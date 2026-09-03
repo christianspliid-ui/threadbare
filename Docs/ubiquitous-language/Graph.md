@@ -4,6 +4,56 @@ Not content-adjacent. Terms covering the world graph data model: nodes, edges, v
 
 ---
 
+### World Object
+
+**Aliases:** World-object kind, Kind, Object kind
+**Also see:** `[[Node]]`, `[[NodeType]]`, `[[Location]]`, `[[Place]]`, `[[Route]]`, `[[WorldRef]]`
+**Status:** canonical
+
+A kind of thing the world keeps, named in game words: a node type (or an edge type, or a slice of `GameState`) plus a subtype the game names. A *variant* is a subtype or a class, never a new node type. The registry is `src/data/world-objects.ts`; the catalogue and the one-PR rule for adding a kind (registry row + UL term + canon row) are `Docs/canon/world-objects.md` (THR-1394, ratified 2026-09-03). Every kind names the `[[WorldRef]]` kind it projects onto — the two are one vocabulary seen from two sides.
+
+---
+
+### Area
+
+**Aliases:** Region (code word), `region` node
+**Also see:** `[[World Object]]`, `[[HexTile]]`, `[[Location]]`
+**Status:** canonical
+
+A multi-hex cluster by dominant terrain feature, containing its Locations. Geographic only: political territory is a Faction's `controls` edges, never a second region kind. The code word is *region*; the game word is Area.
+
+---
+
+### Location
+
+**Aliases:** Place-tier location, Settlement (one class of it)
+**Also see:** `[[World Object]]`, `[[Place]]`, `[[Three-tier Position Model]]`, `[[Area]]`
+**Status:** canonical
+
+The outer place tier: a `location` node **without** `parentLocationId`, told apart by `locationSubtype`. Seven classes over the existing subtypes — settlement, stronghold, holy_place, ruin, wild, wonder, deposit — each a game word. Resources are stocks on a Location (`properties.resources`); Deposit is the Location class over the six extraction subtypes, and nothing mints a `resource` node.
+
+---
+
+### Place
+
+**Aliases:** Sublocation (code word), `sublocation` (legacy node type, reader-accepted only)
+**Also see:** `[[World Object]]`, `[[Location]]`, `[[Three-tier Position Model]]`
+**Status:** canonical
+
+The inner place tier — an inn, a granary, a gatehouse, a grove, a spring — inside a Location: a `location` node **with** `parentLocationId`, told apart by `sublocationTypeId`, classed by the sublocation tag (military, scholarly, arcane, commerce, religious, cultural, underworld, nature, authority, borderlands). Not always built, which is why it is not a *structure*; never a *room* (Christian, 2026-09-03). The code word stays *sublocation* (`src/engine/sublocationShape.ts`); the game word is Place.
+
+---
+
+### Route
+
+**Aliases:** Road, Trade route, Pilgrim way, Portal
+**Also see:** `[[World Object]]`, `[[Location]]`, `[[Edge]]`
+**Status:** canonical
+
+An edge between two Locations — `road`, `trades_with`, `sacred_route` — that traversal walks, and that grows an identity node (`location:trade_route` today) the moment it becomes nameable, ownable, blockadable or consecrated. Five ratified classes: road, trail, trade_lane, pilgrim_way, portal; a portal is a route edge with an empty hex path and its own cost. Trail and portal have no edge type yet (THR-1394 slice 2 adds `routeKind`).
+
+---
+
 ### Node
 
 **Aliases:** Graph Node, World Node, GraphNode

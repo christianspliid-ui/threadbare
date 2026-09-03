@@ -52,7 +52,8 @@ function farOnlyGraph(): WorldGraph {
   });
   graph.addNode({
     id: 'loc_market', name: 'The Grand Market', type: 'location',
-    properties: { locationSubtype: 'market', hexCol: 5, hexRow: 5 },
+    // THR-1394: `market` is a Place type, never a Location subtype; a capital is the market town.
+    properties: { locationSubtype: 'capital', hexCol: 5, hexRow: 5 },
   });
   graph.addNode({
     id: 'loc_far_town', name: 'Farhold', type: 'location',

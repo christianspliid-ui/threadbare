@@ -110,9 +110,9 @@ export const CELL_MOTIVATIONS_BY_VERB: Readonly<Record<UndertakingVerb, readonly
  */
 export const FOUND_SITE_RULE: Readonly<Record<UndertakingObjectTypeId, StrategicTargetRule>> = {
   attachment: { type: 'self' },
-  room: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'capital', 'trading_post', 'port', 'hamlet'] },
+  room: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
   settlement: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'farmland'] },
-  route: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+  route: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
   company: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort'] },
   faction: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
   mark: { type: 'colocated_actor' },

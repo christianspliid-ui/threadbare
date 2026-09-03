@@ -36,7 +36,7 @@ The `Docs/ai-index/` files are the live runtime contracts. The Canon page links 
 | [`Docs/ai-index/tick-phases.md`](../ai-index/tick-phases.md) | Changing phase order, inserting a new phase, moving work between orchestrator and phase modules |
 | [`Docs/ai-index/invariants-and-footguns.md`](../ai-index/invariants-and-footguns.md) | Refactoring caches/selectors, adding UI that depends on graph changes, adding new graph-driven entities |
 
-Alongside them, three canon gates bind engine design work: [`systems-inventory.md`](systems-inventory.md) (Step 0 — grep before drafting; extend/activate, never green-field a listed subsystem), [`interface-map.md`](interface-map.md) (contract stewardship, § Interface impact), and [`verification-gates.md`](verification-gates.md) (the gate law, incl. the 30-tick engine smoke).
+Alongside them, four canon gates bind engine design work: [`world-objects.md`](world-objects.md) (the catalogue of kinds — a new node type, subtype or content target names its kind there first), [`systems-inventory.md`](systems-inventory.md) (Step 0 — grep before drafting; extend/activate, never green-field a listed subsystem), [`interface-map.md`](interface-map.md) (contract stewardship, § Interface impact), and [`verification-gates.md`](verification-gates.md) (the gate law, incl. the 30-tick engine smoke).
 
 ## Non-Functional Priorities (the seven, in order)
 

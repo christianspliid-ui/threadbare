@@ -17,7 +17,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 | [Encounters.md](./Encounters.md) | Encounter, Template, UAT, Aftermath, Reaction, Seed, Hidden Mark, Awareness | ✅ |
 | [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility — plus the attachment layer: Attachment, Effect, Power, Spell, Bestowal, Innate Power | ✅ |
 | [Prose.md](./Prose.md) | IPK, Enrichment Placeholder, Resolver, Strata, Narrative Lexicon, Chronicle | ✅ |
-| [Graph.md](./Graph.md) | Node, Edge, WorldGraph, NodeType, EdgeType, versioning, position model | ❌ |
+| [Graph.md](./Graph.md) | World Object, Area, Location, Place, Route, Node, Edge, WorldGraph, NodeType, EdgeType, versioning, position model | ❌ |
 | [Coordination.md](./Coordination.md) | CC session types, Linear states, claim discipline, WIP, Coordination Block (+ retired Cowork/Codex terms) | ❌ |
 | [Process.md](./Process.md) | NFPs, Three-Pillar Rule, Definition of Done, Design Governance, UL, Drift Scan | ❌ |
 
@@ -160,6 +160,11 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ### Graph
 
+- **[World Object](./Graph.md#world-object)** — a kind of thing the world keeps, in game words: a node/edge/state shape plus a named subtype; registry `src/data/world-objects.ts`, catalogue `Docs/canon/world-objects.md`
+- **[Area](./Graph.md#area)** — a multi-hex terrain cluster containing its Locations; the `region` node; geographic, never political
+- **[Location](./Graph.md#location)** — the outer place tier: a `location` node without `parentLocationId`; seven classes over `locationSubtype`
+- **[Place](./Graph.md#place)** — the inner place tier inside a Location: a `location` node with `parentLocationId`; the code word is *sublocation*; never "room" or "structure"
+- **[Route](./Graph.md#route)** — an edge between two Locations (`road`, `trades_with`, `sacred_route`) that grows an identity node when nameable or ownable; classes road · trail · trade_lane · pilgrim_way · portal
 - **[Node](./Graph.md#node)** — `GraphNode`; the basic entity in the world graph; everything is a node
 - **[Edge](./Graph.md#edge)** — `GraphEdge`; typed directed relationship between nodes; everything meaningful is an edge
 - **[WorldGraph](./Graph.md#worldgraph)** — central data structure; mutated in place; object reference never changes; use version counters for stale-detection
