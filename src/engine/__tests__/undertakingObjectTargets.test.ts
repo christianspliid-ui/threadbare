@@ -36,10 +36,10 @@ function world(): WorldGraph {
 
 function undoTemplate(objectTypeId: UndertakingObjectTypeId): StrategicActionTemplate {
   return {
-    id: `cell_undo_${objectTypeId}`,
-    displayName: `Undo ${objectTypeId}`,
+    id: `cell_destroy_${objectTypeId}`,
+    displayName: `Destroy ${objectTypeId}`,
     verb: 'destroy',
-    undertakingVerb: 'undo',
+    undertakingVerb: 'destroy',
     objectTypeId,
     executionMode: 'multi_tick_project',
     behaviorFamily: 'warlord',
@@ -51,30 +51,30 @@ function undoTemplate(objectTypeId: UndertakingObjectTypeId): StrategicActionTem
 describe('undo × attachment and undo × mark through the motive gate', () => {
   it('passes against a rival holder, naming the holder as the victim', () => {
     const g = world();
-    const attachment = evaluateMotiveGate(g, ME, 'chart_rival', undoTemplate('attachment'), { kind: 'node', nodeId: 'chart_rival' });
+    const attachment = evaluateMotiveGate(g, ME, 'chart_rival', undoTemplate('item'), { kind: 'node', nodeId: 'chart_rival' });
     expect(attachment).toMatchObject({ allowed: true, motive: 'rivalry', ownerId: RIVAL, ownerCount: 1 });
 
-    const mark = evaluateMotiveGate(g, ME, STRANGER, undoTemplate('mark'), { kind: 'edge', edgeId: 'mark_rival' });
+    const mark = evaluateMotiveGate(g, ME, STRANGER, undoTemplate('agreement'), { kind: 'edge', edgeId: 'mark_rival' });
     expect(mark).toMatchObject({ allowed: true, motive: 'rivalry', ownerId: RIVAL, ownerCount: 1 });
   });
 
   it('is refused against oneself — the holder is found, and no motive holds toward oneself', () => {
     const g = world();
-    const attachment = evaluateMotiveGate(g, ME, 'chart_mine', undoTemplate('attachment'), { kind: 'node', nodeId: 'chart_mine' });
+    const attachment = evaluateMotiveGate(g, ME, 'chart_mine', undoTemplate('item'), { kind: 'node', nodeId: 'chart_mine' });
     expect(attachment).toEqual({ allowed: false, ownerCount: 1 });
 
-    const mark = evaluateMotiveGate(g, ME, STRANGER, undoTemplate('mark'), { kind: 'edge', edgeId: 'mark_mine' });
+    const mark = evaluateMotiveGate(g, ME, STRANGER, undoTemplate('agreement'), { kind: 'edge', edgeId: 'mark_mine' });
     expect(mark).toEqual({ allowed: false, ownerCount: 1 });
   });
 
   it('is refused against a holder there is no quarrel with, and the handle is what finds the holder', () => {
     const g = world();
     g.removeEdge('h');
-    const refused = evaluateMotiveGate(g, ME, 'chart_rival', undoTemplate('attachment'), { kind: 'node', nodeId: 'chart_rival' });
+    const refused = evaluateMotiveGate(g, ME, 'chart_rival', undoTemplate('item'), { kind: 'node', nodeId: 'chart_rival' });
     expect(refused).toEqual({ allowed: false, ownerCount: 1 });
     // The mark's place is the subject, who holds nothing: without the handle the gate
     // would read the subject node and refuse as *unowned* — the pre-slice defect.
-    const withoutHandle = evaluateMotiveGate(g, ME, STRANGER, undoTemplate('mark'));
+    const withoutHandle = evaluateMotiveGate(g, ME, STRANGER, undoTemplate('agreement'));
     expect(withoutHandle.ownerCount).toBe(0);
   });
 
@@ -88,9 +88,9 @@ describe('ownership rules and the control variant', () => {
   it('classifies own / other / unowned from the type\'s edges and picks claim or seize', () => {
     const g = world();
     g.addNode({ id: 'room_free', name: 'Free room', type: 'location', properties: { parentLocationId: 'x', sublocationTypeId: 'sublocation-type.workshop' } });
-    const attachment = getUndertakingObjectType('attachment')!;
-    const room = getUndertakingObjectType('room')!;
-    const mark = getUndertakingObjectType('mark')!;
+    const attachment = getUndertakingObjectType('item')!;
+    const room = getUndertakingObjectType('place')!;
+    const mark = getUndertakingObjectType('agreement')!;
 
     expect(ownershipOf(g, ME, attachment, { kind: 'node', nodeId: 'chart_mine' })).toBe('own');
     expect(ownershipOf(g, ME, attachment, { kind: 'node', nodeId: 'chart_rival' })).toBe('other');
@@ -104,6 +104,6 @@ describe('ownership rules and the control variant', () => {
     expect(resolveVerbVariant(g, ME, 'control', room, { kind: 'node', nodeId: 'room_free' })).toBe('control:claim');
     expect(resolveVerbVariant(g, ME, 'control', attachment, { kind: 'node', nodeId: 'chart_rival' })).toBe('control:seize');
     expect(resolveVerbVariant(g, ME, 'control', attachment, { kind: 'node', nodeId: 'chart_mine' })).toBeNull();
-    expect(resolveVerbVariant(g, ME, 'undo', attachment, { kind: 'node', nodeId: 'chart_rival' })).toBe('undo');
+    expect(resolveVerbVariant(g, ME, 'destroy', attachment, { kind: 'node', nodeId: 'chart_rival' })).toBe('destroy');
   });
 });

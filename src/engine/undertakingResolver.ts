@@ -54,9 +54,10 @@ export function ownershipSatisfies(rule: UndertakingOwnership, actual: ObjectOwn
 }
 
 /**
- * The variant a verb resolves to against this object. `control` is the only verb
- * with variants: `claim` for the unheld, `seize` for another's; an object the actor
- * already holds cannot be controlled again, so that answers `null`.
+ * The variant a verb resolves to against this object. `control` splits into `claim`
+ * for the unheld and `seize` for another's (an object the actor already holds cannot be
+ * controlled again, so that answers `null`); `change` splits into `raise` for one's own
+ * and `lower` for another's.
  */
 export function resolveVerbVariant(
   graph: WorldGraph,
@@ -65,6 +66,11 @@ export function resolveVerbVariant(
   type: UndertakingObjectType,
   handle: UndertakingObjectHandle,
 ): UndertakingVerbVariant | null {
+  if (verb === 'change') {
+    // Raise what is one's own (or nobody's); lower another's — the hostile mirror.
+    const ownership = ownershipOf(graph, actorId, type, handle);
+    return ownership === 'other' ? 'change:lower' : 'change:raise';
+  }
   if (verb !== 'control') return verb;
   const ownership = ownershipOf(graph, actorId, type, handle);
   if (ownership === 'unowned') return 'control:claim';
@@ -119,8 +125,8 @@ export function resolveUndertakingCompletion(input: UndertakingResolutionInput):
   if (!type) {
     return { ops: [{ success: false, op: 'resolve_undertaking', error: `unknown_object_type:${objectTypeId}` }], variant: null, refused: 'unknown_object_type' };
   }
-  // `found` acts on a site the object does not exist at yet; every other verb needs the object.
-  if (verb !== 'found' && !isObjectOfType(graph, type, handle)) {
+  // `create` acts on a site the object does not exist at yet; every other verb needs the object.
+  if (verb !== 'create' && !isObjectOfType(graph, type, handle)) {
     return { ops: [{ success: false, op: 'resolve_undertaking', error: `object_gone:${objectIdOf(handle)}` }], variant: null, refused: 'object_gone' };
   }
 

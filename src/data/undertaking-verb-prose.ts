@@ -31,7 +31,7 @@ export interface UndertakingVerbLineSet {
 }
 
 export const UNDERTAKING_VERB_PROSE: Readonly<Record<UndertakingVerbVariant, UndertakingVerbLineSet>> = {
-  found: {
+  create: {
     activity: [
       '{Actor} is raising {object} at {place}, and the ground has begun to answer.',
       '{Actor} works at {place} on what will be {object}, a little further each day.',
@@ -46,7 +46,7 @@ export const UNDERTAKING_VERB_PROSE: Readonly<Record<UndertakingVerbVariant, Und
     ],
     narration: 'Where there was nothing at {place}, {actor} has made {object}.',
   },
-  improve: {
+  'change:raise': {
     activity: [
       '{Actor} is bettering {object} at {place}, patient with the slow parts.',
       '{Actor} works {object} over, piece by piece; {place} sees the difference before it is finished.',
@@ -60,6 +60,20 @@ export const UNDERTAKING_VERB_PROSE: Readonly<Record<UndertakingVerbVariant, Und
       '{Object} has grown under {actor}\'s hand.',
     ],
     narration: '{Actor} has made {object} more than it was.',
+  },
+  'change:lower': {
+    activity: [
+      '{Actor} works quietly against {object}, and {owner} has not yet noticed what is slipping.',
+      'Little by little {actor} is wearing {object} down at {place}; the damage is patient work.',
+      '{Actor} has found the seam in {object} and is prying at it, a little more each day.',
+      'At {place} {actor} turns a hand against {object}, and what {owner} built begins to give.',
+    ],
+    completion: [
+      '{Object} is the poorer for {actor}\'s work; {owner} will feel it before understanding it.',
+      '{Actor} has brought {object} low at {place}, and {owner} keeps what is left.',
+      'The seam {actor} pried at has opened: {object} is not what it was.',
+    ],
+    narration: '{Actor} has undermined {object}, and {owner} is left with the lesser thing.',
   },
   use: {
     activity: [
@@ -106,7 +120,7 @@ export const UNDERTAKING_VERB_PROSE: Readonly<Record<UndertakingVerbVariant, Und
     ],
     narration: '{Actor} has taken {object} from {owner}.',
   },
-  undo: {
+  destroy: {
     activity: [
       '{Actor} is unmaking {object} at {place}; {owner} will not thank them for it.',
       '{Actor} works against {object}, and {owner}\'s hold on {place} thins with every day of it.',
@@ -121,7 +135,7 @@ export const UNDERTAKING_VERB_PROSE: Readonly<Record<UndertakingVerbVariant, Und
     ],
     narration: '{Actor} has undone {object}, and {owner} has lost it.',
   },
-  survey: {
+  observe: {
     activity: [
       '{Actor} is learning {object} at {place}, a little more each day.',
       '{Actor} watches {object} and keeps what is learned.',
@@ -140,5 +154,5 @@ export const UNDERTAKING_VERB_PROSE: Readonly<Record<UndertakingVerbVariant, Und
 
 /** The player-facing verb word for a cell's display name (UI Law 14 — never a `snake_case` member). */
 export const UNDERTAKING_VERB_WORDS: Readonly<Record<UndertakingVerbVariant, string>> = {
-  found: 'Found', improve: 'Improve', use: 'Use', 'control:claim': 'Claim', 'control:seize': 'Seize', undo: 'Undo', survey: 'Survey',
+  create: 'Create', 'change:raise': 'Raise', 'change:lower': 'Lower', use: 'Use', 'control:claim': 'Claim', 'control:seize': 'Seize', destroy: 'Destroy', observe: 'Observe',
 };

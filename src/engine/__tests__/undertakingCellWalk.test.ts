@@ -44,11 +44,11 @@ describe('the cell walk', () => {
   it('offers undo × attachment against the rival\'s chart with its handle and tier, never against one\'s own', () => {
     const g = world();
     const { candidates, rejections } = generateStrategicCandidates(g, ME, [REVENGE], undefined, 10, mulberry32(1), undefined, 'cells');
-    const undo = candidates.filter(c => c.templateId === 'cell.undo.attachment');
+    const undo = candidates.filter(c => c.templateId === 'cell.destroy.item');
     expect(undo.map(c => c.targetNodeId)).toEqual(['chart_rival']);
     expect(undo[0]).toMatchObject({
       objectHandle: { kind: 'node', nodeId: 'chart_rival' },
-      objectTypeId: 'attachment',
+      objectTypeId: 'item',
       objectTier: 1,
       victimAgentId: RIVAL,
       verb: 'destroy',
@@ -56,8 +56,8 @@ describe('the cell walk', () => {
     expect(candidates.some(c => c.targetNodeId === 'chart_mine')).toBe(false);
     // Cells with nothing of their type in this world are refused by the cell's own reason.
     const reasons = rejections.map(r => r.reason);
-    expect(reasons).toContain('no_object_in_range:room');
-    expect(reasons).toContain('no_object_in_range:settlement');
+    expect(reasons).toContain('no_object_in_range:place');
+    expect(reasons).toContain('no_object_in_range:location');
   });
 
   it('traces an unreachable cell once per world, naming why', () => {
@@ -65,13 +65,17 @@ describe('the cell walk', () => {
     generateStrategicCandidates(g, ME, [REVENGE], undefined, 10, mulberry32(1), undefined, 'cells');
     generateStrategicCandidates(g, ME, [REVENGE], undefined, 11, mulberry32(2), undefined, 'cells');
     const traces = getTraces().filter(t => t.category === 'undertaking_cell_unreachable') as Array<{ objectTypeId: string; reason: string }>;
-    const rooms = traces.filter(t => t.objectTypeId === 'room');
+    const rooms = traces.filter(t => t.objectTypeId === 'place');
     expect(rooms).toHaveLength(1);
     expect(rooms[0].reason).toBe('no_object_exists');
-    // A settlement exists (the town) but nobody holds it — the other reason.
-    const settlements = traces.filter(t => t.objectTypeId === 'settlement');
-    expect(settlements).toHaveLength(1);
-    expect(settlements[0].reason).toBe('no_owned_object');
+    // A Location exists (the town) but nobody holds it — the other reason. Revenge walks
+    // more than one location cell (seize, lower), and each traces once.
+    const settlements = traces.filter(t => t.objectTypeId === 'location');
+    expect(settlements.length).toBeGreaterThanOrEqual(1);
+    for (const t of settlements) expect(t.reason).toBe('no_owned_object');
+    // Once per (verb, type) per world: seize and lower each trace once, never twice.
+    const verbs = settlements.map(t => (t as unknown as { verb: string }).verb);
+    expect(new Set(verbs).size).toBe(settlements.length);
   });
 
   it('under the templates model no cell is walked at all', () => {

@@ -5,6 +5,7 @@ import type {
   UndertakingOwnership,
   StrategicVerb as StrategicVerbForCells,
   UndertakingHarmClass as HarmClassForCells,
+  StrategicFactionSeed,
 } from '../types/strategicAction';
 //
 // All tunable weights, caps, cooldowns, cadence, and catalyst constants
@@ -925,52 +926,54 @@ export type UndertakingModel = 'templates' | 'cells';
 export const UNDERTAKING_MODEL: UndertakingModel = 'templates';
 
 /** The closed verb set. `control` resolves to `claim` or `seize` by ownership. */
-export const UNDERTAKING_VERBS: readonly UndertakingVerb[] = ['found', 'improve', 'use', 'control', 'undo', 'survey'];
+export const UNDERTAKING_VERBS: readonly UndertakingVerb[] = ['create', 'change', 'use', 'control', 'destroy', 'observe'];
 
 /** Every variant a cell may name — the verbs, with `control` split. */
 export const UNDERTAKING_VERB_VARIANTS: readonly UndertakingVerbVariant[] = [
-  'found', 'improve', 'use', 'control:claim', 'control:seize', 'undo', 'survey',
+  'create', 'change:raise', 'change:lower', 'use', 'control:claim', 'control:seize', 'destroy', 'observe',
 ];
 
 /** The legacy `StrategicVerb` each undertaking verb reads as on shared traces and history. */
 export const STRATEGIC_VERB_OF_UNDERTAKING_VERB: Readonly<Record<UndertakingVerb, StrategicVerbForCells>> = {
-  found: 'create', improve: 'change', use: 'change', control: 'control', undo: 'destroy', survey: 'gather_info',
+  create: 'create', change: 'change', use: 'change', control: 'control', destroy: 'destroy', observe: 'gather_info',
 };
 
 /** Which verb variants require a quarrel with the object's holder. */
-export const MOTIVE_GATED_VERBS: readonly UndertakingVerbVariant[] = ['control:seize', 'undo'];
+export const MOTIVE_GATED_VERBS: readonly UndertakingVerbVariant[] = ['control:seize', 'change:lower', 'destroy'];
 
 /** The cell's default ownership rule per variant. */
 export const OWNERSHIP_BY_VERB: Readonly<Record<UndertakingVerbVariant, UndertakingOwnership>> = {
-  found: 'any', improve: 'own', use: 'own', 'control:claim': 'unowned', 'control:seize': 'other', undo: 'other', survey: 'any',
+  create: 'any', 'change:raise': 'own', 'change:lower': 'other', use: 'own', 'control:claim': 'unowned', 'control:seize': 'other', destroy: 'other', observe: 'any',
 };
 
 type PerTier = readonly [number, number, number];
 
 /** Checkpoint difficulty by verb variant and object tier — inside the existing tier bands. */
 export const UNDERTAKING_VERB_DIFFICULTY: Readonly<Record<UndertakingVerbVariant, PerTier>> = {
-  found: [0.45, 0.5, 0.55], improve: [0.4, 0.45, 0.5], use: [0.35, 0.4, 0.45],
-  'control:claim': [0.4, 0.45, 0.5], 'control:seize': [0.55, 0.6, 0.6], undo: [0.5, 0.55, 0.6], survey: [0.35, 0.4, 0.45],
+  create: [0.45, 0.5, 0.55], 'change:raise': [0.4, 0.45, 0.5], 'change:lower': [0.5, 0.55, 0.6], use: [0.35, 0.4, 0.45],
+  'control:claim': [0.4, 0.45, 0.5], 'control:seize': [0.55, 0.6, 0.6], destroy: [0.5, 0.55, 0.6], observe: [0.35, 0.4, 0.45],
 };
 
 /**
  * The board's payoff by verb variant and object tier. Every value sits inside
  * `UNDERTAKING_TIER_PAYOFF_BANDS` for its tier (T1 0.4–0.9, T2 0.9–1.6, T3 1.3–2.2;
- * pinned by `undertaking-objects.test.ts`); undo and seize sit at the band's top.
+ * pinned by `undertaking-objects.test.ts`); destroy and seize sit at the band's top.
  */
 export const UNDERTAKING_VERB_PAYOFF: Readonly<Record<UndertakingVerbVariant, PerTier>> = {
-  found: [0.7, 1.3, 1.8], improve: [0.6, 1.1, 1.6], use: [0.5, 1.0, 1.5],
-  'control:claim': [0.7, 1.3, 1.8], 'control:seize': [0.9, 1.6, 2.2], undo: [0.9, 1.6, 2.2], survey: [0.45, 0.95, 1.4],
+  create: [0.7, 1.3, 1.8], 'change:raise': [0.6, 1.1, 1.6], 'change:lower': [0.8, 1.4, 2.0], use: [0.5, 1.0, 1.5],
+  'control:claim': [0.7, 1.3, 1.8], 'control:seize': [0.9, 1.6, 2.2], destroy: [0.9, 1.6, 2.2], observe: [0.45, 0.95, 1.4],
 };
 
-/** Project length in checkpoints; `0` means instant. `control × settlement` is the sustained mode, not a project. */
+/** Project length in checkpoints; `0` means instant. `control × location` is the sustained mode, not a project. */
 export const UNDERTAKING_VERB_DURATION: Readonly<Record<UndertakingVerbVariant, PerTier>> = {
-  found: [4, 6, 8], improve: [4, 6, 8], use: [0, 0, 0],
-  'control:claim': [4, 6, 8], 'control:seize': [4, 6, 8], undo: [4, 6, 8], survey: [0, 0, 0],
+  create: [4, 6, 8], 'change:raise': [4, 6, 8], 'change:lower': [4, 6, 8], use: [0, 0, 0],
+  'control:claim': [4, 6, 8], 'control:seize': [4, 6, 8], destroy: [4, 6, 8], observe: [0, 0, 0],
 };
 
 /** What seizing anything registers as to the grievance lane. */
 export const HARM_ON_SEIZE: HarmClassForCells = 'holding_seized';
+/** What lowering another's thing registers as: it is still theirs, and the poorer for it. */
+export const HARM_ON_LOWER: HarmClassForCells = 'property_destroyed';
 
 /** The share of a type's objects that may fall to the default tier before the slice fails. */
 export const TIER_DEFAULT_SHARE_MAX = 0.1;
@@ -987,16 +990,48 @@ export const UNDERTAKING_ROUTE_TIER_HEX_BANDS: readonly [number, number] = [3, 6
 export const UNDERTAKING_COMPANY_TIER_ROSTER_BANDS: readonly [number, number] = [3, 8];
 /** Faction tier by member count. */
 export const UNDERTAKING_FACTION_TIER_MEMBER_BANDS: readonly [number, number] = [5, 15];
-/** Mark tier by the edge's `magnitude`. */
+/** Agreement (mark) tier by the edge's `magnitude`. */
 export const UNDERTAKING_MARK_TIER_MAGNITUDE_BANDS: readonly [number, number] = [0.4, 0.7];
+/** Army tier by roster size. */
+export const UNDERTAKING_ARMY_TIER_ROSTER_BANDS: readonly [number, number] = [5, 20];
+/** Standing tier by the `reputation_with` score's distance from neutral (0.5). */
+export const UNDERTAKING_STANDING_TIER_DISTANCE_BANDS: readonly [number, number] = [0.15, 0.3];
 
-/** `found × room` with no override mints this type; a cell override names another. */
-export const UNDERTAKING_DEFAULT_ROOM_TYPE_ID = 'sublocation-type.workshop';
-/** `found × settlement` with no override founds this subtype. */
-export const UNDERTAKING_DEFAULT_SETTLEMENT_SUBTYPE = 'hamlet';
-/** `improve × settlement`: prosperity added per completion (clamped to [0, 1]). */
-export const UNDERTAKING_IMPROVE_PROSPERITY_DELTA = 0.1;
-/** `undo × settlement`: prosperity is floored here and the subtype becomes `ruins`. */
+/** `create × place` with no override mints this type; a cell override names another. */
+export const UNDERTAKING_DEFAULT_PLACE_TYPE_ID = 'sublocation-type.workshop';
+/** `create × location` with no override founds this subtype (settlement class). */
+export const UNDERTAKING_DEFAULT_LOCATION_SUBTYPE = 'hamlet';
+/** `change × location`: prosperity added (raise) or removed (lower) per completion, clamped to [0, 1]. */
+export const UNDERTAKING_CHANGE_PROSPERITY_DELTA = 0.1;
+/** `destroy × location`: prosperity is floored here and the subtype becomes `ruins`. */
 export const RUINED_SETTLEMENT_PROSPERITY_FLOOR = 0.1;
+/** `change × standing`: reputation delta per completion (raise +, lower −). */
+export const UNDERTAKING_STANDING_DELTA = 0.15;
+/** `destroy × standing`: the quarrel's reputation blow, beside the `hostile_to` edge. */
+export const UNDERTAKING_QUARREL_STANDING_DELTA = -0.3;
+/** `create × agreement` with no override: the mark's secret type and magnitude. */
+export const UNDERTAKING_DEFAULT_MARK_SECRET_TYPE = 'indiscretion';
+export const UNDERTAKING_DEFAULT_MARK_MAGNITUDE = 0.5;
+/** `create × army` with no override: the warhost's strength (0–1). */
+export const UNDERTAKING_DEFAULT_WARHOST_STRENGTH = 0.5;
+/** `observe × anything`: the intelligence key the survey writes. */
+export const UNDERTAKING_OBSERVE_INTELLIGENCE_TYPE = 'observed';
+/**
+ * `create × faction` with no override founds this order. The four content-id lists
+ * point at the generic guild content every founded order runs (THR-1309) — an order
+ * founded with unresolvable ids would be live by every dashboard and inert in play.
+ */
+export const UNDERTAKING_DEFAULT_FACTION_SEED: StrategicFactionSeed = {
+  factionType: 'guild',
+  nameTemplate: '{actor}\'s Company',
+  description: 'An order founded by one mortal\'s work, taking its name and its purpose from its founder.',
+  iconGlyph: '⚒',
+  themeColor: '#8a6a1e',
+  locationTypes: ['town', 'city', 'capital'],
+  joinEncounterTemplateId: 'ag.join',
+  promotionEncounterTemplateId: 'ag.promotion',
+  questTemplateIds: ['ag.quest.escort_caravan', 'ag.quest.recover_artifact', 'ag.quest.wilderness_survey', 'ag.senior.bounty_hunt'],
+  socialTemplateIds: ['ag.social.tavern_tales', 'ag.social.mentor', 'ag.social.rivalry'],
+};
 /** `undo × faction`: ticks until the planted schism resolves. */
 export const UNDERTAKING_SCHISM_RESOLUTION_DELAY_TICKS = 12;

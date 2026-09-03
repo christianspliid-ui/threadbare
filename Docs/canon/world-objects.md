@@ -70,6 +70,8 @@ One PR, three edits, no exceptions:
 2. **A UL term** — the shard the `ulTerm` names. The game word is the term; the code word is an alias.
 3. **A row on this page** — the catalogue table above.
 
+A new kind also takes its place on the **undertaking grid** — [`undertaking-grid.generated.md`](undertaking-grid.generated.md): either a `NOT_AN_OBJECT` reason or a disposition per verb in [`scripts/undertaking-grid-dispositions.ts`](../../scripts/undertaking-grid-dispositions.ts), or `generate-undertaking-grid` fails by name. That is how a new kind cannot arrive without the question "what can a mortal do to one?" being answered.
+
 A **new node or edge type** additionally keeps the load-bearing rule (full design before code — CLAUDE.md § Load-Bearing Architectural Decisions) and names its kind in the same PR; the contract test fails by name on a union member no kind claims, so it cannot be forgotten.
 
 **Cautious expansion, in one sentence:** before a new kind, ask whether it is a class or a subtype of one that exists — the answer is almost always yes, and the registry note on the nearest kind says what was decided last time.
