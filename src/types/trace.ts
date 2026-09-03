@@ -118,6 +118,7 @@ export type TraceCategory =
   | 'undertaking_outcome_event'
   | 'grievance_transition'
   | 'ambition_displaced'
+  | 'covet_rivalry_seeded'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -520,6 +521,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking_outcome_event',
   'grievance_transition',
   'ambition_displaced',
+  'covet_rivalry_seeded',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -2077,6 +2079,24 @@ export interface AmbitionDisplacedTrace extends TraceBase {
 }
 
 /**
+ * Trace: a covet rivalry was seeded (THR-1388) — the mortal was refused a destroy
+ * against the same owner `COVET_RIVALRY_THRESHOLD` boards running and now holds a
+ * `hostile_to` edge (cause `covets`) the motive gate reads as rivalry.
+ */
+export interface CovetRivalrySeededTrace extends TraceBase {
+  category: 'covet_rivalry_seeded';
+  actorId: string;
+  /** The faction or mortal whose holding was refused. */
+  ownerId: string;
+  /** The last refused target. */
+  targetId: string;
+  /** The count at seeding. */
+  refusals: number;
+  /** The destroy-heavy ambition that drove the refusals. */
+  ambitionId: string;
+}
+
+/**
  * Trace: one undertaking checkpoint resolved (THR-1292 §2).
  *
  * Emitted once per checkpoint *attempt*, including the deferred ones — a
@@ -3257,6 +3277,7 @@ export type TraceEntry =
   | UndertakingOutcomeEventTrace
   | GrievanceTransitionTrace
   | AmbitionDisplacedTrace
+  | CovetRivalrySeededTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
   | FollowChangeTrace

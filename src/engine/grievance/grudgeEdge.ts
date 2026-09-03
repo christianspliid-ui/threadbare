@@ -92,3 +92,55 @@ export function hasGrudge(graph: WorldGraph, a: string, b: string): boolean {
   return graph.getOutgoingEdges(a, 'hostile_to').some(e => e.target === b)
     || graph.getOutgoingEdges(b, 'hostile_to').some(e => e.target === a);
 }
+
+/**
+ * The covet rivalry's provenance (THR-1388). Deliberately **not** a `GrudgeCause`:
+ * `undertakingMotive.GRUDGE_PROVENANCE` does not list it, so the gate reads the edge
+ * as `rivalry` (two mortals in each other's way), never `grudge` (one wronged the
+ * other) — a covet cannot mint a vendetta by itself; only the harm it licenses can.
+ */
+export type CovetCause = 'covets';
+
+export interface WriteCovetRivalryOptions {
+  /** The holding the mortal kept reaching for. */
+  readonly sourceTargetId?: string;
+}
+
+/**
+ * Write the covet rivalry one way — actor → owner — idempotently.
+ *
+ * One direction, unlike `writeGrudge`: coveting is a state of the coveter, not of the
+ * relationship. The owner has done nothing and holds no quarrel until a harm arrives,
+ * at which point the existing lane writes the grudge both ways.
+ *
+ * @returns true when the edge was newly created.
+ */
+export function writeCovetRivalry(
+  graph: WorldGraph,
+  actorId: string,
+  ownerId: string,
+  tick: number,
+  options: WriteCovetRivalryOptions = {},
+): boolean {
+  if (actorId === ownerId) return false;
+  const existing = graph.getOutgoingEdges(actorId, 'hostile_to').find(e => e.target === ownerId);
+  if (existing) return false;
+  try {
+    const cause: CovetCause = 'covets';
+    graph.addEdge({
+      id: `e_hostile_to_${actorId}_${ownerId}`,
+      source: actorId,
+      target: ownerId,
+      type: 'hostile_to',
+      properties: {
+        since: tick,
+        cause,
+        ...(options.sourceTargetId && { sourceTargetId: options.sourceTargetId }),
+      },
+    });
+    return true;
+  } catch {
+    // Fail-soft: a missing rivalry costs a story, never correctness (NFP #4).
+    return false;
+  }
+}

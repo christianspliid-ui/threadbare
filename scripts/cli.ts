@@ -359,6 +359,18 @@ function printAgent(partialId: string): void {
     }
   }
 
+  // The covet counter (THR-1388) — what they keep reaching for, and how close to hating its holder.
+  const covet = match.properties.covet as { ownerId?: string; count?: number; targetId?: string } | undefined;
+  if (covet && typeof covet.ownerId === 'string') {
+    const ownerName = state.graph.getNode(covet.ownerId)?.name ?? covet.ownerId;
+    const targetName = covet.targetId ? (state.graph.getNode(covet.targetId)?.name ?? covet.targetId) : '?';
+    console.log(`  Covets: ${targetName} (held by ${ownerName}) — refused ${covet.count ?? 0} board(s)`);
+  }
+  const covetEdges = state.graph.getOutgoingEdges(match.id, 'hostile_to').filter(e => e.properties.cause === 'covets');
+  for (const e of covetEdges) {
+    console.log(`  Covet rivalry: vs ${state.graph.getNode(e.target)?.name ?? e.target} since tick ${String(e.properties.since ?? '?')}`);
+  }
+
   // Grievances and grudges (THR-1298) — what was done to them, and what it left.
   // The sheet shows heat as a word; here it shows both, because the raw number is what
   // a tuning pass on GRIEVANCE_HEAT_DECAY_PER_CHECK actually needs to read.

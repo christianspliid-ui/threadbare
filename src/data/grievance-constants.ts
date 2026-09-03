@@ -157,3 +157,23 @@ export const GRIEVANCE_HEAT_BAND_BURNING = 0.7;
  * window an agent lives in, not a floor label nobody ever sees.
  */
 export const GRIEVANCE_HEAT_BAND_HOT = 0.4;
+
+// ─── The covet rivalry (THR-1388) ────────────────────────────────────
+
+/**
+ * Boards on which a destroy was refused `no_motive` against the same owner before the
+ * mortal comes to hold a rivalry with that owner — one game day at 12 ticks/day. The
+ * probe saw 624 refusals over 26 actor–owner pairs on seed 42 in 300 ticks, so the
+ * median pair crosses this inside a season.
+ */
+export const COVET_RIVALRY_THRESHOLD = 12;
+
+/**
+ * A newer refused owner replaces the counted one only while the count is still below
+ * this — a mortal who has nearly formed a rivalry does not forget it for the next
+ * warehouse.
+ */
+export const COVET_SWITCH_BELOW = 4;
+
+/** Live covet edges (`hostile_to`, cause `covets`) a mortal may hold at once. */
+export const MAX_COVET_RIVALRIES_PER_ACTOR = 1;

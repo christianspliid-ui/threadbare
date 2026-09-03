@@ -45,6 +45,8 @@ export const GRUDGE_CAUSE_CLAUSES: Readonly<Record<string, string>> = {
   grievance_cooled: 'an old wrong that never quite closed',
   mentorship_break: 'a teaching that ended badly',
   excommunicated: 'a name struck from the rolls',
+  // THR-1388 — a rivalry, not a grudge: the owner is a chip beside the line, so the clause does not name them.
+  covets: 'a holding one of them kept reaching for',
 };
 
 /**
