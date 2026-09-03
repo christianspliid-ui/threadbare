@@ -291,7 +291,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `fragment` (1) | `fragmentResolution.ts` | `THR-475`, `THR-573`, `THR-884` |
 | `game` (1) | `gameInit.ts` | — |
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-786`, `THR-822`, `THR-841` |
-| `grievance` (3) | `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-731` |
+| `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-731` |
 | `group` (1) | `groupShape.ts` | `THR-1297` |
 | `groups` (15) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (1) | `guildSeeding.ts` | — |
@@ -400,4 +400,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (2 dormant) · 99 tick phases · 180 engine domains · 532 modules._
+_Counts: 26 registered subsystems (2 dormant) · 99 tick phases · 180 engine domains · 533 modules._
