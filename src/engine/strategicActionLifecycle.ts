@@ -58,6 +58,8 @@ import {
   type GraphOpResult,
 } from './strategicGraphOps';
 import { resolveDurableActorLocation } from './tradeRouteOps';
+import { UNDERTAKING_MODEL } from '../data/strategic-action-constants';
+import { resolveUndertakingCompletion } from './undertakingResolver';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
 import { getPlaceTierLocations } from './sublocationShape';
@@ -450,6 +452,9 @@ export function executeStrategicAction(
         behaviorFamily: candidate.behaviorFamily,
         targetNodeId: candidate.targetNodeId,
         targetHex: candidate.targetHex,
+        // The object the cell acts on (THR-1392), carried to completion.
+        objectHandle: candidate.objectHandle,
+        objectTypeId: candidate.objectTypeId,
         // Carried from the gate that approved this candidate (THR-1296 §6). Absent on
         // every local undertaking; the bind pass binds it as `$anchor` when set.
         anchorNodeId: candidate.anchorNodeId,
@@ -831,6 +836,8 @@ export function advanceStrategicProjects(
         originLocationId: project.originLocationId,
         targetNodeId: project.targetNodeId,
         targetHex: project.targetHex,
+        objectHandle: project.objectHandle,
+        objectTypeId: project.objectTypeId,
         scoreComponents: {
           ambitionAlignment: 0, blockerRelief: 0, worldImpact: 0,
           catalystValue: 0, roleFit: 0, controlPressure: 0,
@@ -1154,8 +1161,30 @@ function executeInstantMutation(
   const poolInvalidatedLocationIds: string[] = [];
   const targetId = candidate.targetNodeId;
 
-  // ── Hint-driven dispatch: templates declare their mutation via mutationHint ──
+  // ── The one resolver (THR-1392), behind the flag ──
+  // A candidate that names an object acts through its object type's declared verb
+  // semantic; the per-template switch below is the template model and is deleted
+  // when the flag flips. With `UNDERTAKING_MODEL === 'templates'` (the default) this
+  // branch is never taken, and nothing the player sees changes.
   const template = getStrategicTemplate(candidate.templateId);
+  if (UNDERTAKING_MODEL === 'cells' && candidate.objectTypeId && candidate.objectHandle && template?.undertakingVerb) {
+    const resolution = resolveUndertakingCompletion({
+      state, graph,
+      actorId: candidate.actorId,
+      verb: template.undertakingVerb,
+      objectTypeId: candidate.objectTypeId,
+      handle: candidate.objectHandle,
+      tick,
+      projectId: candidate.candidateId,
+      originLocationId: candidate.originLocationId,
+      targetNodeId: candidate.targetNodeId,
+    });
+    ops.push(...resolution.ops);
+    if (targetId && resolution.ops.some(o => o.success)) poolInvalidatedLocationIds.push(targetId);
+    return { ops, poolInvalidatedLocationIds };
+  }
+
+  // ── Hint-driven dispatch: templates declare their mutation via mutationHint ──
   const hint = template?.mutationHint;
 
   if (hint) {

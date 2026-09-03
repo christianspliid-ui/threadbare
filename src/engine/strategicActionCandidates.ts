@@ -50,6 +50,13 @@ import { getGroupPosition } from './groups/groupQueries';
 import type { ReachDomain } from '../types/traits';
 import { findEligibleApprentices, MENTORSHIP_TEMPLATE_ID } from './mentorshipUndertaking';
 import { evaluateRemoteAnchorGate, ANCHOR_CAST_KEY } from './binding/remoteAnchor';
+import type { UndertakingObjectHandle, UndertakingObjectTypeId } from '../types/strategicAction';
+import {
+  getUndertakingObjectType,
+  enumerateObjectHandles,
+  objectPlaceNodeId,
+} from '../data/undertaking-objects';
+import { ownershipOf, ownershipSatisfies } from './undertakingResolver';
 import { evaluateMotiveGate } from './undertakingMotive';
 
 // ─── Template Registry ──────────────────────────────────────────────
@@ -221,8 +228,10 @@ export function generateStrategicCandidates(
         continue;
       }
 
-      // Find valid targets
-      let targets = findValidTargets(graph, actorId, template, locationId, actorHex);
+      // Find valid targets. For the `object` rule (THR-1392) the handle each target
+      // stands for rides beside the node — an edge object has no node of its own.
+      const objectHandles = new Map<string, UndertakingObjectHandle>();
+      let targets = findValidTargets(graph, actorId, template, locationId, actorHex, objectHandles);
       if (review?.targetId) targets = targets.filter(t => t.id === review.targetId);
       if (review?.preferOwnedTarget) {
         // Owned first, stable otherwise: the motive gate already knows how to count
@@ -286,7 +295,8 @@ export function generateStrategicCandidates(
         // Two reasons, not one: "nobody holds this" and "the actor has no quarrel with
         // whoever does" are different worlds and want different fixes. Both share the
         // `no_motive` prefix so a sweep can match either.
-        const motiveGate = evaluateMotiveGate(graph, actorId, target.id, template);
+        const objectHandle = objectHandles.get(target.id);
+        const motiveGate = evaluateMotiveGate(graph, actorId, target.id, template, objectHandle);
         if (!motiveGate.allowed && !review?.bypass.has('motive_gate')) {
           const reason = motiveGate.ownerCount === 0
             ? `no_motive_unowned:${target.id}`
@@ -343,6 +353,11 @@ export function generateStrategicCandidates(
           displayName: template.displayName,
           targetNodeId: target.id,
           targetHex: targetHex ?? undefined,
+          // The object the cell acts on (THR-1392); absent on every legacy rule.
+          objectHandle,
+          objectTypeId: objectHandle && template.targetRule.type === 'object'
+            ? template.targetRule.objectTypeId as UndertakingObjectTypeId
+            : undefined,
           anchorNodeId: anchorGate.anchorNodeId,
           // The victim the motive gate already named (THR-1298). Stamped here because
           // this is the one point where the gate's answer is still in scope — by
@@ -457,10 +472,35 @@ function findValidTargets(
   // THR-1310: the caller already resolved this once per actor; threading it through
   // keeps one source for where the agent stands rather than re-deriving it per template.
   actorHex: { col: number; row: number } | null,
+  /** Out: the object handle behind each returned node, for the `object` rule (THR-1392). */
+  objectHandles?: Map<string, UndertakingObjectHandle>,
 ): GraphNode[] {
   const rule = template.targetRule;
 
   switch (rule.type) {
+    case 'object': {
+      // Every object of the type in the world under the cell's ownership rule
+      // (THR-1392). The registry's shape enumerates, the resolver's one ownership
+      // read classifies, and the place node carries the handle out. An edge object
+      // (a mark) is placed at its target; two marks on one subject collapse to the
+      // first by edge id — deterministic, and the case is rare enough that slice 2's
+      // cell enumeration can widen it if the census asks.
+      const type = getUndertakingObjectType(rule.objectTypeId);
+      if (!type) return [];
+      const nodes: GraphNode[] = [];
+      const seen = new Set<string>();
+      for (const handle of enumerateObjectHandles(graph, type)) {
+        if (!ownershipSatisfies(rule.ownership, ownershipOf(graph, actorId, type, handle))) continue;
+        const placeId = objectPlaceNodeId(graph, handle);
+        const node = placeId ? graph.getNode(placeId) : undefined;
+        if (!node || seen.has(node.id)) continue;
+        seen.add(node.id);
+        nodes.push(node);
+        objectHandles?.set(node.id, handle);
+      }
+      return orderTargetsByProximity(graph, nodes, actorHex, STRATEGIC_TARGET_SCAN_CAPS.object);
+    }
+
     case 'self':
       return [graph.getNode(actorId)].filter(Boolean) as GraphNode[];
 

@@ -1,4 +1,11 @@
 // src/data/strategic-action-constants.ts
+import type {
+  UndertakingVerb,
+  UndertakingVerbVariant,
+  UndertakingOwnership,
+  StrategicVerb as StrategicVerbForCells,
+  UndertakingHarmClass as HarmClassForCells,
+} from '../types/strategicAction';
 //
 // All tunable weights, caps, cooldowns, cadence, and catalyst constants
 // for the ambition-driven strategic action system.
@@ -805,6 +812,9 @@ export const STRATEGIC_TARGET_SCAN_CAPS: Readonly<Record<string, number>> = {
   // THR-1309. Small because both arms of the rule are naturally small: a commander
   // holds very few bands, and a rival only needs the nearest few to have a real choice.
   group_node: 5,
+  // THR-1392: every object of a type in the world, nearest first. Eight, so a cell
+  // sees a real choice without pricing the whole map.
+  object: 8,
 };
 
 /**
@@ -902,3 +912,91 @@ export const WARBAND_INITIAL_COHESION = 0.7;
  * revisited to earn a distinction the fiction does not actually make.
  */
 export const SUBORNED_WARBAND_DISSOLUTION_REASON = 'betrayal' as const;
+
+// ─── Verb × object type (THR-1392) ──────────────────────────────────
+//
+// The undertaking model. `templates` is the shipped authored-kind-row model;
+// `cells` enumerates verb × object-type cells over the world's own objects
+// (`src/data/undertaking-objects.ts`, `src/engine/undertakingResolver.ts`). The
+// flag flips only when `census:undertakings` passes on cells (slice 4).
+
+
+export type UndertakingModel = 'templates' | 'cells';
+export const UNDERTAKING_MODEL: UndertakingModel = 'templates';
+
+/** The closed verb set. `control` resolves to `claim` or `seize` by ownership. */
+export const UNDERTAKING_VERBS: readonly UndertakingVerb[] = ['found', 'improve', 'use', 'control', 'undo', 'survey'];
+
+/** Every variant a cell may name — the verbs, with `control` split. */
+export const UNDERTAKING_VERB_VARIANTS: readonly UndertakingVerbVariant[] = [
+  'found', 'improve', 'use', 'control:claim', 'control:seize', 'undo', 'survey',
+];
+
+/** The legacy `StrategicVerb` each undertaking verb reads as on shared traces and history. */
+export const STRATEGIC_VERB_OF_UNDERTAKING_VERB: Readonly<Record<UndertakingVerb, StrategicVerbForCells>> = {
+  found: 'create', improve: 'change', use: 'change', control: 'control', undo: 'destroy', survey: 'gather_info',
+};
+
+/** Which verb variants require a quarrel with the object's holder. */
+export const MOTIVE_GATED_VERBS: readonly UndertakingVerbVariant[] = ['control:seize', 'undo'];
+
+/** The cell's default ownership rule per variant. */
+export const OWNERSHIP_BY_VERB: Readonly<Record<UndertakingVerbVariant, UndertakingOwnership>> = {
+  found: 'any', improve: 'own', use: 'own', 'control:claim': 'unowned', 'control:seize': 'other', undo: 'other', survey: 'any',
+};
+
+type PerTier = readonly [number, number, number];
+
+/** Checkpoint difficulty by verb variant and object tier — inside the existing tier bands. */
+export const UNDERTAKING_VERB_DIFFICULTY: Readonly<Record<UndertakingVerbVariant, PerTier>> = {
+  found: [0.45, 0.5, 0.55], improve: [0.4, 0.45, 0.5], use: [0.35, 0.4, 0.45],
+  'control:claim': [0.4, 0.45, 0.5], 'control:seize': [0.55, 0.6, 0.6], undo: [0.5, 0.55, 0.6], survey: [0.35, 0.4, 0.45],
+};
+
+/**
+ * The board's payoff by verb variant and object tier. Every value sits inside
+ * `UNDERTAKING_TIER_PAYOFF_BANDS` for its tier (T1 0.4–0.9, T2 0.9–1.6, T3 1.3–2.2;
+ * pinned by `undertaking-objects.test.ts`); undo and seize sit at the band's top.
+ */
+export const UNDERTAKING_VERB_PAYOFF: Readonly<Record<UndertakingVerbVariant, PerTier>> = {
+  found: [0.7, 1.3, 1.8], improve: [0.6, 1.1, 1.6], use: [0.5, 1.0, 1.5],
+  'control:claim': [0.7, 1.3, 1.8], 'control:seize': [0.9, 1.6, 2.2], undo: [0.9, 1.6, 2.2], survey: [0.45, 0.95, 1.4],
+};
+
+/** Project length in checkpoints; `0` means instant. `control × settlement` is the sustained mode, not a project. */
+export const UNDERTAKING_VERB_DURATION: Readonly<Record<UndertakingVerbVariant, PerTier>> = {
+  found: [4, 6, 8], improve: [4, 6, 8], use: [0, 0, 0],
+  'control:claim': [4, 6, 8], 'control:seize': [4, 6, 8], undo: [4, 6, 8], survey: [0, 0, 0],
+};
+
+/** What seizing anything registers as to the grievance lane. */
+export const HARM_ON_SEIZE: HarmClassForCells = 'holding_seized';
+
+/** The share of a type's objects that may fall to the default tier before the slice fails. */
+export const TIER_DEFAULT_SHARE_MAX = 0.1;
+
+/** How many authored flavour variants one cell may carry before it is a pack again. */
+export const CELL_OVERRIDE_MAX_PER_CELL = 3;
+
+/** The tier an object falls to when its type's source is missing (traced `undertaking_tier_defaulted`). */
+export const UNDERTAKING_DEFAULT_TIER = 2 as const;
+
+/** Route tier by hex length of the pair: ≤ first is T1, ≤ second T2, longer T3. */
+export const UNDERTAKING_ROUTE_TIER_HEX_BANDS: readonly [number, number] = [3, 6];
+/** Company tier by roster size. */
+export const UNDERTAKING_COMPANY_TIER_ROSTER_BANDS: readonly [number, number] = [3, 8];
+/** Faction tier by member count. */
+export const UNDERTAKING_FACTION_TIER_MEMBER_BANDS: readonly [number, number] = [5, 15];
+/** Mark tier by the edge's `magnitude`. */
+export const UNDERTAKING_MARK_TIER_MAGNITUDE_BANDS: readonly [number, number] = [0.4, 0.7];
+
+/** `found × room` with no override mints this type; a cell override names another. */
+export const UNDERTAKING_DEFAULT_ROOM_TYPE_ID = 'sublocation-type.workshop';
+/** `found × settlement` with no override founds this subtype. */
+export const UNDERTAKING_DEFAULT_SETTLEMENT_SUBTYPE = 'hamlet';
+/** `improve × settlement`: prosperity added per completion (clamped to [0, 1]). */
+export const UNDERTAKING_IMPROVE_PROSPERITY_DELTA = 0.1;
+/** `undo × settlement`: prosperity is floored here and the subtype becomes `ruins`. */
+export const RUINED_SETTLEMENT_PROSPERITY_FLOOR = 0.1;
+/** `undo × faction`: ticks until the planted schism resolves. */
+export const UNDERTAKING_SCHISM_RESOLUTION_DELAY_TICKS = 12;
