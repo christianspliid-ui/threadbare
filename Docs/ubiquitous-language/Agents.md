@@ -559,6 +559,26 @@ Code anchors: `src/engine/holdings.ts` (`grantHolding`, `reconcileHoldingFaces`,
 
 ---
 
+### Undertaking Contract
+
+**Aliases:** the undertaking contract; `check:undertaking` (the command that runs it)
+**Also see:** `[[Undertaking]]`, `[[Kind Row]]`, `[[Batch Brief]]`, `[[Work]]`, `[[Undertaking Verb]]`
+**Status:** canonical
+
+*Seated 2026-09-03 (THR-1390); the implementation is THR-1300 slice 1.*
+
+The authoring-time contract a strategic action template must satisfy to be **contract-complete** — the undertaking factory's machine gate. Ten blocks, ordered structural-first so a template missing its `[[Kind Row]]` is told that before it is told about a weak sentence: `identity`, `kind_membership`, `counter_play`, `cast`, `creation`, `bands`, `board`, `reachability`, `register`, `tokens`.
+
+**It composes the validators that already exist rather than restating them** — kind membership and counter-play through `validateKindRegistry`, board authoring through `findMotivationDefects`, register through the encounter line's own `countVagueness` / `countSecondPerson` detectors at the encounter standard. A gate that re-implements one of those is a second rule that will drift.
+
+**A named, shrinking ratchet instead of exemptions.** `UNDERTAKING_RETROFIT_PENDING` holds the templates that predate the contract; there are no exemptions and no per-template escape hatch. The runner exits non-zero when an unlisted template fails **and equally when a listed one now passes** — a stale ratchet entry is a lie about the corpus, and that second exit condition is what makes the list shrink.
+
+**Not the Composition Contract.** That is the encounter line's sibling gate (`src/data/content-eval/compositionContract.ts`), and it decided this one's shape: same blocks-and-violations structure, same warn channel that prints without failing, different substrate. **Passing one says nothing about the other.** Law 56 also inverts between them — undertaking chips are engine-derived, so chip backing holds by construction and the leak is prose *claiming* state, which the `creation` write-set rule gates.
+
+Code anchors: `src/data/content-eval/undertakingContract.ts` (`UNDERTAKING_BLOCKS`, `checkUndertakingContract`, `buildUndertakingContractContext`), `src/data/content-eval/undertakingRetrofitPending.ts` (`UNDERTAKING_RETROFIT_PENDING`), `scripts/check-undertaking.ts`, `Docs/canon/undertakings.md`.
+
+---
+
 ### Calling
 
 **Aliases:** the `calling` / `callingTitleKey` / `callingSinceTick` node properties (engine); "what the world calls them"
