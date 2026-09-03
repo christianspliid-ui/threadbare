@@ -27,6 +27,7 @@
  * ambient is a measurable fact. This reports, it does not remedy.
  */
 import type { WorldGraph } from './graph';
+import { profileWorkIds } from './strategicActionCandidates';
 import type { GraphNode } from '../types/graph';
 import type { AmbitionTemplate } from '../types/ambition';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
@@ -132,7 +133,7 @@ export function measureStrategicReachability(
     rows.push({
       ambitionId: template.id,
       behaviorFamily: profile.behaviorFamily,
-      templateIds: profile.templateIds,
+      templateIds: profileWorkIds(profile),
       autonomousHolders,
       silencedHolders: silenced.get(template.id) ?? 0,
       reachable: autonomousHolders > 0,

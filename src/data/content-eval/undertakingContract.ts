@@ -27,6 +27,7 @@
  */
 
 import type { StrategicActionTemplate, UndertakingKindRow } from '../../types/strategicAction';
+import { UNDERTAKING_PROSE_TOKENS } from '../../engine/undertakingProse';
 import type { AmbitionTemplate } from '../../types/ambition';
 import type { ValuePair } from '../../types/agent';
 import { VALUE_PAIRS } from '../../types/agent';
@@ -210,7 +211,7 @@ export const OWNABLE_TARGET_RULE_TYPES: ReadonlySet<string> = new Set([
  * `SIMPLE_TOKENS` was read off `enrichProse`; when a substitution chain is added
  * to that path this set is where it is declared.
  */
-export const STRATEGIC_PROSE_TOKENS: ReadonlySet<string> = new Set<string>();
+export const STRATEGIC_PROSE_TOKENS: ReadonlySet<string> = new Set<string>(UNDERTAKING_PROSE_TOKENS);
 
 function rowFor(template: StrategicActionTemplate): UndertakingKindRow | undefined {
   const kind = getUndertakingKindForTemplate(template.id);

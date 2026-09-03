@@ -124,6 +124,8 @@ import {
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
   BOARD_VARIETY_PENALTY_WEIGHT,
   UNDERTAKING_NEUTRAL_DESIRE,
+  UNDERTAKING_VERB_PAYOFF,
+  UNDERTAKING_VERB_DIFFICULTY,
 } from '../data/strategic-action-constants';
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -213,7 +215,12 @@ export interface BoardInput {
  * state and not a stub: the verb table is the same one the legacy `worldImpact`
  * component already scores on, so the board is not being handed a made-up number.
  */
-export function resolveUndertakingPayoff(template: StrategicActionTemplate | undefined): number {
+export function resolveUndertakingPayoff(
+  template: StrategicActionTemplate | undefined,
+  /** The object's tier when the candidate acts on one (THR-1392 slice 2) — a cell's payoff scales on it. */
+  objectTier?: 1 | 2 | 3,
+): number {
+  if (template?.cellVariant && objectTier) return UNDERTAKING_VERB_PAYOFF[template.cellVariant][objectTier - 1] * UNDERTAKING_PAYOFF_SCALE;
   if (template?.payoffValue !== undefined) return template.payoffValue * UNDERTAKING_PAYOFF_SCALE;
   const byVerb = template ? STRATEGIC_VERB_IMPACT[template.verb] : undefined;
   return (byVerb ?? STRATEGIC_VERB_IMPACT_DEFAULT) * UNDERTAKING_PAYOFF_SCALE;
@@ -468,9 +475,11 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
 
     const advanceProbability = forecastAdvanceProbability(
       safeCapability(graph, candidate.actorId, reach),
-      template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY,
+      template?.cellVariant && candidate.objectTier
+        ? UNDERTAKING_VERB_DIFFICULTY[template.cellVariant][candidate.objectTier - 1]
+        : template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY,
     );
-    const payoff = resolveUndertakingPayoff(template);
+    const payoff = resolveUndertakingPayoff(template, candidate.objectTier);
 
     // A candidate has not started, so the whole undertaking is remaining.
     const workTicks = template?.projectDuration ?? STRATEGIC_DEFAULT_PROJECT_WORK_TICKS;

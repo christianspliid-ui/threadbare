@@ -2,10 +2,10 @@
 
 > **Generated:** 2026-09-03 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: fc412b1af135b0eabad88b2bd7ee409d9e0cc4c1)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 2a266ff3e99813a2d869c7c807ba576b994fec81)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 536b365a7471a26b4ba6cfd25548bdf86d40bbf7)
->   - Docs/canon/undertakings.md (sha1: 402374ba749b94c5aa9648f2bf0bc04a6cdca8e9)
+>   - Docs/canon/undertakings.md (sha1: f523523f9ad6e9b888fe9c4e2b19835ad5dfd30d)
 >   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
@@ -279,6 +279,6 @@ An undertaking is authored inside its mechanics; the prose comes last and is hel
 - **Board authoring** — `motivations`: at least `UNDERTAKING_MOTIVATION_MIN_ARITY` (2) distinct `VALUE_PAIRS` members; `payoffValue` present. One currency ranks encounters and undertakings together (`UNIFIED_DECISION_BOARD_MODE = 'live'`, THR-1349); a template with no desire signal scores nothing, silently.
 - **Reachability** — the id appears in at least one ambition's `strategicProfile.templateIds` (`src/data/ambition-templates.ts`). The third registration, and the silent one.
 - **Register** — `activityProse` and `completionProse` at the encounter standard (Prose Doctrine v2, `Docs/canon/prose.md`): present tense, third person, the agent named, no evasive vagueness, no second person, no numerals, no exclamation marks. Abstraction and intensifiers rank; they do not gate.
-- **Tokens** — the strategic prose path renders `activityProse[0]` and `completionProse[0]` verbatim; no `{token}` resolves there today (`STRATEGIC_PROSE_TOKENS` is empty and is where a substitution chain is declared when one is added).
+- **Tokens** — a template's `activityProse[0]` renders verbatim; a **cell's** lines carry four slots — `{object}` `{owner}` `{actor}` `{place}` (sentence-initial capitals allowed) — filled from the world by `resolveUndertakingProse` (`src/engine/undertakingProse.ts`), which also returns the concepts it named for chips. `STRATEGIC_PROSE_TOKENS` names exactly those tokens; the contract's `tokens` block refuses any other.
 
 > Source: Docs/canon/undertakings.md § The template and its authored seams (extracted at generation time)

@@ -104,6 +104,8 @@ export interface StrategicActionTemplate {
    */
   readonly undertakingVerb?: UndertakingVerb;
   readonly objectTypeId?: UndertakingObjectTypeId;
+  /** The variant a synthesised cell is (`control` splits into claim and seize cells). */
+  readonly cellVariant?: UndertakingVerbVariant;
   readonly executionMode: StrategicExecutionMode;
   readonly behaviorFamily: BehaviorFamily;
 
@@ -666,6 +668,8 @@ export interface StrategicActionCandidate {
    */
   readonly objectHandle?: UndertakingObjectHandle;
   readonly objectTypeId?: UndertakingObjectTypeId;
+  /** The object's tier, read at proposal (THR-1392 slice 2) — what difficulty and payoff scale on. */
+  readonly objectTier?: 1 | 2 | 3;
 
   /**
    * The commanded entity this remote undertaking reaches through (THR-1296 §6).
@@ -728,6 +732,7 @@ export interface StrategicProjectRuntime {
   /** The object this undertaking acts on (THR-1392), carried from the candidate. */
   readonly objectHandle?: UndertakingObjectHandle;
   readonly objectTypeId?: UndertakingObjectTypeId;
+  readonly objectTier?: 1 | 2 | 3;
 
   /**
    * Who this undertaking is aimed at (THR-1298), carried from the candidate the
@@ -940,6 +945,12 @@ export interface AmbitionStrategicProfile {
   readonly preferredVerbs: readonly StrategicVerb[];
   /** Strategic template IDs that this ambition can generate */
   readonly templateIds: readonly string[];
+  /**
+   * Verb × object cells this ambition can generate (THR-1392 slice 2) — cell template
+   * ids (`cell.<variant>.<type>`, `src/data/undertaking-cells.ts`). Walked ahead of
+   * `templateIds` when `UNDERTAKING_MODEL === 'cells'`; ignored on `templates`.
+   */
+  readonly cells?: readonly string[];
   /** Reach domains this ambition's strategic steps emphasize */
   readonly reachEmphasis: Partial<Record<ReachDomain, number>>;
 }

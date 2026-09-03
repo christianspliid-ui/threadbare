@@ -60,6 +60,9 @@ import {
 import { resolveDurableActorLocation } from './tradeRouteOps';
 import { UNDERTAKING_MODEL } from '../data/strategic-action-constants';
 import { resolveUndertakingCompletion } from './undertakingResolver';
+import { cellCompletionProse } from './undertakingProse';
+import { getUndertakingObjectType } from '../data/undertaking-objects';
+import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
 import { getPlaceTierLocations } from './sublocationShape';
@@ -297,14 +300,19 @@ function christenCompletedWork(
   const created = graph.getNode(createdId);
   if (!created) return undefined;
 
+  // A cell has no kind row; its object type maps to the kind whose naming family
+  // fits (THR-1392 slice 2, `OBJECT_TYPE_NAMING_KIND`).
+  const objectType = project.objectTypeId ? getUndertakingObjectType(project.objectTypeId) : undefined;
   const name = generateWorkName({
     workId: createdId,
-    kindId: getUndertakingKindForTemplate(project.templateId),
+    kindId: getUndertakingKindForTemplate(project.templateId)
+      ?? (objectType ? OBJECT_TYPE_NAMING_KIND[objectType.id] : undefined),
     reach: leadingReachOfTemplate(project.templateId),
     foundation: foundationOfActor(graph, project.actorId),
     anchorName: resolveAnchorName(state, graph, project),
     actorName: graph.getNode(project.actorId)?.name,
-    nounOverride: nounForCreatedNode(created),
+    nounOverride: nounForCreatedNode(created)
+      ?? (objectType ? OBJECT_TYPE_NOUNS[objectType.id]?.[0] : undefined),
     tick,
   });
 
@@ -455,6 +463,7 @@ export function executeStrategicAction(
         // The object the cell acts on (THR-1392), carried to completion.
         objectHandle: candidate.objectHandle,
         objectTypeId: candidate.objectTypeId,
+        objectTier: candidate.objectTier,
         // Carried from the gate that approved this candidate (THR-1296 §6). Absent on
         // every local undertaking; the bind pass binds it as `$anchor` when set.
         anchorNodeId: candidate.anchorNodeId,
@@ -838,6 +847,7 @@ export function advanceStrategicProjects(
         targetHex: project.targetHex,
         objectHandle: project.objectHandle,
         objectTypeId: project.objectTypeId,
+        objectTier: project.objectTier,
         scoreComponents: {
           ambitionAlignment: 0, blockerRelief: 0, worldImpact: 0,
           catalystValue: 0, roleFit: 0, controlPressure: 0,
@@ -941,7 +951,12 @@ export function advanceStrategicProjects(
       // significance follows the record's presentation — an interrupt-tier completion
       // is the chronicle moment the plan names, a badge-tier one keeps the old value.
       const finishedName = christened?.name ?? candidate.displayName;
-      const completionMessage = `${actorNode?.name ?? project.actorId} completes: ${finishedName}`;
+      // A cell's completion line is composed from the world — the object's name, its
+      // holder, the place — never the template's display name (THR-1392 slice 2).
+      const completedCell = getStrategicTemplate(project.templateId);
+      const completionMessage = completedCell?.cellVariant && project.objectTypeId
+        ? cellCompletionProse(graph, project, completedCell.cellVariant).text
+        : `${actorNode?.name ?? project.actorId} completes: ${finishedName}`;
       if (completionMoment) {
         moments.push({ ...completionMoment, label: completionMessage, undertakingName: finishedName });
       }

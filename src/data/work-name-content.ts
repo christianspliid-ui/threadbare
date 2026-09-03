@@ -54,6 +54,37 @@ export const WORK_KIND_FAMILY: Readonly<Record<string, WorkNameFamily>> = {
   faction: 'order',
 };
 
+/**
+ * The kind a cell's object type names from (THR-1392 slice 2). A cell has no kind
+ * row, so `christenCompletedWork` maps its object type to the kind whose family
+ * fits — through this table rather than by adding type ids to `WORK_KIND_FAMILY`,
+ * because a family name (`route`, `mark`) must never resolve as a kind id.
+ */
+export const OBJECT_TYPE_NAMING_KIND: Readonly<Record<string, string>> = {
+  attachment: 'masterwork_item',
+  room: 'sublocation',
+  settlement: 'place_location',
+  route: 'trade_route',
+  company: 'warband',
+  faction: 'faction',
+  mark: 'leverage_mark',
+};
+
+/**
+ * Per-object-type nouns (THR-1392 slice 2) — the noun a christened work of that
+ * type takes when the created node carries no more specific one. Player words, in
+ * the order the namer prefers them.
+ */
+export const OBJECT_TYPE_NOUNS: Readonly<Record<string, readonly string[]>> = {
+  attachment: ['Work', 'Piece', 'Masterwork', 'Charm', 'Relic'],
+  room: ['Hall', 'House', 'Yard', 'Chamber', 'Quarter'],
+  settlement: ['Stead', 'Holding', 'Haven', 'Reach', 'Seat'],
+  route: ['Way', 'Road', 'Run', 'Crossing', 'Carry'],
+  company: ['Company', 'Band', 'Host', 'Column', 'Sworn'],
+  faction: ['Order', 'Covenant', 'League', 'Fellowship', 'Chapter'],
+  mark: ['Hold', 'Debt', 'Grip', 'Lien', 'Claim'],
+};
+
 /** The family a work of this kind is named from. Never throws; unknown → `'place'`. */
 export function familyForKind(kindId: string | undefined): WorkNameFamily {
   if (!kindId) return 'place';
