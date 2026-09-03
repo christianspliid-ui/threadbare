@@ -30,6 +30,7 @@
 import type { DomainContributions, ReachDomain } from '../types/traits';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
+import { chainMasteryTraitId, legacyChainMasteryTraitId, findExistingTraitEdge } from './traitShape';
 import { touchStructure, touchWorld, type SimulationRuntime } from './simulationRuntime';
 import {
   CHAIN_COMPLETION_CAPABILITY_BONUS,
@@ -284,14 +285,9 @@ export function classifyChainStage(
 
 // ─── Write path ────────────────────────────────────────────────
 
-/**
- * Node id for the synthetic trait carrying a completed chain's capability bonus.
- * One node per (chain, agent) so the bonus is naturally idempotent — a chain can
- * only be completed once, but a re-entrant call must never stack the boost.
- */
-function chainMasteryTraitId(chainId: string, agentId: string): string {
-  return `chain_mastery_${chainId}_${agentId}`;
-}
+// The chain-mastery trait id moved to `traitShape.ts` at THR-1395: one shared definition
+// per chain, and the idempotence the per-(chain, agent) id used to give for free now comes
+// from the bearer's own `has_trait` edge — see the `alreadyGranted` check below.
 
 /**
  * Grant the one-time `CHAIN_COMPLETION_CAPABILITY_BONUS` for a finished chain.
@@ -313,10 +309,14 @@ function applyChainCompletionBonus(
   primaryReach: ReachDomain,
   tick: number,
 ): boolean {
-  const traitNodeId = chainMasteryTraitId(chainId, agentId);
-  const alreadyGranted = graph
-    .getOutgoingEdges(agentId, 'has_trait')
-    .some(e => e.target === traitNodeId);
+  const traitNodeId = chainMasteryTraitId(chainId);
+  // Idempotence is the bearer's edge, not the node id (THR-1395). The legacy per-bearer
+  // id is checked too, so a saved world where this agent already earned the bonus does
+  // not earn it a second time under the new shape.
+  const alreadyGranted = findExistingTraitEdge(graph, agentId, [
+    traitNodeId,
+    legacyChainMasteryTraitId(chainId, agentId),
+  ]) !== undefined;
   if (alreadyGranted) return false;
 
   if (!graph.getNode(traitNodeId)) {
@@ -339,7 +339,9 @@ function applyChainCompletionBonus(
   }
 
   graph.addEdge({
-    id: `edge_${traitNodeId}`,
+    // Per-bearer, because the *node* no longer is: two agents finishing the same chain
+    // now point at one definition, so an id derived from the node alone would collide.
+    id: `edge_${traitNodeId}.${agentId}`,
     source: agentId,
     target: traitNodeId,
     type: 'has_trait',

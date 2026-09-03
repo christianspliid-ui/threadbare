@@ -307,13 +307,13 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     shape: { kind: 'node', nodeType: 'trait', discriminator: { key: 'subcategory', values: CONDITION_SUBCATEGORIES } },
     classes: { condition: ['condition'], scar: ['scar'] },
     owningSystem: 'Traits & attachments', writers: ['gameInit', 'spellActivation', 'rewardPool'], status: 'live',
-    note: 'Wounds, diseases, strains; blessings and curses as signed conditions; scars as permanent ones. Per-bearer state belongs on the `has_trait` edge — today conditions are minted one node per bearer, the repair is its own ticket.',
+    note: 'Wounds, diseases, strains; blessings and curses as signed conditions; scars as permanent ones. Shared definitions, per-bearer state on the `has_trait` edge (THR-1395): the seeded catalogue was already one node per kind, and `spellActivation`\'s `condition_inflict` — the one writer that minted a node per application — now points every bearer of a template at the same definition.',
   }),
   K({
     id: 'trait', gameWord: 'Trait', ulTerm: 'Traits.md#trait', worldRef: null,
     shape: { kind: 'node', nodeType: 'trait', discriminator: { key: 'subcategory', values: TRAIT_SUBCATEGORIES } },
-    owningSystem: 'Traits & attachments', writers: ['gameInit', 'culturalTraits', 'capabilityGrowth', 'reputation'], status: 'live',
-    note: 'The graph\'s vocabulary of what a thing *is*: shared definition nodes, per-bearer state on `has_trait`. Tags refine traits; they are not a general object taxonomy.',
+    owningSystem: 'Traits & attachments', writers: ['gameInit', 'culturalTraits', 'capabilityGrowth', 'encounterChains', 'reputation'], status: 'live',
+    note: 'The graph\'s vocabulary of what a thing *is*: shared definition nodes, per-bearer state on `has_trait`. Tags refine traits; they are not a general object taxonomy. THR-1395 brought the `experience` subcategory back to that rule — encounter growth and chain mastery minted one node per bearer (44 nodes for 44 bearers on a seeded medium world at tick 30) and now share one per domain and one per chain.',
   }),
   K({
     id: 'agreement', gameWord: 'Agreement', ulTerm: 'Traits.md#attachment', worldRef: null,

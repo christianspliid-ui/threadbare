@@ -192,7 +192,10 @@ describe('applyChainStageCompletion (THR-803 write path)', () => {
     const agentId = 'agent_chain_test';
     const graph = makeGraphWithAgent(agentId);
     const masteryEdges = () =>
-      graph.getOutgoingEdges(agentId, 'has_trait').filter(e => e.target.startsWith('chain_mastery_'));
+      // THR-1395: the definition is shared per chain (`trait.experience.chain.<id>`);
+      // the bearing — and so the once-only guarantee — is this agent's own edge.
+      graph.getOutgoingEdges(agentId, 'has_trait')
+        .filter(e => e.target.startsWith('trait.experience.chain.'));
 
     applyChainStageCompletion(graph, agentId, scholars.stages[0], 1);
     applyChainStageCompletion(graph, agentId, scholars.stages[1], 2);
@@ -206,6 +209,61 @@ describe('applyChainStageCompletion (THR-803 write path)', () => {
     // Re-entrant call must not stack the boost.
     applyChainStageCompletion(graph, agentId, scholars.stages[2], 4);
     expect(masteryEdges()).toHaveLength(1);
+  });
+
+  // THR-1395 moved chain mastery to one shared definition per chain. The per-(chain, agent)
+  // node id used to make both of these true for free; now the edge has to carry them, so
+  // both are worth pinning: two finishers share one node, and neither collides with the
+  // other's edge (the edge id used to be derived from the node id alone).
+  it('shares one chain-mastery definition between two agents who both finish', () => {
+    const graph = makeGraphWithAgent('agent_a');
+    graph.addNode({
+      id: 'agent_b', type: 'actor', name: 'Second Finisher',
+      properties: { actorType: 'individual' },
+    });
+
+    for (const agentId of ['agent_a', 'agent_b']) {
+      scholars.stages.forEach((stage, i) => {
+        applyChainStageCompletion(graph, agentId, stage, i + 1);
+      });
+    }
+
+    const masteryNodes = graph.getNodesByType('trait')
+      .filter(n => n.id.startsWith('trait.experience.chain.'));
+    expect(masteryNodes).toHaveLength(1);
+
+    for (const agentId of ['agent_a', 'agent_b']) {
+      const edges = graph.getOutgoingEdges(agentId, 'has_trait')
+        .filter(e => e.target === masteryNodes[0].id);
+      expect(edges).toHaveLength(1);
+      expect(edges[0].properties.level).toBe(CHAIN_COMPLETION_CAPABILITY_BONUS);
+    }
+  });
+
+  it('does not re-grant the bonus to a bearer holding the legacy per-bearer mastery node', () => {
+    const agentId = 'agent_legacy';
+    const graph = makeGraphWithAgent(agentId);
+    const legacyId = `chain_mastery_${scholars.id}_${agentId}`;
+    graph.addNode({
+      id: legacyId, type: 'trait', name: 'Chain Mastery (legacy)',
+      properties: { subcategory: 'experience', tags: ['experience', 'chain'] },
+    });
+    graph.addEdge({
+      id: `edge_${legacyId}`, source: agentId, target: legacyId, type: 'has_trait',
+      properties: {
+        level: CHAIN_COMPLETION_CAPABILITY_BONUS, acquiredTick: 1,
+        lastReinforcedTick: 1, source: 'chain_completion', visibility: 'discoverable',
+      },
+    });
+
+    scholars.stages.forEach((stage, i) => {
+      applyChainStageCompletion(graph, agentId, stage, i + 1);
+    });
+
+    // Still exactly one bearing, still the legacy one — no second, shared-shape grant.
+    const edges = graph.getOutgoingEdges(agentId, 'has_trait');
+    expect(edges).toHaveLength(1);
+    expect(edges[0].target).toBe(legacyId);
   });
 
   it('fail-soft: a missing agent node does not throw', () => {

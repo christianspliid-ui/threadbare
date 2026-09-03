@@ -35,6 +35,7 @@ import type { WorldGraph } from './graph';
 import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { ReachDomain, DomainContributions } from '../types/traits';
 import { computeCapability, computeTier } from './domainCapability';
+import { experienceTraitId, legacyExperienceTraitId, findExistingTraitEdge } from './traitShape';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -195,36 +196,39 @@ export function applyEncounterGrowth(
     };
   }
 
-  // Find or create synthetic experience trait
-  const traitNodeId = `encounter_experience_${domain}_${agentId}`;
-  const existingTraitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
-  let foundEdge: ReturnType<WorldGraph['getEdge']> | undefined;
-
-  for (const edge of existingTraitEdges) {
-    if (edge.target === traitNodeId) {
-      foundEdge = edge;
-      break;
-    }
-  }
+  // Find or create the shared experience trait definition (THR-1395).
+  //
+  // One node per domain, not one per (domain, agent): the node's properties are a pure
+  // function of `domain`, and every quantity that varies per bearer — the accrued level,
+  // the reinforcement tick — is already on the edge below. A saved world may hold the
+  // pre-THR-1395 per-bearer node instead, so the lookup accepts that id too and keeps
+  // accruing onto the edge that already exists rather than opening a second one.
+  const traitNodeId = experienceTraitId(domain);
+  const foundEdge = findExistingTraitEdge(graph, agentId, [
+    traitNodeId,
+    legacyExperienceTraitId(domain, agentId),
+  ]);
 
   if (!foundEdge) {
-    // Create new experience trait node
-    const domainContributions: DomainContributions = { [domain]: 1.0 };
-    graph.addNode({
-      id: traitNodeId,
-      type: 'trait',
-      name: `Experience (${domain})`,
-      properties: {
-        subcategory: 'experience' as string,
-        description: `Accumulated encounter experience in the ${domain} domain`,
-        importance: 0.3,
-        maxLevel: 100,
-        visibility: 'discoverable',
-        domainContributions,
-        tags: ['experience', 'encounter', domain],
-        flavorText: `Hard-won experience in the ways of ${domain}.`,
-      },
-    });
+    // Mint the definition on first use in this world; shared from then on.
+    if (!graph.getNode(traitNodeId)) {
+      const domainContributions: DomainContributions = { [domain]: 1.0 };
+      graph.addNode({
+        id: traitNodeId,
+        type: 'trait',
+        name: `Experience (${domain})`,
+        properties: {
+          subcategory: 'experience' as string,
+          description: `Accumulated encounter experience in the ${domain} domain`,
+          importance: 0.3,
+          maxLevel: 100,
+          visibility: 'discoverable',
+          domainContributions,
+          tags: ['experience', 'encounter', domain],
+          flavorText: `Hard-won experience in the ways of ${domain}.`,
+        },
+      });
+    }
 
     // Add has_trait edge with growth as level
     graph.addEdge({
