@@ -450,10 +450,10 @@ When you read `'broken'` in a `QuintessenceThresholdState` comparison, that is t
 ### Undertaking Verb
 
 **Aliases:** verb × object, cell (a verb on one object type), `UndertakingVerb` / `UndertakingVerbVariant` (engine)
-**Also see:** `[[Undertaking]]`, `[[Work]]`, `[[World Object]]`
+**Also see:** `[[Undertaking]]`, `[[Work]]`, `[[World Object]]`, `[[Rivalry]]`, `[[Grudge]]`
 **Status:** canonical
 
-The six things a mortal's work can do to a thing the world keeps (Christian, 2026-09-03): **Create** makes one; **Change** alters one — *raise* one's own, *lower* another's; **Use** spends what one gives; **Control** takes one — *claim* an unheld one, *seize* another's; **Destroy** unmakes one (the object as it was is gone — ruined, razed, disbanded, split, exposed); **Observe** learns one. The four data verbs plus the two the game adds, ownership and yield. Lower, seize and destroy are motive-gated. A *cell* is one verb on one `[[World Object]]` kind; the grid of every kind × every verb is generated (`Docs/canon/undertaking-grid.generated.md`). The plain verb is the model's; the word the player reads is the object's (a warband is *raised*, a masterwork *crafted*).
+The six things a mortal's work can do to a thing the world keeps (Christian, 2026-09-03): **Create** makes one; **Change** alters one — *raise* one's own, *lower* another's; **Use** spends what one gives; **Control** takes one — *claim* an unheld one, *seize* another's; **Destroy** unmakes one (the object as it was is gone — ruined, razed, disbanded, split, exposed); **Observe** learns one. The four data verbs plus the two the game adds, ownership and yield. Lower, seize and destroy are motive-gated — licensed only by a `[[Grudge]]`, a `[[Rivalry]]`, a contested ambition or a faction war held toward whoever owns the target. A *cell* is one verb on one `[[World Object]]` kind; the grid of every kind × every verb is generated (`Docs/canon/undertaking-grid.generated.md`). The plain verb is the model's; the word the player reads is the object's (a warband is *raised*, a masterwork *crafted*).
 
 ---
 
@@ -649,21 +649,69 @@ Code anchors: `src/engine/grievance/grievanceLifecycle.ts` (`GrievanceSeed`, `re
 
 ### Grudge
 
-**Aliases:** standing blood, a `hostile_to` edge with provenance
-**Also see:** `[[Grievance]]`, `[[Heat]]`, `[[Falling Out]]`, `[[Company]]`, `[[Group]]`
+**Aliases:** standing blood, a `hostile_to` edge with an *injury* provenance
+**Also see:** `[[Rivalry]]`, `[[Covet Rivalry]]`, `[[Grievance]]`, `[[Heat]]`, `[[Falling Out]]`, `[[Company]]`, `[[Group]]`
 **Status:** canonical
 
-The standing hostility between two actors: a **bidirectional** `hostile_to` edge stamped with the tick it began and a `cause`. Relationship colour, **not a driver** — a grudge never puts anything on the decision board. Bidirectional because a grudge is a state of the relationship rather than of one party: having razed someone's home puts you at odds with them whether or not you feel wronged in return.
+The standing hostility between two actors *where one has wronged the other*: a **bidirectional** `hostile_to` edge stamped with the tick it began and an injury `cause`. Relationship colour, **not a driver** — a grudge never puts anything on the decision board. Bidirectional because a grudge is a state of the relationship rather than of one party: having razed someone's home puts you at odds with them whether or not you feel wronged in return.
+
+**Not every `hostile_to` is a grudge (THR-1391).** The edge carries two readings and the motive gate names both. A provenance in `GRUDGE_PROVENANCE` — `group_engagement`, `mentorship_break`, `grievance_cooled` — reads as a **grudge**: one wronged the other. *Any other* provenance, and **no provenance at all**, reads as a `[[Rivalry]]`: the two are merely in each other's way. Grudge is the more specific reading of the same edge, so a caller that accepts both is told `grudge` when an injury is on it and `rivalry` when none is. The carve-out is load-bearing rather than tidy: the re-ignition rule and the vendetta lane key on the *injury* reading, so a rivalry cannot mint a vendetta by itself — only the harm it licenses can.
 
 **One edge with a provenance field, not two senses.** The word already appeared in canon prose for band contests — *"There is blood between them and …"* — before the reactive loop existed, and the two uses are the same mechanism, not a collision. Band opposition has written this edge since THR-731 with `cause: 'group_engagement'`; a cooled grievance writes the *same* edge with `cause: 'grievance_cooled'`, through the *same* single writer. The mortal sheet renders both through one clause map, so the sentence a player reads is identical in shape and differs only in why. Reconciled, not forked (THR-1379).
 
 **Actors of any kind.** Bands write grudges between `[[Group]]` nodes; grievances write them between individuals. The edge does not care which.
 
-**It never fades, and it makes the next harm worse.** A fresh harm from a culprit who already holds a grudge edge with the victim opens hotter (`GRIEVANCE_REIGNITION_BOOST`) — this is what makes the second betrayal worse than the first. Writing is idempotent and leaves an existing edge exactly as it is: refreshing `since` on every pass would make an old grudge indistinguishable from a fresh one, and the re-ignition rule reads the edge's *existence*, not its age.
+**It never fades, and it makes the next harm worse.** A fresh harm from a culprit who already holds a grudge edge with the victim opens hotter (`GRIEVANCE_REIGNITION_BOOST`) — this is what makes the second betrayal worse than the first. Writing is idempotent and leaves an existing edge exactly as it is: refreshing `since` on every pass would make an old grudge indistinguishable from a fresh one, and the re-ignition rule reads the edge's *existence*, not its age. **The permanence is the edge's, not the grudge's** — nothing anywhere in the engine removes a `hostile_to`, so "never fades" is true of every reading of it, `[[Rivalry]]` included. That is a property of the substrate rather than a designed decay curve: any future forgetting is a removal sweep somebody has to write, with its own phase and trace.
 
-**Provenance is a closed set, and its key diverges by writer.** `GrudgeCause` is an enum rather than a free string because motive gates classify it to decide whether a destroy verb is licensed, and a typo in a free-form cause would silently read as "no grudge" — a gate that fails open on a misspelling is worse than one that fails closed on an unknown enum. Three older writers stamp provenance under three *different* keys (band opposition `cause`, excommunication `reason`, mentorship severance `basis`); the grievance writer joined the `cause` camp rather than widening a documented divergence, and readers must still handle all three. A feud declared by a notable writes the edge with no provenance key at all, which the prose reports honestly as *"something neither of them speaks of"* rather than guessing.
+**Provenance is a closed set, and its key diverges by writer.** `GrudgeCause` is an enum rather than a free string because motive gates classify it to decide whether a destroy verb is licensed, and a typo in a free-form cause would silently read as "no grudge" — a gate that fails open on a misspelling is worse than one that fails closed on an unknown enum. Three older writers stamp provenance under three *different* keys (band opposition `cause`, excommunication `reason`, mentorship severance `basis`); the grievance writer joined the `cause` camp rather than widening a documented divergence, and readers must still handle all three. A feud declared by a notable writes the edge with no provenance key at all, which the prose reports honestly as *"something neither of them speaks of"* rather than guessing. **`covets` is a closed set of its own, deliberately beside this one:** the covet writer types its provenance as `CovetCause`, *not* as a fourth `GrudgeCause`, and `GRUDGE_PROVENANCE` was left unextended on purpose — that omission is the whole mechanism by which a `[[Covet Rivalry]]` stays a rivalry.
 
-Code anchors: `src/engine/grievance/grudgeEdge.ts` (`writeGrudge`, `hasGrudge`, `GrudgeCause`), `src/engine/groups/bandOpposition.ts`, `src/data/grievance-prose.ts` (`GRUDGE_CAUSE_CLAUSES`, `getGrudgeCauseClause`), `src/engine/undertakingMotive.ts` (`GRUDGE_PROVENANCE`).
+Code anchors: `src/engine/grievance/grudgeEdge.ts` (`writeGrudge`, `hasGrudge`, `GrudgeCause`), `src/engine/groups/bandOpposition.ts`, `src/data/grievance-prose.ts` (`GRUDGE_CAUSE_CLAUSES`, `getGrudgeCauseClause`), `src/engine/undertakingMotive.ts` (`GRUDGE_PROVENANCE`, `isInjuryProvenance`).
+
+---
+
+### Rivalry
+
+**Aliases:** the `rivalry` motive (engine), a non-injury `hostile_to`; *two in each other's way* (prose framing)
+**Also see:** `[[Grudge]]`, `[[Covet Rivalry]]`, `[[Grievance]]`, `[[Undertaking Verb]]`, `[[Kind Row]]`
+**Status:** canonical
+
+*Seated 2026-09-04 by THR-1391, naming a reading the motive gate had used unnamed since THR-1297.*
+
+The **non-injury** reading of a standing `hostile_to`: these two are in each other's way, but neither has wronged the other. One of the four motives that license a motive-gated destroy — the others being `[[Grudge]]`, *contested ambition* (both actively `pursues` the same ambition node) and *faction war* (`relates_to.isRival`).
+
+**Defined by exclusion, which is why it is the wide one.** The gate reads provenance from all three keys the edge's writers use (`cause`, `reason`, `basis`) and asks one question: is the value in `GRUDGE_PROVENANCE`? If yes it is a grudge; **everything else is a rivalry**, including an edge carrying no provenance at all. So the term covers, today: a `[[Covet Rivalry]]` (`cause: 'covets'`), an excommunication (`reason: 'excommunicated'`), a quarrel opened by an undertaking's *destroy* on a standing (`cause: 'quarrel'`), and a notable's declared feud (no key). None of those is an injury the vendetta lane can read, and each is a real reason to move against someone.
+
+**Directional, unlike a grudge.** The gate only ever asks the *actor's* outgoing edges, so a rivalry licenses the holder's destroys and says nothing about the other party's. A grudge is written both ways because being wronged is a fact about the pair; a rivalry can stand one way, because wanting what someone holds is a fact about the wanter.
+
+**Ordered after grudge, deliberately.** A caller that accepts both motives is told `grudge` whenever an injury provenance is present, because the specific reading is the more informative one for the trace — *why* the razing was allowed, not merely that it was. Rivalry is what remains when the more specific reading does not apply.
+
+**It licenses harm; it does not carry it.** A rivalry puts nothing on the decision board on its own (it is not a drive, exactly as a grudge is not) and cannot mint a `[[Grievance]]` — only the harm it licenses does, through the existing lane, at which point the pair holds a real grudge. That one-way street is what stops the loop feeding on its own output.
+
+Code anchors: `src/engine/undertakingMotive.ts` (`holdsMotive`, `GRUDGE_PROVENANCE`, `HOSTILE_PROVENANCE_KEYS`, `isInjuryProvenance`), `src/types/strategicAction.ts` (`MotiveKind`).
+
+---
+
+### Covet Rivalry
+
+**Aliases:** the covet edge, `cause: 'covets'` (engine); *a holding one of them kept reaching for* (the sheet's clause)
+**Also see:** `[[Rivalry]]`, `[[Grudge]]`, `[[Grievance]]`, `[[Undertaking]]`, `[[Undertaking Verb]]`
+**Status:** canonical
+
+*Seated 2026-09-04 by THR-1391, with the THR-1388 implementation ([PR #1794](https://github.com/christianspliid-ui/threadbare/pull/1794)).*
+
+The `[[Rivalry]]` **the world writes out of frustrated wanting**: a mortal pursuing a destroy-heavy ambition who is refused a destroy against the same owner `COVET_RIVALRY_THRESHOLD` boards running comes to hold a `hostile_to` toward that owner, stamped `cause: 'covets'`. What a mortal cannot take, they come to hate.
+
+**It exists because the gate was starving, not tight.** The motive gate asks a destroy for a quarrel; on the default seeds the world never wrote one — every `no_motive` refusal measured was a conqueror aiming at a holding whose owner simply was not their rival, and the only writers of mortal-to-mortal `hostile_to` were mentorship breaks and the vendetta lane itself, so the loop's seed was its own output (zero culprit-carrying harms in 300 ticks on seeds 42 and 99). The fix seeds a quarrel rather than widening a motive: the gate is unchanged, and reads this edge exactly as it reads every other rivalry.
+
+**The counter is a property; the relationship is the edge.** Refusals accumulate on the actor as `properties.covet` — one live record per mortal, naming the owner, the count, the last refused target and the driving ambition — because a mortal's private frustration is bookkeeping, not a relationship. It becomes an edge only at the threshold, and the record is cleared as the edge is written. A newer owner displaces the counted one only while the count is still below `COVET_SWITCH_BELOW`, so a mortal near a rivalry does not forget it for the next warehouse; one board refusing the same owner several ways counts **once**, because that is one day of coveting, not three.
+
+**Bounded, and never against the wrong party.** At most `MAX_COVET_RIVALRIES_PER_ACTOR` (1) live covet edge per mortal. The Ascendant is never coveted — the god holds nothing a mortal can raid — nor is the actor's own faction, nor a fellow member of it. Only `no_motive:` refusals count: `no_motive_unowned:` means nobody holds the target, and coveting nobody is not a story.
+
+**It never fades, and that is a substrate fact, not a design one.** An earlier draft gave the edge a decay riding "the grievance-cooling sweep"; there is no such exit — `grievance_cooled` is a *write*, and nothing removes a `hostile_to` anywhere — so the TTL was dropped rather than half-built. A covet rivalry stands until a harm turns the pair into a `[[Grudge]]` through the existing lane, which is the loop closing. If a standing covet ever proves to over-supply against the vendetta-share ceiling, decay gets designed then, with its own phase and trace.
+
+**One clause on the sheet, no number.** The rivalry surfaces through the mortal sheet's existing hostility line, which renders the cause word through one clause map — *a holding one of them kept reaching for*. The count never renders (Law 13); the owner is already a chip beside the clause, so the clause never names them. Seeding emits `covet_rivalry_seeded`.
+
+Code anchors: `src/engine/grievance/covetRivalry.ts` (`recordCovetRefusals`, `readCovetRecord`, `covetEdgeCount`, `destroyHeavyAmbitionId`), `src/engine/grievance/grudgeEdge.ts` (`writeCovetRivalry`, `CovetCause`), `src/data/grievance-constants.ts` (`COVET_RIVALRY_THRESHOLD`, `COVET_SWITCH_BELOW`, `MAX_COVET_RIVALRIES_PER_ACTOR`), `src/data/grievance-prose.ts` (`GRUDGE_CAUSE_CLAUSES.covets`), plan `Docs/plans/2026-09-03-thr-1388-covet-rivalry.md`.
 
 ---
 
