@@ -13,87 +13,38 @@ export const LEGACY_MUSIC_MUTE_KEY = 'threadbearer_muted';
 
 export const MUSIC_SRC_DEFAULT = '/audio/music/theme-drone.mp3';
 
-// ── Encounter sound design (THR-346, post-v1 H1) ────────────────────
-// Spec: Docs/plans/2026-05-04-encounter-ui-canonical.md §3.3 (Moment 1)
-// and §4.1/§4.3 (Moment 2 registration cues).
+// ── Encounter sound design (THR-346) — RETIRED IN FULL ──────────────
 //
-// These cues are SYNTHESIZED via the Web Audio API rather than sampled —
-// no assets ship with them. The spec calls for a cello drone and struck-string
-// notes at named intervals; deriving those from oscillators keeps the sphere
-// tinting exact (an interval is a frequency ratio, not a mix decision) and
-// keeps every value below a tunable number per NFP #1.
-
-/** Master trim applied to every encounter cue, on top of the UI channel volume. */
-export const ENCOUNTER_CUE_MASTER_GAIN = 0.9;
-
-// Levels in dBFS, straight from the §3.3 spec table.
-/** Held breath. Spec: "-28dB, mono center, low-pass at 800Hz". */
-export const ENCOUNTER_INHALE_DB = -28;
-/** Cello drone peak on the taut beat. Spec: "Peaks at -16dB". */
-export const ENCOUNTER_THRUM_PEAK_DB = -16;
-/** Struck-string resolve node. Sits between breath and thrum peak. */
-export const ENCOUNTER_RESOLVE_DB = -18;
-/** Slackening-thread release. Spec: "barely-audible". */
-export const ENCOUNTER_RELEASE_DB = -34;
-
-// Cue timings in ms from commit, matching the §3.3 table and the
-// useThreadReveal beat clock (60+380+520+420+240 = 1620ms total).
-export const ENCOUNTER_INHALE_START_MS = 0;
-export const ENCOUNTER_INHALE_DURATION_MS = 380;
-export const ENCOUNTER_THRUM_START_MS = 380;
-export const ENCOUNTER_THRUM_PEAK_MS = 1320;
-export const ENCOUNTER_THRUM_RELEASE_MS = 1560;
-export const ENCOUNTER_RESOLVE_DURATION_MS = 240;
-
-/** Low-pass corner for the inhale, per spec. */
-export const ENCOUNTER_INHALE_LOWPASS_HZ = 800;
-/** Low-pass corner for the cello drone — keeps it bowed, not buzzing. */
-export const ENCOUNTER_THRUM_LOWPASS_HZ = 520;
-
-/** Cello root. C2 = 65.41Hz — the low open register the spec's "root only" implies. */
-export const ENCOUNTER_CELLO_ROOT_HZ = 65.41;
-/** Struck-string notes sound an octave above the drone root so they read as separate. */
-export const ENCOUNTER_RESOLVE_OCTAVE_MULTIPLIER = 4;
-
-/** Struck string: near-instant attack, long decay. */
-export const ENCOUNTER_RESOLVE_ATTACK_MS = 4;
-export const ENCOUNTER_RESOLVE_DECAY_MS = 900;
-
-/**
- * Sphere tinting for the resolve note, in semitones above the cello root.
- *
- * The spec names three exactly — "low fourth on Iron, open fifth on Eye,
- * soft minor third on Heart" — and those three are reproduced literally.
- * The remaining six reaches are extrapolated to keep the same consonance
- * gradient the named three establish (stable intervals for grounded reaches,
- * unresolved ones for reaches that withhold). They are tuning numbers, not
- * spec claims; change them freely if the feel is wrong.
- */
-export const ENCOUNTER_RESOLVE_SEMITONES: Readonly<Record<string, number>> = {
-  iron: 5, // perfect fourth — spec-exact ("low fourth")
-  eye: 7, // perfect fifth — spec-exact ("open fifth")
-  heart: 3, // minor third — spec-exact ("soft minor third")
-  stone: 0, // unison — heaviest, most grounded
-  gold: 9, // major sixth — open and generous
-  veil: 10, // minor seventh — deliberately unresolved
-  star: 12, // octave — a return rather than an arrival
-  shadow: 6, // tritone — unstable
-  quintessence: 4, // major third — the only unambiguously bright one
-};
-
-/** Fallback interval when a reach is missing from the map (fail-soft). */
-export const ENCOUNTER_RESOLVE_SEMITONES_FALLBACK = 0;
-
-// The Moment 2 registration-cue constants (level, attack, decay, and the
-// ten-entry sphere-tint map) were retired with the cue itself (THR-1168). The map
-// was keyed by the *engine effect* vocabulary of canonical UI spec §4.1 —
-// `intelligence`, `hidden_mark`, `spawn_artifact` and kin — and no player surface
-// still speaks it: THR-1082 replaced the mechanical effect buckets with six
-// story-first consequence kinds (`prize | standing | toll | wound | seed | mark`),
-// sharing zero keys with this map. The live "what registered" surface is the
-// consequence-chip block in `EncounterVeil.tsx` (THR-971 / THR-1082), which could
-// only ever have driven the fallback pitch. Recover from git history if a
-// per-effect registration surface returns.
+// RETIRED 2026-09-04 (THR-1168, director's ruling in chat: "no audio please").
+// The Moment 1 tension reveal is gone with its constants: the four dBFS levels
+// (-28 inhale / -16 thrum peak / -18 resolve / -34 release), the cue timings
+// (inhale 0–380ms, thrum 380ms–1.32s peak releasing at 1.56s, resolve 240ms),
+// the two filter corners (800Hz inhale / 520Hz thrum), the C2 65.41Hz cello
+// root with its ×4 octave multiplier, the 4ms/900ms struck-string envelope,
+// and the nine-reach semitone tint map. Deleted with them:
+// `src/audio/encounterSoundDesign.ts`, `src/hooks/useThreadReveal.ts`, and
+// both audio test files.
+//
+// Why, and why it is a ruling rather than a defect. The question was whether
+// committing a hand of nudge cards should carry ~1.6s of held breath before
+// the outcome lands — a feel question with no right answer to test against,
+// so it went to the director and came back no. The cues had had no live
+// consumer since THR-1049 deleted the D1/D2 encounter screen and THR-1167
+// deleted `ThreadOverlay`; `useThreadReveal` was left as the sole caller of
+// all three cue functions, reachable from its own tests alone.
+//
+// The Moment 2 registration cue was retired first, on mechanical grounds
+// (THR-1168, 2026-08-18): its pitch map was keyed by the engine effect
+// vocabulary (`intelligence` / `hidden_mark` / `spawn_artifact`, canonical UI
+// spec §4.1), and THR-1082 had replaced that on every player surface with six
+// story-first consequence kinds (`prize | standing | toll | wound | seed |
+// mark`) sharing zero keys with it — so the only available wiring would have
+// played one fallback pitch forever behind a live-looking call.
+//
+// Recovery: the cue design of record survives as spec, not code — canonical
+// UI spec §3.3 (`Docs/plans/2026-05-04-encounter-ui-canonical.md`) still
+// carries the full three-cue table with every timing and level, and the
+// implementation is in git history. Revival needs the ruling revisited first.
 
 /**
  * Pool of in-game music tracks. MusicChannel shuffles through these,

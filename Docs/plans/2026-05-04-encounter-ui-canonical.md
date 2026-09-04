@@ -1,5 +1,7 @@
 # Encounter UI — Canonical Specification (2026-05-04)
 
+> **lint_plan_doc:** exempt — a standing specification of record, not a dated plan doc. It describes a surface that was built and has now been partly retired; it proposes no work, so the per-system required sections (`## Engine pillar`, `## Coordination block`, `## Vision audit`, …) do not apply and never will. Predates the plan-doc template by four months. Marker added by THR-1168, the first edit to reach it through the staged lint.
+
 **Status:** Canonical specification for the encounter player-facing UI surface. Promotion target: `Systems/Encounter UI.md` after THR-301 implementation lands. Currently lives as a plan doc.
 
 **Audience:** Implementation executors (CC / Codex) working THR-301 and child issues. Designers iterating on the surface. Content authors composing encounters that render here.
@@ -100,7 +102,7 @@ When the player commits an encounter choice, the world resolves through a five-b
 
 ### 3.3 Sound design
 
-> **Retired surface — no live consumer (Christian's ruling, chat 2026-08-12, THR-962).** This section describes the D1/D2 encounter screen, which the Nudge Model stage superseded (THR-775); the cues are implemented (`src/audio/encounterSoundDesign.ts`, mounted only in the StyleGuide) but deliberately **not routed** to the live encounter stage — Christian ruled "no sound for now" when offered the re-route. Revival path: reopen THR-962 (routing) first, then a feel pass (was THR-961, canceled alongside). Keep this spec as the cue design of record; do not wire it anywhere without that reopen.
+> **Retired surface — the implementation is deleted; this table is now the only record (Christian's ruling, chat 2026-09-04, THR-1168).** Asked whether committing a hand of nudge cards should carry ~1.6s of held breath before the outcome lands, the director answered *"no audio please"* — closing the question left open by the 2026-08-12 THR-962 ruling ("no sound for now"), which had kept the cues built but unrouted. `src/audio/encounterSoundDesign.ts`, `src/hooks/useThreadReveal.ts`, both audio test files and every `ENCOUNTER_*` constant were deleted by THR-1168; the module had had no live consumer since THR-1049 removed the D1/D2 screen and THR-1167 removed `ThreadOverlay`. **The cue table below is preserved deliberately as the design of record** — it carries every timing and level, so the sequence is recoverable from this section plus git history. Do not re-implement it without the ruling being revisited.
 
 Three layered cues, total cue length ≤ visual sequence so the prose log lands in silence:
 
