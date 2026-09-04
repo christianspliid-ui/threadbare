@@ -349,6 +349,18 @@ function buildChoices(
 
   if (authoredForStep && authoredForStep.length > 0) {
     // Use authored choice cards with full prose bodies
+    //
+    // THR-1411 — the stance rides along. `AuthoredChoiceCard.interventionType`
+    // is a required field, so every authored card has always carried one; this
+    // branch simply never copied it onto the model, and three separate surface
+    // reads went dark at once: the stance word (`stanceLabel`), the card's glow
+    // colour (`TYPE_COLORS[interventionType]`), and the withdrawn card's `fate
+    // decides` meta label. The sibling `buildSimpleEncounterStageModel` never
+    // lost it because the authored hand reaches it through
+    // `notification.choices`, which `phaseEncounterVisibility` fills with
+    // `card.interventionType` — so the same template rendered its stance at
+    // `watched` tier and dropped it at attended, which is the asymmetry the
+    // THR-1133 pixel sweep caught on `crafting.quest.flawed_steel`.
     return authoredForStep.map((card) => ({
       id: card.id,
       label: enrichProse(card.label, ctx),
@@ -358,6 +370,8 @@ function buildChoices(
       affordable: essence + 1e-9 >= card.essenceCost,
       costLabel: card.essenceCost > 0 ? formatEssenceLabel(card.essenceCost) : undefined,
       likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
+      interventionType: card.interventionType,
+      stanceLabel: interventionStanceWord(card.interventionType),
     }));
   }
 

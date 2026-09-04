@@ -185,8 +185,14 @@ export interface EncounterStageChoiceModel {
    * Banded at the source by `engine/interventionStanceWords`, the way
    * `roleLabel` bands a cast member's `supportRole`, so a surface never has to
    * remember to resolve the enum. Absent means the producer tagged no stance
-   * (authored choice cards carry their own prose instead) and the meta row
-   * renders nothing — a designed empty, not a missing value.
+   * and the meta row renders nothing — a designed empty, not a missing value.
+   *
+   * THR-1411 — this used to read "authored choice cards carry their own prose
+   * instead", describing the one producer that dropped the field as though it
+   * had chosen to. `AuthoredChoiceCard.interventionType` is required, so an
+   * authored card always has a stance to band; the attended adapter just never
+   * copied it, and the comment made that omission read as intent. An authored
+   * card is now the same as any other: it has a stance, so it shows one.
    */
   stanceLabel?: string;
   /** God-voice quote revealed when choice is selected. */
