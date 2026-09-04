@@ -32,6 +32,14 @@ describe('DebugPanel CLI tab', () => {
         nodeName: 'Gate Seal Case',
         message: "Spawned possession 'Gate Seal Case' on 'Recruit' from 'Gate Seal Case'.",
       })),
+      // THR-1413 — the companion mint route.
+      spawnCompanion: vi.fn(() => ({
+        success: true,
+        kind: 'companion',
+        nodeId: 'companion_agent_1_12_companion.wayfarer',
+        nodeName: 'Thorne',
+        message: "Thorne (Wayfarer) now accompanies 'Recruit'.",
+      })),
       spawnLocation: vi.fn(() => ({
         success: true,
         kind: 'location',
@@ -116,6 +124,24 @@ describe('DebugPanel CLI tab', () => {
 
     expect(window.__DEBUG?.spawnAttachment).toHaveBeenCalledWith('@hero', 'Gate Seal Case', { tick: 12 });
     expect(screen.getByLabelText('Encounter CLI output').textContent).toContain('Attachment spawned.');
+  });
+
+  /**
+   * THR-1413 — the browser half of "minted from the browser and the CLI". Proves the
+   * typed verb reaches the bridge; `debugWorldSpawnTools.test.ts` proves what the
+   * bridge then does to the graph.
+   */
+  it('runs companion spawn commands from the in-game CLI tab', () => {
+    render(<DebugPanel currentTick={1} />);
+
+    fireEvent.click(screen.getByText('CLI'));
+    fireEvent.change(screen.getByLabelText('Encounter CLI input'), {
+      target: { value: 'spawn companion @hero companion.wayfarer --tick 12' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Run' }));
+
+    expect(window.__DEBUG?.spawnCompanion).toHaveBeenCalledWith('@hero', 'companion.wayfarer', { tick: 12 });
+    expect(screen.getByLabelText('Encounter CLI output').textContent).toContain('Companion joined.');
   });
 
   it('runs move agent commands from the in-game CLI tab', () => {

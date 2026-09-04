@@ -327,10 +327,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 43 total — 4 write, 2 read, 37 unclassified
+- **Production hits:** 44 total — 4 write, 2 read, 38 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/action-technical-effects.ts` +32 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +33 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -595,10 +595,10 @@ exit
 - **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/companions.ts`
-- **Production hits:** 39 total — 2 write, 2 read, 35 unclassified
+- **Production hits:** 41 total — 2 write, 2 read, 37 unclassified
 - **Write sites:** `src/data/companion-templates.ts`, `src/engine/companions.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/anomaly-reward-catalog.ts` +30 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +32 more
 - **Verdict:** Verified 2026-08-14: THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer's stone raw score by exactly the template's +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
@@ -818,10 +818,10 @@ exit
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
+- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts` +2 more
+- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts` +3 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `factory-pack-registry` — 🔵 UNVERIFIED-OK
@@ -877,10 +877,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 113 total — 3 write, 7 read, 103 unclassified
+- **Production hits:** 114 total — 3 write, 7 read, 104 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounterHandoff.ts` +98 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts` +99 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE

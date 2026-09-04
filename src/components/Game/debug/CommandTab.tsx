@@ -167,6 +167,18 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
       ].filter(Boolean).join('\n');
     }
 
+    if (parsed.kind === 'spawn-companion') {
+      const result = window.__DEBUG.spawnCompanion(parsed.agentQuery, parsed.templateQuery, {
+        tick: parsed.tick,
+      });
+      return [
+        result.success ? 'Companion joined.' : 'Companion mint failed.',
+        result.message,
+        result.nodeName ? `node: ${result.nodeName}` : null,
+        parsed.tick !== undefined ? `tick: ${parsed.tick}` : null,
+      ].filter(Boolean).join('\n');
+    }
+
     if (parsed.kind === 'spawn-location') {
       const result = window.__DEBUG.spawnLocation(parsed.subtype, parsed.col, parsed.row, {
         name: parsed.name,

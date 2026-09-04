@@ -4,7 +4,7 @@ import type { RewardHistoryEntry } from './engine/rewardHistory';
 import type { BalanceRunSummary, BalanceTargets, BalanceEvaluationResult } from './types/balanceEval';
 import type { TickEvent } from './types/gameState';
 import type { DebugSpawnEncounterResult, DebugSpawnEncounterContextResult, DebugSpawnEncounterOptions, DebugSpawnEncounterContextOptions } from './engine/debugEncounterTools';
-import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions, DebugSpawnBandOptions } from './engine/debugWorldSpawnTools';
+import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions, DebugSpawnCompanionOptions, DebugSpawnBandOptions } from './engine/debugWorldSpawnTools';
 import type { PortfolioPinResult } from './engine/portfolioManager';
 import type { SetHomeSeatResult } from './engine/influence';
 
@@ -1052,6 +1052,15 @@ export interface DebugBridge {
   spawnEncounterContext: (templateId: string, options?: DebugSpawnEncounterContextOptions) => DebugSpawnEncounterContextResult;
   /** Spawn an attachment (artifact, trait, etc.) on an agent. */
   spawnAttachment: (agentQuery: string, templateQuery: string, options?: DebugSpawnAttachmentOptions) => DebugWorldSpawnResult;
+  /** Mint a companion (THR-1413) onto an agent or the ascendant, and show the row.
+   *
+   *  `spawnAttachment` cannot do this: it searches artifact/trait **nodes** in the graph,
+   *  and `COMPANION_TEMPLATES` are a data array that never becomes nodes. Match ladder:
+   *  exact id (`companion.wayfarer`) → id prefix → profession substring. `@hero` and
+   *  `@ascendant` both resolve; an ascendant companion renders on `AscendantSheet`.
+   *  Repeat mints of the same template on the same bearer walk the tick forward, so the
+   *  second call adds a second companion rather than silently no-opping. */
+  spawnCompanion: (agentQuery: string, templateQuery: string, options?: DebugSpawnCompanionOptions) => DebugWorldSpawnResult;
   /** Spawn a location at the specified hex coordinates. */
   spawnLocation: (subtype: string, col: number, row: number, options?: DebugSpawnLocationOptions) => DebugWorldSpawnResult;
   /** Spawn a sublocation under a location at the specified target. */

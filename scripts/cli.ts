@@ -62,7 +62,7 @@ import {
 } from '../src/engine/traceBuffer';
 import type { TickProfileTrace } from '../src/types/trace';
 import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
-import { spawnDebugBand } from '../src/engine/debugWorldSpawnTools';
+import { spawnDebugBand, spawnDebugCompanion } from '../src/engine/debugWorldSpawnTools';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { hexDistance } from '../src/lib/hexMath';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
@@ -1290,6 +1290,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}objects${RESET} [kind]          World-object kinds with their live counts in this world, and the write-time guard's warnings (THR-1394)`);
   console.log(`  ${BOLD}follow${RESET} <agent|@first>       Follow a mortal (their moments interrupt)`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
+  console.log(`  ${BOLD}spawn companion${RESET} <agent|@hero> <companionTemplateId|profession> Mint a companion onto an agent (THR-1413)`);
   console.log(`  ${BOLD}spawn band${RESET} <faction> [--role raider|defender]  Force a faction to field an NPC band`);
   console.log(`  ${BOLD}aftermath list${RESET} <agent|@hero>   List pending aftermath reactions for an agent`);
   console.log(`  ${BOLD}aftermath pick${RESET} <agent|@hero> [reactionId]  Apply an aftermath reaction`);
@@ -1629,6 +1630,22 @@ function handleSpawnBand(factionQuery: string, roleArg?: string): void {
     // must see it, or the confrontation content it exists to unlock stays invisible.
     touchStructure(runtime);
   }
+}
+
+/**
+ * `spawn companion <agent|@hero> <templateId|profession>` — THR-1413.
+ *
+ * Delegates to the same `spawnDebugCompanion` the browser bridge calls, so the two
+ * surfaces cannot drift the way `spawn attachment`'s hand-rolled clone-and-edge
+ * path did. Fail-soft: an unknown agent or template prints and returns.
+ */
+function handleSpawnCompanion(agentQuery: string, templateQuery: string): void {
+  const result = spawnDebugCompanion(state, agentQuery, templateQuery);
+  if (!result.success) {
+    console.log(`${RED}${result.message}${RESET}`);
+    return;
+  }
+  console.log(`${GREEN}✓${RESET} ${result.message} ${dim(`[${result.nodeId}]`)}`);
 }
 
 function handleSpawnAttachment(agentQuery: string, templateQuery: string): void {
@@ -2167,6 +2184,8 @@ function handleCommand(line: string): boolean {
         handleSpawnUndertaking(subParts[1], subParts[2], subParts.slice(3));
       } else if (subParts[0] === 'attachment' && subParts.length >= 3) {
         handleSpawnAttachment(subParts[1], subParts.slice(2).join(' '));
+      } else if (subParts[0] === 'companion' && subParts.length >= 3) {
+        handleSpawnCompanion(subParts[1], subParts.slice(2).join(' '));
       } else if (subParts[0] === 'band' && subParts.length >= 2) {
         // `spawn band <faction...> [--role r]` — the faction query may be several
         // words ("The Arcane Circle"), so take everything up to the flag.
@@ -2174,7 +2193,7 @@ function handleCommand(line: string): boolean {
         const factionQuery = (roleIndex === -1 ? subParts.slice(1) : subParts.slice(1, roleIndex)).join(' ');
         handleSpawnBand(factionQuery, roleIndex === -1 ? undefined : subParts[roleIndex + 1]);
       } else {
-        console.log(`${RED}Usage: spawn encounter|attachment <agent|@hero> <templateId>  |  spawn band <faction> [--role raider|defender]${RESET}`);
+        console.log(`${RED}Usage: spawn encounter|attachment|companion <agent|@hero> <templateId>  |  spawn band <faction> [--role raider|defender]${RESET}`);
       }
       break;
     }

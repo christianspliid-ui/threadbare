@@ -202,6 +202,7 @@ import { buildEncounterBinderContext } from '../../engine/binding/encounterBinde
 import {
   moveDebugAgent,
   spawnDebugAttachment,
+  spawnDebugCompanion,
   spawnDebugLocationAtHex,
   spawnDebugNpc,
   spawnDebugBand,
@@ -2476,6 +2477,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       },
       spawnAttachment: (agentQuery, templateQuery, options) => {
         const result = spawnDebugAttachment(_gameStateRef.current, agentQuery, templateQuery, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+      // THR-1413 — the companions row (THR-1096) had no deliberate mint route.
+      spawnCompanion: (agentQuery, templateQuery, options) => {
+        const result = spawnDebugCompanion(_gameStateRef.current, agentQuery, templateQuery, options);
         if (result.success) {
           touchStructure(runtime);
           setGameState(prev => ({ ...prev, graph: prev.graph }));

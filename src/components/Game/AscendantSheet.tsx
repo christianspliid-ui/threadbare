@@ -23,6 +23,8 @@ import { Tooltip } from '../shared/Tooltip';
 import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
 import { getThreadsFrom } from '../../engine/graphQueries';
+import { getCompanions } from '../../engine/companions';
+import { reachDisplayName } from '../../engine/aftermathWords';
 import { composePortrait } from '../../utils/portraitCompositor';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -136,6 +138,29 @@ function tickToNarrativeAge(tick: number): string {
   return 'The ages blur into legend.';
 }
 
+/**
+ * Which Reaches a companion steadies, in words (THR-1413).
+ *
+ * Deliberately *not* `AttachmentsTab`'s `contributionLine`, which renders the raw
+ * term (`+3 iron`). That is a numeral on a player-facing surface — Law 13 — and
+ * copying it would spread the violation to a second surface rather than contain
+ * it. Banding the value instead would mean inventing a ladder for the raw
+ * contribution scale, which Law 15 makes a ruling rather than an implementation
+ * choice. So this names the Reaches and lets the authored `goodFor` line carry the
+ * "how much" as fiction, which is what the player can actually act on.
+ * The exact term stays where Law 13 puts it: in the trace and the designer view.
+ */
+function companionReachLine(contributions: Record<string, number>): string {
+  const reaches = Object.entries(contributions)
+    .filter(([, v]) => typeof v === 'number' && v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .map(([reach]) => reachDisplayName(reach));
+
+  if (reaches.length === 0) return 'No help in any Reach — just company.';
+  if (reaches.length === 1) return `Steadies your ${reaches[0]}.`;
+  return `Steadies your ${reaches.slice(0, -1).join(', ')} and ${reaches[reaches.length - 1]}.`;
+}
+
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -186,6 +211,19 @@ export function AscendantSheet({
         return gameState.essencePool[b as SphereName] - gameState.essencePool[a as SphereName];
       });
   }, [gameState.essencePool, primarySphere, secondarySphere]);
+
+  // THR-1413 — companions on the ascendant. `computeRawScore` already walks
+  // `accompanies` on *any* node, so a companion granted to the ascendant (the
+  // `grant_companion` op resolves `$actor` to them on every player-cast) is
+  // already raising their reach capability. It was doing so invisibly: this
+  // section is the surface for state that was live and unshown (Law 56).
+  const companions = useMemo(
+    () => getCompanions(gameState.graph, gameState.ascendantId),
+    // Keyed like the `threadEdges` memo below: the sheet is a modal that mounts
+    // on open, so it recomputes each time it is shown. No `worldVersion` here —
+    // this component is not handed the runtime that owns it.
+    [gameState.graph, gameState.ascendantId],
+  );
 
   // Thread edges
   const threadEdges = useMemo(
@@ -519,6 +557,43 @@ export function AscendantSheet({
               </p>
             )}
           </section>
+
+          {/* Companions — THR-1413. Only rendered when one exists: an empty
+              section would be a promise the god-scale sheet does not make. */}
+          {companions.length > 0 && (
+            <section className="anim-fade-up-enter" style={{ animationDelay: '175ms', animationFillMode: 'backwards' }}>
+              <SectionHeading as="h2">Companions</SectionHeading>
+              <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--text-secondary)' }}>
+                {companions.length === 1
+                  ? 'One walks at your side, hired or drawn to you.'
+                  : `${companions.length} walk at your side, hired or drawn to you.`}
+              </p>
+              <ul className="space-y-2">
+                {companions.map(companion => (
+                  <li
+                    key={companion.id}
+                    className="flex flex-col"
+                    data-testid={`ascendant-companion-${companion.templateId}`}
+                  >
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {companion.name}
+                      </span>
+                      <span className="text-xs uppercase tracking-wider ml-auto" style={{ color: 'var(--text-tertiary)' }}>
+                        {companion.profession}
+                      </span>
+                    </div>
+                    <p className="text-sm italic" style={{ color: 'var(--text-secondary)' }}>
+                      {companion.goodFor}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {companionReachLine(companion.domainContributions as Record<string, number>)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
         </div>
       </div>

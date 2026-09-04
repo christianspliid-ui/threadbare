@@ -10,6 +10,9 @@ import { spawnBandForFaction, canFieldBand } from './groups/bandSpawner';
 import type { BandRole } from './groups/groupQueries';
 import { selectDefaultTrackedHero } from './balanceTelemetry';
 import { instantiateReward, REWARD_INSTANTIATE_PREFIX } from './rewardPool';
+import { mintCompanion, COMPANION_NODE_PREFIX } from './companions';
+import { hashString } from './factionAmbitions';
+import { COMPANION_TEMPLATES, type CompanionTemplate } from '../data/companion-templates';
 import { rebindLocatedAt as sharedRebindLocatedAt } from './relocationIntent';
 
 /** Build a resolution note showing what a query resolved to, so misresolution is visible. */
@@ -21,7 +24,7 @@ function resolutionNote(query: string, resolvedId: string, resolvedName: string)
 
 export interface DebugWorldSpawnResult {
   success: boolean;
-  kind?: 'location' | 'sublocation' | 'npc' | 'agent' | 'attachment' | 'band';
+  kind?: 'location' | 'sublocation' | 'npc' | 'agent' | 'attachment' | 'band' | 'companion';
   nodeId?: string;
   nodeName?: string;
   locationId?: string;
@@ -50,6 +53,12 @@ export interface DebugMoveAgentOptions {
 
 export interface DebugSpawnAttachmentOptions {
   tick?: number;
+}
+
+export interface DebugSpawnCompanionOptions {
+  tick?: number;
+  /** Honour `COMPANION_MAX`. Off by default — a debug mint exists to reach a state, not to be refused by it. */
+  respectCap?: boolean;
 }
 
 export interface DebugSpawnBandOptions {
@@ -194,6 +203,29 @@ function resolveAttachmentTemplate(state: GameState, query: string): GraphNode |
   if (prefix) return prefix;
 
   return candidates.find(node => node.name.toLowerCase().includes(normalized)) ?? null;
+}
+
+/**
+ * Resolve a companion template from the data array (THR-1413).
+ *
+ * Deliberately *not* `resolveAttachmentTemplate`: that one searches artifact and
+ * trait **nodes** in the graph, and `COMPANION_TEMPLATES` are a data array that
+ * never becomes nodes — which is exactly why `spawn attachment companion.wayfarer`
+ * answered "no attachment template matching". Same match ladder as its sibling
+ * (exact id → id prefix → name/profession substring) so the two feel alike.
+ */
+function resolveCompanionTemplate(query: string): CompanionTemplate | null {
+  const normalized = normalize(query);
+  const exact = COMPANION_TEMPLATES.find(t => t.id === query);
+  if (exact) return exact;
+
+  const prefix = COMPANION_TEMPLATES.find(t => t.id.startsWith(query));
+  if (prefix) return prefix;
+
+  return COMPANION_TEMPLATES.find(t =>
+    normalize(t.profession).includes(normalized)
+    || (t.fixedName !== undefined && normalize(t.fixedName).includes(normalized)),
+  ) ?? null;
 }
 
 function nextRewardTick(state: GameState, recipientAgentId: string, templateNodeId: string, requestedTick?: number): number {
@@ -679,5 +711,75 @@ export function spawnDebugAttachment(
     nodeName: instantiated.displayName,
     reused: false,
     message: `Spawned ${instantiated.category} '${instantiated.displayName}' on '${actor.name}' from '${template.name}'.${actorNote}`,
+  };
+}
+
+/**
+ * Mint a companion onto a named actor from the debug surfaces (THR-1413).
+ *
+ * The route that did not exist: `mintCompanion` was reachable only from encounter
+ * aftermath and `grant_companion`, so the companions row (THR-1096) could not be
+ * put on screen deliberately. Accepts the same actor queries as its siblings, so
+ * `@hero` and `@ascendant` both work — an ascendant companion is a real state the
+ * capability walk already reads (`computeRawScore` walks `accompanies` on any
+ * node), and `AscendantSheet` renders it.
+ *
+ * Fail-soft per NFP #4: an unknown actor or template returns a failed result with
+ * a message, never a throw.
+ */
+export function spawnDebugCompanion(
+  state: GameState,
+  agentQuery: string,
+  templateQuery: string,
+  options: DebugSpawnCompanionOptions = {},
+): DebugWorldSpawnResult {
+  const actor = findActorNode(state, agentQuery);
+  if (!actor) {
+    return {
+      success: false,
+      message: `No actor matching '${agentQuery}'.`,
+    };
+  }
+
+  const actorNote = resolutionNote(agentQuery, actor.id, actor.name);
+  const template = resolveCompanionTemplate(templateQuery);
+  if (!template) {
+    return {
+      success: false,
+      message: `No companion template matching '${templateQuery}'. Known ids: ${COMPANION_TEMPLATES.map(t => t.id).join(', ')}.`,
+    };
+  }
+
+  // `mintCompanion` treats an id collision at the same tick as "already granted"
+  // and returns null. Walk the tick forward so a second mint of the same template
+  // on the same bearer produces a second companion instead of a silent no-op.
+  let tick = options.tick ?? state.tick;
+  while (state.graph.getNode(`${COMPANION_NODE_PREFIX}_${actor.id}_${tick}_${template.id}`)) {
+    tick += 1;
+  }
+
+  const minted = mintCompanion(
+    state.graph,
+    template.id,
+    actor.id,
+    tick,
+    mulberry32((state.seed + tick * 977 + hashString(template.id)) >>> 0),
+    { source: 'debug_spawn_companion', respectCap: options.respectCap === true },
+  );
+
+  if (!minted) {
+    return {
+      success: false,
+      message: `Could not mint '${template.profession}' on '${actor.name}' — a unique already exists, or the cap applies.${actorNote}`,
+    };
+  }
+
+  return {
+    success: true,
+    kind: 'companion',
+    nodeId: minted.companionId,
+    nodeName: minted.name,
+    reused: false,
+    message: `${minted.name} (${template.profession}) now accompanies '${actor.name}'.${actorNote}`,
   };
 }
