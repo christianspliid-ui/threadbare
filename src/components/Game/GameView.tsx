@@ -130,6 +130,11 @@ import { PremonitionModal } from './PremonitionModal';
 import { StoryBeatModal } from './StoryBeatModal';
 import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition';
 import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '../../engine/premonitionActions';
+// THR-1414 — the forcePremonition debug lever.
+import { buildWhisperPremonition } from '../../engine/phaseDivinePremonition';
+import { FORCE_COMPULSION_FLAG } from '../../engine/premonitionCompulsion';
+import { PREMONITION_EXPIRY_TICKS } from '../../data/premonition-constants';
+import { mulberry32 } from '../../lib/prng';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { spendNudgeEssence } from './encounter-stage/nudgeCommit';
@@ -2066,6 +2071,65 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         props.quintessenceCurrent = Math.round(ratio * max);
         return { ...prev, worldVersion: (prev.worldVersion ?? 0) + 1 };
       });
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Debug bridge: forcePremonition (THR-1414) ─────────────────────────────
+  // The whisper arm queues a real premonition visible immediately; the compulsion
+  // arm arms the decision phase, because a compulsion is composed from candidates
+  // that only exist inside it.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerForcePremonition((agentId, kind) => {
+      let outcome: import('../../debug-bridge.d').ForcePremonitionResult = {
+        error: 'Game not loaded',
+      };
+
+      setGameState(prev => {
+        const agent = prev.graph.getNode(agentId);
+        if (!agent) {
+          outcome = { error: `Agent ${agentId} is not in the graph` };
+          return prev;
+        }
+
+        if (kind === 'compulsion') {
+          // Direct property write — updateNode replaces the handle.
+          agent.properties[FORCE_COMPULSION_FLAG] = true;
+          // A property write on a mutated-in-place graph is invisible to memoized
+          // selectors until the world is touched.
+          touchWorld(runtime);
+          outcome = {
+            staged: 'armed', kind, agentId, agentName: agent.name, id: null,
+            nextStep: 'call window.__DEBUG.tick(1) — the compulsion is emitted at the next scoring moment',
+          };
+          return prev;
+        }
+
+        const built = buildWhisperPremonition(agent, prev, mulberry32(prev.seed + prev.tick * 67));
+        if (!built) {
+          outcome = { error: `No nudge candidates for ${agent.name} — nothing to whisper` };
+          return prev;
+        }
+
+        // Show it now rather than after PREMONITION_DISPLAY_DELAY_TICKS: a forced
+        // premonition exists to be looked at, and a lever that still needs ten ticks
+        // is the same wait it was meant to remove. Expiry keeps its usual width.
+        const premonition = {
+          ...built,
+          showAfterTick: prev.tick,
+          eligibleUntilTick: prev.tick + PREMONITION_EXPIRY_TICKS,
+        };
+        outcome = {
+          staged: 'queued', kind, agentId, agentName: agent.name, id: premonition.id,
+          nextStep: 'the modal opens on the next render — read window.__DEBUG.getOpenModals()',
+        };
+        return {
+          ...prev,
+          premonitionQueue: [...(prev.premonitionQueue ?? []), premonition],
+        };
+      });
+
+      return outcome;
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

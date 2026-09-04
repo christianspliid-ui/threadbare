@@ -75,6 +75,55 @@ function resolveNudgeProse(
   return result;
 }
 
+// ─── Gate Chain ─────────────────────────────────────────────────
+
+/**
+ * The gates a threaded agent must clear before a whisper is generated for them,
+ * in evaluation order. `null` means every gate passed.
+ *
+ * Exported so a headless probe can attribute a zero whisper count to a named gate
+ * without replicating the chain — the phase below evaluates the same function, so
+ * probe and production can never drift apart (THR-1414).
+ */
+export type PremonitionGate =
+  | 'not_an_actor'
+  | 'already_pending'
+  | 'tier_below_1'
+  | 'not_idle'
+  | 'whisper_unavailable'
+  | 'dissolved'
+  | 'no_nudge_candidates';
+
+/**
+ * Evaluate the whisper gate chain for one agent. Returns the first gate that
+ * rejects, or `null` when the agent is eligible.
+ *
+ * @param agentsWithPending ids that already hold a queued premonition — one at a time.
+ */
+export function evaluatePremonitionGates(
+  agent: GraphNode,
+  state: GameState,
+  agentsWithPending: ReadonlySet<string>,
+): PremonitionGate | null {
+  if (agent.type !== 'actor') return 'not_an_actor';
+  if (agentsWithPending.has(agent.id)) return 'already_pending';
+
+  const tier = getThreadTier(state.graph, state.ascendantId, agent.id);
+  if (tier < 1) return 'tier_below_1';
+
+  if (!isAgentIdle(agent, state)) return 'not_idle';
+
+  const whisperAvailable = (agent.properties?.whisperAvailable as boolean | undefined) ?? true;
+  if (!whisperAvailable) return 'whisper_unavailable';
+
+  const quintessence = (agent.properties?.quintessence as number | undefined) ?? 1.0;
+  if (quintessence <= 0) return 'dissolved';
+
+  if (deriveNudgeCandidates(agent, state.graph, state).length === 0) return 'no_nudge_candidates';
+
+  return null;
+}
+
 // ─── Agent Idle Check ───────────────────────────────────────────
 
 function isAgentIdle(agent: GraphNode, state: GameState): boolean {
@@ -231,28 +280,76 @@ export function phaseDivinePremonition(
 
   for (const agent of threadedAgents) {
     try {
-      // Gate: no pending premonition for this agent already
-      if (agentsWithPending.has(agent.id)) continue;
+      // Gate chain — see evaluatePremonitionGates. Kept as one call so the
+      // headless probe attributes rejections to the same gates production uses.
+      if (evaluatePremonitionGates(agent, state, agentsWithPending) !== null) continue;
 
-      // Gate: tier 1+
-      const tier = getThreadTier(graph, ascendantId, agent.id);
-      if (tier < 1) continue;
+      const premonition = buildWhisperPremonition(agent, state, rng);
+      if (!premonition) continue;
+      newPremonitions.push(premonition);
 
-      // Gate: agent must be idle
-      if (!isAgentIdle(agent, state)) continue;
+      // Mark whisper as consumed for this idle period
+      graph.updateNode(agent.id, {
+        properties: { ...agent.properties, whisperAvailable: false },
+      });
 
-      // Gate: whisperAvailable flag (set true on idle, false on non-generic encounter commit)
-      const whisperAvailable = (agent.properties?.whisperAvailable as boolean | undefined) ?? true;
-      if (!whisperAvailable) continue;
+    } catch {
+      // Fail-soft: skip this agent, never crash the tick loop
+      continue;
+    }
+  }
 
-      // Gate: not dissolved
-      const quintessence = (agent.properties?.quintessence as number | undefined) ?? 1.0;
-      if (quintessence <= 0) continue;
+  // Merge with existing queue, discarding stale entries.
+  //
+  // Expiry is the ONLY staleness rule — matching `phaseAgentDecision`, which
+  // merges the same queue on `eligibleUntilTick > tick` alone.
+  //
+  // THR-1414: this filter also pruned entries whose agent was no longer idle,
+  // which made every whisper undeliverable by construction. A whisper is born
+  // only while the agent is idle, becomes visible `PREMONITION_DISPLAY_DELAY_TICKS`
+  // (10) later — and `phaseAgentDecision`, running immediately after this phase in
+  // the same tick, is what takes an idle agent and commits them to an action. So
+  // the entry was pruned at tick+1, nine ticks before the UI was allowed to show
+  // it. Measured on a generated seeded world: 8 whispers pushed over 200 ticks,
+  // 0 surviving to their display window. See premonitionGateChain.test.ts.
+  //
+  // Dropping the idle test costs nothing the design wanted: a whisper's effect is
+  // a decaying scoring bias on the agent's *next* decisions, so it stays meaningful
+  // after they pick up work, and `eligibleUntilTick` already bounds how long it lives.
+  const existingQueue = (state.premonitionQueue ?? []).filter(
+    p => p.eligibleUntilTick > state.tick,
+  );
 
-      // Derive contextual nudge candidates
-      const candidates = deriveNudgeCandidates(agent, graph, state);
-      if (candidates.length === 0) continue;
+  // Only return premonitionQueue — do NOT return tickEvents here.
+  // This phase doesn't emit tick events. Returning tickEvents: [] would
+  // overwrite the accumulated events from prior phases when the orchestrator
+  // spreads the result.
+  return {
+    premonitionQueue: [...existingQueue, ...newPremonitions],
+  };
+}
 
+/**
+ * Build the whisper a given agent would receive right now, without consulting the
+ * gate chain and without touching state.
+ *
+ * Split out of the phase loop (THR-1414) so `window.__DEBUG.forcePremonition` can
+ * stage a real whisper — same prose, same nudge derivation, same display window —
+ * rather than a hand-built stand-in that could drift from what players see.
+ *
+ * Returns null when the agent has no eligible nudges to offer.
+ */
+export function buildWhisperPremonition(
+  agent: GraphNode,
+  state: GameState,
+  rng: () => number,
+): PremonitionEvent | null {
+  const { graph } = state;
+  const candidates = deriveNudgeCandidates(agent, graph, state);
+  if (candidates.length === 0) return null;
+
+  {
+    {
       // Sort by relevance, pick top 2-3
       candidates.sort((a, b) => b.relevance - a.relevance);
       const count = Math.min(
@@ -306,35 +403,10 @@ export function phaseDivinePremonition(
         vignetteProse: vignette,
         whisperOptions: options,
       };
-      newPremonitions.push(premonition);
 
-      // Mark whisper as consumed for this idle period
-      graph.updateNode(agent.id, {
-        properties: { ...agent.properties, whisperAvailable: false },
-      });
-
-    } catch {
-      // Fail-soft: skip this agent, never crash the tick loop
-      continue;
+      return premonition;
     }
   }
-
-  // Merge with existing queue (discard stale + no-longer-idle entries)
-  const existingQueue = (state.premonitionQueue ?? []).filter(p => {
-    if (p.eligibleUntilTick <= state.tick) return false;
-    // Prune whispers/compulsions for agents that are no longer idle
-    const agentNode = graph.getNode(p.agentId);
-    if (agentNode && !isAgentIdle(agentNode, state)) return false;
-    return true;
-  });
-
-  // Only return premonitionQueue — do NOT return tickEvents here.
-  // This phase doesn't emit tick events. Returning tickEvents: [] would
-  // overwrite the accumulated events from prior phases when the orchestrator
-  // spreads the result.
-  return {
-    premonitionQueue: [...existingQueue, ...newPremonitions],
-  };
 }
 
 // ─── Helpers ────────────────────────────────────────────────────

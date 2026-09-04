@@ -78,6 +78,42 @@ describe('shouldEmitCompulsion', () => {
     });
   });
 
+  describe('the debug force flag (THR-1414)', () => {
+    // `window.__DEBUG.forcePremonition(agent, 'compulsion')` stamps this so a
+    // reviewer can reach the surface without waiting out a 12-tick cooldown.
+    it('bypasses a cooldown that would otherwise refuse', () => {
+      const cooling = agent({ lastCompulsionTick: 40 });
+      // Same agent, same tick — the flag is the only difference.
+      expect(shouldEmitCompulsion(cooling, 41, [], [])).toBe(false);
+      expect(
+        shouldEmitCompulsion(agent({ lastCompulsionTick: 40, debugForceCompulsion: true }), 41, [], []),
+      ).toBe(true);
+    });
+
+    it('still refuses when that agent already holds a live premonition', () => {
+      // Forcing must not stack two offers on one agent — that is a UI state the
+      // game never reaches on its own.
+      const queued = [premonition('actor_kael', 45)];
+      expect(
+        shouldEmitCompulsion(agent({ debugForceCompulsion: true }), 40, queued, []),
+      ).toBe(false);
+    });
+
+    it('still refuses a second emission inside the same tick', () => {
+      const thisTick = [premonition('actor_kael', 53)];
+      expect(
+        shouldEmitCompulsion(agent({ debugForceCompulsion: true }), 40, [], thisTick),
+      ).toBe(false);
+    });
+
+    it('leaves an unflagged agent on the ordinary gates', () => {
+      // Falsifies "the flag check accidentally passes everyone".
+      expect(
+        shouldEmitCompulsion(agent({ lastCompulsionTick: 40, debugForceCompulsion: false }), 41, [], []),
+      ).toBe(false);
+    });
+  });
+
   it('the stamp is written at emission, so all three endings are covered', () => {
     // Chosen, dismissed and expired differ only in what the UI did with the
     // event — none of them writes lastCompulsionTick, and none needs to.
