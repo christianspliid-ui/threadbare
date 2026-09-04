@@ -53,11 +53,6 @@ TheFantasyWorldSimulator/
 │   │   │   ├── passes/          # 8 generation passes (climate, vegetation, culture, etc.)
 │   │   │   └── [other passes]
 │   │   │
-│   │   ├── terrainPipeline/     # Terrain rendering pipeline (7 modules)
-│   │   │   ├── coastline generation
-│   │   │   ├── lake depression filling
-│   │   │   └── [other terrain]
-│   │   │
 │   │   └── __tests__/           # Engine contract tests
 │   │       ├── contracts/       # Contract test patterns
 │   │       └── [other test files]

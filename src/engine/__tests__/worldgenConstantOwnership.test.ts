@@ -1,42 +1,52 @@
 /**
- * THR-1409 — one declaration per worldgen constant, and a tuning panel that
- * shows the number the generator actually reads.
+ * THR-1409 / THR-1418 — one declaration per worldgen constant, and a tuning
+ * panel every row of which reads the declaration a generator imports.
  *
- * Three constants (`RIVER_MIN_LENGTH`, `LAKE_SIZE_MAX`, `GREAT_LAKE_SIZE_MAX`)
- * were declared in both `terrainPipeline/types.ts` and `worldGenData.ts` with
- * *different* values, and a fourth (`TEMP_ALTITUDE_PENALTY`) in both
- * `terrainPipeline/types.ts` and `worldgen/constants.ts`. The two copies had
- * disjoint consumers — the generators read one, the CMS tuning panel rendered
- * the other — so the divergence never surfaced as a conflict, and the panel
- * displayed numbers no world had ever been generated with. That is an NFP #1
- * (Tunability) failure: the surface a designer opens to change a number was
- * wired to a copy nothing reads.
+ * THR-1409: three constants (`RIVER_MIN_LENGTH`, `LAKE_SIZE_MAX`,
+ * `GREAT_LAKE_SIZE_MAX`) were declared in both `terrainPipeline/types.ts` and
+ * `worldGenData.ts` with *different* values, and a fourth
+ * (`TEMP_ALTITUDE_PENALTY`) in both `terrainPipeline/types.ts` and
+ * `worldgen/constants.ts`. The two copies had disjoint consumers — the
+ * generators read one, the CMS tuning panel rendered the other — so the
+ * divergence never surfaced as a conflict, and the panel displayed numbers no
+ * world had ever been generated with. That is an NFP #1 (Tunability) failure:
+ * the surface a designer opens to change a number was wired to a copy nothing
+ * reads.
  *
- * Two guards, because the failure had two independent halves:
+ * THR-1418: the sweep that fix required showed the duplication was the small
+ * half. `terrainPipeline/` had no pipeline — no passes, no orchestrator, no
+ * caller — and 22 further panel rows read it. It has been retired, and the
+ * `worldgen-terrain` group rebuilt from the live pipeline's own constants.
+ * The third guard below generalises the second: it holds for *every* row in
+ * the group, so a future row wired to a module no generator reads fails here
+ * rather than waiting for someone to notice a dial that does nothing.
+ *
+ * Three guards, because the failure has three independent halves:
  *   1. No constant name is declared by more than one worldgen constants module.
- *   2. The panel's rendered value is the *same declaration* the generator imports.
+ *   2. Every panel row resolves to a live module and is identity-equal to it.
+ *   3. The four THR-1409 constants specifically still point at their owner.
  *
- * Guard 1 alone would not have caught a panel re-pointed at a third module, and
- * guard 2 alone would not have caught a fresh duplicate nothing renders yet.
+ * Guard 1 alone would not have caught a panel re-pointed at a third module,
+ * guard 2 alone would not have caught a fresh duplicate nothing renders yet,
+ * and guard 3 pins the specific regression that motivated the first two.
  */
 import { describe, it, expect } from 'vitest';
 
-import * as terrainPipelineTypes from '../terrainPipeline/types';
 import * as worldGenData from '../worldGenData';
 import * as worldgenConstants from '../worldgen/constants';
 import { TUNABLE_GROUPS } from '../../components/CMS/tunableConstants';
 
 /**
- * The three modules that declare worldgen tuning constants. Runtime namespace
- * keys, not parsed source: types erase at runtime, so this compares exactly the
+ * The modules that declare worldgen tuning constants. Runtime namespace keys,
+ * not parsed source: types erase at runtime, so this compares exactly the
  * declarations a consumer can import a *value* from — which is the thing that
- * can silently diverge. (`RiverPath` and `WorldGenData` are declared in two of
- * these modules as well, but they are structurally different interfaces with
- * disjoint consumers rather than duplicates of one another; they carry no value
- * and cannot drift apart numerically. See the ticket for why they stay.)
+ * can silently diverge.
+ *
+ * `terrainPipeline/types.ts` was the third entry until THR-1418 retired it.
+ * The keys here are also the only `sourceFile` values a `worldgen-terrain` row
+ * may carry; anything else fails guard 2 rather than being skipped by it.
  */
 const MODULES: ReadonlyArray<readonly [string, Record<string, unknown>]> = [
-  ['src/engine/terrainPipeline/types.ts', terrainPipelineTypes],
   ['src/engine/worldGenData.ts', worldGenData],
   ['src/engine/worldgen/constants.ts', worldgenConstants],
 ];
@@ -48,7 +58,7 @@ const MODULES: ReadonlyArray<readonly [string, Record<string, unknown>]> = [
  */
 const ALLOWED_DUPLICATES: Record<string, string> = {};
 
-describe('worldgen constant ownership (THR-1409)', () => {
+describe('worldgen constant ownership (THR-1409, THR-1418)', () => {
   it('the modules under test actually export constants', () => {
     // Falsification guard: an empty or mis-resolved namespace would make the
     // intersection below trivially empty and the duplicate test vacuous.
@@ -76,6 +86,46 @@ describe('worldgen constant ownership (THR-1409)', () => {
       .map(([name, modules]) => `${name} declared in ${modules.join(' and ')}`);
 
     expect(duplicates).toEqual([]);
+  });
+
+  it('every worldgen-terrain row reads a constant a live module declares', () => {
+    const group = TUNABLE_GROUPS.find(g => g.id === 'worldgen-terrain');
+    expect(group, 'worldgen-terrain group is missing from TUNABLE_GROUPS').toBeDefined();
+
+    const rows = group!.constants;
+    // Falsification guard: an empty group would make every assertion below
+    // vacuous, and "no row is broken" would pass on a panel showing nothing.
+    expect(rows.length, 'worldgen-terrain group renders no rows').toBeGreaterThan(10);
+
+    const byFile = new Map(MODULES);
+    const failures: string[] = [];
+    const filesSeen = new Set<string>();
+
+    for (const row of rows) {
+      const mod = byFile.get(row.sourceFile);
+      if (!mod) {
+        // An unrecognised sourceFile FAILS rather than being skipped — a row
+        // pointed at a module nothing generates from is the whole defect.
+        failures.push(`${row.exportName} points at ${row.sourceFile}, which declares no worldgen constants`);
+        continue;
+      }
+      filesSeen.add(row.sourceFile);
+      if (!(row.exportName in mod)) {
+        failures.push(`${row.exportName} is not exported by ${row.sourceFile}`);
+        continue;
+      }
+      if (row.value !== mod[row.exportName]) {
+        failures.push(
+          `${row.exportName} renders ${String(row.value)} but ${row.sourceFile} declares ${String(mod[row.exportName])}`,
+        );
+      }
+    }
+
+    expect(failures).toEqual([]);
+
+    // Coverage guard: the loop must actually exercise both modules, or a
+    // regression confined to one of them would pass unnoticed.
+    expect([...filesSeen].sort()).toEqual(MODULES.map(([f]) => f).sort());
   });
 
   it('the CMS tuning panel renders the declaration the generators import', () => {
@@ -110,9 +160,6 @@ describe('worldgen constant ownership (THR-1409)', () => {
     // worldGenData, so these are the numbers in force during worldgen.
     expect(worldGenData.RIVER_MIN_LENGTH).toBeGreaterThan(0);
     expect(worldGenData.LAKE_SIZE_MAX).toBeLessThan(worldGenData.GREAT_LAKE_SIZE_MAX);
-    expect(terrainPipelineTypes).not.toHaveProperty('RIVER_MIN_LENGTH');
-    expect(terrainPipelineTypes).not.toHaveProperty('LAKE_SIZE_MAX');
-    expect(terrainPipelineTypes).not.toHaveProperty('GREAT_LAKE_SIZE_MAX');
-    expect(terrainPipelineTypes).not.toHaveProperty('TEMP_ALTITUDE_PENALTY');
+    expect(worldGenData.RIVER_SOURCE_COUNT_MIN).toBeLessThan(worldGenData.RIVER_SOURCE_COUNT_MAX);
   });
 });

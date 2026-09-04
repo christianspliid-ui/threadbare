@@ -1,5 +1,5 @@
 {
-  "total": 2929,
+  "total": 2928,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -643,7 +643,6 @@
     "src/engine/strategicActionCandidates.ts": 1,
     "src/engine/strategicGraphOps.ts": 3,
     "src/engine/taxonomy.ts": 3,
-    "src/engine/terrainPipeline/__tests__/types.test.ts": 1,
     "src/engine/threadDigest.ts": 2,
     "src/engine/tickHealthMonitor.ts": 4,
     "src/engine/tooltipResolver.ts": 1,

@@ -376,7 +376,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `taxonomy` (1) | `taxonomy.ts` | — |
 | `temporal` (1) | `temporal.ts` | — |
 | `terrain` (1) | `terrain.ts` | — |
-| `terrainpipeline` (1) | `terrainPipeline/types.ts` | `THR-1409` |
 | `thread` (1) | `threadDigest.ts` | — |
 | `threat` (1) | `threatRating.ts` | — |
 | `tick` (1) | `tickHealthMonitor.ts` | — |
@@ -400,4 +399,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (2 dormant) · 99 tick phases · 180 engine domains · 536 modules._
+_Counts: 26 registered subsystems (2 dormant) · 99 tick phases · 179 engine domains · 535 modules._
