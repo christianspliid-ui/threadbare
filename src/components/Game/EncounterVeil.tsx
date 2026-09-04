@@ -247,11 +247,26 @@ const TYPE_COLORS: Record<string, string> = {
   withdrawn: 'rgb(var(--veil-neutral-rgb) / 0.2)',
 };
 
-/** Type label colors (slightly brighter for readability) */
+/**
+ * Type label colors — the stance word's ink, so Law 45 binds them as text.
+ *
+ * THR-1411 — measured on the ground the word actually sits on (`--veil-void`
+ * under the card's own `--veil-gold` at 0.03 hovered / 0.06 selected), the
+ * shipped alphas gave 6.89:1 supportive, **3.79:1 coercive** and **2.69:1
+ * withdrawn** — two below the 4.5:1 floor. They read as passing for a year
+ * because the attended veil never rendered the word at all (that is the bug
+ * this ticket fixes), so the only surface showing them was the `watched`-tier
+ * one nobody measured. Raised to the alphas below; `TYPE_COLORS` above is the
+ * decorative glow line, not text, and Law 45 does not bind it.
+ *
+ * Ratios below are on `--veil-void`, the convention the Law 45 gate in
+ * `encounterVeilLaws.test.ts` measures; the card's gold wash costs ~0.2 and
+ * every one still clears the floor on that stricter ground (6.89 / 5.06 / 4.98).
+ */
 const TYPE_LABEL_COLORS: Record<string, string> = {
-  supportive: 'rgb(var(--veil-gain-rgb) / 0.7)',
-  coercive: 'rgb(var(--veil-coercive-rgb) / 0.7)',
-  withdrawn: 'rgb(var(--veil-neutral-rgb) / 0.5)',
+  supportive: 'rgb(var(--veil-gain-rgb) / 0.7)',      /* 7.12:1 */
+  coercive: 'rgb(var(--veil-coercive-rgb) / 0.85)',   /* 5.30:1 */
+  withdrawn: 'rgb(var(--veil-neutral-rgb) / 0.8)',    /* 5.19:1 */
 };
 
 /** Thread tier display labels */

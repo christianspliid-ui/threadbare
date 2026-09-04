@@ -414,6 +414,42 @@ describe('Law 45 — veil text tones meet WCAG AA against --veil-void', () => {
     );
   });
 
+  /**
+   * THR-1411 — the three stance hues, which colour the stance word on a choice
+   * card and are therefore text.
+   *
+   * They went unmeasured until now because the attended veil never rendered the
+   * word: `buildUnifiedEncounterStageModel`'s authored branch dropped
+   * `interventionType`, so the only surface showing a stance was the
+   * `watched`-tier one. Fixing the producer made two failing tones visible
+   * (coercive 3.79:1, withdrawn 2.69:1 on the card ground), so the alphas moved
+   * with the fix.
+   */
+  it.each([
+    ['stance supportive', 'veil-gain-rgb', 0.7],
+    ['stance coercive', 'veil-coercive-rgb', 0.85],
+    ['stance withdrawn', 'veil-neutral-rgb', 0.8],
+  ] as const)('%s clears AA on --veil-void', (_label, token, alpha) => {
+    const ratio = polarityRatio(read(CSS), token, alpha);
+    expect(ratio, `${_label} measured ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('routes the stance word through the measured alphas, so the table above is not vacuous', () => {
+    // Without this the case list asserts that three numbers typed into a test
+    // clear AA while `TYPE_LABEL_COLORS` ships others — the exact shape the
+    // loss-red gate above exists to prevent.
+    const veil = readCode(VEIL);
+    expect(veil, 'supportive stance ink').toMatch(
+      /supportive:\s*'rgb\(var\(--veil-gain-rgb\) \/ 0\.7\)'/,
+    );
+    expect(veil, 'coercive stance ink').toMatch(
+      /coercive:\s*'rgb\(var\(--veil-coercive-rgb\) \/ 0\.85\)'/,
+    );
+    expect(veil, 'withdrawn stance ink').toMatch(
+      /withdrawn:\s*'rgb\(var\(--veil-neutral-rgb\) \/ 0\.8\)'/,
+    );
+  });
+
   it('keeps --veil-text-atmosphere below the floor, so it cannot be mistaken for an AA tone', () => {
     // Not a bug: Law 45 legalises sub-floor tones for pure atmosphere. The
     // assertion is that the *escape hatch stays visibly an escape hatch* — if
