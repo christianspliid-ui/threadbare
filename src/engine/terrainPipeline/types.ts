@@ -23,7 +23,9 @@ export const ELEVATION_NOISE_AMPLITUDE = 0.15;
 
 // Pass 4: Temperature
 export const LATITUDE_EQUATOR_ROW = 22; // Middle of 45-row grid
-export const TEMP_ALTITUDE_PENALTY = 0.3;
+// TEMP_ALTITUDE_PENALTY is owned by `src/engine/worldgen/constants.ts` (THR-1409).
+// The live climate pass (`worldgen/passes/pass04-climate.ts`) reads it from there;
+// a second declaration here was a silent duplicate. Import it from that module.
 export const TEMP_BASE_RANGE = 0.9;
 
 // Pass 5: Moisture
@@ -34,9 +36,12 @@ export const MOISTURE_BASE = 0.2;
 
 // Pass 6: Rivers & Lakes
 export const RIVER_SOURCE_COUNT = 8;
-export const RIVER_MIN_LENGTH = 5;
-export const LAKE_SIZE_MAX = 6;
-export const GREAT_LAKE_SIZE_MAX = 15;
+// RIVER_MIN_LENGTH, LAKE_SIZE_MAX and GREAT_LAKE_SIZE_MAX are owned by
+// `src/engine/worldGenData.ts` (THR-1409). The live generators
+// (`riverGeneration.ts`, `lakeGeneration.ts`) read them from there at 4 / 5 / 12;
+// the copies that used to sit here declared 5 / 6 / 15 and were read by nothing
+// but the CMS tuning panel, which therefore displayed values no world was
+// generated with. Import them from that module.
 export const GREAT_LAKE_CHANCE = 0.15;
 
 // Pass 8: Regions

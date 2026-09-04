@@ -25,6 +25,7 @@ import * as terrain from '../../engine/terrain';
 import * as wgConstants from '../../engine/worldgen/constants';
 import * as forceField from '../../engine/forceField';
 import * as terrainTypes from '../../engine/terrainPipeline/types';
+import * as worldGenData from '../../engine/worldGenData';
 import * as agentLife from '../../engine/agentLifecycle';
 import * as ambitionTick from '../../engine/ambitionTick';
 import * as ambitionBoost from '../../engine/ambitionBoost';
@@ -1022,10 +1023,10 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Amplitude of Perlin noise added to elevation.',
         'src/engine/terrainPipeline/types.ts', [0.05, 0.4],
         'terrainPipeline → elevation variation'),
-      n('TEMP_ALTITUDE_PENALTY', terrainTypes.TEMP_ALTITUDE_PENALTY,
+      n('TEMP_ALTITUDE_PENALTY', wgConstants.TEMP_ALTITUDE_PENALTY,
         'Temperature reduction per unit elevation.',
-        'src/engine/terrainPipeline/types.ts', [0.1, 0.6],
-        'terrainPipeline → climate model'),
+        'src/engine/worldgen/constants.ts', [0.1, 0.6],
+        'worldgen pass04-climate → climate model'),
       n('TEMP_BASE_RANGE', terrainTypes.TEMP_BASE_RANGE,
         'Base temperature range (equator = 1.0, poles = 0).',
         'src/engine/terrainPipeline/types.ts', [0.5, 1.0],
@@ -1050,18 +1051,18 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Number of river sources placed on the map.',
         'src/engine/terrainPipeline/types.ts', [2, 20],
         'terrainPipeline → river generation'),
-      n('RIVER_MIN_LENGTH', terrainTypes.RIVER_MIN_LENGTH,
+      n('RIVER_MIN_LENGTH', worldGenData.RIVER_MIN_LENGTH,
         'Minimum river length in hexes (shorter rivers are discarded).',
-        'src/engine/terrainPipeline/types.ts', [2, 10],
-        'terrainPipeline → river validation'),
-      n('LAKE_SIZE_MAX', terrainTypes.LAKE_SIZE_MAX,
+        'src/engine/worldGenData.ts', [2, 10],
+        'riverGeneration → river validation'),
+      n('LAKE_SIZE_MAX', worldGenData.LAKE_SIZE_MAX,
         'Maximum size of a normal lake in hexes.',
-        'src/engine/terrainPipeline/types.ts', [1, 15],
-        'terrainPipeline → lake generation'),
-      n('GREAT_LAKE_SIZE_MAX', terrainTypes.GREAT_LAKE_SIZE_MAX,
+        'src/engine/worldGenData.ts', [1, 15],
+        'lakeGeneration → lake generation'),
+      n('GREAT_LAKE_SIZE_MAX', worldGenData.GREAT_LAKE_SIZE_MAX,
         'Maximum size of a great lake in hexes.',
-        'src/engine/terrainPipeline/types.ts', [5, 30],
-        'terrainPipeline → great lake generation'),
+        'src/engine/worldGenData.ts', [5, 30],
+        'lakeGeneration → great lake generation'),
       n('GREAT_LAKE_CHANCE', terrainTypes.GREAT_LAKE_CHANCE,
         'Probability that a lake becomes a great lake.',
         'src/engine/terrainPipeline/types.ts', [0.0, 0.5],
