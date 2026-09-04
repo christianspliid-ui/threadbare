@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-03 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-04 07:41 local (05:41 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -27,7 +27,7 @@ Judge first if you like — the batch-1 sample ([THR-1130](https://linear.app/th
 
 **You filed this yourself on 16 August and nothing has moved since.** One button on the live game that captures a run to a `.json` you attach to chat — so a weird-looking simulation reaches an agent as *state*, not a screenshot and a sentence.
 
-Scope is already settled from your answers that day: snapshot only, no replay log; must work on the deployed build; output is a downloaded file. High priority, blocked by nothing, 18 days in `Todo` purely because no design pass was run.
+Scope is already settled from your answers that day: snapshot only, no replay log; must work on the deployed build; output is a downloaded file. High priority, blocked by nothing, 19 days in `Todo` purely because no design pass was run.
 
 **Yes** puts it at the front of the design queue. **No** closes it rather than keeping it warm. *— surfaced by daily-backlog-grooming, 2026-09-03*
 
@@ -43,7 +43,7 @@ Say **"work the undertakings map"** and a session takes the open tickets in orde
 
 Still one word — and **smaller than earlier briefings claimed**. It was billed as the valve holding the design pipeline shut; three of the four things it supposedly blocked closed under their own power ([grievance supply](https://linear.app/threadbare/issue/THR-1383), [undertaking factory](https://linear.app/threadbare/issue/THR-1300), [decision-board re-scope](https://linear.app/threadbare/issue/THR-1349)).
 
-What remains is genuinely just intent: 18 days In Design, assigned to you, no plan doc. The machine keeps it counted because an assigned item means a person may be about to start. **Yes** changes nothing; **not getting to it** sets it aside. (Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket.)
+What remains is genuinely just intent: 19 days In Design, assigned to you, no plan doc. The machine keeps it counted because an assigned item means a person may be about to start. **Yes** changes nothing; **not getting to it** sets it aside. (Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket.)
 
 The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic").
 
