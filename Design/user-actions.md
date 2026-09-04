@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-04 12:55 local (10:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-04 13:54 local (11:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -10,7 +10,7 @@ The brief: [Retrofit batch 2 — the camp six](https://github.com/christiansplii
 
 **Six, not seven.** `shrine_offering` is held to batch 3 — most warnings of the set (10), and a weak contrast against `offer_small_prayer`. It is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with), so **that checkpoint waits one batch longer**. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting. None has a typed consequence today.
 
-Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation this morning. Unchanged from the last three briefings and not re-argued.
+Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation this morning. Unchanged across six briefings and not re-argued.
 
 *"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* The execution ticket is [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine), which an executor still needs to reconcile to the merged brief.
 
@@ -105,7 +105,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 ## Resolved this period
 
 - **Your pixel sweep is three-for-nine, and it found a tenth fix on its own** *(2026-09-04)*. Live: [THR-1410](https://linear.app/threadbare/issue/THR-1410/authored-choice-veil-the-commit-control-is-unreachable-at-19201080-the) — the commit button that sat *underneath* the `Look away` footer at 1920×1080, so authored-choice encounters could not be committed at all ([PR #1813](https://github.com/christianspliid-ui/threadbare/pull/1813)); [THR-1411](https://linear.app/threadbare/issue/THR-1411/the-stance-word-never-renders-on-the-live-authored-choice-veil-choice), the stance word that never rendered on a choice card ([PR #1815](https://github.com/christianspliid-ui/threadbare/pull/1815)); and [THR-1409](https://linear.app/threadbare/issue/THR-1409/three-worldgen-constants-are-declared-twice-with-different-values-the), the tuning panel showing worldgen numbers the generator never read. Fixing that last one turned up [THR-1418](https://linear.app/threadbare/issue/THR-1418/terrainpipeline-has-no-pipeline-22-more-cms-tuning-rows-render-a) — 22 more rows with the same fault — merged this morning too. Six sweep tickets are still queued; ask 10 is what keeps that pipeline fed.
-- **You killed the encounter audio moments** *(2026-09-04)*. *"thr 1168. no audio please."* — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) had waited since 18 August; it is now a deletion job on the shelf and off your list for good.
+- **You killed the encounter audio moments, and they are now deleted** *(2026-09-04)*. *"thr 1168. no audio please."* — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) had waited since 18 August. Your ruling turned it into a deletion job, and it merged and deployed the same day ([PR #1817](https://github.com/christianspliid-ui/threadbare/pull/1817)). Off your list for good.
 - **You accepted the two batch-1 exemplars** *(2026-09-04)*. *"the two examplars are accepted"* — The Grateful Kin and The Unsafe Bridge cleared the "worth meeting twice" bar, which released the camp batch's park and put content back in the queue. Ask 1 is the one approval left behind it.
 - **Your three undertaking forks are decided** *(2026-09-03)*. [THR-1397](https://linear.app/threadbare/issue/THR-1397/which-open-cells-are-wanted-yield-and-leverage-ownership-of-people) — every open cell dispositioned: plotting a mortal's death, the signed curse and forced succession are all in. Ask 4 is three smaller questions than it was.
 - **The undertaking grid is generated and build-gated** *(2026-09-03)*. [Slice 4a](https://github.com/christianspliid-ui/threadbare/pull/1804) — your verbs, the registry redrawn on the world-object catalogue, and [a grid page](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/undertaking-grid.generated.md) the build refuses to let go stale. Ask 2 is its last slice.
