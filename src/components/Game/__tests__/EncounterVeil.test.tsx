@@ -1807,6 +1807,33 @@ describe('aftermath mode', () => {
       expect(new Set(counts).size).toBeGreaterThan(1);
       expect(counts).toEqual(['3', '2', '2', '1']);
     });
+
+    /**
+     * THR-1416 — the tag column's ceiling, asserted on the real component.
+     *
+     * This is the sanctioned jsdom substitution for the browser capture (an
+     * unattended run cannot start a dev server), so it asserts what jsdom can
+     * actually see: that the shipped constant reaches the DOM on a chip built
+     * from the authored template. jsdom has no layout engine, so the *wrap* it
+     * governs was measured separately in a real engine at the row's true
+     * geometry (540px container, Palatino 16px / 0.16em) — the table on
+     * `CONSEQUENCE_TAG_MAX_PX` records it.
+     *
+     * The literal is written out rather than imported from the component: an
+     * assertion against the constant it is guarding passes for every possible
+     * value, which is the shape that lets a silent retune ship unnoticed.
+     */
+    it('caps the tag column at the tuned ceiling so a long noun cannot wrap to four lines', () => {
+      render(<EncounterVeil {...defaultProps} model={veilModelFor('slice.kin.a_cooler_welcome')} />);
+
+      const tag = screen.getByTestId('consequence-chip-tag-bond');
+      expect(tag).toHaveStyle({ maxWidth: '210px', minWidth: '74px' });
+
+      // The cap only means anything while the tag is the element carrying the
+      // long text — if the noun ever moved out of this span, the assertion above
+      // would still pass while governing nothing.
+      expect(tag.textContent).toContain('REPUTATION WITH SACRED GROVE');
+    });
   });
 
 });

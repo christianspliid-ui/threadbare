@@ -100,6 +100,35 @@ export interface EncounterVeilProps {
 const CONSEQUENCE_TILE_PX = 40;
 
 /**
+ * Floor for the `CATEGORY · NOUN` tag column, so a bare `PATH` still holds the
+ * same left edge as its neighbours and the chip row reads as one column.
+ */
+const CONSEQUENCE_TAG_MIN_PX = 74;
+
+/**
+ * Ceiling for the same column. THR-1416 — at 190 every long authored tag wrapped
+ * to **four** lines, which is the ragged look the ticket was filed for.
+ *
+ * The value is 210 rather than the 240 the ticket proposed, because the sentence
+ * beside the tag is `flex: 1` inside a 540px container: every pixel the tag
+ * gains is a pixel the prose loses. Measured over the four Grateful Kin bands
+ * and the six widest authored tags in the corpus (Palatino 16px / 0.16em, the
+ * real row geometry):
+ *
+ * | maxWidth | tag lines | sentence column | row height | tag↔sentence gap |
+ * | -- | -- | -- | -- | -- |
+ * | 190 (was) | 4 | 270px | 136–163px | 48–75px |
+ * | **210** | **3** | 250px | 136–163px (unchanged in 8/10) | 70–97px |
+ * | 240 | 2–3 | 220px | 163–190px (**taller in 9/10**) | 119–146px |
+ *
+ * So 240 buys a shorter tag by making the *row* taller and the two columns less
+ * even — the opposite of the ask. 210 drops the four-line wrap in 10/10 cases at
+ * almost no cost to the prose. Raising this further trades prose width for tag
+ * width; it is one number if that trade is ever wanted.
+ */
+const CONSEQUENCE_TAG_MAX_PX = 210;
+
+/**
  * Delta-cluster glyph size. Above the Law 11 floor of 14 because the cluster is
  * the *headline* reading of a compact chip — it carries the meaning with no text
  * beside it, which is the case Law 11 says sizes up.
@@ -927,14 +956,15 @@ export function EncounterVeil({
                       colour never carries polarity alone; the category word rides
                       with it, and direction lives in the cluster. */}
                   <span
+                    data-testid={`consequence-chip-tag-${chip.category}`}
                     style={{
                       fontFamily: FONT_DISPLAY,
                       fontSize: 'var(--text-xs)',
                       letterSpacing: '0.16em',
                       color: consequenceToneColor(chip.tone),
                       flexShrink: 0,
-                      minWidth: 74,
-                      maxWidth: 190,
+                      minWidth: CONSEQUENCE_TAG_MIN_PX,
+                      maxWidth: CONSEQUENCE_TAG_MAX_PX,
                     }}
                   >
                     {/* THR-1136 §3a — the category word carries Law 17's hover
