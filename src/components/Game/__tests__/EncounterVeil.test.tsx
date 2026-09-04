@@ -2213,3 +2213,61 @@ describe('THR-1172 — an underline must earn itself (composed veil)', () => {
     expect(falselyMarked).toEqual([]);
   });
 });
+
+/**
+ * THR-1410 — the footer strip (`◆ N essence · Look away`) is
+ * `position: absolute; bottom: 0; z-index: 20` *over* the content column, so
+ * the column has to reserve the strip's height at its bottom or the last
+ * interactive element scrolls underneath it and stops taking clicks. It used to
+ * reserve `8vh` — 86.4px at the 1920×1080 viewport contract, 8px short of the
+ * strip's 94px — and one card of extra content put the authored-choice commit
+ * under the strip entirely: `elementFromPoint` at the button's centre resolved
+ * to the footer `div`, so the encounter could not be committed at all.
+ *
+ * jsdom has no layout engine, so this cannot re-measure the overlap; what it
+ * pins is the invariant the overlap violated — **the column's bottom
+ * reservation is at least the footer's height**, read off the two rendered
+ * elements rather than off the constants, so a constant that changes on one
+ * side only still fails here. Falsified by dropping `paddingBottom` from the
+ * column (0 ≥ 94 fails) or by re-expressing it as a `vh` the shorthand then
+ * overrides.
+ */
+describe('EncounterVeil — footer clearance (THR-1410)', () => {
+  const px = (value: string): number => {
+    expect(value).toMatch(/^\d+(\.\d+)?px$/);
+    return Number.parseFloat(value);
+  };
+
+  it('reserves at least the footer strip height below the scroll column', () => {
+    render(<EncounterVeil {...defaultProps} />);
+
+    const column = screen.getByTestId('veil-content-column');
+    const footer = screen.getByTestId('veil-footer');
+
+    const reserved = px(column.style.paddingBottom);
+    const footerHeight = px(footer.style.minHeight);
+
+    expect(reserved).toBeGreaterThanOrEqual(footerHeight);
+  });
+
+  it('keeps the commit control inside the column that reserves the clearance', () => {
+    render(<EncounterVeil {...defaultProps} />);
+
+    // The reservation only protects what it contains. If the commit ever moves
+    // out of this column, the padding above stops being the thing that clears
+    // it and this suite would otherwise keep passing while the bug returned.
+    const column = screen.getByTestId('veil-content-column');
+    expect(column.contains(screen.getByTestId('stage-commit'))).toBe(true);
+  });
+
+  it('does not let the padding shorthand override the bottom reservation', () => {
+    render(<EncounterVeil {...defaultProps} />);
+
+    // The column sets `padding` (shorthand) and `paddingBottom` (longhand) in
+    // the same style object. Order decides which wins, and getting it backwards
+    // silently restores the `vh` bottom that caused the bug.
+    const column = screen.getByTestId('veil-content-column');
+    expect(column.style.paddingBottom).not.toMatch(/vh$/);
+    expect(px(column.style.paddingBottom)).toBeGreaterThan(0);
+  });
+});
