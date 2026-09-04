@@ -177,6 +177,36 @@ const BOOST_PIP_MIN_HIT_PX = 24;
 const BOOST_PIP_DOT_PX = 12;
 
 /**
+ * Height of the veil's footer strip (`◆ N essence · Look away`), which is
+ * `position: absolute; bottom: 0` over the content column at `zIndex: 20`.
+ *
+ * THR-1410 — the footer floats *over* the scroll column rather than sitting in
+ * flow beside it, so the column must reserve the strip's height at its bottom
+ * or the last interactive element scrolls underneath it and stops taking
+ * clicks. The column used to reserve `8vh` (86.4px at the 1920×1080 viewport
+ * contract), 8px short of the strip's measured 94px: the nudge shell's commit
+ * overlapped the footer by exactly that 8px, and one card taller of content put
+ * the authored-choice commit under it entirely — `elementFromPoint` at the
+ * button's centre resolved to the footer `div`, so the encounter could not be
+ * committed at all.
+ *
+ * The two numbers are paired deliberately. The strip pins this as a
+ * `minHeight` and the column reserves it plus {@link VEIL_FOOTER_CLEARANCE_PX},
+ * so the reservation is derived from the strip's own geometry and the pair
+ * cannot drift apart the way a hand-tuned `vh` did (NFP #1 — retuning the
+ * footer is a number change here, not a hunt through two inline style blocks).
+ */
+const VEIL_FOOTER_HEIGHT_PX = 94;
+
+/**
+ * Breathing room between the last interactive element in the scroll column and
+ * the top of the footer strip (THR-1410). Clearing the strip by exactly its own
+ * height leaves the commit button flush against it, which reads as an overlap
+ * even when the hit target is intact.
+ */
+const VEIL_FOOTER_CLEARANCE_PX = 24;
+
+/**
  * Law 44 (THR-1010) — the one duration reduced motion collapses everything to,
  * in seconds because the veil's inline transitions are authored in seconds.
  * Mirrors `--anim-fast: 150ms` in `index.css`; kept as a named constant so
@@ -1938,6 +1968,7 @@ export function EncounterVeil({
 
       {/* ── Content zone (reading area) ───────────────────── */}
       <div
+        data-testid="veil-content-column"
         style={{
           position: 'absolute',
           top: 0,
@@ -1953,7 +1984,13 @@ export function EncounterVeil({
           // unscrollable edge (THR-925). Engines without 'safe' drop the
           // declaration and fall back to flex-start, which scrolls correctly.
           justifyContent: 'safe center',
-          padding: '6vh 5vw 8vh 3vw',
+          padding: '6vh 5vw 0 3vw',
+          // THR-1410 — the bottom reservation is px, not vh, because what it
+          // has to clear is the footer strip, and the strip's height is what
+          // the column must track. A `vh` bottom padding tracks the viewport
+          // instead, which is how it drifted 8px short of the strip and left
+          // the commit control unclickable at max scroll.
+          paddingBottom: VEIL_FOOTER_HEIGHT_PX + VEIL_FOOTER_CLEARANCE_PX,
           background: hasArt
             ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
             : 'transparent',
@@ -2218,6 +2255,7 @@ export function EncounterVeil({
 
       {/* ── Footer chrome ─────────────────────────────────── */}
       <div
+        data-testid="veil-footer"
         style={{
           position: 'absolute',
           bottom: 0,
@@ -2227,6 +2265,12 @@ export function EncounterVeil({
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '2.5vh 5vw',
+          // THR-1410 — the strip's height is what the content column reserves
+          // above it, so it is pinned rather than left to fall out of the `vh`
+          // padding: a floor here makes the reservation true by construction at
+          // every viewport instead of only at the one it was measured on.
+          boxSizing: 'border-box',
+          minHeight: VEIL_FOOTER_HEIGHT_PX,
           zIndex: 20,
           background: `linear-gradient(to top, ${VOID} 0%, rgba(10,10,15,0.6) 60%, transparent 100%)`,
           ...entranceStyle(ENTRANCE_DELAYS.footer, 0.8),
