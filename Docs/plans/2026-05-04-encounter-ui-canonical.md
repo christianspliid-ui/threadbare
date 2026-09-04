@@ -1,6 +1,6 @@
 # Encounter UI — Canonical Specification (2026-05-04)
 
-> **lint_plan_doc:** exempt — a standing specification of record, not a dated plan doc. It describes a surface that was built and has now been partly retired; it proposes no work, so the per-system required sections (`## Engine pillar`, `## Coordination block`, `## Vision audit`, …) do not apply and never will. Predates the plan-doc template by four months. Marker added by THR-1168, the first edit to reach it through the staged lint.
+> **lint_plan_doc:** exempt — a standing specification of record, not a dated plan doc. It describes a surface that was built and has since been partly retired; it proposes no work, so the per-system required sections (`## Engine pillar`, `## Coordination block`, `## Vision audit`, …) do not apply and never will. Predates the plan-doc template by four months, and this marker was added by the first edit to reach it through the staged lint. Deliberately carries no issue id: `rebuild-plans-index` attributes a doc to the first Linear reference in it, so an id here would reassign this spec away from the issue that authored it.
 
 **Status:** Canonical specification for the encounter player-facing UI surface. Promotion target: `Systems/Encounter UI.md` after THR-301 implementation lands. Currently lives as a plan doc.
 
