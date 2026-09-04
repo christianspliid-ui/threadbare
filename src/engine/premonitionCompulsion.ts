@@ -83,6 +83,14 @@ export function isCompulsionEligible(
  * @param pending     premonitions already queued from earlier ticks
  * @param pendingThisTick premonitions minted so far during this tick's agent loop
  */
+/**
+ * Property a debug lever stamps to make the next scoring moment emit a compulsion
+ * regardless of cooldown. Dev-only (`window.__DEBUG.forcePremonition`, THR-1414);
+ * nothing in the simulation writes it. Cleared by the emitter after one use, so a
+ * forced compulsion is one-shot and never leaves the agent permanently exempt.
+ */
+export const FORCE_COMPULSION_FLAG = 'debugForceCompulsion';
+
 export function shouldEmitCompulsion(
   agentNode: GraphNode,
   tick: number,
@@ -90,6 +98,15 @@ export function shouldEmitCompulsion(
   pendingThisTick: readonly PremonitionEvent[],
 ): boolean {
   const agentId = agentNode.id;
+
+  // Debug force (THR-1414): bypass the cooldown, but never the one-live-premonition
+  // rule below — two stacked offers for one agent is a UI state the game never has.
+  const forced = agentNode.properties?.[FORCE_COMPULSION_FLAG] === true;
+  if (forced) {
+    if (pending.some(p => p.agentId === agentId && p.eligibleUntilTick > tick)) return false;
+    if (pendingThisTick.some(p => p.agentId === agentId)) return false;
+    return true;
+  }
 
   // Gate 1: one live premonition per agent at a time. Expired entries do not
   // block — they are dropped from the queue at the end of this same phase.

@@ -1015,6 +1015,34 @@ export interface DebugBridge {
    * Returns the resulting state. Call `suppressBeats(false)` to restore normal beats.
    */
   suppressBeats(enabled?: boolean): boolean;
+  /**
+   * THR-1414: stage a premonition on an agent so the Premonition surface can be
+   * reached on demand, instead of waiting for the whole gate chain (threaded ·
+   * tier ≥ 1 · idle · whisper available · undissolved · has nudge candidates) to
+   * coincide with an open display window.
+   *
+   * `'whisper'` builds the real whisper that agent would receive — the same nudge
+   * derivation and prose `phaseDivinePremonition` uses — and queues it **visible
+   * immediately**, bypassing `PREMONITION_DISPLAY_DELAY_TICKS`. The modal opens on
+   * the next render; no ticking required.
+   *
+   * `'compulsion'` is composed from the agent's actual scored encounter candidates,
+   * which exist only inside the decision phase — so it cannot be built from outside.
+   * This arms a one-shot flag that bypasses the court-position and cooldown gates;
+   * call `tick(1)` and a real compulsion is emitted at the real scoring moment.
+   * `staged` is `'armed'` in that case rather than `'queued'`.
+   *
+   * Async — it resolves `agentQuery` (`@hero`, an id, an id prefix, or a partial
+   * name) the same way the other agent accessors do. Always `await` it.
+   */
+  forcePremonition(
+    agentQuery: string,
+    kind?: 'whisper' | 'compulsion',
+  ): Promise<ForcePremonitionResult>;
+  /** @internal GameView registers its premonition stager here */
+  _registerForcePremonition(
+    fn: (agentId: string, kind: 'whisper' | 'compulsion') => ForcePremonitionResult,
+  ): void;
   /** THR-1019: whether `suppressBeats(true)` is currently in force. */
   isBeatSuppressionActive(): boolean;
   /** @internal GameView registers its one-pass narrative-interrupt dismisser here */
@@ -1597,6 +1625,21 @@ export interface DebugBridge {
     spotlightCount: number;
   }>;
 }
+
+/** Result of `window.__DEBUG.forcePremonition` (THR-1414). */
+export type ForcePremonitionResult =
+  | {
+      /** `'queued'` — a whisper is on the queue and visible now. `'armed'` — the next tick emits a compulsion. */
+      staged: 'queued' | 'armed';
+      kind: 'whisper' | 'compulsion';
+      agentId: string;
+      agentName: string;
+      /** Premonition id, for whispers. Null when a compulsion is merely armed — it does not exist yet. */
+      id: string | null;
+      /** What the caller must do next before the modal can appear. */
+      nextStep: string;
+    }
+  | { error: string };
 
 declare global {
   interface Window {

@@ -144,6 +144,11 @@ if (import.meta.env.DEV) {
   let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
   let _setQuintessenceCb: ((ratio: number) => void) | null = null;
+
+  /** THR-1414 — stage a premonition from the debug bridge. Registered by GameView. */
+  let _forcePremonitionCb:
+    | ((agentId: string, kind: 'whisper' | 'compulsion') => import('./debug-bridge.d').ForcePremonitionResult)
+    | null = null;
   // Thread story provider (THR-455)
   let _threadStoryProvider: ((agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null) | null = null;
 
@@ -1018,6 +1023,36 @@ if (import.meta.env.DEV) {
       return _beatSuppressionActive;
     },
     isBeatSuppressionActive: () => _beatSuppressionActive,
+
+    /**
+     * THR-1414: stage a premonition on an agent so the surface can be reached on
+     * demand instead of waiting for the gate chain to coincide.
+     *
+     * `'whisper'` builds the real whisper the agent would receive — same nudge
+     * derivation, same prose — and queues it **visible immediately** (no 10-tick
+     * display delay), so the modal opens on the next render.
+     *
+     * `'compulsion'` cannot be built here: a compulsion is composed from the agent's
+     * actual scored encounter candidates, which exist only inside the decision phase.
+     * So this arms a one-shot flag and the next `tick(1)` emits a real one at the
+     * real scoring moment. Advance one tick, then read `getOpenModals()`.
+     *
+     * `agentQuery` takes `@hero`, an agent id, an id prefix, or a partial name.
+     */
+    forcePremonition: async (agentQuery: string, kind: 'whisper' | 'compulsion' = 'whisper') => {
+      if (kind !== 'whisper' && kind !== 'compulsion') {
+        return { error: `forcePremonition: kind must be 'whisper' or 'compulsion', got ${String(kind)}` };
+      }
+      if (!_forcePremonitionCb) return { error: 'Game not loaded' };
+      const node = await resolveAgentNode(agentQuery);
+      if (!node) return { error: `No agent matching '${agentQuery}'` };
+      return _forcePremonitionCb(node.id, kind);
+    },
+    /** @internal GameView registers its premonition stager here */
+    _registerForcePremonition: (
+      fn: (agentId: string, kind: 'whisper' | 'compulsion') => import('./debug-bridge.d').ForcePremonitionResult,
+    ) => { _forcePremonitionCb = fn; },
+
     _registerBeatDismisser: (fn: () => import('./components/Game/beatDismissal').BeatDismissalRecord[]) => {
       _beatDismisser = fn;
     },

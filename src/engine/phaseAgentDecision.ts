@@ -59,7 +59,7 @@ import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
-import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion } from './premonitionCompulsion';
+import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
 import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
@@ -941,9 +941,14 @@ export function phaseAgentDecision(
       if (decision.selected && decision.topCandidates.length > 1) {
         try {
           const compulsionActor = graph.getNode(agentId);
+          // THR-1414: `window.__DEBUG.forcePremonition(agent, 'compulsion')` stamps a
+          // one-shot flag so a reviewer can reach this surface without waiting for an
+          // eligible court position and a cleared cooldown to coincide. Dev-only —
+          // nothing in the simulation writes it.
+          const compulsionForced = compulsionActor?.properties?.[FORCE_COMPULSION_FLAG] === true;
           if (
             compulsionActor
-            && isCompulsionEligible(graph, state.ascendantId, agentId)
+            && (compulsionForced || isCompulsionEligible(graph, state.ascendantId, agentId))
             && shouldEmitCompulsion(
               compulsionActor, state.tick, state.premonitionQueue ?? [], newPremonitions,
             )
@@ -957,7 +962,12 @@ export function phaseAgentDecision(
               // endings (chosen, dismissed, expired). Direct property write, not
               // spread: updateNode replaces the handle.
               const freshForStamp = graph.getNode(agentId);
-              if (freshForStamp) freshForStamp.properties.lastCompulsionTick = state.tick;
+              if (freshForStamp) {
+                freshForStamp.properties.lastCompulsionTick = state.tick;
+                // A forced compulsion is one-shot — clear the flag so the agent
+                // returns to the ordinary gates immediately (THR-1414).
+                if (compulsionForced) delete freshForStamp.properties[FORCE_COMPULSION_FLAG];
+              }
             }
           }
         } catch {
