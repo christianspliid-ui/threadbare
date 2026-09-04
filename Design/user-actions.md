@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-09-04 09:00 local (07:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-04 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Approve the camp six — and note the link changed — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 1. Approve the camp six — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-**Read this brief, not the one you were given an hour ago:** [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md), drafted and merged 08:23 this morning. The older August draft is still on `main` under a near-identical name and reads plausible, but three rulings have overtaken it.
+The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md), drafted and merged 08:23 this morning. (An older August draft still sits on `main` under a near-identical name and reads plausible — three rulings have overtaken it. The link above is the live one.)
 
 **Six, not seven.** `shrine_offering` is held to batch 3 — most warnings of the set (10), and a weak contrast against `offer_small_prayer`. It is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with), so **that checkpoint waits one batch longer**. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting. None has a typed consequence today.
 
-Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation this morning.
+Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation this morning. Unchanged from the last two briefings and not re-argued.
 
 *"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* The execution ticket is [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine), which an executor still needs to reconcile to the merged brief.
 
@@ -102,6 +102,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **Your pixel sweep's worst find is fixed and live** *(2026-09-04)*. [THR-1410](https://linear.app/threadbare/issue/THR-1410/authored-choice-veil-the-commit-control-is-unreachable-at-19201080-the) — on encounters with authored choice cards the commit button sat *underneath* the `Look away` footer at 1920x1080, so the encounter could not be committed at all. [PR #1813](https://github.com/christianspliid-ui/threadbare/pull/1813) merged and deployed. Six more from the same sweep are queued; ask 10 is what keeps that pipeline fed.
 - **You killed the encounter audio moments** *(2026-09-04)*. *"thr 1168. no audio please."* — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) had waited since 18 August; it is now a deletion job on the shelf and off your list for good.
 - **You accepted the two batch-1 exemplars** *(2026-09-04)*. *"the two examplars are accepted"* — The Grateful Kin and The Unsafe Bridge cleared the "worth meeting twice" bar, which released the camp batch's park and put content back in the queue. Ask 1 is the one approval left behind it.
 - **Your three undertaking forks are decided** *(2026-09-03)*. [THR-1397](https://linear.app/threadbare/issue/THR-1397/which-open-cells-are-wanted-yield-and-leverage-ownership-of-people) — every open cell dispositioned: plotting a mortal's death, the signed curse and forced succession are all in. Ask 4 is three smaller questions than it was.
@@ -111,7 +112,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **The word players see is settled and shipped** *(2026-09-02)*. [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register): what a character owns reads **freehold**. Say the word any time if it is wrong to your ear — still four lines to reverse.
 - **Three of the four things Traits wave 2 was said to be blocking closed on their own** *(2026-09-02)*. No decision of yours was involved, and ask 5 is smaller as a result.
 - **The engine got a speed guard** *(2026-09-02)*. [THR-1385](https://linear.app/threadbare/issue/THR-1385) — tick cost had drifted 45 s → 112 s over four days with CI timeouts as the only signal. Now measured hourly against a rolling median.
-- **The CI gate dropped from ~25 minutes to single digits** *(2026-09-02)*. [THR-1384](https://linear.app/threadbare/issue/THR-1384) moved the heavy world-simulation tests post-merge; [THR-1386](https://linear.app/threadbare/issue/THR-1386), [THR-919](https://linear.app/threadbare/issue/THR-919), [THR-940](https://linear.app/threadbare/issue/THR-940) cut the import overhead underneath.
 
 ---
 
