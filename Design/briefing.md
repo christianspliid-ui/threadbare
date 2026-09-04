@@ -1,17 +1,17 @@
 # Briefing
-**Generated:** 2026-09-04 09:56 local (07:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-04 10:56 local (08:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Approve the camp six and the batch runs.** — [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md)
 
-Unchanged from an hour ago and not re-argued — the corrected link reached you, this is the same ask standing still. Six encounters: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting the perimeter. None carries a typed consequence today. `shrine_offering` is held to batch 3, which means [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) waits one batch longer.
+Third hour standing, unchanged and not re-argued. Six encounters — sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting the perimeter. None carries a typed consequence today. `shrine_offering` is held to batch 3, so [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) waits one batch longer.
 
-The brief asks **two yes/no things**: repair these in place or re-roll from fresh premises (repair is the plan), and the 2-of-6 sample — `ward_the_camp` and `tend_to_wounds`, your own pick this morning.
+Two yes/no things: repair these in place or re-roll from fresh premises (repair is the plan), and the 2-of-6 sample — `ward_the_camp` and `tend_to_wounds`, your own pick.
 
 **Say "batch 2, run the six"** and it starts. **"Re-roll them"** or **"put shrine_offering back in"** adjusts first. The parked ticket is [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to).
 
-This is still the only queued item that becomes something you can *play*.
+Still the only queued item that becomes something you can *play*.
 
 ## Also waiting (11)
 
@@ -23,23 +23,24 @@ This is still the only queued item that becomes something you can *play*.
 - **Two sketches to react to** — [twenty generated spells](https://linear.app/threadbare/issue/THR-1232), [thirty generated items](https://linear.app/threadbare/issue/THR-1236). Your reaction *is* the design decision.
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — should image spends be gated on you at all?** Your answer settles five plates and every batch after.
 - **[THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game) — what is a run *about*?** Remembrance, or named campaigns. Nothing downstream waits.
-- **[THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — one attended dev-server sitting.** Nineteen owed screenshots a scheduled run structurally cannot take. The last sweep you ran is still paying out — see Queue.
-- **[THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — chart the hub map?** Advice: wait — the checkpoint that gates it now sits one batch further out.
+- **[THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — one attended dev-server sitting.** Nineteen owed screenshots a scheduled run structurally cannot take. Your last sweep is still paying out — see Queue.
+- **[THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — chart the hub map?** Advice: wait — the checkpoint that gates it sits one batch further out.
 - **A Tenacious-style trait** — parked, no ticket, no urgency. Listed so it is not silently forgotten.
 
 ## Queue
 
-**Ten `Ready for Dev`, two `In Dev` — healthy.** Nothing is stale; every open item was created in the last three days.
+**Nine `Ready for Dev`, two `In Dev` — healthy.** Nothing stale; every open item was created in the last three days.
 
-- **Your pixel sweep's worst find is fixed and live.** [THR-1410](https://linear.app/threadbare/issue/THR-1410/authored-choice-veil-the-commit-control-is-unreachable-at-19201080-the) — on encounters with authored choice cards, the commit button sat *underneath* the `Look away` footer strip at 1920×1080, so the encounter could not be committed at all. [PR #1813](https://github.com/christianspliid-ui/threadbare/pull/1813) merged and the live site is serving it. Six more from the same sweep are queued: the missing stance word, a chip that wraps to four lines, three debug dead-ends, and the dev-server config fault ([THR-1415](https://linear.app/threadbare/issue/THR-1415/vite-dev-server-watches-claudeworktrees-every-lane-worktree-created-or), new this hour). **Nothing needed from you on any of them.**
+- **Your pixel sweep keeps paying out.** [THR-1410](https://linear.app/threadbare/issue/THR-1410/authored-choice-veil-the-commit-control-is-unreachable-at-19201080-the) — the unreachable commit button — shipped last hour. Six more from the same sweep are queued: the missing stance word, a chip that wraps to four lines, three debug dead-ends, and [the dev-server config fault](https://linear.app/threadbare/issue/THR-1415/vite-dev-server-watches-claudeworktrees-every-lane-worktree-created-or). **Nothing needed from you on any of them.**
+- **A second fix merged and deployed this hour** — [PR #1814](https://github.com/christianspliid-ui/threadbare/pull/1814), duplicated worldgen terrain constants given one owner. Not from your sweep; routine repair.
 - **Both `In Dev` items are parked on you** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) (the lead ask) and [THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants) (first also-waiting). Correct parks, both.
-- **[THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) still says "the camp seven, shrine_offering first"** and points at the retired brief path. An executor should reconcile the ticket to the merged brief before running it — no decision of yours needed.
+- **[THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) still says "the camp seven, shrine_offering first"** and points at the retired brief path — carried a third hour. An executor reconciles it to the merged brief before running; no decision of yours needed.
 
 ## Health
 
 **All green. Nothing for you, nothing for a session.**
 
-- Live site serving the latest commit on main (`7fd33ed7`) · CI, Heavy tests and Linear Auto-Close green · no PRs waiting to merge · all 9 scheduled tasks within schedule · home tree on `main`, current and clean · reaper ran 09:40, healthy, 3 long-stale worktrees still awaiting disposition.
-- **The tick-cost drift from last hour was machine noise, as flagged.** The promised second reading came back **71 ms/tick, 28% *below* the 7-day median** on the same tree — so last hour's 118 ms was contention with the other lanes, not a code regression. Nothing to chase.
-- The tick-cost measurement leaked a `[WorldGen]` log line into its own JSON output again — fourth day running. Stripped in-run; the row published is real. It belongs on stderr; this lane does not edit scripts.
+- Live site serving the latest commit on main (`05c4761c`) · CI, Heavy tests and Linear Auto-Close green · no PRs waiting to merge · all 9 scheduled tasks within schedule · home tree on `main`, current and clean · reaper ran 10:40, healthy, 3 long-stale worktrees still awaiting disposition.
+- **Tick cost is dead on its median** — 83 ms/tick against a 7-day median of 83, +0%. That closes yesterday's scare honestly: the 118 ms reading was lane contention, the 71 ms reading was the rebound, and this is the settled number.
+- The tick-cost measurement leaked a `[WorldGen]` log line into its own JSON output again — fifth day running. Stripped in-run; the published row is real. It belongs on stderr; this lane does not edit scripts.
 - Ten hours of lane silence overnight, declined under your 8 August ruling that overnight quiet is normal. The probe also still re-reports the 30 Aug – 1 Sep outage (58.1h) it cannot explain; you were told that story on Wednesday. Nothing here needs a decision from you.

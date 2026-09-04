@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-04 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-04 10:56 local (08:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -87,6 +87,8 @@ Deliberately left with you: what the game means, not how to wire it. No urgency 
 ### 10. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
 One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each carries test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes now, nineteen captures. Newest include faction heraldry (does a subordinate charge at 0.42 scale read as *deliberately lesser* or as a broken asset?), the tooltip focus ring, and the aftermath screen as composed.
+
+Your 4 September sitting closed out and the ticket returned to the shelf as `Todo` — the nineteen captures are still owed, and two of them are now also named inside the tickets your sweep filed ([THR-1413](https://linear.app/threadbare/issue/THR-1413/no-route-puts-a-companion-on-a-mortal-from-the-browser-and-a-companion), [THR-1414](https://linear.app/threadbare/issue/THR-1414/no-premonition-surfaced-in-280-ticks-across-four-seeded-runs-verify)), because that sitting found the routes to reach them do not exist yet.
 
 It grows as more UI ships behind the same wall. Get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundles into the sitting in ask 1.
 
