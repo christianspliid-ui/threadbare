@@ -7,6 +7,7 @@ export type ParsedDebugCommand =
   | { kind: 'spawn-undertaking'; agentQuery: string; templateId: string; target?: string; band?: string }
   | { kind: 'spawn-encounter-context'; templateId: string; agentQuery?: string; locationQuery?: string; col?: number; row?: number; moveAgent?: boolean }
   | { kind: 'spawn-attachment'; agentQuery: string; templateQuery: string; tick?: number }
+  | { kind: 'spawn-companion'; agentQuery: string; templateQuery: string; tick?: number }
   | { kind: 'spawn-location'; subtype: string; col: number; row: number; name?: string }
   | { kind: 'spawn-sublocation'; sublocationTypeId: string; locationQuery?: string; col?: number; row?: number; name?: string }
   | { kind: 'spawn-npc'; role: string; locationQuery?: string; col?: number; row?: number; name?: string; factionDefId?: string; spotlightTier?: SpotlightTier }
@@ -148,6 +149,34 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
     }
 
     return { kind: 'spawn-attachment', agentQuery, templateQuery, tick };
+  }
+
+  // THR-1413 — companions are a data array, not template nodes, so they need
+  // their own verb rather than widening `spawn attachment`'s node search.
+  if (head === 'spawn' && second === 'companion') {
+    if (rest.length < 2) {
+      return { error: 'Usage: spawn companion <agent|@hero|@ascendant> <companionTemplateId|profession> [--tick <n>]' };
+    }
+
+    const [agentQuery, templateQuery, ...flags] = rest;
+    let tick: number | undefined;
+
+    for (let i = 0; i < flags.length; i += 1) {
+      const flag = flags[i];
+      if (flag === '--tick') {
+        const value = flags[i + 1];
+        const parsedTick = Number.parseInt(value ?? '', 10);
+        if (Number.isNaN(parsedTick)) {
+          return { error: 'tick must be an integer.' };
+        }
+        tick = parsedTick;
+        i += 1;
+      } else {
+        return { error: `Unknown flag '${flag}'.` };
+      }
+    }
+
+    return { kind: 'spawn-companion', agentQuery, templateQuery, tick };
   }
 
   if (head === 'spawn' && second === 'location') {

@@ -1091,6 +1091,10 @@ if (import.meta.env.DEV) {
       (_encounterBridge?.spawnAttachment as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, templateQuery, options)
       ?? { success: false, message: 'Encounter bridge not registered' },
 
+    spawnCompanion: (agentQuery: string, templateQuery: string, options?: Record<string, unknown>) =>
+      (_encounterBridge?.spawnCompanion as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, templateQuery, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
     spawnLocation: (subtype: string, col: number, row: number, options?: Record<string, unknown>) =>
       (_encounterBridge?.spawnLocation as ((...a: unknown[]) => unknown) | undefined)?.(subtype, col, row, options)
       ?? { success: false, message: 'Encounter bridge not registered' },

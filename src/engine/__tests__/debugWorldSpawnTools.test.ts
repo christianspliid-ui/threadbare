@@ -4,10 +4,13 @@ import { WorldGraph } from '../graph';
 import {
   moveDebugAgent,
   spawnDebugAttachment,
+  spawnDebugCompanion,
   spawnDebugLocationAtHex,
   spawnDebugNpc,
   spawnDebugSublocation,
 } from '../debugWorldSpawnTools';
+import { getCompanions } from '../companions';
+import { computeRawScore } from '../domainCapability';
 
 function makeState(graph: WorldGraph): GameState {
   return {
@@ -290,5 +293,98 @@ describe('debugWorldSpawnTools', () => {
     expect(result.success).toBe(true);
     const instanceId = result.nodeId!;
     expect(state.graph.getOutgoingEdges('agent_1', 'has_trait').some(edge => edge.target === instanceId)).toBe(true);
+  });
+});
+
+/**
+ * THR-1413 — the mint route that did not exist.
+ *
+ * `spawn attachment companion.wayfarer` answered "no attachment template matching"
+ * because `resolveAttachmentTemplate` searches artifact/trait *nodes* and
+ * `COMPANION_TEMPLATES` are a data array that never becomes nodes. These pin the
+ * new verb, including the ascendant bearer whose capability the walk already reads.
+ */
+describe('spawnDebugCompanion (THR-1413)', () => {
+  function makeCompanionWorld(): GameState {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'asc_1',
+      type: 'actor',
+      name: 'The Ascendant',
+      properties: { actorType: 'ascendant' },
+    });
+    graph.addNode({
+      id: 'agent_1',
+      type: 'actor',
+      name: 'Kael Thornweaver',
+      properties: { actorType: 'individual' },
+    });
+    return makeState(graph);
+  }
+
+  it('mints a companion onto a named mortal and joins them by an accompanies edge', () => {
+    const state = makeCompanionWorld();
+
+    const result = spawnDebugCompanion(state, 'Kael', 'companion.wayfarer');
+
+    expect(result.success).toBe(true);
+    expect(result.kind).toBe('companion');
+    const companions = getCompanions(state.graph, 'agent_1');
+    expect(companions).toHaveLength(1);
+    expect(companions[0].templateId).toBe('companion.wayfarer');
+    expect(companions[0].id).toBe(result.nodeId);
+    // The generated personal name is what the row shows — not the profession.
+    expect(result.nodeName).toBe(companions[0].name);
+    expect(result.message).toContain('Kael Thornweaver');
+  });
+
+  it('resolves a template by profession as well as by exact id', () => {
+    const state = makeCompanionWorld();
+    const byProfession = spawnDebugCompanion(state, 'agent_1', 'Guild Scribe');
+
+    expect(byProfession.success).toBe(true);
+    expect(getCompanions(state.graph, 'agent_1')[0].templateId).toBe('companion.guild-scribe');
+  });
+
+  it('mints twice on one bearer instead of silently no-opping on the tick collision', () => {
+    const state = makeCompanionWorld();
+
+    const first = spawnDebugCompanion(state, 'agent_1', 'companion.wayfarer');
+    const second = spawnDebugCompanion(state, 'agent_1', 'companion.wayfarer');
+
+    expect(first.success).toBe(true);
+    expect(second.success).toBe(true);
+    expect(second.nodeId).not.toBe(first.nodeId);
+    expect(getCompanions(state.graph, 'agent_1')).toHaveLength(2);
+  });
+
+  it('refuses an unknown template and an unknown actor without throwing', () => {
+    const state = makeCompanionWorld();
+
+    const badTemplate = spawnDebugCompanion(state, 'agent_1', 'companion.does-not-exist');
+    expect(badTemplate.success).toBe(false);
+    expect(badTemplate.message).toContain('No companion template matching');
+
+    const badActor = spawnDebugCompanion(state, 'Nobody At All', 'companion.wayfarer');
+    expect(badActor.success).toBe(false);
+    expect(badActor.message).toContain('No actor matching');
+    expect(getCompanions(state.graph, 'agent_1')).toHaveLength(0);
+  });
+
+  it('mints onto the ascendant, and that companion raises the ascendant capability the walk reads', () => {
+    const state = makeCompanionWorld();
+    const before = computeRawScore(state.graph, 'asc_1', 'iron');
+
+    const result = spawnDebugCompanion(state, '@ascendant', 'companion.sellsword-band');
+
+    expect(result.success).toBe(true);
+    const companions = getCompanions(state.graph, 'asc_1');
+    expect(companions).toHaveLength(1);
+    // Decision 2 (THR-1413): the grant is NOT refused, because the contribution is
+    // already live — `computeRawScore` walks `accompanies` on any node, so refusing
+    // would delete a working capability term. `AscendantSheet` renders it instead.
+    const contribution = companions[0].domainContributions.iron ?? 0;
+    expect(contribution).toBeGreaterThan(0);
+    expect(computeRawScore(state.graph, 'asc_1', 'iron')).toBeCloseTo(before + contribution, 5);
   });
 });
