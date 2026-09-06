@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-09-06 17:00 local (15:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-06 18:00 local (16:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Reconnect Linear.** Five lane runs in a row have now hit the same wall, and re-verified this run: the connector still reports *requires authentication*, a scheduled session cannot run a browser sign-in, and `LINEAR_API_KEY` is still unset.
+**Reconnect Linear.** Sixth lane run in a row against the same wall, re-verified this hour: the connector reports *requires authentication*, a scheduled session cannot run a browser sign-in, and `LINEAR_API_KEY` is still unset.
 
 Either fix is enough, and both need you:
 
@@ -34,12 +34,13 @@ Nothing else has changed since the last brief; the thirteen below are carried un
 
 **Unreadable — Linear is down.** No count, no flagged items, no parked-In-Dev sweep this run. Nothing above is offered as current board state. Last verified reading was Friday 2026-09-04: Ready for Dev 10, In Dev 3, one live claim.
 
-The queue is almost certainly intact — **zero open PRs**, so nothing is stranded mid-merge, and `main` has moved only by docs commits since Friday.
+The queue is almost certainly intact — **zero open PRs**, so nothing is stranded mid-merge, and `main` has moved only by docs and tooling commits since Friday.
 
 ## Health
 
-- **Linear unreachable** — the lead ask above. Raised again this run by [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md) and [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md); folded into ask 1 rather than repeated.
-- **One correction to the grooming report, so it is not believed later.** It warns that this briefing "has been frozen since Friday 15:54 and will not refresh itself." It has not been: the brief has published every hour through the outage, including this one, with the Queue section stating the fault plainly. The escalation channel degrades honestly rather than failing — the same correction tb-orchestrator already made against impediment #973.
-- **The tick-cost measurement tripped over its own log line again — second run running.** `measure:tick-cost` prints a `[WorldGen] Genome NPC top-up` line to stdout ahead of its JSON, so `check:tick-cost` reads a parse error instead of a reading. Stripped and re-run again this hour; the row is published. No longer intermittent enough to wait out — a one-line stdout fix in the measure script ends it. Executor-side, not yours.
-- **Tick cost healthy** — 73 ms/tick steady, 13% *below* the 7-day median (84, 17 rows).
-- Everything else green: deploy live at `5c37c7dd`, all 3 scheduled workflows and post-merge CI passing, no PRs waiting, all 9 scheduled tasks on schedule, worktree reaper ran 16 minutes ago.
+- **Linear unreachable** — the lead ask above. Both lane reports from this morning ([tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md), [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md)) raise it and nothing else; folded into ask 1 rather than repeated.
+- **The tick-cost stdout fault is fixed and the fix is proven.** [PR #1825](https://github.com/christianspliid-ui/threadbare/pull/1825) merged this hour, and this is the first run in three where the probe parsed its own measurement with no hand-stripping. That health line retires.
+- **Tick cost is reading high this hour, and one reading is not a trend.** The probe's verdict, verbatim: *"tick cost 120 ms/tick steady, 43% above the 7-day median (84, 18 rows since b95996df); top phase agent_decision, 511 agents. Name the merges between b95996df and 2ad1c1c8: `git log --oneline --merges b95996df..2ad1c1c8`"*. One fact against reading it as a regression: warm-up cost stayed in band at 41 ms/tick (the last eleven rows run 37–47), so only the steady phase moved — the shape of machine contention rather than of slower code. Next hour's row settles it. Executor's call either way, not yours.
+- **The orchestrator's one carried chore is done** — PR #1822 merged; there is nothing left for a session to run by hand there.
+- Everything else green: deploy live at `2ad1c1c8`, all 3 scheduled workflows and post-merge CI passing, no PRs waiting, all 9 scheduled tasks on schedule, worktree reaper ran 17 minutes ago.
+- Visibility only, no action: the silence probe still reports the two overnight gaps (11.7 h and 10 h) it always reports — declined under your 8 August ruling that overnight quiet is normal.
