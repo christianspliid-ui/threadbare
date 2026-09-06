@@ -30,21 +30,62 @@ const FATAL_FALLBACK_NAMES = [
 ];
 
 /**
- * Synthesize a fallback name from GENERIC_NAMES with a deterministic ordinal,
- * ensuring the result is never a banned placeholder pattern.
+ * Epithets that compose a distinct fallback name once both flat pools are spent.
+ * Paired with a given name this yields GENERIC_NAMES × FALLBACK_EPITHETS distinct
+ * results that still read as a person rather than a placeholder.
  */
-function synthesizeFallbackName(rng: () => number, index: number): string {
-  // Try GENERIC_NAMES pool first with the ordinal as the pick anchor
-  const pool = GENERIC_NAMES;
-  if (pool.length > 0) {
-    const pick = pool[index % pool.length];
-    if (!WANDERER_FALLBACK_BANNED_PATTERNS.some(p => p.test(pick))) {
-      return pick;
+const FALLBACK_EPITHETS = [
+  'of the Eastern Road',
+  'of the Unnamed Path',
+  'of the Far Shore',
+  'of the Empty Hills',
+  'Without Clan',
+];
+
+/**
+ * Synthesize a fallback name from GENERIC_NAMES with a deterministic ordinal,
+ * ensuring the result is never a banned placeholder pattern — and never a name
+ * the world is already using.
+ *
+ * THR-1420: this branch used to return `pool[index % pool.length]` without
+ * consulting `usedNames`, so it was the one path in the picker that could hand
+ * back an already-taken name. Its ordinal anchor is `usedNames.size`, which does
+ * not advance when the colliding name is already in the set — so two mints that
+ * reached this branch against the same world returned the *same* name by
+ * construction. Every tier below now walks from the anchor and takes the first
+ * candidate that is both unused and unbanned.
+ */
+function synthesizeFallbackName(index: number, usedNames: Set<string>): string {
+  const isBanned = (name: string) => WANDERER_FALLBACK_BANNED_PATTERNS.some(p => p.test(name));
+
+  // Tier 1: generic pool, anchored at the ordinal.
+  for (let i = 0; i < GENERIC_NAMES.length; i++) {
+    const pick = GENERIC_NAMES[(index + i) % GENERIC_NAMES.length];
+    if (usedNames.has(pick) || isBanned(pick)) continue;
+    return pick;
+  }
+
+  // Tier 2: the canon list.
+  for (let i = 0; i < FATAL_FALLBACK_NAMES.length; i++) {
+    const pick = FATAL_FALLBACK_NAMES[(index + i) % FATAL_FALLBACK_NAMES.length];
+    if (usedNames.has(pick) || isBanned(pick)) continue;
+    return pick;
+  }
+
+  // Tier 3: compose given name + epithet.
+  for (let g = 0; g < GENERIC_NAMES.length; g++) {
+    const given = GENERIC_NAMES[(index + g) % GENERIC_NAMES.length];
+    for (let e = 0; e < FALLBACK_EPITHETS.length; e++) {
+      const composed = `${given} ${FALLBACK_EPITHETS[(index + e) % FALLBACK_EPITHETS.length]}`;
+      if (usedNames.has(composed) || isBanned(composed)) continue;
+      return composed;
     }
   }
-  // Fall back to canon list
-  const _ = rng; // consume rng for determinism if caller passes one
-  return FATAL_FALLBACK_NAMES[index % FATAL_FALLBACK_NAMES.length];
+
+  // Every authored combination is spoken for. Returning a duplicate is worse than
+  // returning a name nobody wrote, but the tick loop must never throw (NFP #4), so
+  // hand back the anchored composition and accept the collision.
+  return `${GENERIC_NAMES[index % GENERIC_NAMES.length]} ${FALLBACK_EPITHETS[index % FALLBACK_EPITHETS.length]}`;
 }
 
 // ─── Foundation-Keyed Names ──────────────────────────────────────
@@ -283,7 +324,7 @@ export function pickCulturalName(
 
   // Last resort — synthesize a fallback that passes the banned-pattern guard (THR-456)
   const index = usedNames.size;
-  const fallback = synthesizeFallbackName(rng, index);
+  const fallback = synthesizeFallbackName(index, usedNames);
   usedNames.add(fallback);
   return fallback;
 }
