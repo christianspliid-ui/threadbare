@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 01:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -10,7 +10,7 @@ Still one word — and **smaller than earlier briefings claimed**. It was billed
 
 What remains is genuinely just intent: **22 days In Design, assigned to you, no plan doc.** The machine keeps it counted because an assigned item means a person may be about to start.
 
-**What has changed is the cost of the silence.** The design tier is allowed to prepare exactly one new thing at a time, and your ticket occupies that slot — seventh consecutive day. The build queue sits at **five**, and it held there only because a lane filed a fresh ticket as it shipped another: four closed in the two hours before this run, so the shelf is being consumed as fast as it refills. **Yes** changes nothing and the asking stops; **not getting to it** sets it aside, frees the slot, and preparation restarts tonight.
+**What has changed is the cost of the silence.** The design tier is allowed to prepare exactly one new thing at a time, and your ticket occupies that slot — seventh consecutive day. The build queue sits at **four**, and it held there only because a lane filed a fresh ticket as it shipped another: five closed in the four hours before this run, so the shelf is being consumed as fast as it refills. **Yes** changes nothing and the asking stops; **not getting to it** sets it aside, frees the slot, and preparation restarts tonight.
 
 The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic"). *(Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket. — lead ask from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06b.md), 2026-09-06)*
 
@@ -116,7 +116,7 @@ My read is that it was a host that was simply off: three unrelated schedulers st
 
 ### 14. The scripted half of Linear access — small, and not urgent
 
-**The connector fixed itself — there is nothing to reauthorize.** It came back on its own around 17:15 today after roughly six hours of lane runs against a wall, and has stayed up since: this run read the board normally, and a lane claimed [THR-1420](https://linear.app/threadbare/issue/THR-1420) and opened its PR while this brief was being written. Nothing was lost. This entry is what survives that ask, reduced to its remainder.
+**The connector fixed itself — there is nothing to reauthorize.** It came back on its own around 17:15 on 6 September after roughly six hours of lane runs against a wall, and has stayed up since — a full night now, with every board read this run returning normally and three tickets shipped through it overnight. Nothing was lost. This entry is what survives that ask, reduced to its remainder.
 
 **`LINEAR_API_KEY` is still unset.** A handful of background checks read Linear through that environment variable rather than the connector, so they stay switched off — one background lint runs with three sub-checks dark. **Nothing is blocked on it.** The transport is already written and shipped in `scripts/drift-scan/linear.ts`.
 
