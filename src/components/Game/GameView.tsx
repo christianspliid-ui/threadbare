@@ -2046,18 +2046,23 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [fogDisabled, hexMapRef]);
 
   // ── Debug bridge: omniscience toggle ─────────────────────────────────────
+  // The ref is the synchronous source of truth. Reading `omniscienceMode` from
+  // the closure meant two `toggleOmniscience()` calls inside one tick both saw
+  // the pre-render value and both returned the same thing (THR-1412); state
+  // updates do not land until React re-renders, but a debug lever has to report
+  // what it just did.
+  const omniscienceRef = useRef(omniscienceMode);
+  omniscienceRef.current = omniscienceMode;
+
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerOmniscienceToggle((enabled?: boolean) => {
-      if (enabled === undefined) {
-        const next = !omniscienceMode;
-        setOmniscienceMode(next);
-        return next;
-      }
-      setOmniscienceMode(enabled);
-      return enabled;
+      const next = enabled === undefined ? !omniscienceRef.current : enabled;
+      omniscienceRef.current = next;
+      setOmniscienceMode(next);
+      return next;
     });
-  }, [omniscienceMode]);
+  }, []);
 
   // ── Debug bridge: setQuintessence / setBand (THR-184) ─────────────────────
   useEffect(() => {
@@ -2136,13 +2141,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Debug bridge: listActions / fireAction ────────────────────────────────
   // A single ref captures the mutable state slices needed by both commands.
   // setGameState is a stable React dispatcher — it doesn't need the ref treatment.
+  // `state` carries the whole slice so agent selectors resolve through the
+  // shared `resolveDebugAgent` (THR-1032), which needs `ascendantId` to honour
+  // `@hero`. The destructured fields stay for the cast path below.
   const _actionStateRef = useRef({
+    state: gameState,
     graph: gameState.graph,
     tick: gameState.tick,
     seed: gameState.seed,
     ascendantId: gameState.ascendantId,
   });
   _actionStateRef.current = {
+    state: gameState,
     graph: gameState.graph,
     tick: gameState.tick,
     seed: gameState.seed,
@@ -2153,17 +2163,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerActionBridge({
       listActions: (agentId?: string) => {
-        const { graph } = _actionStateRef.current;
+        const { state } = _actionStateRef.current;
 
-        // If agentId given, verify the agent exists first
+        // If agentId given, verify the agent exists first. Resolution goes
+        // through the shared resolver (THR-1032) — the hand-rolled matcher this
+        // replaced read `properties.name`, which actors do not carry, so the
+        // documented "doubles as an existence check" reported every agent
+        // non-existent (THR-1412).
         if (agentId !== undefined) {
-          const actors = graph.getNodesByType('actor');
-          const match = actors.find(n =>
-            n.id === agentId ||
-            n.id.startsWith(agentId) ||
-            ((n.properties.name as string | undefined) ?? '').toLowerCase().includes(agentId.toLowerCase())
-          );
-          if (!match) return [];
+          if (isDebugAgentMiss(resolveDebugAgent(state, agentId))) return [];
         }
 
         // Return all actor-targeting templates
@@ -2184,16 +2192,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       },
 
       fireAction: (agentId: string, templateId: string) => {
-        const { graph, tick, seed, ascendantId } = _actionStateRef.current;
+        const { state, graph, tick, seed, ascendantId } = _actionStateRef.current;
 
-        // Find agent
-        const actors = graph.getNodesByType('actor');
-        const agentMatch = actors.find(n =>
-          n.id === agentId ||
-          n.id.startsWith(agentId) ||
-          ((n.properties.name as string | undefined) ?? '').toLowerCase().includes(agentId.toLowerCase())
-        );
-        if (!agentMatch) return { success: false, message: `No agent matching '${agentId}'` };
+        // Find agent — shared resolver (THR-1032): exact id, id prefix, display
+        // name, or the `@hero` alias. Its miss text names how many actors were
+        // searched, so "no such agent" stays distinguishable from "the matcher
+        // is blind" (THR-1412).
+        const resolved = resolveDebugAgent(state, agentId);
+        if (isDebugAgentMiss(resolved)) return { success: false, message: resolved.error };
+        const agentMatch = resolved.node;
 
         // Find template — exact id first, then partial match
         let template = getUnifiedTemplateById(templateId);
@@ -2225,7 +2232,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
         setGameState(prev => commitPlayerCast(prev, { cast }));
 
-        const agentName = (agentMatch.properties.name as string | undefined) ?? agentMatch.id;
+        const agentName = agentMatch.name ?? agentMatch.id;
         return {
           success: true,
           actionId: cast.action.actionId,

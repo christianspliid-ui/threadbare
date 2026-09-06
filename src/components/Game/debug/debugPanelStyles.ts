@@ -33,12 +33,30 @@ export const HEADER_STYLE: React.CSSProperties = {
   fontSize: 'var(--text-xs)',
 };
 
+/**
+ * Ceiling on the wrapped tab strip, in px. The strip wraps rather than
+ * overflowing off-panel (THR-1412: 43 tabs in a 480px panel measured
+ * scrollWidth 3751 against clientWidth 479, putting 37 of them past the right
+ * edge and reachable only by scripted `button.click()`). Wrapping alone would
+ * cost ~8 rows of the panel's height, so the strip is capped and scrolls
+ * vertically past the cap — every tab stays mouse-reachable while the trace
+ * area below keeps the bulk of the panel. Raise for more rows on screen at
+ * once, lower to give the trace feed more room.
+ */
+export const TAB_BAR_MAX_HEIGHT = 112;
+
 export const TAB_BAR_STYLE: React.CSSProperties = {
   display: 'flex',
+  flexWrap: 'wrap',
   gap: '8px',
   borderBottom: `1px solid ${PANEL_STYLES.borderColor}`,
   padding: '8px 12px',
   background: 'var(--bg-abyss)',
+  maxHeight: TAB_BAR_MAX_HEIGHT,
+  overflowY: 'auto',
+  // The strip sizes to its content and never gets squeezed by the scroll area
+  // below it, which owns `flex: 1`.
+  flexShrink: 0,
 };
 
 const TAB_BUTTON_BASE: React.CSSProperties = {
@@ -50,6 +68,9 @@ const TAB_BUTTON_BASE: React.CSSProperties = {
   fontSize: 'var(--text-xs)',
   fontWeight: 500,
   transition: 'all 200ms ease-out',
+  // Multi-word labels ("Essence Sources") wrap as whole tabs, never mid-label.
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
 };
 
 // RC-019: Pre-computed tab styles to avoid object allocation per render
