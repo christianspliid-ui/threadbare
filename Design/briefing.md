@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-09-06 18:00 local (16:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-06 18:55 local (16:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Reconnect Linear.** Sixth lane run in a row against the same wall, re-verified this hour: the connector reports *requires authentication*, a scheduled session cannot run a browser sign-in, and `LINEAR_API_KEY` is still unset.
+**Reconnect Linear.** Seventh lane run in a row against the same wall, re-verified this hour: the connector reports *requires authentication*, a scheduled session cannot run a browser sign-in, and `LINEAR_API_KEY` is still unset.
 
 Either fix is enough, and both need you:
 
@@ -38,9 +38,7 @@ The queue is almost certainly intact — **zero open PRs**, so nothing is strand
 
 ## Health
 
-- **Linear unreachable** — the lead ask above. Both lane reports from this morning ([tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md), [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md)) raise it and nothing else; folded into ask 1 rather than repeated.
-- **The tick-cost stdout fault is fixed and the fix is proven.** [PR #1825](https://github.com/christianspliid-ui/threadbare/pull/1825) merged this hour, and this is the first run in three where the probe parsed its own measurement with no hand-stripping. That health line retires.
-- **Tick cost is reading high this hour, and one reading is not a trend.** The probe's verdict, verbatim: *"tick cost 120 ms/tick steady, 43% above the 7-day median (84, 18 rows since b95996df); top phase agent_decision, 511 agents. Name the merges between b95996df and 2ad1c1c8: `git log --oneline --merges b95996df..2ad1c1c8`"*. One fact against reading it as a regression: warm-up cost stayed in band at 41 ms/tick (the last eleven rows run 37–47), so only the steady phase moved — the shape of machine contention rather than of slower code. Next hour's row settles it. Executor's call either way, not yours.
-- **The orchestrator's one carried chore is done** — PR #1822 merged; there is nothing left for a session to run by hand there.
-- Everything else green: deploy live at `2ad1c1c8`, all 3 scheduled workflows and post-merge CI passing, no PRs waiting, all 9 scheduled tasks on schedule, worktree reaper ran 17 minutes ago.
-- Visibility only, no action: the silence probe still reports the two overnight gaps (11.7 h and 10 h) it always reports — declined under your 8 August ruling that overnight quiet is normal.
+- **Linear unreachable** — the lead ask above. Nothing new was raised this hour: the orchestrator ran at 18:27 and wrote no report, which for that lane means it had nothing it could do rather than that it failed. This morning's two reports ([tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md), [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md)) raise Linear and nothing else, and are already folded into ask 1.
+- **Tick cost is elevated for a second hour, and the two readings disagree about how much.** The probe's verdict, verbatim: *"tick cost 112 ms/tick steady, 33% above the 7-day median (84, 19 rows since b95996df); top phase agent_decision, 511 agents. Name the merges between b95996df and 33a3eb10: `git log --oneline --merges b95996df..33a3eb10`"*. Last hour read 120; this hour 112 — moving down, not compounding. The fact that argued contention last hour still holds: **warm-up stayed at 38 ms/tick**, dead centre of the 37–41 band every row in the window sits in, so only the steady phase moved. Real code slowdown would drag both. Steady itself has swung 73→95→85→85→82→73 across today alone, so 112 is high but not off that scale. Executor's call, not yours — but it is now worth one look rather than none.
+- Everything else green: deploy live and current at `2ad1c1c8` (the commits since it are docs and tooling, so no rebuild was owed), all 3 scheduled workflows and all 3 post-merge CI workflows passing, no PRs waiting to merge, all 9 scheduled tasks on schedule, worktree reaper ran 15 minutes ago.
+- Visibility only, no action: the silence probe still reports the same three gaps (44.9 h weekend, 11.7 h and 10 h overnight). The two overnight ones are declined under your 8 August ruling; the weekend one is the last item on your list above.
