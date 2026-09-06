@@ -1,12 +1,14 @@
 # User Action Required
 
-**Last updated:** 2026-09-06 15:00 local (13:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were last verified Friday 2026-09-04 — Linear was unreachable this run too.**
+**Last updated:** 2026-09-06 16:00 local (14:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were last verified Friday 2026-09-04 — Linear was unreachable this run too.**
 
 ## Standing asks
 
 ### 1. Reconnect Linear — it is blocking four lanes
 
 **The board has been unreachable since the machine came back on Sunday, and it is now into its second day.** Work pickup, the orchestrator, daily grooming and this brief all read Linear before they do anything; none of them can claim a ticket, promote work, or report what is in flight. It worked on Friday, so this is a change, not a standing gap.
+
+**Re-verified 14:00 UTC — still down, four lane runs in a row.** Not a slow call or a one-run blip: the connector reports *requires authentication*, and a scheduled session cannot run the sign-in flow.
 
 Either fix is enough, and both need you — an unattended session cannot sign in:
 

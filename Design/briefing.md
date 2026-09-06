@@ -1,40 +1,43 @@
 # Briefing
-**Generated:** 2026-09-06 15:00 local (13:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-06 16:00 local (14:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Reconnect Linear.** Four lanes read the board before they do anything, and all four are still shut out: work pickup, the orchestrator, daily grooming, and this brief. None of them can claim a ticket, promote work, or check what is in flight. Linear worked on Friday — this is a change, not a standing gap, and it is now into its second day.
+**Reconnect Linear.** It has now been unreachable for three straight hours of lane runs, and this brief is the fourth lane to hit the same wall today — after [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md), [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md) and the work-pickup lane. Re-verified this run: the connector reports *requires authentication*, a scheduled run cannot do a browser sign-in, and `LINEAR_API_KEY` is still unset.
 
-Either fix is enough, and both need you because an unattended session cannot sign in:
+Either fix is enough, and both need you:
 
 - **Re-authorize the Linear connector** — claude.ai → Settings → Connectors.
-- **Or set `LINEAR_API_KEY` in the machine environment** — better for the scheduled lanes: no browser sign-in, and it does not lapse the same way. The code that reads it is already shipped. (Confirmed unset again this run.)
+- **Or set `LINEAR_API_KEY` in the machine environment** — the better one for the scheduled lanes: no browser sign-in, and it does not lapse the same way. The code that reads it is already shipped.
 
-**Why this one first:** your approval at the top of the list below — *"batch 2, run the six"* — will not start the machine while this is broken, because the lane that would pick it up cannot claim the ticket. You can still start it by hand in a chat session; it is only the unattended machine that is stopped. Everything else queued behind you is in the same position.
-
-*(Raised again this morning by [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md) and [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md); logged as impediments [#973 and #974](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md).)*
+Until then no lane can claim a ticket, promote work, or tell you what is in flight — including the batch-2 approval below, which you can still start by hand in a chat session. Detail: [ask 1](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Also waiting (13)
 
-1. [Approve the camp six](https://linear.app/threadbare/issue/THR-1130) — *"batch 2, run the six"* unblocks the retrofit line. [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md).
-2. [The undertaking retirement list](https://linear.app/threadbare/issue/THR-1392) — four templates get deleted; you asked to see the list first. *"Run 4b"* finishes it.
-3. [Do you still want the incident-capture button?](https://linear.app/threadbare/issue/THR-1134) — your own 16 August ticket, 21 days untouched. Yes or no.
-4. [Three questions left on the undertakings map](https://linear.app/threadbare/issue/THR-1396) — take [the division rule](https://linear.app/threadbare/issue/THR-1398) first; it unblocks four.
-5. [Traits wave 2 — still planning it?](https://linear.app/threadbare/issue/THR-790) — one word, and smaller than earlier briefings claimed.
-6. [The fight map — seven open](https://linear.app/threadbare/issue/THR-1258) — settle [monster fights](https://linear.app/threadbare/issue/THR-1263) and [duels](https://linear.app/threadbare/issue/THR-1264) and three more open by themselves.
-7. Two sketches ready to build for you to react to — [twenty spells](https://linear.app/threadbare/issue/THR-1232), [thirty items](https://linear.app/threadbare/issue/THR-1236).
-8. [Should image spend be gated on you at all?](https://linear.app/threadbare/issue/THR-876) — your answer settles five plates and every batch after.
-9. [What is a run about?](https://linear.app/threadbare/issue/THR-1198) — the god's remembrance, or a named campaign. No urgency.
-10. [One attended dev-server session](https://linear.app/threadbare/issue/THR-1133) — nine passes, nineteen captures owed. Nothing blocks the sitting.
-11. [Chart the hub map](https://linear.app/threadbare/issue/THR-1220) — advice is still *wait*; only you can charter one.
-12. A Tenacious-style trait, parked — no ticket, no urgency, listed so it is not forgotten.
-13. [Should weekend quiet be normal too?](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md) — one word stops the 45-hour gap reaching you again.
+- **[Approve the camp six](https://linear.app/threadbare/issue/THR-1130)** — *"batch 2, run the six"*. [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md) is merged and unchanged.
+- **[The undertaking retirement list](https://linear.app/threadbare/issue/THR-1392)** — four templates get deleted; *"run 4b"* finishes the migration.
+- **[Do you still want the incident-capture button?](https://linear.app/threadbare/issue/THR-1134)** — you filed it 16 August; yes or no.
+- **[Three questions on the undertakings map](https://linear.app/threadbare/issue/THR-1396)** — take [the division rule](https://linear.app/threadbare/issue/THR-1398) first; it unblocks four.
+- **[Are you still planning Traits wave 2?](https://linear.app/threadbare/issue/THR-790)** — one word; smaller than it was billed.
+- **[The fight map](https://linear.app/threadbare/issue/THR-1258)** — settle [monster fights](https://linear.app/threadbare/issue/THR-1263) and [duels](https://linear.app/threadbare/issue/THR-1264) and three more open by themselves.
+- **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236)** — sketches built for you to react to.
+- **[Image credits](https://linear.app/threadbare/issue/THR-876)** — should the spend be gated on you at all?
+- **[What is a run about?](https://linear.app/threadbare/issue/THR-1198)** — remembrance, or named campaigns.
+- **[One attended dev-server session](https://linear.app/threadbare/issue/THR-1133)** — nineteen captures owed; nothing blocks the sitting.
+- **[Chart the hub map](https://linear.app/threadbare/issue/THR-1220)** — advice is still to wait for your slice checkpoint.
+- **A Tenacious-style trait** — parked by default, listed so it is not forgotten.
+- **Should weekend quiet be normal too?** — one word declines the 45-hour Friday-to-Sunday gap the way you declined overnight quiet.
 
 ## Queue
 
-**Stale — Linear was unreachable this run too, so nothing below was read today.** Last verified Friday 2026-09-04: 10 Ready for Dev, 3 In Dev (THR-1410 live; THR-1130 and THR-1392 parked on your gates above). No open PRs at all right now, so nothing is stranded mid-merge — that part is measured, not carried. Recommended next pickup is unchanged from Friday: [THR-1411](https://linear.app/threadbare/issue/THR-1411) then [THR-1416](https://linear.app/threadbare/issue/THR-1416). **No parked-In-Dev scan ran; this lane is the only one that looks, and it could not.**
+**Unreadable — Linear is down.** No count, no flagged items, no parked-In-Dev sweep this run. Nothing below is offered as current board state. Last verified reading was Friday 2026-09-04: Ready for Dev 10, In Dev 3, one live claim.
+
+The queue is almost certainly intact — **zero open PRs**, so nothing is stranded mid-merge, and `main` has moved only by docs commits since Friday.
 
 ## Health
 
-- **Two overnight silence gaps** (11.7 h and 10 h, Tue and Thu nights) — declined per your 8 August ruling that overnight quiet is normal. Noted for visibility only. The 45-hour weekend gap is ask 13 above, not a second health item.
-- **Everything else green.** Last hour's stuck retrospective PR merged on its own — [#1822](https://github.com/christianspliid-ui/threadbare/pull/1822) is in at [`4ced52a8`](https://github.com/christianspliid-ui/threadbare/commit/4ced52a8) and no PR is now waiting. Deploy up to date at [`5c37c7dd`](https://github.com/christianspliid-ui/threadbare/commit/5c37c7dd) (later commits were docs-only, so no rebuild was owed), all 3 scheduled workflows and all 3 post-merge checks healthy, all 9 scheduled tasks on schedule, the branch reaper ran 16 minutes ago, and tick cost is 85 ms/tick — 1% above the 7-day median, well inside the drift line.
+- **Linear unreachable** — the lead ask above. Second-order cost measured by the orchestrator: `check:process` now passes with three sub-checks dark, including the guard on coordination-block presence. Lane-side only; CI is unaffected.
+- **The retro PR that was flagged stuck is not stuck.** [PR #1822](https://github.com/christianspliid-ui/threadbare/pull/1822) was `CONFLICTING` when tb-orchestrator saw it at 11:42Z; it merged at 12:07Z. Its five process improvements and impediment #974 are on `main`. Carried here only so the sibling finding is not re-raised next run.
+- **The tick-cost measurement nearly lost its own trend row.** `measure:tick-cost` printed a `[WorldGen] Genome NPC top-up` line to stdout ahead of its JSON, so `check:tick-cost` returned `unknown` on a parse error rather than a reading. Stripped the prefix and re-ran; the row is published. Intermittent — the 11:55 and 12:55 runs were clean — so it will resurface. Executor-side, not yours.
+- **Tick cost healthy** — 82 ms/tick steady, 3% *below* the 7-day median (84, 16 rows).
+- Everything else green: deploy live at `5c37c7dd`, all 3 scheduled workflows and post-merge CI passing, no PRs waiting, all 9 scheduled tasks on schedule, worktree reaper ran 15 minutes ago.
