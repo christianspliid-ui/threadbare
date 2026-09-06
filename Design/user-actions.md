@@ -1,17 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-09-06 14:00 local (12:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were last verified Friday 2026-09-04 — Linear was unreachable this run too.**
+**Last updated:** 2026-09-06 15:00 local (13:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were last verified Friday 2026-09-04 — Linear was unreachable this run too.**
 
 ## Standing asks
 
 ### 1. Reconnect Linear — it is blocking four lanes
 
-**The board has been unreachable since the machine came back on Sunday.** Work pickup, the orchestrator, daily grooming and this brief all read Linear before they do anything; none of them can claim a ticket, promote work, or report what is in flight. It worked on Friday, so this is a change, not a standing gap.
+**The board has been unreachable since the machine came back on Sunday, and it is now into its second day.** Work pickup, the orchestrator, daily grooming and this brief all read Linear before they do anything; none of them can claim a ticket, promote work, or report what is in flight. It worked on Friday, so this is a change, not a standing gap.
 
 Either fix is enough, and both need you — an unattended session cannot sign in:
 
 - **Re-authorize the Linear connector** — claude.ai → Settings → Connectors.
-- **Or set `LINEAR_API_KEY` in the machine environment** — better for the scheduled lanes: no browser sign-in, and it does not lapse the same way. The code that reads it is already shipped.
+- **Or set `LINEAR_API_KEY` in the machine environment** — better for the scheduled lanes: no browser sign-in, and it does not lapse the same way. The code that reads it is already shipped. (Re-checked this run: still unset.)
 
 **It gates ask 2 in practice.** *"batch 2, run the six"* will not start the unattended machine while this is broken, because the lane that would pick it up cannot claim the ticket — though you can still start it by hand in a chat session. Raised independently this morning by [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md) and [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md); logged as impediments #973 and #974.
 

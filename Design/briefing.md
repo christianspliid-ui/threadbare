@@ -1,18 +1,18 @@
 # Briefing
-**Generated:** 2026-09-06 14:00 local (12:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-06 15:00 local (13:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Reconnect Linear.** Four lanes read the board before they do anything, and all four came back from the weekend to find it shut: work pickup, the orchestrator, daily grooming, and this brief. None of them can claim a ticket, promote work, or check what is in flight. Linear worked on Friday — this is a change, not a standing gap.
+**Reconnect Linear.** Four lanes read the board before they do anything, and all four are still shut out: work pickup, the orchestrator, daily grooming, and this brief. None of them can claim a ticket, promote work, or check what is in flight. Linear worked on Friday — this is a change, not a standing gap, and it is now into its second day.
 
 Either fix is enough, and both need you because an unattended session cannot sign in:
 
 - **Re-authorize the Linear connector** — claude.ai → Settings → Connectors.
-- **Or set `LINEAR_API_KEY` in the machine environment** — better for the scheduled lanes: no browser sign-in, and it does not lapse the same way. The code that reads it is already shipped.
+- **Or set `LINEAR_API_KEY` in the machine environment** — better for the scheduled lanes: no browser sign-in, and it does not lapse the same way. The code that reads it is already shipped. (Confirmed unset again this run.)
 
 **Why this one first:** your approval at the top of the list below — *"batch 2, run the six"* — will not start the machine while this is broken, because the lane that would pick it up cannot claim the ticket. You can still start it by hand in a chat session; it is only the unattended machine that is stopped. Everything else queued behind you is in the same position.
 
-*(Raised independently this morning by [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md) and [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md); logged as impediments #973 and #974.)*
+*(Raised again this morning by [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06.md) and [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-09-06.md); logged as impediments [#973 and #974](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md).)*
 
 ## Also waiting (13)
 
@@ -32,10 +32,9 @@ Either fix is enough, and both need you because an unattended session cannot sig
 
 ## Queue
 
-**Stale — Linear was unreachable this run, so nothing below was read today.** Last verified Friday 2026-09-04: 10 Ready for Dev, 3 In Dev (THR-1410 live; THR-1130 and THR-1392 parked on your gates above). No open feature PRs, so nothing is stranded mid-merge. Recommended next pickup is unchanged from Friday: [THR-1168](https://linear.app/threadbare/issue/THR-1168) — though that one you already killed, so [THR-1411](https://linear.app/threadbare/issue/THR-1411) then [THR-1416](https://linear.app/threadbare/issue/THR-1416) is the live pair. **No parked-In-Dev scan ran; this lane is the only one that looks, and it could not.**
+**Stale — Linear was unreachable this run too, so nothing below was read today.** Last verified Friday 2026-09-04: 10 Ready for Dev, 3 In Dev (THR-1410 live; THR-1130 and THR-1392 parked on your gates above). No open PRs at all right now, so nothing is stranded mid-merge — that part is measured, not carried. Recommended next pickup is unchanged from Friday: [THR-1411](https://linear.app/threadbare/issue/THR-1411) then [THR-1416](https://linear.app/threadbare/issue/THR-1416). **No parked-In-Dev scan ran; this lane is the only one that looks, and it could not.**
 
 ## Health
 
-- **[PR #1822](https://github.com/christianspliid-ui/threadbare/pull/1822) (weekly retrospective) is stuck twice over** — it has a merge conflict, and GitHub has scheduled no checks on it in 21 minutes. Needs a session to run `git merge origin/main`, resolve, and push; `update-branch` does not fix a conflict. Executor work, not yours.
-- **Two overnight silence gaps** (11.7 h and 10 h, Tue and Thu nights) — declined per your 8 August ruling that overnight quiet is normal. Noted for visibility only.
-- Everything else green: deploy up to date at [`5c37c7dd`](https://github.com/christianspliid-ui/threadbare/commit/5c37c7dd), all 3 scheduled workflows and all 3 post-merge checks healthy, all 9 scheduled tasks on schedule, the branch reaper ran 20 minutes ago, and tick cost is 85 ms/tick — 2% above the 7-day median, well inside the drift line.
+- **Two overnight silence gaps** (11.7 h and 10 h, Tue and Thu nights) — declined per your 8 August ruling that overnight quiet is normal. Noted for visibility only. The 45-hour weekend gap is ask 13 above, not a second health item.
+- **Everything else green.** Last hour's stuck retrospective PR merged on its own — [#1822](https://github.com/christianspliid-ui/threadbare/pull/1822) is in at [`4ced52a8`](https://github.com/christianspliid-ui/threadbare/commit/4ced52a8) and no PR is now waiting. Deploy up to date at [`5c37c7dd`](https://github.com/christianspliid-ui/threadbare/commit/5c37c7dd) (later commits were docs-only, so no rebuild was owed), all 3 scheduled workflows and all 3 post-merge checks healthy, all 9 scheduled tasks on schedule, the branch reaper ran 16 minutes ago, and tick cost is 85 ms/tick — 1% above the 7-day median, well inside the drift line.
