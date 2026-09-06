@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 00:29 local (22:29 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -122,16 +122,9 @@ My read is that it was a host that was simply off: three unrelated schedulers st
 
 Setting it in the machine environment or the home tree's `.env` is the durable fix — no browser sign-in, and it survives a lapsed token, which is exactly the failure that just happened. Worth doing eventually, not worth your evening.
 
-### 15. Restart the Claude desktop app when convenient — 30 seconds, and mostly cleared already
-
-**The pile-up has largely resolved itself since it was first reported.** Of the sixteen stale helper processes that were spinning at 21:37, measured again this run: **one is still burning, at about 15 of the machine's 32 cores.** The rest have gone quiet on their own. Machine load is 70%, not the 100% it sat at for over an hour. Thirty-five such processes are still resident, but only that one is doing work.
-
-**Nothing is broken and no work has been lost.** The one thing it still costs is the engine-speed trend: this run measured **155 ms/tick against a normal 84** — but with warm-up inflated by the same factor (71 against 38), which is the fingerprint of a busy machine rather than a slow simulation. An hour ago the same measurement read 1233 ms. So it is improving fast, and the reading was discarded again rather than recorded, because publishing it would skew the week's baseline and hide a real slowdown later.
-
-**No agent can clear the last one safely** — killing it could cut a live session off mid-run. Quitting and reopening the app does it. **Nothing waits on this and it can wait until morning**; it stays on the list only because it is yours to do, it is cheap, and it is the one thing keeping the engine-speed trend dark.
-
 ## Resolved this period
 
+- **The stale-process pile-up cleared itself — no restart needed** *(2026-09-07)*. The sixteen helper processes that pinned the machine for over an hour are gone: 22 remain resident, the machine is at **2% load**, and this run measured warm-up at **39.1 ms against a normal 38** — the busy-machine fingerprint is absent. The engine-speed trend is publishing rows again, so the one thing that ask was protecting is no longer at risk.
 - **Linear came back on its own** *(2026-09-06)*. Six hours of lane runs hit a *requires authentication* wall and it recovered unaided around 17:15 — no reauthorization, no API key, nothing lost. The board sat still; it did not lose anything. One residue is ask 14 and one is agent-owned: seven merges to `main` ([PRs #1821–#1827](https://github.com/christianspliid-ui/threadbare/pulls?q=is%3Apr+is%3Amerged)) carry no `Fixes THR-XX` line, because the lanes correctly refused to claim tickets they could not reach. Flagged for the Friday retro.
 - **Your pixel sweep is six-for-nine and found a fix of its own** *(2026-09-04)*. Live: [THR-1409](https://linear.app/threadbare/issue/THR-1409/three-worldgen-constants-are-declared-twice-with-different-values-the), [THR-1410](https://linear.app/threadbare/issue/THR-1410/authored-choice-veil-the-commit-control-is-unreachable-at-19201080-the), [THR-1411](https://linear.app/threadbare/issue/THR-1411/the-stance-word-never-renders-on-the-live-authored-choice-veil-choice), [THR-1413](https://linear.app/threadbare/issue/THR-1413/no-route-puts-a-companion-on-a-mortal-from-the-browser-and-a-companion), [THR-1414](https://linear.app/threadbare/issue/THR-1414/no-premonition-surfaced-in-280-ticks-across-four-seeded-runs-verify), the self-found [THR-1418](https://linear.app/threadbare/issue/THR-1418/terrainpipeline-has-no-pipeline-22-more-cms-tuning-rows-render-a), and [THR-1416](https://linear.app/threadbare/issue/THR-1416/consequence-chip-tag-maxwidth-190-wraps-bond-reputation-with-sacred) — the consequence chip's tag ceiling, tuned against the corpus rather than one screenshot ([PR #1820](https://github.com/christianspliid-ui/threadbare/pull/1820)).
 - **You killed the encounter audio moments, and they are now deleted** *(2026-09-04)*. *"thr 1168. no audio please."* — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) had waited since 18 August; merged and deployed the same day ([PR #1817](https://github.com/christianspliid-ui/threadbare/pull/1817)).
@@ -141,7 +134,6 @@ Setting it in the machine environment or the home tree's `.env` is the durable f
 - **The world's objects now have one catalogue in game words** *(2026-09-03)*. [THR-1394](https://linear.app/threadbare/issue/THR-1394/the-worlds-objects-one-canonical-catalogue-in-game-words-the-drift) — what made the undertakings map chartable, and what unparked ask 3.
 - **Proactive Agent Actions closed complete** *(2026-09-03)*. [The map](https://linear.app/threadbare/issue/THR-1276/proactive-agent-actions-wayfinder-map) and all six plan docs done — substrate, action library, binder, reactive loop, the calling & the surfaces, the factory.
 - **The word players see is settled and shipped** *(2026-09-02)*. [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register): what a character owns reads **freehold**. Say the word any time if it is wrong to your ear — still four lines to reverse.
-- **Three of the four things Traits wave 2 was said to be blocking closed on their own** *(2026-09-02)*. No decision of yours was involved, and ask 1 is smaller as a result.
 
 ---
 
