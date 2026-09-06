@@ -3180,7 +3180,13 @@ function StepNavigator({
         return (
           <button
             className="focus-ring"
-            key={step.stepId}
+            // THR-1417 — the index fallback is the second layer, not the fix. The
+            // defect was a producer writing `undefined` into a non-optional
+            // `stepId` (`buildGateDutyEncounterStageModel`, repaired there); this
+            // keeps a future producer's omission from silently costing every dot
+            // its identity across re-renders. Both layers are falsified
+            // independently — see `stepNavigatorKeys.test.tsx`.
+            key={step.stepId ?? `step-${i}`}
             onClick={clickable ? () => onSelectStep?.(isCurrent || isReplaying ? null : i) : undefined}
             disabled={!clickable}
             title={title}
