@@ -787,3 +787,112 @@ describe('THR-1173 — the gate duty location reaches link tier', () => {
     }
   });
 });
+
+describe('THR-1417 — every history row carries a real step identity', () => {
+  /**
+   * The adapter used to write `stepId: step.id` and `stepLabel: step.name`
+   * straight through. `ActionStep` declares neither field, the gate-duty steps
+   * genuinely carry neither, and nothing stamps them at build time — so both
+   * reads were `undefined` at runtime, written into two fields
+   * `EncounterStageHistoryModel` declares non-optional. `stepId` is the step
+   * navigator's React key, so every veil open logged 'Each child in a list
+   * should have a unique "key" prop'.
+   *
+   * This is the owning layer for that defect. `StepNavigator` also defends
+   * itself with an index fallback (`__tests__/stepNavigatorKeys.test.tsx`), and
+   * that second layer is deliberately not what this test measures: revert the
+   * `??` fallbacks in the adapter and this fails on its own.
+   */
+  function buildHistoryModel() {
+    const template = getGateDutyTemplate();
+    const encounter: ActiveEncounterDisplay = {
+      encounterId: template.id,
+      actorId: 'agent.guard',
+      currentStepIndex: 1,
+      history: [{ encounterId: 'step-1', success: true, tick: 12 }],
+      choiceHistory: [],
+      status: 'active',
+      startedTick: 10,
+      sourceSystem: 'unified_action',
+      actionId: 'ua_gate_duty',
+    };
+    const notification: EncounterNotification = {
+      id: 'notif-gate-duty-keys',
+      agentId: 'agent.guard',
+      agentName: 'Sergeant Tal',
+      courtPosition: 'the_first',
+      encounterId: template.id,
+      encounterName: template.name,
+      prose: 'The checkpoint is already in motion.',
+      choices: [],
+      createdTick: 11,
+      autoResolveTick: null,
+      viewed: false,
+      resolved: false,
+    };
+    const clearanceGateState: ClearanceGateRuntimeState = {
+      runtimeId: 'clearance_gate_cg.quest.gate_duty_keys',
+      templateId: template.id,
+      gateId: 'checkpoint_clearance',
+      anchorLocationId: 'loc.town',
+      subjectNodeId: 'npc.courier',
+      authorityNodeId: 'npc.captain',
+      witnessNodeIds: ['npc.witness'],
+      locationNodeId: 'loc.gatehouse',
+      persistence: 'must-persist',
+      state: 'pending',
+      revealedSignalKeys: [],
+      attempts: 0,
+      lastUpdatedTick: 11,
+      history: [],
+    };
+    const graph = {
+      getNode(nodeId: string) {
+        const nodes: Record<string, unknown> = {
+          'loc.gatehouse': { name: 'South Quarantine Gate' },
+          'npc.captain': { name: 'Captain Merrow' },
+          'npc.courier': { name: 'Courier Nessa' },
+          'npc.witness': { name: 'Dock Porter' },
+        };
+        return nodes[nodeId] ?? null;
+      },
+      getOutgoingEdges: () => [],
+    } as const;
+
+    return buildGateDutyEncounterStageModel({
+      template,
+      encounter,
+      notification,
+      agentName: 'Sergeant Tal',
+      threadTier: 'strong',
+      graph: graph as never,
+      clearanceGateState,
+      essence: 0.34,
+    });
+  }
+
+  it('the premise still holds — the authored steps carry no id or name of their own', () => {
+    // Guards the test below from going vacuous. If steps ever gain real ids the
+    // fallback stops being the thing under test, and this line says so out loud
+    // rather than letting the assertions pass for a new reason.
+    const steps = getGateDutyTemplate().steps as readonly { id?: string; name?: string }[];
+
+    expect(steps.length).toBeGreaterThan(1);
+    expect(steps.every(step => step.id === undefined)).toBe(true);
+    expect(steps.every(step => step.name === undefined)).toBe(true);
+  });
+
+  it('gives every history row a defined, unique stepId and a non-empty label', () => {
+    const history = buildHistoryModel().history;
+
+    // Non-empty population: an empty history would satisfy every `every()` below.
+    expect(history.length).toBeGreaterThan(1);
+    for (const row of history) {
+      expect(typeof row.stepId).toBe('string');
+      expect(row.stepId).not.toBe('');
+      expect(typeof row.stepLabel).toBe('string');
+      expect(row.stepLabel).not.toBe('');
+    }
+    expect(new Set(history.map(row => row.stepId)).size).toBe(history.length);
+  });
+});

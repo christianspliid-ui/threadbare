@@ -411,14 +411,29 @@ function buildHistory(
   const currentStepIndex = getCurrentStepIndex(encounter, activeAction);
 
   return template.steps.map((step, index) => {
+    // THR-1417 — `ActionStep` declares neither `id` nor `name`, and the gate-duty
+    // steps genuinely carry neither: nothing stamps them at build time, so both
+    // reads are `undefined` at runtime. `stepId` is the step navigator's React
+    // key, and an undefined key is the "unique key prop" warning the veil logged
+    // on every open. Both fields are declared non-optional on
+    // `EncounterStageHistoryModel`, so writing `undefined` into them was a lie the
+    // types could not catch — this file predates the THR-489 baseline that hides
+    // the `step.id` error itself.
+    //
+    // The fallbacks are the conventions already in use for exactly this: the two
+    // sibling adapters key on `step-${index}`, and `buildSimpleEncounterStageModel`
+    // labels on `Step ${i + 1}`. Positional keys are correct here — the step list
+    // is fixed-length and never reordered, so index identity *is* step identity.
+    const stepId = step.id ?? `step-${index}`;
+    const stepLabel = step.name ?? `Step ${index + 1}`;
     const unifiedOutcome = activeAction?.stepOutcomes[index];
     if (unifiedOutcome !== undefined) {
       const choiceMemory = getChoiceMemoryForStep(encounter, activeAction, index, step.id);
       const afterimage = buildAfterimage(index, choiceMemory, isStepSuccess(unifiedOutcome))
         ?? (isStepSuccess(unifiedOutcome) ? step.onSuccess.narrative : step.onFailure.narrative);
       return {
-        stepId: step.id,
-        stepLabel: step.name,
+        stepId,
+        stepLabel,
         status: 'resolved',
         afterimage,
       };
@@ -430,22 +445,22 @@ function buildHistory(
       const afterimage = buildAfterimage(index, choiceMemory, stepOutcome?.success ?? false)
         ?? (stepOutcome?.success ? step.onSuccess.narrative : step.onFailure.narrative);
       return {
-        stepId: step.id,
-        stepLabel: step.name,
+        stepId,
+        stepLabel,
         status: 'resolved',
         afterimage,
       };
     }
     if (!activeAction?.resolved && index === currentStepIndex) {
       return {
-        stepId: step.id,
-        stepLabel: step.name,
+        stepId,
+        stepLabel,
         status: 'current',
       };
     }
     return {
-      stepId: step.id,
-      stepLabel: step.name,
+      stepId,
+      stepLabel,
       status: 'future',
     };
   });
