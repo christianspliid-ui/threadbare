@@ -11,6 +11,7 @@ import {
 import { computeRawScore, getTopContributors } from '../domainCapability';
 import { COMPANION_MAX, COMPANION_TEMPLATES } from '../../data/companion-templates';
 import { mulberry32 } from '../../lib/prng';
+import { GENERIC_NAMES } from '../../data/culture-name-pools';
 
 const BEARER = 'actor.bearer';
 const OTHER = 'actor.other';
@@ -273,5 +274,54 @@ describe('companions — the capability walk', () => {
 
     removeCompanion(graph, minted.companionId, 'story', 3);
     expect(computeRawScore(graph, BEARER, 'stone')).toBe(0);
+  });
+});
+
+describe('companions — two companions on one bearer never share a name (THR-1420)', () => {
+  /**
+   * The world's flat name pools are finite; a mature world has already spent them.
+   * Once spent, every mint lands in the picker's fallback tier — the branch that
+   * used to hand back a name without consulting the exclusion set. Same-tick is
+   * load-bearing: staggering the ticks lets the ordinal anchor advance and hides it.
+   */
+  function makeExhaustedGraph(): WorldGraph {
+    const graph = makeGraph();
+    for (const [i, name] of GENERIC_NAMES.entries()) {
+      graph.addNode({
+        id: `actor.filler_${i}`,
+        type: 'actor',
+        name,
+        properties: { actorType: 'individual' },
+      });
+    }
+    return graph;
+  }
+
+  it('mints two distinct names for one bearer at the same tick', () => {
+    const graph = makeExhaustedGraph();
+    const tick = 5;
+
+    const a = mintCompanion(graph, 'companion.wayfarer', BEARER, tick, mulberry32(42), {
+      source: 'test.same_tick',
+    });
+    const b = mintCompanion(graph, 'companion.guild-scribe', BEARER, tick, mulberry32(42), {
+      source: 'test.same_tick',
+    });
+
+    expect(a).not.toBeNull();
+    expect(b).not.toBeNull();
+    expect(a!.name).not.toBe(b!.name);
+  });
+
+  it('does not reuse a name an existing actor already carries', () => {
+    const graph = makeExhaustedGraph();
+    const taken = new Set(graph.getNodesByType('actor').map(n => n.name));
+
+    const minted = mintCompanion(graph, 'companion.wayfarer', BEARER, 5, mulberry32(42), {
+      source: 'test.same_tick',
+    });
+
+    expect(minted).not.toBeNull();
+    expect(taken.has(minted!.name)).toBe(false);
   });
 });
