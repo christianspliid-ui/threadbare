@@ -345,9 +345,23 @@ export interface DebugBridge {
    * List action templates available to fire on agents. Omit `agentId` to list every
    * actor-targeting template; pass an agent id/name to filter by that agent's context.
    * Doubles as an existence check — returns `[]` when the agent query matches nothing.
+   *
+   * The selector resolves through `resolveDebugAgent` (THR-1032): exact id, id
+   * prefix, case-insensitive display-name substring, or `@hero` / `@avatar` for
+   * the ascendant's avatar.
    */
   listActions: (agentId?: string) => DebugActionInfo[];
-  /** Fire an action template on a target agent immediately, bypassing UI animations. agentId and templateId both accept partial matches. */
+  /**
+   * Fire an action template on a target agent immediately, bypassing UI animations.
+   * `agentId` accepts the same selectors as {@link listActions}; `templateId`
+   * accepts an exact id, an id substring, or a template-name substring.
+   *
+   * **The named agent is the *target*, not the actor.** The cast runs on the
+   * player-cast path with the **ascendant as actor**, so a template op carrying
+   * `nodeId: '$actor'` (e.g. `grant_companion`) lands on the ascendant and not
+   * on the agent you named — the trace reads `bearerId asc.<identity>`. To put
+   * an effect on the agent itself the template must target `$target` (THR-1412).
+   */
   fireAction: (agentId: string, templateId: string) => DebugFireResult;
   /** List canonical Starter 12 action IDs. */
   listStarterActions: () => Promise<string[]>;

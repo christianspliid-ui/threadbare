@@ -57,6 +57,14 @@ interface UseAgentInteractionParams {
   runtime?: SimulationRuntime;
   /** Simulation running state setter — used to auto-pause when an ascendant action is initiated */
   setRunning?: React.Dispatch<React.SetStateAction<boolean>>;
+  /**
+   * Debug omniscience (`window.__DEBUG.setOmniscience`). When true, every agent
+   * card and profile resolves at `transparent` instead of the familiarity the
+   * player has actually earned. GameView passed this before THR-1412 but the
+   * hook never declared or read it, so the documented "bypasses familiarity
+   * gating" left a stranger's sheet at `stranger`.
+   */
+  omniscienceMode?: boolean;
 }
 
 export function useAgentInteraction({
@@ -69,6 +77,7 @@ export function useAgentInteraction({
   onParticleBurst,
   runtime,
   setRunning,
+  omniscienceMode = false,
 }: UseAgentInteractionParams) {
   // ── Hooks ──
   const { playCastSound } = useInterventionAudio();
@@ -184,7 +193,9 @@ export function useAgentInteraction({
   const agentInfoCard = useMemo(() => {
     if (!selectedAgentId) return null;
     const familiarity = getFamiliarity(gameState.familiarityMap, selectedAgentId);
-    const knowledgeLevel = getKnowledgeLevel(familiarity);
+    // Omniscience lifts the card to the top level instead of the familiarity
+    // the player earned — that is the whole point of the debug flag (THR-1412).
+    const knowledgeLevel = omniscienceMode ? 'transparent' : getKnowledgeLevel(familiarity);
     const card = getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel, gameState.seed, gameState.tick);
 
     // Add scry court position as an active effect if agent holds one
@@ -201,14 +212,14 @@ export function useAgentInteraction({
     }
 
     return card;
-  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, gameState.seed, gameState.tick, scryState, worldVersion]);
+  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, gameState.seed, gameState.tick, scryState, worldVersion, omniscienceMode]);
 
   const agentFullProfile = useMemo(() => {
     if (!profileModalAgentId) return undefined;
     const familiarity = getFamiliarity(gameState.familiarityMap, profileModalAgentId);
-    const knowledgeLevel = getKnowledgeLevel(familiarity);
+    const knowledgeLevel = omniscienceMode ? 'transparent' : getKnowledgeLevel(familiarity);
     return getAgentFullProfile(gameState.graph, profileModalAgentId, gameState.ascendantId, knowledgeLevel);
-  }, [profileModalAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, worldVersion]);
+  }, [profileModalAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, worldVersion, omniscienceMode]);
 
   // ── Handlers ──
   const handleAgentSelect = useCallback((agentId: string) => {
