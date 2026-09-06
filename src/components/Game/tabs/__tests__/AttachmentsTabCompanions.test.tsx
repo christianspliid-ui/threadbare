@@ -73,12 +73,33 @@ describe('AttachmentsTab — Companions row', () => {
     expect(container.textContent?.toLowerCase()).not.toContain('retinue');
   });
 
-  it('renders the always-on bonus as signed reach deltas', () => {
+  // Replaced, not deleted (THR-1421). The assertion this supersedes pinned
+  // `+2 stone` / `+1 eye` — a raw magnitude and a raw reach key on a
+  // player-facing surface, Laws 13 and 14. The `not.toMatch` arm is the half
+  // that makes the fix falsifiable rather than eyeballed: it fails if any
+  // numeral returns to the row by any route, not just via the old wording.
+  it('names the Reaches a companion steadies, and lets no numeral onto the row', () => {
     render(<AttachmentsTab card={card({ companions: [companion()] })} />);
 
     const row = screen.getByTestId('companion-companion.wayfarer');
-    expect(row.textContent).toContain('+2 stone');
-    expect(row.textContent).toContain('+1 eye');
+    expect(row.textContent).toContain('Steadies your Stone and Eye.');
+    expect(row.textContent ?? '').not.toMatch(/[+-]?\d/);
+  });
+
+  it('names a single Reach without the list grammar', () => {
+    render(
+      <AttachmentsTab
+        card={card({ companions: [companion({ domainContributions: { iron: 3 } })] })}
+      />,
+    );
+
+    const row = screen.getByTestId('companion-companion.wayfarer');
+    // The terminal period is the assertion that matters: it pins the
+    // single-Reach grammar, since the two-Reach form would read
+    // `Steadies your Iron and …`. Not a bare `not.toContain('and')` — the
+    // authored `goodFor` sentence on this fixture contains one.
+    expect(row.textContent).toContain('Steadies your Iron.');
+    expect(row.textContent ?? '').not.toMatch(/[+-]?\d/);
   });
 
   it('names a bonus-less companion honestly rather than showing an empty line', () => {
@@ -86,7 +107,7 @@ describe('AttachmentsTab — Companions row', () => {
       <AttachmentsTab card={card({ companions: [companion({ domainContributions: {} })] })} />,
     );
     expect(screen.getByTestId('companion-companion.wayfarer').textContent)
-      .toContain('No bonus — just company.');
+      .toContain('No help in any Reach — just company.');
   });
 
   it('shows a duration readout for a contracted companion', () => {
@@ -103,8 +124,13 @@ describe('AttachmentsTab — Companions row', () => {
       />,
     );
 
-    expect(screen.getByTestId('companion-companion.sellsword-band').textContent)
-      .toContain('4 ticks remaining');
+    // THR-1421: was `4 ticks remaining` — a raw magnitude in an engine unit
+    // (Laws 13 + 14). `durationLabel` spells the count out, so the numeral-free
+    // arm now covers the whole row rather than only its permanent variant.
+    const row = screen.getByTestId('companion-companion.sellsword-band');
+    expect(row.textContent).toContain('one day remaining');
+    expect(row.textContent).not.toContain('ticks');
+    expect(row.textContent ?? '').not.toMatch(/[+-]?\d/);
   });
 
   it('shows no duration readout for a permanent companion', () => {

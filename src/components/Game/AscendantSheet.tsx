@@ -24,7 +24,7 @@ import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
 import { getThreadsFrom } from '../../engine/graphQueries';
 import { getCompanions } from '../../engine/companions';
-import { reachDisplayName } from '../../engine/aftermathWords';
+import { companionReachLine } from './companionWords';
 import { composePortrait } from '../../utils/portraitCompositor';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -136,29 +136,6 @@ function tickToNarrativeAge(tick: number): string {
   if (tick < 120) return 'Generations have passed beneath your gaze.';
   if (tick < 200) return 'Empires have risen and crumbled.';
   return 'The ages blur into legend.';
-}
-
-/**
- * Which Reaches a companion steadies, in words (THR-1413).
- *
- * Deliberately *not* `AttachmentsTab`'s `contributionLine`, which renders the raw
- * term (`+3 iron`). That is a numeral on a player-facing surface — Law 13 — and
- * copying it would spread the violation to a second surface rather than contain
- * it. Banding the value instead would mean inventing a ladder for the raw
- * contribution scale, which Law 15 makes a ruling rather than an implementation
- * choice. So this names the Reaches and lets the authored `goodFor` line carry the
- * "how much" as fiction, which is what the player can actually act on.
- * The exact term stays where Law 13 puts it: in the trace and the designer view.
- */
-function companionReachLine(contributions: Record<string, number>): string {
-  const reaches = Object.entries(contributions)
-    .filter(([, v]) => typeof v === 'number' && v > 0)
-    .sort(([, a], [, b]) => b - a)
-    .map(([reach]) => reachDisplayName(reach));
-
-  if (reaches.length === 0) return 'No help in any Reach — just company.';
-  if (reaches.length === 1) return `Steadies your ${reaches[0]}.`;
-  return `Steadies your ${reaches.slice(0, -1).join(', ')} and ${reaches[reaches.length - 1]}.`;
 }
 
 function capitalize(s: string): string {
