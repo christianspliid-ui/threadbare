@@ -6,7 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
-last_validated_against: 2026-08-29
+last_validated_against: 2026-09-06
 validated_doctrine: architecture@1
 ---
 
@@ -215,6 +215,19 @@ break the thing it checks, or query a known-bad row — before believing its PAS
 check you have never seen red proves only that the check ran. Related: assert against the
 *production* export, never a fixture copy of it (a copied table verifies fiction), and pin
 closed sets with `toEqual` on the real producer's output so a new member fails loud.
+
+**The mirror image: a guard resting on an organic baseline of 1–3 observations (impediments
+#959, #969, #971).** A vacuity fix that asserts `population > 0` over *organic* simulation
+content can itself be measuring luck: `edgeIntegrity`'s `trades_with > 0` floor rested on **one**
+route on one seed (zero on the sibling seed), and `lairClearing`'s threshold-4 arm rested on one
+qualifying lair (`[6, 1, 1]`). Both flipped red on an unrelated world-shifting change and read as
+that change's regression (~1 h of misdirected diagnosis). When writing a guard over organic
+content, ask not "does this fail when the feature is gone" but **"how many observations is the
+baseline, and what is the second-smallest?"** — if the answer is 1–3, construct the population
+deterministically (seed the route, seed the steeped lair) so the guard asserts the *mechanism*,
+not that the content happened to occur. And before building any fixed-seed probe, confirm the
+entrypoint actually produces the population (`initializeGameStateFromIdentity` worlds have zero
+threaded agents; the obvious worldgen entrypoint generates no rivers or lakes — #969/#971).
 
 ## Your test does not get a fresh module registry (THR-940)
 
