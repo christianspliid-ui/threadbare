@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-09-04 15:54 local (13:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-06 13:26 local (11:26 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were last verified Friday 2026-09-04 — Linear was unreachable this run.**
 
 ## Standing asks
 
 ### 1. Approve the camp six — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md), drafted and merged 08:23 this morning. (An older August draft still sits on `main` under a near-identical name and reads plausible — three rulings have overtaken it. The link above is the live one.)
+The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md), merged Friday morning. (An older August draft still sits on `main` under a near-identical name and reads plausible — three rulings have overtaken it. The link above is the live one.)
 
 **Six, not seven.** `shrine_offering` is held to batch 3 — most warnings of the set (10), and a weak contrast against `offer_small_prayer`. It is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with), so **that checkpoint waits one batch longer**. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting. None has a typed consequence today.
 
-Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation this morning. Unchanged across seven briefings and not re-argued.
+Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation. Unchanged and not re-argued.
 
 *"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* The execution ticket is [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine), which an executor still needs to reconcile to the merged brief.
 
@@ -26,13 +26,13 @@ You asked to see the list before anything is deleted. [Slice 4a](https://github.
 
 **You filed this yourself on 16 August and nothing has moved since.** One button on the live game that captures a run to a `.json` you attach to chat — so a weird-looking simulation reaches an agent as *state*, not a screenshot and a sentence.
 
-Scope is already settled from your answers that day: snapshot only, no replay log; must work on the deployed build; output is a downloaded file. High priority, blocked by nothing, 19 days in `Todo` purely because no design pass was run.
+Scope is already settled from your answers that day: snapshot only, no replay log; must work on the deployed build; output is a downloaded file. High priority, blocked by nothing, 21 days in `Todo` purely because no design pass was run.
 
 **Yes** puts it at the front of the design queue. **No** closes it rather than keeping it warm. *— surfaced by daily-backlog-grooming, 2026-09-03*
 
 ### 4. Three questions left on the undertakings map — [THR-1396](https://linear.app/threadbare/issue/THR-1396/undertakings-across-the-living-simulation-wayfinder-map)
 
-**Smaller than it was.** [Which open cells are wanted](https://linear.app/threadbare/issue/THR-1397/which-open-cells-are-wanted-yield-and-leverage-ownership-of-people) is decided and closed — every cell dispositioned, and your three forks with it: **plotting a mortal's death**, **the signed curse**, **forced succession**. The map's research question is finished too: of 26 subsystems, 11 are moved by a live cell, 14 untouched, 5 of those a genuine gap.
+[Which open cells are wanted](https://linear.app/threadbare/issue/THR-1397/which-open-cells-are-wanted-yield-and-leverage-ownership-of-people) is decided and closed — every cell dispositioned, and your three forks with it: **plotting a mortal's death**, **the signed curse**, **forced succession**. The map's research question is finished too: of 26 subsystems, 11 are moved by a live cell, 14 untouched, 5 of those a genuine gap.
 
 What is left is three questions about what the game should mean — **take the first one first, it unblocks four**:
 
@@ -46,20 +46,20 @@ Say **"work the undertakings map"** and a session takes them in order.
 
 Still one word — and **smaller than earlier briefings claimed**. It was billed as the valve holding the design pipeline shut; three of the four things it supposedly blocked closed under their own power ([grievance supply](https://linear.app/threadbare/issue/THR-1383), [undertaking factory](https://linear.app/threadbare/issue/THR-1300), [decision-board re-scope](https://linear.app/threadbare/issue/THR-1349)).
 
-What remains is genuinely just intent: 20 days In Design, assigned to you, no plan doc. The machine keeps it counted because an assigned item means a person may be about to start. **Yes** changes nothing; **not getting to it** sets it aside. (Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket.)
+What remains is genuinely just intent: 22 days In Design, assigned to you, no plan doc. The machine keeps it counted because an assigned item means a person may be about to start. **Yes** changes nothing; **not getting to it** sets it aside. (Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket.)
 
 The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic").
 
 ### 6. The fight map — seven open, and two of them are the head — [Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)
 
-**Corrected 2026-09-04: seven, not ten.** Three of the ten were waiting on answers to the other two all along; earlier briefings counted labels instead of reading relations. Every research question the map carried is finished.
+**Seven, not ten.** Three of the ten were waiting on answers to the other two all along; earlier briefings counted labels instead of reading relations. Every research question the map carried is finished.
 
 Settle these two and **three more open by themselves**:
 
 - [**How a fight against a monster works**](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton) — the nerve test, the clash test, and what a monster's stat block has to say.
 - [**How a fight between two people works**](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) — both sides roll, and the interesting part is which pair of results you got.
 
-The rest: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights). Say *"work the fight map"*. *— correction from tb-orchestrator*
+The rest: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights). Say *"work the fight map"*.
 
 ### 7. Two sketches ready to be built for you to react to
 
@@ -88,7 +88,7 @@ Deliberately left with you: what the game means, not how to wire it. No urgency 
 
 One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each carries test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes now, nineteen captures. Newest include faction heraldry (does a subordinate charge at 0.42 scale read as *deliberately lesser* or as a broken asset?), the tooltip focus ring, and the aftermath screen as composed.
 
-**Both captures that were unreachable are now reachable — as of this hour, nothing blocks the sitting.** The companion route ([THR-1413](https://linear.app/threadbare/issue/THR-1413/no-route-puts-a-companion-on-a-mortal-from-the-browser-and-a-companion)) merged this morning, so a companion can be put on a mortal from the browser; and [the premonition that never fired](https://linear.app/threadbare/issue/THR-1414/no-premonition-surfaced-in-280-ticks-across-four-seeded-runs-verify) merged at 15:34 — the queue was deleting whispers nine ticks before they could show, and the fix ships a lever that forces one on demand. Your 4 September sitting closed out and the ticket returned to the shelf as `Todo`; the nineteen captures are still owed. One more attended item joined this morning: [THR-1419](https://linear.app/threadbare/issue/THR-1419/attended-pixel-pass-for-the-choice-card-meta-row-confirm-the-three) — the choice-card meta row, checking a three-item withdrawn row does not overflow the card and that the stance hues read against the veil ground.
+**Nothing blocks the sitting.** The companion route ([THR-1413](https://linear.app/threadbare/issue/THR-1413/no-route-puts-a-companion-on-a-mortal-from-the-browser-and-a-companion)) merged Friday, so a companion can be put on a mortal from the browser; and [the premonition that never fired](https://linear.app/threadbare/issue/THR-1414/no-premonition-surfaced-in-280-ticks-across-four-seeded-runs-verify) merged with a lever that forces one on demand. One more attended item joined Friday: [THR-1419](https://linear.app/threadbare/issue/THR-1419/attended-pixel-pass-for-the-choice-card-meta-row-confirm-the-three) — the choice-card meta row, checking a three-item withdrawn row does not overflow the card and that the stance hues read against the veil ground.
 
 It grows as more UI ships behind the same wall. Get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundles into the sitting in ask 1.
 
@@ -102,14 +102,24 @@ The hub is still unchartered, and the slice map's charter names it as successor:
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream waits on it. Listed only so it is not silently forgotten; say the word and it gets a ticket and a design pass.
 
+### 13. Should weekend quiet be normal too? — one word
+
+**The machine was off from Friday 16:28 to Sunday 13:22 — 45 hours — and everything resumed on its own.** Nothing broke, nothing was lost, no work is missing. The reason it reaches you at all is that the silence probe cannot tell a deliberate weekend from a fault, and you have only ruled on nights.
+
+The probe's own words: *"No scheduled Claude Code lane has written to origin/main or origin/ops since 2026-09-04T14:28:53.000Z — 44.9h of fleet-wide silence, past the 6h threshold, and no pause marker is set. Either the lanes are broken, or this is a deliberate pause that was never declared."*
+
+My read is that it was a host that was simply off: three unrelated schedulers stopped in the same minutes and came back in the same minute. That is a machine-state fact, not a defect.
+
+**Say "weekend quiet is normal too"** and it is declined the way overnight quiet has been since 8 August, and stops reaching you. Say nothing and it will surface again after the next long gap.
+
 ## Resolved this period
 
-- **Your pixel sweep is five-for-nine, it found a tenth fix on its own, and it has cleared its own last roadblock** *(2026-09-04)*. Live: [THR-1410](https://linear.app/threadbare/issue/THR-1410/authored-choice-veil-the-commit-control-is-unreachable-at-19201080-the) — the commit button that sat *underneath* the `Look away` footer at 1920×1080 ([PR #1813](https://github.com/christianspliid-ui/threadbare/pull/1813)); [THR-1411](https://linear.app/threadbare/issue/THR-1411/the-stance-word-never-renders-on-the-live-authored-choice-veil-choice), the stance word that never rendered on a choice card ([PR #1815](https://github.com/christianspliid-ui/threadbare/pull/1815)); [THR-1409](https://linear.app/threadbare/issue/THR-1409/three-worldgen-constants-are-declared-twice-with-different-values-the), the tuning panel showing worldgen numbers the generator never read; [THR-1413](https://linear.app/threadbare/issue/THR-1413/no-route-puts-a-companion-on-a-mortal-from-the-browser-and-a-companion), the missing companion route ([PR #1818](https://github.com/christianspliid-ui/threadbare/pull/1818)); and [THR-1414](https://linear.app/threadbare/issue/THR-1414/no-premonition-surfaced-in-280-ticks-across-four-seeded-runs-verify) — no premonition in 280 ticks, because the queue deleted whispers nine ticks before they could be shown ([PR #1819](https://github.com/christianspliid-ui/threadbare/pull/1819)). Fixing the tuning panel turned up [THR-1418](https://linear.app/threadbare/issue/THR-1418/terrainpipeline-has-no-pipeline-22-more-cms-tuning-rows-render-a) — 22 more rows with the same fault — merged this morning too. Four sweep tickets are still queued; ask 10 is what keeps that pipeline fed.
-- **You killed the encounter audio moments, and they are now deleted** *(2026-09-04)*. *"thr 1168. no audio please."* — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) had waited since 18 August. Your ruling turned it into a deletion job, and it merged and deployed the same day ([PR #1817](https://github.com/christianspliid-ui/threadbare/pull/1817)). Off your list for good.
-- **You accepted the two batch-1 exemplars** *(2026-09-04)*. *"the two examplars are accepted"* — The Grateful Kin and The Unsafe Bridge cleared the "worth meeting twice" bar, which released the camp batch's park and put content back in the queue. Ask 1 is the one approval left behind it.
-- **Your three undertaking forks are decided** *(2026-09-03)*. [THR-1397](https://linear.app/threadbare/issue/THR-1397/which-open-cells-are-wanted-yield-and-leverage-ownership-of-people) — every open cell dispositioned: plotting a mortal's death, the signed curse and forced succession are all in. Ask 4 is three smaller questions than it was.
+- **Your pixel sweep is six-for-nine and found a fix of its own** *(2026-09-04)*. Live: [THR-1409](https://linear.app/threadbare/issue/THR-1409/three-worldgen-constants-are-declared-twice-with-different-values-the), [THR-1410](https://linear.app/threadbare/issue/THR-1410/authored-choice-veil-the-commit-control-is-unreachable-at-19201080-the), [THR-1411](https://linear.app/threadbare/issue/THR-1411/the-stance-word-never-renders-on-the-live-authored-choice-veil-choice), [THR-1413](https://linear.app/threadbare/issue/THR-1413/no-route-puts-a-companion-on-a-mortal-from-the-browser-and-a-companion), [THR-1414](https://linear.app/threadbare/issue/THR-1414/no-premonition-surfaced-in-280-ticks-across-four-seeded-runs-verify), the self-found [THR-1418](https://linear.app/threadbare/issue/THR-1418/terrainpipeline-has-no-pipeline-22-more-cms-tuning-rows-render-a), and [THR-1416](https://linear.app/threadbare/issue/THR-1416/consequence-chip-tag-maxwidth-190-wraps-bond-reputation-with-sacred) — the consequence chip's tag ceiling, tuned against the corpus rather than one screenshot ([PR #1820](https://github.com/christianspliid-ui/threadbare/pull/1820)), and the last thing merged before the machine went quiet.
+- **You killed the encounter audio moments, and they are now deleted** *(2026-09-04)*. *"thr 1168. no audio please."* — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) had waited since 18 August; merged and deployed the same day ([PR #1817](https://github.com/christianspliid-ui/threadbare/pull/1817)).
+- **You accepted the two batch-1 exemplars** *(2026-09-04)*. *"the two examplars are accepted"* — The Grateful Kin and The Unsafe Bridge cleared the "worth meeting twice" bar, which released the camp batch's park. Ask 1 is the one approval left behind it.
+- **Your three undertaking forks are decided** *(2026-09-03)*. [THR-1397](https://linear.app/threadbare/issue/THR-1397/which-open-cells-are-wanted-yield-and-leverage-ownership-of-people) — plotting a mortal's death, the signed curse and forced succession are all in. Ask 4 is three smaller questions than it was.
 - **The undertaking grid is generated and build-gated** *(2026-09-03)*. [Slice 4a](https://github.com/christianspliid-ui/threadbare/pull/1804) — your verbs, the registry redrawn on the world-object catalogue, and [a grid page](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/undertaking-grid.generated.md) the build refuses to let go stale. Ask 2 is its last slice.
-- **The world's objects now have one catalogue in game words** *(2026-09-03)*. [THR-1394](https://linear.app/threadbare/issue/THR-1394/the-worlds-objects-one-canonical-catalogue-in-game-words-the-drift) — the drift between what the code called things and what the game calls them is fixed. It is what made the undertakings map chartable, and what unparked ask 2.
+- **The world's objects now have one catalogue in game words** *(2026-09-03)*. [THR-1394](https://linear.app/threadbare/issue/THR-1394/the-worlds-objects-one-canonical-catalogue-in-game-words-the-drift) — what made the undertakings map chartable, and what unparked ask 2.
 - **Proactive Agent Actions closed complete** *(2026-09-03)*. [The map](https://linear.app/threadbare/issue/THR-1276/proactive-agent-actions-wayfinder-map) and all six plan docs done — substrate, action library, binder, reactive loop, the calling & the surfaces, the factory.
 - **The word players see is settled and shipped** *(2026-09-02)*. [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register): what a character owns reads **freehold**. Say the word any time if it is wrong to your ear — still four lines to reverse.
 - **Three of the four things Traits wave 2 was said to be blocking closed on their own** *(2026-09-02)*. No decision of yours was involved, and ask 5 is smaller as a result.
