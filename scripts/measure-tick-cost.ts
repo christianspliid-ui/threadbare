@@ -136,7 +136,28 @@ function measure(): TickCostReport {
   };
 }
 
-const report = measure();
+/**
+ * `--json` makes stdout a machine-readable contract: `check:tick-cost` `JSON.parse`s
+ * the captured stream whole. Engine code on the worldgen path writes diagnostics with
+ * `console.log` — `[WorldGen] Genome NPC top-up` (`worldSeed.ts`) is the one that bites —
+ * and those land *ahead* of the JSON, so the parse fails and the probe records
+ * `verdict: 'unknown'` instead of a reading. Route console output to stderr for the
+ * duration of the measurement: the diagnostics stay visible in lane logs, and stdout
+ * carries exactly one JSON object. Guards against any future stdout writer on this
+ * path, not just today's line (THR-1385 probe; recurring lane workaround retired).
+ */
+function measureWithCleanStdout(): TickCostReport {
+  if (!json) return measure();
+  const stdoutLog = console.log;
+  console.log = ((...args: unknown[]) => console.error(...args)) as typeof console.log;
+  try {
+    return measure();
+  } finally {
+    console.log = stdoutLog;
+  }
+}
+
+const report = measureWithCleanStdout();
 
 if (json) {
   console.log(JSON.stringify(report));
