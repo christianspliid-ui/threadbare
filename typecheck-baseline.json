@@ -1,5 +1,5 @@
 {
-  "total": 2926,
+  "total": 2925,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -171,7 +171,6 @@
     "src/data/avatar-portrait-assets.ts": 2,
     "src/data/condition-trait-content.ts": 6,
     "src/data/culture-content.ts": 1,
-    "src/data/culture-name-pools.ts": 1,
     "src/data/dream-content.ts": 3,
     "src/data/economic-trait-content.ts": 8,
     "src/data/effect-shell-proof-templates.ts": 7,
