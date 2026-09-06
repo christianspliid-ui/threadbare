@@ -2,27 +2,37 @@
 
 Full sweep (last full sweep 2026-09-01, 5 days ago — past the 4-day light-sweep threshold). Enumeration ran in the **home tree** (`C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`), which matters for the root-markdown and stray-report checks.
 
-**One check could not run at all:** the Linear queue audit, three-pillar compliance, and the Linear half of the Done-state smoke test are all blocked by the connector outage below. Everything else ran.
+> **Amended in place, same run (~19:0xZ).** This report was first published saying the Linear queue audit and three-pillar compliance were unmeasurable, because the connector was unauthenticated and two `ToolSearch` probes returned no Linear tool of any name. **Linear became reachable partway through the sweep** and both checks were then run in full. The Queue-health section below is real, measured data — not the stale figures the first version quoted. The outage was genuine when probed (see Finding 5, and impediment #973's five recurrences today); it recovered rather than never having happened. Amended rather than deferred to next week because the first version asserted an absence of measurement this run in fact went on to have.
 
 ## Needs Christian
 
-**Linear has been unreachable for at least six straight hours of lane runs, and both fixes are yours alone.** This is not new to you — it leads your briefing already, and impediment #973 has been bumped five times today. What this sweep adds is the *shape* of the cost, because a board outage looks exactly like a quiet board:
+**Linear went down for at least six straight hours of lane runs today, and came back on its own. The durable fix is still worth doing.**
 
-- Since 2026-09-06 ~11:00Z, **seven consecutive merges to `main` carry no `Fixes THR-XX` line** (PRs [#1821](https://github.com/christianspliid-ui/threadbare/pull/1821)–[#1827](https://github.com/christianspliid-ui/threadbare/pull/1827)) — every one is unticketed work, because the lane correctly refuses to claim a board ticket it cannot claim. Before the outage, the last four ticketed merges ([#1817](https://github.com/christianspliid-ui/threadbare/pull/1817)–[#1820](https://github.com/christianspliid-ui/threadbare/pull/1820)) all carried theirs.
-- Four lanes are degraded, not stopped: `tb-opus-pickup`, `tb-orchestrator`, `daily-backlog-grooming`, and this one.
-- The weekly retro also ran without it (impediment #974) — its drift-scan input and its ticket-filing output both hang on the same connector, so last cycle's one qualifying ticket is drafted but unfiled.
+You have seen the outage — it led your briefing and impediment #973 was bumped five times. It is now **resolved for this session**, so nothing is blocked as you read this. What is worth thirty seconds of your attention is that it resolved without anyone doing either of the two documented remedies, which means nothing stops it recurring tomorrow.
 
-**Either remedy alone fixes it.** (a) Reauthorize the Linear connector in claude.ai → Settings → Connectors. (b) Set `LINEAR_API_KEY` in the machine environment or the home tree's `.env` — the transport is already written and shipped in `scripts/drift-scan/linear.ts`, and seven scripts read it; this one needs no browser session and survives a lapsed token.
+What it cost while it was down, measured rather than estimated:
 
-Nothing else in this sweep needs you. The findings below are agent-owned technical calls for the Friday retro.
+- **Seven consecutive merges to `main` carry no `Fixes THR-XX` line** (PRs [#1821](https://github.com/christianspliid-ui/threadbare/pull/1821)–[#1827](https://github.com/christianspliid-ui/threadbare/pull/1827)) — all unticketed work, because the lane correctly refuses to claim a board ticket it cannot claim. The four merges before the outage ([#1817](https://github.com/christianspliid-ui/threadbare/pull/1817)–[#1820](https://github.com/christianspliid-ui/threadbare/pull/1820)) all carried theirs.
+- Four lanes degraded: `tb-opus-pickup`, `tb-orchestrator`, `daily-backlog-grooming`, and this one. The weekly retro too (impediment #974) — its drift-scan input and its ticket-filing output hang on the same connector, so last cycle's one qualifying ticket is drafted but unfiled.
+
+**The recommendation, unchanged and now cheap:** set `LINEAR_API_KEY` in the machine environment or the home tree's `.env`. The transport is already written and shipped in `scripts/drift-scan/linear.ts` and seven scripts read it; it needs no browser session and survives a lapsed token. Reauthorizing the connector in claude.ai → Settings → Connectors also works but is the fix that just proved it can lapse silently.
+
+Nothing else in this sweep needs you. Everything below is an agent-owned technical call for the Friday retro.
 
 ## Queue health
 
-**Not measurable this run.** `plugin:productivity:linear` reports "requires authentication before their tools can be used", and this session is non-interactive so no OAuth flow can run here. Two `ToolSearch` probes (`+linear list issues`, and the keyword form) returned no Linear tool of any name — only `mcp__github__list_issues`. `LINEAR_API_KEY` is absent from the environment and from both `.env` files.
+Measured at ~19:0xZ, state-filtered per protocol (never an unfiltered `list_issues`; sorted in memory, no `orderBy:priority` — impediment #49).
 
-Ready for Dev count, In Dev count, oldest item in each: **unknown**. So are the coordination-block audit, the orphan-project check, the stale-In-Dev check, the deferral-ordering check, and check 8 (three-pillar compliance on in-flight design), all of which start from a board query.
+| State | Count | Oldest | Notes |
+|---|---|---|---|
+| **Ready for Dev** | **4** | THR-1407, created 2026-09-03 (3 days) | All unassigned. All four carry a project **and** a full coordination block as the latest comment. |
+| **In Dev** | **3** (effective WIP **1**) | THR-1130, started 2026-08-15 (22 days, `Parked`) | THR-1420 is the one live claim (started 09-04, updated today). THR-1392 and THR-1130 both carry `Parked`, which frees the slot. |
+| **In Design** | **2** | THR-790 (Medium), THR-1002 (Medium) | THR-1298 has since left this state — its plan doc landed and slices are merging. |
+| **Implementation Planning** | **0** | — | — |
 
-The last board reading anyone has is from the lost 2026-09-01 orchestrator report (Finding 3): `Todo` 43, `Ready for Dev` 2 at 17:40:34Z. Five days stale — quoted as provenance, not as a current count.
+**WIP=1 is satisfied** — the two extra In Dev items carry `Parked`, and no stale-claim sweep is owed. **No stale handoffs**: the oldest Ready-for-Dev item is 3 days, well under a week. **No orphans**: every issue in every queried state belongs to a project. **No `Deferral`-labelled items** are sitting behind other work.
+
+**The one thing worth the retro's eye is the shelf's composition, not its hygiene.** Four items, three of them `Low` priority and one `No priority`; two are `Repo Health`/`Infrastructure`, one is a debug-tooling bug, one is a UI-law bug. **Zero content or feature work is queued for the executor.** This is not the 32-of-35 pile-up that prompted Christian's 2026-08-10 throttle — the throttle is working, and these four are individually well-formed. It is the other failure the throttle's own text predicts: *"a process-only queue is a starved shelf, not a license to binge — the headline finding is 'feature pipeline needs supply'."* The 2026-09-01 orchestrator report reached the same conclusion independently (*"The bottleneck is design sessions, not the queue"*), and with `Implementation Planning` empty and only two items In Design, the supply side is where the constraint sits. Recorded as the headline, per that instruction, rather than as a ticket.
 
 ## Findings
 
@@ -70,13 +80,18 @@ Skill tree otherwise clean: 44 directories, **43 with a valid `SKILL.md`** (the 
 
 **Cost:** costs ~5 min (`rm -rf` two scratch dirs, one `.gitignore` line). Not fixing costs a recurring false positive on this check every week, plus a directory that reads as a skill to anything enumerating the tree. **Below the materiality bar** — zero work lost, first occurrence. Log row.
 
-### 5. Linear reachability is not in the sandbox-limitations catalogue
+### 5. Linear reachability is not in the sandbox-limitations catalogue — and the probe every lane used to detect the outage is aimed at the wrong name
 
-`Docs/ops/sandbox-limitations.md` carries three Linear rows — `save_issue` silent drops (#48), the assignee-restore hazard, and `orderBy: 'priority'` (#49). **None covers the connector being unauthenticated**, which is now at 5 recurrences in a single day and takes a whole lane down. CLAUDE.md's five-rule summary says "Verify-after-write on every Linear mutation", which presumes reachability.
+`Docs/ops/sandbox-limitations.md` carries three Linear rows — `save_issue` silent drops (#48), the assignee-restore hazard, and `orderBy: 'priority'` (#49). **None covers the connector being unauthenticated**, which hit 5 recurrences in a single day and took a whole lane down. CLAUDE.md's five-rule summary says "Verify-after-write on every Linear mutation", which presumes reachability.
 
-Worth promoting alongside it: #973's own still-open follow-up — have `scripts/session-precheck.ts` probe Linear reachability and report it in the `fingerprint` line beside `rg`/`git`/`nm`, so a lane whose every invariant runs through an API fails its precheck rather than its first mutation.
+**This sweep adds a detail worth more than the catalogue row.** Every lane run today diagnosed the outage the same way — a `ToolSearch` probe returning "no Linear tool of any name" — and the auth-required list named `plugin:productivity:linear` as the culprit. When Linear came back mid-sweep it came back under a **UUID-named server**, not that plugin name, while `plugin:productivity:linear` *remained* on the auth-required list. So:
 
-**Cost:** costs ~20 min (one catalogue row) + ~40 min (the precheck probe). Not fixing costs each affected lane re-deriving the diagnosis from scratch — measured at ~10 min per run in #974, across 4 lanes hourly. **Clears the materiality bar** on recurrence (5 in one day).
+- A lane that concludes "Linear is down" from the plugin name being unauthenticated can be wrong — a working Linear may be present under a different server id.
+- **The reliable probe is a capability call, not a name lookup.** One `list_teams` round-trip settles it; this sweep's did.
+
+That also sharpens #973's still-open follow-up: the reachability probe proposed for `scripts/session-precheck.ts` should make a real call, not check for a named connector.
+
+**Cost:** costs ~20 min (one catalogue row) + ~40 min (the precheck probe). Not fixing costs each affected lane re-deriving the diagnosis from scratch — measured at ~10 min per run in #974, across 4 lanes hourly — and risks a lane standing down while Linear is in fact reachable. **Clears the materiality bar** on recurrence (5 in one day).
 
 ### 6. The registry says this lane files findings; Christian's throttle says it does not
 
@@ -92,8 +107,18 @@ CLAUDE.md § Continuous Improvement (Christian, 2026-08-10) made the weekly retr
 
 **Cost:** costs one `.gitignore` line. Not fixing costs one permanent line of `git status` noise in the tree every session reads. **Below the bar.** Log row.
 
+### 8. Any lane commenting on a Ready-for-Dev item displaces the coordination block the executor reads
+
+Found already-diagnosed on THR-1415 rather than discovered here, and recorded so the retro can count it rather than re-derive it. `pull-work` Step 3 validates the **latest comment** for `Suggested model` / `Parallel-safe with` / `Mutex with`. On 2026-09-04, `daily-backlog-grooming` posted a correct and necessary grooming note (removing a wrong `docs-only` label) at 07:19:07Z — which buried the coordination block posted at 06:42:14Z. `tb-orchestrator` caught it and re-asserted the block verbatim at 07:29:00Z.
+
+The self-correction worked, and the lanes handled it exactly right — including declining to file it (*"Logged for the retro, not filed (2026-08-10 throttle)"*). But the hazard is structural, not a defect in either lane: **any** comment from **any** lane on a Ready-for-Dev item has this effect, and it is caught only if another lane happens to sweep afterwards. The cheap durable fix is to make Step 3 search for the most recent comment *containing a coordination block* rather than reading the last comment.
+
+**Cost:** costs ~20 min (one predicate change in `pull-work` Step 3). Not fixing costs one bounced or guessed-at pickup per occurrence (~15 min), at an unknown rate — this sweep found 1 occurrence in the 8-day window. **Below the materiality bar** on recurrence. Log row, with the count started.
+
 ## Clean checks
 
+- **Linear queue audit (check 1):** PASS on every hygiene predicate — see Queue health. Projects on all issues, coordination blocks on all four Ready-for-Dev items (each with all three required fields plus `Blocked by` and an evidence-shape line), WIP=1 respected, no stale In Dev, no stale handoff, no mis-ordered deferrals.
+- **Three-pillar compliance (check 8):** PASS. `Implementation Planning` is empty. Of the two In Design items, THR-1002 has no plan doc yet — correct for a design pass still in progress, not a finding — and THR-790's `Docs/plans/2026-07-26-traits-trigger-architecture.md` is fully compliant: `## Substrate inventory` (mandatory since THR-614), explicit `## Engine pillar` / `## Content pillar` / `## UI pillar`, `## Constants`, `## NFP compliance`, plus `## Forked-audit verdicts` and `## Intent-judge verdict`.
 - **Skill tree — `SKILL.md` presence:** PASS with one exception (Finding 4). 43/44 directories valid; all load-order-named skills resolve; no broken CLAUDE.md references; no empty `description:` frontmatter.
 - **Scheduled-task registry, direction 1** (registered → row): PASS. All 10 tasks `list_scheduled_tasks` returns have rows, including the two dormant ones.
 - **Scheduled-task registry, direction 3** (directory → registration): PASS, no *new* orphans. 13 directories vs 10 registered; the 3 extras (`check-slack-for-new-dev-work`, `daily-standup`, `keep-website-up-to-date`) are the known THR-851 set, already mirrored under `Docs/ops/scheduled-task-prompts/retired/` and awaiting Christian's deletion (a Christian action by design — the path is outside the repo).
@@ -106,15 +131,16 @@ CLAUDE.md § Continuous Improvement (Christian, 2026-08-10) made the weekly retr
 - **`Docs/status/` fragments:** PASS. 403 fragments; every 2026-09-04 closeout (THR-1168/1391/1409/1410/1411/1413/1414/1416/1418) has one, and the unticketed 2026-09-06 tick-cost work has `2026-09-06-thr-1385.md`.
 - **Orphan deferrals:** PASS. **Zero** `// TODO` / `// DEFERRED` comments in `src/` lacking a `THR-` reference; 9 correctly tagged as `// TODO(THR-XX)`.
 - **Autosync / home-tree health:** PASS. `threadbare-autosync.log` shows clean hourly `synced:`/`ok:` lines with no `skip:` and no `MANUAL REPAIR NEEDED`. The 2026-09-04 16:50 → 2026-09-06 13:50 gap is the machine-offline window corroborated by #974. Home tree is 2 commits behind `origin/main` mid-hour with only `.claude/settings.local.json` modified — normal, self-correcting.
-- **Done-state smoke test (commit side):** PASS, no THR-540 false-close pattern. The last four ticketed merges (#1817–#1820) each carry a line-anchored `Fixes THR-XX` in their branch commits; the seven since carry none because they are unticketed outage-window work. No bare-substring or branch-name close vectors observed.
+- **Done-state smoke test:** PASS, no THR-540 false-close pattern. The last four ticketed merges (#1817–#1820) each carry a line-anchored `Fixes THR-XX` in their branch commits; the seven since carry none because they are unticketed outage-window work. No bare-substring or branch-name close vectors observed.
 - **Wiki exemption audit:** PASS on legitimacy. All 14 exemptions in the window state a behaviour-neutral reason and the reasons hold on inspection. The *volume and aim* are Finding 1, not misuse.
-- **`tsc --noEmit` as a claimed type gate:** PASS on the operative surfaces. `CLAUDE.md` and `Docs/canon/verification-gates.md` name it only to forbid it. Historical mentions across `Docs/plans/` and `Design/retros/` are records of the finding, not live instructions.
+- **`tsc --noEmit` as a claimed type gate:** PASS. A full-tree grep across `.md`/`.json`/`.yml` returns three non-documentation hits, none of them a gate: two `.claude/settings.local.json` permission-allowlist entries, and a **comment** at `.github/workflows/ci.yml:490` recording that it *used to* live there and was a no-op. `CLAUDE.md` and `Docs/canon/verification-gates.md` name it only to forbid it; mentions across `Docs/plans/` and `Design/retros/` are records of the finding, not live instructions.
 
 ## Notes
 
-- **Grey zone — the Linear-blocked checks.** Rather than guess, checks 1 and 8 are recorded as unmeasured. The five-day-stale counts from the lost 09-01 report are quoted as provenance only; treating them as current would put a rotting snapshot into the record, which is precisely what THR-688 rule A forbids.
+- **The amendment is the most important note here.** The first version of this report declared two checks unmeasurable and quoted a five-day-stale board reading as provenance. Had the sweep ended there, the retro would have inherited "queue health: unknown" for a week. Worth generalising: **when a lane reports a capability as unavailable, the claim is true only as of the probe** — re-probing before publishing costs one round-trip and, this run, converted the report's largest gap into its most substantive section.
 - **Chose not to PR Finding 6.** It is a one-word registry correction and this lane is permitted to make durable registry fixes. I recorded it instead of minting a PR: it would cost a worktree, a PR and a CI cycle to move one word, and Christian's 2026-08-10 direction is explicit that the delivery machine's failure mode is accretion. It is pre-written above, so any session already touching `Docs/ops/` can apply it in one edit. Findings 4 and 7 are the same shape — trivial fixes, batched deliberately.
 - **`.agents/skills/` reads worse than it is.** The check is written unconditionally because the THR-654 demolition removed a genuine parallel skill tree. What is there now is 320 PNGs from a skill eval with no `SKILL.md` in sight. Reported as a finding because the rule is unconditional, but flagged here so the retro does not spend the demolition's severity on scratch files.
 - **Two checks caught things nothing else would have.** The THR-1056 stray-report probe found Finding 3, and it is the only reason a lost `needsChristian: true` report is now in the record. The check-10 coverage sweep found Finding 1 — a gate that has never fired for the repo's busiest system. Both are checks whose value is invisible until the week they fire; noting it because the six-week sunset rule applies to them, and this is their renewal evidence.
+- **Finding 8 was not discovered by this sweep**, it was read off a lane's own comment thread. Recorded anyway because the lanes correctly declined to file it, which means nothing else was carrying the count forward to the retro. That is the throttle working as designed only if this report does its half.
 - **Sandbox friction encountered:** a Bash heredoc corrupted regex backslashes in a throwaway analysis script on the first attempt, exactly as CLAUDE.md § Known Sandbox Limitations warns. Rewritten via `node -e` with a backslash-free escaper. Known, already catalogued, not logged as new.
-- **Nothing was filed, closed, merged, or transitioned by this sweep**, per § Recording findings. No issue was claimed; no `src/` file was touched.
+- **Nothing was filed, closed, merged, or transitioned by this sweep**, per § Recording findings. No issue was claimed; no `src/` file was touched. The Linear calls made after recovery were all reads (`list_teams`, `list_issues`, `list_comments`).
