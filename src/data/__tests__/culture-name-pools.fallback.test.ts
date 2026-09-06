@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickCulturalName, WANDERER_FALLBACK_BANNED_PATTERNS } from '../culture-name-pools';
+import { pickCulturalName, WANDERER_FALLBACK_BANNED_PATTERNS, GENERIC_NAMES } from '../culture-name-pools';
 
 function seededRng(seed: number): () => number {
   let s = seed | 0;
@@ -56,5 +56,35 @@ describe('pickCulturalName — banned patterns never leak', () => {
     }
     // all names should be unique
     expect(new Set(names).size).toBe(5);
+  });
+});
+
+describe('pickCulturalName — the fallback tier honours the exclusion set (THR-1420)', () => {
+  it('never returns a name the caller already marked used, even with every pool spent', () => {
+    // The real caller (`mintCompanionName`) rebuilds `usedNames` from the graph on
+    // every mint, so the ordinal anchor — `usedNames.size` — does not advance
+    // between two colliding mints. A shared-and-growing set hides that; a fresh
+    // set per call is what production actually does.
+    const spent = [...GENERIC_NAMES];
+
+    const first = new Set<string>(spent);
+    const nameA = pickCulturalName('', '', seededRng(11), first);
+    expect(spent).not.toContain(nameA);
+
+    // Second call, fresh set of the same size plus the name just handed out —
+    // exactly the shape two companions on one bearer produce.
+    const second = new Set<string>([...spent, nameA]);
+    // The picker adds its choice to the set before returning, so the membership
+    // question has to be asked of a snapshot taken before the call.
+    const takenBefore = new Set(second);
+    const nameB = pickCulturalName('', '', seededRng(11), second);
+    expect(takenBefore.has(nameB)).toBe(false);
+    expect(nameB).not.toBe(nameA);
+  });
+
+  it('still refuses banned placeholder patterns from the fallback tier', () => {
+    const used = new Set<string>(GENERIC_NAMES);
+    const name = pickCulturalName('', '', seededRng(3), used);
+    expect(WANDERER_FALLBACK_BANNED_PATTERNS.some(p => p.test(name))).toBe(false);
   });
 });
