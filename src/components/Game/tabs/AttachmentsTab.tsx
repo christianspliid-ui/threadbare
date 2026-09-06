@@ -13,6 +13,8 @@ import { getAttachmentArtUrl } from '../../../data/artifact-category-art';
 import { EntityVisual } from '../../shared/EntityVisual';
 import { getUITooltip } from '../../../data/ui-content';
 import { COMPANION_MAX } from '../../../data/companion-templates';
+import { companionReachLine } from '../companionWords';
+import { durationLabel } from '../../../engine/aftermathWords';
 import type { CompanionEntry } from '../../../engine/companions';
 
 interface AttachmentsTabProps {
@@ -41,15 +43,6 @@ const SLOT_GROUP_ORDER = [
 
 function getSlotCap(slotTag: string): number | undefined {
   return SLOT_CAPS[slotTag] ?? CONDITION_CAPS[slotTag];
-}
-
-/** Reach glyphs for a companion's always-on bonus — the same vocabulary the sheet uses elsewhere. */
-function contributionLine(contributions: Record<string, number>): string {
-  const parts = Object.entries(contributions)
-    .filter(([, v]) => typeof v === 'number' && v !== 0)
-    .sort(([, a], [, b]) => b - a)
-    .map(([reach, v]) => `${v > 0 ? '+' : ''}${v} ${reach}`);
-  return parts.length > 0 ? parts.join(' · ') : 'No bonus — just company.';
 }
 
 export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps) {
@@ -83,7 +76,7 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
           {companion.goodFor}
         </p>
         <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-          {contributionLine(companion.domainContributions as Record<string, number>)}
+          {companionReachLine(companion.domainContributions as Record<string, number>)}
         </p>
         {companion.ticksRemaining != null && companion.totalTicks != null && companion.totalTicks > 0 && (
           <div className="flex items-center gap-2 mt-1">
@@ -96,7 +89,15 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
               />
             </div>
             <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              {'⏳'} {companion.ticksRemaining} ticks remaining
+              {/*
+                THR-1421: the contribution line was not the only numeral on this row —
+                `4 ticks remaining` is a raw magnitude (Law 13) in an engine unit the
+                player never sees named anywhere else (Law 14). `durationLabel` is the
+                sanctioned reading and spells its count out, so the row is numeral-free
+                as a whole rather than in the half this ticket was filed about.
+                Five sibling surfaces still render the raw tick count — swept by THR-1423.
+              */}
+              {'⏳'} {durationLabel(companion.ticksRemaining)} remaining
             </span>
           </div>
         )}
