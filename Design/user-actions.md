@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-06 20:35 local (18:35 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run — the first since Friday 2026-09-04.**
+**Last updated:** 2026-09-06 21:37 local (19:37 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -10,7 +10,7 @@ Still one word — and **smaller than earlier briefings claimed**. It was billed
 
 What remains is genuinely just intent: **22 days In Design, assigned to you, no plan doc.** The machine keeps it counted because an assigned item means a person may be about to start.
 
-**What has changed is the cost of the silence.** The design tier is allowed to prepare exactly one new thing at a time, and your ticket occupies that slot — seventh consecutive day. The build queue is down to **five** and the weekend outage drained it with nothing refilling. **Yes** changes nothing and the asking stops; **not getting to it** sets it aside, frees the slot, and preparation restarts tonight.
+**What has changed is the cost of the silence.** The design tier is allowed to prepare exactly one new thing at a time, and your ticket occupies that slot — seventh consecutive day. The build queue sits at **five**, and it held there only because a lane filed a fresh ticket as it shipped another: four closed in the two hours before this run, so the shelf is being consumed as fast as it refills. **Yes** changes nothing and the asking stops; **not getting to it** sets it aside, frees the slot, and preparation restarts tonight.
 
 The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic"). *(Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket. — lead ask from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-06b.md), 2026-09-06)*
 
@@ -121,6 +121,14 @@ My read is that it was a host that was simply off: three unrelated schedulers st
 **`LINEAR_API_KEY` is still unset.** A handful of background checks read Linear through that environment variable rather than the connector, so they stay switched off — one background lint runs with three sub-checks dark. **Nothing is blocked on it.** The transport is already written and shipped in `scripts/drift-scan/linear.ts`.
 
 Setting it in the machine environment or the home tree's `.env` is the durable fix — no browser sign-in, and it survives a lapsed token, which is exactly the failure that just happened. Worth doing eventually, not worth your evening.
+
+### 15. Restart the Claude desktop app when convenient — 30 seconds
+
+**Stale background helpers from earlier sessions have piled up on the machine and are spinning at full tilt.** Sixteen of them are consuming roughly **30 cores between them**; the machine has been pinned at 100% for over an hour, with 35 such processes alive in total. They are helper servers left behind by previous app sessions, not anything the game or the lanes own.
+
+**Nothing is broken and no work has been lost.** What it costs is speed — every lane on this machine runs slower — and one specific casualty: **the engine-speed measurement has now failed two hours running.** It reported 1233 ms/tick against a normal 84, with the warm-up figure inflated in step, which is the signature of a busy machine rather than a slow simulation. Both readings were discarded rather than recorded, because publishing one would have skewed the week's baseline and hidden a real slowdown later.
+
+**No agent can clear these safely** — killing them would cut live sessions off mid-run, including the one writing this. Quitting and reopening the app does it. Nothing waits on it tonight; it is on your list because it is yours to do and it is cheap.
 
 ## Resolved this period
 
