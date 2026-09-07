@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 02:56 local (00:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -20,7 +20,11 @@ Two places still show you a bare percentage: an effect tooltip says something is
 
 **Recommendation: drop both numbers rather than invent a new language.** The doom clock already shows a bar and names which chapter of five you are in — the percentage is a third rendering of a quantity the screen states twice. The tooltip's strength is arguably readable from the effect's prose.
 
-The fork that is genuinely yours: **if a proportion is ever worth showing, what should it read as** — whatever is picked becomes the sanctioned reading for *every* proportion in the game, the way "four days" now is for every term. Say **"drop them"** and a lane takes it from there; *"no, they matter"* needs your language. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-07.md), 2026-09-07*
+**The same question now covers ten readouts, not two.** [THR-1426](https://linear.app/threadbare/issue/THR-1426/tick-timestamps-and-per-tick-rates-are-the-two-tick-shapes-with-no) landed an hour after this ask and carries two more shapes with no sanctioned reading: **timestamps** (*t42*, *Tick 42*) and **per-tick rates** (*regen 1.5/tick*). It is the same fork, not a second one — worth more, not more urgent.
+
+The rate half may not even need you: [THR-1008](https://linear.app/threadbare/issue/THR-1008/threadspanel-leaks-raw-magnitudes-a-percentage-and-a-debug-meta-strip) already set a precedent for banding rates into words. So if you say *drop the percentages*, a lane applies that existing pattern to the rates and only the timestamps come back to you — those genuinely have no precedent.
+
+The fork that is genuinely yours: **if a proportion is ever worth showing, what should it read as** — whatever is picked becomes the sanctioned reading for *every* proportion in the game, the way "four days" now is for every term. Say **"drop them"** and a lane takes it from there; *"no, they matter"* needs your language. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-07b.md), 2026-09-07*
 
 ### 3. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
@@ -96,7 +100,11 @@ Deliberately left with you: what the game means, not how to wire it. No urgency 
 
 One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each carries test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes now, nineteen captures. Newest include faction heraldry (does a subordinate charge at 0.42 scale read as *deliberately lesser* or as a broken asset?), the tooltip focus ring, and the aftermath screen as composed.
 
-**Nothing blocks the sitting.** The companion route ([THR-1413](https://linear.app/threadbare/issue/THR-1413)) merged Friday, and [the premonition that never fired](https://linear.app/threadbare/issue/THR-1414) merged with a lever that forces one on demand. One more attended item joined Friday: [THR-1419](https://linear.app/threadbare/issue/THR-1419) — the choice-card meta row, checking a three-item withdrawn row does not overflow the card and that the stance hues read against the veil ground.
+**Every hole is now filled — this became genuinely doable at 00:28 tonight.** Three of the nine passes were impossible on 2026-09-04, not because of the sweep but because the game had no route to the surfaces: nothing could put a companion on a mortal, no premonition appeared in ~280 ticks, and every faction-carrying character read as a stranger. All three closed — the companion route ([THR-1413](https://linear.app/threadbare/issue/THR-1413)), a lever that forces a premonition on demand ([THR-1414](https://linear.app/threadbare/issue/THR-1414)), and the reveal switch, which was genuinely broken and is fixed ([THR-1412](https://linear.app/threadbare/issue/THR-1412), merged 00:28 UTC today).
+
+Two captures ride along: the debug panel's tab strip was rebuilt so its 43 tabs wrap and scroll instead of running off the edge — **that fix shipped without anyone seeing it at full size** — and the faction heraldry comparison from [THR-854](https://linear.app/threadbare/issue/THR-854). One more attended item joined Friday: [THR-1419](https://linear.app/threadbare/issue/THR-1419) — the choice-card meta row, checking a three-item withdrawn row does not overflow the card and that the stance hues read against the veil ground.
+
+**There is no decision in this — it is a session, not a question.** Roughly twenty minutes.
 
 It grows as more UI ships behind the same wall. Get through part of it, say which, and the remainder is re-expanded rather than closed whole.
 
@@ -139,7 +147,6 @@ Setting it in the machine environment or the home tree's `.env` is the durable f
 - **The undertaking grid is generated and build-gated** *(2026-09-03)*. [Slice 4a](https://github.com/christianspliid-ui/threadbare/pull/1804) — your verbs, the registry redrawn, and a grid page the build refuses to let go stale.
 - **The world's objects now have one catalogue in game words** *(2026-09-03)*. [THR-1394](https://linear.app/threadbare/issue/THR-1394) — what made the undertakings map chartable, and what unparked ask 4.
 - **Proactive Agent Actions closed complete** *(2026-09-03)*. [The map](https://linear.app/threadbare/issue/THR-1276) and all six plan docs done.
-- **The word players see is settled and shipped** *(2026-09-02)*. [THR-1314](https://linear.app/threadbare/issue/THR-1314): what a character owns reads **freehold**. Say the word any time if it is wrong to your ear — still four lines to reverse.
 
 ---
 
