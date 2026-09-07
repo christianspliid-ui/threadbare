@@ -99,9 +99,10 @@ function commandArmyAt(
   });
 }
 
+// THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
 function run(graph: WorldGraph) {
   return generateStrategicCandidates(
-    graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42),
+    graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42), undefined, 'templates',
   );
 }
 

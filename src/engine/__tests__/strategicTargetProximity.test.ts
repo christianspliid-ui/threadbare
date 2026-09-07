@@ -205,8 +205,9 @@ describe('location_subtype targeting is proximity-bounded end to end (THR-1310)'
     // Strictly more far towns than the cap, so insertion order alone fills it.
     const graph = addMerchant(buildFarFirstWorld(cap + 4, 3));
 
+    // THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
     const result = generateStrategicCandidates(
-      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42),
+      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42), undefined, 'templates',
     );
 
     const townTargets = targetIds(result.candidates, /^loc_(far|near)_/);
@@ -223,7 +224,7 @@ describe('location_subtype targeting is proximity-bounded end to end (THR-1310)'
     const graph = addMerchant(buildFarFirstWorld(2, 0));
 
     const result = generateStrategicCandidates(
-      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42),
+      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42), undefined, 'templates',
     );
 
     const townTargets = targetIds(result.candidates, /^loc_far_/);
@@ -235,7 +236,7 @@ describe('location_subtype targeting is proximity-bounded end to end (THR-1310)'
     const graph = addMerchant(buildFarFirstWorld(2, 0));
 
     const result = generateStrategicCandidates(
-      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42),
+      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42), undefined, 'templates',
     );
 
     const far = result.candidates.find(c => c.targetNodeId?.startsWith('loc_far_'));

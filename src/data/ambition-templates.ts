@@ -123,7 +123,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.control_seize.route',
         'cell.create.place',
         'cell.change_raise.location',
-        'cell.destroy.route',
       ],
       templateIds: [
         'strategic_survey_market',
@@ -132,7 +131,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_build_warehouse',
         'strategic_found_guild_chapter',
         'strategic_maintain_monopoly',
-        'strategic_commission_quest',
         // THR-1308: appended, not inserted. `generateStrategicCandidates` walks this
         // list in order and breaks at STRATEGIC_MAX_CANDIDATES_PER_AMBITION, so a
         // mid-list insert silently pushes a shipped verb out of reach — it pushed
@@ -213,7 +211,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.create.company',
         'cell.change_raise.company',
         'cell.destroy.company',
-        'cell.destroy.route',
         'cell.control_seize.place',
       ],
       templateIds: [
@@ -317,7 +314,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       ],
       templateIds: [
         'strategic_craft_masterwork',
-        'strategic_improve_masterwork',
         'strategic_chart_the_wilds',
         'strategic_walk_the_unmapped',
       ],
@@ -404,7 +400,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_establish_research_circle',
         'strategic_mount_expedition',
         'strategic_guard_knowledge',
-        'strategic_train_apprentice',
       ],
       reachEmphasis: { veil: 0.9, eye: 0.5, star: 0.3 },
     },
@@ -670,16 +665,14 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_establish_research_circle',
         'strategic_mount_expedition',
         'strategic_guard_knowledge',
-        'strategic_train_apprentice',
         // THR-1297 slice 5 — the `leverage_mark` arc's home. An ambition to uncover
         // what people buried is the one that most naturally turns up what a *living*
-        // person buried, which is what a mark is. Cultivate → press → burn, in order,
-        // plus the cache's counter-play: a secret-seeker is also the world's most
-        // motivated exposer of somebody else's hoard.
+        // person buried, which is what a mark is. Cultivate → press → burn, in order.
+        // (THR-1403 retired `strategic_expose_cache`, which used to close this list:
+        // it was prose only, and a cache is not a world-object kind.)
         'strategic_cultivate_informant',
         'strategic_press_the_mark',
         'strategic_burn_the_mark',
-        'strategic_expose_cache',
       ],
       reachEmphasis: { eye: 0.8, veil: 0.5, stone: 0.4 },
     },
@@ -965,10 +958,11 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
 // a culprit — the mint lane writes a grievance block on the `pursues` edge for these
 // and plain provenance for the others.
 //
-// Their `strategicProfile` blocks carry over verbatim, which is what makes seven
+// Their `strategicProfile` blocks carry over verbatim, which is what makes six
 // otherwise-unreachable strategic templates reachable (`strategic_expose_mark`,
 // `strategic_suborn_warband`, `strategic_sever_network`, `strategic_destroy_masterwork`,
-// `strategic_expose_cache`, `strategic_burn_the_charts`, `strategic_cultivate_informant`).
+// `strategic_burn_the_charts`, `strategic_cultivate_informant`). The seventh,
+// `strategic_expose_cache`, was retired by THR-1403.
 
 export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
   // 1. Seek Revenge (vengeance, triggered by betrayal)
@@ -1034,15 +1028,15 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // which is the same reasoning the four others were placed on.
         //
         // **Placed second, not appended, and that position is measured.** The cap is
-        // 1 candidate per template with a break at 5 per ambition, and
-        // `strategic_expose_cache` finds targets on almost every pass — appended, this
-        // verb was reached 0 times in 150 ticks on seed 99 while `expose_cache` fired
-        // 23. Both `expose_mark` and this one are self-gating (no held mark / no
-        // nearby band ⇒ no targets ⇒ the slot passes straight on), so putting them
-        // ahead of the always-available verb costs `expose_cache` nothing it would
-        // otherwise have had.
+        // 1 candidate per template with a break at 5 per ambition, and the
+        // always-available `strategic_expose_cache` used to sit ahead of it — appended,
+        // this verb was reached 0 times in 150 ticks on seed 99 while `expose_cache`
+        // fired 23. `expose_cache` was retired by THR-1403 (prose only; a cache is not
+        // a world-object kind), but the ordering rule it taught still binds: both
+        // `expose_mark` and this one are self-gating (no held mark / no nearby band ⇒
+        // no targets ⇒ the slot passes straight on), so they stay ahead of anything
+        // always-available that is added to this list later.
         'strategic_suborn_warband',
-        'strategic_expose_cache',
         'strategic_sever_network',
         'strategic_destroy_masterwork',
         'strategic_burn_the_charts',

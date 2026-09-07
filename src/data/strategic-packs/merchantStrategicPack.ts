@@ -175,29 +175,8 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
   },
 
   // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
-  // 7. Commission Quest — post a standing reward and let the world answer it
-  //    The payoff is the catalyst seed itself, so the mutation is deliberately none.
-  {
-    id: 'strategic_commission_quest',
-    displayName: 'Commission Quest',
-    verb: 'create',
-    executionMode: 'multi_tick_project',
-    behaviorFamily: 'merchant-expansion',
-    reachProfile: { gold: 0.6, heart: 0.2, eye: 0.2 },
-    projectDuration: 4,
-    activityProse: [
-      'Writing the notice. Deciding how much of the truth the reward has to cover.',
-      'A commission is an admission that you cannot do it yourself. Price it accordingly.',
-    ],
-    completionProse: [
-      'The notice is posted and the purse is real. Someone will come. Someone always comes.',
-    ],
-    catalystEncounterIds: ['commissioned-quest.generic'],
-    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
-    resourceHint: { wealthCost: 8, reachFloor: { gold: 0.2 } },
-    motivations: ['asceticism_extravagance', 'loyalty_ambition'],
-    mutationHint: { type: 'no_mutation' },
-  },
+  // 7. Commission Quest — retired by THR-1403. Posting a work order is the faction
+  //    phase's job, not a mortal's undertaking, so the fiction had no cell to land on.
 ];
 
 /** Look up a merchant strategic template by ID */

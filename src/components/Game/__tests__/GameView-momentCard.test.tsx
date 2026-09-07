@@ -178,7 +178,15 @@ describe('GameView moment card consumer (THR-1299 slice 3)', () => {
       }
     };
     followActiveActors();
-    expect(followed.size, 'no undertaking was running to follow — the fixture cannot falsify').toBeGreaterThan(0);
+    // THR-1403: under the cells model a small world's first works are often instant
+    // (watching), which complete in the tick they start — keep driving until a
+    // multi-tick work is actually running, bounded like the interrupt loop below.
+    while (followed.size === 0 && ticks < MAX_TICKS) {
+      act(() => { tickBridge!(UNDERTAKING_CHECKPOINT_INTERVAL_TICKS); });
+      ticks += UNDERTAKING_CHECKPOINT_INTERVAL_TICKS;
+      followActiveActors();
+    }
+    expect(followed.size, `no undertaking was running to follow in ${ticks} ticks — the fixture cannot falsify`).toBeGreaterThan(0);
 
     // Drive until the engine produces an interrupt-tier record for a followed mortal.
     let interruptSeen = false;

@@ -23,6 +23,7 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 | Subsystem | Aliases | Domains | Note |
 |---|---|---|---|
 | Companies & Group Travel | company, companies, group, party, band, fellowship, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
+| Intelligence, Knowledge & Familiarity | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | Knowledge-facet accumulation from encounters/observations, interaction depth, intelligence reliability decay. |
 | Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
 
 ## Subsystem registry
@@ -57,7 +58,7 @@ names like `TB-073`) a premise might use.
 | **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret` | — |
 | **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow`, `spell` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
 | **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor`, `npc`, `binding` | `2a.78`, `2.38`, `6.75` |
-| **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
+| **Intelligence, Knowledge & Familiarity** | 🟠 DORMANT | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
 | **Spheres & Quintessence** | 🟠 DORMANT | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
 | **World Generation, Terrain & Places** | 🟢 ACTIVE | worldgen, world generation, terrain, biome, elevation, climate, hydrology, hex map, tile, coastline, river, lake, settlement genome, sublocation, place, region, area | `world`, `worldgen`, `terrain`, `coastline`, `river`, `lake`, `depression`, `region`, `hex`, `sublocation`, `settlementgenome`, `road` | `6.635`, `6.636` |
 
@@ -272,6 +273,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `disposition` (1) | `disposition.ts` | — |
 | `distance` (1) | `distanceMatrix.ts` | `THR-1183`, `THR-1346` |
 | `divine` (1) | `divineAttention.ts` | — |
+| `division` (1) | `divisionRule.ts` | `THR-1398`, `THR-1403` |
 | `domain` (1) | `domainCapability.ts` | — |
 | `doom` (2) | `doomClock.ts`, `doomIdentityMilestones.ts` | — |
 | `dream` (1) | `dream.ts` | — |
@@ -404,4 +406,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 181 engine domains · 538 modules._
+_Counts: 27 registered subsystems (3 dormant) · 100 tick phases · 182 engine domains · 539 modules._

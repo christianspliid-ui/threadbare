@@ -134,9 +134,11 @@ export function startUndertakingForReview(
   // The ambitions whose profiles name this template. Passing them keeps the
   // `ambition_profile` bypass honest: the candidate still carries a real ambition id,
   // it just does not require the actor to *hold* that ambition.
-  // A cell is walked under the cells model whatever the flag says (THR-1392 slice 3):
-  // the review lever is how a cell is proven before the flag flips.
-  const model = template.cellVariant ? 'cells' : undefined;
+  // A cell is walked under the cells model and an authored template under the template
+  // arm, whatever the flag says (THR-1392 slice 3; THR-1403 flipped the flag to `cells`):
+  // the review lever is how either is started by name — a legacy template is walked
+  // only through its ambitions' `templateIds`, which the cells model no longer reads.
+  const model = template.cellVariant ? 'cells' : 'templates';
   const ambitionIds = profiledAmbitionIdsFor(templateId, model);
   const review: ReviewCandidateOptions = {
     templateId,

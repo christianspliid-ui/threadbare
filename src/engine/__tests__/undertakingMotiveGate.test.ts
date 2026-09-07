@@ -82,9 +82,10 @@ function world(): WorldGraph {
   return graph;
 }
 
+// THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
 function raidCandidates(graph: WorldGraph) {
   const result = generateStrategicCandidates(
-    graph, WARLORD, [AMBITION], undefined, 10, mulberry32(42),
+    graph, WARLORD, [AMBITION], undefined, 10, mulberry32(42), undefined, 'templates',
   );
   return {
     offered: result.candidates.filter(c => c.templateId === RAID),
@@ -183,7 +184,7 @@ describe('motive gate — wired into candidate generation', () => {
     // target it refused the raid on. Without this, a gate that refused everything
     // would pass every assertion above.
     const result = generateStrategicCandidates(
-      world(), WARLORD, [AMBITION], undefined, 10, mulberry32(42),
+      world(), WARLORD, [AMBITION], undefined, 10, mulberry32(42), undefined, 'templates',
     );
     const ungated = result.candidates.filter(c => c.templateId !== RAID);
     expect(ungated.length).toBeGreaterThan(0);

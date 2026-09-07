@@ -293,15 +293,19 @@ describe('GRIEVANCE_AMBITION_TEMPLATES', () => {
   });
 
   /**
-   * THR-1298 — the conversion's payload: seven strategic templates that were reachable
+   * THR-1298 — the conversion's payload: the strategic templates that were reachable
    * only through the unreachable reactive pool's `strategicProfile`s.
    *
    * Because nothing ever assigned a reactive ambition, every one of these was dead
    * content — authored, registered, and impossible to fire. Carrying the profiles over
    * verbatim is what makes them reachable, so this pins the actual reason the
    * conversion was worth doing rather than merely that the rename happened.
+   *
+   * Seven at THR-1298, six now: THR-1403 retired `strategic_expose_cache` outright
+   * (prose only, and a cache is not a world-object kind). Its absence is asserted
+   * rather than merely dropped from the list, so a retired id cannot creep back in.
    */
-  it('carries over the strategic profiles that make seven verbs reachable', () => {
+  it('carries over the strategic profiles that make six verbs reachable', () => {
     const reachable = new Set(
       GRIEVANCE_AMBITION_TEMPLATES.flatMap((t) => t.strategicProfile?.templateIds ?? []),
     );
@@ -310,12 +314,12 @@ describe('GRIEVANCE_AMBITION_TEMPLATES', () => {
       'strategic_suborn_warband',
       'strategic_sever_network',
       'strategic_destroy_masterwork',
-      'strategic_expose_cache',
       'strategic_burn_the_charts',
       'strategic_cultivate_informant',
     ]) {
       expect(reachable.has(id)).toBe(true);
     }
+    expect(reachable.has('strategic_expose_cache')).toBe(false);
   });
 });
 

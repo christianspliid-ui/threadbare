@@ -110,6 +110,7 @@ import {
   UNDERTAKING_MARK_TIER_MAGNITUDE_BANDS,
   UNDERTAKING_STANDING_TIER_DISTANCE_BANDS,
   UNDERTAKING_STANDING_TIER_SENTIMENT_BANDS,
+  ITEM_TIER_BY_CLASS,
   CONDITION_CURE_UNGATED_FOR_ALLIES,
   UNDERTAKING_STANDING_DELTA,
   UNDERTAKING_QUARREL_STANDING_DELTA,
@@ -743,8 +744,12 @@ function itemTier(graph: WorldGraph, handle: UndertakingObjectHandle): Undertaki
   if (!node) return null;
   // `AttachmentTier` is numeric 1–4 (Mundane…Legendary); the undertaking ladder has three rungs.
   const stamped = num(node.properties, 'tier');
-  if (stamped === null) return null;
-  return Math.min(3, Math.max(1, Math.round(stamped))) as UndertakingObjectTier;
+  if (stamped !== null) return Math.min(3, Math.max(1, Math.round(stamped))) as UndertakingObjectTier;
+  // THR-1403: no stamped tier — fall back to the item's class rather than defaulting
+  // every seeded item. A node with neither a stamp nor a known class still returns
+  // null, and the caller defaults and traces (`undertaking_tier_defaulted`).
+  const subcategory = node.properties.subcategory;
+  return typeof subcategory === 'string' ? ITEM_TIER_BY_CLASS[subcategory] ?? null : null;
 }
 
 function isRouteObject(n: GraphNode): boolean {

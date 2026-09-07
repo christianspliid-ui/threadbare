@@ -96,8 +96,9 @@ describe('harmClass authoring on destroy templates', () => {
   it('every destroy template authors a harmClass in the union', () => {
     const destroys = getAllStrategicTemplates().filter((t) => t.verb === 'destroy');
     // The population must be real: a registry that failed to load would pass an
-    // every-member assertion over zero members.
-    expect(destroys.length).toBeGreaterThanOrEqual(9);
+    // every-member assertion over zero members. 9 until THR-1403 retired
+    // `strategic_expose_cache`, which was a destroy.
+    expect(destroys.length).toBeGreaterThanOrEqual(8);
     for (const template of destroys) {
       expect(template.harmClass, `${template.id} authors no harmClass`).toBeDefined();
       expect(HARM_CLASSES).toContain(template.harmClass);
@@ -111,7 +112,8 @@ describe('harmClass authoring on destroy templates', () => {
    */
   it('every harm-carrying template is also motive-gated', () => {
     const harmful = getAllStrategicTemplates().filter((t) => t.harmClass);
-    expect(harmful.length).toBeGreaterThanOrEqual(9);
+    // 9 until THR-1403 retired `strategic_expose_cache`, which carried one.
+    expect(harmful.length).toBeGreaterThanOrEqual(8);
     for (const template of harmful) {
       expect(
         template.motiveGate?.length ?? 0,

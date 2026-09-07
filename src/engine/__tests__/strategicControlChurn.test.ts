@@ -226,8 +226,9 @@ describe('THR-1286 — control stance retirement', () => {
 describe('THR-1286 — control claim gating', () => {
   function controlCandidates(strategicState: StrategicRuntimeState | undefined, tick: number) {
     const graph = buildMerchantWorld();
+    // THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
     const result = generateStrategicCandidates(
-      graph, 'merchant_a', ['ambition_dominate_trade'], strategicState, tick, mulberry32(42),
+      graph, 'merchant_a', ['ambition_dominate_trade'], strategicState, tick, mulberry32(42), undefined, 'templates',
     );
     return {
       control: result.candidates.filter(c => c.templateId === CONTROL_TEMPLATE),

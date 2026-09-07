@@ -14,7 +14,10 @@
  * **It only ever shrinks.** Deleting a name is the retrofit's proof — the id leaves
  * this file in the same commit the template becomes contract-complete, and
  * `undertakingContract.test.ts` fails both ways: a listed template that now passes,
- * and an unlisted one that fails.
+ * and an unlisted one that fails. A *retired* template leaves for the same reason
+ * read from the other side: the ratchet test resolves no report for an id with no
+ * template, which reads as stale (THR-1403 removed `strategic_commission_quest` and
+ * `strategic_improve_masterwork` this way).
  *
  * **This is not an exemption mechanism** (plan ruling 3). Per-template, temporary,
  * one direction of travel.
@@ -42,7 +45,6 @@ export const UNDERTAKING_RETROFIT_PENDING: readonly string[] = [
   'strategic_chart_the_wilds',
   'strategic_civic_construction',
   'strategic_claim_territory',
-  'strategic_commission_quest',
   'strategic_consecrate_holy_site',
   'strategic_consecrate_site',
   'strategic_cultivate_informant',
@@ -54,6 +56,7 @@ export const UNDERTAKING_RETROFIT_PENDING: readonly string[] = [
   'strategic_establish_sacred_route',
   'strategic_establish_spy_network',
   'strategic_establish_trade_route',
+  'strategic_expose_cache',
   'strategic_extend_reach',
   'strategic_extend_route',
   'strategic_follow_the_chart',
@@ -65,7 +68,6 @@ export const UNDERTAKING_RETROFIT_PENDING: readonly string[] = [
   'strategic_found_shrine',
   'strategic_grow_settlement',
   'strategic_guard_knowledge',
-  'strategic_improve_masterwork',
   'strategic_investigate_anomaly',
   'strategic_maintain_authority',
   'strategic_maintain_civic_order',

@@ -65,9 +65,12 @@ describe('the cell walk', () => {
     generateStrategicCandidates(g, ME, [REVENGE], undefined, 10, mulberry32(1), undefined, 'cells');
     generateStrategicCandidates(g, ME, [REVENGE], undefined, 11, mulberry32(2), undefined, 'cells');
     const traces = getTraces().filter(t => t.category === 'undertaking_cell_unreachable') as Array<{ objectTypeId: string; reason: string }>;
-    const rooms = traces.filter(t => t.objectTypeId === 'place');
-    expect(rooms).toHaveLength(1);
-    expect(rooms[0].reason).toBe('no_object_exists');
+    // Since THR-1403 the division rule derives more than one place cell for a
+    // vengeance mortal with every reach; each cell traces once, all for the same reason.
+    const rooms = traces.filter(t => t.objectTypeId === 'place') as Array<{ objectTypeId: string; reason: string; templateId?: string; verb?: string }>;
+    expect(rooms.length).toBeGreaterThanOrEqual(1);
+    expect(new Set(rooms.map(r => `${r.verb}.${r.templateId}`)).size).toBe(rooms.length);
+    for (const r of rooms) expect(r.reason).toBe('no_object_exists');
     // A Location exists (the town) but nobody holds it — the other reason. Revenge walks
     // more than one location cell (seize, lower), and each traces once.
     const settlements = traces.filter(t => t.objectTypeId === 'location');

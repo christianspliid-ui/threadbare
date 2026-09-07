@@ -120,7 +120,12 @@ const WORLD_ARTIFACTS: GraphNode[] = (() => {
   );
   let state: GameState = initial;
   for (let i = 0; i < 60; i++) state = runTick(state);
-  return ARTIFACT_NODE_TYPES.flatMap(t => state.graph.getNodesByType(t));
+  // A holding face (`attachmentCategory: 'holding'`, `src/engine/holdings.ts`) is a deed
+  // to a place, not a possession — it carries the place's subtype and no possession
+  // subcategory by design. Faces appear in this world since THR-1403 (a completed
+  // `create × place` grants the holding), so they are named out, not counted.
+  return ARTIFACT_NODE_TYPES.flatMap(t => state.graph.getNodesByType(t))
+    .filter(n => n.properties?.attachmentCategory !== 'holding');
 })();
 
 describe('possession subcategory vocabulary — a live seeded world', () => {

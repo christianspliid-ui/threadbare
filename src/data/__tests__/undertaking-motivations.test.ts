@@ -37,8 +37,12 @@ import { findMotivationDefects } from '../content-eval/undertakingContract';
  * Non-vacuity floor for the corpus sweep. Not an identity pin — new packs may
  * raise it. It exists so that a sweep over an accidentally-empty
  * `getAllStrategicTemplates()` fails loudly instead of passing silently.
+ *
+ * 64 until THR-1403 retired three templates outright (`strategic_improve_masterwork`,
+ * `strategic_commission_quest`, `strategic_expose_cache`). A floor above the real
+ * population is a red that says nothing about motivations, so it moves with the corpus.
  */
-const CORPUS_FLOOR = 64;
+const CORPUS_FLOOR = 61;
 
 // `findMotivationDefects` was lifted out of this file into the Undertaking Contract
 // (`content-eval/undertakingContract.ts`, THR-1300 slice 1) so the gate and this
