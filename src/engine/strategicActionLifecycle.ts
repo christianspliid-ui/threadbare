@@ -34,6 +34,7 @@ import {
   FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
   MOMENT_INTERRUPT_SIGNIFICANCE,
   MOMENT_COMPLETION_SIGNIFICANCE,
+  HARM_ON_AFFLICT,
 } from '../data/strategic-action-constants';
 import {
   createTradeRoute,
@@ -294,7 +295,20 @@ function christenCompletedWork(
 ): { nodeId: string; name: string } | undefined {
   // The created *node* — an edge op (a route, a mark) can precede the node op that
   // christening names, so the pick must skip ids the graph has no node for (THR-1300).
-  const createdId = ops.find(o => o.success && o.createdId && graph.getNode(o.createdId))?.createdId;
+  //
+  // A `trait` node is skipped too (THR-1429). Christening names **works**: a founded
+  // settlement, a masterwork, a company someone raised. A power and a condition are
+  // catalog content with authored names — "Crystal Gate", "Null-Touched" — and the
+  // catalog is the authority on what they are called (Law 14). Renaming one to a
+  // work-name does not decorate it, it destroys the authored word and makes the sheet
+  // say something untrue; and for a *shared* definition node it does so for every
+  // mortal in the world at once. Powers and conditions only began reaching this site
+  // with THR-1429's create cells, so nothing shipped changes behaviour here.
+  const createdId = ops.find(o => {
+    if (!o.success || !o.createdId) return false;
+    const node = graph.getNode(o.createdId);
+    return node !== undefined && node.type !== 'trait';
+  })?.createdId;
   if (!createdId) return undefined;
   const created = graph.getNode(createdId);
   if (!created) return undefined;
@@ -904,13 +918,27 @@ export function advanceStrategicProjects(
         : 0;
 
       const completedTemplate = getStrategicTemplate(project.templateId);
-      if (completedTemplate?.harmClass) {
+
+      // A **signed** cell decides its harm per completion, not per template (THR-1429).
+      // `create × Condition` is one cell that blesses an ally and curses an enemy: only
+      // the resolved sign knows which happened, and `harmClass` on the template is read
+      // once for every completion of it. So an op may name the harm it actually did,
+      // and that overrides the template's. Every other cell sets neither field and is
+      // untouched — the template's authored class still wins by default.
+      const signedHarm = ops.find(o => o.success && o.harmClass);
+      const harmClass = signedHarm?.harmClass ?? completedTemplate?.harmClass;
+      // The victim normally rides the motive gate that licensed the verb. An ungated
+      // cell — the curse rides `create` — has no gate to read one off, so the op names
+      // the mortal it acted on.
+      const harmVictimId = signedHarm?.victimAgentId ?? checked.victimAgentId;
+
+      if (harmClass) {
         createUndertakingOutcomeNode({
           graph,
           project: checked,
-          harmClass: completedTemplate.harmClass,
+          harmClass,
           tick,
-          victimAgentId: checked.victimAgentId,
+          victimAgentId: harmVictimId,
           ascendantId: state.ascendantId,
           // An answer sits one link further down the chain than the harm it answers,
           // so an overshoot that *does* re-open the account opens it at the right
@@ -961,6 +989,32 @@ export function advanceStrategicProjects(
         : `${actorNode?.name ?? project.actorId} completes: ${finishedName}`;
       if (completionMoment) {
         moments.push({ ...completionMoment, label: completionMessage, undertakingName: finishedName });
+      }
+
+      // ── The target's badge (THR-1429) ──
+      //
+      // The one moment record whose `actorId` is not the undertaking's actor. A mortal
+      // who was cursed, or whose art was sealed, gets a badge on their own thread row —
+      // because the affliction is a fact about *them*, and the actor's completion card
+      // is on the wrong sheet to say so.
+      //
+      // Never an interrupt: `resolveMomentPresentation` fixes this class at `badge`,
+      // and the record is built here rather than through `buildMoment` precisely
+      // because that helper is `project.actorId`-shaped all the way down.
+      if (harmClass === HARM_ON_AFFLICT && harmVictimId && harmVictimId !== project.actorId) {
+        const victimName = graph.getNode(harmVictimId)?.name ?? harmVictimId;
+        moments.push({
+          id: `undertaking_afflicted_${project.projectId}_${tick}`,
+          projectId: project.projectId,
+          actorId: harmVictimId,
+          templateId: project.templateId,
+          momentClass: 'afflicted',
+          presentation: 'badge',
+          tick,
+          label: `Something is on ${victimName} — ${actorNode?.name ?? project.actorId}'s doing`,
+          undertakingName: finishedName,
+          acknowledged: false,
+        });
       }
       events.push({
         id: completionMoment?.id ?? `strategic_complete_${project.projectId}_${tick}`,

@@ -558,15 +558,20 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   knows_spell: {
     type: 'knows_spell',
     sourceNodeType: 'actor',
-    // The union's comment says "actor → spell_template", but there is no
-    // `spell_template` NodeType and spells are not graph nodes at all today
-    // (`spellActivation.ts` reads them off actor properties). `action_template` is the
-    // nearest real type a learned spell would be minted as.
-    targetNodeType: 'action_template',
+    // THR-1429 is the writer this row was waiting for, and it corrected the endpoint
+    // exactly as the comment above asked. A spell IS a graph node now — a `trait` node
+    // whose `subcategory` is `spell`, one shared definition per spell (THR-1395) — so
+    // the old `action_template` guess is retired. It named nothing: the row had no
+    // producer and no instances, so nothing migrated.
+    //
+    // `knows_spell` and `has_trait` point at the SAME node and mean different things:
+    // known is the biography (unlimited, THR-1231), wielded is what the mortal is
+    // carrying now (capped by `SLOT_CAPS.spell`).
+    targetNodeType: 'trait',
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'DORMANT (no producers): actor has learned a spell. Endpoints are declared intent, not measured — correct this row when a writer appears.',
+    description: 'Actor has learned a spell: actor → the shared `spell`-subcategory trait definition node. Written by `learn_spell` (create × Power, THR-1429). Unlimited — the wielded half is a `has_trait` edge to the same node, under the spell slot cap.',
   },
   embodies_spirit_of: {
     type: 'embodies_spirit_of',

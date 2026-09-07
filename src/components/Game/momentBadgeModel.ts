@@ -44,6 +44,10 @@ export const MOMENT_CLASS_ACCENT: Record<UndertakingMomentClass, string> = {
   fork: 'var(--accent-gold)',
   abandoned: 'var(--negative)',
   completion: 'var(--positive)',
+  // Something was done *to* this mortal (THR-1429). The negative tone, like the other
+  // setbacks — and always a badge, never an interrupt, so this accent only ever
+  // renders on a thread row.
+  afflicted: 'var(--negative)',
 };
 
 /** Tail of the screen-reader label — what the click will open. */

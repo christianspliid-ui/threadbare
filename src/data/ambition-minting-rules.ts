@@ -158,6 +158,12 @@ export const HARM_MAGNITUDE_BY_CLASS: Readonly<Record<UndertakingHarmClass, numb
   property_destroyed: 0.8,
   holding_seized: 0.6,
   network_severed: 0.5,
+  // A curse worn, or an art sealed (THR-1429). Above a severed network and below a
+  // seized holding on purpose: it is done *to the person* rather than to their things,
+  // which is the worse insult, but it wears off — and `GRIEVANCE_DISPLACEMENT_MIN`
+  // (0.8) is deliberately above it, so an affliction never displaces what the cursed
+  // mortal was already doing. It gives them a reason, not a new life.
+  afflicted: 0.6,
   undertaking_abandoned: 0.3,
 };
 
@@ -224,6 +230,19 @@ export const UNDERTAKING_MINTING_RULES: Readonly<
       { templateId: 'ambition_protect_the_home', weight: 0.6 },
     ],
   },
+  // Something was put *on* them — a curse worn, an art sealed (THR-1429). The first
+  // harm class in the game whose object is the person rather than their property, so
+  // the drives it offers are the personal ones: the vendetta, and the impulse to get
+  // out from under it. There is no `witness` row on purpose — a curse is worn quietly
+  // and the crowd does not see it land, which is the same seen-harm rule THR-1383
+  // wrote for every other class, applied to the one where it bites hardest.
+  afflicted: {
+    victim: [
+      { templateId: 'ambition_seek_revenge', weight: 1.0, grievance: true },
+      { templateId: 'ambition_protect_the_home', weight: 0.4 },
+      { templateId: 'ambition_flee_the_ravaged_land', weight: 0.3 },
+    ],
+  },
   // Self-facing and culprit-less: the agent walked away from their own work. There is
   // nobody to avenge, so every candidate here is a soft drive — what failure leaves
   // behind is a next thing to try, which is the "failure is plot, not punishment"
@@ -243,5 +262,8 @@ export const HARM_CLASS_LABELS: Readonly<Record<UndertakingHarmClass, string>> =
   holding_seized: 'the seizure',
   network_severed: 'the severing',
   named_death: 'the killing',
+  // Reads back as "Seek revenge · because of the cursing — Hesk's work". A stem, never
+  // a class name: the chronicle says what was done, not which enum it was.
+  afflicted: 'the cursing',
   undertaking_abandoned: 'the work abandoned',
 };

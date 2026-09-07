@@ -220,3 +220,45 @@ export function applySuppressions(
 
   return { states, suppressedCount, liftedCount };
 }
+
+// ─── Is this mortal's art sealed? (THR-1429) ────────────────────────
+
+/**
+ * Whether a mortal's spells are currently bound by a seal.
+ *
+ * **Read the bearer, not the power.** `applySuppressions` above keys `effectStates`
+ * by *attachment node id*, which is exact while every attachment is a per-bearer
+ * instance — and every one was, until the Power kind got its shape. A spell is now
+ * **one shared definition node** (THR-1395, `spellDefinitionNode`), so a flag written
+ * against that node id would say "this spell is sealed" for every mortal in the world
+ * who ever learned it, rather than for the one somebody cursed. Two mortals knowing
+ * Veilwalk is the common case, not the exotic one, so that leak would fire early and
+ * read as the seal working.
+ *
+ * The definition node therefore carries no `effects` array at all, which means pass 3
+ * above skips it and no such flag is ever written; and the question "is this mortal
+ * sealed" is answered here, off the mortal's **own** conditions — where the seal
+ * actually lives, as a per-bearer Null-Touched instance with its own `ticksRemaining`.
+ *
+ * This is not a hand-rolled second resolution: it asks through `collectAttachmentEffects`,
+ * the same walker `applySuppressions` uses, so a suppressed suppressor stays silent
+ * and an inactive attachment stays skipped by the one set of rules.
+ */
+export function isSpellSuppressedFor(
+  graph: WorldGraph,
+  agentId: string,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): boolean {
+  try {
+    for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+      if (entry.effect.type !== 'suppress') continue;
+      const target = (entry.effect as SuppressEffect).target;
+      if (target === 'spell' || target === 'all_effects') return true;
+    }
+  } catch {
+    // Fail-soft (NFP #4): an unreadable walk means "not sealed" — refusing every cast
+    // in the world because one graph read threw is the worse failure by far.
+    return false;
+  }
+  return false;
+}

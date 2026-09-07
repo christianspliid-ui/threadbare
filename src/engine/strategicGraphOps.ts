@@ -22,7 +22,7 @@ import { getAgentLocationId, getAgentsAtLocation, getFactionMembershipEdges } fr
 import type { GameState } from '../types/gameState';
 import type { ReachDomain } from '../types/traits';
 import type { LocationSubtype } from '../types/index';
-import type { StrategicFactionSeed } from '../types/strategicAction';
+import type { StrategicFactionSeed, UndertakingHarmClass } from '../types/strategicAction';
 import type { FactionDefinition, FactionRankTier, FactionType } from '../types/faction';
 import { FACTION_REPUTATION_DECAY_PER_TICK } from '../data/faction-constants';
 import {
@@ -48,6 +48,26 @@ export interface GraphOpResult {
   op: string;
   createdId?: string;
   error?: string;
+  /**
+   * The harm this op did, when the op — not the template — is the only thing that can
+   * know it (THR-1429).
+   *
+   * `StrategicActionTemplate.harmClass` is authored per template and read once at
+   * completion, which is right for every cell whose harm is fixed by its verb. It
+   * cannot express a **signed** cell: `create × Condition` is one cell that blesses an
+   * ally and curses an enemy, and only the resolved sign says which happened. An op
+   * that sets this overrides the template's class for that completion; absent, the
+   * template's own value stands and nothing changes for the other thirteen kinds.
+   */
+  harmClass?: UndertakingHarmClass;
+  /**
+   * Who the harm landed on, when the op knows and the motive gate did not.
+   *
+   * The completion site normally takes the victim from the gate that licensed the
+   * verb. An ungated cell — the curse rides `create`, which is not motive-gated by
+   * verb — has no gate to read one off, so the op names the mortal it acted on.
+   */
+  victimAgentId?: string;
 }
 
 /**

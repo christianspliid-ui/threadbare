@@ -32,7 +32,7 @@ Two words for one thing is the drift this page exists to stop. Where the code wo
 | **Item** | A possession. | `artifact` · `attachmentCategory: possession` | arms · mounts_and_beasts · vestments · tomes_and_scrolls · relics_and_talismans · tools_and_instruments · provisions |
 | **Legendary artifact** | An item with its own trait graph, bonded rather than possessed. | `artifact_legendary` node | — |
 | **Holding** | Not a thing — the *ownership* of a Location, Place or Route. The `owns` edge is the truth; the artifact face is a sheet convenience. (Player word: *freehold*.) | `owns` edge; mirror `artifact:holding` | — |
-| **Power** | Spell · bestowal · innate. No node shape of its own yet; dormant. | `trait` · `subcategory: bestowed` (partial) | spell · bestowal · innate |
+| **Power** | Spell · bestowal · innate. A **trait node whose subcategory names its class** (THR-1429): `bestowed` for a god's gift, `spell` for one a mortal learned. One shared definition node per spell, minted at seeding from `SPELL_TEMPLATES`, per-bearer state on the edge (THR-1395) — `has_trait` says *wielded* (capped by `SLOT_CAPS.spell`), `knows_spell` says *known* (unlimited). `innate` has no member yet. | `trait` · `subcategory: bestowed \| spell` | spell · bestowal · innate |
 | **Condition** | Wounds, diseases, strains, blessings, curses, scars. | `trait` · `subcategory: condition \| scar` | condition · scar |
 | **Trait** | The graph's vocabulary of what a thing *is*: shared definitions, per-bearer state on `has_trait`. Tags refine traits; they are not an object taxonomy. | `trait` · `subcategory` ∈ nine | — |
 | **Agreement** | A favour owed, or a mark (a secret held as leverage). | `owes_favor` · `knows_secret_of` edges | favor · mark |

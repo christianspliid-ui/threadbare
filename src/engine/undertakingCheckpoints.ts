@@ -203,6 +203,12 @@ export function resolveMomentPresentation(
     case 'abandoned':
     case 'complication':
       return 'interrupt';
+    // Fixed at badge, for a followed target as much as an unfollowed one (THR-1429).
+    // An affliction is *state* — the sheet already shows the curse and its duration
+    // (Law 56) — and the attention pool cannot afford an interrupt every time a curse
+    // lands somewhere in the world. The badge is the whole notification.
+    case 'afflicted':
+      return 'badge';
   }
 }
 

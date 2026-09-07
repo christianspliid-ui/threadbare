@@ -104,6 +104,8 @@ import { COMPANION_MAX } from '../src/data/companion-templates';
 import { WORLD_OBJECT_KINDS, barePlaceTypeId } from '../src/data/world-objects';
 import { nodeSchemaWarningsSoFar } from '../src/types/nodeSchema';
 import { getAgentGrudges } from '../src/engine/agentDetail';
+import { getAgentAttachments } from '../src/engine/agentAttachments';
+import { isSpellSuppressedFor } from '../src/engine/effects/effectSuppression';
 import { getGrievanceHeatWord } from '../src/data/grievance-prose';
 import {
   getAllGroups,
@@ -402,6 +404,31 @@ function printAgent(partialId: string): void {
     console.log(`  Grudges (${grudges.length}):`);
     for (const g of grudges) {
       console.log(`    ${g.targetName} — ${g.causeClause}`);
+    }
+  }
+
+  // ── Powers and conditions (THR-1429) ──
+  //
+  // Words on the sheet, numbers in the CLI: the inspector is where the raw tick
+  // counts belong, so the surfaces above can keep saying "a while yet".
+  const attachments = getAgentAttachments(state.graph, match.id);
+  const spells = attachments.powers.filter(p => p.powerClass === 'spell');
+  const bestowals = attachments.powers.filter(p => p.powerClass !== 'spell');
+  const sealed = isSpellSuppressedFor(state.graph, match.id, state.effectStates);
+
+  if (spells.length > 0 || bestowals.length > 0 || attachments.knownSpells.length > 0) {
+    console.log(`  Powers${sealed ? ` ${YELLOW}[SEALED — spells will not answer]${RESET}` : ''}:`);
+    for (const p of spells) console.log(`    wields  ${p.name} (spell)`);
+    for (const p of bestowals) console.log(`    wields  ${p.name} (bestowal)`);
+    for (const k of attachments.knownSpells) console.log(`    ${DIM}knows   ${k.name} (${k.tradition}) — not carried${RESET}`);
+  }
+
+  const signedConditions = attachments.conditions.filter(c => c.sign);
+  if (signedConditions.length > 0) {
+    console.log(`  Conditions somebody put on them (${signedConditions.length}):`);
+    for (const c of signedConditions) {
+      const ticks = c.ticksRemaining == null ? 'indefinite' : `${c.ticksRemaining} ticks left`;
+      console.log(`    ${c.sign}: ${c.name} — ${c.inflictedByName ?? 'someone'}, ${ticks}`);
     }
   }
 }

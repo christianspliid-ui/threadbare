@@ -1110,3 +1110,111 @@ export const HOLDING_INCOME_TRACE_AGGREGATE_ABOVE = 5;
  * emptying the caster.
  */
 export const SPELL_SOUL_PRICE_QUINTESSENCE_SCALE = 0.005;
+
+// ─── The dormant kinds I — powers and conditions (THR-1429) ─────────
+//
+// Every threshold, duration and cap the three cells read. The *pools* are catalog
+// tags rather than id lists, so adding a blessing to the catalog widens the cell
+// without touching this file (NFP #1).
+
+/**
+ * The Veil capability at which a mortal with neither a caster trait nor a caster role
+ * may still study a spell.
+ *
+ * The third limb of THR-1230 ruling 4's composed caster predicate: a mortal who has
+ * gone deep enough into the Veil can teach themselves, so the caster population is
+ * not the seeded roles alone.
+ *
+ * **Units: the raw 0–100 `domainCapabilities` scale, measured, not the 0–1 the plan
+ * guessed** (seed 42 / small, tick 1: veil min 10, median 27, max 62). A `0.35` floor
+ * on this field would have passed every agent that carries it, which reads in a trace
+ * exactly like a gate that works.
+ *
+ * It is deliberately a *thin* limb: only 11 of 331 mortals carry `domainCapabilities`
+ * at all on that world, so the role limb below is what actually supplies casters. Do
+ * not widen this one to fix a starved cell — it cannot fix it; widen the roles.
+ */
+export const LEARN_SPELL_CASTER_VEIL_FLOOR = 40;
+
+/**
+ * NPC roles that make a mortal a caster outright.
+ *
+ * **Corrected against the seeded vocabulary, not guessed** (THR-1429 handoff asked the
+ * executor to do exactly this). Measured on seed 42 / small at tick 1: 313 of 331
+ * mortals carry an `npcRole`, and the plan's starting list — `mage`, `hedge_witch`,
+ * `sage` — matches **none** of them; those three roles are not in the world. The
+ * eleven below are, and they are the ones a spell-study reads as: 65 of 331 mortals,
+ * which is a population rather than a rounding error.
+ *
+ * Widening this is the tuning lever if the census (THR-1402) finds `learn_spell`
+ * never firing.
+ */
+export const CASTER_NPC_ROLES: readonly string[] = [
+  'priest', 'oracle', 'acolyte', 'monk', 'chaplain',
+  'enchanter', 'warmage', 'alchemist', 'scholar', 'healer', 'herald',
+];
+
+/** Mastery traits that make a mortal a caster. Matched as a substring of the trait node's id. */
+export const CASTER_MASTERY_TRAIT_IDS: readonly string[] = ['spell_weaver', 'spellweaver', 'arcanist'];
+
+/**
+ * Whether a mortal with **no** sphere alignment may study from the whole shelf.
+ *
+ * THR-1429 specified the tradition shelf as "spell definitions whose `sphereAffinity`
+ * is one of the actor's aligned spheres — a shelf, not a shop". Measured on seed 42 /
+ * small at tick 30: **3 of 337** mortals carry any non-zero `sphereAffinity` score and
+ * **1** carries a `sphereAlignment`. Read literally, the shelf is empty for ~99% of the
+ * world and the cell can never fire — the plan's own kill criterion ("the shelf or the
+ * caster floor is too narrow — the constants move, not the shape"), reached at build
+ * time from a measurement instead of after two census seeds.
+ *
+ * So the shape is kept exactly: aligned mortals still draw from their tradition first,
+ * sorted by id, first unknown. This constant only decides what an *unaligned* mortal
+ * sees — the whole shelf, rather than nothing. Set it `false` once sphere alignment is
+ * a broadly-populated field and the shelf can afford to be a shelf for everyone.
+ */
+export const LEARN_SPELL_UNALIGNED_SHELF_OPEN = true;
+
+/**
+ * `reputation_with` score at which another mortal counts as an ally for a blessing.
+ *
+ * Above `Accepted` (0.5) on purpose: the neutral midpoint is not friendship, and a
+ * blessing handed to everyone the actor merely tolerates would make the sign
+ * meaningless (the gate *is* the story rule).
+ */
+export const CONDITION_ALLY_STANDING_MIN = 0.6;
+
+/** The highest condition tier each outcome band may inflict. The tier-3 conditions stay encounter rewards. */
+export const CONDITION_TIER_CAP_BY_BAND: Readonly<Record<string, number>> = {
+  critical_success: 2,
+  success: 1,
+  success_at_cost: 1,
+};
+
+/** The tier cap when the completion carried no band (the instant path). */
+export const CONDITION_TIER_CAP_DEFAULT = 1;
+
+/** A curse's `ticksRemaining` by band — three days, two, one, on the 12-tick day. */
+export const CURSE_DURATION_TICKS_BY_BAND: Readonly<Record<string, number>> = {
+  critical_success: 36,
+  success: 24,
+  success_at_cost: 12,
+};
+
+/** A curse's duration when the completion carried no band. */
+export const CURSE_DURATION_TICKS_DEFAULT = 24;
+
+/** How long a sealed power stays bound, before the band table scales it. */
+export const SEAL_POWER_SUPPRESS_TICKS = 24;
+
+/** The catalog tag naming the blessing pool. */
+export const CONDITION_BLESSING_TAG = '#blessing';
+
+/** The catalog tag naming the curse pool — the seal draws from it too. */
+export const CONDITION_CURSE_TAG = '#curse';
+
+/** The condition a seal mints: the catalog's existing spell-suppressing curse. */
+export const SEAL_POWER_CONDITION_ID = 'reward_condition_null_touched';
+
+/** What a curse or a seal registers as, for the grievance funnel. */
+export const HARM_ON_AFFLICT: HarmClassForCells = 'afflicted';
