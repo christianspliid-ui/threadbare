@@ -1233,6 +1233,17 @@ export const RING_TARGET_MEMBER_COUNT = 4;
  */
 export const RING_REACH_HEXES = 3;
 
+/**
+ * The Shadow capability at which a stranger is ring material.
+ *
+ * The **Reach**, not the Sphere: Shadow is a thing a mortal does, and the two axes
+ * are orthogonal — reading `sphereAlignment.darkness` here found nobody on seed 42,
+ * because it asks a different question entirely. Measured against the live
+ * population (see the ring-founding test): it sits low enough that an ordinary
+ * settlement supplies recruits and high enough that not everyone is one.
+ */
+export const RING_RECRUIT_SHADOW_MIN = 0.35;
+
 /** The sheet's banded phrase for a ring's size — never a numeral (UI Law 14). */
 export const NETWORK_SIZE_WORDS: readonly (readonly [number, string])[] = [
   [2, 'a few'],

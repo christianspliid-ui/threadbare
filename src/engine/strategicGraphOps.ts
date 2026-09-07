@@ -40,7 +40,9 @@ import { hexDistance } from '../lib/hexMath';
 import {
   RING_TARGET_MEMBER_COUNT,
   RING_REACH_HEXES,
+  RING_RECRUIT_SHADOW_MIN,
 } from '../data/strategic-action-constants';
+import { computeCapability } from './domainCapability';
 import { seedFactionFromDefinition } from './factionSeeding';
 import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
@@ -1223,15 +1225,32 @@ export function foundRing(
       !!n && n.id !== actorId && !isGrouped(graph, n.id) && !isAgentGone(n)
       && n.properties.actorType === 'individual';
 
-    /** A ring is built of people who already share the founder's cause, or the founder's bent. */
-    const sharesCause = (n: GraphNode): boolean => {
+    /**
+     * How badly the founder wants this person: a faction-mate first, then anyone who
+     * leans Shadow, then whoever else is standing here.
+     *
+     * A **preference, not a gate**, and that is the load-bearing decision. "Leans
+     * Shadow" is the *Reach* (the two axes are orthogonal — reading
+     * `sphereAlignment.darkness` asks a different question and found nobody on seed
+     * 42), but a hard Shadow threshold makes the cell nearly unfoundable: an
+     * ordinary NPC carries no capability traits at all, so `computeCapability`
+     * returns ~0.02 for them and a settlement full of people supplies no recruits.
+     * That is this plan's own kill criterion, reached before shipping rather than
+     * after. `raiseWarband` takes whoever is standing there for the same reason; a
+     * ring is choosier about *order*, never about whether it can exist.
+     */
+    const affinity = (n: GraphNode): number => {
       if (founderFaction) {
         for (const e of getFactionMembershipEdges(graph, n.id)) {
-          if (e.target === founderFaction) return true;
+          if (e.target === founderFaction) return 0;
         }
       }
-      const spheres = n.properties.sphereAlignment as Record<string, number> | undefined;
-      return typeof spheres?.darkness === 'number' && spheres.darkness > 0;
+      try {
+        if (computeCapability(graph, n.id, 'shadow') >= RING_RECRUIT_SHADOW_MIN) return 1;
+      } catch {
+        // Fail-soft: an unreadable capability is simply not a preference.
+      }
+      return 2;
     };
 
     const seen = new Set<string>();
@@ -1241,12 +1260,15 @@ export function foundRing(
       if (recruits.length >= RING_TARGET_MEMBER_COUNT) break;
       if (eligible(node) && !seen.has(id)) { seen.add(id); recruits.push(node); }
     }
-    for (const node of getAgentsAtLocation(graph, locationId)) {
+    // Sorted by preference then by id, so the choice is reproducible from the graph
+    // alone (NFP #3) and the founder still gets their own people first.
+    const pool = getAgentsAtLocation(graph, locationId)
+      .filter(n => eligible(n) && !seen.has(n.id))
+      .sort((a, b) => affinity(a) - affinity(b) || a.id.localeCompare(b.id));
+    for (const node of pool) {
       if (recruits.length >= RING_TARGET_MEMBER_COUNT) break;
-      if (eligible(node) && !seen.has(node.id) && sharesCause(node)) {
-        seen.add(node.id);
-        recruits.push(node);
-      }
+      seen.add(node.id);
+      recruits.push(node);
     }
 
     const members = [founder, ...recruits];
@@ -1340,8 +1362,19 @@ export function reinforceWarband(
       // THR-1430: a ring recruits from wherever its people already are — anyone
       // within `RING_REACH_HEXES` of any member — which is what lets a ring grow
       // across a region while a company only grows where it stands.
+      //
+      // The ring's *own* members are excluded by id rather than by `isGrouped`:
+      // that predicate resolves through `getGroupOf`, which is company-scoped, so a
+      // ring member reads as ungrouped and reinforcement re-added them — a duplicate
+      // `member_of` edge id, which the graph rejects and which took the whole
+      // reinforcement down with it.
+      const existing = new Set(
+        getGroupMemberEdges(graph, targetGroupId)
+          .filter(e => (e.properties as Record<string, unknown>).leftAtTick === undefined)
+          .map(e => e.source),
+      );
       const candidates = graph.getNodesByType('actor')
-        .filter(n => eligible(n) && ringMemberInReachOf(graph, targetGroupId, n.id) !== null)
+        .filter(n => eligible(n) && !existing.has(n.id) && ringMemberInReachOf(graph, targetGroupId, n.id) !== null)
         .sort((a, b) => a.id.localeCompare(b.id));
       for (const node of candidates) {
         if (recruits.length >= room) break;
