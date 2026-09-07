@@ -28,7 +28,7 @@ import {
 import { runFilterPipeline } from './encounterFilterPipeline';
 import { scoreAndSelect, NOVELTY_CATEGORY_WINDOW_TICKS, type FamiliarityRecord, type ScoredCandidate, type EncounterNoveltyRecord } from './encounterScoring';
 import { findActionableIntelligence } from './intelligence';
-import { buildMotiveReceipt, resolveMintedAmbitionProvenance } from './foreshadowing/motiveReceipt';
+import { buildMotiveReceipt, resolveMintedAmbitionOrigin } from './foreshadowing/motiveReceipt';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
@@ -1123,8 +1123,9 @@ export function phaseAgentDecision(
                 region: receiptRegion,
               })
             : undefined;
-          // A minted want names its origin in the receipt (THR-726).
-          const mintedProvenance = resolveMintedAmbitionProvenance(
+          // A minted want names its origin in the receipt (THR-726); when that origin
+          // is an undertaking outcome the term reads as `undertaking` (THR-1432).
+          const mintedProvenance = resolveMintedAmbitionOrigin(
             graph, agentId, sel.entry.reachPrimary,
           );
           const receipt = buildMotiveReceipt(

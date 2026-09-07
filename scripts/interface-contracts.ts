@@ -133,6 +133,7 @@ const ECONOMY = 'Mortal Economy & Prosperity';
 const RUINS = 'Ruins, Clues & Delves';
 const TRAITS = 'Personality & Emergent Traits';
 const PROGRESSION = 'Ascendant Beats & Progression';
+const OMENS = 'Omens & Atmospheric Pressure';
 
 export const CONTRACTS: readonly Contract[] = [
   // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
@@ -2279,6 +2280,31 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-07',
       evidence:
         'THR-1433. `canReadIntention` is the one predicate: familiarity at `INTENTION_KNOWLEDGE_TIER` (skipped for a secret cell), a followed mortal’s unrevealed `knows_secret_of` mark, a followed network’s living member within `NETWORK_READ_REACH_HEXES`. The hook stamps the live answer on the card (`intentionRead`) and builds the intention line; the Overview tab renders it with the door in the tooltip; the Journey and Chronicle ambition gates and the thread-card foreshadowing tooltip call the same rule. Non-vacuous by `src/engine/__tests__/intentionReading.test.ts` (each door falsified at its owning layer — out of reach, unfollowed leader, revealed mark, the plot at `transparent`), `src/components/Game/tabs/__tests__/OverviewTabIntention.test.tsx` (the line renders through each door and not at all when closed) and the browser proof on the closing PR (`__DEBUG.followAgent` + `__DEBUG.spawnMark` on a stranger, `__DEBUG.canReadIntention`).',
+    },
+  },
+  {
+    id: 'undertaking-outcomes-cast-omens',
+    producerSystem: AMBITIONS,
+    consumerSystem: OMENS,
+    intent:
+      'A mortal’s work casts omens: a razing, a seizure, a killing or a curse done by mortal hands becomes a portent the world carries — a chronicle line and a pressure on what happens next near the place — instead of the foreshadowing layer reading only the doom clock and the god’s own weather.',
+    mechanism: {
+      kind: 'event',
+      symbols: ['undertaking_outcome', 'castUndertakingPortent', 'portendedTick', 'OMEN_UNDERTAKING_LOOKBACK_TICKS'],
+      module: 'src/engine/phaseOmenAgenda.ts',
+    },
+    writeSites: [
+      'src/engine/grievance/undertakingOutcomeNode.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    readSites: [
+      'src/engine/phaseOmenAgenda.ts',
+      'src/data/game-config.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        'THR-1432. `castUndertakingPortent` (phase 1.7, last step) weighs every `undertaking_outcome` node within `OMEN_UNDERTAKING_LOOKBACK_TICKS` by its `harmMagnitude` × `OMEN_UNDERTAKING_WEIGHT_BY_HARM` × the attention term (`OMEN_UNDERTAKING_FOLLOWED_WEIGHT` when the god follows the culprit or the victim), casts the top one as an `EmittedOmen` carrying `provenance.outcomeNodeId` and the deed in words, stamps the node `portendedTick`, and appends a `narrative` chronicle event. Non-vacuous by `src/engine/__tests__/phaseOmenAgenda.undertakingPortent.test.ts` (nodes written by the real writer `createUndertakingOutcomeNode`; lookback, attention in both directions, victim follow, heavier harm, once-only, one-per-tick, seeded tie) and `src/engine/__tests__/undertakingPortent.live.test.ts` (heavy lane: seed 42 medium, a destroy × Location started through the review lever completes and the next tick’s `state.emittedOmens` names its node). Headless CLI run recorded on the ticket.',
     },
   },
   {

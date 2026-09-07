@@ -13,11 +13,26 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
-import type { OmenState, ActiveOmen, OmenTrackTemplate, CompletedOmen, EmittedOmen, OmenCategory } from '../types/omen';
-import { EMITTED_OMEN_SCORE_WEIGHT } from '../data/game-config';
+import type { OmenState, ActiveOmen, OmenTrackTemplate, CompletedOmen, EmittedOmen, EmittedOmenProvenance, OmenCategory } from '../types/omen';
+import type { GraphNode } from '../types/graph';
+import type { UndertakingHarmClass } from '../types/strategicAction';
+import type { UndertakingPortentTrace } from '../types/trace';
+import {
+  EMITTED_OMEN_SCORE_WEIGHT,
+  EMITTED_OMEN_MAX_ACTIVE,
+  EMITTED_OMEN_LOCAL_DEFAULT_RADIUS,
+  OMEN_UNDERTAKING_LOOKBACK_TICKS,
+  OMEN_UNDERTAKING_WEIGHT_BY_HARM,
+  OMEN_UNDERTAKING_FOLLOWED_WEIGHT,
+  OMEN_UNDERTAKING_MAX_PER_TICK,
+  OMEN_UNDERTAKING_DURATION_TICKS,
+  OMEN_UNDERTAKING_CATEGORY_BY_HARM,
+} from '../data/game-config';
+import { HARM_MAGNITUDE_BY_CLASS, HARM_CLASS_LABELS } from '../data/ambition-minting-rules';
 import { hexDistance } from '../lib/hexMath';
 import {
   OMEN_TEMPLATES,
+  UNDERTAKING_PORTENT_HOOKS,
   getDoomEchoTemplates,
   getEligibleSphereSurgeTemplates,
   getSeasonalTemplates,
@@ -25,6 +40,10 @@ import {
 } from '../data/omenTemplates';
 import { emitTrace } from './traceBuffer';
 import { appendRecentEvent } from './encounterAftermath';
+import { isUndertakingOutcomeEventId } from './grievance/undertakingOutcomeNode';
+import { isFollowed } from './followedAgents';
+import { resolveToParentLocation } from './sublocationShape';
+import type { WorldGraph } from './graph';
 
 // ─── Tunable Constants (NFP #1) ──────────────────────────────────
 
@@ -354,6 +373,155 @@ function emitBeats(
   };
 }
 
+// ─── A mortal's work casts omens (THR-1432) ──────────────────────
+
+/** One outcome node the portent step weighed, with the terms that ranked it. */
+export interface PortentCandidate {
+  readonly node: GraphNode;
+  readonly harmClass: UndertakingHarmClass;
+  readonly harmMagnitude: number;
+  readonly followed: boolean;
+  readonly score: number;
+}
+
+export interface PortentResult {
+  /** The omen cast this tick, or null — with why. */
+  readonly omen: EmittedOmen | null;
+  readonly candidates: readonly PortentCandidate[];
+  readonly reason: string;
+}
+
+/** The property stamped on an outcome node once it has portended, so it never portends twice. */
+export const PORTENDED_TICK_PROPERTY = 'portendedTick';
+
+function nameOf(graph: WorldGraph, id: unknown): string | undefined {
+  if (typeof id !== 'string') return undefined;
+  const name = graph.getNode(id)?.name;
+  return typeof name === 'string' && name.trim().length > 0 ? name : undefined;
+}
+
+/**
+ * The place a portent hangs over: the thing the work was done *to* when that is a
+ * place (a razed town portends over the town, not over the hex the razer set out
+ * from), else the `occurred_at` site — either resolved to the settlement a room sits in.
+ */
+function portentSite(graph: WorldGraph, node: GraphNode): GraphNode | undefined {
+  const targetId = node.properties?.targetNodeId;
+  const target = typeof targetId === 'string' ? graph.getNode(targetId) : undefined;
+  const siteId = graph.getOutgoingEdges(node.id, 'occurred_at')[0]?.target;
+  const site = (target?.type === 'location' ? target : undefined) ?? (siteId ? graph.getNode(siteId) : undefined);
+  if (!site) return undefined;
+  return (site.type === 'location' ? resolveToParentLocation(graph, site) : undefined) ?? site;
+}
+
+/**
+ * The deed in words — the same shape the grievance lane's mint label takes
+ * ("the razing of Dunmar — Hesk's work"), built from the node rather than the mint so
+ * a harm nobody minted a drive from still reads whole.
+ */
+function portentDeed(graph: WorldGraph, node: GraphNode, harmClass: UndertakingHarmClass, site: GraphNode | undefined): string {
+  const stem = HARM_CLASS_LABELS[harmClass];
+  const targetName = nameOf(graph, node.properties?.targetNodeId) ?? site?.name;
+  // "the razing of Dunmar", but "the work abandoned at Horsepolis" — a self-facing
+  // harm has no object to be *of*.
+  const joiner = harmClass === 'undertaking_abandoned' ? 'at' : 'of';
+  const placed = targetName ? `${stem} ${joiner} ${targetName}` : stem;
+  const culpritName = nameOf(graph, node.properties?.culpritAgentId);
+  return culpritName ? `${placed} — ${culpritName}'s work` : placed;
+}
+
+/**
+ * Weigh every recent `undertaking_outcome` node and return the one that portends.
+ *
+ * Score = the node's own `harmMagnitude` × `OMEN_UNDERTAKING_WEIGHT_BY_HARM` × the
+ * attention term (`OMEN_UNDERTAKING_FOLLOWED_WEIGHT` when the god follows the culprit
+ * or the victim). Ties are broken by one seeded draw, and only then — a clear winner
+ * costs the phase's PRNG nothing (NFP #3). Fail-soft: a node with no harm class, no
+ * magnitude, or outside the lookback is skipped; a throw on one node skips that node.
+ *
+ * Pure with respect to state: the caller stamps the winner and appends the omen.
+ */
+export function castUndertakingPortent(state: GameState, rng: () => number): PortentResult {
+  const graph = state.graph;
+  const tick = state.tick;
+  const cutoff = tick - OMEN_UNDERTAKING_LOOKBACK_TICKS;
+  const candidates: PortentCandidate[] = [];
+
+  for (const node of graph.getNodesByType('event')) {
+    try {
+      if (!isUndertakingOutcomeEventId(node.id)) continue;
+      const p = node.properties ?? {};
+      if (p.eventType !== 'undertaking_outcome') continue;
+      const nodeTick = typeof p.tick === 'number' ? p.tick : Number.NEGATIVE_INFINITY;
+      if (nodeTick < cutoff || nodeTick > tick) continue;
+      if (typeof p[PORTENDED_TICK_PROPERTY] === 'number') continue;
+      const harmClass = p.harmClass as UndertakingHarmClass;
+      const weight = OMEN_UNDERTAKING_WEIGHT_BY_HARM[harmClass];
+      if (weight === undefined) continue;
+      const harmMagnitude = typeof p.harmMagnitude === 'number' ? p.harmMagnitude : (HARM_MAGNITUDE_BY_CLASS[harmClass] ?? 0);
+      if (harmMagnitude <= 0) continue;
+      const parties = [p.culpritAgentId, p.victimAgentId].filter((id): id is string => typeof id === 'string');
+      const followed = parties.some(id => isFollowed(state, graph, id));
+      const score = harmMagnitude * weight * (followed ? OMEN_UNDERTAKING_FOLLOWED_WEIGHT : 1);
+      candidates.push({ node, harmClass, harmMagnitude, followed, score });
+    } catch (err) {
+      console.warn(`[OmenAgenda] portent candidate ${node.id} skipped:`, err);
+    }
+  }
+
+  if (candidates.length === 0) return { omen: null, candidates, reason: 'no_recent_outcome' };
+  if (OMEN_UNDERTAKING_MAX_PER_TICK <= 0) return { omen: null, candidates, reason: 'disabled' };
+
+  // Score descending, id ascending — the same state always ranks the same way.
+  candidates.sort((a, b) => b.score - a.score || (a.node.id < b.node.id ? -1 : a.node.id > b.node.id ? 1 : 0));
+  const top = candidates[0].score;
+  const ties = candidates.filter(c => c.score === top);
+  const pick = ties.length === 1 ? ties[0] : (pickRandom(ties, rng) ?? ties[0]);
+
+  const node = pick.node;
+  const p = node.properties ?? {};
+  const site = portentSite(graph, node);
+  const deed = portentDeed(graph, node, pick.harmClass, site);
+  const placeName = site?.name ?? 'the place';
+  const hook = UNDERTAKING_PORTENT_HOOKS[pick.harmClass]
+    .replace(/\{deed\}/g, deed)
+    .replace(/\{place\}/g, placeName);
+  const hexCol = site?.properties?.hexCol;
+  const hexRow = site?.properties?.hexRow;
+  const scope: EmittedOmen['scope'] = typeof hexCol === 'number' && typeof hexRow === 'number'
+    ? { kind: 'local', hexCol, hexRow, radius: EMITTED_OMEN_LOCAL_DEFAULT_RADIUS }
+    : { kind: 'global' };
+
+  const provenance: EmittedOmenProvenance = {
+    kind: 'undertaking',
+    outcomeNodeId: node.id,
+    templateId: typeof p.templateId === 'string' ? p.templateId : '',
+    verb: typeof p.verb === 'string' ? p.verb : '',
+    harmClass: pick.harmClass,
+    deed,
+    ...(typeof p.culpritAgentId === 'string' && { culpritAgentId: p.culpritAgentId }),
+    ...(typeof p.victimAgentId === 'string' && { victimAgentId: p.victimAgentId }),
+    ...(site && { siteId: site.id }),
+    followed: pick.followed,
+  };
+
+  const omen: EmittedOmen = {
+    omenId: `omen_und_${node.id}`,
+    sourceEncounterId: node.id,
+    sourceReactionId: 'undertaking_outcome',
+    category: OMEN_UNDERTAKING_CATEGORY_BY_HARM[pick.harmClass],
+    // The world feels the harm at its own weight; attention decides which harm, not how loud.
+    intensity: Math.max(0, Math.min(1, pick.harmMagnitude * OMEN_UNDERTAKING_WEIGHT_BY_HARM[pick.harmClass])),
+    scope,
+    narrativeHook: hook,
+    emittedTick: tick,
+    expiresTick: tick + OMEN_UNDERTAKING_DURATION_TICKS,
+    provenance,
+  };
+
+  return { omen, candidates, reason: ties.length === 1 ? 'top_score' : `tie_draw_${ties.length}` };
+}
+
 // ─── Main phase ──────────────────────────────────────────────────
 
 /**
@@ -363,6 +531,9 @@ function emitBeats(
  * 2. Force-expire primary on doom stage transition (if OMEN_DOOM_STAGE_FORCE_EXPIRE)
  * 3. Selection — fill empty slots with new omen tracks
  * 4. Beat emission — fire atmospheric micro-events on interval
+ * 5. Sphere pressure from sphere-surge omens
+ * 6. A mortal's work casts a portent (THR-1432) — the loudest recent undertaking
+ *    outcome becomes an emitted omen
  */
 export function phaseOmenAgenda(state: GameState): Partial<GameState> {
   if (state.tick < OMEN_FIRST_ACTIVATION_TICK) return {};
@@ -570,7 +741,69 @@ export function phaseOmenAgenda(state: GameState): Partial<GameState> {
     }
   }
 
-  // ── 5. Build updated OmenState ────────────────────────────────
+  // ── 5. A mortal's work casts a portent (THR-1432) ─────────────
+  // Last on purpose: every draw above is unchanged whether or not a portent is cast,
+  // so a razing cannot re-roll the seasonal omen (NFP #3).
+
+  let emittedOmens: EmittedOmen[] | undefined;
+  try {
+    const portent = castUndertakingPortent(state, rng);
+    if (portent.omen) {
+      const omen = portent.omen;
+      const outcomeNode = state.graph.getNode(omen.provenance!.outcomeNodeId);
+      if (outcomeNode) outcomeNode.properties[PORTENDED_TICK_PROPERTY] = tick;
+
+      let updated = [...(state.emittedOmens ?? []), omen];
+      if (updated.length > EMITTED_OMEN_MAX_ACTIVE) {
+        // Evict the oldest — the same rule the aftermath's emit_omen applies.
+        const evicted = updated.reduce((oldest, o) => (o.emittedTick < oldest.emittedTick ? o : oldest), updated[0]);
+        emitTrace({
+          tick, category: 'omen_decayed',
+          omenId: evicted.omenId, livedTicks: tick - evicted.emittedTick,
+          failReason: 'cap_evicted',
+          summary: `omen_decayed: ${evicted.omenId} evicted (cap_evicted)`,
+        });
+        updated = updated.filter(o => o !== evicted);
+      }
+      emittedOmens = updated;
+
+      const significance = Math.max(0.5, Math.min(0.85, 0.5 + omen.intensity * 0.3));
+      const portentEvent: TickEvent = {
+        id: nextEventId(tick),
+        tick,
+        type: 'narrative',
+        message: omen.narrativeHook,
+        significance,
+        ...(omen.provenance?.culpritAgentId && { actorId: omen.provenance.culpritAgentId }),
+      };
+      tickEvents = [...tickEvents, portentEvent];
+      recentEvents = appendRecentEvent(recentEvents, portentEvent);
+
+      const winner = portent.candidates.find(c => c.node.id === omen.provenance!.outcomeNodeId);
+      emitTrace({
+        tick,
+        category: 'omen_emitted',
+        ...(omen.provenance?.culpritAgentId && { agentId: omen.provenance.culpritAgentId }),
+        omenId: omen.omenId,
+        omenCategory: omen.category,
+        intensity: omen.intensity,
+        expiresTick: omen.expiresTick,
+        sourceEncounterId: omen.sourceEncounterId,
+        sourceReactionId: 'undertaking_outcome',
+        outcomeNodeId: omen.provenance!.outcomeNodeId,
+        harmClass: omen.provenance!.harmClass,
+        score: winner?.score ?? 0,
+        followed: omen.provenance!.followed,
+        candidates: portent.candidates.map(c => ({ outcomeNodeId: c.node.id, harmClass: c.harmClass, score: c.score, followed: c.followed })),
+        summary: `omen_emitted[portent]: ${omen.provenance!.harmClass} — ${omen.provenance!.deed} (${portent.reason}, ${portent.candidates.length} weighed)`,
+      } satisfies Omit<UndertakingPortentTrace, 'id' | 'timestamp'>);
+    }
+  } catch (err) {
+    // Fail-soft: a portent is a reading of the world, never a precondition of the tick.
+    console.warn('[OmenAgenda] portent step failed:', err);
+  }
+
+  // ── 6. Build updated OmenState ────────────────────────────────
 
   const omenState: OmenState = {
     primary,
@@ -583,6 +816,7 @@ export function phaseOmenAgenda(state: GameState): Partial<GameState> {
     tickEvents,
     recentEvents,
     pendingSpherePressures,
+    ...(emittedOmens !== undefined && { emittedOmens }),
   };
 }
 

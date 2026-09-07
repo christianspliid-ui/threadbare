@@ -33,6 +33,7 @@ import {
   STAKE_CLAUSES,
   DEFAULT_STAKE_CLAUSES,
   MATTER_NO_PLACE,
+  DEED_UNKNOWN,
   matterAtPlace,
 } from '../../data/foreshadowing-content';
 import { STAKE_CLAUSE_MIN_WEIGHT } from './constants';
@@ -124,6 +125,11 @@ export function composeReceiptForeshadowing(
   const hedgeTail = lowIntel ? pick(LOW_INTEL_HEDGE_TAILS) : null;
   const stakeTpl = hasStake ? pick(STAKE_CLAUSES[second.kind] ?? DEFAULT_STAKE_CLAUSES) : null;
 
+  // The deed behind an `undertaking` pull, in words (THR-1432): the receipt carries
+  // the grievance lane's own label — "the razing of Dunmar — Hesk's work" — never a
+  // cell id, so the tooltip says what was done and not which enum it was.
+  const deed = receipt.contributions.find(c => c.kind === 'undertaking')?.provenance?.detail ?? DEED_UNKNOWN;
+
   const slots = {
     name: firstName,
     subject,
@@ -133,6 +139,7 @@ export function composeReceiptForeshadowing(
     matter,
     Matter,
     place: locationName,
+    deed,
   };
   const ctx = { number, slots };
 

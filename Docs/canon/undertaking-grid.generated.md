@@ -45,12 +45,12 @@
 
 ## Subsystems × verbs
 
-> Which of the world's 27 subsystems a mortal's own work reaches, and who reads what it leaves. A subsystem is reached in **three ways**, and the status word says the closest one: it owns the kind a live cell acts on, or it is the home of the operation that cell runs, or it reads what someone else's cell left behind. **10 LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **3 REACHED-BY-OP** (owns no kind, but a live cell's operation lives in its modules), **8 READS** (reads what a live cell leaves), **0 OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **6 UNTOUCHED** (nothing reaches it at all — each with its by-design reason below). Every status is derived, never authored: the owned-kind join reads `WORLD_OBJECT_KINDS[].owningSystem`, the op join resolves each live cell's operation to its home module through the registry's own imports and `scripts/subsystems-registry.ts`, and the reader join reads `SUBSYSTEM_READERS`. Counting only the first join is what made five reached subsystems read UNTOUCHED (THR-1431).
+> Which of the world's 27 subsystems a mortal's own work reaches, and who reads what it leaves. A subsystem is reached in **three ways**, and the status word says the closest one: it owns the kind a live cell acts on, or it is the home of the operation that cell runs, or it reads what someone else's cell left behind. **10 LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **3 REACHED-BY-OP** (owns no kind, but a live cell's operation lives in its modules), **9 READS** (reads what a live cell leaves), **0 OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **5 UNTOUCHED** (nothing reaches it at all — each with its by-design reason below). Every status is derived, never authored: the owned-kind join reads `WORLD_OBJECT_KINDS[].owningSystem`, the op join resolves each live cell's operation to its home module through the registry's own imports and `scripts/subsystems-registry.ts`, and the reader join reads `SUBSYSTEM_READERS`. Counting only the first join is what made five reached subsystems read UNTOUCHED (THR-1431).
 
 | Subsystem | Kinds it owns | Create | Raise | Lower | Use | Claim | Seize | Destroy | Observe | Status | Read by |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **War, Armies & Battles** | `army`, `battle` | 🟢 live | 🟢 live | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🔵 wanted | LIVE-TOUCHED | War, Armies & Battles · Companies & Group Travel · Strategic Projects & Control |
-| **Factions & Succession** | `faction` | 🟢 live | · | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🟢 live | LIVE-TOUCHED | Factions & Succession |
+| **War, Armies & Battles** | `army`, `battle` | 🟢 live | 🟢 live | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🔵 wanted | LIVE-TOUCHED | Omens & Atmospheric Pressure · War, Armies & Battles · Companies & Group Travel · Strategic Projects & Control |
+| **Factions & Succession** | `faction` | 🟢 live | · | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🟢 live | LIVE-TOUCHED | Omens & Atmospheric Pressure · Factions & Succession |
 | **Rival Gods & Schemes** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
 | **Doom Clock & Journey** | `journey` | · | · | · | · | · | · | · | · | READS | — |
 | **Mandate** | _none_ | · | · | · | · | · | · | · | · | READS | — |
@@ -58,69 +58,79 @@
 | **Encounters & Dilemmas** | `action_template`, `encounter_template` | · | · | · | · | · | · | · | · | READS | — |
 | **Culture** | `culture` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
 | **Personality & Emergent Traits** | `trait` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
-| **Mortal Economy & Prosperity** | `route` | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | · | 🟢 live | LIVE-TOUCHED | Mortal Economy & Prosperity · War, Armies & Battles · Attention, Chronicle & Narrative |
+| **Mortal Economy & Prosperity** | `route` | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | · | 🟢 live | LIVE-TOUCHED | Omens & Atmospheric Pressure · Mortal Economy & Prosperity · War, Armies & Battles · Attention, Chronicle & Narrative |
 | **Ambitions & Undertakings** | `ambition`, `undertaking` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
-| **Attachments, Items & Possessions** | `companion`, `item`, `legendary_artifact`, `holding`, `power` | 🟢 live | ⏳ later | ⏳ later | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | ⏳ later | LIVE-TOUCHED | Attachments, Items & Possessions · Spheres & Quintessence · Encounters & Dilemmas · Effects & Conditions · Factions & Succession |
+| **Attachments, Items & Possessions** | `companion`, `item`, `legendary_artifact`, `holding`, `power` | 🟢 live | ⏳ later | ⏳ later | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | ⏳ later | LIVE-TOUCHED | Omens & Atmospheric Pressure · Attachments, Items & Possessions · Spheres & Quintessence · Encounters & Dilemmas · Effects & Conditions · Factions & Succession |
 | **Ruins, Clues & Delves** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Stealth, Detection & Hidden Marks** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
 | **Attention, Chronicle & Narrative** | `event` | · | · | · | · | · | · | · | · | READS | — |
-| **Omens & Atmospheric Pressure** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Omens & Atmospheric Pressure** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Strategic Projects & Control** | _none_ | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
 | **Ascendant Beats & Progression** | `ascendant`, `god` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Companies & Group Travel** | `company`, `network` | 🟢 live | 🟢 live | 🔵 wanted | 🟢 live | 🔵 wanted | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Companies & Group Travel · Encounters & Dilemmas · Strategic Projects & Control |
+| **Companies & Group Travel** | `company`, `network` | 🟢 live | 🟢 live | 🔵 wanted | 🟢 live | 🔵 wanted | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Companies & Group Travel · Encounters & Dilemmas · Strategic Projects & Control |
 | **Movement & Colocation** | _none_ | · | · | · | · | · | · | · | · | READS | — |
-| **Reputation & Influence** | `standing` | · | 🟢 live | 🟢 live | 🔵 wanted | · | · | 🟢 live | · | LIVE-TOUCHED | Encounters & Dilemmas · Ambitions & Undertakings · Secrets & Favors · Mortal Economy & Prosperity · Attention, Chronicle & Narrative |
-| **Secrets & Favors** | `agreement` | 🟢 live | · | · | 🟢 live | · | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Secrets & Favors · Encounters & Dilemmas · Intelligence, Knowledge & Familiarity · Ruins, Clues & Delves · Attention, Chronicle & Narrative |
-| **Effects & Conditions** | `condition` | 🟢 live | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Effects & Conditions · Encounters & Dilemmas |
-| **Agent Lifecycle** | `mortal` | · | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Agent Lifecycle · Companies & Group Travel · Factions & Succession · Ambitions & Undertakings · Attention, Chronicle & Narrative |
+| **Reputation & Influence** | `standing` | · | 🟢 live | 🟢 live | 🔵 wanted | · | · | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Encounters & Dilemmas · Ambitions & Undertakings · Secrets & Favors · Mortal Economy & Prosperity · Attention, Chronicle & Narrative |
+| **Secrets & Favors** | `agreement` | 🟢 live | · | · | 🟢 live | · | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Secrets & Favors · Encounters & Dilemmas · Intelligence, Knowledge & Familiarity · Ruins, Clues & Delves · Attention, Chronicle & Narrative |
+| **Effects & Conditions** | `condition` | 🟢 live | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Effects & Conditions · Encounters & Dilemmas |
+| **Agent Lifecycle** | `mortal` | · | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Agent Lifecycle · Companies & Group Travel · Factions & Succession · Ambitions & Undertakings · Attention, Chronicle & Narrative |
 | **Intelligence, Knowledge & Familiarity** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Spheres & Quintessence** | `sphere`, `reach`, `cosmology_node` | · | · | · | · | · | · | · | · | READS | — |
-| **World Generation, Terrain & Places** | `area`, `hex`, `location`, `place`, `sublocation_node` | 🟢 live | 🟢 live | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | LIVE-TOUCHED | Mortal Economy & Prosperity · Strategic Projects & Control · Movement & Colocation · War, Armies & Battles · Factions & Succession · Mandate · Doom Clock & Journey · Attachments, Items & Possessions · Encounters & Dilemmas |
+| **World Generation, Terrain & Places** | `area`, `hex`, `location`, `place`, `sublocation_node` | 🟢 live | 🟢 live | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | LIVE-TOUCHED | Omens & Atmospheric Pressure · Mortal Economy & Prosperity · Strategic Projects & Control · Movement & Colocation · War, Armies & Battles · Factions & Succession · Mandate · Doom Clock & Journey · Attachments, Items & Possessions · Encounters & Dilemmas |
 
 ### What the live cells leave, and who picks it up
 
 - **War, Armies & Battles**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _War, Armies & Battles_ — `armyAttrition.ts`, `battleResolution.ts` — both walk `member_of` from the raised warhost
   - _Companies & Group Travel_ — `groups/groupQueries.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts` (`groupStatus`) — an army is a company kind
   - _Strategic Projects & Control_ — `strategicActionCandidates.ts`
 - **Factions & Succession**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Factions & Succession_ — `phaseSchismResolution.ts:34` consumes the `schismPendingResolutionTick` stamp destroy × Faction plants; `phaseFactionActions.ts`, `factionAmbitions.ts`, `phaseFactionSuccession.ts` read the founded faction node
 - **Mortal Economy & Prosperity**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Mortal Economy & Prosperity_ — `phaseTradeRouteDecay.ts:92` (`lastTraded` staleness), `phases/routeEvents.ts:137-144` (auto-clears `threatened` after `ROUTE_THREATENED_CLEAR_TICKS`), `phaseEconomicTraits.ts:75` (counts `controlledBy`)
   - _War, Armies & Battles_ — `armySupply.ts:115` reads `threatened` on `trades_with` — a blockade starves a campaign
   - _Attention, Chronicle & Narrative_ — `tradeRouteMarkers.ts`, `proseResolvers.ts:912-924` (the marker and the sentence)
 - **Attachments, Items & Possessions**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Attachments, Items & Possessions_ — `attachmentSlotResolver.ts:124-241` (`possesses`, `acquiredTick`), `orchestrator.ts:145 expireCompanions` (phase 6.625b)
   - _Spheres & Quintessence_ — `phaseQuintessence.ts` consumes the `QuintessenceEvent` that use × Power's soul-price leaves on `pendingQuintessenceEvents`, where the threshold gates already bite (THR-1428 R4) — a mortal casting at their own cost moves the cosmology's meters. Recorded here by THR-1431: the cell's `readBy` said so in prose, but the structured reader was missing, which is why the subsystem read UNTOUCHED.
   - _Encounters & Dilemmas_ — `domainCapability.ts` (item and companion contributions), `resolutionModifiers.ts` (`owns`), `graphConditions.ts`
   - _Effects & Conditions_ — `effects/effectPredicates.ts` — the `owns` predicate, and the `condition_inflict` trait use × Power mints
   - _Factions & Succession_ — `notableAgendas.ts:446` (`owns`)
 - **Companies & Group Travel**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Companies & Group Travel_ — `groups/groupQueries.ts`, `groups/groupMovement.ts`, `groups/groupCohesion.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts`
   - _Encounters & Dilemmas_ — `groups/bandOpposition.ts`, `encounterSeeding.ts` (`groupStatus`)
   - _Strategic Projects & Control_ — `strategicActionCandidates.ts`
 - **Reputation & Influence**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Encounters & Dilemmas_ — `socialLeverage.ts` (`reputationLeverageTerm`), `encounterAftermath.ts`, `unifiedActionResolution.ts`
   - _Ambitions & Undertakings_ — `grievance/grudgeEdge.ts`, `grievance/covetRivalry.ts`, `undertakingMotive.ts` — the `hostile_to` edge destroy × Standing writes is a motive gate on later cells
   - _Secrets & Favors_ — `secretGeneration.ts`
   - _Mortal Economy & Prosperity_ — `phases/routeEvents.ts` (`hostile_to`)
   - _Attention, Chronicle & Narrative_ — `LocationProfileModal.tsx`, `OverviewTab.tsx` — standing on the sheet
 - **Secrets & Favors**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Secrets & Favors_ — `phaseSecretsFavors.ts` (decay; a revealed secret is exempt — `graphOpExecutor.ts:1443`), `secretsFavorsConsequences.ts`, `secretsFromResolution.ts`
   - _Encounters & Dilemmas_ — `socialLeverage.ts` — a mark is leverage in the encounter
   - _Intelligence, Knowledge & Familiarity_ — `intelligence.ts` (`knows_secret_of`)
   - _Ruins, Clues & Delves_ — `ruins/perceiveRelay.ts:381`
   - _Attention, Chronicle & Narrative_ — `threadDigest.ts`, `agentDetail.ts`
 - **Effects & Conditions**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Effects & Conditions_ — `conditionDecay.ts:63` (walks `has_trait`), `effects/effectQueries.ts`, `effects/effectWalker.ts`, `effects/conditionProxyEvents.ts`, `phaseSlotCaps`
   - _Encounters & Dilemmas_ — `effects/effectPredicates.ts`, `graphConditions.ts` — a cured condition changes what the mortal is eligible for
 - **Agent Lifecycle**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Agent Lifecycle_ — `agentLifecycle.ts` — `markMortalDead` is the one funnel; its `retain` mode leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy`, and the phase's own actor scan already skips `deceased !== true`
   - _Companies & Group Travel_ — `groups/groupQueries.ts:isAgentGone` reads `deceased === true` as gone, so every roster query and `reconcileLostMembers` closes a dead member's `member_of` edge without a node removal
   - _Factions & Succession_ — `phaseFactionSuccession.ts` / `factionNetwork.ts` — the `deceased` read added by THR-1430: a seat-holder marked dead is a vacancy the phase resolves on its next pass by its own rules
   - _Ambitions & Undertakings_ — `ambitionTick.ts` grievance funnel — reads the `named_death` outcome node and THR-1383's seen-rule to decide whether a vendetta is minted
   - _Attention, Chronicle & Narrative_ — the existing `agent_death` event and the sheet's death header — the cause word, and *by whom* only where a mark or a culprit-provenance hostile edge exists
 - **World Generation, Terrain & Places**
+  - _Omens & Atmospheric Pressure_ — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
   - _Mortal Economy & Prosperity_ — `phaseProsperity.ts`, `phaseSettlementPromotion.ts`, `phases/resourceStockTiers.ts`, `phaseUnrest.ts` — the prosperity a founded, raised, lowered or ruined Location carries
   - _Strategic Projects & Control_ — `phaseStrategicProjects.ts` (degradation, neglect), `strategicTelemetry.ts`, `strategicPresentation.ts`, `HexMapV2/scene/StrategicMarkerMesh.ts` — the `controls` edge claim × Location writes
   - _Movement & Colocation_ — `sublocation.ts:592-636 checkDissolutions` (a `permanent` built Place survives), `socialEncounterGeneration.ts` (`sublocationTypeId`), `distanceMatrix.ts` (structural rebuild)
@@ -189,6 +199,17 @@
   - _reads_ **Mortal Economy & Prosperity** — `tradeRouteMarkers.ts`, `proseResolvers.ts:912-924` (the marker and the sentence)
   - _reads_ **Reputation & Influence** — `LocationProfileModal.tsx`, `OverviewTab.tsx` — standing on the sheet
   - _reads_ **Secrets & Favors** — `threadDigest.ts`, `agentDetail.ts`
+- **Omens & Atmospheric Pressure** — READS
+  - _reads_ **Agent Lifecycle** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **Attachments, Items & Possessions** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **Companies & Group Travel** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **Effects & Conditions** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **Factions & Succession** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **Mortal Economy & Prosperity** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **Reputation & Influence** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **Secrets & Favors** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **War, Armies & Battles** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
+  - _reads_ **World Generation, Terrain & Places** — `phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit's or victim's work first); the chronicle carries the line and the encounter scorer feels the pressure
 - **Movement & Colocation** — READS
   - _reads_ **World Generation, Terrain & Places** — `sublocation.ts:592-636 checkDissolutions` (a `permanent` built Place survives), `socialEncounterGeneration.ts` (`sublocationTypeId`), `distanceMatrix.ts` (structural rebuild)
 - **Intelligence, Knowledge & Familiarity** — READS
@@ -204,7 +225,6 @@ _Why a mortal's own work never moves these. Decided on THR-1401; the generator f
 - **Essence & Divine Economy** — Essence is the god's currency and the divine receipt is the god's ledger. Mortals neither earn nor spend it — a mortal who could move the essence economy by working would be a second god, which is the one thing the ascendant fantasy cannot share.
 - **Culture** — Culture is a property of regions and peoples that worldgen seeds and long drift moves, on a timescale no single undertaking reaches. One mortal's work changes what a culture *holds* — its prosperity, its holdings, its factions — never the culture itself. A verb that let one person edit a people would make the slowest layer in the game the most volatile.
 - **Stealth, Detection & Hidden Marks** — These are the god's fingerprints: the layer exists to track how visible the *player's* interventions are, and detection pressure is the cost of a god acting through a mortal. Decided on THR-1397 (and restated by THR-1430): mortal surveillance never feeds it — a spy watching a rival is the Intelligence layer's business, and routing it here would charge the god for work they did not do.
-- **Omens & Atmospheric Pressure** — **A gap, not a design choice** — recorded here because the list is held to totality and every UNTOUCHED row must say why. The foreshadowing layer reads world events but not undertaking outcomes, so a raised warhost or a ruined town portends nothing. THR-1432 files the reader; when it lands this entry goes stale and the generator will say so.
 - **Ascendant Beats & Progression** — The god's own arc — remembrance, the beats, the journey the player climbs. A mortal's undertaking cannot advance it, because the beats measure what the *player* has done; mortals supply the occasions a beat fires on, never the progression itself.
 
 ## Standing riders

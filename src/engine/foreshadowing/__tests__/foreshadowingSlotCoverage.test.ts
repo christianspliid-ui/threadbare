@@ -43,6 +43,9 @@ const BOUND_SLOTS = new Set([
   'matter',
   'Matter',
   'place',
+  // The deed behind an `undertaking` pull (THR-1432) — the receipt composer fills it
+  // from provenance, the generic composer binds the fallback.
+  'deed',
 ]);
 
 const NOUN_SLOT = /\{([A-Za-z]+)\}/g;
@@ -158,6 +161,7 @@ describe('foreshadowing clause pools — live render (THR-1360)', () => {
     'chain',
     'exploration',
     'proximity',
+    'undertaking',
   ];
 
   function receipt(kind: MotiveContributionKind, tick: number): MotiveReceipt {

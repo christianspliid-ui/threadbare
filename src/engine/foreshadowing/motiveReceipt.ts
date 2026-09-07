@@ -20,6 +20,7 @@ import type {
   MotiveReceipt,
 } from '../../types/foreshadowing';
 import { classifyForecastTier } from '../encounters/outcomeForecast';
+import { isUndertakingOutcomeEventId } from '../grievance/undertakingOutcomeNode';
 import {
   INTEL_TIER_BRIEFED_BELOW,
   INTEL_TIER_RUMOR_BELOW,
@@ -72,7 +73,7 @@ interface RawTerm {
 function extractRawTerms(
   candidate: ScoredCandidate,
   intelRecordId: string | null,
-  ambitionProvenanceDetail?: string,
+  ambitionProvenance?: string | MintedAmbitionOrigin,
 ): RawTerm[] {
   const rarityDelta = (candidate.rarityMultiplier - 1) * MULTIPLIER_DELTA_SCALE;
   const bondDelta = candidate.bondBonus * MULTIPLIER_DELTA_SCALE;
@@ -83,10 +84,18 @@ function extractRawTerms(
 
   // A minted want names its origin ("the bloodshed at Thornhaven"); otherwise the
   // ambition term is attributed to its dominant reach as before (THR-726).
-  const ambitionDetail = ambitionProvenanceDetail ?? candidate.entry.reachPrimary;
+  const origin = typeof ambitionProvenance === 'string' ? { label: ambitionProvenance } : ambitionProvenance;
+  const ambitionDetail = origin?.label ?? candidate.entry.reachPrimary;
+  // A want minted by an undertaking outcome — a harm done to this mortal, or their own
+  // work collapsing — is its own kind (THR-1432): the receipt says *what was done*,
+  // and the outcome node rides along so a surface can walk back to it.
+  const fromUndertaking = isUndertakingOutcomeEventId(origin?.eventId);
+  const ambitionTerm: RawTerm = fromUndertaking
+    ? { kind: 'undertaking', term: candidate.ambitionBoost, provenance: { nodeId: origin!.eventId, detail: ambitionDetail } }
+    : { kind: 'ambition', term: candidate.ambitionBoost, provenance: { detail: ambitionDetail } };
 
   const terms: RawTerm[] = [
-    { kind: 'ambition', term: candidate.ambitionBoost, provenance: { detail: ambitionDetail } },
+    ambitionTerm,
     { kind: 'personality', term: candidate.personalityBias },
     { kind: 'intel', term: candidate.intelBonus, provenance: intelRecordId ? { detail: intelRecordId } : undefined },
     { kind: 'mark', term: candidate.markRevealBonus },
@@ -112,15 +121,18 @@ function extractRawTerms(
  * @param intelReliability Reliability (0..1) of the matched IntelligenceRecord, or null if none.
  * @param intelRecordId  Record id of the matched intelligence, for provenance, or null.
  * @param decidedAtTick  The tick the selection committed.
+ * @param ambitionProvenance The minted want's origin — its label alone (THR-726), or
+ *   the label with the event node behind it (THR-1432), which turns the ambition
+ *   term into an `undertaking` one when that node is an undertaking outcome.
  */
 export function buildMotiveReceipt(
   candidate: ScoredCandidate,
   intelReliability: number | null,
   intelRecordId: string | null,
   decidedAtTick: number,
-  ambitionProvenanceDetail?: string,
+  ambitionProvenance?: string | MintedAmbitionOrigin,
 ): MotiveReceipt {
-  const raw = extractRawTerms(candidate, intelRecordId, ambitionProvenanceDetail);
+  const raw = extractRawTerms(candidate, intelRecordId, ambitionProvenance);
 
   // Positive score mass only (NFP #2 — receipt describes what pulled the agent in).
   const positive = raw
@@ -171,16 +183,37 @@ export function resolveMintedAmbitionProvenance(
   actorId: string,
   dominantReach: string,
 ): string | undefined {
-  let fallback: string | undefined;
+  return resolveMintedAmbitionOrigin(graph, actorId, dominantReach)?.label;
+}
+
+/** Where a minted want came from: the label the receipt shows and the event node behind it. */
+export interface MintedAmbitionOrigin {
+  readonly label: string;
+  /** The `mintedByEventId` on the `pursues` edge — an encounter event or an undertaking outcome (`evt_und_…`). */
+  readonly eventId?: string;
+}
+
+/**
+ * The same walk as `resolveMintedAmbitionProvenance`, keeping the event node beside
+ * the label (THR-1432) so the receipt can tell a want minted by a harm from one
+ * minted by an encounter. Read-only + fail-soft; undefined when nothing was minted.
+ */
+export function resolveMintedAmbitionOrigin(
+  graph: WorldGraph,
+  actorId: string,
+  dominantReach: string,
+): MintedAmbitionOrigin | undefined {
+  let fallback: MintedAmbitionOrigin | undefined;
   for (const edge of graph.getOutgoingEdges(actorId, 'pursues')) {
     if (edge.properties?.status !== 'active') continue;
     const mintedByEventId = edge.properties?.mintedByEventId as string | undefined;
     const mintedByLabel = edge.properties?.mintedByLabel as string | undefined;
     if (!mintedByEventId || !mintedByLabel) continue;
-    fallback ??= mintedByLabel;
+    const origin: MintedAmbitionOrigin = { label: mintedByLabel, eventId: mintedByEventId };
+    fallback ??= origin;
     const node = graph.getNode(edge.target);
     const affinity = node?.properties?.reachAffinity as Record<string, number> | undefined;
-    if (affinity && (affinity[dominantReach] ?? 0) > 0) return mintedByLabel;
+    if (affinity && (affinity[dominantReach] ?? 0) > 0) return origin;
   }
   return fallback;
 }
