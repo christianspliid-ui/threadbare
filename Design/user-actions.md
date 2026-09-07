@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 08:56 local (06:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 09:57 local (07:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -10,9 +10,9 @@ The brief: [Retrofit batch 2 — the camp six](https://github.com/christiansplii
 
 **Six, not seven.** `shrine_offering` is held to batch 3 — most warnings of the set (10), weak contrast against `offer_small_prayer` — and it is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), so **that checkpoint waits one batch longer**. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting. None has a typed consequence today.
 
-Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation.
+Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan, and both other lanes independently recommend keeping it) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`.
 
-*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* Execution ticket [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word. **The build shelf is empty for the second consecutive hour**, and this is the only ask here that refills it without a session from you — the design items below free a slot but stage another thing that needs you.
+*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* Execution ticket [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word. **The build shelf has now been empty four hours running**, and this is the only ask here that refills it without a session from you.
 
 ### 2. What should a proportion read as? — [THR-1424](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)
 
@@ -20,7 +20,7 @@ Two places still show you a bare percentage: an effect tooltip says something is
 
 **Recommendation: drop both numbers rather than invent a new language.** The doom clock already shows a bar and names which chapter of five you are in — the percentage is a third rendering of a quantity the screen states twice.
 
-**The same question covers ten readouts, not two.** [THR-1426](https://linear.app/threadbare/issue/THR-1426/tick-timestamps-and-per-tick-rates-are-the-two-tick-shapes-with-no) carries **timestamps** (*t42*, *Tick 42*) and **per-tick rates** (*regen 1.5/tick*) — same fork. The rate half may not need you ([THR-1008](https://linear.app/threadbare/issue/THR-1008) already banded rates into words), so if you say *drop the percentages*, a lane applies that pattern and only the timestamps come back.
+**The same question covers ten readouts, not two.** [THR-1426](https://linear.app/threadbare/issue/THR-1426) carries **timestamps** (*t42*, *Tick 42*) and **per-tick rates** (*regen 1.5/tick*) — same fork. The rate half may not need you ([THR-1008](https://linear.app/threadbare/issue/THR-1008) already banded rates into words), so if you say *drop the percentages*, a lane applies that pattern and only the timestamps come back.
 
 The fork that is genuinely yours: **if a proportion is ever worth showing, what should it read as** — whatever is picked becomes the sanctioned reading for *every* proportion in the game. Say **"drop them"** and a lane takes it from there.
 
@@ -30,7 +30,7 @@ Still one word — and **smaller than earlier briefings claimed**. It was billed
 
 What remains is genuinely just intent: **23 days In Design, assigned to you, no plan doc.** The machine keeps it counted because an assigned item means a person may be about to start.
 
-**Yes** changes nothing and the asking stops; **not getting to it** sets it aside and frees a design slot. The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic"). *(Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket.)*
+**Yes** changes nothing and the asking stops; **not getting to it** sets it aside and frees a design slot. The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic"). *(Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket. Note: only the `Parked` label frees the slot; unassigning does not.)*
 
 ### 4. The undertaking retirement list — four get deleted — [THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants)
 
@@ -48,14 +48,14 @@ Scope is already settled from your answers that day: snapshot only, no replay lo
 
 **Yes** puts it at the front of the design queue. **No** closes it rather than keeping it warm.
 
-### 6. Three questions left on the undertakings map — [THR-1396](https://linear.app/threadbare/issue/THR-1396/undertakings-across-the-living-simulation-wayfinder-map)
+### 6. The undertakings map — and the first question now has a page to look at — [THR-1396](https://linear.app/threadbare/issue/THR-1396/undertakings-across-the-living-simulation-wayfinder-map)
 
 [Which open cells are wanted](https://linear.app/threadbare/issue/THR-1397) is decided and closed — every cell dispositioned, and your three forks with it: **plotting a mortal's death**, **the signed curse**, **forced succession**.
 
-What is left is three questions about what the game should mean — **take the first one first, it unblocks four**:
+Three questions left. **Take the first one first, it unblocks four — and it stopped being abstract this morning:**
 
-- [The division rule](https://linear.app/threadbare/issue/THR-1398) — does a mortal's ambition pick its verbs and its Reach pick its objects?
-- [The untouched-by-design list](https://linear.app/threadbare/issue/THR-1401) — which systems mortals should never move by their own work. **The list is now machine-made and says 17 untouched, not the 14 you were going to split** — three systems have never been looked at in this light, so the split is worth re-doing against the new list.
+- [The division rule](https://linear.app/threadbare/issue/THR-1398) — does a mortal's ambition pick its verbs and its Reach pick its objects? Now a **[one-page mock](https://claude.ai/code/artifact/cd0c4d40-ef9d-48da-9bf7-00fc2f2fef87)**: two tables and three worked callings — a Magnate, a Knife, a Mender — so you react to the spreads rather than to the rule.
+- [The untouched-by-design list](https://linear.app/threadbare/issue/THR-1401) — which systems mortals should never move by their own work. **The list is now machine-made and says 17 untouched, not the 14 you were going to split.**
 - [What the player sees](https://linear.app/threadbare/issue/THR-1404) — the calling on the sheet, the work on the chronicle, the grid as a codex page.
 
 Say **"work the undertakings map"** and a session takes them in order.
@@ -118,10 +118,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 The probe's own words: *"The scheduled lanes went silent for 44.9h (2026-09-04T14:28:53.000Z → 2026-09-06T11:25:14.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time."*
 
-My read is that it was a host that was simply off: three unrelated schedulers stopped in the same minutes and came back in the same minute. That is a machine-state fact, not a defect.
-
-**Say "weekend quiet is normal too"** and it is declined the way overnight quiet has been since 8 August, and stops reaching you. Say nothing and it will surface again after the next long gap.
-
 ### 15. The scripted half of Linear access — small, and not urgent
 
 **The connector is healthy — there is nothing to reauthorize.** It came back on its own around 17:15 on 6 September after roughly six hours of lane runs against a wall, and every board read this run returned normally.
@@ -132,8 +128,9 @@ Setting it is the durable fix — no browser sign-in, and it survives a lapsed t
 
 ## Resolved this period
 
-- **The card-grammar session is no longer an ask** *(2026-09-07)*. [THR-1002](https://linear.app/threadbare/issue/THR-1002) — the orchestrator corrected itself: the machine sets it aside by itself on **11 September**, so an answer changes nothing before or after. Your 6 August direction on verbose action cards still stands and the ticket keeps it; it simply does not need a word from you.
-- **The undertakings map's third view is machine-made now** *(2026-09-07)*. [THR-1405](https://linear.app/threadbare/issue/THR-1405) / [THR-1427](https://linear.app/threadbare/issue/THR-1427) — which systems a mortal's own work reaches is generated rather than hand-drawn, and can no longer quietly fall behind the code. It moved ask 6's untouched count from 14 to 17.
+- **The division-rule question now has an artifact to react to** *(2026-09-07)*. [THR-1398](https://linear.app/threadbare/issue/THR-1398) — a one-page mock of both tables with three worked callings is attached to the ticket, so ask 6's first question stopped being abstract.
+- **The card-grammar session is no longer an ask** *(2026-09-07)*. [THR-1002](https://linear.app/threadbare/issue/THR-1002) — the machine sets it aside by itself on **11 September**, so an answer changes nothing before or after. Your 6 August direction on verbose action cards still stands and the ticket keeps it.
+- **The undertakings map's third view is machine-made now** *(2026-09-07)*. [THR-1405](https://linear.app/threadbare/issue/THR-1405) / [THR-1427](https://linear.app/threadbare/issue/THR-1427) — which systems a mortal's own work reaches is generated rather than hand-drawn. It moved ask 6's untouched count from 14 to 17.
 - **The dev server no longer chokes on the robots' worktrees** *(2026-09-07)*. [THR-1415](https://linear.app/threadbare/issue/THR-1415) — the fault that made the game refuse to load during your last attended session is fixed; ask 11 got materially cheaper.
 - **Linear came back on its own** *(2026-09-06)*. Six hours of lane runs hit an authentication wall and it recovered unaided around 17:15 — no reauthorization, nothing lost. Two residues: ask 15, and seven unticketed merges flagged for the Friday retro.
 - **Your pixel sweep is six-for-nine and found a fix of its own** *(2026-09-04)*. [THR-1409](https://linear.app/threadbare/issue/THR-1409), [THR-1410](https://linear.app/threadbare/issue/THR-1410), [THR-1411](https://linear.app/threadbare/issue/THR-1411), [THR-1413](https://linear.app/threadbare/issue/THR-1413), [THR-1414](https://linear.app/threadbare/issue/THR-1414), the self-found [THR-1418](https://linear.app/threadbare/issue/THR-1418), and [THR-1416](https://linear.app/threadbare/issue/THR-1416).
