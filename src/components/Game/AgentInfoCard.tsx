@@ -10,7 +10,7 @@ import { generateEntityProse } from '../../engine/proseGenerator';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
 import { getSphereColor } from '../../data/sphereIcons';
 import { BACKSTORY_CONSTANTS } from '../../types/prose';
-import { durationLabel } from '../../engine/aftermathWords';
+import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
 import {
   getAgentStrategicSummary,
   getAgentStrategicHistory,
@@ -539,7 +539,12 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                       : 'var(--text-muted)';
                     return (
                       <div key={idx} style={{ fontSize: 'var(--text-xs)', color }}>
-                        {prefix} {entry.displayName} — {entry.ticksAgo} ticks ago
+                        {/* THR-1425: `3 ticks ago` is the same Law 13 + 14 pair THR-1423 fixed on
+                            the remaining terms — a raw magnitude in an engine unit. `elapsedLabel`
+                            is the elapsed sibling of `durationLabel`; it reads a sub-day gap as
+                            `less than a day` rather than `durationLabel`'s `one day`, which for an
+                            elapsed span would state something false. */}
+                        {prefix} {entry.displayName} — {elapsedLabel(entry.ticksAgo)} ago
                       </div>
                     );
                   })}

@@ -2,6 +2,7 @@ import type { MandateDefinition, MandateStage, MandateState } from '../../types/
 import { Modal } from '../shared/Modal';
 import { ProgressBar } from '../shared/ProgressBar';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
+import { durationLabel } from '../../engine/aftermathWords';
 
 interface MandateDetailProps {
   open: boolean;
@@ -334,7 +335,10 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
               />
             )}
             {definition.tickLimit && (
-              <DetailRow label="Time Limit" value={`${definition.tickLimit} ticks`} color="#ea580c" />
+              /* THR-1425: a mandate's limit is a duration, so it reads through `durationLabel`.
+                 The row label already says "Time Limit", so the value carries only the term —
+                 spelling `ticks` into it put the engine unit on the surface twice (Law 14). */
+              <DetailRow label="Time Limit" value={durationLabel(definition.tickLimit)} color="#ea580c" />
             )}
             {state.assignedTick != null && (
               <DetailRow label="Assigned" value={`Tick ${state.assignedTick}`} />

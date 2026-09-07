@@ -61,7 +61,9 @@ function formatEffectSummary(trigger: ActionTriggerEffect): string {
   const payload = trigger.payload;
   parts.push(payload.kind.replace(/_/g, ' '));
   if (payload.kind === 'condition_grant' && payload.durationTicks != null) {
-    parts.push(`(${payload.durationTicks} ticks)`);
+    // THR-1425: a granted condition's term is a duration, so it takes `durationLabel` —
+    // the same reading THR-1423 gave the remaining terms, not the elapsed sibling.
+    parts.push(`(${durationLabel(payload.durationTicks)})`);
   }
   if (trigger.maxFires !== undefined) {
     parts.push(trigger.maxFires === 1 ? '(once)' : `(${trigger.maxFires}x)`);

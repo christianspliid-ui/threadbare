@@ -10,6 +10,7 @@ import { TIER_COLORS } from '../../data/uiColorPalette';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ReachDomain } from '../../types/traits';
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
+import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
 import { queryDigest } from '../../engine/digestBuffer';
 import { RecentActivityLog } from './RecentActivityLog';
 import { StorySoFarPanel } from './StorySoFarPanel';
@@ -901,17 +902,21 @@ function LocationDetailBody({
 // so it fits the existing visual language.
 function SchismPendingBanner({
   ticksRemaining,
-  resolutionTick,
 }: {
   ticksRemaining: number | null;
-  resolutionTick: number;
 }) {
+  // THR-1425: all three branches were tick-denominated (Laws 13 + 14) — two carried a bare
+  // numeral and the third spelled the engine unit out on its own. The remaining term is a
+  // duration, so it reads through `durationLabel`, the same reading THR-1423 gave every other
+  // remaining term. The null branch is the "we do not know the current tick" case, so it can
+  // no longer name a deadline at all; it says only that one exists (Law 21 — a fallback is a
+  // designed state, not a leaked internal).
   const remainingText =
     ticksRemaining === null
-      ? `resolves at tick ${resolutionTick}`
+      ? 'the reckoning is already set'
       : ticksRemaining === 0
-        ? 'resolves this tick'
-        : `${ticksRemaining} tick${ticksRemaining === 1 ? '' : 's'} until the crisis settles`;
+        ? 'it settles now'
+        : `${durationLabel(ticksRemaining)} until the crisis settles`;
   return (
     <div
       data-testid="schism-pending-banner"
@@ -984,7 +989,10 @@ function SchismReformAfterimage({
           marginBottom: 'var(--space-1)',
         }}
       >
-        Schism Reformed — {ticksSince} tick{ticksSince === 1 ? '' : 's'} ago
+        {/* THR-1425: the afterimage is gated to the 24 ticks after a reform, so this is the
+            site where the elapsed floor is actually exercised — half its range is under a day,
+            and `durationLabel` would have read every one of those as `one day ago`. */}
+        Schism Reformed — {elapsedLabel(ticksSince)} ago
       </div>
       <div
         style={{
@@ -1029,13 +1037,12 @@ function FactionDetailBody({
     typeof lastReformTick === 'number' &&
     currentTick !== undefined &&
     (currentTick - lastReformTick) <= 24;
+  // THR-1425: `resolutionTick` is no longer passed to the banner — it used it only to print
+  // `resolves at tick 42`, an absolute engine timestamp on a player-facing surface.
   return (
     <>
       {showSchismBanner && (
-        <SchismPendingBanner
-          ticksRemaining={ticksRemaining}
-          resolutionTick={schismResolutionTick}
-        />
+        <SchismPendingBanner ticksRemaining={ticksRemaining} />
       )}
       {showReformAfterimage && (
         <SchismReformAfterimage
