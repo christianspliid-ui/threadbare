@@ -323,7 +323,12 @@ export const CROSS_CUTTING_DOMAINS: ReadonlySet<string> = new Set(['game', 'phas
  * @param relFromEngine module path relative to `src/engine/`, either separator.
  */
 export function domainOf(relFromEngine: string): string {
-  const parts = relFromEngine.split(/[\/]/);
+  // Both separators, deliberately: `path.relative` yields backslashes on Windows, and a
+  // class of `/` alone silently stops splitting sub-directory modules there — they fall
+  // through to the basename branch, so `content-eval\detectors.ts` buckets as `content`
+  // and merges two real domains into one. It still compiles and every test still passes;
+  // only `check:generated-freshness` catches it.
+  const parts = relFromEngine.split(/[\\/]/);
   if (parts.length > 1) return parts[0].toLowerCase();
   const base = parts[0].replace(/\.ts$/, '');
   return (base.match(/^[a-z0-9]+/)?.[0] ?? base).toLowerCase();
