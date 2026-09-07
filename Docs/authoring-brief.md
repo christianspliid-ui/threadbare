@@ -5,7 +5,7 @@
 >   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 834d14da1d047ca9ccbc2c31ad1c6cf253190e4f)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 536b365a7471a26b4ba6cfd25548bdf86d40bbf7)
->   - Docs/canon/undertakings.md (sha1: c2a8b0a9fc18fd17eb0be62b90a5dd58fd725f96)
+>   - Docs/canon/undertakings.md (sha1: a70713a14084a3c2426e500900311fd4e6511adf)
 >   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
@@ -271,7 +271,7 @@ An undertaking is authored inside its mechanics; the prose comes last and is hel
 `StrategicActionTemplate` (`src/types/strategicAction.ts`) is the whole authored surface. The fields that carry design, in the order the machine gate reads them:
 
 - **Identity** — `id` (`strategic_` prefix), `displayName` (words, never numerals), `verb` (`gather_info | create | change | control | destroy`), `executionMode` (`instant | multi_tick_project | claim_control`), `behaviorFamily`, `reachProfile`.
-- **Kind membership** — every `multi_tick_project` sits in exactly one kind row's C, U or D column (`src/data/undertaking-kinds.ts`); a row-less `instant` verb must carry a `mutationHint`.
+- **Kind membership** — every authored `multi_tick_project` sits in exactly one kind row's C, U or D column (`src/data/undertaking-kinds.ts`); a row-less `instant` verb must carry a `mutationHint`. (Authored templates only: a cell is its own registration in the object registry, and since THR-1403 the board walks cells.)
 - **Counter-play** — a `destroy` verb carries a `motiveGate` (⊆ `MOTIVE_GATE_KINDS`: `rivalry`, `grudge`, `contested_ambition`, `faction_war`), a `harmClass` (`named_death`, `property_destroyed`, `holding_seized`, `network_severed`, `undertaking_abandoned`), and a `targetRule` that can resolve an ownable or commanded thing. **Until a kind can be undone, it is not a kind** — `validateKindRegistry` refuses a row with an empty D column.
 - **Cast** — a create/update project declares `cast` slots (`UndertakingCastSpec`): a `must-persist` slot carries `mintRole` and an `identityRequirement`; a reuse slot names `acceptedRoles` (an any-role slot cannot be scarce).
 - **Creation** — a `create` verb declares `creationEffects` for at least one outcome band, or a `mutationHint` producing the kind's `objectShape`. A work whose only product is prose is not a work (Law 56's inverse: chips are engine-derived, so the leak is prose claiming state).
