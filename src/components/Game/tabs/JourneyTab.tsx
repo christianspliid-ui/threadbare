@@ -105,6 +105,8 @@ interface JourneyTabProps {
   knowledge?: AgentKnowledge;
   /** Opens another agent's sheet — used by a vendetta's culprit link (THR-1298). */
   onOpenEntity?: (id: string) => void;
+  /** Opens a place — the ledger's object link when the deed was done to a Location (THR-1434). */
+  onOpenLocation?: (locationId: string) => void;
   /** Live game state — the undertaking cards and the arc strip read it. */
   gameState?: GameState;
   /** The follow toggle's state and handler (THR-1299 slice 4). */
@@ -112,7 +114,47 @@ interface JourneyTabProps {
   onToggleFollow?: (agentId: string) => void;
 }
 
-export function JourneyTab({ card, knowledge, onOpenEntity, gameState, followState, onToggleFollow }: JourneyTabProps) {
+/**
+ * The ledger line for a finished deed (THR-1434): the verb word with its tooltip
+ * (Law 17), the object linked where a page exists (Law 21) and plain text where
+ * none does. Never a cell id, never a numeral.
+ */
+function DeedLine({ deed, onOpenEntity, onOpenLocation }: {
+  deed: NonNullable<AgentArcEntry['deed']>;
+  onOpenEntity?: (id: string) => void;
+  onOpenLocation?: (locationId: string) => void;
+}) {
+  const ref = deed.objectRef;
+  const open = ref
+    ? (ref.kind === 'agent' && onOpenEntity) ? () => onOpenEntity(ref.id)
+      : ((ref.kind === 'location' || ref.kind === 'sublocation') && onOpenLocation) ? () => onOpenLocation(ref.id)
+        : undefined
+    : undefined;
+  return (
+    <span style={{ color: 'var(--text-primary)' }} data-testid="arc-deed">
+      <Tooltip id={`ui.verb.${deed.verb}`}>
+        <span className="underline decoration-dotted cursor-help">{deed.word}</span>
+      </Tooltip>
+      {' '}
+      {open ? (
+        <button
+          type="button"
+          onClick={open}
+          data-testid="arc-deed-object"
+          className="underline decoration-dotted cursor-pointer"
+          style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'var(--accent-gold)' }}
+        >
+          {deed.objectName}
+        </button>
+      ) : (
+        <span data-testid="arc-deed-object">{deed.objectName}</span>
+      )}
+      .
+    </span>
+  );
+}
+
+export function JourneyTab({ card, knowledge, onOpenEntity, onOpenLocation, gameState, followState, onToggleFollow }: JourneyTabProps) {
   // Whether to show ambitions — either via interaction depth OR the one mind-reading
   // rule (THR-1433): familiarity, a followed mortal's mark, or a followed network.
   const showAmbitions =
@@ -188,7 +230,9 @@ export function JourneyTab({ card, knowledge, onOpenEntity, gameState, followSta
                 className="flex items-baseline gap-2 text-sm"
               >
                 <span aria-hidden="true" style={{ color: 'var(--accent-gold-dim)', flexShrink: 0 }}>{ARC_KIND_GLYPH[entry.kind]}</span>
-                <span style={{ color: 'var(--text-primary)' }}>{entry.line}</span>
+                {entry.deed
+                  ? <DeedLine deed={entry.deed} onOpenEntity={onOpenEntity} onOpenLocation={onOpenLocation} />
+                  : <span style={{ color: 'var(--text-primary)' }}>{entry.line}</span>}
                 <span className="text-xs" style={{ color: 'var(--text-muted)', marginLeft: 'auto', whiteSpace: 'nowrap' }}>{entry.when}</span>
               </li>
             ))}

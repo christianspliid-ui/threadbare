@@ -1039,6 +1039,12 @@ export interface DebugBridge {
    */
   getUndertakingMoments(agentRef?: string): Promise<readonly import('./types/strategicAction').UndertakingMomentRecord[]>;
   /**
+   * The Undertakings codex section's census (THR-1434): how many cards the section
+   * built against the grid's live cell count, and any cell it had to skip, by name.
+   * Async — `await` it.
+   */
+  getUndertakingCodexCensus(): Promise<{ entries: number; liveCells: number; kinds: number; problems: { cellId: string; problem: string }[] }>;
+  /**
    * The calling (THR-1299 slice 5) — the stored title on the agent node and the
    * tick it was set, plus `derived`: what a fresh derivation says right now.
    * When `derived.titleKey` differs from `titleKey`, the hysteresis gate is

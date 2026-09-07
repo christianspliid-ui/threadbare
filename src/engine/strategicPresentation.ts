@@ -16,7 +16,16 @@ import type {
 } from '../types/strategicAction';
 import type { WorldGraph } from './graph';
 import { getStrategicTemplate } from './strategicActionCandidates';
-import { cellActivityProse } from './undertakingProse';
+import { cellActivityProse, objectDisplayName } from './undertakingProse';
+import { getUndertakingObjectType } from '../data/undertaking-objects';
+import { UNDERTAKING_VERB_GERUNDS } from '../data/undertaking-verb-prose';
+import { getUndertakingTroubleWord } from '../data/domain-words';
+import { UNDERTAKING_HALT_RATCHET_N } from '../data/strategic-action-constants';
+
+/** "a company", "an area" — the article a doing-line needs before a kind word. */
+function withArticle(noun: string): string {
+  return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
+}
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
 import { hexKey } from '../lib/hexKey';
@@ -133,6 +142,15 @@ export interface AgentStrategicSummary {
     progressFraction: number; // 0–1
     progressLabel: string;    // prose: "just begun" | "underway" | "well advanced" | "nearly complete"
     verb: StrategicVerb;
+    /**
+     * The roster's doing-line (THR-1434): the work as a phrase plus the progress or
+     * the trouble word — *raising a company — faltering*, *watching the Old Ruin —
+     * halfway*. Words only, never a numeral; composed here so the roster and the
+     * sheet say the same thing.
+     */
+    doingLine: string;
+    /** The trouble word when the work has halted, else null. */
+    troubleWord: string | null;
   } | null;
   /** Number of active control stances. */
   controlCount: number;
@@ -216,11 +234,36 @@ export function getAgentStrategicSummary(
         ? template!.activityProse[0]
         : (template?.displayName ?? activeProject.templateId);
 
+    const progressLabel = getProgressLabel(progressFraction);
+    const troubleWord = getUndertakingTroubleWord(
+      activeProject.halts ?? 0, activeProject.escalated === true, UNDERTAKING_HALT_RATCHET_N,
+    );
+    // The doing-line (THR-1434): a cell reads as its verb's gerund on the object the
+    // world names — *watching the Old Ruin* — else on the kind with an article
+    // (*raising a company*, the thing not yet made); a template reads as its activity
+    // line. Then the trouble word if the work has halted, else how far along it is.
+    const cellVariant = template?.cellVariant;
+    const objectType = activeProject.objectTypeId ? getUndertakingObjectType(activeProject.objectTypeId) : undefined;
+    const objectName = objectType
+      ? objectDisplayName(graph, objectType.id, activeProject.objectHandle)
+      : undefined;
+    // A create cell's handle is the *site*, not the thing — the thing does not exist
+    // yet — so it reads "raising a company at Hawkgate", never "raising Hawkgate".
+    const kindWithArticle = objectType ? withArticle(objectType.displayName.toLowerCase()) : '';
+    const phrase = cellVariant && objectType
+      ? cellVariant === 'create'
+        ? `${UNDERTAKING_VERB_GERUNDS[cellVariant]} ${kindWithArticle}${objectName ? ` at ${objectName}` : ''}`
+        : `${UNDERTAKING_VERB_GERUNDS[cellVariant]} ${objectName ?? kindWithArticle}`
+      : displayName;
+    const doingLine = `${phrase} — ${troubleWord ?? progressLabel}`;
+
     projectInfo = {
       displayName,
       progressFraction,
-      progressLabel: getProgressLabel(progressFraction),
+      progressLabel,
       verb: activeProject.verb,
+      doingLine,
+      troubleWord,
     };
   }
 

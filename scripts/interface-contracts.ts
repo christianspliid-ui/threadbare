@@ -2252,6 +2252,38 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'undertakings-reach-the-player',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: NARRATIVE,
+    intent:
+      'What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.',
+    mechanism: {
+      kind: 'property',
+      symbols: ['doingLine', 'deed', 'describeDeed', 'buildUndertakingCodexEntries', 'callingsForCell', 'UNDERTAKING_VERB_GERUNDS', 'UNDERTAKING_VERB_DEEDS'],
+      module: 'src/engine/undertakingDeed.ts',
+    },
+    writeSites: [
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/undertakingDeed.ts',
+      'src/engine/strategicPresentation.ts',
+      'src/data/undertaking-verb-prose.ts',
+      'src/data/division-rule-tables.ts',
+    ],
+    readSites: [
+      'src/components/Codex/undertakingCodex.ts',
+      'src/components/Codex/codexRegistry.ts',
+      'src/components/Game/ThreadsPanel.tsx',
+      'src/components/Game/tabs/JourneyTab.tsx',
+      'src/engine/agentArc.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        'THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.',
+    },
+  },
+  {
     id: 'god-reads-mortal-intention',
     producerSystem: 'Intelligence, Knowledge & Familiarity',
     consumerSystem: NARRATIVE,

@@ -47,6 +47,8 @@ export interface AgentProfileModalProps {
    * profile and would open the wrong surface for a faction node.
    */
   onOpenFaction?: (factionNodeId: string, name: string) => void;
+  /** Open a place from the ledger's object link (THR-1434). */
+  onOpenLocation?: (locationId: string) => void;
   /**
    * Stacking band (THR-1139). Defaults to the modal tier; GameView passes
    * `MODAL_Z_ABOVE_INTERRUPT` so the sheet opens above a modal-tier interrupt
@@ -59,7 +61,7 @@ export interface AgentProfileModalProps {
   onToggleFollow?: (agentId: string) => void;
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, zIndex, followState, onToggleFollow }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     scrollToNewStrata ? 'chronicle' : 'overview'
   );
@@ -241,6 +243,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
             card={card}
             knowledge={knowledge}
             onOpenEntity={onOpenEntity}
+            onOpenLocation={onOpenLocation}
             gameState={gameState}
             followState={followState}
             onToggleFollow={onToggleFollow}

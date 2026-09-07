@@ -289,6 +289,14 @@ if (import.meta.env.DEV) {
      * to the player and the cap has not yet evicted, acknowledged ones included,
      * narrowed to one agent when a ref is given.
      */
+    /**
+     * The Undertakings codex section's census (THR-1434): entries built against the
+     * grid's live cell count, plus any cell the builder had to skip, by name.
+     */
+    getUndertakingCodexCensus: async () => {
+      const { undertakingCodexCensus } = await import('./components/Codex/undertakingCodex');
+      return undertakingCodexCensus();
+    },
     getUndertakingMoments: async (agentRef?: string) => {
       const state = _gameStateProvider?.();
       if (!state) return [];

@@ -972,6 +972,23 @@ export interface StrategicControlState {
 // ─── Strategic History Entry ────────────────────────────────────────
 // Record of a completed or failed strategic action for player/debug inspection.
 
+/**
+ * A finished deed, named by verb and object (THR-1434, Law 2 — the producer
+ * declares). The ledger renders *Founded the Saltway*; the object is linked where a
+ * page exists (`objectRef`), else named in words alone.
+ */
+export interface UndertakingDeed {
+  readonly verb: UndertakingVerbVariant;
+  /** The ledger's word for the verb — "Founded", "Cured", "Seized". */
+  readonly word: string;
+  /** The object as the world names it — "the Saltway", "Old Maerin's fever". */
+  readonly objectName: string;
+  /** The object as a world reference, when the object kind has a page. */
+  readonly objectRef?: import('./worldRef').WorldRef;
+  /** The full phrase, ready to render: `${word} ${objectName}`. */
+  readonly phrase: string;
+}
+
 export interface StrategicHistoryEntry {
   readonly tick: number;
   readonly actorId: string;
@@ -984,6 +1001,8 @@ export interface StrategicHistoryEntry {
   readonly outcome: 'completed' | 'failed' | 'stalled';
   readonly graphOps: readonly string[];
   readonly catalystSeeded: boolean;
+  /** The deed by verb and object (THR-1434); present on a completed cell. */
+  readonly deed?: UndertakingDeed;
 }
 
 // ─── Ambition Strategic Profile ─────────────────────────────────────
