@@ -315,5 +315,8 @@ export function mintRouteIdentity(
     ROUTE_IDENTITY_SUBTYPE,
     tick,
     { routeSourceId: sourceLocId, routeTargetId: targetLocId, routeEdgeId: edgeId },
+    // Keyed on the lane's two ends, not the origin hex and tick: two lanes out of one
+    // capital on one tick (worldgen seeds exactly that, THR-1437) are two objects.
+    `loc_${ROUTE_IDENTITY_SUBTYPE}_${sourceLocId}_${targetLocId}`,
   );
 }

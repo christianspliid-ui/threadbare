@@ -45,12 +45,19 @@ describe('undertaking checkpoints run in the live simulation', () => {
     // Drained per tick: the trace buffer is a ring, so an end-of-run read reports
     // only the tail — which is how the original census under-counted by 15×.
     const checkpoints: any[] = [];
+    // `pendingUndertakingMoments` is capped at MOMENT_QUEUE_MAX and holds the newest
+    // records, so the end-of-run snapshot is a tail exactly as the trace buffer is.
+    // At the seeded protagonist count THR-1437 raised, foundings from the opening
+    // ticks are evicted long before tick 60 — so the classes seen *during* the run are
+    // harvested per tick, the same discipline the checkpoint drain above already uses.
+    const momentClassesSeen = new Set<string>();
     for (let i = 0; i < TICKS; i++) {
       clearTraces();
       state = runTick(state, [], runtime);
       for (const t of getTraces()) {
         if (t.category === 'undertaking_checkpoint') checkpoints.push(t);
       }
+      for (const m of state.pendingUndertakingMoments ?? []) momentClassesSeen.add(m.momentClass);
     }
 
     expect(checkpoints.length, 'no checkpoint ever fired — the phase is not wired').toBeGreaterThan(0);
@@ -75,6 +82,6 @@ describe('undertaking checkpoints run in the live simulation', () => {
     expect(queue.length, 'no moment ever queued — the phases do not merge the records').toBeGreaterThan(0);
     expect(queue.length).toBeLessThanOrEqual(MOMENT_QUEUE_MAX);
     expect(queue.every(m => m.presentation !== 'interrupt')).toBe(true);
-    expect(queue.some(m => m.momentClass === 'started'), 'no founding queued — the dead started branch is still dead').toBe(true);
+    expect(momentClassesSeen.has('started'), 'no founding queued — the dead started branch is still dead').toBe(true);
   }, 120_000);
 });

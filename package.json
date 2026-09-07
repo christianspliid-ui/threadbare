@@ -132,7 +132,8 @@
     "telemetry:calling": "esbuild scripts/calling-telemetry.ts --bundle --platform=node --format=esm --outfile=.cache/calling-telemetry.mjs --external:fs --external:path && node .cache/calling-telemetry.mjs",
     "census:reachability": "esbuild scripts/kind-reachability.ts --bundle --platform=node --format=esm --outfile=.cache/kind-reachability.mjs --external:fs --external:path && node .cache/kind-reachability.mjs",
     "census:ownership": "esbuild scripts/census-ownership.ts --bundle --platform=node --format=esm --outfile=.cache/census-ownership.mjs --external:fs --external:path && node .cache/census-ownership.mjs",
-    "census:cells": "esbuild scripts/census-cells.ts --bundle --platform=node --format=esm --outfile=.cache/census-cells.mjs --external:fs --external:path && node .cache/census-cells.mjs"
+    "census:cells": "esbuild scripts/census-cells.ts --bundle --platform=node --format=esm --outfile=.cache/census-cells.mjs --external:fs --external:path && node .cache/census-cells.mjs",
+    "census:seeded-world": "esbuild scripts/census-seeded-world.ts --bundle --platform=node --format=esm --outfile=.cache/census-seeded-world.mjs --external:fs --external:path && node .cache/census-seeded-world.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",

@@ -556,14 +556,28 @@ export const COOLDOWN_MINIMUM = 2;
 // WORLD POPULATION — Agent count by map size (worldSeed.ts)
 // ═══════════════════════════════════════════════════════════════════
 
-/** Agent count range per map size. Actual count is randomized within range via seeded PRNG.
- * Tuning tip: more agents = more social encounters, more co-location, less idle time.
- * Rule of thumb: 1 agent per 20–40 habitable hexes keeps encounter density healthy. */
+/** Protagonists per map size — the mortals seeded with capabilities, an ambition and the
+ * spotlight tier, i.e. the people who can start an undertaking. Actual count is
+ * randomized within range via seeded PRNG.
+ *
+ * THR-1437 raised the values (was small 6–10, medium 10–16, large 16–24, epic 24–36).
+ * THR-1435 measured a medium world at 14 deciders across 214 Locations, every
+ * undertaking in the census came from them plus two mercenary commanders, and NPC
+ * graduation promoted nobody in 150 ticks — so the aperture was not the constraint,
+ * the seed count was. The name is unchanged on purpose: it is already the named,
+ * tunable constant, and renaming forces importer edits for nothing.
+ *
+ * Tuning tip: more agents = more social encounters, more co-location, less idle time —
+ * and more per-tick decision-loop work. Tick cost is the kill criterion, measured with
+ * `measure:tick-cost` before/after; above +25% at medium these values step down.
+ * The criterion fired on the closeout: 18–24 measured +26% (seed 42, 80 → 101 ms
+ * steady) and +39% (seed 99, 98 → 136 ms), so medium is 14–20 — the plan's stated
+ * step-down — with the two numbers recorded on THR-1437. */
 export const AGENT_COUNT_BY_MAP_SIZE: Record<string, { min: number; max: number }> = {
-  small:  { min: 6, max: 10 },   // 20×15 = 300 hexes → ~1 per 30-50 hexes
-  medium: { min: 10, max: 16 },  // 32×24 = 768 hexes → ~1 per 48-77 hexes
-  large:  { min: 16, max: 24 },  // 48×36 = 1728 hexes → ~1 per 72-108 hexes
-  epic:   { min: 24, max: 36 },  // 64×48 = 3072 hexes → ~1 per 85-128 hexes
+  small:  { min: 8, max: 12 },   // 20×15 = 300 hexes
+  medium: { min: 14, max: 20 },  // 32×24 = 768 hexes — stepped down from 18–24 by the tick-cost criterion
+  large:  { min: 24, max: 32 },  // 48×36 = 1728 hexes
+  epic:   { min: 32, max: 44 },  // 64×48 = 3072 hexes
 };
 
 /** Fallback agent count when map size is unknown.

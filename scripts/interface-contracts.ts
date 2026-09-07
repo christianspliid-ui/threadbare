@@ -2318,6 +2318,39 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'worldgen-seeds-the-living-world',
+    producerSystem: 'World Generation, Terrain & Places',
+    consumerSystem: AMBITIONS,
+    intent:
+      'Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.',
+    // Keyed on the edges the seeder writes, not on the seeder: what crosses this
+    // boundary is the graph the starting world holds — a lane, a holding, a possession,
+    // a quarrel, a mark, a command — and every consumer reads those edges without
+    // knowing who wrote them. `seedLivingWorld` itself is the writer, named in the intent.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['trades_with', 'owns', 'possesses', 'hostile_to', 'knows_secret_of', 'commanded_by'],
+      module: 'src/engine/seedLivingWorld.ts',
+    },
+    writeSites: [
+      'src/engine/seedLivingWorld.ts',
+      'src/engine/worldSeed.ts',
+    ],
+    readSites: [
+      'src/engine/tradeRouteOps.ts',
+      'src/engine/holdingIncome.ts',
+      'src/engine/undertakingMotive.ts',
+      'src/engine/socialLeverage.ts',
+      'src/engine/armySupply.ts',
+      'src/engine/strategicActionCandidates.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-08',
+      evidence:
+        'THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).',
+    },
+  },
+  {
     id: 'god-reads-mortal-intention',
     producerSystem: 'Intelligence, Knowledge & Familiarity',
     consumerSystem: NARRATIVE,
