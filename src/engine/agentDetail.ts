@@ -270,6 +270,21 @@ export interface AgentDetail {
   portraitUrl: string | null;
   /** Quintessence value (0–1.0) — existential health. Undefined if not yet initialized. */
   quintessence?: number;
+  /**
+   * Wealth (0–100). The sheet renders the *tier word*, never the number (THR-1428,
+   * UI Law IV) — it is carried raw here because the tier table is the one authority on
+   * where the words fall, and a surface that received a pre-worded value could not be
+   * re-banded by changing a constant.
+   */
+  wealth?: number;
+  /** What last moved that wealth, in words — the tooltip's line. */
+  wealthSource?: string;
+  /**
+   * Places this mortal knows the way to (THR-1428): `knows_of` familiarity and any
+   * live lead they hold. What a survey *earned*, made inspectable — an aftermath may
+   * only move what the player can see.
+   */
+  knownPlaces?: readonly { readonly id: string; readonly name: string; readonly lead?: string }[];
   /** Trait summaries for display — grouped by category. Only includes public traits. */
   traits?: TraitSummary[];
   /** Social leverage data: secrets and favors (THR-30). Undefined if none. */
@@ -392,6 +407,23 @@ export interface AgentInfoCardData {
   giftsAndBurdens?: AttachmentFullEntry[];
   /** Places and resources this agent holds (THR-1297) — their `owns` edges' faces. */
   holdings?: AttachmentFullEntry[];
+  /**
+   * Wealth (0–100) and what last moved it (THR-1428). The sheet renders the *tier
+   * word*, never the number (UI Law IV): the raw value travels because the tier table
+   * is the one authority on where the words fall.
+   *
+   * Ungated, the same way `holdings` is: what somebody visibly holds — a road they
+   * toll, a town that pays them — is a public fact about them, and holding income
+   * moves this the moment a mortal takes a freehold.
+   */
+  wealth?: number;
+  wealthSource?: string;
+  /**
+   * Places this mortal knows the way to, and the leads they are still following
+   * (THR-1428). What a survey earned, made inspectable — an aftermath may only move
+   * what the player can see.
+   */
+  knownPlaces?: readonly { readonly id: string; readonly name: string; readonly lead?: string }[];
   /** Full intent list for the character sheet modal (prototype: always visible) */
   intents?: ActiveIntent[];
   /** Fulfilled ambitions for the ChronicleTab §Completed Ambitions list (THR-721). */
@@ -750,11 +782,68 @@ export function getAgentDetail(
     intents: intents.length > 0 ? intents : undefined,
     portraitUrl,
     quintessence: (props.quintessence as number | undefined),
+    wealth: (props.wealth as number | undefined),
+    wealthSource: describeWealthSource(props.lastWealthReason as string | undefined),
+    knownPlaces: collectKnownPlaces(graph, agentId),
     traits: traitSummaries.length > 0 ? traitSummaries : undefined,
     leverage,
     activeUndertakings: summarizeActiveUndertakings(strategicState, agentId),
     mentorship,
   };
+}
+
+// ─── What a mortal holds and what they know (THR-1428) ──────────────
+
+/**
+ * The last thing that moved this mortal's wealth, in words. The reason is stamped by
+ * `applyWealthDelta`'s callers as a machine key; the sheet never shows a key
+ * (UI Law 14), so it is turned into a phrase here or dropped entirely.
+ *
+ * *Freehold* is kept to what an `owns` edge holds; a `controls`-edge Location is
+ * *controlled* (UL § Freehold).
+ */
+function describeWealthSource(reason: string | undefined): string | undefined {
+  switch (reason) {
+    case 'route_control': return 'tolls on a road they hold';
+    case 'sublocation_income': return 'a freehold that pays its way';
+    case 'location_tithe': return 'the tithe of a place they control';
+    case 'trade_success': return 'a trade that went well';
+    case 'trade_failure': return 'a trade that did not';
+    case 'disruption': return 'a road gone bad';
+    case 'agreement_broken': return 'a bargain broken against them';
+    default: return undefined;
+  }
+}
+
+/**
+ * Places this mortal knows the way to, and the leads they are still following.
+ * Read straight from the graph edges the readers write — the row and the world cannot
+ * disagree (Law 56). Sorted by name so the list is stable between reads.
+ */
+function collectKnownPlaces(
+  graph: WorldGraph,
+  agentId: string,
+): { id: string; name: string; lead?: string }[] {
+  const known = new Map<string, { id: string; name: string; lead?: string }>();
+
+  for (const edge of graph.getOutgoingEdges(agentId, 'knows_of')) {
+    const node = graph.getNode(edge.target);
+    if (node?.name) known.set(node.id, { id: node.id, name: node.name });
+  }
+  // A live lead is knowledge too, and it is the more interesting kind: it says the
+  // place is half-found rather than merely remembered.
+  for (const edge of graph.getOutgoingEdges(agentId, 'knows_clue_of')) {
+    if (edge.properties?.consumed === true) continue;
+    const node = graph.getNode(edge.target);
+    if (!node?.name) continue;
+    const precision = edge.properties?.precision;
+    const lead = precision === 'located' ? 'knows where it lies'
+      : precision === 'narrowed' ? 'has a lead on it'
+      : 'has heard of it';
+    known.set(node.id, { id: node.id, name: node.name, lead });
+  }
+
+  return [...known.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // ─── Familiarity-gated Aggregators ──────────────────────────────────
@@ -1155,6 +1244,17 @@ export function getAgentInfoCard(
   const companions = getCompanions(graph, agentId);
   if (companions.length > 0) {
     card.companions = companions;
+  }
+
+  // What they hold and what they know (THR-1428) — ungated with `holdings` for the
+  // same reason: a road somebody tolls is a public fact about them, and the places
+  // they have surveyed are the product of work the world watched them do.
+  if (detail.wealth != null) {
+    card.wealth = detail.wealth;
+    if (detail.wealthSource) card.wealthSource = detail.wealthSource;
+  }
+  if (detail.knownPlaces && detail.knownPlaces.length > 0) {
+    card.knownPlaces = detail.knownPlaces;
   }
 
   // Intent data — always visible in prototype

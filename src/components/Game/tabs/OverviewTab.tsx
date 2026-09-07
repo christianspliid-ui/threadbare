@@ -13,6 +13,7 @@ import { resolveTooltip } from '../../../engine/tooltipResolver';
 import type { WorldGraph } from '../../../engine/graph';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { getReputationWord } from '../../../data/domain-words';
+import { getWealthTier } from '../../../engine/wealth';
 import { getNotableStandings } from '../../../engine/reputation';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
 import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry';
@@ -538,6 +539,56 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
               You haven&apos;t observed {card.name} closely enough to read their character.
             </p>
           )}
+        </section>
+      )}
+
+      {/* Means (THR-1428) — the wealth *tier word*, never the number (UI Law IV).
+          What a mortal holds now yields: a seized road tolls, a claimed freehold pays,
+          a controlled town tithes. The tooltip names what last moved it in words, so a
+          player who notices somebody growing rich can find out why without meeting a
+          machine key (Law 14). State-backed: the word is read off the node, never a
+          cached copy (Law 56). */}
+      {card.wealth != null && (
+        <section data-testid="overview-means">
+          <SectionHeading as="h2">Means</SectionHeading>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Tooltip
+              label={getWealthTier(card.wealth)}
+              desc={card.wealthSource
+                ? `Lately: ${card.wealthSource}.`
+                : 'What they have gathered, and kept.'}
+            >
+              <span
+                className="cursor-help"
+                style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+                role="term"
+                tabIndex={0}
+              >
+                {getWealthTier(card.wealth)}
+              </span>
+            </Tooltip>
+          </p>
+        </section>
+      )}
+
+      {/* Knows the way to (THR-1428) — what watching earned. Familiarity and any live
+          lead, each place by its own name, with the stage of the finding beside it
+          (Law 1: every concept carries what a reader needs to follow it). */}
+      {card.knownPlaces && card.knownPlaces.length > 0 && (
+        <section data-testid="overview-known-places">
+          <SectionHeading as="h2">Knows the way to</SectionHeading>
+          <ul className="space-y-1">
+            {card.knownPlaces.map((place) => (
+              <li key={place.id} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {place.name}
+                {place.lead && (
+                  <span className="italic" style={{ color: 'var(--text-tertiary)' }}>
+                    {' '}— {place.lead}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

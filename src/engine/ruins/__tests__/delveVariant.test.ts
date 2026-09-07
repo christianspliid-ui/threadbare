@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it, beforeEach } from 'vitest';
+import { RUINED_SETTLEMENT_DELVE_DECAY_TICKS } from '../../../data/strategic-action-constants';
 import { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
@@ -179,6 +180,82 @@ describe('phaseDelveAdmission', () => {
     const patch = phaseDelveAdmission(state);
     expect(patch.activeDelves![0].delveScale).toBe('minor');
     expect(patch.activeDelves![0].totalBeats).toBe(2);
+  });
+
+  // ─── A mortal's ruin joins the delve layer (THR-1428 R2) ───────────────────
+  //
+  // The three arms are asserted together because the decay window is the design: a
+  // scan that admitted every `ruins` location would pass the first arm alone, and a
+  // scan that admitted none would pass the second alone.
+
+  /** A settlement a mortal ruined: the shape the `destroy × Location` cell writes. */
+  function addMortalRuin(graph: WorldGraph, id: string, hexCol: number, hexRow: number, ruinedTick: number): void {
+    graph.addNode({
+      id, type: 'location', name: `Razed ${id}`,
+      properties: {
+        locationSubtype: 'ruins',
+        ruinedFromSubtype: 'town',
+        ruinedTick,
+        ruinMagnitude: 0.5,
+        hexCol, hexRow,
+        prosperity: 0.1,
+      },
+    });
+  }
+
+  it('admits a mortal-ruined settlement once the decay window has passed', () => {
+    state = makeState(RUINED_SETTLEMENT_DELVE_DECAY_TICKS + 1);
+    addAscendant(state.graph);
+    addAgent(state.graph, 'agent-1', 'Talen', 3, 4);
+    addMortalRuin(state.graph, 'ruin-razed', 3, 4, 0);
+    addLocatedClue(state.graph, 'agent-1', 'ruin-razed', 1);
+
+    const patch = phaseDelveAdmission(state);
+    expect(patch.activeDelves).toHaveLength(1);
+    expect(patch.activeDelves![0].ruinId).toBe('ruin-razed');
+  });
+
+  it('does not admit a ruin that is still fresh — a massacre site is not a delve yet', () => {
+    state = makeState(RUINED_SETTLEMENT_DELVE_DECAY_TICKS - 1);
+    addAscendant(state.graph);
+    addAgent(state.graph, 'agent-1', 'Talen', 3, 4);
+    addMortalRuin(state.graph, 'ruin-fresh', 3, 4, 0);
+    addLocatedClue(state.graph, 'agent-1', 'ruin-fresh', 1);
+
+    const patch = phaseDelveAdmission(state);
+    expect(patch.activeDelves ?? []).toHaveLength(0);
+  });
+
+  it('does not admit a `ruins` location that no mortal ruined', () => {
+    // Worldgen ruins carry no `ruinedTick`; they are not admitted by this branch, and
+    // elder ruins keep their own. Without this arm the widened filter would quietly
+    // open the delve layer to every ruin on the map.
+    state = makeState(RUINED_SETTLEMENT_DELVE_DECAY_TICKS + 100);
+    addAscendant(state.graph);
+    addAgent(state.graph, 'agent-1', 'Talen', 3, 4);
+    state.graph.addNode({
+      id: 'ruin-worldgen', type: 'location', name: 'Old Stones',
+      properties: { locationSubtype: 'ruins', hexCol: 3, hexRow: 4 },
+    });
+    addLocatedClue(state.graph, 'agent-1', 'ruin-worldgen', 1);
+
+    const patch = phaseDelveAdmission(state);
+    expect(patch.activeDelves ?? []).toHaveLength(0);
+  });
+
+  it('still requires a located clue for a mortal-ruined settlement', () => {
+    state = makeState(RUINED_SETTLEMENT_DELVE_DECAY_TICKS + 1);
+    addAscendant(state.graph);
+    addAgent(state.graph, 'agent-1', 'Talen', 3, 4);
+    addMortalRuin(state.graph, 'ruin-razed', 3, 4, 0);
+    // A narrowed lead is not an open door — the observe → clue → delve climb stands.
+    state.graph.addEdge({
+      id: 'clue_narrow', source: 'agent-1', target: 'ruin-razed', type: 'knows_clue_of',
+      properties: { magnitude: 0.5, precision: 'narrowed', source: 'undertaking_survey', discoveredTick: 1, consumed: false },
+    });
+
+    const patch = phaseDelveAdmission(state);
+    expect(patch.activeDelves ?? []).toHaveLength(0);
   });
 });
 

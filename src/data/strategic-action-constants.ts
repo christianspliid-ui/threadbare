@@ -1035,3 +1035,78 @@ export const UNDERTAKING_DEFAULT_FACTION_SEED: StrategicFactionSeed = {
 };
 /** `undo × faction`: ticks until the planted schism resolves. */
 export const UNDERTAKING_SCHISM_RESOLUTION_DELAY_TICKS = 12;
+
+// ─── The owed readers (THR-1428) ────────────────────────────────────
+//
+// Nine live cells wrote into systems nothing read. These are the knobs of the
+// readers they were decided to have (THR-1397), banded so a survey's worth and a
+// freehold's yield are tuned by changing a number, never by rewriting a reader.
+
+/**
+ * How good a lead a survey yields on a ruin- or wonder-class Location, by the band
+ * the work landed on. A band absent from this table yields no clue at all — which is
+ * what makes observe → clue → delve a climb: only a `critical_success` writes the
+ * `located` precision the delve admission scan requires (THR-1399's band order).
+ */
+export const OBSERVE_CLUE_PRECISION_BY_BAND: Readonly<Record<string, 'vague' | 'narrowed' | 'located'>> = {
+  critical_success: 'located',
+  success: 'narrowed',
+  success_at_cost: 'vague',
+};
+
+/** Clue magnitude a survey writes; the delve scale reads the ruin's own magnitude, not this. */
+export const OBSERVE_CLUE_MAGNITUDE = 0.5;
+
+/** Locations an area survey makes familiar per completion. */
+export const OBSERVE_AREA_FAMILIARITY_CAP = 3;
+
+/** The band at which a survey doubles into a secret about someone who was there. */
+export const OBSERVE_MARK_BAND = 'critical_success';
+
+/** The band at which an area survey mints a chart anyone who can read a map may follow. */
+export const OBSERVE_CHART_BAND = 'critical_success';
+
+/** The secret type a survey's mark carries — what watching someone actually learns. */
+export const OBSERVE_MARK_SECRET_TYPE = 'observed_movement';
+
+/** Magnitude of the mark a survey's strong result mints. */
+export const OBSERVE_MARK_MAGNITUDE = 0.4;
+
+/** The delve scale a mortal-ruined settlement carries, banded from what it was before. */
+export const RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE: Readonly<Record<string, number>> = {
+  hamlet: 0.3, camp: 0.3, farmland: 0.3,
+  town: 0.5, city: 0.7, capital: 0.8,
+  castle: 0.6, fort: 0.5, tower: 0.4,
+};
+
+/** The magnitude a ruined settlement falls to when its pre-ruin subtype is not in the table. */
+export const RUINED_SETTLEMENT_DEFAULT_MAGNITUDE = 0.5;
+
+/** How long a fresh ruin waits before the delve layer admits it — the dust has to settle. */
+export const RUINED_SETTLEMENT_DELVE_DECAY_TICKS = 36;
+
+/** How often holdings pay (one day). */
+export const HOLDING_INCOME_INTERVAL_TICKS = 12;
+
+/** Per controlled Location per interval, before the prosperity multiplier. */
+export const WEALTH_CONTROLLED_LOCATION_TITHE = 1;
+
+/**
+ * A rich town tithes more. Steps are read against the Location's `prosperity` (0–1):
+ * below the first threshold the first multiplier applies, and so on upward.
+ */
+export const HOLDING_TITHE_PROSPERITY_THRESHOLDS: readonly [number, number, number] = [0.25, 0.5, 0.75];
+export const HOLDING_TITHE_PROSPERITY_MULTIPLIER: readonly [number, number, number] = [0.5, 1, 2];
+
+/** Rate limit on the freehold-income chronicle line per holder (six days). */
+export const HOLDING_INCOME_CHRONICLE_INTERVAL_TICKS = 72;
+
+/** Above this many freeholds, one holder's payments write one aggregated `wealth_delta` trace. */
+export const HOLDING_INCOME_TRACE_AGGREGATE_ABOVE = 5;
+
+/**
+ * Doom points → quintessence fraction. The 30-point cap per cast (`DOOM_COST_CAP_PER_CAST`)
+ * becomes at most 0.15 of a 0–1 meter, so a spell's price is felt without one cast
+ * emptying the caster.
+ */
+export const SPELL_SOUL_PRICE_QUINTESSENCE_SCALE = 0.005;

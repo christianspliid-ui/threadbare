@@ -128,6 +128,7 @@ import { phaseArmyNotifications } from './armyNotifications';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
+import { phaseHoldingIncome } from './holdingIncome';
 import { phaseSublocations } from './phaseSublocations';
 import { phaseSettlementPromotion } from './phaseSettlementPromotion';
 import { phaseSettlementReassessment } from './phaseSettlementReassessment';
@@ -3511,6 +3512,18 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     phaseEventCounts['trade_route_decay'] = r.eventDelta;
   }
   prevEventCount = s.tickEvents.length;
+
+  // Phase 6.63: Holding income (THR-1428 R3). What a mortal holds yields, once a day.
+  // Placed here on purpose: after the decay phase has settled which routes are still
+  // alive (so a dead route is not tolled) and before the prosperity pulse that reads
+  // wealth tiers, so the day's takings are what `phaseEconomicTraits` sees.
+  try {
+    const r = runInlinePhase('holding_income', s, () => phaseHoldingIncome(s));
+    s = r.next;
+    phaseEventCounts['holding_income'] = r.eventDelta;
+  } catch {
+    // fail-soft: nobody's day is ruined by an unpayable holding (NFP #4)
+  }
 
   // Phase 6.625: Condition Decay (tick-based removal of transient condition traits)
   try {

@@ -14,6 +14,7 @@ import type {
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 import type { FactionActionRecord } from '../../types/factionAction';
 import { getReputationWord } from '../../data/domain-words';
+import { getWealthTier } from '../../engine/wealth';
 import { durationLabel } from '../../engine/aftermathWords';
 
 interface FactionSheetProps {
@@ -330,6 +331,18 @@ export const FactionSheet = React.memo(function FactionSheet({
                       emptyText="No controlled settlements yet."
                     />
                   </Section>
+
+                  {/* Means (THR-1428) — the tier word, never the number (UI Law IV).
+                      An order's coffers sit beside what it controls because the two
+                      move together: what a faction holds is where its money comes
+                      from. Read off the node, never a cached copy (Law 56). */}
+                  {typeof factionNode?.properties?.wealth === 'number' && (
+                    <Section title="Means">
+                      <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
+                        {getWealthTier(factionNode.properties.wealth as number)}
+                      </span>
+                    </Section>
+                  )}
 
                   <Section title="Current Agenda">
                     {summary.activeAmbition ? (

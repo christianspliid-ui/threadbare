@@ -1353,6 +1353,37 @@ Each entry is `{ role: NpcRole, minTier }` (capstones are bare roles). `role` mu
 
 ---
 
+### Capability 28: A Cell Ships With Its Reader — The `{learned}` Slot and the Band-Graded Product (THR-1428)
+
+**What it does:** an undertaking cell's completion now *produces* something a phase or a surface consumes, and the prose can name it. Two content-facing capabilities came out of it: a fifth prose slot, `{learned}`, and the rule that decides what a survey earns.
+
+**Why you want it:** before this, the five `observe` cells wrote a `strategicIntelligence` record no engine module read. A survey completion could say *"the survey of the Sunken Treasury is done"* and be describing nothing — the mortal knew no more than before, and no system could act on it. The rule that closes that class of hole, now in `Docs/canon/undertakings.md`: **a cell ships with its reader; a wanted cell whose product no phase or surface reads is not built until one does.**
+
+**The fifth slot.** `{learned}` joins `{object}` `{owner}` `{actor}` `{place}` in `src/data/undertaking-verb-prose.ts`. It resolves from the **knowledge edges the actor now holds**, not from a payload carried on the event — so the sentence and the graph cannot disagree (Law 56). Strongest first: a chart, a secret, a `located` lead, a `narrowed` lead, plain familiarity, nothing. Write it as a **trailing clause**, because it resolves empty when the survey turned up nothing new and the line still has to read whole:
+
+```ts
+completion: [
+  '{Actor} knows {object} now, better than {owner} would like{learned}.',
+]
+// → "Old Maerin knows the Sunken Treasury now, better than the guild would like,
+//    and has found where the Sunken Treasury lies."
+// → "Old Maerin knows Wickford now, better than the guild would like."   (nothing new)
+```
+
+**The band decides the product.** `ObjectVerbContext.outcome` carries the final checkpoint's band, so a semantic can grade what it writes. `OBSERVE_CLUE_PRECISION_BY_BAND` is the pattern to copy: `critical_success → 'located'`, `success → 'narrowed'`, `success_at_cost → 'vague'`, and a band absent from the table yields **nothing**. That absence is load-bearing — only a `located` clue satisfies the delve admission scan, so *observe → clue → delve* is a climb rather than an open door. A cell authored on the instant path has no checkpoint and takes the plain-success row; never add a second resolution to get a band.
+
+**Three rules for a new cell's reader:**
+
+1. **Name it in the same commit.** `scripts/undertaking-grid-dispositions.ts` requires a `reader` on every `wanted` disposition and `npm run generate-undertaking-grid` fails by name on an empty one. Write what will *consume* the product, not what writes it.
+2. **A refusal is a product too.** Trace it. `UndertakingReaderTrace` carries `refused` (`already_known`, `clue_already_held`, `nobody_there`, …) precisely because a survey of somewhere already known is *success with nothing new* — a different fact from a reader that never fired, and indistinguishable from it in a run that only traced the writes (NFP #2).
+3. **Write to the name the consumer already reads.** The plan for R2 named a new `ruinSphereAlignment`; the delve layer reads `sphereAlignment`, so the new property would have been another write nobody reads. Grep the consumer before choosing a name.
+
+**How to tell whether yours landed.** With tracing on, `await window.__DEBUG.getUndertakingReaders('@hero')` lists every reader that ran at that mortal's cell completions, writes and refusals alike; `await window.__DEBUG.getHoldingIncome()` lists what holdings paid (only on a `HOLDING_INCOME_INTERVAL_TICKS` boundary — an empty result off-boundary means "not a payday", not "nothing is held"). In the CLI, `traces 50` after a completion. The grid's live-cell notes say **Read by** for a cell whose reader exists and **Owes** for one still without.
+
+**Where to find the implementation:** the readers in `src/data/undertaking-objects.ts` (`applyObserveReaders`, `maybeSpawnSiteClue`, `mintAreaChart`, `maybeMintObservedMark`), the `{learned}` resolver in `src/engine/undertakingProse.ts` (`learnedClause`), the income pass in `src/engine/holdingIncome.ts`. Plan: `Docs/plans/2026-09-07-thr-1428-owed-readers.md`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

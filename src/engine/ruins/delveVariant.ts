@@ -22,6 +22,7 @@ import { computeCapability } from '../domainCapability';
 import { gatherNarrativeContext, enrichProse } from '../proseEnrichment';
 import { consumeCluesOnConvergence } from './clueLifecycle';
 import { resolveDelveProseEntry } from '../../data/ruins-delve-content';
+import { RUINED_SETTLEMENT_DELVE_DECAY_TICKS } from '../../data/strategic-action-constants';
 import {
   MAX_SAGA_DELVES_CONCURRENT,
   MAX_MAJOR_DELVES_CONCURRENT,
@@ -303,10 +304,21 @@ export function phaseDelveAdmission(state: GameState): Partial<GameState> {
       const hex = agentHex(graph, agentId);
       if (!hex) continue;
 
-      // Find elder_ruin locations at this hex
+      // Find delvable ruins at this hex: the worldgen elder ruins, and — since
+      // THR-1428 R2 — settlements a mortal ruined, once the dust has settled. A fresh
+      // ruin is a massacre site, not a delve; `RUINED_SETTLEMENT_DELVE_DECAY_TICKS`
+      // is how long the world waits before it is somewhere to explore. A `ruins`
+      // location with no `ruinedTick` (worldgen ruins) is not admitted by this branch —
+      // elder ruins keep their own.
       const ruinNodes = graph.getNodesByType('location').filter(n => {
         const props = n.properties as Record<string, unknown>;
-        if (props.locationType !== 'elder_ruin') return false;
+        const isElder = props.locationType === 'elder_ruin';
+        const subtype = (props.locationSubtype ?? props.locationType) as string | undefined;
+        const ruinedTick = props.ruinedTick;
+        const isMatureMortalRuin = subtype === 'ruins'
+          && typeof ruinedTick === 'number'
+          && ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick;
+        if (!isElder && !isMatureMortalRuin) return false;
         const nHexCol = props.hexCol as number | undefined;
         const nHexRow = props.hexRow as number | undefined;
         return nHexCol === hex.col && nHexRow === hex.row;

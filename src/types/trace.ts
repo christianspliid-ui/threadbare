@@ -127,6 +127,8 @@ export type TraceCategory =
   // Verb × object undertakings (THR-1392)
   | 'undertaking_cell_unreachable'
   | 'undertaking_tier_defaulted'
+  // The owed readers (THR-1428)
+  | 'undertaking_reader'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -532,6 +534,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'covet_rivalry_seeded',
   'undertaking_cell_unreachable',
   'undertaking_tier_defaulted',
+  'undertaking_reader',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -1312,6 +1315,7 @@ export interface WealthDeltaTrace extends TraceBase {
   delta: number;
   newWealth: number;
   reason: 'trade_success' | 'trade_failure' | 'route_control' | 'sublocation_income'
+         | 'location_tithe'
          | 'prosperous_home' | 'disruption' | 'agreement_broken'
          | 'mercenary_hire' | 'assassination_commission' | 'influence_purchase'
          | 'construction' | 'monopoly';
@@ -2128,6 +2132,30 @@ export interface UndertakingTierDefaultedTrace extends TraceBase {
   objectTypeId: UndertakingObjectTypeId;
   objectId: string;
   tier: 1 | 2 | 3;
+}
+
+/**
+ * Trace: a reader ran at a cell completion (THR-1428).
+ *
+ * One per reader applied, and — this is the point — one per reader *refused*. A
+ * survey of somewhere already known produces nothing new, and a run that only traced
+ * the writes would show that as silence indistinguishable from a reader that never
+ * fired at all (NFP #2). `refused` names which it was.
+ */
+export interface UndertakingReaderTrace extends TraceBase {
+  category: 'undertaking_reader';
+  actorId: string;
+  /** `'cell.observe.location'`, `'cell.destroy.location'`, `'cell.use.power'`. */
+  cellId: string;
+  reader: 'familiarity' | 'clue' | 'chart' | 'mark' | 'ruin_delve_stamp' | 'spell_price' | 'spell_exhausted';
+  /** The observed / ruined node, or the power. */
+  objectId: string;
+  /** The edge or node written, when one was. */
+  productId?: string;
+  /** The band read from `ctx.outcome`, when the lifecycle carried one. */
+  outcome?: string;
+  refused?: 'already_known' | 'clue_already_held' | 'map_already_held' | 'nobody_there'
+          | 'schema_violation' | 'exhausted' | 'no_band_row' | 'nothing_eligible';
 }
 
 /**
@@ -3251,6 +3279,7 @@ export type TraceEntry =
   | ModifierResolutionTrace
   | ProsperityTickTrace
   | EconShockSeededTrace
+  | UndertakingReaderTrace
   | WealthDeltaTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace

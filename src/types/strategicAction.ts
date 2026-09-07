@@ -7,6 +7,7 @@
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { EdgeType } from './graph';
+import type { CluePrecision } from './knowledge';
 // The group family's discriminator, imported rather than restated (THR-1309). A
 // literal copy of the union here would be a second authority on what a group kind
 // is, which is exactly the drift `groupShape.ts` was created to end (THR-1297 §4).
@@ -423,7 +424,10 @@ export type StrategicMutationHint =
    * so a chart verb feeds an economy that exists rather than minting a private score.
    * `magnitude`/`precision` are the clue's strength and how narrowly it points.
    */
-  | { type: 'spawn_clue'; magnitude: number; precision: number; detail?: string }
+  // `precision` is the `CluePrecision` word, not a number (THR-1428): the delve
+  // admission scan tests `precision === 'located'` and `CLUE_MAX_AGE` keys on the three
+  // words, so a numeric precision wrote a clue no layer could act on.
+  | { type: 'spawn_clue'; magnitude: number; precision: CluePrecision; detail?: string }
   /**
    * Stamp durable familiarity with the target location.
    *

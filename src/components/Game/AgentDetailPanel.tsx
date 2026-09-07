@@ -13,6 +13,7 @@ import { IconButton } from '../shared/IconButton';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
 import { quintessenceToWord } from '../../types/quintessence';
+import { getWealthTier } from '../../engine/wealth';
 import { QUINTESSENCE_TOOLTIPS } from '../../data/quintessence-content';
 import { QUINTESSENCE_LEXICON } from '../../data/quintessence-content';
 import { RecentActivityLog } from './RecentActivityLog';
@@ -328,6 +329,67 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             </div>
           );
         })()}
+
+        {/* Wealth — the tier word, never the number (THR-1428, UI Law IV). The tooltip
+            names what last moved it, in words: a player who sees a mortal grow rich
+            can find out why without meeting a machine key (Law 14). */}
+        {detail.wealth != null && (
+          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <span>Their means are </span>
+            <Tooltip
+              label={getWealthTier(detail.wealth)}
+              desc={detail.wealthSource ? `Lately: ${detail.wealthSource}.` : 'What they have gathered, and kept.'}
+            >
+              <span
+                style={{
+                  color: 'var(--text-secondary)',
+                  fontStyle: 'italic',
+                  textDecoration: 'underline',
+                  textDecorationStyle: 'dotted',
+                  cursor: 'help',
+                }}
+                role="term"
+                tabIndex={0}
+              >
+                {getWealthTier(detail.wealth).toLowerCase()}
+              </span>
+            </Tooltip>
+          </div>
+        )}
+
+        {/* Knows the way to — what watching earned (THR-1428). Every place carries its
+            own name and, when a lead is live, what stage the finding is at (Law 1). */}
+        {detail.knownPlaces && detail.knownPlaces.length > 0 && (
+          <div className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
+            <div style={{ color: 'var(--text-muted)' }}>Knows the way to</div>
+            <ul className="space-y-0.5">
+              {detail.knownPlaces.map((place) => (
+                <li key={place.id}>
+                  <button
+                    type="button"
+                    onClick={() => onLocationClick(place.id)}
+                    className="text-left"
+                    style={{
+                      color: 'var(--text-secondary)',
+                      textDecoration: 'underline',
+                      textDecorationStyle: 'dotted',
+                      cursor: 'pointer',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      font: 'inherit',
+                    }}
+                  >
+                    {place.name}
+                  </button>
+                  {place.lead && (
+                    <span style={{ color: 'var(--text-muted)' }}> — {place.lead}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Mentorship — active and historical (THR-75) */}
         {detail.mentorship && detail.mentorship.length > 0 && (

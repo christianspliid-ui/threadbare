@@ -584,6 +584,24 @@ export interface DebugBridge {
   getEncounterNoveltyRecord: () => Record<string, number> | null;
   /** Snapshot of the trace ring buffer. Empty unless tracing was enabled first. */
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
+  /**
+   * What holdings paid (THR-1428 R3) — the `wealth_delta` traces whose reason is one
+   * of `route_control` | `sublocation_income` | `location_tithe`, optionally narrowed
+   * to one holder (`@hero`, id, id prefix or partial name).
+   *
+   * Payments fire only on a `HOLDING_INCOME_INTERVAL_TICKS` boundary, so an empty
+   * result on tick 5 means "not a payday", not "nothing is held" — run past the next
+   * boundary before reading it. Requires `enableTracing()` first, like every trace
+   * reader here (an un-enabled buffer returns `[]`, not an error).
+   */
+  getHoldingIncome: (actorQuery?: string) => Promise<ReadonlyArray<TraceEntry>>;
+  /**
+   * Every reader that ran at an undertaking cell completion (THR-1428) — writes *and*
+   * refusals: a survey of somewhere already known traces `refused: 'already_known'`,
+   * which is a different fact from a reader that never fired. Optionally narrowed to
+   * one actor. Requires `enableTracing()` first.
+   */
+  getUndertakingReaders: (actorQuery?: string) => Promise<ReadonlyArray<TraceEntry>>;
   /** Start recording traces into the ring buffer. `openDebugPanel()` enables this implicitly. */
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;

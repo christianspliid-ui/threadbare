@@ -26,7 +26,9 @@ export type EconomicChronicleTrigger =
   | 'wealth_tier_down'
   // Mortal economy — resource stock crossings (THR-615)
   | 'resource_scarcity'
-  | 'resource_glut';
+  | 'resource_glut'
+  // What a mortal holds yields (THR-1428)
+  | 'holding_income';
 
 // ─── Significance defaults per trigger ──────────────────────────────────────
 
@@ -45,6 +47,8 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
   wealth_tier_down: 0.6,
   resource_scarcity: 0.7,
   resource_glut: 0.5,
+  // Quiet by design: a day's tolls is the world ticking over, not a turning point.
+  holding_income: 0.3,
 };
 
 // ─── Chronicle Templates ────────────────────────────────────────────────────
@@ -175,6 +179,19 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     '{settlement} has more {resource} than it can use. The surplus rots in the yards while its worth collapses.',
     'The {resource} floods {settlement}\'s markets. Cheap plenty for the buyer, quiet ruin for the seller.',
     'So much {resource} has come to {settlement} that no one will pay for it. The abundance is its own kind of trouble.',
+  ],
+
+  // What a mortal holds yields (THR-1428). Rate-limited per holder by
+  // `HOLDING_INCOME_CHRONICLE_INTERVAL_TICKS`, because a daily toll retold every day
+  // is not a chronicle, it is an accounts ledger. Numbers never appear here; the wealth
+  // *tier word* does, and only when it moves. A `controls`-edge Location is *controlled*
+  // and an `owns`-edge holding is a *freehold* — the UL keeps those apart.
+  holding_income: [
+    'The tolls of {target} fill {actor}\'s purse, as they have each day since the road changed hands.',
+    '{target} pays its tithe to {actor}. Whatever the town thinks of the arrangement, it pays.',
+    'What {actor} holds is paying for itself. {target} sends its due, and the ledger closes even.',
+    'The freehold at {target} yields to {actor} again — quiet money, the kind that accumulates without anyone remarking on it.',
+    '{actor} collects from {target}. Holding a thing and being paid by it turn out to be the same act.',
   ],
 };
 
