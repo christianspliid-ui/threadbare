@@ -208,6 +208,9 @@ function applyEffect(
         .find(e => e.target === targetId);
       if (!existingEdge) {
         state.graph.addEdge({
+          // THR-1436: an edge without an id can never be addressed again — the undertaking
+          // registry's Standing object is this edge, and `getEdge` could not find it.
+          id: `relates_to_complication_${ctx.action.actorId}_${targetId}`,
           source: ctx.action.actorId,
           target: targetId,
           type: 'relates_to',

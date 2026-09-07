@@ -309,7 +309,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     shape: { kind: 'node', nodeType: 'trait', discriminator: { key: 'subcategory', values: CONDITION_SUBCATEGORIES } },
     classes: { condition: ['condition'], scar: ['scar'] },
     owningSystem: 'Effects & Conditions', writers: ['gameInit', 'spellActivation', 'rewardPool'], status: 'live',
-    note: 'Wounds, diseases, strains; blessings and curses as signed conditions; scars as permanent ones. Shared definitions, per-bearer state on the `has_trait` edge (THR-1395): the seeded catalogue was already one node per kind, and `spellActivation`\'s `condition_inflict` — the one writer that minted a node per application — now points every bearer of a template at the same definition.',
+    note: 'Wounds, diseases, strains; blessings and curses as signed conditions; scars as permanent ones. Shared definitions, per-bearer state on the `has_trait` edge (THR-1395): the seeded catalogue was already one node per kind, and `spellActivation`\'s `condition_inflict` — the one writer that minted a node per application — now points every bearer of a template at the same definition. The undertaking *object* for a Condition is not this definition but one mortal\'s bearing of it — the `has_trait` edge (THR-1436): the one kind where the two registries\' shapes differ on purpose, because what a healer cures is a wound on a person, never the wound as a kind.',
   }),
   K({
     id: 'trait', gameWord: 'Trait', ulTerm: 'Traits.md#trait', worldRef: null,

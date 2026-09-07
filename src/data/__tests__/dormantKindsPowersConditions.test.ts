@@ -471,9 +471,11 @@ describe('the seal is read off the bearer, never off the shared power', () => {
     const sealed = call(POWER.verbs.destroy, ctx(graph, 'witch', { handle: { kind: 'node', nodeId: spellId }, outcome: 'success' }));
     expect(isSpellSuppressedFor(graph, 'rival')).toBe(true);
 
-    // `destroy × Condition` — the cure, live since before this ticket.
+    // `destroy × Condition` — the cure, live since before this ticket. The object is the
+    // rival's *bearing* of the seal, the `has_trait` edge (THR-1436), never the definition.
     addMortal(graph, 'healer');
-    const cured = call(CONDITION.verbs.destroy, ctx(graph, 'healer', { handle: { kind: 'node', nodeId: sealed.createdId! } }));
+    const seal = graph.getOutgoingEdges('rival', 'has_trait').find(e => e.target === sealed.createdId)!;
+    const cured = call(CONDITION.verbs.destroy, ctx(graph, 'healer', { handle: { kind: 'edge', edgeId: seal.id } }));
     expect(cured.success).toBe(true);
     expect(isSpellSuppressedFor(graph, 'rival'), 'the art answers again').toBe(false);
   });

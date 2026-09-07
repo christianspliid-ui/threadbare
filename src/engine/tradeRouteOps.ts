@@ -35,7 +35,8 @@ import type { GraphOp, GraphOpContext, GraphOpResult } from '../types/graphOp';
 import { resolveRef } from '../types/graphOp';
 import { hexDistance } from '../lib/hexMath';
 import { resolveLocationToHex } from './encounterAwareness';
-import { createTradeRoute } from './strategicGraphOps';
+import { createTradeRoute, createLocation, type GraphOpResult as StrategicOpResult } from './strategicGraphOps';
+import { ROUTE_IDENTITY_SUBTYPE } from '../data/strategic-action-constants';
 import {
   readTradeRouteProps,
   scoreRoutePairBalance,
@@ -274,4 +275,45 @@ export function executeTaxTradeRoute(
     },
   });
   return { op, success: true, createdId: target.id };
+}
+
+// ─── The route's identity node (THR-1308; one writer since THR-1436) ─────
+
+/**
+ * Mint the identity node a Route object *is*, once a `trades_with` edge has landed.
+ *
+ * The edge stays the economic authority — every existing consumer reads it and none
+ * changes — but an edge has nowhere to carry a name, an owner or a blockade state, so
+ * the `trade_route` kind's object is this node: a `location` of subtype
+ * `ROUTE_IDENTITY_SUBTYPE` at the origin's hex, named `A–B Road`, carrying
+ * `routeSourceId` / `routeTargetId` / `routeEdgeId`. One writer for every caller — the
+ * lifecycle's `trade_route` hint arm and the `create × Route` cell — so a seeded route
+ * (THR-1437) takes the same shape. Minted only after the edge actually landed: an
+ * identity for a route that does not exist is exactly the orphan the kind registry
+ * exists to refuse. Fail-soft: no origin hex → a failed result, and the edge stands.
+ */
+export function mintRouteIdentity(
+  graph: WorldGraph,
+  sourceLocId: string,
+  targetLocId: string,
+  edgeId: string | undefined,
+  actorId: string,
+  tick: number,
+): StrategicOpResult {
+  const originHex = resolveLocationToHex(graph, sourceLocId);
+  if (!originHex) return { success: false, op: 'create_location', error: 'route_identity_unminted:no_origin_hex' };
+  const originNode = graph.getNode(sourceLocId);
+  const destNode = graph.getNode(targetLocId);
+  return createLocation(
+    graph,
+    originHex,
+    actorId,
+    // No article of our own: settlement names already carry one where they want one
+    // ("The Shattered Sanctum"), and prepending a second produced "The The Shattered
+    // Sanctum–Greycity Road" in the first 150-tick run this shipped against.
+    `${originNode?.name ?? 'Unknown'}–${destNode?.name ?? 'Unknown'} Road`,
+    ROUTE_IDENTITY_SUBTYPE,
+    tick,
+    { routeSourceId: sourceLocId, routeTargetId: targetLocId, routeEdgeId: edgeId },
+  );
 }

@@ -2284,6 +2284,40 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'undertaking-ownership-agrees-with-writers',
+    producerSystem: ATTACHMENTS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'The undertaking object registry reads who holds a thing through the edges the world actually writes — a faction through the leader the succession seam derives, a companion through `accompanies`, a condition as one mortal’s borne `has_trait` edge, a standing as one ordered pair from `reputation_with` or the seeded `relates_to`, an item never a catalog template, a route as the identity node the cell now mints — so the verbs a kind declares find something to act on instead of refusing `no_owned_object` on every seed.',
+    ulTerms: ['Undertaking', 'Condition', 'Companion', 'Standing'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveObjectOwners', 'ownersOf', 'gateExemption', 'edgeTypes', 'CATALOG_TEMPLATE_IDS', 'mintRouteIdentity', 'ownershipCensus'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: [
+      'src/engine/worldSeed.ts',
+      'src/engine/companions.ts',
+      'src/engine/reputation.ts',
+      'src/engine/phaseFactionSuccession.ts',
+      'src/engine/rewardPool.ts',
+      'src/engine/tradeRouteOps.ts',
+    ],
+    readSites: [
+      'src/data/undertaking-objects.ts',
+      'src/engine/undertakingMotive.ts',
+      'src/engine/strategicActionCandidates.ts',
+      'src/engine/undertakingResolver.ts',
+      'scripts/census-ownership.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-08',
+      evidence:
+        'THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing.',
+    },
+  },
+  {
     id: 'god-reads-mortal-intention',
     producerSystem: 'Intelligence, Knowledge & Familiarity',
     consumerSystem: NARRATIVE,

@@ -321,10 +321,16 @@ function objectBlock(template: StrategicActionTemplate): PackageObjectBlock | un
   if (!type) return undefined;
   const rule = template.targetRule.type === 'object' ? template.targetRule.ownership : 'any';
   const article = (w: string) => (/^[aeiou]/i.test(w) ? 'an' : 'a');
+  // THR-1436: an edge object may enumerate several edge types (a standing is a
+  // `reputation_with` or, failing one, a `relates_to`), and a type may read its
+  // holder through its own reader rather than an edge walk (a faction's leader).
+  const edgeTypes = type.shape.edgeTypes ?? (type.shape.edgeType ? [type.shape.edgeType] : []);
   const shape = type.shape.nodeType
     ? `${article(type.shape.nodeType)} ${type.shape.nodeType} node${type.shape.discriminator ? ' of the type\'s shape' : ''}`
-    : `${article(type.shape.edgeType!)} ${type.shape.edgeType} edge`;
-  const heldVia = type.ownedVia.length === 0 ? 'the edge\'s own source' : type.ownedVia.join(', ');
+    : `${article(edgeTypes[0] ?? 'edge')} ${edgeTypes.join(' or ')} edge`;
+  const heldVia = type.ownersOf
+    ? 'the type\'s own reader'
+    : type.ownedVia.length === 0 ? 'the edge\'s own source' : type.ownedVia.join(', ');
   return {
     objectTypeId: type.id,
     displayName: type.displayName,
