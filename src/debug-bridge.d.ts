@@ -104,6 +104,28 @@ export interface DebugPlayerReceiptsResult {
   receipts: DebugPlayerReceiptInfo[];
 }
 
+/** One Power on a mortal's sheet (THR-1429) — a spell they learned or a bestowal they were given. */
+export interface DebugPower {
+  id: string;
+  name: string;
+  powerClass: 'spell' | 'bestowal';
+  /** The spell template behind a `spell`-class power; `null` for a bestowal. */
+  spellTemplateId: string | null;
+  /** The sphere shelf it came from; `null` when it declares none. */
+  tradition: string | null;
+}
+
+/** `__DEBUG.getPowers()` — known, wielded, and what a seal has bound (THR-1429). */
+export interface DebugPowers {
+  actorId: string;
+  /** Everything ever learned or given, wielded or not. Unlimited (THR-1231). */
+  known: DebugPower[];
+  /** What they are carrying now — under `SLOT_CAPS.spell`. */
+  wielded: DebugPower[];
+  /** The wielded spells a seal has bound. Empty unless the bearer wears a suppressing condition. */
+  suppressed: DebugPower[];
+}
+
 export interface DebugRarityInfo {
   tier: number;
   tierName: string;
@@ -405,6 +427,17 @@ export interface DebugBridge {
    * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
    */
   getAgentAttachments: (agentIdOrName: string) => Promise<AgentAttachments | null>;
+  /**
+   * THR-1429 — the Power kind, per mortal: what they know, what they carry, what is bound.
+   *
+   * `known` is unlimited (the biography) and includes everything wielded; `wielded` is
+   * what they carry now, under the spell slot cap; `suppressed` is the wielded spells a
+   * seal has bound, read off the **bearer's own conditions** rather than off the shared
+   * spell node — two mortals knowing the same spell must not share one seal.
+   *
+   * Accepts `@hero`, an agent id, id prefix, or partial name. `null` if no agent matches.
+   */
+  getPowers: (agentIdOrName: string) => Promise<DebugPowers | null>;
 
   /**
    * THR-822: where an agent originated and how long it has held its current position.

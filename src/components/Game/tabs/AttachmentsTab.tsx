@@ -107,8 +107,15 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
 
   const possessions = card.possessions ?? [];
   const conditions = card.afflictions ?? [];
-  const powers = (card.giftsAndBurdens ?? []).filter(g => g.subcategory === 'bestowed_power');
-  const agreements = (card.giftsAndBurdens ?? []).filter(g => g.subcategory !== 'bestowed_power');
+  // THR-1429: a Power is a bestowal *or* a spell, so the split reads the Power classes
+  // rather than the one subcategory that used to be the only one. Keyed off
+  // `powerClass` where the builder set it, with the bestowal string as the fallback —
+  // matching on `!== 'bestowed_power'` alone would have filed every learned spell
+  // under Agreements.
+  const isPower = (g: AttachmentFullEntry) => g.powerClass !== undefined || g.subcategory === 'bestowed_power';
+  const powers = (card.giftsAndBurdens ?? []).filter(isPower);
+  const agreements = (card.giftsAndBurdens ?? []).filter(g => !isPower(g));
+  const knownSpells = card.knownSpells ?? [];
   // THR-1297: holdings arrive as their own bucket so they are never counted as loot;
   // they merge into the flat list here and `SLOT_GROUP_ORDER` gives them their own
   // (uncapped) section — see the `holding` entry below.
@@ -192,10 +199,33 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
               </span>
             </Tooltip>
             <span className="text-xs uppercase tracking-wider" style={{ color: `${tierColor}99` }}>
+              {/* The class word (THR-1429, Law 14): a Power says which kind it is —
+                  a Spell somebody learned, or a Bestowal a god gave. */}
+              {entry.powerClass === 'spell' ? 'Spell · ' : entry.powerClass === 'bestowal' ? 'Bestowal · ' : ''}
               {tierName}
               {entry.isPinned && ' (pinned)'}
             </span>
           </div>
+          {/* Sealed (THR-1429): the power is still theirs and it will not answer.
+              Read off the bearer's own conditions, never a cache (Law 56). */}
+          {entry.sealed && (
+            <p className="text-xs mb-1 font-semibold" style={{ color: 'var(--negative)' }} data-testid={`attachment-sealed-${entry.id}`}>
+              Sealed — bound, and it will not answer
+            </p>
+          )}
+          {/* Whose doing a condition was. A curse whose culprit the bearer cannot name
+              says so, rather than showing nothing — the seen-harm rule, on the sheet. */}
+          {entry.sign && entry.sign !== 'blessing' && (
+            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }} data-testid={`attachment-sign-${entry.id}`}>
+              {entry.sign === 'seal' ? 'A sealing' : 'A cursing'}
+              {entry.inflictedByName ? ` — ${entry.inflictedByName}'s doing` : " — someone's doing"}
+            </p>
+          )}
+          {entry.sign === 'blessing' && (
+            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }} data-testid={`attachment-sign-${entry.id}`}>
+              A blessing{entry.inflictedByName ? ` — ${entry.inflictedByName} saw to it` : ''}
+            </p>
+          )}
           {entry.flavorText && (
             <p className="text-sm italic mb-1" style={{ color: 'var(--text-secondary)' }}>
               {entry.flavorText}
@@ -243,7 +273,7 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
     );
   };
 
-  if (!hasAny && companions.length === 0) {
+  if (!hasAny && companions.length === 0 && knownSpells.length === 0) {
     return (
       <p className="text-sm italic" style={{ color: 'var(--text-tertiary)' }}>
         {card.name} carries no known possessions, conditions, powers, or agreements,
@@ -292,6 +322,36 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
             {items.map(item => renderVignette(item))}
           </section>
         ))}
+
+      {/* Knows (THR-1429) — spells learned but not currently carried.
+          Known is the biography and is unlimited (THR-1231); wielded is what they
+          carry now and is capped, and appears in the strand above. The cap reads as a
+          phrase, never a numeral (Law 13): a mind holds what it can hold. */}
+      {knownSpells.length > 0 && (
+        <section data-testid="attachments-known-spells">
+          <Tooltip
+            label="Knows"
+            desc="Learned, and not carried today. A mind holds as many workings as it can hold; the rest wait to be taken up again."
+          >
+            <SectionHeading as="h2">Knows</SectionHeading>
+          </Tooltip>
+          {knownSpells.map(spell => (
+            <div
+              key={spell.id}
+              className="flex gap-3 py-2 items-baseline"
+              style={{ borderBottom: '1px solid var(--border-subtle)' }}
+              data-testid={`known-spell-${spell.id}`}
+            >
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {getAttachmentGlyph('spell')} {spell.name}
+              </span>
+              <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
+                {spell.tradition}
+              </span>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* Inactive section */}
       {inactiveItems.length > 0 && (

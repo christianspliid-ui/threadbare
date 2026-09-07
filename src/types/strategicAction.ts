@@ -296,6 +296,7 @@ export type UndertakingHarmClass =
   | 'holding_seized'          // a thing they owned now answers to someone else
   | 'network_severed'         // the ties they worked through are cut
   | 'named_death'             // someone bound to them is dead
+  | 'afflicted'               // something was put *on* them — a curse worn, an art sealed (THR-1429)
   | 'undertaking_abandoned';  // their own work was walked away from (self-facing, culprit-less)
 
 // ─── Motives (THR-1281 §4) ──────────────────────────────────────────
@@ -915,7 +916,14 @@ export type UndertakingMomentClass =
   | 'completion'
   | 'fork'
   | 'abandoned'
-  | 'complication';
+  | 'complication'
+  /**
+   * The one class whose `actorId` is not the undertaking's actor but its **target**
+   * (THR-1429): a mortal who was cursed, or whose art was sealed. Always `badge` —
+   * an affliction is state the sheet already shows (Law 56), and the attention pool
+   * cannot watch everyone a curse lands on.
+   */
+  | 'afflicted';
 
 /** How a moment reaches the player. `'none'` means chronicle-only. */
 export type UndertakingMomentPresentation = 'interrupt' | 'badge' | 'none';

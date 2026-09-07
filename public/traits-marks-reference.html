@@ -356,6 +356,7 @@
           <tr><td>cultural</td><td>1</td><td>Culture-inherited, permanent · <code>culturalTraits.ts</code></td></tr>
           <tr><td>innate</td><td>0 static</td><td>Minted at runtime as <code>trait_formative_*</code> nodes · <code>culturalTraits.ts</code></td></tr>
           <tr><td>bestowed</td><td>0 static</td><td>Minted at grant time · <code>tierPromotion.ts</code>, <code>rewardPool.ts</code>, <code>hexActionBridge.ts</code></td></tr>
+          <tr><td>spell</td><td>1 per template, shared</td><td>THR-1429 — the Power kind's second class. One definition node per <code>SPELL_TEMPLATES</code> entry, minted at seeding · <code>seedAttachments.ts</code>, <code>spell-templates.ts</code>. A bearer holds <code>knows_spell</code> (known, unlimited) and/or <code>has_trait</code> (wielded, capped by <code>SLOT_CAPS.spell</code>) to the <em>same</em> node; per-bearer state lives on the edge.</td></tr>
           <tr><td>destiny</td><td>0</td><td><strong>Reserved.</strong> No definition, no producer, no reader</td></tr>
         </tbody>
       </table>
@@ -414,7 +415,7 @@
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
         <tbody>
-          <tr><td>TraitCategory</td><td>10</td><td>innate·cultural·personality·mastery·reputation·condition·scar·bestowed·destiny·core · <code>types/traits.ts:12</code></td></tr>
+          <tr><td>TraitCategory</td><td>11</td><td>innate·cultural·personality·mastery·reputation·condition·scar·bestowed·destiny·core·<strong>spell</strong> · <code>types/traits.ts:12</code></td></tr>
           <tr><td>TraitVisibility</td><td>3</td><td>public · discoverable · divine_only · <code>types/traits.ts:57</code></td></tr>
           <tr><td>static trait definitions</td><td>64</td><td>Across the six <code>src/data/*-trait-content.ts</code> files</td></tr>
           <tr><td>has_trait sourceNodeType</td><td>3</td><td>actor · location · sublocation · <code>types/edgeSchema.ts:67</code></td></tr>

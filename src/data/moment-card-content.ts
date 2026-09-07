@@ -76,6 +76,14 @@ export const MOMENT_CARD_CONTENT: Readonly<Record<UndertakingMomentClass, Moment
     opening: '{actor} has completed {undertaking}.',
     consequence: 'It stands in the world now. Whoever it was aimed at will remember whose work it was.',
   },
+  // The one class whose `{actor}` is the mortal it was done *to* (THR-1429). It is
+  // badge-tier by construction, so this card is only ever reached by opening the badge
+  // — never as an interrupt — and it says what is now on them rather than what they did.
+  afflicted: {
+    title: 'Something Is On Them',
+    opening: '{actor} carries something they did not ask for.',
+    consequence: 'It sits on them until it wears off or someone lifts it. Their sheet says what it is, and whether they know whose doing it was.',
+  },
 };
 
 /** Fill a template line. Unknown placeholders render as their bare key, never as `undefined`. */

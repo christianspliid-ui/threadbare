@@ -125,6 +125,22 @@ const ENGINE_REL = path.join('src', 'engine');
 const LOCAL_HELPER_DEPTH = 3;
 
 /**
+ * Modules that are **instrumentation, not operation** — every cell touches them, so a
+ * cell reduced to one of these has no op home at all rather than a home here.
+ *
+ * `traceBuffer` is the whole list, and it earns its place: THR-1429's `learn_spell` and
+ * `inflict_condition` write `ctx.graph` directly and reach an engine module only to
+ * emit their trace, so the join saw `traceBuffer.ts` — a module no subsystem claims —
+ * and failed two correct cells by name. Attributing a mortal's work to the trace buffer
+ * would be worse than failing: it is the one module every cell would resolve to, which
+ * would mark whichever subsystem claimed it as reached by everything.
+ *
+ * This is a statement about what counts as an operation, not a hand map of cell →
+ * subsystem: a real operation module that resolves to no subsystem still fails by name.
+ */
+const INSTRUMENTATION_MODULES: ReadonlySet<string> = new Set(['traceBuffer.ts']);
+
+/**
  * Comments out of a key. Nearly every entry in the registry is preceded by a `//` line
  * explaining the cell, and those lines sit inside the entry's own slice — left in, they
  * become part of the key and every commented cell goes unrecognised.
@@ -283,7 +299,9 @@ export function buildOpReach(repoRoot: string, cells: readonly Cell[]): { reache
     const entry = topLevelEntries(block).find(e => e.key.replace(/^['"]|['"]$/g, '') === c.variant);
     if (entry === undefined) { problems.push(`${label}: LIVE but the registry's \`verbs\` block declares no entry for it — the op-module join cannot see it`); continue; }
     const mode = /\bmode:\s*'([^']+)'/.exec(entry.value)?.[1];
-    const modules = mode !== undefined ? modulesProducingOp(repoRoot, mode) : [...modulesFor(entry.value, imports, helpers)].sort();
+    const modules = (mode !== undefined ? modulesProducingOp(repoRoot, mode) : [...modulesFor(entry.value, imports, helpers)])
+      .filter(m => !INSTRUMENTATION_MODULES.has(m))
+      .sort();
     // A cell that calls no engine module writes the graph inline — `seize_item` moves the
     // `possesses` edge itself. That is not a drift signal and must not fail: the cell has
     // no op home to attribute, so it adds nothing to this join and is already counted by

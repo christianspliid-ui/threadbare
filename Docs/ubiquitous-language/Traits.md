@@ -176,6 +176,8 @@ A `[[Power]]` a caster **learns from a magic tradition**. Casters are an earned 
 
 Three authored axes carry a spell's design: **agency** (fate-woven or deliberate), **arena** (encounter or map), and **price** (free → strain → gamble → transgression). Code anchor: the `'spell'` member of `AttachmentCategory`.
 
+**Shape (THR-1429).** A spell is a graph node: **one shared `trait` definition node per spell**, `subcategory: 'spell'`, minted once at seeding from `SPELL_TEMPLATES` — never one node per bearer (THR-1395). A mortal's relationship to it is two edges to that same node, and they mean different things: **`knows_spell`** is *known* — the biography, unlimited — and **`has_trait`** is *wielded*, what they are carrying now, capped by `SLOT_CAPS.spell`. Learning past the cap leaves a spell known and not carried, which is a fact the sheet states rather than a failure. `'spell'` is also a member of `[[Trait Category]]`, which is what makes the Power kind's discriminator `subcategory: bestowed | spell`.
+
 ---
 
 ### Bestowal

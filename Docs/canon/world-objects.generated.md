@@ -33,7 +33,7 @@
 | `item` | Item | node · `artifact` · `subcategory` ∈ {arms, mounts_beasts, vestments, tomes_scrolls, relics_talismans, tools_instruments, provisions} | **arms** (1) · **mounts_and_beasts** (1) · **vestments** (1) · **tomes_and_scrolls** (1) · **relics_and_talismans** (1) · **tools_and_instruments** (1) · **provisions** (1) | Attachments, Items & Possessions | `rewardPool`, `resourceSeeding`, `strategicGraphOps`, `gameInit` | live | 271 | 🟢 LIVE |
 | `legendary_artifact` | Legendary artifact | node · `artifact_legendary` | — | Attachments, Items & Possessions | `worldSeed` | live | 2 | 🟢 LIVE |
 | `holding` | Holding | edge · `owns` · identity node `artifact:holding` | — | Attachments, Items & Possessions | `holdings` | live | 0 | ⚪ DORMANT |
-| `power` | Power | node · `trait` · `subcategory` ∈ {bestowed} | **spell** (0) · **bestowal** (1) · **innate** (0) | Attachments, Items & Possessions | `spellActivation` | dormant | 48 | 🟢 LIVE |
+| `power` | Power | node · `trait` · `subcategory` ∈ {bestowed, spell} | **spell** (1) · **bestowal** (1) · **innate** (0) | Attachments, Items & Possessions | `spellActivation`, `seedAttachments`, `undertaking-objects` | live | 58 | 🟢 LIVE |
 | `condition` | Condition | node · `trait` · `subcategory` ∈ {condition, scar} | **condition** (1) · **scar** (1) | Effects & Conditions | `gameInit`, `spellActivation`, `rewardPool` | live | 135 | 🟢 LIVE |
 | `trait` | Trait | node · `trait` · `subcategory` ∈ {innate, mastery, reputation, personality, core, destiny, cultural, experience} | — | Personality & Emergent Traits | `gameInit`, `culturalTraits`, `capabilityGrowth`, `encounterChains`, `reputation` | live | 161 | 🟢 LIVE |
 | `agreement` | Agreement | edge · `owes_favor`, `knows_secret_of` | **favor** (1) · **mark** (1) | Secrets & Favors | `secretGeneration`, `strategicGraphOps` | live | 2 | 🟢 LIVE |
@@ -105,7 +105,7 @@
 
 | Class | Members |
 |---|---|
-| spell | _(no value yet)_ |
+| spell | `spell` |
 | bestowal | `bestowed` |
 | innate | _(no value yet)_ |
 
@@ -151,7 +151,7 @@
 - **Item** (`item`, UL `Traits.md#attachment`, chip kind `artifact`) — A possession: arms, a mount, a tome, a relic, tools, provisions; charts and masterworks are items with a subtype. Every mint stamps `attachmentCategory: possession` (THR-1394 slice 2) and is told apart by `subcategory`.
 - **Legendary artifact** (`legendary_artifact`, UL `Traits.md#attachment`, chip kind `artifact`) — An item with its own trait graph, bonded rather than possessed.
 - **Holding** (`holding`, UL `Agents.md#work`) — Not a thing — the ownership of a Location, Place or Route. The `owns` edge is the truth; the mirror artifact face (`attachmentCategory: 'holding'`) is a sheet convenience and never a target. The player word is *freehold*.
-- **Power** (`power`, UL `Traits.md#power`, chip kind `attachment`) — Spell · bestowal · innate — the UL family. No node shape of its own yet: a cast spell mints a condition trait and `knows_spell` has no writer. A later ticket gives it a shape; the registry records the family and the gap.
+- **Power** (`power`, UL `Traits.md#power`, chip kind `attachment`) — Spell · bestowal · innate — the UL family. THR-1429 gave the kind the shape this row deferred: a **trait node whose subcategory names its class**, `bestowed` for a god's gift and `spell` for one a mortal learned. One shared definition node per spell, minted at seeding from `SPELL_TEMPLATES`, per-bearer state on the edge (THR-1395); `has_trait` says wielded and `knows_spell` says known, both pointing at the same node. `innate` stays empty — nothing mints one yet.
 - **Condition** (`condition`, UL `Traits.md#trait-category`, chip kind `attachment`) — Wounds, diseases, strains; blessings and curses as signed conditions; scars as permanent ones. Shared definitions, per-bearer state on the `has_trait` edge (THR-1395): the seeded catalogue was already one node per kind, and `spellActivation`'s `condition_inflict` — the one writer that minted a node per application — now points every bearer of a template at the same definition.
 - **Trait** (`trait`, UL `Traits.md#trait`) — The graph's vocabulary of what a thing *is*: shared definition nodes, per-bearer state on `has_trait`. Tags refine traits; they are not a general object taxonomy. THR-1395 brought the `experience` subcategory back to that rule — encounter growth and chain mastery minted one node per bearer (44 nodes for 44 bearers on a seeded medium world at tick 30) and now share one per domain and one per chain.
 - **Agreement** (`agreement`, UL `Traits.md#attachment`) — A favour owed, or a mark — a secret held as leverage. Both between two parties; both edges.

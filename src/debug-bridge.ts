@@ -1335,6 +1335,63 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1429: what a mortal can do with the Power kind — known, wielded, sealed.
+     *
+     * The three are different facts and the sheet says all three: `known` is the
+     * biography (unlimited), `wielded` is what they carry now (capped by the spell
+     * slot), and `sealed` is the subset a curse has bound. `sealed` is read off the
+     * **bearer's own conditions**, never off the spell node — a spell definition is
+     * shared by every mortal who learned it, so a per-node flag would report the
+     * whole world sealed the moment one witch was cursed.
+     *
+     * Accepts `@hero`, an agent id, id prefix, or partial name. Returns null if not found.
+     */
+    getPowers: async (agentIdOrName: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+      const match = await resolveAgentNode(agentIdOrName);
+      if (!match) return null;
+
+      const { isSpellSuppressedFor } = await import('./engine/effects/effectSuppression');
+      const state = _gameStateProvider?.();
+      const sealed = isSpellSuppressedFor(graph, match.id, state?.effectStates);
+
+      const describe = (nodeId: string) => {
+        const n = graph.getNode(nodeId);
+        return {
+          id: nodeId,
+          name: n?.name ?? nodeId,
+          powerClass: (n?.properties.subcategory as string) === 'spell' ? 'spell' as const : 'bestowal' as const,
+          spellTemplateId: (n?.properties.spellTemplateId as string | undefined) ?? null,
+          tradition: (n?.properties.sphereAffinity as string | undefined) ?? null,
+        };
+      };
+
+      const wielded = graph.getOutgoingEdges(match.id, 'has_trait')
+        .filter(e => {
+          const sub = graph.getNode(e.target)?.properties.subcategory;
+          return sub === 'spell' || sub === 'bestowed';
+        })
+        .map(e => describe(e.target));
+      const wieldedIds = new Set(wielded.map(w => w.id));
+      const known = [
+        ...wielded,
+        ...graph.getOutgoingEdges(match.id, 'knows_spell')
+          .filter(e => !wieldedIds.has(e.target))
+          .map(e => describe(e.target)),
+      ];
+
+      return {
+        actorId: match.id,
+        known,
+        wielded,
+        // Every wielded spell, when the bearer is sealed — a bestowal is not a spell
+        // and `suppress: 'spell'` does not touch it.
+        suppressed: sealed ? wielded.filter(w => w.powerClass === 'spell') : [],
+      };
+    },
+
+    /**
      * THR-479: list the ascendant's Aspects (apex milestone beyond the five
      * tiers). Returns living Aspects and mythic echoes (dead Aspects whose bond
      * endures). Empty array if the game isn't loaded or there are none.

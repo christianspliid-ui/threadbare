@@ -9,7 +9,13 @@ import type { CulturalStrengthRange } from '../data/culture-content';
 import type { AttachmentEffect } from './effects';
 import type { ContentCensusTag } from './contentCensus';
 
-export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'core' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
+/**
+ * `spell` is the Power kind's second class beside `bestowed` (THR-1429): a power a
+ * mortal *learned* rather than one a god gave. Both are trait nodes, so `use × Power`
+ * reads them through one shape; the subcategory is what tells a study apart from a gift.
+ * One shared definition node per spell (THR-1395), per-bearer state on the edge.
+ */
+export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'core' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed' | 'spell';
 
 // ─── Reputation Trait Effects (parseable payload) ──────────────────
 

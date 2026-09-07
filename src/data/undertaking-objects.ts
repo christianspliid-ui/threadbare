@@ -30,6 +30,7 @@ import type { WorldGraph } from '../engine/graph';
 import type { GraphEdge, GraphNode, NodeType, EdgeType } from '../types/graph';
 import type { GraphOp } from '../types/graphOp';
 import type {
+  MotiveKind,
   UndertakingHarmClass,
   UndertakingObjectHandle,
   UndertakingObjectTypeId,
@@ -58,24 +59,34 @@ import {
   mintTreasureMap,
 } from '../engine/strategicGraphOps';
 import { emitTrace } from '../engine/traceBuffer';
-import type { UndertakingReaderTrace } from '../types/trace';
+import type {
+  UndertakingReaderTrace,
+  PowerLearnedTrace,
+  ConditionInflictedTrace,
+  TraceEntry,
+} from '../types/trace';
 import type { QuintessenceEvent } from '../types/quintessence';
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
+import { getGroupOf } from '../engine/groups/groupQueries';
 import { raiseWarhostForce } from '../engine/armySpawning';
 import { mintCompanion, removeCompanion } from '../engine/companions';
 import { applyReputationWithDelta } from '../engine/reputation';
 import { removeTrait } from '../engine/traits';
 import { activateSpell } from '../engine/spellActivation';
+import { holdsMotive } from '../engine/undertakingMotive';
+import { instantiateReward } from '../engine/rewardPool';
+import { isSpellSuppressedFor } from '../engine/effects/effectSuppression';
 import { getSpellTemplate } from './spell-templates';
+import { SLOT_CAPS } from './attachment-slot-constants';
 import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
-import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId } from './world-objects';
+import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES } from './world-objects';
 import {
   ROUTE_IDENTITY_SUBTYPE,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
@@ -108,6 +119,21 @@ import {
   RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE,
   RUINED_SETTLEMENT_DEFAULT_MAGNITUDE,
   SPELL_SOUL_PRICE_QUINTESSENCE_SCALE,
+  // The dormant kinds I (THR-1429)
+  MOTIVE_GATE_KINDS,
+  LEARN_SPELL_CASTER_VEIL_FLOOR,
+  CASTER_NPC_ROLES,
+  CASTER_MASTERY_TRAIT_IDS,
+  LEARN_SPELL_UNALIGNED_SHELF_OPEN,
+  CONDITION_ALLY_STANDING_MIN,
+  CONDITION_TIER_CAP_BY_BAND,
+  CONDITION_TIER_CAP_DEFAULT,
+  CURSE_DURATION_TICKS_BY_BAND,
+  CURSE_DURATION_TICKS_DEFAULT,
+  CONDITION_BLESSING_TAG,
+  CONDITION_CURSE_TAG,
+  SEAL_POWER_CONDITION_ID,
+  HARM_ON_AFFLICT,
 } from './strategic-action-constants';
 
 // ─── Shapes ─────────────────────────────────────────────────────────
@@ -184,7 +210,10 @@ export interface UndertakingObjectType {
 
 // ─── Helpers shared by the types ────────────────────────────────────
 
-const HOLDER_TO_OBJECT: readonly EdgeType[] = ['owns', 'controls', 'possesses', 'leads'];
+// `has_trait` joins the holder → object list for THR-1429: a mortal bears a power the
+// same direction they possess an item, so `resolveObjectOwners` must walk it inward.
+// It only ever fires for a type that names it in `ownedVia` — today, Power alone.
+const HOLDER_TO_OBJECT: readonly EdgeType[] = ['owns', 'controls', 'possesses', 'leads', 'has_trait'];
 
 function bandTier(value: number, bands: readonly [number, number]): UndertakingObjectTier {
   return value <= bands[0] ? 1 : value <= bands[1] ? 2 : 3;
@@ -691,6 +720,248 @@ function bearersOf(graph: WorldGraph, traitId: string): string[] {
   return graph.getIncomingEdges(traitId, 'has_trait').map(e => e.source);
 }
 
+// ─── The dormant kinds I — powers and conditions (THR-1429) ─────────
+
+/** One `power_learned` / `condition_inflicted` entry. Fail-soft: tracing never throws into a semantic. */
+function emitKindTrace(entry: PowerLearnedTrace | ConditionInflictedTrace): void {
+  try {
+    emitTrace(entry as TraceEntry);
+  } catch {
+    // NFP #4 — a trace that cannot be written must not take the world write with it.
+  }
+}
+
+/**
+ * Is this mortal a caster? THR-1230 ruling 4, composed as THR-1229 recommended:
+ * a spell-weaver mastery trait, **or** a caster role, **or** Veil at the floor.
+ *
+ * Evaluated at proposal so a non-caster never sees the cell on the board (the
+ * `no_eligible_apprentice` doctrine), and again at completion so a mortal who stopped
+ * being one mid-project is refused rather than quietly allowed.
+ */
+function isCaster(graph: WorldGraph, actorId: string): boolean {
+  const node = graph.getNode(actorId);
+  if (!node) return false;
+
+  // (a) A mastery trait that names the craft.
+  for (const edge of graph.getOutgoingEdges(actorId, 'has_trait')) {
+    const id = edge.target.toLowerCase();
+    if (CASTER_MASTERY_TRAIT_IDS.some(t => id.includes(t))) return true;
+  }
+
+  // (b) A caster role. The seeded vocabulary, measured — see CASTER_NPC_ROLES.
+  const role = (str(node.properties, 'npcRole') ?? str(node.properties, 'role') ?? '').toLowerCase();
+  if (role && CASTER_NPC_ROLES.includes(role)) return true;
+
+  // (c) Veil deep enough to teach oneself. Raw 0–100 scale (measured), and a field
+  // most mortals do not carry — an absent capability block is not a caster, never a
+  // zero that accidentally clears a floor of zero.
+  const caps = node.properties.domainCapabilities as Record<string, number> | undefined;
+  const veil = caps && typeof caps.veil === 'number' ? caps.veil : null;
+  return veil !== null && veil >= LEARN_SPELL_CASTER_VEIL_FLOOR;
+}
+
+/** The spheres a mortal is aligned to, sorted, or empty when they have declared none. */
+function alignedSpheres(graph: WorldGraph, actorId: string): string[] {
+  const props = graph.getNode(actorId)?.properties ?? {};
+  const out = new Set<string>();
+
+  const alignment = props.sphereAlignment as { primary?: string; secondary?: string } | undefined;
+  if (alignment?.primary) out.add(alignment.primary);
+  if (alignment?.secondary) out.add(alignment.secondary);
+
+  const affinity = props.sphereAffinity as { scores?: Record<string, number> } | undefined;
+  for (const [sphere, score] of Object.entries(affinity?.scores ?? {})) {
+    if (typeof score === 'number' && score > 0) out.add(sphere);
+  }
+
+  return [...out].sort();
+}
+
+/** The `spell`-class definition nodes in the world, sorted by id (NFP #3 — no draw anywhere here). */
+function spellDefinitions(graph: WorldGraph): GraphNode[] {
+  return graph.getNodesByType('trait')
+    .filter(n => n.properties.subcategory === 'spell')
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/** Which spell definition nodes an actor already knows (`knows_spell`) or wields (`has_trait`). */
+function spellsOfActor(graph: WorldGraph, actorId: string): { known: Set<string>; wielded: Set<string> } {
+  const known = new Set<string>();
+  const wielded = new Set<string>();
+  for (const e of graph.getOutgoingEdges(actorId, 'knows_spell')) known.add(e.target);
+  for (const e of graph.getOutgoingEdges(actorId, 'has_trait')) {
+    if (graph.getNode(e.target)?.properties.subcategory === 'spell') {
+      wielded.add(e.target);
+      // Wielding without knowing cannot happen through `learn_spell`, but a world
+      // loaded from elsewhere is not this cell's to police: treat wielded as known.
+      known.add(e.target);
+    }
+  }
+  return { known, wielded };
+}
+
+/**
+ * Whether two mortals are allies — the blessing half of the sign.
+ *
+ * Three readings in order, the first that answers wins: the same faction, the same
+ * company, or standing at or above `CONDITION_ALLY_STANDING_MIN`. Self is handled by
+ * the caller, because blessing oneself needs no test at all.
+ */
+function isAlly(graph: WorldGraph, actorId: string, targetId: string): boolean {
+  const actorFaction = actorFactionId(graph, actorId);
+  if (actorFaction && actorFaction === actorFactionId(graph, targetId)) return true;
+
+  // Compare ids, not node objects — `getGroupOf` returns a fresh handle per call.
+  const actorGroup = getGroupOf(graph, actorId)?.id;
+  if (actorGroup && actorGroup === getGroupOf(graph, targetId)?.id) return true;
+
+  for (const e of graph.getOutgoingEdges(actorId, 'reputation_with')) {
+    if (e.target !== targetId) continue;
+    const score = num(e.properties, 'score');
+    if (score !== null && score >= CONDITION_ALLY_STANDING_MIN) return true;
+  }
+  return false;
+}
+
+/** The first motive the actor holds against the target, or null. The curse half of the sign. */
+function motiveAgainst(graph: WorldGraph, actorId: string, targetId: string): MotiveKind | null {
+  for (const motive of MOTIVE_GATE_KINDS) {
+    if (holdsMotive(graph, actorId, targetId, motive)) return motive;
+  }
+  return null;
+}
+
+export type ConditionSign = 'blessing' | 'curse' | 'seal';
+
+/**
+ * The sign of a condition the actor would put on the target — the whole story rule of
+ * `create × Condition`, and the gate (THR-1397).
+ *
+ * You bless yourself and your friends; you curse someone you have a reason to curse;
+ * and a stranger is **refused**, deliberately, rather than being handed some neutral
+ * third thing. Returns `null` for the stranger case so the caller can trace `no_sign`.
+ */
+export function resolveConditionSign(
+  graph: WorldGraph,
+  actorId: string,
+  targetId: string,
+): { sign: 'blessing' | 'curse'; motive?: MotiveKind } | null {
+  if (actorId === targetId) return { sign: 'blessing' };
+  if (isAlly(graph, actorId, targetId)) return { sign: 'blessing' };
+  const motive = motiveAgainst(graph, actorId, targetId);
+  if (motive) return { sign: 'curse', motive };
+  return null;
+}
+
+/** The condition-template pool for a sign, as catalog tags rather than an id list (NFP #1). */
+function conditionPool(graph: WorldGraph, tag: string, tierCap: number): GraphNode[] {
+  return graph.getNodesByType('trait')
+    .filter(n => {
+      if (n.properties.subcategory !== 'condition') return false;
+      const tags = n.properties.tags;
+      if (!Array.isArray(tags) || !tags.includes(tag)) return false;
+      const tier = num(n.properties, 'tier');
+      return tier === null || tier <= tierCap;
+    })
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/**
+ * Pick one template from a pool: prefer one tagged with a Reach the actor leads in,
+ * else the pool's first by id. A filter, a sort and a first — no draw (NFP #3).
+ */
+function pickConditionTemplate(graph: WorldGraph, actorId: string, pool: readonly GraphNode[]): GraphNode | null {
+  if (pool.length === 0) return null;
+  const caps = graph.getNode(actorId)?.properties.domainCapabilities as Record<string, number> | undefined;
+  const leading = Object.entries(caps ?? {})
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 2)
+    .map(([reach]) => `#${reach}`);
+  return pool.find(n => {
+    const tags = n.properties.tags;
+    return Array.isArray(tags) && leading.some(t => tags.includes(t));
+  }) ?? pool[0];
+}
+
+/** The tier cap and curse duration for the band the completion landed on. */
+function conditionTierCap(outcome: string | undefined): number {
+  return (outcome ? CONDITION_TIER_CAP_BY_BAND[outcome] : undefined) ?? CONDITION_TIER_CAP_DEFAULT;
+}
+
+function curseDurationTicks(outcome: string | undefined): number {
+  return (outcome ? CURSE_DURATION_TICKS_BY_BAND[outcome] : undefined) ?? CURSE_DURATION_TICKS_DEFAULT;
+}
+
+/**
+ * Put one condition on one mortal — the shared body of `inflict_condition` and
+ * `seal_power`.
+ *
+ * The mint is the catalog's own (`instantiateReward`, the `trait` branch), so the
+ * conditions a mortal inflicts are exactly the conditions encounters already hand out
+ * and every live reader — decay, the predicates, the walkers, the cure — reads them
+ * unchanged. What this adds on top is the two edge properties that make an inflicted
+ * condition legible as somebody's *doing*: the `sign` and the hand that dealt it.
+ */
+function inflictCondition(
+  ctx: ObjectVerbContext,
+  args: {
+    targetId: string;
+    templateId: string;
+    sign: ConditionSign;
+    motive?: MotiveKind;
+    ticksRemaining: number | null;
+    op: string;
+  },
+): GraphOpResult {
+  const { targetId, templateId, sign, motive, ticksRemaining, op } = args;
+
+  const minted = instantiateReward(ctx.graph, templateId, targetId, ctx.tick);
+  if (!minted) {
+    emitKindTrace({
+      category: 'condition_inflicted', tick: ctx.tick, actorId: ctx.actorId, targetId,
+      templateId, sign, ...(motive ? { motive } : {}), ticksRemaining: 0, refused: 'mint_failed',
+      summary: `${templateId} would not take on ${targetId}`,
+    } as ConditionInflictedTrace);
+    return fail(op, 'mint_failed');
+  }
+
+  // Per-bearer state on the edge (THR-1395) — the duration the band decided, the sign,
+  // and the culprit. `inflictedBy` is what lets the sheet say whose doing it was and
+  // what the grievance lane reads a *seen* culprit off.
+  const edge = ctx.graph.getEdge(minted.edgeId);
+  if (edge) {
+    ctx.graph.updateEdge(minted.edgeId, {
+      properties: {
+        ...edge.properties,
+        sign,
+        inflictedBy: ctx.actorId,
+        ...(motive ? { inflictedMotive: motive } : {}),
+        ...(ticksRemaining !== null ? { ticksRemaining, totalTicks: ticksRemaining } : {}),
+      },
+    });
+  }
+
+  emitKindTrace({
+    category: 'condition_inflicted', tick: ctx.tick, actorId: ctx.actorId, targetId,
+    templateId, sign, ...(motive ? { motive } : {}),
+    ticksRemaining: ticksRemaining ?? 0,
+    summary: sign === 'blessing'
+      ? `${targetId} walks under ${minted.displayName}`
+      : `${minted.displayName} is on ${targetId}`,
+  } as ConditionInflictedTrace);
+
+  // A curse and a seal are harms; a blessing is not. The class rides the op result so
+  // the completion site writes the outcome node for one and not the other — the sign
+  // is decided per completion, and a template-level `harmClass` could not say it.
+  return {
+    success: true,
+    op,
+    createdId: minted.instanceId,
+    ...(sign === 'blessing' ? {} : { harmClass: HARM_ON_AFFLICT, victimAgentId: targetId }),
+  };
+}
+
 // ─── Places ─────────────────────────────────────────────────────────
 
 const AREA: UndertakingObjectType = {
@@ -1064,19 +1335,186 @@ const ITEM: UndertakingObjectType = {
 const POWER: UndertakingObjectType = {
   id: 'power',
   displayName: 'Power',
-  shape: { nodeType: 'trait', discriminator: isTraitOfSubcategory(['bestowed']) },
-  ownedVia: [],
+  // THR-1429: the Power kind's shape, which the world-object registry deferred. Both
+  // classes are trait nodes — `bestowed` is a god's gift, `spell` one a mortal learned —
+  // so `use` reads them through one discriminator and never has to know which it got.
+  shape: { nodeType: 'trait', discriminator: isTraitOfSubcategory(POWER_SUBCATEGORIES) },
+  // Who holds a power: the bearer's `has_trait` edge. Empty until THR-1429, because
+  // `use` is an `own` cell and never had to ask. `destroy` is an `other` cell, so with
+  // no holder edge the ownership filter matched nobody and the motive gate found no
+  // owner to hold a motive against — the cell enumerated zero targets, always.
+  ownedVia: ['has_trait'],
   tierOf: () => 2,
   lexicon: 'item',
-  harmOnDestroy: 'property_destroyed',
+  // Sealing another's art is not property damage — nothing of theirs is rubble; a
+  // thing was put *on* them, and the drive that answers it is the affliction's.
+  harmOnDestroy: HARM_ON_AFFLICT,
   verbs: {
-    // Casting: the spell op, its costs and its backlash exist; a bestowed power that
-    // names its spell template is cast by the bearer. A power with no template is
-    // refused — the Power kind has no node shape of its own yet (dormant), and this
-    // cell measures how often one can be cast at all.
+    /**
+     * `create × Power` — a scholar learns a spell (THR-1429, THR-1397's tier-one work).
+     *
+     * The first writer of `knows_spell`, and the cell that wakes the Power kind. Known
+     * and wielded are two different facts (THR-1231): the `knows_spell` edge is the
+     * biography and is unlimited, the `has_trait` edge is what the mortal is carrying
+     * now and is capped by `SLOT_CAPS.spell`. Learning past the cap is not a failure —
+     * it is a spell known and not carried, and the trace says so rather than refusing.
+     */
+    create: (ctx) => {
+      const op = 'learn_spell';
+      const traceRefusal = (refused: PowerLearnedTrace['refused'], spellTemplateId = '', tradition = '') => {
+        emitKindTrace({
+          category: 'power_learned', tick: ctx.tick, actorId: ctx.actorId,
+          spellTemplateId, tradition, wielded: false, refused,
+          summary: `${ctx.actorId} learns nothing: ${refused}`,
+        } as PowerLearnedTrace);
+        return fail(op, refused ?? 'refused');
+      };
+
+      if (!ctx.graph.getNode(ctx.actorId)) return fail(op, 'actor_not_found');
+      if (!isCaster(ctx.graph, ctx.actorId)) return traceRefusal('not_a_caster');
+
+      const definitions = spellDefinitions(ctx.graph);
+      // A world seeded before this ship has no definition nodes. Refuse and say so —
+      // never mint one per bearer to paper over it (THR-1395).
+      if (definitions.length === 0) return traceRefusal('no_definition');
+
+      // The tradition shelf: the actor's aligned spheres first. An unaligned mortal —
+      // measured as ~99% of them — studies from the open shelf rather than from
+      // nothing, which is what keeps the cell from being dead on arrival.
+      const aligned = alignedSpheres(ctx.graph, ctx.actorId);
+      const shelf = aligned.length > 0
+        ? definitions.filter(n => aligned.includes(String(n.properties.sphereAffinity)))
+        : (LEARN_SPELL_UNALIGNED_SHELF_OPEN ? definitions : []);
+
+      const { known, wielded } = spellsOfActor(ctx.graph, ctx.actorId);
+      const pick = shelf.find(n => !known.has(n.id));
+      if (!pick) {
+        // Told apart on purpose: a shelf that had nothing on it and a shelf whose every
+        // spell is already learned are different facts about the same mortal.
+        return traceRefusal(shelf.length === 0 ? 'no_spell_to_learn' : 'already_known');
+      }
+
+      const spellTemplateId = str(pick.properties, 'spellTemplateId') ?? pick.id;
+      const tradition = str(pick.properties, 'sphereAffinity') ?? 'unaligned';
+
+      // Known — always, and first. The biography is the thing this cell exists to write.
+      const knowsEdgeId = `knows_spell_${ctx.actorId}_${pick.id}`;
+      ctx.graph.addEdge({
+        id: knowsEdgeId,
+        source: ctx.actorId,
+        target: pick.id,
+        type: 'knows_spell',
+        properties: { learnedTick: ctx.tick, sphereAffinity: tradition, source: op },
+      });
+
+      // Wielded — only if a slot is free. The cap is the attachment system's own
+      // (`SLOT_CAPS.spell`); this cell adds no cap logic of its own.
+      const freeSlot = wielded.size < (SLOT_CAPS.spell ?? 0);
+      if (freeSlot) {
+        ctx.graph.addEdge({
+          id: `has_trait_${ctx.actorId}_${pick.id}`,
+          source: ctx.actorId,
+          target: pick.id,
+          type: 'has_trait',
+          properties: {
+            level: 1,
+            acquiredTick: ctx.tick,
+            ticksRemaining: null,
+            source: op,
+            visibility: 'discoverable',
+            modifiers: {},
+          },
+        });
+      }
+
+      emitKindTrace({
+        category: 'power_learned', tick: ctx.tick, actorId: ctx.actorId,
+        spellTemplateId, tradition, wielded: freeSlot,
+        summary: freeSlot
+          ? `${ctx.actorId} has ${pick.name} now`
+          : `${ctx.actorId} has ${pick.name} by heart, with no room to carry it`,
+      } as PowerLearnedTrace);
+
+      // The **edge**, not the node. What this undertaking created is one mortal's
+      // knowledge of a spell; the definition node existed before them and is shared
+      // with every other mortal who ever learns it. Reporting the node id here handed
+      // `christenCompletedWork` a world-shared node to rename, and one priest's study
+      // renamed Crystal Gate to "The Standing Quarter of Morthane" for everybody.
+      return { success: true, op, createdId: knowsEdgeId };
+    },
+
+    /**
+     * `destroy × Power` — sealing a rival's art (THR-1429, THR-1397: "a curse-class
+     * condition that suppresses the power, motive-gated").
+     *
+     * The power is **not** removed: it stays known and stays wielded, and the mortal
+     * simply cannot call on it while the seal holds. That is what makes curing the
+     * condition (`destroy × Condition`, already live) the counter-play, and it ships
+     * in the same commit for free.
+     *
+     * `destroy` is already motive-gated by verb, so the licence is checked before this
+     * ever runs — the gate is not re-implemented here.
+     */
+    destroy: (ctx) => {
+      const op = 'seal_power';
+      const power = nodeOf(ctx.graph, ctx.handle);
+      if (!power) return fail(op, 'power_not_found');
+
+      // Which bearer the seal lands on. A spell definition node is **shared**, so its
+      // bearer set is every mortal in the world who wields that spell — and the motive
+      // gate is satisfied by *any* one of them holding a motive against the actor. Left
+      // there, a witch with a grudge against one Veilwalker could seal a different,
+      // innocent Veilwalker and the gate would still read as licensed.
+      //
+      // So the target is chosen to agree with the licence: the named target if it is
+      // genuinely a bearer, else a bearer the actor actually holds a motive against,
+      // and only then anyone else. Sorted, so the pick is reproducible (NFP #3).
+      const bearers = bearersOf(ctx.graph, power.id).filter(b => b !== ctx.actorId).sort();
+      const targetId = (ctx.targetNodeId && bearers.includes(ctx.targetNodeId))
+        ? ctx.targetNodeId
+        : (bearers.find(b => motiveAgainst(ctx.graph, ctx.actorId, b) !== null) ?? bearers[0]);
+      if (!targetId) {
+        emitKindTrace({
+          category: 'condition_inflicted', tick: ctx.tick, actorId: ctx.actorId, targetId: '',
+          templateId: SEAL_POWER_CONDITION_ID, sign: 'seal', ticksRemaining: 0,
+          refused: 'power_not_wielded',
+          summary: `nobody is carrying ${power.name ?? power.id} to seal`,
+        } as ConditionInflictedTrace);
+        return fail(op, 'power_not_wielded');
+      }
+      if (!ctx.graph.getNode(targetId)) return fail(op, 'target_gone');
+
+      return inflictCondition(ctx, {
+        targetId,
+        templateId: SEAL_POWER_CONDITION_ID,
+        sign: 'seal',
+        motive: motiveAgainst(ctx.graph, ctx.actorId, targetId) ?? undefined,
+        // The seal and the condition carrying it run out together.
+        ticksRemaining: curseDurationTicks(ctx.outcome),
+        op,
+      });
+    },
+
+    // Casting: the spell op, its costs and its backlash exist; a power that
+    // names its spell template is cast by the bearer — a bestowal a god gave, or
+    // (THR-1429) a spell the mortal learned. A power with no template is refused.
     use: (ctx) => {
       const node = nodeOf(ctx.graph, ctx.handle);
       if (!node) return fail('activate_spell', 'power_not_found');
+
+      // The seal's reader (THR-1429). Read off the **bearer**, not off the power: a
+      // spell definition node is shared by every mortal who learned it, so a flag on
+      // the node would silence Veilwalk for the whole world the moment one witch was
+      // cursed. `isSpellSuppressedFor` asks the actor's own conditions instead.
+      if (isSpellSuppressedFor(ctx.graph, ctx.actorId, ctx.state.effectStates)) {
+        emitReaderTrace(ctx, {
+          cellId: 'cell.use.power', reader: 'spell_suppressed', objectId: node.id,
+          refused: 'power_suppressed',
+          summary: `${node.name ?? node.id} will not answer — ${ctx.actorId}'s art is bound`,
+        });
+        return fail('activate_spell', 'power_suppressed');
+      }
+
       const spellId = str(node.properties, 'spellTemplateId') ?? str(node.properties, 'spellId') ?? node.id;
       const spell = getSpellTemplate(spellId);
       if (!spell) return fail('activate_spell', `no_spell_template:${spellId}`);
@@ -1129,9 +1567,71 @@ const CONDITION: UndertakingObjectType = {
   lexicon: 'item',
   harmOnDestroy: 'property_destroyed',
   verbs: {
+    /**
+     * `create × Condition` — one **signed** cell (THR-1429, THR-1397 verbatim: "Against
+     * another it is a curse … For oneself or an ally it is a blessing, the same cell
+     * un-gated").
+     *
+     * The first cell in the game whose object is made *against a person*. The sign is
+     * read from the actor's relation to the target and is itself the gate: you bless
+     * yourself and your friends, you curse someone you have a reason to curse, and a
+     * stranger is refused. There is deliberately no neutral third outcome.
+     *
+     * Its counter-play — curing — is the `destroy` semantic directly below, live since
+     * before this cell existed.
+     */
+    create: (ctx) => {
+      const op = 'inflict_condition';
+      // A `create` cell's handle is the **site**: for a condition, `CREATE_SITE_RULE`
+      // makes that a co-located mortal, so the site and the target are the same node.
+      const targetId = ctx.targetNodeId ?? nodeIdOf(ctx.handle);
+      if (!targetId || !ctx.graph.getNode(targetId)) {
+        emitKindTrace({
+          category: 'condition_inflicted', tick: ctx.tick, actorId: ctx.actorId, targetId: targetId ?? '',
+          templateId: '', sign: 'blessing', ticksRemaining: 0, refused: 'target_gone',
+          summary: 'the one it was meant for is gone',
+        } as ConditionInflictedTrace);
+        return fail(op, 'target_gone');
+      }
+
+      const signed = resolveConditionSign(ctx.graph, ctx.actorId, targetId);
+      if (!signed) {
+        emitKindTrace({
+          category: 'condition_inflicted', tick: ctx.tick, actorId: ctx.actorId, targetId,
+          templateId: '', sign: 'blessing', ticksRemaining: 0, refused: 'no_sign',
+          summary: `${ctx.actorId} has no reason to bless or curse ${targetId}`,
+        } as ConditionInflictedTrace);
+        return fail(op, 'no_sign');
+      }
+
+      const tag = signed.sign === 'blessing' ? CONDITION_BLESSING_TAG : CONDITION_CURSE_TAG;
+      const pool = conditionPool(ctx.graph, tag, conditionTierCap(ctx.outcome));
+      const template = pickConditionTemplate(ctx.graph, ctx.actorId, pool);
+      if (!template) {
+        emitKindTrace({
+          category: 'condition_inflicted', tick: ctx.tick, actorId: ctx.actorId, targetId,
+          templateId: '', sign: signed.sign, ticksRemaining: 0, refused: 'no_template',
+          summary: `nothing in the ${tag} pool this band could reach`,
+        } as ConditionInflictedTrace);
+        return fail(op, 'no_template');
+      }
+
+      return inflictCondition(ctx, {
+        targetId,
+        templateId: template.id,
+        sign: signed.sign,
+        motive: signed.motive,
+        // A gift is what it is: a blessing keeps the template's own duration. A curse
+        // is scaled by how well the work went.
+        ticksRemaining: signed.sign === 'curse' ? curseDurationTicks(ctx.outcome) : null,
+        op,
+      });
+    },
+
     // Curing: the removal funnel the expiry phase already uses, taken as work — a
     // healer's undertaking. Conditions are one node per bearer today (THR-1395), so
-    // removing the edge is removing the condition.
+    // removing the edge is removing the condition. Since THR-1429 this is also how a
+    // sealed power is freed early: the seal is a condition, so curing it lifts it.
     destroy: (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
       if (!nodeId || !ctx.graph.getNode(nodeId)) return fail('cure_condition', 'condition_not_found');

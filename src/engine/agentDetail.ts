@@ -408,6 +408,12 @@ export interface AgentInfoCardData {
   /** Places and resources this agent holds (THR-1297) — their `owns` edges' faces. */
   holdings?: AttachmentFullEntry[];
   /**
+   * Spells learned but not currently carried (THR-1429). Known is the biography and
+   * is unlimited; wielded is capped and appears in `giftsAndBurdens`. A sheet showing
+   * only the carried ones would say a spell dropped for want of a slot was forgotten.
+   */
+  knownSpells?: import('./agentAttachments').KnownSpellEntry[];
+  /**
    * Wealth (0–100) and what last moved it (THR-1428). The sheet renders the *tier
    * word*, never the number (UI Law IV): the raw value travels because the tier table
    * is the one authority on where the words fall.
@@ -1519,6 +1525,9 @@ export function getAgentInfoCard(
     const giftsAndBurdens = [...attachments.powers, ...attachments.agreements];
     if (giftsAndBurdens.length > 0) {
       card.giftsAndBurdens = giftsAndBurdens;
+    }
+    if (attachments.knownSpells.length > 0) {
+      card.knownSpells = attachments.knownSpells;
     }
 
     // Expose axiological profile for archetype epithet derivation (intimate+)
