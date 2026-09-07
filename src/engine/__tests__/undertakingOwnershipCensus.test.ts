@@ -119,7 +119,13 @@ describe(`the ownership census on seed ${SEED}, small, tick ${TICKS}`, () => {
 
   it('Route — the create cell mints the identity node the object is, and the route cells then enumerate it', () => {
     const ROUTE = getUndertakingObjectType('route')!;
-    expect(handleIds('route')).toEqual([]);
+    // THR-1437: worldgen now founds a lane from each culture's capital and mints its
+    // identity node, so the Route population is no longer empty at tick 0. The claim
+    // this test makes is about the *create cell* — that it adds the object it says it
+    // does — so the assertion is a delta against the world's own starting set, not the
+    // vanished `[]` it used to be able to assume.
+    const before = handleIds('route');
+    expect(before.length).toBeGreaterThanOrEqual(1);
     const actor = g.getNodesByType('actor').find(isAutonomousDecisionActor)!;
     const settlements = getLocationNodes(g).filter(n => resolveLocationToHex(g, n.id));
     let near: GraphNode | undefined;
@@ -145,6 +151,7 @@ describe(`the ownership census on seed ${SEED}, small, tick ${TICKS}`, () => {
     expect(identity?.properties.locationSubtype).toBe(ROUTE_IDENTITY_SUBTYPE);
     expect(identity?.properties.routeSourceId).toBe(near!.id);
     expect(identity?.properties.routeTargetId).toBe(far!.id);
-    expect(handleIds('route')).toEqual([identity!.id]);
+    expect(before).not.toContain(identity!.id);
+    expect(handleIds('route')).toEqual([...before, identity!.id].sort());
   });
 });

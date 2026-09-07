@@ -863,9 +863,16 @@ export function createLocation(
   locationSubtype: string,
   tick: number,
   extraProperties: Record<string, unknown> = {},
+  /**
+   * A caller-derived id for a node whose identity is not its hex — a route's identity
+   * node is keyed on its two ends, so two lanes out of one capital on one tick are two
+   * nodes rather than one `location_already_exists` (THR-1437). Still deterministic:
+   * the caller derives it from ids the same run mints the same way.
+   */
+  idOverride?: string,
 ): GraphOpResult {
   try {
-    const nodeId = `loc_${locationSubtype}_${hex.col}_${hex.row}_${tick}`;
+    const nodeId = idOverride ?? `loc_${locationSubtype}_${hex.col}_${hex.row}_${tick}`;
     if (graph.getNode(nodeId)) {
       return { success: false, op: 'create_location', error: 'location_already_exists' };
     }
@@ -888,14 +895,18 @@ export function createLocation(
 
     // `constructed_by` is the edge the world already reads to say who raised a thing
     // — the same one `createSublocation` writes. A founded place with no builder edge
-    // would be a settlement nobody founded.
-    graph.addEdge({
-      id: `constructed_by_${nodeId}_${actorId}`,
-      source: nodeId,
-      target: actorId,
-      type: 'constructed_by',
-      properties: { tick },
-    });
+    // would be a settlement nobody founded — unless nobody did: worldgen seeds lanes
+    // and their identity nodes before any mortal acts (`actorId` 'worldgen',
+    // THR-1437), and an edge to a node that does not exist threw the whole mint away.
+    if (graph.getNode(actorId)) {
+      graph.addEdge({
+        id: `constructed_by_${nodeId}_${actorId}`,
+        source: nodeId,
+        target: actorId,
+        type: 'constructed_by',
+        properties: { tick },
+      });
+    }
 
     return { success: true, op: 'create_location', createdId: nodeId };
   } catch (e) {

@@ -10,7 +10,8 @@
       "section": "Manual",
       "sources": [
         "src/engine/ascendantBeat*.ts",
-        "src/engine/worldGeneration*.ts",
+        "src/engine/worldSeed.ts",
+        "src/engine/seedLivingWorld.ts",
         "src/types/remembrance.ts",
         "src/data/archetype-content.ts",
         "src/data/backstory-content.ts"

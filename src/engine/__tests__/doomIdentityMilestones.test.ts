@@ -43,8 +43,17 @@ describe('evaluateIdentityMilestones', () => {
       ascendantArchetype, 'Test-Runner', cosmology, SEED, cols, rows, archetype,
     );
 
+    // The trace buffer is a 2000-entry ring that evicts the oldest entry per emit, and
+    // a 30-tick run at the seeded protagonist count THR-1437 raised emits well past
+    // 2000 — so the `doom_milestone` trace written at the ~tick-20 crossing is long
+    // gone by the time the loop ends. Harvest per tick rather than reading the ring at
+    // the end; the claim under test is that the crossing *emitted*, not that the ring
+    // still holds it (the standing trace-harvest rule).
+    const milestoneTraces: ReturnType<typeof getTraces>[number][] = [];
     for (let t = 0; t < TICKS; t++) {
       state = runTick(state);
+      milestoneTraces.push(...getTraces().filter((tr) => tr.category === 'doom_milestone'));
+      clearTraces();
     }
 
     const matrix = state.doomIdentityMatrix;
@@ -64,8 +73,7 @@ describe('evaluateIdentityMilestones', () => {
       expect(secondMilestone.triggered).toBeFalsy();
     }
 
-    // Trace emitted for the crossing
-    const milestoneTraces = getTraces().filter((t) => t.category === 'doom_milestone');
+    // Trace emitted for the crossing (harvested per tick above)
     expect(milestoneTraces.length).toBeGreaterThanOrEqual(1);
     expect(milestoneTraces[0].summary).toContain(firstMilestone.label);
   }, MILESTONE_SMOKE_TIMEOUT_MS);

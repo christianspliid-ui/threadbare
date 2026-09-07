@@ -63,6 +63,7 @@ import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits } from './effects/effectQueries';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
+import { seedLivingWorld, formatLivingWorldSummary } from './seedLivingWorld';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1850,6 +1851,28 @@ export function seedWorld(
   // reads faction `reachWeights` over `located_at` edges only, and this writes
   // `member_of` — so nothing between the old and new positions observes the difference.
   assignFactionsToExistingNpcs(graph, factionLocationMap);
+
+  // ── Living world — seeded objects and relationships (THR-1437) ────────
+  // Placed *here*, at the very tail, for the same reason the second genome pass is:
+  // this is the first point where every input exists. The passes read cultures
+  // (~500 lines up), the settlement promotion pass's capitals, faction definitions and
+  // their home Locations (~180 lines up), the reward catalog nodes `seedAttachments`
+  // adds, and the `controls` edges `ensureFactionControlAtHomeLocations` completes.
+  // Anywhere earlier and one of those is empty.
+  const livingWorld = seedLivingWorld(graph, {
+    seed,
+    locationIds,
+    individualIds,
+    factionIds,
+    factionDefIds,
+    cultureIds,
+    locationCultureMap,
+  });
+  // A garrison captain is a protagonist by construction — capabilities, spotlight tier,
+  // a name and a command. Folded in before the return so every consumer of
+  // `individualIds` (ambitions, the roster, the census) sees them as what they are.
+  individualIds.push(...livingWorld.captainIds);
+  console.log(formatLivingWorldSummary(livingWorld));
 
   if (genomeNpcResult.npcIds.length > 0) {
     console.log(

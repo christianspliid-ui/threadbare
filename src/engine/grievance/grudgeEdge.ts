@@ -24,8 +24,13 @@ import type { WorldGraph } from '../graph';
  * classifies these values to decide whether a destroy verb is licensed, and a typo in a
  * free-form cause would silently read as "no grudge" — a motive gate that fails open on
  * a misspelling is worse than one that fails closed on an unknown enum.
+ *
+ * `'old_quarrel'` is the one member deliberately **absent** from `GRUDGE_PROVENANCE`
+ * (THR-1437): a quarrel the world was seeded with is history, not an injury anybody
+ * saw, so the motive gate must read it as `rivalry` — which licenses lower, seize and
+ * destroy on things — and never as `grudge`, which licenses the plot.
  */
-export type GrudgeCause = 'group_engagement' | 'grievance_cooled';
+export type GrudgeCause = 'group_engagement' | 'grievance_cooled' | 'old_quarrel';
 
 export interface WriteGrudgeOptions {
   /** The event node the grudge traces back to, when one exists. */
