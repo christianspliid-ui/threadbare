@@ -923,7 +923,7 @@ export const SUBORNED_WARBAND_DISSOLUTION_REASON = 'betrayal' as const;
 
 
 export type UndertakingModel = 'templates' | 'cells';
-export const UNDERTAKING_MODEL: UndertakingModel = 'templates';
+export const UNDERTAKING_MODEL: UndertakingModel = 'cells'; // PROTO THR-1402: throwaway branch, never merged
 
 /** The closed verb set. `control` resolves to `claim` or `seize` by ownership. */
 export const UNDERTAKING_VERBS: readonly UndertakingVerb[] = ['create', 'change', 'use', 'control', 'destroy', 'observe'];

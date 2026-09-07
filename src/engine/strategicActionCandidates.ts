@@ -59,6 +59,7 @@ import {
 import { ownershipOf, ownershipSatisfies, readObjectTier } from './undertakingResolver';
 import { getCellTemplate } from '../data/undertaking-cells';
 import { UNDERTAKING_MODEL, UNDERTAKING_DEFAULT_TIER, type UndertakingModel } from '../data/strategic-action-constants';
+import { deriveDivisionCells, rotateForTick } from './divisionRule'; // PROTO THR-1402
 import type { AmbitionStrategicProfile as StrategicProfileForCells } from '../types/strategicAction';
 import { evaluateMotiveGate } from './undertakingMotive';
 
@@ -223,7 +224,11 @@ export function generateStrategicCandidates(
     const profile = ambitionTemplate.strategicProfile;
     let ambitionCandidateCount = 0;
 
-    const workIds = profileWorkIds(profile, model);
+    // PROTO THR-1402: under the cells model, the division rule derives the spread and
+    // the hand list is added on top (THR-1398: overrides add, never replace).
+    const workIds = model === 'cells'
+      ? [...new Set([...rotateForTick(deriveDivisionCells(actor, ambitionTemplate.category), tick, actorId), ...profileWorkIds(profile, model)])]
+      : profileWorkIds(profile, model);
     for (const templateId of workIds) {
       if (ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
       if (candidates.length >= STRATEGIC_MAX_CANDIDATES_PER_ACTOR) break;
