@@ -133,6 +133,7 @@ const ECONOMY = 'Mortal Economy & Prosperity';
 const RUINS = 'Ruins, Clues & Delves';
 const TRAITS = 'Personality & Emergent Traits';
 const PROGRESSION = 'Ascendant Beats & Progression';
+const OMENS = 'Omens & Atmospheric Pressure';
 
 export const CONTRACTS: readonly Contract[] = [
   // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
@@ -2248,6 +2249,31 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-02',
       evidence:
         'THR-1299 slice 3. `MomentCard.tsx` renders the oldest unacknowledged interrupt-tier `UndertakingMomentRecord`; GameView fills its `pendingMoment` slot only while no other interrupt is open and renders the card only while that stays true, so collation (encounter first, never two modals) holds by construction rather than by a priority table. The card is in the interrupt registry (`interruptModalOpen`, `getDebugOpenModals` → `MomentCard`) so it auto-pauses with its cause named on the face. Acknowledge routes through `acknowledgeUndertakingMoment`, the queue\'s single writer, and traces `acknowledged`; the pop traces `opened`. Non-vacuous by `src/components/Game/__tests__/GameView-momentCard.test.tsx`, which renders the real GameView, follows every mortal with a live undertaking through the debug lever, drives real ticks through the tick bridge until an interrupt-tier record exists, and asserts the card is in `getDebugOpenModals`, that acknowledging it flips the record through the live state provider, and that the `opened` / `acknowledged` traces fired; plus `momentCardModel.test.ts` (chips are state-backed per class, the named-loss complication, the divine-hand chip, the forward drive link off a real outcome node, the action slot gated on a live project) and `MomentCard.test.tsx` (every class renders without numerals, acknowledge, the two-beat Inspire arm, an unaffordable verb fails inline). Browser proof at 1920×1080 on `?view=game&seeded&size=medium` via `__DEBUG.followAgent` + `__DEBUG.tick`, recorded on the closing PR.',
+    },
+  },
+  {
+    id: 'undertaking-outcomes-cast-omens',
+    producerSystem: AMBITIONS,
+    consumerSystem: OMENS,
+    intent:
+      'A mortal’s work casts omens: a razing, a seizure, a killing or a curse done by mortal hands becomes a portent the world carries — a chronicle line and a pressure on what happens next near the place — instead of the foreshadowing layer reading only the doom clock and the god’s own weather.',
+    mechanism: {
+      kind: 'event',
+      symbols: ['undertaking_outcome', 'castUndertakingPortent', 'portendedTick', 'OMEN_UNDERTAKING_LOOKBACK_TICKS'],
+      module: 'src/engine/phaseOmenAgenda.ts',
+    },
+    writeSites: [
+      'src/engine/grievance/undertakingOutcomeNode.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    readSites: [
+      'src/engine/phaseOmenAgenda.ts',
+      'src/data/game-config.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        'THR-1432. `castUndertakingPortent` (phase 1.7, last step) weighs every `undertaking_outcome` node within `OMEN_UNDERTAKING_LOOKBACK_TICKS` by its `harmMagnitude` × `OMEN_UNDERTAKING_WEIGHT_BY_HARM` × the attention term (`OMEN_UNDERTAKING_FOLLOWED_WEIGHT` when the god follows the culprit or the victim), casts the top one as an `EmittedOmen` carrying `provenance.outcomeNodeId` and the deed in words, stamps the node `portendedTick`, and appends a `narrative` chronicle event. Non-vacuous by `src/engine/__tests__/phaseOmenAgenda.undertakingPortent.test.ts` (nodes written by the real writer `createUndertakingOutcomeNode`; lookback, attention in both directions, victim follow, heavier harm, once-only, one-per-tick, seeded tie) and `src/engine/__tests__/undertakingPortent.live.test.ts` (heavy lane: seed 42 medium, a destroy × Location started through the review lever completes and the next tick’s `state.emittedOmens` names its node). Headless CLI run recorded on the ticket.',
     },
   },
   {

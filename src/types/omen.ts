@@ -11,6 +11,7 @@ import type { SphereName } from './index';
 import type { ContentCensusTag } from './contentCensus';
 import type { DoomClockArchetype } from './doomClock';
 import type { EncounterType } from './encounter';
+import type { UndertakingHarmClass } from './strategicAction';
 
 // ─── Category ───────────────────────────────────────────────────
 
@@ -139,6 +140,29 @@ export type EmittedOmenScope =
   | { readonly kind: 'regional'; readonly regionId: string }
   | { readonly kind: 'local'; readonly hexCol: number; readonly hexRow: number; readonly radius?: number };
 
+/**
+ * Why an emitted omen exists when a mortal's work cast it (THR-1432).
+ *
+ * Carried on the omen so a surface can say *what* it portends — the outcome node is
+ * the machine handle, `deed` the words. Absent on every omen an encounter aftermath
+ * emitted; those name their source through `sourceEncounterId` as before.
+ */
+export interface EmittedOmenProvenance {
+  readonly kind: 'undertaking';
+  /** The `undertaking_outcome` event node (`evt_und_…`) this portent reads. */
+  readonly outcomeNodeId: string;
+  readonly templateId: string;
+  readonly verb: string;
+  readonly harmClass: UndertakingHarmClass;
+  /** The deed in words — "the razing of Dunmar — Hesk's work". Never a cell id. */
+  readonly deed: string;
+  readonly culpritAgentId?: string;
+  readonly victimAgentId?: string;
+  readonly siteId?: string;
+  /** Whether the culprit or the victim was followed when the portent was cast (the attention term). */
+  readonly followed: boolean;
+}
+
 export interface EmittedOmen {
   readonly omenId: string;
   readonly sourceEncounterId: string;
@@ -150,4 +174,6 @@ export interface EmittedOmen {
   readonly sphereAlignment?: SphereName;
   readonly emittedTick: number;
   readonly expiresTick: number;
+  /** Set when a mortal's work cast this omen (THR-1432). */
+  readonly provenance?: EmittedOmenProvenance;
 }

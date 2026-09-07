@@ -3454,6 +3454,8 @@ export type TraceEntry =
   | ChoiceSetPlayerDismissedTrace
   | OmenSelectionTrace
   | OmenBeatTrace
+  | UndertakingPortentTrace
+  | OmenDecayedTrace
   // Encounter aftermath traces (THR-111)
   | CliAutoAftermathTrace
   | EncounterAftermathAppliedTrace
@@ -4170,6 +4172,41 @@ export interface OmenBeatTrace extends TraceBase {
   omenId: string;
   slot: 'primary' | 'secondary';
   prose: string;
+}
+
+/**
+ * Trace: a mortal's work cast a portent — an `undertaking_outcome` node became an
+ * emitted omen (THR-1432). Shares the `omen_emitted` category with the aftermath's
+ * emit_omen effect; `sourceReactionId: 'undertaking_outcome'` tells them apart.
+ * Carries every candidate and its score so "why did the razing portend and not the
+ * seizure" is answerable from the trace alone (NFP #2).
+ */
+export interface UndertakingPortentTrace extends TraceBase {
+  category: 'omen_emitted';
+  omenId: string;
+  omenCategory: string;
+  intensity: number;
+  expiresTick: number;
+  sourceEncounterId: string;
+  sourceReactionId: 'undertaking_outcome';
+  outcomeNodeId: string;
+  harmClass: string;
+  score: number;
+  followed: boolean;
+  candidates: Array<{ outcomeNodeId: string; harmClass: string; score: number; followed: boolean }>;
+}
+
+/**
+ * Trace: an emitted omen left the world (THR-115) — expired at its `expiresTick`, or
+ * evicted at `EMITTED_OMEN_MAX_ACTIVE` (`failReason: 'cap_evicted'`). Typed by
+ * THR-1432, which added a third emitter; the two older emit sites already wrote this
+ * shape untyped.
+ */
+export interface OmenDecayedTrace extends TraceBase {
+  category: 'omen_decayed';
+  omenId: string;
+  livedTicks: number;
+  failReason?: 'cap_evicted';
 }
 
 /** Trace: agent added to player's protagonist portfolio (THR-148) */

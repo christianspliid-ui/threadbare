@@ -32,6 +32,8 @@ export type MotiveSource = 'choice' | 'mission' | 'chance' | 'divine';
  */
 const MISSION_KINDS: ReadonlySet<MotiveContribution['kind']> = new Set([
   'ambition',
+  // A want minted by a harm is an ambition with a name on it (THR-1432).
+  'undertaking',
   'chain',
   'reputation',
   'bond',

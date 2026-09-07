@@ -99,7 +99,13 @@ export type MotiveContributionKind =
   | 'doom_identity'
   | 'chain'
   | 'exploration'
-  | 'proximity';
+  | 'proximity'
+  /**
+   * The want pulling the choice was minted by an undertaking outcome — a harm done
+   * to this mortal, or their own work collapsing (THR-1432). Carries the outcome
+   * node as `provenance.nodeId` and the deed in words as `provenance.detail`.
+   */
+  | 'undertaking';
 
 export interface MotiveContribution {
   kind: MotiveContributionKind;

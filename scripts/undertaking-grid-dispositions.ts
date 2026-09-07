@@ -260,17 +260,26 @@ export const UNTOUCHED_BY_DESIGN: readonly UntouchedByDesign[] = [
     reason: 'These are the god\'s fingerprints: the layer exists to track how visible the *player\'s* interventions are, and detection pressure is the cost of a god acting through a mortal. Decided on THR-1397 (and restated by THR-1430): mortal surveillance never feeds it — a spy watching a rival is the Intelligence layer\'s business, and routing it here would charge the god for work they did not do.',
   },
   {
-    subsystem: 'Omens & Atmospheric Pressure',
-    reason: '**A gap, not a design choice** — recorded here because the list is held to totality and every UNTOUCHED row must say why. The foreshadowing layer reads world events but not undertaking outcomes, so a raised warhost or a ruined town portends nothing. THR-1432 files the reader; when it lands this entry goes stale and the generator will say so.',
-  },
-  {
     subsystem: 'Ascendant Beats & Progression',
     reason: 'The god\'s own arc — remembrance, the beats, the journey the player climbs. A mortal\'s undertaking cannot advance it, because the beats measure what the *player* has done; mortals supply the occasions a beat fires on, never the progression itself.',
   },
 ];
 
+/**
+ * The omen agenda reads what every harm-carrying cell leaves (THR-1432). One reader,
+ * shared by every LIVE-TOUCHED subsystem whose destroy, seize or lower cell registers a
+ * harm: the `undertaking_outcome` node the completion writes becomes a portent within
+ * `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by the harm and by whether the god follows
+ * the hand or the victim. Declared once so the ten rows cannot drift apart.
+ */
+const OMEN_PORTENT_READER: SubsystemReader = {
+  subsystem: 'Omens & Atmospheric Pressure',
+  sites: '`phaseOmenAgenda.ts castUndertakingPortent` (THR-1432) — the `undertaking_outcome` node a harm-carrying completion leaves becomes an emitted omen within `OMEN_UNDERTAKING_LOOKBACK_TICKS`, weighted by `OMEN_UNDERTAKING_WEIGHT_BY_HARM` and by attention (a followed culprit\'s or victim\'s work first); the chronicle carries the line and the encounter scorer feels the pressure',
+};
+
 export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader[]>> = {
   'World Generation, Terrain & Places': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Mortal Economy & Prosperity', sites: '`phaseProsperity.ts`, `phaseSettlementPromotion.ts`, `phases/resourceStockTiers.ts`, `phaseUnrest.ts` — the prosperity a founded, raised, lowered or ruined Location carries' },
     { subsystem: 'Strategic Projects & Control', sites: '`phaseStrategicProjects.ts` (degradation, neglect), `strategicTelemetry.ts`, `strategicPresentation.ts`, `HexMapV2/scene/StrategicMarkerMesh.ts` — the `controls` edge claim × Location writes' },
     { subsystem: 'Movement & Colocation', sites: '`sublocation.ts:592-636 checkDissolutions` (a `permanent` built Place survives), `socialEncounterGeneration.ts` (`sublocationTypeId`), `distanceMatrix.ts` (structural rebuild)' },
@@ -282,11 +291,13 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
     { subsystem: 'Encounters & Dilemmas', sites: '`encounterScoring.ts` (`prosperity`)' },
   ],
   'Mortal Economy & Prosperity': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Mortal Economy & Prosperity', sites: '`phaseTradeRouteDecay.ts:92` (`lastTraded` staleness), `phases/routeEvents.ts:137-144` (auto-clears `threatened` after `ROUTE_THREATENED_CLEAR_TICKS`), `phaseEconomicTraits.ts:75` (counts `controlledBy`)' },
     { subsystem: 'War, Armies & Battles', sites: '`armySupply.ts:115` reads `threatened` on `trades_with` — a blockade starves a campaign' },
     { subsystem: 'Attention, Chronicle & Narrative', sites: '`tradeRouteMarkers.ts`, `proseResolvers.ts:912-924` (the marker and the sentence)' },
   ],
   'War, Armies & Battles': [
+    OMEN_PORTENT_READER,
     { subsystem: 'War, Armies & Battles', sites: '`armyAttrition.ts`, `battleResolution.ts` — both walk `member_of` from the raised warhost' },
     { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts` (`groupStatus`) — an army is a company kind' },
     { subsystem: 'Strategic Projects & Control', sites: '`strategicActionCandidates.ts`' },
@@ -296,6 +307,7 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
   // writer, not a reader — except the succession phase, which gained the read in the
   // same commit because a retained dead leader would otherwise keep leading.
   'Agent Lifecycle': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Agent Lifecycle', sites: '`agentLifecycle.ts` — `markMortalDead` is the one funnel; its `retain` mode leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy`, and the phase\'s own actor scan already skips `deceased !== true`' },
     { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts:isAgentGone` reads `deceased === true` as gone, so every roster query and `reconcileLostMembers` closes a dead member\'s `member_of` edge without a node removal' },
     { subsystem: 'Factions & Succession', sites: '`phaseFactionSuccession.ts` / `factionNetwork.ts` — the `deceased` read added by THR-1430: a seat-holder marked dead is a vacancy the phase resolves on its next pass by its own rules' },
@@ -303,14 +315,17 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
     { subsystem: 'Attention, Chronicle & Narrative', sites: 'the existing `agent_death` event and the sheet\'s death header — the cause word, and *by whom* only where a mark or a culprit-provenance hostile edge exists' },
   ],
   'Companies & Group Travel': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts`, `groups/groupMovement.ts`, `groups/groupCohesion.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts`' },
     { subsystem: 'Encounters & Dilemmas', sites: '`groups/bandOpposition.ts`, `encounterSeeding.ts` (`groupStatus`)' },
     { subsystem: 'Strategic Projects & Control', sites: '`strategicActionCandidates.ts`' },
   ],
   'Factions & Succession': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Factions & Succession', sites: '`phaseSchismResolution.ts:34` consumes the `schismPendingResolutionTick` stamp destroy × Faction plants; `phaseFactionActions.ts`, `factionAmbitions.ts`, `phaseFactionSuccession.ts` read the founded faction node' },
   ],
   'Attachments, Items & Possessions': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Attachments, Items & Possessions', sites: '`attachmentSlotResolver.ts:124-241` (`possesses`, `acquiredTick`), `orchestrator.ts:145 expireCompanions` (phase 6.625b)' },
     { subsystem: 'Spheres & Quintessence', sites: '`phaseQuintessence.ts` consumes the `QuintessenceEvent` that use × Power\'s soul-price leaves on `pendingQuintessenceEvents`, where the threshold gates already bite (THR-1428 R4) — a mortal casting at their own cost moves the cosmology\'s meters. Recorded here by THR-1431: the cell\'s `readBy` said so in prose, but the structured reader was missing, which is why the subsystem read UNTOUCHED.' },
     { subsystem: 'Encounters & Dilemmas', sites: '`domainCapability.ts` (item and companion contributions), `resolutionModifiers.ts` (`owns`), `graphConditions.ts`' },
@@ -318,6 +333,7 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
     { subsystem: 'Factions & Succession', sites: '`notableAgendas.ts:446` (`owns`)' },
   ],
   'Reputation & Influence': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Encounters & Dilemmas', sites: '`socialLeverage.ts` (`reputationLeverageTerm`), `encounterAftermath.ts`, `unifiedActionResolution.ts`' },
     { subsystem: 'Ambitions & Undertakings', sites: '`grievance/grudgeEdge.ts`, `grievance/covetRivalry.ts`, `undertakingMotive.ts` — the `hostile_to` edge destroy × Standing writes is a motive gate on later cells' },
     { subsystem: 'Secrets & Favors', sites: '`secretGeneration.ts`' },
@@ -325,6 +341,7 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
     { subsystem: 'Attention, Chronicle & Narrative', sites: '`LocationProfileModal.tsx`, `OverviewTab.tsx` — standing on the sheet' },
   ],
   'Secrets & Favors': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Secrets & Favors', sites: '`phaseSecretsFavors.ts` (decay; a revealed secret is exempt — `graphOpExecutor.ts:1443`), `secretsFavorsConsequences.ts`, `secretsFromResolution.ts`' },
     { subsystem: 'Encounters & Dilemmas', sites: '`socialLeverage.ts` — a mark is leverage in the encounter' },
     { subsystem: 'Intelligence, Knowledge & Familiarity', sites: '`intelligence.ts` (`knows_secret_of`)' },
@@ -332,6 +349,7 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
     { subsystem: 'Attention, Chronicle & Narrative', sites: '`threadDigest.ts`, `agentDetail.ts`' },
   ],
   'Effects & Conditions': [
+    OMEN_PORTENT_READER,
     { subsystem: 'Effects & Conditions', sites: '`conditionDecay.ts:63` (walks `has_trait`), `effects/effectQueries.ts`, `effects/effectWalker.ts`, `effects/conditionProxyEvents.ts`, `phaseSlotCaps`' },
     { subsystem: 'Encounters & Dilemmas', sites: '`effects/effectPredicates.ts`, `graphConditions.ts` — a cured condition changes what the mortal is eligible for' },
   ],

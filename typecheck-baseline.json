@@ -1,5 +1,5 @@
 {
-  "total": 2924,
+  "total": 2918,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -324,7 +324,7 @@
     "src/engine/__tests__/encounterAftermath.intelReferencedProse.test.ts": 2,
     "src/engine/__tests__/encounterAftermath.resolveContext.test.ts": 1,
     "src/engine/__tests__/encounterAftermath.test.ts": 17,
-    "src/engine/__tests__/encounterAftermath.worldShaping.test.ts": 17,
+    "src/engine/__tests__/encounterAftermath.worldShaping.test.ts": 13,
     "src/engine/__tests__/encounterAwareness.test.ts": 3,
     "src/engine/__tests__/encounterCache.test.ts": 4,
     "src/engine/__tests__/encounterChains.test.ts": 1,
@@ -534,7 +534,7 @@
     "src/engine/elderEssenceReward.ts": 1,
     "src/engine/encounter.ts": 9,
     "src/engine/encounter/branchingCurator.ts": 1,
-    "src/engine/encounterAftermath.ts": 93,
+    "src/engine/encounterAftermath.ts": 92,
     "src/engine/encounterAwareness.ts": 1,
     "src/engine/encounterCache.ts": 1,
     "src/engine/encounterChoiceMemory.ts": 11,
@@ -593,7 +593,7 @@
     "src/engine/phaseHexState.ts": 1,
     "src/engine/phaseMandate.ts": 1,
     "src/engine/phaseMovement.ts": 3,
-    "src/engine/phaseOmenAgenda.ts": 5,
+    "src/engine/phaseOmenAgenda.ts": 4,
     "src/engine/phaseProsperity.ts": 3,
     "src/engine/phaseQuintessence.ts": 1,
     "src/engine/phaseReputationDecay.ts": 1,
