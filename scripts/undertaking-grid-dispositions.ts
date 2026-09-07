@@ -34,6 +34,16 @@
  */
 import type { WorldObjectKindId } from '../src/data/world-objects';
 import type { UndertakingVerbVariant } from '../src/types/strategicAction';
+import { SECRET_CELL_IDS } from '../src/data/intention-reading-constants';
+
+/**
+ * Cells whose intention is a secret (THR-1433): the god reads them only through a
+ * followed mortal's mark or a followed network, never by familiarity. The list lives
+ * beside the predicate that reads it (`src/data/intention-reading-constants.ts`) and
+ * is re-exported here so the grid renders it and the generator holds it to the live
+ * cells — a secret cell that is not a live cell is a stale entry.
+ */
+export { SECRET_CELL_IDS };
 
 export type CellDispositionStatus = 'wanted' | 'later' | 'open' | 'no';
 
@@ -156,7 +166,7 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
     destroy: { op: 'disband_group', note: 'Roll up the ring.' },
   },
   mortal: {
-    destroy: { op: 'plot_death', note: 'The plot (THR-1430) — a premeditated killing, never the duel (an encounter seeded off a quarrel, `destroy × Standing`) or the slaying (a battle, a delve). Motive-gated harder than any other cell: `PLOT_MOTIVES` admits only `grudge` and `faction_war`, so opportunism never licenses a killing. The death goes through the one funnel `markMortalDead` in `retain` mode — it writes `deceased`, `deceasedTick`, `deathCause` and `slainBy` and never removes the node, so the dead stay in the chronicle and their echoes survive. The heaviest harm class (`named_death`) is registered, so the vendetta may be minted; whether anyone *saw* it is THR-1383\'s rule and not this cell\'s. When the target is a mortal the player holds a thread to, a `peril` moment interrupts before the strike resolves and the strike defers `PLOT_PERIL_GRACE_TICKS`, so the god has a turn to spend on levers that already exist. Retires the crude `action.shadow.assassinate`, which deleted the node.', retires: ['action.shadow.assassinate'], readBy: 'The agent lifecycle\'s own readers of `deceased` (`isAgentGone`, every group query, `reconcileLostMembers`); the succession phase, which since THR-1430 reads `deceased` on a seat-holder so a killed leader vacates the seat on the next pass; the grievance funnel in `ambitionTick`, which reads the `named_death` outcome node and the seen-rule to decide the vendetta; and the sheet\'s death header, which names the cause word and — only where a mark or a culprit-provenance hostile edge exists — by whom.' },
+    destroy: { op: 'plot_death', note: 'The plot (THR-1430) — a premeditated killing, never the duel (an encounter seeded off a quarrel, `destroy × Standing`) or the slaying (a battle, a delve). Motive-gated harder than any other cell: `PLOT_MOTIVES` admits only `grudge` and `faction_war`, so opportunism never licenses a killing. The death goes through the one funnel `markMortalDead` in `retain` mode — it writes `deceased`, `deceasedTick`, `deathCause` and `slainBy` and never removes the node, so the dead stay in the chronicle and their echoes survive. The heaviest harm class (`named_death`) is registered, so the vendetta may be minted; whether anyone *saw* it is THR-1383\'s rule and not this cell\'s. When the target is a mortal the player holds a thread to, a `peril` moment interrupts before the strike resolves and the strike defers `PLOT_PERIL_GRACE_TICKS`, so the god has a turn to spend on levers that already exist. Retires the crude `action.shadow.assassinate`, which deleted the node. **A secret** (THR-1433, `SECRET_CELL_IDS`): the plotter\'s intention is read only through a followed mortal\'s mark or a followed network — knowing a man well does not tell you he is planning a murder; his enemy\'s spy does.', retires: ['action.shadow.assassinate'], readBy: 'The agent lifecycle\'s own readers of `deceased` (`isAgentGone`, every group query, `reconcileLostMembers`); the succession phase, which since THR-1430 reads `deceased` on a seat-holder so a killed leader vacates the seat on the next pass; the grievance funnel in `ambitionTick`, which reads the `named_death` outcome node and the seen-rule to decide the vendetta; and the sheet\'s death header, which names the cause word and — only where a mark or a culprit-provenance hostile edge exists — by whom.' },
   },
   companion: {
     create: { op: 'mint_companion', note: 'Recruit a companion — the op the aftermath effects reach, as a work.' },

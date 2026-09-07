@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
-import {
-  AMBITION_PRIMARY_INTERACTIONS,
-  AMBITION_PRIMARY_KNOWLEDGE,
-} from '../../../types/agentKnowledge';
-import { KNOWLEDGE_LEVELS } from '../../../types/familiarity';
+import { AMBITION_PRIMARY_INTERACTIONS } from '../../../types/agentKnowledge';
+import { readIntentionFromCard } from '../../../engine/intentionReading';
 import { BACKSTORY_CONSTANTS } from '../../../types/prose';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { getSphereColor } from '../../../data/sphereIcons';
@@ -63,10 +60,11 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata }: Ch
     (!card.backstory || card.backstory.strata.length === 0) && card.influenceTier === 0;
 
   // Completed Ambitions use the same gate as primary ambitions (THR-721): a single
-  // meaningful exposure, or recognition-level knowledge, reveals "who they became."
+  // meaningful exposure, or the one mind-reading rule (THR-1433 — familiarity, a
+  // followed mortal's mark, or a followed network), reveals "who they became."
   const showCompletedAmbitions =
     (knowledge != null && knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS)
-    || KNOWLEDGE_LEVELS.indexOf(card.knowledgeLevel) >= KNOWLEDGE_LEVELS.indexOf(AMBITION_PRIMARY_KNOWLEDGE);
+    || readIntentionFromCard(card).readable;
   const completedAmbitions = card.completedAmbitions ?? [];
 
   return (

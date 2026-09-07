@@ -4,7 +4,7 @@ import { getCompletedAmbitions, getAgentInfoCard } from '../agentDetail';
 import { AMBITION_TEMPLATES } from '../../data/ambition-templates';
 import {
   AMBITION_PRIMARY_INTERACTIONS,
-  AMBITION_PRIMARY_KNOWLEDGE,
+  INTENTION_KNOWLEDGE_TIER,
   AMBITION_SECONDARY_INTERACTIONS,
   COMPLETED_AMBITIONS_MAX_DISPLAY,
 } from '../../types/agentKnowledge';
@@ -163,7 +163,8 @@ describe('getCompletedAmbitions (THR-721)', () => {
 describe('ambition visibility thresholds (THR-721)', () => {
   it('primary ambition is revealed at first meaningful exposure', () => {
     expect(AMBITION_PRIMARY_INTERACTIONS).toBe(1);
-    expect(AMBITION_PRIMARY_KNOWLEDGE).toBe('recognised');
+    // THR-1433 renamed the tier (`INTENTION_KNOWLEDGE_TIER`) and kept THR-721's value.
+    expect(INTENTION_KNOWLEDGE_TIER).toBe('recognised');
   });
 
   it('secondary-ambition gate is unchanged (verdict 3)', () => {

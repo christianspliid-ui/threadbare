@@ -9,7 +9,8 @@ import { getRetinueAgents, getThreadedNodes } from '../../../engine/retinue';
 import type { ThreadCategory, ThreadedNode } from '../../../engine/retinue';
 import { enrichRetinueWithActivity } from '../../../engine/agentActivity';
 import { getAgentActivityLabel } from '../../../engine/agentActivity';
-import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../engine/agentDetail';
+import { getAgentDetail, getAgentInfoCard, getAgentFullProfile, summarizeActiveUndertakings } from '../../../engine/agentDetail';
+import { canReadIntention, describeIntentionRead } from '../../../engine/intentionReading';
 import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
@@ -197,6 +198,23 @@ export function useAgentInteraction({
     // the player earned — that is the whole point of the debug flag (THR-1412).
     const knowledgeLevel = omniscienceMode ? 'transparent' : getKnowledgeLevel(familiarity);
     const card = getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel, gameState.seed, gameState.tick);
+
+    // One rule for reading a mortal's mind (THR-1433): the live answer rides on the
+    // card so every tab asks the same predicate, and the intention line is built
+    // only when the door is open and there is something behind it.
+    if (card) {
+      const read = canReadIntention(gameState, gameState.ascendantId, selectedAgentId, { knowledgeLevel });
+      card.intentionRead = read;
+      if (read.readable && card.primaryIntentSummary) {
+        const heading = summarizeActiveUndertakings(gameState.strategicState, selectedAgentId)?.[0]?.displayName;
+        card.intention = {
+          ambition: card.primaryIntentSummary.displayName,
+          ...(heading ? { heading } : {}),
+          through: read.through,
+          how: describeIntentionRead(read, card.name),
+        };
+      }
+    }
 
     // Add scry court position as an active effect if agent holds one
     if (card && scryState?.initialized) {

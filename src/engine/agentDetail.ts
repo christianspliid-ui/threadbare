@@ -466,6 +466,24 @@ export interface AgentInfoCardData {
   /** Primary intent summary for compact AgentInfoCard (prototype: always visible) */
   primaryIntentSummary?: { displayName: string; category: AmbitionCategory };
   /**
+   * Whether the god may read this mortal's mind, and through which door (THR-1433).
+   * Stamped by the hook that builds the card from live state (`canReadIntention`);
+   * every ambition gate on the sheet reads it through `readIntentionFromCard`, which
+   * falls back to the card's own tier when a caller built the card without one.
+   */
+  intentionRead?: import('./intentionReading').IntentionRead;
+  /**
+   * The intention line (THR-1404, THR-1433): what the mortal is up to — the ambition
+   * and the work it heads toward — present only when `intentionRead` is readable
+   * and the mortal pursues something. `how` is the tooltip sentence (Law 17).
+   */
+  intention?: {
+    readonly ambition: string;
+    readonly heading?: string;
+    readonly through: import('./intentionReading').IntentionReadThrough;
+    readonly how: string;
+  };
+  /**
    * The calling (THR-1299 slice 5) — what the world calls this mortal for what
    * they do. Derived, never a stat; gated with the archetype label at
    * `recognised`+, because a name the world uses is the same class of fact.

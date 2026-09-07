@@ -208,6 +208,8 @@ import {
   moveDebugAgent,
   spawnDebugAttachment,
   spawnDebugCompanion,
+  spawnDebugMark,
+  type DebugSpawnMarkOptions,
   spawnDebugLocationAtHex,
   spawnDebugNpc,
   spawnDebugBand,
@@ -1934,6 +1936,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const _gotoAgentGraphRef = useRef(gameState.graph);
   _gotoAgentGraphRef.current = gameState.graph;
 
+  // ── Debug bridge: openAgentSheet (THR-1433) ──────────────────────────────
+  // The sheet renders only while the mortal is the selected agent (the card the
+  // modal reads is built from `selectedAgentId`), so this goes through `gotoAgent`
+  // first and then the same setter the info card's "Sheet →" button uses.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerOpenAgentSheet((id: string) => {
+      const graph = _gotoAgentGraphRef.current;
+      const match = graph.getNodesByType('actor').find(n =>
+        n.id === id ||
+        n.id.startsWith(id) ||
+        ((n.properties.name as string | undefined) ?? '').toLowerCase().includes(id.toLowerCase())
+      );
+      if (!match) return false;
+      window.__DEBUG?.gotoAgent(match.id);
+      openAgentProfileForId(match.id);
+      return true;
+    });
+  }, [openAgentProfileForId]);
+
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerGotoAgent((id: string) => {
@@ -2550,6 +2572,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         const result = spawnDebugAttachment(_gameStateRef.current, agentQuery, templateQuery, options);
         if (result.success) {
           touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+      // THR-1433 — a mark on a stranger, so the mind-reading proof can be constructed.
+      spawnMark: (holderQuery, subjectQuery, options) => {
+        const result = spawnDebugMark(
+          _gameStateRef.current, String(holderQuery), String(subjectQuery),
+          (options ?? undefined) as DebugSpawnMarkOptions | undefined,
+        );
+        if (result.success) {
+          touchWorld(runtime);
           setGameState(prev => ({ ...prev, graph: prev.graph }));
         }
         return result;

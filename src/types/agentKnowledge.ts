@@ -108,11 +108,20 @@ export const OVERVIEW_BACKSTORY_INTERACTIONS = 5;
 export const AMBITION_PRIMARY_INTERACTIONS = 1;
 
 /**
- * Knowledge level that alternatively reveals the primary ambition (THR-721).
- * Replaces a previously-hardcoded `'known'` string in JourneyTab; mere
- * recognition from afar now suffices to read a mortal's primary drive.
+ * The familiarity at which the god can read a mortal's intention — their ambition
+ * and the work it heads toward — by watching alone (THR-1433; was
+ * `AMBITION_PRIMARY_KNOWLEDGE`, THR-721). One name, read by one predicate:
+ * `canReadIntention` in `src/engine/intentionReading.ts`. No surface compares a
+ * knowledge tier against this directly; the sheet, the chronicle and the encounter
+ * receipt all ask the predicate, which also knows the two ways a *mortal's* work can
+ * open a mind the god has never watched — a followed mortal's mark, a followed
+ * network's reach.
+ *
+ * Kept at `recognised` — THR-721's ruling that mere recognition from afar suffices
+ * to read a primary drive; THR-1433's ticket text said `known`, which was the
+ * pre-THR-721 hardcode, and the ruled value wins over the older string.
  */
-export const AMBITION_PRIMARY_KNOWLEDGE: KnowledgeLevel = 'recognised';
+export const INTENTION_KNOWLEDGE_TIER: KnowledgeLevel = 'recognised';
 
 /** Interactions needed to reveal secondary ambition */
 export const AMBITION_SECONDARY_INTERACTIONS = 4;

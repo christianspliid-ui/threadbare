@@ -400,6 +400,22 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
               </Tooltip>
             </p>
           )}
+          {/*
+            The intention — what they are up to, never what they could do (THR-1404,
+            THR-1433). Present only when the one mind-reading rule opened the door
+            (familiarity, a followed mortal's mark, a followed network); the tooltip
+            says how (Law 17). Unreadable renders nothing — no placeholder (Law 25).
+          */}
+          {card.intention && (
+            <p className="text-sm" data-testid="identity-intention" style={{ color: 'var(--text-secondary)' }}>
+              <Tooltip id={`ui.intention.${card.intention.through}`} desc={card.intention.how}>
+                <span className="underline decoration-dotted cursor-help">
+                  Set on {card.intention.ambition}
+                  {card.intention.heading ? ` — ${card.intention.heading}` : ''}
+                </span>
+              </Tooltip>
+            </p>
+          )}
           {hasKnowledge(card.knowledgeLevel, 'recognised') && (card.factionName || card.cultureName) && (
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {[card.factionName, card.cultureName].filter(Boolean).join(' · ')}

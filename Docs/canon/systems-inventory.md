@@ -261,7 +261,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `culture` (5) | `cultureDetail.ts`, `cultureFlag.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15` |
 | `curator` (1) | `curator.ts` | — |
 | `cycle` (1) | `cycleEnd.ts` | — |
-| `debug` (7) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-689`, `THR-878` |
+| `debug` (7) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-689`, `THR-878` |
 | `decay` (1) | `decayCurve.ts` | — |
 | `decision` (1) | `decisionBoard.ts` | `THR-1292`, `THR-1349` |
 | `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-452`, `THR-506`, `THR-514` |
@@ -307,6 +307,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `influence` (1) | `influence.ts` | — |
 | `insider` (1) | `insiderBeatDetection.ts` | — |
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
+| `intention` (1) | `intentionReading.ts` | `THR-1404`, `THR-1433` |
 | `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
 | `kpi` (3) | `kpi/branchingDistance.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-452`, `THR-457`, `THR-571` |
@@ -403,4 +404,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 180 engine domains · 536 modules._
+_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 181 engine domains · 537 modules._
