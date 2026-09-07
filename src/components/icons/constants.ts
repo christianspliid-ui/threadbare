@@ -1,22 +1,25 @@
 import type { FactionType } from '../../types/faction';
-import type { ReachDomain } from '../../types/traits';
 import type { SphereName, CreationSphereName, FoundationSphereName } from '../../types/index';
 
-export const SPHERE_COLORS: Record<SphereName, string> = {
-  force: '#ff6b6b', matter: '#d4a87a', energy: '#ffe44d', life: '#33ff77',
-  mind: '#44aaff', spirit: '#cc66ff', time: '#ffb355', entropy: '#8fd4c0',
-  chaos: '#d4d4d8', order: '#fbbf24', light: '#fef3c7', darkness: '#8b7fbf',
-};
+/**
+ * THR-1422: `SPHERE_COLORS` and `REACH_TO_SPHERE` are re-exported from
+ * `src/data/premonition-constants.ts`, which owns both. This module used to
+ * declare its own copy of each. The engine reads `REACH_TO_SPHERE`, so the data
+ * layer has to own it; `SPHERE_COLORS` follows it to keep the cosmology's
+ * colours and its reach→sphere mapping in one place. Every existing import of
+ * these two names from this module keeps working.
+ *
+ * `SPHERE_COLORS_BASE` below is a distinct, more saturated map — not a
+ * duplicate — and is declared here.
+ */
+import { SPHERE_COLORS, REACH_TO_SPHERE } from '../../data/premonition-constants';
+
+export { SPHERE_COLORS, REACH_TO_SPHERE };
 
 export const SPHERE_COLORS_BASE: Record<SphereName, string> = {
   force: '#ff4444', matter: '#a8886a', energy: '#ffd700', life: '#00cc55',
   mind: '#2288ff', spirit: '#aa44dd', time: '#ff9933', entropy: '#5a8a7a',
   chaos: '#8a8a8e', order: '#d4af37', light: '#ffeb99', darkness: '#4a3a8a',
-};
-
-export const REACH_TO_SPHERE: Record<ReachDomain, CreationSphereName> = {
-  iron: 'force', stone: 'matter', eye: 'energy', gold: 'life',
-  veil: 'mind', heart: 'spirit', star: 'time', shadow: 'entropy',
 };
 
 export function sphereFromReach(reach: string | null | undefined): SphereName | null {

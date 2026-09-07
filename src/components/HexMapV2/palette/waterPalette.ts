@@ -25,10 +25,14 @@ export const WATER_PALETTE: Record<string, string> = {
 
 /**
  * Sea level threshold — ocean hexes are those with elevation below this value.
- * Must match worldGen seaLevelThreshold in hexGrid.ts.
- * NFP #1: Named constant.
+ *
+ * THR-1422: re-exported from worldgen, not redeclared. This file used to carry
+ * its own `0.38` under a comment asking a human to keep it matching worldgen by
+ * hand; the import makes that true by construction instead. Worldgen writes the
+ * elevations this palette colours, so it owns the line dividing them — move it
+ * there and the map can no longer paint water where the engine says land.
  */
-export const SEA_LEVEL = 0.38;
+export { SEA_LEVEL } from '../../../engine/worldgen/constants';
 
 /**
  * Depth band elevation thresholds for ocean coloring.

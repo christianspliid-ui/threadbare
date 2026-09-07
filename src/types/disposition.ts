@@ -120,14 +120,21 @@ export interface MemberOfEdgeProperties {
 
 // ─── Trust Constants ────────────────────────────────────────────
 
-/** Trust gain per cooperative interaction */
-export const TRUST_COOPERATE_DELTA = 0.03;
-
-/** Trust loss per defective interaction */
-export const TRUST_DEFECT_DELTA = -0.08;
-
-/** Trust decay toward 0 per tick (absolute, applied to |trust|) */
-export const TRUST_DECAY_PER_TICK = 0.002;
+/**
+ * THR-1422: re-exported from the central tuning file, not redeclared here.
+ *
+ * These three carried a second declaration in this module with its own
+ * doc-comments and no importers, while `trustMechanics.ts` — the only consumer
+ * — read `agent-behavior-constants.ts`. Tuning the copy in a types module would
+ * have changed nothing in the simulation. That file is the tuning surface (it
+ * carries the `@range` annotations the CMS panel renders), so it owns them;
+ * this re-export mirrors the one `trustMechanics.ts` already publishes.
+ */
+export {
+  TRUST_COOPERATE_DELTA,
+  TRUST_DEFECT_DELTA,
+  TRUST_DECAY_PER_TICK,
+} from '../data/agent-behavior-constants';
 
 /** Default trust for new relationships */
 export const DEFAULT_TRUST = 0;

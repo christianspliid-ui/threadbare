@@ -107,11 +107,24 @@ export const AMBITION_STALENESS_TICKS = 50;
 // SPHERE-REACH MAPPING — for nudge color and essence pool matching
 // ═══════════════════════════════════════════════════════════════════
 
-import type { SphereName } from '../types';
+import type { SphereName, CreationSphereName } from '../types';
 import type { ReachDomain } from '../types/traits';
 
-/** Maps each reach to its powering sphere (1:1 from cosmology model). */
-export const REACH_TO_SPHERE: Record<ReachDomain, SphereName> = {
+/**
+ * Maps each reach to its powering sphere (1:1 from cosmology model).
+ *
+ * THR-1422: sole declaration. `components/icons/constants.ts` re-exports this
+ * rather than carrying a second map — the engine reads it
+ * (`phaseDivinePremonition.ts`, `premonitionCompulsion.ts`), so a component
+ * module cannot own it without inverting the layering. Two independent
+ * reach→sphere maps could disagree about the cosmology itself; see
+ * `Docs/canon/cosmology.md`.
+ *
+ * Typed to `CreationSphereName` (was `SphereName` here, and already the
+ * narrower type at the icons site): all eight reaches map to Creation spheres,
+ * and the narrower type is what the UI consumers were relying on.
+ */
+export const REACH_TO_SPHERE: Record<ReachDomain, CreationSphereName> = {
   iron: 'force',
   stone: 'matter',
   eye: 'energy',
@@ -134,7 +147,15 @@ export const SPHERE_TO_REACH: Partial<Record<SphereName, ReachDomain>> = {
   entropy: 'shadow',
 };
 
-/** Sphere colors from the cosmology model — used for UI tinting. */
+/**
+ * Sphere colors from the cosmology model — used for UI tinting.
+ *
+ * THR-1422: sole declaration. `components/icons/constants.ts` re-exports this;
+ * it previously held an identical twelve-entry copy, so one Sphere could be
+ * painted two colours on two surfaces — a Law 4 / Law 14 hazard that renders as
+ * "the UI is subtly wrong" and never as an error. `SPHERE_COLORS_BASE` at the
+ * icons site is a genuinely distinct map and stays there.
+ */
 export const SPHERE_COLORS: Record<SphereName, string> = {
   // Foundation
   chaos: '#d4d4d8',

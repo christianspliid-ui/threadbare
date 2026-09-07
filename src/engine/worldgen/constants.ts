@@ -111,7 +111,20 @@ export const CANYON_DRY_RIFT_COUNT = 2;
 export const CANYON_DEPTH_FACTOR = 0.3;
 
 // ─── Sea level ───────────────────────────────────────────────────
-/** Elevation threshold dividing ocean from land (matches terrain.ts ELEV.SEA_LEVEL) */
+/**
+ * Elevation threshold dividing ocean from land.
+ *
+ * THR-1422: sole declaration. The renderer's water line
+ * (`components/HexMapV2/palette/waterPalette.ts`) re-exports this rather than
+ * carrying its own copy — worldgen writes the elevation the renderer then
+ * reads, so the engine owns the threshold that divides them. Pinned by
+ * `src/engine/__tests__/constantOwnership.test.ts`.
+ *
+ * This is deliberately *not* a key of `terrain.ts`'s `ELEV` band table — that
+ * table's boundaries (`DEEP_OCEAN` 0.15, `SHALLOWS` 0.25, …) classify biomes
+ * within the water column; this one divides water from land. Two earlier
+ * comments here and in `types.ts` cited a non-existent `ELEV.SEA_LEVEL`.
+ */
 export const SEA_LEVEL = 0.38;
 
 // ─── Coastline constants ─────────────────────────────────────────
