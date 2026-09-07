@@ -1,19 +1,21 @@
 # Briefing
-**Generated:** 2026-09-07 16:00 local (14:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-07 16:57 local (14:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Run the census** — [THR-1402](https://linear.app/threadbare/issue/THR-1402/prototype-the-two-seed-census-on-the-cells-model-which-callings). Fourth hour with the same ask, and this is the hour it gets *less* urgent, not more. That is worth saying plainly.
+**Run the census** — [THR-1402](https://linear.app/threadbare/issue/THR-1402/prototype-the-two-seed-census-on-the-cells-model-which-callings). Fifth hour with the same ask, and the honest position keeps shrinking rather than growing. Worth saying plainly before the ask itself.
 
-**Last hour's brief led with "the queue is empty and nothing is building." That argument is gone — the machine refilled its own queue without you.** In the seventy minutes after [THR-1428 merged](https://github.com/christianspliid-ui/threadbare/pull/1839), a design session wrote and shipped two more plan docs off the same map and handed both to the build queue: [THR-1429](https://linear.app/threadbare/issue/THR-1429/the-dormant-kinds-i-powers-and-conditions-a-scholar-learns-a-spell-a) (a scholar learns a spell, a zealot blesses, a witch curses, a rival's power is sealed) and [THR-1430](https://linear.app/threadbare/issue/THR-1430/the-dormant-kinds-ii-rings-and-the-plot-a-spider-founds-and-runs-a) (a spider founds and runs a ring, a knife kills a mortal on purpose). Both have merged plan docs; both are claimable now. **You were never in the path.**
+**Last hour the queue had refilled itself. This hour it is five deep and one of them is being built.** [THR-1429](https://linear.app/threadbare/issue/THR-1429/the-dormant-kinds-i-powers-and-conditions-a-scholar-learns-a-spell-a) (a scholar learns a spell, a zealot blesses, a witch curses, a rival's power sealed) was claimed and is in the build now. Four more were designed and handed off in the meantime: [THR-1431](https://linear.app/threadbare/issue/THR-1431), [THR-1432](https://linear.app/threadbare/issue/THR-1432) (a raised warhost or a ruined town can portend), [THR-1433](https://linear.app/threadbare/issue/THR-1433) (one rule for the god reading a mortal's mind), [THR-1434](https://linear.app/threadbare/issue/THR-1434) (what the player sees of a mortal's work). **None of them needed you.**
 
-**So the census is no longer the thing that stops the queue starving. It is still the thing that switches on finished code.** Two separate pieces of shipped, tested, idle machinery now point at it. This morning's work gave mortals the ability to earn from what they hold — a seized road's toll, a freehold's keep, a tithe from a place they control — and none of it pays anyone, because no mortal owns or holds anything until the model flips. [The flip](https://linear.app/threadbare/issue/THR-1403/task-migrate-the-64-retire-the-four-flip-the-model-to-cells) is blocked on the census alone.
+**So this ask has exactly one argument left, and it is a good one: it switches on code that is already built, tested and idle.** [THR-1428](https://linear.app/threadbare/issue/THR-1428) gave mortals the ability to earn from what they hold — a seized road's toll, a freehold's keep, a tithe from a place they control. It pays nobody today, because no mortal owns or holds anything until the model flips, and [the flip](https://linear.app/threadbare/issue/THR-1403/task-migrate-the-64-retire-the-four-flip-the-model-to-cells) is blocked on the census alone.
+
+**What happens if you never answer:** nothing breaks and the queue keeps moving — the machine has proved that five hours running. Finished machinery just stays switched off, and more of it accumulates behind the same gate.
 
 What it costs you: a session runs two seeds for 150 ticks with the cells model on and shows you one picture — which cells fired, which never fired, which callings sat idle. **Your reaction is the decision:** a cell that never fires is either unreachable or unwanted. Say **"run the census"**.
 
 ## Also waiting (15)
 
-- **[Approve the camp six](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)** — *"batch 2, run the six"* is still one word for six encounters of content work, and it is the only ask with no design session in front of it.
+- **[Approve the camp six](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)** — *"batch 2, run the six"* is one word for six encounters of content work, and still the only ask with no design session in front of it.
 - **[The undertaking retirement list](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants)** — 60 templates absorbed, 4 deleted; you asked to see the list first.
 - **[The map's other two questions](https://linear.app/threadbare/issue/THR-1396/undertakings-across-the-living-simulation-wayfinder-map)** — [the untouched-by-design list](https://linear.app/threadbare/issue/THR-1401) and [what the player sees](https://linear.app/threadbare/issue/THR-1404). No build work behind either.
 - **[What should a proportion read as?](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)** — recommendation is to drop both numbers rather than invent a language.
@@ -31,14 +33,15 @@ What it costs you: a session runs two seeds for 150 ticks with the cells model o
 
 ## Queue
 
-**Refilled on its own — 2 Ready for Dev, both claimable, both with merged plan docs.**
+**Healthy and moving on its own — 5 Ready for Dev, 1 being built.**
 
-- **[THR-1429](https://linear.app/threadbare/issue/THR-1429/the-dormant-kinds-i-powers-and-conditions-a-scholar-learns-a-spell-a)** (handed off 15:31 local) and **[THR-1430](https://linear.app/threadbare/issue/THR-1430/the-dormant-kinds-ii-rings-and-the-plot-a-spider-founds-and-runs-a)** (15:38). Nine consecutive hours of `Ready for Dev: 0` ended without an answer from you — the design lane authored the next band while the executor was finishing the last one.
-- **0 live in dev.** The next hourly pickup claims the top of the two.
+- **[THR-1429](https://linear.app/threadbare/issue/THR-1429/the-dormant-kinds-i-powers-and-conditions-a-scholar-learns-a-spell-a) is claimed and in the build.** Waiting behind it: [THR-1430](https://linear.app/threadbare/issue/THR-1430) (a spider founds a criminal ring, a knife kills by intent), [THR-1431](https://linear.app/threadbare/issue/THR-1431), [THR-1432](https://linear.app/threadbare/issue/THR-1432), [THR-1433](https://linear.app/threadbare/issue/THR-1433), [THR-1434](https://linear.app/threadbare/issue/THR-1434) — all five with merged plan docs, all claimable.
+- **From zero to five in three hours, with no answer from you.** Nine consecutive hours of an empty shelf ended at 15:31; the design lane has been authoring the next band faster than the executor can clear it.
 - **2 parked, both waiting on you** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) (the camp six) and [THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants) (the retirement list). Both are asks above; neither is a fault.
 - **One item promotes itself at midnight**: [THR-1256](https://linear.app/threadbare/issue/THR-1256/flip-checkguidance-freshness-from-advisory-to-blocking-after-its-burn) clears a time gate and the machine picks it up unaided.
 
 ## Health
 
-- **Everything green** — deploy serving the latest commit, CI and all three scheduled workflows passing on main, no PRs waiting to merge, all 9 lanes on schedule, the worktree reaper ran at 15:40. Tick cost 72 ms/tick, 21% *below* the 7-day median.
-- **The home tree has stopped syncing, not just fallen behind.** It is pinned at last night's 19:41 commit and is now 33 behind `main` (29 an hour ago, 24 before that). It is the read-only mirror, so nothing is at risk and no work is stranded — but this is a stall, not a lag. Agent-side to check; not yours.
+- **Green everywhere it matters** — deploy serving the latest commit, CI and all three scheduled workflows passing on main, no PRs waiting to merge, all 9 lanes on schedule, the worktree reaper ran at 16:40.
+- **Tick cost jumped this hour.** The probe's words: *"tick cost 118 ms/tick steady, 31% above the 7-day median (90, 36 rows since b95996df); top phase agent_decision, 511 agents."* The five readings before it ran 71–89 ms, so this may be one noisy sample rather than a regression — an agent-side check, not yours.
+- **The home tree is still frozen.** Pinned at last night's 19:41 commit (`198310f0`), unchanged across three hours while `main` moved on. It is the read-only mirror, so nothing is at risk and no work is stranded. Agent-side; not yours.

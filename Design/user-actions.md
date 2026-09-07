@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 16:00 local (14:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 16:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -12,7 +12,9 @@ A session runs seeds 42 and 99 for 150 ticks with the cells model on, and hands 
 
 **Why this leads — it switches on code that already shipped.** [THR-1428](https://linear.app/threadbare/issue/THR-1428) merged at 14:10 and gave mortals the ability to *earn* from what they hold: a seized road's toll, a freehold's keep, a tithe from a place they control. On a world today that pays out nothing, because nobody owns or holds anything until the model flips. [The flip](https://linear.app/threadbare/issue/THR-1403/task-migrate-the-64-retire-the-four-flip-the-model-to-cells) is blocked on the census alone.
 
-**What is no longer true: that the queue needs you to refill it.** Earlier briefings led this ask with an empty build shelf. That argument is retired — at 15:31 and 15:38 the design lane handed off [THR-1429](https://linear.app/threadbare/issue/THR-1429) and [THR-1430](https://linear.app/threadbare/issue/THR-1430) with merged plan docs, without an answer from you. The census is the gate on finished, idle machinery, not on the queue. Say **"run the census"**.
+**What is no longer true: that the queue needs you to refill it.** Earlier briefings led this ask with an empty build shelf. That argument is fully retired — the shelf went from zero to **five handed-off items in three hours**, one of them already claimed and building, none of them needing an answer from you. This is the gate on finished, idle machinery, not on the queue.
+
+**If you never answer:** nothing breaks and the queue keeps moving. Finished machinery stays switched off, and more accumulates behind the same gate. Say **"run the census"**.
 
 ### 2. Approve the camp six — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
@@ -131,7 +133,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The queue refilled itself, so "the shelf is empty" stopped being a reason to answer anything** *(2026-09-07)*. Nine consecutive hours of zero build work ended without you: [THR-1429](https://linear.app/threadbare/issue/THR-1429) and [THR-1430](https://linear.app/threadbare/issue/THR-1430) — mortals learning spells, blessings and curses, sealed rival powers, criminal rings, murder by intent — were designed, plan-doc'd and handed off between 15:31 and 15:38. Ask 1 keeps its own argument; it lost a borrowed one.
+- **The queue refilled itself five deep, so "the shelf is empty" is retired as a reason to answer anything** *(2026-09-07)*. Nine hours of zero build work ended at 15:31 without you; by 16:51 there were five handed-off items ([THR-1429](https://linear.app/threadbare/issue/THR-1429) through [THR-1434](https://linear.app/threadbare/issue/THR-1434) — spells, blessings and curses, criminal rings, murder by intent, omens, mind-reading, the player's view) and the first was claimed and building. Ask 1 keeps its own argument; it lost a borrowed one.
 - **The first band off the undertakings map shipped end to end in one morning** *(2026-09-07)*. [THR-1428, the owed readers](https://linear.app/threadbare/issue/THR-1428) — created 12:13, plan doc merged 12:35, claimed 13:01, [merged 14:10](https://github.com/christianspliid-ui/threadbare/pull/1839). Every live undertaking write now has something that reads it. A third of it stays dormant until the model flips, which is ask 1.
 - **The undertakings map moved for the first time since it was charted** *(2026-09-07)*. Four questions closed between 11:56 and 12:13 — [the owed readers](https://linear.app/threadbare/issue/THR-1397), [the division rule](https://linear.app/threadbare/issue/THR-1398), [the grid prototype](https://linear.app/threadbare/issue/THR-1399), [the coverage research](https://linear.app/threadbare/issue/THR-1400).
 - **The card-grammar session is no longer an ask** *(2026-09-07)*. [THR-1002](https://linear.app/threadbare/issue/THR-1002) — the machine sets it aside by itself on **11 September**, so an answer changes nothing before or after. Your 6 August direction on verbose action cards still stands and the ticket keeps it.
