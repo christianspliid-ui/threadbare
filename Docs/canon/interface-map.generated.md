@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 79 |
+| 🟢 LIVE | 80 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 22 |
-| **Total** | **110** |
+| **Total** | **111** |
 
 ## Contracts by producing subsystem
 
@@ -87,6 +87,7 @@ remediation ticket or the build fails.
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔵 UNVERIFIED-OK | — |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `companion-capability-contribution` | A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name. | edge-prop: `accompanies`, `domainContributions`, `getCompanions` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `undertaking-ownership-agrees-with-writers` | The undertaking object registry reads who holds a thing through the edges the world actually writes — a faction through the leader the succession seam derives, a companion through `accompanies`, a condition as one mortal’s borne `has_trait` edge, a standing as one ordered pair from `reputation_with` or the seeded `relates_to`, an item never a catalog template, a route as the identity node the cell now mints — so the verbs a kind declares find something to act on instead of refusing `no_owned_object` on every seed. | function: `resolveObjectOwners`, `ownersOf`, `gateExemption`, `edgeTypes`, `CATALOG_TEMPLATE_IDS`, `mintRouteIdentity`, `ownershipCensus` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ### Attention, Chronicle & Narrative
 
@@ -609,10 +610,10 @@ exit
 - **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/companions.ts`
-- **Production hits:** 41 total — 2 write, 2 read, 37 unclassified
+- **Production hits:** 42 total — 2 write, 2 read, 38 unclassified
 - **Write sites:** `src/data/companion-templates.ts`, `src/engine/companions.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +32 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +33 more
 - **Verdict:** Verified 2026-08-14: THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer's stone raw score by exactly the template's +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
@@ -1398,6 +1399,18 @@ exit
 - **Read sites:** `src/data/game-config.ts`, `src/engine/phaseOmenAgenda.ts`
 - **Other hits:** `src/data/world-objects.ts`, `src/engine/ambitionTick.ts`, `src/types/omen.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-07: THR-1432. `castUndertakingPortent` (phase 1.7, last step) weighs every `undertaking_outcome` node within `OMEN_UNDERTAKING_LOOKBACK_TICKS` by its `harmMagnitude` × `OMEN_UNDERTAKING_WEIGHT_BY_HARM` × the attention term (`OMEN_UNDERTAKING_FOLLOWED_WEIGHT` when the god follows the culprit or the victim), casts the top one as an `EmittedOmen` carrying `provenance.outcomeNodeId` and the deed in words, stamps the node `portendedTick`, and appends a `narrative` chronicle event. Non-vacuous by `src/engine/__tests__/phaseOmenAgenda.undertakingPortent.test.ts` (nodes written by the real writer `createUndertakingOutcomeNode`; lookback, attention in both directions, victim follow, heavier harm, once-only, one-per-tick, seeded tie) and `src/engine/__tests__/undertakingPortent.live.test.ts` (heavy lane: seed 42 medium, a destroy × Location started through the review lever completes and the next tick’s `state.emittedOmens` names its node). Headless CLI run recorded on the ticket.
+
+### `undertaking-ownership-agrees-with-writers` — 🟢 LIVE
+
+- **Intent:** The undertaking object registry reads who holds a thing through the edges the world actually writes — a faction through the leader the succession seam derives, a companion through `accompanies`, a condition as one mortal’s borne `has_trait` edge, a standing as one ordered pair from `reputation_with` or the seeded `relates_to`, an item never a catalog template, a route as the identity node the cell now mints — so the verbs a kind declares find something to act on instead of refusing `no_owned_object` on every seed.
+- **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
+- **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
+- **Module:** `src/data/undertaking-objects.ts`
+- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
+- **Write sites:** `src/engine/tradeRouteOps.ts`
+- **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/world-objects.ts`, `src/engine/effectAura.ts`, `src/engine/effectExecutors.ts`, `src/engine/effectTick.ts` +3 more
+- **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
 
