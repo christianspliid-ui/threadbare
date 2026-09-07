@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 10:56 local (08:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 11:52 local (09:52 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -12,7 +12,7 @@ The brief: [Retrofit batch 2 — the camp six](https://github.com/christiansplii
 
 Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan, and both other lanes independently recommend keeping it) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`.
 
-*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* Execution ticket [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word. **The build shelf has been empty since 07:30 this morning — five straight runs — and there is no live work behind it either**: the only two items in flight are this one and ask 4, both parked on you. This is the only ask here that refills the shelf without a session from you.
+*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* Execution ticket [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word. **The build shelf has been empty since 07:30 this morning — six straight runs — and there is no live work behind it either**: the only two items in flight are this one and ask 4, both parked on you. This is the only ask here that refills the shelf without a session from you.
 
 ### 2. What should a proportion read as? — [THR-1424](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)
 

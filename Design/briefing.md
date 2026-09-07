@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-09-07 10:56 local (08:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-07 11:52 local (09:52 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say *"batch 2, run the six"*.** The build shelf is not just thin this morning — it is **empty, and so is everything behind it**. Zero items ready to build, and the two items in flight are both parked on answers from you. The machine's build slot has been free with nothing to put in it since **07:30 this morning — five straight runs**.
+**Say *"batch 2, run the six"*.** Nothing has changed since the last brief except the count: the build shelf has now been empty for **six straight runs** — since 07:30 this morning — and there is still nothing behind it. Zero items ready to build, zero live, and the only two items in flight are both parked on answers from you.
 
 Six camp encounters go through the factory line the same hour, unattended, no session from you. Brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md) · ticket: [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) · execution: [THR-1222](https://linear.app/threadbare/issue/THR-1222).
 
@@ -28,11 +28,14 @@ Two yes/no questions live in the brief — **repair the six in place, or re-roll
 
 ## Queue
 
-**Starved — 0 ready to build, 0 live.** Two items in flight ([THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants), [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)) are both `Parked`, both on asks above — so the executor's one build slot has been free with nothing to fill it since 07:30 local, five runs.
+**Starved — 0 ready to build, 0 live.** Two items in flight ([THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants), [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)) are both `Parked`, both on asks above — so the executor's one build slot has now been free with nothing to fill it for six runs.
 
-- Behind the shelf: **2 In Design** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)), **0 in Implementation Planning**. Nothing is about to arrive on its own.
-- Agent-owned, not yours: the orchestrator found a **second** ticket this morning that shipped weeks ago under a different number ([THR-716](https://linear.app/threadbare/issue/THR-716), fixed under THR-933; [THR-1088](https://linear.app/threadbare/issue/THR-1088) was the first). Same shape both times — filed twice, fixed once, closed once, survivor left in a column no scan opens. That is why the shelf reads exhausted while candidates sit there. Logged for the Friday retro.
+- **One item arrives on its own tomorrow.** [THR-1256](https://linear.app/threadbare/issue/THR-1256/flip-checkguidance-freshness-from-advisory-to-blocking-after-its-burn) is deliberately date-gated to **2026-09-08** and is promotion-ready the moment the window opens — no blockers, no assignee, coordination block already written. It is the only thing on the board with a known arrival time, and it needs nothing from you.
+- Behind the shelf otherwise: **2 In Design** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)), **0 in Implementation Planning**.
+- Agent-owned, not yours: this hour's orchestrator run corrected a wrong severity claim standing on [THR-984](https://linear.app/threadbare/issue/THR-984/npm-run-lintplan-doc-with-no-args-lints-zero-files-and-always-reports) — the plan-doc lint is advisory at every call site it has, never blocking. Measured: 3 of 131 recent plan docs carry an error, so the ticket stays Low. Routed to the Friday retro, no ticket filed.
 
 ## Health
 
-All green — deployment live on the latest commit, CI and all three scheduled jobs passing, no PRs waiting to merge, all nine lanes on schedule, engine tick cost within its normal band.
+All green — deployment live on the latest commit (`e4e3706a`), CI and all three scheduled jobs passing, no PRs waiting to merge, all nine lanes on schedule, engine tick cost 71 ms/tick (31% *below* its 7-day median).
+
+- Agent-side, nothing at risk: the shared home checkout is 22 commits behind `origin/main` (yesterday 19:41). It is the read-only mirror — nothing is stranded on it, and every lane branches from `origin`.
