@@ -1,19 +1,21 @@
 # Briefing
-**Generated:** 2026-09-07 13:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-07 15:00 local (13:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Run the census** — [THR-1402](https://linear.app/threadbare/issue/THR-1402/prototype-the-two-seed-census-on-the-cells-model-which-callings). Same ask as last hour, and the argument for it got sharper in the meantime.
+**Run the census** — [THR-1402](https://linear.app/threadbare/issue/THR-1402/prototype-the-two-seed-census-on-the-cells-model-which-callings). Third hour with the same ask, and this is the hour it stopped being about future work.
 
-The plan doc off the undertakings map [merged at 12:35](https://github.com/christianspliid-ui/threadbare/pull/1838), and **the machine claimed the work 26 minutes later** — [THR-1428, the owed readers](https://linear.app/threadbare/issue/THR-1428/the-owed-readers-every-live-undertaking-cells-write-gets-its-reader) has been building since 13:01. That is the whole shelf: one item, in flight, and nothing behind it.
+**The build queue is empty and nothing is in flight.** [THR-1428, the owed readers](https://linear.app/threadbare/issue/THR-1428/the-owed-readers-every-live-undertaking-cells-write-gets-its-reader) — claimed at 13:01 last hour — [merged at 14:10](https://github.com/christianspliid-ui/threadbare/pull/1839). It was the whole shelf. There is nothing behind it: zero Ready for Dev, zero live in dev.
 
-Behind the census sits [migrate the 64, retire the four, flip the model to cells](https://linear.app/threadbare/issue/THR-1403) — the last slice of the migration, and the only other task the machine can claim and run without you. The census is its single blocker. When THR-1428 lands the queue is empty again unless this is cleared first.
+**And a third of what it shipped cannot pay out yet.** That work gave mortals the ability to *earn* from what they hold — a seized road's toll, a freehold's keep, a tithe from a place they control. On a world today that pays out nothing at all, because no mortal owns anything, controls anything, or holds a road until the model flips to the new shape. [The flip](https://linear.app/threadbare/issue/THR-1403/task-migrate-the-64-retire-the-four-flip-the-model-to-cells) is the only task on the board the machine can claim and run entirely on its own — and the census is its single blocker.
+
+So the census is no longer just the answer that turns into new build work. It is the answer that switches on code that already shipped this morning, and the only thing that refills an empty queue without a design session first.
 
 What it costs you: a session runs two seeds for 150 ticks with the cells model on and shows you one picture — which cells fired, which never fired, which callings sat idle. **Your reaction is the decision:** a cell that never fires is either unreachable or unwanted. Say **"run the census"**.
 
 ## Also waiting (15)
 
-- **[Approve the camp six](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)** — *"batch 2, run the six"* puts six encounters of content work on the queue the same hour. Unchanged, still one word.
+- **[Approve the camp six](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)** — *"batch 2, run the six"* is the other one-word answer that puts work on an empty queue the same hour, with no design session in the way.
 - **[The undertaking retirement list](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants)** — 60 templates absorbed, 4 deleted; you asked to see the list first.
 - **[The map's other two questions](https://linear.app/threadbare/issue/THR-1396/undertakings-across-the-living-simulation-wayfinder-map)** — [the untouched-by-design list](https://linear.app/threadbare/issue/THR-1401) and [what the player sees](https://linear.app/threadbare/issue/THR-1404). No build work behind either.
 - **[What should a proportion read as?](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)** — recommendation is to drop both numbers rather than invent a language.
@@ -31,14 +33,14 @@ What it costs you: a session runs two seeds for 150 ticks with the cells model o
 
 ## Queue
 
-**Starved — 0 Ready for Dev**, but for the first time in a week that is not a stall: the one item that landed was claimed within half an hour.
+**Starved — 0 Ready for Dev, and this hour nothing is building either.**
 
-- **1 live in dev** — [THR-1428](https://linear.app/threadbare/issue/THR-1428/the-owed-readers-every-live-undertaking-cells-write-gets-its-reader), claimed 13:01, building now. First build item off the undertakings map.
+- **0 live in dev.** [THR-1428](https://linear.app/threadbare/issue/THR-1428/the-owed-readers-every-live-undertaking-cells-write-gets-its-reader) merged at 14:10 — start to finish in a single morning, the first band delivered off the undertakings map. The shelf is empty because it was *drained*, not because nothing arrived.
 - **2 parked, both waiting on you** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) (the camp six) and [THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants) (the retirement list). Both are asks above; neither is a fault.
-- **Runway: one item.** When THR-1428 merges the shelf is empty unless the census or the camp six clears first.
+- **Runway: none.** Two one-word answers — the census, or the camp six — each refill it within the hour. Everything else on the board needs a design session first.
+- **One item promotes itself tomorrow** without you: [THR-1256](https://linear.app/threadbare/issue/THR-1256/flip-checkguidance-freshness-from-advisory-to-blocking-after-its-burn) clears a time gate at midnight and the machine picks it up on its own.
 
 ## Health
 
-- **Everything green** — deploy up to date, CI and all three scheduled workflows passing on main, no PRs waiting to merge, all 9 lanes on schedule, the worktree reaper ran 14 minutes ago.
-- **Tick cost 73 ms/tick** — 23% *below* the 7-day median. No drift.
-- **The home tree is 24 commits behind `main`.** It is the read-only mirror, so nothing is at risk and no work is stranded — but the autosync that normally keeps it current has not run through those 24. Agent-side to check; not yours.
+- **Everything green** — deploy serving the latest commit, CI and all three scheduled workflows passing on main, no PRs waiting to merge, all 9 lanes on schedule, the worktree reaper ran at 14:43. Tick cost 89 ms/tick, 5% below the 7-day median.
+- **The home tree is now 29 commits behind `main`, up from 24 an hour ago.** It is the read-only mirror, so nothing is at risk and no work is stranded — but the autosync that normally keeps it current is falling further behind rather than catching up. Agent-side to check; not yours.
