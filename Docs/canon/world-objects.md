@@ -19,14 +19,14 @@ Two words for one thing is the drift this page exists to stop. Where the code wo
 | **Location** | The outer place tier: where mortals live, hold, ruin and wonder. | `location` node without `parentLocationId`; `locationSubtype` | settlement · stronghold · holy_place · ruin · wild · wonder · deposit |
 | **Place** | The inner tier — an inn, a granary, a gatehouse, a grove, a spring — inside a Location. Not always built. (Code word: *sublocation*.) | `location` node with `parentLocationId`; `sublocationTypeId` | military · scholarly · arcane · commerce · religious · cultural · underworld · nature · authority · borderlands |
 | **Route** | An edge between two Locations that grows an identity node when it becomes nameable, ownable, blockadable or consecrated. | `road` · `trades_with` · `sacred_route` edges; identity node `location:trade_route` | road · trail · trade_lane · pilgrim_way · portal |
-| **Mortal** | An individual actor. (Engine word: *agent*.) | `actor` · `actorType: individual` | roles, callings, spotlight tiers are variants |
+| **Mortal** | An individual actor. (Engine word: *agent*.) One undertaking cell acts on a Mortal and only one: `destroy` — the plot, a premeditated killing (THR-1430). A dead Mortal is retained, carrying `deceased`, `deathCause` and `slainBy`, so the chronicle can still name them. | `actor` · `actorType: individual` | roles, callings, spotlight tiers are variants |
 | **Ascendant** | The player and rival ascendants; an ordinary actor architecturally. | `actor` · `actorType: ascendant` | — |
 | **God / Spirit** | Gods and place-spirits; dormant. | `actor` · `actorType: god \| place_spirit` | — |
 | **Faction** | A structured social entity holding territory through `controls`. | `actor` · `actorType: faction` | — |
 | **Culture** | A people; mortals and locations `belongs_to` one. | `actor` · `actorType: culture` | — |
 | **Company** | A travelling group; never "party". | `actor` · `groupKind: company` | — |
 | **Army** | A company kind with stance, supply, momentum. | `actor` · `groupKind: army` | — |
-| **Network** | A company kind that does not travel; dormant. | `actor` · `groupKind: network` | — |
+| **Network** | A group that does not travel — a web of people in several places, laid over the map rather than standing on it. Live since THR-1430: founded, widened and run as undertakings; the group phase keeps it (upkeep, cohesion, dissolution) and never moves it. | `actor` · `groupKind: network` | — |
 | **Battle** | An engine detail kept as an actor node so participants can `participates_in` it. | `actor` · `groupKind: battle` | — |
 | **Companion** | A face that walks with one mortal; never an agent. | `companion` node | — |
 | **Item** | A possession. | `artifact` · `attachmentCategory: possession` | arms · mounts_and_beasts · vestments · tomes_and_scrolls · relics_and_talismans · tools_and_instruments · provisions |

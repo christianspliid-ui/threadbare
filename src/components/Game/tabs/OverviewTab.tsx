@@ -365,6 +365,21 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
       <section>
         <SectionHeading as="h2">Identity</SectionHeading>
         <div className="space-y-1">
+          {/* THR-1430: the dead stay in the chronicle now, so the sheet has to say
+              so first — it is the one fact that reframes every other line below it.
+              *By whom* appears only where somebody could actually know (the same
+              seen-rule the chronicle uses), so a clean kill names nobody. */}
+          {card.death && (
+            <p
+              className="text-sm"
+              data-testid="identity-death"
+              style={{ color: 'var(--negative)', fontFamily: 'var(--font-display)' }}
+            >
+              {card.death.by
+                ? `${card.death.causeWord} — by ${card.death.by}`
+                : card.death.causeWord}
+            </p>
+          )}
           {card.locationName && (
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.locationName}</p>
           )}
@@ -449,7 +464,10 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
           is visible on the map), so not knowledge-gated. Cohesion is prose only. */}
       {card.company && (
         <section>
-          <SectionHeading as="h2">Company</SectionHeading>
+          {/* THR-1430: the heading is the catalogue's word for what this actually is
+              — Company, Army or Network. "Ring" is a design gloss and reaches no
+              surface (Law 14). */}
+          <SectionHeading as="h2">{card.company.kindWord}</SectionHeading>
           <div className="space-y-2">
             <p className="text-sm" style={{ color: 'var(--accent-gold)', fontFamily: 'var(--font-display)' }}>
               {card.company.name}
@@ -460,6 +478,30 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               {COHESION_SENTENCE[card.company.cohesionState]}
             </p>
+            {/* A network is a web laid over the map, not a band on the road, so where
+                its people *are* is the line that says what it is. Banded size, never
+                a numeral (Law 13). */}
+            {card.company.memberLocations && card.company.memberLocations.length > 0 && (
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {card.company.sizeWord ?? 'a handful'} of people, in{' '}
+                {card.company.memberLocations.map((loc, i) => (
+                  <span key={loc.id}>
+                    {i > 0 && (i === card.company!.memberLocations!.length - 1 ? ' and ' : ', ')}
+                    {onOpenEntity ? (
+                      <button
+                        onClick={() => onOpenEntity(loc.id)}
+                        title={`Open ${loc.name}`}
+                        className="underline decoration-dotted cursor-pointer"
+                        style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', font: 'inherit' }}
+                      >
+                        {loc.name}
+                      </button>
+                    ) : loc.name}
+                  </span>
+                ))}
+                .
+              </p>
+            )}
             {/* Rivals (THR-731) — only when blood has actually been spilt. */}
             {card.company.rivals && card.company.rivals.length > 0 && (
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>

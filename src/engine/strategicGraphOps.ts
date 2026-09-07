@@ -34,7 +34,15 @@ import { createGroup } from './groups/groupFormation';
 import { dissolveGroup } from './groups/groupDissolution';
 import { getGroupMemberEdges, getGroupPosition, isAgentGone, isGrouped } from './groups/groupQueries';
 import { refreshRoster } from './groups/groupCohesion';
-import { isCompanyGroupNode } from './groupShape';
+import { isCompanyGroupNode, getGroupKind } from './groupShape';
+import { resolveLocationToHex } from './encounterAwareness';
+import { hexDistance } from '../lib/hexMath';
+import {
+  RING_TARGET_MEMBER_COUNT,
+  RING_REACH_HEXES,
+  RING_RECRUIT_SHADOW_MIN,
+} from '../data/strategic-action-constants';
+import { computeCapability } from './domainCapability';
 import { seedFactionFromDefinition } from './factionSeeding';
 import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
@@ -1121,6 +1129,170 @@ export function raiseWarband(
   }
 }
 
+// ─── Rings (THR-1430) ────────────────────────────────────────────────
+
+/**
+ * Every living member of a group, as nodes. Shared by the ring's reach helpers.
+ */
+function livingGroupMembers(graph: WorldGraph, groupId: string): GraphNode[] {
+  return getGroupMemberEdges(graph, groupId)
+    .filter(e => (e.properties as Record<string, unknown>).leftAtTick === undefined)
+    .map(e => graph.getNode(e.source))
+    .filter((n): n is GraphNode => n !== undefined && !isAgentGone(n));
+}
+
+/**
+ * The hexes a ring has eyes on: every living member's own hex.
+ *
+ * A ring's position is not one place — that is the whole difference between a ring
+ * and a company. `getGroupPosition` (the leader's location) is the wrong question
+ * here and deliberately unused.
+ */
+export function ringMemberHexes(
+  graph: WorldGraph,
+  ringId: string,
+): { memberId: string; hex: { col: number; row: number } }[] {
+  const out: { memberId: string; hex: { col: number; row: number } }[] = [];
+  for (const member of livingGroupMembers(graph, ringId)) {
+    const locId = getAgentLocationId(graph, member.id);
+    if (!locId) continue;
+    const hex = resolveLocationToHex(graph, locId);
+    if (hex) out.push({ memberId: member.id, hex });
+  }
+  return out.sort((a, b) => a.memberId.localeCompare(b.memberId));
+}
+
+/**
+ * Which member of the ring, if any, is close enough to a node to act on it — the
+ * first by id, so the answer is reproducible (NFP #3).
+ *
+ * @returns the member's id, or `null` when nothing the ring has is within reach.
+ */
+export function ringMemberInReachOf(
+  graph: WorldGraph,
+  ringId: string,
+  targetNodeId: string,
+): string | null {
+  const targetHex = resolveLocationToHex(graph, targetNodeId)
+    ?? (() => {
+      // An actor target resolves through wherever they are standing.
+      const locId = getAgentLocationId(graph, targetNodeId);
+      return locId ? resolveLocationToHex(graph, locId) : null;
+    })();
+  if (!targetHex) return null;
+  for (const { memberId, hex } of ringMemberHexes(graph, ringId)) {
+    if (hexDistance(hex, targetHex) <= RING_REACH_HEXES) return memberId;
+  }
+  return null;
+}
+
+/**
+ * Found a ring — `create × Network`, the cell that wakes the dormant kind.
+ *
+ * The same mint every group goes through (`createGroup`, the one shape), stamped
+ * `network`. Members are the bound `recruit` cast first — the people the undertaking
+ * actually engaged — then co-located ungrouped mortals who share the founder's
+ * faction or lean Shadow, up to {@link RING_TARGET_MEMBER_COUNT}.
+ *
+ * A ring is founded *somewhere* and then stops caring where it is: the group phase
+ * enumerates it for upkeep, cohesion and dissolution but never moves it
+ * (`GROUP_KINDS_THAT_TRAVEL`).
+ *
+ * @returns `too_few_to_found` when the recruit pool cannot reach `GROUP_MIN_MEMBERS`.
+ */
+export function foundRing(
+  state: GameState,
+  actorId: string,
+  boundCastIds: readonly string[] = [],
+): GraphOpResult {
+  try {
+    const graph = state.graph;
+    const locationId = getAgentLocationId(graph, actorId);
+    if (!locationId) return { success: false, op: 'found_ring', error: 'no_location' };
+
+    const founder = graph.getNode(actorId);
+    if (!founder) return { success: false, op: 'found_ring', error: 'actor_not_found' };
+
+    const founderFaction = (() => {
+      for (const e of getFactionMembershipEdges(graph, actorId)) {
+        const n = graph.getNode(e.target);
+        if (n?.type === 'actor' && n.properties.actorType === 'faction') return n.id;
+      }
+      return null;
+    })();
+
+    const eligible = (n: GraphNode | undefined): n is GraphNode =>
+      !!n && n.id !== actorId && !isGrouped(graph, n.id) && !isAgentGone(n)
+      && n.properties.actorType === 'individual';
+
+    /**
+     * How badly the founder wants this person: a faction-mate first, then anyone who
+     * leans Shadow, then whoever else is standing here.
+     *
+     * A **preference, not a gate**, and that is the load-bearing decision. "Leans
+     * Shadow" is the *Reach* (the two axes are orthogonal — reading
+     * `sphereAlignment.darkness` asks a different question and found nobody on seed
+     * 42), but a hard Shadow threshold makes the cell nearly unfoundable: an
+     * ordinary NPC carries no capability traits at all, so `computeCapability`
+     * returns ~0.02 for them and a settlement full of people supplies no recruits.
+     * That is this plan's own kill criterion, reached before shipping rather than
+     * after. `raiseWarband` takes whoever is standing there for the same reason; a
+     * ring is choosier about *order*, never about whether it can exist.
+     */
+    const affinity = (n: GraphNode): number => {
+      if (founderFaction) {
+        for (const e of getFactionMembershipEdges(graph, n.id)) {
+          if (e.target === founderFaction) return 0;
+        }
+      }
+      try {
+        if (computeCapability(graph, n.id, 'shadow') >= RING_RECRUIT_SHADOW_MIN) return 1;
+      } catch {
+        // Fail-soft: an unreadable capability is simply not a preference.
+      }
+      return 2;
+    };
+
+    const seen = new Set<string>();
+    const recruits: GraphNode[] = [];
+    for (const id of boundCastIds) {
+      const node = graph.getNode(id);
+      if (recruits.length >= RING_TARGET_MEMBER_COUNT) break;
+      if (eligible(node) && !seen.has(id)) { seen.add(id); recruits.push(node); }
+    }
+    // Sorted by preference then by id, so the choice is reproducible from the graph
+    // alone (NFP #3) and the founder still gets their own people first.
+    const pool = getAgentsAtLocation(graph, locationId)
+      .filter(n => eligible(n) && !seen.has(n.id))
+      .sort((a, b) => affinity(a) - affinity(b) || a.id.localeCompare(b.id));
+    for (const node of pool) {
+      if (recruits.length >= RING_TARGET_MEMBER_COUNT) break;
+      seen.add(node.id);
+      recruits.push(node);
+    }
+
+    const members = [founder, ...recruits];
+    if (members.length < GROUP_MIN_MEMBERS) {
+      return { success: false, op: 'found_ring', error: 'too_few_to_found' };
+    }
+
+    const created = createGroup(state, {
+      members,
+      leaderId: actorId,
+      locationId,
+      cause: 'raised_warband',
+      groupType: 'squad',
+      startingCohesion: WARBAND_INITIAL_COHESION,
+      kind: 'network',
+    });
+    if (!created) return { success: false, op: 'found_ring', error: 'group_creation_refused' };
+
+    return { success: true, op: 'found_ring', createdId: created.groupId };
+  } catch (e) {
+    return { success: false, op: 'found_ring', error: String(e) };
+  }
+}
+
 /**
  * Add fighters to a warband the actor already commands — the `warband` kind's *update*.
  *
@@ -1154,7 +1326,10 @@ export function reinforceWarband(
     if (!group) {
       return { success: false, op: 'reinforce_group', error: 'group_not_found' };
     }
-    if (!isCompanyGroupNode(group)) {
+    // THR-1430: rings reinforce through this same op. Armies and battles do not —
+    // an army grows through the war system, and a battle is not a body you recruit into.
+    const groupKind = getGroupKind(group);
+    if (groupKind !== 'company' && groupKind !== 'network') {
       return { success: false, op: 'reinforce_group', error: 'not_a_company' };
     }
     if ((group.properties as Record<string, unknown>).groupStatus === 'disbanded') {
@@ -1183,9 +1358,33 @@ export function reinforceWarband(
       if (recruits.length >= room) break;
       if (eligible(node) && !seen.has(id)) { seen.add(id); recruits.push(node); }
     }
-    for (const node of getAgentsAtLocation(graph, locationId)) {
-      if (recruits.length >= room) break;
-      if (eligible(node) && !seen.has(node.id)) { seen.add(node.id); recruits.push(node); }
+    if (groupKind === 'network') {
+      // THR-1430: a ring recruits from wherever its people already are — anyone
+      // within `RING_REACH_HEXES` of any member — which is what lets a ring grow
+      // across a region while a company only grows where it stands.
+      //
+      // The ring's *own* members are excluded by id rather than by `isGrouped`:
+      // that predicate resolves through `getGroupOf`, which is company-scoped, so a
+      // ring member reads as ungrouped and reinforcement re-added them — a duplicate
+      // `member_of` edge id, which the graph rejects and which took the whole
+      // reinforcement down with it.
+      const existing = new Set(
+        getGroupMemberEdges(graph, targetGroupId)
+          .filter(e => (e.properties as Record<string, unknown>).leftAtTick === undefined)
+          .map(e => e.source),
+      );
+      const candidates = graph.getNodesByType('actor')
+        .filter(n => eligible(n) && !existing.has(n.id) && ringMemberInReachOf(graph, targetGroupId, n.id) !== null)
+        .sort((a, b) => a.id.localeCompare(b.id));
+      for (const node of candidates) {
+        if (recruits.length >= room) break;
+        if (!seen.has(node.id)) { seen.add(node.id); recruits.push(node); }
+      }
+    } else {
+      for (const node of getAgentsAtLocation(graph, locationId)) {
+        if (recruits.length >= room) break;
+        if (eligible(node) && !seen.has(node.id)) { seen.add(node.id); recruits.push(node); }
+      }
     }
 
     if (recruits.length === 0) {

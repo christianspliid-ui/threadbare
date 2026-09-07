@@ -72,6 +72,11 @@ export type GraphOpType =
   | 'add_edge'
   | 'remove_edge'
   | 'update_edge'
+  // THR-1430: kill a mortal and leave the body. Routes through `markMortalDead` in
+  // `retain`, so the ward and the Aspect echo are honoured and the chronicle keeps a
+  // node it can name. This is what a `delete`-shaped card that kills a *person* uses
+  // instead of `remove_node`, which deletes someone the world can then never mention.
+  | 'mark_mortal_dead'
   | 'apply_influence'
   | 'set_thread_courtposition'
   | 'reveal_secret'    // THR-30: marks actor's best knows_secret_of→target as revealed

@@ -126,6 +126,46 @@ export interface DebugPowers {
   suppressed: DebugPower[];
 }
 
+/** One hex a ring has eyes on, and whose eyes they are (THR-1430). */
+export interface DebugRingMemberHex {
+  memberId: string;
+  hex: { col: number; row: number };
+}
+
+/** `__DEBUG.getRings()` — a network, which is a group that never travels (THR-1430). */
+export interface DebugRing {
+  ringId: string;
+  name: string;
+  status: unknown;
+  cohesion: unknown;
+  leaderId: string | null;
+  leaderName: string | null;
+  members: { id: string; name: string; gone: boolean }[];
+  /**
+   * Where the ring's living members actually are — the ring itself has no position.
+   * Reach is measured from every entry here, not from the leader.
+   */
+  memberHexes: DebugRingMemberHex[];
+}
+
+/** `__DEBUG.getPlots()` — a live `destroy × Mortal`, by the stage it has reached (THR-1430). */
+export interface DebugPlot {
+  projectId: string;
+  actorId: string;
+  actorName: string;
+  targetId: string | null;
+  targetName: string | null;
+  targetDeceased: boolean;
+  checkpointIndex: number;
+  /** The named stage: 'the watching' | 'the positioning' | 'the strike'. */
+  stage: string;
+  nextCheckpointTick: number | null;
+  /** Set once the god was warned. `null` means the target is not followed. */
+  perilGrantedTick: number | null;
+  /** How long the strike was pushed out by the warning. Zero when nobody was warned. */
+  perilDeferredTicks: number;
+}
+
 export interface DebugRarityInfo {
   tier: number;
   tierName: string;
@@ -438,6 +478,25 @@ export interface DebugBridge {
    * Accepts `@hero`, an agent id, id prefix, or partial name. `null` if no agent matches.
    */
   getPowers: (agentIdOrName: string) => Promise<DebugPowers | null>;
+
+  /**
+   * THR-1430: every network in the world, with its leader, its members and the hexes
+   * those members stand on.
+   *
+   * A ring has no position of its own, so `memberHexes` is how you answer "where is
+   * it?" — and `RING_REACH_HEXES` is measured from every entry, which is why a ring
+   * can act on somewhere its leader has never been.
+   */
+  getRings: () => Promise<DebugRing[]>;
+
+  /**
+   * THR-1430: every live plot, by the stage it has reached.
+   *
+   * Use this rather than counting checkpoints by hand: `stage` names the checkpoint
+   * in the words the ladder uses, and `perilGrantedTick` is the only way to see
+   * whether the god was warned before the strike.
+   */
+  getPlots: () => Promise<DebugPlot[]>;
 
   /**
    * THR-822: where an agent originated and how long it has held its current position.

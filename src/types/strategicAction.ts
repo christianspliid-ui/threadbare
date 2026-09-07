@@ -57,6 +57,7 @@ export type UndertakingVerbVariant =
  */
 export type UndertakingObjectTypeId =
   | 'area' | 'location' | 'place' | 'route'
+  | 'mortal'
   | 'faction' | 'company' | 'army' | 'network' | 'companion'
   | 'item' | 'power' | 'condition' | 'agreement' | 'standing';
 
@@ -820,6 +821,16 @@ export interface StrategicProjectRuntime {
   /** Consecutive absence deferrals; `UNDERTAKING_ABSENCE_DEFERRAL_LIMIT` of them convert to one halt */
   deferrals?: number;
   /**
+   * The tick a plot's peril moment bought the target (THR-1430).
+   *
+   * Set once, when the warning is enqueued for a followed target, and never cleared:
+   * a target who stops being followed does not lose the grace, because the grace was
+   * already granted. Its presence is what stops the strike from being deferred twice.
+   */
+  perilGrantedTick?: number;
+  /** How many ticks the strike actually waited — carried onto `plot_resolved`. */
+  perilDeferredTicks?: number;
+  /**
    * Doc 3's re-binding seam. Set when an escalation asks for the undertaking to be
    * re-bound with complications.
    *
@@ -923,7 +934,15 @@ export type UndertakingMomentClass =
    * an affliction is state the sheet already shows (Law 56), and the attention pool
    * cannot watch everyone a curse lands on.
    */
-  | 'afflicted';
+  | 'afflicted'
+  /**
+   * The warning (THR-1430). Like `afflicted`, its `actorId` is the **target** and not
+   * the undertaking's actor — a mortal the player holds a thread to, whom someone
+   * means to kill. Always `interrupt`, and the one moment class that buys time: the
+   * strike defers `PLOT_PERIL_GRACE_TICKS` so the god has a turn to spend. The card
+   * never names the plotter — knowing *that* is what the god's own verbs are for.
+   */
+  | 'peril';
 
 /** How a moment reaches the player. `'none'` means chronicle-only. */
 export type UndertakingMomentPresentation = 'interrupt' | 'badge' | 'none';

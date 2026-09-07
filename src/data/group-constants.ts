@@ -9,6 +9,25 @@
  * or UI — see THR-734 for the UL entries.
  */
 
+// ─── Which kinds the group phase serves (THR-1430) ───────────────────
+//
+// A network is a group node that does not travel — a web laid over the map rather
+// than a band on the road. It must still be *seen* by the phase (upkeep, cohesion,
+// dissolution) before it can be told not to move, which is why these are two lists
+// and not one: the enumeration is wide, the movement sub-step is narrow.
+
+import type { GroupKind } from '../engine/groupShape';
+
+/** Kinds the group phase enumerates for upkeep, cohesion and dissolution. */
+export const GROUP_PHASE_KINDS: readonly GroupKind[] = ['company', 'network'] as const;
+
+/**
+ * Kinds the group phase's movement sub-step moves. Armies move through the war
+ * system and battles are not a travelling body; a network's members keep their own
+ * lives and positions, which is the whole point of a ring.
+ */
+export const GROUP_KINDS_THAT_TRAVEL: readonly GroupKind[] = ['company'] as const;
+
 // ─── Membership ──────────────────────────────────────────────────────
 
 /** Hard cap on members in one company. */

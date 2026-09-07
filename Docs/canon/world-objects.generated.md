@@ -45,7 +45,7 @@
 | `divine_receipt` | Divine receipt | state · `GameState.playerActionReceipts[]` | — | Essence & Divine Economy | `playerReceipts` | live | — | 🟢 LIVE |
 | `sphere` | Sphere | state · `GameState.cosmology` | — | Spheres & Quintessence | `cosmology` | live | — | 🟢 LIVE |
 | `reach` | Reach | state · `ReachDomain (a type union; capability per reach on the actor)` | — | Spheres & Quintessence | `capabilityGrowth` | live | — | 🟢 LIVE |
-| `action_template` | (action template) | node · `action_template` | — | Encounters & Dilemmas | `gameInit` | content | 88 | 🟢 LIVE |
+| `action_template` | (action template) | node · `action_template` | — | Encounters & Dilemmas | `gameInit` | content | 86 | 🟢 LIVE |
 | `encounter_template` | (encounter template) | node · `encounter_template` | — | Encounters & Dilemmas | — | content | 0 | ⚪ DORMANT |
 | `cosmology_node` | (cosmology node — dormant) | node · `cosmology` | — | Spheres & Quintessence | — | dormant | 0 | ⚪ DORMANT |
 | `sublocation_node` | (sublocation node — legacy) | node · `sublocation` | — | World Generation, Terrain & Places | — | legacy | 0 | ⚪ DORMANT |

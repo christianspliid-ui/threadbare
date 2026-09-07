@@ -231,6 +231,71 @@ export const UNDERTAKING_CELL_PROSE: Readonly<Record<string, UndertakingVerbLine
     ],
     narration: '{Actor} has sealed {object}, and {owner} keeps what will not answer.',
   },
+
+  // ─── Rings and the plot (THR-1430) ───────────────────────────────
+  //
+  // The catalogue's word is **Network** and it is what reaches any surface; "ring"
+  // is this file's gloss and appears in no line. What the prose has to carry is the
+  // one thing that makes a network different from a company: it is not in a place.
+
+  'cell.create.network': {
+    activity: [
+      '{Actor} has been having quiet words with people at {place} who are good at listening.',
+      'At {place} {actor} is finding out who talks, and to whom.',
+      '{Actor} is putting something together that has no name and no roof.',
+    ],
+    completion: [
+      '{Actor} has people now — in {place} and past it — who hear things and say them only to {actor}.',
+      'What {actor} built at {place} does not gather anywhere. It is simply in more places than one.',
+      '{Actor} has ears out. They are not all in the same town.',
+    ],
+    narration: '{Actor} has built a network.',
+  },
+
+  'cell.change_raise.network': {
+    activity: [
+      '{Actor} is adding to {object}, quietly, one conversation at a time.',
+      'Word goes out from {actor} that there is a place for the right sort.',
+      '{Actor} wants {object} wider than it is.',
+    ],
+    completion: [
+      '{Object} reaches further than it did. {Actor} saw to that.',
+      'There are more people in {object} now, and they do not all know each other.',
+      '{Actor} has widened {object}. It covers ground it did not cover.',
+    ],
+    narration: '{Actor} has widened {object}.',
+  },
+
+  'cell.use.network': {
+    activity: [
+      '{Actor} has put a question to {object} and is waiting on the answer.',
+      'Somewhere out along {object}, someone is paying attention on {actor}\'s behalf.',
+      '{Actor} is listening through other people\'s ears.',
+    ],
+    completion: [
+      'Word reaches {actor} of {object}. Nobody who told it knows who else was listening.',
+      '{Actor} knows something now, and was never anywhere near where it happened.',
+      'It came back to {actor} the way things do when enough people owe you.',
+    ],
+    narration: '{Actor} has learned something through {object}.',
+  },
+
+  // The plot. The lines never let the killing become a fight, and they never make it
+  // sound clean: the register is a narrator reporting a murder, from outside.
+  'cell.destroy.mortal': {
+    activity: [
+      '{Actor} has been finding out where {object} sleeps, and who is near.',
+      '{Actor} is not arguing with {object} any more. That part is over.',
+      'Something is being arranged about {object}, and {object} does not know it.',
+    ],
+    completion: [
+      '{Object} is dead, and the night keeps the name.',
+      '{Object} is dead. A name is on the wind, and it is {actor}\'s.',
+      '{Object} lives, and knows now exactly who wanted otherwise.',
+      '{Actor} is caught at it. {Object} is still breathing.',
+    ],
+    narration: '{Actor} meant {object} dead.',
+  },
 };
 
 /**

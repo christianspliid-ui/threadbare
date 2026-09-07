@@ -48,6 +48,10 @@ export const MOMENT_CLASS_ACCENT: Record<UndertakingMomentClass, string> = {
   // setbacks — and always a badge, never an interrupt, so this accent only ever
   // renders on a thread row.
   afflicted: 'var(--negative)',
+  // A warning that someone means this mortal harm (THR-1430). Always an interrupt,
+  // so this accent is the card's, not a thread row's — and the strongest negative
+  // the palette has, because there is a little time and not much of it.
+  peril: 'var(--negative)',
 };
 
 /** Tail of the screen-reader label — what the click will open. */

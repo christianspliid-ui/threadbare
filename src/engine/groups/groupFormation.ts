@@ -14,6 +14,7 @@ import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
 import type { AxiologicalProfile } from '../../types/agent';
 import { getAgentBonds } from '../graphQueries';
+import type { GroupKind } from '../groupShape';
 import { generateGroupName } from './groupNames';
 import {
   getGroupCohesion, isCompanyNode, isGroupEligibleAgent, isGroupReuniting,
@@ -363,6 +364,11 @@ export interface CreateGroupInput {
    */
   bandRole?: BandRole;
   bandFactionId?: string;
+  /**
+   * Which family member this node is (THR-1430). Defaults to `'company'`, so every
+   * caller cut before rings existed is unchanged. `found_ring` passes `'network'`.
+   */
+  kind?: GroupKind;
 }
 
 /**
@@ -407,7 +413,7 @@ export function createGroup(
         // THR-1297: the explicit kind tag. `groupType` stays (it is the company's own
         // party/squad/faction_band flavour); this says *which family member* the node is,
         // so a reader never has to infer it from which property bag happens to be present.
-        groupKind: 'company',
+        groupKind: input.kind ?? 'company',
         groupType: input.groupType,
         cohesion,
         groupStatus: 'active',

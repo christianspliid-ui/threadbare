@@ -37,6 +37,7 @@ import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { resolveLocationToHex } from '../encounterAwareness';
 import { applyCohesionDelta } from './groupCohesion';
 import { writeGrudge } from '../grievance/grudgeEdge';
+import { markMortalDead } from '../agentLifecycle';
 import {
   getActiveGroups,
   getGroupLeader,
@@ -367,9 +368,11 @@ function applyCasualty(
   const victim = pool[Math.floor(rng() * pool.length)] ?? pool[0];
   if (!victim || isAgentGone(victim)) return undefined;
 
-  graph.updateNode(victim.id, {
-    properties: { ...victim.properties, deceased: true, deceasedTick: tick },
-  });
+  // THR-1430: through the one funnel, in `retain` — which is exactly what this site
+  // has always done. The funnel adds the Aspect echo this path never checked: a band
+  // casualty who happens to be an Aspect of the god now echoes instead of simply dying.
+  const death = markMortalDead(graph, victim.id, tick, { cause: 'band', mode: 'retain' });
+  if (death.outcome === 'not_a_mortal' || death.outcome === 'warded') return undefined;
   return graph.getNode(victim.id) ?? victim;
 }
 

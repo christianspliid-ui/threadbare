@@ -24,11 +24,11 @@ Settled at the attended sitting of 2026-08-17 ([THR-1161](https://linear.app/thr
 
 | Class | Effect kinds | GraphOps | Total |
 |---|---:|---:|---:|
-| ✅ acted-on | 42 | 43 | 85 |
+| ✅ acted-on | 42 | 44 | 86 |
 | 📒 bookkeeping | 1 | 0 | 1 |
 | 🌱 dormant-hook | 1 | 1 | 2 |
 | 🕳️ write-without-consumer | 0 | 0 | 0 |
-| **Total** | **44** | **44** | **88** |
+| **Total** | **44** | **45** | **89** |
 
 ## Aftermath effect kinds
 
@@ -92,7 +92,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 
 ## GraphOp ops
 
-Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 44 members.
+Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 45 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
@@ -102,6 +102,7 @@ Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 
 | `add_edge` | ✅ acted-on | an edge into the world graph | `src/engine/graph.ts` → `getOutgoingEdges` (acts) |
 | `remove_edge` | ✅ acted-on | removal of an edge | `src/engine/graph.ts` → `getOutgoingEdges` (acts) |
 | `update_edge` | ✅ acted-on | properties on an existing edge | `src/engine/graph.ts` → `updateEdge` (acts) |
+| `mark_mortal_dead` | ✅ acted-on | `deceased`, `deceasedTick`, `deathCause` and `slainBy` on a mortal, through the one death funnel — the node and its edges are retained (THR-1430) | `src/engine/groups/groupQueries.ts` → `isAgentGone` (acts)<br/>`src/engine/factionNetwork.ts` → `getAnointedLeaderId` (acts)<br/>`src/engine/agentDetail.ts` → `getAgentDetail` (acts) |
 | `apply_influence` | ✅ acted-on | a decaying divine-influence entry on the target actor | `src/engine/effectTick.ts` → `divineInfluence` (acts) |
 | `set_thread_courtposition` | ✅ acted-on | `courtPosition` on the ascendant's thread edge | `src/engine/attentionTier.ts` → `courtPosition` (acts) |
 | `reveal_secret` | ✅ acted-on | the `revealed` flag on a `knows_secret_of` edge | `src/engine/phaseSecretsFavors.ts` → `knows_secret_of` (acts) |
