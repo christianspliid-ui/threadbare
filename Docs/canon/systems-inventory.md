@@ -22,8 +22,8 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 
 | Subsystem | Aliases | Domains | Note |
 |---|---|---|---|
-| Companies & Group Travel | company, companies, group, party, band, fellowship, companion, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
-| Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
+| Companies & Group Travel | company, companies, group, party, band, fellowship, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
+| Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
 
 ## Subsystem registry
 
@@ -38,27 +38,28 @@ names like `TB-073`) a premise might use.
 | **Rival Gods & Schemes** | 🟢 ACTIVE | rival, rivals, scheme, pantheon, antagonist | `rival` | `3` |
 | **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
 | **Mandate** | 🟢 ACTIVE | mandate, divine mandate, objective | `mandate` | `mandate` |
-| **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source | `essence`, `essencesource`, `control` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715` |
+| **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source | `essence`, `essencesource`, `control`, `player` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715` |
 | **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction | `encounter`, `encounters`, `dilemma` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
-| **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core` | `6.626` |
+| **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits` | `6.626` |
 | **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity` | `6.62`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
 | **Ambitions & Undertakings** | 🟢 ACTIVE | ambition, undertaking, initiative, goal, mentorship, apprentice | `ambition`, `undertaking`, `mentorship` | — |
-| **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement | `attachment`, `seed` | `2a.85` |
+| **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement | `attachment`, `seed`, `holdings`, `companions`, `reward` | `2a.85` |
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
 | **Attention, Chronicle & Narrative** | 🟢 ACTIVE | attention, chronicle, digest, narrative, story, feed | `attention`, `chronicle`, `narrative` | `2a.65`, `6.66`, `5` |
 | **Omens & Atmospheric Pressure** | 🟢 ACTIVE | omen, pressure, atmosphere, portent, foreshadowing | `omen`, `foreshadowing`, `emittedomen` | `1.7`, `2a.605`, `6.639` |
 | **Strategic Projects & Control** | 🟢 ACTIVE | strategic, project, control, contestation, territory | `strategic`, `contestation`, `control` | `2a.55`, `6.1` |
 | **Ascendant Beats & Progression** | 🟢 ACTIVE | beat, spine, director, ascendant progression, milestone | `ascendantbeat`, `ascendant` | `1.5`, `1.7`, `1.75` |
-| **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, companion, cohesion | `groups` | — |
+| **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, cohesion | `groups` | — |
 | **Movement & Colocation** | 🟢 ACTIVE | movement, travel, pathfinding, colocation, sublocation | `avatarmove`, `movement` | `2.35`, `2.352`, `2.36`, `2.361`, `2.37`, `2.4` |
-| **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence` | `6.55`, `6.6`, `6.634`, `6.64` |
-| **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor` | — |
-| **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
-| **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor` | `2a.78`, `2.38`, `6.75` |
+| **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence`, `grievance` | `6.55`, `6.6`, `6.634`, `6.64` |
+| **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret` | — |
+| **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow`, `spell` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
+| **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor`, `npc`, `binding` | `2a.78`, `2.38`, `6.75` |
 | **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
-| **Spheres & Quintessence** | 🟠 DORMANT | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
+| **Spheres & Quintessence** | 🟠 DORMANT | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
+| **World Generation, Terrain & Places** | 🟢 ACTIVE | worldgen, world generation, terrain, biome, elevation, climate, hydrology, hex map, tile, coastline, river, lake, settlement genome, sublocation, place, region, area | `world`, `worldgen`, `terrain`, `coastline`, `river`, `lake`, `depression`, `region`, `hex`, `sublocation`, `settlementgenome`, `road` | `6.635`, `6.636` |
 
 - **War, Armies & Battles** — Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614. **Do not design a green-field war system** — extend or tune this one.
 - **Factions & Succession** — Faction actions, ambitions, reputation, rank changes, succession, schism resolution.
@@ -86,6 +87,7 @@ names like `TB-073`) a premise might use.
 - **Agent Lifecycle** — Agent death, birth, migration; NPC graduation to individuals; apotheosis capstone seeding on tier-4 mortals.
 - **Intelligence, Knowledge & Familiarity** — Knowledge-facet accumulation from encounters/observations, interaction depth, intelligence reliability decay.
 - **Spheres & Quintessence** — Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation.
+- **World Generation, Terrain & Places** — The map itself and what worldgen puts on it: Areas, Hexes, Locations, Places. Distinct from Movement & Colocation, which moves agents across them and owns sublocation dissolution; distinct from Mortal Economy & Prosperity, which owns what settlements produce rather than where they are.
 
 ## Unclassified tick phases
 
@@ -399,4 +401,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (2 dormant) · 99 tick phases · 179 engine domains · 535 modules._
+_Counts: 27 registered subsystems (2 dormant) · 99 tick phases · 179 engine domains · 535 modules._

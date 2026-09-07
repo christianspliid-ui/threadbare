@@ -14,6 +14,9 @@
  *      kind's `worldRef` is a real `WorldRefKind` (the reverse is the type system's).
  *   4. Every class member is a value its kind's discriminator claims.
  *   5. Every writer names a module that exists under `src/`.
+ *   5b. Every kind's `owningSystem` is a real systems-inventory subsystem, and every
+ *      writer's module domain is claimed by some subsystem — the join that lets the
+ *      undertaking grid emit a subsystem × verb view (THR-1407).
  *   6. A small seeded world writes no discriminator value the registry does not claim —
  *      the write-time guard, run against a generated world rather than a fixture, so a
  *      writer that mints an unregistered subtype fails here before it fails in `--check`.
@@ -38,6 +41,7 @@ import { SUBLOCATION_TYPE_CATEGORY } from '../sublocation-category-art';
 import { WORLD_REF_KINDS, WORLD_REF_RESERVED_KINDS, isWorldRefKind } from '../../types/worldRef';
 import { validateNodeAgainstRegistry, getNodeSchema } from '../../types/nodeSchema';
 import { parseUnionMembers, stripLineComments } from '../../../scripts/anchor-catalog-sources';
+import { SUBSYSTEM_NAMES, SUBSYSTEM_DOMAINS, CROSS_CUTTING_DOMAINS } from '../../../scripts/subsystems-registry';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../engine/gameInit';
 import { runTick, resetEventCounter, resetDecisionCache } from '../../engine/orchestrator';
 import { createBalancedCosmology } from '../../engine/cosmology';
@@ -121,6 +125,45 @@ describe('world-object registry — internal consistency', () => {
       }
     }
     expect(missing, 'writers with no module').toEqual([]);
+  });
+
+  // ─── The systems-inventory join (THR-1407) ───────────────────────────────
+  // Two halves of one predicate: every kind names a subsystem that exists, and every
+  // writer that kind names lands in some subsystem's `domains`. Nothing checked either
+  // before, which is why 32 of 34 rows had drifted — 8 by case alone, `Set.has` being
+  // case-sensitive. Both assert NAMES, never counts (THR-688 rule A): a count is a
+  // snapshot that rots the moment a kind row lands.
+  //
+  // Fix drift on the world-objects side, never by renaming a registry row:
+  // `interface-contracts.ts` validates every contract's producer/consumer against
+  // `SUBSYSTEM_NAMES`, and `drift-scan/interface-coverage.ts` + `lint-plan-doc.ts` read
+  // `SUBSYSTEMS` too, so a rename here sweeps three further consumers.
+
+  it('names an owningSystem that is a registry subsystem', () => {
+    const unknown = WORLD_OBJECT_KINDS
+      .filter(k => !SUBSYSTEM_NAMES.has(k.owningSystem))
+      .map(k => `${k.id}: ${k.owningSystem}`);
+    expect(unknown, 'owningSystem values absent from SUBSYSTEM_NAMES').toEqual([]);
+  });
+
+  it('names writers whose module domain some subsystem claims', () => {
+    // Mirrors `domainOf()` in generate-systems-inventory.ts: a nested writer takes its
+    // directory (`settlementGenome/materialize` → `settlementgenome`), a top-level one
+    // the leading lower-case token of its basename (`npcSeeding` → `npc`).
+    const domainOf = (writer: string): string => {
+      const parts = writer.split(/[\\/]/);
+      if (parts.length > 1) return parts[0].toLowerCase();
+      return (parts[0].match(/^[a-z0-9]+/)?.[0] ?? parts[0]).toLowerCase();
+    };
+    const unhomed: string[] = [];
+    for (const k of WORLD_OBJECT_KINDS) {
+      for (const w of k.writers) {
+        const d = domainOf(w);
+        if (SUBSYSTEM_DOMAINS.has(d) || CROSS_CUTTING_DOMAINS.has(d)) continue;
+        unhomed.push(`${k.id}: ${w} (domain '${d}')`);
+      }
+    }
+    expect(unhomed, 'writer domains no subsystem claims — add the token to the owning row\'s `domains`, or to CROSS_CUTTING_DOMAINS if it genuinely spans subsystems').toEqual([]);
   });
 
   it('claims each discriminator value for exactly one kind per node type (a refined value is shared by design)', () => {

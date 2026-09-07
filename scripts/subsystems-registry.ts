@@ -84,7 +84,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Essence & Divine Economy',
     aliases: ['essence', 'divine economy', 'income', 'wellspring', 'essence source'],
     activityKeywords: ['essence', 'divine'],
-    domains: ['essence', 'essencesource', 'control'],
+    domains: ['essence', 'essencesource', 'control', 'player'],
     phaseMatch: /\b(essence|control effects|divine)\b/i,
     note: 'Essence pool + sources (THR-611). Typed sources yield own-sphere income.',
   },
@@ -108,7 +108,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Personality & Emergent Traits',
     aliases: ['personality', 'trait', 'traits', 'becoming', 'axiological', 'temperament'],
     activityKeywords: ['personality', 'trait', 'core_personality'],
-    domains: ['personality', 'core'],
+    domains: ['personality', 'core', 'trait', 'traits'],
     phaseMatch: /\b(personality|trait)\b/i,
     note: 'Layered: worldgen baseline → core → emergent traits (THR-527/542/561).',
   },
@@ -139,7 +139,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     // edges were demonstrably growing 7→82 — the false-DORMANT error this generator's
     // header calls the dangerous one, because it hides live substrate from designers.
     activityKeywords: ['artifact', 'slot'],
-    domains: ['attachment', 'seed'],
+    domains: ['attachment', 'seed', 'holdings', 'companions', 'reward'],
     phaseMatch: /\b(attachment|possession|slot cap)\b/i,
     note: 'Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.',
   },
@@ -193,7 +193,10 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
   },
   {
     name: 'Companies & Group Travel',
-    aliases: ['company', 'companies', 'group', 'party', 'band', 'fellowship', 'companion', 'cohesion'],
+    // `companion` is deliberately NOT an alias (THR-1407): `companions.ts` mints the Companion
+    // kind under Attachments — its module header is explicit that a companion is *not* an actor —
+    // so the alias here was a false search hit pointing designers at the wrong subsystem.
+    aliases: ['company', 'companies', 'group', 'party', 'band', 'fellowship', 'cohesion'],
     activityKeywords: ['group_phase', 'group_formed', 'group_dissolved'],
     domains: ['groups'],
     phaseMatch: /\bgroups?\b/i,
@@ -211,7 +214,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Reputation & Influence',
     aliases: ['reputation', 'influence', 'renown', 'standing'],
     activityKeywords: ['reputation', 'influence'],
-    domains: ['reputation', 'influence'],
+    domains: ['reputation', 'influence', 'grievance'],
     phaseMatch: /\b(reputation|influence)\b/i,
     note: 'Reach-polarity reputation traits and divine influence decay + tier promotion.',
   },
@@ -219,7 +222,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Secrets & Favors',
     aliases: ['secret', 'secrets', 'favor', 'blackmail', 'leverage'],
     activityKeywords: ['secret', 'favor', 'leverage'],
-    domains: ['secrets', 'favor'],
+    domains: ['secrets', 'favor', 'secret'],
     phaseMatch: /\b(secret|favor)\b/i,
     note: 'Secret/favor economy. If shown DORMANT, it produced no distinctly-named output this run — verify before assuming unused.',
   },
@@ -227,7 +230,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Effects & Conditions',
     aliases: ['effect', 'condition', 'buff', 'debuff', 'status', 'possession', 'slot'],
     activityKeywords: ['effect', 'condition'],
-    domains: ['effect', 'effects', 'condition', 'conditiondecay', 'conditionoverflow'],
+    domains: ['effect', 'effects', 'condition', 'conditiondecay', 'conditionoverflow', 'spell'],
     phaseMatch: /\b(effect|condition|slot cap)\b/i,
     note: 'Per-agent effect bookkeeping (duration/cooldown/decay/stacking), effect shells, condition decay + overflow, slot caps.',
   },
@@ -235,7 +238,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Agent Lifecycle',
     aliases: ['lifecycle', 'birth', 'death', 'migration', 'graduation', 'apotheosis', 'npc'],
     activityKeywords: ['birth', 'graduated', 'lifecycle'],
-    domains: ['agentlifecycle', 'agent', 'apotheosis', 'anointsuccessor'],
+    domains: ['agentlifecycle', 'agent', 'apotheosis', 'anointsuccessor', 'npc', 'binding'],
     phaseMatch: /\b(lifecycle|graduation|apotheosis)\b/i,
     note: 'Agent death, birth, migration; NPC graduation to individuals; apotheosis capstone seeding on tier-4 mortals.',
   },
@@ -251,9 +254,29 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Spheres & Quintessence',
     aliases: ['sphere', 'quintessence', 'foundation', 'creation', 'saturation', 'world-soul'],
     activityKeywords: ['sphere', 'quintessence', 'saturation'],
-    domains: ['sphere', 'quintessence', 'saturation', 'cosmology'],
+    domains: ['sphere', 'quintessence', 'saturation', 'cosmology', 'domain', 'capability', 'reach'],
     phaseMatch: /\b(sphere|quintessence|saturation|world-soul)\b/i,
     note: 'Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation.',
+  },
+  {
+    name: 'World Generation, Terrain & Places',
+    aliases: ['worldgen', 'world generation', 'terrain', 'biome', 'elevation', 'climate', 'hydrology',
+              'hex map', 'tile', 'coastline', 'river', 'lake', 'settlement genome', 'sublocation',
+              'place', 'region', 'area'],
+    // Measured against the standard 120-tick seed-42 medium run (THR-1407), not guessed.
+    // The obvious nouns are all ABSENT from the activity vocabulary — `terrain`, `worldgen`
+    // and `genome` never appear as a trace category or event type, because this subsystem
+    // does most of its work in `initializeGameState` rather than in a tick phase. Badging
+    // it on those three would have reproduced the false-DORMANT error this file's
+    // Attachments row records at :136-140. `hex`, `settlement` and `location` are present.
+    activityKeywords: ['hex', 'settlement', 'location'],
+    domains: ['world', 'worldgen', 'terrain', 'coastline', 'river', 'lake', 'depression',
+              'region', 'hex', 'sublocation', 'settlementgenome', 'road'],
+    // `settlement tier`, not bare `settlement`: promotion/demotion and genome reassessment
+    // change what stands on the map, but Settlement *Prosperity* is what a settlement
+    // produces — Mortal Economy & Prosperity's, per this row's note.
+    phaseMatch: /\b(worldgen|terrain|genome|hex state|settlement tier)\b/i,
+    note: 'The map itself and what worldgen puts on it: Areas, Hexes, Locations, Places. Distinct from Movement & Colocation, which moves agents across them and owns sublocation dissolution; distinct from Mortal Economy & Prosperity, which owns what settlements produce rather than where they are.',
   },
 ];
 
@@ -264,3 +287,23 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
  * unmatched row.
  */
 export const SUBSYSTEM_NAMES: ReadonlySet<string> = new Set(SUBSYSTEMS.map((s) => s.name));
+
+/**
+ * Every `domains` token any row claims — the vocabulary the world-object registry's
+ * reverse pin resolves writer modules against (THR-1407).
+ */
+export const SUBSYSTEM_DOMAINS: ReadonlySet<string> = new Set(SUBSYSTEMS.flatMap((s) => s.domains));
+
+/**
+ * Module domains that deliberately belong to no single subsystem (THR-1407).
+ *
+ * `domainOf()` in `generate-systems-inventory.ts` buckets a top-level module by the
+ * leading lower-case token of its basename, so these three collapse work from a dozen
+ * subsystems into one token: `phaseFactionActions.ts` and `phaseDoom.ts` are both
+ * `phase`; `gameInit.ts` boots every subsystem at once; `unifiedActionResolution.ts` is
+ * the shared action pipeline every verb runs through. Claiming one of them for a single
+ * row would attribute all of its siblings to that row in the systems inventory — a
+ * misattribution worse than the gap it closes. They are listed here, rather than
+ * silently skipped, so the reverse pin still fails on a genuinely unhomed writer.
+ */
+export const CROSS_CUTTING_DOMAINS: ReadonlySet<string> = new Set(['game', 'phase', 'unified']);

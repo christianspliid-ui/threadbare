@@ -67,6 +67,7 @@ Templates (`action_template`, `encounter_template`) are authored content that ha
 One PR, three edits, no exceptions:
 
 1. **A row in the registry** — `src/data/world-objects.ts`. A subtype joins an existing kind's `discriminator.values` and a class; a class is a new key in the kind's `classes`; a kind is a new `K({...})` with its `gameWord`, `ulTerm`, `worldRef`, `shape`, `owningSystem`, `writers`, `status`, `note`.
+   - `owningSystem` must be a **verbatim** subsystem name from `scripts/subsystems-registry.ts`, and each writer's module domain must be claimed by some row's `domains` — both pinned by `worldObjects.test.ts` since THR-1407. Fix a mismatch on *this* side: renaming a registry row sweeps `interface-contracts.ts`, `drift-scan/interface-coverage.ts` and `lint-plan-doc.ts` with it.
 2. **A UL term** — the shard the `ulTerm` names. The game word is the term; the code word is an alias.
 3. **A row on this page** — the catalogue table above.
 
