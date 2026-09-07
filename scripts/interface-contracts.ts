@@ -2473,7 +2473,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Strategic Projects & Control',
     intent:
-      'An undertaking is a verb — create · change (raise | lower) · use · control (claim | seize) · destroy · observe — acted on a kind of thing the world-object catalogue names (Area, Location, Place, Route, Faction, Company, Army, Network, Companion, Item, Power, Condition, Agreement, Standing). Each kind registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a kind does not declare is refused and traced unreachable, never faked; the generated grid (every kind × every verb) names each undeclared cell as an open decision or not an object, and fails the build when a cell has no place on it (THR-1392).',
+      'An undertaking is a verb — create · change (raise | lower) · use · control (claim | seize) · destroy · observe — acted on a kind of thing the world-object catalogue names (Area, Location, Place, Route, Mortal, Faction, Company, Army, Network, Companion, Item, Power, Condition, Agreement, Standing). Each kind registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a kind does not declare is refused and traced unreachable, never faked; the generated grid (every kind × every verb) names each undeclared cell as an open decision or not an object, and fails the build when a cell has no place on it (THR-1392).',
     // Keyed on the registry and the resolver together: the registry is what crosses
     // the boundary (an object system declares its verbs there), the resolver is the
     // one reader that turns a declaration into a world change.
@@ -2498,6 +2498,54 @@ export const CONTRACTS: readonly Contract[] = [
     // passes on cells (slice 4), so no cell travels a path the simulation takes by
     // itself today. The flip is what turns this badge green.
     deferralTicket: 'THR-1392',
+  },
+  {
+    id: 'mortal-dies-through-one-funnel',
+    producerSystem: 'Agent Lifecycle',
+    consumerSystem: 'Ambitions & Undertakings',
+    intent:
+      'Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller\'s `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle\'s own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god\'s commissioned killing (`retain`). Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).',
+    // Keyed on `deceased` rather than on the function: what crosses this boundary is
+    // the *property the funnel writes*, and no consumer calls `markMortalDead` — they
+    // all read the mark it leaves. Declaring the writer's own name here reported the
+    // consumers as starving, which is the map working.
+    mechanism: {
+      kind: 'property',
+      symbols: ['deceased', 'markMortalDead'],
+      module: 'src/engine/agentLifecycle.ts',
+    },
+    writeSites: [
+      'src/engine/agentLifecycle.ts',
+      'src/engine/groups/bandOpposition.ts',
+      'src/engine/graphOpExecutor.ts',
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/groups/groupQueries.ts',
+      'src/engine/factionNetwork.ts',
+      'src/engine/agentDetail.ts',
+    ],
+  },
+  {
+    id: 'ring-is-a-group-that-stays',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Companies & Group Travel',
+    intent:
+      'A network is a group node that the group phase sees but never moves. `found_ring` mints it through the one group mint (`createGroup`, stamped `groupKind: \'network\'`), so it is a company\'s sibling rather than a new shape, and every membership query already reads it. The phase enumerates `GROUP_PHASE_KINDS` (companies and networks) for upkeep, cohesion and dissolution and gates only the movement sub-step on `GROUP_KINDS_THAT_TRAVEL` — the two lists are separate because each half alone is a defect: widening the enumeration without gating movement makes rings travel, and gating movement without widening the enumeration leaves them invisible to upkeep and dissolution. `getAllGroups` still defaults to companies alone, so its ~40 existing callers are unchanged. A ring has no position of its own; its reach is measured from every living member (`RING_REACH_HEXES`), which is what lets it act somewhere its leader has never been (THR-1430).',
+    mechanism: {
+      kind: 'function',
+      symbols: ['foundRing', 'ringMemberInReachOf', 'GROUP_PHASE_KINDS', 'GROUP_KINDS_THAT_TRAVEL'],
+      module: 'src/engine/strategicGraphOps.ts',
+    },
+    writeSites: [
+      'src/engine/strategicGraphOps.ts',
+      'src/engine/groups/groupFormation.ts',
+    ],
+    readSites: [
+      'src/engine/groups/phaseGroups.ts',
+      'src/engine/groups/groupQueries.ts',
+      'src/engine/agentDetail.ts',
+    ],
   },
   {
     id: 'mortal-learns-a-spell',

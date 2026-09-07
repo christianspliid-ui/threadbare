@@ -247,6 +247,36 @@ export function isGrouped(graph: WorldGraph, agentId: string): boolean {
 }
 
 /**
+ * The active group of any of the given kinds this agent belongs to (THR-1430).
+ *
+ * The kind-aware sibling of {@link getGroupOf}, which is deliberately company-only.
+ * The character sheet asks through this one, because a mortal's ring is as much a
+ * fact about them as their company — and the sheet says which it is, in the
+ * catalogue's own word.
+ *
+ * Returns the first match in `member_of` edge order, so an agent in both a company
+ * and a ring answers with whichever the graph wrote first. That is a real ambiguity
+ * and it is left visible rather than resolved by a hidden precedence rule.
+ */
+export function getGroupOfKinds(
+  graph: WorldGraph,
+  agentId: string,
+  kinds: readonly GroupKind[],
+): GraphNode | undefined {
+  const wanted = new Set(kinds);
+  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+    if (edge.properties?.leftAtTick != null) continue;
+    const target = graph.getNode(edge.target);
+    const kind = getGroupKind(target);
+    if (kind !== undefined && wanted.has(kind)
+      && (target!.properties as Record<string, unknown>).groupStatus !== 'disbanded') {
+      return target;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Living-member count of the company an agent currently belongs to, or 0 when
  * the agent is in no active company.
  *

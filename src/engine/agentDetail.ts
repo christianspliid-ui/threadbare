@@ -53,13 +53,42 @@ import type { MemberOfEdgeProperties } from '../types/disposition';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { computeRankFromReputation } from '../types/faction';
 import {
-  getGroupOf,
+  getGroupOfKinds,
   getGroupLeader,
   getGroupMembers,
   getGroupCohesion,
   getCohesionState,
   type CohesionState,
 } from './groups/groupQueries';
+import { getGroupKind, type GroupKind } from './groupShape';
+import { NETWORK_SIZE_WORDS } from '../data/strategic-action-constants';
+
+/**
+ * The kinds a mortal's sheet will name. Battles are not something anyone *belongs*
+ * to, so they are not here.
+ */
+const SHEET_GROUP_KINDS: readonly GroupKind[] = ['company', 'army', 'network'] as const;
+
+/** The catalogue's word for each kind (UI Law 14 — the game word, never the code word). */
+const GROUP_KIND_WORDS: Readonly<Record<GroupKind, string>> = {
+  company: 'Company',
+  army: 'Army',
+  network: 'Network',
+  battle: 'Battle',
+};
+
+/**
+ * The banded phrase for a network's size — never a numeral (Law 13).
+ *
+ * A god does not count a ring's members; they get a sense of how far it goes.
+ */
+function networkSizeWord(count: number): string {
+  let word = NETWORK_SIZE_WORDS[NETWORK_SIZE_WORDS.length - 1]?.[1] ?? 'a web';
+  for (const [ceiling, phrase] of NETWORK_SIZE_WORDS) {
+    if (count <= ceiling) { word = phrase; break; }
+  }
+  return word;
+}
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { readStoredCalling } from './calling';
 
@@ -496,6 +525,38 @@ export interface AgentInfoCardData {
      * that has never fought anyone renders no Rivals line at all.
      */
     rivals?: string[];
+    /**
+     * The catalogue's word for what this group is (THR-1430): `Company`, `Army` or
+     * `Network`. "Ring" is a design gloss and reaches no surface (UI Law 14).
+     */
+    kindWord: string;
+    /**
+     * Where a network's members actually are, as linked place names (Law 1).
+     *
+     * Present for networks only, and it is the point of the line: a company is
+     * somewhere, a network is a web laid over the map, so "where is it?" is answered
+     * by a list of places rather than one.
+     */
+    memberLocations?: { id: string; name: string }[];
+    /**
+     * The banded size phrase — "a few", "a handful", "a web". Never a numeral
+     * (Law 13); a ring's exact headcount is not something the god can count.
+     */
+    sizeWord?: string;
+  };
+  /**
+   * How this mortal died, when they are dead (THR-1430).
+   *
+   * Present only on a retained `deceased` node — which, since the plot, is a thing
+   * the player can be looking at. `by` obeys the same seen-rule the chronicle does:
+   * a name appears only where a mark or a culprit-provenance hostile edge exists, so
+   * a clean kill shows a death with no killer.
+   */
+  death?: {
+    /** The cause word: `slain` · `fell in a fight` · `died`. */
+    causeWord: string;
+    /** The killer's name, only where somebody could actually know it. */
+    by?: string;
   };
 }
 
@@ -1145,6 +1206,39 @@ export function getCompletedAmbitions(graph: WorldGraph, agentId: string): Compl
  */
 const HOSTILE_PROVENANCE_KEYS = ['cause', 'reason', 'basis'] as const;
 
+/** The word the sheet uses for each way a mortal left (THR-1430). */
+const DEATH_CAUSE_WORDS: Readonly<Record<string, string>> = {
+  plot: 'slain',
+  commission: 'slain',
+  band: 'fell in a fight',
+  lifecycle: 'died',
+};
+
+/**
+ * Whether anyone could actually know who did this killing (THR-1430).
+ *
+ * The same seen-rule the chronicle uses, and the reason a clean kill names nobody:
+ * a name reaches the sheet only where a witness carries a mark about the culprit, or
+ * where somebody wrote a culprit-provenance hostile edge at them. `slainBy` is always
+ * on the node — it is how the world knows — but the *player* is not the world.
+ */
+function killerIsKnown(graph: WorldGraph, victimId: string, killerId: string): boolean {
+  try {
+    for (const edge of graph.getIncomingEdges(killerId, 'knows_secret_of')) {
+      if (edge.source !== killerId) return true;
+    }
+    for (const edge of graph.getIncomingEdges(killerId, 'hostile_to')) {
+      const props = edge.properties as Record<string, unknown>;
+      if (HOSTILE_PROVENANCE_KEYS.some(k => typeof props[k] === 'string')) return true;
+    }
+    // The victim's own grudge, when the plot missed and they lived to hold one.
+    return graph.getOutgoingEdges(victimId, 'hostile_to').some(e => e.target === killerId);
+  } catch {
+    // Fail-soft: an unreadable graph names nobody, which is the safe direction.
+    return false;
+  }
+}
+
 /**
  * Actor kinds that are not a *person* you can have history with.
  *
@@ -1279,10 +1373,13 @@ export function getAgentInfoCard(
   // Company membership (THR-74) — public: a company is a visible band travelling
   // together, so it is not knowledge-gated. Cohesion is carried only as the prose
   // state; the number stays in debug.
-  const group = getGroupOf(graph, agentId);
+  // THR-1430: asked through the kind-aware sibling, so a mortal's *ring* reaches the
+  // sheet too. `getGroupOf` is company-only by design and would simply have omitted it.
+  const group = getGroupOfKinds(graph, agentId, SHEET_GROUP_KINDS);
   if (group) {
     const leader = getGroupLeader(graph, group.id);
     const members = getGroupMembers(graph, group.id);
+    const groupKind = getGroupKind(group) ?? 'company';
     card.company = {
       id: group.id,
       name: group.name,
@@ -1293,7 +1390,24 @@ export function getAgentInfoCard(
         name: m.name,
         role: m.id === leader?.id ? 'leader' : 'member',
       })),
+      kindWord: GROUP_KIND_WORDS[groupKind] ?? 'Company',
     };
+
+    // A network is a web laid over the map, so where its people *are* is the line
+    // that says what it is. Deduplicated by place and sorted, so the same list reads
+    // the same way twice (NFP #3).
+    if (groupKind === 'network') {
+      const seen = new Map<string, string>();
+      for (const m of members) {
+        const locId = getAgentLocationId(graph, m.id);
+        const loc = locId ? graph.getNode(locId) : undefined;
+        if (loc && !seen.has(loc.id)) seen.set(loc.id, loc.name ?? loc.id);
+      }
+      card.company.memberLocations = [...seen.entries()]
+        .map(([id, name]) => ({ id, name }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      card.company.sizeWord = networkSizeWord(members.length);
+    }
 
     // Standing rivalries (THR-731). The grudge writer stamps `hostile_to` both ways
     // on a resolved group contest, but read both directions anyway: a one-sided edge
@@ -1308,6 +1422,22 @@ export function getAgentInfoCard(
       .map(id => graph.getNode(id)?.name)
       .filter((name): name is string => !!name);
     if (rivals.length > 0) card.company.rivals = rivals;
+  }
+
+  // ── The dead (THR-1430) ──
+  //
+  // Since the plot, a death can leave a body the player is looking at — so the sheet
+  // has to say what happened. The cause word is the node's own; *by whom* obeys the
+  // chronicle's seen-rule, so a clean kill renders a death with no killer named,
+  // which is the mechanically "unfair" and narratively correct answer.
+  if (agentProps.deceased === true) {
+    const causeWord = DEATH_CAUSE_WORDS[agentProps.deathCause as string] ?? 'died';
+    const slainBy = typeof agentProps.slainBy === 'string' ? agentProps.slainBy : undefined;
+    card.death = { causeWord };
+    if (slainBy && killerIsKnown(graph, agentId, slainBy)) {
+      const killer = graph.getNode(slainBy);
+      if (killer?.name) card.death.by = killer.name;
+    }
   }
 
   // Completed ambitions — biography for the ChronicleTab (THR-721). Populated in
