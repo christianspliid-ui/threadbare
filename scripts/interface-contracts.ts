@@ -2323,9 +2323,13 @@ export const CONTRACTS: readonly Contract[] = [
     consumerSystem: AMBITIONS,
     intent:
       'Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.',
+    // Keyed on the edges the seeder writes, not on the seeder: what crosses this
+    // boundary is the graph the starting world holds — a lane, a holding, a possession,
+    // a quarrel, a mark, a command — and every consumer reads those edges without
+    // knowing who wrote them. `seedLivingWorld` itself is the writer, named in the intent.
     mechanism: {
-      kind: 'function',
-      symbols: ['seedLivingWorld', 'LIVING_WORLD_DEFAULTS', 'AGENT_COUNT_BY_MAP_SIZE'],
+      kind: 'edge-prop',
+      symbols: ['trades_with', 'owns', 'possesses', 'hostile_to', 'knows_secret_of', 'commanded_by'],
       module: 'src/engine/seedLivingWorld.ts',
     },
     writeSites: [
