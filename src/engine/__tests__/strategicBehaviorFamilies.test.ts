@@ -238,8 +238,9 @@ describe('candidate generation across families', () => {
       const graph = buildMultiFamilyGraph();
       const rng = mulberry32(42);
 
+      // THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
       const result = generateStrategicCandidates(
-        graph, 'actor_versatile', [ambitionId], undefined, 10, rng,
+        graph, 'actor_versatile', [ambitionId], undefined, 10, rng, undefined, 'templates',
       );
 
       expect(result.candidates.length).toBeGreaterThan(0);
@@ -255,7 +256,7 @@ describe('candidate generation across families', () => {
     const rng = mulberry32(42);
 
     const result = generateStrategicCandidates(
-      graph, 'actor_versatile', ['ambition_arcane_enlightenment'], undefined, 10, rng,
+      graph, 'actor_versatile', ['ambition_arcane_enlightenment'], undefined, 10, rng, undefined, 'templates',
     );
 
     expect(result.candidates.length).toBeGreaterThan(0);
@@ -456,7 +457,7 @@ describe('ambition strategic profile wiring', () => {
     const rng = mulberry32(42);
 
     const result = generateStrategicCandidates(
-      graph, 'actor_versatile', ['ambition_found_dynasty'], undefined, 10, rng,
+      graph, 'actor_versatile', ['ambition_found_dynasty'], undefined, 10, rng, undefined, 'templates',
     );
 
     // Should NOT generate merchant templates

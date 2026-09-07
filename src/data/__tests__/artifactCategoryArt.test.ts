@@ -124,7 +124,13 @@ describe('artifact category art — coverage against a seeded world', () => {
   let state: GameState = initial;
   for (let i = 0; i < 60; i++) state = runTick(state);
 
-  const artifactNodes = ARTIFACT_NODE_TYPES.flatMap(t => state.graph.getNodesByType(t));
+  // A holding face (`attachmentCategory: 'holding'`, `src/engine/holdings.ts`) is an
+  // artifact node that is a deed to a place, not a possession: it carries the place's
+  // subtype, never a possession subcategory, and renders through the place, not the
+  // item plates. Faces appear in this world since THR-1403 (a `create × place` that
+  // completes grants the holding), so they are named out here rather than counted.
+  const artifactNodes = ARTIFACT_NODE_TYPES.flatMap(t => state.graph.getNodesByType(t))
+    .filter(n => n.properties?.attachmentCategory !== 'holding');
 
   it('finds artifact nodes to assert over (guards against a vacuous pass)', () => {
     // Without this, every assertion below would pass over an empty array.

@@ -308,7 +308,11 @@ describe('the T1 corpus is reachable', () => {
     ]);
 
     expect(named.length).toBeGreaterThan(0);
-    expect(named.filter(id => !offerable.has(id))).toEqual([]);
+    // THR-1403: the board walks cells now; the kind rows are the legacy arm. A retired
+    // template that keeps its definition only so a row's counter-play stays sound is
+    // off every profile on purpose — named here exactly, so a second one fails.
+    const RETIRED_OFF_THE_BOARD = ['strategic_expose_cache'];
+    expect(named.filter(id => !offerable.has(id))).toEqual(RETIRED_OFF_THE_BOARD);
   });
 
   it('every offerable template id resolves to a real template', () => {

@@ -2470,7 +2470,7 @@ export const CONTRACTS: readonly Contract[] = [
     // record; both are deleted (THR-1292 §3) and the `mentors` edge now carries
     // `undertakingId` rather than `initiativeId`.
     verifiedLive:
-      'mentorshipUndertaking.test.ts (30 tests) covers eligibility, bootstrap, band-driven bond drift, milestone seeds, separation, divine sever and both terminal verdicts; a 150-tick seed-42 CLI run produced live `mentors` edges and one completed `strategic_train_apprentice`.',
+      'mentorshipUndertaking.test.ts (30 tests) covers eligibility, bootstrap, band-driven bond drift, milestone seeds, separation, divine sever and both terminal verdicts; a 150-tick seed-42 CLI run produced live `mentors` edges and one completed `strategic_train_apprentice`. **That CLI half is no longer reproducible as written (THR-1403):** the template keeps its definition — `MENTORSHIP_TEMPLATE_ID` drives the bootstrap and the terminal arcs from `strategicActionLifecycle` — but it was removed from every `strategicProfile`, because mentorship is its own initiative rather than a verb × object cell, so nothing starts one until that start path lands. The tests above still drive the whole edge.',
   },
   {
     id: 'binder-mint-valve',
@@ -2614,13 +2614,13 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/undertakingMotive.ts',
       'src/engine/strategicActionCandidates.ts',
       'src/engine/strategicActionLifecycle.ts',
+      'src/engine/divisionRule.ts',
     ],
-    // UNVERIFIED-OK rather than LIVE: the registry, the resolver, the cells and the
-    // walk are wired and tested end to end, and the live proof completes a cell on a
-    // seeded world — but `UNDERTAKING_MODEL` stays on `templates` until the census
-    // passes on cells (slice 4), so no cell travels a path the simulation takes by
-    // itself today. The flip is what turns this badge green.
-    deferralTicket: 'THR-1392',
+    verifiedLive: {
+      date: '2026-09-08',
+      evidence:
+        'THR-1403 flipped `UNDERTAKING_MODEL` to `cells`: the board walks each mortal’s division-rule spread (`deriveDivisionCells`, category × leading Reaches) with the profile’s hand-listed cells on top, rotated by tick and actor, the per-ambition cap not binding a cell; the authored templates are absorbed (a profile’s `templateIds` are not walked) and stay as the legacy arm the review levers start by name. Falsified in `divisionRule.test.ts` (derived cells the hand list never named are walked; none under `templates`; six cell candidates from one ambition where the cap allows five; mentorship rides beside the spread for its categories) and on two 150-tick seeds by `npm run census:cells`: 163 · 74 starts, 136 · 49 completions, 14 · 23 distinct cells, multi-tick finish rate 29.6% · 53.7% (19.0% · 24.4% under the old durations). `census:undertakings` fails its variety floor (14 · 23 distinct against 25) on object supply — no routes, companies, networks, agreements or quarrels at seeding — which is THR-1437’s Done-when.',
+    },
   },
   {
     id: 'mortal-dies-through-one-funnel',

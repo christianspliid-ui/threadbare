@@ -105,6 +105,7 @@ describe('strategicActionCandidates', () => {
       const graph = buildTestGraph();
       const rng = mulberry32(42);
 
+      // THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
       const result = generateStrategicCandidates(
         graph,
         'actor_merchant',
@@ -112,6 +113,8 @@ describe('strategicActionCandidates', () => {
         undefined,
         10,
         rng,
+        undefined,
+        'templates',
       );
 
       expect(result.candidates.length).toBeGreaterThan(0);
@@ -138,6 +141,8 @@ describe('strategicActionCandidates', () => {
         undefined,
         10,
         rng,
+        undefined,
+        'templates',
       );
 
       // Most templates require gold >= 0.3-0.5, should be rejected
@@ -164,7 +169,7 @@ describe('strategicActionCandidates', () => {
       }) as unknown as Parameters<typeof generateStrategicCandidates>[3];
 
       const atCap = generateStrategicCandidates(
-        graph, 'actor_merchant', ['ambition_dominate_trade'], running(UNDERTAKING_MAX_ACTIVE_PER_ACTOR), 10, rng,
+        graph, 'actor_merchant', ['ambition_dominate_trade'], running(UNDERTAKING_MAX_ACTIVE_PER_ACTOR), 10, rng, undefined, 'templates',
       );
       expect(atCap.candidates).toHaveLength(0);
       expect(atCap.rejections.length).toBeGreaterThan(0);
@@ -172,7 +177,7 @@ describe('strategicActionCandidates', () => {
 
       // One below the cap: the same mortal, the same world, offered undertakings.
       const belowCap = generateStrategicCandidates(
-        graph, 'actor_merchant', ['ambition_dominate_trade'], running(UNDERTAKING_MAX_ACTIVE_PER_ACTOR - 1), 10, mulberry32(42),
+        graph, 'actor_merchant', ['ambition_dominate_trade'], running(UNDERTAKING_MAX_ACTIVE_PER_ACTOR - 1), 10, mulberry32(42), undefined, 'templates',
       );
       expect(belowCap.candidates.length).toBeGreaterThan(0);
       expect(belowCap.rejections.some(r => r.reason.startsWith('active_cap'))).toBe(false);
@@ -185,7 +190,7 @@ describe('strategicActionCandidates', () => {
         controls: [], history: [],
       } as unknown as Parameters<typeof generateStrategicCandidates>[3];
       const afterFinishing = generateStrategicCandidates(
-        graph, 'actor_merchant', ['ambition_dominate_trade'], finished, 10, mulberry32(42),
+        graph, 'actor_merchant', ['ambition_dominate_trade'], finished, 10, mulberry32(42), undefined, 'templates',
       );
       expect(afterFinishing.candidates.length).toBeGreaterThan(0);
     });
@@ -201,6 +206,8 @@ describe('strategicActionCandidates', () => {
         undefined,
         10,
         rng,
+        undefined,
+        'templates',
       );
 
       expect(result.candidates).toHaveLength(0);
@@ -217,6 +224,8 @@ describe('strategicActionCandidates', () => {
         undefined,
         10,
         rng,
+        undefined,
+        'templates',
       );
 
       const idPairs = result.candidates.map(c => `${c.templateId}:${c.targetNodeId}`);
@@ -241,6 +250,8 @@ describe('strategicActionCandidates', () => {
         undefined,
         10,
         rng,
+        undefined,
+        'templates',
       );
 
       expect(result.candidates).toHaveLength(0);
@@ -266,6 +277,8 @@ describe('strategicActionCandidates', () => {
         undefined,
         10,
         rng,
+        undefined,
+        'templates',
       );
 
       // Should not exceed STRATEGIC_MAX_CANDIDATES_PER_ACTOR (12)
@@ -374,7 +387,7 @@ describe('generateStrategicCandidates — route-formation balance bias wiring (T
   it('lifts the worldImpact of a complementary route candidate above the flat create base', () => {
     const graph = buildComplementaryGraph();
     const result = generateStrategicCandidates(
-      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42),
+      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42), undefined, 'templates',
     );
 
     const routeCandidates = result.candidates.filter(c => c.templateId === 'strategic_establish_trade_route');

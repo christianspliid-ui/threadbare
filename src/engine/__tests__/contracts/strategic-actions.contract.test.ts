@@ -72,8 +72,9 @@ describe('merchant proving slice contract', () => {
     const graph = buildMerchantWorld();
     const rng = mulberry32(42);
 
+    // THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
     const result = generateStrategicCandidates(
-      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng,
+      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng, undefined, 'templates',
     );
 
     // Should generate candidates across multiple templates
@@ -93,7 +94,7 @@ describe('merchant proving slice contract', () => {
     const rng = mulberry32(42);
 
     const { candidates } = generateStrategicCandidates(
-      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng,
+      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng, undefined, 'templates',
     );
 
     const scored = scoreStrategicCandidates(candidates, undefined, 10, mulberry32(42));
@@ -115,7 +116,7 @@ describe('merchant proving slice contract', () => {
     const rng = mulberry32(42);
 
     const { candidates } = generateStrategicCandidates(
-      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng,
+      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng, undefined, 'templates',
     );
 
     // Find a survey market candidate
@@ -139,7 +140,7 @@ describe('merchant proving slice contract', () => {
     const rng = mulberry32(42);
 
     const { candidates } = generateStrategicCandidates(
-      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng,
+      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng, undefined, 'templates',
     );
 
     const warehouse = candidates.find(c => c.templateId === 'strategic_build_warehouse');
@@ -191,7 +192,7 @@ describe('merchant proving slice contract', () => {
     const rng = mulberry32(42);
 
     const { candidates } = generateStrategicCandidates(
-      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng,
+      graph, 'merchant_a', ['ambition_dominate_trade'], undefined, 10, rng, undefined, 'templates',
     );
 
     const scored = scoreStrategicCandidates(candidates, undefined, 10, mulberry32(42));

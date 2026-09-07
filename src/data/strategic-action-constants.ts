@@ -23,8 +23,24 @@ export const ENABLE_STRATEGIC_ACTIONS = true;
 /** Hard cap on proactive candidates generated per actor per tick */
 export const STRATEGIC_MAX_CANDIDATES_PER_ACTOR = 12;
 
-/** Prevent a single ambition from flooding the board */
+/** Prevent a single ambition from flooding the board — a template-model lever; a cell is not counted against it (THR-1403). */
 export const STRATEGIC_MAX_CANDIDATES_PER_AMBITION = 5;
+
+/**
+ * Targets offered per cell on one board (THR-1403). Cells enumerate by object, not by
+ * list position, so the per-ambition cap above does not bind them; this is the only cap
+ * a cell takes besides `STRATEGIC_MAX_CANDIDATES_PER_ACTOR`.
+ */
+export const UNDERTAKING_MAX_CANDIDATES_PER_CELL = 2;
+
+/**
+ * Mentorship is its own initiative, not a cell (THR-1403): under the cells model the
+ * board offers `MENTORSHIP_TEMPLATE_ID` beside a mortal's derived spread when their
+ * active ambition's category is one of these — the two categories whose profiles
+ * listed it under the template model (`ambition_arcane_enlightenment`,
+ * `ambition_uncover_secrets`). The apprentice gate still refuses when nobody is eligible.
+ */
+export const MENTORSHIP_AMBITION_CATEGORIES: readonly string[] = ['mastery', 'discovery'];
 
 /**
  * How many undertakings one mortal may have running at once (THR-1387).
@@ -916,14 +932,15 @@ export const SUBORNED_WARBAND_DISSOLUTION_REASON = 'betrayal' as const;
 
 // ─── Verb × object type (THR-1392) ──────────────────────────────────
 //
-// The undertaking model. `templates` is the shipped authored-kind-row model;
-// `cells` enumerates verb × object-type cells over the world's own objects
-// (`src/data/undertaking-objects.ts`, `src/engine/undertakingResolver.ts`). The
-// flag flips only when `census:undertakings` passes on cells (slice 4).
-
+// The undertaking model. `cells` — the live model since THR-1403 (2026-09-08) —
+// enumerates verb × object-type cells over the world's own objects
+// (`src/data/undertaking-objects.ts`, `src/engine/undertakingResolver.ts`), derived
+// per mortal by the division rule (`src/engine/divisionRule.ts`). `templates` is the
+// retired authored-kind-row model, kept as the legacy arm the review levers and the
+// contract tests still start by id; nothing on the board walks it.
 
 export type UndertakingModel = 'templates' | 'cells';
-export const UNDERTAKING_MODEL: UndertakingModel = 'templates';
+export const UNDERTAKING_MODEL: UndertakingModel = 'cells';
 
 /** The closed verb set. `control` resolves to `claim` or `seize` by ownership. */
 export const UNDERTAKING_VERBS: readonly UndertakingVerb[] = ['create', 'change', 'use', 'control', 'destroy', 'observe'];
@@ -964,10 +981,18 @@ export const UNDERTAKING_VERB_PAYOFF: Readonly<Record<UndertakingVerbVariant, Pe
   'control:claim': [0.7, 1.3, 1.8], 'control:seize': [0.9, 1.6, 2.2], destroy: [0.9, 1.6, 2.2], observe: [0.45, 0.95, 1.4],
 };
 
-/** Project length in checkpoints; `0` means instant. `control × location` is the sustained mode, not a project. */
+/**
+ * Project length in checkpoints; `0` means instant. `control × location` is the sustained
+ * mode, not a project. T1/T2/T3 = 2/3/4 checkpoints = 12/18/24 progress at
+ * `UNDERTAKING_PROGRESS_PER_ADVANCE` 6, restoring the documented 18 at T2 (THR-1403) —
+ * the comment above `STRATEGIC_DEFAULT_PROJECT_WORK_TICKS` has said "3 checkpoints = 18"
+ * since before this change; the two now agree. Expected finish share at p = 0.5 with
+ * ratchet 3 ≈ 0.69 / 0.45 / 0.34 for T1 / T2 / T3 (THR-1403 calibration, measured on the
+ * closeout).
+ */
 export const UNDERTAKING_VERB_DURATION: Readonly<Record<UndertakingVerbVariant, PerTier>> = {
-  create: [4, 6, 8], 'change:raise': [4, 6, 8], 'change:lower': [4, 6, 8], use: [0, 0, 0],
-  'control:claim': [4, 6, 8], 'control:seize': [4, 6, 8], destroy: [4, 6, 8], observe: [0, 0, 0],
+  create: [2, 3, 4], 'change:raise': [2, 3, 4], 'change:lower': [2, 3, 4], use: [0, 0, 0],
+  'control:claim': [2, 3, 4], 'control:seize': [2, 3, 4], destroy: [2, 3, 4], observe: [0, 0, 0],
 };
 
 /** What seizing anything registers as to the grievance lane. */
@@ -1002,6 +1027,17 @@ export const UNDERTAKING_STANDING_TIER_DISTANCE_BANDS: readonly [number, number]
  * the fallback the score overrides. Mirrors the distance bands above.
  */
 export const UNDERTAKING_STANDING_TIER_SENTIMENT_BANDS: readonly [number, number] = [0.3, 0.6];
+/**
+ * Item tier by `subcategory` class when the artifact carries no stamped `tier`
+ * (THR-1403) — a stamped tier always wins, this is the fallback `itemTier` reads in
+ * `undertaking-objects.ts`. Subcategory spellings read from `reward-attachment-catalog.ts`.
+ * Typed as `1 | 2 | 3` rather than importing `UndertakingObjectTier` from
+ * `undertaking-objects.ts`, which already imports this module for its constants.
+ */
+export const ITEM_TIER_BY_CLASS: Readonly<Record<string, 1 | 2 | 3>> = {
+  arms: 1, vestments: 1, tools_instruments: 1, provisions: 1,
+  tomes_scrolls: 2, relics_talismans: 2, mounts_beasts: 2,
+};
 
 /** `create × place` with no override mints this type; a cell override names another. */
 export const UNDERTAKING_DEFAULT_PLACE_TYPE_ID = 'sublocation-type.workshop';

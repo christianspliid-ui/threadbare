@@ -28,6 +28,7 @@
  */
 import type { WorldGraph } from './graph';
 import { profileWorkIds } from './strategicActionCandidates';
+import { UNDERTAKING_MODEL, type UndertakingModel } from '../data/strategic-action-constants';
 import type { GraphNode } from '../types/graph';
 import type { AmbitionTemplate } from '../types/ambition';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
@@ -97,6 +98,12 @@ export function measureStrategicReachability(
   options: {
     readonly templates?: readonly AmbitionTemplate[];
     readonly excludedActorIds?: ReadonlySet<string>;
+    /**
+     * The undertaking model whose work ids the rows list (THR-1403). Defaults to the
+     * flag; under `cells` a row lists the profile's hand-listed cells — the derived
+     * spread needs an actor, and `census:cells` is that instrument.
+     */
+    readonly model?: UndertakingModel;
   } = {},
 ): StrategicReachabilityReport {
   const templates = options.templates ?? AMBITION_TEMPLATES;
@@ -133,7 +140,7 @@ export function measureStrategicReachability(
     rows.push({
       ambitionId: template.id,
       behaviorFamily: profile.behaviorFamily,
-      templateIds: profileWorkIds(profile),
+      templateIds: profileWorkIds(profile, options.model ?? UNDERTAKING_MODEL),
       autonomousHolders,
       silencedHolders: silenced.get(template.id) ?? 0,
       reachable: autonomousHolders > 0,

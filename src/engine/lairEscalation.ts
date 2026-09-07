@@ -228,6 +228,11 @@ function createNamedElite(state: GameState, lairNode: GraphNode): string {
       dominantSphere: sphere,
       lairId,
       spawnedAtTick: tick,
+      // THR-1403: elites stay in the encounter pipeline (that's why they sit at the
+      // lair) but must not be counted as deciding mortals — an unset spotlightTier
+      // defaults to 'spotlight' (isAutonomousDecisionActor in strategicKindReachability.ts),
+      // which would otherwise put every minted elite in the autonomous decision tier.
+      spotlightTier: 'ambient' as const,
     },
   });
 

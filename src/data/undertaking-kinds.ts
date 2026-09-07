@@ -74,6 +74,11 @@ export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
       'strategic_mount_expedition',
     ],
     updateTemplateIds: ['strategic_write_treatise'],
+    // THR-1403 retired `strategic_expose_cache` from every ambition profile (the board
+    // no longer walks it under the cells model); its definition stays as this row's
+    // counter-play so the legacy registry gate stays sound — the same treatment as
+    // `strategic_train_apprentice`. A cache is not a world-object kind; the row goes
+    // when the intelligence object type lands with its reader (THR-1393).
     destroyTemplateIds: ['strategic_expose_cache'],
     lexicon: 'cache',
   },
@@ -101,7 +106,10 @@ export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
     // Carried on `possesses`, not the `holding` category. A hammer is not ground.
     ownable: false,
     createTemplateIds: ['strategic_craft_masterwork'],
-    updateTemplateIds: ['strategic_improve_masterwork'],
+    // THR-1403 retired `strategic_improve_masterwork`: `change × Item` is an open cell
+    // and no operation raises an item, so nothing changes a masterwork today. The row
+    // keeps its create and its counter-play, which is what makes it a kind.
+    updateTemplateIds: [],
     destroyTemplateIds: ['strategic_destroy_masterwork'],
     lexicon: 'item',
   },

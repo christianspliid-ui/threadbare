@@ -57,8 +57,9 @@ import {
   objectPlaceNodeId,
 } from '../data/undertaking-objects';
 import { ownershipOf, ownershipSatisfies, readObjectTier } from './undertakingResolver';
-import { getCellTemplate } from '../data/undertaking-cells';
-import { UNDERTAKING_MODEL, UNDERTAKING_DEFAULT_TIER, type UndertakingModel } from '../data/strategic-action-constants';
+import { getCellTemplate, isCellTemplateId } from '../data/undertaking-cells';
+import { UNDERTAKING_MODEL, UNDERTAKING_DEFAULT_TIER, UNDERTAKING_MAX_CANDIDATES_PER_CELL, MENTORSHIP_AMBITION_CATEGORIES, type UndertakingModel } from '../data/strategic-action-constants';
+import { deriveDivisionCells, rotateForTick } from './divisionRule';
 import type { AmbitionStrategicProfile as StrategicProfileForCells } from '../types/strategicAction';
 import { evaluateMotiveGate } from './undertakingMotive';
 
@@ -92,12 +93,15 @@ export function getStrategicTemplate(id: string): StrategicActionTemplate | unde
 
 /**
  * The work ids an ambition profile offers under a model (THR-1392 slice 2) — the one
- * reader every consumer of `strategicProfile.templateIds` goes through. Cells lead
- * so the per-ambition cap cannot starve them (the THR-1388 ordering lesson).
+ * reader every consumer of `strategicProfile.templateIds` goes through. Under `cells`
+ * (THR-1403, the flip) a profile offers its hand-listed cells and nothing else: the
+ * authored templates are absorbed by cells, and the rest of a mortal's spread is
+ * derived by the division rule at the board (`deriveDivisionCells`), which needs the
+ * actor and so cannot live in this static read.
  */
 export function profileWorkIds(profile: StrategicProfileForCells, model: UndertakingModel = UNDERTAKING_MODEL): readonly string[] {
   if (model !== 'cells') return profile.templateIds;
-  return [...(profile.cells ?? []), ...profile.templateIds];
+  return profile.cells ?? [];
 }
 
 /**
@@ -223,9 +227,20 @@ export function generateStrategicCandidates(
     const profile = ambitionTemplate.strategicProfile;
     let ambitionCandidateCount = 0;
 
-    const workIds = profileWorkIds(profile, model);
+    // THR-1403: under `cells` the mortal's spread is the division rule's derivation
+    // (category × leading Reaches) with the profile's hand list added on top; rotated
+    // by tick and actor so the per-actor cap starves no cell by list position. The
+    // per-ambition cap below is a template-model lever — cells enumerate by object.
+    const workIds = model === 'cells'
+      ? rotateForTick([...new Set([...deriveDivisionCells(actor, ambitionTemplate.category), ...profileWorkIds(profile, model)])], tick, actorId)
+      : [...profileWorkIds(profile, model)];
+    // Mentorship is its own initiative, not a cell: it rides ahead of the spread for the
+    // ambition categories that used to list it (first, so the per-actor cap never
+    // starves it behind a dozen cells), and keeps its apprentice gate.
+    if (model === 'cells' && MENTORSHIP_AMBITION_CATEGORIES.includes(ambitionTemplate.category)) workIds.unshift(MENTORSHIP_TEMPLATE_ID);
     for (const templateId of workIds) {
-      if (ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
+      const isCell = isCellTemplateId(templateId);
+      if (!isCell && ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
       if (candidates.length >= STRATEGIC_MAX_CANDIDATES_PER_ACTOR) break;
 
       const template = getStrategicTemplate(templateId);
@@ -299,12 +314,15 @@ export function generateStrategicCandidates(
         continue;
       }
 
-      // Generate a candidate for the best targets (cap per-template to ensure variety)
-      const maxPerTemplate = Math.min(2, Math.max(1, Math.floor(STRATEGIC_MAX_CANDIDATES_PER_AMBITION / Math.max(1, workIds.length))));
+      // Generate a candidate for the best targets (cap per-template to ensure variety).
+      // A cell takes its own per-cell cap and ignores the per-ambition one (THR-1403).
+      const maxPerTemplate = isCell
+        ? UNDERTAKING_MAX_CANDIDATES_PER_CELL
+        : Math.min(2, Math.max(1, Math.floor(STRATEGIC_MAX_CANDIDATES_PER_AMBITION / Math.max(1, workIds.length))));
       let templateCandidateCount = 0;
       for (const target of targets) {
         if (templateCandidateCount >= maxPerTemplate) break;
-        if (ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
+        if (!isCell && ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
         if (candidates.length >= STRATEGIC_MAX_CANDIDATES_PER_ACTOR) break;
 
         // Check variety: skip if recent history has this template+target combo

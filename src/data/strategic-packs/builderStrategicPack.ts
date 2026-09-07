@@ -182,28 +182,9 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     mutationHint: { type: 'mint_masterwork', craftTag: 'masterwork', tier: 2 },
   },
 
-  // 6. Improve the Work — update. Re-forging what is already made.
-  {
-    id: 'strategic_improve_masterwork',
-    displayName: 'Improve the Work',
-    verb: 'change',
-    executionMode: 'multi_tick_project',
-    behaviorFamily: 'builder-civic',
-    reachProfile: { stone: 0.45, iron: 0.3, eye: 0.25 },
-    projectDuration: 5,
-    activityProse: [
-      'Taking apart something that already worked, on the suspicion that it could work better.',
-    ],
-    completionProse: [
-      'The improvement is small and the difference is not. Anyone who uses it will feel it.',
-    ],
-    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
-    resourceHint: { wealthCost: 20, reachFloor: { stone: 0.3 } },
-    checkpointDifficulty: 0.45,
-    payoffValue: 0.6,
-    motivations: ['preservation_transformation', 'asceticism_extravagance'],
-    mutationHint: { type: 'no_mutation' },
-  },
+  // 6. Improve the Work — retired by THR-1403. `change × Item` is an open cell on the
+  //    grid and no operation raises an item, so the template's fiction promised a
+  //    change the world could not make.
 
   // 7. Break the Work — counter-play. Motive-gated: destroying what someone spent a
   //    season making is the paradigm case of an act that needs a reason behind it.

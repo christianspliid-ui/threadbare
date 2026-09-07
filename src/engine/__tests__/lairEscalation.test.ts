@@ -22,6 +22,8 @@ import {
 import type { GameState } from '../../types/gameState';
 import type { HexTile } from '../../types/index';
 import type { SpherePressureEvent } from '../../types/sphereAffinity';
+import { isAutonomousDecisionActor } from '../strategicKindReachability';
+import type { GraphNode } from '../../types/graph';
 
 // ─── Minimal GameState builder ────────────────────────────────────────────────
 
@@ -260,6 +262,52 @@ describe('phaseLairEscalation — minor→major upgrade', () => {
     expect(eliteNode).toBeTruthy();
     expect(eliteNode?.type).toBe('actor');
     expect(eliteNode?.properties.isMonsterElite).toBe(true);
+  });
+
+  /**
+   * THR-1403: a minted elite must not be counted as a deciding mortal.
+   * `isAutonomousDecisionActor` (strategicKindReachability.ts) treats an unset
+   * `spotlightTier` as `'spotlight'` — the "unset means spotlight" default — so
+   * every elite would otherwise land in the autonomous decision tier even though
+   * it never runs the loop; it only exists to be encountered at the lair.
+   *
+   * The negative arm (tier deleted) falsifies the stamp rather than the predicate:
+   * without it, this test would also pass if `isAutonomousDecisionActor` were
+   * broken in a way that always returned false.
+   */
+  it('mints an elite that does NOT count as an autonomous decision actor (THR-1403)', () => {
+    const graph = new WorldGraph();
+    const tick = LAIR_ESCALATION_INTERVAL * 2;
+    addLairNode(graph, 'lair_0', {
+      lairTier: 'minor',
+      spawnedAtTick: 0,
+      dominantSphere: 'force',
+    });
+
+    const state = makeMinimalState({
+      graph,
+      tick,
+      seed: 42,
+      pendingSpherePressures: [],
+    });
+
+    phaseLairEscalation(state);
+
+    const lair = graph.getNode('lair_0');
+    const eliteId = lair?.properties.namedEliteId as string | undefined;
+    expect(eliteId).toBeTruthy();
+
+    const eliteNode = graph.getNode(eliteId!)!;
+    expect(eliteNode.properties.spotlightTier).toBe('ambient');
+    expect(isAutonomousDecisionActor(eliteNode)).toBe(false);
+
+    // Negative arm: strip the stamp and the "unset means spotlight" default takes
+    // over, proving the assertion above tests the stamp and not the predicate.
+    const unstamped: GraphNode = {
+      ...eliteNode,
+      properties: { ...eliteNode.properties, spotlightTier: undefined },
+    };
+    expect(isAutonomousDecisionActor(unstamped)).toBe(true);
   });
 
   it('does NOT upgrade minor lair when insufficient ticks have passed', () => {

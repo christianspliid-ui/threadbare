@@ -90,6 +90,9 @@ describe('the readers', () => {
     g.addNode({ id: 'chart', name: 'Chart', type: 'artifact', properties: { tier: 1 } });
     g.addNode({ id: 'relic', name: 'Relic', type: 'artifact', properties: { tier: 4 } });
     g.addNode({ id: 'untiered', name: 'Trinket', type: 'artifact', properties: {} });
+    // THR-1403: class fallback when `tier` is unstamped, and the stamp wins when both are present.
+    g.addNode({ id: 'classed_relic', name: 'Talisman', type: 'artifact', properties: { subcategory: 'relics_talismans' } });
+    g.addNode({ id: 'classed_and_stamped', name: 'Blade', type: 'artifact', properties: { subcategory: 'arms', tier: 3 } });
     g.addNode({ id: 'holder', name: 'Holder', type: 'actor', properties: { actorType: 'individual' } });
     g.addNode({ id: 'subject', name: 'Subject', type: 'actor', properties: { actorType: 'individual' } });
     g.addEdge({ id: 'agreement', source: 'holder', target: 'subject', type: 'knows_secret_of', properties: { magnitude: 0.9, revealed: false, secretType: 'affair', discoveredTick: 0, source: 'observed' } });
@@ -106,6 +109,8 @@ describe('the readers', () => {
     expect(tier('item', { kind: 'node', nodeId: 'chart' })).toEqual({ tier: 1, defaulted: false });
     expect(tier('item', { kind: 'node', nodeId: 'relic' })).toEqual({ tier: 3, defaulted: false }); // 4 clamps to the ladder
     expect(tier('item', { kind: 'node', nodeId: 'untiered' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
+    expect(tier('item', { kind: 'node', nodeId: 'classed_relic' })).toEqual({ tier: 2, defaulted: false });
+    expect(tier('item', { kind: 'node', nodeId: 'classed_and_stamped' })).toEqual({ tier: 3, defaulted: false }); // stamp wins over class
     expect(tier('agreement', { kind: 'edge', edgeId: 'agreement' })).toEqual({ tier: 3, defaulted: false });
     expect(tier('agreement', { kind: 'edge', edgeId: 'nope' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
   });

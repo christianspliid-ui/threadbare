@@ -150,7 +150,10 @@ describe('threaded agent balance telemetry contract', () => {
     setTrackedAgents(runtime, [threadedId]);
 
     let current = state;
-    for (let i = 0; i < IDLE_FORCED_TRAVEL_THRESHOLD + 2; i++) {
+    // THR-1403: under the cells model a stranded mortal first watches what there is —
+    // two or three instant works, until the duplicate window closes them — and only
+    // then idles into forced travel, so the budget is two thresholds, not one.
+    for (let i = 0; i < IDLE_FORCED_TRAVEL_THRESHOLD * 2 + 2; i++) {
       current = runTick(current, [], runtime);
     }
 

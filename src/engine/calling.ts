@@ -37,7 +37,6 @@ import type { AxiologicalProfile } from '../types/agent';
 import type { AmbitionCategory } from '../types/ambition';
 import type { BehaviorFamily, UndertakingKindId } from '../types/strategicAction';
 import type { CallingChangeTrace } from '../types/trace';
-import { REACH_DOMAINS } from '../types/traits';
 import {
   CALLING_ROWS,
   BEHAVIOR_FAMILY_TO_CALLING,
@@ -84,14 +83,11 @@ export interface StoredCalling {
 
 // ─── Inputs ──────────────────────────────────────────────────────────
 
-/** The two highest-capability reaches, highest first; fewer when the map is thin. */
-export function leadingReachPair(node: GraphNode | undefined): ReachDomain[] {
-  const caps = (node?.properties?.domainCapabilities ?? {}) as Partial<Record<ReachDomain, number>>;
-  return REACH_DOMAINS
-    .filter(r => typeof caps[r] === 'number' && (caps[r] as number) > 0)
-    .sort((a, b) => (caps[b] as number) - (caps[a] as number) || REACH_DOMAINS.indexOf(a) - REACH_DOMAINS.indexOf(b))
-    .slice(0, 2);
-}
+// The two highest-capability reaches — moved to `divisionRule.ts` (THR-1403) so the
+// candidate generator can read it without importing this module; re-exported here for
+// the callers that always read it from the calling.
+import { leadingReachPair } from './divisionRule';
+export { leadingReachPair };
 
 export interface AmbitionInput {
   readonly category: AmbitionCategory;

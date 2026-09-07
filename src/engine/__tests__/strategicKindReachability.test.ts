@@ -101,7 +101,7 @@ describe('measureStrategicReachability', () => {
   it('reports an ambition reachable when a spotlight actor pursues it', () => {
     const g = new WorldGraph();
     addActor(g, 'hero', 'spotlight', ['amb_trade']);
-    const r = measureStrategicReachability(g, { templates: [trade, war] });
+    const r = measureStrategicReachability(g, { model: 'templates', templates: [trade, war] });
 
     const row = r.rows.find(x => x.ambitionId === 'amb_trade')!;
     expect(row.reachable).toBe(true);
@@ -115,7 +115,7 @@ describe('measureStrategicReachability', () => {
     const g = new WorldGraph();
     addActor(g, 'npc', 'notable', ['amb_trade']);
     addActor(g, 'born', 'ambient', ['amb_trade']);
-    const r = measureStrategicReachability(g, { templates: [trade, war] });
+    const r = measureStrategicReachability(g, { model: 'templates', templates: [trade, war] });
 
     const row = r.rows.find(x => x.ambitionId === 'amb_trade')!;
     expect(row.reachable).toBe(false);
@@ -128,7 +128,7 @@ describe('measureStrategicReachability', () => {
   it('distinguishes "nobody wants it" from "wanted but silenced"', () => {
     const g = new WorldGraph();
     addActor(g, 'hero', 'spotlight', ['amb_war']);
-    const r = measureStrategicReachability(g, { templates: [trade, war] });
+    const r = measureStrategicReachability(g, { model: 'templates', templates: [trade, war] });
 
     // amb_trade is unreachable because zero actors pursue it — not silenced.
     expect(r.unreachableFamilies).toContain('merchant');
@@ -146,7 +146,7 @@ describe('measureStrategicReachability', () => {
 
     const g = new WorldGraph();
     addActor(g, 'hero', 'spotlight', ['amb_great']); // nobody pursues amb_forge
-    const r = measureStrategicReachability(g, { templates: [forge, greatWork] });
+    const r = measureStrategicReachability(g, { model: 'templates', templates: [forge, greatWork] });
 
     expect(r.rows.find(x => x.ambitionId === 'amb_forge')!.reachable).toBe(false);
     expect(r.rows.find(x => x.ambitionId === 'amb_great')!.reachable).toBe(true);
@@ -163,11 +163,11 @@ describe('measureStrategicReachability', () => {
     // Abandoned ambitions must not count as holders.
     const edge = g.getOutgoingEdges('hero', 'pursues')[0];
     edge.properties.status = 'abandoned';
-    expect(measureStrategicReachability(g, { templates: [trade] })
+    expect(measureStrategicReachability(g, { model: 'templates', templates: [trade] })
       .rows[0].reachable).toBe(false);
 
     edge.properties.status = 'active';
-    expect(measureStrategicReachability(g, {
+    expect(measureStrategicReachability(g, { model: 'templates',
       templates: [trade], excludedActorIds: new Set(['hero']),
     }).rows[0].reachable).toBe(false);
   });
@@ -183,7 +183,7 @@ describe('measureStrategicReachability', () => {
       type: 'pursues', properties: { status: 'active' },
     });
 
-    const r = measureStrategicReachability(g, { templates: [trade] });
+    const r = measureStrategicReachability(g, { model: 'templates', templates: [trade] });
     expect(r.rows[0].autonomousHolders).toBe(0);
     expect(r.autonomousActorCount).toBe(1);
   });
