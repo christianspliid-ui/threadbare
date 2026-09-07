@@ -11,6 +11,7 @@ import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import { LocationCard, SoulCard, FactionEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
 import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
+import { elapsedLabel } from '../../engine/aftermathWords';
 import { mulberry32 } from '../../lib/prng';
 import { useNarration } from '../../services/narration/useNarration';
 import {
@@ -1249,7 +1250,11 @@ export const HexChronicle = memo(function HexChronicle({
                       Income: {Object.entries(effect.perTickIncome).map(([sphere, inc]) => `+${inc}/${sphere}`).join(', ')}/tick
                     </span>
                   )}
-                  <span>{effect.ticksActive} ticks active</span>
+                  {/* THR-1425: `40 ticks active` is a raw magnitude (Law 13) in an engine unit
+                      the player never sees named (Law 14). `elapsedLabel` reads how long it has
+                      been running; a freshly-sustained effect reads `less than a day` rather than
+                      `durationLabel`'s `one day`, which would over-report its standing. */}
+                  <span>held {elapsedLabel(effect.ticksActive)}</span>
                 </div>
               </div>
             ))}

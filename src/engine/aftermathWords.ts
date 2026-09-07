@@ -230,6 +230,38 @@ export function durationLabel(ticks: number): string {
   return `${countWord(weeks)} week${weeks === 1 ? '' : 's'}`;
 }
 
+/**
+ * An **elapsed** span — how long ago something happened, or how long it has been running
+ * (THR-1425). The sibling of `durationLabel`, which reads a *term*.
+ *
+ * **Why a sibling rather than a second call to `durationLabel`.** The two answer different
+ * questions and disagree at the bottom of the range. `durationLabel` floors to `one day`,
+ * which is right for a term — an agreement with three ticks left is still meaningfully "a day"
+ * of standing, and rounding it away would under-report a live commitment. For an elapsed span
+ * that same floor states something false: a schism that reformed three ticks ago did **not**
+ * reform `one day ago`, it reformed today. The floor is the whole difference, and it is a
+ * reading decision, not a rounding detail — so it lives in one place rather than being
+ * re-derived at each call site.
+ *
+ * **Why `less than a day` and not a band.** The Law 13 amendment of 2026-08-12 rules out
+ * answering *"how much?"* with an adverb ladder — Christian's verdict on `grew steadily` was
+ * *"how can a player use that word to gage anything"*. `less than a day` is not an adverb: it
+ * is a bound stated in the same unit the rest of the ladder uses, so a player reads it against
+ * `four days` on the next row without translating. It also composes into every phrasing the
+ * call sites need without the function owning any of them — `${elapsedLabel(n)} ago`,
+ * `held ${elapsedLabel(n)}`, `took ${elapsedLabel(n)} to resolve` all read as English at both
+ * ends of the range. That is why there is one function here and not one per preposition:
+ * the ladder is the reading, the preposition is the sentence's.
+ *
+ * Above a day it delegates, so there is exactly one days/weeks ladder in the codebase and a
+ * retune of `TICKS_PER_DAY` moves both readings together (UI Law 3).
+ */
+export function elapsedLabel(ticks: number): string {
+  const t = Number.isFinite(ticks) ? Math.max(0, Math.floor(ticks)) : 0;
+  if (t < TICKS_PER_DAY) return 'less than a day';
+  return durationLabel(t);
+}
+
 // ─── Key humanising ──────────────────────────────────────────────────
 
 /** `witness_story_followed` → `witness story followed`. */

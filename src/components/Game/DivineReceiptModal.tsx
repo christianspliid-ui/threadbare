@@ -18,6 +18,7 @@ import { selectReceiptFrameLine } from '../../data/receipt-content';
 import type { PlayerActionReceipt } from '../../engine/playerReceipts';
 import type { EncounterAftermathChangePolarity } from '../../types/unifiedAction';
 import { formatEssence } from '../shared/formatEssence';
+import { elapsedLabel } from '../../engine/aftermathWords';
 
 interface DivineReceiptModalProps {
   open: boolean;
@@ -38,7 +39,7 @@ function capitalize(s: string): string {
   return s.length > 0 ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-/** Woven technical sentence — essence, target, ticks. No key:value chips (taste profile). */
+/** Woven technical sentence — essence, target, elapsed term. No key:value chips (taste profile). */
 function technicalSentence(receipt: PlayerActionReceipt): string {
   const sphereLabel = receipt.sphere ? `${capitalize(receipt.sphere)} ` : '';
   const essenceClause =
@@ -52,9 +53,15 @@ function technicalSentence(receipt: PlayerActionReceipt): string {
         ? ` on ${receipt.targetName}`
         : '';
   const ticks = Math.max(0, receipt.resolvedTick - receipt.startTick);
-  const ticksClause =
-    ticks > 0 ? `, and the working took ${ticks} tick${ticks === 1 ? '' : 's'} to resolve` : ', resolving at once';
-  return `${essenceClause}${targetClause}${ticksClause}.`;
+  // THR-1425: the elapsed count was a raw magnitude in an engine unit (Laws 13 + 14). It sits
+  // mid-sentence in authored prose, so the replacement has to read as prose rather than as a
+  // stat value — which is exactly what `elapsedLabel` composes into: `took less than a day to
+  // resolve` and `took four days to resolve` are both English. The instantaneous case keeps its
+  // own clause: a working that resolved on the tick it was cast did not take `less than a day`,
+  // it took no time at all, and collapsing the two would lose a distinction the player can feel.
+  const elapsedClause =
+    ticks > 0 ? `, and the working took ${elapsedLabel(ticks)} to resolve` : ', resolving at once';
+  return `${essenceClause}${targetClause}${elapsedClause}.`;
 }
 
 export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }: DivineReceiptModalProps) {
