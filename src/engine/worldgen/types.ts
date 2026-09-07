@@ -78,7 +78,7 @@ export interface WorldGenParams {
   rows: number;
   seed: number;
   ridgeCount: number;          // default 4 (3-5 range)
-  seaLevelThreshold: number;   // default 0.38 (from ELEV.SEA_LEVEL)
+  seaLevelThreshold: number;   // default: SEA_LEVEL from worldgen/constants.ts
   landShape: 'continent' | 'continents' | 'islands' | 'archipelago' | 'landlocked';
   mountainDensity: 'few' | 'moderate' | 'many';
   // Culture roster provided externally
