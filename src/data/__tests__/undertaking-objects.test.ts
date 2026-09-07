@@ -30,10 +30,10 @@ import {
 } from '../strategic-action-constants';
 import { UNDERTAKING_TIER_PAYOFF_BANDS } from '../content-eval/undertakingConstants';
 
-const TYPE_IDS = ['area', 'location', 'place', 'route', 'faction', 'company', 'army', 'network', 'companion', 'item', 'power', 'condition', 'agreement', 'standing'] as const;
+const TYPE_IDS = ['area', 'location', 'place', 'route', 'mortal', 'faction', 'company', 'army', 'network', 'companion', 'item', 'power', 'condition', 'agreement', 'standing'] as const;
 
 describe('the object-type registry', () => {
-  it('registers the fourteen catalogue kinds once each, with a shape, a lexicon and a harm class', () => {
+  it('registers the fifteen catalogue kinds once each, with a shape, a lexicon and a harm class', () => {
     expect(UNDERTAKING_OBJECT_TYPES.map(t => t.id).sort()).toEqual([...TYPE_IDS].sort());
     for (const t of UNDERTAKING_OBJECT_TYPES) {
       expect(!!t.shape.nodeType !== !!t.shape.edgeType, `${t.id} is a node or an edge object, not both`).toBe(true);

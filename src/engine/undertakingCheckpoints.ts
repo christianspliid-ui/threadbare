@@ -209,6 +209,11 @@ export function resolveMomentPresentation(
     // lands somewhere in the world. The badge is the whole notification.
     case 'afflicted':
       return 'badge';
+    // The one moment that buys time (THR-1430). Always an interrupt for a followed
+    // target: a badge the player finds later is no warning at all, and the whole
+    // point of the peril moment is that the god still has a turn to spend.
+    case 'peril':
+      return 'interrupt';
   }
 }
 

@@ -37,7 +37,13 @@ import { areFactionsHostile } from './factionNetwork';
  * writers; it is read around here rather than migrated, because renaming a live edge
  * property is a destructive change and this gate only needs to classify.
  */
-const GRUDGE_PROVENANCE = new Set(['group_engagement', 'mentorship_break', 'grievance_cooled']);
+const GRUDGE_PROVENANCE = new Set([
+  'group_engagement', 'mentorship_break', 'grievance_cooled',
+  // THR-1430: a plot that failed is the plainest injury there is, and the survivor's
+  // hostility must read as a grudge — so the target may one day plot back. Reading it
+  // as mere rivalry would leave the person who was nearly murdered without a licence.
+  'attempted_killing',
+]);
 
 const HOSTILE_PROVENANCE_KEYS = ['cause', 'reason', 'basis'] as const;
 

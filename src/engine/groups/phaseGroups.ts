@@ -42,7 +42,10 @@ import {
   GROUP_SEEKING_EVENT_SIGNIFICANCE,
   GROUP_REUNION_EVENT_SIGNIFICANCE,
   GROUP_REUNION_LAPSE_EVENT_SIGNIFICANCE,
+  GROUP_PHASE_KINDS,
+  GROUP_KINDS_THAT_TRAVEL,
 } from '../../data/group-constants';
+import { getGroupKind } from '../groupShape';
 
 /** Significance of company chronicle events in the event feed. */
 const GROUP_EVENT_SIGNIFICANCE = 0.55;
@@ -90,7 +93,10 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   // One full scan, two slices: the active working set, and the disbanded companies a
   // Reunite window may still be open on (sub-step 4.5). Deriving both from a single
   // pass keeps this phase at one O(actors) walk rather than two.
-  const allGroups = getAllGroups(state.graph);
+  // THR-1430: the enumeration is wide (companies and networks); the movement
+  // sub-step below is narrow. A ring must be seen by upkeep, cohesion and
+  // dissolution before it can be told not to travel.
+  const allGroups = getAllGroups(state.graph, GROUP_PHASE_KINDS);
   const active = allGroups.filter(
     n => (n.properties as Record<string, unknown>).groupStatus !== 'disbanded',
   );
@@ -153,7 +159,11 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   }
 
   // ── Sub-step 3: movement ──
+  // THR-1430: only the kinds that travel. A network is a web laid over the map —
+  // its members keep their own lives and positions — so it is enumerated above for
+  // upkeep, cohesion and dissolution, and skipped here.
   for (const group of survivors) {
+    if (!GROUP_KINDS_THAT_TRAVEL.includes(getGroupKind(group) ?? 'company')) continue;
     try {
       const move = runGroupMovement(state, group);
       if (move.moved) {

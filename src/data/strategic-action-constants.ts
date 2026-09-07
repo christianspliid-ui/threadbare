@@ -1218,3 +1218,54 @@ export const SEAL_POWER_CONDITION_ID = 'reward_condition_null_touched';
 
 /** What a curse or a seal registers as, for the grievance funnel. */
 export const HARM_ON_AFFLICT: HarmClassForCells = 'afflicted';
+
+// ─── Rings and the plot (THR-1430) ───────────────────────────────────
+
+/** Members a founding recruits toward. Smaller than a warband: a ring is thin by design. */
+export const RING_TARGET_MEMBER_COUNT = 4;
+
+/**
+ * How far from *any* member a ring can recruit, watch or mark, in hexes.
+ *
+ * This is the whole of what makes a ring different from a company: a company acts
+ * where it stands, a ring acts wherever one of its people happens to be. Raising it
+ * widens every ring's reach at once — which is the tuning lever if rings feel inert.
+ */
+export const RING_REACH_HEXES = 3;
+
+/** The sheet's banded phrase for a ring's size — never a numeral (UI Law 14). */
+export const NETWORK_SIZE_WORDS: readonly (readonly [number, string])[] = [
+  [2, 'a few'],
+  [4, 'a handful'],
+  [8, 'a web'],
+] as const;
+
+/**
+ * The only motives that license a killing.
+ *
+ * Deliberately narrower than the general motive gate: `rivalry` and
+ * `contested_ambition` are opportunism, and opportunism does not get to kill
+ * (THR-1397). A grudge is an injury actually done; a faction war is a war.
+ */
+export const PLOT_MOTIVES: readonly string[] = ['grudge', 'faction_war'] as const;
+
+/** The watching, the positioning, the strike. */
+export const PLOT_CHECKPOINTS = 3;
+
+/** Added to the strike's difficulty above `destroy`'s band — the hardest roll on the grid. */
+export const PLOT_DIFFICULTY_BONUS = 0.15;
+
+/** Subtracted on the positioning when the actor has an anchor near the target. */
+export const PLOT_POSITIONING_EASE = 0.10;
+
+/** How long the strike waits after a followed target's peril moment — half a day. */
+export const PLOT_PERIL_GRACE_TICKS = 6;
+
+/** The bands on which the plotter is exposed. */
+export const PLOT_EXPOSURE_BANDS: readonly string[] = ['success_at_cost', 'critical_failure'] as const;
+
+/** The secret a witness to an exposed killing carries. */
+export const PLOT_WITNESS_SECRET_TYPE = 'witnessed_killing';
+
+/** How damning that secret is. Heavier than an observed movement: they saw a murder. */
+export const PLOT_WITNESS_MAGNITUDE = 0.9;

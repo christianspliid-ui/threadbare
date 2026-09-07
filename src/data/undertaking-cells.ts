@@ -74,6 +74,8 @@ export const CELL_FAMILY_BY_TYPE: Readonly<Record<UndertakingObjectTypeId, Behav
   location: 'builder-civic',
   place: 'builder-civic',
   route: 'merchant-expansion',
+  // The plot is the underworld's work, not a courtier's (THR-1430).
+  mortal: 'underworld-network',
   faction: 'court-political',
   company: 'warlord-expansion',
   army: 'warlord-expansion',
@@ -123,6 +125,9 @@ export const CREATE_SITE_RULE: Readonly<Record<UndertakingObjectTypeId, Strategi
   location: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'farmland'] },
   place: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
   route: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
+  // A mortal is never *made* by an undertaking — the kind has one cell and it is
+  // `destroy`. `self` keeps the table total without claiming a create cell exists.
+  mortal: { type: 'self' },
   faction: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
   company: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort'] },
   army: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort', 'castle'] },
