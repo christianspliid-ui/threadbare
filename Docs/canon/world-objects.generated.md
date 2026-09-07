@@ -8,12 +8,8 @@
 
 | Check | Count | Limit | Verdict |
 |---|---|---|---|
-| UNREGISTERED — census values no kind claims | 1 | 0 | ❌ |
+| UNREGISTERED — census values no kind claims | 0 | 0 | ✅ |
 | PHANTOM — union members and content targets no writer mints | 0 | 0 | ✅ |
-
-**Unregistered values** (register the value on a kind, or fix the writer):
-
-- `location locationSubtype=encounter_support ×1`
 
 ## Kinds
 

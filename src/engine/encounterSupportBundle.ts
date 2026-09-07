@@ -121,7 +121,11 @@ function resolveLocationSupport(
     type: 'location',
     name: spec.fallbackName ?? spec.sublocationTypeId,
     properties: {
-      locationSubtype: 'encounter_support',
+      // A support node is a Place — `parentLocationId` is the tier, `sublocationTypeId`
+      // its kind. It used to stamp `locationSubtype: 'encounter_support'` as well, the
+      // outer tier's discriminator with a value no Location class registers, which the
+      // world-object drift census refused the first time a run reached this writer
+      // (THR-1403). `generatedBy` below is what says where it came from.
       sublocationTypeId: spec.sublocationTypeId,
       parentLocationId: locationId,
       persistence: PERMANENT_SUBLOCATION_PERSISTENCE,

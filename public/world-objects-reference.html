@@ -21,7 +21,7 @@
   .wrap { overflow-x: auto; }
   ul { max-width: 90ch; }
   li { margin: .35rem 0; }
-  .drift { background: var(--surface); padding: 1rem 1.25rem; border-left: 3px solid #b5533c; }
+  .drift { background: var(--surface); padding: 1rem 1.25rem; border-left: 3px solid var(--live); }
 </style>
 </head>
 <body>
@@ -68,7 +68,7 @@
 <h1>World Objects</h1>
 <p class="lede">Every kind of thing the world keeps, in game words. A world object is a node type (or an edge type, or a slice of game state) plus a subtype the game names; a variant is a subtype or a class, never a new node type. Rendered from the registry plus a census of seeds 42, 99 on the medium map at tick 30. The hand page — what the kinds mean and how to add one — is <code>Docs/canon/world-objects.md</code>.</p>
 <h2>Drift</h2>
-<div class="drift"><ul><li><code>UNREGISTERED location locationSubtype=encounter_support ×1</code></li></ul></div>
+<div class="drift"><p>No drift: every census value is claimed by a kind, every union member is claimed, every content target names a subtype a writer mints.</p></div>
 <h2>Kinds</h2>
 <div class="wrap"><table>
 <thead><tr><th>Kind</th><th>Game word</th><th>Shape</th><th>Classes</th><th>Owning system</th><th>Status</th><th>Census</th><th>Badge</th></tr></thead>
