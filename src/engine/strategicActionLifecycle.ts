@@ -29,7 +29,6 @@ import {
   STRATEGIC_CONTROL_DEGRADATION_RATE,
   STRATEGIC_HISTORY_WINDOW_TICKS,
   ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES,
-  ROUTE_IDENTITY_SUBTYPE,
   WARBAND_RECRUIT_CAST_KEY,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
   FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
@@ -59,7 +58,7 @@ import {
   foundFaction,
   type GraphOpResult,
 } from './strategicGraphOps';
-import { resolveDurableActorLocation } from './tradeRouteOps';
+import { resolveDurableActorLocation, mintRouteIdentity } from './tradeRouteOps';
 import { resolveUndertakingCompletion } from './undertakingResolver';
 import { cellCompletionProse } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
@@ -1311,37 +1310,12 @@ function executeInstantMutation(
             const routeResult = createTradeRoute(graph, sourceLocId, targetId, candidate.actorId, tick);
             ops.push(routeResult);
 
-            // THR-1308: the route gains an identity face. The `trades_with` edge stays
-            // the economic authority — every existing consumer reads it and none of
-            // them changes — but an edge has nowhere to carry a name, an owner or a
-            // blockade state, so the `trade_route` kind's object is this node. Minted
-            // only when the edge actually landed: an identity for a route that does
-            // not exist is exactly the orphan the kind registry exists to refuse.
+            // THR-1308: the route gains an identity face — the node the Route object
+            // *is*. One writer since THR-1436 (`mintRouteIdentity`, shared with the
+            // `create × Route` cell and THR-1437's seeded routes); minted only when
+            // the edge actually landed, and a failure to mint leaves the edge standing.
             if (routeResult.success) {
-              const originHex = resolveLocationToHex(graph, sourceLocId);
-              if (originHex) {
-                const originNode = graph.getNode(sourceLocId);
-                const destNode = graph.getNode(targetId);
-                ops.push(
-                  createLocation(
-                    graph,
-                    originHex,
-                    candidate.actorId,
-                    // No article of our own: settlement names already carry one where
-                    // they want one ("The Shattered Sanctum"), and prepending a second
-                    // produced "The The Shattered Sanctum–Greycity Road" in the first
-                    // 150-tick run this shipped against.
-                    `${originNode?.name ?? 'Unknown'}–${destNode?.name ?? 'Unknown'} Road`,
-                    ROUTE_IDENTITY_SUBTYPE,
-                    tick,
-                    {
-                      routeSourceId: sourceLocId,
-                      routeTargetId: targetId,
-                      routeEdgeId: routeResult.createdId,
-                    },
-                  ),
-                );
-              }
+              ops.push(mintRouteIdentity(graph, sourceLocId, targetId, routeResult.createdId, candidate.actorId, tick));
             }
           }
         }

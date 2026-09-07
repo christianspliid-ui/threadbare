@@ -1,5 +1,5 @@
 {
-  "total": 2918,
+  "total": 2917,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -507,7 +507,7 @@
     "src/engine/battleResolution.ts": 7,
     "src/engine/capabilityGrowth.ts": 2,
     "src/engine/clearanceGate.ts": 1,
-    "src/engine/complicationEffects.ts": 2,
+    "src/engine/complicationEffects.ts": 1,
     "src/engine/conditionOverflow.ts": 2,
     "src/engine/contentCensus/adapters.ts": 2,
     "src/engine/contentCensus/matrix.ts": 1,

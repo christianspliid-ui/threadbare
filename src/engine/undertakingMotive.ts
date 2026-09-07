@@ -60,6 +60,13 @@ export interface MotiveGateResult {
    * separating in the trace.
    */
   readonly ownerCount: number;
+  /**
+   * The object type un-gated this verb for the actor's relation to the holder
+   * (THR-1436 — the cure for an ally). Set only when `allowed` through that door; the
+   * board records it as `gate_exempt:<reason>` so a skipped gate is as visible as a
+   * refused one.
+   */
+  readonly exempt?: string;
 }
 
 const ALLOWED_UNGATED: MotiveGateResult = { allowed: true, ownerCount: 0 };
@@ -167,6 +174,16 @@ export function evaluateMotiveGate(
   const gate = template.motiveGate;
   if (!gate || gate.length === 0) return ALLOWED_UNGATED;
 
+  // THR-1436: a type may un-gate one verb for a relation the actor holds toward the
+  // holder — curing an ally's wound needs no quarrel. Consulted before the owner walk
+  // and fails closed: a reader that throws or answers nothing leaves the gate standing.
+  if (objectHandle) {
+    const exempt = resolveGateExemption(graph, actorId, template, objectHandle);
+    if (exempt) {
+      return { allowed: true, ownerCount: resolveHandleOwners(graph, objectHandle, template).length, exempt };
+    }
+  }
+
   const owners = objectHandle
     ? resolveHandleOwners(graph, objectHandle, template)
     : resolveTargetOwners(graph, targetNodeId);
@@ -202,6 +219,29 @@ function resolveHandleOwners(
   const type = rule.type === 'object' ? getUndertakingObjectType(rule.objectTypeId) : undefined;
   if (type) return resolveObjectOwners(graph, type, handle);
   return handle.kind === 'node' ? resolveTargetOwners(graph, handle.nodeId) : [];
+}
+
+/**
+ * The reason a type's per-verb exemption gives for skipping the gate, or `null`.
+ * Only a cell (a template carrying its `cellVariant`) can be exempted, and only by
+ * the type it acts on; a legacy template has no door here.
+ */
+function resolveGateExemption(
+  graph: WorldGraph,
+  actorId: string,
+  template: StrategicActionTemplate,
+  handle: UndertakingObjectHandle,
+): string | null {
+  const rule = template.targetRule;
+  const variant = template.cellVariant;
+  if (!variant || rule.type !== 'object') return null;
+  const test = getUndertakingObjectType(rule.objectTypeId)?.gateExemption?.[variant];
+  if (!test) return null;
+  try {
+    return test(graph, actorId, handle);
+  } catch {
+    return null;
+  }
 }
 
 // ─── Readers ────────────────────────────────────────────────────────

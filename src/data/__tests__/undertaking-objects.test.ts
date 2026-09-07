@@ -36,7 +36,10 @@ describe('the object-type registry', () => {
   it('registers the fifteen catalogue kinds once each, with a shape, a lexicon and a harm class', () => {
     expect(UNDERTAKING_OBJECT_TYPES.map(t => t.id).sort()).toEqual([...TYPE_IDS].sort());
     for (const t of UNDERTAKING_OBJECT_TYPES) {
-      expect(!!t.shape.nodeType !== !!t.shape.edgeType, `${t.id} is a node or an edge object, not both`).toBe(true);
+      const isEdge = !!t.shape.edgeType || !!t.shape.edgeTypes;
+      expect(!!t.shape.nodeType !== isEdge, `${t.id} is a node or an edge object, not both`).toBe(true);
+      // THR-1436: a type reads its holder through its own reader or through edges, never both.
+      expect(!(t.ownersOf && t.ownedVia.length > 0), `${t.id} declares ownersOf or ownedVia, not both`).toBe(true);
       expect(t.lexicon.length).toBeGreaterThan(0);
       expect(HARM_ON_DESTROY[t.id]).toBe(t.harmOnDestroy);
     }

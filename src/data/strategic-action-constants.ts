@@ -996,6 +996,12 @@ export const UNDERTAKING_MARK_TIER_MAGNITUDE_BANDS: readonly [number, number] = 
 export const UNDERTAKING_ARMY_TIER_ROSTER_BANDS: readonly [number, number] = [5, 20];
 /** Standing tier by the `reputation_with` score's distance from neutral (0.5). */
 export const UNDERTAKING_STANDING_TIER_DISTANCE_BANDS: readonly [number, number] = [0.15, 0.3];
+/**
+ * Standing tier from a `relates_to` sentiment's magnitude (|−1..1|) when no
+ * `reputation_with` score exists for the pair (THR-1436) — the seeded relationship is
+ * the fallback the score overrides. Mirrors the distance bands above.
+ */
+export const UNDERTAKING_STANDING_TIER_SENTIMENT_BANDS: readonly [number, number] = [0.3, 0.6];
 
 /** `create × place` with no override mints this type; a cell override names another. */
 export const UNDERTAKING_DEFAULT_PLACE_TYPE_ID = 'sublocation-type.workshop';
@@ -1183,6 +1189,14 @@ export const LEARN_SPELL_UNALIGNED_SHELF_OPEN = true;
  * meaningless (the gate *is* the story rule).
  */
 export const CONDITION_ALLY_STANDING_MIN = 0.6;
+
+/**
+ * Whether curing an ally's condition bypasses the motive gate (THR-1436). The cure is
+ * signed the way the blessing is: a healer needs no quarrel to help a friend, while
+ * curing a stranger or an enemy (lifting their seal) stays gated. `false` restores the
+ * verb's default gate, so curing anyone needs a motive against them.
+ */
+export const CONDITION_CURE_UNGATED_FOR_ALLIES = true;
 
 /** The highest condition tier each outcome band may inflict. The tier-3 conditions stay encounter rewards. */
 export const CONDITION_TIER_CAP_BY_BAND: Readonly<Record<string, number>> = {

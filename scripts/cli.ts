@@ -46,6 +46,7 @@ import { startUndertakingForReview, setUndertakingBandPin, getUndertakingPinVerd
 import { enqueueUndertakingMoments } from '../src/engine/undertakingMoments';
 import { followAgent as followAgentWrite, isFollowed as isFollowedRead } from '../src/engine/followedAgents';
 import { isAutonomousDecisionActor as isSpotlightActor } from '../src/engine/strategicKindReachability';
+import { getUndertakingObjectType, ownershipCensus } from '../src/data/undertaking-objects';
 import { prepareEncounterSupportBundle } from '../src/engine/encounterSupportBundle';
 import { buildEncounterBinderContext } from '../src/engine/binding/encounterBinderContext';
 import { createBalancedCosmology } from '../src/engine/cosmology';
@@ -1787,7 +1788,14 @@ ${BOLD}World objects${RESET} — ${rows.length} kind${rows.length === 1 ? '' : '
     }
     const shape = s.kind === 'state' ? `state ${s.path}` : s.kind === 'edge' ? `edge ${s.edgeTypes.join('/')}` : `node ${s.nodeType}${s.discriminator ? ` · ${s.discriminator.key}` : ''}`;
     const badge = count === null ? DIM + '—' + RESET : count > 0 ? GREEN + String(count) + RESET : YELLOW + '0' + RESET;
-    console.log(`  ${BOLD}${k.gameWord.padEnd(20)}${RESET} ${badge.padEnd(16)} ${DIM}${shape}${RESET}`);
+    // THR-1436: what the undertaking registry can see of the kind — objects it
+    // enumerates, how many have a holder, how many are held by a deciding mortal.
+    const undertakingType = getUndertakingObjectType(k.id as Parameters<typeof getUndertakingObjectType>[0]);
+    const census = undertakingType ? ownershipCensus(graph, undertakingType, isSpotlightActor) : null;
+    const ownedText = census
+      ? `  ${DIM}undertaking:${RESET} ${census.objects} objects · ${census.owned} owned · ${census.ownedByDeciding} by a deciding mortal`
+      : '';
+    console.log(`  ${BOLD}${k.gameWord.padEnd(20)}${RESET} ${badge.padEnd(16)} ${DIM}${shape}${RESET}${ownedText}`);
     if (kindQuery) {
       console.log(`    ${DIM}${k.note}${RESET}`);
       if (k.classes) for (const [c, m] of Object.entries(k.classes)) console.log(`    ${c}: ${m.length ? m.join(', ') : '(no value yet)'}`);

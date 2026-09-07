@@ -170,7 +170,7 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
   },
   companion: {
     create: { op: 'mint_companion', note: 'Recruit a companion — the op the aftermath effects reach, as a work.' },
-    destroy: { op: 'remove_companion', note: 'Send a companion away, or — motive-gated against another\'s — turn them.' },
+    destroy: { op: 'remove_companion', note: 'Turn another\'s companion — motive-gated against the mortal they walk beside, who holds them through `accompanies` (THR-1436). Dismissing one\'s own companion is not a work: it stays the story\'s and the expiry phase\'s (`removeCompanion`, `expireCompanions`).' },
   },
   item: {
     create: { op: 'mint_masterwork', note: 'A masterwork where the maker stands; a chart is the same cell with the kind as a parameter.', retires: ['craft_masterwork'] },
@@ -184,7 +184,7 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
   },
   condition: {
     create: { op: 'inflict_condition', note: 'One **signed** cell (THR-1429), and the first in the game whose object is made against a person. The sign is read at proposal from the actor\'s relation to the target and is itself the gate: self or an ally (same faction, same company, or standing ≥ `CONDITION_ALLY_STANDING_MIN`) is a blessing from the `#blessing` pool, un-gated; a mortal the actor holds a motive against is a curse from the `#curse` pool with a band-scaled duration; a stranger is refused `no_sign`. There is deliberately no neutral third outcome. Op: the catalog\'s own `instantiateReward` mint, with `sign` and `inflictedBy` added to the bearer\'s edge.', readBy: '`conditionDecay` runs the duration; `effectPredicates` / `graphConditions` gate eligibility on what is worn; the encounter walkers shape tests around it; a curse registers `afflicted` harm through `UNDERTAKING_MINTING_RULES`, so the cursed may come to want vengeance against a *seen* culprit; and `destroy × Condition` — the cure, already live — is the counter-play.' },
-    destroy: { op: 'cure_condition', note: 'Curing: the removal funnel the expiry phase uses, taken as work — a healer\'s undertaking. The counter-play to the curse (create × Condition), and since THR-1429 the way a sealed power is freed early.' },
+    destroy: { op: 'cure_condition', note: 'Curing: the removal funnel the expiry phase uses, taken as work — a healer\'s undertaking. The object is one mortal\'s *bearing* of a condition — the `has_trait` edge, never the shared definition (THR-1436) — so the cure lifts that bearer\'s wound and nobody else\'s. **Signed like the blessing:** curing an ally (same faction, same company, or standing ≥ `CONDITION_ALLY_STANDING_MIN`) needs no quarrel and the board records `gate_exempt:ally`; curing a stranger or an enemy stays motive-gated (`CONDITION_CURE_UNGATED_FOR_ALLIES`). The counter-play to the curse (create × Condition), and since THR-1429 the way a sealed power is freed early.' },
   },
   agreement: {
     create: { op: 'mint_leverage_mark', note: 'Digging up a secret: a mark on the mortal the work was done about.' },
@@ -192,9 +192,9 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
     destroy: { op: 'expose_mark', note: 'Exposing a mark: the edge stays, revealed, and loses its leverage. Forgiving a favour is the same cell on the favour class.' },
   },
   standing: {
-    'change:raise': { op: 'apply_reputation_with_delta (+)', note: 'Cultivating one\'s own standing with a person, a faction or a place.' },
-    'change:lower': { op: 'apply_reputation_with_delta (−)', note: 'Smearing another\'s standing — the same op, signed — motive-gated.' },
-    destroy: { op: 'create_relation_edge hostile_to', note: 'A quarrel: the standing broken and a hostile_to edge standing in its place — motive-gated. The seed of a duel, which is an encounter, never a work.' },
+    'change:raise': { op: 'apply_reputation_with_delta (+)', note: 'Cultivating one\'s own standing with a person, a faction or a place. A Standing object is one ordered pair (THR-1436): read from `reputation_with` when a score exists, from the seeded `relates_to` otherwise — the op mints the score edge on first write either way.' },
+    'change:lower': { op: 'apply_reputation_with_delta (−)', note: 'Smearing another\'s standing — the same op, signed — motive-gated. Targets the same ordered-pair objects as raise (THR-1436).' },
+    destroy: { op: 'create_relation_edge hostile_to', note: 'A quarrel: the standing broken and a hostile_to edge standing in its place — motive-gated. The seed of a duel, which is an encounter, never a work. `hostile_to` is what this cell writes, never a Standing object (THR-1436).' },
   },
 };
 

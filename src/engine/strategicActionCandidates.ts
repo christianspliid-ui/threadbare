@@ -352,6 +352,10 @@ export function generateStrategicCandidates(
         // `no_motive` prefix so a sweep can match either.
         const objectHandle = objectHandles.get(target.id);
         const motiveGate = evaluateMotiveGate(graph, actorId, target.id, template, objectHandle);
+        // THR-1436: a gate the object type waived (the cure for an ally) is recorded on
+        // the board beside the refusals, so a skipped gate is as inspectable as a
+        // refused one. The candidate is kept — this entry is a note, not a rejection.
+        if (motiveGate.exempt) rejections.push({ templateId, reason: `gate_exempt:${motiveGate.exempt}` });
         if (!motiveGate.allowed && !review?.bypass.has('motive_gate')) {
           const reason = motiveGate.ownerCount === 0
             ? `no_motive_unowned:${target.id}`

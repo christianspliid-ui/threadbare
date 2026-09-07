@@ -74,7 +74,7 @@ import type { QuintessenceEvent } from '../types/quintessence';
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
-import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute } from '../engine/tradeRouteOps';
+import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
 import { getGroupOf } from '../engine/groups/groupQueries';
 import { raiseWarhostForce } from '../engine/armySpawning';
@@ -91,7 +91,10 @@ import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
-import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES } from './world-objects';
+import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES, CONDITION_SUBCATEGORIES } from './world-objects';
+import { getFactionLeaderId } from '../engine/factionNetwork';
+import { REWARD_POSSESSIONS } from './reward-attachment-catalog';
+import { ANOMALY_SIGNATURE_ARTIFACTS } from './anomaly-reward-catalog';
 import {
   ROUTE_IDENTITY_SUBTYPE,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
@@ -106,6 +109,8 @@ import {
   UNDERTAKING_FACTION_TIER_MEMBER_BANDS,
   UNDERTAKING_MARK_TIER_MAGNITUDE_BANDS,
   UNDERTAKING_STANDING_TIER_DISTANCE_BANDS,
+  UNDERTAKING_STANDING_TIER_SENTIMENT_BANDS,
+  CONDITION_CURE_UNGATED_FOR_ALLIES,
   UNDERTAKING_STANDING_DELTA,
   UNDERTAKING_QUARREL_STANDING_DELTA,
   UNDERTAKING_DEFAULT_MARK_SECRET_TYPE,
@@ -156,8 +161,16 @@ export interface UndertakingObjectShape {
   readonly nodeType?: NodeType;
   /** Edge objects: the edge type, plus an optional discriminator on the edge. */
   readonly edgeType?: EdgeType;
+  /**
+   * Edge objects several edge types can stand for (THR-1436): enumerated in the
+   * declared order and deduplicated by ordered pair, the first listed type winning —
+   * a standing is the `reputation_with` score when one exists and the seeded
+   * `relates_to` otherwise. Declared instead of `edgeType`, never beside it.
+   */
+  readonly edgeTypes?: readonly EdgeType[];
   readonly discriminator?: (n: GraphNode) => boolean;
-  readonly edgeDiscriminator?: (e: GraphEdge) => boolean;
+  /** The graph rides along so a discriminator can read the edge's ends (THR-1436). */
+  readonly edgeDiscriminator?: (e: GraphEdge, graph: WorldGraph) => boolean;
 }
 
 /** The inputs a verb semantic may read. Absent members are absent — every semantic is fail-soft on them. */
@@ -219,6 +232,19 @@ export interface UndertakingObjectType {
    * this the gate reads a mortal as unowned and refuses every plot by construction.
    */
   readonly selfOwned?: boolean;
+  /**
+   * The type's own holder reader (THR-1436), consulted by `resolveObjectOwners` before
+   * any edge walk and returned as-is — for a holder no edge names, such as a faction's
+   * leader, which the succession seam derives from `leads` or `member_of.rank`. A
+   * type declares this or a non-empty `ownedVia`, never both.
+   */
+  readonly ownersOf?: (graph: WorldGraph, handle: UndertakingObjectHandle) => readonly string[];
+  /**
+   * Per-verb doors through the motive gate (THR-1436): the reason the gate is waived
+   * for this actor and object, or `null` to leave it standing. The cure for an ally is
+   * the one door today. Fails closed — a reader that throws is no exemption.
+   */
+  readonly gateExemption?: Partial<Record<UndertakingVerbVariant, (graph: WorldGraph, actorId: string, handle: UndertakingObjectHandle) => string | null>>;
   /** Tier read off the object; `null` when the source is missing (the caller defaults and traces). */
   readonly tierOf: (graph: WorldGraph, handle: UndertakingObjectHandle) => UndertakingObjectTier | null;
   /** What each verb variant does to THIS type. A verb not declared here is not a cell. */
@@ -232,7 +258,13 @@ export interface UndertakingObjectType {
 // `has_trait` joins the holder → object list for THR-1429: a mortal bears a power the
 // same direction they possess an item, so `resolveObjectOwners` must walk it inward.
 // It only ever fires for a type that names it in `ownedVia` — today, Power alone.
-const HOLDER_TO_OBJECT: readonly EdgeType[] = ['owns', 'controls', 'possesses', 'leads', 'has_trait'];
+// `accompanies` runs bearer → companion (`companions.ts`), the `possesses` direction (THR-1436).
+const HOLDER_TO_OBJECT: readonly EdgeType[] = ['owns', 'controls', 'possesses', 'leads', 'has_trait', 'accompanies'];
+
+/** The edge types an edge object enumerates — the several declared, or the one. */
+export function edgeTypesOf(shape: UndertakingObjectShape): readonly EdgeType[] {
+  return shape.edgeTypes ?? (shape.edgeType ? [shape.edgeType] : []);
+}
 
 function bandTier(value: number, bands: readonly [number, number]): UndertakingObjectTier {
   return value <= bands[0] ? 1 : value <= bands[1] ? 2 : 3;
@@ -690,8 +722,20 @@ function placeTier(graph: WorldGraph, handle: UndertakingObjectHandle): Undertak
 /** Holding faces are mirrors of an `owns` edge, not objects of their own (THR-1297). */
 const HOLDING_FACE_CATEGORY = 'holding';
 
+/**
+ * Every catalog template's id (THR-1436). The reward and anomaly catalogs are seeded
+ * as artifact nodes with no possessor, and an instance minted from one spreads its
+ * template's properties and shares the `reward_` prefix — so a template is told apart
+ * by id, never by prefix and never by a stamped property. Derived, never hand-listed.
+ */
+export const CATALOG_TEMPLATE_IDS: ReadonlySet<string> = new Set(
+  [...REWARD_POSSESSIONS, ...ANOMALY_SIGNATURE_ARTIFACTS].map(n => n.id),
+);
+
 function isItemObject(n: GraphNode): boolean {
-  return n.type === 'artifact' && n.properties.attachmentCategory !== HOLDING_FACE_CATEGORY;
+  return n.type === 'artifact'
+    && n.properties.attachmentCategory !== HOLDING_FACE_CATEGORY
+    && !CATALOG_TEMPLATE_IDS.has(n.id);
 }
 
 function itemTier(graph: WorldGraph, handle: UndertakingObjectHandle): UndertakingObjectTier | null {
@@ -734,9 +778,24 @@ function isTraitOfSubcategory(subcategories: readonly string[]) {
   return (n: GraphNode): boolean => n.type === 'trait' && subcategories.includes(String(n.properties.subcategory));
 }
 
-/** The bearers of a per-bearer trait node (has_trait edges point bearer → trait). */
+/** The bearers of a shared trait node (has_trait edges point bearer → trait). */
 function bearersOf(graph: WorldGraph, traitId: string): string[] {
   return graph.getIncomingEdges(traitId, 'has_trait').map(e => e.source);
+}
+
+/**
+ * A `has_trait` edge whose target is a condition-class definition — one mortal's
+ * bearing of a condition, which is the Condition object (THR-1436).
+ */
+function isBorneCondition(e: GraphEdge, graph: WorldGraph): boolean {
+  const definition = graph.getNode(e.target);
+  return !!definition && isTraitOfSubcategory(CONDITION_SUBCATEGORIES)(definition);
+}
+
+/** A standing runs between two parties that can hold one: a person, a faction, a place. */
+function isStandingBetween(e: GraphEdge, graph: WorldGraph): boolean {
+  const ends = [graph.getNode(e.source), graph.getNode(e.target)];
+  return ends.every(n => !!n && (n.type === 'actor' || n.type === 'location'));
 }
 
 // ─── The dormant kinds I — powers and conditions (THR-1429) ─────────
@@ -1135,7 +1194,14 @@ const ROUTE: UndertakingObjectType = {
       const near = [ctx.originLocationId, resolveDurableActorLocation(ctx.graph, ctx.actorId)]
         .find(id => id && id !== far && ctx.graph.getNode(id));
       if (!near) return fail('create_trade_route', 'no_endpoints');
-      return createTradeRoute(ctx.graph, near, far, ctx.actorId, ctx.tick);
+      const routed = createTradeRoute(ctx.graph, near, far, ctx.actorId, ctx.tick);
+      if (!routed.success) return routed;
+      // THR-1436: the object a Route *is* — the identity node, through the lifecycle's
+      // own writer. The edge is the economy's authority and stands regardless; the node
+      // is what every route cell enumerates, so it is what this cell reports. Fail-soft:
+      // an unminted identity leaves the edge and reports it, as the lifecycle arm does.
+      const identity = mintRouteIdentity(ctx.graph, near, far, routed.createdId, ctx.actorId, ctx.tick);
+      return identity.success ? identity : routed;
     },
     // A blockade lowers a route: suspended, not deleted — the trade phases already honour it.
     'change:lower': (ctx) => {
@@ -1180,7 +1246,17 @@ const FACTION: UndertakingObjectType = {
   id: 'faction',
   displayName: 'Faction',
   shape: { nodeType: 'actor', discriminator: isFactionObject },
-  ownedVia: ['commanded_by', 'leads'],
+  ownedVia: [],
+  // THR-1436: no edge says who holds a faction — `commanded_by` is never written for
+  // one, and `leads` stands only after an anointing. The holder is the leader the
+  // succession seam derives (the `leads` edge, else the top `member_of.rank`), read
+  // through the one function every leader-resolution site consults. A leaderless
+  // faction reads unowned — which is what `claim × Faction` waits for.
+  ownersOf: (graph, handle) => {
+    const factionId = nodeIdOf(handle);
+    const leader = factionId ? getFactionLeaderId(graph, factionId) : null;
+    return leader ? [leader] : [];
+  },
   tierOf: groupTier(UNDERTAKING_FACTION_TIER_MEMBER_BANDS),
   lexicon: 'network',
   harmOnDestroy: 'network_severed',
@@ -1538,7 +1614,10 @@ const COMPANION: UndertakingObjectType = {
   id: 'companion',
   displayName: 'Companion',
   shape: { nodeType: 'companion' },
-  ownedVia: [],
+  // THR-1436: the mortal a companion walks beside holds them, through the edge the
+  // companion mint writes (bearer → companion). `destroy` is therefore aimed at
+  // *another's* companion — turning them; dismissing one's own is the story's.
+  ownedVia: ['accompanies'],
   tierOf: () => 1,
   lexicon: 'band',
   harmOnDestroy: 'network_severed',
@@ -1838,9 +1917,27 @@ const POWER: UndertakingObjectType = {
 const CONDITION: UndertakingObjectType = {
   id: 'condition',
   displayName: 'Condition',
-  shape: { nodeType: 'trait', discriminator: isTraitOfSubcategory(['condition', 'scar']) },
+  // THR-1436: the object is one mortal's *bearing* of a condition — the `has_trait`
+  // edge to a condition-class definition — never the shared definition node (THR-1395
+  // made those one per kind). The holder is the edge's source, the bearer; the tier is
+  // the definition's own where the catalog stamps one.
+  shape: { edgeType: 'has_trait', edgeDiscriminator: isBorneCondition },
   ownedVia: [],
-  tierOf: () => 2,
+  tierOf: (graph, handle) => {
+    const edge = edgeOf(graph, handle);
+    const definition = edge ? graph.getNode(edge.target) : undefined;
+    const stamped = definition ? num(definition.properties, 'tier') : null;
+    return stamped === null ? null : (Math.min(3, Math.max(1, Math.round(stamped))) as UndertakingObjectTier);
+  },
+  gateExemption: {
+    // The cure is signed like the blessing (THR-1429's own `isAlly`): a friend's wound
+    // needs no quarrel; a stranger's, or an enemy's seal, keeps the verb's gate.
+    destroy: (graph, actorId, handle) => {
+      if (!CONDITION_CURE_UNGATED_FOR_ALLIES) return null;
+      const edge = edgeOf(graph, handle);
+      return edge && edge.source !== actorId && isAlly(graph, actorId, edge.source) ? 'ally' : null;
+    },
+  },
   lexicon: 'item',
   harmOnDestroy: 'property_destroyed',
   verbs: {
@@ -1906,15 +2003,15 @@ const CONDITION: UndertakingObjectType = {
     },
 
     // Curing: the removal funnel the expiry phase already uses, taken as work — a
-    // healer's undertaking. Conditions are one node per bearer today (THR-1395), so
-    // removing the edge is removing the condition. Since THR-1429 this is also how a
-    // sealed power is freed early: the seal is a condition, so curing it lifts it.
+    // healer's undertaking. The object is the borne edge (THR-1436), so the cure lifts
+    // this bearer's condition and nobody else's — definitions are shared (THR-1395),
+    // and removing every bearer's edge was a whole-world cure. Since THR-1429 this is
+    // also how a sealed power is freed early: the seal is a condition, so curing it lifts it.
     destroy: (ctx) => {
-      const nodeId = nodeIdOf(ctx.handle);
-      if (!nodeId || !ctx.graph.getNode(nodeId)) return fail('cure_condition', 'condition_not_found');
-      const bearers = bearersOf(ctx.graph, nodeId);
-      if (bearers.length === 0) return fail('cure_condition', 'no_bearer');
-      for (const bearer of bearers) removeTrait(ctx.graph, bearer, nodeId);
+      const edge = edgeOf(ctx.graph, ctx.handle);
+      if (!edge) return fail('cure_condition', 'condition_not_found');
+      if (!ctx.graph.getNode(edge.source)) return fail('cure_condition', 'bearer_gone');
+      removeTrait(ctx.graph, edge.source, edge.target);
       return { success: true, op: 'cure_condition' };
     },
   },
@@ -1965,12 +2062,21 @@ const AGREEMENT: UndertakingObjectType = {
 const STANDING: UndertakingObjectType = {
   id: 'standing',
   displayName: 'Standing',
-  shape: { edgeType: 'reputation_with' },
+  // THR-1436: one object per ordered pair — the `reputation_with` score when one has
+  // been written, the seeded `relates_to` otherwise (the three semantics call
+  // `applyReputationWithDelta`, which mints the score edge on first write either way).
+  // `hostile_to` is what `destroy` writes, never an object.
+  shape: { edgeTypes: ['reputation_with', 'relates_to'], edgeDiscriminator: isStandingBetween },
   ownedVia: [],
   tierOf: (graph, handle) => {
     const edge = edgeOf(graph, handle);
-    const score = edge ? num(edge.properties, 'score') : null;
-    return score === null ? null : bandTier(Math.abs(score - 0.5), UNDERTAKING_STANDING_TIER_DISTANCE_BANDS);
+    if (!edge) return null;
+    if (edge.type === 'reputation_with') {
+      const score = num(edge.properties, 'score');
+      return score === null ? null : bandTier(Math.abs(score - 0.5), UNDERTAKING_STANDING_TIER_DISTANCE_BANDS);
+    }
+    const sentiment = num(edge.properties, 'sentiment');
+    return sentiment === null ? null : bandTier(Math.abs(sentiment), UNDERTAKING_STANDING_TIER_SENTIMENT_BANDS);
   },
   lexicon: 'network',
   harmOnDestroy: 'network_severed',
@@ -2029,9 +2135,21 @@ export function enumerateObjectHandles(graph: WorldGraph, type: UndertakingObjec
         if (!type.shape.discriminator || type.shape.discriminator(n)) out.push({ kind: 'node', nodeId: n.id });
       }
     }
-    if (type.shape.edgeType) {
-      for (const e of graph.getEdgesByType(type.shape.edgeType)) {
-        if (!type.shape.edgeDiscriminator || type.shape.edgeDiscriminator(e)) out.push({ kind: 'edge', edgeId: e.id });
+    // THR-1436: several edge types stand for one object per ordered pair, the first
+    // declared type winning; a single-type shape keeps every edge, as before.
+    const dedupeByPair = !!type.shape.edgeTypes;
+    const seenPairs = new Set<string>();
+    for (const edgeType of edgeTypesOf(type.shape)) {
+      for (const e of graph.getEdgesByType(edgeType)) {
+        // An edge nobody can address (a writer that forgot its id) is not an object.
+        if (!e.id) continue;
+        if (type.shape.edgeDiscriminator && !type.shape.edgeDiscriminator(e, graph)) continue;
+        if (dedupeByPair) {
+          const pair = `${e.source}→${e.target}`;
+          if (seenPairs.has(pair)) continue;
+          seenPairs.add(pair);
+        }
+        out.push({ kind: 'edge', edgeId: e.id });
       }
     }
   } catch {
@@ -2048,8 +2166,8 @@ export function isObjectOfType(graph: WorldGraph, type: UndertakingObjectType, h
       && (!type.shape.discriminator || type.shape.discriminator(n));
   }
   const e = graph.getEdge(handle.edgeId);
-  return !!e && !!type.shape.edgeType && e.type === type.shape.edgeType
-    && (!type.shape.edgeDiscriminator || type.shape.edgeDiscriminator(e));
+  return !!e && edgeTypesOf(type.shape).includes(e.type)
+    && (!type.shape.edgeDiscriminator || type.shape.edgeDiscriminator(e, graph));
 }
 
 /** The id the trace names — the node's, or the edge's. */
@@ -2063,7 +2181,11 @@ export function objectIdOf(handle: UndertakingObjectHandle): string {
  */
 export function objectPlaceNodeId(graph: WorldGraph, handle: UndertakingObjectHandle): string | null {
   if (handle.kind === 'node') return handle.nodeId;
-  return graph.getEdge(handle.edgeId)?.target ?? null;
+  const edge = graph.getEdge(handle.edgeId);
+  if (!edge) return null;
+  // THR-1436: a borne edge (a condition on a mortal) is where the bearer stands, not
+  // at the shared definition it points to.
+  return graph.getNode(edge.target)?.type === 'trait' ? edge.source : edge.target;
 }
 
 /**
@@ -2087,6 +2209,11 @@ export function resolveObjectOwners(
     // edge would ever answer it.
     if (type.selfOwned) {
       owners.add(handle.nodeId);
+      return [...owners];
+    }
+    // THR-1436: a type's own reader answers before any edge walk (a faction's leader).
+    if (type.ownersOf) {
+      for (const owner of type.ownersOf(graph, handle)) owners.add(owner);
       return [...owners];
     }
     for (const via of type.ownedVia) {
@@ -2115,4 +2242,37 @@ export function tierOfObject(
     // fall through to the default
   }
   return { tier: UNDERTAKING_DEFAULT_TIER, defaulted: true };
+}
+
+// ─── The ownership census (THR-1436) ────────────────────────────────
+
+/** One row of the ownership census: what the registry can see of a kind on the live graph. */
+export interface OwnershipCensusRow {
+  readonly objectTypeId: UndertakingObjectTypeId;
+  readonly objects: number;
+  readonly owned: number;
+  readonly ownedByDeciding: number;
+}
+
+/**
+ * Objects · owned · owned by a deciding mortal, for one type — the number THR-1436
+ * moves and the number THR-1437's seeding is measured on. `isDeciding` is the caller's
+ * (the engine's `isAutonomousDecisionActor`), so the registry stays free of the
+ * reachability module. Read by the CLI's `objects` readout and `npm run census:ownership`.
+ */
+export function ownershipCensus(
+  graph: WorldGraph,
+  type: UndertakingObjectType,
+  isDeciding: (n: GraphNode) => boolean,
+): OwnershipCensusRow {
+  const handles = enumerateObjectHandles(graph, type);
+  let owned = 0;
+  let ownedByDeciding = 0;
+  for (const handle of handles) {
+    const owners = resolveObjectOwners(graph, type, handle);
+    if (owners.length === 0) continue;
+    owned += 1;
+    if (owners.some(id => { const n = graph.getNode(id); return !!n && isDeciding(n); })) ownedByDeciding += 1;
+  }
+  return { objectTypeId: type.id, objects: handles.length, owned, ownedByDeciding };
 }
