@@ -16,7 +16,7 @@ function makeEntry(): EncounterCacheEntry {
     reachPrimary: 'iron', reachSecondary: 'gold', threatRating: 'moderate', encounterType: 'social',
     motivations: [], requiresPresence: false, remotePenalty: 0, questPriority: 0, isQuestEncounter: false,
     totalTickCost: 1, successRewardEstimate: 1, stepCount: 1, stepDifficulties: [0.5], stepReaches: ['iron'],
-  } as EncounterCacheEntry;
+  } as unknown as EncounterCacheEntry;
 }
 
 function makeCandidate(overrides: Partial<ScoredCandidate> = {}): ScoredCandidate {

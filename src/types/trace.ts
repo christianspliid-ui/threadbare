@@ -3455,6 +3455,7 @@ export type TraceEntry =
   | OmenSelectionTrace
   | OmenBeatTrace
   | UndertakingPortentTrace
+  | OmenDecayedTrace
   // Encounter aftermath traces (THR-111)
   | CliAutoAftermathTrace
   | EncounterAftermathAppliedTrace
@@ -4193,6 +4194,19 @@ export interface UndertakingPortentTrace extends TraceBase {
   score: number;
   followed: boolean;
   candidates: Array<{ outcomeNodeId: string; harmClass: string; score: number; followed: boolean }>;
+}
+
+/**
+ * Trace: an emitted omen left the world (THR-115) — expired at its `expiresTick`, or
+ * evicted at `EMITTED_OMEN_MAX_ACTIVE` (`failReason: 'cap_evicted'`). Typed by
+ * THR-1432, which added a third emitter; the two older emit sites already wrote this
+ * shape untyped.
+ */
+export interface OmenDecayedTrace extends TraceBase {
+  category: 'omen_decayed';
+  omenId: string;
+  livedTicks: number;
+  failReason?: 'cap_evicted';
 }
 
 /** Trace: agent added to player's protagonist portfolio (THR-148) */
