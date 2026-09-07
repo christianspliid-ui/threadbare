@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 07:00 local (05:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -12,7 +12,7 @@ The brief: [Retrofit batch 2 — the camp six](https://github.com/christiansplii
 
 Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation.
 
-*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* The execution ticket is [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word. **The build shelf has one item on it and no content work at all**, so this word is what restarts the encounter line.
+*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* The execution ticket is [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word. **The build shelf is now empty — zero items, for the first time** ([THR-1422](https://linear.app/threadbare/issue/THR-1422) merged at 05:28Z and nothing replaced it), so this word is what restarts the line, and it is the only ask here that does so without a session from you.
 
 ### 2. What should a proportion read as? — [THR-1424](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)
 
@@ -38,9 +38,9 @@ What remains is genuinely just intent: **over three weeks In Design, assigned to
 
 It has sat In Design **19 days**, unassigned, and is worked up far enough that a design session could start on it **cold** — no preparation, no question outstanding. Nothing technical waits on it.
 
-**Why it reaches you at all:** design sessions are attended. No unattended lane authors plan docs, so a worked-up item simply waits until you sit down with it. Together with ask 3 it occupies the design tier, which is why the orchestrator cannot stage a third and the build shelf keeps draining to empty.
+**Why it reaches you at all:** design sessions are attended. No unattended lane authors plan docs, so a worked-up item simply waits until you sit down with it. Together with ask 3 it occupies the design tier, which is why the orchestrator cannot stage a third — and the build shelf has now finished draining to empty.
 
-Say **"design the card grammar"** and it is the next session. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-07e.md), fourth consecutive run*
+Say **"design the card grammar"** and it is the next session. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-07f.md), fifth consecutive run, and the first where it costs build hours*
 
 ### 5. The undertaking retirement list — four get deleted — [THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants)
 
@@ -147,8 +147,6 @@ Setting it is the durable fix — no browser sign-in, and it survives a lapsed t
 - **Linear came back on its own** *(2026-09-06)*. Six hours of lane runs hit an authentication wall and it recovered unaided around 17:15 — no reauthorization, nothing lost. Two residues: ask 16, and seven unticketed merges flagged for the Friday retro.
 - **Your pixel sweep is six-for-nine and found a fix of its own** *(2026-09-04)*. [THR-1409](https://linear.app/threadbare/issue/THR-1409), [THR-1410](https://linear.app/threadbare/issue/THR-1410), [THR-1411](https://linear.app/threadbare/issue/THR-1411), [THR-1413](https://linear.app/threadbare/issue/THR-1413), [THR-1414](https://linear.app/threadbare/issue/THR-1414), the self-found [THR-1418](https://linear.app/threadbare/issue/THR-1418), and [THR-1416](https://linear.app/threadbare/issue/THR-1416).
 - **You accepted the two batch-1 exemplars** *(2026-09-04)*. *"the two examplars are accepted"* — The Grateful Kin and The Unsafe Bridge cleared the bar, releasing the camp batch's park. Ask 1 is the one approval left behind it.
-- **The undertaking grid is generated and build-gated** *(2026-09-03)*. [Slice 4a](https://github.com/christianspliid-ui/threadbare/pull/1804) — your verbs, the registry redrawn, and a grid page the build refuses to let go stale.
-- **The world's objects now have one catalogue in game words** *(2026-09-03)*. [THR-1394](https://linear.app/threadbare/issue/THR-1394) — what made the undertakings map chartable, and what unparked ask 5.
 
 ---
 

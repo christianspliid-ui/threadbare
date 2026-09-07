@@ -1,49 +1,48 @@
 # Briefing
-**Generated:** 2026-09-07 07:00 local (05:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-07 07:57 local (05:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Approve the camp six — three words and six encounters get built without you.** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) · [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md)
+**Approve the camp six — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to).** Same ask as last night, and since then the build shelf reached **zero**. The last queued item merged at 07:28 your time; every automatic build run from now until something reaches the queue has nothing to pick up.
 
-Fifth hour at the top, and the queue argues for it harder than it did an hour ago: the build shelf is down to **one** item — an engine-plumbing ticket nobody has claimed — and there is still **no content or feature work queued at all**. Your word is what refills it.
+*"batch 2, run the six"* is the whole answer. It puts content work on the shelf the same hour, with no session from you — the [brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md) is merged and [THR-1222](https://linear.app/threadbare/issue/THR-1222) is pickup-able the moment you say it.
 
-Six encounters, not seven — sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting. `shrine_offering` is held to batch 3, which is why your slice checkpoint waits one batch longer. Two questions in the brief: **repair the six in place, or re-roll them from fresh premises?** (repair is the plan), and the 2-of-6 sample — `ward_the_camp` and `tend_to_wounds`, your own pick.
+The other two answers, if you'd rather: *"re-roll them"* · *"put shrine_offering back in."*
 
-Say the word and the unattended machine picks up [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) the same hour.
-
-**"batch 2, run the six"** · *"re-roll them"* · *"put shrine_offering back in."*
+I have not pinged you about this again — you were told an hour ago and the ask has not changed, only its cost.
 
 ## Also waiting (15)
 
-- **[What should a proportion read as?](https://linear.app/threadbare/issue/THR-1424)** — one answer settles ten readouts: percentages, timestamps like *t42*, rates like *regen 1.5 per tick* ([THR-1426](https://linear.app/threadbare/issue/THR-1426)). Recommendation stands: *"drop them"*.
-- **[Are you still planning to design Traits wave 2?](https://linear.app/threadbare/issue/THR-790)** — one word. In Design, your name on it, over three weeks, no plan doc.
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002)** — *new here, though it has waited 19 days.* Your own August direction that action cards are too verbose; worked up far enough that a design session could start on it cold. It needs one of your sessions, not a decision.
-- **[The undertaking retirement list](https://linear.app/threadbare/issue/THR-1392)** — four templates get deleted; *"run 4b"* finishes the migration and flips the model on. Last slice of four.
-- **[Do you still want the incident-capture button?](https://linear.app/threadbare/issue/THR-1134)** — you filed it 16 August; yes or no.
-- **[Three questions on the undertakings map](https://linear.app/threadbare/issue/THR-1396)** — take [the division rule](https://linear.app/threadbare/issue/THR-1398) first; it unblocks four. [The untouched list](https://linear.app/threadbare/issue/THR-1401) is now machine-made and says **17 systems, not 14** — worth re-splitting against the new list rather than the old.
-- **[The fight map](https://linear.app/threadbare/issue/THR-1258)** — settle [monster fights](https://linear.app/threadbare/issue/THR-1263) and [duels](https://linear.app/threadbare/issue/THR-1264) and three more open by themselves.
-- **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236)** — sketches built for you to react to.
-- **[Image credits](https://linear.app/threadbare/issue/THR-876)** — should the spend be gated on you at all?
-- **[What is a run about?](https://linear.app/threadbare/issue/THR-1198)** — remembrance, or named campaigns.
-- **[One attended dev-server session](https://linear.app/threadbare/issue/THR-1133)** — roughly twenty minutes, no decision in it, and the dev-server fault that ate a quarter of your last attempt is fixed and shipped ([THR-1415](https://linear.app/threadbare/issue/THR-1415)).
-- **[Chart the hub map](https://linear.app/threadbare/issue/THR-1220)** — advice is still to wait for your slice checkpoint.
-- **A Tenacious-style trait** — parked by default, listed so it is not forgotten.
-- **Should weekend quiet be normal too?** — one word declines the 45-hour Friday-to-Sunday gap the way you declined overnight quiet.
-- **The scripted half of Linear access** — `LINEAR_API_KEY` still unset (re-checked this run); nothing is blocked on it. Worth doing eventually, not worth your evening.
+- [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) — the card grammar wants one of your sessions, not a decision; worked up enough to start cold.
+- [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) — Traits wave 2: do you mean to run this pass yourself? Either answer frees a design slot.
+- [THR-1424](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct) — what should a proportion read as, if it ever shows at all? Recommendation: drop both numbers.
+- [THR-1392](https://linear.app/threadbare/issue/THR-1392/undertakings-as-verb-object-type-replace-authored-kind-row-variants) — the undertaking retirement list; four templates get deleted, you asked to see them first.
+- [THR-1134](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) — the incident-capture button you filed on 16 August: still want it?
+- [THR-1396](https://linear.app/threadbare/issue/THR-1396/undertakings-across-the-living-simulation-wayfinder-map) — three questions left on the undertakings map; [the division rule](https://linear.app/threadbare/issue/THR-1398) first, it unblocks four.
+- [Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) — seven open, and [two](https://linear.app/threadbare/issue/THR-1263) [of them](https://linear.app/threadbare/issue/THR-1264) open three more by themselves.
+- [THR-1232](https://linear.app/threadbare/issue/THR-1232) / [THR-1236](https://linear.app/threadbare/issue/THR-1236) — twenty spells and thirty items, built for you to react to; your reaction is the decision.
+- [THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — should image-credit spend be gated on you at all, or decided by the lane and reported after?
+- [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game) — what is a run *about*: remembrance, or a named campaign? No urgency.
+- [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — one attended dev-server session, ~20 minutes; both reasons the last attempt went badly are now fixed.
+- [THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — chartering the hub map. Advice: wait, its entry condition sits behind the camp six.
+- A Tenacious-style trait — parked option, no ticket, no urgency. Listed so it isn't silently forgotten.
+- Weekend quiet — one word (*"weekend quiet is normal too"*) declines the 45-hour Friday–Sunday gap the way overnight quiet has been declined since 8 August.
+- `LINEAR_API_KEY` is still unset. Nothing is blocked on it; the connector recovered on its own yesterday.
+
+Detail and the exact wording for each: [Design/user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Queue
 
-**Starved — one ready item, and it is not content.**
+**Starved — 0 ready to build.** First time it has actually reached zero. 53 items sit in `Todo`; 2 in `In Dev`, both parked.
 
-- [THR-1422](https://linear.app/threadbare/issue/THR-1422/six-constants-are-defined-twice-with-no-shared-source-sea-level) (six constants defined twice) is the whole build shelf. Unclaimed for ~9½ hours, which is correct rather than stuck: it carries no priority, and the executor's 04:01 run took the higher-priority [THR-1427](https://linear.app/threadbare/issue/THR-1427) instead and shipped it in 54 minutes. THR-1422 is next by construction.
-- Two items sit In Dev and both are **deliberate parks**, so nothing is stuck: [THR-1130](https://linear.app/threadbare/issue/THR-1130) waits on the ask above, [THR-1392](https://linear.app/threadbare/issue/THR-1392) on the retirement list.
-- The standing shape is unchanged and now sharper: **the constraint is design supply, not executor capacity.** Both In-Design slots are occupied by items waiting on you ([THR-790](https://linear.app/threadbare/issue/THR-790), [THR-1002](https://linear.app/threadbare/issue/THR-1002)), so the orchestrator cannot stage a third. *— finding carried from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-07e.md), fourth consecutive run*
+- [THR-1422](https://linear.app/threadbare/issue/THR-1422) — the single item on the shelf last hour — was claimed at 05:21Z and merged at 05:28Z ([PR #1837](https://github.com/christianspliid-ui/threadbare/pull/1837)). Nothing replaced it.
+- [THR-1130](https://linear.app/threadbare/issue/THR-1130) parked, 3 days — waiting on the lead ask above.
+- [THR-1392](https://linear.app/threadbare/issue/THR-1392) parked, 4 days — waiting on the retirement-list review.
+- Both design slots are held by items waiting on you ([THR-790](https://linear.app/threadbare/issue/THR-790), [THR-1002](https://linear.app/threadbare/issue/THR-1002)), so the orchestrator cannot stage a third and prepare new work. That is the bound, not a shortage of things to do.
 
 ## Health
 
-**Everything green except one measurement, and it is an agent's job, not yours.**
+All green.
 
-- **Engine speed drifted:** tick cost 114 ms/tick steady, 28% above the 7-day median (89, 26 rows since b95996df); top phase agent_decision, 511 agents. Name the merges between b95996df and c798bc91: `git log --oneline --merges b95996df..c798bc91`
-- Deploy, CI, all three scheduled workflows, post-merge checks, the merge queue, all nine scheduled tasks and the worktree reaper: green. Nothing waiting to merge.
-- The two overnight gaps in lane coverage (10h and 11.7h) are the nightly shape you already ruled normal on 8 August — noted, not raised. The 45-hour weekend gap is the ask above.
-- The home tree is 19 commits behind `origin/main`. It is autosync's read-only mirror and no lane works in it, so nothing is affected; recorded because the freshness probe reads it.
+- Engine speed is back under the line — 111 ms/tick steady, +21% against the weekly median, below the 25% drift threshold. Last night's ~28% reading has resolved without intervention; no action, and it was never yours.
+- The home checkout is 22 commits behind `origin/main`. It is the read-only mirror and no lane works there, so nothing is affected — noted only because the probe reads it.
