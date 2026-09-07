@@ -15,40 +15,40 @@
 
 | Kind | Game word | Shape | Classes | Owning system | Writers | Status | Census | Badge |
 |---|---|---|---|---|---|---|---|---|
-| `area` | Area | node · `region` | — | World generation & terrain | `worldSeed` | live | 41 | 🟢 LIVE |
-| `hex` | Hex | state · `GameState.tiles[]` | — | Hex map | `terrain` | live | — | 🟢 LIVE |
-| `location` | Location | node · `location` − `parentLocationId` · `locationSubtype` ∈ {54 values} | **settlement** (6) · **stronghold** (3) · **holy_place** (3) · **ruin** (8) · **wild** (15) · **wonder** (13) · **deposit** (6) | World generation & terrain | `worldSeed`, `strategicGraphOps` | live | 549 | 🟢 LIVE |
-| `place` | Place | node · `location` + `parentLocationId` · `sublocationTypeId` ∈ {151 values} | **commerce** (28) · **authority** (13) · **military** (16) · **scholarly** (10) · **arcane** (19) · **religious** (22) · **cultural** (11) · **underworld** (11) · **nature** (15) · **borderlands** (6) | Sublocations | `sublocation`, `strategicGraphOps`, `settlementGenome/materialize` | live | 1747 | 🟢 LIVE |
-| `route` | Route | edge · `road`, `trades_with`, `sacred_route` · identity node `location:trade_route` | **road** (1) · **trail** (0) · **trade_lane** (1) · **pilgrim_way** (1) · **portal** (0) | Trade routes | `roadNetwork`, `tradeRoute`, `strategicGraphOps` | live | 33 | 🟢 LIVE |
-| `mortal` | Mortal | node · `actor` · `actorType` ∈ {individual} | — | Agents & decision | `worldSeed`, `npcSeeding`, `agentLifecycle`, `binding/mintInhabitant` | live | 1132 | 🟢 LIVE |
-| `ascendant` | Ascendant | node · `actor` · `actorType` ∈ {ascendant} | — | Ascendant & divine economy | `gameInit` | live | 2 | 🟢 LIVE |
-| `god` | God / Spirit | node · `actor` · `actorType` ∈ {god, place_spirit} | — | Ascendant & divine economy | — | dormant | 0 | ⚪ DORMANT |
-| `faction` | Faction | node · `actor` · `actorType` ∈ {faction} | — | Factions & succession | `worldSeed`, `strategicGraphOps` | live | 106 | 🟢 LIVE |
-| `culture` | Culture | node · `actor` · `actorType` ∈ {culture} | — | Cultures | `worldSeed` | live | 11 | 🟢 LIVE |
-| `company` | Company | node · `actor` · `groupKind` ∈ {company} | — | Companies & group travel | `groups/groupFormation`, `strategicGraphOps` | live | 6 | 🟢 LIVE |
-| `army` | Army | node · `actor` · `groupKind` ∈ {army} | — | War, armies & battles | `armySpawning` | live | 6 | 🟢 LIVE |
-| `network` | Network | node · `actor` · `groupKind` ∈ {network} | — | Companies & group travel | `strategicGraphOps` | dormant | 0 | ⚪ DORMANT |
-| `battle` | Battle | node · `actor` · `groupKind` ∈ {battle} | — | War, armies & battles | `battleResolution` | live | 0 | ⚪ DORMANT |
-| `companion` | Companion | node · `companion` | — | Attachments, items & possessions | `companions` | live | 0 | ⚪ DORMANT |
-| `item` | Item | node · `artifact` · `subcategory` ∈ {arms, mounts_beasts, vestments, tomes_scrolls, relics_talismans, tools_instruments, provisions} | **arms** (1) · **mounts_and_beasts** (1) · **vestments** (1) · **tomes_and_scrolls** (1) · **relics_and_talismans** (1) · **tools_and_instruments** (1) · **provisions** (1) | Attachments, items & possessions | `rewardPool`, `resourceSeeding`, `strategicGraphOps`, `gameInit` | live | 271 | 🟢 LIVE |
-| `legendary_artifact` | Legendary artifact | node · `artifact_legendary` | — | Attachments, items & possessions | `worldSeed` | live | 2 | 🟢 LIVE |
-| `holding` | Holding | edge · `owns` · identity node `artifact:holding` | — | Attachments, items & possessions | `holdings` | live | 0 | ⚪ DORMANT |
-| `power` | Power | node · `trait` · `subcategory` ∈ {bestowed} | **spell** (0) · **bestowal** (1) · **innate** (0) | Attachments, items & possessions | `spellActivation` | dormant | 48 | 🟢 LIVE |
-| `condition` | Condition | node · `trait` · `subcategory` ∈ {condition, scar} | **condition** (1) · **scar** (1) | Traits & attachments | `gameInit`, `spellActivation`, `rewardPool` | live | 135 | 🟢 LIVE |
-| `trait` | Trait | node · `trait` · `subcategory` ∈ {innate, mastery, reputation, personality, core, destiny, cultural, experience} | — | Traits & attachments | `gameInit`, `culturalTraits`, `capabilityGrowth`, `encounterChains`, `reputation` | live | 161 | 🟢 LIVE |
-| `agreement` | Agreement | edge · `owes_favor`, `knows_secret_of` | **favor** (1) · **mark** (1) | Secrets & favors | `secretGeneration`, `strategicGraphOps` | live | 2 | 🟢 LIVE |
-| `standing` | Standing | edge · `reputation_with`, `relates_to`, `hostile_to` | **reputation** (1) · **relationship** (1) · **quarrel** (1) | Reputation & standing | `reputation`, `factionSeeding`, `grievance/grudgeEdge` | live | 154 | 🟢 LIVE |
-| `ambition` | Ambition | node · `ambition` | — | Ambitions & undertakings | `ambitionAssignment`, `ambitionTick`, `ambitionShape` | live | 45 | 🟢 LIVE |
-| `undertaking` | Undertaking | state · `GameState.strategicState.projects[]` | — | Ambitions & undertakings | `strategicActionLifecycle` | live | — | 🟢 LIVE |
-| `event` | Event | node · `event` · `eventType` ∈ {9 values} | — | Attention, chronicle & narrative | `encounterEventNode`, `grievance/undertakingOutcomeNode`, `phaseFactionActions`, `unifiedActionResolution` | live | 105 | 🟢 LIVE |
+| `area` | Area | node · `region` | — | World Generation, Terrain & Places | `worldSeed` | live | 41 | 🟢 LIVE |
+| `hex` | Hex | state · `GameState.tiles[]` | — | World Generation, Terrain & Places | `terrain` | live | — | 🟢 LIVE |
+| `location` | Location | node · `location` − `parentLocationId` · `locationSubtype` ∈ {54 values} | **settlement** (6) · **stronghold** (3) · **holy_place** (3) · **ruin** (8) · **wild** (15) · **wonder** (13) · **deposit** (6) | World Generation, Terrain & Places | `worldSeed`, `strategicGraphOps` | live | 549 | 🟢 LIVE |
+| `place` | Place | node · `location` + `parentLocationId` · `sublocationTypeId` ∈ {151 values} | **commerce** (28) · **authority** (13) · **military** (16) · **scholarly** (10) · **arcane** (19) · **religious** (22) · **cultural** (11) · **underworld** (11) · **nature** (15) · **borderlands** (6) | World Generation, Terrain & Places | `sublocation`, `strategicGraphOps`, `settlementGenome/materialize` | live | 1747 | 🟢 LIVE |
+| `route` | Route | edge · `road`, `trades_with`, `sacred_route` · identity node `location:trade_route` | **road** (1) · **trail** (0) · **trade_lane** (1) · **pilgrim_way** (1) · **portal** (0) | Mortal Economy & Prosperity | `roadNetwork`, `tradeRoute`, `strategicGraphOps` | live | 33 | 🟢 LIVE |
+| `mortal` | Mortal | node · `actor` · `actorType` ∈ {individual} | — | Agent Lifecycle | `worldSeed`, `npcSeeding`, `agentLifecycle`, `binding/mintInhabitant` | live | 1132 | 🟢 LIVE |
+| `ascendant` | Ascendant | node · `actor` · `actorType` ∈ {ascendant} | — | Ascendant Beats & Progression | `gameInit` | live | 2 | 🟢 LIVE |
+| `god` | God / Spirit | node · `actor` · `actorType` ∈ {god, place_spirit} | — | Ascendant Beats & Progression | — | dormant | 0 | ⚪ DORMANT |
+| `faction` | Faction | node · `actor` · `actorType` ∈ {faction} | — | Factions & Succession | `worldSeed`, `strategicGraphOps` | live | 106 | 🟢 LIVE |
+| `culture` | Culture | node · `actor` · `actorType` ∈ {culture} | — | Culture | `worldSeed` | live | 11 | 🟢 LIVE |
+| `company` | Company | node · `actor` · `groupKind` ∈ {company} | — | Companies & Group Travel | `groups/groupFormation`, `strategicGraphOps` | live | 6 | 🟢 LIVE |
+| `army` | Army | node · `actor` · `groupKind` ∈ {army} | — | War, Armies & Battles | `armySpawning` | live | 6 | 🟢 LIVE |
+| `network` | Network | node · `actor` · `groupKind` ∈ {network} | — | Companies & Group Travel | `strategicGraphOps` | dormant | 0 | ⚪ DORMANT |
+| `battle` | Battle | node · `actor` · `groupKind` ∈ {battle} | — | War, Armies & Battles | `battleResolution` | live | 0 | ⚪ DORMANT |
+| `companion` | Companion | node · `companion` | — | Attachments, Items & Possessions | `companions` | live | 0 | ⚪ DORMANT |
+| `item` | Item | node · `artifact` · `subcategory` ∈ {arms, mounts_beasts, vestments, tomes_scrolls, relics_talismans, tools_instruments, provisions} | **arms** (1) · **mounts_and_beasts** (1) · **vestments** (1) · **tomes_and_scrolls** (1) · **relics_and_talismans** (1) · **tools_and_instruments** (1) · **provisions** (1) | Attachments, Items & Possessions | `rewardPool`, `resourceSeeding`, `strategicGraphOps`, `gameInit` | live | 271 | 🟢 LIVE |
+| `legendary_artifact` | Legendary artifact | node · `artifact_legendary` | — | Attachments, Items & Possessions | `worldSeed` | live | 2 | 🟢 LIVE |
+| `holding` | Holding | edge · `owns` · identity node `artifact:holding` | — | Attachments, Items & Possessions | `holdings` | live | 0 | ⚪ DORMANT |
+| `power` | Power | node · `trait` · `subcategory` ∈ {bestowed} | **spell** (0) · **bestowal** (1) · **innate** (0) | Attachments, Items & Possessions | `spellActivation` | dormant | 48 | 🟢 LIVE |
+| `condition` | Condition | node · `trait` · `subcategory` ∈ {condition, scar} | **condition** (1) · **scar** (1) | Effects & Conditions | `gameInit`, `spellActivation`, `rewardPool` | live | 135 | 🟢 LIVE |
+| `trait` | Trait | node · `trait` · `subcategory` ∈ {innate, mastery, reputation, personality, core, destiny, cultural, experience} | — | Personality & Emergent Traits | `gameInit`, `culturalTraits`, `capabilityGrowth`, `encounterChains`, `reputation` | live | 161 | 🟢 LIVE |
+| `agreement` | Agreement | edge · `owes_favor`, `knows_secret_of` | **favor** (1) · **mark** (1) | Secrets & Favors | `secretGeneration`, `strategicGraphOps` | live | 2 | 🟢 LIVE |
+| `standing` | Standing | edge · `reputation_with`, `relates_to`, `hostile_to` | **reputation** (1) · **relationship** (1) · **quarrel** (1) | Reputation & Influence | `reputation`, `factionSeeding`, `grievance/grudgeEdge` | live | 154 | 🟢 LIVE |
+| `ambition` | Ambition | node · `ambition` | — | Ambitions & Undertakings | `ambitionAssignment`, `ambitionTick`, `ambitionShape` | live | 45 | 🟢 LIVE |
+| `undertaking` | Undertaking | state · `GameState.strategicState.projects[]` | — | Ambitions & Undertakings | `strategicActionLifecycle` | live | — | 🟢 LIVE |
+| `event` | Event | node · `event` · `eventType` ∈ {9 values} | — | Attention, Chronicle & Narrative | `encounterEventNode`, `grievance/undertakingOutcomeNode`, `phaseFactionActions`, `unifiedActionResolution` | live | 105 | 🟢 LIVE |
 | `journey` | Journey | state · `GameState.pendingVignettes[] (the First’s doom-clock-scheduled journey beats)` | — | Doom Clock & Journey | `journeyEngine` | live | — | 🟢 LIVE |
 | `divine_receipt` | Divine receipt | state · `GameState.playerActionReceipts[]` | — | Essence & Divine Economy | `playerReceipts` | live | — | 🟢 LIVE |
-| `sphere` | Sphere | state · `GameState.cosmology` | — | Cosmology | `cosmology` | live | — | 🟢 LIVE |
-| `reach` | Reach | state · `ReachDomain (a type union; capability per reach on the actor)` | — | Cosmology | `capabilityGrowth` | live | — | 🟢 LIVE |
-| `action_template` | (action template) | node · `action_template` | — | Encounters & dilemmas | `gameInit` | content | 88 | 🟢 LIVE |
-| `encounter_template` | (encounter template) | node · `encounter_template` | — | Encounters & dilemmas | — | content | 0 | ⚪ DORMANT |
-| `cosmology_node` | (cosmology node — dormant) | node · `cosmology` | — | Cosmology | — | dormant | 0 | ⚪ DORMANT |
-| `sublocation_node` | (sublocation node — legacy) | node · `sublocation` | — | Sublocations | — | legacy | 0 | ⚪ DORMANT |
+| `sphere` | Sphere | state · `GameState.cosmology` | — | Spheres & Quintessence | `cosmology` | live | — | 🟢 LIVE |
+| `reach` | Reach | state · `ReachDomain (a type union; capability per reach on the actor)` | — | Spheres & Quintessence | `capabilityGrowth` | live | — | 🟢 LIVE |
+| `action_template` | (action template) | node · `action_template` | — | Encounters & Dilemmas | `gameInit` | content | 88 | 🟢 LIVE |
+| `encounter_template` | (encounter template) | node · `encounter_template` | — | Encounters & Dilemmas | — | content | 0 | ⚪ DORMANT |
+| `cosmology_node` | (cosmology node — dormant) | node · `cosmology` | — | Spheres & Quintessence | — | dormant | 0 | ⚪ DORMANT |
+| `sublocation_node` | (sublocation node — legacy) | node · `sublocation` | — | World Generation, Terrain & Places | — | legacy | 0 | ⚪ DORMANT |
 
 ## Classes
 
