@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-07 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
+**Last updated:** 2026-09-07 04:57 local (02:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Ticket states below were re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -12,25 +12,23 @@ The brief: [Retrofit batch 2 — the camp six](https://github.com/christiansplii
 
 Two yes/no questions in the brief: **repair in place, or re-roll from fresh premises?** (repair is the plan) and **the 2-of-6 sample** — `ward_the_camp` and `tend_to_wounds`, your own recommendation.
 
-*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* The execution ticket is [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word.
+*"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* The execution ticket is [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able by the unattended machine the moment you say the word. **The queue has no other content work in it**, so this word is what restarts the encounter line.
 
 ### 2. What should a proportion read as? — [THR-1424](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)
 
 Two places still show you a bare percentage: an effect tooltip says something is at *62% strength*, and the doom clock says you are *62%* of the way to the doom. The design laws ban percentages on player-facing surfaces, and unlike the "4 ticks" problem cleared all week, **there is no existing replacement to reach for** — a duration converts into days; "62% strength" converts into nothing a player already thinks in. Word ladders are out by your own verdict on `grew steadily`: *"how can a player use that word to gage anything"*.
 
-**Recommendation: drop both numbers rather than invent a new language.** The doom clock already shows a bar and names which chapter of five you are in — the percentage is a third rendering of a quantity the screen states twice. The tooltip's strength is arguably readable from the effect's prose.
+**Recommendation: drop both numbers rather than invent a new language.** The doom clock already shows a bar and names which chapter of five you are in — the percentage is a third rendering of a quantity the screen states twice.
 
-**The same question now covers ten readouts, not two.** [THR-1426](https://linear.app/threadbare/issue/THR-1426/tick-timestamps-and-per-tick-rates-are-the-two-tick-shapes-with-no) landed an hour after this ask and carries two more shapes with no sanctioned reading: **timestamps** (*t42*, *Tick 42*) and **per-tick rates** (*regen 1.5/tick*). It is the same fork, not a second one — worth more, not more urgent.
+**The same question covers ten readouts, not two.** [THR-1426](https://linear.app/threadbare/issue/THR-1426/tick-timestamps-and-per-tick-rates-are-the-two-tick-shapes-with-no) carries two more shapes with no sanctioned reading: **timestamps** (*t42*, *Tick 42*) and **per-tick rates** (*regen 1.5/tick*). Same fork, not a second one. The rate half may not even need you — [THR-1008](https://linear.app/threadbare/issue/THR-1008) already banded rates into words — so if you say *drop the percentages*, a lane applies that pattern to the rates and only the timestamps come back.
 
-The rate half may not even need you: [THR-1008](https://linear.app/threadbare/issue/THR-1008/threadspanel-leaks-raw-magnitudes-a-percentage-and-a-debug-meta-strip) already set a precedent for banding rates into words. So if you say *drop the percentages*, a lane applies that existing pattern to the rates and only the timestamps come back to you — those genuinely have no precedent.
-
-The fork that is genuinely yours: **if a proportion is ever worth showing, what should it read as** — whatever is picked becomes the sanctioned reading for *every* proportion in the game, the way "four days" now is for every term. Say **"drop them"** and a lane takes it from there; *"no, they matter"* needs your language. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-07b.md), 2026-09-07*
+The fork that is genuinely yours: **if a proportion is ever worth showing, what should it read as** — whatever is picked becomes the sanctioned reading for *every* proportion in the game. Say **"drop them"** and a lane takes it from there. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-07b.md), 2026-09-07*
 
 ### 3. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
 Still one word — and **smaller than earlier briefings claimed**. It was billed as the valve holding the design pipeline shut; three of the four things it supposedly blocked closed under their own power ([grievance supply](https://linear.app/threadbare/issue/THR-1383), [undertaking factory](https://linear.app/threadbare/issue/THR-1300), [decision-board re-scope](https://linear.app/threadbare/issue/THR-1349)).
 
-What remains is genuinely just intent: **23 days In Design, assigned to you, no plan doc.** The machine keeps it counted because an assigned item means a person may be about to start, and it occupies the design tier's one preparation slot — eighth consecutive day.
+What remains is genuinely just intent: **over three weeks In Design, assigned to you, no plan doc.** The machine keeps it counted because an assigned item means a person may be about to start, and it occupies the design tier's one preparation slot.
 
 **Yes** changes nothing and the asking stops; **not getting to it** sets it aside, frees the slot, and preparation restarts tonight. The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic"). *(Its description still says blocked — that blocker closed 26 July and grooming corrected the ticket.)*
 
@@ -98,15 +96,13 @@ Deliberately left with you: what the game means, not how to wire it. No urgency 
 
 ### 11. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
-One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each carries test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes now, nineteen captures. Newest include faction heraldry (does a subordinate charge at 0.42 scale read as *deliberately lesser* or as a broken asset?), the tooltip focus ring, and the aftermath screen as composed.
+One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each carries test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes, nineteen captures.
 
-**Every hole is now filled — this became genuinely doable at 00:28 tonight.** Three of the nine passes were impossible on 2026-09-04, not because of the sweep but because the game had no route to the surfaces: nothing could put a companion on a mortal, no premonition appeared in ~280 ticks, and every faction-carrying character read as a stranger. All three closed — the companion route ([THR-1413](https://linear.app/threadbare/issue/THR-1413)), a lever that forces a premonition on demand ([THR-1414](https://linear.app/threadbare/issue/THR-1414)), and the reveal switch, which was genuinely broken and is fixed ([THR-1412](https://linear.app/threadbare/issue/THR-1412), merged 00:28 UTC today).
+**Two things changed since you last tried this, and both were the reasons it went badly.** Three of the nine passes were impossible on 2026-09-04 because the game had no route to the surfaces — nothing could put a companion on a mortal, no premonition appeared in ~280 ticks, every faction-carrying character read as a stranger. All three closed ([THR-1413](https://linear.app/threadbare/issue/THR-1413), [THR-1414](https://linear.app/threadbare/issue/THR-1414), [THR-1412](https://linear.app/threadbare/issue/THR-1412)). And the game itself **would not load** that day: the dev server was watching all ~199 lane worktrees inside the repo folder, so every hourly robot flooded it and the page stayed blank. That is fixed and shipped ([THR-1415](https://linear.app/threadbare/issue/THR-1415), 02:16Z today) — dev server only, nothing about the built game changes.
 
-Two captures ride along: the debug panel's tab strip was rebuilt so its 43 tabs wrap and scroll instead of running off the edge — **that fix shipped without anyone seeing it at full size** — and the faction heraldry comparison from [THR-854](https://linear.app/threadbare/issue/THR-854). One more attended item joined Friday: [THR-1419](https://linear.app/threadbare/issue/THR-1419) — the choice-card meta row, checking a three-item withdrawn row does not overflow the card and that the stance hues read against the veil ground.
+Riding along: the debug panel's 43-tab strip, rebuilt to wrap and scroll and **shipped without anyone seeing it at full size**; the faction heraldry comparison ([THR-854](https://linear.app/threadbare/issue/THR-854)); and the choice-card meta row ([THR-1419](https://linear.app/threadbare/issue/THR-1419)).
 
-**There is no decision in this — it is a session, not a question.** Roughly twenty minutes.
-
-It grows as more UI ships behind the same wall. Get through part of it, say which, and the remainder is re-expanded rather than closed whole.
+**There is no decision in this — it is a session, not a question.** Roughly twenty minutes. Get through part of it, say which, and the remainder is re-expanded rather than closed whole.
 
 ### 12. Chart the hub map — [THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)
 
@@ -130,7 +126,7 @@ My read is that it was a host that was simply off: three unrelated schedulers st
 
 ### 15. The scripted half of Linear access — small, and not urgent
 
-**The connector fixed itself — there is nothing to reauthorize.** It came back on its own around 17:15 on 6 September after roughly six hours of lane runs against a wall, and has stayed up since — a full night now, with every board read this run returning normally and four tickets shipped through it overnight. Nothing was lost.
+**The connector fixed itself — there is nothing to reauthorize.** It came back on its own around 17:15 on 6 September after roughly six hours of lane runs against a wall, and has stayed up since — every board read this run returned normally. Nothing was lost.
 
 **`LINEAR_API_KEY` is still unset.** A handful of background checks read Linear through that environment variable rather than the connector, so they stay switched off — one background lint runs with three sub-checks dark. **Nothing is blocked on it.** The transport is already written and shipped in `scripts/drift-scan/linear.ts`.
 
@@ -138,7 +134,8 @@ Setting it in the machine environment or the home tree's `.env` is the durable f
 
 ## Resolved this period
 
-- **The stale-process pile-up cleared itself — no restart needed** *(2026-09-07)*. Machine at 2% load; warm-up back to normal and the engine-speed trend is publishing rows again.
+- **The dev server no longer chokes on the robots' worktrees** *(2026-09-07)*. [THR-1415](https://linear.app/threadbare/issue/THR-1415) — the fault that made the game refuse to load during your last attended session is fixed; ask 11 got materially cheaper.
+- **The stale-process pile-up cleared itself — no restart needed** *(2026-09-07)*. Machine back to normal and the engine-speed trend is publishing rows again.
 - **Linear came back on its own** *(2026-09-06)*. Six hours of lane runs hit an authentication wall and it recovered unaided around 17:15 — no reauthorization, nothing lost. Two residues: ask 15, and seven unticketed merges flagged for the Friday retro.
 - **Your pixel sweep is six-for-nine and found a fix of its own** *(2026-09-04)*. [THR-1409](https://linear.app/threadbare/issue/THR-1409), [THR-1410](https://linear.app/threadbare/issue/THR-1410), [THR-1411](https://linear.app/threadbare/issue/THR-1411), [THR-1413](https://linear.app/threadbare/issue/THR-1413), [THR-1414](https://linear.app/threadbare/issue/THR-1414), the self-found [THR-1418](https://linear.app/threadbare/issue/THR-1418), and [THR-1416](https://linear.app/threadbare/issue/THR-1416).
 - **You killed the encounter audio moments, and they are now deleted** *(2026-09-04)*. *"thr 1168. no audio please."* — [THR-1168](https://linear.app/threadbare/issue/THR-1168) merged and deployed the same day.
