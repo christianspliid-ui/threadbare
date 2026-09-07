@@ -28,7 +28,7 @@ import {
   type RuleOverrideContext,
 } from './effects/ruleOverrideConsumers';
 import type { EncounterCacheManager } from './encounterCache';
-import type { SimulationRuntime } from './simulationRuntime';
+import { touchWorld, type SimulationRuntime } from './simulationRuntime';
 import { drainMintQueue } from './binding/mintInhabitant';
 import { generateRoleCapabilities } from './npcGraduation';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
@@ -162,6 +162,131 @@ function drainMintValve(
   return true;
 }
 
+// ─── The one death funnel (THR-1430) ──────────────────────────────
+
+/** Why a mortal died — carried on the node so the chronicle and the sheet can say it. */
+export type MortalDeathCause = 'plot' | 'band' | 'lifecycle' | 'commission';
+
+/**
+ * What `markMortalDead` did. `warded` and `echo` are outcomes, not failures — a caller
+ * that asked for a death and got one of these must resolve as *the target lived* (or
+ * lived on as myth), never as an error (NFP #4).
+ */
+export type MortalDeathOutcome = 'died' | 'warded' | 'echo' | 'not_a_mortal';
+
+export interface MarkMortalDeadOptions {
+  readonly cause: MortalDeathCause;
+  /** Who did it, when anyone did. Written to `slainBy` so the seen-rule has a culprit. */
+  readonly byActorId?: string;
+  /**
+   * `retain` leaves the node in the graph carrying `deceased` — the dead stay in the
+   * chronicle and their echoes survive. `remove` sweeps the edges and deletes the node,
+   * which is what the lifecycle's own low-reputation death has always done.
+   *
+   * Whether *every* death should retain is a real question and deliberately not settled
+   * here: every node-absence reader (`binding/bindingRegistry.ts`, `isAgentGone`, the
+   * spatial sweeps) would need the `deceased` read first. It is the next question on the
+   * Agent Lifecycle seam of the wayfinder map (THR-1396).
+   */
+  readonly mode: 'retain' | 'remove';
+}
+
+export interface MarkMortalDeadResult {
+  readonly outcome: MortalDeathOutcome;
+  /** Where they fell, for the event's hex and the location's `deathCount`. */
+  readonly hexCoords?: { col: number; row: number };
+  /** The ascendants whose bond became a mythic echo, when the target was an Aspect. */
+  readonly echoedAscendantIds?: readonly string[];
+}
+
+/** The location's tally `phaseProsperity` reads for its death-site unrest bonus. */
+function bumpDeathCount(locNode: { properties: Record<string, unknown> }): void {
+  const prev = typeof locNode.properties.deathCount === 'number' ? locNode.properties.deathCount : 0;
+  locNode.properties.deathCount = prev + 1;
+}
+
+/**
+ * Kill one mortal, through the guards every death owes.
+ *
+ * The one funnel a mortal leaves the world by. It carries, in order: the
+ * `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as
+ * *survived*), the Aspect echo (THR-479 — an Aspect of the god is never unmade),
+ * and only then the write itself, in the caller's `mode`.
+ *
+ * Callers today: the lifecycle's low-reputation death (`remove`), band opposition's
+ * casualty (`retain`), the plot (`retain`, THR-1430) and the god's commissioned
+ * killing (`retain`). **The Physical Conflict fight framework (THR-1258) is the next
+ * caller — it calls this, it does not extract its own.**
+ *
+ * Emits no event: the caller owns the wording of its own death, because a band
+ * casualty, a plot and a fever do not read alike. It does write the node, the edges
+ * and the location's `deathCount`.
+ */
+export function markMortalDead(
+  graph: GameState['graph'],
+  mortalId: string,
+  tick: number,
+  options: MarkMortalDeadOptions,
+  runtime?: SimulationRuntime,
+  overrideCtx?: RuleOverrideContext,
+): MarkMortalDeadResult {
+  const node = graph.getNode(mortalId);
+  if (!node || node.properties.actorType !== 'individual') return { outcome: 'not_a_mortal' };
+  // Already gone — idempotent, so a double-resolve never double-kills.
+  if (node.properties.deceased === true) return { outcome: 'not_a_mortal' };
+
+  // Where they fell, captured before any edge is swept.
+  const deathLocNode = getAgentLocation(graph, mortalId);
+  const hexCoords = deathLocNode?.properties?.hexCol != null
+    ? { col: deathLocNode.properties.hexCol as number, row: deathLocNode.properties.hexRow as number }
+    : undefined;
+
+  // (1) The ward. A promise that "you will not die" is asked exactly where death is
+  // decided and nowhere else — so every caller of this funnel inherits it for free.
+  if (overrideCtx && readFlagOverride(overrideCtx, mortalId, 'death_prevented', `markMortalDead.${options.cause}`)) {
+    return { outcome: 'warded', hexCoords };
+  }
+
+  // (2) The Aspect echo. The conduit closes, the bond endures; the node is retained
+  // regardless of the caller's mode, because an Aspect is never unmade.
+  const echo = markAspectEchoOnDeath(graph, mortalId, tick);
+  if (echo.isEcho) {
+    const echoed = graph.getNode(mortalId);
+    if (echoed) {
+      echoed.properties.deceasedTick = tick;
+      echoed.properties.deathCause = options.cause;
+      if (options.byActorId) echoed.properties.slainBy = options.byActorId;
+    }
+    if (deathLocNode) bumpDeathCount(deathLocNode);
+    if (runtime) touchWorld(runtime);
+    return { outcome: 'echo', hexCoords, echoedAscendantIds: echo.ascendantIds };
+  }
+
+  if (deathLocNode) bumpDeathCount(deathLocNode);
+
+  if (options.mode === 'retain') {
+    // The band-death shape (`groups/bandOpposition.ts`), plus the provenance the
+    // grievance lane reads. Edges are left standing: the dead keep their history.
+    graph.updateNode(mortalId, {
+      properties: {
+        ...node.properties,
+        deceased: true,
+        deceasedTick: tick,
+        deathCause: options.cause,
+        ...(options.byActorId ? { slainBy: options.byActorId } : {}),
+      },
+    });
+  } else {
+    for (const edge of graph.getAllEdgesForNode(mortalId)) {
+      graph.removeEdge(edge.id);
+    }
+    graph.removeNode(mortalId);
+  }
+
+  if (runtime) touchWorld(runtime);
+  return { outcome: 'died', hexCoords };
+}
+
 export function phaseAgentLifecycle(
   state: GameState,
   nextEventId: () => string,
@@ -232,24 +357,21 @@ export function phaseAgentLifecycle(
     }
 
     if (shouldDie) {
-      // Capture location before removing edges
-      const deathLocNode = getAgentLocation(graph, actor.id);
-      const deathHexCoords = deathLocNode?.properties?.hexCol != null
-        ? { col: deathLocNode.properties.hexCol as number, row: deathLocNode.properties.hexRow as number }
-        : undefined;
+      // THR-1430: the write goes through the one funnel. The ward was already
+      // resolved above (this site owns its `agent_death_averted` wording), so no
+      // override context is passed — asking twice would read the same flag twice.
+      // `remove` is what this path has always done; the retain-everything question
+      // is the map's next one for this seam, not this ticket's.
+      const death = markMortalDead(
+        graph,
+        actor.id,
+        state.tick,
+        { cause: 'lifecycle', mode: 'remove' },
+        runtime,
+      );
+      const deathHexCoords = death.hexCoords;
 
-      // Record death at location so phaseProsperity can apply deathSiteUnrestBonus
-      if (deathLocNode) {
-        const prev = typeof deathLocNode.properties.deathCount === 'number'
-          ? deathLocNode.properties.deathCount : 0;
-        deathLocNode.properties.deathCount = prev + 1;
-      }
-
-      // THR-479: an Aspect of the god is never unmade. If this mortal is an
-      // Aspect, retain the node + aspect_of edge as a mythic echo (the conduit
-      // closes, the bond endures); otherwise remove the node normally.
-      const echo = markAspectEchoOnDeath(graph, actor.id, state.tick);
-      if (echo.isEcho) {
+      if (death.outcome === 'echo') {
         deadActorIds.add(actor.id); // prune in-flight actions; node retained as echo
         events.push({
           id: nextEventId(),
@@ -261,13 +383,7 @@ export function phaseAgentLifecycle(
           notification: { channel: 'toast' },
           hexCoords: deathHexCoords,
         });
-      } else {
-        // Remove all edges connected to this actor
-        const allEdges = graph.getAllEdgesForNode(actor.id);
-        for (const edge of allEdges) {
-          graph.removeEdge(edge.id);
-        }
-        graph.removeNode(actor.id);
+      } else if (death.outcome === 'died') {
         deadActorIds.add(actor.id);
 
         events.push({

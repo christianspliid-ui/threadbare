@@ -1,5 +1,6 @@
 import type { GraphNode } from '../types/graph';
 import { getFactionMembershipEdges } from './graphQueries';
+import { isAgentGone } from './groups/groupQueries';
 import type { WorldGraph } from './graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import type { FactionDefinition } from '../types/faction';
@@ -192,7 +193,12 @@ export function getFactionNetworkSummary(
   // THR-432 — `leads` edge is authoritative when present, with score derivation
   // as the untouched fallback. Anointed succession sets this edge.
   const anointedId = getAnointedLeaderId(graph, factionId);
-  const fallbackLeaderId = sortedMembers.find(member => !member.isArmy)?.id ?? null;
+  // THR-1430: and the fallback skips the dead too. Guarding only the anointed seam
+  // above would have moved the problem rather than fixed it — a murdered leader with
+  // no `leads` edge would simply have been re-derived as leader by score.
+  const fallbackLeaderId = sortedMembers.find(
+    member => !member.isArmy && !isAgentGone(graph.getNode(member.id)),
+  )?.id ?? null;
   const leaderId = anointedId ?? fallbackLeaderId;
 
   const normalizedMembers = sortedMembers.map(member => ({
@@ -572,6 +578,13 @@ export function getAnointedLeaderId(
   if (!edge) return null;
   const leader = graph.getNode(edge.source);
   if (!leader || leader.type !== 'actor') return null;
+  // THR-1430: the dead do not lead. This docblock has always promised that a `leads`
+  // edge pointing at a dead agent is ignored, and until now the promise was kept only
+  // by accident — death *removed* the node, so `getNode` answered it. The plot retains
+  // the node, so the seat has to be read off `deceased` explicitly or a murdered leader
+  // goes on leading forever. Reading it here covers every leader-resolution call site,
+  // because this helper is the single seam they all consult.
+  if (isAgentGone(leader)) return null;
   // Armies and group nodes cannot lead — guard against drift in the leads edge.
   if (leader.properties.armyState != null || leader.properties.actorType === 'group') return null;
   // The leader must still be a member of this faction. If they were expelled

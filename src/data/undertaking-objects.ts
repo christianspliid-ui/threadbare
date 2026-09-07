@@ -57,12 +57,17 @@ import {
   seedKnowsOf,
   spawnClue,
   mintTreasureMap,
+  foundRing,
+  ringMemberInReachOf,
 } from '../engine/strategicGraphOps';
+import { markMortalDead } from '../engine/agentLifecycle';
 import { emitTrace } from '../engine/traceBuffer';
 import type {
   UndertakingReaderTrace,
   PowerLearnedTrace,
   ConditionInflictedTrace,
+  RingRunTrace,
+  PlotResolvedTrace,
   TraceEntry,
 } from '../types/trace';
 import type { QuintessenceEvent } from '../types/quintessence';
@@ -134,6 +139,11 @@ import {
   CONDITION_CURSE_TAG,
   SEAL_POWER_CONDITION_ID,
   HARM_ON_AFFLICT,
+  // The dormant kinds II — rings and the plot (THR-1430)
+  PLOT_MOTIVES,
+  PLOT_EXPOSURE_BANDS,
+  PLOT_WITNESS_SECRET_TYPE,
+  PLOT_WITNESS_MAGNITUDE,
 } from './strategic-action-constants';
 
 // ─── Shapes ─────────────────────────────────────────────────────────
@@ -200,6 +210,15 @@ export interface UndertakingObjectType {
    * runs object → holder). Edge objects are held by the edge's own source.
    */
   readonly ownedVia: readonly EdgeType[];
+  /**
+   * Objects of this type are held by nobody but themselves (THR-1430).
+   *
+   * A mortal is the one object in the catalogue whose owner *is* the object: no edge
+   * says who holds a person, and the motive gate asks "what does the actor hold
+   * against the owner?" — which for a killing is a question about the victim. Without
+   * this the gate reads a mortal as unowned and refuses every plot by construction.
+   */
+  readonly selfOwned?: boolean;
   /** Tier read off the object; `null` when the source is missing (the caller defaults and traces). */
   readonly tierOf: (graph: WorldGraph, handle: UndertakingObjectHandle) => UndertakingObjectTier | null;
   /** What each verb variant does to THIS type. A verb not declared here is not a cell. */
@@ -1241,6 +1260,73 @@ const ARMY: UndertakingObjectType = {
   },
 };
 
+/**
+ * `use × Network` — running a ring (THR-1430).
+ *
+ * THR-1397: *"each completion does what one observe or one seize × Agreement would,
+ * against a target the ring has members near — the ring is the multiplier on the two
+ * verbs already decided."* So this writes nothing new: it reaches the observe readers
+ * THR-1428 shipped on a place-kind target, and `create × Agreement`'s own mark op on a
+ * mortal. What is new is only the *reach* — a member three hexes away is close enough,
+ * which is the whole difference between a ring and a person.
+ *
+ * It writes nothing into Stealth, hidden marks, or detection pressure: mortal
+ * surveillance never feeds the god's own visibility (THR-1397, restated on THR-1430).
+ */
+function runRing(ctx: ObjectVerbContext): GraphOpResult {
+  const ringId = nodeIdOf(ctx.handle);
+  if (!ringId) return fail('run_ring', 'no_node');
+  const ring = ctx.graph.getNode(ringId);
+  if (!ring) return fail('run_ring', 'ring_gone');
+  if ((ring.properties as Record<string, unknown>).groupStatus === 'disbanded') {
+    return fail('run_ring', 'ring_gone');
+  }
+
+  // The target is the *place of the work* — the ring reaches out to it, rather than
+  // the leader walking there.
+  const targetId = ctx.targetNodeId;
+  if (!targetId) return fail('run_ring', 'nothing_in_reach');
+  const target = ctx.graph.getNode(targetId);
+  if (!target) return fail('run_ring', 'nothing_in_reach');
+
+  const memberId = ringMemberInReachOf(ctx.graph, ringId, targetId);
+  if (!memberId) return fail('run_ring', 'nothing_in_reach');
+
+  const leaderId = ctx.actorId;
+  let product: 'familiarity' | 'clue' | 'mark' | 'nothing_new' = 'nothing_new';
+
+  try {
+    if (target.type === 'actor' && target.properties.actorType !== 'faction') {
+      // A mortal target: what the ring earns is leverage over them.
+      const result = mintLeverageMark(
+        ctx.graph, leaderId, targetId,
+        OBSERVE_MARK_SECRET_TYPE, OBSERVE_MARK_MAGNITUDE, ctx.tick,
+      );
+      product = result.success ? 'mark' : 'nothing_new';
+    } else {
+      // A place-kind target: the observe readers, with the ring's leader as the knower.
+      applyObserveReaders(ctx, targetId);
+      product = isSurveyableSite(target) ? 'clue' : 'familiarity';
+    }
+  } catch {
+    // A reader that throws must never fail the work the ring actually did (NFP #4).
+    product = 'nothing_new';
+  }
+
+  emitTrace({
+    category: 'ring_run',
+    tick: ctx.tick,
+    ringId,
+    leaderId,
+    targetId,
+    product,
+    memberId,
+    summary: `ring_run: ${ring.name ?? ringId} reached ${target.name ?? targetId} through ${memberId} → ${product}`,
+  } as RingRunTrace);
+
+  return { success: true, op: 'run_ring' };
+}
+
 const NETWORK: UndertakingObjectType = {
   id: 'network',
   displayName: 'Network',
@@ -1250,10 +1336,201 @@ const NETWORK: UndertakingObjectType = {
   lexicon: 'network',
   harmOnDestroy: 'network_severed',
   verbs: {
+    // Founding a ring — the cell that wakes the dormant kind (THR-1430).
+    create: (ctx) => foundRing(ctx.state, ctx.actorId, ctx.boundCastIds ?? []),
+    // Recruiting into it: the live op, which since THR-1430 admits networks and
+    // draws from anyone within reach of any member rather than only where the
+    // leader stands.
+    'change:raise': (ctx) => {
+      const nodeId = nodeIdOf(ctx.handle);
+      return nodeId ? reinforceWarband(ctx.state, ctx.actorId, nodeId, ctx.boundCastIds ?? []) : fail('reinforce_group', 'no_node');
+    },
+    use: runRing,
     destroy: (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
       return nodeId ? disbandGroup(ctx.state, nodeId) : fail('disband_group', 'no_node');
     },
+  },
+};
+
+// ─── The plot (THR-1430) ────────────────────────────────────────────
+
+/**
+ * How long this plot's strike actually waited for the god to act.
+ *
+ * Read off the project record rather than recomputed: the deferral is granted by the
+ * checkpoint layer when the peril moment is enqueued, and the cell only reports it.
+ * Zero when the target was never followed — nobody was watching, so nobody was owed
+ * a turn.
+ */
+function readPlotDeferral(ctx: ObjectVerbContext): number {
+  try {
+    if (!ctx.projectId) return 0;
+    const project = ctx.state.strategicState?.projects?.find(p => p.projectId === ctx.projectId);
+    return typeof project?.perilDeferredTicks === 'number' ? project.perilDeferredTicks : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Whether this node is a mortal a plot may be aimed at. */
+function isPlottableMortal(n: GraphNode | undefined): boolean {
+  if (!n || n.type !== 'actor') return false;
+  const props = n.properties as Record<string, unknown>;
+  return props.actorType === 'individual' && props.deceased !== true;
+}
+
+/**
+ * The target's standing in the world, which raises every stage's difficulty.
+ *
+ * Killing someone nobody would miss is not the same work as killing a faction's head,
+ * and the ladder should say so before the dice do.
+ */
+function mortalTier(graph: WorldGraph, handle: UndertakingObjectHandle): UndertakingObjectTier | null {
+  const nodeId = nodeIdOf(handle);
+  if (!nodeId) return null;
+  const node = graph.getNode(nodeId);
+  if (!node) return null;
+  try {
+    // A faction's leader, or anyone the god holds a thread to: the loudest death.
+    if (graph.getOutgoingEdges(nodeId, 'leads').length > 0) return 3;
+    if (graph.getIncomingEdges(nodeId, 'commanded_by').length > 0) return 2;
+    if ((node.properties as Record<string, unknown>).isNotable === true) return 2;
+  } catch {
+    return null;
+  }
+  return 1;
+}
+
+/**
+ * One-way hostility with an injury provenance — the survivor's own grudge.
+ *
+ * Deliberately *not* `writeGrudge`, which is bidirectional: a plot that missed leaves
+ * the target hating the plotter, and it must not also stamp the plotter as newly
+ * aggrieved by the person they tried to murder.
+ */
+function writeAttemptedKillingHostility(
+  graph: WorldGraph,
+  from: string,
+  to: string,
+  tick: number,
+): void {
+  if (from === to) return;
+  try {
+    const existing = graph.getOutgoingEdges(from, 'hostile_to').find(e => e.target === to);
+    if (existing) return;
+    graph.addEdge({
+      id: `e_hostile_to_${from}_${to}`,
+      source: from,
+      target: to,
+      type: 'hostile_to',
+      properties: { cause: 'attempted_killing', since: tick },
+    });
+  } catch {
+    // Fail-soft: an unwritable edge costs the vendetta, never the resolution (NFP #4).
+  }
+}
+
+/**
+ * `destroy × Mortal` — the plot (THR-1430).
+ *
+ * A premeditated killing: never the duel (an encounter seeded off a quarrel,
+ * `destroy × Standing`) and never the slaying (a battle, a delve). The sovereignty
+ * non-negotiable binds the god, not one mortal against another — so this is a mortal's
+ * verb end to end, and the god's part is the warning and the levers they already have.
+ *
+ * The death goes through {@link markMortalDead} in `retain`: the dead stay in the
+ * chronicle, and the grievance lane can avenge a body it can still name. Whether
+ * anyone *saw* it is THR-1383's rule and not this cell's — a clean kill breeds no
+ * vendetta, an exposed one does.
+ */
+function plotDeath(ctx: ObjectVerbContext): GraphOpResult {
+  const targetId = nodeIdOf(ctx.handle);
+  if (!targetId) return fail('plot_death', 'no_node');
+  const target = ctx.graph.getNode(targetId);
+  if (!target) return fail('plot_death', 'target_gone');
+  if (!isPlottableMortal(target)) return fail('plot_death', 'not_a_mortal');
+  if (targetId === ctx.actorId) return fail('plot_death', 'not_a_mortal');
+  // The player's avatar is never a mortal's to kill.
+  if ((target.properties as Record<string, unknown>).isAvatar === true) {
+    return fail('plot_death', 'not_a_mortal');
+  }
+
+  // The licence, read again at completion: a grudge that was settled between the
+  // proposal and the strike takes the knife out of the plotter's hand.
+  const motive = PLOT_MOTIVES.find(m => holdsMotive(ctx.graph, ctx.actorId, targetId, m as MotiveKind));
+  if (!motive) return fail('plot_death', 'no_licence');
+
+  const band = ctx.outcome ?? 'success';
+  const lethal = band === 'critical_success' || band === 'success' || band === 'success_at_cost';
+  const exposed = PLOT_EXPOSURE_BANDS.includes(band);
+  const deferredTicks = readPlotDeferral(ctx);
+
+  let outcome: PlotResolvedTrace['outcome'] = 'survived';
+  let witnessId: string | undefined;
+
+  if (lethal) {
+    const death = markMortalDead(
+      ctx.graph, targetId, ctx.tick,
+      { cause: 'plot', byActorId: ctx.actorId, mode: 'retain' },
+      ctx.runtime,
+      { graph: ctx.graph, effectStates: ctx.state.effectStates, persisted: ctx.state, tick: ctx.tick },
+    );
+    if (death.outcome === 'warded') {
+      // The ward wins and the plot resolves as *survived* — an outcome, not an error.
+      outcome = 'warded';
+    } else {
+      outcome = exposed ? 'slain_exposed' : 'slain';
+    }
+  } else {
+    // A failed plot is a harm *seen* by the one person who could not miss it.
+    writeAttemptedKillingHostility(ctx.graph, targetId, ctx.actorId, ctx.tick);
+    outcome = exposed ? 'caught' : 'survived';
+  }
+
+  if (exposed && outcome !== 'warded') {
+    // Somebody was standing there. The first by id, so the witness is reproducible.
+    const witnesses = coLocatedMortals(ctx, targetId).filter(id => id !== targetId);
+    witnessId = witnesses[0];
+    if (witnessId) {
+      mintLeverageMark(
+        ctx.graph, witnessId, ctx.actorId,
+        PLOT_WITNESS_SECRET_TYPE, PLOT_WITNESS_MAGNITUDE, ctx.tick,
+      );
+    }
+    // The victim's faction, if they had one, learns to hate the culprit.
+    const faction = actorFactionId(ctx.graph, targetId);
+    if (faction) writeAttemptedKillingHostility(ctx.graph, faction, ctx.actorId, ctx.tick);
+  }
+
+  emitTrace({
+    category: 'plot_resolved',
+    tick: ctx.tick,
+    actorId: ctx.actorId,
+    targetId,
+    motive,
+    band,
+    outcome,
+    ...(witnessId ? { witnessId } : {}),
+    deferredTicks,
+    summary: `plot_resolved: ${ctx.actorId} → ${target.name ?? targetId} (${motive}, ${band}) → ${outcome}`,
+  } as PlotResolvedTrace);
+
+  return { success: true, op: 'plot_death' };
+}
+
+const MORTAL: UndertakingObjectType = {
+  id: 'mortal',
+  displayName: 'Mortal',
+  shape: { nodeType: 'actor', discriminator: isPlottableMortal },
+  // Nobody holds a person. The gate asks about the victim themself — see `selfOwned`.
+  ownedVia: [],
+  selfOwned: true,
+  tierOf: mortalTier,
+  lexicon: 'shadow',
+  harmOnDestroy: 'named_death',
+  verbs: {
+    destroy: plotDeath,
   },
 };
 
@@ -1726,6 +2003,7 @@ const STANDING: UndertakingObjectType = {
 
 export const UNDERTAKING_OBJECT_TYPES: readonly UndertakingObjectType[] = [
   AREA, LOCATION, PLACE, ROUTE,
+  MORTAL,
   FACTION, COMPANY, ARMY, NETWORK, COMPANION,
   ITEM, POWER, CONDITION, AGREEMENT, STANDING,
 ];
@@ -1803,6 +2081,12 @@ export function resolveObjectOwners(
     if (handle.kind === 'edge') {
       const edge = graph.getEdge(handle.edgeId);
       if (edge) owners.add(edge.source);
+      return [...owners];
+    }
+    // THR-1430: a person is their own owner. Returned before the edge walk because no
+    // edge would ever answer it.
+    if (type.selfOwned) {
+      owners.add(handle.nodeId);
       return [...owners];
     }
     for (const via of type.ownedVia) {

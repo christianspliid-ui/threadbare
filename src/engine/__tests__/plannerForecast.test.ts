@@ -221,7 +221,7 @@ describe('forecastEncounterExpectedUtility', () => {
 
 describe('push/resist eligibility', () => {
   it('push eligible for risky action families', () => {
-    expect(isPushEligible('action.shadow.assassinate-target')).toBe(true);
+    // `action.shadow.assassinate` retired by THR-1430 — the bought killing carries the family.
     expect(isPushEligible('action.iron.conquer-fortress')).toBe(true);
     expect(isPushEligible('action.gold.commission-assassination-plot')).toBe(true);
   });
@@ -256,7 +256,7 @@ describe('push benefit in encounter forecast', () => {
   it('push is not recommended when Q is low', () => {
     const graph = makeGraphWithAgent('agent_1', 0.15, 1.0); // 15% Q ratio < Q_LOW_THRESHOLD
     const entry = makeEntry({
-      templateId: 'action.shadow.assassinate-target',
+      templateId: 'action.gold.commission-assassination-target',
       stepDifficulties: [0.6],
     });
     const forecast = forecastEncounterExpectedUtility(entry, 'agent_1', graph);
@@ -266,7 +266,7 @@ describe('push benefit in encounter forecast', () => {
   it('push can be recommended for eligible templates with sufficient Q', () => {
     const graph = makeGraphWithAgent('agent_1', 0.8, 1.0);
     const entry = makeEntry({
-      templateId: 'action.shadow.assassinate-target',
+      templateId: 'action.gold.commission-assassination-target',
       stepDifficulties: [0.6], // Hard enough (0-1 scale) to benefit from push
       stepReaches: ['iron'] as ReachDomain[],
     });

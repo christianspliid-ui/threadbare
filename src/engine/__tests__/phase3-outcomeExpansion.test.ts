@@ -249,7 +249,7 @@ describe('isProvingSliceTemplate', () => {
   });
 
   it('detects risky/coercive templates', () => {
-    expect(isProvingSliceTemplate('action.shadow.assassinate')).toBe(true);
+    // `action.shadow.assassinate` retired by THR-1430 — the bought killing carries the family.
     expect(isProvingSliceTemplate('action.iron.conquer')).toBe(true);
     expect(isProvingSliceTemplate('action.gold.commission-assassination')).toBe(true);
   });
@@ -293,7 +293,7 @@ describe('computeOutcomeConsequence', () => {
   });
 
   it('risky templates have steeper penalties', () => {
-    const risky = computeOutcomeConsequence('action.shadow.assassinate', 'critical_failure', 'actor1', 10);
+    const risky = computeOutcomeConsequence('action.gold.commission-assassination', 'critical_failure', 'actor1', 10);
     const normal = computeOutcomeConsequence('action.heart.inspire', 'critical_failure', 'actor1', 10);
     expect(Math.abs(risky.quintessenceEvent!.delta)).toBeGreaterThan(Math.abs(normal.quintessenceEvent!.delta));
   });

@@ -15,6 +15,7 @@ import type { EssenceSource, SourceKind } from '../types/essenceSource';
 import { readEssenceSource, findLatentSourcesInRange } from './essenceSources';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFortificationModifier } from './siegeResolution';
+import { markMortalDead, type MortalDeathCause } from './agentLifecycle';
 import {
   executeEstablishTradeRoute,
   executeConductTrade,
@@ -199,6 +200,9 @@ function executeSingleOp(
 
       case 'remove_node':
         return executeRemoveNode(graph, op, ctx);
+
+      case 'mark_mortal_dead':
+        return executeMarkMortalDead(graph, op, ctx);
 
       case 'update_node':
         return executeUpdateNode(graph, op, ctx);
@@ -388,6 +392,46 @@ function executeRemoveNode(graph: WorldGraph, op: GraphOp, ctx: GraphOpContext):
     op,
     success: true,
   };
+}
+
+/**
+ * Kill a mortal and leave the body (THR-1430).
+ *
+ * The card-level counterpart of `remove_node` for a target who is a *person*. It goes
+ * through `markMortalDead` in `retain`, so a commissioned killing honours the ward and
+ * the Aspect echo and leaves a `deceased` node the chronicle can still name and the
+ * grievance lane can still avenge.
+ *
+ * A warded target is `success: true` with nothing written: the god paid, the killer
+ * went, and something older refused it. That is an outcome of the card, not a failure
+ * of the op.
+ */
+function executeMarkMortalDead(graph: WorldGraph, op: GraphOp, ctx: GraphOpContext): GraphOpResult {
+  if (!op.nodeId) {
+    return { op, success: false, error: 'mark_mortal_dead requires nodeId' };
+  }
+
+  const nodeId = resolveRef(op.nodeId, ctx);
+  if (!graph.getNode(nodeId)) {
+    return { op, success: false, error: `Node not found: ${nodeId}` };
+  }
+
+  const cause = typeof op.changes?.cause === 'string'
+    ? (op.changes.cause as MortalDeathCause)
+    : 'commission';
+
+  const result = markMortalDead(
+    graph,
+    nodeId,
+    ctx.tick ?? 0,
+    { cause, byActorId: ctx.actorId, mode: 'retain' },
+  );
+
+  if (result.outcome === 'not_a_mortal') {
+    return { op, success: false, error: `Not a living mortal: ${nodeId}` };
+  }
+
+  return { op, success: true };
 }
 
 /**

@@ -655,6 +655,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // The seeker's road into the Powers seam (THR-1429, the division rule): what
         // an uncoverer of secrets learns is not only a mark, it is sometimes a spell.
         'cell.create.power',
+        // The ring (THR-1430). Someone who wants to know what people buried is the
+        // one who builds a web to hear it — and this ambition already owns
+        // `destroy × Network` (rolling up someone else's), so the counter-play was
+        // here before the thing it counters. Founding, growing and running it.
+        'cell.create.network',
+        'cell.change_raise.network',
+        'cell.use.network',
       ],
       templateIds: [
         'strategic_research_archive',
@@ -1013,6 +1020,11 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // rival's art can clear its own motive gate.
         'cell.create.condition',
         'cell.destroy.power',
+        // The plot (THR-1430). This is the one ambition where a killing is the point
+        // rather than a means, and the cell's own gate is narrower than the profile:
+        // `PLOT_MOTIVES` admits only a grudge or a war, so an avenger with nothing
+        // but a rivalry is still refused at proposal.
+        'cell.destroy.mortal',
       ],
       templateIds: [
         'strategic_expose_mark',

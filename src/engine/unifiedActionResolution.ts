@@ -2620,7 +2620,7 @@ export function executeStepResult(
  * Phase 3 proving slice: narrow seam, not all actions.
  */
 const PUSH_ELIGIBLE_PREFIXES = [
-  'action.shadow.assassinate',
+  // `action.shadow.assassinate` retired by THR-1430; the bought killing below stays.
   'action.iron.conquer',
   'action.gold.commission-assassination',
 ];

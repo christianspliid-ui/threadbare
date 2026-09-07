@@ -364,6 +364,14 @@ export const GRAPH_OP_ROWS: Readonly<Record<string, LedgerRow>> = {
     writes: 'removal of a node and its incident edges',
     consumers: [acts('src/engine/graph.ts', 'getNodesByType')],
   },
+  mark_mortal_dead: {
+    writes: "`deceased`, `deceasedTick`, `deathCause` and `slainBy` on a mortal, through the one death funnel — the node and its edges are retained (THR-1430)",
+    consumers: [
+      acts('src/engine/groups/groupQueries.ts', 'isAgentGone'),
+      acts('src/engine/factionNetwork.ts', 'getAnointedLeaderId'),
+      acts('src/engine/agentDetail.ts', 'getAgentDetail'),
+    ],
+  },
   update_node: {
     writes: "properties on an existing node",
     consumers: [acts('src/engine/graph.ts', 'updateNode')],

@@ -129,6 +129,9 @@ export type TraceCategory =
   | 'undertaking_tier_defaulted'
   // The owed readers (THR-1428)
   | 'undertaking_reader'
+  // The dormant kinds — rings and the plot (THR-1430)
+  | 'ring_run'
+  | 'plot_resolved'
   // The dormant kinds — powers and conditions (THR-1429)
   | 'power_learned'
   | 'condition_inflicted'
@@ -538,6 +541,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking_cell_unreachable',
   'undertaking_tier_defaulted',
   'undertaking_reader',
+  'ring_run',
+  'plot_resolved',
   'power_learned',
   'condition_inflicted',
   'undertaking_checkpoint',
@@ -2140,6 +2145,40 @@ export interface UndertakingTierDefaultedTrace extends TraceBase {
 }
 
 /**
+ * Trace: a ring completed a run against a target (THR-1430).
+ *
+ * `memberId` is the point of the trace as much as the product is: a ring acts at a
+ * distance, so *which* member's position qualified the target is the only way to
+ * read back why a run reached where it did.
+ */
+export interface RingRunTrace extends TraceBase {
+  category: 'ring_run';
+  ringId: string;
+  leaderId: string;
+  targetId: string;
+  product: 'familiarity' | 'clue' | 'mark' | 'nothing_new';
+  memberId: string;
+}
+
+/**
+ * Trace: a plot's strike resolved (THR-1430).
+ *
+ * `outcome` is deliberately wider than the band: a `warded` plot rolled a success and
+ * still failed to kill, and reading that back off the band alone is impossible.
+ */
+export interface PlotResolvedTrace extends TraceBase {
+  category: 'plot_resolved';
+  actorId: string;
+  targetId: string;
+  motive: string;
+  band: string;
+  outcome: 'slain' | 'slain_exposed' | 'survived' | 'caught' | 'warded';
+  witnessId?: string;
+  /** The peril grace actually waited — zero when the target was not followed. */
+  deferredTicks: number;
+}
+
+/**
  * Trace: a reader ran at a cell completion (THR-1428).
  *
  * One per reader applied, and — this is the point — one per reader *refused*. A
@@ -3398,6 +3437,8 @@ export type TraceEntry =
   | CovetRivalrySeededTrace
   | UndertakingCellUnreachableTrace
   | UndertakingTierDefaultedTrace
+  | RingRunTrace
+  | PlotResolvedTrace
   | PowerLearnedTrace
   | ConditionInflictedTrace
   | UndertakingCheckpointTrace

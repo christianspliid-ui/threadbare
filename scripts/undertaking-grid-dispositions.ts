@@ -150,7 +150,13 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
     destroy: { op: 'disband_group', note: 'Stand the army down.' },
   },
   network: {
+    create: { op: 'found_ring', note: 'Founding a ring (THR-1430) — `createGroup` stamped with the network kind, the cell that wakes the dormant kind. Members are the bound `recruit` cast first, then co-located ungrouped mortals who share the founder\'s faction or lean Shadow, up to `RING_TARGET_MEMBER_COUNT`. A ring is founded somewhere and then stops caring where it is.', readBy: 'The group layer, which since THR-1430 enumerates networks alongside companies (`GROUP_PHASE_KINDS`) for upkeep, cohesion and dissolution and gates only the movement sub-step (`GROUP_KINDS_THAT_TRAVEL`) — so a ring frays and dies like a company but never travels; the sheet\'s group line; and the ring\'s own `use` cell below.' },
+    'change:raise': { op: 'reinforce_group', note: 'Recruiting into the ring — the live op, which since THR-1430 admits the network kind and draws candidates from anyone within `RING_REACH_HEXES` of *any* member rather than only where the leader stands. That is what lets a ring grow across a region.', readBy: 'The same group-roster readers as founding it — roster size is what the ring\'s use cell multiplies against, and `ringMemberInReachOf` walks the roster on every run.' },
+    use: { op: 'run_ring', note: 'Running the ring (THR-1430): each completion does what one observe would against a target the ring has members near — the ring is the multiplier on a verb already decided. A place-kind target takes the THR-1428 observe readers with the leader as the knower; a mortal target takes `mintLeverageMark`. Writes nothing into Stealth, hidden marks or detection pressure: mortal surveillance is not the god\'s fingerprints (THR-1397). `seize × Agreement` joins as a third product when the yield band ships, with no other change here.', readBy: 'Whatever the multiplied verb\'s own reader is: a ring observe writes the `knows_of` familiarity and clues the THR-1428 R1 readers write, read by encounter awareness and the sheet\'s Knows-the-way-to row; a ring on a mortal writes the `knows_secret_of` edge the leverage economy presses. The `ring_run` trace names which member\'s position qualified the target.' },
     destroy: { op: 'disband_group', note: 'Roll up the ring.' },
+  },
+  mortal: {
+    destroy: { op: 'plot_death', note: 'The plot (THR-1430) — a premeditated killing, never the duel (an encounter seeded off a quarrel, `destroy × Standing`) or the slaying (a battle, a delve). Motive-gated harder than any other cell: `PLOT_MOTIVES` admits only `grudge` and `faction_war`, so opportunism never licenses a killing. The death goes through the one funnel `markMortalDead` in `retain` mode — it writes `deceased`, `deceasedTick`, `deathCause` and `slainBy` and never removes the node, so the dead stay in the chronicle and their echoes survive. The heaviest harm class (`named_death`) is registered, so the vendetta may be minted; whether anyone *saw* it is THR-1383\'s rule and not this cell\'s. When the target is a mortal the player holds a thread to, a `peril` moment interrupts before the strike resolves and the strike defers `PLOT_PERIL_GRACE_TICKS`, so the god has a turn to spend on levers that already exist. Retires the crude `action.shadow.assassinate`, which deleted the node.', retires: ['action.shadow.assassinate'], readBy: 'The agent lifecycle\'s own readers of `deceased` (`isAgentGone`, every group query, `reconcileLostMembers`); the succession phase, which since THR-1430 reads `deceased` on a seat-holder so a killed leader vacates the seat on the next pass; the grievance funnel in `ambitionTick`, which reads the `named_death` outcome node and the seen-rule to decide the vendetta; and the sheet\'s death header, which names the cause word and — only where a mark or a culprit-provenance hostile edge exists — by whom.' },
   },
   companion: {
     create: { op: 'mint_companion', note: 'Recruit a companion — the op the aftermath effects reach, as a work.' },
@@ -285,6 +291,17 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
     { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts` (`groupStatus`) — an army is a company kind' },
     { subsystem: 'Strategic Projects & Control', sites: '`strategicActionCandidates.ts`' },
   ],
+  // THR-1430: the plot is the first undertaking that ends a life, so the lifecycle
+  // becomes live-touched. Everything below already read `deceased` — the cell adds a
+  // writer, not a reader — except the succession phase, which gained the read in the
+  // same commit because a retained dead leader would otherwise keep leading.
+  'Agent Lifecycle': [
+    { subsystem: 'Agent Lifecycle', sites: '`agentLifecycle.ts` — `markMortalDead` is the one funnel; its `retain` mode leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy`, and the phase\'s own actor scan already skips `deceased !== true`' },
+    { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts:isAgentGone` reads `deceased === true` as gone, so every roster query and `reconcileLostMembers` closes a dead member\'s `member_of` edge without a node removal' },
+    { subsystem: 'Factions & Succession', sites: '`phaseFactionSuccession.ts` / `factionNetwork.ts` — the `deceased` read added by THR-1430: a seat-holder marked dead is a vacancy the phase resolves on its next pass by its own rules' },
+    { subsystem: 'Ambitions & Undertakings', sites: '`ambitionTick.ts` grievance funnel — reads the `named_death` outcome node and THR-1383\'s seen-rule to decide whether a vendetta is minted' },
+    { subsystem: 'Attention, Chronicle & Narrative', sites: 'the existing `agent_death` event and the sheet\'s death header — the cause word, and *by whom* only where a mark or a culprit-provenance hostile edge exists' },
+  ],
   'Companies & Group Travel': [
     { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts`, `groups/groupMovement.ts`, `groups/groupCohesion.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts`' },
     { subsystem: 'Encounters & Dilemmas', sites: '`groups/bandOpposition.ts`, `encounterSeeding.ts` (`groupStatus`)' },
@@ -360,10 +377,7 @@ export const CELL_DISPOSITIONS: Readonly<Partial<Record<WorldObjectKindId, Parti
     observe: W('Scouting an army: writes `knows_of` familiarity with the army and its commander (`seedKnowsOf`), so the scout\'s work feeds intelligence and encounters rather than a dead record. The war readout already computes the strength.', 'The intelligence layer and the war readout: `seedKnowsOf` on the army and its commander is the same edge the survey readers write (THR-1428 R1), read by encounter awareness and the agent sheet\' Knows-the-way-to row.'),
   },
   network: {
-    create: W('Founding a ring — `raise_warband` with the network kind; the cell that wakes the dormant kind.', 'The group layer: a network is a group node, read by membership queries, the company and network surfaces, and the ring\' own use cell below.'),
-    'change:raise': W('Recruiting into the ring — `reinforce_group`.', 'The same group-roster readers as founding it — roster size is what the ring\' use cell multiplies against.'),
     'change:lower': L('Turning members of another\'s ring — desertion one kind over; waits until rings live long enough in a run to be worth attacking (the census on cells will show).'),
-    use: W('Running the ring: each completion does what one observe or one seize × Agreement would, against a target the ring has members near — the ring is the multiplier on the two verbs already decided. Mortal surveillance does not feed the god\'s detection pressure: those are the god\'s fingerprints.', 'Whatever the multiplied verb\' own reader is: a ring observe writes familiarity and marks (the THR-1428 R1 readers), a ring seize on an Agreement moves a `knows_secret_of` edge the leverage economy presses.'),
     'control:claim': N('—'),
     'control:seize': L('Turning a ring — the mutiny one kind over; waits with lower × Network.'),
     observe: N('—'),
@@ -414,7 +428,6 @@ export const CELL_DISPOSITIONS: Readonly<Partial<Record<WorldObjectKindId, Parti
     use: N('Sovereign (Vision non-negotiable): never used.'),
     'control:claim': N('Sovereign: never claimed or held.'),
     'control:seize': N('Sovereign: never seized.'),
-    destroy: W('The plot — a premeditated killing (an assassination, a manhunt), never the duel (an encounter seeded off a quarrel, destroy × Standing) or the slaying (battle, the delve). The sovereignty non-negotiable binds the god, not one mortal against another. Motive-gated harder than any other cell (an existing hostility or a grievance on the books, never opportunism); the heaviest harm class so the vendetta is minted; writes `deceased` — never a node removal — so the dead stay in the chronicle and their echoes survive. When the target is a mortal the player holds a thread to, the attempt surfaces as a moment before it resolves, so the god can spend and intervene. Its stages are the world\'s own verbs: observe (where the target is, who guards them), positioning (a company, a ring, a favour called in), the strike. Op needed: `plot_death`; retires the crude `action.shadow.assassinate`, which deletes the node.', 'The agent lifecycle\' death path, the grievance system that reads a killing as a cause, and the succession phase where the victim held a seat.'),
     observe: N('Surveillance is observe on the kinds a mortal acts through, and use × Network.'),
   },
 };

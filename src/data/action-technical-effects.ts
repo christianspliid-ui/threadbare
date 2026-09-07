@@ -74,8 +74,6 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "A read action: on success, flips the target's `secret` to revealed. On failure, the actor's security dips.",
   'action.shadow.recruit-agent':
     "On success, adds a secret `serves` edge from the target to the actor. On failure, the actor's reputation dips.",
-  'action.shadow.assassinate':
-    'On success, removes the target node. On failure, the actor loses security.',
   'action.veil.cast-spell':
     "On success, adds an `enchanted_by` edge (spell magic) to the target. On failure, the actor's mana dips.",
   'action.veil.detect-magic':

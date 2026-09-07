@@ -32,7 +32,7 @@
 
 import type { WorldGraph } from '../graph';
 import type { GraphNode, GraphEdge } from '../../types/graph';
-import { isCompanyGroupNode } from '../groupShape';
+import { isCompanyGroupNode, getGroupKind, type GroupKind } from '../groupShape';
 import { GROUP_COHESION_START_BASE, GROUP_COHESION_BOUND_THRESHOLD, GROUP_FRAY_THRESHOLD, GROUP_DISSOLUTION_THRESHOLD } from '../../data/group-constants';
 
 /** How a company decides where to go. */
@@ -174,14 +174,27 @@ export function isCompanyNode(node: GraphNode | undefined): boolean {
   return isCompanyGroupNode(node);
 }
 
-/** All company nodes in the graph, active and disbanded. */
-export function getAllGroups(graph: WorldGraph): GraphNode[] {
-  return graph.getNodesByType('actor').filter(isCompanyNode);
+/**
+ * All group nodes of the given kinds, active and disbanded.
+ *
+ * THR-1430: `kinds` is optional and defaults to companies alone, so every one of the
+ * ~40 existing callers keeps exactly the set it had. The group *phase* passes
+ * `GROUP_PHASE_KINDS` to admit networks to upkeep, cohesion and dissolution — a ring
+ * has to be seen before it can be told not to travel. Armies stay out either way:
+ * they are the war system's.
+ */
+export function getAllGroups(graph: WorldGraph, kinds?: readonly GroupKind[]): GraphNode[] {
+  if (!kinds) return graph.getNodesByType('actor').filter(isCompanyNode);
+  const wanted = new Set(kinds);
+  return graph.getNodesByType('actor').filter(n => {
+    const kind = getGroupKind(n);
+    return kind !== undefined && wanted.has(kind);
+  });
 }
 
-/** Active companies only — the working set for the tick phase. */
-export function getActiveGroups(graph: WorldGraph): GraphNode[] {
-  return getAllGroups(graph).filter(
+/** Active groups of the given kinds (companies alone by default) — the phase's working set. */
+export function getActiveGroups(graph: WorldGraph, kinds?: readonly GroupKind[]): GraphNode[] {
+  return getAllGroups(graph, kinds).filter(
     n => (n.properties as Record<string, unknown>).groupStatus !== 'disbanded',
   );
 }
@@ -231,6 +244,36 @@ export function getGroupOf(graph: WorldGraph, agentId: string): GraphNode | unde
 /** Convenience predicate: is this agent currently in a company? */
 export function isGrouped(graph: WorldGraph, agentId: string): boolean {
   return getGroupOf(graph, agentId) !== undefined;
+}
+
+/**
+ * The active group of any of the given kinds this agent belongs to (THR-1430).
+ *
+ * The kind-aware sibling of {@link getGroupOf}, which is deliberately company-only.
+ * The character sheet asks through this one, because a mortal's ring is as much a
+ * fact about them as their company — and the sheet says which it is, in the
+ * catalogue's own word.
+ *
+ * Returns the first match in `member_of` edge order, so an agent in both a company
+ * and a ring answers with whichever the graph wrote first. That is a real ambiguity
+ * and it is left visible rather than resolved by a hidden precedence rule.
+ */
+export function getGroupOfKinds(
+  graph: WorldGraph,
+  agentId: string,
+  kinds: readonly GroupKind[],
+): GraphNode | undefined {
+  const wanted = new Set(kinds);
+  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+    if (edge.properties?.leftAtTick != null) continue;
+    const target = graph.getNode(edge.target);
+    const kind = getGroupKind(target);
+    if (kind !== undefined && wanted.has(kind)
+      && (target!.properties as Record<string, unknown>).groupStatus !== 'disbanded') {
+      return target;
+    }
+  }
+  return undefined;
 }
 
 /**
