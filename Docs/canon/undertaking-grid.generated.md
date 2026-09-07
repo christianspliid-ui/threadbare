@@ -43,6 +43,87 @@
 | **(cosmology node — dormant)** `cosmology_node` | · | · | · | · | · | · | · | · |
 | **(sublocation node — legacy)** `sublocation_node` | · | · | · | · | · | · | · | · |
 
+## Subsystems × verbs
+
+> The same cells joined through `WORLD_OBJECT_KINDS[].owningSystem` — which of the world's 27 subsystems a mortal's own work reaches, and who reads what it leaves. **9 LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **1 OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **17 UNTOUCHED** (no cell reaches it at all). Status is derived from the cells, never authored. Whether an untouched subsystem is untouched *by design* or is a gap is a design question and is deliberately **not** answered here.
+
+| Subsystem | Kinds it owns | Create | Raise | Lower | Use | Claim | Seize | Destroy | Observe | Status | Read by |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **War, Armies & Battles** | `army`, `battle` | 🟢 live | 🟢 live | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🔵 wanted | LIVE-TOUCHED | War, Armies & Battles · Companies & Group Travel · Strategic Projects & Control |
+| **Factions & Succession** | `faction` | 🟢 live | · | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🟢 live | LIVE-TOUCHED | Factions & Succession |
+| **Rival Gods & Schemes** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Doom Clock & Journey** | `journey` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Mandate** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Essence & Divine Economy** | `divine_receipt` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Encounters & Dilemmas** | `action_template`, `encounter_template` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Culture** | `culture` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Personality & Emergent Traits** | `trait` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Mortal Economy & Prosperity** | `route` | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | · | 🟢 live | LIVE-TOUCHED | Mortal Economy & Prosperity · War, Armies & Battles · Attention, Chronicle & Narrative |
+| **Ambitions & Undertakings** | `ambition`, `undertaking` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Attachments, Items & Possessions** | `companion`, `item`, `legendary_artifact`, `holding`, `power` | 🟢 live | ⏳ later | ⏳ later | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | ⏳ later | LIVE-TOUCHED | Attachments, Items & Possessions · Encounters & Dilemmas · Effects & Conditions · Factions & Succession |
+| **Ruins, Clues & Delves** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Stealth, Detection & Hidden Marks** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Attention, Chronicle & Narrative** | `event` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Omens & Atmospheric Pressure** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Strategic Projects & Control** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Ascendant Beats & Progression** | `ascendant`, `god` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Companies & Group Travel** | `company`, `network` | 🟢 live | 🟢 live | 🔵 wanted | 🔵 wanted | 🔵 wanted | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Companies & Group Travel · Encounters & Dilemmas · Strategic Projects & Control |
+| **Movement & Colocation** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Reputation & Influence** | `standing` | · | 🟢 live | 🟢 live | 🔵 wanted | · | · | 🟢 live | · | LIVE-TOUCHED | Encounters & Dilemmas · Ambitions & Undertakings · Secrets & Favors · Mortal Economy & Prosperity · Attention, Chronicle & Narrative |
+| **Secrets & Favors** | `agreement` | 🟢 live | · | · | 🟢 live | · | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Secrets & Favors · Encounters & Dilemmas · Intelligence, Knowledge & Familiarity · Ruins, Clues & Delves · Attention, Chronicle & Narrative |
+| **Effects & Conditions** | `condition` | 🔵 wanted | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Effects & Conditions · Encounters & Dilemmas |
+| **Agent Lifecycle** | `mortal` | · | · | · | · | · | · | 🔵 wanted | · | OPEN-ONLY | — |
+| **Intelligence, Knowledge & Familiarity** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Spheres & Quintessence** | `sphere`, `reach`, `cosmology_node` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **World Generation, Terrain & Places** | `area`, `hex`, `location`, `place`, `sublocation_node` | 🟢 live | 🟢 live | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | LIVE-TOUCHED | Mortal Economy & Prosperity · Strategic Projects & Control · Movement & Colocation · War, Armies & Battles · Factions & Succession · Mandate · Doom Clock & Journey · Attachments, Items & Possessions · Encounters & Dilemmas |
+
+### What the live cells leave, and who picks it up
+
+- **War, Armies & Battles**
+  - _War, Armies & Battles_ — `armyAttrition.ts`, `battleResolution.ts` — both walk `member_of` from the raised warhost
+  - _Companies & Group Travel_ — `groups/groupQueries.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts` (`groupStatus`) — an army is a company kind
+  - _Strategic Projects & Control_ — `strategicActionCandidates.ts`
+- **Factions & Succession**
+  - _Factions & Succession_ — `phaseSchismResolution.ts:34` consumes the `schismPendingResolutionTick` stamp destroy × Faction plants; `phaseFactionActions.ts`, `factionAmbitions.ts`, `phaseFactionSuccession.ts` read the founded faction node
+- **Mortal Economy & Prosperity**
+  - _Mortal Economy & Prosperity_ — `phaseTradeRouteDecay.ts:92` (`lastTraded` staleness), `phases/routeEvents.ts:137-144` (auto-clears `threatened` after `ROUTE_THREATENED_CLEAR_TICKS`), `phaseEconomicTraits.ts:75` (counts `controlledBy`)
+  - _War, Armies & Battles_ — `armySupply.ts:115` reads `threatened` on `trades_with` — a blockade starves a campaign
+  - _Attention, Chronicle & Narrative_ — `tradeRouteMarkers.ts`, `proseResolvers.ts:912-924` (the marker and the sentence)
+- **Attachments, Items & Possessions**
+  - _Attachments, Items & Possessions_ — `attachmentSlotResolver.ts:124-241` (`possesses`, `acquiredTick`), `orchestrator.ts:145 expireCompanions` (phase 6.625b)
+  - _Encounters & Dilemmas_ — `domainCapability.ts` (item and companion contributions), `resolutionModifiers.ts` (`owns`), `graphConditions.ts`
+  - _Effects & Conditions_ — `effects/effectPredicates.ts` — the `owns` predicate, and the `condition_inflict` trait use × Power mints
+  - _Factions & Succession_ — `notableAgendas.ts:446` (`owns`)
+- **Companies & Group Travel**
+  - _Companies & Group Travel_ — `groups/groupQueries.ts`, `groups/groupMovement.ts`, `groups/groupCohesion.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts`
+  - _Encounters & Dilemmas_ — `groups/bandOpposition.ts`, `encounterSeeding.ts` (`groupStatus`)
+  - _Strategic Projects & Control_ — `strategicActionCandidates.ts`
+- **Reputation & Influence**
+  - _Encounters & Dilemmas_ — `socialLeverage.ts` (`reputationLeverageTerm`), `encounterAftermath.ts`, `unifiedActionResolution.ts`
+  - _Ambitions & Undertakings_ — `grievance/grudgeEdge.ts`, `grievance/covetRivalry.ts`, `undertakingMotive.ts` — the `hostile_to` edge destroy × Standing writes is a motive gate on later cells
+  - _Secrets & Favors_ — `secretGeneration.ts`
+  - _Mortal Economy & Prosperity_ — `phases/routeEvents.ts` (`hostile_to`)
+  - _Attention, Chronicle & Narrative_ — `LocationProfileModal.tsx`, `OverviewTab.tsx` — standing on the sheet
+- **Secrets & Favors**
+  - _Secrets & Favors_ — `phaseSecretsFavors.ts` (decay; a revealed secret is exempt — `graphOpExecutor.ts:1443`), `secretsFavorsConsequences.ts`, `secretsFromResolution.ts`
+  - _Encounters & Dilemmas_ — `socialLeverage.ts` — a mark is leverage in the encounter
+  - _Intelligence, Knowledge & Familiarity_ — `intelligence.ts` (`knows_secret_of`)
+  - _Ruins, Clues & Delves_ — `ruins/perceiveRelay.ts:381`
+  - _Attention, Chronicle & Narrative_ — `threadDigest.ts`, `agentDetail.ts`
+- **Effects & Conditions**
+  - _Effects & Conditions_ — `conditionDecay.ts:63` (walks `has_trait`), `effects/effectQueries.ts`, `effects/effectWalker.ts`, `effects/conditionProxyEvents.ts`, `phaseSlotCaps`
+  - _Encounters & Dilemmas_ — `effects/effectPredicates.ts`, `graphConditions.ts` — a cured condition changes what the mortal is eligible for
+- **World Generation, Terrain & Places**
+  - _Mortal Economy & Prosperity_ — `phaseProsperity.ts`, `phaseSettlementPromotion.ts`, `phases/resourceStockTiers.ts`, `phaseUnrest.ts` — the prosperity a founded, raised, lowered or ruined Location carries
+  - _Strategic Projects & Control_ — `phaseStrategicProjects.ts` (degradation, neglect), `strategicTelemetry.ts`, `strategicPresentation.ts`, `HexMapV2/scene/StrategicMarkerMesh.ts` — the `controls` edge claim × Location writes
+  - _Movement & Colocation_ — `sublocation.ts:592-636 checkDissolutions` (a `permanent` built Place survives), `socialEncounterGeneration.ts` (`sublocationTypeId`), `distanceMatrix.ts` (structural rebuild)
+  - _War, Armies & Battles_ — `battleAftermath.ts:150,163` skips the `ruins` subtype; `armySupply.ts:204` reads the first incoming `controls` source **as the faction** — a mortal claimant is misread as an army's provisioning faction (a type confusion, not a design)
+  - _Factions & Succession_ — `notableAgendas.ts:233,269` (`ruins`)
+  - _Mandate_ — `phaseMandate.ts:34` lists `ruins` among the mandate-relevant subtypes
+  - _Doom Clock & Journey_ — `journeyEngine.ts:142` counts the First's `controls` edges as `locationsControlled`
+  - _Attachments, Items & Possessions_ — `holdings.ts` — the `owns` edge and holding face that claim / seize / raze × Place move
+  - _Encounters & Dilemmas_ — `encounterScoring.ts` (`prosperity`)
+
 ## Standing riders
 
 _Rules that bind every cell rather than one._
