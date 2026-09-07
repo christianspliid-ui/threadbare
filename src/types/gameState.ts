@@ -161,6 +161,12 @@ export interface TickEvent {
   witnessAgentIds?: readonly string[];
   /** IDs of the raw events this event was synthesized from (colocation aggregation). */
   aggregatedFromIds?: readonly string[];
+  /**
+   * The things this line is about, as world references (THR-1434, Law 2 — the
+   * producer declares). A chronicle surface that renders links reads these; none
+   * parses the message. Present on an undertaking's completion event.
+   */
+  refs?: readonly import('./worldRef').WorldRef[];
 }
 
 export interface ArchetypeDrift {

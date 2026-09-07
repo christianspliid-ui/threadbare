@@ -346,20 +346,26 @@ function CompactThreadRow({
   const familyPresentation = strategicSummary
     ? { glyph: strategicSummary.calling.glyph, color: strategicSummary.calling.color, label: strategicSummary.calling.title }
     : null;
+  // The row's doing-line (THR-1434): what the mortal is in the middle of, in words —
+  // the work as a phrase plus the progress or the trouble word (composed once in
+  // `getAgentStrategicSummary`, so the sheet says the same); else what they hold,
+  // "and more" rather than a count (Law 13); else nothing — never an "idle" label.
   const strategicBadgeText = strategicSummary
     ? (() => {
         if (strategicSummary.activeProject) {
-          return `${strategicSummary.activeProject.displayName} — ${strategicSummary.activeProject.progressLabel}`;
+          return strategicSummary.activeProject.doingLine;
         }
         if (strategicSummary.primaryControl) {
-          const suffix = strategicSummary.controlCount > 1
-            ? ` +${strategicSummary.controlCount - 1}`
-            : '';
-          return `Holds ${strategicSummary.primaryControl.targetName}${suffix}`;
+          const suffix = strategicSummary.controlCount > 1 ? ' and more' : '';
+          return `holds ${strategicSummary.primaryControl.targetName}${suffix}`;
         }
         return null;
       })()
     : null;
+  // The tooltip says the whole of it: the activity line the world composed.
+  const strategicBadgeDesc = strategicSummary?.activeProject
+    ? strategicSummary.activeProject.displayName
+    : strategicBadgeText ?? undefined;
 
   // Secondary info line
   let secondaryInfo = '';
@@ -475,7 +481,7 @@ function CompactThreadRow({
             {familyPresentation && (
               <Tooltip
                 label={familyPresentation.label}
-                desc={strategicBadgeText ?? undefined}
+                desc={strategicBadgeDesc}
               >
                 <span
                   style={{ fontSize: 'var(--text-xs)', color: familyPresentation.color, flexShrink: 0, lineHeight: 1 }}
@@ -632,12 +638,18 @@ function CompactThreadRow({
 
           {/* Strategic badge row (agents with active strategic activity) */}
           {node.category === 'agent' && strategicBadgeText && familyPresentation && (
-            <Tooltip label={familyPresentation.label} desc={strategicBadgeText}>
+            <Tooltip label={familyPresentation.label} desc={strategicBadgeDesc}>
               <div
                 className="truncate"
+                data-testid="thread-doing-line"
                 style={{
                   padding: '1px 4px',
                   borderRadius: 4,
+                  // One coalesced line (Law 49) with a hit area a pointer can land on (Law 46).
+                  minHeight: 24,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
                   fontFamily: 'var(--font-body)',
                   fontSize: 'var(--text-xs)',
                   lineHeight: 1.2,
@@ -645,7 +657,8 @@ function CompactThreadRow({
                   backgroundColor: `color-mix(in srgb, ${familyPresentation.color} ${Math.round(STRATEGIC_BADGE_BG_OPACITY * 100)}%, transparent)`,
                 }}
               >
-                {familyPresentation.glyph} {strategicBadgeText}
+                <span aria-hidden="true">{familyPresentation.glyph}</span>
+                <span className="truncate">{strategicBadgeText}</span>
               </div>
             </Tooltip>
           )}

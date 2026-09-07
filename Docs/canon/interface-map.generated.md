@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 78 |
+| 🟢 LIVE | 79 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 22 |
-| **Total** | **109** |
+| **Total** | **110** |
 
 ## Contracts by producing subsystem
 
@@ -211,6 +211,7 @@ remediation ticket or the build fails.
 | `mentorship-rides-undertaking-checkpoints` | A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one. | edge-prop: `mentors`, `undertakingId` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `shared-step-resolution-two-callers` | One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project. | function: `resolveStepCore`, `mapResolverOutcomeToStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `undertaking-checkpoint-events` | What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it. | event: `undertaking_checkpoint`, `undertaking_fork`, `resolveMomentPresentation`, `followedAgentIds`, `pendingUndertakingMoments`, `moment_surface` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `undertakings-reach-the-player` | What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked. | property: `doingLine`, `deed`, `describeDeed`, `buildUndertakingCodexEntries`, `callingsForCell`, `UNDERTAKING_VERB_GERUNDS`, `UNDERTAKING_VERB_DEEDS` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
 ### War, Armies & Battles
 
@@ -597,10 +598,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 70 total — 4 write, 7 read, 59 unclassified
+- **Production hits:** 72 total — 4 write, 7 read, 61 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/scene/HexSceneSetup.ts` +54 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +56 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `companion-capability-contribution` — 🟢 LIVE
@@ -876,10 +877,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 80 total — 2 write, 3 read, 75 unclassified
+- **Production hits:** 81 total — 2 write, 3 read, 76 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx` +70 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +71 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1381,10 +1382,10 @@ exit
 - **Intent:** An undertaking is a verb — create · change (raise | lower) · use · control (claim | seize) · destroy · observe — acted on a kind of thing the world-object catalogue names (Area, Location, Place, Route, Mortal, Faction, Company, Army, Network, Companion, Item, Power, Condition, Agreement, Standing). Each kind registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a kind does not declare is refused and traced unreachable, never faked; the generated grid (every kind × every verb) names each undeclared cell as an open decision or not an object, and fails the build when a cell has no place on it (THR-1392).
 - **Producer → Consumer:** Ambitions & Undertakings → Strategic Projects & Control
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 9 total — 2 write, 4 read, 3 unclassified
+- **Production hits:** 10 total — 2 write, 4 read, 4 unclassified
 - **Write sites:** `src/data/undertaking-cells.ts`, `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Other hits:** `src/components/Codex/undertakingCodex.ts`, `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertaking-outcomes-cast-omens` — 🟢 LIVE
@@ -1408,6 +1409,17 @@ exit
 - **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
 - **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +18 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `undertakings-reach-the-player` — 🟢 LIVE
+
+- **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
+- **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
+- **Module:** `src/engine/undertakingDeed.ts`
+- **Production hits:** 29 total — 5 write, 5 read, 19 unclassified
+- **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
+- **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/tabs/JourneyTab.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentArc.ts`
+- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/condition-trait-content.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts`, `src/data/encounters/vertical-slice.ts` +14 more
+- **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
 

@@ -20,6 +20,8 @@ import { getAttachmentGlyph } from '../Game/attachmentGlyphs';
 import { ACTION_ART } from '../Game/actionArt';
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { effectSourceFor, type EffectSource } from '../../data/actionEffectSource';
+import { buildUndertakingCodexEntries } from './undertakingCodex';
+import { UNDERTAKING_VERB_WORDS } from '../../data/undertaking-verb-prose';
 import { formatEssenceLabel } from '../shared/formatEssence';
 import { magnitudeWord, durationLabel, type MagnitudeBand } from '../../engine/aftermathWords';
 
@@ -57,8 +59,8 @@ export interface CodexEntry {
    */
   isAscendantAction?: boolean;
   tags: string[];
-  /** Extra key-value details shown in the detail panel */
-  details: { label: string; value: string }[];
+  /** Extra key-value details shown in the detail panel; `tooltipId` gives the value a hover (Law 17). */
+  details: { label: string; value: string; tooltipId?: string }[];
   /** Optional path to an art asset (relative to public/) */
   imageAssetPath?: string;
   /** Starter-floor membership (THR-419). */
@@ -230,6 +232,8 @@ const SUBCATEGORY_DISPLAY: Record<string, string> = {
   ...SLOT_TAG_DISPLAY_NAMES,
   ...REACH_DISPLAY,
   ...RESOURCE_CATEGORY_DISPLAY,
+  // The undertaking verbs (THR-1434) — the Undertakings section's rail groups cells by verb.
+  ...UNDERTAKING_VERB_WORDS,
   divine: 'Divine',
   condition: 'Afflictions',
   intelligence: 'Intelligence',
@@ -771,6 +775,11 @@ export function getAllCodexEntries(): CodexEntry[] {
     entries.push(mapResourceClass(resourceId));
   }
 
+  // Undertakings (THR-1434) — one card per live cell of the grid, from the same
+  // registry and dispositions the designer wiki page reads. Capability lives here,
+  // never on a person's sheet (THR-1404).
+  entries.push(...buildUndertakingCodexEntries());
+
   // Attach art asset paths where available
   for (const entry of entries) {
     // Does not clobber a plate already resolved by `mapPossession` — for a
@@ -795,6 +804,8 @@ export function getCodexCategories(): CodexCategory[] {
     { id: 'company', label: 'Company Actions', glyph: '\u2042' },
     { id: 'threads', label: 'Thread & Insight', glyph: '\u2058' },
     { id: 'actions', label: 'Mortal Actions', glyph: '\u2694' },
+    // Hammer and pick \u2014 the work mortals do on the world's things (THR-1434).
+    { id: 'undertakings', label: 'Undertakings', glyph: '\u2692' },
     { id: 'possessions', label: 'Possessions', glyph: '\u25C6' },
     { id: 'conditions', label: 'Conditions', glyph: '\u2715' },
     { id: 'agreements', label: 'Agreements', glyph: '\u260D' },

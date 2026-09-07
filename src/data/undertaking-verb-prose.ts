@@ -164,6 +164,51 @@ export const UNDERTAKING_VERB_WORDS: Readonly<Record<UndertakingVerbVariant, str
   create: 'Create', 'change:raise': 'Raise', 'change:lower': 'Lower', use: 'Use', 'control:claim': 'Claim', 'control:seize': 'Seize', destroy: 'Destroy', observe: 'Observe',
 };
 
+/**
+ * The verb as the roster's doing-line says it (THR-1434): *raising a company*,
+ * *watching the ruin*. Lowercase, present participle, a game word rather than the
+ * verb's own name where the name would read like a menu (`use` → *working*).
+ */
+export const UNDERTAKING_VERB_GERUNDS: Readonly<Record<UndertakingVerbVariant, string>> = {
+  create: 'raising', 'change:raise': 'bettering', 'change:lower': 'undermining', use: 'working',
+  'control:claim': 'claiming', 'control:seize': 'seizing', destroy: 'breaking', observe: 'watching',
+};
+
+/**
+ * The verb as the ledger names a finished deed (THR-1434): *Founded the Saltway*,
+ * *Seized the Old Mill*. Capitalised, past tense, one word.
+ */
+export const UNDERTAKING_VERB_DEEDS: Readonly<Record<UndertakingVerbVariant, string>> = {
+  create: 'Founded', 'change:raise': 'Raised', 'change:lower': 'Undermined', use: 'Worked',
+  'control:claim': 'Claimed', 'control:seize': 'Seized', destroy: 'Broke', observe: 'Watched',
+};
+
+/**
+ * Deed words for the cells whose verb reads wrong on a ledger — a cure is not a
+ * breaking, a learned working was not founded. Bounded on purpose, like the per-cell
+ * line sets above: a cell with no entry takes its verb's word.
+ */
+export const UNDERTAKING_CELL_DEEDS: Readonly<Record<string, string>> = {
+  'cell.create.power': 'Learned',
+  'cell.destroy.power': 'Sealed',
+  'cell.create.condition': 'Laid',
+  'cell.destroy.condition': 'Cured',
+  'cell.destroy.mortal': 'Slew',
+  'cell.create.company': 'Raised',
+  'cell.create.army': 'Raised',
+  'cell.create.network': 'Founded',
+  'cell.destroy.location': 'Razed',
+  'cell.destroy.standing': 'Soured',
+  'cell.destroy.agreement': 'Forgave',
+  'cell.use.agreement': 'Called in',
+  'cell.observe.area': 'Charted',
+};
+
+/** The ledger's word for a finished cell: its own if it has one, else its verb's. */
+export function deedWordFor(cellId: string, variant: UndertakingVerbVariant): string {
+  return UNDERTAKING_CELL_DEEDS[cellId] ?? UNDERTAKING_VERB_DEEDS[variant];
+}
+
 // ─── Per-cell line sets (THR-1429) ──────────────────────────────────
 
 /**

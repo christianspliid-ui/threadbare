@@ -224,3 +224,21 @@ export function getUndertakingProgressWord(percentComplete: number): string {
   const tier = Math.min(4, Math.floor((clamped / 100) * 5));
   return UNDERTAKING_PROGRESS_WORDS[tier];
 }
+
+/**
+ * The trouble word for a work that has halted (THR-1434) — what the roster's
+ * doing-line says instead of the progress word once the dice have gone against it.
+ * `null` when the work is not in trouble, so the caller falls back to progress.
+ */
+export const UNDERTAKING_TROUBLE_WORDS = {
+  faltering: 'faltering',
+  goingBadly: 'going badly',
+  allOrNothing: 'all or nothing',
+} as const;
+
+export function getUndertakingTroubleWord(halts: number, escalated: boolean, ratchetN: number): string | null {
+  if (escalated) return UNDERTAKING_TROUBLE_WORDS.allOrNothing;
+  if (halts <= 0) return null;
+  if (halts >= ratchetN - 1) return UNDERTAKING_TROUBLE_WORDS.goingBadly;
+  return UNDERTAKING_TROUBLE_WORDS.faltering;
+}
