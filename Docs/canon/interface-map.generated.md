@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 74 |
+| 🟢 LIVE | 76 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 20 |
-| **Total** | **103** |
+| **Total** | **105** |
 
 ## Contracts by producing subsystem
 
@@ -51,6 +51,8 @@ remediation ticket or the build fails.
 | `grievance-reaches-the-mortal-sheet` | A vendetta says on the character sheet whose it is and how hot it burns — "burning · against Oswen, after the razing of Thornhall" — so a drive the world minted from a harm is legible as such rather than as an ordinary want. | edge-prop: `grievance`, `culpritAgentId`, `heat`, `heatWord` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `holdings-single-writer-owns-edge` | What a mortal owns is written in exactly one place. The `owns` edge is the authority; the bearer-side attachment is its face, and both are minted, moved and retired by `holdings.ts` alone. | edge-prop: `owns` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
+| `mortal-inflicts-a-condition` | A mortal can now put something on another mortal, and every system that already read conditions reads these unchanged. `create × Condition` (`inflict_condition`) and `destroy × Power` (`seal_power`) mint through the catalog's own `instantiateReward`, so an inflicted blessing or curse is the same shape an encounter reward has always produced — with two additions on the bearer's edge that make it legible as somebody's doing: `sign` (blessing | curse | seal) and `inflictedBy`. The **sign is the gate**: self or an ally is a blessing, un-gated; a mortal the actor holds a motive against is a curse; a stranger is refused, and there is no neutral third outcome. A curse or a seal registers the `afflicted` harm class, which crosses into the grievance funnel; a blessing registers none, and that asymmetry is decided per completion rather than per template, so the op carries the harm class the completion site reads (THR-1429). | function: `inflictCondition`, `resolveConditionSign`, `instantiateReward`, `isSpellSuppressedFor`, `afflicted` | Effects & Conditions | 🟢 LIVE | — |
+| `mortal-learns-a-spell` | A mortal who studies a working comes to hold it, and the systems that ask "what can this person do?" get their answer from the graph rather than from the study. `create × Power` (`learn_spell`) is the first writer of `knows_spell`, and the Power kind now has a node shape: one shared `spell`-subcategory trait definition per template, minted at seeding, with per-bearer state on the edge (THR-1395). The two edges mean different things and both cross this boundary — `knows_spell` is the biography and is unlimited, `has_trait` is what the mortal carries now and is held to `SLOT_CAPS.spell` by the attachment system's own slot pass. Learning past the cap writes the knowledge and not the carry, which is a state the sheet reports rather than a refusal (THR-1429). | edge: `knows_spell`, `has_trait`, `spellDefinitionNode`, `SLOT_CAPS` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `one-namer-shared-primitives` | There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own. | module-export: `possessive`, `hashSeed`, `pickFrom`, `generateWorkName` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ruined-settlement-joins-delve-layer` | A settlement a mortal razed becomes somewhere to explore: it carries a depth banded from what it used to be, and the delve layer admits it once the dust has settled — so a warlord's destruction feeds a wanderer's delve rather than ending the story of that place. | node-prop: `ruinMagnitude`, `ruinedTick`, `locationSubtype` | Ruins, Clues & Delves | 🟢 LIVE | — |
 | `t1-undertaking-objects-feed-existing-economies` | A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads. | edge-prop: `knows_clue_of`, `knows_secret_of`, `owes_favor`, `consumeOnEvent`, `possesses` | Attachments, Items & Possessions | 🟢 LIVE | — |
@@ -384,10 +386,10 @@ exit
 - **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 10 total — 2 write, 2 read, 6 unclassified
+- **Production hits:** 11 total — 2 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts` +1 more
+- **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/nudgeGrantLiveness.ts` +2 more
 - **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-grants-trait-while-held` — 🟢 LIVE
@@ -448,10 +450,10 @@ exit
 - **Intent:** Worldgen seeds starting possessions so agents begin already carrying history.
 - **Producer → Consumer:** Agent Lifecycle → Attachments, Items & Possessions
 - **Module:** `src/engine/seedAttachments.ts`
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/seedAttachments.ts`
 - **Read sites:** `src/engine/worldSeed.ts`
-- **Other hits:** `src/engine/nudgeGrantLiveness.ts`
+- **Other hits:** `src/data/world-objects.ts`, `src/engine/nudgeGrantLiveness.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `aura-reaches-resolution-modifiers` — 🟢 LIVE
@@ -711,10 +713,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Faction*
 - **Module:** `src/engine/undertakingMotive.ts`
-- **Production hits:** 17 total — 1 write, 3 read, 13 unclassified
+- **Production hits:** 18 total — 1 write, 3 read, 14 unclassified
 - **Write sites:** `src/data/strategic-packs/warlordStrategicPack.ts`
 - **Read sites:** `src/data/undertaking-kinds.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/data/ambition-templates.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-eval/undertakingPackage.ts` +8 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/data/ambition-templates.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-eval/undertakingPackage.ts` +9 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 2. The corpus held exactly one `verb: 'destroy'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor's enemy. It now declares `motiveGate: ['rivalry','grudge','faction_war']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace's new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -855,10 +857,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 72 total — 2 write, 3 read, 67 unclassified
+- **Production hits:** 73 total — 2 write, 3 read, 68 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx` +62 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx` +63 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -986,6 +988,30 @@ exit
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
 - **Other hits:** `src/components/Game/momentCardModel.ts`, `src/debug-bridge.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/ambition.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
+
+### `mortal-inflicts-a-condition` — 🟢 LIVE
+
+- **Intent:** A mortal can now put something on another mortal, and every system that already read conditions reads these unchanged. `create × Condition` (`inflict_condition`) and `destroy × Power` (`seal_power`) mint through the catalog's own `instantiateReward`, so an inflicted blessing or curse is the same shape an encounter reward has always produced — with two additions on the bearer's edge that make it legible as somebody's doing: `sign` (blessing | curse | seal) and `inflictedBy`. The **sign is the gate**: self or an ally is a blessing, un-gated; a mortal the actor holds a motive against is a curse; a stranger is refused, and there is no neutral third outcome. A curse or a seal registers the `afflicted` harm class, which crosses into the grievance funnel; a blessing registers none, and that asymmetry is decided per completion rather than per template, so the op carries the harm class the completion site reads (THR-1429).
+- **Producer → Consumer:** Ambitions & Undertakings → Effects & Conditions
+- **UL terms:** *Condition*, *Curse*, *Blessing*
+- **Module:** `src/data/undertaking-objects.ts`
+- **Production hits:** 24 total — 1 write, 3 read, 20 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`
+- **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/effects/effectSuppression.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Other hits:** `src/components/Game/momentBadgeModel.ts`, `src/data/action-template-content.ts`, `src/data/ambition-minting-rules.ts`, `src/data/culture-content.ts`, `src/data/moment-card-content.ts` +15 more
+- **Verdict:** Verified 2026-09-07: THR-1429. On seed 42 small a motive-gated `cell.create.condition` left reward_condition_nightmares on npc_10 with sign=curse, inflictedBy=npc_11 and ticksRemaining=19 (24 from CURSE_DURATION_TICKS_BY_BAND.success, decayed 5 by conditionDecay — the live reader), plus an undertaking_outcome event carrying harmClass=afflicted, victim npc_10, culprit npc_11. `cell.destroy.power` left reward_condition_null_touched with sign=seal and the bearer reading sealed through the effect walker. The blessing arm registers no harm, and the stranger arm refuses no_sign — both falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, along with the cross-bearer guard: a second wielder of the same shared spell node is NOT sealed when the first is cursed.
+
+### `mortal-learns-a-spell` — 🟢 LIVE
+
+- **Intent:** A mortal who studies a working comes to hold it, and the systems that ask "what can this person do?" get their answer from the graph rather than from the study. `create × Power` (`learn_spell`) is the first writer of `knows_spell`, and the Power kind now has a node shape: one shared `spell`-subcategory trait definition per template, minted at seeding, with per-bearer state on the edge (THR-1395). The two edges mean different things and both cross this boundary — `knows_spell` is the biography and is unlimited, `has_trait` is what the mortal carries now and is held to `SLOT_CAPS.spell` by the attachment system's own slot pass. Learning past the cap writes the knowledge and not the carry, which is a state the sheet reports rather than a refusal (THR-1429).
+- **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
+- **UL terms:** *Spell*, *Power*, *Bestowal*
+- **Module:** `src/data/undertaking-objects.ts`
+- **Production hits:** 74 total — 2 write, 3 read, 69 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
+- **Other hits:** `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/attachment-slot-constants.ts`, `src/data/choice-set-catalog.ts` +64 more
+- **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
 

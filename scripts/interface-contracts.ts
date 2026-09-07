@@ -2500,6 +2500,62 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-1392',
   },
   {
+    id: 'mortal-learns-a-spell',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Attachments, Items & Possessions',
+    intent:
+      'A mortal who studies a working comes to hold it, and the systems that ask "what can this person do?" get their answer from the graph rather than from the study. `create × Power` (`learn_spell`) is the first writer of `knows_spell`, and the Power kind now has a node shape: one shared `spell`-subcategory trait definition per template, minted at seeding, with per-bearer state on the edge (THR-1395). The two edges mean different things and both cross this boundary — `knows_spell` is the biography and is unlimited, `has_trait` is what the mortal carries now and is held to `SLOT_CAPS.spell` by the attachment system\'s own slot pass. Learning past the cap writes the knowledge and not the carry, which is a state the sheet reports rather than a refusal (THR-1429).',
+    ulTerms: ['Spell', 'Power', 'Bestowal'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['knows_spell', 'has_trait', 'spellDefinitionNode', 'SLOT_CAPS'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: [
+      'src/data/undertaking-objects.ts',
+      'src/engine/seedAttachments.ts',
+    ],
+    readSites: [
+      'src/engine/agentAttachments.ts',
+      'src/engine/spellActivation.ts',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        'THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.',
+    },
+  },
+  {
+    id: 'mortal-inflicts-a-condition',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Effects & Conditions',
+    intent:
+      'A mortal can now put something on another mortal, and every system that already read conditions reads these unchanged. `create × Condition` (`inflict_condition`) and `destroy × Power` (`seal_power`) mint through the catalog\'s own `instantiateReward`, so an inflicted blessing or curse is the same shape an encounter reward has always produced — with two additions on the bearer\'s edge that make it legible as somebody\'s doing: `sign` (blessing | curse | seal) and `inflictedBy`. The **sign is the gate**: self or an ally is a blessing, un-gated; a mortal the actor holds a motive against is a curse; a stranger is refused, and there is no neutral third outcome. A curse or a seal registers the `afflicted` harm class, which crosses into the grievance funnel; a blessing registers none, and that asymmetry is decided per completion rather than per template, so the op carries the harm class the completion site reads (THR-1429).',
+    ulTerms: ['Condition', 'Curse', 'Blessing'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['inflictCondition', 'resolveConditionSign', 'instantiateReward', 'isSpellSuppressedFor', 'afflicted'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: [
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/conditionDecay.ts',
+      'src/engine/effects/effectSuppression.ts',
+      'src/engine/ambitionTick.ts',
+      'src/engine/agentAttachments.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        'THR-1429. On seed 42 small a motive-gated `cell.create.condition` left reward_condition_nightmares on npc_10 with sign=curse, inflictedBy=npc_11 and ticksRemaining=19 (24 from CURSE_DURATION_TICKS_BY_BAND.success, decayed 5 by conditionDecay — the live reader), plus an undertaking_outcome event carrying harmClass=afflicted, victim npc_10, culprit npc_11. `cell.destroy.power` left reward_condition_null_touched with sign=seal and the bearer reading sealed through the effect walker. The blessing arm registers no harm, and the stranger arm refuses no_sign — both falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, along with the cross-bearer guard: a second wielder of the same shared spell node is NOT sealed when the first is cursed.',
+    },
+  },
+  {
     id: 'factory-pack-registry',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Strategic Projects & Control',

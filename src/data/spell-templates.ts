@@ -159,3 +159,56 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
 export function getSpellTemplate(id: string): SpellTemplate | undefined {
   return SPELL_TEMPLATES.find(s => s.id === id);
 }
+
+// ─── The Power kind's node shape (THR-1429) ─────────────────────────
+//
+// A spell IS a graph node now: one **shared definition node per spell**, minted once
+// at seeding, never one per bearer (THR-1395 — `traitShape.ts` deprecates the
+// per-bearer node id). A mortal who *wields* the spell holds a `has_trait` edge to
+// this node; one who merely *knows* it holds a `knows_spell` edge to the same node.
+// Per-bearer state — when it was learned, where it came from — lives on the edge.
+//
+// The node deliberately carries **no `effects` array**. A cast resolves through
+// `activateSpell` against the *template* (looked up by `spellTemplateId`), so the
+// effects would be read by nobody here — and putting them on a node that many
+// mortals share would hand the effect walker a shared attachment, where a suppression
+// or a decay meant for one bearer would land on every bearer at once. The shape is
+// the reason the seal is read off the bearer's own conditions rather than off this
+// node's runtime state.
+
+/** The id of the shared definition node for a spell template. */
+export function spellDefinitionNodeId(spellTemplateId: string): string {
+  return `power.spell.${spellTemplateId}`;
+}
+
+/** The definition-node shape for one spell template — the single writer of the Power kind's `spell` class. */
+export function spellDefinitionNode(spell: SpellTemplate): {
+  id: string;
+  type: 'trait';
+  name: string;
+  properties: Record<string, unknown>;
+} {
+  return {
+    id: spellDefinitionNodeId(spell.id),
+    type: 'trait',
+    name: spell.name,
+    properties: {
+      subcategory: 'spell',
+      spellTemplateId: spell.id,
+      sphereAffinity: spell.sphereAffinity,
+      tier: spell.tier,
+      tags: [...spell.tags],
+      mechanicalSummary: spell.mechanicalSummary,
+      flavorText: spell.flavorText,
+      visibility: 'discoverable',
+      maxLevel: 1,
+    },
+  };
+}
+
+/** Every spell definition node the world seeds — one per template, sorted by id (NFP #3). */
+export function allSpellDefinitionNodes(): ReturnType<typeof spellDefinitionNode>[] {
+  return [...SPELL_TEMPLATES]
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map(spellDefinitionNode);
+}

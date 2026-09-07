@@ -23,7 +23,7 @@ import type {
   StrategicActionCandidate,
 } from '../types/strategicAction';
 import { getUndertakingObjectType, objectPlaceNodeId, resolveObjectOwners } from '../data/undertaking-objects';
-import { UNDERTAKING_VERB_PROSE } from '../data/undertaking-verb-prose';
+import { cellLineSet } from '../data/undertaking-verb-prose';
 import { hashSeed } from './naming/workNames';
 import { mulberry32 } from '../lib/prng';
 import { resolveToParentLocation } from './sublocationShape';
@@ -214,7 +214,7 @@ export function cellActivityProse(
   project: Pick<StrategicProjectRuntime, 'projectId' | 'actorId' | 'objectHandle' | 'objectTypeId' | 'targetNodeId' | 'victimAgentId'>,
   variant: UndertakingVerbVariant,
 ): UndertakingProseResult {
-  const line = pickUndertakingLine(UNDERTAKING_VERB_PROSE[variant].activity, project.projectId) ?? '';
+  const line = pickUndertakingLine(cellLineSet(variant, project.objectTypeId).activity, project.projectId) ?? '';
   return resolveUndertakingProse(line, {
     graph, actorId: project.actorId, objectTypeId: project.objectTypeId, handle: project.objectHandle,
     targetNodeId: project.targetNodeId, ownerId: project.victimAgentId,
@@ -227,7 +227,9 @@ export function cellCompletionProse(
   project: Pick<StrategicProjectRuntime, 'projectId' | 'actorId' | 'objectHandle' | 'objectTypeId' | 'targetNodeId' | 'victimAgentId'>,
   variant: UndertakingVerbVariant,
 ): UndertakingProseResult {
-  const line = pickUndertakingLine(UNDERTAKING_VERB_PROSE[variant].completion, `${project.projectId}:completion`) ?? '';
+  // THR-1429: a cell may speak with its own voice — `cellLineSet` falls back to the
+  // verb's lines for the eleven object types that read the same way.
+  const line = pickUndertakingLine(cellLineSet(variant, project.objectTypeId).completion, `${project.projectId}:completion`) ?? '';
   return resolveUndertakingProse(line, {
     graph, actorId: project.actorId, objectTypeId: project.objectTypeId, handle: project.objectHandle,
     targetNodeId: project.targetNodeId, ownerId: project.victimAgentId,
@@ -236,7 +238,7 @@ export function cellCompletionProse(
 
 /** The activity line for a candidate not yet started (the board's word for it). */
 export function cellCandidateProse(graph: WorldGraph, candidate: StrategicActionCandidate, variant: UndertakingVerbVariant): UndertakingProseResult {
-  const line = pickUndertakingLine(UNDERTAKING_VERB_PROSE[variant].activity, candidate.candidateId) ?? '';
+  const line = pickUndertakingLine(cellLineSet(variant, candidate.objectTypeId).activity, candidate.candidateId) ?? '';
   return resolveUndertakingProse(line, {
     graph, actorId: candidate.actorId, objectTypeId: candidate.objectTypeId, handle: candidate.objectHandle,
     targetNodeId: candidate.targetNodeId, ownerId: candidate.victimAgentId,

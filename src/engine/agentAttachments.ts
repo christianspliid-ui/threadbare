@@ -16,6 +16,7 @@ import type {
 } from '../types/attachments';
 import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
 import { resolveSlotTag } from './attachmentSlotResolver';
+import { isSpellSuppressedFor } from './effects/effectSuppression';
 
 /**
  * Pull an attachment's on-use behavior out of its `effects[]`.
@@ -65,6 +66,32 @@ export interface AttachmentFullEntry extends AttachmentSummary {
   isPinned?: boolean;
   /** Counterparty name for agreements. */
   counterpartyName?: string;
+  // ── The dormant kinds I (THR-1429) ──
+  /**
+   * Which class of Power this is — a spell the mortal learned, or a bestowal a god
+   * gave. Absent on everything that is not a Power. The sheet says the word.
+   */
+  powerClass?: 'spell' | 'bestowal';
+  /** A power whose bearer is under a seal: it is theirs, and it will not answer. */
+  sealed?: boolean;
+  /** How a condition came to be worn — somebody's doing, and which kind of doing. */
+  sign?: 'blessing' | 'curse' | 'seal';
+  /** Who did it, when the bearer knows. Absent means "someone's doing". */
+  inflictedByName?: string;
+}
+
+/**
+ * A spell this mortal has learned but is not currently carrying (THR-1429).
+ *
+ * Known is the biography and is unlimited; wielded is what they carry now and is
+ * capped. The sheet shows both, because a spell dropped for want of a slot has not
+ * been forgotten — and a sheet that showed only the carried ones would say it had.
+ */
+export interface KnownSpellEntry {
+  readonly id: string;
+  readonly name: string;
+  /** The sphere shelf it came from — the tradition, in the UL's word. */
+  readonly tradition: string;
 }
 
 /**
@@ -124,6 +151,8 @@ export interface AgentAttachments {
    * instead of at every consumer.
    */
   holdings: AttachmentFullEntry[];
+  /** Spells learned but not currently carried (THR-1429) — the `knows_spell` half. */
+  knownSpells: KnownSpellEntry[];
 }
 
 /**
@@ -191,6 +220,10 @@ export function getAgentAttachments(
     }
   }
 
+  // Whether this mortal's art is bound (THR-1429). Asked once for the whole walk:
+  // the seal is a fact about the *bearer*, so every spell they carry shows it.
+  const spellsSealed = isSpellSuppressedFor(graph, agentId);
+
   // ─── Conditions: has_trait edges where trait category is condition/blessing/curse
   const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
   for (const edge of traitEdges) {
@@ -210,6 +243,13 @@ export function getAgentAttachments(
       else if (nodeTags.includes('#curse')) subcategory = 'curse';
       else if (nodeTags.includes('#disease')) subcategory = 'disease';
 
+      // THR-1429: a condition somebody *put* on this mortal carries its sign and the
+      // hand that dealt it, both on the edge. The culprit's name is shown only when
+      // the bearer could know it — an anonymous curse reads "someone's doing", which
+      // is the seen-harm rule the grievance lane already applies, said on the sheet.
+      const sign = edge.properties.sign as 'blessing' | 'curse' | 'seal' | undefined;
+      const inflictedBy = edge.properties.inflictedBy as string | undefined;
+
       conditions.push({
         id: node.id,
         name: node.name,
@@ -226,6 +266,35 @@ export function getAgentAttachments(
         active: edge.properties.active !== false,
         inactiveReason: edge.properties.inactiveReason as string | undefined,
         sourceEncounterId: edge.properties.sourceEncounterId as string | undefined,
+        ...(sign ? { sign } : {}),
+        ...(inflictedBy ? { inflictedByName: graph.getNode(inflictedBy)?.name ?? undefined } : {}),
+      });
+    }
+
+    // ─── Spells: has_trait edges to a `spell`-class Power (THR-1429)
+    //
+    // The wielded half. Rendered in the same strand as bestowals with the class word,
+    // because both are Powers and the sheet's job is to say which kind this one is.
+    if (category === 'spell') {
+      const { ticksRemaining, totalTicks } = readEdgeDuration(edge.properties);
+      powers.push({
+        id: node.id,
+        name: node.name,
+        subcategory: 'spell',
+        tier: (traitProps.tier as AttachmentTier) ?? 1,
+        mechanicalSummary: (traitProps.mechanicalSummary as string) ?? node.name,
+        ticksRemaining,
+        totalTicks,
+        tags: (traitProps.tags as string[]) ?? [],
+        flavorText: traitProps.flavorText as string | undefined,
+        source: edge.properties.source as string | undefined,
+        slotTag: 'spell',
+        powerClass: 'spell',
+        // Read off the bearer, never off the shared definition node — the same reason
+        // `isSpellSuppressedFor` exists (a spell node is shared by every wielder).
+        sealed: spellsSealed,
+        active: edge.properties.active !== false,
+        inactiveReason: edge.properties.inactiveReason as string | undefined,
       });
     }
 
@@ -294,11 +363,31 @@ export function getAgentAttachments(
     });
   }
 
+  // ─── Known spells: `knows_spell` edges with no matching wielded `has_trait`
+  //
+  // The biography half (THR-1231: known is unlimited, wielded is capped). Only the
+  // ones NOT currently carried appear here — a spell in both lists would read as two
+  // spells, and the strand above already speaks for the carried ones.
+  const wieldedSpellIds = new Set(powers.filter(p => p.powerClass === 'spell').map(p => p.id));
+  const knownSpells: KnownSpellEntry[] = [];
+  for (const edge of graph.getOutgoingEdges(agentId, 'knows_spell')) {
+    if (wieldedSpellIds.has(edge.target)) continue;
+    const node = graph.getNode(edge.target);
+    if (!node) continue;
+    knownSpells.push({
+      id: node.id,
+      name: node.name,
+      tradition: (node.properties.sphereAffinity as string | undefined) ?? 'unaligned',
+    });
+  }
+  knownSpells.sort((a, b) => a.name.localeCompare(b.name));
+
   return {
     holdings: sortAttachments(holdings),
     possessions: sortAttachments(possessions),
     conditions: sortAttachments(conditions),
     powers: sortAttachments(powers),
     agreements: sortAttachments(agreements),
+    knownSpells,
   };
 }

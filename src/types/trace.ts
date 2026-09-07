@@ -129,6 +129,9 @@ export type TraceCategory =
   | 'undertaking_tier_defaulted'
   // The owed readers (THR-1428)
   | 'undertaking_reader'
+  // The dormant kinds — powers and conditions (THR-1429)
+  | 'power_learned'
+  | 'condition_inflicted'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -535,6 +538,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking_cell_unreachable',
   'undertaking_tier_defaulted',
   'undertaking_reader',
+  'power_learned',
+  'condition_inflicted',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -2147,7 +2152,9 @@ export interface UndertakingReaderTrace extends TraceBase {
   actorId: string;
   /** `'cell.observe.location'`, `'cell.destroy.location'`, `'cell.use.power'`. */
   cellId: string;
-  reader: 'familiarity' | 'clue' | 'chart' | 'mark' | 'ruin_delve_stamp' | 'spell_price' | 'spell_exhausted';
+  reader: 'familiarity' | 'clue' | 'chart' | 'mark' | 'ruin_delve_stamp' | 'spell_price' | 'spell_exhausted'
+        /** The seal's reader (THR-1429): `use × Power` refusing a bound art. */
+        | 'spell_suppressed';
   /** The observed / ruined node, or the power. */
   objectId: string;
   /** The edge or node written, when one was. */
@@ -2155,7 +2162,46 @@ export interface UndertakingReaderTrace extends TraceBase {
   /** The band read from `ctx.outcome`, when the lifecycle carried one. */
   outcome?: string;
   refused?: 'already_known' | 'clue_already_held' | 'map_already_held' | 'nobody_there'
-          | 'schema_violation' | 'exhausted' | 'no_band_row' | 'nothing_eligible';
+          | 'schema_violation' | 'exhausted' | 'no_band_row' | 'nothing_eligible'
+          /** `use × Power` on a power a seal has bound (THR-1429). */
+          | 'power_suppressed';
+}
+
+/**
+ * Trace: a mortal learned a spell (THR-1429, `create × Power`).
+ *
+ * `wielded: false` is not a failure — it is the slot cap saying the spell is known
+ * and not carried, which is a different fact from a refusal and has to read as one
+ * (NFP #2). A refusal names itself in `refused` and writes nothing.
+ */
+export interface PowerLearnedTrace extends TraceBase {
+  category: 'power_learned';
+  actorId: string;
+  spellTemplateId: string;
+  /** The sphere shelf the spell was drawn from — the tradition, in the UL's word. */
+  tradition: string;
+  wielded: boolean;
+  refused?: 'not_a_caster' | 'no_spell_to_learn' | 'already_known' | 'no_definition';
+}
+
+/**
+ * Trace: a condition was put on somebody (THR-1429, `create × Condition` and
+ * `destroy × Power`).
+ *
+ * `sign` is the whole story of the cell: you bless friends, you curse enemies, and
+ * you seal a rival's art. A `no_sign` refusal is a stranger — deliberately not a
+ * neutral third outcome.
+ */
+export interface ConditionInflictedTrace extends TraceBase {
+  category: 'condition_inflicted';
+  actorId: string;
+  targetId: string;
+  templateId: string;
+  sign: 'blessing' | 'curse' | 'seal';
+  /** The motive that opened the gate, for a curse or a seal. */
+  motive?: string;
+  ticksRemaining: number;
+  refused?: 'no_sign' | 'no_template' | 'target_gone' | 'power_not_wielded' | 'mint_failed';
 }
 
 /**
@@ -3352,6 +3398,8 @@ export type TraceEntry =
   | CovetRivalrySeededTrace
   | UndertakingCellUnreachableTrace
   | UndertakingTierDefaultedTrace
+  | PowerLearnedTrace
+  | ConditionInflictedTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
   | FollowChangeTrace

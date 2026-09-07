@@ -386,6 +386,11 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
         'cell.use.power',
+        // Learning is casting's obvious sibling and this profile is where the caster
+        // already lives (THR-1429). A cell listed in no profile is enumerated by
+        // nobody — `profiledAmbitionIdsFor` returns the empty set and even the review
+        // lever cannot start it — so this line is what makes the cell reachable.
+        'cell.create.power',
         'cell.observe.place',
         'cell.create.item',
         'cell.create.place',
@@ -647,6 +652,9 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.destroy.agreement',
         'cell.create.item',
         'cell.control_seize.item',
+        // The seeker's road into the Powers seam (THR-1429, the division rule): what
+        // an uncoverer of secrets learns is not only a mark, it is sometimes a spell.
+        'cell.create.power',
       ],
       templateIds: [
         'strategic_research_archive',
@@ -733,6 +741,10 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.create.faction',
         'cell.change_raise.standing',
         'cell.destroy.condition',
+        // The zealot's blessing (THR-1429). This profile already carried curing;
+        // inflicting is its mirror, and against an ally the cell is un-gated — so on
+        // this ambition it is the blessing half that fires, and the sign says so.
+        'cell.create.condition',
         'cell.create.place',
         'cell.control_claim.place',
         'cell.change_raise.location',
@@ -995,6 +1007,12 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.destroy.agreement',
         'cell.destroy.company',
         'cell.control_seize.item',
+        // The curse and the seal (THR-1429). A vendetta is exactly where the motive
+        // the sign reads already exists, so this is the profile where `create ×
+        // Condition` resolves to a curse rather than a blessing, and where sealing a
+        // rival's art can clear its own motive gate.
+        'cell.create.condition',
+        'cell.destroy.power',
       ],
       templateIds: [
         'strategic_expose_mark',

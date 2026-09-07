@@ -15,6 +15,7 @@ import {
   REWARD_CONDITIONS,
   REWARD_BESTOWED_POWERS,
 } from '../data/reward-attachment-catalog';
+import { allSpellDefinitionNodes } from '../data/spell-templates';
 import {
   ANOMALY_SIGNATURE_ARTIFACTS,
   ANOMALY_BESTOWED_POWERS,
@@ -39,6 +40,17 @@ export function seedAttachments(graph: WorldGraph): void {
     graph.addNode(node);
   }
   for (const node of REWARD_BESTOWED_POWERS) {
+    graph.addNode(node);
+  }
+
+  // ── Spell definitions: the Power kind's `spell` class (THR-1429) ──
+  //
+  // Beside the trait definitions above because that is what they are — shared
+  // definition nodes nobody holds until somebody learns them. One per template,
+  // never one per bearer (THR-1395). `learn_spell` writes the edges; this writes
+  // the vocabulary they point at, so a world seeded before the cell existed is the
+  // only world where a learn can refuse `no_definition`.
+  for (const node of allSpellDefinitionNodes()) {
     graph.addNode(node);
   }
 

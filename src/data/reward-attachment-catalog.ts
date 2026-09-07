@@ -28,6 +28,10 @@
 import type { GraphNode } from '../types/graph';
 import type { PossessionNodeProperties } from '../types/attachments';
 import type { TraitDefinitionProperties } from '../types/traits';
+// The seal's duration is one number in one place (NFP #1): the condition that carries
+// the suppression and the cell that mints it must not drift apart (THR-1429).
+// `strategic-action-constants` imports only types, so this is not a cycle.
+import { SEAL_POWER_SUPPRESS_TICKS } from './strategic-action-constants';
 
 // ═══════════════════════════════════════════════════════════════════════
 // REWARD_POSSESSIONS — Artifact nodes (~50)
@@ -3413,18 +3417,28 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#supernatural', '#shadow', '#veil', '#anti-magic', '#negative'],
+      // THR-1429: this entry is what `destroy × Power` — sealing a rival's art —
+      // mints. Two edits, not a new entry: it already carried exactly the mechanism a
+      // seal needs, and a second spell-suppressing condition would be a duplicate
+      // mechanism in the catalog.
+      //
+      // (1) `#curse` joins the tags, so the sign logic and the sheet read a seal as
+      //     the curse it is rather than as an unsigned affliction.
+      // (2) `suppress.ticks` is aligned to `SEAL_POWER_SUPPRESS_TICKS`, so the
+      //     suppression and the condition carrying it expire together instead of the
+      //     art coming back while the curse is still worn.
+      tags: ['#supernatural', '#shadow', '#veil', '#anti-magic', '#curse', '#negative'],
       description: 'Something has scoured the magic from your blood. Spells slide off you. So do blessings.',
       maxLevel: 1,
       visibility: 'discoverable',
       importance: 0,
       domainContributions: {},
-      mechanicalSummary: '+0.05 Shadow, -0.04 Star, suppresses spells on self for 8 ticks',
+      mechanicalSummary: '+0.05 Shadow, -0.04 Star, and the bearer\'s spells will not answer while it lasts',
       flavorText: 'Candles gutter when you pass. Enchanted locks open at your touch, and then break. Healers look at you with pity.',
       effects: [
         { type: 'passive', reach: 'shadow', value: 0.05 },
         { type: 'passive', reach: 'star', value: -0.04 },
-        { type: 'suppress', target: 'spell', scope: { scope: 'self' }, ticks: 8 },
+        { type: 'suppress', target: 'spell', scope: { scope: 'self' }, ticks: SEAL_POWER_SUPPRESS_TICKS },
       ],
     } as TraitDefinitionProperties,
   },

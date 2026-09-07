@@ -167,6 +167,8 @@ export type RouteKind = typeof ROUTE_KINDS[number];
 /** `bestowed` is the Power kind's; `condition` and `scar` are the Condition kind's. */
 export const TRAIT_SUBCATEGORIES: readonly string[] = ['innate', 'mastery', 'reputation', 'personality', 'core', 'destiny', 'cultural', 'experience'];
 export const CONDITION_SUBCATEGORIES: readonly string[] = ['condition', 'scar'];
+/** The Power kind's classes as subcategories: a god's gift, and a spell a mortal learned (THR-1429). */
+export const POWER_SUBCATEGORIES: readonly string[] = ['bestowed', 'spell'];
 
 export const EVENT_TYPES: readonly string[] = [
   'encounter_outcome', 'undertaking_outcome', 'action_resolved', 'narrative', 'ripple_consequence', 'combat_started', 'divine_spark',
@@ -297,10 +299,10 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   }),
   K({
     id: 'power', gameWord: 'Power', ulTerm: 'Traits.md#power', worldRef: 'attachment',
-    shape: { kind: 'node', nodeType: 'trait', discriminator: { key: 'subcategory', values: ['bestowed'] } },
-    classes: { spell: [], bestowal: ['bestowed'], innate: [] },
-    owningSystem: 'Attachments, Items & Possessions', writers: ['spellActivation'], status: 'dormant',
-    note: 'Spell · bestowal · innate — the UL family. No node shape of its own yet: a cast spell mints a condition trait and `knows_spell` has no writer. A later ticket gives it a shape; the registry records the family and the gap.',
+    shape: { kind: 'node', nodeType: 'trait', discriminator: { key: 'subcategory', values: POWER_SUBCATEGORIES } },
+    classes: { spell: ['spell'], bestowal: ['bestowed'], innate: [] },
+    owningSystem: 'Attachments, Items & Possessions', writers: ['spellActivation', 'seedAttachments', 'undertaking-objects'], status: 'live',
+    note: 'Spell · bestowal · innate — the UL family. THR-1429 gave the kind the shape this row deferred: a **trait node whose subcategory names its class**, `bestowed` for a god\'s gift and `spell` for one a mortal learned. One shared definition node per spell, minted at seeding from `SPELL_TEMPLATES`, per-bearer state on the edge (THR-1395); `has_trait` says wielded and `knows_spell` says known, both pointing at the same node. `innate` stays empty — nothing mints one yet.',
   }),
   K({
     id: 'condition', gameWord: 'Condition', ulTerm: 'Traits.md#trait-category', worldRef: 'attachment',
