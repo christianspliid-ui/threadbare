@@ -18,9 +18,9 @@ import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import type { GameState } from '../../../types/gameState';
 import {
   AMBITION_PRIMARY_INTERACTIONS,
-  AMBITION_PRIMARY_KNOWLEDGE,
   AMBITION_SECONDARY_INTERACTIONS,
 } from '../../../types/agentKnowledge';
+import { readIntentionFromCard } from '../../../engine/intentionReading';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { StepDots } from '../../shared/StepDots';
 import { Tooltip } from '../../shared/Tooltip';
@@ -113,10 +113,11 @@ interface JourneyTabProps {
 }
 
 export function JourneyTab({ card, knowledge, onOpenEntity, gameState, followState, onToggleFollow }: JourneyTabProps) {
-  // Whether to show ambitions — either via interaction depth OR knowledge level
+  // Whether to show ambitions — either via interaction depth OR the one mind-reading
+  // rule (THR-1433): familiarity, a followed mortal's mark, or a followed network.
   const showAmbitions =
     (knowledge != null && knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS)
-    || hasKnowledge(card.knowledgeLevel, AMBITION_PRIMARY_KNOWLEDGE);
+    || readIntentionFromCard(card).readable;
 
   // Whether to show secondary ambitions
   const showSecondaryAmbitions =

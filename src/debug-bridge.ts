@@ -87,6 +87,7 @@ if (import.meta.env.DEV) {
   let _debugPanelToggle: ((open?: boolean) => void) | null = null;
   // GameView registers this to zoom + select an agent by id/name
   let _gotoAgent: ((id: string) => boolean) | null = null;
+  let _openAgentSheet: ((id: string) => boolean) | null = null;
   // GameView registers these to list and fire actions
   interface ActionBridge {
     listActions: (agentId?: string) => import('./debug-bridge.d').DebugActionInfo[];
@@ -187,6 +188,15 @@ if (import.meta.env.DEV) {
     /** @internal GameView registers its gotoAgent handler here */
     _registerGotoAgent: (fn: (id: string) => boolean) => { _gotoAgent = fn; },
     /**
+     * Open a mortal's full character sheet (`AgentProfileModal`) by id, id prefix
+     * or partial name — the same match `gotoAgent` uses, then the profile route the
+     * info card's "Sheet →" button takes (THR-1433). The constructed route for any
+     * sheet proof on a mortal the player holds no thread to.
+     */
+    openAgentSheet: (id: string) => _openAgentSheet?.(id) ?? false,
+    /** @internal GameView registers its openAgentSheet handler here */
+    _registerOpenAgentSheet: (fn: (id: string) => boolean) => { _openAgentSheet = fn; },
+    /**
      * THR-689: advance the sim n ticks synchronously through the real runTick pipeline.
      * Bypasses the interval loop, which `document.hidden` throttles to ~1 tick per
      * interaction in an automated tab — making "run N ticks and observe X" checks
@@ -286,6 +296,25 @@ if (import.meta.env.DEV) {
       if (!agentRef) return getPendingUndertakingMoments(state);
       const node = await resolveAgentNode(agentRef);
       return node ? getPendingUndertakingMoments(state, node.id) : [];
+    },
+    /**
+     * One rule for reading a mortal's mind (THR-1433): whether the god may read
+     * this mortal's intention, through which door, and via whom — the predicate
+     * every sheet gate and the encounter receipt call.
+     */
+    canReadIntention: async (agentRef: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const node = await resolveAgentNode(agentRef);
+      if (!node) return null;
+      const { canReadIntention, describeIntentionRead, secretIntentionOf } = await import('./engine/intentionReading');
+      const read = canReadIntention(state, state.ascendantId, node.id);
+      return {
+        agentId: node.id,
+        ...read,
+        how: describeIntentionRead(read, node.name),
+        secretWork: secretIntentionOf(state, node.id),
+      };
     },
     /**
      * The calling (THR-1299 slice 5): the stored title and when it was set, plus
@@ -1125,6 +1154,11 @@ if (import.meta.env.DEV) {
     spawnAttachment: (agentQuery: string, templateQuery: string, options?: Record<string, unknown>) =>
       (_encounterBridge?.spawnAttachment as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, templateQuery, options)
       ?? { success: false, message: 'Encounter bridge not registered' },
+
+    spawnMark: (holderQuery: string, subjectQuery: string, options?: { secretType?: string; magnitude?: number }) =>
+      ((_encounterBridge?.spawnMark as ((...a: unknown[]) => unknown) | undefined)?.(holderQuery, subjectQuery, options)
+        ?? { success: false, message: 'Encounter bridge not registered' }
+      ) as import('./engine/debugWorldSpawnTools').DebugWorldSpawnResult,
 
     spawnCompanion: (agentQuery: string, templateQuery: string, options?: Record<string, unknown>) =>
       (_encounterBridge?.spawnCompanion as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, templateQuery, options)

@@ -34,6 +34,7 @@ import type {
   MotiveReceipt,
 } from '../../types/foreshadowing';
 import type { GameState } from '../../types/gameState';
+import { canReadIntention, type IntentionRead } from '../intentionReading';
 import type { GraphNode } from '../../types/graph';
 import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
 import type { ForeshadowingResolutionTrace } from '../../types/trace';
@@ -381,6 +382,13 @@ interface ForeshadowingCompositionInput {
   authoredTemplate: string | null;
   /** Renders `authoredTemplate`. Differs per entry — see the two call sites. */
   renderAuthored: (template: string) => string;
+  /**
+   * Whether the god may read this mortal's mind (THR-1433, `canReadIntention`).
+   * The receipt-driven path — the mortal's real motive — is taken only when the
+   * door is open; a closed door falls to the composed-generic guess. Absent on the
+   * panel path, which holds no state, and reads as open there (unchanged behaviour).
+   */
+  intention?: IntentionRead;
 }
 
 interface ForeshadowingComposition {
@@ -403,7 +411,7 @@ function composeForeshadowingProse(
 ): ForeshadowingComposition {
   const {
     agentId, encounterId, agentNode, signals,
-    locationId, locationName, authoredTemplate, renderAuthored,
+    locationId, locationName, authoredTemplate, renderAuthored, intention,
   } = input;
 
   if (authoredTemplate) {
@@ -414,7 +422,10 @@ function composeForeshadowingProse(
   const subjectPronoun = resolveSubjectPronoun(agentNode?.properties?.gender);
   const receipt = readMotiveReceipt(agentNode, encounterId, locationId);
 
-  if (receipt) {
+  // The mind-reading rule (THR-1433): the receipt is the mortal's real motive, so it
+  // is shown only through an open door; closed, the god gets the composed guess.
+  const mindReadable = intention === undefined || intention.readable;
+  if (receipt && mindReadable) {
     const composed = composeReceiptForeshadowing(
       { agentId, encounterId, agentName, subjectPronoun, locationName },
       receipt,
@@ -422,7 +433,10 @@ function composeForeshadowingProse(
     return {
       prose: composed.prose,
       tooltipProse: composed.tooltipProse,
-      compositionKeys: composed.compositionKeys,
+      compositionKeys: [
+        ...composed.compositionKeys,
+        ...(intention?.readable ? [`read:${intention.through}`] : []),
+      ],
       receipt,
     };
   }
@@ -685,6 +699,8 @@ export function getEncounterForeshadowingById(
       agentNode,
       signals,
       authoredTemplate,
+      // The thread-card tooltip holds the state, so it asks the one rule (THR-1433).
+      intention: canReadIntention(state, state.ascendantId, agentId),
       renderAuthored: authored => resolveForeshadowingPlaceholders(
         authored,
         agentNode?.name ?? agentId,

@@ -482,6 +482,21 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'The calling',
     desc: 'What the world calls this mortal for what they do — read from their strongest reaches, the ambition they pursue and their temperament. It changes only when their life does.',
   },
+  // The intention line (THR-1433): one id per door the reading came through. The
+  // surface passes the sentence naming the spy or the ring as `desc`; these are the
+  // labels and the fallback sentences.
+  'ui.intention.familiarity': {
+    label: 'What they are set on',
+    desc: 'You have watched this mortal long enough to know what they want.',
+  },
+  'ui.intention.mark': {
+    label: 'What they are set on',
+    desc: 'A mortal you follow holds a secret of theirs — and what a follower knows, you know.',
+  },
+  'ui.intention.network': {
+    label: 'What they are set on',
+    desc: 'A network you follow has people near them — their eyes are yours.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

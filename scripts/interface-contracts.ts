@@ -2251,6 +2251,37 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'god-reads-mortal-intention',
+    producerSystem: 'Intelligence, Knowledge & Familiarity',
+    consumerSystem: NARRATIVE,
+    intent:
+      'The god reads what a mortal is set on — the ambition and the work it heads toward — through one rule everywhere: having watched them, or a followed mortal’s mark on them, or a followed network’s people near them. A mortal’s intelligence work counts as the god’s own knowledge, so running a ring or digging up a secret changes what the player can see on a sheet; and a secret work (the plot) is never read by watching alone.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['canReadIntention', 'readIntentionFromCard', 'intentionRead', 'INTENTION_KNOWLEDGE_TIER', 'SECRET_CELL_IDS'],
+      module: 'src/engine/intentionReading.ts',
+    },
+    writeSites: [
+      'src/engine/intentionReading.ts',
+      'src/data/intention-reading-constants.ts',
+      'src/types/agentKnowledge.ts',
+    ],
+    readSites: [
+      'src/components/Game/hooks/useAgentInteraction.ts',
+      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/components/Game/tabs/JourneyTab.tsx',
+      'src/components/Game/tabs/ChronicleTab.tsx',
+      'src/engine/foreshadowing/encounterForeshadowing.ts',
+      'src/engine/agentDetail.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        'THR-1433. `canReadIntention` is the one predicate: familiarity at `INTENTION_KNOWLEDGE_TIER` (skipped for a secret cell), a followed mortal’s unrevealed `knows_secret_of` mark, a followed network’s living member within `NETWORK_READ_REACH_HEXES`. The hook stamps the live answer on the card (`intentionRead`) and builds the intention line; the Overview tab renders it with the door in the tooltip; the Journey and Chronicle ambition gates and the thread-card foreshadowing tooltip call the same rule. Non-vacuous by `src/engine/__tests__/intentionReading.test.ts` (each door falsified at its owning layer — out of reach, unfollowed leader, revealed mark, the plot at `transparent`), `src/components/Game/tabs/__tests__/OverviewTabIntention.test.tsx` (the line renders through each door and not at all when closed) and the browser proof on the closing PR (`__DEBUG.followAgent` + `__DEBUG.spawnMark` on a stranger, `__DEBUG.canReadIntention`).',
+    },
+  },
+  {
     id: 'calling-derivation',
     producerSystem: 'Strategic Projects & Control',
     consumerSystem: NARRATIVE,

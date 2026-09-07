@@ -396,6 +396,15 @@ export interface DebugBridge {
   /** @internal GameView registers its gotoAgent handler here */
   _registerGotoAgent: (fn: (id: string) => boolean) => void;
   /**
+   * Open a mortal's full character sheet (`AgentProfileModal`) by id, id prefix or
+   * partial name (THR-1433): selects them as `gotoAgent` does, then opens the sheet
+   * the info card's "Sheet →" button opens. Returns true when the mortal was found.
+   * The constructed route for a sheet proof on a mortal the player holds no thread to.
+   */
+  openAgentSheet: (id: string) => boolean;
+  /** @internal GameView registers its openAgentSheet handler here */
+  _registerOpenAgentSheet: (fn: (id: string) => boolean) => void;
+  /**
    * THR-689: advance the sim n ticks synchronously through the real runTick pipeline,
    * bypassing the `document.hidden`-throttled interval loop. Auto-pauses the run loop.
    * Clamped to DEBUG_TICK_MAX (200) per call.
@@ -1037,6 +1046,21 @@ export interface DebugBridge {
    * `calling_change` rows carry both scores. `null` for an unknown ref or no
    * game. Async — `await` it.
    */
+  /**
+   * One rule for reading a mortal's mind (THR-1433). `readable` with the door it
+   * came through — `familiarity`, `mark` (via the followed holder) or `network`
+   * (via the followed ring) — and `how`, the sentence the sheet's tooltip shows;
+   * `secretWork` names the mortal's active secret cell (the plot) when one closes
+   * the familiarity door. `null` for an unknown ref or no game. Async — `await` it.
+   */
+  canReadIntention(agentRef: string): Promise<({
+    agentId: string;
+    how: string;
+    secretWork: string | null;
+  } & (
+    | { readable: true; through: 'familiarity' | 'mark' | 'network'; via?: string; viaName?: string; secret: boolean }
+    | { readable: false; secret: boolean }
+  )) | null>;
   getCalling(agentRef: string): Promise<{
     agentId: string;
     title: string | null;
@@ -1204,6 +1228,12 @@ export interface DebugBridge {
   spawnEncounterContext: (templateId: string, options?: DebugSpawnEncounterContextOptions) => DebugSpawnEncounterContextResult;
   /** Spawn an attachment (artifact, trait, etc.) on an agent. */
   spawnAttachment: (agentQuery: string, templateQuery: string, options?: DebugSpawnAttachmentOptions) => DebugWorldSpawnResult;
+  /** Mint a leverage mark (THR-1433) — `holder` learns a secret of `subject`'s
+   *  (`knows_secret_of`, unrevealed), through the same `mintLeverageMark` op the
+   *  observe cells use. The constructed route for the mind-reading proof: follow the
+   *  holder, mint the mark, and the subject's sheet shows the intention line through
+   *  the mark. Both queries accept an id, an id prefix, a partial name or `@hero`. */
+  spawnMark: (holderQuery: string, subjectQuery: string, options?: { secretType?: string; magnitude?: number }) => DebugWorldSpawnResult;
   /** Mint a companion (THR-1413) onto an agent or the ascendant, and show the row.
    *
    *  `spawnAttachment` cannot do this: it searches artifact/trait **nodes** in the graph,

@@ -14,6 +14,50 @@ import { mintCompanion, COMPANION_NODE_PREFIX } from './companions';
 import { hashString } from './factionAmbitions';
 import { COMPANION_TEMPLATES, type CompanionTemplate } from '../data/companion-templates';
 import { rebindLocatedAt as sharedRebindLocatedAt } from './relocationIntent';
+import { mintLeverageMark } from './strategicGraphOps';
+import { UNDERTAKING_DEFAULT_MARK_SECRET_TYPE, UNDERTAKING_DEFAULT_MARK_MAGNITUDE } from '../data/strategic-action-constants';
+
+export interface DebugSpawnMarkOptions {
+  secretType?: string;
+  magnitude?: number;
+}
+
+/**
+ * Mint a leverage mark from the debug surfaces (THR-1433): `holder` learns a secret
+ * of `subject`'s, through the same `mintLeverageMark` op the observe cells use, so
+ * the mind-reading proof can be constructed — follow the holder, mint the mark, open
+ * the subject's sheet. Fail-soft per NFP #4: an unknown actor, a self-mark or an
+ * already-held mark returns a failed result with the op's own reason, never a throw.
+ */
+export function spawnDebugMark(
+  state: GameState,
+  holderQuery: string,
+  subjectQuery: string,
+  options: DebugSpawnMarkOptions = {},
+): DebugWorldSpawnResult {
+  const holder = findActorNode(state, holderQuery);
+  if (!holder) return { success: false, message: `No actor matching '${holderQuery}'.` };
+  const subject = findActorNode(state, subjectQuery);
+  if (!subject) return { success: false, message: `No actor matching '${subjectQuery}'.` };
+  const notes = resolutionNote(holderQuery, holder.id, holder.name) + resolutionNote(subjectQuery, subject.id, subject.name);
+  const result = mintLeverageMark(
+    state.graph, holder.id, subject.id,
+    options.secretType ?? UNDERTAKING_DEFAULT_MARK_SECRET_TYPE,
+    options.magnitude ?? UNDERTAKING_DEFAULT_MARK_MAGNITUDE,
+    state.tick,
+  );
+  if (!result.success) {
+    return { success: false, message: `Could not mark '${subject.name}' for '${holder.name}': ${result.error ?? 'refused'}.${notes}` };
+  }
+  return {
+    success: true,
+    kind: 'mark',
+    nodeId: result.createdId,
+    nodeName: `${holder.name} → ${subject.name}`,
+    reused: false,
+    message: `'${holder.name}' now holds a secret of '${subject.name}' (${result.createdId}).${notes}`,
+  };
+}
 
 /** Build a resolution note showing what a query resolved to, so misresolution is visible. */
 function resolutionNote(query: string, resolvedId: string, resolvedName: string): string {
@@ -24,7 +68,7 @@ function resolutionNote(query: string, resolvedId: string, resolvedName: string)
 
 export interface DebugWorldSpawnResult {
   success: boolean;
-  kind?: 'location' | 'sublocation' | 'npc' | 'agent' | 'attachment' | 'band' | 'companion';
+  kind?: 'location' | 'sublocation' | 'npc' | 'agent' | 'attachment' | 'band' | 'companion' | 'mark';
   nodeId?: string;
   nodeName?: string;
   locationId?: string;
