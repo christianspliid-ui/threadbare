@@ -256,7 +256,11 @@ export function payHoldingIncome(state: GameState): HoldingIncomeResult {
           promptContext: {
             actors: entry.chronicleChapter.actorIds,
             location: sourceName,
-            sphere: 'gold',
+            // `matter`, not `gold`: Gold is a *Reach* (what you do) and the prompt
+            // context wants a *Sphere* (what fuels it) — the two are orthogonal axes.
+            // The neighbouring economic chronicle sites spell `'gold'` here and are
+            // part of the type-error baseline for exactly this reason.
+            sphere: 'matter',
             mood: 'economic',
           },
           tick,
