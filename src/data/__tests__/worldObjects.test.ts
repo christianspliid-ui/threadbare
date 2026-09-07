@@ -273,13 +273,15 @@ describe('undertaking grid — subsystem × verb view', () => {
       const m = /^\| \*\*(.+?)\*\* \|(.*)\|\s*$/.exec(line);
       if (!m) continue;
       const [, name, body] = m;
-      const status = /LIVE-TOUCHED|OPEN-ONLY|UNTOUCHED/.exec(body)?.[0];
+      // Five words since THR-1431: the join became three-way, so a subsystem that owns
+      // no kind can still be reached through its operation's home module or as a reader.
+      const status = /LIVE-TOUCHED|REACHED-BY-OP|OPEN-ONLY|UNTOUCHED|READS/.exec(body)?.[0];
       if (!status) { statusless.push(name); continue; }
       // The reader column is the last cell; a live-touched subsystem must fill it.
       const reads = body.split('|').at(-1)?.trim() ?? '';
       if (status === 'LIVE-TOUCHED' && reads.length === 0) readerless.push(name);
     }
-    expect(statusless, 'view rows carrying no LIVE-TOUCHED / OPEN-ONLY / UNTOUCHED status').toEqual([]);
+    expect(statusless, 'view rows carrying no LIVE-TOUCHED / REACHED-BY-OP / READS / OPEN-ONLY / UNTOUCHED status').toEqual([]);
     expect(readerless, 'LIVE-TOUCHED rows with an empty reader column — say who reads it, or say nothing does').toEqual([]);
   });
 });

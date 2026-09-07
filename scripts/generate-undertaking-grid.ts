@@ -30,22 +30,23 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import { WORLD_OBJECT_KINDS, type WorldObjectKindId } from '../src/data/world-objects';
 import { UNDERTAKING_OBJECT_TYPES } from '../src/data/undertaking-objects';
 import { UNDERTAKING_VERB_VARIANTS, UNDERTAKING_VERBS } from '../src/data/strategic-action-constants';
 import { UNDERTAKING_VERB_WORDS } from '../src/data/undertaking-verb-prose';
 import type { UndertakingVerbVariant } from '../src/types/strategicAction';
-import { NOT_AN_OBJECT, LIVE_CELL_NOTES, CELL_DISPOSITIONS, STANDING_RIDERS, SUBSYSTEM_READERS, type CellDisposition, type LiveCellNote, type SubsystemReader } from './undertaking-grid-dispositions.ts';
+import { NOT_AN_OBJECT, LIVE_CELL_NOTES, CELL_DISPOSITIONS, STANDING_RIDERS, SUBSYSTEM_READERS, UNTOUCHED_BY_DESIGN, type CellDisposition, type LiveCellNote, type SubsystemReader } from './undertaking-grid-dispositions.ts';
 import { readManifest, buildNav } from './design-wiki-nav.ts';
-import { SUBSYSTEMS, SUBSYSTEM_NAMES } from './subsystems-registry.ts';
+import { SUBSYSTEMS, SUBSYSTEM_NAMES, subsystemForModule } from './subsystems-registry.ts';
 
 const OUTPUT_MD_REL = path.join('Docs', 'canon', 'undertaking-grid.generated.md');
 const OUTPUT_HTML_REL = path.join('public', 'undertaking-grid-reference.html');
 const WIKI_PAGE_ID = 'undertaking-grid';
 
 type CellStatus = 'live' | 'wanted' | 'later' | 'open' | 'no';
-interface Cell {
+export interface Cell {
   readonly kind: WorldObjectKindId;
   readonly variant: UndertakingVerbVariant;
   readonly status: CellStatus;
@@ -58,7 +59,7 @@ interface Cell {
   readonly decided?: string;
 }
 
-function buildGrid(): { cells: Cell[]; problems: string[] } {
+export function buildGrid(): { cells: Cell[]; problems: string[] } {
   const cells: Cell[] = [];
   const problems: string[] = [];
   const declared = new Map<string, boolean>();
@@ -103,32 +104,255 @@ function buildGrid(): { cells: Cell[]; problems: string[] } {
   return { cells, problems };
 }
 
+// ─── Op reach: the module each live cell's operation lives in (THR-1431) ────
+// The subsystem view's first join asks one question only — does a live cell act on a
+// kind this subsystem *owns*. Five subsystems own no kind and so read UNTOUCHED although
+// a mortal's work reaches every one of them today (THR-1401). This resolves the second
+// way in: the home module of the operation the cell actually runs.
+//
+// The join reads real code, never a hand map. A verb semantic is a function in the
+// registry source; the engine symbols it references resolve through that file's own
+// import statements, and `subsystemForModule` (the shared registry THR-1407 pinned)
+// houses each module under a subsystem. A verb handled by a sustained *mode* has no
+// function, so its home is the module that PRODUCES the op result — the one carrying an
+// `op: '<mode>'` literal, the pattern every graph op returns. That deliberately excludes
+// the dispatchers that merely name the mode (`phaseAgentDecision`, `undertakingResolver`):
+// every cell passes through those, so counting them would mark every subsystem reached.
+
+const REGISTRY_REL = path.join('src', 'data', 'undertaking-objects.ts');
+const ENGINE_REL = path.join('src', 'engine');
+/** How far a verb body is followed through helpers local to the registry file. */
+const LOCAL_HELPER_DEPTH = 3;
+
+/**
+ * Modules that are **instrumentation, not operation** — every cell touches them, so a
+ * cell reduced to one of these has no op home at all rather than a home here.
+ *
+ * `traceBuffer` is the whole list, and it earns its place: THR-1429's `learn_spell` and
+ * `inflict_condition` write `ctx.graph` directly and reach an engine module only to
+ * emit their trace, so the join saw `traceBuffer.ts` — a module no subsystem claims —
+ * and failed two correct cells by name. Attributing a mortal's work to the trace buffer
+ * would be worse than failing: it is the one module every cell would resolve to, which
+ * would mark whichever subsystem claimed it as reached by everything.
+ *
+ * This is a statement about what counts as an operation, not a hand map of cell →
+ * subsystem: a real operation module that resolves to no subsystem still fails by name.
+ */
+const INSTRUMENTATION_MODULES: ReadonlySet<string> = new Set(['traceBuffer.ts']);
+
+/**
+ * Comments out of a key. Nearly every entry in the registry is preceded by a `//` line
+ * explaining the cell, and those lines sit inside the entry's own slice — left in, they
+ * become part of the key and every commented cell goes unrecognised.
+ */
+function stripComments(s: string): string {
+  return s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\n)[^\n]*?\/\/[^\n]*/g, '$1');
+}
+
+/** Split an object-literal body into its top-level entries, honouring strings and comments. */
+function topLevelEntries(body: string): { key: string; value: string }[] {
+  const out: { key: string; value: string }[] = [];
+  let depth = 0, start = 0, colon = -1, i = 0;
+  const push = (end: number) => {
+    const raw = body.slice(start, end);
+    if (!raw.trim()) return;
+    if (colon < start) { const k = stripComments(raw).trim(); if (k) out.push({ key: k, value: k }); return; }
+    out.push({ key: stripComments(body.slice(start, colon)).trim(), value: body.slice(colon + 1, end).trim() });
+  };
+  while (i < body.length) {
+    const c = body[i];
+    if (c === '/' && body[i + 1] === '/') { const nl = body.indexOf('\n', i); if (nl === -1) break; i = nl; continue; }
+    if (c === '/' && body[i + 1] === '*') { const e = body.indexOf('*/', i); i = e === -1 ? body.length : e + 2; continue; }
+    if (c === "'" || c === '"' || c === '`') {
+      const q = c; i++;
+      while (i < body.length && body[i] !== q) { if (body[i] === '\\') i++; i++; }
+      i++; continue;
+    }
+    if (c === '{' || c === '(' || c === '[') depth++;
+    else if (c === '}' || c === ')' || c === ']') depth--;
+    else if (c === ':' && depth === 0 && colon < start) colon = i;
+    else if (c === ',' && depth === 0) { push(i); start = i + 1; colon = -1; }
+    i++;
+  }
+  push(body.length);
+  return out;
+}
+
+/** The inner text of the `{ … }` opening at or after `from`. */
+function braceBody(src: string, from: number): { body: string; end: number } | null {
+  const open = src.indexOf('{', from);
+  if (open === -1) return null;
+  let depth = 0, i = open;
+  while (i < src.length) {
+    const c = src[i];
+    if (c === '/' && src[i + 1] === '/') { const nl = src.indexOf('\n', i); if (nl === -1) break; i = nl; continue; }
+    if (c === '/' && src[i + 1] === '*') { const e = src.indexOf('*/', i); i = e === -1 ? src.length : e + 2; continue; }
+    if (c === "'" || c === '"' || c === '`') {
+      const q = c; i++;
+      while (i < src.length && src[i] !== q) { if (src[i] === '\\') i++; i++; }
+      i++; continue;
+    }
+    if (c === '{') depth++;
+    else if (c === '}') { depth--; if (depth === 0) return { body: src.slice(open + 1, i), end: i }; }
+    i++;
+  }
+  return null;
+}
+
+/** Symbol → engine module, read from the registry file's own `../engine/*` imports. */
+function engineImports(src: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const re = /import\s+(?:type\s+)?\{([^}]+)\}\s+from\s+'\.\.\/engine\/([^']+)'/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const mod = `${m[2]}.ts`;
+    for (const raw of m[1].split(',')) {
+      const sym = raw.trim().replace(/^type\s+/, '').split(/\s+as\s+/).pop()?.trim();
+      if (sym) out.set(sym, mod);
+    }
+  }
+  return out;
+}
+
+/** Functions declared in the registry file, so a verb entry can be followed through them. */
+function localHelpers(src: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const re = /^(?:export\s+)?(?:function\s+(\w+)\s*\(|const\s+(\w+)[^=\n]*=\s*(?:\([^)]*\)|\w+)[^=\n]*=>)/gm;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const name = m[1] ?? m[2];
+    const b = braceBody(src, m.index + m[0].length - 1);
+    if (name && b) out.set(name, b.body);
+  }
+  return out;
+}
+
+/** Each object type's `verbs: { … }` body, keyed by the kind id declared just above it. */
+function verbBlocks(src: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const re = /\bverbs:\s*\{/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const id = [...src.slice(0, m.index).matchAll(/\bid:\s*'([^']+)'/g)].pop()?.[1];
+    const b = braceBody(src, m.index + m[0].length - 1);
+    if (id && b) out.set(id, b.body);
+  }
+  return out;
+}
+
+/** Engine modules a verb entry reaches, following helpers local to the registry file. */
+function modulesFor(text: string, imports: Map<string, string>, helpers: Map<string, string>): Set<string> {
+  const mods = new Set<string>();
+  const seen = new Set<string>();
+  const visit = (t: string, depth: number): void => {
+    for (const [sym, mod] of imports) if (new RegExp(`\\b${sym}\\b`).test(t)) mods.add(mod);
+    if (depth >= LOCAL_HELPER_DEPTH) return;
+    for (const [name, body] of helpers) {
+      if (seen.has(name) || !new RegExp(`\\b${name}\\b`).test(t)) continue;
+      seen.add(name);
+      visit(body, depth + 1);
+    }
+  };
+  visit(text, 0);
+  return mods;
+}
+
+/** Engine modules that PRODUCE this op result — `op: '<name>'`, never a bare mention. */
+function modulesProducingOp(repoRoot: string, op: string): string[] {
+  const root = path.join(repoRoot, ENGINE_REL);
+  const hits: string[] = [];
+  const needle = new RegExp(`\\bop:\\s*'${op}'`);
+  const walk = (dir: string): void => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, e.name);
+      if (e.isDirectory()) { if (e.name !== '__tests__') walk(abs); continue; }
+      if (!e.name.endsWith('.ts') || e.name.endsWith('.d.ts') || e.name.endsWith('.test.ts')) continue;
+      if (needle.test(fs.readFileSync(abs, 'utf-8'))) hits.push(path.relative(root, abs).replace(/\\/g, '/'));
+    }
+  };
+  walk(root);
+  return hits.sort();
+}
+
+/** One live cell's operation, resolved to the module(s) and subsystem(s) it reaches. */
+export interface CellReach {
+  readonly cell: string;
+  readonly op: string;
+  readonly modules: readonly string[];
+  readonly subsystems: readonly string[];
+}
+
+/** Every live cell's operation resolved to its home module(s). Exported for the test. */
+export function buildOpReach(repoRoot: string, cells: readonly Cell[]): { reaches: CellReach[]; problems: string[] } {
+  const problems: string[] = [];
+  const src = fs.readFileSync(path.join(repoRoot, REGISTRY_REL), 'utf-8');
+  const imports = engineImports(src);
+  const helpers = localHelpers(src);
+  const blocks = verbBlocks(src);
+  const reaches: CellReach[] = [];
+
+  for (const c of cells) {
+    if (c.status !== 'live') continue;
+    const label = `${c.kind} × ${c.variant}`;
+    const block = blocks.get(c.kind);
+    if (block === undefined) { problems.push(`${label}: LIVE but the registry source has no \`verbs\` block for '${c.kind}' — the op-module join cannot see it`); continue; }
+    const entry = topLevelEntries(block).find(e => e.key.replace(/^['"]|['"]$/g, '') === c.variant);
+    if (entry === undefined) { problems.push(`${label}: LIVE but the registry's \`verbs\` block declares no entry for it — the op-module join cannot see it`); continue; }
+    const mode = /\bmode:\s*'([^']+)'/.exec(entry.value)?.[1];
+    const modules = (mode !== undefined ? modulesProducingOp(repoRoot, mode) : [...modulesFor(entry.value, imports, helpers)])
+      .filter(m => !INSTRUMENTATION_MODULES.has(m))
+      .sort();
+    // A cell that calls no engine module writes the graph inline — `seize_item` moves the
+    // `possesses` edge itself. That is not a drift signal and must not fail: the cell has
+    // no op home to attribute, so it adds nothing to this join and is already counted by
+    // the owned-kind one. Finding modules that map to NO subsystem is the real signal —
+    // an engine module nobody housed in the registry.
+    if (modules.length === 0) continue;
+    const subsystems = [...new Set(modules.map(m => subsystemForModule(m)).filter((s): s is string => s !== null))].sort();
+    if (subsystems.length === 0) {
+      problems.push(`${label} (\`${c.op ?? mode ?? '?'}\`): its operation lives in ${modules.join(', ')}, which ${modules.length === 1 ? 'resolves' : 'resolve'} to no registry subsystem — cross-cutting or unhomed. House the module under a subsystem in \`scripts/subsystems-registry.ts\`.`);
+      continue;
+    }
+    reaches.push({ cell: `${UNDERTAKING_VERB_WORDS[c.variant]} × ${c.kind}`, op: c.op ?? mode ?? '', modules, subsystems });
+  }
+  return { reaches, problems };
+}
+
 // ─── The subsystem × verb view (THR-1427) ───────────────────────────────────
 // The third view of the same cells, joined through `WORLD_OBJECT_KINDS[].owningSystem`
 // — the join THR-1407 repaired and pinned, which until now had no reader. It answers
 // the question the kind × verb grid cannot: which of the world's 27 subsystems does a
 // mortal's own work actually reach, and what happens to what it leaves behind.
 //
-// The status is MECHANICAL — derived from the cells, never authored. Whether an
-// UNTOUCHED subsystem is untouched *by design* or is a gap is THR-1401's question for
-// Christian; this view reports coverage and stops there.
+// The status is MECHANICAL — derived from the cells, never authored. Since THR-1431 the
+// join is three-way (owned kind, the operation's home module, a reader), because the
+// owned-kind join alone marked five subsystems UNTOUCHED that a mortal's work reaches
+// every run. What stays UNTOUCHED now carries its by-design reason from THR-1401, held
+// to totality both ways: a bare UNTOUCHED row fails, and so does a reason for a
+// subsystem something has since started reaching.
 
-type SubsystemStatus = 'live-touched' | 'open-only' | 'untouched';
+type SubsystemStatus = 'live-touched' | 'reached-by-op' | 'reads' | 'open-only' | 'untouched';
 
-interface SubsystemRow {
+export interface SubsystemRow {
   readonly subsystem: string;
   readonly status: SubsystemStatus;
   /** The strongest cell status any owned kind carries for the verb; `null` when the subsystem owns no kind. */
   readonly verbs: Readonly<Partial<Record<UndertakingVerbVariant, CellStatus>>>;
   readonly kinds: readonly string[];
   readonly readers: readonly SubsystemReader[];
+  /** Live cells whose operation lives in a module this subsystem owns (THR-1431). */
+  readonly reachedByOps: readonly CellReach[];
+  /** LIVE-TOUCHED subsystems naming this one as a reader of what their cells leave. */
+  readonly readsFrom: readonly { from: string; sites: string }[];
+  /** Why nothing reaches it, when nothing does — `UNTOUCHED_BY_DESIGN` (THR-1401). */
+  readonly byDesign?: string;
 }
 
-const SUBSYSTEM_STATUS_WORD: Record<SubsystemStatus, string> = { 'live-touched': 'LIVE-TOUCHED', 'open-only': 'OPEN-ONLY', untouched: 'UNTOUCHED' };
+const SUBSYSTEM_STATUS_WORD: Record<SubsystemStatus, string> = { 'live-touched': 'LIVE-TOUCHED', 'reached-by-op': 'REACHED-BY-OP', reads: 'READS', 'open-only': 'OPEN-ONLY', untouched: 'UNTOUCHED' };
 /** Strongest-first: a subsystem's verb cell shows the best any of its kinds manages. */
 const CELL_RANK: Record<CellStatus, number> = { live: 4, wanted: 3, later: 2, open: 1, no: 0 };
 
-function buildSubsystemView(cells: readonly Cell[]): { rows: SubsystemRow[]; problems: string[] } {
+export function buildSubsystemView(cells: readonly Cell[], reaches: readonly CellReach[]): { rows: SubsystemRow[]; problems: string[] } {
   const problems: string[] = [];
   const ownerOf = new Map<string, string>();
   for (const kind of WORLD_OBJECT_KINDS) {
@@ -139,7 +363,9 @@ function buildSubsystemView(cells: readonly Cell[]): { rows: SubsystemRow[]; pro
     ownerOf.set(kind.id, kind.owningSystem);
   }
 
-  const rows: SubsystemRow[] = SUBSYSTEMS.map(s => {
+  // Pass 1: the owned-kind join alone, which decides who is LIVE-TOUCHED. The other two
+  // ways in are measured against that set — a reader is only a reader of a live cell.
+  const owned = SUBSYSTEMS.map(s => {
     const kinds = WORLD_OBJECT_KINDS.filter(k => ownerOf.get(k.id) === s.name).map(k => k.id as string);
     const verbs: Partial<Record<UndertakingVerbVariant, CellStatus>> = {};
     for (const c of cells) {
@@ -148,13 +374,45 @@ function buildSubsystemView(cells: readonly Cell[]): { rows: SubsystemRow[]; pro
       if (held === undefined || CELL_RANK[c.status] > CELL_RANK[held]) verbs[c.variant] = c.status;
     }
     const best = Object.values(verbs).reduce((m, v) => Math.max(m, CELL_RANK[v]), 0);
-    const status: SubsystemStatus = best === CELL_RANK.live ? 'live-touched' : best > CELL_RANK.no ? 'open-only' : 'untouched';
-    return { subsystem: s.name, status, verbs, kinds, readers: SUBSYSTEM_READERS[s.name] ?? [] };
+    return { name: s.name, kinds, verbs, best };
+  });
+  const liveTouched = new Set(owned.filter(o => o.best === CELL_RANK.live).map(o => o.name));
+
+  // Pass 2: the two ways a subsystem is reached without owning the kind (THR-1431).
+  // Precedence is strongest-first — owning the kind beats running the op, which beats
+  // reading what someone else's cell left — so the status word says the closest relation.
+  const rows: SubsystemRow[] = owned.map(o => {
+    const reachedByOps = reaches.filter(r => r.subsystems.includes(o.name));
+    const readsFrom = [...liveTouched]
+      .flatMap(from => (SUBSYSTEM_READERS[from] ?? []).filter(x => x.subsystem === o.name).map(x => ({ from, sites: x.sites })))
+      .sort((a, b) => a.from.localeCompare(b.from));
+    const status: SubsystemStatus =
+      o.best === CELL_RANK.live ? 'live-touched'
+      : reachedByOps.length > 0 ? 'reached-by-op'
+      : readsFrom.length > 0 ? 'reads'
+      : o.best > CELL_RANK.no ? 'open-only'
+      : 'untouched';
+    const byDesign = UNTOUCHED_BY_DESIGN.find(u => u.subsystem === o.name)?.reason;
+    return { subsystem: o.name, status, verbs: o.verbs, kinds: o.kinds, readers: SUBSYSTEM_READERS[o.name] ?? [], reachedByOps, readsFrom, byDesign };
   });
 
-  // Totality, the same three-way contract the cell dispositions carry: every
-  // LIVE-TOUCHED subsystem is named, nothing else is, and every name is a real one.
-  const liveTouched = new Set(rows.filter(r => r.status === 'live-touched').map(r => r.subsystem));
+  // Totality for the by-design list, the same contract the cell dispositions carry: an
+  // UNTOUCHED subsystem must say why nothing reaches it, and a reason for a subsystem
+  // something now reaches is stale. Without the stale half the list would quietly
+  // outlive the gap it explains — the failure mode the whole map exists to prevent.
+  for (const r of rows) {
+    if (r.status === 'untouched' && r.byDesign === undefined) {
+      problems.push(`${r.subsystem}: UNTOUCHED with no UNTOUCHED_BY_DESIGN reason — say why a mortal's own work never moves it, or it is a gap nobody has named`);
+    }
+  }
+  for (const u of UNTOUCHED_BY_DESIGN) {
+    if (!SUBSYSTEM_NAMES.has(u.subsystem)) { problems.push(`UNTOUCHED_BY_DESIGN['${u.subsystem}']: not a registry subsystem`); continue; }
+    const row = rows.find(r => r.subsystem === u.subsystem);
+    if (row && row.status !== 'untouched') problems.push(`UNTOUCHED_BY_DESIGN['${u.subsystem}']: reads ${SUBSYSTEM_STATUS_WORD[row.status]} now — a mortal's work does reach it, so the by-design reason is stale; remove it`);
+  }
+
+  // Totality, the same three-way contract: every LIVE-TOUCHED subsystem is named,
+  // nothing else is, and every name is a real one.
   for (const r of rows) {
     if (r.status === 'live-touched' && SUBSYSTEM_READERS[r.subsystem] === undefined) {
       problems.push(`${r.subsystem}: LIVE-TOUCHED but has no SUBSYSTEM_READERS entry — name who reads what its cells leave, or give it an empty list to record that nothing does`);
@@ -192,8 +450,8 @@ function renderMarkdown(cells: Cell[], rows: readonly SubsystemRow[]): string {
     L.push(`| **${kind.gameWord}** \`${kind.id}\` | ${row.join(' | ')} |`);
   }
   L.push('', '## Subsystems × verbs', '');
-  const touched = rows.filter(r => r.status === 'live-touched'), openOnly = rows.filter(r => r.status === 'open-only'), untouched = rows.filter(r => r.status === 'untouched');
-  L.push(`> The same cells joined through \`WORLD_OBJECT_KINDS[].owningSystem\` — which of the world's ${rows.length} subsystems a mortal's own work reaches, and who reads what it leaves. **${touched.length} LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **${openOnly.length} OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **${untouched.length} UNTOUCHED** (no cell reaches it at all). Status is derived from the cells, never authored. Whether an untouched subsystem is untouched *by design* or is a gap is a design question and is deliberately **not** answered here.`);
+  const touched = rows.filter(r => r.status === 'live-touched'), byOp = rows.filter(r => r.status === 'reached-by-op'), reading = rows.filter(r => r.status === 'reads'), openOnly = rows.filter(r => r.status === 'open-only'), untouched = rows.filter(r => r.status === 'untouched');
+  L.push(`> Which of the world's ${rows.length} subsystems a mortal's own work reaches, and who reads what it leaves. A subsystem is reached in **three ways**, and the status word says the closest one: it owns the kind a live cell acts on, or it is the home of the operation that cell runs, or it reads what someone else's cell left behind. **${touched.length} LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **${byOp.length} REACHED-BY-OP** (owns no kind, but a live cell's operation lives in its modules), **${reading.length} READS** (reads what a live cell leaves), **${openOnly.length} OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **${untouched.length} UNTOUCHED** (nothing reaches it at all — each with its by-design reason below). Every status is derived, never authored: the owned-kind join reads \`WORLD_OBJECT_KINDS[].owningSystem\`, the op join resolves each live cell's operation to its home module through the registry's own imports and \`scripts/subsystems-registry.ts\`, and the reader join reads \`SUBSYSTEM_READERS\`. Counting only the first join is what made five reached subsystems read UNTOUCHED (THR-1431).`);
   L.push('');
   L.push(`| Subsystem | Kinds it owns | ${UNDERTAKING_VERB_VARIANTS.map(v => UNDERTAKING_VERB_WORDS[v]).join(' | ')} | Status | Read by |`);
   L.push(`|---|---|${UNDERTAKING_VERB_VARIANTS.map(() => '---').join('|')}|---|---|`);
@@ -208,6 +466,16 @@ function renderMarkdown(cells: Cell[], rows: readonly SubsystemRow[]): string {
     if (r.readers.length === 0) L.push('  - **Nothing reads this.** Every consequence its live cells write vanishes — a lever with no consequence.');
     for (const x of r.readers) L.push(`  - _${x.subsystem}_ — ${x.sites}`);
   }
+  L.push('', '### Reached without owning a kind', '');
+  if (byOp.length === 0 && reading.length === 0) L.push('_None — every subsystem a mortal\'s work reaches owns the kind it acts on._');
+  for (const r of [...byOp, ...reading]) {
+    L.push(`- **${r.subsystem}** — ${SUBSYSTEM_STATUS_WORD[r.status]}`);
+    for (const x of r.reachedByOps) L.push(`  - _the op_ \`${x.op}\` (${x.cell}) — ${x.modules.map(m => `\`${m}\``).join(', ')}`);
+    for (const x of r.readsFrom) L.push(`  - _reads_ **${x.from}** — ${x.sites}`);
+  }
+  L.push('', '### Untouched by design', '', '_Why a mortal\'s own work never moves these. Decided on THR-1401; the generator fails on an UNTOUCHED subsystem with no reason here, and on a reason for a subsystem something now reaches._', '');
+  if (untouched.length === 0) L.push('_None — a mortal\'s work reaches every subsystem._');
+  for (const r of untouched) L.push(`- **${r.subsystem}** — ${r.byDesign ?? '_(no reason — the generator has already failed on this)_'}`);
   L.push('', '## Standing riders', '', '_Rules that bind every cell rather than one._', '');
   for (const r of STANDING_RIDERS) L.push(`- ${r}`);
   L.push('', '## Live cells', '');
@@ -239,7 +507,7 @@ function renderHtml(cells: Cell[], subsystemRows: readonly SubsystemRow[]): stri
   const owing = live.filter(c => c.owes);
   const read = live.filter(c => c.readBy);
   const kindsWithCell = new Set(cells.filter(c => c.status !== 'no').map(c => c.kind)).size;
-  const touched = subsystemRows.filter(r => r.status === 'live-touched'), openOnly = subsystemRows.filter(r => r.status === 'open-only'), untouched = subsystemRows.filter(r => r.status === 'untouched');
+  const touched = subsystemRows.filter(r => r.status === 'live-touched'), byOp = subsystemRows.filter(r => r.status === 'reached-by-op'), reading = subsystemRows.filter(r => r.status === 'reads'), openOnly = subsystemRows.filter(r => r.status === 'open-only'), untouched = subsystemRows.filter(r => r.status === 'untouched');
   const head = UNDERTAKING_VERB_VARIANTS.map(v => `<th class="verb">${esc(UNDERTAKING_VERB_WORDS[v])}<span class="grp">${esc(v.split(':')[0].toUpperCase())}</span></th>`).join('');
   const rows = WORLD_OBJECT_KINDS.map(kind => {
     const tds = UNDERTAKING_VERB_VARIANTS.map(v => {
@@ -302,7 +570,7 @@ function renderHtml(cells: Cell[], subsystemRows: readonly SubsystemRow[]): stri
   .sv { display:block; padding: 6px 4px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
   .sv.live { background: var(--live-soft); color: var(--live); font-weight:bold; } .sv.wanted { background: var(--wanted-soft); color: var(--wanted); } .sv.later { background: var(--later-soft); color: var(--later); } .sv.open { background: var(--open-soft); color: var(--open); } .sv.no { color: var(--muted); }
   .sstat { display:inline-block; padding: 3px 8px; border-radius: 3px; font-size:10px; letter-spacing:.06em; white-space:nowrap; }
-  .sstat.live-touched { background: var(--live-soft); color: var(--live); } .sstat.open-only { background: var(--open-soft); color: var(--open); } .sstat.untouched { color: var(--muted); border:1px solid var(--line); }
+  .sstat.live-touched { background: var(--live-soft); color: var(--live); } .sstat.reached-by-op { background: var(--live-soft); color: var(--live); } .sstat.reads { background: var(--open-soft); color: var(--open); } .sstat.open-only { background: var(--open-soft); color: var(--open); } .sstat.untouched { color: var(--muted); border:1px solid var(--line); }
   .unread { color: var(--open); }
 </style>
 </head>
@@ -318,8 +586,8 @@ ${rows}
 </tbody></table></div>
 <div id="detail"><h3>Pick a cell</h3><p>Click any cell to read what it does, which operation it rides or needs, which old templates it absorbs, and what it still owes.</p></div>
 <h2>Subsystems × verbs</h2>
-<p class="lede">The same cells joined through each kind's <code>owningSystem</code> — which of the world's ${subsystemRows.length} subsystems a mortal's own work reaches, and who reads what it leaves behind. Status is derived from the cells, never authored: <b>live-touched</b> means a live cell rides an op on a kind the subsystem owns, <b>open-only</b> that only decided-but-unbuilt or undecided cells reach it, <b>untouched</b> that no cell reaches it at all. Whether an untouched subsystem is untouched <i>by design</i> or is a gap is a design question and is deliberately not answered here.</p>
-<div class="stats"><div class="stat"><b>${touched.length}</b><span>live-touched</span></div><div class="stat"><b>${openOnly.length}</b><span>open-only</span></div><div class="stat"><b>${untouched.length}</b><span>untouched</span></div></div>
+<p class="lede">Which of the world's ${subsystemRows.length} subsystems a mortal's own work reaches, and who reads what it leaves behind. A subsystem is reached in <b>three ways</b>, and the status word says the closest one: <b>live-touched</b> means a live cell rides an op on a kind the subsystem owns; <b>reached-by-op</b> that it owns no kind but a live cell's operation lives in its modules; <b>reads</b> that it reads what another subsystem's live cell leaves; <b>open-only</b> that only decided-but-unbuilt or undecided cells reach it; <b>untouched</b> that nothing reaches it at all, each with its by-design reason below. Every status is derived, never authored — counting only the owned-kind join is what made five reached subsystems read untouched (THR-1431).</p>
+<div class="stats"><div class="stat"><b>${touched.length}</b><span>live-touched</span></div><div class="stat"><b>${byOp.length}</b><span>reached-by-op</span></div><div class="stat"><b>${reading.length}</b><span>reads</span></div><div class="stat"><b>${openOnly.length}</b><span>open-only</span></div><div class="stat"><b>${untouched.length}</b><span>untouched</span></div></div>
 <div class="wrap"><table><thead><tr><th>Subsystem</th><th>Kinds it owns</th>${head}<th>Status</th><th>Read by</th></tr></thead><tbody>
 ${subsystemRows.map(r => {
     const tds = UNDERTAKING_VERB_VARIANTS.map(v => {
@@ -332,6 +600,11 @@ ${subsystemRows.map(r => {
 </tbody></table></div>
 <h3>What the live cells leave, and who picks it up</h3>
 <ul>${touched.map(r => `<li><b>${esc(r.subsystem)}</b>${r.readers.length === 0 ? '<ul><li><b class="unread">Nothing reads this.</b> Every consequence its live cells write vanishes — a lever with no consequence.</li></ul>' : `<ul>${r.readers.map(x => `<li><i>${esc(x.subsystem)}</i> — ${codeify(esc(x.sites))}</li>`).join('')}</ul>`}</li>`).join('\n')}</ul>
+<h3>Reached without owning a kind</h3>
+${byOp.length === 0 && reading.length === 0 ? '<p><small>None — every subsystem a mortal\'s work reaches owns the kind it acts on.</small></p>' : `<ul>${[...byOp, ...reading].map(r => `<li><b>${esc(r.subsystem)}</b> <span class="sstat ${r.status}">${SUBSYSTEM_STATUS_WORD[r.status]}</span><ul>${r.reachedByOps.map(x => `<li><i>the op</i> <code>${esc(x.op)}</code> (${esc(x.cell)}) — ${x.modules.map(m => `<code>${esc(m)}</code>`).join(', ')}</li>`).join('')}${r.readsFrom.map(x => `<li><i>reads</i> <b>${esc(x.from)}</b> — ${codeify(esc(x.sites))}</li>`).join('')}</ul></li>`).join('\n')}</ul>`}
+<h3>Untouched by design</h3>
+<p class="lede">Why a mortal's own work never moves these. Decided on THR-1401; the generator fails on an untouched subsystem with no reason here, and on a reason for a subsystem something now reaches.</p>
+${untouched.length === 0 ? '<p><small>None — a mortal\'s work reaches every subsystem.</small></p>' : `<ul>${untouched.map(r => `<li><b>${esc(r.subsystem)}</b> — ${codeify(esc(r.byDesign ?? '(no reason — the generator has already failed on this)'))}</li>`).join('\n')}</ul>`}
 <h2>Standing riders</h2>
 <ul>${STANDING_RIDERS.map(r => `<li>${esc(r)}</li>`).join('\n')}</ul>
 <h2>Wanted cells — decided yes, not yet built</h2>
@@ -365,8 +638,9 @@ function main(): void {
   const check = process.argv.includes('--check');
   const repoRoot = process.cwd();
   const { cells, problems } = buildGrid();
-  const { rows, problems: viewProblems } = buildSubsystemView(cells);
-  problems.push(...viewProblems);
+  const { reaches, problems: opProblems } = buildOpReach(repoRoot, cells);
+  const { rows, problems: viewProblems } = buildSubsystemView(cells, reaches);
+  problems.push(...opProblems, ...viewProblems);
   const md = renderMarkdown(cells, rows);
   const html = renderHtml(cells, rows);
   const mdPath = path.join(repoRoot, OUTPUT_MD_REL);
@@ -391,4 +665,9 @@ function main(): void {
   if (problems.length) process.exit(1);
 }
 
-main();
+// Run only when this module IS the entry — the test imports it for `buildGrid`,
+// `buildOpReach` and `buildSubsystemView`, and a bare `main()` would regenerate the map
+// (and `process.exit`) on import. Under the npm script both sides resolve to the same
+// bundled `.cache/*.mjs`, so the guard holds there too.
+const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
+if (invokedPath && invokedPath === path.resolve(fileURLToPath(import.meta.url))) main();

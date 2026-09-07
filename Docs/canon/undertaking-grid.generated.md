@@ -45,36 +45,36 @@
 
 ## Subsystems × verbs
 
-> The same cells joined through `WORLD_OBJECT_KINDS[].owningSystem` — which of the world's 27 subsystems a mortal's own work reaches, and who reads what it leaves. **9 LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **1 OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **17 UNTOUCHED** (no cell reaches it at all). Status is derived from the cells, never authored. Whether an untouched subsystem is untouched *by design* or is a gap is a design question and is deliberately **not** answered here.
+> Which of the world's 27 subsystems a mortal's own work reaches, and who reads what it leaves. A subsystem is reached in **three ways**, and the status word says the closest one: it owns the kind a live cell acts on, or it is the home of the operation that cell runs, or it reads what someone else's cell left behind. **9 LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **3 REACHED-BY-OP** (owns no kind, but a live cell's operation lives in its modules), **8 READS** (reads what a live cell leaves), **1 OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **6 UNTOUCHED** (nothing reaches it at all — each with its by-design reason below). Every status is derived, never authored: the owned-kind join reads `WORLD_OBJECT_KINDS[].owningSystem`, the op join resolves each live cell's operation to its home module through the registry's own imports and `scripts/subsystems-registry.ts`, and the reader join reads `SUBSYSTEM_READERS`. Counting only the first join is what made five reached subsystems read UNTOUCHED (THR-1431).
 
 | Subsystem | Kinds it owns | Create | Raise | Lower | Use | Claim | Seize | Destroy | Observe | Status | Read by |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | **War, Armies & Battles** | `army`, `battle` | 🟢 live | 🟢 live | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🔵 wanted | LIVE-TOUCHED | War, Armies & Battles · Companies & Group Travel · Strategic Projects & Control |
 | **Factions & Succession** | `faction` | 🟢 live | · | · | · | 🔵 wanted | 🔵 wanted | 🟢 live | 🟢 live | LIVE-TOUCHED | Factions & Succession |
 | **Rival Gods & Schemes** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Doom Clock & Journey** | `journey` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Mandate** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Doom Clock & Journey** | `journey` | · | · | · | · | · | · | · | · | READS | — |
+| **Mandate** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Essence & Divine Economy** | `divine_receipt` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Encounters & Dilemmas** | `action_template`, `encounter_template` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Encounters & Dilemmas** | `action_template`, `encounter_template` | · | · | · | · | · | · | · | · | READS | — |
 | **Culture** | `culture` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Personality & Emergent Traits** | `trait` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Personality & Emergent Traits** | `trait` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
 | **Mortal Economy & Prosperity** | `route` | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | · | 🟢 live | LIVE-TOUCHED | Mortal Economy & Prosperity · War, Armies & Battles · Attention, Chronicle & Narrative |
-| **Ambitions & Undertakings** | `ambition`, `undertaking` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Attachments, Items & Possessions** | `companion`, `item`, `legendary_artifact`, `holding`, `power` | 🟢 live | ⏳ later | ⏳ later | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | ⏳ later | LIVE-TOUCHED | Attachments, Items & Possessions · Encounters & Dilemmas · Effects & Conditions · Factions & Succession |
-| **Ruins, Clues & Delves** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Ambitions & Undertakings** | `ambition`, `undertaking` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
+| **Attachments, Items & Possessions** | `companion`, `item`, `legendary_artifact`, `holding`, `power` | 🟢 live | ⏳ later | ⏳ later | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | ⏳ later | LIVE-TOUCHED | Attachments, Items & Possessions · Spheres & Quintessence · Encounters & Dilemmas · Effects & Conditions · Factions & Succession |
+| **Ruins, Clues & Delves** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Stealth, Detection & Hidden Marks** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Attention, Chronicle & Narrative** | `event` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Attention, Chronicle & Narrative** | `event` | · | · | · | · | · | · | · | · | READS | — |
 | **Omens & Atmospheric Pressure** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Strategic Projects & Control** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Strategic Projects & Control** | _none_ | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
 | **Ascendant Beats & Progression** | `ascendant`, `god` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
 | **Companies & Group Travel** | `company`, `network` | 🟢 live | 🟢 live | 🔵 wanted | 🔵 wanted | 🔵 wanted | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Companies & Group Travel · Encounters & Dilemmas · Strategic Projects & Control |
-| **Movement & Colocation** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Movement & Colocation** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Reputation & Influence** | `standing` | · | 🟢 live | 🟢 live | 🔵 wanted | · | · | 🟢 live | · | LIVE-TOUCHED | Encounters & Dilemmas · Ambitions & Undertakings · Secrets & Favors · Mortal Economy & Prosperity · Attention, Chronicle & Narrative |
 | **Secrets & Favors** | `agreement` | 🟢 live | · | · | 🟢 live | · | 🔵 wanted | 🟢 live | · | LIVE-TOUCHED | Secrets & Favors · Encounters & Dilemmas · Intelligence, Knowledge & Familiarity · Ruins, Clues & Delves · Attention, Chronicle & Narrative |
 | **Effects & Conditions** | `condition` | 🟢 live | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Effects & Conditions · Encounters & Dilemmas |
 | **Agent Lifecycle** | `mortal` | · | · | · | · | · | · | 🔵 wanted | · | OPEN-ONLY | — |
-| **Intelligence, Knowledge & Familiarity** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
-| **Spheres & Quintessence** | `sphere`, `reach`, `cosmology_node` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Intelligence, Knowledge & Familiarity** | _none_ | · | · | · | · | · | · | · | · | READS | — |
+| **Spheres & Quintessence** | `sphere`, `reach`, `cosmology_node` | · | · | · | · | · | · | · | · | READS | — |
 | **World Generation, Terrain & Places** | `area`, `hex`, `location`, `place`, `sublocation_node` | 🟢 live | 🟢 live | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | 🟢 live | 🟢 live | LIVE-TOUCHED | Mortal Economy & Prosperity · Strategic Projects & Control · Movement & Colocation · War, Armies & Battles · Factions & Succession · Mandate · Doom Clock & Journey · Attachments, Items & Possessions · Encounters & Dilemmas |
 
 ### What the live cells leave, and who picks it up
@@ -91,6 +91,7 @@
   - _Attention, Chronicle & Narrative_ — `tradeRouteMarkers.ts`, `proseResolvers.ts:912-924` (the marker and the sentence)
 - **Attachments, Items & Possessions**
   - _Attachments, Items & Possessions_ — `attachmentSlotResolver.ts:124-241` (`possesses`, `acquiredTick`), `orchestrator.ts:145 expireCompanions` (phase 6.625b)
+  - _Spheres & Quintessence_ — `phaseQuintessence.ts` consumes the `QuintessenceEvent` that use × Power's soul-price leaves on `pendingQuintessenceEvents`, where the threshold gates already bite (THR-1428 R4) — a mortal casting at their own cost moves the cosmology's meters. Recorded here by THR-1431: the cell's `readBy` said so in prose, but the structured reader was missing, which is why the subsystem read UNTOUCHED.
   - _Encounters & Dilemmas_ — `domainCapability.ts` (item and companion contributions), `resolutionModifiers.ts` (`owns`), `graphConditions.ts`
   - _Effects & Conditions_ — `effects/effectPredicates.ts` — the `owns` predicate, and the `condition_inflict` trait use × Power mints
   - _Factions & Succession_ — `notableAgendas.ts:446` (`owns`)
@@ -123,6 +124,75 @@
   - _Doom Clock & Journey_ — `journeyEngine.ts:142` counts the First's `controls` edges as `locationsControlled`
   - _Attachments, Items & Possessions_ — `holdings.ts` — the `owns` edge and holding face that claim / seize / raze × Place move
   - _Encounters & Dilemmas_ — `encounterScoring.ts` (`prosperity`)
+
+### Reached without owning a kind
+
+- **Personality & Emergent Traits** — REACHED-BY-OP
+  - _the op_ `cure_condition` (Destroy × condition) — `traits.ts`
+- **Ambitions & Undertakings** — REACHED-BY-OP
+  - _the op_ `seal_power` (Destroy × power) — `undertakingMotive.ts`
+  - _reads_ **Reputation & Influence** — `grievance/grudgeEdge.ts`, `grievance/covetRivalry.ts`, `undertakingMotive.ts` — the `hostile_to` edge destroy × Standing writes is a motive gate on later cells
+- **Strategic Projects & Control** — REACHED-BY-OP
+  - _the op_ `record_intelligence` (Observe × area) — `strategicGraphOps.ts`, `sublocationShape.ts`
+  - _the op_ `create_location` (Create × location) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
+  - _the op_ `modify_location_property (+)` (Raise × location) — `strategicGraphOps.ts`
+  - _the op_ `modify_location_property (−)` (Lower × location) — `strategicGraphOps.ts`
+  - _the op_ `claim_control (mode)` (Claim × location) — `strategicGraphOps.ts`
+  - _the op_ `record_intelligence` (Observe × location) — `strategicGraphOps.ts`, `sublocationShape.ts`
+  - _the op_ `create_sublocation` (Create × place) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
+  - _the op_ `record_intelligence` (Observe × place) — `strategicGraphOps.ts`, `sublocationShape.ts`
+  - _the op_ `create_trade_route` (Create × route) — `strategicGraphOps.ts`, `tradeRouteOps.ts`
+  - _the op_ `blockade_route` (Lower × route) — `strategicGraphOps.ts`
+  - _the op_ `record_intelligence` (Observe × route) — `strategicGraphOps.ts`, `sublocationShape.ts`
+  - _the op_ `found_faction` (Create × faction) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
+  - _the op_ `record_intelligence` (Observe × faction) — `strategicGraphOps.ts`, `sublocationShape.ts`
+  - _the op_ `raise_warband` (Create × company) — `strategicGraphOps.ts`
+  - _the op_ `reinforce_group` (Raise × company) — `strategicGraphOps.ts`
+  - _the op_ `disband_group` (Destroy × company) — `strategicGraphOps.ts`
+  - _the op_ `reinforce_group` (Raise × army) — `strategicGraphOps.ts`
+  - _the op_ `disband_group` (Destroy × army) — `strategicGraphOps.ts`
+  - _the op_ `disband_group` (Destroy × network) — `strategicGraphOps.ts`
+  - _the op_ `mint_masterwork` (Create × item) — `strategicGraphOps.ts`
+  - _the op_ `mint_leverage_mark` (Create × agreement) — `strategicGraphOps.ts`
+  - _the op_ `press_the_mark` (Use × agreement) — `strategicGraphOps.ts`
+  - _the op_ `create_relation_edge hostile_to` (Destroy × standing) — `reputation.ts`, `strategicGraphOps.ts`
+  - _reads_ **Companies & Group Travel** — `strategicActionCandidates.ts`
+  - _reads_ **War, Armies & Battles** — `strategicActionCandidates.ts`
+  - _reads_ **World Generation, Terrain & Places** — `phaseStrategicProjects.ts` (degradation, neglect), `strategicTelemetry.ts`, `strategicPresentation.ts`, `HexMapV2/scene/StrategicMarkerMesh.ts` — the `controls` edge claim × Location writes
+- **Doom Clock & Journey** — READS
+  - _reads_ **World Generation, Terrain & Places** — `journeyEngine.ts:142` counts the First's `controls` edges as `locationsControlled`
+- **Mandate** — READS
+  - _reads_ **World Generation, Terrain & Places** — `phaseMandate.ts:34` lists `ruins` among the mandate-relevant subtypes
+- **Encounters & Dilemmas** — READS
+  - _reads_ **Attachments, Items & Possessions** — `domainCapability.ts` (item and companion contributions), `resolutionModifiers.ts` (`owns`), `graphConditions.ts`
+  - _reads_ **Companies & Group Travel** — `groups/bandOpposition.ts`, `encounterSeeding.ts` (`groupStatus`)
+  - _reads_ **Effects & Conditions** — `effects/effectPredicates.ts`, `graphConditions.ts` — a cured condition changes what the mortal is eligible for
+  - _reads_ **Reputation & Influence** — `socialLeverage.ts` (`reputationLeverageTerm`), `encounterAftermath.ts`, `unifiedActionResolution.ts`
+  - _reads_ **Secrets & Favors** — `socialLeverage.ts` — a mark is leverage in the encounter
+  - _reads_ **World Generation, Terrain & Places** — `encounterScoring.ts` (`prosperity`)
+- **Ruins, Clues & Delves** — READS
+  - _reads_ **Secrets & Favors** — `ruins/perceiveRelay.ts:381`
+- **Attention, Chronicle & Narrative** — READS
+  - _reads_ **Mortal Economy & Prosperity** — `tradeRouteMarkers.ts`, `proseResolvers.ts:912-924` (the marker and the sentence)
+  - _reads_ **Reputation & Influence** — `LocationProfileModal.tsx`, `OverviewTab.tsx` — standing on the sheet
+  - _reads_ **Secrets & Favors** — `threadDigest.ts`, `agentDetail.ts`
+- **Movement & Colocation** — READS
+  - _reads_ **World Generation, Terrain & Places** — `sublocation.ts:592-636 checkDissolutions` (a `permanent` built Place survives), `socialEncounterGeneration.ts` (`sublocationTypeId`), `distanceMatrix.ts` (structural rebuild)
+- **Intelligence, Knowledge & Familiarity** — READS
+  - _reads_ **Secrets & Favors** — `intelligence.ts` (`knows_secret_of`)
+- **Spheres & Quintessence** — READS
+  - _reads_ **Attachments, Items & Possessions** — `phaseQuintessence.ts` consumes the `QuintessenceEvent` that use × Power's soul-price leaves on `pendingQuintessenceEvents`, where the threshold gates already bite (THR-1428 R4) — a mortal casting at their own cost moves the cosmology's meters. Recorded here by THR-1431: the cell's `readBy` said so in prose, but the structured reader was missing, which is why the subsystem read UNTOUCHED.
+
+### Untouched by design
+
+_Why a mortal's own work never moves these. Decided on THR-1401; the generator fails on an UNTOUCHED subsystem with no reason here, and on a reason for a subsystem something now reaches._
+
+- **Rival Gods & Schemes** — The god's peers, not the world's people. A rival's scheme is run by a rival ascendant against the player and advances on its own phase; a mortal has no verb that reaches it, and giving one would let a farmer's season interrupt a god's plot. Mortals feel a scheme as the encounters and pressures it produces — that is the whole of their contact with it.
+- **Essence & Divine Economy** — Essence is the god's currency and the divine receipt is the god's ledger. Mortals neither earn nor spend it — a mortal who could move the essence economy by working would be a second god, which is the one thing the ascendant fantasy cannot share.
+- **Culture** — Culture is a property of regions and peoples that worldgen seeds and long drift moves, on a timescale no single undertaking reaches. One mortal's work changes what a culture *holds* — its prosperity, its holdings, its factions — never the culture itself. A verb that let one person edit a people would make the slowest layer in the game the most volatile.
+- **Stealth, Detection & Hidden Marks** — These are the god's fingerprints: the layer exists to track how visible the *player's* interventions are, and detection pressure is the cost of a god acting through a mortal. Decided on THR-1397 (and restated by THR-1430): mortal surveillance never feeds it — a spy watching a rival is the Intelligence layer's business, and routing it here would charge the god for work they did not do.
+- **Omens & Atmospheric Pressure** — **A gap, not a design choice** — recorded here because the list is held to totality and every UNTOUCHED row must say why. The foreshadowing layer reads world events but not undertaking outcomes, so a raised warhost or a ruined town portends nothing. THR-1432 files the reader; when it lands this entry goes stale and the generator will say so.
+- **Ascendant Beats & Progression** — The god's own arc — remembrance, the beats, the journey the player climbs. A mortal's undertaking cannot advance it, because the beats measure what the *player* has done; mortals supply the occasions a beat fires on, never the progression itself.
 
 ## Standing riders
 

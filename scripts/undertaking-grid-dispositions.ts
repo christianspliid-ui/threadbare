@@ -213,6 +213,56 @@ export interface SubsystemReader {
  * untouched-by-design / gap split (audit § 3) is deliberately absent — that verdict is
  * THR-1401's question for Christian, not this generator's to render.
  */
+/** Why a mortal's own work never moves a subsystem (THR-1401, filed by THR-1431). */
+export interface UntouchedByDesign {
+  readonly subsystem: string;
+  readonly reason: string;
+}
+
+/**
+ * The subsystems a mortal's own work is **not meant** to reach, each with its reason
+ * (decided by Christian on THR-1401, 2026-09-07).
+ *
+ * Held to totality in both directions by `generate-undertaking-grid`, the same
+ * discipline the cell dispositions carry: an UNTOUCHED subsystem missing from this list
+ * fails by name, and an entry for a subsystem the three-way join now reaches fails as
+ * stale. The second half is the one that matters — without it a reason would quietly
+ * outlive the gap it explains, and the map would keep asserting "by design" about
+ * something a cell started moving three months ago.
+ *
+ * A subsystem is UNTOUCHED only when none of the three joins reaches it: it owns no
+ * kind a live cell acts on, no live cell's operation lives in its modules, and it reads
+ * nothing a live cell leaves. Most of these are the god's own half of the game — the
+ * divine economy, the mandate, the doom clock — which mortals move only by being acted
+ * *upon*, never by their own undertakings.
+ */
+export const UNTOUCHED_BY_DESIGN: readonly UntouchedByDesign[] = [
+  {
+    subsystem: 'Rival Gods & Schemes',
+    reason: 'The god\'s peers, not the world\'s people. A rival\'s scheme is run by a rival ascendant against the player and advances on its own phase; a mortal has no verb that reaches it, and giving one would let a farmer\'s season interrupt a god\'s plot. Mortals feel a scheme as the encounters and pressures it produces — that is the whole of their contact with it.',
+  },
+  {
+    subsystem: 'Essence & Divine Economy',
+    reason: 'Essence is the god\'s currency and the divine receipt is the god\'s ledger. Mortals neither earn nor spend it — a mortal who could move the essence economy by working would be a second god, which is the one thing the ascendant fantasy cannot share.',
+  },
+  {
+    subsystem: 'Culture',
+    reason: 'Culture is a property of regions and peoples that worldgen seeds and long drift moves, on a timescale no single undertaking reaches. One mortal\'s work changes what a culture *holds* — its prosperity, its holdings, its factions — never the culture itself. A verb that let one person edit a people would make the slowest layer in the game the most volatile.',
+  },
+  {
+    subsystem: 'Stealth, Detection & Hidden Marks',
+    reason: 'These are the god\'s fingerprints: the layer exists to track how visible the *player\'s* interventions are, and detection pressure is the cost of a god acting through a mortal. Decided on THR-1397 (and restated by THR-1430): mortal surveillance never feeds it — a spy watching a rival is the Intelligence layer\'s business, and routing it here would charge the god for work they did not do.',
+  },
+  {
+    subsystem: 'Omens & Atmospheric Pressure',
+    reason: '**A gap, not a design choice** — recorded here because the list is held to totality and every UNTOUCHED row must say why. The foreshadowing layer reads world events but not undertaking outcomes, so a raised warhost or a ruined town portends nothing. THR-1432 files the reader; when it lands this entry goes stale and the generator will say so.',
+  },
+  {
+    subsystem: 'Ascendant Beats & Progression',
+    reason: 'The god\'s own arc — remembrance, the beats, the journey the player climbs. A mortal\'s undertaking cannot advance it, because the beats measure what the *player* has done; mortals supply the occasions a beat fires on, never the progression itself.',
+  },
+];
+
 export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader[]>> = {
   'World Generation, Terrain & Places': [
     { subsystem: 'Mortal Economy & Prosperity', sites: '`phaseProsperity.ts`, `phaseSettlementPromotion.ts`, `phases/resourceStockTiers.ts`, `phaseUnrest.ts` — the prosperity a founded, raised, lowered or ruined Location carries' },
@@ -245,6 +295,7 @@ export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader
   ],
   'Attachments, Items & Possessions': [
     { subsystem: 'Attachments, Items & Possessions', sites: '`attachmentSlotResolver.ts:124-241` (`possesses`, `acquiredTick`), `orchestrator.ts:145 expireCompanions` (phase 6.625b)' },
+    { subsystem: 'Spheres & Quintessence', sites: '`phaseQuintessence.ts` consumes the `QuintessenceEvent` that use × Power\'s soul-price leaves on `pendingQuintessenceEvents`, where the threshold gates already bite (THR-1428 R4) — a mortal casting at their own cost moves the cosmology\'s meters. Recorded here by THR-1431: the cell\'s `readBy` said so in prose, but the structured reader was missing, which is why the subsystem read UNTOUCHED.' },
     { subsystem: 'Encounters & Dilemmas', sites: '`domainCapability.ts` (item and companion contributions), `resolutionModifiers.ts` (`owns`), `graphConditions.ts`' },
     { subsystem: 'Effects & Conditions', sites: '`effects/effectPredicates.ts` — the `owns` predicate, and the `condition_inflict` trait use × Power mints' },
     { subsystem: 'Factions & Succession', sites: '`notableAgendas.ts:446` (`owns`)' },
