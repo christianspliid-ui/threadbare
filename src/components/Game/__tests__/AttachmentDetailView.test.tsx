@@ -82,7 +82,12 @@ describe('AttachmentDetailView', () => {
 
   it('renders duration section for transient conditions', () => {
     render(<AttachmentDetailView attachment={transientCondition} onBack={vi.fn()} />);
-    expect(screen.getByText('8 / 20 ticks')).toBeTruthy();
+    // THR-1423: was `8 / 20 ticks` — two raw magnitudes (Law 13) in an engine unit named
+    // nowhere player-facing (Law 14). The `x / y` pair is the quantity the row's ProgressBar
+    // already draws, so the reading keeps only the remaining term.
+    const duration = screen.getByText(/remaining$/);
+    expect(duration.textContent).not.toMatch(/\d/);
+    expect(duration.textContent).not.toMatch(/tick/i);
   });
 
   it('does not render duration section for permanent items', () => {
