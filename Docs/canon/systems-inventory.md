@@ -42,7 +42,7 @@ names like `TB-073`) a premise might use.
 | **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction | `encounter`, `encounters`, `dilemma` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits` | `6.626` |
-| **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity` | `6.62`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
+| **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo, holding, freehold, wealth, tithe, toll | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity`, `holding` | `6.62`, `6.628`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
 | **Ambitions & Undertakings** | 🟢 ACTIVE | ambition, undertaking, initiative, goal, mentorship, apprentice | `ambition`, `undertaking`, `mentorship` | — |
 | **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement | `attachment`, `seed`, `holdings`, `companions`, `reward` | `2a.85` |
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
@@ -70,7 +70,7 @@ names like `TB-073`) a premise might use.
 - **Encounters & Dilemmas** — The core narrative engine — scoring, eligibility, resolution, aftermath reactions, chapter archive.
 - **Culture** — Culture generation, gravity, tension, mores, phonetic naming.
 - **Personality & Emergent Traits** — Layered: worldgen baseline → core → emergent traits (THR-527/542/561).
-- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes. M3: Dynamic Economy.
+- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route's toll, a freehold's keep, a controlled Location's tithe). M3: Dynamic Economy.
 - **Ambitions & Undertakings** — Agent-level drives and the multi-tick undertakings that serve them; mentorship rides the undertaking checkpoint pass (THR-1292 §3 retired the separate initiative pipeline).
 - **Attachments, Items & Possessions** — Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.
@@ -165,6 +165,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.71` | Intelligence Reliability Decay | `THR-137` | orchestrator |
 | `6.715` | Divine Proximity Importance | `THR-25` | orchestrator |
 | `6.62` | Trade Route Decay | — | orchestrator |
+| `6.628` | Holding income | `THR-1428` | orchestrator |
 | `6.625` | Condition Decay | — | orchestrator |
 | `6.625b` | Companion expiry | `THR-1096` | orchestrator |
 | `6.626` | Mastery Trait Decay | — | orchestrator |
@@ -300,6 +301,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-188` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
+| `holding` (1) | `holdingIncome.ts` | `THR-1428`, `THR-822` |
 | `holdings` (1) | `holdings.ts` | `THR-1297` |
 | `idle` (1) | `idleBehavior.ts` | — |
 | `influence` (1) | `influence.ts` | — |
@@ -401,4 +403,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 27 registered subsystems (2 dormant) · 99 tick phases · 179 engine domains · 535 modules._
+_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 180 engine domains · 536 modules._

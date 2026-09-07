@@ -3513,7 +3513,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
   prevEventCount = s.tickEvents.length;
 
-  // Phase 6.63: Holding income (THR-1428 R3). What a mortal holds yields, once a day.
+  // Phase 6.628: Holding income (THR-1428 R3). What a mortal holds yields, once a day.
   // Placed here on purpose: after the decay phase has settled which routes are still
   // alive (so a dead route is not tolled) and before the prosperity pulse that reads
   // wealth tiers, so the day's takings are what `phaseEconomicTraits` sees.
