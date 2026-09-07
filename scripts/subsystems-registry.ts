@@ -310,3 +310,38 @@ export const SUBSYSTEM_DOMAINS: ReadonlySet<string> = new Set(SUBSYSTEMS.flatMap
  * silently skipped, so the reverse pin still fails on a genuinely unhomed writer.
  */
 export const CROSS_CUTTING_DOMAINS: ReadonlySet<string> = new Set(['game', 'phase', 'unified']);
+
+/**
+ * Which module-domain token a module under `src/engine/` belongs to (THR-1431).
+ *
+ * Moved here from `generate-systems-inventory.ts` so the two generators that need it
+ * share one authority rather than keeping divergent copies — the drift this module was
+ * extracted to stop. A module in a sub-directory takes the directory name
+ * (`groups/phaseGroups.ts` → `groups`); a top-level module takes the leading lower-case
+ * run of its basename (`strategicGraphOps.ts` → `strategic`, `phaseDoom.ts` → `phase`).
+ *
+ * @param relFromEngine module path relative to `src/engine/`, either separator.
+ */
+export function domainOf(relFromEngine: string): string {
+  const parts = relFromEngine.split(/[\/]/);
+  if (parts.length > 1) return parts[0].toLowerCase();
+  const base = parts[0].replace(/\.ts$/, '');
+  return (base.match(/^[a-z0-9]+/)?.[0] ?? base).toLowerCase();
+}
+
+/**
+ * The subsystem a module under `src/engine/` implements, or `null` when it belongs to
+ * none (THR-1431).
+ *
+ * `null` has two distinct causes and the caller is expected to treat them the same way
+ * — as "this module does not tell you which subsystem was reached":
+ *   - a **cross-cutting** domain (`CROSS_CUTTING_DOMAINS`): `phase`, `game`, `unified`
+ *     collapse a dozen subsystems into one token, so claiming one would attribute all
+ *     of its siblings to that row;
+ *   - a domain no row claims at all.
+ */
+export function subsystemForModule(relFromEngine: string): string | null {
+  const domain = domainOf(relFromEngine);
+  if (CROSS_CUTTING_DOMAINS.has(domain)) return null;
+  return SUBSYSTEMS.find((s) => s.domains.includes(domain))?.name ?? null;
+}

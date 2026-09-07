@@ -54,7 +54,7 @@ import { generateArchetypes } from '../src/engine/ascendant';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
 import { ENGINE_PHASES } from '../src/engine/phases';
-import { SUBSYSTEMS, type Subsystem } from './subsystems-registry.ts';
+import { SUBSYSTEMS, domainOf, type Subsystem } from './subsystems-registry.ts';
 
 // ─── Tunable constants (NFP #1) ───────────────────────────────────────────────
 
@@ -138,13 +138,6 @@ function registryPhaseRows(): PhaseRow[] {
 
 /** Domain for a module: its first sub-directory under src/engine, else the leading
  *  lower-case token of a top-level file's basename (`armyMovement` → `army`). */
-function domainOf(relFromEngine: string): string {
-  const parts = relFromEngine.split(/[\\/]/);
-  if (parts.length > 1) return parts[0].toLowerCase();
-  const base = parts[0].replace(/\.ts$/, '');
-  return (base.match(/^[a-z0-9]+/)?.[0] ?? base).toLowerCase();
-}
-
 function isSourceModule(name: string): boolean {
   return name.endsWith('.ts') && !name.endsWith('.d.ts') && !name.endsWith('.test.ts') && !name.endsWith('.spec.ts');
 }
