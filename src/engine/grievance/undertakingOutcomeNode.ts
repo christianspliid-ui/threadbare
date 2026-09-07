@@ -29,6 +29,15 @@ import type { TraceEntry } from '../../types/trace';
 /** Id prefix for undertaking outcome event nodes — distinct from `evt_` (encounters). */
 export const UNDERTAKING_EVENT_NODE_ID_PREFIX = 'evt_und_';
 
+/**
+ * Whether an event id names an undertaking outcome node. The one test every reader of
+ * the namespace goes through (the grievance mint, the omen agenda's portent, the
+ * receipt's `undertaking` provenance — THR-1432), so the prefix cannot be re-spelled.
+ */
+export function isUndertakingOutcomeEventId(id: string | undefined | null): boolean {
+  return typeof id === 'string' && id.startsWith(UNDERTAKING_EVENT_NODE_ID_PREFIX);
+}
+
 export interface CreateUndertakingOutcomeParams {
   readonly graph: WorldGraph;
   readonly project: StrategicProjectRuntime;

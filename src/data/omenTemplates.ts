@@ -12,6 +12,28 @@
  */
 
 import type { OmenTrackTemplate } from '../types/omen';
+import type { UndertakingHarmClass } from '../types/strategicAction';
+
+// ═══════════════════════════════════════════════════════════════════
+// Portents cast by a mortal's work (THR-1432)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * The narrative hook an undertaking portent carries, by the harm it reads. Two slots,
+ * filled from the world by the omen agenda phase: `{deed}` is the harm in words — the
+ * grievance lane's own label, "the razing of Dunmar — Hesk's work" — and `{place}` is
+ * where it happened. GM narration, present tense, no numerals (Prose Doctrine v2).
+ * Not an omen *track*: a portent has no beats and no template; it is one line the
+ * chronicle carries and a pressure the encounter scorer feels.
+ */
+export const UNDERTAKING_PORTENT_HOOKS: Readonly<Record<UndertakingHarmClass, string>> = {
+  property_destroyed: 'Smoke still hangs where {deed} was done, and {place} has not stopped talking about it.',
+  holding_seized: 'Word of {deed} runs ahead of the new holder; at {place} people count what else might change hands.',
+  network_severed: 'Since {deed}, messages go unanswered around {place}, and the quiet is its own kind of news.',
+  named_death: 'After {deed}, doors close early at {place}, and nobody says the name aloud.',
+  afflicted: 'Since {deed}, the folk of {place} watch each other for the first signs.',
+  undertaking_abandoned: 'Tools lie where they were dropped at {place}; {deed} is a thing people step around.',
+};
 
 // ═══════════════════════════════════════════════════════════════════
 // DOOM-ECHO OMENS — The Breach (Force/Chaos/Entropy)

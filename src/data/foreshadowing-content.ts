@@ -265,7 +265,18 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
     'The road to {matter} is short, and {subject} {v:take} the short road.',
     '{Matter} is on the way, and {subject} will not waste the steps.',
   ],
+  // The want was minted by a harm — `{deed}` is the harm in words, from the receipt
+  // ("the razing of Dunmar — Hesk's work"). THR-1432.
+  undertaking: [
+    '{Subject} {v:carry} {deed} still, and {matter} is where {subject} {v:mean} to answer it.',
+    'Behind this is {deed}. {Subject} {v:have} not put it down, and {matter} is a place to set it right.',
+    '{Subject} {v:go} to {matter} because of {deed}; the account is open, and {subject} {v:intend} to close it.',
+    'What drives {object} to {matter} is {deed} — no fresh want, an old one with a name on it.',
+  ],
 };
+
+/** The `{deed}` slot when the receipt names no deed — a pull attributed to an undertaking with no label (fail-soft). */
+export const DEED_UNKNOWN = 'what was done';
 
 /**
  * S2 reach-flavor sub-tables (THR-640) for the four most common contribution
@@ -410,6 +421,11 @@ export const STAKE_CLAUSES: Partial<Record<MotiveContributionKind, readonly stri
     '{Subject} {v:know} how much {subject} {v:stand} to lose if the reach falls short.',
     'Wanting this much has undone steadier hands than these.',
     '{Subject} {v:want} it badly enough that the wanting itself is a risk.',
+  ],
+  undertaking: [
+    'Answering {deed} may cost more than the wound did.',
+    '{Subject} {v:know} that a settled score has a way of opening again.',
+    'There is a hand behind {deed}, and it will not be idle while {subject} {v:move}.',
   ],
   bond: [
     'If this goes wrong, someone {subject} {v:love} pays for it too.',

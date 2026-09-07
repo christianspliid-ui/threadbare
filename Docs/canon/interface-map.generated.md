@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 76 |
+| 🟢 LIVE | 77 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 22 |
-| **Total** | **107** |
+| **Total** | **108** |
 
 ## Contracts by producing subsystem
 
@@ -60,6 +60,7 @@ remediation ticket or the build fails.
 | `t1-undertaking-objects-feed-existing-economies` | A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads. | edge-prop: `knows_clue_of`, `knows_secret_of`, `owes_favor`, `consumeOnEvent`, `possesses` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `undertaking-creation-effects` | A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift. | function: `materializeWalkOnActor`, `applyCreationEffects`, `selectCreationBand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-1297 |
 | `undertaking-object-types` | An undertaking is a verb — create · change (raise | lower) · use · control (claim | seize) · destroy · observe — acted on a kind of thing the world-object catalogue names (Area, Location, Place, Route, Mortal, Faction, Company, Army, Network, Companion, Item, Power, Condition, Agreement, Standing). Each kind registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a kind does not declare is refused and traced unreachable, never faked; the generated grid (every kind × every verb) names each undeclared cell as an open decision or not an object, and fails the build when a cell has no place on it (THR-1392). | function: `UNDERTAKING_OBJECT_TYPES`, `resolveUndertakingCompletion`, `resolveObjectOwners`, `undertaking_cell_unreachable` | Strategic Projects & Control | 🔵 UNVERIFIED-OK | THR-1392 |
+| `undertaking-outcomes-cast-omens` | A mortal’s work casts omens: a razing, a seizure, a killing or a curse done by mortal hands becomes a portent the world carries — a chronicle line and a pressure on what happens next near the place — instead of the foreshadowing layer reading only the doom clock and the god’s own weather. | event: `undertaking_outcome`, `castUndertakingPortent`, `portendedTick`, `OMEN_UNDERTAKING_LOOKBACK_TICKS` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 
 ### Ascendant Beats & Progression
 
@@ -859,10 +860,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 76 total — 2 write, 3 read, 71 unclassified
+- **Production hits:** 80 total — 2 write, 3 read, 75 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx` +66 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx` +70 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1008,10 +1009,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Effects & Conditions
 - **UL terms:** *Condition*, *Curse*, *Blessing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 24 total — 1 write, 3 read, 20 unclassified
+- **Production hits:** 26 total — 1 write, 3 read, 22 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/effects/effectSuppression.ts`, `src/engine/strategicActionLifecycle.ts`
-- **Other hits:** `src/components/Game/momentBadgeModel.ts`, `src/data/action-template-content.ts`, `src/data/ambition-minting-rules.ts`, `src/data/culture-content.ts`, `src/data/moment-card-content.ts` +15 more
+- **Other hits:** `src/components/Game/momentBadgeModel.ts`, `src/data/action-template-content.ts`, `src/data/ambition-minting-rules.ts`, `src/data/culture-content.ts`, `src/data/game-config.ts` +17 more
 - **Verdict:** Verified 2026-09-07: THR-1429. On seed 42 small a motive-gated `cell.create.condition` left reward_condition_nightmares on npc_10 with sign=curse, inflictedBy=npc_11 and ticksRemaining=19 (24 from CURSE_DURATION_TICKS_BY_BAND.success, decayed 5 by conditionDecay — the live reader), plus an undertaking_outcome event carrying harmClass=afflicted, victim npc_10, culprit npc_11. `cell.destroy.power` left reward_condition_null_touched with sign=seal and the bearer reading sealed through the effect walker. The blessing arm registers no harm, and the stranger arm refuses no_sign — both falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, along with the cross-bearer guard: a second wielder of the same shared spell node is NOT sealed when the first is cursed.
 
 ### `mortal-learns-a-spell` — 🟢 LIVE
@@ -1369,6 +1370,17 @@ exit
 - **Read sites:** `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
 - **Other hits:** `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `undertaking-outcomes-cast-omens` — 🟢 LIVE
+
+- **Intent:** A mortal’s work casts omens: a razing, a seizure, a killing or a curse done by mortal hands becomes a portent the world carries — a chronicle line and a pressure on what happens next near the place — instead of the foreshadowing layer reading only the doom clock and the god’s own weather.
+- **Producer → Consumer:** Ambitions & Undertakings → Omens & Atmospheric Pressure
+- **Module:** `src/engine/phaseOmenAgenda.ts`
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Write sites:** `src/engine/grievance/undertakingOutcomeNode.ts`
+- **Read sites:** `src/data/game-config.ts`, `src/engine/phaseOmenAgenda.ts`
+- **Other hits:** `src/data/world-objects.ts`, `src/engine/ambitionTick.ts`, `src/types/omen.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-09-07: THR-1432. `castUndertakingPortent` (phase 1.7, last step) weighs every `undertaking_outcome` node within `OMEN_UNDERTAKING_LOOKBACK_TICKS` by its `harmMagnitude` × `OMEN_UNDERTAKING_WEIGHT_BY_HARM` × the attention term (`OMEN_UNDERTAKING_FOLLOWED_WEIGHT` when the god follows the culprit or the victim), casts the top one as an `EmittedOmen` carrying `provenance.outcomeNodeId` and the deed in words, stamps the node `portendedTick`, and appends a `narrative` chronicle event. Non-vacuous by `src/engine/__tests__/phaseOmenAgenda.undertakingPortent.test.ts` (nodes written by the real writer `createUndertakingOutcomeNode`; lookback, attention in both directions, victim follow, heavier harm, once-only, one-per-tick, seeded tie) and `src/engine/__tests__/undertakingPortent.live.test.ts` (heavy lane: seed 42 medium, a destroy × Location started through the review lever completes and the next tick’s `state.emittedOmens` names its node). Headless CLI run recorded on the ticket.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
 

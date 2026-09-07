@@ -13,6 +13,8 @@
  */
 
 import type { DoomClockArchetype } from '../types/doomClock';
+import type { UndertakingHarmClass } from '../types/strategicAction';
+import type { OmenCategory } from '../types/omen';
 
 // ─── Doom Clock Pacing ──────────────────────────────────────────
 
@@ -157,6 +159,54 @@ export const EMITTED_OMEN_MAX_ACTIVE = 20;
 
 /** Default hex radius for scope.kind='local' when radius is not specified. */
 export const EMITTED_OMEN_LOCAL_DEFAULT_RADIUS = 2;
+
+// ─── A mortal's work casts omens (THR-1432) ─────────────────────────────────
+//
+// The omen agenda phase reads the `undertaking_outcome` event nodes a harm-carrying
+// undertaking leaves behind (a razing, a seizure, a killing) and lets the loudest
+// recent one become an emitted omen — the world portends what mortals did, not only
+// what the doom clock is doing to them. One portent per tick at most; each outcome
+// node portends once (it is stamped `portendedTick`).
+
+/** How far back the phase looks for an outcome node to portend, in ticks (half a twelve-tick day). */
+export const OMEN_UNDERTAKING_LOOKBACK_TICKS = 6;
+
+/**
+ * How loudly each harm class portends, multiplied by the node's own `harmMagnitude`
+ * (`HARM_MAGNITUDE_BY_CLASS`). A killing and a razing carry their full weight; work
+ * merely walked away from is barely a murmur.
+ */
+export const OMEN_UNDERTAKING_WEIGHT_BY_HARM: Readonly<Record<UndertakingHarmClass, number>> = {
+  named_death: 1.0,
+  property_destroyed: 1.0,
+  holding_seized: 0.9,
+  network_severed: 0.8,
+  afflicted: 0.8,
+  undertaking_abandoned: 0.4,
+};
+
+/** Attention term: a followed culprit's or victim's work outranks an unfollowed one at equal harm. */
+export const OMEN_UNDERTAKING_FOLLOWED_WEIGHT = 2;
+
+/** Portents cast per tick, at most. */
+export const OMEN_UNDERTAKING_MAX_PER_TICK = 1;
+
+/** How long a portent lingers, in ticks (one day). */
+export const OMEN_UNDERTAKING_DURATION_TICKS = 12;
+
+/**
+ * The omen category a portent reads under, by harm — the category picks the encounter
+ * types it tilts (`EMITTED_OMEN_ENCOUNTER_AFFINITY`): blood and rubble echo the doom
+ * (duels, thefts); a severed tie or a curse strains the culture (aid, trade, leading).
+ */
+export const OMEN_UNDERTAKING_CATEGORY_BY_HARM: Readonly<Record<UndertakingHarmClass, OmenCategory>> = {
+  named_death: 'doom_echo',
+  property_destroyed: 'doom_echo',
+  holding_seized: 'doom_echo',
+  network_severed: 'cultural',
+  afflicted: 'cultural',
+  undertaking_abandoned: 'cultural',
+};
 
 /** Chronicle significance for a spawned artifact at common tier. */
 export const SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_COMMON = 0.55;

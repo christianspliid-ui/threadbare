@@ -3454,6 +3454,7 @@ export type TraceEntry =
   | ChoiceSetPlayerDismissedTrace
   | OmenSelectionTrace
   | OmenBeatTrace
+  | UndertakingPortentTrace
   // Encounter aftermath traces (THR-111)
   | CliAutoAftermathTrace
   | EncounterAftermathAppliedTrace
@@ -4170,6 +4171,28 @@ export interface OmenBeatTrace extends TraceBase {
   omenId: string;
   slot: 'primary' | 'secondary';
   prose: string;
+}
+
+/**
+ * Trace: a mortal's work cast a portent — an `undertaking_outcome` node became an
+ * emitted omen (THR-1432). Shares the `omen_emitted` category with the aftermath's
+ * emit_omen effect; `sourceReactionId: 'undertaking_outcome'` tells them apart.
+ * Carries every candidate and its score so "why did the razing portend and not the
+ * seizure" is answerable from the trace alone (NFP #2).
+ */
+export interface UndertakingPortentTrace extends TraceBase {
+  category: 'omen_emitted';
+  omenId: string;
+  omenCategory: string;
+  intensity: number;
+  expiresTick: number;
+  sourceEncounterId: string;
+  sourceReactionId: 'undertaking_outcome';
+  outcomeNodeId: string;
+  harmClass: string;
+  score: number;
+  followed: boolean;
+  candidates: Array<{ outcomeNodeId: string; harmClass: string; score: number; followed: boolean }>;
 }
 
 /** Trace: agent added to player's protagonist portfolio (THR-148) */

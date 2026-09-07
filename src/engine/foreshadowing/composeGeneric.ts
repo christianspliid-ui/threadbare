@@ -22,6 +22,7 @@ import {
   EXPECTATION_CLAUSES,
   DEFAULT_PULL_CLAUSES,
   MATTER_NO_PLACE,
+  DEED_UNKNOWN,
   matterAtPlace,
 } from '../../data/foreshadowing-content';
 
@@ -103,6 +104,9 @@ export function composeGenericForeshadowing(
     matter,
     Matter,
     place: locationName,
+    // The generic path has no receipt and so no deed; bound anyway so every slot a
+    // clause may name is bound by both composers (THR-1432).
+    deed: DEED_UNKNOWN,
   };
   const ctx = { number, slots };
 
