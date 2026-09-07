@@ -23,7 +23,6 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 | Subsystem | Aliases | Domains | Note |
 |---|---|---|---|
 | Companies & Group Travel | company, companies, group, party, band, fellowship, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
-| Intelligence, Knowledge & Familiarity | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | Knowledge-facet accumulation from encounters/observations, interaction depth, intelligence reliability decay. |
 | Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
 
 ## Subsystem registry
@@ -58,7 +57,7 @@ names like `TB-073`) a premise might use.
 | **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret` | — |
 | **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow`, `spell` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
 | **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor`, `npc`, `binding` | `2a.78`, `2.38`, `6.75` |
-| **Intelligence, Knowledge & Familiarity** | 🟠 DORMANT | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
+| **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
 | **Spheres & Quintessence** | 🟠 DORMANT | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
 | **World Generation, Terrain & Places** | 🟢 ACTIVE | worldgen, world generation, terrain, biome, elevation, climate, hydrology, hex map, tile, coastline, river, lake, settlement genome, sublocation, place, region, area | `world`, `worldgen`, `terrain`, `coastline`, `river`, `lake`, `depression`, `region`, `hex`, `sublocation`, `settlementgenome`, `road` | `6.635`, `6.636` |
 
@@ -296,7 +295,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `fragment` (1) | `fragmentResolution.ts` | `THR-475`, `THR-573`, `THR-884` |
 | `game` (1) | `gameInit.ts` | — |
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-786`, `THR-822`, `THR-841` |
-| `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-731` |
+| `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-1437`, `THR-731` |
 | `group` (1) | `groupShape.ts` | `THR-1297` |
 | `groups` (15) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (1) | `guildSeeding.ts` | — |
@@ -365,7 +364,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `scry` (1) | `scry.ts` | — |
 | `secret` (1) | `secretGeneration.ts` | `THR-30` |
 | `secrets` (2) | `secretsFavorsConsequences.ts`, `secretsFromResolution.ts` | `THR-30`, `THR-724` |
-| `seed` (1) | `seedAttachments.ts` | `THR-1429` |
+| `seed` (2) | `seedAttachments.ts`, `seedLivingWorld.ts` | `THR-1429`, `THR-1435`, `THR-1437` |
 | `settlementgenome` (11) | `settlementGenome/archetypes.ts`, `settlementGenome/constants.ts`, `settlementGenome/cultureBaseline.ts`, `settlementGenome/index.ts`, `settlementGenome/infrastructure.ts`, `settlementGenome/materialize.ts`, `settlementGenome/reachMenu.ts`, `settlementGenome/runGenome.ts`, `settlementGenome/sphereMenu.ts`, `settlementGenome/types.ts`, `settlementGenome/vitality.ts` | `THR-1344` |
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
 | `simulation` (2) | `simulation.ts`, `simulationRuntime.ts` | `TB-086`, `TB-087` |
@@ -406,4 +405,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 27 registered subsystems (3 dormant) · 100 tick phases · 182 engine domains · 539 modules._
+_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 182 engine domains · 540 modules._
