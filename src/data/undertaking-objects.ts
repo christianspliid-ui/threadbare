@@ -53,7 +53,13 @@ import {
   recordIntelligence,
   createRelationEdge,
   foundFaction,
+  seedKnowsOf,
+  spawnClue,
+  mintTreasureMap,
 } from '../engine/strategicGraphOps';
+import { emitTrace } from '../engine/traceBuffer';
+import type { UndertakingReaderTrace } from '../types/trace';
+import type { QuintessenceEvent } from '../types/quintessence';
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
@@ -92,6 +98,16 @@ import {
   UNDERTAKING_OBSERVE_INTELLIGENCE_TYPE,
   UNDERTAKING_DEFAULT_FACTION_SEED,
   UNDERTAKING_DEFAULT_TIER,
+  OBSERVE_CLUE_PRECISION_BY_BAND,
+  OBSERVE_CLUE_MAGNITUDE,
+  OBSERVE_AREA_FAMILIARITY_CAP,
+  OBSERVE_MARK_BAND,
+  OBSERVE_CHART_BAND,
+  OBSERVE_MARK_SECRET_TYPE,
+  OBSERVE_MARK_MAGNITUDE,
+  RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE,
+  RUINED_SETTLEMENT_DEFAULT_MAGNITUDE,
+  SPELL_SOUL_PRICE_QUINTESSENCE_SCALE,
 } from './strategic-action-constants';
 
 // ─── Shapes ─────────────────────────────────────────────────────────
@@ -130,6 +146,12 @@ export interface ObjectVerbContext {
   readonly boundCastIds?: readonly string[];
   /** Authored cell-override parameters (slice 2). Read by name, defaulted by constant. */
   readonly params?: Readonly<Record<string, unknown>>;
+  /**
+   * The band the work's final checkpoint landed on (THR-1428). Optional because the
+   * instant-execution path has no checkpoint to read: an absent band takes the
+   * plain-success row everywhere, never a second resolution.
+   */
+  readonly outcome?: string;
 }
 
 export type ObjectVerbSemantic = (ctx: ObjectVerbContext) => GraphOpResult;
@@ -186,6 +208,148 @@ function holdingCtx(ctx: ObjectVerbContext) {
 
 const fail = (op: string, error: string): GraphOpResult => ({ success: false, op, error });
 
+// ─── The owed readers (THR-1428) ────────────────────────────────────
+//
+// Every reader below turns a write that nothing read into a product some phase or
+// surface consumes. The decision for each is THR-1397's; the band order is THR-1399's.
+// A refusal is traced as loudly as a write: a survey of somewhere already known
+// produced *nothing new*, which is a different fact from a reader that never ran.
+
+/** One `undertaking_reader` entry. Fail-soft: tracing never throws into a semantic. */
+function emitReaderTrace(
+  ctx: ObjectVerbContext,
+  entry: {
+    cellId: string;
+    reader: UndertakingReaderTrace['reader'];
+    objectId: string;
+    productId?: string;
+    refused?: UndertakingReaderTrace['refused'];
+    summary: string;
+  },
+): void {
+  emitTrace({
+    category: 'undertaking_reader',
+    tick: ctx.tick,
+    actorId: ctx.actorId,
+    cellId: entry.cellId,
+    reader: entry.reader,
+    objectId: entry.objectId,
+    ...(entry.productId ? { productId: entry.productId } : {}),
+    ...(ctx.outcome ? { outcome: ctx.outcome } : {}),
+    ...(entry.refused ? { refused: entry.refused } : {}),
+    summary: entry.summary,
+  } as UndertakingReaderTrace);
+}
+
+/**
+ * A graph op's refusal mapped onto the trace's vocabulary. An op that refused because
+ * the product already exists is *success with nothing new* — the semantic keeps going.
+ */
+function refusalOf(result: GraphOpResult): UndertakingReaderTrace['refused'] | undefined {
+  if (result.success) return undefined;
+  const e = result.error ?? '';
+  if (e.includes('already_known')) return 'already_known';
+  if (e.includes('clue_already_held')) return 'clue_already_held';
+  if (e.includes('map_already_held')) return 'map_already_held';
+  if (e.includes('mark_already_held')) return 'already_known';
+  return 'schema_violation';
+}
+
+/** Familiarity with one Location, traced either way. Returns whether an edge was written. */
+function writeFamiliarity(ctx: ObjectVerbContext, cellId: string, locationId: string): boolean {
+  const result = seedKnowsOf(ctx.graph, ctx.actorId, locationId, ctx.tick);
+  const name = ctx.graph.getNode(locationId)?.name ?? locationId;
+  emitReaderTrace(ctx, {
+    cellId,
+    reader: 'familiarity',
+    objectId: locationId,
+    productId: result.createdId,
+    refused: refusalOf(result),
+    summary: result.success ? `knows the way to ${name}` : `${name} was already known`,
+  });
+  return result.success;
+}
+
+/** The Location classes worth a clue or a chart: what a survey can find something *in*. */
+const SURVEYABLE_CLASSES: ReadonlySet<string> = new Set(['ruin', 'wonder']);
+
+function isSurveyableSite(n: GraphNode | undefined): boolean {
+  if (!n || !isLocationNode(n)) return false;
+  const cls = locationClassOf(locationSubtypeOf(n));
+  return cls !== undefined && SURVEYABLE_CLASSES.has(cls);
+}
+
+/**
+ * The mortals standing at the observed node, other than the observer — who a survey
+ * could have learned something about. Sorted by id so the draw below is the only
+ * non-determinism.
+ */
+function coLocatedMortals(ctx: ObjectVerbContext, nodeId: string): string[] {
+  return ctx.graph.getIncomingEdges(nodeId, 'located_at')
+    .map(e => ctx.graph.getNode(e.source))
+    .filter((n): n is GraphNode =>
+      n !== undefined && n.type === 'actor' && n.properties.actorType !== 'faction' && n.id !== ctx.actorId)
+    .map(n => n.id)
+    .sort();
+}
+
+/**
+ * A survey strong enough to learn a secret mints one about somebody who was there.
+ * The recipient is drawn with the same seeding the `use × Power` semantic uses, so the
+ * choice is reproducible from seed and tick alone (NFP #3).
+ */
+function maybeMintObservedMark(ctx: ObjectVerbContext, cellId: string, subjectPoolNodeId: string): void {
+  if (ctx.outcome !== OBSERVE_MARK_BAND) return;
+  const candidates = coLocatedMortals(ctx, subjectPoolNodeId);
+  if (candidates.length === 0) {
+    emitReaderTrace(ctx, {
+      cellId, reader: 'mark', objectId: subjectPoolNodeId, refused: 'nobody_there',
+      summary: 'nobody was there to learn anything about',
+    });
+    return;
+  }
+  const draw = mulberry32(ctx.tick * 104729 + ctx.actorId.length)();
+  const subjectId = candidates[Math.floor(draw * candidates.length)] ?? candidates[0];
+  const result = mintLeverageMark(
+    ctx.graph, ctx.actorId, subjectId,
+    OBSERVE_MARK_SECRET_TYPE, OBSERVE_MARK_MAGNITUDE, ctx.tick,
+  );
+  emitReaderTrace(ctx, {
+    cellId, reader: 'mark', objectId: subjectId,
+    productId: result.createdId, refused: refusalOf(result),
+    summary: result.success
+      ? `learned something about ${ctx.graph.getNode(subjectId)?.name ?? subjectId}`
+      : 'that secret was already held',
+  });
+}
+
+/**
+ * A clue on a surveyable site, at the precision the band earned. Only a critical
+ * success writes `located`, which is the precision the delve admission scan requires —
+ * so observe → clue → delve is a climb, not a free door (THR-1399's band order).
+ */
+function maybeSpawnSiteClue(ctx: ObjectVerbContext, cellId: string, siteId: string): void {
+  const site = ctx.graph.getNode(siteId);
+  if (!isSurveyableSite(site)) return;
+  const precision = ctx.outcome ? OBSERVE_CLUE_PRECISION_BY_BAND[ctx.outcome] : undefined;
+  if (!precision) {
+    emitReaderTrace(ctx, {
+      cellId, reader: 'clue', objectId: siteId,
+      refused: ctx.outcome ? 'no_band_row' : undefined,
+      summary: `${site?.name ?? siteId} gave up no lead`,
+    });
+    return;
+  }
+  const result = spawnClue(ctx.graph, ctx.actorId, siteId, ctx.tick, OBSERVE_CLUE_MAGNITUDE, precision);
+  emitReaderTrace(ctx, {
+    cellId, reader: 'clue', objectId: siteId,
+    productId: result.createdId, refused: refusalOf(result),
+    summary: result.success
+      ? `has a ${precision} lead on ${site?.name ?? siteId}`
+      : `already held a lead on ${site?.name ?? siteId}`,
+  });
+}
+
 /**
  * The site a `create` verb lands on. A site chosen at proposal can be gone by
  * completion — a siege razes the hamlet the Place was to be built in (measured: seed
@@ -237,11 +401,190 @@ function actorFactionId(graph: WorldGraph, actorId: string): string | null {
   return null;
 }
 
-/** `observe × anything`: intelligence about the object, keyed on the actor. */
+/**
+ * `observe × anything`: intelligence about the object, keyed on the actor.
+ *
+ * The `recordIntelligence` write is kept (additive), but it is no longer the whole
+ * product: what watching *earns* is familiarity — the `knows_of` edge the ruins layer's
+ * clue convergence already writes and the world already reads (THR-1428 R1). Each kind
+ * supplies which Locations a survey of it made familiar; the shared tail writes them,
+ * clues the surveyable ones, and — on a strong result only — mints the chart or the
+ * mark. A kind that resolves no Location keeps the plain intelligence write.
+ */
 function observe(ctx: ObjectVerbContext): GraphOpResult {
   const nodeId = nodeIdOf(ctx.handle);
   if (!nodeId || !ctx.graph.getNode(nodeId)) return fail('record_intelligence', 'object_not_found');
-  return recordIntelligence(ctx.graph, ctx.actorId, nodeId, UNDERTAKING_OBSERVE_INTELLIGENCE_TYPE, ctx.tick);
+  const base = recordIntelligence(ctx.graph, ctx.actorId, nodeId, UNDERTAKING_OBSERVE_INTELLIGENCE_TYPE, ctx.tick);
+  try {
+    applyObserveReaders(ctx, nodeId);
+  } catch {
+    // A reader that throws must never fail the work the mortal actually did (NFP #4).
+  }
+  return base;
+}
+
+/** The cell id an observe reader traces under, by what the handle turned out to be. */
+function observeCellId(node: GraphNode | undefined): string {
+  if (!node) return 'cell.observe.unknown';
+  if (node.type === 'actor') return node.properties.actorType === 'faction' ? 'cell.observe.faction' : 'cell.observe.mortal';
+  if (isPlaceNode(node)) return 'cell.observe.place';
+  if (locationSubtypeOf(node) === ROUTE_IDENTITY_SUBTYPE) return 'cell.observe.route';
+  if (isLocationNode(node)) return 'cell.observe.location';
+  return 'cell.observe.area';
+}
+
+/**
+ * Which Locations a survey of this object made familiar, per kind (THR-1397's table).
+ * Never a faction node — `knows_of` is actor → location, and forcing one would be a
+ * schema violation rather than a reader.
+ */
+function observedLocations(ctx: ObjectVerbContext, node: GraphNode): string[] {
+  // Area: every Location in it the actor is not yet familiar with, up to the cap.
+  // An Area is a `region` node (the world-object catalogue's Area kind), and it holds
+  // its Locations on `contains` edges — a Hex is deliberately not a node at all.
+  if (node.type === 'region') {
+    return locationsInArea(ctx, node).slice(0, OBSERVE_AREA_FAMILIARITY_CAP);
+  }
+  // Faction: the seat — the Location it controls nearest the actor. Controls nothing → skip.
+  if (node.type === 'actor' && node.properties.actorType === 'faction') {
+    const seat = nearestControlledLocation(ctx, node.id);
+    return seat ? [seat] : [];
+  }
+  if (node.type !== 'location') return [];
+  const subtype = locationSubtypeOf(node);
+  // Route: both endpoints of the identity node.
+  if (subtype === ROUTE_IDENTITY_SUBTYPE) {
+    return [str(node.properties, 'routeSourceId'), str(node.properties, 'routeTargetId')]
+      .filter((id): id is string => id !== null && ctx.graph.getNode(id)?.type === 'location');
+  }
+  // Place: the Place and its parent Location.
+  if (isPlaceNode(node)) {
+    const parent = resolveToParentLocation(ctx.graph, node);
+    return parent && parent.id !== node.id ? [node.id, parent.id] : [node.id];
+  }
+  return [node.id];
+}
+
+/**
+ * The Locations an Area holds, sorted so the familiarity cap takes a stable slice.
+ * `contains` is the edge worldgen writes; the place tier only, so a survey of a valley
+ * makes its settlements familiar rather than every room inside them.
+ */
+function locationsInArea(ctx: ObjectVerbContext, area: GraphNode): string[] {
+  return ctx.graph.getOutgoingEdges(area.id, 'contains')
+    .map(e => ctx.graph.getNode(e.target))
+    .filter((n): n is GraphNode => n !== undefined && isLocationNode(n))
+    .map(n => n.id)
+    .sort();
+}
+
+/** The Location a faction controls nearest the observer, by hex distance. */
+function nearestControlledLocation(ctx: ObjectVerbContext, factionId: string): string | null {
+  const from = resolveDurableActorLocation(ctx.graph, ctx.actorId);
+  const fromNode = from ? ctx.graph.getNode(from) : undefined;
+  const fc = fromNode ? num(fromNode.properties, 'hexCol') : null;
+  const fr = fromNode ? num(fromNode.properties, 'hexRow') : null;
+  const held = ctx.graph.getOutgoingEdges(factionId, 'controls')
+    .map(e => ctx.graph.getNode(e.target))
+    .filter((n): n is GraphNode => n !== undefined && isLocationNode(n))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  if (held.length === 0) return null;
+  if (fc === null || fr === null) return held[0].id;
+  let best = held[0];
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const n of held) {
+    const c = num(n.properties, 'hexCol');
+    const r = num(n.properties, 'hexRow');
+    const d = c === null || r === null
+      ? Number.POSITIVE_INFINITY
+      : hexDistance({ col: fc, row: fr }, { col: c, row: r });
+    if (d < bestDist) { best = n; bestDist = d; }
+  }
+  return best.id;
+}
+
+/** Write the familiarity a survey earned, and on a strong result the chart or the mark. */
+function applyObserveReaders(ctx: ObjectVerbContext, nodeId: string): void {
+  const node = ctx.graph.getNode(nodeId);
+  if (!node) return;
+  const cellId = observeCellId(node);
+  const locations = observedLocations(ctx, node);
+
+  // What the actor knew *before* this survey. Captured first because the familiarity
+  // writes below would otherwise make every site in the area "already known" by the
+  // time the chart looks for one, and the chart would never be minted.
+  const knownBefore = new Set(ctx.graph.getOutgoingEdges(ctx.actorId, 'knows_of').map(e => e.target));
+
+  for (const locationId of locations) writeFamiliarity(ctx, cellId, locationId);
+
+  // A clue on the observed site itself, when the site is one a delve could enter.
+  if (node.type === 'location') maybeSpawnSiteClue(ctx, cellId, nodeId);
+
+  // Area × strong result: a chart of one site the actor did not already know — a
+  // possession somebody else can follow, not a note to self.
+  if (cellId === 'cell.observe.area' && ctx.outcome === OBSERVE_CHART_BAND) {
+    mintAreaChart(ctx, cellId, node, knownBefore);
+  }
+
+  // The secret a strong survey doubles into: about somebody at the observed node, or
+  // about the faction's leader when the object was a faction.
+  if (cellId === 'cell.observe.faction') {
+    const leaderId = factionLeaderId(ctx, nodeId);
+    if (leaderId) maybeMintObservedMarkAbout(ctx, cellId, leaderId);
+  } else if (cellId !== 'cell.observe.area' && cellId !== 'cell.observe.route') {
+    maybeMintObservedMark(ctx, cellId, nodeId);
+  }
+}
+
+/** One chart, to the first unfamiliar surveyable Location in the area. Deterministic. */
+function mintAreaChart(
+  ctx: ObjectVerbContext,
+  cellId: string,
+  area: GraphNode,
+  known: ReadonlySet<string>,
+): void {
+  const site = locationsInArea(ctx, area)
+    .find(id => !known.has(id) && isSurveyableSite(ctx.graph.getNode(id)));
+  if (!site) {
+    emitReaderTrace(ctx, {
+      cellId, reader: 'chart', objectId: area.id, refused: 'nothing_eligible',
+      summary: 'nothing in the area was worth charting',
+    });
+    return;
+  }
+  const result = mintTreasureMap(ctx.graph, ctx.actorId, site, ctx.tick);
+  emitReaderTrace(ctx, {
+    cellId, reader: 'chart', objectId: site,
+    productId: result.createdId, refused: refusalOf(result),
+    summary: result.success
+      ? `charted ${ctx.graph.getNode(site)?.name ?? site} for anyone who can read a map`
+      : 'already held that chart',
+  });
+}
+
+/** The faction's leader, if it has one — the subject a survey of a faction learns about. */
+function factionLeaderId(ctx: ObjectVerbContext, factionId: string): string | null {
+  for (const e of ctx.graph.getIncomingEdges(factionId, 'leads')) {
+    const n = ctx.graph.getNode(e.source);
+    if (n?.type === 'actor' && n.properties.actorType !== 'faction') return n.id;
+  }
+  return null;
+}
+
+/** The mark path when the subject is already known by id (the faction's leader). */
+function maybeMintObservedMarkAbout(ctx: ObjectVerbContext, cellId: string, subjectId: string): void {
+  if (ctx.outcome !== OBSERVE_MARK_BAND) return;
+  const result = mintLeverageMark(
+    ctx.graph, ctx.actorId, subjectId,
+    OBSERVE_MARK_SECRET_TYPE, OBSERVE_MARK_MAGNITUDE, ctx.tick,
+  );
+  emitReaderTrace(ctx, {
+    cellId, reader: 'mark', objectId: subjectId,
+    productId: result.createdId, refused: refusalOf(result),
+    summary: result.success
+      ? `learned something about ${ctx.graph.getNode(subjectId)?.name ?? subjectId}`
+      : 'that secret was already held',
+  });
 }
 
 function groupTier(bands: readonly [number, number]) {
@@ -421,10 +764,29 @@ const LOCATION: UndertakingObjectType = {
       if (!cls || !RUINABLE_CLASSES.has(cls)) return fail('ruin_settlement', `not_ruinable:${cls ?? 'unclassed'}`);
       razeHolding(ctx.graph, nodeId, holdingCtx(ctx));
       const prosperity = num(loc.properties, 'prosperity') ?? RUINED_SETTLEMENT_PROSPERITY_FLOOR;
+      const wasSubtype = locationSubtypeOf(loc);
       loc.properties.prosperity = Math.min(prosperity, RUINED_SETTLEMENT_PROSPERITY_FLOOR);
       loc.properties.ruinedFromSubtype = loc.properties.locationSubtype;
       loc.properties.locationSubtype = 'ruins';
       loc.properties.ruinedTick = ctx.tick;
+      // R2 (THR-1428, decided in THR-1397): the ruin joins the delve layer. The scale
+      // is banded from what the place *was* — a razed capital is a deeper delve than a
+      // razed hamlet — and it is the one property the admission scan reads off the node
+      // (`delveVariant.ts`), which is why it is written here rather than derived there.
+      // `sphereAlignment` is deliberately untouched: the delve reads that name directly,
+      // and a settlement that never carried one gets the vault archetype, not an invented
+      // sphere.
+      const magnitude = (wasSubtype !== null && wasSubtype !== undefined
+        ? RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE[wasSubtype]
+        : undefined) ?? RUINED_SETTLEMENT_DEFAULT_MAGNITUDE;
+      loc.properties.ruinMagnitude = magnitude;
+      emitReaderTrace(ctx, {
+        cellId: 'cell.destroy.location',
+        reader: 'ruin_delve_stamp',
+        objectId: nodeId,
+        productId: nodeId,
+        summary: `${loc.name ?? nodeId} is a ruin the delve layer can admit (magnitude ${magnitude})`,
+      });
       return { success: true, op: 'ruin_settlement' };
     },
     observe,
@@ -718,9 +1080,40 @@ const POWER: UndertakingObjectType = {
       const spellId = str(node.properties, 'spellTemplateId') ?? str(node.properties, 'spellId') ?? node.id;
       const spell = getSpellTemplate(spellId);
       if (!spell) return fail('activate_spell', `no_spell_template:${spellId}`);
+      // Exhaustion's reader (THR-1428 R4): `tick_exhaust` has always stamped a
+      // deadline nobody checked. A caster still spent is refused here, which is what
+      // makes the cost a cost.
+      const exhaustedUntil = num(ctx.graph.getNode(ctx.actorId)?.properties ?? {}, 'exhaustedUntilTick');
+      if (exhaustedUntil !== null && exhaustedUntil > ctx.tick) {
+        emitReaderTrace(ctx, {
+          cellId: 'cell.use.power', reader: 'spell_exhausted', objectId: node.id,
+          refused: 'exhausted',
+          summary: `too spent to call on ${node.name ?? node.id} again yet`,
+        });
+        return fail('activate_spell', 'spell_exhausted');
+      }
       const prng = mulberry32(ctx.tick * 104729 + ctx.actorId.length);
       const outcome = activateSpell(ctx.graph, ctx.actorId, spell, ctx.targetNodeId, ctx.tick, prng());
-      return outcome.outcome === 'success' || outcome.outcome === 'backlash'
+      const cast = outcome.outcome === 'success' || outcome.outcome === 'backlash';
+      // The spell's price lands on quintessence, where the game's threshold gates
+      // already bite — not on the `doom` health meter (THR-1397, verbatim: "the
+      // spell's soul-price moves from the doom health meter to quintessence"). The
+      // quintessence phase owns the write; this only queues the event.
+      if (cast && (outcome.soulPrice ?? 0) > 0) {
+        const mutableState = ctx.state as { pendingQuintessenceEvents?: QuintessenceEvent[] };
+        const events = mutableState.pendingQuintessenceEvents ?? (mutableState.pendingQuintessenceEvents = []);
+        events.push({
+          targetNodeId: ctx.actorId,
+          delta: -(outcome.soulPrice ?? 0) * SPELL_SOUL_PRICE_QUINTESSENCE_SCALE,
+          source: 'spell_price',
+          tick: ctx.tick,
+        });
+        emitReaderTrace(ctx, {
+          cellId: 'cell.use.power', reader: 'spell_price', objectId: node.id,
+          summary: `the calling cost ${node.name ?? node.id}'s bearer something of themselves`,
+        });
+      }
+      return cast
         ? { success: true, op: 'activate_spell' }
         : fail('activate_spell', outcome.outcome);
     },

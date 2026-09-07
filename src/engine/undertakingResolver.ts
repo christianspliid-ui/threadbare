@@ -97,6 +97,12 @@ export interface UndertakingResolutionInput {
   readonly targetNodeId?: string;
   readonly boundCastIds?: readonly string[];
   readonly params?: Readonly<Record<string, unknown>>;
+  /**
+   * The band the work's final checkpoint landed on (THR-1428). The readers a cell owes
+   * are graded by it — a survey that scraped through learns less than one that went
+   * perfectly. Absent on the instant path, where there is no checkpoint to read.
+   */
+  readonly outcome?: string;
 }
 
 export interface UndertakingResolution {
@@ -158,6 +164,7 @@ export function resolveUndertakingCompletion(input: UndertakingResolutionInput):
     projectId: input.projectId, runtime: input.runtime,
     originLocationId: input.originLocationId, targetNodeId: input.targetNodeId,
     boundCastIds: input.boundCastIds, params: input.params,
+    outcome: input.outcome,
   };
 
   let result: GraphOpResult;

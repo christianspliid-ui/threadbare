@@ -129,6 +129,8 @@ const COMPANIES = 'Companies & Group Travel';
 const FACTIONS = 'Factions & Succession';
 const NARRATIVE = 'Attention, Chronicle & Narrative';
 const QUINTESSENCE = 'Spheres & Quintessence';
+const ECONOMY = 'Mortal Economy & Prosperity';
+const RUINS = 'Ruins, Clues & Delves';
 const TRAITS = 'Personality & Emergent Traits';
 const PROGRESSION = 'Ascendant Beats & Progression';
 
@@ -2761,6 +2763,70 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-08-27',
       evidence:
         "THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.",
+    },
+  },
+
+  // ── The owed readers (THR-1428) ───────────────────────────────────────────
+  // Two destinations that did not exist before: what a mortal holds now pays them,
+  // and a settlement a mortal razed becomes somewhere the delve layer will admit.
+  {
+    id: 'freehold-income-pays-mortal-holders',
+    producerSystem: AMBITIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'What a mortal holds yields to them: a seized route tolls, a freehold pays, a controlled Location tithes — so taking something that produces is worth taking, and the wealth it moves is visible to the player as a word.',
+    ulTerms: ['Freehold', 'Undertaking'],
+    // Shape, not function — and the generator caught the first draft naming the pass,
+    // the same way it caught the T1 row above. No consumer imports `payHoldingIncome`;
+    // they read the `wealth` the pass moved and the reason it stamped. Declaring the
+    // function classified this LEAKED with "declared read sites empty", which was an
+    // accurate description of a contract stated in the wrong currency: the interface
+    // here *is* the property, so the property is what must appear at both ends.
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'lastWealthReason'],
+      module: 'src/engine/holdingIncome.ts',
+    },
+    writeSites: [
+      'src/engine/holdingIncome.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    readSites: [
+      'src/engine/agentDetail.ts',
+      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/components/Game/FactionSheet.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        "THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.",
+    },
+  },
+  {
+    id: 'ruined-settlement-joins-delve-layer',
+    producerSystem: AMBITIONS,
+    consumerSystem: RUINS,
+    intent:
+      "A settlement a mortal razed becomes somewhere to explore: it carries a depth banded from what it used to be, and the delve layer admits it once the dust has settled — so a warlord's destruction feeds a wanderer's delve rather than ending the story of that place.",
+    ulTerms: ['Undertaking'],
+    // Shape, not function: the delve admission scan reads node properties off the ruin,
+    // never an import from the producing cell. Naming the semantic would classify LEAKED
+    // for the same reason the T1 row above records — the interface here *is* the shape.
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['ruinMagnitude', 'ruinedTick', 'locationSubtype'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: [
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/ruins/delveVariant.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-07',
+      evidence:
+        "THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.",
     },
   },
 ];

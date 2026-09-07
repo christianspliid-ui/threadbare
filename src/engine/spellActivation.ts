@@ -66,6 +66,12 @@ export interface ActivationResult {
   backlashEffect?: AttachmentEffect;
   /** Costs that were paid (empty if blocked) */
   paidCosts: SpellCost[];
+  /**
+   * The soul price this cast incurred (THR-1428). Zero unless the spell carried a
+   * `doom_increase` cost. The caller lands it on quintessence — casting costs spirit,
+   * not health, so nothing here writes `doom` on its behalf.
+   */
+  soulPrice?: number;
   /** Narrative text for the backlash (if any) */
   backlashNarrative?: string;
   /** Trace for inspectability */
@@ -205,13 +211,26 @@ export function canPayCosts(
 /**
  * Pay spell costs. Call only after canPayCosts returns true.
  * Mutates graph state.
+ *
+ * @returns the **soul price** the cast incurred — the capped `doom_increase` total.
+ *
+ * The price is *returned* rather than written because since THR-1428 it lands on
+ * quintessence, not on the `doom` health meter (decided in THR-1397: casting costs
+ * spirit, and quintessence is where the game's threshold gates actually bite). The
+ * caller routes it; `payCosts` no longer knows where it goes. `health_sacrifice` still
+ * writes `doom` directly — that cost genuinely *is* health.
+ *
+ * @param tick the current tick, so `tick_exhaust` stamps a deadline in the future.
+ *   Absent, it falls back to the agent's `currentTick` property as before.
  */
 export function payCosts(
   graph: WorldGraph,
   agentId: string,
   costs: SpellCost | SpellCost[],
-): void {
+  tick?: number,
+): number {
   const costArray = Array.isArray(costs) ? costs : [costs];
+  let soulPrice = 0;
 
   for (const cost of costArray) {
     switch (cost.type) {
@@ -225,10 +244,9 @@ export function payCosts(
         break;
       }
       case 'doom_increase': {
-        const agentNode = graph.getNode(agentId);
-        if (!agentNode) break;
-        const capped = Math.min(cost.amount, DOOM_COST_CAP_PER_CAST);
-        agentNode.properties.doom = ((agentNode.properties.doom as number) ?? 0) + capped;
+        // The soul price. Accumulated and returned, never written to `doom` — the
+        // caller lands it on quintessence (THR-1428 R4).
+        soulPrice += Math.min(cost.amount, DOOM_COST_CAP_PER_CAST);
         break;
       }
       case 'attachment_consume': {
@@ -274,8 +292,12 @@ export function payCosts(
       case 'tick_exhaust': {
         const agentNode = graph.getNode(agentId);
         if (!agentNode) break;
+        // The deadline must be stamped against the tick the cast happened on. Reading
+        // it off the agent's `currentTick` property (which no writer sets) put every
+        // exhaustion deadline in the past, so the reader THR-1428 adds would have
+        // refused nothing. The caller's tick wins when it has one.
         agentNode.properties.exhaustedUntilTick =
-          ((agentNode.properties.currentTick as number) ?? 0) + cost.ticks;
+          (tick ?? (agentNode.properties.currentTick as number) ?? 0) + cost.ticks;
         break;
       }
       case 'health_sacrifice': {
@@ -290,11 +312,13 @@ export function payCosts(
         break;
       }
       case 'multi': {
-        payCosts(graph, agentId, cost.costs);
+        soulPrice += payCosts(graph, agentId, cost.costs, tick);
         break;
       }
     }
   }
+
+  return soulPrice;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -437,7 +461,7 @@ export function activateSpell(
 
   // 4. Cost payment (atomic)
   const costArray = Array.isArray(spell.cost) ? spell.cost : [spell.cost];
-  payCosts(graph, agentId, spell.cost);
+  const soulPrice = payCosts(graph, agentId, spell.cost, tick);
 
   // 5. Update cooldown state
   if (effectStates) {
@@ -469,6 +493,7 @@ export function activateSpell(
         backlashEffect: backlashResult.effect,
         backlashNarrative: backlashResult.narrative,
         paidCosts: costArray,
+        soulPrice,
         trace: {
           ...baseTrace,
           result: 'backlash',
@@ -484,6 +509,7 @@ export function activateSpell(
     outcome: 'success',
     appliedEffects: spell.effects,
     paidCosts: costArray,
+    soulPrice,
     trace: {
       ...baseTrace,
       result: 'applied',

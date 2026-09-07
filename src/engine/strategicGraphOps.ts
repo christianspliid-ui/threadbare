@@ -41,6 +41,7 @@ import { validateEdgeEndpoints } from '../types/edgeSchema';
 import { emitTrace } from './traceBuffer';
 import type { RouteCargoAssignedTrace, TraceEntry } from '../types/trace';
 import type { SublocationPersistence } from '../types/sublocation';
+import type { CluePrecision } from '../types/knowledge';
 
 export interface GraphOpResult {
   success: boolean;
@@ -454,7 +455,13 @@ export function spawnClue(
   targetLocationId: string,
   tick: number,
   magnitude: number,
-  precision: number,
+  /**
+   * `CluePrecision`, not a number (THR-1428). Every consumer of this edge reads the
+   * string union — the delve admission scan requires `precision === 'located'` and
+   * `CLUE_MAX_AGE` keys on the three words — so a numeric precision wrote a clue no
+   * layer could ever act on, which is the exact dead-end this op was built to avoid.
+   */
+  precision: CluePrecision,
   detail?: string,
 ): GraphOpResult {
   try {

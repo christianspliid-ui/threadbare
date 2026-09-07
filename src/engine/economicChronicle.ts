@@ -283,6 +283,7 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     wealth_tier_down: 'Fortune Falls',
     resource_scarcity: 'A Scarcity Bites',
     resource_glut: 'A Glut Descends',
+    holding_income: 'A Holding Pays',
   };
   return titles[trigger];
 }

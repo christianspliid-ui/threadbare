@@ -112,6 +112,49 @@ function capitalize(s: string): string {
 }
 
 /**
+ * What a survey produced, in words (THR-1428). Read from the knowledge the actor now
+ * holds about the object rather than from a payload carried on the event — the edges
+ * *are* the product, so the sentence and the graph cannot disagree (Law 56).
+ *
+ * Strongest first: a chart is a thing others can follow, a secret is leverage, a lead
+ * is a place half-found, familiarity is knowing the way. Empty when the actor holds
+ * none of them, which is what "the survey turned up nothing new" reads as.
+ */
+function learnedClause(graph: WorldGraph, ctx: UndertakingProseContext): string {
+  const objectId = ctx.handle?.kind === 'node' ? ctx.handle.nodeId : undefined;
+  if (!objectId) return '';
+  const objectName = nameOf(graph, objectId) ?? '';
+
+  const chart = graph.getOutgoingEdges(ctx.actorId, 'possesses')
+    .map(e => graph.getNode(e.target))
+    .find(n => typeof n?.properties.mapsToLocationId === 'string');
+  if (chart) {
+    const site = nameOf(graph, chart.properties.mapsToLocationId as string);
+    return site ? `, and has charted ${site} for anyone who can read a map` : '';
+  }
+
+  const secret = graph.getOutgoingEdges(ctx.actorId, 'knows_secret_of')
+    .find(e => e.properties?.source === 'undertaking_cultivation' && e.properties?.revealed !== true);
+  if (secret) {
+    const subject = nameOf(graph, secret.target);
+    if (subject) return `, and has learned something about ${subject} that ${subject} would rather keep`;
+  }
+
+  const clue = graph.getOutgoingEdges(ctx.actorId, 'knows_clue_of')
+    .find(e => e.target === objectId && e.properties?.consumed !== true);
+  if (clue) {
+    const precision = clue.properties?.precision;
+    if (precision === 'located') return objectName ? `, and has found where ${objectName} lies` : '';
+    return objectName ? `, and has a lead on what ${objectName} hides` : '';
+  }
+
+  const familiar = graph.getOutgoingEdges(ctx.actorId, 'knows_of').some(e => e.target === objectId);
+  if (familiar && objectName) return `, and knows the way to ${objectName} now`;
+
+  return '';
+}
+
+/**
  * Fill the four slots in `line` from the world. `{Object}`, `{Owner}`, `{Actor}` and
  * `{Place}` are the sentence-initial forms.
  */
@@ -145,14 +188,15 @@ export function resolveUndertakingProse(line: string, ctx: UndertakingProseConte
     .replace(/\{Actor\}/g, capitalize(slot.actor))
     .replace(/\{actor\}/g, slot.actor)
     .replace(/\{Place\}/g, capitalize(slot.place))
-    .replace(/\{place\}/g, slot.place);
+    .replace(/\{place\}/g, slot.place)
+    .replace(/\{learned\}/g, learnedClause(graph, ctx));
   // Law 43: a token nobody resolved never reaches a screen.
   text = text.replace(/\{[A-Za-z_:.-]+\}/g, '').replace(/\s{2,}/g, ' ').replace(/\s+([,.;])/g, '$1').trim();
   return { text, concepts };
 }
 
-/** The four tokens the strategic prose path resolves — read by the contract's `tokens` block. */
-export const UNDERTAKING_PROSE_TOKENS: readonly string[] = ['object', 'owner', 'actor', 'place', 'Object', 'Owner', 'Actor', 'Place'];
+/** The tokens the strategic prose path resolves — read by the contract's `tokens` block. */
+export const UNDERTAKING_PROSE_TOKENS: readonly string[] = ['object', 'owner', 'actor', 'place', 'learned', 'Object', 'Owner', 'Actor', 'Place'];
 
 /**
  * One line from a set, chosen by a stable key (a project id) so the same work reads

@@ -1732,6 +1732,43 @@ if (import.meta.env.DEV) {
       return traces.filter(t => t.agentId === resolved.node.id);
     },
 
+    /**
+     * What a mortal's holdings paid this interval (THR-1428 R3), read off the
+     * `wealth_delta` traces the pass emits. Requires `enableTracing()` first, like
+     * every trace reader here.
+     */
+    getHoldingIncome: async (actorQuery?: string) => {
+      const { getTraces } = await import('./engine/traceBuffer');
+      const INCOME_REASONS = new Set(['route_control', 'sublocation_income', 'location_tithe']);
+      const paid = getTraces().filter(
+        t => t.category === 'wealth_delta'
+          && INCOME_REASONS.has((t as { reason?: string }).reason ?? ''),
+      );
+      if (!actorQuery) return paid;
+      const state = _gameStateProvider?.();
+      if (!state) return paid.filter(t => (t as { actorId?: string }).actorId === actorQuery);
+      const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+      const resolved = resolveDebugAgent(state, actorQuery);
+      if (isDebugAgentMiss(resolved)) return [];
+      return paid.filter(t => (t as { actorId?: string }).actorId === resolved.node.id);
+    },
+
+    /**
+     * Every reader that ran at a cell completion (THR-1428), writes and refusals
+     * alike — a survey that turned up nothing new is the interesting case.
+     */
+    getUndertakingReaders: async (actorQuery?: string) => {
+      const { getTraces } = await import('./engine/traceBuffer');
+      const readers = getTraces().filter(t => t.category === 'undertaking_reader');
+      if (!actorQuery) return readers;
+      const state = _gameStateProvider?.();
+      if (!state) return readers.filter(t => (t as { actorId?: string }).actorId === actorQuery);
+      const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+      const resolved = resolveDebugAgent(state, actorQuery);
+      if (isDebugAgentMiss(resolved)) return [];
+      return readers.filter(t => (t as { actorId?: string }).actorId === resolved.node.id);
+    },
+
     // Strategic action inspection
     getStrategicDecisionSummary: async (agentId?: string) => {
       const state = _gameStateProvider?.();

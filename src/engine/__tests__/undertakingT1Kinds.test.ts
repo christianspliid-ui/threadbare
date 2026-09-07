@@ -76,7 +76,7 @@ function assertSchemaSatisfied(graph: WorldGraph, edgeId: string, edgeType: Edge
 describe('spawn_clue', () => {
   it('writes a clue carrying every property the ruins layer converges on', () => {
     const graph = world();
-    const result = spawnClue(graph, ACTOR, SITE, 12, 0.6, 0.7, 'followed from a chart');
+    const result = spawnClue(graph, ACTOR, SITE, 12, 0.6, 'located', 'followed from a chart');
 
     expect(result.success).toBe(true);
     assertSchemaSatisfied(graph, result.createdId!, 'knows_clue_of');
@@ -87,8 +87,8 @@ describe('spawn_clue', () => {
     // The ruins layer consumes the *first* unconsumed clue, so a pile of duplicates
     // would read as one find repeated forever rather than as deeper knowledge.
     const graph = world();
-    spawnClue(graph, ACTOR, SITE, 12, 0.6, 0.7);
-    const second = spawnClue(graph, ACTOR, SITE, 13, 0.6, 0.7);
+    spawnClue(graph, ACTOR, SITE, 12, 0.6, 'located');
+    const second = spawnClue(graph, ACTOR, SITE, 13, 0.6, 'located');
 
     expect(second.success).toBe(false);
     expect(second.error).toBe('clue_already_held');
@@ -98,15 +98,15 @@ describe('spawn_clue', () => {
     // The flip of the guard above: idempotence is per *live* clue, not per place —
     // otherwise a site could be surveyed exactly once in a world's lifetime.
     const graph = world();
-    const first = spawnClue(graph, ACTOR, SITE, 12, 0.6, 0.7);
+    const first = spawnClue(graph, ACTOR, SITE, 12, 0.6, 'located');
     const edge = graph.getEdge(first.createdId!)!;
     graph.updateEdge(edge.id, { properties: { ...edge.properties, consumed: true } });
 
-    expect(spawnClue(graph, ACTOR, SITE, 20, 0.6, 0.7).success).toBe(true);
+    expect(spawnClue(graph, ACTOR, SITE, 20, 0.6, 'located').success).toBe(true);
   });
 
   it('refuses an actor-to-actor clue — the schema is enforced, not assumed', () => {
-    const result = spawnClue(world(), ACTOR, SUBJECT, 12, 0.6, 0.7);
+    const result = spawnClue(world(), ACTOR, SUBJECT, 12, 0.6, 'located');
     expect(result.success).toBe(false);
   });
 });

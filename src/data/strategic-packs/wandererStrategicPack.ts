@@ -165,7 +165,11 @@ export const WANDERER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     requiresLocation: false,
     payoffValue: 0.8,
     motivations: ['tradition_novelty', 'revelation_discretion'],
-    mutationHint: { type: 'spawn_clue', magnitude: 0.6, precision: 0.7, detail: 'followed from a chart' },
+    // `located`, not 0.7 (THR-1428): the completion prose is "the mark resolves into a
+    // place", which is exactly the precision the delve admission scan requires. Written
+    // as a number, this clue satisfied no reader at all — the wanderer walked the mark
+    // down and the ruins layer never heard about it.
+    mutationHint: { type: 'spawn_clue', magnitude: 0.6, precision: 'located', detail: 'followed from a chart' },
   },
 
   // 4. Burn the Charts — the counter-play. Motive-gated: a chart is somebody's

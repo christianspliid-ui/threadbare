@@ -10,6 +10,9 @@
  *   {owner}   whoever holds it, by name (empty on an unheld object)
  *   {actor}   the mortal doing the work, by name; {Actor} sentence-initial
  *   {place}   where the work stands, by name
+ *   {learned} what a survey produced (THR-1428), read from the knowledge the actor now
+ *             holds about the object — familiarity, a lead, a chart, a secret. Empty
+ *             when the survey turned up nothing, so the line still reads whole.
  *
  * Register (Prose Doctrine v2, `Docs/canon/prose.md`): GM narration, present tense,
  * third person, no second person, no numerals, no exclamation marks. A cell may carry
@@ -142,11 +145,15 @@ export const UNDERTAKING_VERB_PROSE: Readonly<Record<UndertakingVerbVariant, Und
       'At {place} {actor} takes the measure of {object}.',
       '{Actor} is reading {object} for what it hides.',
     ],
+    // The completion lines carry `{learned}` (THR-1428): watching now *produces*
+    // something — familiarity, a lead, a chart, a secret — and the sentence names it.
+    // The token is a trailing clause so a survey that turned up nothing new still
+    // reads as a whole sentence when it resolves empty.
     completion: [
-      '{Actor} knows {object} now, better than {owner} would like.',
-      'The survey of {object} is done; {actor} carries it in their head.',
-      '{Actor} has taken the measure of {object} at {place}.',
-      'What {object} hid, {actor} has found.',
+      '{Actor} knows {object} now, better than {owner} would like{learned}.',
+      'The survey of {object} is done; {actor} carries it in their head{learned}.',
+      '{Actor} has taken the measure of {object} at {place}{learned}.',
+      'What {object} hid, {actor} has found{learned}.',
     ],
     narration: '{Actor} has learned {object}.',
   },

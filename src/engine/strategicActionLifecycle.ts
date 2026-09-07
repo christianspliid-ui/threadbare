@@ -856,7 +856,10 @@ export function advanceStrategicProjects(
         generationReason: 'ambition_progression',
       };
 
-      const mutation = executeInstantMutation(state, graph, candidate, tick);
+      // The band this work actually landed on — the readers a cell owes are graded by
+      // it (THR-1428). It is already resolved on the checkpoint record, so no second
+      // resolution is needed to grade a survey.
+      const mutation = executeInstantMutation(state, graph, candidate, tick, checked.lastCheckpoint?.band);
       const ops = mutation.ops;
       completedOps.push(...ops);
       poolInvalidatedLocationIds.push(...mutation.poolInvalidatedLocationIds);
@@ -1170,6 +1173,12 @@ function executeInstantMutation(
   graph: WorldGraph,
   candidate: StrategicActionCandidate,
   tick: number,
+  /**
+   * The band the work's final checkpoint landed on, when there was one (THR-1428).
+   * The multi-tick completion path below reads it off `lastCheckpoint`; the instant
+   * path has no checkpoint, so its readers take the plain-success row.
+   */
+  outcome?: string,
 ): InstantMutationResult {
   const ops: GraphOpResult[] = [];
   const poolInvalidatedLocationIds: string[] = [];
@@ -1194,6 +1203,7 @@ function executeInstantMutation(
       projectId: candidate.candidateId,
       originLocationId: candidate.originLocationId,
       targetNodeId: candidate.targetNodeId,
+      outcome,
     });
     ops.push(...resolution.ops);
     if (targetId && resolution.ops.some(o => o.success)) poolInvalidatedLocationIds.push(targetId);

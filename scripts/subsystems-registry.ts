@@ -114,11 +114,14 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
   },
   {
     name: 'Mortal Economy & Prosperity',
-    aliases: ['economy', 'trade', 'resource', 'resources', 'prosperity', 'gold', 'market', 'settlement', 'cargo'],
-    activityKeywords: ['prosperity', 'economic', 'resource', 'settlement'],
-    domains: ['resource', 'settlement', 'economic', 'trade', 'gold', 'prosperity'],
-    phaseMatch: /\b(prosperity|settlement|economic|resource|trade|gold)\b/i,
-    note: 'Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes. M3: Dynamic Economy.',
+    aliases: ['economy', 'trade', 'resource', 'resources', 'prosperity', 'gold', 'market', 'settlement', 'cargo', 'holding', 'freehold', 'wealth', 'tithe', 'toll'],
+    activityKeywords: ['prosperity', 'economic', 'resource', 'settlement', 'holding'],
+    domains: ['resource', 'settlement', 'economic', 'trade', 'gold', 'prosperity', 'holding'],
+    // `holding income` joins the match since THR-1428: what a mortal holds pays them,
+    // which is this subsystem's business even though the *producing* cells belong to
+    // Ambitions & Undertakings.
+    phaseMatch: /\b(prosperity|settlement|economic|resource|trade|gold|holding income)\b/i,
+    note: 'Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route\'s toll, a freehold\'s keep, a controlled Location\'s tithe). M3: Dynamic Economy.',
   },
   {
     name: 'Ambitions & Undertakings',

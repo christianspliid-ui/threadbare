@@ -201,7 +201,16 @@ export function hasReliefLine(state: GameState, settlementId: string | undefined
   if (!settlementId) return false;
   const node = state.graph.getNode(settlementId);
   if (!node) return false;
-  const factionId = state.graph.getIncomingEdges(settlementId, 'controls')[0]?.source;
+  // A settlement may be controlled by a mortal claimant as well as by a faction
+  // (THR-1392 put `controls` in a mortal's hands). Relief is a *faction's* logistics,
+  // so the first incoming edge is not good enough: taking it unfiltered resolves a
+  // supply line for an individual's id, which no faction host can ever match, and the
+  // siege reads unrelieved for a reason that has nothing to do with the war
+  // (THR-1428 R5). A faction is an `actor` node wearing `actorType: 'faction'` — the
+  // node type alone does not separate the two.
+  const factionId = state.graph.getIncomingEdges(settlementId, 'controls')
+    .map(e => e.source)
+    .find(source => state.graph.getNode(source)?.properties.actorType === 'faction');
   if (!factionId) return false;
   const line = resolveSupplyLine(state, settlementId, factionId, { allowSelfHost: false });
   return line.hostId !== null && !line.threatened;
