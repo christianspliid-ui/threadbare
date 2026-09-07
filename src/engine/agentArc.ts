@@ -34,6 +34,12 @@ export interface AgentArcEntry {
   readonly line: string;
   /** The tick as the player reads it — "today", "three days past". */
   readonly when: string;
+  /**
+   * The deed by verb and object (THR-1434) when the entry is a finished cell: the
+   * ledger renders the verb word with its tooltip and the object as a link where
+   * a page exists. `line` still carries the whole sentence for surfaces without links.
+   */
+  readonly deed?: import('../types/strategicAction').UndertakingDeed;
 }
 
 /** Relative time in words. Never a numeral. */
@@ -62,8 +68,11 @@ export function getAgentArc(
         id: `hist_${h.templateId}_${h.tick}`,
         kind: 'undertaking_completed',
         tick: h.tick,
-        line: `Finished ${h.displayName}.`,
+        // A cell's deed names verb and object — "Founded the Saltway." — the
+        // christened title stays the work's name on the moment card (THR-1434).
+        line: h.deed ? `${h.deed.phrase}.` : `Finished ${h.displayName}.`,
         when: ticksAgoWord(now - h.tick),
+        ...(h.deed ? { deed: h.deed } : {}),
       });
     } else {
       entries.push({

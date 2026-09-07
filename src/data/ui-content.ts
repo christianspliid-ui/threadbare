@@ -497,6 +497,24 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'What they are set on',
     desc: 'A network you follow has people near them — their eyes are yours.',
   },
+  // The undertaking verbs, as the ledger and the codex name them (THR-1434). One id
+  // per verb variant; the sheet's deed word carries it.
+  'ui.verb.create': { label: 'Create', desc: 'To make a thing the world did not have — a settlement founded, a company raised, a working learned.' },
+  'ui.verb.change:raise': { label: 'Raise', desc: 'To better a thing one holds — richer, stronger, more.' },
+  'ui.verb.change:lower': { label: 'Lower', desc: 'To diminish a thing another holds — still theirs, and the poorer for it. Needs a reason.' },
+  'ui.verb.use': { label: 'Use', desc: 'To work a thing one holds for what it yields — a harvest, a favour called in, a spell cast at its price.' },
+  'ui.verb.control:claim': { label: 'Claim', desc: 'To take up a thing nobody holds and make it one\'s own.' },
+  'ui.verb.control:seize': { label: 'Seize', desc: 'To take a thing from the hands that hold it. Needs a reason.' },
+  'ui.verb.destroy': { label: 'Destroy', desc: 'To end a thing — raze it, cure it, seal it, or, at the darkest, kill. Needs a reason.' },
+  'ui.verb.observe': { label: 'Observe', desc: 'To watch a thing and come away knowing it — the way to it, who holds it, what it hides.' },
+  'ui.doing_line': {
+    label: 'What they are doing',
+    desc: 'The work this mortal is in the middle of, and how it goes — the word after the dash is how far along it is, or the trouble it is in.',
+  },
+  'ui.undertaking_kind': {
+    label: 'The kind of thing',
+    desc: 'What in the world this undertaking acts on — a place, a company, a standing, a working. Every kind the world keeps has its verbs.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

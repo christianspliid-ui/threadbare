@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import type { CodexEntry } from './codexRegistry';
 import { SectionHeading } from '../shared/SectionHeading';
+import { Tooltip } from '../shared/Tooltip';
 import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
 
 interface CodexDetailPanelProps {
@@ -191,9 +192,17 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
                   <span style={{ color: 'var(--text-tertiary)' }}>
                     {detail.label}
                   </span>
-                  <span style={{ color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%' }}>
-                    {detail.value}
-                  </span>
+                  {detail.tooltipId ? (
+                    <Tooltip id={detail.tooltipId}>
+                      <span className="underline decoration-dotted cursor-help" style={{ color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%' }}>
+                        {detail.value}
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <span style={{ color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%' }}>
+                      {detail.value}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

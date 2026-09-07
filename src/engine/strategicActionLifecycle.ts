@@ -13,6 +13,7 @@ import type {
   StrategicProjectRuntime,
   StrategicControlState,
   StrategicHistoryEntry,
+  UndertakingDeed,
   StrategicRuntimeState,
   UndertakingMomentRecord,
 } from '../types/strategicAction';
@@ -69,6 +70,7 @@ import { getLocationNodes } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
+import { describeDeed } from './undertakingDeed';
 import {
   findGrievanceForAmbitionTemplate,
   satisfyGrievance,
@@ -447,8 +449,11 @@ export function executeStrategicAction(
       // Check for catalyst seeding
       catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
 
-      // Record history
-      const historyEntry = createHistoryEntry(candidate, tick, ops, catalystSeeded);
+      // Record history — with the deed by verb and object for a cell (THR-1434).
+      const historyEntry = createHistoryEntry(
+        candidate, tick, ops, catalystSeeded,
+        describeDeed(graph, candidate, undefined, ops.find(o => o.success && o.createdId && graph.getNode(o.createdId))?.createdId),
+      );
       const updatedHistory = pruneHistory([...currentState.history, historyEntry], tick);
 
       return {
@@ -962,7 +967,11 @@ export function advanceStrategicProjects(
 
       releaseUndertakingBindings(state, checked.projectId, tick);
       updatedProjects.push({ ...checked, progress: newProgress, status: 'completed', lastProgressTick: tick });
-      newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded));
+      // The deed by verb and object (THR-1434), named once here and carried on the
+      // history entry and the completion event — the ledger and the chronicle read
+      // the same reference.
+      const deed = describeDeed(graph, candidate, checked, christened?.nodeId);
+      newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded, deed));
 
       // A finished work is a deed the calling reads (THR-1299 slice 5) — the
       // second of its three event sites.
@@ -1025,6 +1034,9 @@ export function advanceStrategicProjects(
           ? MOMENT_INTERRUPT_SIGNIFICANCE
           : MOMENT_COMPLETION_SIGNIFICANCE,
         actorId: project.actorId,
+        // The same structured reference the ledger carries (THR-1434), so a chronicle
+        // surface can link the object without parsing the line.
+        ...(deed?.objectRef ? { refs: [deed.objectRef] } : {}),
       });
 
       // The christened name rides the completion trace that already fires here,
@@ -1684,6 +1696,7 @@ function createHistoryEntry(
   tick: number,
   ops: GraphOpResult[],
   catalystSeeded: boolean,
+  deed?: UndertakingDeed,
 ): StrategicHistoryEntry {
   return {
     tick,
@@ -1697,6 +1710,7 @@ function createHistoryEntry(
     outcome: 'completed',
     graphOps: ops.map(o => `${o.op}:${o.success ? 'ok' : o.error}`),
     catalystSeeded,
+    ...(deed ? { deed } : {}),
   };
 }
 
