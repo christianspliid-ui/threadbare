@@ -100,7 +100,7 @@ export const HARD_STEP_DIFFICULTY_THRESHOLD = 0.3;
 // ─── Push/Resist Eligibility (mirrors unifiedActionResolution.ts) ──
 
 const PUSH_ELIGIBLE_PREFIXES = [
-  'action.shadow.assassinate',
+  // `action.shadow.assassinate` retired by THR-1430; the bought killing below stays.
   'action.iron.conquer',
   'action.gold.commission-assassination',
 ];

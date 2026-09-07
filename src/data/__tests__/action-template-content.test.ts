@@ -85,4 +85,40 @@ describe('action-template-content', () => {
     const ids = new Set(ACTION_TEMPLATES.map(t => t.id));
     expect(ids.size).toBe(ACTION_TEMPLATES.length);
   });
+
+  // THR-1430. There is no retirement list in this repo (`undertakingRetrofitPending`
+  // is the contract ratchet, not an exemption mechanism), so a retired card's absence
+  // is asserted here or nowhere.
+  it('does not carry the retired assassinate card', () => {
+    expect(getActionTemplateById('action.shadow.assassinate')).toBeUndefined();
+    expect(ACTION_TEMPLATES.some(t => t.id === 'action.shadow.assassinate')).toBe(false);
+  });
+
+  // The rule the retirement was about is "killing a *person* must leave a body", and
+  // it deliberately is NOT asserted as a sweep over `remove_node` on `$target`: the
+  // effect layer does not type its target, so such a sweep also catches
+  // `action.iron.conquer` and `action.stone.demolish`, which delete a *place* and are
+  // right to. Measured — the wide guard fails on exactly those two. The two cards that
+  // ever deleted a mortal are named here instead, and the rule itself is enforced
+  // where the target's type is actually known: the plot cell's own semantic, which
+  // refuses `not_a_mortal`, tested in `undertaking-objects.test.ts`.
+  it('kills the commissioned target through the one funnel, retaining the node', () => {
+    const commission = getActionTemplateById('action.gold.commission-assassination');
+    expect(commission).toBeDefined();
+    const kill = (commission?.onSuccess ?? []).find(e => e.op === 'mark_mortal_dead');
+    expect(kill, 'the bought killing goes through markMortalDead, not remove_node').toBeDefined();
+    expect(kill?.nodeId).toBe('$target');
+    expect(
+      (commission?.onSuccess ?? []).some(e => e.op === 'remove_node'),
+      'the bought killing must not also delete the node',
+    ).toBe(false);
+  });
+
+  it('kills the commissioned target through the one funnel, retaining the node', () => {
+    const commission = getActionTemplateById('action.gold.commission-assassination');
+    expect(commission).toBeDefined();
+    const kill = (commission?.onSuccess ?? []).find(e => e.op === 'mark_mortal_dead');
+    expect(kill, 'the bought killing goes through markMortalDead, not remove_node').toBeDefined();
+    expect(kill?.nodeId).toBe('$target');
+  });
 });

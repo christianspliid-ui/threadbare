@@ -93,6 +93,8 @@ import {
   UNDERTAKING_INSPIRE_FLAG,
   UNDERTAKING_SABOTAGE_FLAG,
   UNDERTAKING_VERB_DIFFICULTY,
+  PLOT_CHECKPOINTS,
+  PLOT_PERIL_GRACE_TICKS,
 } from '../data/strategic-action-constants';
 
 // ─── Band → effect ──────────────────────────────────────────────────
@@ -598,12 +600,25 @@ export function resolveUndertakingCheckpoint(
     ? resolveMomentPresentation(state, graph, project.actorId, momentClass, project)
     : 'none';
 
+  // ── The peril grant (THR-1430) ──
+  //
+  // A plot against a mortal the player holds a thread to surfaces *before* it
+  // resolves, so the god has a turn to spend on levers that already exist — a ward,
+  // a blessing, a thread action. Never a new verb: the sovereignty non-negotiable
+  // binds the god, and it binds them here too.
+  //
+  // Granted once, after the positioning (the checkpoint before the strike), and the
+  // strike's own checkpoint is pushed out by `PLOT_PERIL_GRACE_TICKS`. A target who
+  // stops being followed does not lose the grace — it was already given.
+  const peril = resolvePerilGrant(state, graph, project, checkpointIndex, completing, tick);
+
   const advanced: StrategicProjectRuntime = {
     ...project,
     progress,
     lastProgressTick: tick,
     checkpointIndex: checkpointIndex + 1,
-    nextCheckpointTick: tick + UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
+    nextCheckpointTick: tick + UNDERTAKING_CHECKPOINT_INTERVAL_TICKS + (peril?.graceTicks ?? 0),
+    ...(peril ? { perilGrantedTick: tick, perilDeferredTicks: peril.graceTicks } : {}),
     halts: nextHalts,
     // A resolved checkpoint means the actor showed up; the absence streak resets.
     deferrals: 0,
@@ -635,7 +650,82 @@ export function resolveUndertakingCheckpoint(
     if (momentClass !== 'completion') events.push(moment.event);
   }
 
+  if (peril) {
+    moments.push(peril.record);
+    events.push(peril.event);
+  }
+
   return { verdict: completing ? 'completed' : 'continues', project: advanced, events, moments };
+}
+
+/**
+ * Whether this checkpoint is the one that owes the target a warning — and, if so, the
+ * moment and the grace.
+ *
+ * The conditions are all narrow on purpose: it must be a plot (`destroy × Mortal`),
+ * the target must be a living mortal the player follows, the grace must not already
+ * have been given, and the checkpoint just resolved must be the one *before* the
+ * strike. A completing checkpoint is too late to warn anybody.
+ *
+ * Fail-soft: anything unreadable answers "no warning" and the plot proceeds — a missed
+ * warning costs the god a turn, a thrown checkpoint costs the tick (NFP #4).
+ */
+function resolvePerilGrant(
+  state: GameState,
+  graph: WorldGraph,
+  project: StrategicProjectRuntime,
+  checkpointIndex: number,
+  completing: boolean,
+  tick: number,
+): { record: UndertakingMomentRecord; event: TickEvent; graceTicks: number } | null {
+  try {
+    if (completing) return null;
+    if (project.objectTypeId !== 'mortal') return null;
+    if (project.perilGrantedTick !== undefined) return null;
+
+    // The checkpoint that just resolved is the positioning: the one before the strike.
+    if (checkpointIndex !== PLOT_CHECKPOINTS - 2) return null;
+
+    const handle = project.objectHandle;
+    const targetId = handle?.kind === 'node' ? handle.nodeId : undefined;
+    if (!targetId) return null;
+    const target = graph.getNode(targetId);
+    if (!target || (target.properties as Record<string, unknown>).deceased === true) return null;
+
+    if (!isFollowed(state, graph, targetId)) return null;
+
+    const targetName = target.name ?? targetId;
+    const label = `Someone means ${targetName} harm.`;
+
+    return {
+      graceTicks: PLOT_PERIL_GRACE_TICKS,
+      record: {
+        id: `undertaking_peril_${project.projectId}_${tick}`,
+        projectId: project.projectId,
+        actorId: targetId,
+        templateId: project.templateId,
+        momentClass: 'peril',
+        // Built here rather than through `buildMoment` for the same reason the
+        // `afflicted` record is: that helper is `project.actorId`-shaped all the way
+        // down, and this moment belongs to the target's sheet, not the plotter's.
+        presentation: 'interrupt',
+        tick,
+        label,
+        undertakingName: targetName,
+        acknowledged: false,
+      },
+      event: {
+        id: `undertaking_peril_evt_${project.projectId}_${tick}`,
+        tick,
+        type: 'agent_action',
+        message: label,
+        significance: MOMENT_INTERRUPT_SIGNIFICANCE,
+        actorId: targetId,
+      },
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ─── Fork resolution ────────────────────────────────────────────────

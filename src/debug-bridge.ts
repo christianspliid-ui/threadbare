@@ -1392,6 +1392,79 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1430: every network (a ring) in the world, with its leader and where its
+     * members actually are.
+     *
+     * The member hexes are the point. A ring has no position of its own — that is the
+     * whole difference between a ring and a company — so "where is it?" is answered by
+     * a list, and its reach is measured from every entry in that list.
+     */
+    getRings: async () => {
+      const graph = _graphProvider?.();
+      if (!graph) return [];
+      const [{ getAllGroups, getGroupMemberEdges, isAgentGone }, { ringMemberHexes }] = await Promise.all([
+        import('./engine/groups/groupQueries'),
+        import('./engine/strategicGraphOps'),
+      ]);
+      return getAllGroups(graph, ['network']).map(ring => {
+        const leaderId = graph.getOutgoingEdges(ring.id, 'commanded_by')[0]?.target ?? null;
+        const members = getGroupMemberEdges(graph, ring.id)
+          .filter(e => (e.properties as Record<string, unknown>).leftAtTick === undefined)
+          .map(e => graph.getNode(e.source))
+          .filter((n): n is NonNullable<typeof n> => n !== undefined);
+        return {
+          ringId: ring.id,
+          name: ring.name ?? ring.id,
+          status: (ring.properties as Record<string, unknown>).groupStatus ?? 'active',
+          cohesion: (ring.properties as Record<string, unknown>).cohesion ?? null,
+          leaderId,
+          leaderName: leaderId ? graph.getNode(leaderId)?.name ?? leaderId : null,
+          members: members.map(m => ({
+            id: m.id,
+            name: m.name ?? m.id,
+            gone: isAgentGone(m),
+          })),
+          memberHexes: ringMemberHexes(graph, ring.id),
+        };
+      });
+    },
+
+    /**
+     * THR-1430: every live plot (`destroy × Mortal`), with the stage it has reached.
+     *
+     * `stage` is the named checkpoint the ladder is on — the watching, the
+     * positioning, the strike — because a plot's index alone says nothing about how
+     * close anyone is to dying. `perilGrantedTick` says whether the god was warned.
+     */
+    getPlots: async () => {
+      const state = _gameStateProvider?.();
+      const graph = _graphProvider?.();
+      if (!state || !graph) return [];
+      const { PLOT_CHECKPOINTS } = await import('./data/strategic-action-constants');
+      const STAGE_WORDS = ['the watching', 'the positioning', 'the strike'];
+      return (state.strategicState?.projects ?? [])
+        .filter(p => p.objectTypeId === 'mortal' && p.status === 'active')
+        .map(p => {
+          const targetId = p.objectHandle?.kind === 'node' ? p.objectHandle.nodeId : null;
+          const target = targetId ? graph.getNode(targetId) : undefined;
+          const index = p.checkpointIndex ?? 0;
+          return {
+            projectId: p.projectId,
+            actorId: p.actorId,
+            actorName: graph.getNode(p.actorId)?.name ?? p.actorId,
+            targetId,
+            targetName: target?.name ?? targetId,
+            targetDeceased: (target?.properties as Record<string, unknown> | undefined)?.deceased === true,
+            checkpointIndex: index,
+            stage: STAGE_WORDS[Math.min(index, PLOT_CHECKPOINTS - 1)] ?? 'the strike',
+            nextCheckpointTick: p.nextCheckpointTick ?? null,
+            perilGrantedTick: p.perilGrantedTick ?? null,
+            perilDeferredTicks: p.perilDeferredTicks ?? 0,
+          };
+        });
+    },
+
+    /**
      * THR-479: list the ascendant's Aspects (apex milestone beyond the five
      * tiers). Returns living Aspects and mythic echoes (dead Aspects whose bond
      * endures). Empty array if the game isn't loaded or there are none.

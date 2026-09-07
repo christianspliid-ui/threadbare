@@ -99,7 +99,7 @@ const INFORMATION_PREFIXES = ['action.eye.', 'npc_ask_information', 'npc_eavesdr
 
 /** Risky/coercive actions — steeper penalties on failure tiers */
 const RISKY_COERCIVE_IDS = [
-  'action.shadow.assassinate',
+  // `action.shadow.assassinate` retired by THR-1430; the bought killing below stays.
   'action.iron.conquer',
   'action.gold.commission-assassination',
 ];

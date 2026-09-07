@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 180,
+    "total": 179,
     "byCategory": {
-      "action": 67,
+      "action": 66,
       "artifact": 5,
       "company": 4,
       "divine": 20,
@@ -14,7 +14,7 @@
     "byReach": {
       "iron": 12,
       "gold": 20,
-      "shadow": 23,
+      "shadow": 22,
       "veil": 23,
       "heart": 29,
       "eye": 29,
@@ -23,11 +23,11 @@
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 177,
+      "unlockable-generic": 176,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 114,
+      "template-ops": 113,
       "control-spec": 17,
       "engine-bridge": 43,
       "none": 2,
@@ -718,34 +718,6 @@
       "bucketDeclared": true,
       "description": "You seed a false truth into the world — a fabricated secret about an agent that begins to take on the weight of the real. The secret is believed because it is delivered by no visible hand, and because doubt is cheaper than certainty. Use it to engineer distrust, protect someone from scrutiny, or move a rival into checkmate.",
       "technicalEffect": "On success, fabricates a `knows_secret_of` edge (actor → target, `planted`, unrevealed) of the given `secretType` and magnitude — false leverage that reads as real until investigated.",
-      "effectSource": "template-ops"
-    },
-    {
-      "id": "action.shadow.assassinate",
-      "name": "Assassinate",
-      "spellName": "Silent Step",
-      "category": "action",
-      "reach": "shadow",
-      "sphereAffinity": null,
-      "crudType": "delete",
-      "scale": "regional",
-      "rarityTier": 2,
-      "rarityName": "Storied",
-      "intrinsicTier": "background",
-      "apCost": 1,
-      "essenceCost": null,
-      "durationMode": "instant",
-      "hasControlSpec": false,
-      "aftermathReactionCount": 0,
-      "targetCategories": [],
-      "targetSubtypes": [],
-      "requiresReach": null,
-      "starter": false,
-      "beatGranted": false,
-      "bucket": "unlockable-generic",
-      "bucketDeclared": false,
-      "description": "Sends a skilled killer directly after a target, relying on stealth and precision rather than coin. The actor's own hand is closer to the act than a commission, carrying greater personal risk but also greater certainty of intent. Failure invites devastating exposure.",
-      "technicalEffect": "On success, removes the target node. On failure, the actor loses security.",
       "effectSource": "template-ops"
     },
     {

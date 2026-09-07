@@ -102,7 +102,7 @@ export const REVEAL_FAMILY_ALIASES: Readonly<Record<string, readonly string[]>> 
   'shadow.intrigue': ['action.shadow.', 'encounter.political_intrigue', 'reputation.shadow.'],
   'shadow.betrayal': ['action.heart.betray', 'action.shadow.', 'reputation.shadow.'],
   'shadow.loyalty': ['fa.loyalty_test', 'action.heart.assess-loyalty', 'uk.'],
-  'shadow.retribution': ['action.shadow.assassinate', 'eye.reckoning.', 'uk.senior.eliminate_rival'],
+  'shadow.retribution': ['action.gold.commission-assassination', 'eye.reckoning.', 'uk.senior.eliminate_rival'],
   'gold.betrayal': ['action.gold.break-agreement', 'action.heart.betray', 'broker.quest.rival_shrine_betrayal'],
   'gold.customs': ['action.gold.tax-trade-route', 'encounter.toll_bridge', 'encounter_toll_dispute', 'mct.'],
   'veil.knowledge': ['action.veil.', 'action.eye.refine-knowledge', 'encounter.forbidden_tome'],

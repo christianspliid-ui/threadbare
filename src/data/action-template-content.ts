@@ -429,7 +429,11 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     motivations: ['asceticism_extravagance', 'honesty_cunning', 'loyalty_ambition'],
     minWealthRequired: 15, // WEALTH_ASSASSINATION_COST
     onSuccess: [
-      { op: 'remove_node', nodeId: '$target' },
+      // THR-1430: the god's bought killing stops deleting. `mark_mortal_dead` routes
+      // through the one funnel in `retain`, so a commissioned death honours the ward
+      // and the Aspect echo and leaves a body the chronicle keeps and the grievance
+      // lane can read — the same death the plot writes, bought instead of plotted.
+      { op: 'mark_mortal_dead', nodeId: '$target', changes: { cause: 'commission' } },
       // WEALTH_ASSASSINATION_COST = 15 (represented as 0.15)
       { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.15 } },
     ],
@@ -620,29 +624,12 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
       failure: '{{target}} rejects {{actor}}\'s overture. {{actor}}\'s attempt at recruitment is spurned.',
     },
   },
-  {
-    id: 'action.shadow.assassinate',
-    name: 'Assassinate',
-    spellName: 'Silent Step',
-    description: 'Sends a skilled killer directly after a target, relying on stealth and precision rather than coin. The actor\'s own hand is closer to the act than a commission, carrying greater personal risk but also greater certainty of intent. Failure invites devastating exposure.',
-    rarityTier: 2,
-    crudType: 'delete',
-    reach: 'shadow',
-    durationRange: { min: 3, max: 5 },
-    motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
-    onSuccess: [
-      { op: 'remove_node', nodeId: '$target' },
-    ],
-    onFailure: [
-      { op: 'update_node', nodeId: '$actor', changes: { security: -0.15 } },
-    ],
-    difficulty: 0.70,
-    narrativeTemplates: {
-      initiation: '{{actor}} plots {{the-target}}\'s death, arranging for an assassin in the night.',
-      success: '{{target}} falls in darkness. {{actor}}\'s enemy is no more.',
-      failure: '{{actor}}\'s assassin is caught. {{the-target}} survives, and {{actor}}\'s hand is revealed.',
-    },
-  },
+  // `action.shadow.assassinate` was retired here by THR-1430 (THR-1397's decision).
+  // Its only effect was `{ op: 'remove_node', nodeId: '$target' }` — a deletion the
+  // chronicle cannot remember and the grievance lane cannot avenge. A mortal killing
+  // another on purpose is now `destroy × Mortal` (the plot), which is staged, motive-
+  // gated, and leaves a body. There is no retirement list in this repo: the id's
+  // absence is asserted by `action-template-content.test.ts`.
 
   // Veil (magic) — create, read, update, delete
   {

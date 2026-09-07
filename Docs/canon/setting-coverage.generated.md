@@ -13,7 +13,7 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 698 |
+| templates in the pool | 697 |
 | drawable at ≥1 location subtype | 464 |
 | drawable but at no *authorable* subtype | 22 |
 | declaring a setting envelope | 24 |
