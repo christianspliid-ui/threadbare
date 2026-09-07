@@ -36,8 +36,9 @@ import { UNDERTAKING_OBJECT_TYPES } from '../src/data/undertaking-objects';
 import { UNDERTAKING_VERB_VARIANTS, UNDERTAKING_VERBS } from '../src/data/strategic-action-constants';
 import { UNDERTAKING_VERB_WORDS } from '../src/data/undertaking-verb-prose';
 import type { UndertakingVerbVariant } from '../src/types/strategicAction';
-import { NOT_AN_OBJECT, LIVE_CELL_NOTES, CELL_DISPOSITIONS, STANDING_RIDERS, type CellDisposition, type LiveCellNote } from './undertaking-grid-dispositions.ts';
+import { NOT_AN_OBJECT, LIVE_CELL_NOTES, CELL_DISPOSITIONS, STANDING_RIDERS, SUBSYSTEM_READERS, type CellDisposition, type LiveCellNote, type SubsystemReader } from './undertaking-grid-dispositions.ts';
 import { readManifest, buildNav } from './design-wiki-nav.ts';
+import { SUBSYSTEMS, SUBSYSTEM_NAMES } from './subsystems-registry.ts';
 
 const OUTPUT_MD_REL = path.join('Docs', 'canon', 'undertaking-grid.generated.md');
 const OUTPUT_HTML_REL = path.join('public', 'undertaking-grid-reference.html');
@@ -96,6 +97,71 @@ function buildGrid(): { cells: Cell[]; problems: string[] } {
   return { cells, problems };
 }
 
+// ─── The subsystem × verb view (THR-1427) ───────────────────────────────────
+// The third view of the same cells, joined through `WORLD_OBJECT_KINDS[].owningSystem`
+// — the join THR-1407 repaired and pinned, which until now had no reader. It answers
+// the question the kind × verb grid cannot: which of the world's 27 subsystems does a
+// mortal's own work actually reach, and what happens to what it leaves behind.
+//
+// The status is MECHANICAL — derived from the cells, never authored. Whether an
+// UNTOUCHED subsystem is untouched *by design* or is a gap is THR-1401's question for
+// Christian; this view reports coverage and stops there.
+
+type SubsystemStatus = 'live-touched' | 'open-only' | 'untouched';
+
+interface SubsystemRow {
+  readonly subsystem: string;
+  readonly status: SubsystemStatus;
+  /** The strongest cell status any owned kind carries for the verb; `null` when the subsystem owns no kind. */
+  readonly verbs: Readonly<Partial<Record<UndertakingVerbVariant, CellStatus>>>;
+  readonly kinds: readonly string[];
+  readonly readers: readonly SubsystemReader[];
+}
+
+const SUBSYSTEM_STATUS_WORD: Record<SubsystemStatus, string> = { 'live-touched': 'LIVE-TOUCHED', 'open-only': 'OPEN-ONLY', untouched: 'UNTOUCHED' };
+/** Strongest-first: a subsystem's verb cell shows the best any of its kinds manages. */
+const CELL_RANK: Record<CellStatus, number> = { live: 4, wanted: 3, later: 2, open: 1, no: 0 };
+
+function buildSubsystemView(cells: readonly Cell[]): { rows: SubsystemRow[]; problems: string[] } {
+  const problems: string[] = [];
+  const ownerOf = new Map<string, string>();
+  for (const kind of WORLD_OBJECT_KINDS) {
+    if (!SUBSYSTEM_NAMES.has(kind.owningSystem)) {
+      problems.push(`${kind.id}: owningSystem '${kind.owningSystem}' is not a registry subsystem — the join the subsystem view rides is broken (fix the kind, never the registry)`);
+      continue;
+    }
+    ownerOf.set(kind.id, kind.owningSystem);
+  }
+
+  const rows: SubsystemRow[] = SUBSYSTEMS.map(s => {
+    const kinds = WORLD_OBJECT_KINDS.filter(k => ownerOf.get(k.id) === s.name).map(k => k.id as string);
+    const verbs: Partial<Record<UndertakingVerbVariant, CellStatus>> = {};
+    for (const c of cells) {
+      if (ownerOf.get(c.kind) !== s.name) continue;
+      const held = verbs[c.variant];
+      if (held === undefined || CELL_RANK[c.status] > CELL_RANK[held]) verbs[c.variant] = c.status;
+    }
+    const best = Object.values(verbs).reduce((m, v) => Math.max(m, CELL_RANK[v]), 0);
+    const status: SubsystemStatus = best === CELL_RANK.live ? 'live-touched' : best > CELL_RANK.no ? 'open-only' : 'untouched';
+    return { subsystem: s.name, status, verbs, kinds, readers: SUBSYSTEM_READERS[s.name] ?? [] };
+  });
+
+  // Totality, the same three-way contract the cell dispositions carry: every
+  // LIVE-TOUCHED subsystem is named, nothing else is, and every name is a real one.
+  const liveTouched = new Set(rows.filter(r => r.status === 'live-touched').map(r => r.subsystem));
+  for (const r of rows) {
+    if (r.status === 'live-touched' && SUBSYSTEM_READERS[r.subsystem] === undefined) {
+      problems.push(`${r.subsystem}: LIVE-TOUCHED but has no SUBSYSTEM_READERS entry — name who reads what its cells leave, or give it an empty list to record that nothing does`);
+    }
+  }
+  for (const [name, readers] of Object.entries(SUBSYSTEM_READERS)) {
+    if (!SUBSYSTEM_NAMES.has(name)) problems.push(`SUBSYSTEM_READERS['${name}']: not a registry subsystem`);
+    else if (!liveTouched.has(name)) problems.push(`SUBSYSTEM_READERS['${name}']: readers for a subsystem no live cell reaches — stale, remove it`);
+    for (const r of readers) if (!SUBSYSTEM_NAMES.has(r.subsystem)) problems.push(`SUBSYSTEM_READERS['${name}']: reader '${r.subsystem}' is not a registry subsystem`);
+  }
+  return { rows, problems };
+}
+
 const BADGE: Record<CellStatus, string> = { live: '🟢', wanted: '🔵', later: '⏳', open: '🟡', no: '·' };
 const STATUS_WORD: Record<CellStatus, string> = { live: 'live', wanted: 'wanted', later: 'later', open: 'open', no: 'not an object' };
 
@@ -103,7 +169,7 @@ function cellLabelMd(c: Cell): string {
   return c.status === 'live' ? `${BADGE.live} \`${c.op}\`` : c.status === 'no' ? BADGE.no : `${BADGE[c.status]} ${c.status}`;
 }
 
-function renderMarkdown(cells: Cell[]): string {
+function renderMarkdown(cells: Cell[], rows: readonly SubsystemRow[]): string {
   const L: string[] = [];
   const live = cells.filter(c => c.status === 'live'), wanted = cells.filter(c => c.status === 'wanted'), later = cells.filter(c => c.status === 'later'), open = cells.filter(c => c.status === 'open');
   const owing = live.filter(c => c.owes);
@@ -117,6 +183,23 @@ function renderMarkdown(cells: Cell[]): string {
   for (const kind of WORLD_OBJECT_KINDS) {
     const row = UNDERTAKING_VERB_VARIANTS.map(v => cellLabelMd(cells.find(x => x.kind === kind.id && x.variant === v)!));
     L.push(`| **${kind.gameWord}** \`${kind.id}\` | ${row.join(' | ')} |`);
+  }
+  L.push('', '## Subsystems × verbs', '');
+  const touched = rows.filter(r => r.status === 'live-touched'), openOnly = rows.filter(r => r.status === 'open-only'), untouched = rows.filter(r => r.status === 'untouched');
+  L.push(`> The same cells joined through \`WORLD_OBJECT_KINDS[].owningSystem\` — which of the world's ${rows.length} subsystems a mortal's own work reaches, and who reads what it leaves. **${touched.length} LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **${openOnly.length} OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **${untouched.length} UNTOUCHED** (no cell reaches it at all). Status is derived from the cells, never authored. Whether an untouched subsystem is untouched *by design* or is a gap is a design question and is deliberately **not** answered here.`);
+  L.push('');
+  L.push(`| Subsystem | Kinds it owns | ${UNDERTAKING_VERB_VARIANTS.map(v => UNDERTAKING_VERB_WORDS[v]).join(' | ')} | Status | Read by |`);
+  L.push(`|---|---|${UNDERTAKING_VERB_VARIANTS.map(() => '---').join('|')}|---|---|`);
+  for (const r of rows) {
+    const verbCells = UNDERTAKING_VERB_VARIANTS.map(v => { const s = r.verbs[v]; return s === undefined || s === 'no' ? BADGE.no : `${BADGE[s]} ${s}`; });
+    const reads = r.status !== 'live-touched' ? '—' : r.readers.length === 0 ? '**nothing reads this**' : r.readers.map(x => x.subsystem).join(' · ');
+    L.push(`| **${r.subsystem}** | ${r.kinds.length ? r.kinds.map(k => `\`${k}\``).join(', ') : '_none_'} | ${verbCells.join(' | ')} | ${SUBSYSTEM_STATUS_WORD[r.status]} | ${reads} |`);
+  }
+  L.push('', '### What the live cells leave, and who picks it up', '');
+  for (const r of touched) {
+    L.push(`- **${r.subsystem}**`);
+    if (r.readers.length === 0) L.push('  - **Nothing reads this.** Every consequence its live cells write vanishes — a lever with no consequence.');
+    for (const x of r.readers) L.push(`  - _${x.subsystem}_ — ${x.sites}`);
   }
   L.push('', '## Standing riders', '', '_Rules that bind every cell rather than one._', '');
   for (const r of STANDING_RIDERS) L.push(`- ${r}`);
@@ -139,13 +222,16 @@ function renderMarkdown(cells: Cell[]): string {
 }
 
 function esc(s: string): string { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+/** Backticked spans in the curated prose become real code spans on the served page. */
+function codeify(s: string): string { return s.replace(/`([^`]+)`/g, '<code>$1</code>'); }
 
-function renderHtml(cells: Cell[]): string {
+function renderHtml(cells: Cell[], subsystemRows: readonly SubsystemRow[]): string {
   let nav = '';
   try { nav = buildNav(readManifest(), WIKI_PAGE_ID); } catch (err) { console.warn(`[generate-undertaking-grid] wiki nav skipped: ${(err as Error).message}`); }
   const live = cells.filter(c => c.status === 'live'), wanted = cells.filter(c => c.status === 'wanted'), later = cells.filter(c => c.status === 'later'), open = cells.filter(c => c.status === 'open');
   const owing = live.filter(c => c.owes);
   const kindsWithCell = new Set(cells.filter(c => c.status !== 'no').map(c => c.kind)).size;
+  const touched = subsystemRows.filter(r => r.status === 'live-touched'), openOnly = subsystemRows.filter(r => r.status === 'open-only'), untouched = subsystemRows.filter(r => r.status === 'untouched');
   const head = UNDERTAKING_VERB_VARIANTS.map(v => `<th class="verb">${esc(UNDERTAKING_VERB_WORDS[v])}<span class="grp">${esc(v.split(':')[0].toUpperCase())}</span></th>`).join('');
   const rows = WORLD_OBJECT_KINDS.map(kind => {
     const tds = UNDERTAKING_VERB_VARIANTS.map(v => {
@@ -203,6 +289,13 @@ function renderHtml(cells: Cell[]): string {
   #detail h3 { margin: 0 0 6px; font-weight: normal; color: var(--gold); }
   code { font: 12px ui-monospace, Consolas, monospace; color: var(--gold); }
   ul { max-width: 100ch; } li { margin: .3rem 0; }
+  td.owns { padding: 6px 10px; max-width: 200px; } td.owns code { font-size: 10px; margin-right: 3px; white-space: nowrap; }
+  td.reads { padding: 6px 10px; color: var(--muted); font-size: 12px; max-width: 320px; }
+  .sv { display:block; padding: 6px 4px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .sv.live { background: var(--live-soft); color: var(--live); font-weight:bold; } .sv.wanted { background: var(--wanted-soft); color: var(--wanted); } .sv.later { background: var(--later-soft); color: var(--later); } .sv.open { background: var(--open-soft); color: var(--open); } .sv.no { color: var(--muted); }
+  .sstat { display:inline-block; padding: 3px 8px; border-radius: 3px; font-size:10px; letter-spacing:.06em; white-space:nowrap; }
+  .sstat.live-touched { background: var(--live-soft); color: var(--live); } .sstat.open-only { background: var(--open-soft); color: var(--open); } .sstat.untouched { color: var(--muted); border:1px solid var(--line); }
+  .unread { color: var(--open); }
 </style>
 </head>
 <body>
@@ -216,6 +309,21 @@ ${nav}
 ${rows}
 </tbody></table></div>
 <div id="detail"><h3>Pick a cell</h3><p>Click any cell to read what it does, which operation it rides or needs, which old templates it absorbs, and what it still owes.</p></div>
+<h2>Subsystems × verbs</h2>
+<p class="lede">The same cells joined through each kind's <code>owningSystem</code> — which of the world's ${subsystemRows.length} subsystems a mortal's own work reaches, and who reads what it leaves behind. Status is derived from the cells, never authored: <b>live-touched</b> means a live cell rides an op on a kind the subsystem owns, <b>open-only</b> that only decided-but-unbuilt or undecided cells reach it, <b>untouched</b> that no cell reaches it at all. Whether an untouched subsystem is untouched <i>by design</i> or is a gap is a design question and is deliberately not answered here.</p>
+<div class="stats"><div class="stat"><b>${touched.length}</b><span>live-touched</span></div><div class="stat"><b>${openOnly.length}</b><span>open-only</span></div><div class="stat"><b>${untouched.length}</b><span>untouched</span></div></div>
+<div class="wrap"><table><thead><tr><th>Subsystem</th><th>Kinds it owns</th>${head}<th>Status</th><th>Read by</th></tr></thead><tbody>
+${subsystemRows.map(r => {
+    const tds = UNDERTAKING_VERB_VARIANTS.map(v => {
+      const s = r.verbs[v];
+      return s === undefined || s === 'no' ? '<td><span class="sv no">—</span></td>' : `<td><span class="sv ${s}">${s}</span></td>`;
+    }).join('');
+    const reads = r.status !== 'live-touched' ? '<small>—</small>' : r.readers.length === 0 ? '<b class="unread">nothing reads this</b>' : esc(r.readers.map(x => x.subsystem).join(' · '));
+    return `<tr><td class="kind"><b>${esc(r.subsystem)}</b></td><td class="owns">${r.kinds.length ? r.kinds.map(k => `<code>${esc(k)}</code>`).join(' ') : '<small><i>none</i></small>'}</td>${tds}<td><span class="sstat ${r.status}">${SUBSYSTEM_STATUS_WORD[r.status]}</span></td><td class="reads">${reads}</td></tr>`;
+  }).join('\n')}
+</tbody></table></div>
+<h3>What the live cells leave, and who picks it up</h3>
+<ul>${touched.map(r => `<li><b>${esc(r.subsystem)}</b>${r.readers.length === 0 ? '<ul><li><b class="unread">Nothing reads this.</b> Every consequence its live cells write vanishes — a lever with no consequence.</li></ul>' : `<ul>${r.readers.map(x => `<li><i>${esc(x.subsystem)}</i> — ${codeify(esc(x.sites))}</li>`).join('')}</ul>`}</li>`).join('\n')}</ul>
 <h2>Standing riders</h2>
 <ul>${STANDING_RIDERS.map(r => `<li>${esc(r)}</li>`).join('\n')}</ul>
 <h2>Wanted cells — decided yes, not yet built</h2>
@@ -249,8 +357,10 @@ function main(): void {
   const check = process.argv.includes('--check');
   const repoRoot = process.cwd();
   const { cells, problems } = buildGrid();
-  const md = renderMarkdown(cells);
-  const html = renderHtml(cells);
+  const { rows, problems: viewProblems } = buildSubsystemView(cells);
+  problems.push(...viewProblems);
+  const md = renderMarkdown(cells, rows);
+  const html = renderHtml(cells, rows);
   const mdPath = path.join(repoRoot, OUTPUT_MD_REL);
   const htmlPath = path.join(repoRoot, OUTPUT_HTML_REL);
 

@@ -171,6 +171,93 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
   },
 };
 
+// ─── The reader column of the subsystem × verb view (THR-1427) ──────────────
+
+/** One subsystem that consumes what another's live cells leave behind, and the sites that do it. */
+export interface SubsystemReader {
+  /** A `SUBSYSTEM_NAMES` member — the generator fails by name on anything else. */
+  readonly subsystem: string;
+  /** The engine sites, by module (and line where the audit pinned one). */
+  readonly sites: string;
+}
+
+/**
+ * Who reads what each LIVE-TOUCHED subsystem's cells leave behind — the curated half of
+ * the subsystem × verb view, transcribed from the wayfinder research
+ * (`Docs/audits/2026-09-03-undertaking-systems-coverage-research.md` § 1, column 5).
+ *
+ * Keyed by the *written* subsystem (the `owningSystem` of the kind the cell acts on);
+ * each entry names the *reading* subsystems. Held to totality by the generator: a
+ * LIVE-TOUCHED subsystem with no entry fails, an entry on a subsystem that is not
+ * LIVE-TOUCHED is stale and fails, and a key or a `subsystem` the registry does not have
+ * fails — the same three-way contract the cell dispositions carry.
+ *
+ * **An empty array is a finding, not an omission.** It renders as "nothing reads this",
+ * because a lever with no consequence is exactly what this view is for. The per-cell
+ * version of the same finding is the `owes` field above, which the grid already renders.
+ *
+ * Two deliberate exclusions, so nothing plausible ships as data: sites the audit lists
+ * without a subsystem that claims them (`mentorshipOutcomes.ts`, `binding/binder.ts`,
+ * `binding/remoteAnchor.ts`) are left out rather than attributed by guess; and the
+ * untouched-by-design / gap split (audit § 3) is deliberately absent — that verdict is
+ * THR-1401's question for Christian, not this generator's to render.
+ */
+export const SUBSYSTEM_READERS: Readonly<Record<string, readonly SubsystemReader[]>> = {
+  'World Generation, Terrain & Places': [
+    { subsystem: 'Mortal Economy & Prosperity', sites: '`phaseProsperity.ts`, `phaseSettlementPromotion.ts`, `phases/resourceStockTiers.ts`, `phaseUnrest.ts` — the prosperity a founded, raised, lowered or ruined Location carries' },
+    { subsystem: 'Strategic Projects & Control', sites: '`phaseStrategicProjects.ts` (degradation, neglect), `strategicTelemetry.ts`, `strategicPresentation.ts`, `HexMapV2/scene/StrategicMarkerMesh.ts` — the `controls` edge claim × Location writes' },
+    { subsystem: 'Movement & Colocation', sites: '`sublocation.ts:592-636 checkDissolutions` (a `permanent` built Place survives), `socialEncounterGeneration.ts` (`sublocationTypeId`), `distanceMatrix.ts` (structural rebuild)' },
+    { subsystem: 'War, Armies & Battles', sites: '`battleAftermath.ts:150,163` skips the `ruins` subtype; `armySupply.ts:204` reads the first incoming `controls` source **as the faction** — a mortal claimant is misread as an army\'s provisioning faction (a type confusion, not a design)' },
+    { subsystem: 'Factions & Succession', sites: '`notableAgendas.ts:233,269` (`ruins`)' },
+    { subsystem: 'Mandate', sites: '`phaseMandate.ts:34` lists `ruins` among the mandate-relevant subtypes' },
+    { subsystem: 'Doom Clock & Journey', sites: '`journeyEngine.ts:142` counts the First\'s `controls` edges as `locationsControlled`' },
+    { subsystem: 'Attachments, Items & Possessions', sites: '`holdings.ts` — the `owns` edge and holding face that claim / seize / raze × Place move' },
+    { subsystem: 'Encounters & Dilemmas', sites: '`encounterScoring.ts` (`prosperity`)' },
+  ],
+  'Mortal Economy & Prosperity': [
+    { subsystem: 'Mortal Economy & Prosperity', sites: '`phaseTradeRouteDecay.ts:92` (`lastTraded` staleness), `phases/routeEvents.ts:137-144` (auto-clears `threatened` after `ROUTE_THREATENED_CLEAR_TICKS`), `phaseEconomicTraits.ts:75` (counts `controlledBy`)' },
+    { subsystem: 'War, Armies & Battles', sites: '`armySupply.ts:115` reads `threatened` on `trades_with` — a blockade starves a campaign' },
+    { subsystem: 'Attention, Chronicle & Narrative', sites: '`tradeRouteMarkers.ts`, `proseResolvers.ts:912-924` (the marker and the sentence)' },
+  ],
+  'War, Armies & Battles': [
+    { subsystem: 'War, Armies & Battles', sites: '`armyAttrition.ts`, `battleResolution.ts` — both walk `member_of` from the raised warhost' },
+    { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts` (`groupStatus`) — an army is a company kind' },
+    { subsystem: 'Strategic Projects & Control', sites: '`strategicActionCandidates.ts`' },
+  ],
+  'Companies & Group Travel': [
+    { subsystem: 'Companies & Group Travel', sites: '`groups/groupQueries.ts`, `groups/groupMovement.ts`, `groups/groupCohesion.ts`, `groups/phaseGroups.ts`, `groups/groupDissolution.ts`' },
+    { subsystem: 'Encounters & Dilemmas', sites: '`groups/bandOpposition.ts`, `encounterSeeding.ts` (`groupStatus`)' },
+    { subsystem: 'Strategic Projects & Control', sites: '`strategicActionCandidates.ts`' },
+  ],
+  'Factions & Succession': [
+    { subsystem: 'Factions & Succession', sites: '`phaseSchismResolution.ts:34` consumes the `schismPendingResolutionTick` stamp destroy × Faction plants; `phaseFactionActions.ts`, `factionAmbitions.ts`, `phaseFactionSuccession.ts` read the founded faction node' },
+  ],
+  'Attachments, Items & Possessions': [
+    { subsystem: 'Attachments, Items & Possessions', sites: '`attachmentSlotResolver.ts:124-241` (`possesses`, `acquiredTick`), `orchestrator.ts:145 expireCompanions` (phase 6.625b)' },
+    { subsystem: 'Encounters & Dilemmas', sites: '`domainCapability.ts` (item and companion contributions), `resolutionModifiers.ts` (`owns`), `graphConditions.ts`' },
+    { subsystem: 'Effects & Conditions', sites: '`effects/effectPredicates.ts` — the `owns` predicate, and the `condition_inflict` trait use × Power mints' },
+    { subsystem: 'Factions & Succession', sites: '`notableAgendas.ts:446` (`owns`)' },
+  ],
+  'Reputation & Influence': [
+    { subsystem: 'Encounters & Dilemmas', sites: '`socialLeverage.ts` (`reputationLeverageTerm`), `encounterAftermath.ts`, `unifiedActionResolution.ts`' },
+    { subsystem: 'Ambitions & Undertakings', sites: '`grievance/grudgeEdge.ts`, `grievance/covetRivalry.ts`, `undertakingMotive.ts` — the `hostile_to` edge destroy × Standing writes is a motive gate on later cells' },
+    { subsystem: 'Secrets & Favors', sites: '`secretGeneration.ts`' },
+    { subsystem: 'Mortal Economy & Prosperity', sites: '`phases/routeEvents.ts` (`hostile_to`)' },
+    { subsystem: 'Attention, Chronicle & Narrative', sites: '`LocationProfileModal.tsx`, `OverviewTab.tsx` — standing on the sheet' },
+  ],
+  'Secrets & Favors': [
+    { subsystem: 'Secrets & Favors', sites: '`phaseSecretsFavors.ts` (decay; a revealed secret is exempt — `graphOpExecutor.ts:1443`), `secretsFavorsConsequences.ts`, `secretsFromResolution.ts`' },
+    { subsystem: 'Encounters & Dilemmas', sites: '`socialLeverage.ts` — a mark is leverage in the encounter' },
+    { subsystem: 'Intelligence, Knowledge & Familiarity', sites: '`intelligence.ts` (`knows_secret_of`)' },
+    { subsystem: 'Ruins, Clues & Delves', sites: '`ruins/perceiveRelay.ts:381`' },
+    { subsystem: 'Attention, Chronicle & Narrative', sites: '`threadDigest.ts`, `agentDetail.ts`' },
+  ],
+  'Effects & Conditions': [
+    { subsystem: 'Effects & Conditions', sites: '`conditionDecay.ts:63` (walks `has_trait`), `effects/effectQueries.ts`, `effects/effectWalker.ts`, `effects/conditionProxyEvents.ts`, `phaseSlotCaps`' },
+    { subsystem: 'Encounters & Dilemmas', sites: '`effects/effectPredicates.ts`, `graphConditions.ts` — a cured condition changes what the mortal is eligible for' },
+  ],
+};
+
 /** Dispositions for every non-live cell of every kind that has at least one cell. */
 export const CELL_DISPOSITIONS: Readonly<Partial<Record<WorldObjectKindId, Partial<Record<UndertakingVerbVariant, CellDisposition>>>>> = {
   area: {

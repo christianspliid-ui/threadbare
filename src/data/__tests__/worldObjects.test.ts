@@ -225,3 +225,61 @@ describe('world-object registry — write-time guard', () => {
     expect([...violations].sort(), 'values the world writes that no kind claims').toEqual([]);
   }, 120_000);
 });
+
+// ─── The subsystem × verb view (THR-1427) ──────────────────────────────────
+// THR-1407 made `owningSystem` joinable; this is the reader that join was for. The
+// view is generated (`npm run generate-undertaking-grid`), so these pin the *artifact*
+// rather than the builder — a section that silently stops being emitted, or one that
+// grows a row for a subsystem the registry does not have, fails here.
+//
+// Names, never a count (THR-688 rule A). A count is exactly how the join drifted to
+// 18-of-20 unnoticed: the number stayed plausible while the membership rotted.
+
+describe('undertaking grid — subsystem × verb view', () => {
+  const GRID_MD_REL = path.join('Docs', 'canon', 'undertaking-grid.generated.md');
+  const VIEW_HEADING = '## Subsystems × verbs';
+
+  /** The view's rows, by subsystem name — the leading bold cell of each table row in the section. */
+  const viewRowNames = (): string[] => {
+    const md = fs.readFileSync(path.join(REPO_ROOT, GRID_MD_REL), 'utf-8');
+    const start = md.indexOf(VIEW_HEADING);
+    expect(start, `${GRID_MD_REL} has no "${VIEW_HEADING}" section — regenerate with \`npm run generate-undertaking-grid\``).toBeGreaterThan(-1);
+    const rest = md.slice(start + VIEW_HEADING.length);
+    const end = rest.indexOf('\n## ');
+    const section = end === -1 ? rest : rest.slice(0, end);
+    return [...section.matchAll(/^\| \*\*(.+?)\*\* \|/gm)].map(m => m[1]);
+  };
+
+  it('gives every registry subsystem exactly one row, and no row a name the registry lacks', () => {
+    const rows = viewRowNames();
+    const missing = [...SUBSYSTEM_NAMES].filter(n => !rows.includes(n)).sort();
+    expect(missing, 'SUBSYSTEM_NAMES members with no row in the view').toEqual([]);
+    const foreign = rows.filter(n => !SUBSYSTEM_NAMES.has(n)).sort();
+    expect(foreign, 'view rows naming something absent from SUBSYSTEM_NAMES').toEqual([]);
+    const duplicated = rows.filter((n, i) => rows.indexOf(n) !== i).sort();
+    expect(duplicated, 'subsystems rendered more than once').toEqual([]);
+  });
+
+  it('gives every row a status, and every live-touched row a reader or an explicit "nothing reads this"', () => {
+    const md = fs.readFileSync(path.join(REPO_ROOT, GRID_MD_REL), 'utf-8');
+    const start = md.indexOf(VIEW_HEADING);
+    expect(start, `${GRID_MD_REL} has no "${VIEW_HEADING}" section`).toBeGreaterThan(-1);
+    const rest = md.slice(start + VIEW_HEADING.length);
+    const end = rest.indexOf('\n## ');
+    const section = end === -1 ? rest : rest.slice(0, end);
+    const statusless: string[] = [];
+    const readerless: string[] = [];
+    for (const line of section.split('\n')) {
+      const m = /^\| \*\*(.+?)\*\* \|(.*)\|\s*$/.exec(line);
+      if (!m) continue;
+      const [, name, body] = m;
+      const status = /LIVE-TOUCHED|OPEN-ONLY|UNTOUCHED/.exec(body)?.[0];
+      if (!status) { statusless.push(name); continue; }
+      // The reader column is the last cell; a live-touched subsystem must fill it.
+      const reads = body.split('|').at(-1)?.trim() ?? '';
+      if (status === 'LIVE-TOUCHED' && reads.length === 0) readerless.push(name);
+    }
+    expect(statusless, 'view rows carrying no LIVE-TOUCHED / OPEN-ONLY / UNTOUCHED status').toEqual([]);
+    expect(readerless, 'LIVE-TOUCHED rows with an empty reader column — say who reads it, or say nothing does').toEqual([]);
+  });
+});
