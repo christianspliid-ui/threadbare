@@ -8,6 +8,7 @@ import { Modal } from '../shared/Modal';
 import type { OmenState, ActiveOmen } from '../../types/omen';
 import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
+import { durationLabel } from '../../engine/aftermathWords';
 
 const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
   doom_echo: '⊘',
@@ -79,7 +80,9 @@ function OmenCard({ omen, currentTick, isPrimary }: { omen: ActiveOmen; currentT
 
       {/* Stats */}
       <div style={{ display: 'flex', gap: '16px', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '8px' }}>
-        <span>{intensity} · {ticksLeft} ticks remaining</span>
+        {/* THR-1423: was `{ticksLeft} ticks remaining` — a raw magnitude (Law 13) in an
+            engine unit the player never sees named anywhere else (Law 14). */}
+        <span>{intensity} · {durationLabel(ticksLeft)} remaining</span>
         {biasParts.length > 0 && <span>{biasParts.join(', ')}</span>}
       </div>
     </div>

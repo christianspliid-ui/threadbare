@@ -9,6 +9,7 @@ import { Medallion } from '../shared/Medallion';
 import { FlavorQuote } from '../shared/FlavorQuote';
 import { pickFallbackFlavor } from '../../data/reveal-content';
 import { getAttachmentGlyph } from './attachmentGlyphs';
+import { durationLabel } from '../../engine/aftermathWords';
 
 export interface AttachmentDetailData {
   id: string;
@@ -130,7 +131,11 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
       title: 'Duration',
       insightTier: 'stranger',
       proseVoice: 'chronicle',
-      prose: `${attachment.ticksRemaining} / ${attachment.totalTicks} ticks`,
+      // THR-1423: was `${ticksRemaining} / ${totalTicks} ticks` — two raw magnitudes
+      // (Law 13) in an engine unit named nowhere player-facing (Law 14). The `x / y`
+      // pair is the same quantity the row's ProgressBar already draws, so the reading
+      // keeps only the remaining term, which is what the section title asks for.
+      prose: `${durationLabel(attachment.ticksRemaining)} remaining`,
     });
   }
 

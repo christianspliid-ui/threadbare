@@ -23,6 +23,7 @@ import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import type { DigestEntry } from '../../types/attention';
 import type { ReachDomain } from '../../types/traits';
 import { queryDigest } from '../../engine/digestBuffer';
+import { durationLabel } from '../../engine/aftermathWords';
 import {
   READ_THREADS_COST_6,
   READ_THREADS_COST_12,
@@ -300,7 +301,11 @@ function PreReadState({
             disabled={!canAfford || onCooldown}
             onClick={onRead}
           >
-            {onCooldown ? `Cooldown (${cooldownTicksRemaining} ticks)` : 'Read the Threads'}
+            {/* THR-1423: was `Cooldown (${cooldownTicksRemaining} ticks)` — a raw magnitude
+                (Law 13) in an engine unit the player never sees named (Law 14). Only rendered
+                while `onCooldown`, so the count is always >= 1 and `durationLabel` never has to
+                read a zero as "one day". */}
+            {onCooldown ? `Cooldown (${durationLabel(cooldownTicksRemaining)})` : 'Read the Threads'}
           </Button>
           {onCooldown && (
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>

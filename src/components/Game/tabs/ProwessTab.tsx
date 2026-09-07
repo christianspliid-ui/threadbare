@@ -10,6 +10,7 @@ import type { AttachmentTier } from '../../../types/attachments';
 import type { AttachmentFullEntry } from '../../../engine/agentAttachments';
 import { getAttachmentGlyph } from '../attachmentGlyphs';
 import { resolveAttachmentTooltip } from '../../../engine/attachmentTooltip';
+import { durationLabel } from '../../../engine/aftermathWords';
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 
@@ -154,7 +155,9 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
               />
             </div>
             <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              {entry.ticksRemaining} ticks remaining
+              {/* THR-1423: was `{entry.ticksRemaining} ticks remaining` — a raw magnitude
+                  (Law 13) in an engine unit named nowhere player-facing (Law 14). */}
+              {durationLabel(entry.ticksRemaining)} remaining
             </span>
           </div>
         )}

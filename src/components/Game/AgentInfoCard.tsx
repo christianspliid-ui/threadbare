@@ -10,6 +10,7 @@ import { generateEntityProse } from '../../engine/proseGenerator';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
 import { getSphereColor } from '../../data/sphereIcons';
 import { BACKSTORY_CONSTANTS } from '../../types/prose';
+import { durationLabel } from '../../engine/aftermathWords';
 import {
   getAgentStrategicSummary,
   getAgentStrategicHistory,
@@ -175,7 +176,26 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                   desc={
                     isCourtPosition
                       ? 'Court position in your divine Scry'
-                      : `${strengthPct}% strength · ${effect.ticksRemaining} ticks remaining`
+                      : // THR-1423: `4 ticks remaining` is a raw magnitude (Law 13) in an engine
+                        // unit the player never sees named anywhere else (Law 14). `durationLabel`
+                        // is the sanctioned reading and spells its count out.
+                        //
+                        // `ticksRemaining` is optional on `ActiveEffect` — a permanent effect
+                        // carries none. The old string interpolated that straight through as
+                        // `undefined ticks remaining`; the clause is now dropped entirely rather
+                        // than reading a missing term as a present one (NFP #4).
+                        //
+                        // `strengthPct` is the other half and is NOT banded here: Law 13 bans a
+                        // percentage outright with no sanctioned numeric alternative, so replacing
+                        // it is a Law 15 ruling, split out to THR-1424.
+                        [
+                          strengthPct != null ? `${strengthPct}% strength` : null,
+                          effect.ticksRemaining != null
+                            ? `${durationLabel(effect.ticksRemaining)} remaining`
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')
                   }
                 >
                   <span

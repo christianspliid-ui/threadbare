@@ -2,6 +2,7 @@ import type { DoomClockDefinition, DoomClockState } from '../../types/doomClock'
 import { Modal } from '../shared/Modal';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { DOOM_CLIMAX_START } from '../../data/game-config';
+import { durationLabel } from '../../engine/aftermathWords';
 
 interface DoomClockDetailProps {
   open: boolean;
@@ -186,8 +187,17 @@ export function DoomClockDetail({
                 value={state.progress >= DOOM_CLIMAX_START ? `${state.currentStage} of 5 (Climax)` : `${state.currentStage} of 5`}
                 color={color}
               />
-              <StatRow label="Ticks Elapsed" value={`${state.currentTick} / ${state.totalTicks}`} />
-              <StatRow label="Ticks Remaining" value={`${ticksRemaining}`} />
+              {/* THR-1423: both rows were raw tick counts — `24 / 96` and a bare `72` — a
+                  magnitude (Law 13) in an engine unit named nowhere player-facing (Law 14),
+                  with the unit spelled into the row LABEL as well as the value. Both are
+                  durations, so `durationLabel` reads each without inventing a language.
+                  The `pct` percentage above (line ~169) is the other Law 13 violation on this
+                  surface and is NOT banded here — it needs a Law 15 ruling, split to THR-1424. */}
+              <StatRow
+                label="Elapsed"
+                value={`${durationLabel(state.currentTick)} of ${durationLabel(state.totalTicks)}`}
+              />
+              <StatRow label="Remaining" value={durationLabel(ticksRemaining)} />
               <StatRow label="Next Beat" value={nextBeatLabel} />
               {journeyLabel && (
                 <StatRow label="The First" value={journeyLabel} color={color} />

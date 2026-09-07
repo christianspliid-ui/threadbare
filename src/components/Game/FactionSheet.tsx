@@ -14,6 +14,7 @@ import type {
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 import type { FactionActionRecord } from '../../types/factionAction';
 import { getReputationWord } from '../../data/domain-words';
+import { durationLabel } from '../../engine/aftermathWords';
 
 interface FactionSheetProps {
   factionId: string;
@@ -362,7 +363,11 @@ export const FactionSheet = React.memo(function FactionSheet({
                     {activeConclave && (
                       <div style={{ marginTop: 'var(--space-2)', padding: '8px', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.08)', border: '1px solid rgba(139, 92, 246, 0.25)' }}>
                         <span style={{ color: '#a78bfa', fontSize: 'var(--text-xs)', display: 'block', marginBottom: '2px' }}>
-                          Conclave in session ({activeConclave.ticksRemaining} tick{activeConclave.ticksRemaining !== 1 ? 's' : ''} remaining)
+                          {/* THR-1423: was `({n} tick{s} remaining)` — a raw magnitude (Law 13)
+                              in an engine unit named nowhere player-facing (Law 14). The
+                              `tick{…}` interpolation is why the ticket's own grep missed this
+                              site; `durationLabel` carries its own pluralisation. */}
+                          Conclave in session ({durationLabel(activeConclave.ticksRemaining)} remaining)
                         </span>
                         <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontStyle: 'italic' }}>
                           {activeConclave.question}

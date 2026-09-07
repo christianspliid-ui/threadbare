@@ -232,7 +232,9 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
                 />
               </div>
               <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                {entry.ticksRemaining} ticks remaining
+                {/* THR-1423: the sibling of the companions row above — same raw tick
+                    magnitude (Law 13) in the same unnamed engine unit (Law 14). */}
+                {durationLabel(entry.ticksRemaining)} remaining
               </span>
             </div>
           )}
