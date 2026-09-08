@@ -222,6 +222,15 @@ export interface SecretSummary {
   secretType: string;
   magnitude: number;
   revealed: boolean;
+  /**
+   * How the holder came by it (THR-1439) — `'stolen'` when it was taken off somebody
+   * else, whatever the cultivating cell wrote otherwise. The sheet says *taken from*
+   * rather than *knows* on a stolen one, so the theft is visible on the surface the
+   * god actually opens.
+   */
+  source?: string;
+  /** Whose it was before it was stolen, when it was (THR-1439). */
+  stolenFromName?: string;
 }
 
 /** Compact summary of one favor for UI display */
@@ -415,6 +424,19 @@ export interface AgentInfoCardData {
    * would tell the player who someone hates before they know who they trust.
    */
   grudges?: GrudgeSummary[];
+  /**
+   * Live marks and favours between this agent and others (THR-1439), gated with
+   * `topBonds` and `grudges` at `known`+ for the same reason: what somebody holds over
+   * whom is the same class of fact as who they trust.
+   *
+   * The strand has been computed on `AgentDetail` since THR-30; it reached the *card*
+   * only with THR-1439, because until then its only renderers were the unmounted
+   * `AgentDetailPanel` (impediment #981) and the debug tab, both of which read
+   * `AgentDetail` directly. `getAgentInfoCard` copies fields onto a fresh object rather
+   * than spreading the detail, so a field absent here is absent on the live sheet no
+   * matter what the engine computed.
+   */
+  leverage?: LeverageSummary;
   quotes?: string[];
   cooperationStrategy?: string;
   reputationWord?: string;
@@ -774,12 +796,19 @@ export function getAgentDetail(
     .filter(e => !(e.properties.revealed as boolean))
     .map(e => {
       const subjectNode = graph.getNode(e.target);
+      // THR-1439: provenance, so a stolen mark reads as a theft rather than as
+      // knowledge that arrived from nowhere.
+      const source = typeof e.properties.source === 'string' ? e.properties.source : undefined;
+      const stolenFrom = typeof e.properties.stolenFromId === 'string'
+        ? graph.getNode(e.properties.stolenFromId)?.name : undefined;
       return {
         subjectId: e.target,
         subjectName: subjectNode?.name ?? '(unknown)',
         secretType: (e.properties.secretType as string) ?? 'hidden_weakness',
         magnitude: (e.properties.magnitude as number) ?? 0,
         revealed: false,
+        ...(source ? { source } : {}),
+        ...(stolenFrom ? { stolenFromName: stolenFrom } : {}),
       };
     })
     .sort((a, b) => b.magnitude - a.magnitude)
@@ -892,6 +921,9 @@ function describeWealthSource(reason: string | undefined): string | undefined {
     case 'route_control': return 'tolls on a road they hold';
     case 'sublocation_income': return 'a freehold that pays its way';
     case 'location_tithe': return 'the tithe of a place they control';
+    // THR-1439: the active harvest reads differently from the passive tithe above —
+    // the tithe arrives, the harvest was gone and taken.
+    case 'draw_yield': return 'a tithe drawn by their own hand';
     case 'trade_success': return 'a trade that went well';
     case 'trade_failure': return 'a trade that did not';
     case 'disruption': return 'a road gone bad';
@@ -1558,6 +1590,13 @@ export function getAgentInfoCard(
     // has never wronged anyone renders no section at all rather than an empty heading.
     const grudges = getAgentGrudges(graph, agentId);
     if (grudges.length > 0) card.grudges = grudges;
+
+    // Live marks and favours (THR-1439), gated here with bonds and grudges. `detail`
+    // already carries the strand, computed since THR-30 — it simply had no renderer a
+    // player could open until the Bonds tab's Agreements rows, and this copy is what
+    // gets it there. `undefined` when the agent holds and owes nothing, so the section
+    // keeps its placeholder rather than rendering an empty list.
+    if (detail.leverage) card.leverage = detail.leverage;
 
     // Known level: exactly 1 quote
     if (knowledgeLevel === 'known') {

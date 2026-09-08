@@ -123,6 +123,11 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.control_seize.route',
         'cell.create.place',
         'cell.change_raise.location',
+        // Yield and leverage (THR-1439). A magnate's two active moves: taxing a market
+        // they hold, and widening a lane they own so it carries more. Appended, per the
+        // THR-1308 lesson below.
+        'cell.use.location',
+        'cell.change_raise.route',
       ],
       templateIds: [
         'strategic_survey_market',
@@ -492,6 +497,12 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.use.agreement',
         'cell.destroy.agreement',
         'cell.control_seize.item',
+        // Yield and leverage (THR-1439). A dynasty holds court at the towns it took
+        // (`claim × Location` is already on this list, so the harvest has something to
+        // harvest), and calls in the favours its name has earned — which is the whole
+        // of what a court-political ambition does with standing it cannot spend twice.
+        'cell.use.location',
+        'cell.use.standing',
       ],
       templateIds: [
         'strategic_assess_politics',
@@ -669,6 +680,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.create.network',
         'cell.change_raise.network',
         'cell.use.network',
+        // Yield and leverage (THR-1439). The spy's signature verb: taking what somebody
+        // else knows, so they no longer know it alone. This ambition already owns the
+        // cultivating and pressing of marks, and `use × Network` is the same act at
+        // scale — the theft is the one-handed version. `use × Standing` sits beside it
+        // because an informant is often bought with a favour rather than with coin.
+        'cell.control_seize.agreement',
+        'cell.use.standing',
       ],
       templateIds: [
         'strategic_research_archive',

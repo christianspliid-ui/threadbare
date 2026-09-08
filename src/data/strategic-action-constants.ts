@@ -1422,3 +1422,73 @@ export const PLOT_WITNESS_SECRET_TYPE = 'witnessed_killing';
 
 /** How damning that secret is. Heavier than an observed movement: they saw a murder. */
 export const PLOT_WITNESS_MAGNITUDE = 0.9;
+
+// ─── Yield and leverage (THR-1439) ──────────────────────────────────
+//
+// The last band of the undertaking grid: four cells that move quantities the world
+// already pays and already spends. A held Location can be harvested, a claimed lane's
+// volume raised, a secret stolen outright, and a favour called in on good standing.
+//
+// The costs below are the point of the band. A harvest is not a button: it thins the
+// town's prosperity and the holder's standing there whether or not it lands, so greed
+// reads as a risk rather than a free lever (NFP #5).
+
+/** The lump a harvest draws before the prosperity and Place multipliers — three days of tithe. */
+export const YIELD_DRAW_BASE = 3;
+
+/** Each productive Place in the Location adds this much again to the harvest. */
+export const YIELD_PLACE_MULTIPLIER = 0.25;
+
+/** At most this many productive Places count — a market town, not an arbitrage engine. */
+export const YIELD_DRAW_MAX_PLACES = 4;
+
+/**
+ * Which Place classes multiply a harvest (`placeClassOf`, `src/data/world-objects.ts`).
+ * Commerce alone today: a warehouse and a counting house are what a tithe is drawn on;
+ * a barracks is not.
+ */
+export const YIELD_PRODUCTIVE_PLACE_CLASSES: readonly string[] = ['commerce'] as const;
+
+/** What a harvest costs the Location's prosperity (the 0–100 score), floored at 0. */
+export const YIELD_DRAW_PROSPERITY_COST = 4;
+
+/** What a harvest costs the holder's standing *with the Location* — the town notices. */
+export const YIELD_DRAW_STANDING_COST = 0.05;
+
+/** A Location is harvested at most once an income interval (`HOLDING_INCOME_INTERVAL_TICKS`). */
+export const YIELD_DRAW_COOLDOWN_TICKS = 12;
+
+/**
+ * The band scales the lump. A band with no row here scales to nothing — and the costs
+ * are paid anyway, which is what makes the harvest a risk rather than a button.
+ */
+export const YIELD_DRAW_BAND_SCALE: Readonly<Record<string, number>> = {
+  critical_success: 1.5,
+  success: 1,
+  success_at_cost: 0.75,
+};
+
+/** The volume an expansion work writes onto a lane, capped at `TRADE_ROUTE_MAX_VOLUME`. */
+export const ROUTE_RAISE_VOLUME_DELTA = 2;
+
+/**
+ * The standing a favour can be called in on. `Accepted` (0.5) is the neutral default
+ * every stranger carries, so the gate sits at Respected — a favour is owed by someone
+ * who thinks well of you, not by someone who merely has no quarrel.
+ */
+export const FAVOR_STANDING_MIN = 0.6;
+
+/** The seeded-`relates_to` equivalent, read when no `reputation_with` score exists yet. */
+export const FAVOR_SENTIMENT_MIN = 0.3;
+
+/** What calling in a favour spends of the standing it rests on. */
+export const FAVOR_STANDING_COST = 0.1;
+
+/** The favour's weight — the mark's default, so both classes of Agreement band alike. */
+export const FAVOR_MAGNITUDE = UNDERTAKING_DEFAULT_MARK_MAGNITUDE;
+
+/** What redeeming a favour buys the holder with the debtor's faction (or the debtor). */
+export const FAVOR_REDEEM_STANDING_GAIN = 0.1;
+
+/** What forgiving a debt earns with the debtor — generosity the debtor notices. */
+export const FAVOR_FORGIVE_STANDING_GAIN = 0.05;

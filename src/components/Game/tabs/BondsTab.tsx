@@ -53,6 +53,82 @@ const SOURCE_LABELS: Record<string, string> = {
   faction: 'Faction record',
 };
 
+// ─── Agreements (THR-1439) ────────────────────────────────────────
+
+/**
+ * One Agreements row: a sentence in three pieces so the other party can be a link
+ * (Law 21 — the two ends of a bond are both reachable).
+ */
+interface AgreementRow {
+  key: string;
+  lead: string;
+  partyId: string;
+  partyName: string;
+  tail: string;
+}
+
+/**
+ * The live marks and favours on this sheet, in words.
+ *
+ * Both classes of Agreement, in the order they matter to a reader: what this mortal
+ * holds over other people, what other people hold over them, what they are owed and
+ * what they owe. Provenance is part of the sentence — a stolen secret says *taken
+ * from*, a called-in favour says the asking was deliberate — because those are exactly
+ * the facts the two new cells produce, and a row that flattened them would leave the
+ * cells writing what nothing reads.
+ *
+ * No numbers of any kind (Law 4): `magnitude` decides nothing here, and a count of
+ * secrets is not a thing anyone would say out loud.
+ */
+function buildAgreementRows(card: AgentInfoCardData): AgreementRow[] {
+  if (!hasKnowledge(card.knowledgeLevel, 'known')) return [];
+  const leverage = card.leverage;
+  if (!leverage) return [];
+  const rows: AgreementRow[] = [];
+
+  for (const secret of leverage.secretsHeld) {
+    rows.push({
+      key: `held-${secret.subjectId}`,
+      lead: 'They know something about ',
+      partyId: secret.subjectId,
+      partyName: secret.subjectName,
+      tail: secret.source === 'stolen'
+        ? `, taken from ${secret.stolenFromName ?? 'whoever held it before'}.`
+        : '.',
+    });
+  }
+  for (const secret of leverage.secretsAbout) {
+    rows.push({
+      key: `about-${secret.subjectId}`,
+      lead: 'Something of theirs is known to ',
+      partyId: secret.subjectId,
+      partyName: secret.subjectName,
+      tail: '.',
+    });
+  }
+  for (const favor of leverage.favorsOwedToMe) {
+    rows.push({
+      key: `owed-${favor.counterpartyId}`,
+      lead: '',
+      partyId: favor.counterpartyId,
+      partyName: favor.counterpartyName,
+      tail: favor.context === 'called_in'
+        ? ' owes them a favour, called in and not yet repaid.'
+        : ' owes them a favour.',
+    });
+  }
+  for (const favor of leverage.favorsOwed) {
+    rows.push({
+      key: `owes-${favor.counterpartyId}`,
+      lead: 'They owe ',
+      partyId: favor.counterpartyId,
+      partyName: favor.counterpartyName,
+      tail: favor.context === 'called_in' ? ' a favour that was asked for.' : ' a favour.',
+    });
+  }
+  return rows;
+}
+
 // ─── Component ───────────────────────────────────────────────────
 
 interface BondsTabProps {
@@ -87,6 +163,8 @@ export function BondsTab({ card, knowledge, onOpenEntity }: BondsTabProps) {
   const dispositionLabel = card.cooperationStrategy
     ? (DISPOSITION_LABEL_MAP[card.cooperationStrategy] ?? card.cooperationStrategy)
     : null;
+
+  const agreementRows = buildAgreementRows(card);
 
   return (
     <div className="space-y-4">
@@ -171,10 +249,29 @@ export function BondsTab({ card, knowledge, onOpenEntity }: BondsTabProps) {
         </section>
       )}
 
-      {/* Agreements — placeholder */}
-      <section>
+      {/* Agreements (THR-1439). The leverage strand has been computed on the card
+          since THR-30 and rendered nowhere the player could reach — its only
+          renderers were the unmounted AgentDetailPanel (impediment #981) and the
+          debug tab, so a stolen secret and a called-in favour were invisible on the
+          surface the god actually opens. These rows are that strand, in words: no
+          magnitudes, no keys, no counts (Law 4). Gated at `known`, the same bar the
+          Relationships rows above use — a stranger's agreements are nobody's
+          business, and their sheet keeps the placeholder. */}
+      <section data-testid="modal-agreements">
         <SectionHeading as="h2">Agreements</SectionHeading>
-        <p className="text-stone-400 italic text-sm">No known agreements.</p>
+        {agreementRows.length > 0 ? (
+          <div className="space-y-2">
+            {agreementRows.map(row => (
+              <p key={row.key} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {row.lead}
+                <EntityLink id={row.partyId} name={row.partyName} onOpenEntity={onOpenEntity} />
+                {row.tail}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <p className="text-stone-400 italic text-sm">No known agreements.</p>
+        )}
       </section>
 
       {/* Disposition */}

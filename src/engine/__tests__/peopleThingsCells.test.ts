@@ -27,6 +27,15 @@ import type { GraphNode } from '../../types/graph';
 const SEED = 42;
 const TICKS = 30;
 
+/**
+ * How many consecutive ticks to read a board over before concluding a cell is not
+ * offered (THR-1439). `rotateForTick` offsets by `% items.length`, so a cell that is
+ * reachable at all is reachable somewhere inside one cycle of the walked list; this is
+ * comfortably longer than any list the division rule derives today, which is what makes
+ * the "offered on no tick" arm above a real refutation rather than an unlucky sample.
+ */
+const ROTATION_CYCLE_TICKS = 24;
+
 function world(seed: number, ticks: number): GameState {
   resetEventCounter();
   const runtime = createSimulationRuntime();
@@ -84,18 +93,27 @@ describe('the ownership band on a generated world', () => {
     const commander = getGroupLeader(s.graph, company.id)!;
     const heir = getGroupMembers(s.graph, company.id).find(m => m.id !== commander.id)!;
 
-    // Before: somebody living holds it, so a claim is not on the table.
-    const before = boardFor(s, heir.id, ['ambition_conquer_territory']);
-    expect(before.candidates.some(c =>
-      c.templateId === 'cell.control_claim.company' && c.targetNodeId === company.id)).toBe(false);
+    // Both boards are read across a full rotation cycle rather than at one tick
+    // (THR-1439). `rotateForTick` offsets the walked list by `% items.length`, and the
+    // per-actor ceiling then cuts it — so *which* tick a given cell is reachable on is
+    // a function of how many cells the division rule derives, and every ticket that
+    // adds one moves it. Pinning tick 30 made this test assert the rotation's phase
+    // rather than its own claim; THR-1439 added four cells and the phase moved. The
+    // claim is what is asserted here: before the death the offer exists on no tick,
+    // after it on at least one.
+    const claimOn = (tick: number) => generateStrategicCandidates(
+      s.graph, heir.id, ['ambition_conquer_territory'], undefined, tick, mulberry32(7), undefined, 'cells',
+    ).candidates.find(c => c.templateId === 'cell.control_claim.company' && c.targetNodeId === company.id);
+    const cycle = () => Array.from({ length: ROTATION_CYCLE_TICKS }, (_, i) => claimOn(s.tick + i));
+
+    // Before: somebody living holds it, so a claim is on the table at no phase at all.
+    expect(cycle().filter(Boolean)).toEqual([]);
 
     markMortalDead(s.graph, commander.id, s.tick, { cause: 'lifecycle', mode: 'retain' });
 
-    const after = boardFor(s, heir.id, ['ambition_conquer_territory']);
-    const claim = after.candidates.find(c =>
-      c.templateId === 'cell.control_claim.company' && c.targetNodeId === company.id);
-    expect(claim).toBeDefined();
-    expect(claim!.objectTypeId).toBe('company');
+    const offers = cycle().filter((c): c is NonNullable<typeof c> => c !== undefined);
+    expect(offers.length).toBeGreaterThan(0);
+    expect(offers[0].objectTypeId).toBe('company');
   });
 
   it('an army whose commander dies is offered to a faction-mate, and to nobody outside', () => {

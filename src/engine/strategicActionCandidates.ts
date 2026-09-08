@@ -373,7 +373,7 @@ export function generateStrategicCandidates(
         if (objectHandle && template.cellVariant && template.objectTypeId) {
           const type = getUndertakingObjectType(template.objectTypeId);
           const refusal = type
-            ? eligibilityRefusal(graph, type, template.cellVariant, actorId, objectHandle)
+            ? eligibilityRefusal(graph, type, template.cellVariant, actorId, objectHandle, tick)
             : null;
           if (refusal) {
             rejections.push({ templateId, reason: `ineligible:${refusal}:${target.id}` });
