@@ -1,10 +1,24 @@
 # User Action Required
 
-**Last updated:** 2026-09-08 23:00 local (21:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
+**Last updated:** 2026-09-08 23:57 local (21:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
 
 ## Standing asks
 
-### 1. Approve the camp six — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 1. Rule on the backlog — one sitting, smallest first
+
+**The build queue is empty and this is why.** Twenty-nine backlog tickets were opened and read on the evening of 8 September. Not one is waiting on effort; each is waiting on a ruling from you. They are one- and two-sentence answers, and each releases a piece of buildable work.
+
+The ones already assessed and named:
+
+- [**What a Divine Herald is**](https://linear.app/threadbare/issue/THR-1195) — three live options; a question about what the thing *is*, not a drift correction.
+- [**Which Spheres shadow and void belong to**](https://linear.app/threadbare/issue/THR-1114) — the ticket forbids the mechanical fix outright, so it needs your call.
+- [**Whether a toll moves wealth or gets deleted**](https://linear.app/threadbare/issue/THR-1189) — who pays, out of what, on what cadence.
+- [**Whether a page you can open mid-game should exist**](https://linear.app/threadbare/issue/THR-1315) — no plan doc; an executor would be inventing the surface.
+- [**Activate the pressure system or retire it**](https://linear.app/threadbare/issue/THR-1318) and [**decide whether that is the design**](https://linear.app/threadbare/issue/THR-1148).
+
+**None of these is a design session.** Say **"rule on the backlog"** and they get brought to you framed in game terms, smallest first, in one chat.
+
+### 2. Approve the camp six — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
 The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md). (An older August draft under a near-identical name reads plausible — three rulings have overtaken it. The link above is the live one.)
 
@@ -16,7 +30,7 @@ Two yes/no questions: **repair in place, or re-roll from fresh premises?** (repa
 
 *"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* Execution ticket [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able the moment you say the word.
 
-### 2. The fight map — ten open, and every one is yours — [Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)
+### 3. The fight map — ten open, and every one is yours — [Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)
 
 Every research question the map carried is finished and written up; there is no legwork left on it. Two are the head, and settling them opens the rest:
 
@@ -25,7 +39,7 @@ Every research question the map carried is finished and written up; there is no 
 
 The rest: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266), [just enough monster](https://linear.app/threadbare/issue/THR-1268), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271), [where the cool moments live](https://linear.app/threadbare/issue/THR-1265), [how a fight sits inside an encounter](https://linear.app/threadbare/issue/THR-1269), [the fight on screen](https://linear.app/threadbare/issue/THR-1272). Say *"work the fight map"*.
 
-### 3. Do you still want the incident-capture button? — [THR-1134](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in)
+### 4. Do you still want the incident-capture button? — [THR-1134](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in)
 
 **You filed this yourself on 16 August and nothing has moved since.** One button on the live game that captures a run to a `.json` you attach to chat — so a weird-looking simulation reaches an agent as *state*, not a screenshot and a sentence.
 
@@ -33,7 +47,7 @@ Scope is settled from your answers that day: snapshot only, no replay log; must 
 
 **Yes** puts it at the front of the design queue. **No** closes it rather than keeping it warm.
 
-### 4. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+### 5. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
 Still one word — and **smaller than earlier briefings claimed**. It was billed as the valve holding the design pipeline shut; three of the four things it supposedly blocked closed under their own power ([grievance supply](https://linear.app/threadbare/issue/THR-1383), [undertaking factory](https://linear.app/threadbare/issue/THR-1300), [decision-board re-scope](https://linear.app/threadbare/issue/THR-1349)).
 
@@ -41,7 +55,7 @@ What remains is genuinely just intent: **In Design, assigned to you, no plan doc
 
 **Yes** changes nothing and the asking stops; **not getting to it** sets it aside and frees a design slot. The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic"). *(Its description still says blocked — that blocker closed 26 July. Only the `Parked` label frees the slot; unassigning does not.)*
 
-### 5. Two sketches ready to be built for you to react to
+### 6. Two sketches ready to be built for you to react to
 
 The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) maps have finished everything else; these two sketches are the single open question left on each. A session builds the sketch, you look, and your reaction is the design decision.
 
@@ -50,13 +64,13 @@ The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://l
 
 Say **"work the powers map"** or **"work the item map"**.
 
-### 6. Image credits — should the spend be gated on you at all? — [THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)
+### 7. Image credits — should the spend be gated on you at all? — [THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)
 
 **Five Meet-The-First scene images break the art rule.** Two have words painted in, two show individual faces (reserved for portraits), one has old choice buttons as scenery. All five are switched off and substitutes cover the slots, so nothing is broken. Sizes, rules and acceptance are settled. It waits on you for one reason: **it spends image credits.**
 
 **The real question.** The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170)) were listed here for the same reason and a lane made them anyway; a later lane *overruled* a ticket outright ([THR-831](https://linear.app/threadbare/issue/THR-831)). Both judgements look right. So: **do you want image spends gated on you, or decided by the lane and reported after?** Your answer settles these five and every batch after. Until then the standing rule holds: *remap where a match is honest, come to you only when it is not.*
 
-### 7. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
+### 8. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
 Forty-eight authored lines narrate a campaign's milestones. They are wired and working, but written for **twelve named campaigns**, while every live game derives its spine from **what your god remembers**. Correct, connected, unreachable; the game falls back to generated text and nothing is broken.
 
@@ -64,7 +78,7 @@ Forty-eight authored lines narrate a campaign's milestones. They are wired and w
 
 Deliberately left with you: what the game means, not how to wire it. No urgency — [the wiring shipped](https://linear.app/threadbare/issue/THR-1197) and nothing downstream waits.
 
-### 8. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
+### 9. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
 One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each carries test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes, nineteen captures.
 
@@ -72,7 +86,7 @@ One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screensh
 
 Riding along: the debug panel's 43-tab strip, the faction heraldry comparison ([THR-854](https://linear.app/threadbare/issue/THR-854)), the choice-card meta row ([THR-1419](https://linear.app/threadbare/issue/THR-1419)). **No decision in this — it is a session, roughly twenty minutes.**
 
-### 9. What should a proportion read as? — [THR-1424](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)
+### 10. What should a proportion read as? — [THR-1424](https://linear.app/threadbare/issue/THR-1424/two-player-facing-percentages-have-no-sanctioned-reading-strengthpct)
 
 Two places still show you a bare percentage: an effect tooltip says something is at *62% strength*, and the doom clock says you are *62%* of the way to the doom. The design laws ban percentages on player-facing surfaces, and **there is no existing replacement to reach for** — a duration converts into days; "62% strength" converts into nothing a player already thinks in. Word ladders are out by your own verdict on `grew steadily`: *"how can a player use that word to gage anything"*.
 
@@ -80,13 +94,13 @@ Two places still show you a bare percentage: an effect tooltip says something is
 
 **The same question covers ten readouts.** [THR-1426](https://linear.app/threadbare/issue/THR-1426) carries timestamps (*t42*) and per-tick rates (*regen 1.5/tick*) — same fork; the rate half may already be settled by [THR-1008](https://linear.app/threadbare/issue/THR-1008). Say **"drop them"** and a lane takes it from there.
 
-### 10. Chart the hub map — [THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)
+### 11. Chart the hub map — [THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)
 
 The hub is still unchartered, and the slice map's charter names it as successor: **the player reaching factions, war, economy and divine actions from inside the encounter interface.**
 
 **Advice: wait.** Your integrated slice checkpoint is this map's entry condition — and it waits one batch longer, because `shrine_offering` moved to batch 3 (ask 1). **Only you can charter a map** — say *"chart the hub map"* whenever you want it anyway.
 
-### 11. Should weekend quiet be normal too? — one word
+### 12. Should weekend quiet be normal too? — one word
 
 You have ruled that **overnight** quiet is normal. You have not ruled on weekends, and the silence probe cannot tell a deliberate weekend from a fault, so it keeps reporting them.
 
@@ -94,7 +108,7 @@ The case in front of it is still the 4–6 September weekend: the machine was of
 
 Say **"weekends too"** and the probe stops raising them.
 
-### 12. Parked option, no urgency: a Tenacious-style trait
+### 13. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream waits on it. Listed only so it is not silently forgotten; say the word and it gets a ticket and a design pass.
 
@@ -105,6 +119,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **2026-09-08 — the Linear connector re-auth.** No longer blocking any lane.
 - **2026-09-08 — the division-rule mock** ([THR-1398](https://linear.app/threadbare/issue/THR-1398)). A grooming report flagged it as awaiting your reaction; it had already closed the previous morning. Nothing owed.
 - **2026-09-08 — owning people-things is live** ([THR-1438](https://linear.app/threadbare/issue/THR-1438)). Claiming a company, seizing an army and standing for a faction seat all shipped this evening under the undertakings work you approved. Not an ask you owed — recorded because the grip on what a mortal holds still runs out on a timer with no way to renew it ([THR-1287](https://linear.app/threadbare/issue/THR-1287)), and that now applies to people as well as places. Nothing is blocked on it.
+- **2026-09-08 — the undertakings map is delivered** ([THR-1396](https://linear.app/threadbare/issue/THR-1396)). Its last ticket, [the capability rider](https://linear.app/threadbare/issue/THR-1440), merged at 23:45 — a finished piece of work now grows the mortal in the Reach it leaned on, but only work that could have failed. Every decision on that map is resolved and built. Not an ask; recorded because it was the last thing in flight.
 
 ---
 
