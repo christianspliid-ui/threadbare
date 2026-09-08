@@ -36,6 +36,7 @@ import {
   STRATEGIC_VERB_IMPACT_DEFAULT,
   STRATEGIC_TARGET_SCAN_CAPS,
   STRATEGIC_TARGET_UNRESOLVED_HEX_DISTANCE,
+  STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS,
 } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
 import { getAgentLocationId, getFactionMembershipEdges } from './graphQueries';
@@ -324,12 +325,20 @@ export function generateStrategicCandidates(
         if (!isCell && ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
         if (candidates.length >= STRATEGIC_MAX_CANDIDATES_PER_ACTOR) break;
 
-        // Check variety: skip if recent history has this template+target combo
+        // Check variety: skip if recent history has this template+target combo.
+        //
+        // THR-1442: this is also the control re-claim cooldown. `retireControl` writes a
+        // collapse into history under the stance's own actor/template/target, so a
+        // collapsed stance matches here and is refused for the window — the protection
+        // THR-1286's dedicated `evaluateControlClaimGate` duplicated at 30 ticks before
+        // THR-1303 deleted it as unreachable. Measured across three seeds: zero
+        // re-claims inside the window in 102 collapses, and one seed's minimum gap is
+        // exactly the window. See `STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS`.
         const recentDuplicate = strategicState?.history.some(
           h => h.actorId === actorId
             && h.templateId === templateId
             && h.targetNodeId === target.id
-            && (tick - h.tick) < 24,
+            && (tick - h.tick) < STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS,
         );
         if (recentDuplicate) {
           rejections.push({ templateId, reason: `recent_duplicate:${target.id}` });
@@ -583,6 +592,14 @@ function findValidTargets(
         if (!ownershipSatisfies(rule.ownership, ownership)) continue;
         // A `control` cell under `any` never targets what the actor already holds —
         // the resolver would refuse it at completion, so refuse it here, at proposal.
+        //
+        // THR-1442: this line, plus `control:claim`'s own `unowned` ownership rule, is
+        // why THR-1286's `already_held` guard must NOT come back. `claimControl` writes
+        // a `controls` edge and `LOCATION.ownedVia` includes `controls`, so a stance the
+        // actor holds reads `own` here and is excluded before any gate could see it.
+        // Measured: 3425 live-stance ownership readings across seeds 42/99/7 at 300
+        // ticks, every one `own`. Re-adding the guard would add a branch nothing can
+        // reach — the exact defect that made the original gate dead.
         if (template.undertakingVerb === 'control' && ownership === 'own') continue;
         const placeId = objectPlaceNodeId(graph, handle);
         const node = placeId ? graph.getNode(placeId) : undefined;

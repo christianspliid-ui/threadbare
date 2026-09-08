@@ -9,14 +9,36 @@
  * were `strategic_control`, and they produced 17 successful claims — the rest were
  * decisions spent on a guaranteed no-op.
  *
- * These tests pin the three behaviours that close the loop: collapse retires the record
- * and its edge into history, a retired target is refused for the cooldown window, and a
- * target the actor still holds is never re-proposed.
+ * These tests pin the behaviours that close the loop: collapse retires the record and
+ * its edge into history, a retired target is refused for the re-claim window, and a
+ * target the actor still holds is never proposed.
+ *
+ * THR-1303 deleted the dedicated `evaluateControlClaimGate` that used to enforce the
+ * last two — correctly, because its first line was `template.verb !== 'control'` and no
+ * template has carried that verb since the six ambition-driven control templates were
+ * retired. THR-1442 measured what survives it, and the last two describe the same
+ * behaviours reached through different machinery:
+ *
+ * - **held targets** — the grid's `control:claim` cell carries ownership rule `unowned`
+ *   and the candidate walk skips `control` on anything reading `own`; `claimControl`
+ *   writes a `controls` edge and `LOCATION.ownedVia` includes `controls`, so a held
+ *   stance reads `own`. Unreachable by construction, not by a gate.
+ * - **retired targets** — the generic `recent_duplicate` variety guard matches the
+ *   collapse record `retireControl` writes, at
+ *   `STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS`.
+ *
+ * Both are pinned below so the deletion of either mechanism is a red test rather than a
+ * silent return of the churn.
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { advanceStrategicProjects } from '../strategicActionLifecycle';
 import { releaseControl } from '../strategicGraphOps';
+import { generateStrategicCandidates } from '../strategicActionCandidates';
+import {
+  STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS,
+  STRATEGIC_HISTORY_WINDOW_TICKS,
+} from '../../data/strategic-action-constants';
 import type { GameState } from '../../types/gameState';
 import type { StrategicControlState, StrategicRuntimeState } from '../../types/strategicAction';
 import { mulberry32 } from '../../lib/prng';
@@ -218,5 +240,132 @@ describe('THR-1286 — control stance retirement', () => {
     const result = releaseControl(graph, 'merchant_a', 'loc_market_central');
     expect(result.success).toBe(true);
     expect(result.createdId).toBeUndefined();
+  });
+});
+
+/**
+ * THR-1442 — what actually protects the grid's `control:claim` cell now that the
+ * dedicated gate is gone. Each test perturbs one arm and shows the behaviour flips, so
+ * neither can pass on an empty candidate set.
+ *
+ * Falsified on the closeout, so the red condition of each is known rather than assumed:
+ *
+ * | perturbation                                               | result |
+ * |------------------------------------------------------------|--------|
+ * | neuter the `recentDuplicate` predicate                      | boundary test RED |
+ * | `STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS` 24 → 20           | value pin RED |
+ * | drop the `undertakingVerb === 'control' && own` skip alone  | still green |
+ * | ...and widen `control:claim` ownership to `any`             | held-target test RED |
+ *
+ * Two of these are worth keeping in mind when editing:
+ *
+ * - The boundary test builds its fixture *from* the window constant, so it holds for any
+ *   value — retuning 24 → 0 leaves it green. That is why the value has its own pin. A
+ *   threshold that sits on both sides of its own comparison tests nothing about the
+ *   threshold.
+ * - The two Q1 guards are genuinely redundant, and the cell's `unowned` ownership rule is
+ *   the load-bearing half. The candidate-walk skip is belt-and-braces for a type that
+ *   overrides its ownership rule (`claim × Faction` reads `any`), which is why removing
+ *   it alone changes nothing here.
+ */
+describe('THR-1442 — control churn protection after the gate deletion', () => {
+  const ME = 'actor_claimant';
+  const RECLAIM = 'ambition_reclaim_homeland';
+  const CELL = 'cell.control_claim.location';
+  const KEEP = 'loc_keep';
+
+  function claimantWorld(): WorldGraph {
+    const g = new WorldGraph();
+    const full = { iron: 0.9, shadow: 0.9, eye: 0.9, heart: 0.9, gold: 0.9, stone: 0.9, star: 0.9, veil: 0.9 };
+    g.addNode({ id: ME, name: 'Ered', type: 'actor', properties: { actorType: 'individual', spotlightTier: 'spotlight', domainCapabilities: full } });
+    g.addNode({ id: 'loc_home', name: 'Ashfold', type: 'location', properties: { locationSubtype: 'town', hexCol: 5, hexRow: 5 } });
+    g.addNode({ id: KEEP, name: 'Blackmere Keep', type: 'location', properties: { locationSubtype: 'town', hexCol: 6, hexRow: 5 } });
+    g.addEdge({ id: 'l1', source: ME, target: 'loc_home', type: 'located_at', properties: {} });
+    return g;
+  }
+
+  const claimTargets = (g: WorldGraph, strategicState: StrategicRuntimeState | undefined, tick: number) =>
+    generateStrategicCandidates(g, ME, [RECLAIM], strategicState, tick, mulberry32(1), undefined, 'cells')
+      .candidates.filter(c => c.templateId === CELL).map(c => c.targetNodeId);
+
+  it('never proposes a claim on a target the actor already holds — by the ownership rule, not a gate', () => {
+    const g = claimantWorld();
+
+    // THR-1403 rotates the cell spread by tick, so the per-actor cap admits this cell
+    // only on some ticks. Both arms must be read at the *same* tick, and it must be one
+    // where the cell fires — otherwise the absence below proves only that the rotation
+    // moved on. Find that tick first, and fail loudly if the cell never fires at all.
+    const liveTick = [...Array(40).keys()].find(t => claimTargets(g, undefined, t).includes(KEEP));
+    expect(liveTick, 'control:claim never offered the keep on any tick — the arm is dead').toBeDefined();
+
+    // Controlled arm: unheld, the keep is on the board.
+    expect(claimTargets(g, undefined, liveTick!)).toContain(KEEP);
+
+    addStrategicControlEdge(g, ME, KEEP);
+    // The perturbation applied: ownership now reads `own` through `LOCATION.ownedVia`.
+    expect(strategicControlEdges(g, ME)).toHaveLength(1);
+
+    const held = claimTargets(g, undefined, liveTick!);
+    expect(held).not.toContain(KEEP);
+    // The other location is still offered at the same tick, so this excluded the held
+    // target rather than emptying the board.
+    expect(held).toContain('loc_home');
+  });
+
+  it('refuses a re-claim inside the recent-duplicate window and admits it on the far side', () => {
+    const g = claimantWorld();
+
+    // Both arms are read at the SAME tick, varying only how old the collapse is. Reading
+    // them at two different ticks made this test brittle against the THR-1403 rotation:
+    // it went red when THR-1439 added cells and the spread shifted under the per-actor
+    // cap, which is a fact about rotation, not about the guard under test.
+    const liveTick = [...Array(60).keys()]
+      .map(t => t + STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS)
+      .find(t => claimTargets(g, undefined, t).includes(KEEP));
+    expect(liveTick, 'control:claim never offered the keep on any tick — the arm is dead').toBeDefined();
+
+    const collapseAt = (tick: number): StrategicRuntimeState => stateWith([], [{
+      tick,
+      actorId: ME,
+      templateId: CELL,
+      ambitionId: RECLAIM,
+      verb: 'control',
+      behaviorFamily: 'wanderer-explorer',
+      displayName: 'Blackmere Keep',
+      targetNodeId: KEEP,
+      outcome: 'failed',
+      graphOps: ['release_control'],
+      catalystSeeded: false,
+    }]);
+
+    // One tick short of the window: refused...
+    const inside = collapseAt(liveTick! - (STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS - 1));
+    expect(claimTargets(g, inside, liveTick!)).not.toContain(KEEP);
+    // ...and it is this guard doing it, named on the board.
+    const { rejections } = generateStrategicCandidates(g, ME, [RECLAIM], inside, liveTick!, mulberry32(1), undefined, 'cells');
+    expect(rejections.map(r => r.reason)).toContain(`recent_duplicate:${KEEP}`);
+
+    // Exactly the window old, same tick, same rotation: admitted.
+    const outside = collapseAt(liveTick! - STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS);
+    expect(claimTargets(g, outside, liveTick!)).toContain(KEEP);
+  });
+
+  it('keeps the re-claim window inside the history window it reads from', () => {
+    // The collapse record the guard matches on is pruned with the history window; a
+    // window longer than it would refuse nothing at its far end.
+    expect(STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS).toBeLessThan(STRATEGIC_HISTORY_WINDOW_TICKS);
+  });
+
+  it('pins the window at the measured value, not merely at whatever it is set to', () => {
+    // The boundary test above builds its fixture *from* this constant, so it holds for
+    // any value and cannot notice a retune — the constant sits on both sides of the
+    // comparison. This is the assertion that does notice.
+    //
+    // 24 is not free: it is the observed floor. Across seeds 42/99/7 at 300 ticks, no
+    // collapsed stance was re-claimed inside 24 ticks in 102 collapses, and seed 7's
+    // minimum gap is exactly 24 — this constant releasing. Lowering it re-opens the
+    // churn THR-1286 measured at 39.5% of seed-42 decisions, so a change here is a
+    // deliberate re-measurement, never a passing tune.
+    expect(STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS).toBe(24);
   });
 });
