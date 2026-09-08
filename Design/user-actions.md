@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-08 22:00 local (20:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
+**Last updated:** 2026-09-08 23:00 local (21:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -8,7 +8,7 @@
 
 The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md). (An older August draft under a near-identical name reads plausible — three rulings have overtaken it. The link above is the live one.)
 
-**Five days waiting, and the only ask with no design session in front of it** — one word puts six encounters of content work on the queue the same hour. The shelf is three items deep and one of those is being built right now, so it drains on its own tonight either way; this ask is what refills it with *content* work rather than more engine work.
+**Five days waiting, and as of tonight nothing is being built at all** — the last ticket in flight merged at 20:07 and the shelf is down to two items, neither of them content. One word puts six encounters of content work on the queue the same hour.
 
 **Six, not seven.** `shrine_offering` is held to batch 3 (most warnings of the set, weak contrast against `offer_small_prayer`), and it is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), so that checkpoint waits one batch longer. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting.
 
@@ -16,14 +16,14 @@ Two yes/no questions: **repair in place, or re-roll from fresh premises?** (repa
 
 *"batch 2, run the six"* · *"re-roll them"* · *"put shrine_offering back in."* Execution ticket [THR-1222](https://linear.app/threadbare/issue/THR-1222), pickup-able the moment you say the word.
 
-### 2. The fight map — seven open, and two of them are the head — [Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)
+### 2. The fight map — ten open, and every one is yours — [Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)
 
-Every research question the map carried is finished; there is no legwork left on it. Settle these two and **three more open by themselves**:
+Every research question the map carried is finished and written up; there is no legwork left on it. Two are the head, and settling them opens the rest:
 
 - [**How a fight against a monster works**](https://linear.app/threadbare/issue/THR-1263) — the nerve test, the clash test, and what a monster's stat block has to say.
 - [**How a fight between two people works**](https://linear.app/threadbare/issue/THR-1264) — both sides roll, and the interesting part is which pair of results you got.
 
-The rest: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266), [just enough monster](https://linear.app/threadbare/issue/THR-1268), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271). Say *"work the fight map"*.
+The rest: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266), [just enough monster](https://linear.app/threadbare/issue/THR-1268), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271), [where the cool moments live](https://linear.app/threadbare/issue/THR-1265), [how a fight sits inside an encounter](https://linear.app/threadbare/issue/THR-1269), [the fight on screen](https://linear.app/threadbare/issue/THR-1272). Say *"work the fight map"*.
 
 ### 3. Do you still want the incident-capture button? — [THR-1134](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in)
 
