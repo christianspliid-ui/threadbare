@@ -13,7 +13,6 @@ import {
   STRATEGIC_ROLE_FIT_WEIGHT,
   STRATEGIC_TRAVEL_PENALTY_WEIGHT,
   STRATEGIC_VARIETY_PENALTY_WEIGHT,
-  STRATEGIC_CONTROL_PRESSURE_WEIGHT,
   STRATEGIC_SCORE_FLOOR,
   STRATEGIC_HISTORY_WINDOW_TICKS,
 } from '../data/strategic-action-constants';
@@ -72,8 +71,7 @@ export function scoreStrategicCandidates(
       c.ambitionAlignment * STRATEGIC_BLOCKER_RELIEF_WEIGHT +
       c.worldImpact * STRATEGIC_WORLD_IMPACT_WEIGHT +
       c.catalystValue * STRATEGIC_CATALYST_VALUE_WEIGHT +
-      c.roleFit * STRATEGIC_ROLE_FIT_WEIGHT +
-      c.controlPressure * STRATEGIC_CONTROL_PRESSURE_WEIGHT -
+      c.roleFit * STRATEGIC_ROLE_FIT_WEIGHT -
       c.travelPenalty * STRATEGIC_TRAVEL_PENALTY_WEIGHT -
       varietyPenalty * STRATEGIC_VARIETY_PENALTY_WEIGHT;
 

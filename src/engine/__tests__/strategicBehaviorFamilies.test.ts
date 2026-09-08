@@ -119,8 +119,7 @@ function makeCandidateForTemplate(
     targetNodeId,
     scoreComponents: {
       ambitionAlignment: 0.8, blockerRelief: 0, worldImpact: 0.5,
-      catalystValue: 0, roleFit: 0.6, controlPressure: 0,
-      travelPenalty: 0.1, varietyPenalty: 0,
+      catalystValue: 0, roleFit: 0.6,      travelPenalty: 0.1, varietyPenalty: 0,
     },
     finalScore: 0.5,
     generationReason: 'ambition_progression',
@@ -196,11 +195,16 @@ describe('behavior family pack registration', () => {
     ['zealot-mission', ZEALOT_STRATEGIC_TEMPLATES],
     ['court-political', COURT_STRATEGIC_TEMPLATES],
     ['warlord-expansion', WARLORD_STRATEGIC_TEMPLATES],
-  ] as const)('pack %s has at least one gather_info, one create, and one control template', (_, templates) => {
+    // THR-1303 retired the `control` verb from the pack shape: every pack's template #6
+    // was an ambition-driven upkeep stance, and all six were dead content (deleting them
+    // moved zero decisions across 2610 on seeds 42 + 99 at 300 ticks). Control reaches
+    // the world through the grid's `control:claim` cell now, not through a pack template,
+    // so asserting a `control` verb here would pin a contract nothing implements.
+  ] as const)('pack %s has at least one gather_info and one create template', (_, templates) => {
     const verbs = new Set(templates.map(t => t.verb));
     expect(verbs.has('gather_info')).toBe(true);
     expect(verbs.has('create')).toBe(true);
-    expect(verbs.has('control')).toBe(true);
+    expect(verbs.has('control')).toBe(false);
   });
 
   it('every template is findable via getStrategicTemplate', () => {
@@ -415,16 +419,23 @@ describe('hint-driven execution', () => {
     expect(result.poolInvalidatedLocationIds ?? []).toEqual([]);
   });
 
-  it('no_mutation hint produces zero graph ops', () => {
+  it('claim_control mode mints a stance rather than an instant mutation', () => {
     const graph = buildMultiFamilyGraph();
     const state = makeMinimalGameState(graph);
     const rng = mulberry32(42);
 
+    // THR-1303 retired the six ambition-driven control templates, so no template
+    // carries `claim_control` any more — the grid's `control:claim` cell is its only
+    // producer. The mode itself is untouched and still load-bearing, so the override
+    // pattern this file already uses for `instant` above keeps the execution path
+    // covered without depending on a template that no longer exists.
     const candidate = makeCandidateForTemplate(
-      'strategic_maintain_authority', 'actor_versatile', 'ambition_found_dynasty', 'loc_capital',
+      'strategic_establish_dynasty_seat', 'actor_versatile', 'ambition_found_dynasty', 'loc_capital',
     );
 
-    const result = executeStrategicAction(state, graph, candidate, 10, rng);
+    const result = executeStrategicAction(
+      state, graph, { ...candidate, executionMode: 'claim_control' as const }, 10, rng,
+    );
 
     // claim_control mode handles control creation, but no instant mutation
     expect(result.graphOps.length).toBeGreaterThan(0); // claimControl itself creates an edge

@@ -34,12 +34,10 @@ import {
   UNDERTAKING_MAX_ACTIVE_PER_ACTOR,
   STRATEGIC_VERB_IMPACT,
   STRATEGIC_VERB_IMPACT_DEFAULT,
-  STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS,
   STRATEGIC_TARGET_SCAN_CAPS,
   STRATEGIC_TARGET_UNRESOLVED_HEX_DISTANCE,
 } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
-import type { TraceEntry } from '../types/trace';
 import { getAgentLocationId, getFactionMembershipEdges } from './graphQueries';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
@@ -337,21 +335,6 @@ export function generateStrategicCandidates(
           continue;
         }
 
-        // Control claims that cannot do anything are not worth a decision (THR-1286).
-        const controlGate = evaluateControlClaimGate(template, strategicState, actorId, target.id, tick);
-        if (controlGate) {
-          rejections.push({ templateId, reason: `${controlGate.reason}:${target.id}` });
-          emitTrace({
-            category: 'strategic_control_lifecycle',
-            tick,
-            actorId,
-            targetNodeId: target.id,
-            event: controlGate.event,
-            cooldownRemaining: controlGate.cooldownRemaining,
-            summary: `Control claim declined (${controlGate.event}): ${templateId} → ${target.id}`,
-          } as TraceEntry);
-          continue;
-        }
 
         // A destroy verb needs a reason (THR-1297 §2). Refused at proposal time, for
         // the same reason as the two gates below it: an undertaking nobody can justify
@@ -454,7 +437,6 @@ export function generateStrategicCandidates(
               + computeRouteFormationBias(template, sourceLocationNode, target)),
             catalystValue: template.catalystEncounterIds?.length ? 0.5 : 0,
             roleFit: computeRoleFit(actor, template),
-            controlPressure: computeControlPressure(template, strategicState, actorId, target.id),
             travelPenalty: Math.min(1, travelDist / 10),
             varietyPenalty: 0, // Computed in scoring phase with board context
           },
@@ -802,80 +784,6 @@ function computeRoleFit(actor: GraphNode, template: StrategicActionTemplate): nu
   return fitCount > 0 ? Math.min(1, fitSum / fitCount) : 0.3;
 }
 
-/**
- * Decide whether a `control` claim is worth generating at all (THR-1286).
- *
- * Two shapes of claim can only waste the decision that picks them, because
- * `claimControl` refuses both with `already_controls`:
- *
- * - **`already_held`** — the actor still actively controls this target. Re-claiming is
- *   a no-op. (Whether upkeep *should* exist, and what it should mean, is the Proactive
- *   Agent Actions substrate question; declining a claim that provably cannot succeed
- *   does not answer it either way, and leaves any upkeep verb free to be added.)
- * - **`reclaim_refused`** — the actor let this target's stance collapse less than
- *   `STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS` ago. Read off the collapse history entry
- *   `retireControl` writes, since the record itself is retired on collapse.
- *
- * Returns null when the claim is legitimate. Fail-soft: no strategic state yet means
- * nothing is held and nothing has collapsed, so the claim passes.
- */
-function evaluateControlClaimGate(
-  template: StrategicActionTemplate,
-  strategicState: StrategicRuntimeState | undefined,
-  actorId: string,
-  targetNodeId: string,
-  tick: number,
-): { reason: string; event: 'reclaim_refused' | 'already_held'; cooldownRemaining?: number } | null {
-  if (template.verb !== 'control') return null;
-  if (!strategicState) return null;
-
-  const held = strategicState.controls.some(
-    c => c.actorId === actorId && c.targetNodeId === targetNodeId && c.active,
-  );
-  if (held) return { reason: 'control_already_held', event: 'already_held' };
-
-  // Most recent collapse of this actor's stance on this target
-  let lastCollapseTick = -Infinity;
-  for (const entry of strategicState.history) {
-    if (entry.verb !== 'control') continue;
-    if (entry.actorId !== actorId || entry.targetNodeId !== targetNodeId) continue;
-    if (entry.outcome !== 'failed') continue;
-    if (entry.tick > lastCollapseTick) lastCollapseTick = entry.tick;
-  }
-
-  const elapsed = tick - lastCollapseTick;
-  if (elapsed < STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS) {
-    return {
-      reason: 'control_reclaim_cooldown',
-      event: 'reclaim_refused',
-      cooldownRemaining: STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS - elapsed,
-    };
-  }
-
-  return null;
-}
-
-function computeControlPressure(
-  template: StrategicActionTemplate,
-  strategicState: StrategicRuntimeState | undefined,
-  actorId: string,
-  targetNodeId: string,
-): number {
-  if (template.verb !== 'control') return 0;
-  if (!strategicState) return 0.5; // No state yet — moderate pressure to establish
-
-  // Only a live stance carries upkeep pressure (THR-1286). Collapsed records are
-  // retired on collapse, but a world saved before that fix can still carry one, and its
-  // frozen `neglectTicks` would otherwise pin this at the maximum forever.
-  const existingControl = strategicState.controls.find(
-    c => c.actorId === actorId && c.targetNodeId === targetNodeId && c.active,
-  );
-  if (!existingControl) return 0.5;
-
-  // Higher pressure when neglect is approaching grace threshold
-  return Math.min(1, existingControl.neglectTicks / 8);
-}
-
 function checkReachFloors(
   actor: GraphNode,
   floors: Partial<Record<ReachDomain, number>>,
@@ -894,16 +802,8 @@ function determineGenerationReason(
   _profile: AmbitionStrategicProfile,
   strategicState: StrategicRuntimeState | undefined,
   actorId: string,
-  targetNodeId: string,
+  _targetNodeId: string,
 ): StrategicGenerationReason {
-  // Control obligation check
-  if (template.verb === 'control') {
-    const existing = strategicState?.controls.find(
-      c => c.actorId === actorId && c.targetNodeId === targetNodeId && c.active,
-    );
-    if (existing) return 'control_obligation';
-  }
-
   // Unfinished project check
   if (strategicState?.projects.some(
     p => p.actorId === actorId && p.templateId === template.id && p.status === 'stalled',

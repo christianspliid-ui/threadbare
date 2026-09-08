@@ -130,7 +130,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_establish_trade_route',
         'strategic_build_warehouse',
         'strategic_found_guild_chapter',
-        'strategic_maintain_monopoly',
         // THR-1308: appended, not inserted. `generateStrategicCandidates` walks this
         // list in order and breaks at STRATEGIC_MAX_CANDIDATES_PER_AMBITION, so a
         // mid-list insert silently pushes a shipped verb out of reach — it pushed
@@ -234,7 +233,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_reinforce_warband',
         'strategic_fortify_position',
         'strategic_establish_garrison',
-        'strategic_claim_territory',
         'strategic_recruit_companions',
       ],
       reachEmphasis: { iron: 0.8, heart: 0.6, eye: 0.3 },
@@ -399,7 +397,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_write_treatise',
         'strategic_establish_research_circle',
         'strategic_mount_expedition',
-        'strategic_guard_knowledge',
       ],
       reachEmphasis: { veil: 0.9, eye: 0.5, star: 0.3 },
     },
@@ -486,7 +483,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_secure_office',
         'strategic_organize_patronage',
         'strategic_establish_dynasty_seat',
-        'strategic_maintain_authority',
         'strategic_found_order',
         'strategic_organize_festival',
         'strategic_establish_spy_network',
@@ -664,7 +660,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_write_treatise',
         'strategic_establish_research_circle',
         'strategic_mount_expedition',
-        'strategic_guard_knowledge',
         // THR-1297 slice 5 — the `leverage_mark` arc's home. An ambition to uncover
         // what people buried is the one that most naturally turns up what a *living*
         // person buried, which is what a mark is. Cultivate → press → burn, in order.
@@ -756,7 +751,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_found_shrine',
         'strategic_consecrate_site',
         'strategic_establish_sacred_route',
-        'strategic_police_doctrine',
         'strategic_consecrate_holy_site',
       ],
       reachEmphasis: { star: 0.8, heart: 0.6, eye: 0.2 },
@@ -835,7 +829,6 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_civic_construction',
         'strategic_fortify_defenses',
         'strategic_build_granary',
-        'strategic_maintain_civic_order',
         // THR-1308 place-tier kind — appended for the ordering reason above.
         'strategic_found_settlement',
         'strategic_grow_settlement',

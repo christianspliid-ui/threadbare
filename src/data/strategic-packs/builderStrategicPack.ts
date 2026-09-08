@@ -117,27 +117,6 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'granary', nameTemplate: "Granary at {location}" },
   },
 
-  // 6. Maintain Civic Order — ongoing stewardship stance
-  {
-    id: 'strategic_maintain_civic_order',
-    displayName: 'Maintain Civic Order',
-    verb: 'control',
-    executionMode: 'claim_control',
-    behaviorFamily: 'builder-civic',
-    reachProfile: { heart: 0.5, stone: 0.3, gold: 0.2 },
-    activityProse: [
-      'Inspecting the infrastructure. Settling disputes. Keeping the machinery of civic life turning.',
-      'Order is not a state. It is a practice.',
-    ],
-    completionProse: [
-      'The settlement runs smoothly. For now.',
-    ],
-    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
-    resourceHint: { reachFloor: { heart: 0.3 } },
-    motivations: ['loyalty_ambition', 'preservation_transformation'],
-    mutationHint: { type: 'no_mutation' },
-  },
-
   // ── The `masterwork_item` kind (THR-1297 §5, slice 5) ──────────────
   //
   // The T1 kind whose object is *already* an attachment: an artifact node plus a
