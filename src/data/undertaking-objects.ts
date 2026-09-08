@@ -85,6 +85,11 @@ import { nominateSuccessor, forceSuccession } from '../engine/factionSuccessionO
 import { raiseWarhostForce } from '../engine/armySpawning';
 import { mintCompanion, removeCompanion } from '../engine/companions';
 import { applyReputationWithDelta } from '../engine/reputation';
+// Yield and leverage (THR-1439) — the active harvest, the lane's volume, the theft of
+// a secret and the favour's whole life cycle.
+import { drawYield, raiseRouteVolume, LAST_YIELD_DRAW_PROPERTY } from '../engine/yieldOps';
+import { stealMark, mintFavor, redeemFavor, forgiveFavor, isLiveFavorEdge, standingSupportsFavor } from '../engine/leverageOps';
+import { TRADE_ROUTE_MAX_VOLUME } from '../engine/tradeRoute';
 import { removeTrait } from '../engine/traits';
 import { activateSpell } from '../engine/spellActivation';
 import { holdsMotive } from '../engine/undertakingMotive';
@@ -160,6 +165,8 @@ import {
   PLOT_EXPOSURE_BANDS,
   PLOT_WITNESS_SECRET_TYPE,
   PLOT_WITNESS_MAGNITUDE,
+  // Yield and leverage (THR-1439)
+  YIELD_DRAW_COOLDOWN_TICKS,
 } from './strategic-action-constants';
 
 // ─── Shapes ─────────────────────────────────────────────────────────
@@ -281,8 +288,13 @@ export interface UndertakingObjectType {
    * claimant to belong to the army's faction. Fails closed — a hook that throws is
    * `ineligible:error`, because a precondition nobody could evaluate is not a
    * precondition that passed.
+   *
+   * THR-1439 widened the hook with the world's `tick`, additively: a cooldown is a
+   * precondition about the state of the world exactly as much as a company's cohesion
+   * is, and it cannot be read off the graph alone. Every hook written before this
+   * ignores the extra argument.
    */
-  readonly eligibility?: Partial<Record<UndertakingVerbVariant, (graph: WorldGraph, actorId: string, handle: UndertakingObjectHandle) => string | null>>;
+  readonly eligibility?: Partial<Record<UndertakingVerbVariant, (graph: WorldGraph, actorId: string, handle: UndertakingObjectHandle, tick: number) => string | null>>;
   /** Tier read off the object; `null` when the source is missing (the caller defaults and traces). */
   readonly tierOf: (graph: WorldGraph, handle: UndertakingObjectHandle) => UndertakingObjectTier | null;
   /** What each verb variant does to THIS type. A verb not declared here is not a cell. */
@@ -823,6 +835,16 @@ function isMarkEdge(e: GraphEdge): boolean {
   return e.type === 'knows_secret_of' && e.properties.revealed !== true;
 }
 
+/**
+ * An Agreement in either of its two classes (THR-1439): a mark while it is unrevealed,
+ * a favour while nobody has redeemed or broken it. Both are *live* leverage between an
+ * ordered pair, which is what the kind is; a spent one is a record, not an object.
+ */
+function isLiveAgreement(e: GraphEdge): boolean {
+  return e.type === 'knows_secret_of' ? isMarkEdge(e) : isLiveFavorEdge(e.properties);
+}
+
+
 function isTraitOfSubcategory(subcategories: readonly string[]) {
   return (n: GraphNode): boolean => n.type === 'trait' && subcategories.includes(String(n.properties.subcategory));
 }
@@ -1113,6 +1135,19 @@ const LOCATION: UndertakingObjectType = {
   tierOf: locationTier,
   lexicon: 'place',
   harmOnDestroy: 'property_destroyed',
+  eligibility: {
+    // A town is harvested at most once an income interval. Without the cooldown a
+    // holder would hold court every day until the prosperity ratcheted to nothing,
+    // which is the kill criterion this hook exists to make unreachable.
+    use: (graph, _actorId, handle, tick) => {
+      const nodeId = nodeIdOf(handle);
+      const location = nodeId ? graph.getNode(nodeId) : undefined;
+      if (!location) return 'location_gone';
+      const last = num(location.properties, LAST_YIELD_DRAW_PROPERTY);
+      if (last === null) return null;
+      return tick - last < YIELD_DRAW_COOLDOWN_TICKS ? 'drawn_recently' : null;
+    },
+  },
   verbs: {
     create: (ctx) => {
       const siteId = createSite(ctx);
@@ -1144,6 +1179,17 @@ const LOCATION: UndertakingObjectType = {
       return nodeId
         ? modifyLocationProperty(ctx.graph, nodeId, property, -UNDERTAKING_CHANGE_PROSPERITY_DELTA, [0, 1])
         : fail('modify_location_property', 'no_node');
+    },
+    // Yield is a verb (THR-1439): the active harvest of a held Location — holding
+    // court, taxing a market, drawing a tithe by hand. The lump rides the same funnel
+    // the passive tithe does; the town pays prosperity and the holder pays standing
+    // there, on every band, so a greedy holder is both poorer in the town's eyes and
+    // drawing from a thinner well.
+    use: (ctx) => {
+      const nodeId = nodeIdOf(ctx.handle);
+      return nodeId
+        ? drawYield(ctx.graph, ctx.actorId, nodeId, ctx.tick, ctx.projectId, ctx.outcome)
+        : fail('draw_yield', 'no_node');
     },
     // Establishing control of a Location is the sustained `claim_control` mode —
     // upkeep, degradation, collapse — never a completion semantic.
@@ -1233,7 +1279,27 @@ const ROUTE: UndertakingObjectType = {
   tierOf: routeTier,
   lexicon: 'route',
   harmOnDestroy: 'network_severed',
+  eligibility: {
+    // A lane already carrying all it can carry has nothing an expansion could add.
+    'change:raise': (graph, _actorId, handle) => {
+      const node = nodeOf(graph, handle);
+      const edgeId = node?.properties.routeEdgeId;
+      if (typeof edgeId !== 'string') return 'no_route_edge';
+      const edge = graph.getEdge(edgeId);
+      if (!edge) return 'route_gone';
+      return (num(edge.properties, 'volume') ?? 0) >= TRADE_ROUTE_MAX_VOLUME ? 'at_max_volume' : null;
+    },
+  },
   verbs: {
+    // A merchant's expansion work (THR-1439): a lump of volume onto the lane, and the
+    // decay clock restarted, because expansion is activity. The toll a holder collects
+    // scales on volume, so raising it raises somebody's income the same interval.
+    'change:raise': (ctx) => {
+      const nodeId = nodeIdOf(ctx.handle);
+      return nodeId
+        ? raiseRouteVolume(ctx.graph, nodeId, ctx.tick, ctx.outcome)
+        : fail('raise_route_volume', 'no_node');
+    },
     create: (ctx) => {
       // A route needs both ends standing: the far end is the site chosen at proposal
       // and cannot be substituted (a route to a razed town is no route); the near end
@@ -2334,7 +2400,13 @@ const CONDITION: UndertakingObjectType = {
 const AGREEMENT: UndertakingObjectType = {
   id: 'agreement',
   displayName: 'Agreement',
-  shape: { edgeType: 'knows_secret_of', edgeDiscriminator: isMarkEdge },
+  // THR-1439: the kind has two classes. A **mark** is a secret one party holds over
+  // another; a **favour** is a debt one party owes another. Both are live leverage
+  // between an ordered pair, which is what an Agreement is — and both press, spend and
+  // end through the same verbs. Deduplicated by ordered pair with the mark winning
+  // (THR-1436's multi-edge shape), so a spy who both knows something about somebody
+  // and is owed by them addresses the sharper of the two.
+  shape: { edgeTypes: ['knows_secret_of', 'owes_favor'], edgeDiscriminator: isLiveAgreement },
   ownedVia: [],
   tierOf: (graph, handle) => {
     const edge = edgeOf(graph, handle);
@@ -2343,6 +2415,40 @@ const AGREEMENT: UndertakingObjectType = {
   },
   lexicon: 'mark',
   harmOnDestroy: 'network_severed',
+  // An edge object is held by its source — a mark by its holder, **a favour by the one
+  // who owes it**. That is right for `seize` (you steal a secret, never a debt) and
+  // wrong for `use` and `destroy`, where the party who acts is the one *owed*. So the
+  // ownership rule opens to `any` for those two and the eligibility hooks below carry
+  // the real gate, per class.
+  ownershipOverride: { use: 'any', destroy: 'any' },
+  eligibility: {
+    // Spending: a mark is pressed by its holder, a favour redeemed by its creditor.
+    use: (graph, actorId, handle) => {
+      const edge = edgeOf(graph, handle);
+      if (!edge) return 'agreement_gone';
+      if (edge.type === 'owes_favor') return edge.target === actorId ? null : 'not_owed_to_actor';
+      return edge.source === actorId ? null : 'not_the_holder';
+    },
+    // Ending it: a mark is exposed by its holder, a favour forgiven by its creditor.
+    destroy: (graph, actorId, handle) => {
+      const edge = edgeOf(graph, handle);
+      if (!edge) return 'agreement_gone';
+      if (edge.type === 'owes_favor') return edge.target === actorId ? null : 'not_owed_to_actor';
+      return edge.source === actorId ? null : 'not_the_holder';
+    },
+    // Theft is the mark's alone — a debt cannot change creditors, and a thief who
+    // already knows something about the subject gains nothing by taking a second.
+    'control:seize': (graph, actorId, handle) => {
+      const edge = edgeOf(graph, handle);
+      if (!edge) return 'agreement_gone';
+      if (edge.type !== 'knows_secret_of') return 'not_a_secret';
+      if (edge.source === actorId) return 'already_holds';
+      if (edge.target === actorId) return 'own_mark';
+      const already = graph.getOutgoingEdges(actorId, 'knows_secret_of')
+        .some(e => e.target === edge.target && e.properties.revealed !== true);
+      return already ? 'already_holds' : null;
+    },
+  },
   verbs: {
     // Digging up a secret: a mark on the mortal the work was done about (the site).
     create: (ctx) => {
@@ -2352,19 +2458,37 @@ const AGREEMENT: UndertakingObjectType = {
       const magnitude = typeof ctx.params?.magnitude === 'number' ? ctx.params.magnitude : UNDERTAKING_DEFAULT_MARK_MAGNITUDE;
       return mintLeverageMark(ctx.graph, ctx.actorId, subjectId, secretType, magnitude, ctx.tick);
     },
-    // Pressing a mark is the self-spend the kind row already called a use, not a counter.
+    // Pressing a mark is the self-spend the kind row already called a use, not a
+    // counter. THR-1439: on the favour class the same cell *spends the debt* — the
+    // creditor calls it in and the debtor's side of it is discharged.
     use: (ctx) => {
       const edge = edgeOf(ctx.graph, ctx.handle);
       if (!edge) return fail('press_the_mark', 'mark_not_found');
+      if (edge.type === 'owes_favor') {
+        return redeemFavor(ctx.graph, ctx.actorId, edge.id, ctx.tick, ctx.projectId);
+      }
       const magnitude = num(edge.properties, 'magnitude') ?? 0;
       const context = typeof ctx.params?.context === 'string' ? ctx.params.context : 'pressed';
       return pressTheMark(ctx.graph, edge.source, edge.target, magnitude, context, ctx.tick);
     },
+    // Stealing a secret (THR-1439): the edge moves from holder to thief — the same
+    // shape as seizing an Item, and the holder **loses** it. A copy would make theft
+    // free, and a free theft is not a work anybody would weigh.
+    'control:seize': (ctx) => {
+      const edge = edgeOf(ctx.graph, ctx.handle);
+      if (!edge) return fail('steal_mark', 'mark_not_found');
+      return stealMark(ctx.graph, ctx.actorId, edge.id, ctx.tick);
+    },
     // Exposing a mark reveals it: the edge stays (the world remembers who knew) and
     // loses its leverage, which is what `revealed` already means to Secrets & Favors.
+    // THR-1439: on the favour class the same cell *forgives* — the debt stays on the
+    // record and stops being owed, which is the same gesture in the other economy.
     destroy: (ctx) => {
       const edge = edgeOf(ctx.graph, ctx.handle);
       if (!edge) return fail('expose_mark', 'mark_not_found');
+      if (edge.type === 'owes_favor') {
+        return forgiveFavor(ctx.graph, ctx.actorId, edge.id, ctx.tick, ctx.projectId);
+      }
       ctx.graph.updateEdge(edge.id, {
         properties: { ...edge.properties, revealed: true, revealedTick: ctx.tick, revealedTo: ctx.actorId },
       });
@@ -2394,7 +2518,30 @@ const STANDING: UndertakingObjectType = {
   },
   lexicon: 'network',
   harmOnDestroy: 'network_severed',
+  eligibility: {
+    // Calling in a favour needs a person or a faction on the other end (a town owes
+    // nobody anything) and standing worth spending. `Accepted` is the neutral default
+    // every stranger carries, so the bar sits above it.
+    use: (graph, actorId, handle) => {
+      const edge = edgeOf(graph, handle);
+      if (!edge) return 'standing_gone';
+      if (edge.source !== actorId) return 'not_their_standing';
+      const target = graph.getNode(edge.target);
+      if (!target || target.type !== 'actor') return 'not_a_person';
+      if (graph.getIncomingEdges(actorId, 'owes_favor')
+        .some(e => e.source === edge.target && isLiveFavorEdge(e.properties))) return 'favour_outstanding';
+      return standingSupportsFavor(graph, actorId, edge.target) ? null : 'standing_too_thin';
+    },
+  },
   verbs: {
+    // Calling in a favour (THR-1439): standing spent to put somebody in your debt.
+    // This is the favour class of Agreement's *beginning* — until now the only way to
+    // mint one was to press a mark, which made every debt in the world a threat.
+    use: (ctx) => {
+      const edge = edgeOf(ctx.graph, ctx.handle);
+      if (!edge) return fail('mint_favor', 'standing_not_found');
+      return mintFavor(ctx.graph, ctx.actorId, edge.target, ctx.tick, ctx.projectId, ctx.outcome);
+    },
     // Cultivating one's own standing with a person, a faction or a place.
     'change:raise': (ctx) => {
       const edge = edgeOf(ctx.graph, ctx.handle);
@@ -2558,11 +2705,12 @@ export function eligibilityRefusal(
   variant: UndertakingVerbVariant,
   actorId: string,
   handle: UndertakingObjectHandle,
+  tick = 0,
 ): string | null {
   const hook = type.eligibility?.[variant];
   if (!hook) return null;
   try {
-    return hook(graph, actorId, handle);
+    return hook(graph, actorId, handle, tick);
   } catch {
     return 'error';
   }

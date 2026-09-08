@@ -222,6 +222,15 @@ export interface SecretSummary {
   secretType: string;
   magnitude: number;
   revealed: boolean;
+  /**
+   * How the holder came by it (THR-1439) — `'stolen'` when it was taken off somebody
+   * else, whatever the cultivating cell wrote otherwise. The sheet says *taken from*
+   * rather than *knows* on a stolen one, so the theft is visible on the surface the
+   * god actually opens.
+   */
+  source?: string;
+  /** Whose it was before it was stolen, when it was (THR-1439). */
+  stolenFromName?: string;
 }
 
 /** Compact summary of one favor for UI display */
@@ -774,12 +783,19 @@ export function getAgentDetail(
     .filter(e => !(e.properties.revealed as boolean))
     .map(e => {
       const subjectNode = graph.getNode(e.target);
+      // THR-1439: provenance, so a stolen mark reads as a theft rather than as
+      // knowledge that arrived from nowhere.
+      const source = typeof e.properties.source === 'string' ? e.properties.source : undefined;
+      const stolenFrom = typeof e.properties.stolenFromId === 'string'
+        ? graph.getNode(e.properties.stolenFromId)?.name : undefined;
       return {
         subjectId: e.target,
         subjectName: subjectNode?.name ?? '(unknown)',
         secretType: (e.properties.secretType as string) ?? 'hidden_weakness',
         magnitude: (e.properties.magnitude as number) ?? 0,
         revealed: false,
+        ...(source ? { source } : {}),
+        ...(stolenFrom ? { stolenFromName: stolenFrom } : {}),
       };
     })
     .sort((a, b) => b.magnitude - a.magnitude)
@@ -892,6 +908,9 @@ function describeWealthSource(reason: string | undefined): string | undefined {
     case 'route_control': return 'tolls on a road they hold';
     case 'sublocation_income': return 'a freehold that pays its way';
     case 'location_tithe': return 'the tithe of a place they control';
+    // THR-1439: the active harvest reads differently from the passive tithe above —
+    // the tithe arrives, the harvest was gone and taken.
+    case 'draw_yield': return 'a tithe drawn by their own hand';
     case 'trade_success': return 'a trade that went well';
     case 'trade_failure': return 'a trade that did not';
     case 'disruption': return 'a road gone bad';

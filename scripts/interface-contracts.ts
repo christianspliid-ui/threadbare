@@ -3097,6 +3097,36 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'yield-is-a-verb',
+    producerSystem: AMBITIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      "Holding something pays a trickle; *working* it pays a lump. A mortal who holds a Location can harvest it — at a cost to the town and to how the town sees them — and a mortal who holds a lane can widen what it carries, so the economy the holding cells reach into is worth reaching into rather than a number that only ever accrues.",
+    ulTerms: ['Freehold', 'Undertaking'],
+    // Shape, not function — the same lesson the freehold row above records. No consumer
+    // imports `drawYield` or `raiseRouteVolume`; the economy reads the `wealth` the
+    // harvest banked, the cause it stamped, and the `volume` the expansion wrote.
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'lastWealthReason', 'volume'],
+      module: 'src/engine/yieldOps.ts',
+    },
+    writeSites: [
+      'src/engine/yieldOps.ts',
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/holdingIncome.ts',
+      'src/engine/agentDetail.ts',
+      'src/components/Game/tabs/OverviewTab.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-08',
+      evidence:
+        "THR-1439. `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, inherited from the freehold row:** a mortal-held Location is rare early (a harvest waits on a `claim × Location`), so the live population is thin at low tick counts; that is a supply fact about the producing cell, not a defect in this row.",
+    },
+  },
+  {
     id: 'ruined-settlement-joins-delve-layer',
     producerSystem: AMBITIONS,
     consumerSystem: RUINS,

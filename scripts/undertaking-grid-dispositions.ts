@@ -125,6 +125,7 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
     'change:raise': { op: 'modify_location_property (+)', note: 'Prosperity by default; the old property changes are this cell with the property as a parameter. Reaches every class.', retires: ['grow_settlement', 'fortify_defenses', 'fortify_position', 'organize_festival', 'consecrate_site', 'preach_masses'] },
     'change:lower': { op: 'modify_location_property (−)', note: 'Sabotage: the same op with a negative delta, motive-gated against another\'s Location. A plague on a town is this cell, not create × Condition.' },
     'control:claim': { op: 'claim_control (mode)', note: 'Establishing control is the sustained claim_control mode — upkeep, degradation, collapse — never a one-tick completion. Any class.', readBy: 'The `holding_income` phase (`src/engine/holdingIncome.ts`): a controlled Location tithes its holder every `HOLDING_INCOME_INTERVAL_TICKS`, scaled by the town\'s prosperity, through `applyWealthDelta` and the `wealth_delta` trace — surfaced as the **Means** word on the sheet. The `armySupply` misread is fixed too: `hasReliefLine` filters `controls` sources to faction-typed actors. (THR-1428 R3, R5.)' },
+    use: { op: 'draw_yield', note: 'Yield is a verb (THR-1439): the active harvest of a held Location — holding court, taxing a market, drawing a tithe by hand. The lump scales on the town\'s prosperity band and its productive Places; the town pays prosperity and the holder pays standing there **on every band**, so a failed harvest costs and gains nothing. Once an income interval, by cooldown.', readBy: 'The mortal economy: the lump rides `bankWealth`, the same funnel `holdingIncome` banks the passive tithe through, so `phaseEconomicTraits` bands it into traits and the sheet renders the **Means** word — whose tooltip now says *a tithe drawn by their own hand*. The prosperity drop is read by the prosperity pulse. (THR-1439.)' },
     'control:seize': { op: 'transfer_holding', note: 'Another\'s Location changes hands; motive-gated, holding_seized harm.' },
     destroy: { op: 'ruin_settlement', note: 'The prosperity floor plus the ruins subtype the battle aftermath already reads — not a deletion. Settlement and stronghold classes; ruining a wonder or a deposit is refused.', readBy: 'The Ruins & Delves layer: the cell stamps `ruinMagnitude` banded from what the settlement was, and `delveVariant`\'s admission scan admits a `ruins` Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS` has passed — a warlord\'s destruction feeds a wanderer\'s delve three days later. The located-clue requirement is unchanged. (THR-1428 R2.)' },
     observe: { op: 'record_intelligence', note: 'Learn a Location: its holders, its stocks, its Places.', retires: ['scout_settlement'], readBy: `${OBSERVE_READ_BY} On a ruin or wonder class it also spawns a clue (\`spawnClue\`) — the treasure hunt: observe a ruin → clue → treasure map → delve → claim × Item.` },
@@ -138,6 +139,7 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
   },
   route: {
     create: { op: 'create_trade_route', note: 'A trade lane between the durable origin and the far end; both must stand.', retires: ['establish_trade_route'] },
+    'change:raise': { op: 'raise_route_volume', note: 'A merchant\'s expansion work (THR-1439): a lump of volume written onto the lane\'s `trades_with` edge, and the decay clock restarted — expansion is activity. Capped at `TRADE_ROUTE_MAX_VOLUME`; a lane already at the cap is refused `ineligible:at_max_volume`.', readBy: 'The trade phase and the `holding_income` pass: route `volume` is what both read — the toll a holder collects scales on `volume × taxRate`, so raising volume raises somebody\'s income the same interval. The route decay clock reads `lastTraded`. (THR-1439.)' },
     'change:lower': { op: 'blockade_route', note: 'A blockade: the route suspended, not deleted — the trade phases already honour it. The hostile verb on a route; there is no destroy.', retires: ['disrupt_trade_route'] },
     use: { op: 'conduct_trade', note: 'Trading along one\'s own route — the catalog op, anchored at the near end.', retires: ['conduct_trade'] },
     'control:claim': { op: 'grant_holding', note: 'A freehold on an unheld route\'s identity node.' },
@@ -194,11 +196,13 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
     destroy: { op: 'cure_condition', note: 'Curing: the removal funnel the expiry phase uses, taken as work — a healer\'s undertaking. The object is one mortal\'s *bearing* of a condition — the `has_trait` edge, never the shared definition (THR-1436) — so the cure lifts that bearer\'s wound and nobody else\'s. **Signed like the blessing:** curing an ally (same faction, same company, or standing ≥ `CONDITION_ALLY_STANDING_MIN`) needs no quarrel and the board records `gate_exempt:ally`; curing a stranger or an enemy stays motive-gated (`CONDITION_CURE_UNGATED_FOR_ALLIES`). The counter-play to the curse (create × Condition), and since THR-1429 the way a sealed power is freed early.' },
   },
   agreement: {
-    create: { op: 'mint_leverage_mark', note: 'Digging up a secret: a mark on the mortal the work was done about.' },
-    use: { op: 'press_the_mark', note: 'Pressing a mark is the self-spend the kind row called a use. Spending a favour owed is the same cell on the favour class (the favour is minted by use × Standing).', retires: ['press_the_mark'] },
-    destroy: { op: 'expose_mark', note: 'Exposing a mark: the edge stays, revealed, and loses its leverage. Forgiving a favour is the same cell on the favour class.' },
+    create: { op: 'mint_leverage_mark', note: 'Digging up a secret: a mark on the mortal the work was done about. The mark class only — a favour is minted by use × Standing, never dug up.' },
+    use: { op: 'press_the_mark / redeem_favor', note: 'Pressing a mark is the self-spend the kind row called a use. THR-1439: on the **favour class** the same cell spends the debt — `redeemFavor` marks it redeemed through `applyFavorRedemptionConsequences`, the writer the encounter path already goes through, and pays the creditor standing with the debtor\'s faction. The ownership rule opens to `any` and the eligibility hook carries the real gate per class: a mark is pressed by its holder, a favour redeemed by its creditor.', retires: ['press_the_mark'], readBy: 'The secrets phase, the binder and the favour-calling encounters read `owes_favor.redeemed`; the sheet\'s Agreements rows drop a spent favour the tick it is spent. (THR-1439.)' },
+    'control:seize': { op: 'steal_mark', note: 'Stealing a secret (THR-1439): `retargetEdgeSource` moves the `knows_secret_of` edge from holder to thief — the id stays, so every reader keyed on it keeps working, and **the holder loses it, never a copy**, or theft would be free. The mark class alone; a debt cannot change creditors. Motive-gated against the holder, `holding_seized` harm.', readBy: 'The leverage economy: `pressTheMark`, `socialLeverage`, the secrets phase and the sheet\'s Agreements rows all key on the edge\'s source, so the theft moves every one of them at once. The god\'s reading rule (THR-1433) follows too — a followed thief\'s stolen mark now reads the subject\'s mind. (THR-1439.)' },
+    destroy: { op: 'expose_mark / forgive_favor', note: 'Exposing a mark: the edge stays, revealed, and loses its leverage. THR-1439: on the **favour class** the same cell forgives — the debt stays on the record, stops being owed, and pays the debtor\'s regard. The same gesture in the other economy, gated the same way.', readBy: 'The secrets phase and the sheet read `revealed` / `redeemed`; forgiveness writes a standing gain the reputation layer reads. (THR-1439.)' },
   },
   standing: {
+    use: { op: 'mint_favor', note: 'Calling in a favour (THR-1439): standing spent to put somebody in your debt — the favour class of Agreement\'s beginning. Gated at Respected (`FAVOR_STANDING_MIN`), because `Accepted` is the neutral default every stranger carries and a stranger owes nobody anything; refused on a Location (`ineligible:not_a_person`) and on an outstanding debt. Until this cell the only way to mint a favour was to press a mark, which made every debt in the world a threat.', readBy: 'The agreements layer: `owes_favor` is read by the favour-calling encounters, the binder (`remoteAnchor`, `binder`), the secrets phase and the sheet\'s Agreements rows — and by the two Agreement cells that spend and forgive it. (THR-1439.)' },
     'change:raise': { op: 'apply_reputation_with_delta (+)', note: 'Cultivating one\'s own standing with a person, a faction or a place. A Standing object is one ordered pair (THR-1436): read from `reputation_with` when a score exists, from the seeded `relates_to` otherwise — the op mints the score edge on first write either way.' },
     'change:lower': { op: 'apply_reputation_with_delta (−)', note: 'Smearing another\'s standing — the same op, signed — motive-gated. Targets the same ordered-pair objects as raise (THR-1436).' },
     destroy: { op: 'create_relation_edge hostile_to', note: 'A quarrel: the standing broken and a hostile_to edge standing in its place — motive-gated. The seed of a duel, which is an encounter, never a work. `hostile_to` is what this cell writes, never a Standing object (THR-1436).' },
@@ -378,16 +382,15 @@ export const CELL_DISPOSITIONS: Readonly<Partial<Record<WorldObjectKindId, Parti
     create: N('Terrain makes areas.'), 'change:raise': N('Geography.'), 'change:lower': N('Geography.'), use: N('Geography.'),
     'control:claim': N('Territory is a Faction\'s controls edges over Locations, never a region claim.'), 'control:seize': N('As claim.'), destroy: N('Geography.'),
   },
-  location: {
-    use: W('Yield is a verb: the active harvest of a held Location — holding court, taxing a market, drawing a tithe. Op needed: `draw_yield`, moving a lump of the Location\'s stock into the holder\'s wealth at a cost to the Location\'s prosperity or the holder\'s standing there; the Location\'s productive Places (warehouse, counting house, granary) are the multiplier. Ships only once wealth is visible on the sheet (standing rider).', 'The mortal economy: `draw_yield` moves stock into `wealth`, which `phaseEconomicTraits` bands into traits and the sheet renders as the Means word. The stock drop is read by the prosperity pulse.'),
-  },
+  // use × Location shipped with THR-1439 — see LIVE_CELL_NOTES.
+  location: {},
   place: {
     'change:raise': L('Waits for Places to carry a yield grade, and that grade comes out of the yield work (use × Location) — never invented ahead of it.'),
     'change:lower': L('The hostile mirror of raising; waits with it.'),
     use: N('Absorbed into use × Location: a held Location\'s productive Places are the multiplier on its harvest, so a Place is worth building without a use cell of its own.'),
   },
   route: {
-    'change:raise': W('A merchant\'s expansion work writing a lump of volume onto the lane. Op needed: `raise_route_volume` on the trades_with edge; the yield trickle makes volume worth raising.', 'The trade phase and the `holding_income` pass: route `volume` is what both read — the toll a seizer collects scales on it, so raising volume raises somebody\'s income the same day.'),
+    // change:raise shipped with THR-1439 — see LIVE_CELL_NOTES.
     destroy: N('The blockade is the hostile verb, a lane nobody trades on dies of neglect in the decay phase, and a deletable lane makes the map poorer with no one gaining.'),
   },
   faction: {
@@ -439,12 +442,12 @@ export const CELL_DISPOSITIONS: Readonly<Partial<Record<WorldObjectKindId, Parti
   agreement: {
     'change:raise': N('—'), 'change:lower': N('—'),
     'control:claim': N('An agreement is between two parties; nobody claims it.'),
-    'control:seize': W('Stealing a secret — the `knows_secret_of` edge moves from holder to thief (the seize × Item shape), motive-gated against the holder. The holder loses it, never a copy, or theft is free. The spy\'s signature verb; use × Network does it at scale. Op needed: `steal_mark`.', 'The leverage economy: `knows_secret_of` is read by `pressTheMark`, `socialLeverage` and the secrets strand of the agent sheet. The holder losing it is what the theft is for.'),
+    // control:seize shipped with THR-1439 — see LIVE_CELL_NOTES.
     observe: N('—'),
   },
   standing: {
     create: N('Standing exists the moment two parties meet.'),
-    use: W('Calling in a favour: a work that spends some standing with a person or faction to mint an `owes_favor` edge — the favour class of Agreement, which the secrets system already has and the binder already anchors on. Spending it is use × Agreement, forgiving it destroy × Agreement, both live: the favour class gets its whole life cycle from this one new op. Op needed: `mint_favor`.', 'The agreements layer: `owes_favor` is read by the favour-calling encounters and the binder, and it is the edge `pressTheMark` already mints.'),
+    // use shipped with THR-1439 — see LIVE_CELL_NOTES.
     'control:claim': N('—'), 'control:seize': N('—'), observe: N('—'),
   },
   ambition: {

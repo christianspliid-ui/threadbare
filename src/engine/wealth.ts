@@ -106,3 +106,27 @@ export function readWealth(properties: Record<string, unknown>): number {
   const w = properties.wealth;
   return typeof w === 'number' ? w : 0;
 }
+
+// ─── The one funnel every wealth movement goes through (THR-1439) ─────────
+
+/**
+ * Bank a wealth movement on a holder's properties: the clamped delta, plus the cause
+ * the sheet's Means tooltip reads back (`lastWealthReason`).
+ *
+ * Extracted from `holdingIncome.payHoldingIncome`, which was the only writer that
+ * stamped a cause, so that the active harvest (`draw_yield`) and the passive tithe
+ * share one cause vocabulary rather than two spellings of the same idea. Pure on the
+ * property bag — the trace is the caller's, because the income pass banks a day's
+ * takings once and traces each payment separately for legibility.
+ */
+export function bankWealth(
+  properties: Record<string, unknown>,
+  amount: number,
+  reason: string,
+): { previousWealth: number; newWealth: number } {
+  const previousWealth = readWealth(properties);
+  const newWealth = applyWealthDelta(previousWealth, amount);
+  properties.wealth = newWealth;
+  properties.lastWealthReason = reason;
+  return { previousWealth, newWealth };
+}

@@ -209,6 +209,12 @@ export const UNDERTAKING_CELL_DEEDS: Readonly<Record<string, string>> = {
   'cell.control_claim.army': 'Took command of',
   'cell.control_claim.faction': 'Stood for',
   'cell.observe.army': 'Scouted',
+  // Yield and leverage (THR-1439). *Worked the Greycity* says nothing about what a
+  // harvest is, and *Seized* a secret is what you do to a mill — a secret is **stolen**.
+  // `raise × Route` keeps its verb's word: a lane really was raised.
+  'cell.use.location': 'Drew the yield of',
+  'cell.control_seize.agreement': 'Stole',
+  'cell.use.standing': 'Called in',
 };
 
 /** The ledger's word for a finished cell: its own if it has one, else its verb's. */
@@ -237,6 +243,16 @@ export const UNDERTAKING_CELL_PHRASES: Readonly<Record<string, string>> = {
   'cell.control_claim.faction': 'Stand for a seat',
   'cell.control_seize.faction': 'Usurp a leader',
   'cell.observe.army': 'Scout an army',
+  // Yield and leverage (THR-1439). "Use a location" is machinery talking; the game's
+  // word for what happens is a **harvest**. "Seize an agreement" is worse — the object
+  // is a secret and the act is theft, and the card has to say so before the player
+  // picks it. "Use a standing" is calling in a favour, which is the only phrase anyone
+  // outside the code would ever use for it.
+  'cell.use.location': 'Draw a holding\'s yield',
+  'cell.control_seize.agreement': 'Steal a secret',
+  'cell.use.standing': 'Call in a favour',
+  'cell.use.agreement': 'Press what you hold',
+  'cell.change_raise.route': 'Widen a trade lane',
 };
 
 // ─── Per-cell line sets (THR-1429) ──────────────────────────────────
@@ -447,6 +463,79 @@ export const UNDERTAKING_CELL_PROSE: Readonly<Record<string, UndertakingVerbLine
       '{Actor} pulled at {object} until it tore. Half of it is following them out.',
     ],
     narration: '{Actor} moved on {owner} for {object}.',
+  },
+
+  // ─── Yield and leverage (THR-1439) ───────────────────────────────
+  //
+  // Four cells where the verb's own lines say the wrong thing entirely. "{Actor} is
+  // putting {object} to use" said about a town is a sentence about a tool; a harvest is
+  // something done *to* a place that has people in it, and the lines have to leave the
+  // cost visible. Likewise: seizing an Agreement is a theft, and using a Standing is
+  // asking somebody for something.
+
+  // Holding court, taxing a market, drawing a tithe. The town is present in every line
+  // — that is the whole difference between this and taking coins out of a box.
+  'cell.use.location': {
+    activity: [
+      '{Actor} is holding court at {object}, and the queue outside is people who owe.',
+      'At {object} {actor} has the books open and the market is being counted.',
+      '{Actor} is drawing what {object} owes them, and {object} is finding out how much that is.',
+    ],
+    completion: [
+      '{Actor} has taken the season out of {object}. The town is poorer and knows who by.',
+      'What {object} had, {actor} has. The market will be thinner for a while.',
+      '{Actor} came away from {object} heavier than they went in, and {object} noticed.',
+      '{Actor} leaned on {object} and got nothing worth the leaning. {Object} still paid.',
+    ],
+    narration: '{Actor} has drawn the yield of {object}.',
+  },
+
+  // Expansion work on a lane. Nothing is *built*; what changes is how much moves.
+  'cell.change_raise.route': {
+    activity: [
+      '{Actor} is putting word out along {object} that there is room for more.',
+      'At {place} {actor} is talking to carters about {object}, and about how often.',
+      '{Actor} means more to move along {object} than moves along it now.',
+    ],
+    completion: [
+      'More goes along {object} than did. {Actor} arranged it.',
+      '{Object} is busier. Whoever tolls it will notice before they know why.',
+      '{Actor} has widened what {object} carries; the road itself has not changed at all.',
+    ],
+    narration: '{Actor} has made {object} carry more.',
+  },
+
+  // Theft. The register has to make it clear the holder *lost* it — a copied secret
+  // would be a different, much smaller act.
+  'cell.control_seize.agreement': {
+    activity: [
+      '{Actor} is working out what {owner} knows, and where {owner} keeps it.',
+      'At {place} {actor} is buying the same story {owner} paid for.',
+      '{Actor} wants what {owner} is holding, and wants {owner} not to hold it.',
+    ],
+    completion: [
+      '{Actor} knows it now, and {owner} does not. That is the whole of what changed.',
+      'What {owner} had over somebody, {actor} has. {Owner} is holding nothing.',
+      '{Actor} took it clean. {Owner} will reach for it one day and find it gone.',
+    ],
+    narration: '{Actor} has taken from {owner} the thing {owner} knew.',
+  },
+
+  // Calling in a favour. Standing spent, and somebody now owes — the debt is the point,
+  // not the asking.
+  'cell.use.standing': {
+    activity: [
+      '{Actor} is calling on {object}, which is a thing you only get to do so often.',
+      'At {place} {actor} is asking for something, and spending to ask.',
+      '{Actor} has decided what {object} is for, and is using it now.',
+    ],
+    completion: [
+      '{Actor} asked, and is owed. {Object} is a little thinner for the asking.',
+      'Somebody owes {actor} now. It cost {actor} some of {object} to arrange.',
+      '{Actor} spent {object} on a debt, which is what {object} was always for.',
+      '{Actor} asked and was heard out and nothing came of it. {Object} is spent anyway.',
+    ],
+    narration: '{Actor} has called in a favour.',
   },
 
   'cell.observe.army': {
