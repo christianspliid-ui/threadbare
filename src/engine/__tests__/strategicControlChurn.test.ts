@@ -16,9 +16,7 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { advanceStrategicProjects } from '../strategicActionLifecycle';
-import { generateStrategicCandidates } from '../strategicActionCandidates';
 import { releaseControl } from '../strategicGraphOps';
-import { STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS } from '../../data/strategic-action-constants';
 import type { GameState } from '../../types/gameState';
 import type { StrategicControlState, StrategicRuntimeState } from '../../types/strategicAction';
 import { mulberry32 } from '../../lib/prng';
@@ -220,74 +218,5 @@ describe('THR-1286 — control stance retirement', () => {
     const result = releaseControl(graph, 'merchant_a', 'loc_market_central');
     expect(result.success).toBe(true);
     expect(result.createdId).toBeUndefined();
-  });
-});
-
-describe('THR-1286 — control claim gating', () => {
-  function controlCandidates(strategicState: StrategicRuntimeState | undefined, tick: number) {
-    const graph = buildMerchantWorld();
-    // THR-1403: the live model is 'cells'; this suite proves the legacy template arm the review levers still start.
-    const result = generateStrategicCandidates(
-      graph, 'merchant_a', ['ambition_dominate_trade'], strategicState, tick, mulberry32(42), undefined, 'templates',
-    );
-    return {
-      control: result.candidates.filter(c => c.templateId === CONTROL_TEMPLATE),
-      rejections: result.rejections,
-    };
-  }
-
-  // Falsifier for every "no control candidate" assertion below: with a clean slate the
-  // control template DOES generate, so a zero count later is the gate, not an empty
-  // population.
-  it('generates control candidates when nothing gates them', () => {
-    const { control } = controlCandidates(undefined, 100);
-    expect(control.length).toBeGreaterThan(0);
-  });
-
-  it('refuses a re-claim inside the cooldown after the actor let the stance collapse', () => {
-    const collapseTick = 100;
-    const history = [{
-      tick: collapseTick,
-      actorId: 'merchant_a',
-      templateId: CONTROL_TEMPLATE,
-      ambitionId: 'ambition_dominate_trade',
-      verb: 'control' as const,
-      behaviorFamily: 'merchant-expansion' as const,
-      displayName: 'Maintain Monopoly',
-      targetNodeId: 'loc_market_central',
-      outcome: 'failed' as const,
-      graphOps: ['release_control'],
-      catalystSeeded: false,
-    }];
-
-    const inside = controlCandidates(
-      stateWith([], history),
-      collapseTick + STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS - 1,
-    );
-    expect(inside.control.some(c => c.targetNodeId === 'loc_market_central')).toBe(false);
-    expect(inside.rejections.some(r => r.reason.startsWith('control_reclaim_cooldown'))).toBe(true);
-
-    const after = controlCandidates(
-      stateWith([], history),
-      collapseTick + STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS,
-    );
-    expect(after.control.some(c => c.targetNodeId === 'loc_market_central')).toBe(true);
-  });
-
-  it('does not re-propose a target the actor still actively controls', () => {
-    const held = makeControl({ neglectTicks: 5, degradation: 0 });
-    const { control, rejections } = controlCandidates(stateWith([held]), 100);
-
-    expect(control.some(c => c.targetNodeId === 'loc_market_central')).toBe(false);
-    expect(rejections.some(r => r.reason.startsWith('control_already_held'))).toBe(true);
-  });
-
-  it('leaves other targets claimable while one is held', () => {
-    const held = makeControl({ neglectTicks: 5, degradation: 0 });
-    const { control } = controlCandidates(stateWith([held]), 100);
-
-    // The gate is per-target: holding the market must not silence the whole verb.
-    expect(control.length).toBeGreaterThan(0);
-    expect(control.every(c => c.targetNodeId !== 'loc_market_central')).toBe(true);
   });
 });

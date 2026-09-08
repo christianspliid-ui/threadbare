@@ -98,8 +98,7 @@ function makeCandidate(overrides: Partial<StrategicActionCandidate> = {}): Strat
     targetNodeId: 'loc_market',
     scoreComponents: {
       ambitionAlignment: 0.8, blockerRelief: 0, worldImpact: 0.3,
-      catalystValue: 0, roleFit: 0.6, controlPressure: 0,
-      travelPenalty: 0, varietyPenalty: 0,
+      catalystValue: 0, roleFit: 0.6,      travelPenalty: 0, varietyPenalty: 0,
     },
     finalScore: 0.5,
     generationReason: 'ambition_progression',

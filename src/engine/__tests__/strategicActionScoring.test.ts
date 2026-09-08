@@ -20,7 +20,6 @@ function makeCandidate(overrides: Partial<StrategicActionCandidate> = {}): Strat
       worldImpact: 0.3,
       catalystValue: 0.2,
       roleFit: 0.6,
-      controlPressure: 0,
       travelPenalty: 0.1,
       varietyPenalty: 0,
     },
@@ -45,11 +44,11 @@ describe('strategicActionScoring', () => {
     const candidates = [
       makeCandidate({ candidateId: 'low', scoreComponents: {
         ambitionAlignment: 0.4, blockerRelief: 0.3, worldImpact: 0.3,
-        catalystValue: 0.1, roleFit: 0.3, controlPressure: 0, travelPenalty: 0.1, varietyPenalty: 0,
+        catalystValue: 0.1, roleFit: 0.3, travelPenalty: 0.1, varietyPenalty: 0,
       } }),
       makeCandidate({ candidateId: 'high', scoreComponents: {
         ambitionAlignment: 0.9, blockerRelief: 0.8, worldImpact: 0.9,
-        catalystValue: 0.5, roleFit: 0.8, controlPressure: 0, travelPenalty: 0, varietyPenalty: 0,
+        catalystValue: 0.5, roleFit: 0.8, travelPenalty: 0, varietyPenalty: 0,
       } }),
     ];
     const scored = scoreStrategicCandidates(candidates, undefined, 10, rng);
@@ -112,8 +111,7 @@ describe('strategicActionScoring', () => {
         candidateId: 'terrible',
         scoreComponents: {
           ambitionAlignment: 0, blockerRelief: 0, worldImpact: 0,
-          catalystValue: 0, roleFit: 0, controlPressure: 0,
-          travelPenalty: 0.9, varietyPenalty: 0.9,
+          catalystValue: 0, roleFit: 0,          travelPenalty: 0.9, varietyPenalty: 0.9,
         },
       }),
     ];

@@ -867,7 +867,7 @@ export function advanceStrategicProjects(
         objectTier: project.objectTier,
         scoreComponents: {
           ambitionAlignment: 0, blockerRelief: 0, worldImpact: 0,
-          catalystValue: 0, roleFit: 0, controlPressure: 0,
+          catalystValue: 0, roleFit: 0,
           travelPenalty: 0, varietyPenalty: 0,
         },
         finalScore: 0,
@@ -1070,9 +1070,11 @@ export function advanceStrategicProjects(
   for (const control of currentState.controls) {
     // A collapsed stance is retired, never carried (THR-1286). Records used to
     // accumulate here forever at `active: false, degradation: 1`, and a dead record
-    // is not inert: `computeControlPressure` reads its frozen `neglectTicks` and pins
-    // the re-claim score at maximum. This branch also drains dead records loaded from
-    // a world saved before the fix.
+    // was not inert: the control-pressure score read its frozen `neglectTicks` and
+    // pinned the re-claim score at maximum. That scorer is gone with the ambition-
+    // driven control family (THR-1303), but the retirement stays load-bearing — the
+    // grid's `control:claim` cell still mints stances through this same loop. This
+    // branch also drains dead records loaded from a world saved before the fix.
     if (!control.active) {
       retireControl(graph, control, tick, newHistory, events);
       continue;

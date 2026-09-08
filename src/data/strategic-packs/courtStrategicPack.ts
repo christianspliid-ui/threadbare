@@ -122,27 +122,6 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'estate', nameTemplate: "House of {actor} at {location}" },
   },
 
-  // 6. Maintain Authority — sustain political dominance
-  {
-    id: 'strategic_maintain_authority',
-    displayName: 'Maintain Authority',
-    verb: 'control',
-    executionMode: 'claim_control',
-    behaviorFamily: 'court-political',
-    reachProfile: { heart: 0.4, gold: 0.3, shadow: 0.3 },
-    activityProse: [
-      'Attending to the court. Reminding the ambitious who holds the reins.',
-      'Authority rusts in neglect. Every day requires a fresh coat of attention.',
-    ],
-    completionProse: [
-      'Authority maintained. The political order holds, for now.',
-    ],
-    targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'castle'] },
-    resourceHint: { reachFloor: { heart: 0.3 } },
-    motivations: ['loyalty_ambition', 'honesty_cunning'],
-    mutationHint: { type: 'no_mutation' },
-  },
-
   // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
   // These three were `initiative.*` templates with their own scorer, their own
   // progress phase and their own outcome executor. They are undertakings now:

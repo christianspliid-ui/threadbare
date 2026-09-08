@@ -118,27 +118,6 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     mutationHint: { type: 'create_relation_edge', edgeType: 'sacred_route', direction: 'actor_to_target', properties: { routeType: 'pilgrimage' } },
   },
 
-  // 6. Police Doctrine — maintain doctrinal purity and control
-  {
-    id: 'strategic_police_doctrine',
-    displayName: 'Police Doctrine',
-    verb: 'control',
-    executionMode: 'claim_control',
-    behaviorFamily: 'zealot-mission',
-    reachProfile: { star: 0.5, iron: 0.3, shadow: 0.2 },
-    activityProse: [
-      'Watching for heresy. Correcting the wayward. Doctrine is a garden that needs tending.',
-      'Purity of faith requires vigilance. The alternative is drift.',
-    ],
-    completionProse: [
-      'Doctrine holds. The faithful stay faithful, for now.',
-    ],
-    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'shrine', 'temple'] },
-    resourceHint: { reachFloor: { star: 0.4 } },
-    motivations: ['sacrifice_survival', 'mercy_ruthlessness'],
-    mutationHint: { type: 'no_mutation' },
-  },
-
   // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
   // 7. Consecrate Holy Site — transform an existing place of power into a shrine
   //    Distinct from `strategic_found_shrine`, which *builds* one: this one works

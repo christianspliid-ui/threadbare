@@ -126,27 +126,6 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     mutationHint: { type: 'record_intelligence', intelligenceType: 'expedition_findings' },
   },
 
-  // 6. Guard Knowledge — maintain control over scholarly resources
-  {
-    id: 'strategic_guard_knowledge',
-    displayName: 'Guard Knowledge',
-    verb: 'control',
-    executionMode: 'claim_control',
-    behaviorFamily: 'scholar-seeker',
-    reachProfile: { eye: 0.5, veil: 0.3, shadow: 0.2 },
-    activityProse: [
-      'Restricting access. Curating the collection. Knowledge is power only when controlled.',
-      'The archive speaks only to those who are permitted to listen.',
-    ],
-    completionProse: [
-      'The knowledge is secured. Access is granted, not assumed.',
-    ],
-    targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'temple', 'ruins'] },
-    resourceHint: { reachFloor: { eye: 0.4 } },
-    motivations: ['revelation_discretion', 'tradition_novelty'],
-    mutationHint: { type: 'no_mutation' },
-  },
-
   // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
   // 7. Train Apprentice — the mentorship arc, now an undertaking
   //    The `mentors` edge is the durable relationship; checkpoints drive the arc

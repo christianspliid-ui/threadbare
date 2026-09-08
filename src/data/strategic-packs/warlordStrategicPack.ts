@@ -172,27 +172,6 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     motiveGate: ['rivalry', 'grudge', 'faction_war'],
   },
 
-  // 6. Claim Territory — establish territorial control
-  {
-    id: 'strategic_claim_territory',
-    displayName: 'Claim Territory',
-    verb: 'control',
-    executionMode: 'claim_control',
-    behaviorFamily: 'warlord-expansion',
-    reachProfile: { iron: 0.6, heart: 0.2, eye: 0.2 },
-    activityProse: [
-      'Planting the banner. Drawing the border. Daring anyone to cross it.',
-      'Territory is claimed in steel and held in vigilance.',
-    ],
-    completionProse: [
-      'The territory answers to a new name. For now.',
-    ],
-    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'castle', 'fort'] },
-    resourceHint: { reachFloor: { iron: 0.4 } },
-    motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
-    mutationHint: { type: 'no_mutation' },
-  },
-
   // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
   // 7. Recruit Companions — sworn bonds with those who will follow you
   {

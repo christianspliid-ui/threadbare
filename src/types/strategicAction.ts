@@ -721,7 +721,6 @@ export type StrategicGenerationReason =
   | 'ambition_progression'  // Direct next step for the ambition
   | 'blocker_relief'        // Removes an obstacle to ambition progress
   | 'opportunity_pull'      // World state presents a favorable opening
-  | 'control_obligation'    // Existing control needs maintenance
   | 'unfinished_work';      // Previously started project needs continuation
 
 export interface StrategicScoreComponents {
@@ -730,7 +729,6 @@ export interface StrategicScoreComponents {
   readonly worldImpact: number;
   readonly catalystValue: number;
   readonly roleFit: number;
-  readonly controlPressure: number;
   readonly travelPenalty: number;
   readonly varietyPenalty: number;
 }

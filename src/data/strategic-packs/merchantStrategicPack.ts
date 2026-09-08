@@ -153,27 +153,6 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'guild_chapter', nameTemplate: "{actor}'s Guild Chapter at {location}" },
   },
 
-  // 6. Maintain Monopoly / Control — ongoing control stance
-  {
-    id: 'strategic_maintain_monopoly',
-    displayName: 'Maintain Monopoly',
-    verb: 'control',
-    executionMode: 'claim_control',
-    behaviorFamily: 'merchant-expansion',
-    reachProfile: { gold: 0.6, shadow: 0.2, heart: 0.2 },
-    activityProse: [
-      'Keeping rivals at bay. Maintaining the grip on supply and demand.',
-      'Monopoly is not a state — it is an activity. Unattended, it evaporates.',
-    ],
-    completionProse: [
-      'The market answers to one voice. For now.',
-    ],
-    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
-    resourceHint: { reachFloor: { gold: 0.5 } },
-    motivations: ['asceticism_extravagance', 'honesty_cunning'],
-    mutationHint: { type: 'no_mutation' },
-  },
-
   // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
   // 7. Commission Quest — retired by THR-1403. Posting a work order is the faction
   //    phase's job, not a mortal's undertaking, so the fiction had no cell to land on.
