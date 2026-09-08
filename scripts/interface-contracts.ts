@@ -2252,6 +2252,25 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'undertaking-completion-grows-capability',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent:
+      'Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.',
+    mechanism: {
+      kind: 'property',
+      symbols: ['domainCapabilities', 'growCapabilityOnCompletion', 'capabilityGrowth', 'UNDERTAKING_COMPLETION_CAPABILITY_GROWTH', 'CAPABILITY_MAX'],
+      module: 'src/engine/undertakingCapabilityGrowth.ts',
+    },
+    writeSites: ['src/engine/undertakingCapabilityGrowth.ts', 'src/engine/strategicActionLifecycle.ts'],
+    readSites: ['src/engine/domainCapability.ts', 'src/engine/agentDetail.ts'],
+    verifiedLive: {
+      date: '2026-09-08',
+      evidence:
+        'THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.',
+    },
+  },
+  {
     id: 'undertakings-reach-the-player',
     producerSystem: 'Strategic Projects & Control',
     consumerSystem: NARRATIVE,

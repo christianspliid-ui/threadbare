@@ -280,6 +280,7 @@
       <h3>Two-domain permanence <span class="flag impl">IMPL</span></h3>
       <ul>
         <li>The domain boundary is a permanent set-membership filter, not an aspiration: <code>getTargetActionSlots()</code> applies the <code>requiresReach</code> gate (THR-503) so action cards for out-of-domain Reaches never surface. Capability grows within a domain; the pair itself does not change mid-run.</li>
+        <li>A mortal's seeded capability is a different scale from yours and now has one named ceiling: <code>generateDomainCapabilities</code> (<code>src/engine/worldSeed.ts</code>) rolls each of the eight Reaches at 10–40 on the <strong>raw 0–100</strong> scale and boosts one or two of them, clamped at <code>CAPABILITY_MAX</code> — a constant since THR-1440 rather than a literal, because the completion rider that grows a mortal's Reach when they finish an undertaking must clamp at the same ceiling the seeder does. Only spotlight individuals and factions carry <code>domainCapabilities</code> at all; the wider NPC population does not, and finishing work does not mint it for them.</li>
         <li>Deep drill-down: <a href="action-catalog.html">Action Catalog</a> (real availability buckets) and the divine-actions manual page (W4).</li>
       </ul>
 

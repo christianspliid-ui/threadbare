@@ -1028,6 +1028,38 @@ export const CELL_OVERRIDE_MAX_PER_CELL = 3;
 /** The tier an object falls to when its type's source is missing (traced `undertaking_tier_defaulted`). */
 export const UNDERTAKING_DEFAULT_TIER = 2 as const;
 
+// ─── The capability rider (THR-1440) ────────────────────────────────
+//
+// Christian's standing rider on the grid (THR-1397, 2026-09-03): *"a completed
+// undertaking grows capability in the Reach it leaned on"*. It binds every cell on
+// the grid rather than any one band, which is why it lives with the cell tables and
+// not inside a band's constants.
+
+/**
+ * The ceiling a mortal's `domainCapabilities[reach]` may reach.
+ *
+ * **Not a new number** — this is the ceiling `generateDomainCapabilities` has always
+ * clamped its boosted reaches to in `worldSeed.ts`, named here and imported there so
+ * the seeder and the only other writer of that field cannot drift to two ceilings.
+ * The scale is the raw 0–100 one (`LEARN_SPELL_CASTER_VEIL_FLOOR` above records the
+ * measurement that settled it), not the 0–1 several plans have guessed at.
+ */
+export const CAPABILITY_MAX = 100;
+
+/**
+ * What one completed undertaking adds to the Reach it leaned on, by object tier.
+ *
+ * Deliberately conservative on the raw 0–100 scale: the capability sigmoid is flat
+ * above ~20, so a T2 work moving a mid-competent Reach by 1 is a step a player feels
+ * over a season of work rather than a level-up. Growth is the *story's* reward for
+ * finishing, so only a `completed` outcome pays it — a failed or abandoned work grows
+ * nothing.
+ *
+ * Tuning lever: raise these if the census (`npm run census:cells`) shows a 150-tick
+ * run producing no tier crossings at all; lower them if a protagonist saturates.
+ */
+export const UNDERTAKING_COMPLETION_CAPABILITY_GROWTH: PerTier = [0.5, 1, 2];
+
 /** Route tier by hex length of the pair: ≤ first is T1, ≤ second T2, longer T3. */
 export const UNDERTAKING_ROUTE_TIER_HEX_BANDS: readonly [number, number] = [3, 6];
 /** Company tier by roster size. */
