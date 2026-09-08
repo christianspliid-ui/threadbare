@@ -987,6 +987,15 @@ export interface UndertakingDeed {
   readonly phrase: string;
 }
 
+/**
+ * What a completed undertaking paid into the actor's `domainCapabilities` (THR-1440).
+ * `delta` is what landed after the `CAPABILITY_MAX` clamp, on the raw 0–100 scale.
+ */
+export interface UndertakingCapabilityGrowth {
+  readonly reach: ReachDomain;
+  readonly delta: number;
+}
+
 export interface StrategicHistoryEntry {
   readonly tick: number;
   readonly actorId: string;
@@ -1001,6 +1010,11 @@ export interface StrategicHistoryEntry {
   readonly catalystSeeded: boolean;
   /** The deed by verb and object (THR-1434); present on a completed cell. */
   readonly deed?: UndertakingDeed;
+  /**
+   * The capability the completion grew (THR-1440); present on a `completed` entry
+   * whose actor carries `domainCapabilities` and whose leaning Reach was under the cap.
+   */
+  readonly capabilityGrowth?: UndertakingCapabilityGrowth;
 }
 
 // ─── Ambition Strategic Profile ─────────────────────────────────────

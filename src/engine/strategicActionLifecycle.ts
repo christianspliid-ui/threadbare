@@ -14,6 +14,7 @@ import type {
   StrategicControlState,
   StrategicHistoryEntry,
   UndertakingDeed,
+  UndertakingCapabilityGrowth,
   StrategicRuntimeState,
   UndertakingMomentRecord,
 } from '../types/strategicAction';
@@ -70,6 +71,7 @@ import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
 import { describeDeed } from './undertakingDeed';
+import { growCapabilityOnCompletion } from './undertakingCapabilityGrowth';
 import {
   findGrievanceForAmbitionTemplate,
   satisfyGrievance,
@@ -447,6 +449,25 @@ export function executeStrategicAction(
 
       // Check for catalyst seeding
       catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
+
+      // ── The capability rider is NOT paid here (THR-1440) ──
+      //
+      // An instant cell — a `use`, an `observe` — completes by construction: it has no
+      // checkpoints, so it cannot fail, so there is no price to have paid. The rider's
+      // own clause is "only a completed outcome grows; a failed or abandoned work grows
+      // nothing", and that clause has no meaning for a terminal nothing can miss.
+      //
+      // This is not a style preference; paying it here is measurably a capability farm.
+      // The starvation contract (`threaded-agent-balance.contract.test.ts`) strands a
+      // hero with all eight Reaches zeroed on a barren hex and expects it to idle into
+      // forced travel. With the rider on the instant path it **never idles at all**,
+      // even at 60 ticks (measured: `idleReasons {}`, Eye 0 → 3): `observe × area` acts
+      // on the actor's own hex, so it is always available, and the first free watch
+      // lifts Eye off zero, which widens awareness, which supplies the next watch. A
+      // mortal could climb out of nothing by repeatedly looking around, and the
+      // idle → forced-travel safety net stopped being reachable. Growth is the reward
+      // for finishing something that could have gone wrong; it is paid at the project
+      // terminal in `advanceStrategicProjects` and nowhere else.
 
       // Record history — with the deed by verb and object for a cell (THR-1434).
       const historyEntry = createHistoryEntry(
@@ -970,7 +991,19 @@ export function advanceStrategicProjects(
       // history entry and the completion event — the ledger and the chronicle read
       // the same reference.
       const deed = describeDeed(graph, candidate, checked, christened?.nodeId);
-      newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded, deed));
+
+      // ── The capability rider (THR-1440) ──
+      //
+      // Grown BEFORE the calling recompute below, deliberately: a Reach that crosses a
+      // tier on this completion should rename the mortal's calling on the same tick,
+      // which is the whole point of the rider. Paid here and nowhere else on this path,
+      // so the failure and abandonment terminals — which build their history through
+      // `buildFailureHistory` — grow nothing, as the story's price for not finishing.
+      const capabilityGrowth = growCapabilityOnCompletion(
+        graph, project.actorId, completedTemplate, project.objectTier,
+      );
+
+      newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded, deed, capabilityGrowth));
 
       // A finished work is a deed the calling reads (THR-1299 slice 5) — the
       // second of its three event sites.
@@ -1058,6 +1091,9 @@ export function advanceStrategicProjects(
         status: 'completed',
         christenedName: christened?.name,
         christenedNodeId: christened?.nodeId,
+        // The rider rides the completion trace that already fires, for the same reason
+        // the christened name does — no new category, no extra emission per tick.
+        capabilityGrowth,
         summary: christened
           ? `Project ${project.templateId} completed — christened "${christened.name}"`
           : `Project ${project.templateId} completed`,
@@ -1677,6 +1713,7 @@ function createHistoryEntry(
   ops: GraphOpResult[],
   catalystSeeded: boolean,
   deed?: UndertakingDeed,
+  capabilityGrowth?: UndertakingCapabilityGrowth,
 ): StrategicHistoryEntry {
   return {
     tick,
@@ -1691,6 +1728,7 @@ function createHistoryEntry(
     graphOps: ops.map(o => `${o.op}:${o.success ? 'ok' : o.error}`),
     catalystSeeded,
     ...(deed ? { deed } : {}),
+    ...(capabilityGrowth ? { capabilityGrowth } : {}),
   };
 }
 

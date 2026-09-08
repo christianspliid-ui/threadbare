@@ -5,7 +5,7 @@
 >   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 834d14da1d047ca9ccbc2c31ad1c6cf253190e4f)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 536b365a7471a26b4ba6cfd25548bdf86d40bbf7)
->   - Docs/canon/undertakings.md (sha1: 3b1ce507c72cfe97849867aa702fceb4ffdf2108)
+>   - Docs/canon/undertakings.md (sha1: 48e9b1a1767bb46a85d664f2e29ac1d053dc4db3)
 >   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 

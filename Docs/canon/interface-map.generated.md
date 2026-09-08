@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 84 |
+| 🟢 LIVE | 85 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **114** |
+| **Total** | **115** |
 
 ## Contracts by producing subsystem
 
@@ -214,6 +214,7 @@ remediation ticket or the build fails.
 | `mentorship-rides-undertaking-checkpoints` | A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one. | edge-prop: `mentors`, `undertakingId` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `shared-step-resolution-two-callers` | One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project. | function: `resolveStepCore`, `mapResolverOutcomeToStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `undertaking-checkpoint-events` | What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it. | event: `undertaking_checkpoint`, `undertaking_fork`, `resolveMomentPresentation`, `followedAgentIds`, `pendingUndertakingMoments`, `moment_surface` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `undertaking-completion-grows-capability` | Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them. | property: `domainCapabilities`, `growCapabilityOnCompletion`, `capabilityGrowth`, `UNDERTAKING_COMPLETION_CAPABILITY_GROWTH`, `CAPABILITY_MAX` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `undertakings-reach-the-player` | What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked. | property: `doingLine`, `deed`, `describeDeed`, `buildUndertakingCodexEntries`, `callingsForCell`, `UNDERTAKING_VERB_GERUNDS`, `UNDERTAKING_VERB_DEEDS` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
 ### War, Armies & Battles
@@ -607,10 +608,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 76 total — 4 write, 7 read, 65 unclassified
+- **Production hits:** 77 total — 4 write, 7 read, 66 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +60 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +61 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `companion-capability-contribution` — 🟢 LIVE
@@ -1386,6 +1387,17 @@ exit
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/MomentCard.tsx`
 - **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts`, `src/engine/followedAgents.ts` +7 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 3. `MomentCard.tsx` renders the oldest unacknowledged interrupt-tier `UndertakingMomentRecord`; GameView fills its `pendingMoment` slot only while no other interrupt is open and renders the card only while that stays true, so collation (encounter first, never two modals) holds by construction rather than by a priority table. The card is in the interrupt registry (`interruptModalOpen`, `getDebugOpenModals` → `MomentCard`) so it auto-pauses with its cause named on the face. Acknowledge routes through `acknowledgeUndertakingMoment`, the queue's single writer, and traces `acknowledged`; the pop traces `opened`. Non-vacuous by `src/components/Game/__tests__/GameView-momentCard.test.tsx`, which renders the real GameView, follows every mortal with a live undertaking through the debug lever, drives real ticks through the tick bridge until an interrupt-tier record exists, and asserts the card is in `getDebugOpenModals`, that acknowledging it flips the record through the live state provider, and that the `opened` / `acknowledged` traces fired; plus `momentCardModel.test.ts` (chips are state-backed per class, the named-loss complication, the divine-hand chip, the forward drive link off a real outcome node, the action slot gated on a live project) and `MomentCard.test.tsx` (every class renders without numerals, acknowledge, the two-beat Inspire arm, an unaffordable verb fails inline). Browser proof at 1920×1080 on `?view=game&seeded&size=medium` via `__DEBUG.followAgent` + `__DEBUG.tick`, recorded on the closing PR.
+
+### `undertaking-completion-grows-capability` — 🟢 LIVE
+
+- **Intent:** Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.
+- **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
+- **Module:** `src/engine/undertakingCapabilityGrowth.ts`
+- **Production hits:** 57 total — 2 write, 2 read, 53 unclassified
+- **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCapabilityGrowth.ts`
+- **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts` +48 more
+- **Verdict:** Verified 2026-09-08: THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
 

@@ -2008,6 +2008,19 @@ export interface StrategicProjectProgressTrace extends TraceBase {
   christenedName?: string;
   /** The node the name above was written onto. */
   christenedNodeId?: string;
+  /**
+   * What the completion paid into the actor's capability (THR-1440), on the raw
+   * 0–100 `domainCapabilities` scale.
+   *
+   * Rides this trace for the same reason the christening above does — an additive
+   * payload rather than a category of its own, because a separate per-tick emission
+   * evicts other categories from the ring buffer the liveness sampler drains.
+   *
+   * Present only on `status: 'completed'`, and absent even there when the actor
+   * carries no capability model or its leaning Reach is already at `CAPABILITY_MAX`.
+   * Never present on an instant completion — those pay nothing, deliberately.
+   */
+  capabilityGrowth?: { reach: ReachDomain; delta: number };
 }
 
 /**

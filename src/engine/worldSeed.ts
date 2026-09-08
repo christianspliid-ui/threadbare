@@ -48,6 +48,9 @@ import { seedGuilds } from './guildSeeding';
 import { seedAllFactions } from './factionSeeding';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { AGENT_COUNT_BY_MAP_SIZE, AGENT_COUNT_FALLBACK } from '../data/agent-behavior-constants';
+// The one capability ceiling (THR-1440) — shared with the completion rider so the
+// seeder and the undertaking lifecycle cannot drift to two different 100s.
+import { CAPABILITY_MAX } from '../data/strategic-action-constants';
 import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
 import { pickCulturalName, GENERIC_NAMES, buildSettlementCultureRoots, getSettlementCultureSuffixes } from '../data/culture-name-pools';
 import { spawnArmy } from './armySpawning';
@@ -495,7 +498,7 @@ function generateDomainCapabilities(
   const boostCount = 1 + Math.floor(rng() * 2);
   for (let i = 0; i < boostCount; i++) {
     const domain = pickRandom(rng, REACH_DOMAINS);
-    caps[domain] = Math.min(100, caps[domain] + 20 + Math.floor(rng() * 20));
+    caps[domain] = Math.min(CAPABILITY_MAX, caps[domain] + 20 + Math.floor(rng() * 20));
   }
   return caps;
 }
