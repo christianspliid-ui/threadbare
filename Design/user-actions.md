@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-08 23:57 local (21:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
+**Last updated:** 2026-09-09 00:54 local (22:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
 
 ## Standing asks
 
 ### 1. Rule on the backlog — one sitting, smallest first
 
-**The build queue is empty and this is why.** Twenty-nine backlog tickets were opened and read on the evening of 8 September. Not one is waiting on effort; each is waiting on a ruling from you. They are one- and two-sentence answers, and each releases a piece of buildable work.
+**The build queue is empty — nothing in flight, nothing on the shelf — and this is why.** Forty-four backlog tickets have now been read across two independent censuses on the evening of 8 September (the `Todo` column, then the `Idea` column). Not one is waiting on effort; each is waiting on a ruling from you. They are one- and two-sentence answers, and each releases a piece of buildable work.
 
 The ones already assessed and named:
 
@@ -22,7 +22,7 @@ The ones already assessed and named:
 
 The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md). (An older August draft under a near-identical name reads plausible — three rulings have overtaken it. The link above is the live one.)
 
-**Five days waiting, and as of tonight nothing is being built at all** — the last ticket in flight merged at 20:07 and the shelf is down to two items, neither of them content. One word puts six encounters of content work on the queue the same hour.
+**Six days waiting, and as of this hour the board is empty on both counts** — nothing in flight, and the shelf's last item ([a gate flip](https://linear.app/threadbare/issue/THR-1256)) was picked up and finished at 00:28 tonight. One word puts six encounters of content work on the queue the same hour.
 
 **Six, not seven.** `shrine_offering` is held to batch 3 (most warnings of the set, weak contrast against `offer_small_prayer`), and it is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), so that checkpoint waits one batch longer. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting.
 
@@ -41,9 +41,9 @@ The rest: [when a fight starts on its own](https://linear.app/threadbare/issue/T
 
 ### 4. Do you still want the incident-capture button? — [THR-1134](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in)
 
-**You filed this yourself on 16 August and nothing has moved since.** One button on the live game that captures a run to a `.json` you attach to chat — so a weird-looking simulation reaches an agent as *state*, not a screenshot and a sentence.
+**You filed this yourself on 16 August — 24 days ago — and nothing has moved since.** One button on the live game that captures a run to a `.json` you attach to chat — so a weird-looking simulation reaches an agent as *state*, not a screenshot and a sentence.
 
-Scope is settled from your answers that day: snapshot only, no replay log; must work on the deployed build; output is a downloaded file. High priority, blocked by nothing, 23 days idle purely because no design pass was run.
+Scope is settled from your answers that day: snapshot only, no replay log; must work on the deployed build; output is a downloaded file. High priority, blocked by nothing, idle purely because no design pass was run.
 
 **Yes** puts it at the front of the design queue. **No** closes it rather than keeping it warm.
 
@@ -120,6 +120,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **2026-09-08 — the division-rule mock** ([THR-1398](https://linear.app/threadbare/issue/THR-1398)). A grooming report flagged it as awaiting your reaction; it had already closed the previous morning. Nothing owed.
 - **2026-09-08 — owning people-things is live** ([THR-1438](https://linear.app/threadbare/issue/THR-1438)). Claiming a company, seizing an army and standing for a faction seat all shipped this evening under the undertakings work you approved. Not an ask you owed — recorded because the grip on what a mortal holds still runs out on a timer with no way to renew it ([THR-1287](https://linear.app/threadbare/issue/THR-1287)), and that now applies to people as well as places. Nothing is blocked on it.
 - **2026-09-08 — the undertakings map is delivered** ([THR-1396](https://linear.app/threadbare/issue/THR-1396)). Its last ticket, [the capability rider](https://linear.app/threadbare/issue/THR-1440), merged at 23:45 — a finished piece of work now grows the mortal in the Reach it leaned on, but only work that could have failed. Every decision on that map is resolved and built. Not an ask; recorded because it was the last thing in flight.
+- **2026-09-09 — the shelf's last item is gone** ([THR-1256](https://linear.app/threadbare/issue/THR-1256), [PR #1861](https://github.com/christianspliid-ui/threadbare/pull/1861)). A two-week review of a documentation gate ended by retiring it rather than switching it on — the thing that set it off was wrong, not the lists it checked. An agent's call, made and recorded. Not an ask; recorded because it is why the board is now empty on both counts.
 
 ---
 
