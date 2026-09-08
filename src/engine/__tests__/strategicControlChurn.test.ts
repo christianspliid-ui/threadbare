@@ -250,16 +250,23 @@ describe('THR-1286 — control stance retirement', () => {
  *
  * Falsified on the closeout, so the red condition of each is known rather than assumed:
  *
- * | perturbation                                              | result |
- * |-----------------------------------------------------------|--------|
- * | `STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS` 24 → 0           | re-claim test RED |
- * | drop the `undertakingVerb === 'control' && own` skip alone | still green |
- * | ...and widen `control:claim` ownership to `any`            | held-target test RED |
+ * | perturbation                                               | result |
+ * |------------------------------------------------------------|--------|
+ * | neuter the `recentDuplicate` predicate                      | boundary test RED |
+ * | `STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS` 24 → 20           | value pin RED |
+ * | drop the `undertakingVerb === 'control' && own` skip alone  | still green |
+ * | ...and widen `control:claim` ownership to `any`             | held-target test RED |
  *
- * The middle row is the useful one: the two Q1 guards are genuinely redundant and the
- * cell's `unowned` ownership rule is the load-bearing half. The candidate-walk skip is
- * belt-and-braces for a type that overrides its ownership rule (`claim × Faction` reads
- * `any`), which is why removing it alone changes nothing here.
+ * Two of these are worth keeping in mind when editing:
+ *
+ * - The boundary test builds its fixture *from* the window constant, so it holds for any
+ *   value — retuning 24 → 0 leaves it green. That is why the value has its own pin. A
+ *   threshold that sits on both sides of its own comparison tests nothing about the
+ *   threshold.
+ * - The two Q1 guards are genuinely redundant, and the cell's `unowned` ownership rule is
+ *   the load-bearing half. The candidate-walk skip is belt-and-braces for a type that
+ *   overrides its ownership rule (`claim × Faction` reads `any`), which is why removing
+ *   it alone changes nothing here.
  */
 describe('THR-1442 — control churn protection after the gate deletion', () => {
   const ME = 'actor_claimant';
@@ -307,9 +314,18 @@ describe('THR-1442 — control churn protection after the gate deletion', () => 
 
   it('refuses a re-claim inside the recent-duplicate window and admits it on the far side', () => {
     const g = claimantWorld();
-    const collapseTick = 100;
-    const collapsed = stateWith([], [{
-      tick: collapseTick,
+
+    // Both arms are read at the SAME tick, varying only how old the collapse is. Reading
+    // them at two different ticks made this test brittle against the THR-1403 rotation:
+    // it went red when THR-1439 added cells and the spread shifted under the per-actor
+    // cap, which is a fact about rotation, not about the guard under test.
+    const liveTick = [...Array(60).keys()]
+      .map(t => t + STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS)
+      .find(t => claimTargets(g, undefined, t).includes(KEEP));
+    expect(liveTick, 'control:claim never offered the keep on any tick — the arm is dead').toBeDefined();
+
+    const collapseAt = (tick: number): StrategicRuntimeState => stateWith([], [{
+      tick,
       actorId: ME,
       templateId: CELL,
       ambitionId: RECLAIM,
@@ -322,18 +338,34 @@ describe('THR-1442 — control churn protection after the gate deletion', () => 
       catalystSeeded: false,
     }]);
 
-    const lastRefused = collapseTick + STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS - 1;
-    expect(claimTargets(g, collapsed, lastRefused)).not.toContain(KEEP);
+    // One tick short of the window: refused...
+    const inside = collapseAt(liveTick! - (STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS - 1));
+    expect(claimTargets(g, inside, liveTick!)).not.toContain(KEEP);
     // ...and it is this guard doing it, named on the board.
-    const { rejections } = generateStrategicCandidates(g, ME, [RECLAIM], collapsed, lastRefused, mulberry32(1), undefined, 'cells');
+    const { rejections } = generateStrategicCandidates(g, ME, [RECLAIM], inside, liveTick!, mulberry32(1), undefined, 'cells');
     expect(rejections.map(r => r.reason)).toContain(`recent_duplicate:${KEEP}`);
 
-    expect(claimTargets(g, collapsed, collapseTick + STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS)).toContain(KEEP);
+    // Exactly the window old, same tick, same rotation: admitted.
+    const outside = collapseAt(liveTick! - STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS);
+    expect(claimTargets(g, outside, liveTick!)).toContain(KEEP);
   });
 
   it('keeps the re-claim window inside the history window it reads from', () => {
     // The collapse record the guard matches on is pruned with the history window; a
     // window longer than it would refuse nothing at its far end.
     expect(STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS).toBeLessThan(STRATEGIC_HISTORY_WINDOW_TICKS);
+  });
+
+  it('pins the window at the measured value, not merely at whatever it is set to', () => {
+    // The boundary test above builds its fixture *from* this constant, so it holds for
+    // any value and cannot notice a retune — the constant sits on both sides of the
+    // comparison. This is the assertion that does notice.
+    //
+    // 24 is not free: it is the observed floor. Across seeds 42/99/7 at 300 ticks, no
+    // collapsed stance was re-claimed inside 24 ticks in 102 collapses, and seed 7's
+    // minimum gap is exactly 24 — this constant releasing. Lowering it re-opens the
+    // churn THR-1286 measured at 39.5% of seed-42 decisions, so a change here is a
+    // deliberate re-measurement, never a passing tune.
+    expect(STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS).toBe(24);
   });
 });
