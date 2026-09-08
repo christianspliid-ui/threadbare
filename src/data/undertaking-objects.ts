@@ -34,6 +34,7 @@ import type {
   UndertakingHarmClass,
   UndertakingObjectHandle,
   UndertakingObjectTypeId,
+  UndertakingOwnership,
   UndertakingVerbVariant,
   WorkLexiconId,
 } from '../types/strategicAction';
@@ -76,7 +77,11 @@ import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
-import { getGroupOf } from '../engine/groups/groupQueries';
+import { getGroupOf, getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
+import { setCommander } from '../engine/groups/groupCommand';
+import { applyCohesionDelta } from '../engine/groups/groupCohesion';
+import { writeGrudge } from '../engine/grievance/grudgeEdge';
+import { nominateSuccessor, forceSuccession } from '../engine/factionSuccessionOps';
 import { raiseWarhostForce } from '../engine/armySpawning';
 import { mintCompanion, removeCompanion } from '../engine/companions';
 import { applyReputationWithDelta } from '../engine/reputation';
@@ -118,6 +123,11 @@ import {
   UNDERTAKING_DEFAULT_MARK_MAGNITUDE,
   UNDERTAKING_DEFAULT_WARHOST_STRENGTH,
   UNDERTAKING_OBSERVE_INTELLIGENCE_TYPE,
+  // The ownership of people-things (THR-1438)
+  COMMAND_SEIZED_COHESION_DELTA,
+  USURPATION_STANDING_LOSS,
+  USURPATION_CRITICAL_FAILURE_STANDING_MULT,
+  ARMY_SCOUT_INTELLIGENCE_TYPE,
   UNDERTAKING_DEFAULT_FACTION_SEED,
   UNDERTAKING_DEFAULT_TIER,
   OBSERVE_CLUE_PRECISION_BY_BAND,
@@ -246,6 +256,33 @@ export interface UndertakingObjectType {
    * the one door today. Fails closed — a reader that throws is no exemption.
    */
   readonly gateExemption?: Partial<Record<UndertakingVerbVariant, (graph: WorldGraph, actorId: string, handle: UndertakingObjectHandle) => string | null>>;
+  /**
+   * Per-verb ownership rules that replace `OWNERSHIP_BY_VERB`'s default (THR-1438).
+   *
+   * One cell needs this today: a **candidacy** (`claim × Faction`) is filed on a
+   * faction whose leader is *derived* rather than seated, so the object always reads
+   * as somebody's — under the default `unowned` rule the cell would be unreachable by
+   * construction. The candidacy targets `any` and its `eligibility` hook does the real
+   * gating (no `leads` edge stands).
+   *
+   * Read once, at cell synthesis (`undertaking-cells.ts`), so the template's declared
+   * `targetRule.ownership` **is** the effective rule — the codex card, the candidate
+   * walk and the resolver all read the same one number rather than three copies.
+   */
+  readonly ownershipOverride?: Partial<Record<UndertakingVerbVariant, UndertakingOwnership>>;
+  /**
+   * Per-verb eligibility beyond ownership (THR-1438): the reason this actor cannot
+   * undertake this verb on this object, or `null` when they can.
+   *
+   * Consulted **after** the ownership rule and **before** the motive gate, and refused
+   * on the board as `ineligible:<reason>:<targetId>` — never silently. This is where a
+   * precondition that is about the *state of the world* rather than about who holds
+   * what goes: a mutiny needs a company already coming apart, a coup needs the
+   * claimant to belong to the army's faction. Fails closed — a hook that throws is
+   * `ineligible:error`, because a precondition nobody could evaluate is not a
+   * precondition that passed.
+   */
+  readonly eligibility?: Partial<Record<UndertakingVerbVariant, (graph: WorldGraph, actorId: string, handle: UndertakingObjectHandle) => string | null>>;
   /** Tier read off the object; `null` when the source is missing (the caller defaults and traces). */
   readonly tierOf: (graph: WorldGraph, handle: UndertakingObjectHandle) => UndertakingObjectTier | null;
   /** What each verb variant does to THIS type. A verb not declared here is not a cell. */
@@ -507,7 +544,14 @@ function observe(ctx: ObjectVerbContext): GraphOpResult {
 /** The cell id an observe reader traces under, by what the handle turned out to be. */
 function observeCellId(node: GraphNode | undefined): string {
   if (!node) return 'cell.observe.unknown';
-  if (node.type === 'actor') return node.properties.actorType === 'faction' ? 'cell.observe.faction' : 'cell.observe.mortal';
+  if (node.type === 'actor') {
+    if (node.properties.actorType === 'faction') return 'cell.observe.faction';
+    // THR-1438: a group is an `actor` node too, so without this an army's scouting
+    // would have traced under `cell.observe.mortal` — the reader trace naming a cell
+    // that never ran, which is worse than no trace.
+    if (getGroupKind(node) === 'army') return 'cell.observe.army';
+    return 'cell.observe.mortal';
+  }
   if (isPlaceNode(node)) return 'cell.observe.place';
   if (locationSubtypeOf(node) === ROUTE_IDENTITY_SUBTYPE) return 'cell.observe.route';
   if (isLocationNode(node)) return 'cell.observe.location';
@@ -1245,6 +1289,164 @@ const ROUTE: UndertakingObjectType = {
   },
 };
 
+// ─── The ownership of people-things (THR-1438) ──────────────────────
+//
+// Seven cells that change **who commands a group of people**. Everything below rides
+// two ops the world now has in one place each — `setCommander` for a band's command,
+// `nominateSuccessor` / `forceSuccession` for a faction's seat — plus the observe
+// readers THR-1428 shipped. Nothing here writes a `commanded_by` or a `leads` edge by
+// hand, and nothing here kills anybody: a coup and a usurpation are decided by the
+// faction and by the band the work landed on, never by the blade.
+
+/** The group's commander, but only while they live — a dead commander's band is unowned. */
+function livingCommanderOf(graph: WorldGraph, groupId: string): string | null {
+  const edge = graph.getOutgoingEdges(groupId, 'commanded_by')[0];
+  if (!edge) return null;
+  const commander = graph.getNode(edge.target);
+  return commander && !isAgentGone(commander) ? commander.id : null;
+}
+
+/**
+ * Who holds a company or an army: its living commander, or nobody.
+ *
+ * The "only while they live" clause is the whole cell. `promoteNewLeader` used to
+ * paper over a commander's death inside the dissolution sweep, so the band never read
+ * as unowned and `claim × Company` could never have fired. Now a death opens the seat
+ * and somebody has to take it.
+ */
+const commanderOwnersOf = (graph: WorldGraph, handle: UndertakingObjectHandle): readonly string[] => {
+  const groupId = nodeIdOf(handle);
+  const commander = groupId ? livingCommanderOf(graph, groupId) : null;
+  return commander ? [commander] : [];
+};
+
+/** True when the actor is a living member of the group. */
+function isLivingGroupMember(graph: WorldGraph, actorId: string, groupId: string): boolean {
+  return getGroupMemberEdges(graph, groupId).some(e => {
+    if (e.source !== actorId) return false;
+    if (e.properties?.leftAtTick != null) return false;
+    const member = graph.getNode(e.source);
+    return !!member && !isAgentGone(member);
+  });
+}
+
+/** The faction an army was raised for — its own `member_of` edge names it. */
+function armyFactionId(graph: WorldGraph, armyId: string): string | null {
+  for (const e of graph.getOutgoingEdges(armyId, 'member_of')) {
+    const n = graph.getNode(e.target);
+    if (n?.type === 'actor' && n.properties.actorType === 'faction') return n.id;
+  }
+  return null;
+}
+
+/** True when the actor stands where the group stands — a claim is open to whoever is there. */
+function standsWithGroup(graph: WorldGraph, actorId: string, groupId: string): boolean {
+  const where = getGroupPosition(graph, groupId);
+  if (!where) return false;
+  return graph.getOutgoingEdges(actorId, 'located_at').some(e => e.target === where);
+}
+
+/** Take command of a leaderless band — `claim × Company` and `claim × Army`, one op. */
+function takeCommand(ctx: ObjectVerbContext): GraphOpResult {
+  const groupId = nodeIdOf(ctx.handle);
+  if (!groupId) return fail('take_command', 'no_node');
+  const result = setCommander(ctx.state, groupId, ctx.actorId, 'claim', ctx.tick);
+  return result.success ? { success: true, op: 'take_command' } : fail('take_command', result.error ?? 'not_set');
+}
+
+/**
+ * A mutiny — `seize × Company`.
+ *
+ * The command moves, the deposed stays a member (nobody is killed or expelled), they
+ * take the injury as a `command_seized` grudge, and the company is worse for it. The
+ * grudge is written with `upgradeCause` because this cell is motive-gated on hostility:
+ * an edge between these two almost always stands already, and without the upgrade the
+ * injury would never be recorded — leaving the deposed commander with no licence to
+ * plot back, which is the one consequence a mutiny most obviously owes.
+ */
+function mutiny(ctx: ObjectVerbContext): GraphOpResult {
+  const groupId = nodeIdOf(ctx.handle);
+  if (!groupId) return fail('take_command', 'no_node');
+  const deposed = livingCommanderOf(ctx.graph, groupId);
+  const result = setCommander(ctx.state, groupId, ctx.actorId, 'mutiny', ctx.tick);
+  if (!result.success) return fail('take_command', result.error ?? 'not_set');
+  const wronged = deposed ?? result.previousCommanderId;
+  if (wronged) writeGrudge(ctx.graph, wronged, ctx.actorId, ctx.tick, 'command_seized', { upgradeCause: true });
+  // A one-off consequence with its own tunable, not one of the systemic cohesion
+  // events: `applyCohesionEvent`'s nearest kind is `dissent`, which a Bless window
+  // would suppress and a Sunder window would amplify. A mutiny is neither — it
+  // happened, and it cost the band exactly this much (THR-1438 grey zone, decided here).
+  applyCohesionDelta(ctx.graph, groupId, COMMAND_SEIZED_COHESION_DELTA);
+  return { success: true, op: 'take_command' };
+}
+
+/**
+ * A coup — `seize × Army`.
+ *
+ * The faction decides it, not the blade. On a winning band the seat moves through the
+ * same `setCommander`; on any other the claimant takes the commander's grudge and a
+ * standing loss with the army's faction, doubled when the attempt went badly enough to
+ * be a `critical_failure`. Nobody dies and nothing dissolves — an army is not a thing
+ * you can break by reaching for it.
+ */
+function coup(ctx: ObjectVerbContext): GraphOpResult {
+  const armyId = nodeIdOf(ctx.handle);
+  if (!armyId) return fail('take_command', 'no_node');
+  const commander = livingCommanderOf(ctx.graph, armyId);
+  const won = ctx.outcome === 'success' || ctx.outcome === 'critical_success';
+
+  if (won) {
+    const result = setCommander(ctx.state, armyId, ctx.actorId, 'coup', ctx.tick);
+    return result.success ? { success: true, op: 'take_command' } : fail('take_command', result.error ?? 'not_set');
+  }
+
+  // Every other band — including an absent one, which is the review lever starting a
+  // cell with no pin — takes the failure arm rather than a free retry.
+  if (commander) writeGrudge(ctx.graph, commander, ctx.actorId, ctx.tick, 'usurpation_failed', { upgradeCause: true });
+  const factionId = armyFactionId(ctx.graph, armyId);
+  if (factionId) {
+    applyReputationWithDelta(
+      ctx.graph, ctx.actorId, factionId,
+      -USURPATION_STANDING_LOSS * (ctx.outcome === 'critical_failure' ? USURPATION_CRITICAL_FAILURE_STANDING_MULT : 1),
+      ctx.tick, 'coup_failed',
+    );
+  }
+  return { success: true, op: 'take_command' };
+}
+
+/**
+ * Scouting an army — `observe × Army`.
+ *
+ * The shared observe semantic cannot serve this one unchanged: `knows_of` is a knower
+ * → Location edge (`types/graph.ts`), so a survey of an army can only make the scout
+ * familiar with **where the army stands**, never with the army itself. That is also
+ * the more useful fact — an army's position is what an encounter or a march needs to
+ * know. The intelligence record names the army, and the war readout reads it back as
+ * `scoutedBy`.
+ */
+function scoutArmy(ctx: ObjectVerbContext): GraphOpResult {
+  const armyId = nodeIdOf(ctx.handle);
+  if (!armyId || !ctx.graph.getNode(armyId)) return fail('record_intelligence', 'object_not_found');
+  const base = recordIntelligence(ctx.graph, ctx.actorId, armyId, ARMY_SCOUT_INTELLIGENCE_TYPE, ctx.tick);
+  try {
+    const where = getGroupPosition(ctx.graph, armyId);
+    if (where) {
+      writeFamiliarity(ctx, 'cell.observe.army', where);
+    } else {
+      emitReaderTrace(ctx, {
+        cellId: 'cell.observe.army',
+        reader: 'familiarity',
+        objectId: armyId,
+        refused: 'army_stands_nowhere',
+        summary: 'the army was found, but not anywhere the map names',
+      });
+    }
+  } catch {
+    // A reader that throws must never fail the work the scout actually did (NFP #4).
+  }
+  return base;
+}
+
 // ─── People and collectives ─────────────────────────────────────────
 
 const FACTION: UndertakingObjectType = {
@@ -1265,6 +1467,36 @@ const FACTION: UndertakingObjectType = {
   tierOf: groupTier(UNDERTAKING_FACTION_TIER_MEMBER_BANDS),
   lexicon: 'network',
   harmOnDestroy: 'network_severed',
+  // THR-1438: a candidacy is filed on a faction whose leader is *derived*, so the
+  // object always reads as somebody's. Under `claim`'s default `unowned` rule the
+  // cell would be unreachable by construction; the eligibility hook below carries the
+  // real gate — no seated leader — which is the world's usual state.
+  ownershipOverride: { 'control:claim': 'any' },
+  eligibility: {
+    // Standing for a seat: only when none is filled, only from inside, never by the
+    // person the ladder already points at, and never twice.
+    'control:claim': (graph, actorId, handle) => {
+      const factionId = nodeIdOf(handle);
+      if (!factionId) return 'no_faction';
+      if (graph.getIncomingEdges(factionId, 'leads').length > 0) return 'seat_is_filled';
+      const actor = graph.getNode(actorId);
+      if (!actor || isAgentGone(actor)) return 'not_living';
+      if (!graph.getOutgoingEdges(actorId, 'member_of').some(e => e.target === factionId)) return 'not_of_the_faction';
+      if (getFactionLeaderId(graph, factionId) === actorId) return 'already_leads';
+      if (graph.getOutgoingEdges(actorId, 'will_succeed').some(e => e.target === factionId)) return 'already_stood';
+      return null;
+    },
+    // Usurping: from inside, and not against oneself.
+    'control:seize': (graph, actorId, handle) => {
+      const factionId = nodeIdOf(handle);
+      if (!factionId) return 'no_faction';
+      const actor = graph.getNode(actorId);
+      if (!actor || isAgentGone(actor)) return 'not_living';
+      if (!graph.getOutgoingEdges(actorId, 'member_of').some(e => e.target === factionId)) return 'not_of_the_faction';
+      if (getFactionLeaderId(graph, factionId) === actorId) return 'already_leads';
+      return null;
+    },
+  },
   verbs: {
     // Founding an order: the op the packs reached through one hint, as a cell.
     create: (ctx) => {
@@ -1288,6 +1520,23 @@ const FACTION: UndertakingObjectType = {
       const planted = applyPlantSchism(ctx.state, ctx.runtime, nodeId, ctx.actorId, delay, ctx.tick);
       return planted ? { success: true, op: 'plant_schism', createdId: nodeId } : fail('plant_schism', 'faction_not_found');
     },
+    // A candidacy, not a coronation: the work files a claim and the succession phase
+    // stays the one arbiter, so a mortal's bid and the world's own succession can
+    // never race. The claim ranks below the god's card and a notable's heir.
+    'control:claim': (ctx) => {
+      const factionId = nodeIdOf(ctx.handle);
+      return factionId
+        ? nominateSuccessor(ctx.state, factionId, ctx.actorId, ctx.outcome, ctx.tick)
+        : fail('nominate_successor', 'no_node');
+    },
+    // Usurping: the phase's own seating, run early, with three arms by band. The
+    // deposed leader is never killed — that is the plot's business (THR-1430).
+    'control:seize': (ctx) => {
+      const factionId = nodeIdOf(ctx.handle);
+      return factionId
+        ? forceSuccession(ctx.state, ctx.runtime, factionId, ctx.actorId, ctx.outcome, ctx.tick)
+        : fail('force_succession', 'no_node');
+    },
     observe,
   },
 };
@@ -1296,12 +1545,38 @@ const COMPANY: UndertakingObjectType = {
   id: 'company',
   displayName: 'Company',
   shape: { nodeType: 'actor', discriminator: isGroupOfKind('company') },
-  ownedVia: ['commanded_by'],
+  // THR-1438: `ownedVia: []` because the type declares its own reader — a band is held
+  // by its **living** commander, and a dead one leaves it unowned, which is exactly
+  // what `claim × Company` waits for. A raw `commanded_by` walk cannot say that.
+  ownedVia: [],
+  ownersOf: commanderOwnersOf,
   tierOf: groupTier(UNDERTAKING_COMPANY_TIER_ROSTER_BANDS),
   lexicon: 'band',
   harmOnDestroy: 'holding_seized',
+  eligibility: {
+    // Taking a leaderless company: from inside it, or from where it stands.
+    'control:claim': (graph, actorId, handle) => {
+      const groupId = nodeIdOf(handle);
+      if (!groupId) return 'no_group';
+      const actor = graph.getNode(actorId);
+      if (!actor || isAgentGone(actor)) return 'not_living';
+      return isLivingGroupMember(graph, actorId, groupId) || standsWithGroup(graph, actorId, groupId)
+        ? null : 'not_with_the_company';
+    },
+    // A mutiny is only possible where the cohesion system already reads the company as
+    // coming apart — the band's own ladder decides the window, not this cell.
+    'control:seize': (graph, actorId, handle) => {
+      const groupId = nodeIdOf(handle);
+      if (!groupId) return 'no_group';
+      if (!isLivingGroupMember(graph, actorId, groupId)) return 'not_a_member';
+      const state = getCohesionState(getGroupCohesion(graph.getNode(groupId)));
+      return state === 'frayed' || state === 'breaking' ? null : 'cohesion_holds';
+    },
+  },
   verbs: {
     create: (ctx) => raiseWarband(ctx.state, ctx.actorId, ctx.boundCastIds ?? []),
+    'control:claim': takeCommand,
+    'control:seize': mutiny,
     'change:raise': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
       return nodeId ? reinforceWarband(ctx.state, ctx.actorId, nodeId, ctx.boundCastIds ?? []) : fail('reinforce_group', 'no_node');
@@ -1317,11 +1592,45 @@ const ARMY: UndertakingObjectType = {
   id: 'army',
   displayName: 'Army',
   shape: { nodeType: 'actor', discriminator: isGroupOfKind('army') },
-  ownedVia: ['commanded_by'],
+  // THR-1438: the living commander, as for a company — a fallen commander's host is a
+  // seat somebody in the faction has to take.
+  ownedVia: [],
+  ownersOf: commanderOwnersOf,
   tierOf: groupTier(UNDERTAKING_ARMY_TIER_ROSTER_BANDS),
   lexicon: 'band',
   harmOnDestroy: 'holding_seized',
+  eligibility: {
+    // An army belongs to a faction, so its command does too: only that faction's
+    // people may take it, and nobody commands two hosts at once.
+    'control:claim': (graph, actorId, handle) => {
+      const armyId = nodeIdOf(handle);
+      if (!armyId) return 'no_group';
+      const actor = graph.getNode(actorId);
+      if (!actor || isAgentGone(actor)) return 'not_living';
+      const factionId = armyFactionId(graph, armyId);
+      if (!factionId) return 'army_has_no_faction';
+      if (!graph.getOutgoingEdges(actorId, 'member_of').some(e => e.target === factionId)) return 'not_of_the_faction';
+      const commandsAnother = graph.getIncomingEdges(actorId, 'commanded_by')
+        .some(e => e.source !== armyId && getGroupKind(graph.getNode(e.source)) === 'army');
+      return commandsAnother ? 'already_commands_a_host' : null;
+    },
+    // A coup comes from inside the faction. From outside it would be a battle, and the
+    // war layer already has one.
+    'control:seize': (graph, actorId, handle) => {
+      const armyId = nodeIdOf(handle);
+      if (!armyId) return 'no_group';
+      const actor = graph.getNode(actorId);
+      if (!actor || isAgentGone(actor)) return 'not_living';
+      const factionId = armyFactionId(graph, armyId);
+      if (!factionId) return 'army_has_no_faction';
+      return graph.getOutgoingEdges(actorId, 'member_of').some(e => e.target === factionId)
+        ? null : 'not_of_the_faction';
+    },
+  },
   verbs: {
+    'control:claim': takeCommand,
+    'control:seize': coup,
+    observe: scoutArmy,
     // A mortal commander raising an army for their faction — the op the divine lane reaches.
     create: (ctx) => {
       const factionId = actorFactionId(ctx.graph, ctx.actorId);
@@ -2232,6 +2541,31 @@ export function resolveObjectOwners(
     // Fail-soft: unreadable ownership answers "unowned".
   }
   return [...owners];
+}
+
+/**
+ * Why this actor cannot undertake this verb on this object, or `null` when they can
+ * (THR-1438). A type with no hook for the variant answers `null` — eligibility is
+ * opt-in, exactly like the motive gate it sits beside.
+ *
+ * **Fails closed.** A hook that throws answers `'error'`, because a precondition
+ * nobody could evaluate is not a precondition that passed — the opposite of the
+ * `gateExemption` reader beside it, which fails closed by granting *no* exemption.
+ */
+export function eligibilityRefusal(
+  graph: WorldGraph,
+  type: UndertakingObjectType,
+  variant: UndertakingVerbVariant,
+  actorId: string,
+  handle: UndertakingObjectHandle,
+): string | null {
+  const hook = type.eligibility?.[variant];
+  if (!hook) return null;
+  try {
+    return hook(graph, actorId, handle);
+  } catch {
+    return 'error';
+  }
 }
 
 /** The object's tier, or the default with `defaulted: true` when its source is missing or throws. */

@@ -31,7 +31,7 @@ import type {
 import type { ReachDomain } from '../types/traits';
 import type { ValuePair } from '../types/agent';
 import { UNDERTAKING_OBJECT_TYPES, HARM_ON_DESTROY, type UndertakingObjectType } from './undertaking-objects';
-import { UNDERTAKING_VERB_PROSE, UNDERTAKING_VERB_WORDS } from './undertaking-verb-prose';
+import { UNDERTAKING_VERB_PROSE, UNDERTAKING_VERB_WORDS, UNDERTAKING_CELL_PHRASES } from './undertaking-verb-prose';
 import {
   UNDERTAKING_VERB_VARIANTS,
   STRATEGIC_VERB_OF_UNDERTAKING_VERB,
@@ -163,7 +163,11 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
   const prose = UNDERTAKING_VERB_PROSE[variant];
   return {
     id: cellTemplateId(variant, type.id),
-    displayName: `${UNDERTAKING_VERB_WORDS[variant]} ${withArticle(type.displayName.toLowerCase())}`,
+    // THR-1438: a cell may name itself in the game's own words (a mutiny, a coup, a
+    // candidacy) where the generic "<Verb> <a kind>" misreads. Bounded table; a cell
+    // with no entry takes the generic phrase, which is right for most of them.
+    displayName: UNDERTAKING_CELL_PHRASES[cellTemplateId(variant, type.id)]
+      ?? `${UNDERTAKING_VERB_WORDS[variant]} ${withArticle(type.displayName.toLowerCase())}`,
     verb: STRATEGIC_VERB_OF_UNDERTAKING_VERB[verb],
     undertakingVerb: verb,
     cellVariant: variant,
@@ -181,7 +185,11 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
     completionProse: prose.completion,
     targetRule: variant === 'create'
       ? CREATE_SITE_RULE[type.id]
-      : { type: 'object', objectTypeId: type.id, ownership: OWNERSHIP_BY_VERB[variant] },
+      // THR-1438: a type may override the variant's default ownership rule. Read once,
+      // here, so the template's declared rule *is* the effective one — the candidate
+      // walk, the codex card and the resolver then all read the same number instead of
+      // three copies that could drift.
+      : { type: 'object', objectTypeId: type.id, ownership: type.ownershipOverride?.[variant] ?? OWNERSHIP_BY_VERB[variant] },
     motiveGate: gated ? [...MOTIVE_GATE_KINDS] : undefined,
     harmClass: variant === 'destroy' ? HARM_ON_DESTROY[type.id] : variant === 'control:seize' ? HARM_ON_SEIZE : variant === 'change:lower' ? HARM_ON_LOWER : undefined,
     // A cell's mutation is the resolver's, never a hint; declared so the legacy

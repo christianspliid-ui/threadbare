@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 82 |
+| 🟢 LIVE | 83 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **112** |
+| **Total** | **113** |
 
 ## Contracts by producing subsystem
 
@@ -59,7 +59,7 @@ remediation ticket or the build fails.
 | `ruined-settlement-joins-delve-layer` | A settlement a mortal razed becomes somewhere to explore: it carries a depth banded from what it used to be, and the delve layer admits it once the dust has settled — so a warlord's destruction feeds a wanderer's delve rather than ending the story of that place. | node-prop: `ruinMagnitude`, `ruinedTick`, `locationSubtype` | Ruins, Clues & Delves | 🟢 LIVE | — |
 | `t1-undertaking-objects-feed-existing-economies` | A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads. | edge-prop: `knows_clue_of`, `knows_secret_of`, `owes_favor`, `consumeOnEvent`, `possesses` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `undertaking-creation-effects` | A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift. | function: `materializeWalkOnActor`, `applyCreationEffects`, `selectCreationBand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-1297 |
-| `undertaking-object-types` | An undertaking is a verb — create · change (raise | lower) · use · control (claim | seize) · destroy · observe — acted on a kind of thing the world-object catalogue names (Area, Location, Place, Route, Mortal, Faction, Company, Army, Network, Companion, Item, Power, Condition, Agreement, Standing). Each kind registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a kind does not declare is refused and traced unreachable, never faked; the generated grid (every kind × every verb) names each undeclared cell as an open decision or not an object, and fails the build when a cell has no place on it (THR-1392). | function: `UNDERTAKING_OBJECT_TYPES`, `resolveUndertakingCompletion`, `resolveObjectOwners`, `undertaking_cell_unreachable` | Strategic Projects & Control | 🟢 LIVE | — |
+| `undertaking-object-types` | An undertaking is a verb — create · change (raise | lower) · use · control (claim | seize) · destroy · observe — acted on a kind of thing the world-object catalogue names (Area, Location, Place, Route, Mortal, Faction, Company, Army, Network, Companion, Item, Power, Condition, Agreement, Standing). Each kind registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a kind does not declare is refused and traced unreachable, never faked; the generated grid (every kind × every verb) names each undeclared cell as an open decision or not an object, and fails the build when a cell has no place on it (THR-1392). | function: `UNDERTAKING_OBJECT_TYPES`, `resolveUndertakingCompletion`, `resolveObjectOwners`, `undertaking_cell_unreachable`, `ownershipOverride`, `eligibilityRefusal` | Strategic Projects & Control | 🟢 LIVE | — |
 | `undertaking-outcomes-cast-omens` | A mortal’s work casts omens: a razing, a seizure, a killing or a curse done by mortal hands becomes a portent the world carries — a chronicle line and a pressure on what happens next near the place — instead of the foreshadowing layer reading only the doom clock and the god’s own weather. | event: `undertaking_outcome`, `castUndertakingPortent`, `portendedTick`, `OMEN_UNDERTAKING_LOOKBACK_TICKS` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 
 ### Ascendant Beats & Progression
@@ -87,7 +87,7 @@ remediation ticket or the build fails.
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔵 UNVERIFIED-OK | — |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `companion-capability-contribution` | A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name. | edge-prop: `accompanies`, `domainContributions`, `getCompanions` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `undertaking-ownership-agrees-with-writers` | The undertaking object registry reads who holds a thing through the edges the world actually writes — a faction through the leader the succession seam derives, a companion through `accompanies`, a condition as one mortal’s borne `has_trait` edge, a standing as one ordered pair from `reputation_with` or the seeded `relates_to`, an item never a catalog template, a route as the identity node the cell now mints — so the verbs a kind declares find something to act on instead of refusing `no_owned_object` on every seed. | function: `resolveObjectOwners`, `ownersOf`, `gateExemption`, `edgeTypes`, `CATALOG_TEMPLATE_IDS`, `mintRouteIdentity`, `ownershipCensus` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `undertaking-ownership-agrees-with-writers` | The undertaking object registry reads who holds a thing through the edges the world actually writes — a faction through the leader the succession seam derives, a companion through `accompanies`, a condition as one mortal’s borne `has_trait` edge, a standing as one ordered pair from `reputation_with` or the seeded `relates_to`, an item never a catalog template, a route as the identity node the cell now mints — so the verbs a kind declares find something to act on instead of refusing `no_owned_object` on every seed. | function: `resolveObjectOwners`, `ownersOf`, `gateExemption`, `eligibility`, `edgeTypes`, `CATALOG_TEMPLATE_IDS`, `mintRouteIdentity`, `ownershipCensus` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ### Attention, Chronicle & Narrative
 
@@ -108,6 +108,7 @@ remediation ticket or the build fails.
 | `confrontation-content-gated-on-a-live-opponent` | An encounter about fighting a particular band is only offered while that band is standing there — a confrontation never surfaces against nobody. | function: `requiresOpposingBand`, `hasOpposingBand` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `contested-outcome-band-reaches-the-player` | Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt. | function: `contestedOutcomeFor`, `contested_won` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `draw-together-carries-caster-sphere-to-the-name` | A company gathered by a god carries that god in its name — the sphere the verb was cast under reaches the naming of the company it produces, one tick later. | property: `convergePullSphere` | Companies & Group Travel | 🟢 LIVE | — |
+| `group-command-changes-through-one-writer` | A group's command changes hands in exactly one place. `setCommander` removes the standing `commanded_by`, writes one carrying `via` (formation | promotion | claim | mutiny | coup), and makes the `member_of` roles agree — so group movement, cohesion, battle resolution, the war readout and the roster all read one edge, and a chronicle can tell a promotion from a mutiny. The three spawn-time writers keep their own ids deliberately: they say who a group was *raised* under, which is not a command changing hands. | function: `setCommander`, `CommandVia`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `group-grudge-reaches-the-mortal-sheet` | A company that has fought someone carries it visibly — the mortal sheet names the rival in prose, so blood between companies is legible without a trace viewer. | edge-prop: `hostile_to`, `rivals` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `reunion-reads-the-edges-not-the-roster` | Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied. | property: `leftAtTick` | Companies & Group Travel | 🟢 LIVE | — |
 | `reunite-rides-draw-together-convergence` | A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward. | property: `convergePullHexCol`, `convergePullHexRow`, `convergePullUntilTick` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -158,7 +159,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `reputation-with-unified-read` | Reputation means one thing wherever the game asks it — the social score between a and b — so a standing earned in a town, a guild or a friendship reads in one vocabulary and moves the same things. | function: `getReputationWith`, `applyReputationWithDelta`, `meetsReputationWithRequirement`, `reputationLeverageTerm`, `getNotableStandings` | Encounters & Dilemmas | 🟢 LIVE | — |
 
@@ -605,10 +606,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 73 total — 4 write, 7 read, 62 unclassified
+- **Production hits:** 74 total — 4 write, 7 read, 63 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +57 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +58 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `companion-capability-contribution` — 🟢 LIVE
@@ -672,10 +673,10 @@ exit
 - **Intent:** A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 9 total — 1 write, 1 read, 7 unclassified
+- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
 - **Write sites:** `src/engine/groups/groupQueries.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/binding/remoteAnchor.ts`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts` +2 more
+- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/undertaking-objects.ts`, `src/engine/binding/remoteAnchor.ts`, `src/engine/groups/bandOpposition.ts` +3 more
 - **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
 
 ### `compulsion-card-plants-agent-decision-bias` — 🔴 LEAKED
@@ -730,10 +731,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Faction*
 - **Module:** `src/engine/undertakingMotive.ts`
-- **Production hits:** 18 total — 1 write, 3 read, 14 unclassified
+- **Production hits:** 20 total — 1 write, 3 read, 16 unclassified
 - **Write sites:** `src/data/strategic-packs/warlordStrategicPack.ts`
 - **Read sites:** `src/data/undertaking-kinds.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/data/ambition-templates.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-eval/undertakingPackage.ts` +9 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/data/ambition-templates.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-eval/undertakingPackage.ts` +11 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 2. The corpus held exactly one `verb: 'destroy'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor's enemy. It now declares `motiveGate: ['rivalry','grudge','faction_war']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace's new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -884,11 +885,23 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 82 total — 2 write, 3 read, 77 unclassified
+- **Production hits:** 83 total — 2 write, 3 read, 78 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +72 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +73 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
+
+### `group-command-changes-through-one-writer` — 🟢 LIVE
+
+- **Intent:** A group's command changes hands in exactly one place. `setCommander` removes the standing `commanded_by`, writes one carrying `via` (formation | promotion | claim | mutiny | coup), and makes the `member_of` roles agree — so group movement, cohesion, battle resolution, the war readout and the roster all read one edge, and a chronicle can tell a promotion from a mutiny. The three spawn-time writers keep their own ids deliberately: they say who a group was *raised* under, which is not a command changing hands.
+- **Producer → Consumer:** Companies & Group Travel → Ambitions & Undertakings
+- **UL terms:** *Company*, *Army*, *Undertaking*
+- **Module:** `src/engine/groups/groupCommand.ts`
+- **Production hits:** 26 total — 3 write, 2 read, 21 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/groups/groupCommand.ts`, `src/engine/groups/groupDissolution.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/groups/groupQueries.ts`
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +16 more
+- **Verdict:** Verified 2026-09-08: THR-1438. `promoteNewLeader` now calls `setCommander(..., 'promotion')` and the old `promoted: true` property is gone — measured before the change as one writer and **zero readers**, so the rename repointed nobody. The four cells that change a command (`claim × Company`, `claim × Army`, `seize × Company`, `seize × Army`) call the same writer with their own `via`. Pinned in `src/engine/__tests__/peopleThingsOps.test.ts`: the edge is replaced not appended (exactly one `commanded_by` after), roles flip to `member` on everyone but the new commander, a claimant who was never a member is admitted as `leader`, and a missing group or actor writes nothing and returns the reason. On a generated small world (seed 42, tick 30) a commander marked dead through `markMortalDead` makes `cell.control_claim.company` and `cell.control_claim.army` appear on a living member's board where neither was offered before (`peopleThingsCells.test.ts`).
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
 
@@ -920,10 +933,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 125 total — 3 write, 7 read, 115 unclassified
+- **Production hits:** 126 total — 3 write, 7 read, 116 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +110 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +111 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1021,10 +1034,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`). Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 24 total — 4 write, 3 read, 17 unclassified
+- **Production hits:** 25 total — 4 write, 3 read, 18 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +12 more
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -1137,10 +1150,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 262 total — 1 write, 1 read, 260 unclassified
+- **Production hits:** 263 total — 1 write, 1 read, 261 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +255 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +256 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1173,10 +1186,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
 - **UL terms:** *Reputation*
 - **Module:** `src/engine/reputation.ts`
-- **Production hits:** 14 total — 2 write, 6 read, 6 unclassified
+- **Production hits:** 15 total — 2 write, 6 read, 7 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/reputation.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/encounterFilterPipeline.ts`, `src/engine/secretGeneration.ts`, `src/engine/socialLeverage.ts` +1 more
-- **Other hits:** `src/data/encounters/the-garrisons-price.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/types/edgeSchema.ts` +1 more
+- **Other hits:** `src/data/encounters/the-garrisons-price.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/factionSuccessionOps.ts` +2 more
 - **Verdict:** Verified 2026-08-23: THR-1206, director ruling. Six mechanisms wore the word `reputation` and disagreed; a seventh (`trait.condition.location.standing_welcome`) did reputation's job under a bespoke noun the director vetoed on player surfaces. This is a READ unification plus one new store, deliberately NOT a store migration (strangler ruling in the plan): `getReputationWith` dispatches membership (`member_of.reputation`) → edge (`reputation_with`) → bond (`relates_to.trust`, remapped [-1,1]→[0,1]) → default, and every leg's band word comes from the single `getReputationWord` vocabulary, which is what makes the stores one concept on every surface. The new `reputation_with` edge family (actor → actor|location, required `score`+`lastChangedTick`) fills the two pairs no store covered: agent↔location, and agent↔faction WITHOUT membership — `applyFactionReputationGain` no-ops with `not_a_member`, so a non-member could never earn standing with a community at all. Sparse by construction: minted on first write, decayed toward neutral in phase 6.6 and DELETED once inside `REPUTATION_WITH_PRUNE_EPSILON`, so the sweep is O(edges that exist) and there is no N×M scan. Every consumer ships in the same change, so this is not a write nobody reads (the THR-1154 flaw): the `requiredReputationWith` eligibility gate at both filter sites, the signed opening-leverage term in `computeInitialLeverage` (signed, unlike its bonus-only siblings — standing that has soured is as real as standing earned), and two profile surfaces. Non-vacuous by `src/engine/__tests__/reputation.test.ts` (22 tests: all four dispatch legs in BOTH polarities, priority order between legs, directionality, the cap/clamp/mint/sublocation-resolve write behaviour, decay from both sides, and the prune) — falsified 2-of-22 red with the sublocation resolve reverted — plus `src/components/Game/__tests__/reputationSurfaces.test.tsx` (8 render assertions on the real components, falsified 2-of-8 red with the FactionSheet banding reverted). The first migrated content is the Grateful Kin gratitude beat, whose three bands replaced `apply_condition → standing_welcome` with `reputation_with` deltas and whose four chips now state 'reputation with {target}' — pinned by the corpus and veil suites, which were red on the old noun until updated.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
@@ -1184,10 +1197,10 @@ exit
 - **Intent:** Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied.
 - **Producer → Consumer:** Companies & Group Travel → Companies & Group Travel
 - **UL terms:** *Company*
-- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/groups/groupDissolution.ts`
 - **Read sites:** `src/engine/groups/groupFormation.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/groupCohesion.ts`, `src/engine/strategicGraphOps.ts`, `src/types/strategicAction.ts`
+- **Other hits:** `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/groupCohesion.ts`, `src/engine/strategicGraphOps.ts` +1 more
 - **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "the cleared-roster trap" asserts roster === [] after dissolveGroup *and* that getFormerGroupMembers still returns all three riders — so a roster-based implementation fails the same test that documents why.
 
 ### `reunite-rides-draw-together-convergence` — 🟢 LIVE
@@ -1412,21 +1425,21 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 13 total — 1 write, 3 read, 9 unclassified
-- **Write sites:** `src/engine/tradeRouteOps.ts`
-- **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/world-objects.ts`, `src/engine/effectAura.ts`, `src/engine/effectExecutors.ts`, `src/engine/effectTick.ts` +4 more
-- **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing.
+- **Production hits:** 62 total — 3 write, 4 read, 55 unclassified
+- **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
+- **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +50 more
+- **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.
 - **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
 - **Module:** `src/engine/binding/remoteAnchor.ts`
-- **Production hits:** 26 total — 1 write, 2 read, 23 unclassified
+- **Production hits:** 27 total — 1 write, 2 read, 24 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`
 - **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +18 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +19 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertakings-reach-the-player` — 🟢 LIVE
@@ -1480,9 +1493,9 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 223 total — 1 write, 6 read, 216 unclassified
+- **Production hits:** 224 total — 1 write, 6 read, 217 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +211 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +212 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 

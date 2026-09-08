@@ -14,7 +14,7 @@ import {
   baseVerbOf,
   CREATE_SITE_RULE,
 } from '../undertaking-cells';
-import { UNDERTAKING_OBJECT_TYPES } from '../undertaking-objects';
+import { UNDERTAKING_OBJECT_TYPES, getUndertakingObjectType } from '../undertaking-objects';
 import { UNDERTAKING_VERB_PROSE } from '../undertaking-verb-prose';
 import {
   OWNERSHIP_BY_VERB,
@@ -48,7 +48,16 @@ describe('cell synthesis', () => {
       expect(cell.undertakingVerb).toBe(baseVerbOf(variant));
       // A create cell targets its site (the object does not exist yet); every other cell the object.
       if (variant === 'create') expect(cell.targetRule).toEqual(CREATE_SITE_RULE[cell.objectTypeId!]);
-      else expect(cell.targetRule).toEqual({ type: 'object', objectTypeId: cell.objectTypeId, ownership: OWNERSHIP_BY_VERB[variant] });
+      // THR-1438: the *effective* rule — a type may override its variant's default,
+      // and the template's declared rule is the one the walk and the resolver read.
+      else {
+        const type = getUndertakingObjectType(cell.objectTypeId!);
+        expect(cell.targetRule).toEqual({
+          type: 'object',
+          objectTypeId: cell.objectTypeId,
+          ownership: type?.ownershipOverride?.[variant] ?? OWNERSHIP_BY_VERB[variant],
+        });
+      }
       expect(cell.activityProse.length).toBeGreaterThanOrEqual(3);
       expect(cell.completionProse.length).toBeGreaterThanOrEqual(3);
       expect(cell.activityProse).toEqual(UNDERTAKING_VERB_PROSE[variant].activity);
@@ -87,5 +96,23 @@ describe('cell synthesis', () => {
   it('is resolvable through getStrategicTemplate without being in the pack registry', () => {
     expect(getStrategicTemplate('cell.destroy.item')?.objectTypeId).toBe('item');
     expect(getStrategicTemplate('cell.no.such')).toBeUndefined();
+  });
+
+  // THR-1438 — the override set is pinned, not merely honoured above: a second type
+  // quietly overriding an ownership rule would otherwise pass unremarked, and
+  // ownership is the one number the walk, the codex and the resolver all read.
+  it('exactly one cell overrides its variant ownership rule: the candidacy', () => {
+    const overrides = UNDERTAKING_OBJECT_TYPES.flatMap(t =>
+      Object.entries(t.ownershipOverride ?? {}).map(([variant, rule]) => `${t.id}.${variant}=${rule}`));
+    expect(overrides.sort()).toEqual(['faction.control:claim=any']);
+    // And it is the effective rule on the shipped template, not merely a declaration.
+    expect(getCellTemplate('cell.control_claim.faction')?.targetRule).toEqual({
+      type: 'object', objectTypeId: 'faction', ownership: 'any',
+    });
+    // Its sibling keeps the default, so the two are told apart by the proposed variant
+    // rather than by ownership — see `resolveVerbVariant`.
+    expect(getCellTemplate('cell.control_seize.faction')?.targetRule).toEqual({
+      type: 'object', objectTypeId: 'faction', ownership: 'other',
+    });
   });
 });

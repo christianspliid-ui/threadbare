@@ -200,6 +200,17 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
+        // The ownership of people-things (THR-1438). Placed at the head of the list
+        // for the THR-1388 reason the destroys below were: all five are self-gating —
+        // a claim needs a commander who has died, a mutiny needs a company already
+        // frayed, a coup needs a quarrel inside the faction — so they refuse before
+        // generating a candidate and cost the walk nothing on the ticks they are not
+        // available. At the tail they would simply never be reached on the ticks they are.
+        'cell.control_claim.army',
+        'cell.control_claim.company',
+        'cell.control_seize.army',
+        'cell.control_seize.company',
+        'cell.observe.army',
         'cell.create.army',
         'cell.change_raise.army',
         'cell.destroy.army',
@@ -466,6 +477,11 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
+        // The two mortal routes to a seat (THR-1438). A dynasty is the ambition that
+        // is *about* who sits where, so both belong here — the candidacy first, since
+        // it is gated on the seat standing empty and refuses instantly otherwise.
+        'cell.control_claim.faction',
+        'cell.control_seize.faction',
         'cell.create.faction',
         'cell.change_raise.standing',
         'cell.observe.faction',
@@ -989,6 +1005,11 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
+        // THR-1438 — a vendetta is where the motive these two need already exists:
+        // unseating the person you hate, and turning their own band against them.
+        // Neither kills anybody, which is what keeps them on this side of the plot.
+        'cell.control_seize.faction',
+        'cell.control_seize.company',
         'cell.change_lower.location',
         'cell.change_lower.standing',
         'cell.destroy.standing',

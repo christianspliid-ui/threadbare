@@ -202,12 +202,42 @@ export const UNDERTAKING_CELL_DEEDS: Readonly<Record<string, string>> = {
   'cell.destroy.agreement': 'Forgave',
   'cell.use.agreement': 'Called in',
   'cell.observe.area': 'Charted',
+  // The ownership of people-things (THR-1438). *Claimed the Grey Company* reads like a
+  // land grant; a command is **taken**. And standing for a seat is not claiming it —
+  // the ledger has to say the bid, because the bid is all that happened.
+  'cell.control_claim.company': 'Took command of',
+  'cell.control_claim.army': 'Took command of',
+  'cell.control_claim.faction': 'Stood for',
+  'cell.observe.army': 'Scouted',
 };
 
 /** The ledger's word for a finished cell: its own if it has one, else its verb's. */
 export function deedWordFor(cellId: string, variant: UndertakingVerbVariant): string {
   return UNDERTAKING_CELL_DEEDS[cellId] ?? UNDERTAKING_VERB_DEEDS[variant];
 }
+
+/**
+ * The card's name for the cells whose generic phrase is a lie about what happens
+ * (THR-1438; UI Laws 13/14 — the game's word, never the machinery's).
+ *
+ * *Seize a company* is a **mutiny** and *Seize a faction* is a **usurpation**; those
+ * are different acts with different preconditions, and a codex that calls both of them
+ * "seizing" has told the player nothing about either. *Claim a faction* is worse than
+ * vague — it is wrong: a candidacy does not hand anybody a faction, it puts a name
+ * forward and waits for the seat to fall empty.
+ *
+ * Bounded on purpose, like the deed words and the per-cell line sets above: a cell
+ * with no entry takes `<Verb> <a kind>`, which reads correctly for the other 49.
+ */
+export const UNDERTAKING_CELL_PHRASES: Readonly<Record<string, string>> = {
+  'cell.control_claim.company': 'Take command of a company',
+  'cell.control_seize.company': 'Mutiny against a commander',
+  'cell.control_claim.army': 'Take command of an army',
+  'cell.control_seize.army': 'Mount a coup',
+  'cell.control_claim.faction': 'Stand for a seat',
+  'cell.control_seize.faction': 'Usurp a leader',
+  'cell.observe.army': 'Scout an army',
+};
 
 // ─── Per-cell line sets (THR-1429) ──────────────────────────────────
 
@@ -340,6 +370,97 @@ export const UNDERTAKING_CELL_PROSE: Readonly<Record<string, UndertakingVerbLine
       '{Actor} is caught at it. {Object} is still breathing.',
     ],
     narration: '{Actor} meant {object} dead.',
+  },
+
+  // ─── The ownership of people-things (THR-1438) ───────────────────
+  //
+  // Five cells where the verb's own word is a lie about what happened. *Seizing* a
+  // company is a mutiny and *seizing* a faction is a usurpation; *claiming* a faction
+  // is standing for a seat you may never get. The generic lines would say a thing
+  // changed hands. What these say is that people chose sides.
+
+  'cell.control_claim.company': {
+    activity: [
+      'Nobody is giving the orders in {object}, and {actor} has started giving them anyway.',
+      'At {place} {actor} is doing what the captain of {object} used to do.',
+      '{Object} is looking at {actor} when there are decisions to make.',
+    ],
+    completion: [
+      '{Object} answers to {actor} now. Nobody appointed them.',
+      '{Actor} has {object}. The last one who did is not coming back.',
+      'The command of {object} sat empty long enough that {actor} took it.',
+    ],
+    narration: '{Actor} has taken command of {object}.',
+  },
+
+  'cell.control_seize.company': {
+    activity: [
+      '{Actor} has been talking to {object} about {owner}, one at a time.',
+      'Something is being counted at {place}, and it is how many of {object} would follow {actor}.',
+      '{Object} is coming apart, and {actor} means to be holding it when it does.',
+    ],
+    completion: [
+      '{Object} follows {actor} now. {Owner} is still with them, and rides at the back.',
+      '{Actor} took {object} out from under {owner}. Nobody drew a blade; it was worse than that.',
+      '{Owner} gave an order at {place} and {object} looked at {actor} instead.',
+    ],
+    narration: '{Actor} has turned {object} against {owner}.',
+  },
+
+  'cell.control_seize.army': {
+    activity: [
+      '{Actor} is asking, quietly, whether {owner} should be leading {object} at all.',
+      'At {place} there are two answers to every order, and one of them is {actor}\'s.',
+      '{Actor} is counting captains, not swords.',
+    ],
+    completion: [
+      '{Object} is {actor}\'s. It was decided by the people who feed it, not on a field.',
+      '{Actor} reached for {object} and closed a hand on nothing. {Owner} knows the name now.',
+      'The banner over {object} did not change. Who stands under it did.',
+    ],
+    narration: '{Actor} moved against {owner} for {object}.',
+  },
+
+  'cell.control_claim.faction': {
+    activity: [
+      '{Actor} is letting it be known, in {object}, that they would take the seat.',
+      'At {place} {actor} is being seen with the people who decide such things.',
+      '{Actor} wants {object} and has stopped pretending otherwise.',
+    ],
+    completion: [
+      '{Object} has no head, and {actor}\'s name is the one being said.',
+      '{Actor} has stood for {object}. Standing is not sitting; the seat is still empty.',
+      'When {object} chooses, {actor} will be on the list. That is what was won at {place}.',
+    ],
+    narration: '{Actor} has stood for the head of {object}.',
+  },
+
+  'cell.control_seize.faction': {
+    activity: [
+      '{Actor} is making the case, to anyone in {object} who will hear it, that {owner} has held it long enough.',
+      'At {place} {actor} is counting who in {object} would stay standing if {owner} sat down.',
+      '{Actor} means to have {object}, and is not waiting to be given it.',
+    ],
+    completion: [
+      '{Object} is {actor}\'s. {Owner} still walks about, and is nobody\'s idea of a leader now.',
+      '{Actor} moved on {owner} and {object} did not move with them. It cost.',
+      '{Actor} pulled at {object} until it tore. Half of it is following them out.',
+    ],
+    narration: '{Actor} moved on {owner} for {object}.',
+  },
+
+  'cell.observe.army': {
+    activity: [
+      '{Actor} is somewhere above {object}, counting.',
+      '{Actor} has been following {object} at a distance that keeps them alive.',
+      'At {place} {actor} is learning where {object} is, and where it is going.',
+    ],
+    completion: [
+      '{Actor} knows where {object} stands, and {object} does not know it was watched.',
+      'The country {object} is crossing is on {actor}\'s map now.',
+      '{Actor} came back from {place} knowing what {object} is and where it stands.',
+    ],
+    narration: '{Actor} has scouted {object}.',
   },
 };
 

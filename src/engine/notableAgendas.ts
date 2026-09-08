@@ -42,6 +42,7 @@ import type {
   NotableRosterScanTrace,
 } from '../types/trace';
 import { getFactionMembershipEdges } from './graphQueries';
+import { NOTABLE_HEIR_PRIORITY } from '../data/strategic-action-constants';
 import {
   NOTABLE_AGENDA_FAMILIES,
   getNotableAgendaFamily,
@@ -591,6 +592,10 @@ function anointDeterministicHeir(
       anointedTick: state.tick,
       anointedBy: notableId,
       compositionId,
+      // THR-1438: a notable's heir sits below the god's card and above a mortal's
+      // candidacy. Unset would read as -Infinity in `pickSuccessor` and lose to any
+      // candidacy at all, which is not the order anybody decided.
+      priority: NOTABLE_HEIR_PRIORITY,
     },
   });
 }

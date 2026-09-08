@@ -288,7 +288,13 @@ export interface FactionSuccessionTrace {
     | 'natural_succession'      // leader exited, no successor resolved — fell back to derivation
     | 'successor_self_seated'   // an anointed successor reached the seat unaided; their edge was cleared
     | 'snapshot_bootstrapped'   // first observation of this faction
-    | 'peaceful_overtake';      // leader changed by score, no exit — snapshot re-pointed
+    | 'peaceful_overtake'       // leader changed by score, no exit — snapshot re-pointed
+    // THR-1438 — the two mortal routes to the seat. A candidacy is filed and waits
+    // for the phase; a usurpation resolves in one of three ways, now.
+    | 'candidacy_filed'         // a mortal stood for an unseated faction; the edge queues
+    | 'usurped'                 // a usurpation carried — the seat moved outside the phase
+    | 'usurpation_failed'       // it did not — a grudge and a standing loss
+    | 'usurpation_split';       // it failed badly — the faction is coming apart
   exitedLeaderId: string | null;
   exitedLeaderName: string | null;
   newLeaderId: string | null;
@@ -298,8 +304,8 @@ export interface FactionSuccessionTrace {
   willSucceedCandidatesConsidered: number;
   /** Set when outcome === 'anointed_inherited'. */
   seededEncounterId?: string;
-  /** Set when outcome === 'anointed_inherited'. */
-  conferredVia?: 'anointment' | 'natural';
+  /** Set when outcome === 'anointed_inherited'. `'usurpation'` since THR-1438. */
+  conferredVia?: 'anointment' | 'natural' | 'usurpation';
   summary: string;
 }
 

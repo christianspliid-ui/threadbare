@@ -2200,7 +2200,9 @@ export interface UndertakingReaderTrace extends TraceBase {
   productId?: string;
   /** The band read from `ctx.outcome`, when the lifecycle carried one. */
   outcome?: string;
-  refused?: 'already_known' | 'clue_already_held' | 'map_already_held' | 'nobody_there'
+  /** THR-1438: `'army_stands_nowhere'` — a scouted army whose position the map cannot name. */
+  refused?: 'army_stands_nowhere'
+        | 'already_known' | 'clue_already_held' | 'map_already_held' | 'nobody_there'
           | 'schema_violation' | 'exhausted' | 'no_band_row' | 'nothing_eligible'
           /** `use × Power` on a power a seal has bound (THR-1429). */
           | 'power_suppressed';

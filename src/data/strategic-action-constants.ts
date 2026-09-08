@@ -7,6 +7,10 @@ import type {
   UndertakingHarmClass as HarmClassForCells,
   StrategicFactionSeed,
 } from '../types/strategicAction';
+// THR-1438: the mutiny window is the group ladder's own fray threshold, imported
+// rather than restated so the eligibility gate and the word the roster shows the
+// player can never drift apart.
+import { GROUP_FRAY_THRESHOLD } from './group-constants';
 //
 // All tunable weights, caps, cooldowns, cadence, and catalyst constants
 // for the ambition-driven strategic action system.
@@ -1058,6 +1062,79 @@ export const UNDERTAKING_DEFAULT_FACTION_SEED: StrategicFactionSeed = {
 };
 /** `undo × faction`: ticks until the planted schism resolves. */
 export const UNDERTAKING_SCHISM_RESOLUTION_DELAY_TICKS = 12;
+
+// ─── The ownership of people-things (THR-1438) ──────────────────────
+//
+// Seven cells that change who commands a group of people. Every knob below is a
+// consequence Christian decided on THR-1397; none of them is a difficulty (the verb
+// tables already own that) and none is a probability (the checkpoint ladder rolled
+// before any of this is read).
+
+/**
+ * A mutiny is only possible while the company's cohesion already reads *frayed* or
+ * worse — the cohesion system decides when a band is coming apart, and this cell only
+ * notices. Deliberately the group ladder's own threshold rather than a second number:
+ * a mutiny window that could drift away from the word the roster shows the player
+ * would make the UI lie about eligibility.
+ */
+export const COMPANY_MUTINY_COHESION_MAX = GROUP_FRAY_THRESHOLD;
+
+/** What a mutiny costs the company's cohesion, on top of the deposing itself. */
+export const COMMAND_SEIZED_COHESION_DELTA = -0.1;
+
+/**
+ * The `will_succeed.priority` a candidacy files with, by the band the work landed on.
+ * A band absent from this table files **nothing** — standing for a seat and being
+ * taken seriously are one act, so a work that went badly leaves no weak claim behind.
+ *
+ * Both values sit below `NOTABLE_HEIR_PRIORITY` below `ANOINTMENT_PRIORITY`: the god's
+ * card outranks a notable's heir outranks a mortal's bid outranks the derived ladder.
+ * Christian's veto handle is exactly these three numbers — *"a mortal's bid beats the
+ * god's card"* is a swap, not a rewrite.
+ */
+export const CANDIDACY_PRIORITY_BY_BAND: Readonly<Record<string, number | undefined>> = {
+  critical_success: 2,
+  success: 1,
+};
+
+/** The priority the god's anointment writes on its `will_succeed` edge. Highest by design. */
+export const ANOINTMENT_PRIORITY = 10;
+
+/** The priority a notable's designated heir writes. Below the god, above any mortal's bid. */
+export const NOTABLE_HEIR_PRIORITY = 5;
+
+/**
+ * The `reputation_with` the faction docks a failed usurper or a failed coup.
+ *
+ * **Half of `REPUTATION_WITH_MAX_DELTA_PER_OUTCOME` (0.15), and that is the whole
+ * reason for the number.** The plan pinned 0.15 here; measured at execution, the
+ * reputation writer caps every single outcome's delta at exactly 0.15, so a 0.15 base
+ * doubled on a `critical_failure` was capped straight back to 0.15 — the two failure
+ * arms would have been indistinguishable, and the doubling a silent no-op. (The test
+ * `costs twice as much standing on a critical failure` is what caught it, which is why
+ * a controlled arm has to confirm the perturbation actually landed.)
+ *
+ * So: a plain failure costs half of what one outcome may ever cost a mortal's standing,
+ * and a critical failure costs the whole of it. Raising this above 0.075 does not make
+ * a critical failure hurt more — it only stops it hurting *differently*.
+ */
+export const USURPATION_STANDING_LOSS = 0.075;
+
+/**
+ * How much worse a `critical_failure` is for the usurper's standing.
+ *
+ * THR-1438 grey zone, decided at execution: the plan offered `member_of` role
+ * `'outcast'` *if the role union has it*, else double the loss. Measured — there is no
+ * role union; `role` is a free string written as `'leader'` / `'member'` at the group
+ * writers, and ~49 `member_of` readers would meet an `'outcast'` value none of them
+ * knows. Minting a third role to express a magnitude is the property-bag failure the
+ * group layer already paid for once (`groupShape.ts`), so the magnitude stays a
+ * magnitude.
+ */
+export const USURPATION_CRITICAL_FAILURE_STANDING_MULT = 2;
+
+/** The intelligence record a scouting writes, which the war readout reads back as `scoutedBy`. */
+export const ARMY_SCOUT_INTELLIGENCE_TYPE = 'army';
 
 // ─── The owed readers (THR-1428) ────────────────────────────────────
 //
