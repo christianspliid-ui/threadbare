@@ -1326,6 +1326,9 @@ export interface WealthDeltaTrace extends TraceBase {
   newWealth: number;
   reason: 'trade_success' | 'trade_failure' | 'route_control' | 'sublocation_income'
          | 'location_tithe'
+         // THR-1439: the active harvest of a held Location — the same funnel as the
+         // passive tithe above, with its own cause so the sheet can name which it was.
+         | 'draw_yield'
          | 'prosperous_home' | 'disruption' | 'agreement_broken'
          | 'mercenary_hire' | 'assassination_commission' | 'influence_purchase'
          | 'construction' | 'monopoly';

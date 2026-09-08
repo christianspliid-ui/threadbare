@@ -90,7 +90,10 @@ describe('cell synthesis', () => {
     expect(getCellTemplate('cell.use.agreement')?.projectDuration).toBeUndefined();
     expect(getCellTemplate('cell.destroy.location')?.executionMode).toBe('multi_tick_project');
     expect(getCellTemplate('cell.destroy.location')?.projectDuration).toBeGreaterThan(0);
-    expect(cellsOfType('agreement').map(c => c.cellVariant).sort()).toEqual(['create', 'destroy', 'use']);
+    // THR-1439 added the theft; the Agreement kind now has four cells across its two
+    // classes. Pinned as the whole set, so a fifth has to be written down here.
+    expect(cellsOfType('agreement').map(c => c.cellVariant).sort())
+      .toEqual(['control:seize', 'create', 'destroy', 'use']);
   });
 
   it('is resolvable through getStrategicTemplate without being in the pack registry', () => {
@@ -101,10 +104,23 @@ describe('cell synthesis', () => {
   // THR-1438 — the override set is pinned, not merely honoured above: a second type
   // quietly overriding an ownership rule would otherwise pass unremarked, and
   // ownership is the one number the walk, the codex and the resolver all read.
-  it('exactly one cell overrides its variant ownership rule: the candidacy', () => {
+  it('the ownership overrides are a closed set: the candidacy and the Agreement\'s two classes', () => {
     const overrides = UNDERTAKING_OBJECT_TYPES.flatMap(t =>
       Object.entries(t.ownershipOverride ?? {}).map(([variant, rule]) => `${t.id}.${variant}=${rule}`));
-    expect(overrides.sort()).toEqual(['faction.control:claim=any']);
+    // Pinned as a whole set, not a count: a new override is a design decision about
+    // who may act on an object, and it should have to be written down here.
+    //
+    // THR-1439 added the two Agreement rows. An edge object is held by its source — a
+    // mark by its holder, a favour by the one who *owes* — so `use` and `destroy` on
+    // the favour class are done by the party at the far end of the edge, and the
+    // default rule would make those two cells unreachable by construction exactly as
+    // it would have made the candidacy unreachable. The real per-class gate is the
+    // eligibility hook; see `leverageOps.test.ts`.
+    expect(overrides.sort()).toEqual([
+      'agreement.destroy=any',
+      'agreement.use=any',
+      'faction.control:claim=any',
+    ]);
     // And it is the effective rule on the shipped template, not merely a declaration.
     expect(getCellTemplate('cell.control_claim.faction')?.targetRule).toEqual({
       type: 'object', objectTypeId: 'faction', ownership: 'any',

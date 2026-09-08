@@ -42,7 +42,7 @@ names like `TB-073`) a premise might use.
 | **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction | `encounter`, `encounters`, `dilemma` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits` | `6.626` |
-| **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo, holding, freehold, wealth, tithe, toll | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity`, `holding` | `6.62`, `6.628`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
+| **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo, holding, freehold, wealth, tithe, toll | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity`, `holding`, `yield` | `6.62`, `6.628`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
 | **Ambitions & Undertakings** | 🟢 ACTIVE | ambition, undertaking, initiative, goal, mentorship, apprentice | `ambition`, `undertaking`, `mentorship` | — |
 | **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement | `attachment`, `seed`, `holdings`, `companions`, `reward` | `2a.85` |
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
@@ -54,7 +54,7 @@ names like `TB-073`) a premise might use.
 | **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, cohesion | `groups` | — |
 | **Movement & Colocation** | 🟢 ACTIVE | movement, travel, pathfinding, colocation, sublocation | `avatarmove`, `movement` | `2.35`, `2.352`, `2.36`, `2.361`, `2.37`, `2.4` |
 | **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence`, `grievance` | `6.55`, `6.6`, `6.634`, `6.64` |
-| **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret` | — |
+| **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret`, `leverage` | — |
 | **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow`, `spell` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
 | **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor`, `npc`, `binding` | `2a.78`, `2.38`, `6.75` |
 | **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
@@ -314,6 +314,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `kpi` (3) | `kpi/branchingDistance.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-452`, `THR-457`, `THR-571` |
 | `lair` (3) | `lairClearing.ts`, `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2`, `THR-1319` |
 | `lake` (2) | `lakeGeneration.ts`, `lakeOutflow.ts` | — |
+| `leverage` (1) | `leverageOps.ts` | `THR-1439` |
 | `magic` (1) | `magicPower.ts` | — |
 | `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198` |
 | `meeting` (1) | `meetingEncounter.ts` | `THR-1213` |
@@ -402,7 +403,8 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `wheel` (1) | `wheel.ts` | — |
 | `world` (4) | `worldGenData.ts`, `worldRefResolver.ts`, `worldSeed.ts`, `worldSoul.ts` | `THR-1160`, `THR-1164`, `THR-1165`, `THR-1212` |
 | `worldgen` (15) | `worldgen/WorldGenPipeline.ts`, `worldgen/constants.ts`, `worldgen/passes/pass00-grid.ts`, `worldgen/passes/pass01-provinces.ts`, `worldgen/passes/pass02-elevation.ts`, `worldgen/passes/pass03-coastline.ts`, `worldgen/passes/pass04-climate.ts`, `worldgen/passes/pass05-hydrology.ts`, `worldgen/passes/pass06-tempReassess.ts`, `worldgen/passes/pass07-biome.ts`, `worldgen/passes/pass07b-cultureTerrainNudge.ts`, `worldgen/passes/pass08-smoothing.ts`, `worldgen/passes/pass09-validation.ts`, `worldgen/passes/pass10-fantasyOverlay.ts`, `worldgen/types.ts` | `Phase 3` |
+| `yield` (1) | `yieldOps.ts` | `THR-1428`, `THR-1439` |
 
 ---
 
-_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 182 engine domains · 542 modules._
+_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 184 engine domains · 544 modules._

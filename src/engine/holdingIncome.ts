@@ -43,7 +43,7 @@ import { readTradeRouteProps } from './tradeRoute';
 import { isLocationNode } from './sublocationShape';
 import {
   applyWealthDelta,
-  readWealth,
+  bankWealth,
   WEALTH_ROUTE_CONTROL_INCOME,
   WEALTH_SUBLOCATION_INCOME,
 } from './wealth';
@@ -191,14 +191,16 @@ export function payHoldingIncome(state: GameState): HoldingIncomeResult {
   for (const [holderId, holderPayments] of byHolder) {
     const holder = graph.getNode(holderId);
     if (!holder) continue;
-    const previousWealth = readWealth(holder.properties);
     const total = holderPayments.reduce((sum, p) => sum + p.amount, 0);
-    const newWealth = applyWealthDelta(previousWealth, total);
-    holder.properties.wealth = newWealth;
     // What the sheet's tooltip names. The largest payment is the one worth saying —
-    // "tolls on the Saltway", not a list of every coin.
-    holder.properties.lastWealthReason =
-      holderPayments.reduce((a, b) => (b.amount > a.amount ? b : a)).reason;
+    // "tolls on the Saltway", not a list of every coin. THR-1439: the banking goes
+    // through `bankWealth`, the one funnel the active harvest also uses, so both
+    // spellings of "where this coin came from" are the same vocabulary.
+    const { previousWealth, newWealth } = bankWealth(
+      holder.properties,
+      total,
+      holderPayments.reduce((a, b) => (b.amount > a.amount ? b : a)).reason,
+    );
 
     // Above the aggregate threshold one trace stands for the day; below it, one per
     // payment keeps the CLI `traces` view legible (NFP #2 without drowning it).

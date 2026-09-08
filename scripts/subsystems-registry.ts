@@ -116,7 +116,10 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Mortal Economy & Prosperity',
     aliases: ['economy', 'trade', 'resource', 'resources', 'prosperity', 'gold', 'market', 'settlement', 'cargo', 'holding', 'freehold', 'wealth', 'tithe', 'toll'],
     activityKeywords: ['prosperity', 'economic', 'resource', 'settlement', 'holding'],
-    domains: ['resource', 'settlement', 'economic', 'trade', 'gold', 'prosperity', 'holding'],
+    // 'yield' joins since THR-1439: `yieldOps.ts` is the active half of holding —
+    // the harvest of a held Location and the raising of a lane's volume — which is this
+    // subsystem's business for the same reason holding income is.
+    domains: ['resource', 'settlement', 'economic', 'trade', 'gold', 'prosperity', 'holding', 'yield'],
     // `holding income` joins the match since THR-1428: what a mortal holds pays them,
     // which is this subsystem's business even though the *producing* cells belong to
     // Ambitions & Undertakings.
@@ -225,7 +228,9 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Secrets & Favors',
     aliases: ['secret', 'secrets', 'favor', 'blackmail', 'leverage'],
     activityKeywords: ['secret', 'favor', 'leverage'],
-    domains: ['secrets', 'favor', 'secret'],
+    // 'leverage' joins since THR-1439: `leverageOps.ts` is where a mark is stolen and
+    // a favour is minted, spent and forgiven — the two economies this row already owns.
+    domains: ['secrets', 'favor', 'secret', 'leverage'],
     phaseMatch: /\b(secret|favor)\b/i,
     note: 'Secret/favor economy. If shown DORMANT, it produced no distinctly-named output this run — verify before assuming unused.',
   },

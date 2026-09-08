@@ -133,10 +133,15 @@ describe('the board under the cells model', () => {
     expect([...byCell.values()].filter(n => n >= 2).length).toBeGreaterThanOrEqual(3);
     expect([...byCell.values()].every(n => n <= UNDERTAKING_MAX_CANDIDATES_PER_CELL)).toBe(true);
 
-    // What *does* bind is the per-actor ceiling, and naming it here is the point:
-    // which particular cells sit above it is a function of the THR-1403 rotation and
-    // of how many cells the profile lists, so pinning three cell ids by name made this
-    // test fail on any edit to a `cells` list (THR-1438 added two and it did).
-    expect(cellCandidates.length).toBe(STRATEGIC_MAX_CANDIDATES_PER_ACTOR);
+    // What *does* bind is the per-actor ceiling — never the per-ambition cap, which is
+    // the claim. Asserted as the ceiling rather than *at* it (THR-1439): whether the
+    // ceiling is actually reached depends on how many of the rotated cells find an
+    // object in this fixture world, and the rotation offset is `% items.length`, so
+    // every cell the division rule gains reshuffles which ones land inside it. Pinning
+    // the exact total made this test fail on any change to the derived set — the same
+    // brittleness that made pinning three cell ids by name untenable (THR-1438 added
+    // two and it did; THR-1439 added four more).
+    expect(cellCandidates.length).toBeLessThanOrEqual(STRATEGIC_MAX_CANDIDATES_PER_ACTOR);
+    expect(cellCandidates.length).toBeGreaterThan(STRATEGIC_MAX_CANDIDATES_PER_AMBITION);
   });
 });
