@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-08 19:57 local (17:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
+**Last updated:** 2026-09-08 21:00 local (19:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
 
 ## Standing asks
 
@@ -8,7 +8,7 @@
 
 The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md). (An older August draft under a near-identical name reads plausible — three rulings have overtaken it. The link above is the live one.)
 
-**Four days waiting, and the only ask with no design session in front of it** — one word puts six encounters of content work on the queue the same hour. The shelf is down to three program items, so this matters more tonight, not less.
+**Four days waiting, and the only ask with no design session in front of it** — one word puts six encounters of content work on the queue the same hour. The shelf is down to two program items plus one deferral tonight (a third shipped this evening), so this matters more, not less.
 
 **Six, not seven.** `shrine_offering` is held to batch 3 (most warnings of the set, weak contrast against `offer_small_prayer`), and it is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), so that checkpoint waits one batch longer. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting.
 
@@ -104,6 +104,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **2026-09-08 — the undertaking retirement list** ([THR-1392](https://linear.app/threadbare/issue/THR-1392)). Your *"see the list before anything is deleted"* gate was satisfied inside the flip above; the ticket closes as superseded unless you object.
 - **2026-09-08 — the Linear connector re-auth.** No longer blocking any lane.
 - **2026-09-08 — the division-rule mock** ([THR-1398](https://linear.app/threadbare/issue/THR-1398)). A grooming report flagged it as awaiting your reaction; it had already closed the previous morning. Nothing owed.
+- **2026-09-08 — owning people-things is live** ([THR-1438](https://linear.app/threadbare/issue/THR-1438)). Claiming a company, seizing an army and standing for a faction seat all shipped this evening under the undertakings work you approved. Not an ask you owed — recorded because the grip on what a mortal holds still runs out on a timer with no way to renew it ([THR-1287](https://linear.app/threadbare/issue/THR-1287)), and that now applies to people as well as places. Nothing is blocked on it.
 
 ---
 
