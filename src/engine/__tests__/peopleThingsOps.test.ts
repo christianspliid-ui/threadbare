@@ -20,6 +20,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import type { GraphNode } from '../../types/graph';
+import type { UndertakingObjectTypeId } from '../../types/strategicAction';
 import { setCommander } from '../groups/groupCommand';
 import { seatLeader, nominateSuccessor, forceSuccession } from '../factionSuccessionOps';
 import { phaseFactionSuccession } from '../phaseFactionSuccession';
@@ -116,7 +117,7 @@ function factionWorld(): GameState {
 }
 
 const handle = (nodeId: string) => ({ kind: 'node', nodeId } as const);
-const typeOf = (id: string) => getUndertakingObjectType(id)!;
+const typeOf = (id: UndertakingObjectTypeId) => getUndertakingObjectType(id)!;
 
 beforeEach(() => { enableTracing(); clearTraces(); });
 afterEach(() => { disableTracing(); clearTraces(); });
