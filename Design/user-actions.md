@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-09 00:54 local (22:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **Every ticket state below was re-verified against a live board this run.**
+**Last updated:** 2026-09-09 01:54 local (23:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **The board columns were read live this run; the individual ticket states below carry over from the 00:54 verification, unchanged.**
 
 ## Standing asks
 
