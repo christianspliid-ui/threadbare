@@ -108,6 +108,40 @@ export const STRATEGIC_DEFAULT_PROJECT_WORK_TICKS = 18;
 /** Window kept for player/debug strategic history summaries */
 export const STRATEGIC_HISTORY_WINDOW_TICKS = 120;
 
+/**
+ * How long the same actor+template+target combination is refused as a
+ * `recent_duplicate` — the variety guard in `strategicActionCandidates`.
+ *
+ * Named by THR-1442, where it stopped being merely a variety knob. It is the **only**
+ * thing standing between a collapsed control stance and its immediate re-claim, now
+ * that THR-1303 deleted `evaluateControlClaimGate` (correctly — that gate's first line
+ * was `template.verb !== 'control'`, and no template carries `verb: 'control'` since
+ * the six ambition-driven control templates were retired). The grid's
+ * `cell.control_claim.location` produces every control stance in the world today and
+ * has never carried that verb, so it was never covered by the deleted gate either.
+ *
+ * The collapse record this reads is written by `retireControl` — the THR-1286 fix that
+ * survived the deletion — carrying the actor, template and target this guard matches on.
+ *
+ * Measured (THR-1442, `medium`, 300 ticks, one process per seed, gap from each collapse
+ * to the next stance on the same actor+target):
+ *
+ * | seed | collapses | re-claims | min gap | `< 24` | `[24, 30)` |
+ * |------|----------:|----------:|--------:|-------:|-----------:|
+ * | 42   | 40        | 12        | 27      | 0      | 3          |
+ * | 99   | 8         | 0         | —       | 0      | 0          |
+ * | 7    | 54        | 8         | 24      | 0      | 1          |
+ *
+ * Zero re-claims under this window across 102 collapses, and seed 7's minimum gap of
+ * *exactly* 24 is this constant releasing. Lowering it re-opens the churn THR-1286 was
+ * built against (39.5% of seed-42 decisions), so it is pinned by
+ * `strategicControlChurn.test.ts` rather than left as a bare literal.
+ *
+ * Must stay below `STRATEGIC_HISTORY_WINDOW_TICKS` — the record it reads is pruned with
+ * that window.
+ */
+export const STRATEGIC_RECENT_DUPLICATE_WINDOW_TICKS = 24;
+
 /** Default chance for eligible completions to emit a follow-up encounter seed */
 export const STRATEGIC_CATALYST_SEED_CHANCE = 0.65;
 
