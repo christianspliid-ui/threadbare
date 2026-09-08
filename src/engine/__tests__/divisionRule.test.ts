@@ -14,7 +14,11 @@ import { generateStrategicCandidates, findAmbitionTemplate } from '../strategicA
 import { deriveDivisionCells, leadingReachPair, rotateForTick } from '../divisionRule';
 import { mulberry32 } from '../../lib/prng';
 import { clearTraces, enableTracing } from '../traceBuffer';
-import { STRATEGIC_MAX_CANDIDATES_PER_AMBITION } from '../../data/strategic-action-constants';
+import {
+  STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
+  STRATEGIC_MAX_CANDIDATES_PER_ACTOR,
+  UNDERTAKING_MAX_CANDIDATES_PER_CELL,
+} from '../../data/strategic-action-constants';
 import { isCellTemplateId } from '../../data/undertaking-cells';
 
 const ME = 'actor_me';
@@ -121,11 +125,18 @@ describe('the board under the cells model', () => {
     const cellCandidates = candidates.filter(c => isCellTemplateId(c.templateId));
     expect(STRATEGIC_MAX_CANDIDATES_PER_AMBITION).toBeLessThan(6);
     expect(cellCandidates.length).toBeGreaterThanOrEqual(6);
-    // The six: two charts, two marks, two standings — each through its own cell.
+    // Several cells each enumerate more than one object — which is the claim: a cell
+    // takes its own per-cell allowance (`UNDERTAKING_MAX_CANDIDATES_PER_CELL`) and is
+    // not rationed by the per-ambition cap.
     const byCell = new Map<string, number>();
     for (const c of cellCandidates) byCell.set(c.templateId, (byCell.get(c.templateId) ?? 0) + 1);
-    expect(byCell.get('cell.destroy.item')).toBe(2);
-    expect(byCell.get('cell.destroy.agreement')).toBe(2);
-    expect(byCell.get('cell.change_lower.standing')).toBe(2);
+    expect([...byCell.values()].filter(n => n >= 2).length).toBeGreaterThanOrEqual(3);
+    expect([...byCell.values()].every(n => n <= UNDERTAKING_MAX_CANDIDATES_PER_CELL)).toBe(true);
+
+    // What *does* bind is the per-actor ceiling, and naming it here is the point:
+    // which particular cells sit above it is a function of the THR-1403 rotation and
+    // of how many cells the profile lists, so pinning three cell ids by name made this
+    // test fail on any edit to a `cells` list (THR-1438 added two and it did).
+    expect(cellCandidates.length).toBe(STRATEGIC_MAX_CANDIDATES_PER_ACTOR);
   });
 });

@@ -51,6 +51,7 @@ import { evaluateRemoteAnchorGate, ANCHOR_CAST_KEY } from './binding/remoteAncho
 import type { UndertakingObjectHandle, UndertakingObjectTypeId } from '../types/strategicAction';
 import {
   getUndertakingObjectType,
+  eligibilityRefusal,
   enumerateObjectHandles,
   objectPlaceNodeId,
 } from '../data/undertaking-objects';
@@ -352,6 +353,25 @@ export function generateStrategicCandidates(
         // whoever does" are different worlds and want different fixes. Both share the
         // `no_motive` prefix so a sweep can match either.
         const objectHandle = objectHandles.get(target.id);
+
+        // THR-1438: eligibility, after the ownership rule and before the motive gate.
+        // Ownership answers "whose is it"; this answers "is this actor in a position to
+        // do this at all" — a mutineer needs a company already coming apart, a coup
+        // needs the claimant inside the army's faction. Refused on the board by name,
+        // never silently, so a cell nobody can start is a measurement rather than a
+        // hole (`ineligible:cohesion_holds:...` reads very differently from a cell that
+        // found no target).
+        if (objectHandle && template.cellVariant && template.objectTypeId) {
+          const type = getUndertakingObjectType(template.objectTypeId);
+          const refusal = type
+            ? eligibilityRefusal(graph, type, template.cellVariant, actorId, objectHandle)
+            : null;
+          if (refusal) {
+            rejections.push({ templateId, reason: `ineligible:${refusal}:${target.id}` });
+            continue;
+          }
+        }
+
         const motiveGate = evaluateMotiveGate(graph, actorId, target.id, template, objectHandle);
         // THR-1436: a gate the object type waived (the cure for an ally) is recorded on
         // the board beside the refusals, so a skipped gate is as inspectable as a

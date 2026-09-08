@@ -30,12 +30,48 @@ import type { WorldGraph } from '../graph';
  * saw, so the motive gate must read it as `rivalry` — which licenses lower, seize and
  * destroy on things — and never as `grudge`, which licenses the plot.
  */
-export type GrudgeCause = 'group_engagement' | 'grievance_cooled' | 'old_quarrel';
+export type GrudgeCause =
+  | 'group_engagement'
+  | 'grievance_cooled'
+  | 'old_quarrel'
+  // THR-1438 — the two injuries of the ownership band. Both **are** in
+  // `GRUDGE_PROVENANCE`, unlike `'old_quarrel'`: being deposed by one of your own and
+  // being reached for by someone who wanted your seat are things that happened *to*
+  // you, with a name attached, so they license the plot the way any other injury does.
+  | 'command_seized'
+  | 'usurpation_failed';
 
 export interface WriteGrudgeOptions {
   /** The event node the grudge traces back to, when one exists. */
   readonly sourceEventId?: string;
+  /**
+   * Rewrite a standing edge's `cause` when this one is an injury and the standing one
+   * is not (THR-1438).
+   *
+   * Without it the ownership band's three ops would never record their injury. A
+   * mutiny, a coup and a usurpation are all **motive-gated on hostility**, so by the
+   * time one completes a `hostile_to` between the two almost always exists already —
+   * a `covets`, an `old_quarrel` — and this writer's default is to leave an existing
+   * edge exactly as it is. The provenance would then read as mere rivalry forever,
+   * and the person who was deposed would hold no licence to plot back.
+   *
+   * Only ever an upgrade: an edge that already carries an injury cause keeps it, so
+   * the *first* wound named is the one that stands. `since` is untouched — the
+   * relationship is as old as it was; what changed is what it is now about.
+   */
+  readonly upgradeCause?: boolean;
 }
+
+/**
+ * The causes that read as an injury rather than as friction.
+ *
+ * Mirrors `undertakingMotive.GRUDGE_PROVENANCE` for the members this file owns; the
+ * gate's own set is the authority and covers the causes written by other lanes
+ * (`mentorship_break`, `attempted_killing`) that never pass through here.
+ */
+const INJURY_CAUSES: ReadonlySet<string> = new Set<GrudgeCause>([
+  'group_engagement', 'grievance_cooled', 'command_seized', 'usurpation_failed',
+]);
 
 /**
  * Write the standing grudge both ways, idempotently.
@@ -65,7 +101,23 @@ export function writeGrudge(
   let wrote = false;
   for (const [from, to] of [[a, b], [b, a]] as const) {
     const existing = graph.getOutgoingEdges(from, 'hostile_to').find(e => e.target === to);
-    if (existing) continue;
+    if (existing) {
+      // THR-1438: an injury arriving on top of mere friction renames what the
+      // relationship is about. Never the reverse, and never a second injury over the first.
+      if (options.upgradeCause && INJURY_CAUSES.has(cause)) {
+        const standing = existing.properties?.cause;
+        if (typeof standing !== 'string' || !INJURY_CAUSES.has(standing)) {
+          try {
+            graph.updateEdge(existing.id, {
+              properties: { ...existing.properties, cause, causeUpgradedTick: tick },
+            });
+          } catch {
+            // Fail-soft: the edge keeps the cause it had.
+          }
+        }
+      }
+      continue;
+    }
     try {
       graph.addEdge({
         id: `e_hostile_to_${from}_${to}`,

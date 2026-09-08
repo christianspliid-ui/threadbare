@@ -1264,6 +1264,10 @@ function executeInstantMutation(
       state, graph,
       actorId: candidate.actorId,
       verb: template.undertakingVerb,
+      // THR-1438: the cell the board actually proposed. Without it a candidacy
+      // (`claim × Faction`, ownership `any`) would re-derive to `control:seize` at
+      // completion and run the usurpation the mortal never attempted.
+      variant: template.cellVariant,
       objectTypeId: candidate.objectTypeId,
       handle: candidate.objectHandle,
       tick,

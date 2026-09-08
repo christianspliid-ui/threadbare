@@ -16,6 +16,7 @@ import type { GraphEdge } from '../types/graph';
 import type { FactionAnointSuccessorTrace } from '../types/factionAction';
 import { emitTrace } from './traceBuffer';
 import { getFactionMembershipEdges } from './graphQueries';
+import { ANOINTMENT_PRIORITY } from '../data/strategic-action-constants';
 
 /**
  * Resolve the target agent's faction.
@@ -87,6 +88,12 @@ export function applyAnointSuccessor(
     properties: {
       anointedTick: state.tick,
       anointedBy: actorAscendantId ?? null,
+      // THR-1438: the god's card outranks a notable's heir outranks a mortal's
+      // candidacy. `pickSuccessor` ranks by `priority` with unset reading as
+      // -Infinity, so before this line *any* positive candidacy priority would have
+      // outranked every anointment ever written. Stamped here rather than defaulted
+      // in the reader so the ranking is visible on the edge itself.
+      priority: ANOINTMENT_PRIORITY,
     },
   });
 

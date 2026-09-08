@@ -1730,6 +1730,15 @@ export interface DebugBridge {
     supplyHost: string | null;
     /** Conduit hops to that host; null when cut off. */
     supplyHops: number | null;
+    /**
+     * THR-1438 — the mortals who have scouted this army, by name, sorted.
+     *
+     * Written by `observe × Army`, which records its intelligence on the **scout**
+     * (`strategicIntelligence`, keyed `army_<armyId>`) and makes them familiar with
+     * where the host stands. An empty array is a real answer — nobody has looked —
+     * and is not the same as an army the scouting cell cannot reach.
+     */
+    scoutedBy: string[];
   }>;
 
   /**

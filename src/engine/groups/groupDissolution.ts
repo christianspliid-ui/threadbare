@@ -24,6 +24,7 @@ import {
   type DissolutionReason,
 } from './groupQueries';
 import { reconcileLostMembers, refreshRoster } from './groupCohesion';
+import { setCommander } from './groupCommand';
 import { getAgentHiddenMarks } from '../hiddenMarks';
 import {
   GROUP_MIN_MEMBERS,
@@ -214,34 +215,18 @@ function isGoalComplete(state: GameState, group: GraphNode): boolean {
 /**
  * Repoint `commanded_by` at the longest-serving surviving member.
  * Returns false when nobody is left to lead (caller then dissolves).
+ *
+ * THR-1438: the edge write moved to `setCommander`, the one writer of a changed
+ * command, and the old `promoted: true` property became `via: 'promotion'` — the same
+ * fact in the vocabulary a claim and a mutiny also speak. Nothing read `promoted`
+ * (measured: one writer, no readers), so the rename repoints nobody.
  */
 function promoteNewLeader(state: GameState, group: GraphNode, members: GraphNode[]): boolean {
-  const graph = state.graph;
   const candidates = members.filter(m => !isAgentGone(m));
   if (candidates.length === 0) return false;
 
   const successor = candidates[0]; // getGroupMembers returns join order
-  for (const edge of graph.getOutgoingEdges(group.id, 'commanded_by')) {
-    graph.removeEdge(edge.id);
-  }
-  graph.addEdge({
-    id: `e_commanded_by_${group.id}_${state.tick}`,
-    source: group.id,
-    target: successor.id,
-    type: 'commanded_by',
-    properties: { assignedTick: state.tick, promoted: true },
-  });
-
-  // Reflect the new role on the membership edge so UI and prose agree.
-  for (const edge of getGroupMemberEdges(graph, group.id)) {
-    const isLeader = edge.source === successor.id;
-    if ((edge.properties?.role === 'leader') !== isLeader) {
-      graph.updateEdge(edge.id, {
-        properties: { ...edge.properties, role: isLeader ? 'leader' : 'member' },
-      });
-    }
-  }
-  return true;
+  return setCommander(state, group.id, successor.id, 'promotion', state.tick).success;
 }
 
 /** Close one member's `member_of` edge. The edge persists as history. */

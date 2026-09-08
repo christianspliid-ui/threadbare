@@ -43,6 +43,12 @@ const GRUDGE_PROVENANCE = new Set([
   // hostility must read as a grudge — so the target may one day plot back. Reading it
   // as mere rivalry would leave the person who was nearly murdered without a licence.
   'attempted_killing',
+  // THR-1438: being deposed by one of your own, and being reached for by someone who
+  // wanted your seat. Both are injuries with a name on them — unlike `old_quarrel`,
+  // which is history nobody watched — so both license the plot in return. The whole
+  // point of a mutiny is that the deposed commander now has a reason.
+  'command_seized',
+  'usurpation_failed',
 ]);
 
 const HOSTILE_PROVENANCE_KEYS = ['cause', 'reason', 'basis'] as const;

@@ -286,7 +286,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (5) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-1180`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
-| `faction` (12) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1211`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
+| `faction` (13) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
@@ -297,7 +297,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-786`, `THR-822`, `THR-841` |
 | `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-1437`, `THR-731` |
 | `group` (1) | `groupShape.ts` | `THR-1297` |
-| `groups` (15) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-731`, `THR-732`, `THR-74` |
+| `groups` (16) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupCommand.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-1438`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (1) | `guildSeeding.ts` | — |
 | `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-188` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
@@ -405,4 +405,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 182 engine domains · 540 modules._
+_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 182 engine domains · 542 modules._

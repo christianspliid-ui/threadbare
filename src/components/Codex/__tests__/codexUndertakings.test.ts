@@ -17,6 +17,7 @@ import {
   genericCellLine,
 } from '../undertakingCodex';
 import { UNDERTAKING_CELL_TEMPLATES } from '../../../data/undertaking-cells';
+import { UNDERTAKING_CELL_PHRASES } from '../../../data/undertaking-verb-prose';
 import { UNDERTAKING_OBJECT_TYPES } from '../../../data/undertaking-objects';
 import { callingsForCell, cellsOfCalling } from '../../../data/division-rule-tables';
 import { CALLING_ROWS } from '../../../data/calling-content';
@@ -88,5 +89,28 @@ describe('the Undertakings codex section', () => {
     const census = undertakingCodexCensus();
     expect(census.entries).toBe(census.liveCells);
     expect(census.problems).toEqual([]);
+  });
+
+  // THR-1438 — UI Laws 13/14 on the cards the ownership band added. The generic
+  // phrase is `<Verb> <a kind>`, which for these seven says the wrong thing: seizing a
+  // company is a *mutiny* and seizing a faction a *usurpation*, and "Claim a faction"
+  // describes an outcome a candidacy does not produce. Pinned by name because a
+  // silently-reverted phrase would leave the card building and lying.
+  it('the ownership band`s cards speak the game`s words, not the verb`s', () => {
+    const named = new Map(UNDERTAKING_CELL_TEMPLATES.map(t => [t.id, t.displayName]));
+    expect(named.get('cell.control_claim.company')).toBe('Take command of a company');
+    expect(named.get('cell.control_seize.company')).toBe('Mutiny against a commander');
+    expect(named.get('cell.control_claim.army')).toBe('Take command of an army');
+    expect(named.get('cell.control_seize.army')).toBe('Mount a coup');
+    expect(named.get('cell.control_claim.faction')).toBe('Stand for a seat');
+    expect(named.get('cell.control_seize.faction')).toBe('Usurp a leader');
+    expect(named.get('cell.observe.army')).toBe('Scout an army');
+
+    // And every phrase in the table belongs to a live cell — an entry for a cell that
+    // does not exist is a phrase nobody will ever read, and the kind of stale row the
+    // grid's own totality check exists to prevent elsewhere.
+    for (const cellId of Object.keys(UNDERTAKING_CELL_PHRASES)) {
+      expect(named.has(cellId), `${cellId} has a phrase but is not a live cell`).toBe(true);
+    }
   });
 });

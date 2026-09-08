@@ -32,6 +32,7 @@ import type { WorldGraph } from './graph';
 import type { FactionSuccessionTrace } from '../types/factionAction';
 import { emitTrace } from './traceBuffer';
 import { getAnointedLeaderId, getFactionLeaderId } from './factionNetwork';
+import { seatLeader } from './factionSuccessionOps';
 import {
   INHERITANCE_ENCOUNTER_DELAY,
   INHERITANCE_SEEDED_ENCOUNTER_ID,
@@ -242,30 +243,13 @@ function processFactionSuccession(state: GameState, faction: GraphNode): void {
   const exitedLeaderName = snapshotId ? (graph.getNode(snapshotId)?.name ?? null) : null;
 
   if (winner) {
-    // a. Remove any existing `leads` edge (rare — would only be stale).
-    const oldLeads = getLeadsEdge(graph, factionId);
-    if (oldLeads) graph.removeEdge(oldLeads.id);
-
-    // b. Add new leads edge.
+    // a–d. Seat the winner. THR-1438 lifted these four writes into `seatLeader` —
+    // remove any stale `leads`, write the new one, re-point `leaderSnapshotId`, and
+    // consume the successor's own `will_succeed` claims (lower-priority *other*
+    // candidates remain for the next exit). A usurpation runs the same four, early,
+    // so a seat can only ever move one way in this codebase.
     const successorId = winner.source;
-    const leadsEdgeId = `e_leads_${successorId}_${factionId}_${state.tick}`;
-    graph.addEdge({
-      id: leadsEdgeId,
-      source: successorId,
-      target: factionId,
-      type: 'leads',
-      properties: {
-        seatedTick: state.tick,
-        conferredVia: 'anointment',
-      },
-    });
-
-    // c. Update snapshot to the new leader.
-    graph.updateNode(factionId, { properties: { leaderSnapshotId: successorId } });
-
-    // d. Consume the resolved will_succeed edge. Lower-priority queued
-    //    successors remain for the next exit.
-    graph.removeEdge(winner.id);
+    seatLeader(graph, factionId, successorId, state.tick, 'anointment');
 
     // e. Plant the inheritance encounter on the new leader.
     const seedId = `seed_inheritance_${factionId}_${state.tick}`;

@@ -2292,7 +2292,7 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Undertaking', 'Condition', 'Companion', 'Standing'],
     mechanism: {
       kind: 'function',
-      symbols: ['resolveObjectOwners', 'ownersOf', 'gateExemption', 'edgeTypes', 'CATALOG_TEMPLATE_IDS', 'mintRouteIdentity', 'ownershipCensus'],
+      symbols: ['resolveObjectOwners', 'ownersOf', 'gateExemption', 'eligibility', 'edgeTypes', 'CATALOG_TEMPLATE_IDS', 'mintRouteIdentity', 'ownershipCensus'],
       module: 'src/data/undertaking-objects.ts',
     },
     writeSites: [
@@ -2314,7 +2314,41 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-09-08',
       evidence:
-        'THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing.',
+        'THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.',
+    },
+  },
+  {
+    id: 'group-command-changes-through-one-writer',
+    producerSystem: 'Companies & Group Travel',
+    consumerSystem: AMBITIONS,
+    intent:
+      'A group\'s command changes hands in exactly one place. `setCommander` removes the standing `commanded_by`, writes one carrying `via` (formation | promotion | claim | mutiny | coup), and makes the `member_of` roles agree — so group movement, cohesion, battle resolution, the war readout and the roster all read one edge, and a chronicle can tell a promotion from a mutiny. The three spawn-time writers keep their own ids deliberately: they say who a group was *raised* under, which is not a command changing hands.',
+    ulTerms: ['Company', 'Army', 'Undertaking'],
+    // A NEGATIVE as much as a positive: no module other than `groupCommand.ts` may
+    // repoint a standing `commanded_by`. The defect this row exists to prevent is the
+    // one THR-1438 found — `promoteNewLeader` repointing the edge silently inside the
+    // dissolution sweep, so a commander's death never read as a vacancy and the two
+    // claim cells could not have fired at all.
+    mechanism: {
+      kind: 'function',
+      symbols: ['setCommander', 'CommandVia', 'commanded_by'],
+      module: 'src/engine/groups/groupCommand.ts',
+    },
+    writeSites: [
+      'src/engine/groups/groupCommand.ts',
+      'src/engine/groups/groupDissolution.ts',
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/groups/groupQueries.ts',
+      'src/engine/groups/groupMovement.ts',
+      'src/data/undertaking-objects.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-08',
+      evidence:
+        'THR-1438. `promoteNewLeader` now calls `setCommander(..., \'promotion\')` and the old `promoted: true` property is gone — measured before the change as one writer and **zero readers**, so the rename repointed nobody. The four cells that change a command (`claim × Company`, `claim × Army`, `seize × Company`, `seize × Army`) call the same writer with their own `via`. Pinned in `src/engine/__tests__/peopleThingsOps.test.ts`: the edge is replaced not appended (exactly one `commanded_by` after), roles flip to `member` on everyone but the new commander, a claimant who was never a member is admitted as `leader`, and a missing group or actor writes nothing and returns the reason. On a generated small world (seed 42, tick 30) a commander marked dead through `markMortalDead` makes `cell.control_claim.company` and `cell.control_claim.army` appear on a living member\'s board where neither was offered before (`peopleThingsCells.test.ts`).',
     },
   },
   {
@@ -2635,7 +2669,7 @@ export const CONTRACTS: readonly Contract[] = [
     // one reader that turns a declaration into a world change.
     mechanism: {
       kind: 'function',
-      symbols: ['UNDERTAKING_OBJECT_TYPES', 'resolveUndertakingCompletion', 'resolveObjectOwners', 'undertaking_cell_unreachable'],
+      symbols: ['UNDERTAKING_OBJECT_TYPES', 'resolveUndertakingCompletion', 'resolveObjectOwners', 'undertaking_cell_unreachable', 'ownershipOverride', 'eligibilityRefusal'],
       module: 'src/data/undertaking-objects.ts',
     },
     writeSites: [
@@ -2892,7 +2926,7 @@ export const CONTRACTS: readonly Contract[] = [
     // way it is.
     mechanism: {
       kind: 'function',
-      symbols: ['motiveGate', 'evaluateMotiveGate', 'resolveTargetOwners', 'MOTIVE_GATE_KINDS'],
+      symbols: ['motiveGate', 'evaluateMotiveGate', 'resolveTargetOwners', 'MOTIVE_GATE_KINDS', 'GRUDGE_PROVENANCE'],
       module: 'src/engine/undertakingMotive.ts',
     },
     writeSites: [

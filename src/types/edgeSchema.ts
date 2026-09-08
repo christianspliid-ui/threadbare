@@ -428,7 +428,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-one',
     requiredProperties: [],
-    description: 'Commanded entity (army, company, network) → its commander. Direction is entity→commander; co-location is NOT implied — companies derive position from the leader, armies and networks may stand elsewhere (the remote-anchor rule reaches through them).',
+    description: 'Commanded entity (army, company, network) → its commander. Direction is entity→commander; co-location is NOT implied — companies derive position from the leader, armies and networks may stand elsewhere (the remote-anchor rule reaches through them). Properties: assignedTick, and since THR-1438 `via` (formation | promotion | claim | mutiny | coup) on every edge a command *change* writes — `setCommander` is that one writer.',
   },
   participates_in: {
     type: 'participates_in',
@@ -605,8 +605,10 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     description: 'Agent is the seated leader of this faction. Source = the leader; target = '
       + 'the faction (actorType: faction). Authoritative when present; absent for factions '
       + 'whose leadership has never been explicitly conferred (those fall back to '
-      + 'score-derived leadership). Set/cleared by phaseFactionSuccession. Properties: '
-      + 'seatedTick, conferredVia (anointment | natural).',
+      + 'score-derived leadership). Set/cleared by `seatLeader` — called by '
+      + 'phaseFactionSuccession on an exit, and by `forceSuccession` when a mortal '
+      + 'usurps (THR-1438). Properties: seatedTick, conferredVia (anointment | natural '
+      + '| usurpation).',
   },
 
   // ── Rival schemes (THR-66) ──────────────────────────────────

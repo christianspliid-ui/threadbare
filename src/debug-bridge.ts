@@ -2687,6 +2687,22 @@ if (import.meta.env.DEV) {
       if (!state) return [];
       const graph = state.graph;
       const tick = state.tick ?? 0;
+      // THR-1438 — who has had eyes on each army. `observe × Army` records its
+      // intelligence on the *scout* (`strategicIntelligence`, keyed `army_<id>`), so
+      // reading it per army would rescan every actor once per army. One pass builds
+      // the whole index instead.
+      const scoutsByArmy = new Map<string, string[]>();
+      for (const actor of graph.getNodesByType('actor')) {
+        const intel = actor.properties.strategicIntelligence as Record<string, number> | undefined;
+        if (!intel) continue;
+        for (const key of Object.keys(intel)) {
+          if (!key.startsWith('army_')) continue;
+          const armyId = key.slice('army_'.length);
+          const list = scoutsByArmy.get(armyId);
+          if (list) list.push(actor.name ?? actor.id);
+          else scoutsByArmy.set(armyId, [actor.name ?? actor.id]);
+        }
+      }
       return graph
         .getNodesByType('actor')
         .filter((n) => n.properties.armyState != null)
@@ -2737,6 +2753,9 @@ if (import.meta.env.DEV) {
             supplyHostId: as.supplyHostId ?? null,
             supplyHost: as.supplyHostId ? (graph.getNode(as.supplyHostId)?.name ?? null) : null,
             supplyHops: as.supplyHops ?? null,
+            // THR-1438 — the mortals who have scouted this army. Empty is a real
+            // answer: nobody has looked.
+            scoutedBy: (scoutsByArmy.get(army.id) ?? []).slice().sort(),
           };
         });
     },

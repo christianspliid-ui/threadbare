@@ -32,7 +32,7 @@ import {
   resolveObjectOwners,
   tierOfObject,
 } from '../data/undertaking-objects';
-import { STRATEGIC_VERB_OF_UNDERTAKING_VERB } from '../data/strategic-action-constants';
+import { STRATEGIC_VERB_OF_UNDERTAKING_VERB, OWNERSHIP_BY_VERB } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
 
 export type ObjectOwnership = 'own' | 'other' | 'unowned';
@@ -65,7 +65,33 @@ export function resolveVerbVariant(
   verb: UndertakingVerb,
   type: UndertakingObjectType,
   handle: UndertakingObjectHandle,
+  /**
+   * The variant the board actually proposed (THR-1438), when the caller knows it.
+   *
+   * Ownership alone splits `control` correctly for every type whose two control cells
+   * partition ownership between them — which was every type until a candidacy arrived.
+   * `claim × Faction` overrides its ownership rule to `any` (a faction's leader is
+   * *derived*, so it never reads unowned), which puts both faction control cells on
+   * the same ownership and makes the split ambiguous: a candidacy re-derived from
+   * ownership would come back as `control:seize` and silently run the **usurpation**
+   * the mortal never attempted.
+   *
+   * So a proposed variant wins — but only when the type both declares it and admits
+   * this ownership under its effective rule, so a claim that raced a recovery still
+   * refuses rather than executing against a seat that filled while the work ran. With
+   * no proposed variant, or one the object no longer admits, the ownership ladder
+   * below decides exactly as it always did.
+   */
+  proposed?: UndertakingVerbVariant | null,
 ): UndertakingVerbVariant | null {
+  if (proposed && type.verbs[proposed]) {
+    const rule = type.ownershipOverride?.[proposed] ?? OWNERSHIP_BY_VERB[proposed];
+    const actual = ownershipOf(graph, actorId, type, handle);
+    // A `control` cell never acts on what the actor already holds, whatever the rule
+    // admits — the same refusal the candidate walk makes at proposal.
+    const controllingOwn = proposed.startsWith('control') && actual === 'own';
+    if (!controllingOwn && ownershipSatisfies(rule, actual)) return proposed;
+  }
   if (verb === 'change') {
     // Raise what is one's own (or nobody's); lower another's — the hostile mirror.
     const ownership = ownershipOf(graph, actorId, type, handle);
@@ -103,6 +129,12 @@ export interface UndertakingResolutionInput {
    * perfectly. Absent on the instant path, where there is no checkpoint to read.
    */
   readonly outcome?: string;
+  /**
+   * The cell variant the board proposed (THR-1438). Optional: every caller that has a
+   * cell template has it, and the ownership ladder still decides without it. See
+   * `resolveVerbVariant` for why re-deriving it alone is no longer sufficient.
+   */
+  readonly variant?: UndertakingVerbVariant | null;
 }
 
 export interface UndertakingResolution {
@@ -136,7 +168,7 @@ export function resolveUndertakingCompletion(input: UndertakingResolutionInput):
     return { ops: [{ success: false, op: 'resolve_undertaking', error: `object_gone:${objectIdOf(handle)}` }], variant: null, refused: 'object_gone' };
   }
 
-  const variant = resolveVerbVariant(graph, actorId, verb, type, handle);
+  const variant = resolveVerbVariant(graph, actorId, verb, type, handle, input.variant);
   if (variant === null) {
     return { ops: [{ success: false, op: 'resolve_undertaking', error: 'control_over_own_object' }], variant: null, refused: 'not_applicable' };
   }
