@@ -370,13 +370,48 @@ describe("Docs/guidance-manifest.json", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Burn-in bookkeeping — the one thing that stops "advisory" becoming permanent
+// Burn-in bookkeeping — RESOLVED. This block used to assert that the advisory
+// window carried a review date so it could not become permanent by inattention.
+// The review ran (THR-1256, 2026-09-09) and retired the gate, so what needs
+// asserting flipped with it: that the outcome is recorded, and that the design
+// cannot be re-armed without a code change someone has to read.
 // ---------------------------------------------------------------------------
 
 describe("GUIDANCE_GATE_MODE", () => {
-  it("ships advisory and names both the review date and the flip ticket", () => {
+  it("records the burn-in it shipped with, and the review that closed it", () => {
     expect(GUIDANCE_GATE_MODE.shippedAs).toBe("advisory");
     expect(GUIDANCE_GATE_MODE.flipReviewAfter).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(GUIDANCE_GATE_MODE.flipTicket).toMatch(/^THR-\d+$/);
+    expect(GUIDANCE_GATE_MODE.outcome).toBe("retired");
+    expect(GUIDANCE_GATE_MODE.outcomeOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("resolved the review no earlier than the date it was booked for", () => {
+    // Guards the shape of the failure this whole burn-in was designed against: a
+    // verdict recorded before the window it was supposed to measure had elapsed.
+    expect(
+      Date.parse(GUIDANCE_GATE_MODE.outcomeOn),
+    ).toBeGreaterThanOrEqual(Date.parse(GUIDANCE_GATE_MODE.flipReviewAfter));
+  });
+
+  it("states WHY it was retired in terms a reader can check, not just that it was", () => {
+    // A bare `outcome: "retired"` invites re-adding the gate on a hunch. The reason
+    // carries the measurement, so the next person to reach for it has the counter-evidence
+    // in the same object.
+    expect(GUIDANCE_GATE_MODE.outcomeReason).toMatch(/false positive/i);
+    expect(GUIDANCE_GATE_MODE.outcomeReason).toMatch(/arming trigger/i);
+  });
+
+  it("has no blocking mode left to flip to", () => {
+    // The retirement is structural, not conventional (see the FreshnessMode note):
+    // re-arming must cost a code change. `--blocking` and the env var are both gone,
+    // so passing them must not resurrect a failing exit.
+    const src = fs.readFileSync(
+      new URL("../check-guidance-freshness.ts", import.meta.url),
+      "utf8",
+    );
+    expect(src).not.toMatch(/process\.exit\(1\)/);
+    expect(src).not.toMatch(/argv\.includes\("--blocking"\)/);
+    expect(src).not.toMatch(/GUIDANCE_FRESHNESS_MODE === "blocking"/);
   });
 });

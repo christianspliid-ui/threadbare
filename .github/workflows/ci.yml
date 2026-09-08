@@ -300,26 +300,21 @@ jobs:
           git fetch origin main
           npm run check:wiki-freshness:blocking
 
-      # THR-1253 — the change-time half of guidance governance. Editing a doctrine
-      # AUTHORITY (`Docs/canon/prose.md`, the nudge authoring spec) without touching the
-      # surfaces that restate it is how three register rulings sat in canon while the
-      # pipeline drafted against the retired mode for weeks.
+      # THR-1253's change-time guidance gate stood here, and was RETIRED at its flip
+      # review (THR-1256, 2026-09-09) rather than promoted to blocking. Its advisory
+      # fortnight measured 29 flags across 228 merged PRs, of which ~20 were false
+      # positives — because the gate armed on "an authority FILE was touched", and four
+      # authority files are touched by routine non-doctrinal work as standing policy
+      # (`interface-map.md` by the Definition of Done, `rulebook.md` by the [IMPL]-row
+      # convention, `verification-gates.md` by gate maintenance, `engine.md` by slice
+      # records). No dependent-list edit could fix that: the untouched counts were
+      # repeatedly N/N. Kill criterion cited: THR-1253 plan § Kill criteria.
       #
-      # ADVISORY during burn-in — it logs and exits 0, deliberately (THR-899: a
-      # false-positive gate damages the thing it protects, and a brand-new dependent list
-      # is exactly where false positives live). The flip to
-      # `check:guidance-freshness:blocking` is THR-1256, reviewed on/after 2026-09-08.
-      # Until then a green `Docs gates` run is NOT evidence the sweep was clean — read
-      # this step's own output.
-      #
-      # Mirrored verbatim in the `check` job below, and that is load-bearing rather than
-      # duplication: a PR editing `Docs/canon/prose.md` *and* one source file classifies
-      # as code, skips this job entirely, and would otherwise never be swept — which is
-      # precisely the mixed-diff shape a doctrine change tends to have.
-      - name: Guidance freshness (advisory — flip THR-1256, review 2026-09-08)
-        run: |
-          git fetch origin main
-          npm run check:guidance-freshness
+      # What survives, and is the whole governance chain now: `Docs/guidance-manifest.json`
+      # (the registry) → a deliberate doctrine `version` bump → the retro's Step 5d
+      # trigger → the `/guidance-audit` skill, which reads for the four drift shapes a
+      # diff-matching gate structurally could not see anyway. Do not re-add a step here
+      # without re-reading that evidence.
 
   check:
     name: Test · Typecheck · Build
@@ -526,13 +521,8 @@ jobs:
           git fetch origin main
           npm run check:wiki-freshness:blocking
 
-      # THR-1253 — see the twin step in `Docs gates` for the rationale. It runs here too
-      # because a doctrine change that also touches source classifies as code and skips
-      # that job; advisory in both places until THR-1256 flips it (review 2026-09-08).
-      - name: Guidance freshness (advisory — flip THR-1256, review 2026-09-08)
-        run: |
-          git fetch origin main
-          npm run check:guidance-freshness
+      # THR-1253's guidance gate was mirrored here as well; both copies were retired at
+      # the THR-1256 flip review (2026-09-09). See the note in the `Docs gates` job.
 
       - name: Production build
         run: npx vite build

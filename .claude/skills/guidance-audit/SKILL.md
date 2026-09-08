@@ -2,7 +2,7 @@
 name: guidance-audit
 description: Semantic divergence audit across a doctrine's operative surfaces — finds guidance pulling in different directions, guidance still teaching a retired mode, and guidance whose replacement already exists. Run after any direction change (recording a ruling is not finished until this has run), from the weekly retrospective when a doctrine version has moved, and monthly regardless. Triggers on "/guidance-audit", "guidance audit", "audit the guidance", "does anything still teach the old mode", "guidance drift", "doctrine divergence", "stale guidance sweep".
 model: opus
-last_validated_against: 2026-08-26
+last_validated_against: 2026-09-09
 validated_doctrine: prose@2
 ---
 
@@ -17,20 +17,31 @@ where direction actually takes effect, and nothing about editing canon touches t
 in `Docs/canon/prose.md` while every operative surface kept teaching the retired mode, and
 the pipeline drafted against inverted rules for weeks.
 
-`check:guidance-freshness` (THR-1253) closes the *mechanical* half — an authority edited
-without touching its declared dependents is flagged at change time. This skill is the
-*semantic* half, and it exists because the mechanical half cannot see the failures that
-matter most:
+`check:guidance-freshness` (THR-1253) once closed the *mechanical* half at change time —
+an authority edited without touching its declared dependents was flagged in CI. **That
+gate was retired on 2026-09-09 (THR-1256)**: its advisory fortnight measured ~20 false
+positives in 29 flags, because it armed on "an authority file was touched" and several
+authority files are touched by routine work as standing policy. The script survives as an
+on-demand report (`npm run check:guidance-freshness`); nothing runs it in CI.
+
+**So this skill is now the whole of guidance enforcement, not half of it.** The trigger
+moved to the doctrine `version` bump — a deliberate declaration that direction changed —
+read by the retro's Step 5d, which calls this skill. Row 1 below used to be somebody
+else's job; assume it is yours.
 
 | Failure | Can a gate see it? |
 |---|---|
-| Authority edited, dependent untouched | **Yes** — that is `check:guidance-freshness` |
+| Authority edited, dependent untouched | Was `check:guidance-freshness` — **now this audit's**, since the gate retired |
 | Dependent *touched* but still teaching the old rule | No — the diff looks swept |
 | Two live surfaces stating opposite rules, neither edited recently | No — no diff exists |
 | A whole doc that a newer doc has silently replaced | No — nothing is broken, just redundant |
 | A surface outside the repo (vault) | No — outside CI's reach entirely |
 
-Rows 2–5 are what this audit is for. They need reading, not matching.
+Rows 2–5 are what this audit was always for — they need reading, not matching. Row 1 now
+comes with them, and it is the cheap one: run `npm run check:guidance-freshness` and read
+the sweep report before you start reading surfaces. It still computes authority-touched-
+with-dependents-untouched correctly; what it could not do was decide whether that pattern
+*mattered* in a given PR. You can.
 
 ## Scope
 
@@ -179,15 +190,21 @@ tells you whether direction moved, without reading a word of doctrine.
 
 ## Sunset
 
-This skill, the `check:guidance-freshness` gate and the `validated_doctrine` stamps enter the
-standing **six-week sunset presumption** (CLAUDE.md § process-work throttle): each is renewed
-at retro by citing a catch — a named drift found before it shipped, or an audit finding
-promoted to a ticket — else deleted. Keeping a dead rule requires evidence, not caution.
+This skill and the `validated_doctrine` stamps remain under the standing **six-week sunset
+presumption** (CLAUDE.md § process-work throttle): each is renewed at retro by citing a catch
+— a named drift found before it shipped, or an audit finding promoted to a ticket — else
+deleted. Keeping a dead rule requires evidence, not caution.
+
+**The gate already went, at two weeks** (THR-1256, 2026-09-09), on the last clause of the kill
+criteria below. That is the presumption working, not a failure of the design: the mechanical
+half was cheap to try, was measured, and lost. Read it as precedent — this skill is next if it
+cannot cite a catch.
 
 **Kill criteria specific to this skill** (from `Docs/plans/2026-08-25-thr-1253-guidance-governance.md`):
 if two consecutive audits find nothing across all partitions, drop the retro trigger to
 on-version-bump-only. If the manifest costs more edits than it prevents — measured as
-manifest-fix commits against drift catches — collapse to stamps-and-audit and retire the gate.
+manifest-fix commits against drift catches — collapse to stamps-and-audit. ~~and retire the
+gate~~ — done, see above.
 
 ## Rules
 
@@ -201,7 +218,7 @@ manifest-fix commits against drift catches — collapse to stamps-and-audit and 
 ## Related
 
 - `Docs/guidance-manifest.json` — the doctrine registry this audit reads
-- `scripts/check-guidance-freshness.ts` — the change-time gate (mechanical half)
+- `scripts/check-guidance-freshness.ts` — the sweep report; a CI gate until THR-1256 retired it 2026-09-09
 - `Docs/plans/2026-08-25-thr-1253-guidance-governance.md` — the design and its kill criteria
 - `.claude/skills/impediment-reporter/SKILL.md` — where findings land
 - `.claude/skills/retrospective/SKILL.md` § Step 5d — the recurring trigger

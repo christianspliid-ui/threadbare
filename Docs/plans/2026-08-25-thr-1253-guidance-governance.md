@@ -146,6 +146,20 @@ N/A — no runtime traces; the gate's CI log output and the audit's written repo
 
 ## Kill criteria
 
+> **RESOLVED 2026-09-09 (THR-1256): criterion 1 fired, and the gate is retired.** The advisory
+> fortnight measured 29 flags across 228 merged PRs, ~20 of them false positives — an order of
+> magnitude past the "twice" threshold. The criterion assumed the fault would be in the
+> *dependent lists*; it was not. It was in the **arming trigger**. The gate armed on "an
+> authority FILE appears in the diff", and four authority files are touched by routine
+> non-doctrinal work as standing policy: `interface-map.md` by the Definition of Done,
+> `rulebook.md` by the `[IMPL]`-row convention, `verification-gates.md` by gate maintenance,
+> `engine.md` by slice records. No list edit could have removed those findings — the untouched
+> counts were repeatedly N/N, the whole list. Since the "fix the manifest, then re-measure"
+> branch could only have burned a second fortnight to reach the same place, the review went
+> straight to the recurrence clause. Governance moved to the correctly-armed signal the design
+> already carried: a deliberate doctrine `version` bump, read by the retro's Step 5d, actioned
+> by `/guidance-audit`. Details: `Docs/status/2026-09-09-thr-1256.md`.
+
 - If the gate false-positives twice in its advisory fortnight (fails a PR that genuinely owed no sweep), the dependent lists are wrong — fix the manifest before flipping blocking; if it recurs after, the gate design is wrong: retire it and keep only stamps + audit.
 - If two consecutive audits find nothing across all partitions, drop the retro step to on-version-bump-only (the sunset rule's spirit).
 - If maintaining the manifest costs more edits than it prevents (measured: manifest-fix commits vs drift catches at retro), collapse to the stamps-only design.
