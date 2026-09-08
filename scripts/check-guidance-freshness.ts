@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * check-guidance-freshness — the change-time half of guidance governance (THR-1253).
+ * check-guidance-freshness — the guidance-governance report (THR-1253; retired as a
+ * blocking-capable gate at its flip review, THR-1256 — see RETIRED AS A GATE below).
  *
  * The problem, measured: rulings land in the canonical chain, but agents obey the
  * OPERATIVE chain — the prompts, compiled briefs, exemplars and vault samples they load
@@ -10,20 +11,23 @@
  * teaching the retired mode, for weeks. Nothing forced a direction change to sweep its
  * own restatement sites, so the change PR could end while the old guidance stayed live.
  *
- * This gate makes the sweep part of shipping the change. `Docs/guidance-manifest.json`
+ * The design tried to make the sweep part of shipping the change. `Docs/guidance-manifest.json`
  * declares, per doctrine, the AUTHORITIES that define it and the DEPENDENTS that restate
- * or apply it. A diff that edits an authority without touching every dependent fails,
- * naming the untouched ones — unless a commit body carries the attestation described
- * below. A diff that edits only dependents never fails: downstream edits are free.
+ * or apply it. A diff that edits an authority without touching every dependent is
+ * REPORTED, naming the untouched ones — unless a commit body carries the attestation
+ * described below. A diff that edits only dependents reports nothing: downstream edits
+ * are free.
  *
- * Deliberately the mirror image of `check-wiki-freshness` (THR-730), not a new species —
- * same manifest+sources shape, same commit-body escape hatch, same merge-base diff, same
- * fail-soft posture. Reviewers already know how to read that gate; a second gate with its
- * own idioms would cost more than it caught.
+ * Modelled on `check-wiki-freshness` (THR-730), not a new species — same manifest+sources
+ * shape, same commit-body escape hatch, same merge-base diff, same fail-soft posture. The
+ * resemblance held; the arming trigger did not travel. The wiki gate arms on "a file this
+ * page DOCUMENTS changed", which is a real signal. This one armed on "the authority file
+ * itself was touched", and touching an authority turned out to be routine.
  *
  * TWO INDEPENDENT REPORTS, ONE RUN:
  *
- *   1. THE SWEEP GATE (can fail). Authority edited ⇒ every dependent must be touched.
+ *   1. THE SWEEP REPORT (never fails; this was the gate). Authority edited ⇒ every
+ *      dependent must be touched.
  *      Honors `Guidance-sweep: <doctrineId> — <disposition>` in any commit body over the
  *      diff range: the auditable "checked, deliberately unchanged" hatch, mirroring
  *      `Wiki-freshness-exempt:`. Scoped BY DOCTRINE ID on purpose — a repo with several
@@ -32,7 +36,7 @@
  *      recognisable doctrine id waives nothing and says so. The marker is LINE-ANCHORED,
  *      unlike the wiki gate's — see the note on parseSweepAttestations (impediment #787).
  *
- *   2. THE STAMP REPORT (never fails, in either mode). Dependents carrying YAML
+ *   2. THE STAMP REPORT (never fails; never could). Dependents carrying YAML
  *      frontmatter may declare `validated_doctrine: <id>@<version>`. Any stamp trailing
  *      the manifest version is reported as a named row. This half is ADVISORY ALWAYS:
  *      the stamp asserts "a human re-read this against v2", and forcing it mechanically
@@ -41,26 +45,40 @@
  *      frontmatter block reports as unstamped-by-shape — informational, not a debt: the
  *      SWEEP covers every dependent, the STAMP covers those with somewhere to put one.
  *
- * MODE — advisory by default, blocking behind `--blocking` / GUIDANCE_FRESHNESS_MODE.
- * The gate ships ADVISORY and is flipped after a clean burn-in (THR-899 precedent: a
- * false-positive gate damages the thing it protects, and a brand-new dependent list is
- * exactly where false positives live). `GUIDANCE_GATE_MODE` below records the intended
- * flip date so the burn-in cannot quietly become permanent.
+ * RETIRED AS A GATE (THR-1256, 2026-09-09) — this file reports; it cannot fail a build.
+ * It shipped advisory on 2026-08-26 with a fortnight's burn-in and a flip review. The
+ * review measured the window and flipped it the other way, citing THR-1253's own kill
+ * criterion. What the evidence said, so nobody re-derives it:
  *
- * FAIL-SOFT (NFP #4) — a broken manifest must never block unrelated PRs. Missing or
- * unparseable manifest, unknown dependent paths, unreadable commit bodies: each degrades
- * to a warning or an informational row, never to a red gate on work that owed nothing.
- * This is a deliberate asymmetry with check-wiki-freshness, which fails loud on a missing
- * manifest because gutting it there disarms a gate that has already proven its worth.
- * This manifest is new, its dependent lists are the least-trustworthy thing in the design,
- * and it governs process surfaces rather than shipped behaviour — so the blast radius of
- * a false red is larger than that of a missed sweep, which the /guidance-audit skill
- * catches on its own cadence anyway.
+ *   228 PRs merged in the window. 32 touched a doctrine authority with >=1 dependent
+ *   untouched; 3 carried a waiving `Guidance-sweep:` attestation, so 29 flagged. Of the
+ *   29, roughly 20 were FALSE POSITIVES — PRs that genuinely owed no sweep.
  *
- * Run via `npm run check:guidance-freshness` (advisory; chained into `check:process`) or
- * `npm run check:guidance-freshness:blocking`. It is a TREE-DIFFING gate, so per the
- * CLAUDE.md general rule it runs LAST before `git push`, after the closeout edits — never
- * at its numbered position in a checklist.
+ *   The cause was not the dependent lists (the branch THR-1253 anticipated). It was the
+ *   ARMING TRIGGER: the gate armed on "an authority FILE appears in the diff", and four
+ *   authority files are edited by routine, non-doctrinal work as standing policy —
+ *   `Docs/canon/interface-map.md` on every PR that follows the Definition of Done,
+ *   `Docs/canon/rulebook.md` on every feature that appends its `[IMPL]` row,
+ *   `Docs/canon/verification-gates.md` on gate maintenance, `Docs/canon/engine.md` on
+ *   slice records. No dependent-list edit could remove those findings: the untouched
+ *   counts were repeatedly N/N, i.e. the whole list. Blocking would have red-gated ~13%
+ *   of merges, mostly spuriously — the THR-899 pathology the burn-in existed to detect.
+ *
+ * Governance did NOT go with it. The chain that remains is smaller and correctly armed:
+ * `Docs/guidance-manifest.json` (the registry) -> a deliberate doctrine `version` bump ->
+ * the retrospective's Step 5d trigger, which already compares versions rather than diffs
+ * -> the `/guidance-audit` skill. That skill reads for the four drift shapes a diff
+ * matcher structurally could not see (a dependent touched and still wrong; two live
+ * surfaces contradicting with no diff; a doc silently superseded; a vault page), which
+ * were always the failures that mattered.
+ *
+ * FAIL-SOFT (NFP #4) — retained and now unconditional. Missing or unparseable manifest,
+ * unknown dependent paths, unreadable commit bodies: each degrades to a warning or an
+ * informational row. Nothing here exits non-zero.
+ *
+ * Run via `npm run check:guidance-freshness` on demand — the `/guidance-audit` skill and
+ * the retro's Step 5d are its callers. It reads the working tree against `origin/main`,
+ * so a verdict describes the tree at the instant it ran.
  */
 
 import { execFileSync } from "node:child_process";
@@ -77,7 +95,13 @@ export type Doctrine = {
   manualDependents?: unknown;
 };
 export type GuidanceManifest = { doctrines?: Record<string, Doctrine> };
-export type FreshnessMode = "advisory" | "blocking";
+/**
+ * `"blocking"` is gone rather than merely unused (THR-1256). Leaving the mode in place
+ * would let a future one-line CI edit re-arm a design this window measured as wrong,
+ * without anyone re-reading the evidence — which is exactly how a retired rule comes
+ * back. Re-arming now costs a code change, and a code change gets read.
+ */
+export type FreshnessMode = "report-only";
 
 /** Commit-body token attesting that a doctrine's dependents were swept deliberately. */
 export const SWEEP_TOKEN = "Guidance-sweep:";
@@ -86,22 +110,28 @@ export const SWEEP_TOKEN = "Guidance-sweep:";
 export const STAMP_KEY = "validated_doctrine";
 
 /**
- * Burn-in switch (plan § Constants table). The gate ships advisory; the flip to blocking
- * is a one-line change plus this date, filed as its own follow-up so the burn-in cannot
- * become permanent by inattention. Recorded as a constant rather than prose because the
- * verdict line prints it — a reader must be able to tell an advisory gate from a
- * disarmed one without opening the source.
+ * The burn-in switch, resolved. It shipped `advisory` on 2026-08-26 with a flip review
+ * booked for 2026-09-08 so the burn-in could not become permanent by inattention; the
+ * review ran on 2026-09-09 and retired the gate instead of promoting it. Kept as a
+ * constant, and still printed in the verdict line, because a reader must be able to tell
+ * a live gate from a disarmed one without opening the source — which matters more now
+ * that the answer is "disarmed" than it did when the answer was "not yet".
  */
 export const GUIDANCE_GATE_MODE = {
-  shippedAs: "advisory" as FreshnessMode,
+  shippedAs: "advisory",
   flipReviewAfter: "2026-09-08",
   flipTicket: "THR-1256",
+  /** The review's verdict. `retired` is terminal: there is no blocking mode to flip to. */
+  outcome: "retired" as const,
+  outcomeOn: "2026-09-09",
+  /** THR-1253 § Kill criteria, clause 1 — recurrence after the dependent-list branch. */
+  outcomeReason:
+    "29 flags / 228 merged PRs in the advisory fortnight, ~20 false positives; the cause " +
+    "was the arming trigger (an authority FILE touched), not the dependent lists, and no " +
+    "list edit could fix it. Governance moved to version-bump + /guidance-audit.",
 };
 
-const GUIDANCE_FRESHNESS_MODE: FreshnessMode =
-  process.env.GUIDANCE_FRESHNESS_MODE === "blocking" || process.argv.includes("--blocking")
-    ? "blocking"
-    : "advisory";
+const GUIDANCE_FRESHNESS_MODE: FreshnessMode = "report-only";
 const GUIDANCE_FRESHNESS_BASE = process.env.GUIDANCE_FRESHNESS_BASE ?? "origin/main";
 const GUIDANCE_FRESHNESS_NO_FETCH = process.env.GUIDANCE_FRESHNESS_NO_FETCH === "1";
 /** Wall-clock ceiling on the base-ref fetch, ms — a gate that can hang is worse than one that admits it could not refresh. */
@@ -393,7 +423,7 @@ export function describeStampRow(row: StampRow, doctrineId: string): string | nu
     case "unstamped":
       return `${row.file} — has frontmatter but no \`${STAMP_KEY}\` key (add \`${STAMP_KEY}: ${doctrineId}@…\` when next validated).`;
     case "no-frontmatter":
-      return `${row.file} — no frontmatter block, so no stamp surface. Covered by the sweep gate, not the stamp report.`;
+      return `${row.file} — no frontmatter block, so no stamp surface. Covered by the sweep report and by /guidance-audit, not by a stamp.`;
     case "missing":
       return `${row.file} — listed as a dependent but not present in the tree (stale manifest entry; correct the manifest, not the PR).`;
   }
@@ -401,10 +431,7 @@ export function describeStampRow(row: StampRow, doctrineId: string): string | nu
 
 function main(): void {
   const mode = GUIDANCE_FRESHNESS_MODE;
-  const modeLabel =
-    mode === "blocking"
-      ? "blocking"
-      : `advisory (burn-in; flip reviewed after ${GUIDANCE_GATE_MODE.flipReviewAfter}, ${GUIDANCE_GATE_MODE.flipTicket})`;
+  const modeLabel = `report-only (gate retired ${GUIDANCE_GATE_MODE.outcomeOn}, ${GUIDANCE_GATE_MODE.flipTicket})`;
 
   // Fail-soft on every manifest problem, in BOTH modes — see the header note on the
   // deliberate asymmetry with check-wiki-freshness. A guidance manifest that cannot be
@@ -504,8 +531,7 @@ function main(): void {
     return;
   }
 
-  const label = mode === "blocking" ? "FAIL" : "WARN";
-  console.log(`check-guidance-freshness: ${label} (mode=${modeLabel}, base=${base})`);
+  console.log(`check-guidance-freshness: NOTE (mode=${modeLabel}, base=${base})`);
   for (const f of live) {
     console.log(
       `  - doctrine \`${f.doctrineId}\`: authority changed (${f.touchedAuthorities.join(", ")}) ` +
@@ -513,7 +539,7 @@ function main(): void {
     );
     for (const dep of f.untouchedDependents) console.log(`      · ${dep}`);
     console.log(
-      `    Sweep them in this PR, or attest: a commit-body line \`${SWEEP_TOKEN} ${f.doctrineId} — <what you checked and why nothing changed>\`.`,
+      `    If this edit CHANGED the doctrine, sweep them in this PR and bump the doctrine's \`version\` (that bump, not this report, is what the retro's Step 5d reads). If it merely recorded shipped work, nothing is owed — silence the row with a commit-body line \`${SWEEP_TOKEN} ${f.doctrineId} — <what you checked and why nothing changed>\`.`,
     );
   }
   if (attestations.length > 0 && waived.length === 0) {
@@ -524,9 +550,9 @@ function main(): void {
   }
 
   printStampReport(stampLines);
-
-  if (mode !== "blocking") return;
-  process.exit(1);
+  // No non-zero exit: the sweep half is a report, not a gate (THR-1256). `mode` is read
+  // here so the retirement is visible at the one place a build used to be failed.
+  void mode;
 }
 
 function printStampReport(stampLines: string[]): void {

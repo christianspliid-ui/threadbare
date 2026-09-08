@@ -194,10 +194,15 @@ retro instead of being skipped.
 chain — the prompts, briefs, exemplars and vault samples they load first. Measured 2026-08-25:
 three director-level prose-register rulings sat in canon while every operative surface kept
 teaching the retired mode, and the pipeline drafted against inverted rules for weeks.
-`check:guidance-freshness` catches the mechanical case (authority edited, dependent untouched)
-at change time; it structurally cannot see a dependent that was *touched* and still teaches the
-old rule, two live surfaces contradicting each other with no diff between them, or a doc a
-newer doc has silently replaced. Those need reading, which is what the audit skill does.
+`check:guidance-freshness` used to catch the mechanical case (authority edited, dependent
+untouched) at change time. **It was retired from CI on 2026-09-09 (THR-1256)** — it armed on
+"an authority file was touched", and several authority files are touched by routine work as
+standing policy, so ~20 of its 29 advisory-window flags were false positives. It survives as
+an on-demand report the audit skill runs. So this step is no longer the *second* line of
+defence; it is the only one, which is why the version-comparison trigger above must not be
+skipped. The failures it was always alone in seeing are unchanged: a dependent *touched* and
+still teaching the old rule, two live surfaces contradicting each other with no diff between
+them, a doc a newer doc has silently replaced. Those need reading.
 
 **Where its output goes — into this report, never onto the board.** Per the 2026-08-10
 throttle, this retro is the *single promotion point*: the audit logs impediment rows, and
