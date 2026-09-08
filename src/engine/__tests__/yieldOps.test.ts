@@ -12,7 +12,7 @@
  * bands rather than the type's range, so the Place multiplier is falsified against a
  * town that has productive Places and one that does not.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { drawYield, raiseRouteVolume, yieldLumpFor, productivePlaceCount, yieldBandScale, LAST_YIELD_DRAW_PROPERTY } from '../yieldOps';
 import { readWealth } from '../wealth';

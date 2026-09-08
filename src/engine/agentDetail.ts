@@ -424,6 +424,19 @@ export interface AgentInfoCardData {
    * would tell the player who someone hates before they know who they trust.
    */
   grudges?: GrudgeSummary[];
+  /**
+   * Live marks and favours between this agent and others (THR-1439), gated with
+   * `topBonds` and `grudges` at `known`+ for the same reason: what somebody holds over
+   * whom is the same class of fact as who they trust.
+   *
+   * The strand has been computed on `AgentDetail` since THR-30; it reached the *card*
+   * only with THR-1439, because until then its only renderers were the unmounted
+   * `AgentDetailPanel` (impediment #981) and the debug tab, both of which read
+   * `AgentDetail` directly. `getAgentInfoCard` copies fields onto a fresh object rather
+   * than spreading the detail, so a field absent here is absent on the live sheet no
+   * matter what the engine computed.
+   */
+  leverage?: LeverageSummary;
   quotes?: string[];
   cooperationStrategy?: string;
   reputationWord?: string;
@@ -1577,6 +1590,13 @@ export function getAgentInfoCard(
     // has never wronged anyone renders no section at all rather than an empty heading.
     const grudges = getAgentGrudges(graph, agentId);
     if (grudges.length > 0) card.grudges = grudges;
+
+    // Live marks and favours (THR-1439), gated here with bonds and grudges. `detail`
+    // already carries the strand, computed since THR-30 — it simply had no renderer a
+    // player could open until the Bonds tab's Agreements rows, and this copy is what
+    // gets it there. `undefined` when the agent holds and owes nothing, so the section
+    // keeps its placeholder rather than rendering an empty list.
+    if (detail.leverage) card.leverage = detail.leverage;
 
     // Known level: exactly 1 quote
     if (knowledgeLevel === 'known') {

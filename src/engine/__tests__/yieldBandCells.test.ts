@@ -156,7 +156,7 @@ describe('the yield-and-leverage band on a generated world', () => {
     expect(offeredWithinCycle(s, holder.id, ['ambition_dominate_trade'], 'cell.use.location')).toBe(false);
 
     // The holding is made through the world's own writer, not by hand.
-    const granted = grantHolding(s.graph, holder.id, town, { actorId: holder.id, tick: s.tick });
+    const granted = grantHolding(s.graph, holder.id, town, { tick: s.tick });
     expect(granted.success).toBe(true);
     // And it really is theirs alone — the premise the ownership rule reads.
     expect(holdersOf(s, town)).toEqual([holder.id]);
@@ -185,7 +185,7 @@ describe('the yield-and-leverage band on a generated world', () => {
     }
 
     expect(offeredWithinCycle(s, merchant.id, ['ambition_dominate_trade'], 'cell.change_raise.route')).toBe(false);
-    grantHolding(s.graph, merchant.id, route.id, { actorId: merchant.id, tick: s.tick });
+    grantHolding(s.graph, merchant.id, route.id, { tick: s.tick });
     expect(offeredWithinCycle(s, merchant.id, ['ambition_dominate_trade'], 'cell.change_raise.route')).toBe(true);
   });
 
