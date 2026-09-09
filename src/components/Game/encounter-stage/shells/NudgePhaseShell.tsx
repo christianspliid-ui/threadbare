@@ -20,6 +20,7 @@ import { SphereIcon } from '../../../shared/SphereIcon';
 import { ReachIcon } from '../../../icons';
 import { CardKeywordChip } from '../../../shared/CardKeywordChip';
 import { CostPips, OddsPips } from '../../../shared/OddsPips';
+import { CardFace, FORECAST_TIER_COLORS, HAND_MAX_HEIGHT_PX } from '../../../shared/CardFace';
 import { formatEssencePool } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
@@ -53,27 +54,6 @@ const FONT_PROSE = 'var(--font-prose)';
 const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
 /**
- * Forecast tier → the colour the word carries. Tier classes, not new colours.
- *
- * Law 30 (THR-1031): the hues are `--veil-loss-rgb` / `--veil-gain-rgb`, the
- * same channels the veil composes with — this map and the veil's were the two
- * independent declarations of the polarity pair, already disagreeing on alpha.
- *
- * `doomed` moved from a literal `#b91c1c`. This colour is applied to the
- * forecast **word** below, so Law 45 binds it, and #b91c1c measured 3.05:1 on
- * `--veil-void` — below the 4.5:1 floor. Full loss red is 7.14:1 and makes the
- * ladder symmetric: perilous 0.85 → doomed 1.0 mirrors favorable 0.8 → fated
- * 1.0, so severity still reads as intensity rather than as a different red.
- */
-const FORECAST_TIER_COLORS: Record<string, string> = {
-  doomed: 'rgb(var(--veil-loss-rgb) / 1)',
-  perilous: 'rgb(var(--veil-loss-rgb) / 0.85)',
-  uncertain: 'rgb(var(--veil-gold-rgb) / 0.85)',
-  favorable: 'rgb(var(--veil-gain-rgb) / 0.8)',
-  fated: 'rgb(var(--veil-gain-rgb) / 1)',
-};
-
-/**
  * Factor-sentence polarity. These colour whole sentences, so Law 45 binds both.
  * `against` takes the measured loss-text floor — at 0.7, chosen to sit near the
  * green's 0.75, it painted 3.95:1 against `--veil-void`.
@@ -103,35 +83,12 @@ const REACH_ICON_PX = 34;
 /** Scales glyph, sized to sit level with the difficulty word inside the frame. */
 const TEST_GLYPH_PX = 15;
 
-// ── Card glyph sizes (THR-972 directive 5) ─────────────────────────
-// The director's find was that three glyph vocabularies were "quite small and
-// difficult to read" at 13px and indistinguishable from one another. Sizes are
-// constants so re-tuning legibility stays a number change (NFP #1); the
-// *distinguishing* work is done by the framed price badge below, not by size.
+// ── Legend glyph size ──────────────────────────────────────────────
+// The card's own glyph sizes moved to `shared/CardFace` with the zones that
+// used them (THR-1002); the legend is the shell's, not the card's.
 
-/** Sphere mark on the card's cost row. */
-const CARD_SPHERE_ICON_PX = 16;
-/** Essence price glyphs, inside the framed badge. */
-const CARD_COST_PIP_PX = 14;
-/** The card's odds contribution. */
-const CARD_ODDS_PIP_PX = 14;
 /** Legend glyphs under the hand heading. */
 const LEGEND_GLYPH_PX = 12;
-
-// ── Card-row layout (THR-890) ──────────────────────────────────────
-// The locked card format: picture band, keyword chip, title, cost, effect,
-// quote. Sizes are constants so re-proportioning the row is a number change.
-
-/** Card width. Four fit the encounter stage's column at 1920×1080 without wrap. */
-const CARD_WIDTH_PX = 210;
-/** Picture band height — "small generic image", not a hero illustration. */
-const CARD_ART_HEIGHT_PX = 78;
-/**
- * Tallest the hand may grow. The viewport contract forbids page scroll, so this
- * caps the row rather than letting a tall card push the commit button below the
- * fold; the row itself scrolls horizontally (see the row container).
- */
-const HAND_MAX_HEIGHT_PX = 460;
 
 export interface NudgePhaseShellProps {
   phase: EncounterStageNudgePhaseModel;
@@ -190,57 +147,23 @@ export function NudgeCard({
     sphere: card.sphere,
   });
 
+  // THR-1002: the zone stack moved to `shared/CardFace` so the action card draws
+  // the same face. This adapter is all that remains of the nudge card, and its
+  // DOM is pinned by `NudgeCard.snapshot.test.tsx`, written before the
+  // extraction — if that snapshot moves, the primitive is wrong, not the pin.
   return (
-    <button
-      type="button"
-      // Law 23 (THR-1010): the hand is the stage's primary control — a
-      // keyboard player must be able to see which card is focused.
-      className="focus-ring"
-      data-testid={`nudge-card-${card.id}`}
-      data-nudge-state={card.selected ? 'selected' : card.state}
-      data-nudge-blocked={card.blockedCode ?? ''}
-      data-nudge-keyword={card.keyword ?? ''}
-      aria-pressed={card.selected}
-      disabled={!card.interactive}
-      onClick={onToggle}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'stretch',
-        gap: 0,
-        width: CARD_WIDTH_PX,
-        // The row does not wrap, so a card must hold its width rather than
-        // compressing into illegibility as the hand grows.
-        flexShrink: 0,
-        padding: 0,
-        textAlign: 'left',
-        borderRadius: 10,
-        overflow: 'hidden',
-        background: card.selected
-          ? 'rgb(var(--veil-gold-rgb) / 0.12)'
-          : 'rgba(255, 255, 255, 0.02)',
-        border: `1px solid ${card.selected ? GOLD : 'rgb(var(--veil-gold-rgb) / 0.18)'}`,
-        boxShadow: card.selected ? `0 0 12px rgb(var(--veil-gold-rgb) / 0.22)` : undefined,
-        opacity: dimmed ? 0.45 : 1,
-        cursor: card.interactive ? 'pointer' : 'not-allowed',
-        transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
-      }}
-    >
-      {/* ── Picture band ──────────────────────────────────────────
-          The fallback chain (THR-777/WS4, generated THR-832 batch 2). The
-          manifest lookup runs on `imageTag`; an unresolved tag falls to the
-          `nudge` category generic and, failing even that, returns null and ends
-          at the EntityVisual gradient+glyph, which never blocks the render (plan
-          fail-soft row). Art is the common path now that batch 2 has shipped,
-          but the fallback branch stays load-bearing: it is what a 404 on a
-          registered path degrades into, via the glyph `onError` swap. The card's
-          keyword icon is the fallback glyph, so an artless card still shows the
-          right *kind* of thing rather than a generic lozenge. */}
-      <EntityVisual
-        size="hero"
-        shape="rounded"
-        data-testid={`nudge-card-art-${card.id}`}
-        descriptor={{
+    <CardFace
+      designerView={designerView}
+      onToggle={onToggle}
+      model={{
+        id: card.id,
+        testIdPrefix: 'nudge-card',
+        dataAttributes: {
+          'data-nudge-state': card.selected ? 'selected' : card.state,
+          'data-nudge-blocked': card.blockedCode ?? '',
+          'data-nudge-keyword': card.keyword ?? '',
+        },
+        picture: {
           tier: artPath ? 'art' : 'fallback',
           // `src` present ⇒ art tier; the glyph stays populated either way
           // because EntityVisual uses it as the <img> onError swap target.
@@ -249,169 +172,30 @@ export function NudgeCard({
           gradientIndex: gradientIndexForId(card.id),
           alt: card.name,
           kind: 'encounter',
-        }}
-        aria-label={card.name}
-        style={{
-          height: CARD_ART_HEIGHT_PX,
-          aspectRatio: 'auto',
-          borderRadius: 0,
-          borderWidth: '0 0 1px 0',
-        }}
-      />
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 12px 12px', flex: 1 }}>
-        {/* ── Keyword chip + cost ─────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-          {card.keyword ? (
-            <CardKeywordChip
-              keyword={card.keyword}
-              icon={card.keywordIcon}
-              muted={dimmed}
-              data-testid={`nudge-card-keyword-${card.id}`}
-            />
-          ) : (
-            // A one-off authored option is not in the library and prints no
-            // keyword. The slot still holds its ground so the cost stays right-
-            // aligned across the row.
-            <span />
-          )}
-          {/* THR-972 directive 5 — the sphere mark and the price are two
-              different vocabularies sitting side by side, so they are sized to be
-              read (not 13px) and the price is framed as a token. The frame is
-              what stops the essence row and the odds row below from reading as
-              the same kind of thing. */}
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-            {card.sphere && <SphereIcon sphere={card.sphere} size={CARD_SPHERE_ICON_PX} />}
-            <CostPips
-              cost={card.essenceCost}
-              size={CARD_COST_PIP_PX}
-              framed
-              emphasised={dimmed && card.blockedCode === 'essence_unavailable'}
-              data-testid={`nudge-card-cost-${card.id}`}
-            />
-          </span>
-        </div>
-
-        {/* ── Title ───────────────────────────────────────────── */}
-        <span
-          style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 'var(--text-sm)',
-            lineHeight: 1.25,
-            color: card.selected ? GOLD : 'var(--veil-text-bright)',
-          }}
-        >
-          {card.name}
-        </span>
-
-        {/* ── Alternate costs — a card paid for outside the pool says so ── */}
-        {card.costChannels && card.costChannels.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {card.costChannels.map((channel) => (
-              <span
-                key={channel.id}
-                data-testid={`nudge-card-channel-${card.id}-${channel.id}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
-              >
-                <span aria-hidden="true">{channel.icon}</span>
-                {channel.label}
-                {/* Only a worsening delta earns penalty pips; relief is stated
-                    in the label alone rather than drawn as a price. */}
-                {channel.delta > 0 && <OddsPips value={-channel.delta} size={10} muted={dimmed} />}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* ── Provenance (THR-1247) ────────────────────────────
-            Only a *dealt* card carries this — the ones the god brought rather
-            than the ones the scene wrote. Set below the title and above the
-            effect so the reading order is what it is / where it came from /
-            what it does. Muted and small: it is an attribution, not a second
-            effect line, and it must never compete with the card's own promise.
-
-            An authored card renders nothing here, so today's corpus draws
-            exactly the face it drew before. */}
-        {card.provenance && (
-          <span
-            data-testid={`nudge-card-provenance-${card.id}`}
-            aria-label={card.provenance.text}
-            style={{
-              fontSize: 'var(--text-2xs, 11px)',
-              lineHeight: 1.4,
-              color: TEXT_WARM,
-              opacity: 0.85,
-            }}
-          >
-            {card.provenance.prefix}
-            {card.provenance.conceptLabel && (
-              <>
-                {' — '}
-                {/* Law 1 + 17: the sphere named here is a game concept, so it
-                    carries its tooltip from the one registry. The producer told
-                    us which word it is (Law 2) — we do not go looking for it in
-                    the sentence. */}
-                {card.provenance.conceptTooltipId ? (
-                  <Tooltip id={card.provenance.conceptTooltipId}>
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      {card.provenance.conceptLabel}
-                    </span>
-                  </Tooltip>
-                ) : (
-                  card.provenance.conceptLabel
-                )}
-              </>
-            )}
-            {card.provenance.suffix && (
-              <>{card.provenance.conceptLabel ? ' ' : ' — '}{card.provenance.suffix}</>
-            )}
-          </span>
-        )}
-
-        {/* ── Effect + its odds, in the one pip vocabulary ─────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5, color: TEXT_WHISPER }}>
-            {card.effectLine}
-          </span>
-          <OddsPips
-            value={card.forecastDelta}
-            size={CARD_ODDS_PIP_PX}
-            muted={dimmed}
-            data-testid={`nudge-card-odds-${card.id}`}
-          />
-        </div>
-
-        {/* ── The flavor quote is retired (THR-1224) ───────────────
-            Prose Doctrine v2 § *Retired by name* strikes "the flavor quote"
-            from the authoring rules, so the card face no longer draws
-            `card.fiction`. A card now says what it does and nothing else:
-            name, effect line, cost, odds.
-
-            The `marginTop: auto` that used to seat the quote at the card's
-            foot moves to the spacer below, so cards of different body lengths
-            still align their footers across a row. */}
-        <div style={{ marginTop: 'auto' }} />
-
-        {/* A dimmed card always says why. This is the whole reason
-            `essence_unavailable` dims instead of hiding. */}
-        {dimmed && card.blockedReason && (
-          <span
-            data-testid={`nudge-card-reason-${card.id}`}
-            style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--veil-loss-rgb) / var(--veil-loss-text-alpha))' }}
-          >
-            {card.blockedReason}
-          </span>
-        )}
-
-        {designerView && (
-          <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
+        },
+        ...(card.keyword ? { keyword: { label: card.keyword, icon: card.keywordIcon } } : {}),
+        ...(card.sphere ? { sphere: card.sphere } : {}),
+        cost: card.essenceCost,
+        costEmphasised: dimmed && card.blockedCode === 'essence_unavailable',
+        ...(card.costChannels ? { costChannels: card.costChannels } : {}),
+        ...(card.provenance ? { provenance: card.provenance } : {}),
+        name: card.name,
+        effectLine: card.effectLine,
+        // A nudge *moves* the odds, so it reads them as pips (Law 10).
+        odds: { kind: 'delta', value: card.forecastDelta },
+        ...(card.blockedReason ? { blockedReason: card.blockedReason } : {}),
+        selected: card.selected,
+        dimmed,
+        disabled: !card.interactive,
+        designerLine: (
+          <>
             Δ{card.forecastDelta.toFixed(3)}
             {card.discounted ? ' · discounted' : ''}
             {card.riderLabel ? ` · ${card.riderLabel}` : ''}
-          </span>
-        )}
-      </div>
-    </button>
+          </>
+        ),
+      }}
+    />
   );
 }
 

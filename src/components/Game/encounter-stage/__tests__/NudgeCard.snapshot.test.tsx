@@ -134,6 +134,10 @@ describe('NudgeCard DOM (pre-extraction pin — THR-1002)', () => {
             conceptLabel: 'Darkness',
             conceptTooltipId: 'sphere.darkness',
             suffix: 'signature',
+            // Required by the model and assembled from the parts by
+            // construction: it is the accessible name, so omitting it here
+            // would pin a DOM the producer never emits.
+            text: 'From your repertoire — Darkness signature',
           },
         }),
       ),
@@ -142,7 +146,7 @@ describe('NudgeCard DOM (pre-extraction pin — THR-1002)', () => {
 
   it('renders provenance without a concept', () => {
     expect(
-      renderCard(card({ provenance: { prefix: 'From your repertoire' } })),
+      renderCard(card({ provenance: { prefix: 'From your repertoire', text: 'From your repertoire' } })),
     ).toMatchSnapshot();
   });
 
