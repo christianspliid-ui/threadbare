@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-09 01:54 local (23:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **The board columns were read live this run; the individual ticket states below carry over from the 00:54 verification, unchanged.**
+**Last updated:** 2026-09-09 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **The board columns were read live this run and nothing has moved in four hours; the individual ticket states below carry over from the 00:54 verification, unchanged.**
 
 ## Standing asks
 
 ### 1. Rule on the backlog — one sitting, smallest first
 
-**The build queue is empty — nothing in flight, nothing on the shelf — and this is why.** Forty-four backlog tickets have now been read across two independent censuses on the evening of 8 September (the `Todo` column, then the `Idea` column). Not one is waiting on effort; each is waiting on a ruling from you. They are one- and two-sentence answers, and each releases a piece of buildable work.
+**The build queue is empty — nothing in flight, nothing on the shelf — and this is why.** Forty-four backlog tickets have now been read across three independent censuses (the `Todo` column, then the `Idea` column, then a third pass overnight that re-opened nine of them and read each body from scratch rather than inheriting the earlier verdicts — every decline reproduced). Not one is waiting on effort; each is waiting on a ruling from you. They are one- and two-sentence answers, and each releases a piece of buildable work.
 
 The ones already assessed and named:
 
@@ -22,7 +22,7 @@ The ones already assessed and named:
 
 The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md). (An older August draft under a near-identical name reads plausible — three rulings have overtaken it. The link above is the live one.)
 
-**Six days waiting, and as of this hour the board is empty on both counts** — nothing in flight, and the shelf's last item ([a gate flip](https://linear.app/threadbare/issue/THR-1256)) was picked up and finished at 00:28 tonight. One word puts six encounters of content work on the queue the same hour.
+**Waiting since the 4 September brief, and the board is now empty on both counts for the third hour running** — nothing in flight, and the shelf's last item ([a gate flip](https://linear.app/threadbare/issue/THR-1256)) reached Done at 00:28 local. One word puts six encounters of content work on the queue the same hour.
 
 **Six, not seven.** `shrine_offering` is held to batch 3 (most warnings of the set, weak contrast against `offer_small_prayer`), and it is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), so that checkpoint waits one batch longer. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting.
 
