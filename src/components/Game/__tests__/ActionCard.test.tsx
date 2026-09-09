@@ -12,7 +12,6 @@ const baseSlot: WheelSlot = {
   available: true,
   lockedReason: null,
   essenceCost: 1,
-  detectionRisk: 0.1,
   sphere: 'mind',
   interventionType: 'dream',
   rangeStatus: 'unlimited',
@@ -55,7 +54,6 @@ describe('ActionCard — hand layout', () => {
       label: 'Scry',
       type: 'observation',
       essenceCost: 0,
-      detectionRisk: 0,
       sphere: null,
       interventionType: null,
       description: 'Observe agent psyche and situation',
@@ -173,11 +171,6 @@ describe('ActionCard — focused layout (MTG frame)', () => {
     render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
     // Card still renders without error
     expect(screen.getByTestId('action-card-dream')).toBeInTheDocument();
-  });
-
-  it('shows detection risk in focused layout', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByTestId('action-card-risk')).toHaveTextContent('10%');
   });
 
   it('shows range info for ranged interventions in focused layout', () => {

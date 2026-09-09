@@ -11,6 +11,8 @@ import type { EssencePool, InfluenceTier } from '../types/influence';
 import type { RarityTier } from '../types/rarity';
 import type { ActionScale } from '../types/unifiedAction';
 import type { EffectSource } from '../data/actionEffectSource';
+import type { ForecastTier } from '../types/resolution';
+import type { UpkeepWord } from '../data/action-card-display';
 import type { InterventionType } from '../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../types/dream';
 import { canAfford } from './influence';
@@ -38,8 +40,6 @@ export interface WheelSlot {
   lockedReason: string | null;
   /** Essence cost to use this action */
   essenceCost: number;
-  /** Risk of detection (0.0–1.0) */
-  detectionRisk: number;
   /** Sphere type for this action (used for essence cost), or null for scry/center */
   sphere: SphereName | null;
   /** Intervention type (dream, persuade, etc.), or null for non-interventions */
@@ -95,6 +95,26 @@ export interface WheelSlot {
   effectiveStepDifficulty?: number;
   /** Template scale, carried for the focused card's honest-line fallback (THR-998). */
   scale?: ActionScale | null;
+  /**
+   * The forecast tier word the card prints in its odds zone (THR-1002) —
+   * `classifyForecastTier(castForecastProbability(...))`.
+   *
+   * **Omitted, never guessed**, when the slot was built without a capability map:
+   * a card with no odds zone is honest about not knowing, and a card showing
+   * `uncertain` by default would be a claim nobody made. This is the cast's
+   * counterpart to the nudge card's `OddsPips` — a word rather than pips, because
+   * a cast *rolls* the odds where a nudge *moves* them (Law 10).
+   */
+  forecastTier?: ForecastTier;
+  /** The scale as the player reads it, from `ACTION_SCALE_WORDS` (THR-1002). */
+  scaleWord?: string;
+  /**
+   * Upkeep band for a sustained action (THR-1002) — *light / steady / heavy*, from
+   * `upkeepWord(perTickCost)`. Absent on an instant action, and on a sustained one
+   * whose per-tick cost does not resolve. `perTickCostLabel` keeps the numeral for
+   * the designer view.
+   */
+  upkeepWord?: UpkeepWord;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────
@@ -210,7 +230,7 @@ const WHEEL_LAYOUT: SlotDefinition[] = [
  * 3. Interventions check: (1) tier >= minTier, AND (2) canAfford(pool, sphere, baseCost)
  * 4. Sphere selection: use primarySphere if in intervention's sphereAffinities,
  *    otherwise use first affinity
- * 5. BaseCost and detectionRisk come from INTERVENTION_DEFINITIONS
+ * 5. BaseCost comes from INTERVENTION_DEFINITIONS
  * 6. Range status computed from avatarPos and targetPos if provided
  *
  * @param params - { tier, pool, primarySphere, avatarPos?, targetPos? }
@@ -237,7 +257,6 @@ export function getAgentWheelSlots(params: {
         available: true,
         lockedReason: null,
         essenceCost: 0,
-        detectionRisk: 0,
         sphere: null,
         interventionType: null,
         rangeStatus: 'unknown',
@@ -257,7 +276,6 @@ export function getAgentWheelSlots(params: {
         available,
         lockedReason: available ? null : `Requires tier ${slotDef.minTier}`,
         essenceCost: 0,
-        detectionRisk: 0,
         sphere: null,
         interventionType: null,
         rangeStatus: 'unknown',
@@ -295,7 +313,6 @@ export function getAgentWheelSlots(params: {
         available: false,
         lockedReason: `Requires tier ${interventionDef.minTier}`,
         essenceCost: interventionDef.baseCost,
-        detectionRisk: interventionDef.detectionRisk,
         sphere: selectSphere(primarySphere, interventionDef.sphereAffinities),
         interventionType,
         rangeStatus,
@@ -318,7 +335,6 @@ export function getAgentWheelSlots(params: {
       available: canAffordIntervention,
       lockedReason: canAffordIntervention ? null : `Not enough ${chosenSphere} essence`,
       essenceCost: interventionDef.baseCost,
-      detectionRisk: interventionDef.detectionRisk,
       sphere: chosenSphere,
       interventionType,
       rangeStatus,

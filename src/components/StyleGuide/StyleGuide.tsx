@@ -25,6 +25,7 @@ import { RarityBadge } from '../shared/RarityBadge';
 import { RarityBorderBox } from '../shared/RarityBorderBox';
 import { SphereIcon } from '../shared/SphereIcon';
 import { CardKeywordChip } from '../shared/CardKeywordChip';
+import { CardFace, type CardFaceModel } from '../shared/CardFace';
 import { CostPips, OddsPips } from '../shared/OddsPips';
 import { DeltaCluster } from '../shared/DeltaCluster';
 import {
@@ -123,6 +124,7 @@ const SECTIONS = [
   { id: 'odds-pips', label: 'OddsPips / CostPips (THR-890)' },
   { id: 'delta-cluster', label: 'DeltaCluster (THR-1082)' },
   { id: 'card-keyword-chip', label: 'CardKeywordChip (THR-890)' },
+  { id: 'card-face', label: 'CardFace (THR-1002)' },
   { id: 'rivalicon', label: 'RivalIcon' },
   { id: 'sectionheading', label: 'SectionHeading' },
   { id: 'animatemount', label: 'AnimateMount' },
@@ -293,6 +295,64 @@ function Row({ children, gap = 12 }: { children: React.ReactNode; gap?: number }
     </div>
   );
 }
+
+// ─── CardFace sample models (THR-1002) ─────────────────────────────
+// Hand-built rather than drawn from the registry: this surface is a *specimen
+// sheet*, and a specimen has to hold still. A live slot would make the styleguide
+// move whenever content was re-priced, which is the opposite of what a designer
+// opens it for.
+
+/** The nudge card's model — it *moves* the odds, so its odds zone is pips. */
+const STYLEGUIDE_NUDGE_FACE: CardFaceModel = {
+  id: 'sg.nudge.steady_hand',
+  testIdPrefix: 'styleguide-nudge-card',
+  picture: {
+    tier: 'fallback',
+    glyph: '◈',
+    gradientIndex: 2,
+    alt: 'Steady The Hand',
+    kind: 'encounter',
+  },
+  keyword: { label: 'Boost', icon: '◈' },
+  sphere: 'force',
+  cost: 2,
+  name: 'Steady The Hand',
+  effectLine: 'His grip stops shaking.',
+  odds: { kind: 'delta', value: 0.08 },
+  selected: false,
+  dimmed: false,
+  disabled: false,
+  designerLine: 'Δ0.080 · discounted',
+};
+
+/** The action card's model — it *rolls* the odds, so its odds zone is a word. */
+const STYLEGUIDE_ACTION_FACE: CardFaceModel = {
+  id: 'sg.action.mend_the_blight',
+  testIdPrefix: 'styleguide-action-card',
+  picture: {
+    tier: 'fallback',
+    glyph: '✸',
+    gradientIndex: 5,
+    alt: 'Mend The Blight',
+    // There is no 'action' EntityVisualKind; an action's art is resolved through
+    // `getActionArt`, and its fallback tile is the generic one.
+    kind: 'unknown',
+  },
+  keyword: { label: 'Change', icon: '⟳' },
+  secondaryKeyword: { label: 'Local' },
+  reach: 'stone',
+  sphere: 'life',
+  cost: 3,
+  costChannels: [{ id: 'upkeep', icon: '↻', label: 'steady upkeep', delta: 0 }],
+  name: 'Mend The Blight',
+  effectLine: 'The rot draws back from the roots.',
+  odds: { kind: 'forecast', tier: 'favorable' },
+  rarityTier: 2,
+  selected: false,
+  dimmed: false,
+  disabled: false,
+  designerLine: 'P 0.720 · eff 0.000 · local',
+};
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -977,6 +1037,55 @@ export default function StyleGuide() {
                 <Row>
                   <DeltaCluster direction="opens" count={1} label="A way opens" />
                 </Row>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── CardFace (THR-1002) ─────────────────────────────
+              The two card kinds side by side is the whole point of this entry: the
+              ticket's claim is that they share a grammar, and the only way to check
+              that claim is to look at them together. Different *fields* per context
+              are expected (a nudge has a forecast delta and no rarity; a cast has
+              rarity, a scale chip and an upkeep channel); different grammar is the
+              defect. */}
+          <section id="section-card-face" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>CardFace — one face, both cards</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>A nudge model and an action model, same primitive</Label>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                  <CardFace model={STYLEGUIDE_NUDGE_FACE} designerView={false} onToggle={() => {}} />
+                  <CardFace model={STYLEGUIDE_ACTION_FACE} designerView={false} onToggle={() => {}} />
+                </div>
+                <Label>
+                  Law 10 — the price is framed so it never reads as odds; a nudge
+                  *moves* the odds and draws pips, a cast *rolls* them and draws the
+                  forecast tier word
+                </Label>
+                <Label>selected · dimmed with its reason · designer view</Label>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <CardFace
+                    model={{ ...STYLEGUIDE_ACTION_FACE, id: 'sg.action.selected', selected: true }}
+                    designerView={false}
+                    onToggle={() => {}}
+                  />
+                  <CardFace
+                    model={{
+                      ...STYLEGUIDE_ACTION_FACE,
+                      id: 'sg.action.blocked',
+                      dimmed: true,
+                      disabled: true,
+                      blockedReason: 'Too far from here.',
+                    }}
+                    designerView={false}
+                    onToggle={() => {}}
+                  />
+                  <CardFace
+                    model={STYLEGUIDE_NUDGE_FACE}
+                    designerView
+                    onToggle={() => {}}
+                  />
+                </div>
               </GameErrorBoundary>
             </div>
           </section>

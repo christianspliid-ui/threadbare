@@ -3,6 +3,24 @@ export { AnimateMount } from './AnimateMount';
 export { Button } from './Button';
 export { Card } from './Card';
 export { CardKeywordChip } from './CardKeywordChip';
+export {
+  CardFace,
+  FORECAST_TIER_COLORS,
+  CARD_WIDTH_PX,
+  CARD_PICTURE_BAND_PX,
+  HAND_MAX_HEIGHT_PX,
+  CARD_SPHERE_ICON_PX,
+  CARD_COST_PIP_PX,
+  CARD_ODDS_PIP_PX,
+  CARD_REACH_ICON_PX,
+} from './CardFace';
+export type {
+  CardFaceModel,
+  CardFaceOdds,
+  CardFaceCostChannel,
+  CardFaceProvenance,
+  CardFaceKeyword,
+} from './CardFace';
 export { Divider } from './Divider';
 export { DetailBreadcrumb } from './DetailBreadcrumb';
 export { DetailModal } from './DetailModal';

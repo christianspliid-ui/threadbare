@@ -3767,7 +3767,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       available: true,
       lockedReason: null,
       essenceCost: 0,
-      detectionRisk: 0,
       sphere: archetype.sphereAlignment.primary,
       interventionType: null,
       rangeStatus: 'unlimited',
@@ -4421,7 +4420,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       deliveryMode={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].deliveryMode}
                       essenceCost={slot.essenceCost}
                       sphere={slot.sphere ?? 'mind'}
-                      detectionRisk={slot.detectionRisk}
+                      // THR-1002: detection is read from its own authority rather
+                      // than from a slot field. `WheelSlot.detectionRisk` was
+                      // hardcoded 0 by every live builder, so this popover has been
+                      // quoting "0% risk" on interventions whose authored risk runs
+                      // 0.1–0.6 — and `computeDetection` (reached in production via
+                      // useAgentInteraction → executeIntervention) rolls against the
+                      // authored value, not the zero. The concept is alive here; it
+                      // was only ever dead on the action card, which is why the field
+                      // retired and this read moved instead of going with it.
+                      detectionRisk={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].detectionRisk}
                       rangeStatus={slot.rangeStatus}
                       hexDistance={slot.hexDistance}
                       description={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].description}

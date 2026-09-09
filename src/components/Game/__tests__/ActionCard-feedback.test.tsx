@@ -21,7 +21,6 @@ function makeSlot(overrides?: Partial<WheelSlot>): WheelSlot {
     available: true,
     lockedReason: null,
     essenceCost: 2,
-    detectionRisk: 0.2,
     sphere: 'spirit',
     interventionType: 'persuade',
     rangeStatus: 'unlimited',

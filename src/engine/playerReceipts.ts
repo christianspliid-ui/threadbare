@@ -61,6 +61,9 @@ import {
   RECEIPT_QUEUE_MAX,
   RECEIPT_EVENT_SIGNIFICANCE_TOAST,
   RECEIPT_EVENT_SIGNIFICANCE_MODAL,
+  RECEIPT_TOAST_USES_OVERVIEW,
+  receiptToastSentence,
+  selectReceiptFrameLine,
 } from '../data/receipt-content';
 
 // ─── Receipt type ────────────────────────────────────────────────────────────────
@@ -240,7 +243,12 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
         ? 'yourself'
         : targetNode?.name ?? action.targetId;
 
-    const rawOverview = summary?.overview ?? `Your ${template.name} ${outcomeBandWord(band)}.`;
+    // Law 14: the word a player reads for a template is its `spellName` where one
+    // exists — `name` is the internal handle. This fallback is also the only place
+    // the bare-name sentence survives, and only when the resolver wrote no overview
+    // at all.
+    const templateWord = template.spellName ?? template.name;
+    const rawOverview = summary?.overview ?? `Your ${templateWord} ${outcomeBandWord(band)}.`;
     // THR-1050 — the overview and every reaction label/intent share one context,
     // gathered at most once per receipt and only when some field actually carries a
     // placeholder (preserving the original overview-only fast path). Reactions used
@@ -301,13 +309,29 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
 
     const significance =
       presentation === 'modal' ? RECEIPT_EVENT_SIGNIFICANCE_MODAL : RECEIPT_EVENT_SIGNIFICANCE_TOAST;
+
+    const overviewSentence = RECEIPT_TOAST_USES_OVERVIEW
+      ? receiptToastSentence(overview)
+      : undefined;
+    const toastOverviewUsed = overviewSentence !== undefined;
+    const toastMessage = overviewSentence
+      ?? (RECEIPT_TOAST_USES_OVERVIEW
+        ? selectReceiptFrameLine(band, action.actionId)
+        : `Your ${templateWord} ${outcomeBandWord(band)}.`);
     const event: TickEvent = {
       // id === receipt.id so the notification router can derive the receipt navigation
       // target directly from event.id (one toast event per action → unique).
       id: receipt.id,
       tick: state.tick,
       type: 'player_action_receipt',
-      message: `Your ${template.name} ${outcomeBandWord(band)}.`,
+      // THR-1002: what the cast *did*, not what it was called. The overview is the
+      // sentence the resolver already wrote and the modal already showed; the toast
+      // had been discarding it in favour of the template's internal name and a band
+      // word, which is ~93% of all cast feedback by the reachable-deck measurement.
+      // Falls back to the band's frame line — a truthful sentence — rather than to
+      // the bare name, whenever the overview is missing, blank, or still carries an
+      // unresolved placeholder.
+      message: toastMessage,
       significance,
       sphere: template.sphereAffinity,
       band,
@@ -327,6 +351,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       presentation,
       band,
       changeCount: changes.length,
+      toastOverviewUsed,
       summary: `player_receipt: ${isFallback ? 'fallback ' : ''}${presentation} receipt for ${template.name} (${band})`,
     });
   }

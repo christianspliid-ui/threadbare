@@ -7,19 +7,19 @@ import type { WheelSlot } from '../../../engine/wheel';
 const mockSlots: WheelSlot[] = [
   {
     id: 'scry', label: 'Scry', type: 'observation', angleDeg: 0,
-    available: true, lockedReason: null, essenceCost: 0, detectionRisk: 0,
+    available: true, lockedReason: null, essenceCost: 0,
     sphere: null, interventionType: null, rangeStatus: 'unknown', hexDistance: null,
     description: 'Observe agent psyche and situation',
   },
   {
     id: 'dream', label: 'Dream', type: 'intervention', angleDeg: 45,
-    available: true, lockedReason: null, essenceCost: 1, detectionRisk: 0.1,
+    available: true, lockedReason: null, essenceCost: 1,
     sphere: 'mind', interventionType: 'dream', rangeStatus: 'unlimited', hexDistance: null,
     description: 'Manipulate selection probabilities during sleep',
   },
   {
     id: 'center', label: '', type: 'info', angleDeg: -1,
-    available: true, lockedReason: null, essenceCost: 0, detectionRisk: 0,
+    available: true, lockedReason: null, essenceCost: 0,
     sphere: null, interventionType: null, rangeStatus: 'unknown', hexDistance: null,
     description: '',
   },
@@ -148,13 +148,13 @@ describe('ActionDrawer', () => {
     const hexSlots: WheelSlot[] = [
       {
         id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        available: true, lockedReason: null, essenceCost: 3,
         sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
         description: 'Bless the land', narrativeLayer: 'land',
       },
       {
         id: 'ta:hex.attune_leyline', label: 'Attune Leyline', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 5, detectionRisk: 0,
+        available: true, lockedReason: null, essenceCost: 5,
         sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
         description: 'Attune leyline', narrativeLayer: 'soul',
       },
@@ -183,13 +183,13 @@ describe('ActionDrawer', () => {
     const hexSlots: WheelSlot[] = [
       {
         id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        available: true, lockedReason: null, essenceCost: 3,
         sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
         description: 'Bless the land', narrativeLayer: 'land',
       },
       {
         id: 'ta:hex.attune_leyline', label: 'Attune Leyline', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 5, detectionRisk: 0,
+        available: true, lockedReason: null, essenceCost: 5,
         sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
         description: 'Attune leyline', narrativeLayer: 'soul',
       },
@@ -212,13 +212,13 @@ describe('ActionDrawer', () => {
     const mixedSlots: WheelSlot[] = [
       {
         id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        available: true, lockedReason: null, essenceCost: 3,
         sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
         description: 'Bless the land', narrativeLayer: 'land',
       },
       {
         id: 'ta:loc.ward', label: 'Ward', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        available: true, lockedReason: null, essenceCost: 3,
         sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
         description: 'Place a ward', // no narrativeLayer — location card
       },
@@ -239,8 +239,7 @@ describe('ActionDrawer', () => {
       { ...mockSlots[0] },
       {
         id: 'coincidence', label: 'Coincidence', type: 'intervention', angleDeg: 225,
-        available: false, lockedReason: 'Requires tier 3', essenceCost: 4,
-        detectionRisk: 0.6, sphere: 'time', interventionType: 'coincidence',
+        available: false, lockedReason: 'Requires tier 3', essenceCost: 4, sphere: 'time', interventionType: 'coincidence',
         rangeStatus: 'unlimited', hexDistance: null, description: 'Alter environmental prerequisites',
       },
       { ...mockSlots[1] },
@@ -279,7 +278,7 @@ describe('ActionDrawer — cast line (THR-998)', () => {
   function castSlot(overrides: Partial<WheelSlot>): WheelSlot {
     return {
       id: 'ta:hex.test_working', label: 'Test Working', type: 'target_action', angleDeg: 0,
-      available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+      available: true, lockedReason: null, essenceCost: 3,
       sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
       description: 'A test working', technicalEffect: 'Marks the target.',
       ...overrides,

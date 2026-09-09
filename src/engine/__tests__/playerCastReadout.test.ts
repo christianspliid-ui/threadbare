@@ -25,7 +25,16 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { resolveUncontestedStep } from '../unifiedActionResolution';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
 import { WorldGraph } from '../graph';
-import { castCapabilityByReach, effectiveCastDifficulty } from '../playerCastReadout';
+import {
+  castCapabilityByReach,
+  effectiveCastDifficulty,
+  castForecastProbability,
+  CARD_READOUT_SPHERE_FACTOR,
+  CARD_READOUT_MODS,
+} from '../playerCastReadout';
+import { applyScaleDifficultyAdjust, MIN_PROBABILITY_BY_SCALE } from '../resolutionScaleAdjust';
+import { computeResolutionThreshold } from '../resolutionService';
+import { classifyForecastTier } from '../encounters/outcomeForecast';
 import {
   castHintLine,
   riskHintLine,
@@ -242,5 +251,95 @@ describe('THR-998 — castHintLine contract', () => {
     // line" true by construction rather than by measurement.
     expect(castHintLine(0.06, 0.3, 'regional')).toBe(castHintLine(0.9, 0.3, 'regional'));
     expect(castHintLine(0.06, 0, 'local')).toBe(castHintLine(0.9, 0, 'local'));
+  });
+});
+
+// ─── castForecastProbability — the truthfulness pin (THR-1002) ───────
+//
+// The action card's odds zone prints a forecast tier *word*. The invariant that
+// makes that word honest is not "the word looks right" but: **the probability the
+// card classifies is the probability the roll uses.** So these arms pin
+// `castForecastProbability` against `computeResolutionThreshold` — the resolver's
+// own single source of truth for P — rather than against a number re-typed here.
+// A constant-as-fixture pin would pass while both sides drifted together.
+describe('castForecastProbability', () => {
+  /** What the resolver would compute for the same cast, through its own function. */
+  function resolverProbability(
+    maxDifficulty: number,
+    capability: number,
+    scale: ActionScale,
+  ): number {
+    const { adjustedDifficulty } = applyScaleDifficultyAdjust(
+      maxDifficulty,
+      capability,
+      CARD_READOUT_SPHERE_FACTOR,
+      CARD_READOUT_MODS,
+      scale,
+    );
+    return computeResolutionThreshold({
+      // `actorId` and `domain` are required by the input type but unread by the
+      // threshold maths; named here rather than cast, so a future reader of this
+      // input does not have to wonder whether they mattered.
+      actorId: ASCENDANT_ID,
+      domain: REACH,
+      capability,
+      difficulty: Math.max(0, adjustedDifficulty),
+      sphereFactor: CARD_READOUT_SPHERE_FACTOR,
+      actionModifiers: CARD_READOUT_MODS,
+    });
+  }
+
+  const SCALES: ActionScale[] = ['personal', 'local', 'regional', 'cosmic'];
+
+  it('equals the resolver probability across the measured capability and difficulty range', () => {
+    // The *measured* range, not the type range: ascendant cast capability runs
+    // roughly 0.2–0.9 in play, and authored step difficulties run 0–1.
+    let compared = 0;
+    for (const scale of SCALES) {
+      for (let cap = 0.2; cap <= 0.9001; cap += 0.1) {
+        for (let diff = 0; diff <= 1.0001; diff += 0.1) {
+          expect(castForecastProbability(diff, cap, scale)).toBeCloseTo(
+            resolverProbability(diff, cap, scale),
+            10,
+          );
+          compared++;
+        }
+      }
+    }
+    // Guard against a loop that silently compared nothing (the vacuous-probe trap).
+    expect(compared).toBeGreaterThan(300);
+  });
+
+  it('and so the tier word the card prints equals the tier of the roll probability', () => {
+    for (const scale of SCALES) {
+      for (let cap = 0.2; cap <= 0.9001; cap += 0.1) {
+        for (let diff = 0; diff <= 1.0001; diff += 0.25) {
+          expect(classifyForecastTier(castForecastProbability(diff, cap, scale))).toBe(
+            classifyForecastTier(resolverProbability(diff, cap, scale)),
+          );
+        }
+      }
+    }
+  });
+
+  it('reads fated for a zero-difficulty working by a capable god', () => {
+    // Nothing is subtracted, so P is the capability — and a guaranteed casting is
+    // what the word should say.
+    expect(classifyForecastTier(castForecastProbability(0, 0.9, 'personal'))).toBe('fated');
+  });
+
+  it('never drops below the scale floor for a god who clears it', () => {
+    // A fresh god's local working has its authored price capped away entirely, so
+    // the floor is what speaks. A card classifying the *unfloored* number would
+    // read perilous on a cast that resolves favorable — THR-998's defect, in the
+    // new vocabulary.
+    const p = castForecastProbability(0.9, 0.75, 'local');
+    expect(p).toBeGreaterThanOrEqual(MIN_PROBABILITY_BY_SCALE.local);
+    expect(classifyForecastTier(p)).toBe('favorable');
+  });
+
+  it('returns the scale floor rather than NaN on non-finite input', () => {
+    expect(castForecastProbability(0.5, Number.NaN, 'local')).toBe(MIN_PROBABILITY_BY_SCALE.local);
+    expect(castForecastProbability(0.5, undefined, 'cosmic')).toBe(MIN_PROBABILITY_BY_SCALE.cosmic);
   });
 });

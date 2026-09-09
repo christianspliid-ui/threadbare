@@ -34,7 +34,9 @@ import { effectSourceFor } from '../data/actionEffectSource';
 import { actionEffectsProse } from '../data/actionEffectsProse';
 import { emitTrace } from './traceBuffer';
 import { isActionStepBranch } from '../types/unifiedAction';
-import { effectiveCastDifficulty } from './playerCastReadout';
+import { effectiveCastDifficulty, castForecastProbability } from './playerCastReadout';
+import { classifyForecastTier } from './encounters/outcomeForecast';
+import { ACTION_SCALE_WORDS, upkeepWord } from '../data/action-card-display';
 import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
 
 /**
@@ -80,21 +82,35 @@ function hardestStep(
  * supplied, so the card can tell "the floor capped this away" (0) apart from "nobody
  * told me" (absent) and stay conservative in the second case.
  */
+type CastReadoutFields = Pick<
+  WheelSlot,
+  'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale' | 'forecastTier' | 'scaleWord'
+>;
+
 function castDifficultyFields(
   template: UnifiedActionTemplate,
   capabilities: Partial<Record<ReachDomain, number>> | undefined,
   targetProperties?: Readonly<Record<string, unknown>>,
-): Pick<WheelSlot, 'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale'> {
+): CastReadoutFields {
   const { difficulty, reach } = hardestStep(template, targetProperties);
-  const fields: Pick<WheelSlot, 'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale'> = {
+  const fields: CastReadoutFields = {
     maxStepDifficulty: difficulty,
     scale: template.scale ?? null,
+    // The scale chip is a property of the template alone, so it is always
+    // available — unlike the forecast, which needs the god's capability.
+    scaleWord: ACTION_SCALE_WORDS[template.scale] ?? undefined,
   };
   if (capabilities) {
     fields.effectiveStepDifficulty = effectiveCastDifficulty(
       difficulty,
       capabilities[reach],
       template.scale,
+    );
+    // THR-1002: the word the card prints, classified from the probability the
+    // roll will use. Omitted above when no capability map was supplied, so the
+    // card renders no odds zone rather than a tier nobody computed.
+    fields.forecastTier = classifyForecastTier(
+      castForecastProbability(difficulty, capabilities[reach], template.scale),
     );
   }
   return fields;
@@ -420,10 +436,18 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
 
     // Build per-tick cost label for sustained actions (TB-044)
     let perTickCostLabel: string | undefined;
+    // The dearest single-sphere per-tick cost, which is what the upkeep band reads
+    // (THR-1002). A working charging two spheres is banded by the heavier of them:
+    // the band answers "how costly is holding this open", and the worst channel is
+    // what decides that.
+    let maxPerTickCost = 0;
     if (template.durationMode === 'sustained' && template.controlSpec) {
       const parts: string[] = [];
       for (const [sphere, cost] of Object.entries(template.controlSpec.perTickCost)) {
-        if (cost && cost > 0) parts.push(`${cost} ${sphere}`);
+        if (cost && cost > 0) {
+          parts.push(`${cost} ${sphere}`);
+          if (cost > maxPerTickCost) maxPerTickCost = cost;
+        }
       }
       if (parts.length > 0) perTickCostLabel = `${parts.join(' + ')}/tick`;
     }
@@ -436,7 +460,6 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       available,
       lockedReason,
       essenceCost,
-      detectionRisk: 0,
       sphere: template.sphereAffinity ?? null,
       interventionType: null,
       rangeStatus,
@@ -444,6 +467,9 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       description: template.narrativeTemplates.initiation,
       durationMode: template.durationMode,
       perTickCostLabel,
+      // THR-1002: the band the card prints. `perTickCostLabel` keeps the numeral
+      // for the designer view, which is the only place it is allowed (Law 13).
+      upkeepWord: upkeepWord(maxPerTickCost),
       spellName: template.spellName,
       technicalDescription: template.description,
       technicalEffect: template.technicalEffect,
