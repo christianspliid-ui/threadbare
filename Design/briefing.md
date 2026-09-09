@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-09-09 02:55 local (00:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-09 03:57 local (01:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Say *"batch 2, run the six"* and six encounters of content work go on the queue this hour.** [The camp six](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) · brief: [the 4 September retrofit brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md)
 
-**Third consecutive hour with an empty board** — nothing being built, nothing waiting to be picked up. Nothing has moved since the last two briefs. This is a heartbeat, not news, and it is 3 a.m.; it will still be here in the morning.
+**Fourth consecutive hour with an empty board** — nothing being built, nothing waiting to be picked up, and nothing has moved since the last three briefs. This is a heartbeat, not news, and it is 4 a.m.; it will still be here in the morning.
 
 Waiting since the 4 September brief, and it is the smallest ask on the whole list. Approving it also releases [the card-name tightening](https://linear.app/threadbare/issue/THR-1255), a fully-specified job queued invisibly behind it.
 
@@ -13,7 +13,7 @@ Two yes/no questions inside it, if you want to answer them at the same time — 
 
 ## Also waiting (12)
 
-- [**Rule on the backlog**](https://linear.app/threadbare/issue/THR-1195) — the larger version of the above, and the reason the queue emptied. **Forty-four backlog tickets, none blocked on effort** — now three independent censuses agree, the third re-reading nine ticket bodies from scratch rather than inheriting the verdicts. Roughly thirteen are one- or two-sentence rulings that each release buildable work: what [a Divine Herald](https://linear.app/threadbare/issue/THR-1195) is, which Spheres [shadow and void](https://linear.app/threadbare/issue/THR-1114) belong to, whether [a toll](https://linear.app/threadbare/issue/THR-1189) moves wealth or gets deleted, whether [the pressure system](https://linear.app/threadbare/issue/THR-1318) is switched on or retired. Say **"rule on the backlog"** and they come to you in one sitting, in game terms, smallest first.
+- [**Rule on the backlog**](https://linear.app/threadbare/issue/THR-1195) — the larger version of the above, and the reason the queue emptied. **Forty-four backlog tickets, none blocked on effort.** Roughly thirteen are one- or two-sentence rulings that each release buildable work: what [a Divine Herald](https://linear.app/threadbare/issue/THR-1195) is, which Spheres [shadow and void](https://linear.app/threadbare/issue/THR-1114) belong to, whether [a toll](https://linear.app/threadbare/issue/THR-1189) moves wealth or gets deleted, whether [the pressure system](https://linear.app/threadbare/issue/THR-1318) is switched on or retired. Say **"rule on the backlog"** and they come to you in one sitting, in game terms, smallest first.
 - [**The fight map**](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) — the largest single pile of your questions on the board: **ten open, all yours, zero legwork left.** Start with [a fight against a monster](https://linear.app/threadbare/issue/THR-1263) and [a fight between two people](https://linear.app/threadbare/issue/THR-1264).
 - [**The incident-capture button**](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) — you filed it on 16 August; 24 days idle, nothing blocking it. Yes puts it at the front of the design queue, no closes it.
 - [**Traits wave 2**](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) — still In Design and assigned to you. "Yes" changes nothing and the asking stops; "not getting to it" frees a design slot. Worth being straight: freeing it does not build anything, it only lets a lane record one more "design session wanted" — tidiness, not throughput.
@@ -28,15 +28,14 @@ Two yes/no questions inside it, if you want to answer them at the same time — 
 
 ## Queue
 
-**Zero in flight, zero on the shelf** — the third consecutive hour on both counts.
+**Zero in flight, zero on the shelf** — the fourth consecutive hour on both counts.
 
-- Nothing was picked up and nothing was filed in the last hour. The pickup lane ran on schedule at 02:01; the shelf was already empty when it looked.
+- Nothing was picked up and nothing was filed in the last hour. Both the pickup lane (03:01) and the orchestrator (03:26) ran on schedule and found the shelf already empty.
 - Both In-Dev items are parked with nobody on them. [THR-1130](https://linear.app/threadbare/issue/THR-1130) is the camp-six ask above. [THR-1392](https://linear.app/threadbare/issue/THR-1392) is shipped and awaiting a close — a lane's job, not yours; it closes as superseded unless you object.
-- One correction the orchestrator recorded overnight: the shelf's last item, [a gate flip](https://linear.app/threadbare/issue/THR-1256), reached Done at 00:28 local — five minutes *before* the run that reported it as still in flight. So the position is one step further along than earlier briefs said: not "shelf empty, one job running" but shelf empty, nothing running.
 - No agent can refill the shelf on its own, which is why this brief is one sentence long at the top.
 
 ## Health
 
-- **"Heavy simulation tests" is red on the latest main** (~6 h, one hour longer than last brief). Post-merge only — the required CI check is green and the site is serving `a87e8f24`. A session owes the follow-up; not your call.
-- **Overnight quiet again.** The silence probe reports a 10 h gap (3–4 Sep) and an 18.6 h gap (7–8 Sep); both are the nightly shape you already ruled normal, so they are noted, not raised. The 45 h weekend gap it also still reports is the one waiting on your ruling above.
-- Deploy, CI dispatch, merge queue, scheduled-task heartbeats and the worktree reaper: all green. Engine tick cost is 64 ms/tick, **26% below** the 7-day median (87 ms, 46 rows).
+- **"Heavy simulation tests" is red on the latest main** (~7 h, one hour longer than last brief). Post-merge only — the required CI check is green and the site is serving `a87e8f24`. A session owes the follow-up; not your call.
+- **Overnight quiet again**, and the probe's summary is unchanged: *"The scheduled lanes went silent for 44.9h (2026-09-04 → 2026-09-06) and have since resumed, with no pause marker covering that window."* The 10 h and 18.6 h gaps it also reports are the nightly shape you already ruled normal, so they are noted, not raised; the 45 h weekend gap is the one waiting on your ruling above.
+- Deploy, CI dispatch, merge queue, scheduled-task heartbeats and the worktree reaper: all green. Engine tick cost is 64 ms/tick, **26% below** the 7-day median (86 ms, 47 rows).

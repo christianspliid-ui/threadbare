@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-09 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **The board columns were read live this run and nothing has moved in four hours; the individual ticket states below carry over from the 00:54 verification, unchanged.**
+**Last updated:** 2026-09-09 03:57 local (01:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`. **The board columns were read live this run and nothing has moved in five hours; the individual ticket states below carry over from the 00:54 verification, unchanged.**
 
 ## Standing asks
 
@@ -22,7 +22,7 @@ The ones already assessed and named:
 
 The brief: [Retrofit batch 2 — the camp six](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-04-retrofit-batch-2-brief.md). (An older August draft under a near-identical name reads plausible — three rulings have overtaken it. The link above is the live one.)
 
-**Waiting since the 4 September brief, and the board is now empty on both counts for the third hour running** — nothing in flight, and the shelf's last item ([a gate flip](https://linear.app/threadbare/issue/THR-1256)) reached Done at 00:28 local. One word puts six encounters of content work on the queue the same hour.
+**Waiting since the 4 September brief, and the board is now empty on both counts for the fourth hour running** — nothing in flight, and the shelf's last item ([a gate flip](https://linear.app/threadbare/issue/THR-1256)) reached Done at 00:28 local. One word puts six encounters of content work on the queue the same hour.
 
 **Six, not seven.** `shrine_offering` is held to batch 3 (most warnings of the set, weak contrast against `offer_small_prayer`), and it is roster #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), so that checkpoint waits one batch longer. The six: sharpening blades, warding the camp, a small prayer, rest, tending wounds, scouting.
 
