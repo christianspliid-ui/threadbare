@@ -1,27 +1,28 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 00:57 local (22:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 01:58 local (2026-09-09 23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### 1. Batch 2 — sample the two, say whether they are worth meeting twice — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-The camp six shipped tonight, live on the deployed build. Your rule 6 samples two of every six; the pair is the widest tonal gap in the batch, and I opened both on the live site to confirm they render:
+The camp six shipped and are live on the deployed build. Your rule 6 samples two of every six; this pair is the widest tonal gap in the batch, and both were opened on the live site to confirm they render:
 
 - [**Ward the Camp**](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp) — thinnest start; its hand forces the game's second omen emitter.
 - [**Tend to Wounds**](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds) — warmest tone; a possession and a piece of knowledge come out the other side.
 
-Yes releases batch 3. Anything short of yes is feedback the line can act on. [Batch report](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-09-09.md).
+Yes releases batch 3. Anything short of yes is feedback the line can act on. [Batch report](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-09-09.md). This is the only parked ticket on the board.
 
 ### 2. Rule on the backlog — one sitting, smallest first
 
-**This is why the queue keeps emptying.** Roughly thirteen backlog tickets are waiting on a ruling from you, not on effort — one- and two-sentence answers, each releasing buildable work. Named so far:
+**This is why the queue keeps emptying.** Roughly fourteen backlog tickets are waiting on a ruling from you, not on effort — one- and two-sentence answers, each releasing buildable work. Named so far:
 
 - [What a Divine Herald is](https://linear.app/threadbare/issue/THR-1195) — three live options; a question about what the thing *is*.
 - [Which Spheres shadow and void belong to](https://linear.app/threadbare/issue/THR-1114) — the ticket forbids the mechanical fix outright.
 - [Whether a toll moves wealth or gets deleted](https://linear.app/threadbare/issue/THR-1189) — who pays, out of what, on what cadence.
 - [Whether a page you can open mid-game should exist](https://linear.app/threadbare/issue/THR-1315) — no plan doc; an executor would be inventing the surface.
 - [Activate the pressure system or retire it](https://linear.app/threadbare/issue/THR-1318), and [decide whether that is the design](https://linear.app/threadbare/issue/THR-1148).
+- **New tonight:** [the consequence draw can deal a hand no authored content can wire](https://linear.app/threadbare/issue/THR-1446) — the author burns their one swap fighting the engine instead of the fiction. Batch 2 spent two against a budget of one.
 
 **None of these is a design session.** Say **"rule on the backlog"** and they come to you framed in game terms, smallest first.
 
@@ -61,23 +62,24 @@ Still one word, and **smaller than earlier briefings claimed** — three of the 
 
 What remains is genuinely just intent: **In Design, assigned to you, no plan doc.** The work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic"). **Yes** changes nothing and the asking stops; **not getting to it** frees a design slot. *(Only the `Parked` label frees the slot; unassigning does not.)*
 
-### 8. Was the quiet deliberate — and are weekends normal too?
+### 8. Are weekend-long quiet spells normal too?
 
-Two versions of one question. **Today:** the scheduled lanes wrote nothing for 18 hours through the working day (03:56 → 22:01 local), then all resumed within a minute of each other — the shape of a usage-limit pause, not breakage. Fully recovered; it cost nothing, and your batch-2 approval went straight onto the shelf. **Standing:** you ruled overnight quiet normal; **weekends are still unruled** — last weekend held a 45-hour gap — so the probe keeps raising them.
+You ruled **overnight** quiet normal; **weekends are still unruled**, so the probe keeps raising them — last weekend held a 45-hour gap (Fri 04th → Sun 06th) with nothing recorded to explain it. Last night's 18-hour weekday gap recovered on its own and cost nothing.
 
-One word on each sets a marker and retires the noise. Nothing is lost while the lanes are quiet — work waits, it does not disappear.
+One word sets a marker and retires the noise for good. Nothing is lost while the lanes are quiet — work waits, it does not disappear.
 
 ## Resolved this period
 
 - **2026-09-09 — batch 2 is built.** [THR-1222](https://linear.app/threadbare/issue/THR-1222) is Done; six encounters composition-complete, gate green 6/6, live-proved 6/6, 37 warnings → 0 ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). Only your two-encounter verdict remains, and it is ask 1 above.
-- **2026-09-09 — the incident-capture button no longer needs you.** [THR-1134](https://linear.app/threadbare/issue/THR-1134) got its design pass tonight and is queued to build; the "do you still want this?" ask is retired. One invited veto sits in the plan (an opt-in *include the whole world* checkbox alongside the small default bundle) — an agent's call unless you say otherwise.
+- **2026-09-09 — the card-name clamp released itself.** [THR-1255](https://linear.app/threadbare/issue/THR-1255) opened the moment the camp six merged, and its dead mutex was reversed on the record. On the shelf now; no input needed.
+- **2026-09-09 — the incident-capture button no longer needs you.** [THR-1134](https://linear.app/threadbare/issue/THR-1134) got its design pass and is queued to build. One invited veto sits in the plan (an opt-in *include the whole world* checkbox alongside the small default bundle) — an agent's call unless you say otherwise.
 - **2026-09-09 — batch 2 was approved and ran.** You said *"Batch 2, run the six"*; it shipped the same evening. Six not seven, `shrine_offering` held to batch 3, repair-in-place.
 - **2026-09-09 — the shelf's last item is gone** ([THR-1256](https://linear.app/threadbare/issue/THR-1256), [PR #1861](https://github.com/christianspliid-ui/threadbare/pull/1861)). A two-week review of a documentation gate ended by retiring it rather than switching it on. An agent's call, made and recorded.
 - **2026-09-08 — the census, and the five kinds of work nobody wants.** You said retire the five; [THR-1402](https://linear.app/threadbare/issue/THR-1402) and [THR-1403](https://linear.app/threadbare/issue/THR-1403) are Done — four templates retired, 64 migrated, `UNDERTAKING_MODEL` flipped to `cells` on `main`.
 - **2026-09-08 — the undertaking retirement list** ([THR-1392](https://linear.app/threadbare/issue/THR-1392)). Your *"see the list before anything is deleted"* gate was satisfied inside the flip above; closed as superseded unless you object.
 - **2026-09-08 — the Linear connector re-auth.** No longer blocking any lane.
 - **2026-09-08 — owning people-things is live** ([THR-1438](https://linear.app/threadbare/issue/THR-1438)). Claiming a company, seizing an army and standing for a faction seat all shipped. Recorded because the grip on what a mortal holds still expires with no way to renew it ([THR-1287](https://linear.app/threadbare/issue/THR-1287)) — now true of people as well as places.
-- **2026-09-08 — the undertakings map is delivered** ([THR-1396](https://linear.app/threadbare/issue/THR-1396)). Its last ticket, [the capability rider](https://linear.app/threadbare/issue/THR-1440), merged at 23:45. Every decision on that map is resolved and built.
+- **2026-09-08 — the undertakings map is delivered** ([THR-1396](https://linear.app/threadbare/issue/THR-1396)). Every decision on that map is resolved and built.
 
 ---
 
