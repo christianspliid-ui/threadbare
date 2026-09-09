@@ -1,36 +1,37 @@
 # Briefing
-**Generated:** 2026-09-09 23:58 local (21:58 UTC) · keep-work-flowing-cc
+
+**Generated:** 2026-09-10 00:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**The camp six shipped twenty minutes ago. Two of them are waiting for your eyes — that verdict is the last thing standing between batch 2 and batch 3.**
+**Two encounters, on the live site, waiting for a yes.** The camp six shipped and merged tonight; your rule 6 samples two of every six, and these are the widest tonal gap in the batch. Both open straight into the encounter — I checked each one renders on the deployed build.
 
-You approved the batch at 21:55 tonight; it ran and merged by 23:46 and is live on the deployed build. Six encounters, gate green 6 of 6, live-proved 6 of 6, the 37 prose warnings down to zero. Your own rule 6 says you sample two of every six — the pair chosen for you is the widest gap in the batch:
+- [**Ward the Camp**](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp) — thinnest start; its hand forces the game's second omen emitter.
+- [**Tend to Wounds**](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds) — warmest tone; a possession and a piece of knowledge come out the other side.
 
-- **[Ward the Camp](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp)** — the thinnest start of the six, and its hand forces the game's second omen emitter into the world.
-- **[Tend to Wounds](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds)** — the warmest tone, and the one carrying a possession and a piece of knowledge out the other side.
+Worth meeting twice? **Yes releases batch 3.** Anything short of yes is feedback the line can act on. [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) · [batch report](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-09-09.md)
 
-Both links open the encounter directly; I opened each one on the live site tonight and both render in full. The question is the same one you answered for batch 1: **is this worth meeting twice?** Yes releases batch 3; anything short of yes is feedback the line can act on.
+This is the same ask as the last brief — nothing new has joined the list since, and no doorbell rang for it.
 
-Full batch write-up: [batch report](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-09-09.md) · verdict belongs on [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to).
+## Also waiting (8)
 
-## Also waiting (7)
-
-- **[Rule on the backlog](https://linear.app/threadbare/issue/THR-1195)** — ~13 tickets waiting on one- and two-sentence answers, not on effort. Say *"rule on the backlog"* and they come smallest first.
-- **[The fight map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — ten questions open, every one yours, all legwork finished. Say *"work the fight map"*.
-- **Two sketches to react to** — [twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236); a session builds them, your reaction is the decision.
-- **[Image credits](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** — the real question is whether image spends should be gated on you at all, or decided by the lane and reported after.
-- **[What a run is about](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)** — does a run's spine come from what your god remembers, or from a named campaign the world offers? Nothing downstream waits.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — still one word; it holds a design slot open until you say either way.
-- **Was the quiet deliberate?** — the lanes went silent 18 hours today and 45 hours last weekend, both recovered. You ruled overnight quiet normal; weekdays and weekends are still unruled, so the probe keeps raising them.
+- **[Rule on the backlog](https://linear.app/threadbare/issue/THR-1195)** — ~13 tickets waiting on a one-sentence ruling, not on effort. Say *"rule on the backlog"* and they come smallest first.
+- **[The fight map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — ten questions, all research finished, every one yours. Say *"work the fight map"*.
+- **[Powers](https://linear.app/threadbare/issue/THR-1232) and [items](https://linear.app/threadbare/issue/THR-1236) sketches** — a session builds them, your reaction is the decision.
+- **[Image credits](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** — the real question is whether image spends should be gated on you at all.
+- **[What a run is about](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)** — remembrance or named campaigns. Nothing downstream waits.
+- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — one word: still planning to design it, or free the slot?
+- **Was the weekday quiet deliberate?** — 18 h of lane silence through 2026-09-09, fully recovered, cost nothing.
+- **Are weekends normal too?** — last weekend held a 45 h gap; overnight is ruled normal, weekends are not, so the probe keeps raising them.
 
 ## Queue
 
-Healthy — 4 items ready to build, 1 in flight.
+Healthy but thin — **4 ready to build, 2 in flight.** Two new items arrived tonight, both filed by lanes: a [precheck blind spot](https://linear.app/threadbare/issue/THR-1443/session-precheck-is-blind-to-linear-so-a-lane-whose-every-invariant-is) (Medium) and an [undertaking-outcome bug](https://linear.app/threadbare/issue/THR-1444/undertaking-outcomes-silently-lose-their-site-occurred-at-points-at-a) (Low). The [incident-capture button](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) got its design pass and is now queued to build.
 
-- [THR-1134](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) (High) got its design pass tonight and is queued — the incident-capture button you filed on 16 August is no longer waiting on you.
-- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) is the one parked item, and it is parked on exactly the verdict above.
+- **Parked, In Dev:** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — held on your verdict above, which is the correct place for it to sit.
+- **Active:** [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (card grammar), a session on it now.
 
 ## Health
 
-- Everything green: deploy serving the latest commit, CI green on main, no PRs waiting, all nine scheduled tasks on time, engine tick cost 23% *below* its seven-day median.
+- **One PR is armed but cannot merge.** [#1865](https://github.com/christianspliid-ui/threadbare/pull/1865) (THR-1002, card grammar) has a failing `Test · Typecheck · Build`; auto-merge stays armed and never fires, so it reads as shipped everywhere except the check rollup. The session that owns it fixes and pushes — not yours.
+- Deploy, automated checks, all workflows, scheduled tasks and the worktree reaper are green. The live site serves the latest commit on `main` (`6d77c36c`). Engine speed is 65 ms/tick, 23 % *below* the 7-day median.
