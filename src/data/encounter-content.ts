@@ -7682,7 +7682,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.ward_the_camp',
     name: 'Ward the Camp',
-    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-1222 — the widest honest envelope. A circle gets walked wherever people
+    // stop for a night they are not sure of: the roadside camp, the outlying
+    // steading, the fort whose walls are real but whose garrison still salts the
+    // threshold. Not `urban` — a city has a watch and does not need the veil minded.
+    settings: ['wayside', 'rural', 'stronghold'],
+    openings: {
+      wayside: '{name} walks the edge of the camp at {location} while there is still light to see the ground by.',
+      rural: '{name} takes the long way round the yards at {location}, where the fields give out and the dark starts.',
+      stronghold: '{name} paces the inside of the wall at {location}, which is a thing the wall does not do for itself.',
+    },
     reachPrimary: 'veil',
     reachSecondary: 'star',
     encounterType: 'build',
@@ -7718,6 +7727,168 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         addNudgeIds: ['ward_camp.walk_it_again'],
       },
     ],
+    /**
+     * THR-1222 — the person the ward is *for*. A ward walked for nobody is a
+     * superstition; walked for someone sleeping inside it, it is a promise. Declared
+     * rather than inherited because the envelope spans three classes (THR-1044), and
+     * written class-honest: someone is bedded down inside the circle at a camp, a
+     * steading and a fort alike.
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'sleeper',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        supportRole: 'camp_sleeper',
+        spawnNpcRole: 'wanderer',
+        spawnName: 'The One Who Sleeps Inside It',
+      },
+    ],
+    consequenceDraw: ['condition', 'omen'],
+    consequenceSwap: {
+      from: 'thread',
+      to: 'condition',
+      reason:
+        'The `thread` family is unwirable from authored content. `thread_strengthen` '
+        + 'and its siblings take literal `ascendantId` and `mortalId`, neither of which '
+        + 'is in `SCENE_SENTINEL_FIELDS` (`encounterAftermath.ts`), so no `$actor` / '
+        + '`$target` / `$cast:` sentinel binds them and a template cannot know either '
+        + 'node id; the handler then looks up an existing `thread` edge between the two '
+        + 'and skips when it finds none. Corroborated by the corpus: zero shipped '
+        + 'templates author any thread effect. Traded to `condition` (weight 9 in veil, '
+        + 'the reach\'s highest), which is what a ward actually leaves behind.',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The circle is walked and the night starts. Whatever is out there was going to '
+          + 'be out there either way; the only question was whether anyone had drawn a line '
+          + 'it would notice.',
+        changes: [],
+        reactions: [
+          {
+            id: 'ward_camp.take_first_watch',
+            label: 'Take first watch',
+            intent: 'Somebody sits up regardless.',
+            effects: [],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'The circle closes with nothing left open, and it holds past dawn — longer '
+              + 'than the hand that drew it. The one sleeping inside it wakes rested for the '
+              + 'first time in a week and does not know why. Something further out reads the '
+              + 'line and turns along it instead of across.',
+            changes: [
+              {
+                id: 'ward_camp.kept_ward',
+                kind: 'trait',
+                title: 'Kept Ward',
+                causeClause: 'They closed a circle that outlasted the watch that drew it',
+                detail: 'The veil sits close and friendly around them, and will for a while yet.',
+                polarity: 'gain',
+                category: 'boon',
+                direction: 'gain',
+                stateNoun: { text: 'blessed', entityId: 'trait.condition.blessed', visualKind: 'attachment' },
+                concepts: [{ text: 'sits close and friendly around them' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'ward_camp.let_them_sleep',
+                label: 'Let them sleep',
+                intent: 'The line holds. No reason to wake anyone and say so.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.blessed' },
+                  {
+                    kind: 'emit_omen',
+                    category: 'sphere_surge',
+                    // Low intensity on purpose: this is one camp, one night. The scope
+                    // is `global` because `local` needs literal hex coordinates content
+                    // cannot know, and the engine silently degrades an incomplete local
+                    // scope to global anyway — better to declare what will happen.
+                    intensity: 0.18,
+                    durationTicks: 24,
+                    narrativeHook: 'Somewhere a circle was closed properly, and the dark has been going round it since.',
+                    scope: { kind: 'global' },
+                    sphereAlignment: 'veil',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'The circle closes. It closes because the last of the salt went into it, and '
+              + 'salt is not a thing the road hands out. The line will hold tonight and there '
+              + 'is nothing left to draw another one with tomorrow.',
+            changes: [],
+            reactions: [
+              {
+                id: 'ward_camp.spend_the_salt',
+                label: 'Spend the salt',
+                intent: 'Tonight is the night that has to be got through.',
+                effects: [
+                  {
+                    kind: 'emit_omen',
+                    category: 'sphere_surge',
+                    intensity: 0.12,
+                    durationTicks: 12,
+                    narrativeHook: 'A ward was closed with the last of what closed it, and the veil noticed the price more than the line.',
+                    scope: { kind: 'global' },
+                    sphereAlignment: 'veil',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The circle is walked and does not close, and the part that stays open is the '
+              + 'part nobody can find again in the dark. The one sleeping inside it sleeps '
+              + 'badly and wakes worse. Whatever the line was meant to turn came in and looked '
+              + 'around and went out the same way.',
+            changes: [
+              {
+                id: 'ward_camp.open_line',
+                kind: 'trait',
+                title: 'The Open Line',
+                causeClause: 'They called a circle closed with a gap still in it',
+                detail: 'Something got a look at them through the gap, and the looking stuck.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'loss',
+                stateNoun: { text: 'cursed', entityId: 'trait.condition.cursed', visualKind: 'attachment' },
+                concepts: [{ text: 'the looking stuck' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'ward_camp.walk_it_again_at_dawn',
+                label: 'Walk it again at dawn',
+                intent: 'In daylight the gap will be obvious. That is not much comfort now.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.cursed' },
+                  {
+                    kind: 'emit_omen',
+                    category: 'doom_echo',
+                    intensity: 0.22,
+                    durationTicks: 24,
+                    narrativeHook: 'A ward was left open somewhere, and what came through it has not gone far.',
+                    scope: { kind: 'global' },
+                    sphereAlignment: 'veil',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
     steps: [
       {
         id: 'ward_the_camp.trace',
@@ -9070,7 +9241,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.tend_to_wounds',
     name: 'Tend to Wounds',
-    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-1222 — wider than the other two camp scenes, and honestly so: a hurt body
+    // gets worked on wherever it is when someone competent reaches it. The camp, the
+    // steading kitchen, the fort's back room, and the temple — which keeps the only
+    // people in most of this world who do this for a living.
+    settings: ['wayside', 'rural', 'stronghold', 'sacred'],
+    openings: {
+      wayside: '{name} clears a flat place by the fire at {location}, because the ground is what there is.',
+      rural: '{name} is given the kitchen table at {location} and the good lamp without being asked twice.',
+      stronghold: '{name} takes the back room at {location}, where the noise of the yard does not reach.',
+      sacred: '{name} is shown to the side chamber at {location}, where this has been done before and the floor drains.',
+    },
     reachPrimary: 'eye',
     reachSecondary: 'heart',
     encounterType: 'assist',
@@ -9099,6 +9280,149 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         addNudgeIds: ['tend_wounds.hold_them_still'],
       },
     ],
+    /**
+     * THR-1222 — the patient. This is the one encounter of the six where the second
+     * person is not optional scenery: there is no tending without someone to tend.
+     * `must-persist` because the knowledge below is *about* them and the debt of
+     * having been put back together outlives the scene.
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'patient',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        supportRole: 'tended_patient',
+        spawnNpcRole: 'wanderer',
+        spawnName: 'The One Who Was Carried In',
+      },
+    ],
+    // Drawn hand, wired as drawn — no swap. `possession` lands as the pouch that
+    // gets left behind; `knowledge` as what a body tells you about where it has been.
+    consequenceDraw: ['possession', 'knowledge'],
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The work is done or it is not, and either way the light gets put out and the '
+          + 'room goes back to being a room.',
+        changes: [],
+        reactions: [
+          {
+            id: 'tend_wounds.wash_the_hands',
+            label: 'Wash the hands',
+            intent: 'Whatever happened here, this part is the same.',
+            effects: [],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'Everything that had to come out came out, and what went back together went '
+              + 'back the way it was built. The patient will keep the arm and the use of it. '
+              + 'They press their pouch on {name} on the way out and will not hear otherwise — '
+              + 'and the state the wound was in said plainly where they had been and what had '
+              + 'been happening there.',
+            changes: [
+              {
+                id: 'tend_wounds.the_pouch',
+                kind: 'item',
+                title: "Herbalist's Pouch",
+                causeClause: 'They would not take it back and there was no arguing with them about it',
+                detail: 'Dried leaves, crushed roots, and a mortar small enough to carry.',
+                polarity: 'gain',
+                category: 'boon',
+                direction: 'gain',
+                stateNoun: {
+                  text: 'a mortar small enough to carry',
+                  entityId: 'reward_tools_instruments_herbalists_pouch',
+                  visualKind: 'attachment',
+                },
+                concepts: [{ text: 'Dried leaves, crushed roots' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'tend_wounds.take_the_pouch',
+                label: 'Take the pouch',
+                intent: 'Refusing it twice would be the unkind thing.',
+                effects: [
+                  {
+                    kind: 'attachment_grant',
+                    templateId: 'reward_tools_instruments_herbalists_pouch',
+                  },
+                  {
+                    kind: 'intelligence',
+                    category: 'cultural_knowledge',
+                    label: 'What the wound had been doing',
+                    detail:
+                      'The dirt in it was not road dirt, and it had been bound once already '
+                      + 'by somebody who knew a knot this country does not teach.',
+                    reliability: 0.85,
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'The patient keeps the arm. Getting there used everything {name} was carrying '
+              + 'to use, and there is nothing left in the kit for the next one. It also took '
+              + 'most of a night on {name}\'s feet, and that gets paid for tomorrow. What the '
+              + 'wound showed while it was open is worth remembering even so.',
+            changes: [
+              {
+                id: 'tend_wounds.worked_through',
+                kind: 'trait',
+                title: 'Worked Through',
+                causeClause: 'They stayed on their feet over the table until it was finished',
+                detail: 'Everything since has a lag on it, and will until they sleep properly.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'loss',
+                stateNoun: { text: 'exhausted', entityId: 'trait.condition.exhausted', visualKind: 'attachment' },
+                concepts: [{ text: 'Everything since has a lag on it' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'tend_wounds.empty_the_kit',
+                label: 'Empty the kit',
+                intent: 'The person in front of you is the one you have.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+                  {
+                    kind: 'intelligence',
+                    category: 'cultural_knowledge',
+                    label: 'What the wound had been doing',
+                    detail:
+                      'Bound once already, and badly, by somebody working fast in the dark — '
+                      + 'which says more about where they came from than they did.',
+                    reliability: 0.7,
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview:
+              'It closes badly. It will hold and it will hurt for the rest of a life, and '
+              + 'the patient is decent about it, which is worse than if they were not. Nobody '
+              + 'in the room learns anything from this except how it went.',
+            changes: [],
+            reactions: [
+              {
+                id: 'tend_wounds.put_the_light_out',
+                label: 'Put the light out',
+                intent: 'There is nothing more to be done tonight by looking at it longer.',
+                effects: [],
+              },
+            ],
+          },
+        },
+      },
+    },
     steps: [
       {
         id: 'tend_wounds.assess',
