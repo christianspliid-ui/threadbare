@@ -67,24 +67,27 @@ import {
  * Sorted for diffability. Lowercase; matching is case-insensitive.
  */
 export const IMPERATIVE_VERB_LEXICON: readonly string[] = [
-  'anchor', 'aim', 'answer', 'arm', 'ask', 'banish', 'bend', 'bind', 'blind',
+  'admit', 'anchor', 'aim', 'answer', 'arm', 'ask', 'bank', 'banish', 'bend', 'bind', 'blind',
   'blunt', 'bolster', 'break', 'bribe', 'bury', 'buy', 'calm', 'call', 'carry', 'cast',
-  'catch', 'claim', 'clear', 'close', 'cloud', 'cool', 'count', 'cover', 'crack', 'cut',
+  'catch', 'claim', 'clean', 'clear', 'close', 'cloud', 'cool', 'count', 'cover', 'crack', 'cut',
   'dampen', 'deepen', 'delay', 'deny', 'dim', 'divert', 'draw', 'drive', 'drop',
-  'dull', 'ease', 'empty', 'end', 'fan', 'feed', 'fill', 'find', 'fix', 'flood',
+  'dull', 'ease', 'empty', 'end', 'even', 'expect', 'fan', 'feed', 'feel', 'fill', 'find', 'fix',
+  'flood',
   'follow', 'force', 'free', 'freeze', 'gather', 'give', 'grant', 'guard',
   'guide', 'halt', 'harden', 'hasten', 'hide', 'hold', 'hound', 'keep', 'kindle',
-  'lay', 'lead', 'lend', 'lift', 'light', 'loose', 'loosen', 'mark', 'mend',
-  'move', 'name', 'nudge', 'offer', 'open', 'part', 'pay', 'pin', 'plant',
+  'lay', 'lead', 'lend', 'lift', 'light', 'listen', 'loose', 'loosen', 'mark', 'mend',
+  'mean', 'move', 'name', 'nudge', 'offer', 'open', 'outlast', 'part', 'pay', 'pin', 'plant',
   'press', 'pull', 'push', 'quicken', 'quiet', 'raise', 'reach', 'read',
-  'ready', 'reveal', 'risk', 'root', 'rouse', 'salt', 'salvage', 'save', 'seal', 'seed',
+  'ready', 'remember', 'reveal', 'risk', 'root', 'rouse', 'salt', 'salvage', 'save', 'seal', 'seed',
   'sell', 'send', 'set', 'settle', 'shade', 'sharpen', 'shelter', 'shield',
   'shift', 'show', 'silence', 'slow', 'smother', 'soften', 'sound', 'spare',
   'speed', 'spend', 'split', 'spread', 'stall', 'stand', 'starve', 'steady',
-  'steal', 'steer', 'stiffen', 'still', 'stir', 'stoke', 'stop', 'strike',
+  'steal', 'steer', 'stiffen', 'still', 'stir', 'stoke', 'stop', 'stretch', 'strike',
   'sway', 'sweeten', 'swell', 'take', 'tally', 'tame', 'tempt', 'test',
-  'thicken', 'thin', 'throw', 'tie', 'tilt', 'trade', 'turn', 'twist', 'uncover', 'unmake',
-  'veil', 'wake', 'ward', 'warm', 'warn', 'weigh', 'widen', 'win', 'withhold', 'witness',
+  'thicken', 'thin', 'throw', 'tie', 'tilt', 'trade', 'true', 'trust', 'turn', 'twist',
+  'uncover', 'unmake',
+  'veil', 'wait', 'wake', 'walk', 'ward', 'warm', 'warn', 'weigh', 'widen', 'win',
+  'withhold', 'witness',
 ];
 
 const IMPERATIVE_VERBS: ReadonlySet<string> = new Set(IMPERATIVE_VERB_LEXICON);

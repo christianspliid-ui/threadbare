@@ -202,7 +202,20 @@ describe('authored encounter envelopes', () => {
       expect(set, `${t.id} authored openings but compiled no opening fragment`).toBeDefined();
       expect(set!.axis).toBe('setting');
       expect(set!.variants['*'], `${t.id} opening fragment has no '*' default`).toBeTruthy();
-      expect(firstStepProse(t)).toBe('{frag:opening}');
+      // THR-1222: **starts with**, not equals. This assertion was written against the
+      // converter's old local compile, which *replaced* step-0 prose with the token;
+      // `compileOpeningEnvelope` prepends instead, and has since THR-932. The
+      // difference never surfaced because it could not: no raw entry authored
+      // `openings` until the batch-2 retrofit, so this loop ran zero iterations and
+      // the stale expectation passed for the wrong reason (the sweep above says as
+      // much in its own comment — "vacuous … until the first migrated template lands").
+      //
+      // Prepend is also the correct semantic, not merely the shipped one. Doctrine v2's
+      // opening skeleton is P1 arrival · P2 situation-and-complication · P3 stake: the
+      // per-class opening *is* P1 and the authored step paragraph is P2+P3, so equality
+      // would mean discarding the authored spine — which is exactly what the converter's
+      // own comment records the old path doing wrong.
+      expect(firstStepProse(t)).toMatch(/^\{frag:opening\}/);
     }
   });
 
