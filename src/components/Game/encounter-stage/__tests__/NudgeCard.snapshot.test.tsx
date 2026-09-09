@@ -58,7 +58,7 @@ const BASE: NudgeHandCard = {
   effectLine: 'His grip stops shaking.',
   essenceCost: 2,
   sphere: 'force',
-  state: 'available',
+  state: 'playable',
   forecastDelta: 0.08,
   selected: false,
   interactive: true,
@@ -117,8 +117,10 @@ describe('NudgeCard DOM (pre-extraction pin — THR-1002)', () => {
       renderCard(
         card({
           costChannels: [
-            { id: 'standing', icon: '⚖', label: 'Costs standing with the guild', delta: 0.05 },
-            { id: 'relief', icon: '☼', label: 'The debt is forgiven', delta: -0.04 },
+            // The two real channel ids (`nudge-card-display.ts`) — a made-up id
+            // would pin a DOM the producer cannot emit.
+            { id: 'detection', icon: '⚖', label: 'Mortals may notice', delta: 0.05 },
+            { id: 'doom', icon: '☼', label: 'The clock eases', delta: -0.04 },
           ],
         }),
       ),

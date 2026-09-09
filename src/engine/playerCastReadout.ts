@@ -40,7 +40,8 @@
  * governs mortal resolution too, so it is not a player-cast-local change.
  */
 
-import { applyScaleDifficultyAdjust } from './resolutionScaleAdjust';
+import { applyScaleDifficultyAdjust, MIN_PROBABILITY_BY_SCALE } from './resolutionScaleAdjust';
+import { PROBABILITY_FLOOR, PROBABILITY_CEILING } from './resolutionService';
 import { computeCapabilityWithRawBonus } from './domainCapability';
 import { getAscendantDomainAffinities } from './ascendant';
 import { ascendantCastRawBonus } from '../data/player-cast-constants';
@@ -137,4 +138,84 @@ export function castCapabilityByReach(
     );
   }
   return out;
+}
+
+/**
+ * The probability the roll will use for this cast, pre-roll (THR-1002).
+ *
+ * The card's odds zone reads a **forecast tier word** — the same vocabulary the
+ * encounter stage's test panel uses — and this is the quantity that word
+ * classifies. It runs the resolver's arithmetic in the resolver's own order:
+ * `applyScaleDifficultyAdjust` first (offset, then the per-scale cap that
+ * enforces the floor), then `P = capability + sphereFactor - difficulty + mods`,
+ * then the floor itself. Nothing here re-derives a formula the resolver owns, so
+ * the word on the card and the number in the roll cannot drift — THR-998's
+ * invariant, restated for a tier word instead of a risk sentence: *the card's
+ * odds reading is a function of the probability the roll uses.*
+ *
+ * **Why the floor is applied here and not left to the caller.** A fresh god's
+ * `local` working has its authored difficulty capped away entirely, so its raw
+ * `capability - difficulty` can sit below `MIN_PROBABILITY_BY_SCALE.local`; the
+ * resolver lifts it to the floor post-hoc. A card that classified the *unfloored*
+ * number would read `perilous` on a cast that resolves `favorable` — the precise
+ * lie this module exists to prevent.
+ *
+ * A zero-difficulty step reads `fated` for a capable god at `personal` or `local`,
+ * where the scale offset is negative and nothing is left to subtract. It does **not**
+ * at `cosmic`, whose +0.10 offset the resolver applies to an unpriced step like any
+ * other — see the comment in the body. The word follows the roll, including where
+ * that is less flattering than the template suggests.
+ *
+ * Fail-soft: a non-finite capability or difficulty returns the scale floor rather
+ * than propagating NaN onto the card face — the floor is the weakest true claim
+ * available, and the tier word it produces is never a guess about the template.
+ */
+export function castForecastProbability(
+  maxDifficulty: number | undefined,
+  capability: number | undefined,
+  scale: ActionScale | undefined,
+): number {
+  const resolvedScale: ActionScale = scale ?? 'regional';
+  const floor = MIN_PROBABILITY_BY_SCALE[resolvedScale] ?? PROBABILITY_FLOOR;
+
+  if (typeof capability !== 'number' || !Number.isFinite(capability)) return floor;
+
+  // NOT `effectiveCastDifficulty`, deliberately — and this is the one subtle thing
+  // in the module.
+  //
+  // That function early-returns 0 for an unpriced step, because its job is to answer
+  // *"may the card claim a risk?"*, and at 0 the answer is no. But the resolver does
+  // not skip the scale offset for an unpriced step: it runs
+  // `applyScaleDifficultyAdjust(0, …)`, which at `cosmic` **adds** +0.10. So a
+  // zero-difficulty cosmic working really does roll harder than the god's bare
+  // capability, and a readout built on the presentation helper would have quoted
+  // capability flat — overstating the odds on exactly the scale where the stakes are
+  // highest. Measured, not reasoned: the cross-check against
+  // `computeResolutionThreshold` caught it at cap 0.2 / diff 0 / cosmic (0.2 vs 0.1).
+  const { adjustedDifficulty } = applyScaleDifficultyAdjust(
+    typeof maxDifficulty === 'number' && Number.isFinite(maxDifficulty) ? Math.max(0, maxDifficulty) : 0,
+    capability,
+    CARD_READOUT_SPHERE_FACTOR,
+    CARD_READOUT_MODS,
+    scale,
+  );
+  const difficulty = Math.max(0, Math.min(1, adjustedDifficulty));
+  const raw = capability + CARD_READOUT_SPHERE_FACTOR - difficulty + CARD_READOUT_MODS;
+  if (!Number.isFinite(raw)) return floor;
+
+  // Which floor applies depends on the actor, and the two are not the same number.
+  //
+  // `applyScaleDifficultyAdjust` has *already* enforced the scale floor for an
+  // actor capable enough to clear it — it caps difficulty from above precisely so
+  // `raw >= MIN_PROBABILITY_BY_SCALE[scale]` holds — so for that actor there is
+  // nothing left to lift here. An actor *below* the scale floor gets
+  // `maxDifficultyForFloor = 0` instead, leaving `raw === capability`, and the
+  // resolver lifts that one to the global `PROBABILITY_FLOOR` in its own
+  // post-process. Reading the scale floor for them would overstate their odds —
+  // which is the same class of lie as understating them.
+  // The resolver's own clamp, not a [0, 1] bound: `computeResolutionThreshold`
+  // returns inside [PROBABILITY_FLOOR, PROBABILITY_CEILING], so a readout clamped
+  // any wider would disagree with the roll at the extremes — which is the whole
+  // class of defect this module exists to close.
+  return Math.min(PROBABILITY_CEILING, Math.max(PROBABILITY_FLOOR, raw));
 }

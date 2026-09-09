@@ -3877,6 +3877,18 @@ export interface PlayerReceiptTrace extends TraceBase {
   changeCount: number;
   /** Only present on `reaction_applied`. */
   reactionId?: string;
+  /**
+   * Which sentence the toast carried (THR-1002): `true` when it was the
+   * aftermath overview's first sentence, `false` when the overview was absent,
+   * blank or still placeholder-laden and the band's frame line stood in.
+   *
+   * Registered here rather than duck-typed onto the payload because `emitTrace`'s
+   * `Omit` collapses the union — an unregistered field is silently dropped, and
+   * the fallback *rate* is the measurement this ticket's kill criterion reads
+   * ("if the first sentence is a fragment or a placeholder on more than a handful
+   * of casts, fall back to the frame line and file the authoring as content work").
+   */
+  toastOverviewUsed?: boolean;
 }
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */

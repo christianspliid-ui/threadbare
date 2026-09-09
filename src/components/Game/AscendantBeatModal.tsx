@@ -164,7 +164,6 @@ export function templateToPreviewSlot(template: UnifiedActionTemplate): WheelSlo
     available: true,
     lockedReason: null,
     essenceCost: template.essenceCost ?? 0,
-    detectionRisk: 0,
     sphere: template.sphereAffinity ?? null,
     interventionType: null,
     rangeStatus: 'unlimited',

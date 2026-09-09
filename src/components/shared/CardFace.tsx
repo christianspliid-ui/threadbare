@@ -53,8 +53,8 @@
  */
 
 import type React from 'react';
-import type { SphereName } from '../../types/sphere';
-import type { ReachDomain } from '../../types/reach';
+import type { SphereName } from '../../types/index';
+import type { ReachDomain } from '../../types/traits';
 import type { RarityTier } from '../../types/rarity';
 import type { ForecastTier } from '../../types/resolution';
 import type { EntityVisualDescriptor } from './entityVisualResolver';

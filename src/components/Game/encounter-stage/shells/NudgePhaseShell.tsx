@@ -16,9 +16,7 @@
 import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
-import { SphereIcon } from '../../../shared/SphereIcon';
 import { ReachIcon } from '../../../icons';
-import { CardKeywordChip } from '../../../shared/CardKeywordChip';
 import { CostPips, OddsPips } from '../../../shared/OddsPips';
 import { CardFace, FORECAST_TIER_COLORS, HAND_MAX_HEIGHT_PX } from '../../../shared/CardFace';
 import { formatEssencePool } from '../../../shared/formatEssence';

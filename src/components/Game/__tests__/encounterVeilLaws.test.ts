@@ -65,6 +65,12 @@ function sourceFilesUnderSrc(dir = '', acc: string[] = []): string[] {
 
 const VEIL = 'components/Game/EncounterVeil.tsx';
 const SHELL = 'components/Game/encounter-stage/shells/NudgePhaseShell.tsx';
+/**
+ * The shared card face (THR-1002). The blocked-card reason moved here when the
+ * nudge card's zone stack was extracted, and it now colours that reason for *both*
+ * cards — so Law 45's floor matters more here than it did in the shell, not less.
+ */
+const CARD_FACE = 'components/shared/CardFace.tsx';
 const PREMONITION = 'components/Game/PremonitionModal.tsx';
 const EMERGENCE = 'components/ruins/EmergenceDilemmaModal.tsx';
 const CSS = 'index.css';
@@ -409,8 +415,8 @@ describe('Law 45 — veil text tones meet WCAG AA against --veil-void', () => {
       new RegExp(`tone === 'loss'\\) return '${T}'`),
     );
     expect(shell, 'factor sentence').toMatch(new RegExp(`against:\\s*'${T}'`));
-    expect(shell, 'blocked-card reason').toMatch(
-      /nudge-card-reason[\s\S]{0,240}--veil-loss-text-alpha/,
+    expect(readCode(CARD_FACE), 'blocked-card reason').toMatch(
+      /-reason-\$\{id\}[\s\S]{0,240}--veil-loss-text-alpha/,
     );
   });
 

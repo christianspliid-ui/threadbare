@@ -1004,11 +1004,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',
     intent:
-      'The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts.',
+      'The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. THR-1002 extended the read to the toast tier: the first sentence of that overview is now the toast message, where the toast previously discarded it and said `Your <internal template name> <band>.` — the payload check this row recorded as unverified, on ~93% of casts.',
     ulTerms: ['Aftermath'],
-    mechanism: { kind: 'function', symbols: ['processPlayerReceipts', 'aftermathSummary'], module: 'src/engine/playerReceipts.ts' },
+    mechanism: { kind: 'function', symbols: ['processPlayerReceipts', 'aftermathSummary', 'receiptToastSentence'], module: 'src/engine/playerReceipts.ts' },
     writeSites: ['src/engine/unifiedActionResolution.ts'],
-    readSites: ['src/engine/playerReceipts.ts'],
+    readSites: ['src/engine/playerReceipts.ts', 'src/data/receipt-content.ts'],
   },
   {
     id: 'player-action-receipts-queue',

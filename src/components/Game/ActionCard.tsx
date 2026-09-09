@@ -539,16 +539,19 @@ export const ActionCard = React.memo(function ActionCard({
         {/* ── 5. Spacer to push stats to bottom ─────────────────────── */}
         <div style={{ marginTop: 'auto' }} />
 
-        {/* ── 6. Stats row (risk + range) ─────────────────────────────── */}
+        {/* ── 6. Stats row (range) ────────────────────────────────────
+            The detection-risk zone is gone (THR-1002). It could never render: the
+            only live slot builder hardcoded `detectionRisk: 0` and this zone was
+            gated on `> 0`, so the percentage had been unreachable in production
+            since the legacy wheel was retired (THR-501) — while a test asserted
+            `10%` against a fabricated fixture no builder produces. The concept is
+            still alive for *interventions*, where `computeDetection` rolls against
+            the authored values; it is the card's read of it that was dead, so the
+            read retired and the data stayed. It also could not have come back as-is:
+            a percentage on the player's face violates Law 13, which THR-728's plan
+            had already claimed PASS on — truthfully, but only because this zone was
+            dead at the time. */}
         <div className="flex items-center justify-between gap-2 mt-2">
-          {slot.detectionRisk > 0 && (
-            <span
-              data-testid="action-card-risk"
-              style={{ fontSize: cfg.descSize, color: 'var(--text-secondary)' }}
-            >
-              {Math.round(slot.detectionRisk * 100)}% risk
-            </span>
-          )}
           {slot.rangeStatus !== 'unlimited' && slot.hexDistance !== null && (
             <span
               data-testid="action-card-range"
