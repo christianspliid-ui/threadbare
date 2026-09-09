@@ -7815,7 +7815,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
                     durationTicks: 24,
                     narrativeHook: 'Somewhere a circle was closed properly, and the dark has been going round it since.',
                     scope: { kind: 'global' },
-                    sphereAlignment: 'veil',
+                    // `spirit`, not `veil` — Reaches and Spheres are orthogonal axes
+                    // (CLAUDE.md, load-bearing). Veil is the reach that draws the circle;
+                    // spirit is the sphere the circle is drawn against.
+                    sphereAlignment: 'spirit',
                   },
                 ],
               },
@@ -7840,7 +7843,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
                     durationTicks: 12,
                     narrativeHook: 'A ward was closed with the last of what closed it, and the veil noticed the price more than the line.',
                     scope: { kind: 'global' },
-                    sphereAlignment: 'veil',
+                    sphereAlignment: 'spirit',
                   },
                 ],
               },
@@ -7880,7 +7883,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
                     durationTicks: 24,
                     narrativeHook: 'A ward was left open somewhere, and what came through it has not gone far.',
                     scope: { kind: 'global' },
-                    sphereAlignment: 'veil',
+                    sphereAlignment: 'darkness',
                   },
                 ],
               },
@@ -8522,7 +8525,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.offer_small_prayer',
     name: 'Offer a Small Prayer',
-    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-1222 — a small prayer is said where the person is when they need to say
+    // it, which is mostly not a temple. `sacred` is in the envelope because that is
+    // where it is easiest; the other three are where it actually happens.
+    settings: ['wayside', 'rural', 'sacred', 'stronghold'],
+    openings: {
+      wayside: '{name} stops walking at {location} for the length of it, which is all the ceremony there is out here.',
+      rural: '{name} steps out of the lamplight at {location} where the yard gives onto the fields.',
+      sacred: '{name} finds a corner of {location} that nobody is using and does not light anything.',
+      stronghold: '{name} says it on the wall at {location}, under the noise of the yard, where it will not be remarked on.',
+    },
     reachPrimary: 'star',
     reachSecondary: 'heart',
     encounterType: 'assist',
@@ -8563,6 +8575,152 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         addNudgeIds: ['prayer.expect_an_answer', 'prayer.take_it_on_faith'],
       },
     ],
+    /**
+     * THR-1222 — the one it is said for. A prayer has a subject even when the subject
+     * is elsewhere and will never hear about it, and naming them is what stops this
+     * scene being a mood. Class-honest across all four: everywhere has someone absent
+     * that somebody is worried about.
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'the_absent',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        supportRole: 'prayer_subject',
+        spawnNpcRole: 'wanderer',
+        spawnName: 'The One It Is Said For',
+      },
+    ],
+    // Drawn hand, wired as drawn — no swap. A prayer that is answered gives the
+    // speaker something to want (`drive`) and somewhere to be (`movement`).
+    consequenceDraw: ['drive', 'movement'],
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'It is said, and it takes about as long as it takes. The road is still the road '
+          + 'afterwards.',
+        changes: [],
+        reactions: [
+          {
+            id: 'prayer.walk_on',
+            label: 'Walk on',
+            intent: 'It was going to be said whether or not anything came of it.',
+            effects: [],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'Something answers. Not in words and not in any way {name} could put to '
+              + 'somebody else afterwards, but the shape of it is unmistakable and it is '
+              + 'pointing — at a direction, and at a thing worth doing when they get there. '
+              + 'They stop being a person on a road and start being a person going somewhere.',
+            changes: [
+              {
+                id: 'prayer.the_answer',
+                kind: 'future_hook',
+                title: 'The Answer',
+                causeClause: 'They asked for nothing in particular and were given something specific',
+                detail: 'A direction to walk in, and a reason that will not let go of them.',
+                polarity: 'gain',
+                category: 'path',
+                direction: 'opens',
+                stateNoun: { text: 'driven', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'a reason that will not let go of them' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'prayer.go_where_it_points',
+                label: 'Go where it points',
+                intent: 'There is no arguing with the only clear thing that has happened all year.',
+                effects: [
+                  {
+                    kind: 'assign_ambition',
+                    templateId: 'ambition_spread_faith',
+                    narrativeHook: 'Something answered a small prayer on a road, and they have not been able to keep quiet about it since.',
+                  },
+                  { kind: 'condition_attachment', templateId: 'trait.condition.blessed' },
+                  {
+                    kind: 'agent_relocation',
+                    // `away`, not `nearest_settlement`: an answered prayer sends people
+                    // somewhere they were not going. The intent tilts existing movement
+                    // scoring — it does not teleport — so the journey stays on the map.
+                    destination: { kind: 'away', minHexDistance: 3 },
+                    mode: 'travel',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview:
+              'Nothing answers, and it helps anyway. The words go out and the weight of the '
+              + 'thing they were about is a little further off than it was. {name} walks on '
+              + 'toward the nearest place with people in it, which was the sensible plan '
+              + 'before and is easier to keep to now.',
+            changes: [],
+            reactions: [
+              {
+                id: 'prayer.walk_toward_people',
+                label: 'Walk toward people',
+                intent: 'Whatever was heard or not heard, the night still has to be spent somewhere.',
+                effects: [
+                  {
+                    kind: 'agent_relocation',
+                    destination: { kind: 'nearest_settlement' },
+                    mode: 'travel',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'Nothing answers, and this time the nothing has a shape to it. {name} kneels '
+              + 'past the point where kneeling was the plan, building an answer out of the '
+              + 'wind because getting up without one has become unthinkable. What they get up '
+              + 'with is not comfort and will not leave them alone.',
+            changes: [
+              {
+                id: 'prayer.the_shaped_silence',
+                kind: 'future_hook',
+                title: 'The Shaped Silence',
+                causeClause: 'They would not get up until the silence said something, so it did',
+                detail: 'An errand nobody set them, that they will not be talked out of.',
+                polarity: 'mixed',
+                category: 'path',
+                direction: 'opens',
+                stateNoun: { text: 'driven', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'will not be talked out of' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'prayer.follow_the_silence',
+                label: 'Follow the silence',
+                intent: 'It is an answer if you decide it is, and that decision has been made.',
+                effects: [
+                  {
+                    kind: 'assign_ambition',
+                    templateId: 'ambition_spread_faith',
+                    narrativeHook: 'They knelt until the silence gave them an errand, and have been running it ever since.',
+                  },
+                  {
+                    kind: 'agent_relocation',
+                    destination: { kind: 'away', minHexDistance: 4 },
+                    mode: 'travel',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
     steps: [
       {
         id: 'offer_small_prayer.kneel',
@@ -8945,7 +9103,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.rest_and_reflect',
     name: 'Rest and Reflect',
-    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-1222 — putting the road down happens wherever the road stops. Kept to the
+    // three places a traveller actually sleeps; a temple is somewhere you go *to*,
+    // not somewhere you end up because the light went.
+    settings: ['wayside', 'rural', 'stronghold'],
+    openings: {
+      wayside: '{name} sits down at {location} without deciding to, which is how the body says the day is over.',
+      rural: '{name} is given the bench by the door at {location} and the last of what was warm.',
+      stronghold: '{name} finds the step at {location} where the wall still holds the day\'s heat.',
+    },
     reachPrimary: 'heart',
     reachSecondary: 'eye',
     encounterType: 'explore',
@@ -8982,6 +9148,150 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         addNudgeIds: ['rest_reflect.trust_the_morning'],
       },
     ],
+    /**
+     * THR-1222 — whoever is sitting the other side of the fire. Reflection with a
+     * witness is a different scene from reflection alone: it is the presence of
+     * somebody not asking questions that lets the thinking happen.
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'the_other_one',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        supportRole: 'fireside_companion',
+        spawnNpcRole: 'wanderer',
+        spawnName: 'The One Who Does Not Ask',
+      },
+    ],
+    // Drawn hand, wired as drawn — no swap. What surfaces while resting is a thing
+    // that will come back (`story_seed`); what it makes you do is go there (`movement`).
+    consequenceDraw: ['story_seed', 'movement'],
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The day gets put down. Some of it stays down and some of it does not, and which '
+          + 'is which is not up to the person doing the putting.',
+        changes: [],
+        reactions: [
+          {
+            id: 'rest_reflect.sleep_on_it',
+            label: 'Sleep on it',
+            intent: 'Tomorrow is a road again either way.',
+            effects: [],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'One day comes back whole — not the feeling of it, the thing itself, in order, '
+              + 'with the part {name} had been getting wrong in the right place at last. It is '
+              + 'unfinished business and now it has an address. The one across the fire watches '
+              + 'them work it out and says nothing, which is the useful thing to say.',
+            changes: [
+              {
+                id: 'rest_reflect.the_whole_day',
+                kind: 'future_hook',
+                title: 'The Whole Day, In Order',
+                causeClause: 'They stopped long enough for it to come back the way it happened',
+                detail: 'Unfinished business with a place attached to it, and no more excuse for leaving it.',
+                polarity: 'mixed',
+                category: 'path',
+                direction: 'opens',
+                stateNoun: { text: 'holding unfinished business', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'no more excuse for leaving it' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'rest_reflect.go_back_for_it',
+                label: 'Go back for it',
+                intent: 'It has waited long enough and now it will not stop being there.',
+                effects: [
+                  {
+                    kind: 'encounter_seed',
+                    templateId: 'encounter.rest_and_reflect',
+                    delayTicks: 36,
+                    seedLabel: 'The same day, come back around again',
+                    priority: 2,
+                  },
+                  {
+                    kind: 'agent_relocation',
+                    destination: { kind: 'away', minHexDistance: 3 },
+                    mode: 'travel',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview:
+              'The weight settles. The small grievances sink far enough out of the way that '
+              + 'the morning will not start on top of them, which is the whole of what this was '
+              + 'for. {name} means to be somewhere with a roof on it by the next night.',
+            changes: [],
+            reactions: [
+              {
+                id: 'rest_reflect.make_for_a_roof',
+                label: 'Make for a roof',
+                intent: 'One night on the ground was the plan. Two is a decision.',
+                effects: [
+                  {
+                    kind: 'agent_relocation',
+                    destination: { kind: 'nearest_settlement' },
+                    mode: 'travel',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The stopping is a mistake. Everything that had been kept moving catches up at '
+              + 'once and arrives in no order at all, and what {name} gets instead of rest is '
+              + 'the whole of it at the same time. It will be back tomorrow night, and the '
+              + 'night after, until it is dealt with somewhere other than a fire.',
+            changes: [
+              {
+                id: 'rest_reflect.all_at_once',
+                kind: 'future_hook',
+                title: 'All At Once',
+                causeClause: 'They stopped moving and it all caught up in the same minute',
+                detail: 'A thing that will be waiting at every fire until it is answered somewhere else.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'opens',
+                stateNoun: { text: 'not resting', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'waiting at every fire' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'rest_reflect.get_up_and_walk',
+                label: 'Get up and walk',
+                intent: 'Moving was working. It can go back to working.',
+                effects: [
+                  {
+                    kind: 'encounter_seed',
+                    templateId: 'encounter.rest_and_reflect',
+                    delayTicks: 12,
+                    seedLabel: 'The same night, not yet finished with them',
+                    priority: 3,
+                  },
+                  {
+                    kind: 'agent_relocation',
+                    destination: { kind: 'away', minHexDistance: 2 },
+                    mode: 'travel',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
     steps: [
       {
         id: 'rest_reflect.rest',
@@ -9420,6 +9730,51 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
               },
             ],
           },
+          critical_failure: {
+            // THR-1222: authored because `check:encounter-live` proved the gap. The
+            // deterministic proof run rolls `critical_failure`, fell through to the
+            // fallback face, and reported `reward_node` failing — the step promises
+            // something persistent and an unauthored band delivered nothing. The band
+            // this scene most needed was the one that was missing.
+            overview:
+              'It goes wrong in the quiet way, where nothing dramatic happens and the '
+              + 'breathing just gets further apart. {name} works past the point where working '
+              + 'is the thing to do, and then stops, because there is a point past that too. '
+              + 'The one who was carried in does not get carried out.',
+            changes: [
+              {
+                id: 'tend_wounds.under_their_hands',
+                kind: 'trait',
+                title: 'Under Their Hands',
+                causeClause: 'They were the last person to try, and trying was not enough',
+                detail: 'A face that arrives unasked, at the edge of every quiet hour for a long while.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'loss',
+                stateNoun: { text: 'grieving', entityId: 'trait.condition.grieving', visualKind: 'attachment' },
+                concepts: [{ text: 'arrives unasked' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'tend_wounds.close_their_eyes',
+                label: 'Close their eyes',
+                intent: 'It is the last useful thing there is to do with these hands tonight.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.grieving' },
+                  {
+                    kind: 'intelligence',
+                    category: 'cultural_knowledge',
+                    label: 'What the wound had been doing',
+                    detail:
+                      'Whatever bound it the first time bound it to travel, not to heal — '
+                      + 'somebody wanted them moving more than they wanted them alive.',
+                    reliability: 0.9,
+                  },
+                ],
+              },
+            ],
+          },
         },
       },
     },
@@ -9628,7 +9983,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.scout_the_perimeter',
     name: 'Scout the Perimeter',
-    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-1222 — a perimeter is a thing you walk where there is something inside it
+    // worth walking around. Camp, steading, fort. A city's edge belongs to its watch
+    // and is not one traveller's circuit.
+    settings: ['wayside', 'rural', 'stronghold'],
+    openings: {
+      wayside: '{name} goes out past the last of the firelight at {location} while there is still a difference between shapes.',
+      rural: '{name} takes the field boundary at {location}, which is the only line the place has.',
+      stronghold: '{name} walks the ground outside the wall at {location}, where the wall stops being the answer.',
+    },
     reachPrimary: 'eye',
     reachSecondary: 'iron',
     encounterType: 'explore',
@@ -9662,6 +10025,172 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         addNudgeIds: ['scout_perimeter.walk_it_twice'],
       },
     ],
+    /**
+     * THR-1222 — the one who posted the watch, or would have if anyone had thought
+     * of it. They are the reason a circuit is a duty rather than a walk, and they are
+     * who decides afterwards whether the walker is one of theirs.
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'watch_setter',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        supportRole: 'watch_setter',
+        spawnNpcRole: 'lookout',
+        spawnName: 'The One Who Sets the Watch',
+      },
+    ],
+    /**
+     * Drawn hand, wired as drawn — **no swap**, and the brief's one budgeted swap is
+     * not spent here. Its §2c flagged `membership` as the likely trade ("a camp chore
+     * granting faction membership reads odd at first") and asked the drafter to author
+     * it if a company was in scope. One is: `membership_change` takes a faction
+     * *definition* id, not a node id and not a sentinel — `the-beast-in-the-granary`
+     * and `toll-of-blades` both author bare `'civic_guard'` / `'mercenary_company'` —
+     * so a watch roster is reachable from content. Standing a perimeter watch is
+     * exactly how a traveller earns a place on one.
+     */
+    consequenceDraw: ['membership', 'omen'],
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The circuit gets walked. What is out there is out there whether or not anybody '
+          + 'went and looked, but the going and looking is the difference between knowing and '
+          + 'hoping.',
+        changes: [],
+        reactions: [
+          {
+            id: 'scout_perimeter.report_it',
+            label: 'Report it',
+            intent: 'Somebody should hear what the ground looked like.',
+            effects: [],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'The circuit is walked twice and the second pass finds what the first one had '
+              + 'no reason to look at: the approach nobody had counted, and the fact that it '
+              + 'has been used. The one who sets the watch listens to the whole of it and then '
+              + 'puts {name} on the roster, which is not a thing that is discussed.',
+            changes: [
+              {
+                id: 'scout_perimeter.on_the_roster',
+                kind: 'faction_reputation',
+                title: 'On the Roster',
+                causeClause: 'They walked it twice and came back with the approach nobody had counted',
+                detail: 'A place on the watch, given by someone who does not hand them out.',
+                polarity: 'gain',
+                category: 'bond',
+                direction: 'gain',
+                stateNoun: {
+                  text: 'A place on the watch',
+                  entityId: '$faction:mercenary_company',
+                  visualKind: 'faction',
+                },
+                concepts: [{ text: 'someone who does not hand them out' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'scout_perimeter.take_the_watch',
+                label: 'Take the watch',
+                intent: 'It is the roster or the road, and the roster comes with a fire.',
+                effects: [
+                  {
+                    kind: 'membership_change',
+                    factionId: 'mercenary_company',
+                    op: 'join',
+                    chronicle: true,
+                  },
+                  {
+                    kind: 'emit_omen',
+                    category: 'cultural',
+                    intensity: 0.15,
+                    durationTicks: 24,
+                    narrativeHook: 'Somebody walked a perimeter properly and found the way in, and the people who use that way have not heard yet.',
+                    scope: { kind: 'global' },
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview:
+              'The line is clean. Nothing has crossed it that should not have, and {name} can '
+              + 'say so and be believed, which is worth more than the walk took. The watch is '
+              + 'set differently tonight on the strength of it.',
+            changes: [],
+            reactions: [
+              {
+                id: 'scout_perimeter.set_the_watch',
+                label: 'Set the watch',
+                intent: 'A clean report is still a report, and it changes where people stand.',
+                effects: [
+                  {
+                    kind: 'membership_change',
+                    factionId: 'mercenary_company',
+                    op: 'rank_delta',
+                    rankDelta: 0.05,
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The circuit gets walked and comes back with the wrong answer said confidently. '
+              + 'The line is called clean and it is not, and the watch is set light on the '
+              + 'strength of that. Whatever uses the approach tonight will find it exactly as '
+              + 'open as {name} said it was closed.',
+            changes: [
+              {
+                id: 'scout_perimeter.the_wrong_all_clear',
+                kind: 'faction_reputation',
+                title: 'The Wrong All-Clear',
+                causeClause: 'They called the line clean and the watch was set light on it',
+                detail: 'A word given to people who acted on it, and it was not worth acting on.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'loss',
+                stateNoun: {
+                  text: 'A word given to people who acted on it',
+                  entityId: '$faction:mercenary_company',
+                  visualKind: 'faction',
+                },
+                concepts: [{ text: 'not worth acting on' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'scout_perimeter.stand_by_the_report',
+                label: 'Stand by the report',
+                intent: 'Taking it back now would not un-set the watch.',
+                effects: [
+                  {
+                    kind: 'membership_change',
+                    factionId: 'mercenary_company',
+                    op: 'rank_delta',
+                    rankDelta: -0.1,
+                  },
+                  {
+                    kind: 'emit_omen',
+                    category: 'doom_echo',
+                    intensity: 0.2,
+                    durationTicks: 18,
+                    narrativeHook: 'A perimeter was called clean that was not, and something is going to walk in through the gap on the strength of it.',
+                    scope: { kind: 'global' },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
     steps: [
       {
         id: 'scout_perimeter.map',
