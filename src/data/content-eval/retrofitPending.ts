@@ -168,7 +168,6 @@ export const RETROFIT_PENDING: readonly string[] = [
   'encounter.shadow_ambush',
   'encounter.shadow_hunt',
   'encounter.shadow_in_the_night',
-  'encounter.sharpen_blades',
   'encounter.shell_proof.fate_card_trial',
   'encounter.shell_proof.reckless_wager',
   'encounter.shell_proof.tiered_proving',

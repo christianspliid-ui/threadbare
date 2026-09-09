@@ -182,6 +182,26 @@ type EncounterEntry = {
    * `UnifiedActionTemplate.traitVariants`. Absent for every un-migrated entry.
    */
   traitVariants?: readonly import('../types/unifiedAction').TraitVariant[];
+  /**
+   * THR-1222 (retrofit batch 2) — the Composition Contract blocks, passed straight
+   * through to the template below.
+   *
+   * **Why these had to be added rather than authored.** `toUnifiedTemplate` is a
+   * field allowlist, not a spread: a field absent from both this type and the
+   * converter is silently dropped, and the template renders exactly as it did
+   * before. So a retrofit authored `aftermathConfig` here would have compiled,
+   * read correctly to a reviewer, and connected nothing — the corpus's own
+   * `favorGeneration` sat inert that way until THR-724 found it. The batch-1 slice
+   * encounters avoided this only because they live in `src/data/encounters/` and
+   * are authored as `UnifiedActionTemplate` directly, skipping the converter.
+   *
+   * Additive (NFP #6): every field is optional and absent on all ~200 un-retrofitted
+   * entries, which is exactly how the template type reads "not authored".
+   */
+  supportBundle?: import('../types/encounter').EncounterSupportBundle;
+  aftermathConfig?: import('../types/unifiedAction').UnifiedActionTemplate['aftermathConfig'];
+  consequenceDraw?: readonly string[];
+  consequenceSwap?: import('../types/unifiedAction').UnifiedActionTemplate['consequenceSwap'];
   steps: ReadonlyArray<{
     id?: string;
     name?: string;
@@ -340,6 +360,13 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     favorGeneration: e.favorGeneration,
     // THR-838 (WS5): trait hooks, the template-level half of the nudge model.
     traitVariants: e.traitVariants,
+    // THR-1222: the Composition Contract blocks. See the `EncounterEntry` fields
+    // for why a passthrough was needed — the allowlist drops what it does not name,
+    // so an authored aftermath would otherwise have been inert content.
+    supportBundle: e.supportBundle,
+    aftermathConfig: e.aftermathConfig,
+    consequenceDraw: e.consequenceDraw,
+    consequenceSwap: e.consequenceSwap,
     rarityTier: 1,
     intrinsicTier: 'background',
   });
@@ -7060,7 +7087,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.sharpen_blades',
     name: 'Sharpen Blades',
-    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-1222 — the widest *honest* envelope, replacing `[...ALL_LOCATION_SUBTYPES]`.
+    // Steel gets an edge wherever there is a bench and an hour: a wayside camp, a
+    // steading after the day's work, a fort yard out of the watch's way. Not
+    // `sacred`/`arcane`/`ruin` — nobody sits down to hone a knife in a temple.
+    settings: ['wayside', 'rural', 'stronghold'],
+    openings: {
+      wayside: '{name} stops where the road stops, and the fire at {location} is already lit.',
+      rural: '{name} comes off the lane at {location} with the day\'s work finished and the light not yet gone.',
+      stronghold: '{name} finds a bench in the yard at {location}, out of the way of the watch.',
+    },
     reachPrimary: 'iron',
     reachSecondary: 'stone',
     encounterType: 'build',
@@ -7096,6 +7132,148 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         addNudgeIds: ['sharpen.admit_the_nick'],
       },
     ],
+    /**
+     * THR-1222 — the scene's second person. A multi-class envelope inherits no
+     * family default (THR-1044), so this template declares its own, and it is
+     * written to be class-honest in all three: someone else with steel on their
+     * hip is at the fire, in the steading yard and in the fort yard alike.
+     * `lazy-materialize-on-trigger` because the mark and the favour below are
+     * *about* them — the THR-1165 lesson, where a bind-only default let a debt
+     * land on scenery.
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'blade_owner',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        supportRole: 'camp_blade_owner',
+        spawnNpcRole: 'wanderer',
+        spawnName: 'The One Who Asked',
+      },
+    ],
+    consequenceDraw: ['secret', 'condition'],
+    consequenceSwap: {
+      from: 'place',
+      to: 'condition',
+      reason:
+        'The `place` family needs a condition carrying `targetLocationId`, and no '
+        + 'sentinel on this template can supply one. Verified in the CLI (seed 42, '
+        + 'medium): a spawned `encounter.sharpen_blades` resolves `targetId === actorId`, '
+        + 'so `$target` is an agent and the binder\'s location-kind check rejects it — '
+        + 'the effect would no-op silently, which is the vacuous wiring the gate exists '
+        + 'to prevent. `spawn_unique_location`, the family\'s only sentinel-free kind, '
+        + 'mints a place for honing a knife. Traded to `condition` (weight 8 in iron, the '
+        + 'reach\'s own signature and the corpus\'s thinnest channel at 1 user).',
+    },
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The blade goes back on the hip. Whatever it is now, it is what it will be '
+          + 'the next time it is wanted in a hurry.',
+        changes: [],
+        reactions: [
+          {
+            id: 'sharpen.bank_the_fire',
+            label: 'Bank the fire',
+            intent: 'The hour is spent either way.',
+            effects: [],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'The edge comes up finer than the smith who made it ever got it. The one who '
+              + 'asked holds their own blade out without saying anything, and gets it back '
+              + 'sharper than it has been in a year. That is the sort of thing a person keeps '
+              + 'account of.',
+            changes: [
+              {
+                id: 'sharpen.true_hands',
+                kind: 'trait',
+                title: 'True Hands',
+                causeClause: 'They held one angle for four hundred strokes and never lost it',
+                detail: 'The hands know exactly what they did, and will not be talked out of it for a while.',
+                polarity: 'gain',
+                category: 'boon',
+                direction: 'gain',
+                stateNoun: { text: 'inspired', entityId: 'trait.condition.inspired', visualKind: 'attachment' },
+                concepts: [{ text: 'know exactly what they did' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'sharpen.hand_it_back',
+                label: 'Hand it back',
+                intent: 'Their steel, returned better than it was lent.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.inspired' },
+                  {
+                    kind: 'favor_creation',
+                    magnitudeRange: [0.1, 0.25],
+                    context: 'Their blade was trued by a hand that asked nothing for it',
+                    debtorAgentId: '$cast:blade_owner',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'The edge is back. It cost the ball of a thumb to find every flaw first, and '
+              + 'the cut is on the hand that holds the work. The one who asked saw it happen '
+              + 'and said nothing, which is its own kind of debt.',
+            changes: [
+              {
+                id: 'sharpen.opened_thumb',
+                kind: 'trait',
+                title: 'Opened Thumb',
+                causeClause: 'They found the last nick with the ball of their thumb',
+                detail: 'A working hand with a cut in the worst place on it.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'loss',
+                stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
+                concepts: [{ text: 'a cut in the worst place on it' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'sharpen.wrap_the_hand',
+                label: 'Wrap the hand',
+                intent: 'The work is done and the hand can be dealt with after.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
+                  {
+                    kind: 'favor_creation',
+                    magnitudeRange: [0.05, 0.15],
+                    context: 'They watched the cut happen over their blade and kept quiet about it',
+                    debtorAgentId: '$cast:blade_owner',
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview:
+              'What goes back in the sheath will cut rope. Against anything that argues, it '
+              + 'is a heavy piece of metal with an opinion about being sharp. The one who '
+              + 'asked takes their own blade back unhoned and does not ask again.',
+            changes: [],
+            reactions: [
+              {
+                id: 'sharpen.sheathe_it',
+                label: 'Sheathe it',
+                intent: 'Better to find out here than somewhere it matters.',
+                effects: [],
+              },
+            ],
+          },
+        },
+      },
+    },
     steps: [
       {
         id: 'sharpen_blades.assess',
@@ -7116,7 +7294,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           {
             // Shared generic pool — the `focus` family.
             id: 'sharpen.turn_it_to_the_light',
-            name: 'Turn it to the light',
+            name: 'Tilt it to firelight',
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
@@ -7128,7 +7306,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
           {
             id: 'sharpen.let_the_flaw_show',
-            name: 'Let the flaw show',
+            name: 'Show the flaw',
             sphere: 'matter',
             essenceCost: 2,
             forecastDelta: 0.11,
@@ -7666,7 +7844,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           {
             // Shared generic pool — the `luck` family.
             id: 'ward_camp.a_gap_in_the_wind',
-            name: 'A gap in the wind',
+            name: 'Still the wind',
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.luck',
@@ -7691,7 +7869,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
           {
             id: 'ward_camp.set_a_star_over_it',
-            name: 'Set a star over it',
+            name: 'Set a star overhead',
             sphere: 'light',
             essenceCost: 2,
             forecastDelta: 0.10,
@@ -7703,7 +7881,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
           {
             id: 'ward_camp.let_it_outlast_dawn',
-            name: 'Let it outlast dawn',
+            name: 'Outlast the watch',
             sphere: 'time',
             essenceCost: 2,
             forecastDelta: 0.11,
@@ -7716,7 +7894,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
           {
             id: 'ward_camp.let_the_edges_blur',
-            name: 'Let the edges blur',
+            name: 'Soften the seam',
             sphere: 'chaos',
             essenceCost: 2,
             forecastDelta: 0.09,
@@ -8305,7 +8483,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             imageTag: 'generic.oath',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
-              critical_failure: 'They knelt certain of an answer, and built one out of the wind rather than get up without.',
+              critical_failure: 'They knelt certain of an answer, and built one out of the wind instead of getting up without.',
             },
           },
         ],
@@ -8666,7 +8844,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
           {
             id: 'rest_reflect.let_the_ache_out',
-            name: 'Let the ache out',
+            name: 'Loose the ache',
             sphere: 'life',
             essenceCost: 2,
             forecastDelta: 0.10,
@@ -8759,7 +8937,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           {
             // Shared generic pool — the `luck` family.
             id: 'rest_reflect.a_stray_recollection',
-            name: 'A stray recollection',
+            name: 'Remember one day',
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.luck',
@@ -8797,7 +8975,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
           {
             id: 'rest_reflect.let_the_weight_settle',
-            name: 'Let the weight settle',
+            name: 'Settle the weight',
             sphere: 'entropy',
             essenceCost: 2,
             forecastDelta: 0.11,
@@ -8953,7 +9131,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
           {
             id: 'tend_wounds.lamp_over_the_table',
-            name: 'Lamp over the table',
+            name: 'Light the table',
             sphere: 'light',
             essenceCost: 2,
             forecastDelta: 0.11,
@@ -9045,7 +9223,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           {
             // Shared generic pool — the `strength` family.
             id: 'tend_wounds.one_clean_pull',
-            name: 'One clean pull',
+            name: 'Pull it clean',
             essenceCost: 1,
             forecastDelta: 0.07,
             imageTag: 'generic.strength',
@@ -9156,7 +9334,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         traitId: 'trait.core.core_humility.virtue',
         forecastDelta: 0.04,
         difficultyDelta: -0.01,
-        factorLine: 'Humble, they walk the line again rather than trust the first pass.',
+        factorLine: 'Humble, they walk the line again instead of trusting the first pass.',
         addNudgeIds: ['scout_perimeter.walk_it_twice'],
       },
     ],
@@ -9284,7 +9462,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           {
             // Shared generic pool — the `strength` family.
             id: 'scout_perimeter.one_more_pull',
-            name: 'One more pull',
+            name: 'Steady the arms',
             essenceCost: 1,
             forecastDelta: 0.07,
             imageTag: 'generic.strength',
