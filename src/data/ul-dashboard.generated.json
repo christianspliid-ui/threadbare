@@ -4339,7 +4339,7 @@
       ],
       "status": "canonical",
       "oneLiner": "a multi-hex terrain cluster containing its Locations; the `region` node; geographic, never political",
-      "body": "A multi-hex cluster by dominant terrain feature, containing its Locations. Geographic only: political territory is a Faction's `controls` edges, never a second region kind. The code word is *region*; the game word is Area.",
+      "body": "A multi-hex cluster by dominant terrain feature, containing its Locations. Geographic only: political territory is a Faction's `controls` edges, never a second region kind. The code word is *region*; the game word is Area.\n\n**The Areas partition the land** (THR-1155, 2026-09-10). Every land hex belongs to exactly one, stamped at worldgen on `tile.regionId` from the one detector (`detectRegionsBorderCost`), whose nearest-cluster fill makes the cover total. That is what lets an Area be *acted on* rather than only read: an effect scoped `region` resolves to its real members, a reference of kind `area` routes to it, and the map draws a projection of the same nodes (`areaProjection`) instead of a partition of its own.",
       "seeAlso": [
         {
           "raw": "World Object",

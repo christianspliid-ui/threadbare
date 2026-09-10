@@ -231,6 +231,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `ambition` (6) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-1298`, `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
+| `area` (1) | `areaProjection.ts` | `THR-1155` |
 | `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `Phase 7`, `TB-073`, `THR-626` |
 | `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-1213`, `THR-1318`, `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
@@ -412,4 +413,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 186 engine domains · 548 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 187 engine domains · 549 modules._
