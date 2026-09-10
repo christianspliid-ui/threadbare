@@ -1,45 +1,38 @@
 # Briefing
-**Generated:** 2026-09-10 23:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-11 00:57 local (2026-09-10 22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of).** One word, and two smaller ones behind it.
+**Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of).**
 
-Tonight your nations pass stopped being a drawing. [Slice one shipped and is live](https://github.com/christianspliid-ui/threadbare/pull/1886) — the borders on the map are now a political thing the world can act on. Two slices to go, and the first realm content — a court summons, a border levy, a tithe — is queued behind them.
+Unchanged from an hour ago, and more load-bearing now than it was then: the realm code kept building while you were away. Slice 1 shipped tonight; [slice 2's first half merged at 22:20](https://github.com/christianspliid-ui/threadbare/pull/1887) — a realm can now carry a real faction identity, which is what lets the world act on it at all.
 
-That content has to be written in *some* word. The write-up proposes **Realm** over **Nation** on register grounds: a nation is a modern political word, a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes, and the write-up says outright you may veto the headword.
+The write-up proposes **Realm** over **Nation** and says outright you may veto the headword. A nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes. Two smaller ones want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) (your own ruling this morning, written up) and [**cast**](https://linear.app/threadbare/issue/THR-1445).
 
-Two more are already settled in substance and just want a yes: [**hold**](https://linear.app/threadbare/issue/THR-1449) — a town a mortal keeps by *working* it, which is your own ruling from this morning — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing an action card, plus the odds-reading the player sees before the dice.
-
-*— raised by the orchestrator lane, 21:35Z*
+The realm content — court summons, border levy, tithe — is queued directly behind the code. A word seated now costs a minute; a word seated after that content is authored means re-reading prose that already shipped.
 
 ## Also waiting (12)
 
-- **Do you still intend to design Traits wave 2 yourself?** — [THR-790](https://linear.app/threadbare/issue/THR-790). Yours, untouched, since 15 August (26 days); the design bench is idle behind it. *(Only the `Parked` label frees it; unassigning does not.)*
-- **Should agents be allowed to seat a word in the glossary, keeping you a veto?** The ask above is three of seven waiting words. Say *"delegate it"* and the rest stop reaching you.
-- **A veto is invited on an encounter quality rule that fails all 191 encounters** — [THR-1053](https://linear.app/threadbare/issue/THR-1053). The orchestrator judged it gate calibration and queued the fix. Say the word and it comes back out.
-- **One Done click, no work behind it** — [THR-1380](https://linear.app/threadbare/issue/THR-1380). Verified against live code, no diff written, parked for the close.
-- **Sample two of the camp six** — [Ward the Camp](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp) · [Tend to Wounds](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds). Not blocking anything.
-- **Rule on the backlog** — roughly ten items stop at a question, not a developer. Say *"rule on the backlog"*.
-- **The screenshot sweep wants an attended hour** — [THR-1133](https://linear.app/threadbare/issue/THR-1133). Nineteen captures, one dev-server session, nothing technical blocking it.
-- **The fight map — ten open, every one yours** — [Physical Conflict](https://linear.app/threadbare/issue/THR-1258). Best ways in: [fighting a monster](https://linear.app/threadbare/issue/THR-1263), [two people fighting](https://linear.app/threadbare/issue/THR-1264).
-- **Two sketches ready to be built** — [twenty spells](https://linear.app/threadbare/issue/THR-1232), [thirty items](https://linear.app/threadbare/issue/THR-1236). Your reaction is the design decision.
-- **Should image-credit spend be gated on you at all?** — [THR-876](https://linear.app/threadbare/issue/THR-876). Same question as the glossary one, in a second queue.
-- **What is a run *about*?** — [THR-1198](https://linear.app/threadbare/issue/THR-1198). Remembrance, or named campaigns. Nothing downstream waits.
-- **Are weekend-long quiet spells normal too?** You ruled overnight quiet normal; weekends are still unruled, so the probe keeps raising them. One word retires it.
-
-Detail and links for all of these: [Design/user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- [Delegate the glossary seat, keep a veto?](https://linear.app/threadbare/issue/THR-1453) — seven words wait; three of them are the ask above. One word retires this permanently.
+- [Traits wave 2 — still yours?](https://linear.app/threadbare/issue/THR-790) — the design bench is idle and this is the only thing on it, untouched 27 days.
+- [A veto is invited on an encounter quality rule](https://linear.app/threadbare/issue/THR-1053) — it is the sole reason two written encounters keep being binned; it is also the only item on the build shelf.
+- [One Done click, no work behind it](https://linear.app/threadbare/issue/THR-1380) — the three words you approved had already shipped; nothing is left in it.
+- [Sample two of the camp six](https://linear.app/threadbare/issue/THR-1130) — your standing 2-of-6 rule still owes a verdict. Blocking nothing.
+- [Rule on the backlog — one sitting, smallest first](https://linear.app/threadbare/issue/THR-1189) — ~10 items stop at a question rather than a developer.
+- [The screenshot sweep wants an attended hour](https://linear.app/threadbare/issue/THR-1133) — 19 captures, one dev-server session; unstuck since 4 September.
+- [The fight map — ten open, every one yours](https://linear.app/threadbare/issue/THR-1258) — all research done; two are the head.
+- [Two sketches ready to build for you to react to](https://linear.app/threadbare/issue/THR-1232) — [spells](https://linear.app/threadbare/issue/THR-1232) and [items](https://linear.app/threadbare/issue/THR-1236); your reaction is the decision.
+- [Image credits — should the spend be gated on you at all?](https://linear.app/threadbare/issue/THR-876) — five quarantined plates, everything settled but the credit spend.
+- [What is a run *about*?](https://linear.app/threadbare/issue/THR-1198) — remembrance, or named campaigns. Nothing downstream waits.
+- [Are weekend-long quiet spells normal too?](https://linear.app/threadbare/issue/THR-1077) — you ruled overnight quiet normal; weekends are still unruled, so the probe keeps raising them.
 
 ## Queue
 
-**Starved — 1 ready.** One job in flight, correctly; this is a bench problem, not a queue problem.
+**Starved — 1 job ready, 1 building.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) (realms) is mid-build on slice 2 of 3 and holding the single work slot correctly. The one item behind it is [THR-1053](https://linear.app/threadbare/issue/THR-1053) — the same ticket also-waiting item 3 invites you to veto.
 
-- **In flight:** [THR-1155](https://linear.app/threadbare/issue/THR-1155) (nations and named areas). **Slice 1 of 3 merged and deployed** since the last brief — [PR #1886](https://github.com/christianspliid-ui/threadbare/pull/1886) is live on the site. Slices 2 and 3 to come.
-- **On the shelf:** [THR-1053](https://linear.app/threadbare/issue/THR-1053) only — the item under veto above. It has sat through two executor windows unclaimed, which the orchestrator checked and cleared: not a refusal, just WIP = 1 behind a live build.
-- **Unreachable, and it should not be:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) is High-priority, its blocker cleared this morning and its park was discharged at 15:32 — but it still sits `In Dev` + `Parked` + unassigned, the one shape the pickup queue never looks at. The daily grooming lane owns that unpark and runs tomorrow morning. Nothing is owed by you.
+- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unblocked work that nothing can reach.** Its park was discharged by events at 13:32Z — the ticket it waited on shipped, and both answers to its question now lead to the same action, so no decision is left in it. But it sits `In Dev` + parked + unowned, and the pickup lane only reads the ready queue, so it has been invisible for ~9 hours. The grooming lane fixes exactly this and runs at 09:16 tomorrow; an attended session could free it sooner. No action from you either way.
+- **[THR-1380](https://linear.app/threadbare/issue/THR-1380)** parked awaiting your Done click — also-waiting item 4.
 
 ## Health
 
-- **"Heavy simulation tests" is red on the latest `main`** (~1 h). This is the non-required post-merge lane, so nothing is blocked and no PR is held; a session owes a follow-up fix. Last night's brief recorded it as cleared — it has since gone red again. **Not yours** — flagged here so it is not lost.
-- Everything else green: site serving the latest commit (`716eddde`), CI green on `main`, all three background jobs running, no PRs waiting, all nine scheduled lanes on time, worktree reaper fresh (23:40, 3 items needing disposition).
-- Engine tick cost **89 ms/tick, +3%** on its week's median — down from +16% last hour, well under the flag line.
+All green. The post-merge heavy-test lane that was red an hour ago is green on the latest main. Deploy is serving `135a1de0`, CI green, no PRs waiting to merge, all nine scheduled lanes on schedule, the worktree reaper ran 17 minutes ago. Engine tick cost 91 ms/tick, +5% against its 7-day median — normal.

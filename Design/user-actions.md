@@ -1,35 +1,34 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 23:58 local (2026-09-10 21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-11 00:57 local (2026-09-10 22:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### 1. Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of)
 
-Tonight the map's political borders stopped being decoration. [Slice one of the nations pass](https://github.com/christianspliid-ui/threadbare/pull/1886) merged and is live: a realm is now a landed faction, seated at a capital, holding a territory of towns, with a court to climb. Two slices remain, and the first realm content — a court summons, a border levy, a tithe — is queued behind them.
+The map's political borders have stopped being decoration. [Slice 1](https://github.com/christianspliid-ui/threadbare/pull/1886) is live and [slice 2's first half merged at 22:20](https://github.com/christianspliid-ui/threadbare/pull/1887): a realm is a landed faction, seated at a capital, holding a territory of towns, with a court to climb — and it can now carry a real faction identity, which is what lets the world act on it.
 
 **The write-up proposes *Realm* over *Nation*, and says outright you may veto the headword.** The argument is register: a nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes.
 
-Two more want a yes rather than a decision:
+Two more want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — a town a mortal keeps by *working* it, your own ruling from 10 September — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing a divine action card.
 
-- [**hold**](https://linear.app/threadbare/issue/THR-1449) — a town a mortal keeps by *working* it. This is your own ruling from this morning ("it is a commitment"), written up.
-- [**cast**](https://linear.app/threadbare/issue/THR-1445) — a god playing a divine action card; and the odds-reading the player sees *before* the dice, as words rather than numbers.
-
-Why it is worth a minute rather than a week: content authored before a word is seated is authored against a word nothing can check, which is the drift the glossary exists to prevent. *Raised by the orchestrator lane at 21:35Z.*
+Worth a minute rather than a week: the first realm content (court summons, border levy, tithe) is queued behind the code, and content authored before a word is seated is authored against a word nothing can check.
 
 ### 2. Should agents be allowed to seat a word in the glossary, keeping you a veto?
 
 Say **"delegate it"**, or **"send me the six"** if you'd rather keep the call.
 
-Ask 1 is three of these. **The queue refills faster than a sitting drains it** — seven wait, measured live this run: [**Realm**](https://linear.app/threadbare/issue/THR-1453) (today) · [**hold**](https://linear.app/threadbare/issue/THR-1449) (1 day) · [**cast**](https://linear.app/threadbare/issue/THR-1445) (2 days) · [**agreement**](https://linear.app/threadbare/issue/THR-1441) (2 days) · [**motive gate**](https://linear.app/threadbare/issue/THR-1408) (6 days) · [**composition contract**](https://linear.app/threadbare/issue/THR-1406) (7 days) · [**motive receipt**](https://linear.app/threadbare/issue/THR-633) (67 days).
+Ask 1 is three of these. **The queue refills faster than a sitting drains it** — seven wait, measured live this run: [**Realm**](https://linear.app/threadbare/issue/THR-1453) (1 day) · [**hold**](https://linear.app/threadbare/issue/THR-1449) (1 day) · [**cast**](https://linear.app/threadbare/issue/THR-1445) (2 days) · [**agreement**](https://linear.app/threadbare/issue/THR-1441) (3 days) · [**motive gate**](https://linear.app/threadbare/issue/THR-1408) (7 days) · [**composition contract**](https://linear.app/threadbare/issue/THR-1406) (8 days) · [**motive receipt**](https://linear.app/threadbare/issue/THR-633) (68 days).
 
-You seated three yourself in chat at 20:13 today ([THR-1380](https://linear.app/threadbare/issue/THR-1380)); thirteen minutes later your own nations pass filed a new one. The rule says only a human may seat a word, so the queue cannot clear itself. The glossary is the tie-breaker when code, docs and an agent disagree about a word — an unseated word is one the project cannot settle an argument about. You have delegated exactly this shape twice already (gate calibration, test calibration): *the lane decides, you keep a veto*. One word retires this ask permanently.
+You seated three yourself in chat on 10 September ([THR-1380](https://linear.app/threadbare/issue/THR-1380)); thirteen minutes later your own realms pass filed a new one. The rule says only a human may seat a word, so the queue cannot clear itself — and the glossary is the tie-breaker when code, docs and an agent disagree.
+
+You have delegated exactly this shape twice already (gate calibration, test calibration): *the lane decides, you keep a veto*. One word retires this ask permanently.
 
 ### 3. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**The design seat is empty and the shelf behind it is nearly empty too.** One job is in flight ([nations](https://linear.app/threadbare/issue/THR-1155), slice 1 of 3 shipped tonight), **one** job is on the shelf behind it, and the design bench is idle.
+**The design bench is idle and the shelf behind it holds one item.** One job is building ([realms](https://linear.app/threadbare/issue/THR-1155), slice 2 of 3), one waits behind it, and the bench that refills the shelf is empty.
 
-The bench is what refills the shelf. It takes one job at a time, and the only thing on it is this one — yours, untouched, since **15 August (26 days)**.
+The bench takes one job at a time, and the only thing on it is this one — yours, untouched since **15 August (27 days)**.
 
 The single shelf item is [THR-1053](https://linear.app/threadbare/issue/THR-1053) — the same ticket ask 4 invites you to veto. Veto it and the shelf is empty.
 
@@ -39,7 +38,7 @@ The single shelf item is [THR-1053](https://linear.app/threadbare/issue/THR-1053
 
 A rule in the encounter quality check asks authors to hand-label every game concept mentioned in an aftermath — the "here's what changed in the world" panel at the end of an encounter. **That rule fails all 191 encounters**, and it is the single reason two written encounters — *Snow on the Pass* and *Riders Behind the Caravan* — were thrown out of two consecutive batches over about three weeks.
 
-On 15 August someone checked the code and found the game **already does that labelling automatically**; they wrote the finding on the ticket and stopped, because changing the rule brushes your "no exemptions" ruling. Every lane that looked since said "needs a design session" without reading the comment that had already answered it. It sat 26 days.
+On 15 August someone checked the code and found the game **already does that labelling automatically**; they wrote the finding on the ticket and stopped, because changing the rule brushes your "no exemptions" ruling. Every lane that looked since said "needs a design session" without reading the comment that had already answered it.
 
 The orchestrator re-verified the finding against today's code, judged this **gate calibration** — the agents' call under your 2026-08-12 rule — and put it in the build queue with the evidence attached.
 
@@ -47,7 +46,7 @@ The orchestrator re-verified the finding against today's code, judged this **gat
 
 ### 5. One Done click, no work behind it — [THR-1380](https://linear.app/threadbare/issue/THR-1380/ul-proposal-calling-moment-follow-the-undertaking-surface-vocabulary)
 
-The three words you approved at 20:13 — *calling*, *moment*, *follow* — turned out to have shipped eight days ago under another ticket. An executor claimed it, verified every line against the live code, wrote no diff, and parked it.
+The three words you approved — *calling*, *moment*, *follow* — turned out to have shipped eight days earlier under another ticket. An executor claimed it, verified every line against the live code, wrote no diff, and parked it.
 
 It waits on a **Done** click because no automated lane here is permitted to close a ticket. There is no work left in it and nothing downstream waits.
 
@@ -114,14 +113,15 @@ Two shorter gaps since (18.6 h, 18.1 h) are overnight-shaped and already covered
 
 ## Resolved this period
 
-- **2026-09-10 — the nations pass is building, and slice one is already live.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) took the design seat at 20:26, merged its plan doc at 21:52 with intent judge Allow and three audits passed, was claimed for build at 22:02, and [slice 1 of 3 merged and deployed](https://github.com/christianspliid-ui/threadbare/pull/1886) tonight. It also emptied the design seat, which is what ask 3 turns on.
+- **2026-09-11 — the realms build kept moving overnight.** [Slice 2's first half merged at 22:20Z](https://github.com/christianspliid-ui/threadbare/pull/1887): a realm can now carry a real faction identity, the thing that lets the world act on it. Slice 1 shipped earlier the same evening; one slice and a half remain.
+- **2026-09-11 — the red post-merge test lane cleared itself.** The heavy simulation suite was failing on main an hour ago and is green on the latest commit. No session was needed.
+- **2026-09-10 — the nations pass is building, and slice one is live.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) took the design seat at 20:26, merged its plan doc at 21:52 with intent judge Allow and three audits passed, and was claimed for build at 22:02. It also emptied the design seat, which is what ask 3 turns on.
 - **2026-09-10 — the empty shelf refilled the same hour.** It hit zero at 21:02 and stood at two by 21:52. No starvation gap opened.
-- **2026-09-10 — the tick-cost alarm cleared and kept falling.** Reported 34% over its week's median at its peak; now +3%. It was the busy machine, not a regression.
-- **2026-09-10 — you worked the board yourself at 20:12–20:34, and four things moved.** You ruled [the spotlight tier](https://linear.app/threadbare/issue/THR-1348), put [nations](https://linear.app/threadbare/issue/THR-1155) into the design seat, seated the three undertaking words ([THR-1380](https://linear.app/threadbare/issue/THR-1380)), and filed a new word — [Realm](https://linear.app/threadbare/issue/THR-1453) — which is now ask 1.
+- **2026-09-10 — the tick-cost alarm cleared and kept falling.** Reported 34% over its week's median at its peak; now +5%. It was the busy machine, not a regression.
+- **2026-09-10 — you worked the board yourself at 20:12–20:34, and four things moved.** You ruled [the spotlight tier](https://linear.app/threadbare/issue/THR-1348), put [realms](https://linear.app/threadbare/issue/THR-1155) into the design seat, seated the three undertaking words ([THR-1380](https://linear.app/threadbare/issue/THR-1380)), and filed a new word — [Realm](https://linear.app/threadbare/issue/THR-1453) — which is now ask 1.
 - **2026-09-10 — the last buildable item shipped.** [THR-1452](https://linear.app/threadbare/issue/THR-1452) is Done at 20:34: the top bar's year disagreed with the engine's clock threefold, and now agrees.
 - **2026-09-10 — the shelf halved, twice.** [THR-1451](https://linear.app/threadbare/issue/THR-1451) ([PR #1883](https://github.com/christianspliid-ui/threadbare/pull/1883)) and [THR-1424](https://linear.app/threadbare/issue/THR-1424) ([PR #1880](https://github.com/christianspliid-ui/threadbare/pull/1880)) stopped bare percentages printing on player surfaces.
 - **2026-09-10 — five more shipped in the afternoon.** [THR-1426](https://linear.app/threadbare/issue/THR-1426) and [THR-1423](https://linear.app/threadbare/issue/THR-1423) (tick counts and timestamps now read in words), plus three docs-gate fixes ([THR-836](https://linear.app/threadbare/issue/THR-836), [THR-976](https://linear.app/threadbare/issue/THR-976), [THR-896](https://linear.app/threadbare/issue/THR-896)).
-- **2026-09-10 — three backlog rulings settled themselves and shipped.** [THR-1195](https://linear.app/threadbare/issue/THR-1195) (what a Divine Herald is), [THR-1315](https://linear.app/threadbare/issue/THR-1315) (the mid-game codex page), [THR-1318](https://linear.app/threadbare/issue/THR-1318) (the unused perception layer) — each ruled by a session and merged within the day.
 - **2026-09-10 — batch 3's one open question dissolved without you.** [THR-1130](https://linear.app/threadbare/issue/THR-1130) parked at 10:14 asking whether to wait for [THR-1446](https://linear.app/threadbare/issue/THR-1446); THR-1446 went Done at 11:52, shipping the two scene sentinels that were the blocker.
 
 ---
