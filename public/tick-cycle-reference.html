@@ -543,8 +543,12 @@
         <span>Retire <code>auto_resolve</code> encounter notifications past their <code>autoResolveTick</code> deadline (THR-1068 — marks them resolved; aftermath and legacy-sourced records exempt), then prune old encounter notifications (&gt;50 ticks), stamp completedAtTick on resolved actions, remove stale actions (&gt;100 ticks). Expiry runs <em>before</em> the prune so a record that is both overdue and beyond retention reports as expired rather than silently vanishing; it emits one aggregate <code>encounter_notification</code> trace per tick, never one per record.</span>
       </div>
       <div class="post-tick-item">
+        <strong>Incident Flight Recorder</strong>
+        <span>THR-1134. <code>recordTick()</code> appends this tick's events and one census row (<code>nodeCount</code>, <code>edgeCount</code>, <code>unifiedActions</code>, <code>encounterNotifications</code>, <code>controlEffects</code>, <code>chronicleEntries</code>, <code>recentEvents</code>) to two head-indexed rings on <code>runtime.incidentRecorder</code> — 1000 events and 300 census rows. Runs in <em>production</em>, not just dev: it is what lets a player hand over a state that looks wrong. Kept beside the health check because both are tick-end observers of the finished state, and sized because <code>recentEvents</code>' own 100 entries is three to five ticks, so by the time a world looks wrong the cause has rolled off. Two O(1) array writes, never <code>shift()</code>; guarded at the call site <em>and</em> inside <code>recordTick</code>, so a throwing census counts a miss on the recorder's stats and the tick proceeds untouched.</span>
+      </div>
+      <div class="post-tick-item">
         <strong>Health Validation</strong>
-        <span>validateTickOutput() checks for invariant violations. Failures logged to trace buffer but never throw.</span>
+        <span>validateTickOutput() checks for invariant violations. Failures logged to trace buffer but never throw. The reports and the crash log (100 each, crashes carrying stacks) are no longer dev-only dead ends — THR-1134's incident bundle reads both, and a caught crash raises a one-per-<code>INCIDENT_PROMPT_COOLDOWN_TICKS</code> toast pointing the player at Settings &rarr; Trouble.</span>
       </div>
     </div>
   </div>
