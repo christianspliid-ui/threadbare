@@ -563,31 +563,19 @@ export interface DilemmaResonanceTags {
 }
 
 /**
- * A Hunger-specific prose overlay for a dilemma template.
- * When the god's Hunger matches `hungerId`, the overlay prose replaces
- * or augments the default template prose.
- */
-export interface LensOverlay {
-  /** Which Hunger this overlay is written for — the bare canonical id (THR-1213) */
-  hungerId: HungerId;
-  /** Perception prose — how this god sees the dilemma situation */
-  perceptionProse: string;
-  /** Resonance threshold above which echo prose fires (0-1) */
-  echoThreshold?: number;
-  /** Deep-resonance prose — surfaces when the dilemma strikes close to the god's drive */
-  echoProse?: string;
-}
-
-/**
- * An enriched dilemma template with resonance scoring data and
- * Hunger-specific lens overlays. Extends the base DilemmaTemplate
- * with the data needed for the Meet The First redesign.
+ * An enriched dilemma template with resonance scoring data.
+ * Extends the base DilemmaTemplate with the data needed for the
+ * Meet The First redesign.
+ *
+ * THR-1318 retired the `lensOverlays` field and its `LensOverlay` shape: a
+ * per-Hunger prose overlay authored for 1 of 12 Hungers on 10 of 167 dilemmas,
+ * read by an engine with no production caller. The Hunger reaches the meeting
+ * through `resonance` — which dilemmas get dealt — not through a second prose
+ * channel almost no god could see.
  */
 export interface EnrichedDilemmaTemplate extends DilemmaTemplate {
   /** Resonance tags for scoring against the AscendantLens */
   resonance: DilemmaResonanceTags;
-  /** Per-Hunger prose overlays */
-  lensOverlays: readonly LensOverlay[];
   /** Visual/thematic tags for art direction */
   artTags: readonly string[];
 

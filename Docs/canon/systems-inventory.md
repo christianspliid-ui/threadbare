@@ -232,7 +232,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
 | `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `Phase 7`, `TB-073`, `THR-626` |
-| `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
+| `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-1213`, `THR-1318`, `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
 | `attachment` (5) | `attachmentSlotResolver.ts`, `attachmentTemplateDetail.ts`, `attachmentTemplateIndex.ts`, `attachmentTierAdvancement.ts`, `attachmentTooltip.ts` | `THR-1120`, `THR-1122`, `THR-718`, `THR-719`, `THR-723`, `THR-784`, `THR-974`, `THR-996`, `THR-997` |
 | `attention` (2) | `attentionPool.ts`, `attentionTier.ts` | — |
