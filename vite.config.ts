@@ -19,6 +19,15 @@ const WATCH_IGNORED_WORKTREES = ['**/.claude/worktrees/**', '**/.worktrees/**'];
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), constantWriter()],
+  /**
+   * THR-1134: the commit an incident snapshot came from. Vercel sets
+   * `VERCEL_GIT_COMMIT_SHA` at build time; the dev server and a local `vite build`
+   * read `'local'`, and a bundle whose `run.build` says `local` is itself a
+   * finding — it means the file did not come from the deployed build.
+   */
+  define: {
+    __BUILD_SHA__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA ?? 'local'),
+  },
   server: {
     watch: {
       ignored: WATCH_IGNORED_WORKTREES,

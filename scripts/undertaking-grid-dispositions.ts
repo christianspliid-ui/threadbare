@@ -284,6 +284,10 @@ export const UNTOUCHED_BY_DESIGN: readonly UntouchedByDesign[] = [
     subsystem: 'Ascendant Beats & Progression',
     reason: 'The god\'s own arc — remembrance, the beats, the journey the player climbs. A mortal\'s undertaking cannot advance it, because the beats measure what the *player* has done; mortals supply the occasions a beat fires on, never the progression itself.',
   },
+  {
+    subsystem: 'Diagnostics & Incident Capture',
+    reason: 'Not part of the world at all — it is the instrument pointed at the world. The health validator, the flight recorder and the incident bundle observe the simulation for whoever is debugging it; nothing they hold is a fact *about* the fiction, so no mortal verb reaches them and none should. A mortal whose work could move this layer would be a mortal editing the log of themselves. Mortals appear in a snapshot as data, the way a thermometer holds a temperature — the reading is not something the room can decide to change.',
+  },
 ];
 
 /**

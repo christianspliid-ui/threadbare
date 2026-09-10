@@ -754,8 +754,37 @@ export interface DebugBridge {
   clearCrashLog: () => Promise<void>;
   /** Aggregate session-health readout — the first stop when the sim "looks wrong" but does not throw. */
   getHealthReport: () => Promise<unknown>;
-  /** Full diagnostic bundle (health + crash log + counters) as one JSON-serializable blob for attaching to an issue. */
+  /**
+   * Full diagnostic bundle (health + crash log + counters) as one JSON-serializable blob.
+   *
+   * THR-1134: `stateMetrics` was `null` on every export before that ticket, because
+   * the bridge invoked the underlying call with no state. It now passes the
+   * registered game state, so the counters block is populated whenever a game is
+   * loaded.
+   */
   exportDiagnostics: () => Promise<unknown>;
+  /**
+   * THR-1134 — build an incident snapshot object *without* downloading it.
+   *
+   * Returns `null` when no game state is registered. The default bundle is the
+   * incident tier (run identity, health, census, the event and metrics rings,
+   * attention, clocks, the active-UI record, the focus neighbourhood, traces if
+   * recording was armed); `{ includeWorld: true }` adds every node, every edge and
+   * every state `Map`, which is megabytes on a large map.
+   *
+   * Serialize with `serializeIncidentBundle` from `engine/incidentBundle` — plain
+   * `JSON.stringify` on the result drops every `Map`. Check
+   * `bundle.serialization.incomplete` and `bundle.failedSections` before trusting a
+   * section.
+   */
+  buildIncidentBundle: (opts?: { includeWorld?: boolean }) => Promise<unknown>;
+  /**
+   * THR-1134 — incident flight-recorder occupancy:
+   * `{ events, metrics, eventsWritten, metricsWritten, misses }`. Returns `null`
+   * when no runtime is registered. A non-zero `misses` means an append threw and
+   * was swallowed, which is itself a finding.
+   */
+  getIncidentRecorderStats: () => Promise<unknown>;
   /**
    * Sweep every authored trait ref against the trait definitions in the live graph
    * (THR-786). `null` when no game state is loaded.

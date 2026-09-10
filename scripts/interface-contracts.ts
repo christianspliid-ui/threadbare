@@ -134,8 +134,170 @@ const RUINS = 'Ruins, Clues & Delves';
 const TRAITS = 'Personality & Emergent Traits';
 const PROGRESSION = 'Ascendant Beats & Progression';
 const OMENS = 'Omens & Atmospheric Pressure';
+const DIAGNOSTICS = 'Diagnostics & Incident Capture';
 
 export const CONTRACTS: readonly Contract[] = [
+  // ── Diagnostics & Incident Capture → the incident snapshot (THR-1134) ─────
+  // This chain was ⚪ UNAUDITED: `tickHealthMonitor` has run unconditionally every
+  // tick since it was written, keeping a hundred health reports and a hundred crash
+  // entries *with stacks*, and in production nothing could read any of it — the whole
+  // debug bridge sits behind `if (import.meta.env.DEV)`. A producer writing every
+  // tick to a consumer that cannot exist is this map's headline failure shape, and
+  // these rows close it by shipping the reader.
+  {
+    id: 'tick-health-to-incident-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'When the world looks wrong, the engine has already written down what it caught — so the player can hand that record to someone who can read it, instead of describing a screenshot.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['getHealthLog', 'getCrashLog', 'getLatestReport', 'exportDiagnostics'],
+      module: 'src/engine/tickHealthMonitor.ts',
+    },
+    writeSites: [
+      'src/engine/tickHealthMonitor.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/GameView.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. Before this change the health log, the crash log and `stateMetrics` had exactly one consumer between them — the DEV-gated debug bridge — so on the deployed build every one of them was a write with no possible reader. Three read sites now ship in production: `incidentBundle.health` (log + crash log verbatim), `incidentBundle.census` (`exportDiagnostics(state)`), and `GameView`'s crash-prompt effect, which reads `getCrashLog().length` to raise the one toast that tells the player the door exists. `exportDiagnostics` was additionally invoked with no argument at `debug-bridge.ts:1711`, so its `stateMetrics` block had been `null` on every export since the bridge was written; it now receives the registered state. Non-vacuous by `src/engine/__tests__/incidentBundle.test.ts` — the census-section arm spies `exportDiagnostics` into throwing and asserts the section ships as `{ error }` with `failedSections` naming it and every sibling intact, which fails if the bundle stops calling it at all.",
+    },
+  },
+  {
+    id: 'incident-recorder-to-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'A wrong-looking world is noticed long after its cause; the recorder keeps far more history than the hundred events the UI shows, so the cause is still in the file.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['recordTick', 'getRecordedEvents', 'getRecordedMetrics', 'getIncidentRecorderStats'],
+      module: 'src/engine/incidentRecorder.ts',
+    },
+    writeSites: [
+      'src/engine/orchestrator.ts',
+      'src/engine/simulationRuntime.ts',
+    ],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. `recordTick` is called once per tick from the tick-end site beside `validateTickOutput` with `runtime` already in scope, and both rings are read by `incidentBundle`'s `events` and `census` sections plus `__DEBUG.getIncidentRecorderStats()`. Owned on `SimulationRuntime` rather than at module scope, per the load-bearing decision, so a second playthrough cannot inherit the first one's events. Non-vacuous by `src/engine/__tests__/incidentRecorder.test.ts` (wrap behaviour asserted past `INCIDENT_EVENT_RING_SIZE`, oldest-first order across the wrap, and a throwing census that increments `misses`, leaves the tick untouched, and still records the *next* tick — the last clause falsifies the guard rather than confirming it) and by `incidentBundle.test.ts`'s census/recorder assertion.",
+    },
+  },
+  {
+    id: 'trace-ring-to-incident-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'Traces are the causal trail — the one record that answers *why* rather than *what* — so a player who armed recording before the trouble can hand that trail over.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['getTraces', 'isTracingEnabled', 'enableTracing', 'disableTracing'],
+      module: 'src/engine/traceBuffer.ts',
+    },
+    writeSites: ['src/engine/traceBuffer.ts'],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/hooks/useIncidentCapture.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. `enableTracing` had no production caller — the ring was armed only from the DEV bridge and the CLI — so on the deployed build the causal trail could never be turned on at all. The Settings → Trouble toggle is that caller, and `incidentBundle.traces` is the reader. The buffer itself is untouched (358 importers) and stays off by default: `emitTrace` evicts with `shift()` plus a full renumber, which a saturated tick pays per evicted entry, so the toggle names its cost rather than hiding it. Both arms are pinned in `incidentBundle.test.ts`, each setting the module-scope flag itself rather than inheriting a sibling file's — the armed arm emits and asserts a non-empty ring (confirming the arm perturbed something), the disarmed arm asserts the section is the sentence *recording was off* and carries no `entries` key, because an empty array would read as *nothing happened*.",
+    },
+  },
+  {
+    id: 'active-ui-state-to-incident-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'What the player had open when the world looked wrong is half the question; the bundle carries the same record the debug bridge serves, so the two can never disagree.',
+    mechanism: {
+      kind: 'function',
+      // The record crosses the boundary as a value, not as a call: `GameView`
+      // composes it and the consumers receive it typed. `IncidentUIState` is the
+      // symbol that actually appears on the reading side — declaring only the
+      // composer's own name would name a symbol no consumer contains, which is
+      // how a row passes review and fails the mechanical check.
+      symbols: ['getDebugActiveUIState', 'getDebugOpenModals', 'IncidentUIState', 'getActiveUIState'],
+      module: 'src/components/Game/GameView.tsx',
+    },
+    writeSites: ['src/components/Game/GameView.tsx'],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/hooks/useIncidentCapture.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. The composer already sat outside the `import.meta.env.DEV` guard — only its bridge *registration* is dev-gated — so the production capture path passes the very same callback the bridge registers, rather than a second composer that would drift. `incidentBundle`'s `ui` section stores it and `focus` reads its three selection ids to choose the neighbourhood to dump. Non-vacuous by `incidentBundle.test.ts`: the focus arm asserts the selected actor's neighbours resolve through `getAllEdgesForNode`, and a separate arm asserts a selection id that resolves to no node is marked `missing: true` rather than dropped — a row silently omitted is the failure this section exists to make visible.",
+    },
+  },
+  {
+    id: 'encounter-timeline-to-incident-bundle',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'The mortals the player watches are the ones they will ask about, so each one arrives with the tail of what actually happened to them.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['getTimeline', 'getTrackedAgentIds'],
+      module: 'src/engine/encounterTimeline.ts',
+    },
+    writeSites: [
+      'src/engine/encounterTimeline.ts',
+      'src/engine/encounter.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/debug/EncounterCacheView.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. The timeline accumulates in production with no DEV gate at all (`encounter.ts`, `orchestrator.ts`, `phaseAgentDecision.ts`) and its only reader was the DEV-only `EncounterCacheView`. `incidentBundle`'s `focus` section is the production reader, taking the last `INCIDENT_TIMELINE_TAIL` entries for the selection and for every followed mortal, plus `getTrackedAgentIds()` so a reader can see who else has history to ask for. The formatter/trigger split this subsystem already used is preserved — the bundle takes the raw events, not the TSV.",
+    },
+  },
+  {
+    id: 'incident-bundle-to-download',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'The point of the whole chain: one button on the deployed build turns everything above into a file small enough to attach to a message.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildIncidentBundle', 'serializeIncidentBundle', 'downloadTextFile', 'incidentBundleFilename'],
+      module: 'src/engine/incidentBundle.ts',
+    },
+    writeSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/shared/downloadTextFile.ts',
+    ],
+    readSites: [
+      'src/components/Game/hooks/useIncidentCapture.ts',
+      'src/components/Game/SettingsPanel.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. `useIncidentCapture` builds, serializes, downloads and toasts; `SettingsPanel`'s Trouble section is the control, wired through `GameViewTopBar`, and `__DEBUG.buildIncidentBundle()` calls the same assembler so the dev proof and the production path cannot diverge. The serializer is the load-bearing half: `JSON.stringify(state)` does not throw, it returns plausible JSON with the graph as `{\"nodes\":{},…}` and every state `Map` as `{}`, so the bundle is assembled by hand from public getters and the manifest self-check compares collections walked against collections rewritten, tagging `serialization.incomplete` rather than shipping silent. Non-vacuous by `incidentBundle.test.ts`, whose round-trip arm asserts *both* sides against the same live objects — that naive stringify really does lose the `visibilityMap` and the graph, and that the bundle really does carry them — so it fails against the trap rather than against a fixture that never had it. `downloadTextFile` also replaced the two duplicated inline Blob copies in `EncounterCacheView`.",
+    },
+  },
+
   // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
   // Audit-on-touch: this subsystem was ⚪ UNAUDITED until THR-786 unified the six
   // trait-predicate read sites. These two rows cover the predicate boundary only;

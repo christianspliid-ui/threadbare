@@ -197,6 +197,7 @@ import {
   BAD_OUTCOME_CATEGORY_WEIGHTS,
 } from './rewardPool';
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
+import { recordTick } from './incidentRecorder';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { phaseChosenFactionPowers } from './chosenFactionPowers';
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
@@ -3926,6 +3927,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
 
   // ─── Health Validation ─────────────────────────────────────────
+
+  // THR-1134: the incident flight recorder's one append per tick, beside the
+  // health check because both are tick-end observers of the finished state.
+  // Guarded exactly as the outer tick guard guards the tick: a throwing census
+  // counts a miss and the tick proceeds. Two O(1) array writes; no `shift()`.
+  if (runtime?.incidentRecorder) {
+    try {
+      recordTick(runtime.incidentRecorder, s);
+    } catch {
+      // recordTick guards itself; this is belt to its braces, because the one
+      // thing the recorder must never do is end a tick.
+    }
+  }
 
   const report = validateTickOutput(state, s);
   if (!report.healthy) {

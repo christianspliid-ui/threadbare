@@ -27,6 +27,12 @@ import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useLocationActivities } from './hooks/useLocationActivities';
 import { useAvatarData } from './hooks/useAvatarData';
+import { useIncidentCapture } from './hooks/useIncidentCapture';
+import { getCrashLog } from '../../engine/tickHealthMonitor';
+import {
+  INCIDENT_PROMPT_ON_CRASH,
+  INCIDENT_PROMPT_COOLDOWN_TICKS,
+} from '../../data/incident-snapshot-constants';
 import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
@@ -2719,6 +2725,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerGameStateProvider(() => _gameStateRef.current);
+    // THR-1134: the runtime the bridge hands to `buildIncidentBundle` and
+    // `getIncidentRecorderStats`. `runtimeRef.current` is stable for the session,
+    // so registering once is enough.
+    window.__DEBUG._registerRuntimeProvider(() => runtime);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Debug bridge: synchronous tick batch (THR-689) ────────────────────────
@@ -4149,6 +4159,56 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
   }, [getDebugActiveUIState, getDebugOpenModals]);
 
+  // ── Incident snapshot (THR-1134) ──
+  // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
+  // above — only the *bridge registration* is dev-gated — so the same record the
+  // debug bridge serves is the one the production bundle carries. That is
+  // deliberate: the snapshot's whole point is working where `window.__DEBUG` does
+  // not exist, and a second composer would drift from this one.
+  const incidentCapture = useIncidentCapture({
+    gameState,
+    runtime,
+    mapSize,
+    mapCols: COLS,
+    mapRows: ROWS,
+    getActiveUIState: getDebugActiveUIState,
+    onPushToast: handlePushToast,
+  });
+
+  /**
+   * The crash prompt (THR-1134) — discoverability without a shortcut to memorise.
+   *
+   * When `tickHealthMonitor` catches something the player would otherwise never
+   * see, one toast points at the door. Debounced by tick rather than by wall
+   * clock so a crashing tick loop produces one prompt instead of one per tick,
+   * and it is a toast, never a modal — it must not block the veil, a beat or a
+   * receipt.
+   */
+  const lastCrashPromptTickRef = useRef(-Infinity);
+  const lastCrashCountRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!INCIDENT_PROMPT_ON_CRASH) return;
+    const count = getCrashLog().length;
+    // First observation seeds the baseline: a crash that predates this mount is
+    // history, not news, and must not fire a prompt on load.
+    if (lastCrashCountRef.current === null) {
+      lastCrashCountRef.current = count;
+      return;
+    }
+    if (count <= lastCrashCountRef.current) return;
+    lastCrashCountRef.current = count;
+    if (gameState.tick - lastCrashPromptTickRef.current < INCIDENT_PROMPT_COOLDOWN_TICKS) return;
+    lastCrashPromptTickRef.current = gameState.tick;
+    handlePushToast({
+      id: `incident-crash-${gameState.tick}`,
+      message: 'Something went wrong under the hood. You can save a snapshot from Settings.',
+      count: 1,
+      createdTick: gameState.tick,
+      expiresAt: Date.now() + 10000,
+      onClick: () => setSettingsPanelOpen(true),
+    });
+  }, [gameState.tick, handlePushToast]);
+
   /**
    * THR-935: a revealed-notice snapshot belongs to the surface the badge opened.
    * Once the selection moves elsewhere — or the panel closes — it is news held
@@ -4341,6 +4401,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleUiVolume={handleUiVolume}
         audioMuted={audioMuted}
         handleToggleAudioMute={handleToggleAudioMute}
+        recordingTrouble={incidentCapture.recording}
+        handleToggleRecordTrouble={incidentCapture.toggleRecording}
+        includeWorldInSnapshot={incidentCapture.includeWorld}
+        handleToggleIncludeWorld={incidentCapture.toggleIncludeWorld}
+        handleSaveSnapshot={incidentCapture.captureSnapshot}
       />
 
       {/* ═══ Main content area ═══ */}

@@ -22,6 +22,7 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 
 | Subsystem | Aliases | Domains | Note |
 |---|---|---|---|
+| Diagnostics & Incident Capture | diagnostics, incident, snapshot, health, crash, flight recorder | `diagnostics`, `incident` | THR-1134. The tick-end health validator and crash log, the incident flight recorder on `SimulationRuntime`, and the bundle assembler behind Settings → Trouble → Save a snapshot. **Expect a DORMANT badge on a healthy headless run, and read it as good news:** two of its three activity signals (`tick_health`, `tick_crash`) only fire when something has gone wrong, and the third (`incident_bundle`) only when a person presses the button — neither happens in the inventory's 120-tick sweep. The collector itself runs every tick in every session, production included. |
 | Companies & Group Travel | company, companies, group, party, band, fellowship, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
 | Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
 
@@ -48,6 +49,7 @@ names like `TB-073`) a premise might use.
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
 | **Attention, Chronicle & Narrative** | 🟢 ACTIVE | attention, chronicle, digest, narrative, story, feed | `attention`, `chronicle`, `narrative` | `2a.65`, `6.66`, `5` |
+| **Diagnostics & Incident Capture** | 🟠 DORMANT | diagnostics, incident, snapshot, health, crash, flight recorder | `diagnostics`, `incident` | — |
 | **Omens & Atmospheric Pressure** | 🟢 ACTIVE | omen, pressure, atmosphere, portent, foreshadowing | `omen`, `foreshadowing`, `emittedomen` | `1.7`, `2a.605`, `6.639` |
 | **Strategic Projects & Control** | 🟢 ACTIVE | strategic, project, control, contestation, territory | `strategic`, `contestation`, `control` | `2a.55`, `6.1` |
 | **Ascendant Beats & Progression** | 🟢 ACTIVE | beat, spine, director, ascendant progression, milestone | `ascendantbeat`, `ascendant` | `1.5`, `1.7`, `1.75` |
@@ -76,6 +78,7 @@ names like `TB-073`) a premise might use.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.
 - **Stealth, Detection & Hidden Marks** — Two audiences watch the god: mortals (disbelief→faith) and rivals (signature scans). Hidden-mark decay.
 - **Attention, Chronicle & Narrative** — The attention pool (can't watch everything), the digest, and the run's chronicle/narrative feed.
+- **Diagnostics & Incident Capture** — THR-1134. The tick-end health validator and crash log, the incident flight recorder on `SimulationRuntime`, and the bundle assembler behind Settings → Trouble → Save a snapshot. **Expect a DORMANT badge on a healthy headless run, and read it as good news:** two of its three activity signals (`tick_health`, `tick_crash`) only fire when something has gone wrong, and the third (`incident_bundle`) only when a person presses the button — neither happens in the inventory's 120-tick sweep. The collector itself runs every tick in every session, production included.
 - **Omens & Atmospheric Pressure** — Atmospheric pressure tracks and emitted omens (THR-19); motive-receipt foreshadowing (THR-631).
 - **Strategic Projects & Control** — Multi-tick strategic projects, control degradation, contestation resolution.
 - **Ascendant Beats & Progression** — Ascendant beat director offers beats at doom/tier thresholds (THR-613). Deepening vs milestone beats.
@@ -305,6 +308,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `holding` (1) | `holdingIncome.ts` | `THR-1428`, `THR-822` |
 | `holdings` (1) | `holdings.ts` | `THR-1297` |
 | `idle` (1) | `idleBehavior.ts` | — |
+| `incident` (2) | `incidentBundle.ts`, `incidentRecorder.ts` | `THR-1134` |
 | `influence` (1) | `influence.ts` | — |
 | `insider` (1) | `insiderBeatDetection.ts` | — |
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
@@ -407,4 +411,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 184 engine domains · 545 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 185 engine domains · 547 modules._

@@ -8,6 +8,7 @@ import type { GraphNode } from '../../../types/graph';
 import { getTimeline, getTrackedAgentIds } from '../../../engine/encounterTimeline';
 import { formatEncounterLog, makeFilename, formatAllAgentsLog, makeAllAgentsFilename } from '../../../engine/encounterLogExporter';
 import { getLocationEncounterHistory, getAgentEncounterHistory, EVENT_NODE_ID_PREFIX } from '../../../engine/encounterEventNode';
+import { downloadTextFile } from '../../shared/downloadTextFile';
 
 // ─── Styles ─────────────────────────────────────────────────────
 
@@ -171,13 +172,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
       tickRange,
     });
 
-    const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = makeFilename(seedStr, agentName);
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadTextFile(tsv, makeFilename(seedStr, agentName), 'text/tab-separated-values');
   }, [effectiveExportAgent, graph, seed]);
 
   // Check if any agents have timeline data (recomputed each render — cheap call)
@@ -193,13 +188,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
     });
 
     const tsv = formatAllAgentsLog(agents, seedStr);
-    const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = makeAllAgentsFilename(seedStr);
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadTextFile(tsv, makeAllAgentsFilename(seedStr), 'text/tab-separated-values');
   }, [graph, seed]);
 
   // Map templateId → locationId for encounter progress lookups

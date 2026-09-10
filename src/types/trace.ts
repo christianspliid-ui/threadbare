@@ -255,6 +255,8 @@ export type TraceCategory =
   // Tick-loop observability (THR-580)
   | 'tick_profile'
   | 'distance_matrix_rebuild'
+  // Incident snapshot capture (THR-1134)
+  | 'incident_bundle'
   // Hex→actor index unresolved actors warning (THR-188)
   | 'engine_warning'
   // Effect shells (THR-53)
@@ -666,6 +668,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Tick-loop observability (THR-580)
   'tick_profile',
   'distance_matrix_rebuild',
+  // Incident snapshot capture (THR-1134)
+  'incident_bundle',
   // Hex→actor index unresolved actors warning (THR-188)
   'engine_warning',
   // Effect shells (THR-53)
@@ -3538,6 +3542,8 @@ export type TraceEntry =
   // Tick-loop observability (THR-580)
   | TickProfileTrace
   | DistanceMatrixRebuildTrace
+  // Incident snapshot capture (THR-1134)
+  | IncidentBundleTrace
   // Hex→actor index engine warning (THR-188)
   | EngineWarningTrace
   // Effect shell traces (THR-53)
@@ -4328,6 +4334,28 @@ export interface DistanceMatrixRebuildTrace extends TraceBase {
   locationCount: number;
   totalRebuildsThisSession: number;
   durationMs?: number;
+}
+
+/**
+ * Trace: an incident snapshot was captured (THR-1134).
+ *
+ * Emitted once per capture — a person pressing a button, so player-scale, with
+ * nothing to batch. `failedSections` is the load-bearing field: a bundle that
+ * shipped with a section as `{ error }` is still a useful bundle, and this is
+ * where a reader learns which block to distrust.
+ */
+export interface IncidentBundleTrace extends TraceBase {
+  category: 'incident_bundle';
+  /** Whether the opt-in world tier was included. */
+  includeWorld: boolean;
+  /** Serialized size of the downloaded file. */
+  bytes: number;
+  /** Sections that built cleanly. */
+  sections: readonly string[];
+  /** Sections that threw and shipped as `{ error }`. */
+  failedSections: readonly string[];
+  /** Whether trace recording was armed when the snapshot was taken. */
+  tracingWasOn: boolean;
 }
 
 /**

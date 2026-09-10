@@ -44,6 +44,8 @@ import type { ForeshadowingResult } from '../types/foreshadowing';
 import type { DetailPage } from '../types/detailPage';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import { createEligibilityFunnelCounters } from './kpi/gameplayKpi';
+import { createIncidentRecorder } from './incidentRecorder';
+import type { IncidentRecorder } from './incidentRecorder';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -231,6 +233,19 @@ export interface SimulationRuntime {
    * until the first tick sets it. Read by `computeBranchingCuratorMultiplier`.
    */
   curationPhaseMultiplier: number;
+
+  // ── Incident flight recorder (THR-1134) ──
+  /**
+   * Two head-indexed rings — the tick events beyond `recentEvents`' hundred, and
+   * a per-tick census row — read by the incident snapshot.
+   *
+   * Owned here rather than at module scope (as `tickHealthMonitor` and
+   * `encounterTimeline` are) per the engine-caches-per-session rule: a module
+   * singleton would carry one playthrough's events into the next bundle, which
+   * would mislead exactly the cold agent the snapshot serves. A fresh runtime per
+   * playthrough is the reset, so no init hook and no reset call are needed.
+   */
+  incidentRecorder: IncidentRecorder;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -269,6 +284,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     roleCensusBuiltAt: -1,
     bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
+    incidentRecorder: createIncidentRecorder(),
   };
 }
 
