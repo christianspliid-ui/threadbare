@@ -1477,7 +1477,7 @@ export function applyEncounterAftermathReaction(
 
       case 'recent_event': {
         const event: TickEvent = {
-          id: `enc_after_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          id: `enc_after_${reaction.id}_${tick}_${runtime.aftermathEventSeq++}`,
           tick,
           type: effect.eventType ?? 'ripple_consequence',
           message: effect.message,
@@ -1844,7 +1844,7 @@ export function applyEncounterAftermathReaction(
               : INTEL_REFERENCED_PROSE_SIGNIFICANCE_DUBIOUS);
 
         const event: TickEvent = {
-          id: `enc_after_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          id: `enc_after_${reaction.id}_${tick}_${runtime.aftermathEventSeq++}`,
           tick,
           type: 'narrative',
           message: proseLine,
@@ -4133,7 +4133,7 @@ export function applyEncounterAftermathReaction(
 
         const pole = driftEntry.toPosition >= 0 ? 'virtue' : 'flaw';
         const event: TickEvent = {
-          id: `drift_register_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          id: `drift_register_${reaction.id}_${tick}_${runtime.aftermathEventSeq++}`,
           tick,
           type: 'narrative',
           message: `Drift registered: ${resolvedAgentId} leans ${pole} on '${effect.axisId}' (${effect.threshold}).`,
@@ -4220,7 +4220,7 @@ export function applyEncounterAftermathReaction(
         const markName = (markNode.properties?.name as string | undefined) ?? resolvedAgentId;
         const poleWord = clampedMag >= 0 ? markAxis.virtue.word : markAxis.vice.word;
         const markEvent: TickEvent = {
-          id: `formative_mark_${reaction.id}_${tick}_${nextRecentEvents.length}`,
+          id: `formative_mark_${reaction.id}_${tick}_${runtime.aftermathEventSeq++}`,
           tick,
           type: 'narrative',
           message: `A defining moment marks ${markName}: lastingly more ${poleWord}.`,
