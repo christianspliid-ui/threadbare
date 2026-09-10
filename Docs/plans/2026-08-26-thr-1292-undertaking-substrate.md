@@ -392,6 +392,15 @@ Conversion default for all 36 existing templates + 7 folded ones: `requiresLocat
 generation (`strategicActionCandidates.ts:365-465`); the `controlPressure` scoring weight; the
 THR-1286 cooldown constants; `'strategic_control'` balance decisionType. THR-1287 ("upkeep does not
 exist") is **superseded by this deletion** — the executor closes it as such when the deletion lands.
+
+> **Correction (2026-09-10).** The deletion landed as THR-1303 (`43b8dfb0`, 2026-09-08) **without** the
+> machine: the six templates, the pressure scorer, the claim gate and the `control_obligation` reason went,
+> but `StrategicControlState`, the neglect/degradation loop and `retireControl` stayed, because the
+> undertaking grid had meanwhile routed `control:claim × Location` through them (impediment #990). The
+> supersession promised above therefore did not happen. Christian ruled on 2026-09-10 that a claimed town
+> is a **commitment** (kept by working it), not a Freehold possession, so the loop is design, not debris;
+> THR-1287 is live and is designed in `2026-09-09-thr-1287-control-upkeep.md`. Do not close THR-1287 on
+> this paragraph.
 The `controls` *edge type* and its 72-file consumer web are **not** this doc: the ownership-edge
 disposition table is doc 2's binding obligation (review §3 row 4). THR-1286's shipped relief
 (cooldown + dead-record hygiene, PR #1647, measured 39.5%→11.3% / 38.7%→5.7% control share) stays

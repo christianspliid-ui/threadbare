@@ -1,0 +1,29 @@
+# Brainstorm — a hold is kept by working it (THR-1287)
+
+*Companion to `2026-09-09-thr-1287-control-upkeep.md`. What was weighed, in the order it came up, 2026-09-09.*
+
+**How this started.** Filed at THR-1286's closeout in August as a design question: control was a timer, not a commitment, and the fix needed a decision about what attending to a hold costs and buys. Then THR-1292 §6 promised to delete the whole apparatus and close this as superseded. Then the grid arrived.
+
+**Is it still live?** THR-1303 went Done on 8 September with the title *the control family deletes, but not the machine underneath it* — the six templates and the pressure scorer went, the stance record and the neglect loop stayed, because `control:claim × Location` now runs through them. Impediment #990 records the reasoning. So the supersession the plan promised never happened, and nothing amended the plan; the ops log flagged it once as *THR-1287's dead supersession*. Live, and now the grid's only sustained mode.
+
+**Three shapes, the ticket's own list.** (1) A distinct upkeep verb. THR-1392's critic already argued `hold` out (*not a completion verb*), Christian merged hold and seize into one `control` verb, and the survey counted thirteen total verb tables a new variant would have to enter. Rejected on cost and on the standing ruling. (2) `claimControl` idempotent-with-renewal. The grid never proposes `control:claim` on a held target (`OWNERSHIP_BY_VERB` says `unowned`; THR-1442 measured `already_held` unreachable), so the renewal would sit behind a door the board never opens. Rejected. (3) An ongoing essence or wealth charge. That is the ascendant's sustained-effect model (`phaseControlEffects`), and a mortal's hold is not a covenant — and a charge with no act is still a timer, just a paid one. Rejected.
+
+**The fourth shape, from what THR-1439 shipped.** `use × Location` is the active harvest — holding court, taxing the market, drawing a tithe — and it is only offered to a holder. That *is* attending to the hold. It already costs the town prosperity and the holder standing, on every band. The strategic prose has said for months that *monopoly is an activity*; the activity now exists and just does not touch the clock. Decided: a completed renewing cell on a held Location resets neglect and recovers a quarter of the grip. `change:raise` joins it — improving what you hold is holding it. `observe` does not (looking is not holding); `change:lower` and `destroy` do not (you do not keep a thing by wrecking it).
+
+**Only success renews.** A failed harvest under THR-1439 pays its costs and yields nothing. If it also renewed, the cheapest way to hold a town would be to fail at it. The band that rolled decides, and success-at-cost counts — scraping through is the game's dominant texture.
+
+**A quarter, not all.** Full recovery on one harvest makes the degradation ramp cosmetic: a holder at 0.9 would be at 0 one cooldown later. A quarter means a neglected hold takes several worked cooldowns to come back, and a hold worked every cooldown never degrades at all — which is the promise the wiki made.
+
+**Seize.** Found while reading `transferHolding`: it moves the `controls` edge and the survey could not find it retiring the loser's stance. If it does not, the loser keeps an active record with no edge for up to thirty ticks — the shape THR-1286 spent a ticket removing. Not asserted either way; the executor writes the test first, and the repair is only if it fails.
+
+**What the player sees.** Nothing new, on purpose. The hold already renders on the hex and in the roster; what changes is that it lasts when worked. One chronicle line when a slipping grip is recovered — not on every harvest, which would be a drumbeat. Whether degradation itself is worded anywhere is the executor's first check, and the visibility-parity rule decides the rest: unrendered means unreported.
+
+**Rules of play.** This is one — a hold is kept by working it — so the rulebook, the canon page and the wiki paragraph move in the same PR, and the stale line in THR-1292 §6 gets a dated correction so no later reader closes this ticket on a deletion that did not include it.
+
+**The verdict the draft had missed, and the answer.** The first judge run found what the survey had not: THR-1280 had already ruled *"never tick maintenance"* and shipped the Freehold. So the real question was whether a claimed town is a commitment or a possession, and it went to Christian as one word. His answer (2026-09-10): *commitment* — and *"probably also a faction position … could open up specific encounters within that faction and influence what undertakings are prioritized."* The first half is this plan; the second is THR-1448, filed rather than folded in, because what a hold *means* to a faction is a system of its own. The Freehold route — finish §6, make the claimed town a possession, delete the clock — is now a named rejection with its reason, not an omission.
+
+**The band predicate.** `isStepSuccess` reads as the obvious test and admits `near_miss`, which would make the constant decorative and let a court held for nothing renew the hold. A rank test against the constant over the ladder's own order, with the table's keys pinned to the type's members, is the shape the forecast-tier lesson taught (impediment #311: a table keyed on five names when the runtime has six values fails silently).
+
+**The word.** "Holding" moved to Freehold under THR-1314 and the clock-based kind had no name. *Hold* is the plan's word; THR-1449 proposes it; the rulebook sentence draws the line in one breath so a reader cannot take one for the other.
+
+**Not taken.** Touching the grace, the rate or the re-claim cooldown — the collapse schedule is right for a hold nobody works. Putting the renewal inside `drawYield` — the harvest should not know stances exist. Any interaction with the ascendant's control effects — different system, different sheet.
