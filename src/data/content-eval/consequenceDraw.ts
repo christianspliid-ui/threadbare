@@ -359,10 +359,13 @@ export function familiesWiredByEffects(
  * guess runtime facts such as whether a given card's actor is the ascendant. A check
  * that reported what it cannot prove would train authors to ignore it.
  *
+ * **Takes effects, not a template.** The first cut took the template so it could read
+ * `targetCategories`; that rule was removed as unsound (see {@link sentinelBindingRefusal}),
+ * and keeping the parameter would advertise a template-awareness this check no longer has.
+ *
  * Returns human-readable violations, never throws (NFP #4).
  */
 export function sentinelBindabilityViolations(
-  template: UnifiedActionTemplate,
   effects: readonly EncounterAftermathReactionEffect[],
 ): readonly string[] {
   const problems: string[] = [];

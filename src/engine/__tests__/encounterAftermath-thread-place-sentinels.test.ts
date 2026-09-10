@@ -34,7 +34,6 @@ import type {
   EncounterAftermathReaction,
   EncounterAftermathReactionEffect,
   UnifiedAction,
-  UnifiedActionTemplate,
 } from '../../types/unifiedAction';
 
 const ASCENDANT_ID = 'asc.archetype.chaos_0';
@@ -118,11 +117,15 @@ function reactionWith(
   } as unknown as EncounterAftermathReaction;
 }
 
-/** A minimal template carrying the two fields the bindability gate reads. */
-function templateTargeting(
-  targetCategories: UnifiedActionTemplate['targetCategories'],
-): UnifiedActionTemplate {
-  return { id: 'encounter.test', targetCategories } as unknown as UnifiedActionTemplate;
+/**
+ * A trace entry's category, widened to `string`.
+ *
+ * The four `thread_mutation_*` categories are emitted through `emitTrace`'s cast and are
+ * not members of the `TraceEntry` union, so a direct `===` is a compile error rather than
+ * a failing assertion — part of the THR-489 baseline, not something this ticket introduces.
+ */
+function traceCategory(entry: unknown): string {
+  return String((entry as { category?: unknown }).category);
 }
 
 // ─── Binder: $ascendant ────────────────────────────────────────────────────────
@@ -293,7 +296,7 @@ describe('thread_strengthen end-to-end (THR-1446)', () => {
       state, selfTargetedAction(MORTAL_ID), reaction, 10, runtime,
     );
 
-    const applied = getTraces().filter(t => t.category === 'thread_mutation_applied');
+    const applied = getTraces().filter(t => traceCategory(t) === 'thread_mutation_applied');
     expect(applied.length, 'the effect must land, not skip').toBe(1);
 
     const edge = state.graph.getOutgoingEdges(ASCENDANT_ID, 'thread')
@@ -316,9 +319,9 @@ describe('thread_strengthen end-to-end (THR-1446)', () => {
       state, selfTargetedAction(MORTAL_ID), reaction, 10, runtime,
     );
 
-    const skipped = getTraces().filter(t => t.category === 'thread_mutation_skipped');
+    const skipped = getTraces().filter(t => traceCategory(t) === 'thread_mutation_skipped');
     expect(skipped.length).toBe(1);
-    expect(getTraces().filter(t => t.category === 'thread_mutation_applied')).toHaveLength(0);
+    expect(getTraces().filter(t => traceCategory(t) === 'thread_mutation_applied')).toHaveLength(0);
   });
 
   it('skips fail-soft when the god holds no thread to that mortal yet', () => {
@@ -334,7 +337,7 @@ describe('thread_strengthen end-to-end (THR-1446)', () => {
       state, selfTargetedAction(MORTAL_ID), reaction, 10, runtime,
     );
 
-    const skipped = getTraces().filter(t => t.category === 'thread_mutation_skipped');
+    const skipped = getTraces().filter(t => traceCategory(t) === 'thread_mutation_skipped');
     expect(skipped).toHaveLength(1);
     // The sentinels resolved — the skip names real ids, not the tokens.
     expect(String((skipped[0] as unknown as Record<string, unknown>).ascendantId)).toBe(ASCENDANT_ID);
@@ -351,7 +354,6 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
     // the binder's kind check correctly refuses to bind a person to `targetLocationId`,
     // and nothing told the author.
     const problems = sentinelBindabilityViolations(
-      templateTargeting(undefined),
       [{ kind: 'apply_condition', targetLocationId: '$actor', conditionId: 'blessed' } as unknown as EncounterAftermathReactionEffect],
     );
 
@@ -362,7 +364,6 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
 
   it('accepts the same effect once it is authored with $here', () => {
     const problems = sentinelBindabilityViolations(
-      templateTargeting(undefined),
       [{ kind: 'apply_condition', targetLocationId: '$here', conditionId: 'blessed' } as unknown as EncounterAftermathReactionEffect],
     );
     expect(problems).toEqual([]);
@@ -371,7 +372,6 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
   it('FALSIFIER — refuses every sentinel but $ascendant on the divine end of a thread', () => {
     for (const sentinel of ['$actor', '$target', '$here', '$cast:priest']) {
       const problems = sentinelBindabilityViolations(
-        templateTargeting(undefined),
         [{ kind: 'thread_strengthen', ascendantId: sentinel, mortalId: '$actor' } as unknown as EncounterAftermathReactionEffect],
       );
       expect(problems.length, `${sentinel} must be refused on ascendantId`).toBe(1);
@@ -382,7 +382,6 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
   it('refuses $here and $ascendant on an agent field', () => {
     for (const sentinel of ['$here', '$ascendant']) {
       const problems = sentinelBindabilityViolations(
-        templateTargeting(undefined),
         [{ kind: 'hidden_mark', targetAgentId: sentinel, category: 'betrayal', severity: 0.5, label: 'x' } as unknown as EncounterAftermathReactionEffect],
       );
       expect(problems.length, `${sentinel} must be refused on targetAgentId`).toBe(1);
@@ -391,7 +390,6 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
 
   it('accepts the canonical thread authoring', () => {
     const problems = sentinelBindabilityViolations(
-      templateTargeting(undefined),
       [{ kind: 'thread_strengthen', ascendantId: '$ascendant', mortalId: '$actor' } as unknown as EncounterAftermathReactionEffect],
     );
     expect(problems).toEqual([]);
@@ -406,7 +404,6 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
     // no gate, so `$target` is accepted on every field it could plausibly satisfy.
     for (const field of ['targetLocationId', 'targetSublocationId', 'targetAgentId', 'targetFactionId']) {
       const problems = sentinelBindabilityViolations(
-        templateTargeting(undefined),
         [{ kind: 'apply_condition', [field]: '$target', conditionId: 'blessed' } as unknown as EncounterAftermathReactionEffect],
       );
       expect(problems, `$target on ${field} must not be reported`).toEqual([]);
@@ -415,7 +412,6 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
 
   it('says nothing about literal node ids — a literal is not a sentinel', () => {
     const problems = sentinelBindabilityViolations(
-      templateTargeting(undefined),
       [{ kind: 'apply_condition', targetLocationId: LOCATION_ID, conditionId: 'blessed' } as unknown as EncounterAftermathReactionEffect],
     );
     expect(problems).toEqual([]);
@@ -423,7 +419,7 @@ describe('sentinelBindabilityViolations (THR-1446)', () => {
 
   it('reports one problem per (kind, field, sentinel), not one per reachable face', () => {
     const bad = { kind: 'apply_condition', targetLocationId: '$actor', conditionId: 'blessed' } as unknown as EncounterAftermathReactionEffect;
-    const problems = sentinelBindabilityViolations(templateTargeting(undefined), [bad, bad, bad]);
+    const problems = sentinelBindabilityViolations([bad, bad, bad]);
     expect(problems).toHaveLength(1);
   });
 });

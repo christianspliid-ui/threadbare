@@ -1577,7 +1577,7 @@ export function checkCompositionContract(
   // on this template's declared target shape. Unconditional rather than gated on
   // `consequenceDraw`: a silently no-opping effect is a defect on any template, drawn
   // hand or not, and the corpus that predates the draw is exactly where it hides.
-  for (const problem of sentinelBindabilityViolations(template, allAftermathEffects(template))) {
+  for (const problem of sentinelBindabilityViolations(allAftermathEffects(template))) {
     add('draw', problem);
   }
 
