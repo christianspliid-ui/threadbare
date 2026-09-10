@@ -170,7 +170,15 @@ describe('incidentBundle', () => {
     clearTraces();
     enableTracing();
     try {
-      emitTrace({ category: 'engine_warning', tick: 12, summary: 'a thing happened' });
+      // A real `engine_warning` payload, required fields and all — an emit that
+      // typechecks only because it was cast would prove nothing about the ring.
+      emitTrace({
+        category: 'engine_warning',
+        tick: 12,
+        source: 'hex_actor_index',
+        unresolvedCount: 1,
+        summary: 'a thing happened',
+      });
       const bundle = buildIncidentBundle(makeState(), createSimulationRuntime(), {});
       const traces = bundle.traces as { armed: boolean; entries: unknown[] };
       expect(traces.armed).toBe(true);

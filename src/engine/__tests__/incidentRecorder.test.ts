@@ -14,7 +14,10 @@ import {
 import type { GameState, TickEvent } from '../../types/gameState';
 
 function evt(tick: number, id: string): TickEvent {
-  return { id, tick, type: 'narrative', description: `event ${id}` } as TickEvent;
+  // No cast: `TickEvent`'s required text field is `message`, and a fixture that
+  // invented `description` and cast over the gap would compile while describing
+  // an event shape the engine never produces.
+  return { id, tick, type: 'narrative', message: `event ${id}` };
 }
 
 /**
