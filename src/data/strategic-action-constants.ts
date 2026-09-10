@@ -11,6 +11,9 @@ import type {
 // rather than restated so the eligibility gate and the word the roster shows the
 // player can never drift apart.
 import { GROUP_FRAY_THRESHOLD } from './group-constants';
+// THR-1450: the bandless-instant convention names a row on the outcome ladder, so it
+// is typed by that ladder rather than by a bare string a typo could invent.
+import type { StepOutcome } from '../types/unifiedAction';
 //
 // All tunable weights, caps, cooldowns, cadence, and catalyst constants
 // for the ambition-driven strategic action system.
@@ -1256,6 +1259,33 @@ export const ARMY_SCOUT_INTELLIGENCE_TYPE = 'army';
 // freehold's yield are tuned by changing a number, never by rewriting a reader.
 
 /**
+ * **The band a completion with no checkpoint reads as (THR-1450).**
+ *
+ * Every table below is keyed by the band the work's final checkpoint landed on. An
+ * **instant** cell — `use` and `observe`, the two verbs whose
+ * `UNDERTAKING_VERB_DURATION` row is `[0,0,0]` — has no checkpoint, so it has no band
+ * to hand its readers. That absence means *"nothing could have gone wrong"*, not
+ * *"the band went missing"*: an instant cell completes by construction, and the
+ * lifecycle has already gated on at least one of its ops succeeding.
+ *
+ * So a bandless completion takes the **plain-success row**, and this constant is the
+ * one place that is said. `executeStrategicAction`'s instant arm stamps it before any
+ * reader sees the completion, so readers are handed a real band and none of them has
+ * to hand-roll the convention — which is what let two families drift out of it:
+ * `yieldBandScale` scaled an absent band to **0**, making `use × Location`'s harvest
+ * pay nothing in every live run (the defect THR-1450 was filed for), while
+ * `maybeSpawnSiteClue` refused a survey's clue outright. Three other readers —
+ * `CONDITION_TIER_CAP_DEFAULT`, `CURSE_DURATION_TICKS_DEFAULT` and `plotDeath`'s
+ * `?? 'success'` — had honoured it all along; `strategic-action-constants.test.ts`
+ * pins those two defaults to this row so the agreement cannot rot back apart.
+ *
+ * A **checkpointed** cell whose band is genuinely missing is the opposite case and
+ * keeps the failure arm: there the absence is a lost reading, not a terminal nothing
+ * could miss. See `renewControlStance`, which ranks it `-1` and renews nothing.
+ */
+export const INSTANT_COMPLETION_BAND: StepOutcome = 'success';
+
+/**
  * How good a lead a survey yields on a ruin- or wonder-class Location, by the band
  * the work landed on. A band absent from this table yields no clue at all — which is
  * what makes observe → clue → delve a climb: only a `critical_success` writes the
@@ -1412,7 +1442,10 @@ export const CONDITION_TIER_CAP_BY_BAND: Readonly<Record<string, number>> = {
   success_at_cost: 1,
 };
 
-/** The tier cap when the completion carried no band (the instant path). */
+/**
+ * The tier cap when the completion carried no band (the instant path) — the
+ * `INSTANT_COMPLETION_BAND` row of the table above, pinned to it by test (THR-1450).
+ */
 export const CONDITION_TIER_CAP_DEFAULT = 1;
 
 /** A curse's `ticksRemaining` by band — three days, two, one, on the 12-tick day. */
@@ -1422,7 +1455,10 @@ export const CURSE_DURATION_TICKS_BY_BAND: Readonly<Record<string, number>> = {
   success_at_cost: 12,
 };
 
-/** A curse's duration when the completion carried no band. */
+/**
+ * A curse's duration when the completion carried no band — the
+ * `INSTANT_COMPLETION_BAND` row of the table above, pinned to it by test (THR-1450).
+ */
 export const CURSE_DURATION_TICKS_DEFAULT = 24;
 
 /** How long a sealed power stays bound, before the band table scales it. */
@@ -1540,6 +1576,10 @@ export const YIELD_DRAW_COOLDOWN_TICKS = 12;
 /**
  * The band scales the lump. A band with no row here scales to nothing — and the costs
  * are paid anyway, which is what makes the harvest a risk rather than a button.
+ *
+ * The harvest is an instant cell, so it reads the `INSTANT_COMPLETION_BAND` row above
+ * (THR-1450). It reaching this table with no band at all was the defect that made it
+ * pay nothing in every live run.
  */
 export const YIELD_DRAW_BAND_SCALE: Readonly<Record<string, number>> = {
   critical_success: 1.5,

@@ -4,10 +4,14 @@ import { executeStrategicAction, advanceStrategicProjects } from '../strategicAc
 import type { GameState } from '../../types/gameState';
 import type { StrategicActionCandidate, StrategicRuntimeState } from '../../types/strategicAction';
 import { mulberry32 } from '../../lib/prng';
+import { readWealth } from '../wealth';
+import { yieldLumpFor } from '../yieldOps';
 import {
   UNDERTAKING_PROGRESS_PER_ADVANCE,
   UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
   UNDERTAKING_TIMEOUT_TICKS,
+  INSTANT_COMPLETION_BAND,
+  YIELD_DRAW_PROSPERITY_COST,
 } from '../../data/strategic-action-constants';
 
 function buildMinimalState(graph: WorldGraph): GameState {
@@ -527,6 +531,85 @@ describe('strategicActionLifecycle', () => {
       expect(completionEvents[0].id).toBe(completions[0].id);
       expect(completionEvents[0].message).toBe(completions[0].label);
       expect(completions[0].undertakingName.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ─── The bandless-instant convention (THR-1450) ───────────────────
+
+  describe('an instant cell completes on the plain-success row', () => {
+    /**
+     * `use × Location` — the harvest — is instant, so its completion carries no
+     * checkpoint band. That absence used to reach `yieldBandScale`, which scaled it to
+     * **0**: the town paid prosperity, the holder paid standing, and the lump was
+     * always nothing. Measured on the filing run (seeds 42 + 99, medium, 150 ticks):
+     * one completion, zero `draw_yield` wealth deltas.
+     *
+     * The assertion is on **banked wealth**, not on the argument passed inward. A test
+     * that spied the call site would pass against a `yieldBandScale` that still zeroed
+     * the row it was handed — it would verify the wiring and not the payout, which is
+     * the half that was broken. Wealth strictly increasing is the thing the player
+     * would notice, so it is the thing pinned.
+     */
+    function heldTownWorld(): WorldGraph {
+      const graph = buildTestGraph();
+      graph.updateNode('actor_1', { properties: { ...graph.getNode('actor_1')!.properties, wealth: 20 } });
+      graph.updateNode('loc_town', { properties: { ...graph.getNode('loc_town')!.properties, prosperity: 70 } });
+      graph.addEdge({
+        id: 'ctl_town', source: 'actor_1', target: 'loc_town', type: 'controls', properties: { since: 0 },
+      });
+      return graph;
+    }
+
+    function harvestCandidate(): StrategicActionCandidate {
+      return makeCandidate({
+        templateId: 'cell.use.location',
+        // `use` reports as the `change` strategic verb — `STRATEGIC_VERB_OF_UNDERTAKING_VERB`.
+        verb: 'change',
+        executionMode: 'instant',
+        displayName: 'Draw the yield',
+        targetNodeId: 'loc_town',
+        objectTypeId: 'location',
+        objectHandle: { kind: 'node', nodeId: 'loc_town' },
+        objectTier: 2,
+      });
+    }
+
+    it('banks a non-zero lump for a worked hold, where an absent band banked nothing', () => {
+      const graph = heldTownWorld();
+      const state = buildMinimalState(graph);
+      const before = readWealth(graph.getNode('actor_1')!.properties);
+
+      executeStrategicAction(state, graph, harvestCandidate(), state.tick, mulberry32(42));
+
+      expect(readWealth(graph.getNode('actor_1')!.properties)).toBeGreaterThan(before);
+    });
+
+    it('still charges the town and the holder for it — the harvest is a risk, not a gift', () => {
+      // The costs were never the broken half; pinning them here keeps the fix from
+      // being "read the good row and skip the price", which would be a different bug.
+      const graph = heldTownWorld();
+      const state = buildMinimalState(graph);
+
+      executeStrategicAction(state, graph, harvestCandidate(), state.tick, mulberry32(42));
+
+      expect(graph.getNode('loc_town')!.properties.prosperity).toBe(70 - YIELD_DRAW_PROSPERITY_COST);
+      const standing = graph.getOutgoingEdges('actor_1', 'reputation_with').find(e => e.target === 'loc_town');
+      expect(standing!.properties.score as number).toBeLessThan(0.5);
+    });
+
+    it('pays the plain-success row and not the best one — the stamp is a floor, not a jackpot', () => {
+      // Falsifies the lazy fix of stamping `critical_success` (or of `?? 1`): a lever
+      // that always crits is as wrong as one that never pays, and both would pass a
+      // test that only asked for "more than zero".
+      const graph = heldTownWorld();
+      const state = buildMinimalState(graph);
+      const before = readWealth(graph.getNode('actor_1')!.properties);
+
+      executeStrategicAction(state, graph, harvestCandidate(), state.tick, mulberry32(42));
+      const banked = readWealth(graph.getNode('actor_1')!.properties) - before;
+
+      expect(banked).toBe(yieldLumpFor(heldTownWorld(), 'loc_town', INSTANT_COMPLETION_BAND));
+      expect(banked).toBeLessThan(yieldLumpFor(heldTownWorld(), 'loc_town', 'critical_success'));
     });
   });
 });
