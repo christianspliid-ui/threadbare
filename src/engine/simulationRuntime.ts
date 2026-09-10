@@ -234,6 +234,26 @@ export interface SimulationRuntime {
    */
   curationPhaseMultiplier: number;
 
+  // ── Aftermath event sequence (THR-1447) ──
+  /**
+   * Monotonic sequence stamped into every aftermath-minted `TickEvent` id.
+   *
+   * Replaces `recentEvents.length`, which read as a uniquifier but is a *saturating*
+   * quantity: `appendRecentEvent` slices to MAX_RECENT_EVENTS, so once the buffer fills
+   * the suffix is the constant 100 and the id degenerates to `<prefix>_<reactionId>_<tick>`.
+   * Two resolutions of one reaction on one tick then minted byte-identical ids — a
+   * duplicate React key on the aftermath list, which React answers by duplicating or
+   * *omitting* rows. An omitted row is an authored choice the player is never shown.
+   *
+   * Deliberately not reset by `resetRuntimeCaches()`, for the same reason the version
+   * counters are not: monotonic within a session is the whole guarantee, and restarting
+   * at 0 mid-session would re-open the collision it exists to close.
+   *
+   * Determinism (NFP #3) holds — the counter advances in the engine's own fixed
+   * resolution order, so the same seed replays the same ids.
+   */
+  aftermathEventSeq: number;
+
   // ── Incident flight recorder (THR-1134) ──
   /**
    * Two head-indexed rings — the tick events beyond `recentEvents`' hundred, and
@@ -284,6 +304,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     roleCensusBuiltAt: -1,
     bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
+    aftermathEventSeq: 0,
     incidentRecorder: createIncidentRecorder(),
   };
 }
