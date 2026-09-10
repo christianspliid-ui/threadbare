@@ -50,6 +50,19 @@ export type BranchStalenessResult = ProbeResult & {
   freshnessKey: string;
 };
 
+/**
+ * What the `linear=` fingerprint token can say (THR-1443).
+ *
+ * `nokey` is deliberately NOT a failure: see `probeLinearReachability`.
+ */
+export type LinearProbeKey = "ok" | "nokey" | "noauth" | "unreachable" | "unknown";
+
+export type LinearProbeResult = ProbeResult & {
+  linearKey: LinearProbeKey;
+};
+
+type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
 
@@ -120,6 +133,26 @@ const COMPUTER_USE_ENV_CANDIDATES = [
   "OPENAI_COMPUTER_USE",
   "OPENAI_CUA_ENABLED",
 ] as const;
+
+/**
+ * Linear reachability probe (THR-1443).
+ *
+ * Endpoint and transport shape mirror `scripts/drift-scan/linear.ts`, deliberately
+ * re-stated rather than imported: that module reads `LINEAR_API_KEY` at module scope,
+ * so importing it would freeze the credential read at import time and make this probe
+ * untestable by injection — a one-line duplication is cheaper than that coupling.
+ */
+const LINEAR_API_URL = "https://api.linear.app/graphql";
+const LINEAR_API_KEY_ENV = "LINEAR_API_KEY";
+/** Cheapest possible authenticated board read: one field, no pagination, no filter. */
+const LINEAR_PROBE_QUERY = "{ viewer { id } }";
+/**
+ * Short on purpose. This runs in the first tool call of every coding session, so the
+ * probe's worst case is a budget item, not a diagnostic nicety (NFP #4). A healthy
+ * round trip measured 337ms from the home machine; 4s leaves ~10x headroom and still
+ * cannot turn a Linear outage into a stalled session.
+ */
+const LINEAR_PROBE_TIMEOUT_MS = 4_000;
 
 const WINDOWS_CMD_EXECUTABLE = "cmd.exe";
 const DEFAULT_NPM_EXECUTABLE = "npm";
@@ -198,6 +231,112 @@ function probeRipgrepAvailability(): ProbeResult {
     durationMs: result.durationMs,
     detail: failureReason,
   };
+}
+
+/**
+ * Is the Linear board reachable at all? (THR-1443)
+ *
+ * ## Why this probe exists
+ *
+ * Every pickup invariant is Linear-mediated — `save_issue(assignee, state:"In Dev")`
+ * *is* the claim — so a lane whose board is dark must report rather than work. On
+ * 2026-09-06 both documented paths were down at once and four lanes across three hours
+ * each discovered it independently, at their first mutation, after booting and
+ * orienting (impediment rows 973 ×5 and 974). **The cost was never the outage; it was
+ * that from the board's side an outage looks exactly like a quiet queue.** This moves
+ * that discovery to the first tool call, where it costs a line instead of a run.
+ *
+ * ## Why `nokey` is not a failure — the trap this probe had to avoid
+ *
+ * A CC lane reaches Linear through the **MCP connector**, which this script cannot
+ * see; `LINEAR_API_KEY` is what seven *scripts* use. The two are independent, and on
+ * the home machine the key is routinely unset while the connector is perfectly live —
+ * measured during this ticket's own implementation run, which claimed THR-1443 through
+ * a healthy connector while `LINEAR_API_KEY` was absent. So a probe that reported "no
+ * key" as a red would have hard-stopped the very session that built it. `nokey`
+ * therefore means *this script had no credential*, and says nothing whatever about
+ * the connector.
+ *
+ * What stays load-bearing without a credential is **reachability**: an unauthenticated
+ * POST is answered with a 401 by a healthy endpoint, which separates "Linear is up and
+ * I simply cannot authenticate to it" from "Linear did not answer" — and the latter is
+ * the 2026-09-06 shape, the one signal this ticket exists to surface.
+ */
+export async function probeLinearReachability(
+  fetchImpl: FetchLike = fetch,
+  apiKey: string | undefined = process.env[LINEAR_API_KEY_ENV]?.trim() || undefined,
+): Promise<LinearProbeResult> {
+  const startMs = Date.now();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (apiKey) headers.Authorization = apiKey;
+
+  const settle = (linearKey: LinearProbeKey, status: ProbeStatus, detail: string): LinearProbeResult => ({
+    name: "linear",
+    status,
+    durationMs: Date.now() - startMs,
+    detail,
+    linearKey,
+  });
+
+  try {
+    const response = await fetchImpl(LINEAR_API_URL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query: LINEAR_PROBE_QUERY }),
+      signal: AbortSignal.timeout(LINEAR_PROBE_TIMEOUT_MS),
+    });
+
+    // A 5xx is reachable-but-unusable. From a lane's side that is indistinguishable
+    // from unreachable — the board cannot be read — so it lands in the same bucket,
+    // with the status code kept in the detail so the two are still tellable apart.
+    if (response.status >= 500) {
+      return settle("unreachable", "no", `endpoint answered HTTP ${response.status} (server error)`);
+    }
+
+    // The endpoint answered, which is the whole of what a credential-free probe can
+    // prove. Without a key that is also everything it is entitled to claim.
+    if (!apiKey) {
+      return settle(
+        "nokey",
+        "unknown",
+        `endpoint reachable (HTTP ${response.status}), but ${LINEAR_API_KEY_ENV} is unset — ` +
+          `says nothing about the MCP connector, which is how CC lanes reach the board; ` +
+          `confirm at your first board read`,
+      );
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return settle("noauth", "no", `endpoint rejected ${LINEAR_API_KEY_ENV} (HTTP ${response.status})`);
+    }
+
+    const payload = (await response.json()) as {
+      data?: { viewer?: { id?: string } };
+      errors?: Array<{ message?: string }>;
+    };
+
+    if (payload.errors?.length) {
+      const message = payload.errors.map((entry) => entry.message ?? "unknown error").join("; ");
+      const isAuthError = /auth|credential|token|permission/i.test(message);
+      return isAuthError
+        ? settle("noauth", "no", `GraphQL auth error: ${message}`)
+        : settle("unknown", "unknown", `GraphQL error: ${message}`);
+    }
+
+    if (payload.data?.viewer?.id) {
+      return settle("ok", "yes", "authenticated board read succeeded");
+    }
+
+    return settle("unknown", "unknown", `HTTP ${response.status} with no viewer payload`);
+  } catch (error) {
+    // Fail-soft is the whole contract here (NFP #4): a timeout, a DNS failure and an
+    // offline sandbox all resolve to a printed token, never a thrown session-blocker.
+    const name = error instanceof Error ? error.name : "";
+    const message = error instanceof Error ? error.message : String(error);
+    if (name === "TimeoutError" || name === "AbortError") {
+      return settle("unreachable", "no", `no answer within ${formatSeconds(LINEAR_PROBE_TIMEOUT_MS)}`);
+    }
+    return settle("unreachable", "no", `request failed: ${message}`);
+  }
 }
 
 function probeGitPushDryRun(): ProbeResult {
@@ -593,10 +732,13 @@ function printProbe(result: ProbeResult): void {
   console.log(`- ${result.name}: ${result.status}${durationSuffix} — ${result.detail}`);
 }
 
-function main(): void {
+async function main(): Promise<void> {
   try {
     const ripgrep = probeRipgrepAvailability();
     const gitDryRun = probeGitPushDryRun();
+    // The one probe that leaves the machine. Bounded and fail-soft by construction, so
+    // it can only ever cost the session `LINEAR_PROBE_TIMEOUT_MS` (THR-1443).
+    const linear = await probeLinearReachability();
     // node_modules health is resolved BEFORE the test probe and handed to it: the
     // health verdict decides whether a timing measurement means anything at all
     // (THR-1326). Print order is unchanged — only the evaluation order moved.
@@ -611,6 +753,7 @@ function main(): void {
     printProbe(npmTestTiming);
     printProbe(computerUse);
     printProbe(nodeModules);
+    printProbe(linear);
     printProbe(branchStaleness);
 
     // A degraded install is the one precheck finding that invalidates the run's
@@ -629,13 +772,16 @@ function main(): void {
       `test=${formatFingerprintTestValue(npmTestTiming)}`,
       `cu=${formatFingerprintComputerUse(computerUse)}`,
       `nm=${formatHealthFingerprint(nodeModules.report)}`,
+      `linear=${linear.linearKey}`,
       `freshness=${branchStaleness.freshnessKey}`,
     ].join(" ");
     console.log(`fingerprint ${fingerprint}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.log(`session-precheck encountered an unexpected error: ${message}`);
-    console.log("fingerprint rg=unknown git=unknown test=unknown cu=unknown nm=unknown freshness=unknown");
+    console.log(
+      "fingerprint rg=unknown git=unknown test=unknown cu=unknown nm=unknown linear=unknown freshness=unknown",
+    );
   }
 
   process.exit(0);
@@ -643,5 +789,7 @@ function main(): void {
 
 // Only run when executed directly (not when imported by tests)
 if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] ?? "")) {
-  main();
+  // Fail-soft to the end: main() already swallows probe failures, and this guards the
+  // one path it cannot — a rejection escaping the async boundary itself (THR-1443).
+  void main().catch(() => process.exit(0));
 }

@@ -334,6 +334,17 @@ Work is not "done" until it is deployed and documented. Do all of these automati
   ```
 
   Never read a behind-count off a detached HEAD. `HEAD..origin/main` on a parked HEAD is arithmetically true and semantically false; treating it as decay is what turned a two-command repair into a multi-day escalation (THR-671).
+- [ ] **Read the `linear=` signal** (THR-1443). Same fingerprint line. Every pickup invariant is Linear-mediated — `save_issue(assignee, state:"In Dev")` *is* the claim — so a lane whose board is dark must report, not work. The token exists because **from the board's side an outage looks exactly like a quiet queue**: on 2026-09-06 four lanes across three hours each rediscovered the same outage at their first mutation (impediment rows 973 ×5, 974).
+
+  | `linear=` | Meaning | Action |
+  |---|---|---|
+  | `ok` | Authenticated board read succeeded | Proceed |
+  | `nokey` | Endpoint answered; this *script* has no `LINEAR_API_KEY` | **Proceed** — says nothing about the MCP connector, which is how CC lanes actually reach the board. The normal state on the home machine |
+  | `noauth` | Endpoint answered and rejected the credential | Expect the connector to be dark too. Confirm with one board read; if it fails, report and do not claim |
+  | `unreachable` | No answer within the timeout, or a 5xx | The 2026-09-06 shape. Report the outage as the run's output; **do not claim** |
+  | `unknown` | The probe could not classify what it got | Carry on; confirm at your first board read |
+
+  **`nokey` is not a failure and never gates a run.** The probe is credential-free by design — it must be able to report that `LINEAR_API_KEY` is missing without needing it — so what it proves without one is *reachability*, which is the half that matters. A lane that treats `nokey` as red hard-stops itself on a perfectly healthy board; the session that built this probe was in exactly that state while claiming its own ticket. Only `noauth` and `unreachable` are report-don't-work signals.
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
   - **Design session:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Design Session Start — a state-filtered fan-out across In Design, Implementation Planning, Ready for Dev, In Dev, and Todo, bucketed in memory by `status` (never an unfiltered `list_issues` — it overflows the response budget; see Limitations §).
   - **Execution session:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs), `list_issues state:"In Dev" assignee:"me"` (resume active work)
