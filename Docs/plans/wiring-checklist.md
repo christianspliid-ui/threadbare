@@ -34,10 +34,20 @@ those makes a wired-looking feature inert — which is the general lesson for th
 checklist: a module reaching an import graph is not the same as it reaching a
 player.
 
-**Left dormant on purpose, chartered not smuggled:** the lens *overlay prose*
-engine in the same module (`resolveLensOverlay`, `shouldFireMortalEcho`,
-`composeLensedProse`) still has no caller. Activating it changes what the player
-reads at the bonding beat, which is an experiential decision — THR-1318.
+**Retired rather than activated (THR-1318, 2026-09-10):** the lens *overlay
+prose* engine in the same module (`resolveLensOverlay`, `shouldFireMortalEcho`,
+`composeLensedProse`), the `LensOverlay` type, the
+`EnrichedDilemmaTemplate.lensOverlays` field and its authored prose are all
+deleted, together with the unit test that asserted the dead side. The charter
+allowed either arm; the corpus decided it. Measured at pickup: overlays were
+authored for exactly **one of twelve Hungers (`gather`) on 10 of 167 dilemmas** —
+157 carried `lensOverlays: []`. Activation would have given `gather` gods an
+occasional extra paragraph and the other eleven nothing, and the mortal echo
+(`echoThreshold: 2` on all ten) could not fire at all for the shipped identity,
+whose `driveTags` narrow to a single tag. The Hunger already reaches the meeting
+through *selection* — `emotionalRegister ∩ hunger.dilemmaResonanceTags`, the live
+`hunger-resonance-weighs-the-meeting-deal` contract — so this was a redundant
+second channel, not the god's only voice.
 
 ## Shared anchor machinery — the `WorldRef` type, adapters, and the live resolver (THR-1212 slice 1)
 
