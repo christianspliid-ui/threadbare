@@ -152,6 +152,25 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 - **Rule 3 — Divine influence is soft-power, expressed through the scene's prose; card faces are library-generic.** *(Amended 2026-07-30/2026-08-25: the original rule — "each encounter writes its own god-verbs" — predates the communication pivot. What survives: never full control, and the scene prose grounds each card in this encounter's named elements. What changed: the card text itself is the shared 21-type library vocabulary, spell-style, never scene-bespoke.)*
 - **Rule 4 — Every primitive is clickable.** Every node type — cast tile, item, clue, place, faction, Ascendant — has a detail page.
 
+## The scene-sentinel vocabulary (THR-1446)
+
+Aftermath effects name people and places with **sentinels**, not node ids — the ids are minted per run, so an author cannot know them. The authoritative table is [`src/engine/sceneSentinels.ts`](../../src/engine/sceneSentinels.ts); read it rather than any prose list, including this one (impediment #725 is what a stale copy costs).
+
+| Sentinel | Binds to | Use it for |
+|---|---|---|
+| `$actor` | the acting agent | the mortal whose scene this is |
+| `$target` | the card's resolved target | whoever or whatever the card was aimed at |
+| `$cast:<key>` | a member of the scene's own cast | the innkeeper, the survivor, the swindler |
+| `$ascendant` | **the player's god** | the divine end of a `thread_*` effect |
+| `$here` | **the place the scene happens at** | any consequence landing on a location or place |
+
+Two of these are new as of 2026-09-10, and both existed to close a gap that made whole consequence families unauthorable:
+
+- **`$ascendant` made the `thread` family real.** The Consequence Draw weights `thread` ≥ 1 in all eight reaches — the floor *is* the design — but `thread_*` effects take a literal `ascendantId`, and the node id is minted as `asc.<archetypeId>`. There was no literal an author could write, so every thread effect skipped. Pair it with `$actor` on `mortalId`.
+- **`$here` made `place` reachable on self-targeted encounters.** `$target` binds a location only when the *card* targets one; most encounters resolve self-targeted, so a `place` consequence wired as `targetLocationId: '$target'` no-opped in silence. **When the consequence lands on a place, write `$here`.**
+
+`check:encounter` now fails a sentinel pointed at a field it can never satisfy. It says nothing about `$target`, deliberately: what an encounter resolves against is a runtime fact no template declares, and a gate that guessed produced a false positive on the first try.
+
 ## Active design plans
 
 - [2026-05-04-encounter-experience-design-plan.md](../plans/2026-05-04-encounter-experience-design-plan.md) — encounter experience design (THR-300). Status: **partially superseded (2026-08-25, THR-1252)** — Rules 1/2/4 and the cast-tile/clickable-primitive decisions stand; Rule 3 (per-scene verb prose on choice cards), §3.4, and §4.3 (voice/Chronicle prose) are superseded by the nudge pivot + Prose Doctrine v2, marked in-file. Consult it for the surviving rules only.
