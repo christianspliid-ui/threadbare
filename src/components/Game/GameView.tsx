@@ -80,6 +80,13 @@ import { GameViewTopBar } from './GameView/GameViewTopBar';
 import { DoomClockDetail } from './DoomClockDetail';
 import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
+import type { OutcomeBand } from '../../engine/outcomeConsequences';
+import {
+  ACTION_VERB_WORDS,
+  ACTION_CONTROL_VERB_WORD,
+  ACTION_SCALE_WORDS,
+} from '../../data/action-card-display';
+import { ACTION_VERB_FALLBACK_WORD } from './actionCardModel';
 import { HarvestScreen } from './HarvestScreen';
 import { AgentInfoCard } from './AgentInfoCard';
 import { ThreadsPanel } from './ThreadsPanel';
@@ -425,8 +432,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Codex overlay (THR-613 Slice 3b-tail): full three-state path catalog ──
   const [codexOpen, setCodexOpen] = useState(false);
   const [codexInitialFilter, setCodexInitialFilter] = useState<CodexRunStateFilter>('all');
+  const [codexInitialEntryId, setCodexInitialEntryId] = useState<string | null>(null);
   const openCodex = useCallback((filter: CodexRunStateFilter = 'all') => {
     setCodexInitialFilter(filter);
+    setCodexInitialEntryId(null);
+    setCodexOpen(true);
+  }, []);
+  /**
+   * Open the codex straight to one entry (THR-1002, Law 21).
+   *
+   * The action card's title is a link, and this is where it goes. Entry ids for
+   * actions are the bare template id, which is what `WheelSlot.templateId` holds.
+   */
+  const openCodexEntry = useCallback((entryId: string) => {
+    setCodexInitialFilter('all');
+    setCodexInitialEntryId(entryId);
     setCodexOpen(true);
   }, []);
 
@@ -2216,6 +2236,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             essenceCost: t.essenceCost ?? 0,
             steps: t.steps.length,
             scale: t.scale,
+            // THR-1002: the two words the card's chips print, alongside the raw
+            // keys above — so a verification run can check the translation rather
+            // than only the schema.
+            verbWord: t.durationMode === 'sustained'
+              ? ACTION_CONTROL_VERB_WORD
+              : ACTION_VERB_WORDS[t.crudType] ?? ACTION_VERB_FALLBACK_WORD,
+            scaleWord: ACTION_SCALE_WORDS[t.scale] ?? '',
           }));
       },
 
@@ -3203,6 +3230,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     return receipts.find(r => !r.acknowledged && r.presentation === 'modal') ?? null;
   }, [gameState.playerActionReceipts, openedReceiptId]);
+
+  /**
+   * The band each action last resolved to, keyed by template id (THR-1002).
+   *
+   * Law 37: the ending wears the chrome of the card that started it — so the
+   * drawer's card wears the fate word of its own last cast. The receipt queue is
+   * the authority on what a cast came to; the drawer is a second *reader* of it,
+   * never a second computer of it.
+   *
+   * Last write wins: the queue is chronological, so casting the same action again
+   * replaces the word rather than accumulating a history the card cannot show.
+   * Acknowledged receipts are kept — the player dismissing the toast does not
+   * un-happen the ending, and the card should still say how it went.
+   */
+  const resolvedBands = useMemo(() => {
+    const bands: Record<string, OutcomeBand> = {};
+    for (const receipt of gameState.playerActionReceipts ?? []) {
+      bands[receipt.templateId] = receipt.outcomeBand;
+    }
+    return bands;
+  }, [gameState.playerActionReceipts]);
 
   const handleAcknowledgeReceipt = useCallback(() => {
     if (!activeReceipt) return;
@@ -4694,6 +4742,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
               onClose={handleDrawerClose}
+              resolvedBands={resolvedBands}
+              onOpenCodexEntry={openCodexEntry}
             />
           )}
 
@@ -4707,6 +4757,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               playingCardId={null}
               onSlotClick={handleNonAgentSlotClick}
               onClose={handleCloseNonAgentDrawer}
+              resolvedBands={resolvedBands}
+              onOpenCodexEntry={openCodexEntry}
             />
           )}
         </div>
@@ -5300,6 +5352,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               onClose={() => setCodexOpen(false)}
               runContext={buildCodexRunContext(gameState)}
               initialStateFilter={codexInitialFilter}
+              initialEntryId={codexInitialEntryId}
             />
           </Suspense>
         </div>

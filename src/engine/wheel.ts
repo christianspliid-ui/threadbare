@@ -12,7 +12,8 @@ import type { RarityTier } from '../types/rarity';
 import type { ActionScale } from '../types/unifiedAction';
 import type { EffectSource } from '../data/actionEffectSource';
 import type { ForecastTier } from '../types/resolution';
-import type { UpkeepWord } from '../data/action-card-display';
+import type { ReachDomain } from '../types/traits';
+import type { ActionCrudType, UpkeepWord } from '../data/action-card-display';
 import type { InterventionType } from '../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../types/dream';
 import { canAfford } from './influence';
@@ -115,6 +116,37 @@ export interface WheelSlot {
    * the designer view.
    */
   upkeepWord?: UpkeepWord;
+  /**
+   * The template id this slot was built from (THR-1002), unprefixed.
+   *
+   * The card's name links to the codex entry, and the codex keys its action
+   * entries on the bare template id — so the link needs the id the slot was made
+   * from rather than `slot.id`, which carries the `target_action_` prefix on one
+   * of the two builders and not the other. Carrying it explicitly is what stops a
+   * third consumer re-deriving it by string surgery, which is how the retired
+   * type line came to exist.
+   */
+  templateId?: string;
+  /**
+   * The CRUD axis the card prints as its verb chip (THR-1002).
+   *
+   * This is the field that killed `parseTypeLine`: the verb used to be recovered
+   * by splitting the slot id on dots and upper-casing the third segment, so a
+   * template whose id did not happen to end in its CRUD type printed the wrong
+   * word — or an empty chip — and a raw schema key reached the face either way
+   * (Law 14). The template declares it; the slot carries it.
+   */
+  crudType?: ActionCrudType;
+  /**
+   * The reach the card's mark shows — the reach of the template's *hardest* step,
+   * not the template's headline reach (THR-1002).
+   *
+   * The hardest step is the one whose difficulty the forecast tier was computed
+   * against, so this is the reach the player's odds actually leaned on. Showing
+   * the headline reach beside a tier word derived from a different one would be
+   * two readings of the same cast that disagree.
+   */
+  reach?: ReachDomain;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────

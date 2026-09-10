@@ -33,6 +33,26 @@ export interface DebugActionInfo {
   essenceCost: number;
   steps: number;
   scale: string;
+  /**
+   * The verb chip's word — *Create · Find · Change · Destroy*, or *Control* for a
+   * sustained working (THR-1002).
+   *
+   * This is what the card prints, so asserting on it verifies the face rather than
+   * the schema behind it. `scale` above is the raw key and stays raw: a debug
+   * accessor is not a player surface, and having both lets a verification run
+   * check the translation itself.
+   */
+  verbWord: string;
+  /** The scale chip's word — *Personal · Local · Regional · Cosmic*. */
+  scaleWord: string;
+  /**
+   * **No `forecastTier` here, deliberately.** A forecast belongs to a *slot*, not a
+   * template: it needs a target and the god's capability in the hardest step's
+   * reach, neither of which this accessor has. Reporting one would mean inventing
+   * a capability, and a fabricated tier is precisely the claim this ticket removed
+   * from the card. Read it off the rendered card
+   * (`[data-testid^="action-card-forecast-"]`), which is the only place it is real.
+   */
 }
 
 /**
@@ -98,6 +118,20 @@ export interface DebugPlayerReceiptInfo {
   band: string;
   acknowledged: boolean;
   changeCount: number;
+  /**
+   * The sentence the toast carried (THR-1002) — read off the receipt, not
+   * recomputed, so this is verbatim what the player was shown.
+   *
+   * Undefined only for a receipt created before the field existed.
+   */
+  toastMessage?: string;
+  /**
+   * True when {@link toastMessage} came from the resolver's overview; false when
+   * it fell back to the band's frame line. The fallback *rate* across a run is
+   * the kill criterion's real threshold — sample this rather than eyeballing
+   * toasts.
+   */
+  toastOverviewUsed?: boolean;
 }
 
 export interface DebugPlayerReceiptsResult {

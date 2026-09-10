@@ -1176,10 +1176,15 @@ export const CONTRACTS: readonly Contract[] = [
     id: 'player-action-receipts-queue',
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',
-    intent: 'A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue.',
-    mechanism: { kind: 'node-prop', symbols: ['playerActionReceipts'] },
+    intent:
+      'A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast\'s fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed.',
+    mechanism: { kind: 'node-prop', symbols: ['playerActionReceipts', 'resolvedBands'] },
     writeSites: ['src/engine/playerReceipts.ts'],
-    readSites: ['src/components/Game/GameView.tsx', 'src/debug-bridge.ts'],
+    readSites: [
+      'src/components/Game/GameView.tsx',
+      'src/components/Game/ActionDrawer.tsx',
+      'src/debug-bridge.ts',
+    ],
   },
   {
     id: 'receipt-event-band-toast',
@@ -1193,6 +1198,34 @@ export const CONTRACTS: readonly Contract[] = [
 
   // ── Player-cast outcome variance (THR-728) ────────────────────────────────
   {
+    id: 'wheel-slot-card-face',
+    producerSystem: ENCOUNTERS,
+    // The registry classifies by domain rather than by layer, and every other
+    // UI-consuming row is filed under the domain it serves. The action card is
+    // where a god decides to spend essence, so this is the divine economy's
+    // surface — not a "UI" subsystem, which the registry deliberately has none of.
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A `WheelSlot` is read as a `CardFaceModel` by `actionCardModel`, so the action card and the nudge card render the same primitive (THR-1002). Law 28: the registry row\'s rendering *is* this face. The slot carries the words — `crudType`, `reach`, `scaleWord`, `upkeepWord`, `forecastTier`, `templateId` — and the adapter chooses vocabulary for them; it never computes a fact of its own. Every numeral the retired card printed (cost badge, `{n} hex`, `{X}% risk`, the per-tick rate) now lives behind the designer-view line.',
+    ulTerms: ['UnifiedActionTemplate'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['actionCardModel', 'CardFaceModel'],
+      module: 'src/components/Game/actionCardModel.ts',
+    },
+    writeSites: ['src/components/Game/actionCardModel.ts'],
+    readSites: [
+      'src/components/Game/ActionCard.tsx',
+      'src/components/shared/CardFace.tsx',
+      'src/components/StyleGuide/StyleGuide.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        'THR-1002: `getTargetActionSlots` populates `templateId`, `crudType` and the hardest step\'s `reach` alongside the three THR-1002 readout fields; `ActionCard` renders `CardFace` through `actionCardModel` and has no layout of its own. `ActionCard.test.tsx` asserts no digit appears anywhere on a fully-populated card and no `[A-Z]{3,} · [A-Z]{3,}` type line survives; `ActionDrawer.test.tsx` asserts the same over the whole drawer plus no `\\p{Extended_Pictographic}`. `NudgeCard.snapshot.test.tsx` (written before the extraction) still passes unchanged, which is the proof the nudge face was not moved to accommodate the action face.',
+    },
+  },
+  {
     id: 'authored-step-difficulty-player-resolution',
     producerSystem: ENCOUNTERS,
     consumerSystem: ENCOUNTERS,
@@ -1201,11 +1234,15 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Domain Capability', 'UnifiedActionTemplate'],
     mechanism: { kind: 'function', symbols: ['resolveUncontestedStep', 'difficulty'], module: 'src/engine/unifiedActionResolution.ts' },
     writeSites: ['src/data/unified-action-templates.ts'],
-    readSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/targetActions.ts'],
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/targetActions.ts',
+      'src/engine/playerCastReadout.ts',
+    ],
     verifiedLive: {
-      date: '2026-07-25',
+      date: '2026-09-10',
       evidence:
-        'THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === \'player\'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card\'s risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: \'target_tier_scaled\'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target\'s tier. Both sites resolve through the same helper, so the card\'s risk line cannot drift from the roll; a step without the marker is returned unchanged.',
+        'THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === \'player\'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card\'s risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: \'target_tier_scaled\'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target\'s tier. Both sites resolve through the same helper, so the card\'s risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card\'s read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god\'s local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.',
     },
   },
 

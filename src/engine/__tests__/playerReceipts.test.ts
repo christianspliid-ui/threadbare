@@ -300,6 +300,38 @@ describe('phasePlayerReceipts', () => {
     ).toBe(true);
   });
 
+  it('records on the receipt itself what the toast said, and where it came from', () => {
+    // THR-1002: the state assertion behind `__DEBUG.listPlayerReceipts()`. The
+    // bridge reports these two fields verbatim rather than re-deriving them, so
+    // an inspector cannot report a sentence the player was never shown — and the
+    // kill criterion's real threshold, the *rate* at which the overview is
+    // unusable, becomes something a run can measure instead of assert.
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, {
+        aftermathSummary: summary({
+          overview: 'The fever breaks before dawn. The household sleeps at last.',
+        }),
+      }),
+    ]);
+    const next = processPlayerReceipts(state, {}) as GameState;
+    const receipt = (next.playerActionReceipts ?? [])[0];
+    expect(receipt?.toastMessage).toBe('The fever breaks before dawn.');
+    expect(receipt?.toastOverviewUsed).toBe(true);
+    // The receipt and the event the player actually saw are one string, not two
+    // independently-composed ones.
+    expect(receipt?.toastMessage).toBe(toastEventFor(state)?.message);
+  });
+
+  it('marks the receipt when the toast fell back to a frame line', () => {
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, { aftermathSummary: summary({ overview: '' }) }),
+    ]);
+    const next = processPlayerReceipts(state, {}) as GameState;
+    const receipt = (next.playerActionReceipts ?? [])[0];
+    expect(receipt?.toastOverviewUsed).toBe(false);
+    expect(Object.values(RECEIPT_FRAME_LINES).flat()).toContain(receipt?.toastMessage);
+  });
+
   it('uses a one-sentence overview whole', () => {
     const state = makeState([
       makeAction(TOAST_TEMPLATE!.id, {

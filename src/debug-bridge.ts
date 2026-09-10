@@ -253,6 +253,11 @@ if (import.meta.env.DEV) {
           band: r.outcomeBand,
           acknowledged: r.acknowledged,
           changeCount: r.changes.length,
+          // THR-1002: read off the receipt, not recomputed. The toast sentence is
+          // the feedback ~93% of casts actually deliver, so an inspector that
+          // re-derived it could report a sentence the player was never shown.
+          toastMessage: r.toastMessage,
+          toastOverviewUsed: r.toastOverviewUsed,
         })),
       };
     },
