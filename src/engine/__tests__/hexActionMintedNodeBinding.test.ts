@@ -26,6 +26,9 @@ import {
 import { executeGraphOps } from '../graphOpExecutor';
 import { EDGE_SCHEMA } from '../../types/edgeSchema';
 import { getLocationNodes } from '../sublocationShape';
+import { getAgentsAtLocation, getLineOfSight } from '../hexZoom';
+import { getAvatarsOf } from '../graphQueries';
+import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import type { GraphOpContext } from '../../types/graphOp';
 
 const COL = 3;
@@ -169,6 +172,157 @@ describe('hex.send_herald places its herald at a real location (THR-1194)', () =
     expect(ops).toEqual([]);
     expect(batch.allSucceeded).toBe(true);
     expect(graph.getAllNodes()).toHaveLength(before);
+  });
+});
+
+describe('hex.send_herald mints an avatar-class herald (THR-1195)', () => {
+  /**
+   * THR-1194 placed the herald; nothing could still find it. The mint omitted
+   * `actorType`, which is the property every agent sweep filters on, so the recipe
+   * shipped green with a tier-1 thread pointing at something no location view renders.
+   *
+   * The recorded decision: a Divine Herald is **avatar-class** — `actorType:
+   * 'individual'` so every sweep sees it, plus an `avatar_of` edge so the autonomous
+   * decision loop takes it back out, exactly as it does for the player's own avatar.
+   *
+   * Every assertion below runs against a **populated** fixture and states **both
+   * polarities**. The ticket's own evidence was `getAgentsAtLocation(loc) → []`, and an
+   * empty sweep passes an "is it absent?" test for free; a sweep that never excludes
+   * anything is not a filter. So each test carries a controlled arm — an ordinary
+   * villager who must be seen where the herald is seen, and excluded nowhere the herald
+   * is excluded.
+   */
+
+  /** The place-tier world, plus an ordinary spotlight villager standing at `loc_hold`. */
+  function worldWithVillager(): WorldGraph {
+    const graph = worldWithPlace();
+    graph.addNode({
+      id: 'villager',
+      type: 'actor',
+      name: 'Hedda',
+      properties: { actorType: 'individual' },
+    });
+    graph.addEdge({
+      id: 'edge.located_at.villager',
+      source: 'villager',
+      target: 'loc_hold',
+      type: 'located_at',
+      properties: {},
+    });
+    // Non-individual arm: a faction at the same location, which the sweep must skip.
+    graph.addNode({
+      id: 'guild',
+      type: 'actor',
+      name: 'The Wright Guild',
+      properties: { actorType: 'faction' },
+    });
+    graph.addEdge({
+      id: 'edge.located_at.guild',
+      source: 'guild',
+      target: 'loc_hold',
+      type: 'located_at',
+      properties: {},
+    });
+    return graph;
+  }
+
+  function heraldIdOf(graph: WorldGraph): string {
+    return graph.getOutgoingEdges('asc', 'thread')[0].target;
+  }
+
+  it('every op succeeds, including the new avatar_of edge', () => {
+    const graph = worldWithVillager();
+    const { batch } = cast(graph, 'hex.send_herald');
+
+    // Read the per-op errors, not just the aggregate: THR-1194's whole lesson is that a
+    // failed op inside a fail-soft batch is a flag nobody reads (impediment #699).
+    expect(batch.results.map(r => r.error ?? null)).toEqual(batch.results.map(() => null));
+    expect(batch.allSucceeded).toBe(true);
+  });
+
+  it('is found by getAgentsAtLocation — the sweep that returned [] before', () => {
+    const graph = worldWithVillager();
+    cast(graph, 'hex.send_herald');
+    const heraldId = heraldIdOf(graph);
+
+    const found = getAgentsAtLocation(graph, 'loc_hold').map(a => a.id);
+
+    // Presence against a populated fixture, not absence against an empty one.
+    expect(found).toContain(heraldId);
+    // Controlled arm: the villager proves the sweep was working all along, so a pass
+    // here cannot come from the sweep having been widened to return everything.
+    expect(found).toContain('villager');
+    // …and the faction proves it is still a filter, not a passthrough.
+    expect(found).not.toContain('guild');
+  });
+
+  it('is excluded from the autonomous decision population, while the villager is not', () => {
+    const graph = worldWithVillager();
+    cast(graph, 'hex.send_herald');
+    const heraldId = heraldIdOf(graph);
+
+    // The exact predicate `phaseAgentDecision` builds its actor list from.
+    const avatarNodeIds = new Set(getAvatarsOf(graph, 'asc').map(a => a.id));
+    const decisionActors = graph
+      .getNodesByType('actor')
+      .filter(n => isAutonomousDecisionActor(n) && !avatarNodeIds.has(n.id))
+      .map(n => n.id);
+
+    expect(decisionActors).not.toContain(heraldId);
+    // Both halves of the exclusion, stated separately: the herald passes the tier test
+    // (so it is genuinely the `avatar_of` edge doing the work, not a tier accident)…
+    expect(isAutonomousDecisionActor(graph.getNode(heraldId)!)).toBe(true);
+    expect(avatarNodeIds).toContain(heraldId);
+    // …and an ordinary individual still reaches the loop, so the filter is not blanket.
+    expect(decisionActors).toContain('villager');
+  });
+
+  it('does not displace the player\'s avatar for the singleton avatar_of readers', () => {
+    // `avatar_of` is `many-to-one` in EDGE_SCHEMA and the decision loop reads it through
+    // the plural `getAvatarsOf`, but roughly eight consumers still take
+    // `getIncomingEdges(ascendantId, 'avatar_of')[0]` to mean *the player's avatar* —
+    // fog of war, hex zoom, avatar movement, the debug bridge. A herald now adds a
+    // second edge, so this locks the invariant those readers depend on: the avatar is
+    // wired at world init, the herald at runtime, and insertion order keeps the avatar
+    // first. Exercised through a real reader rather than the raw edge list.
+    const graph = worldWithVillager();
+    graph.addNode({
+      id: 'loc_far',
+      type: 'location',
+      name: 'Far Watch',
+      properties: { hexCol: 9, hexRow: 9, locationSubtype: 'town' },
+    });
+    graph.addNode({
+      id: 'avatar',
+      type: 'actor',
+      name: 'The Ascendant Walking',
+      properties: { actorType: 'individual' },
+    });
+    graph.addEdge({
+      id: 'edge.avatar_of.avatar',
+      source: 'avatar',
+      target: 'asc',
+      type: 'avatar_of',
+      properties: {},
+    });
+    graph.addEdge({
+      id: 'edge.located_at.avatar',
+      source: 'avatar',
+      target: 'loc_far',
+      type: 'located_at',
+      properties: {},
+    });
+
+    // Line of sight before the herald exists — the baseline the reader must preserve.
+    expect(getLineOfSight(graph, 'asc', { col: 9, row: 9 })).toBe('full');
+
+    cast(graph, 'hex.send_herald');
+    expect(getAvatarsOf(graph, 'asc')).toHaveLength(2);
+
+    // Still the avatar's eyes, not the herald's. If the herald's edge were picked,
+    // these two verdicts would swap.
+    expect(getLineOfSight(graph, 'asc', { col: 9, row: 9 })).toBe('full');
+    expect(getLineOfSight(graph, 'asc', { col: COL, row: ROW })).toBe('none');
   });
 });
 

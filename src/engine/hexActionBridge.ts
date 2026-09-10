@@ -507,6 +507,26 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
    * sublocation would be legal under the schema but is not what "arrives at the hex"
    * means. Fail-soft (NFP #4): a hex with no place-tier location yields no ops. Minting
    * a located-nowhere herald is the very orphan this fixes, so refusing beats shipping.
+   *
+   * ---
+   *
+   * THR-1195 — **a Divine Herald is avatar-class.** THR-1194 placed the herald; this
+   * makes it findable. The mint omitted `actorType`, and every agent sweep in the game
+   * keys on it (`getAgentsAtLocation` filters `actorType === 'individual'`), so the
+   * herald landed with a tier-1 thread on it and no location view could render the
+   * envoy the player's divine attention was pointed at.
+   *
+   * The graph already had the answer for *a thing the god sends into the world that is
+   * seen but not autonomous*: the avatar. `ascendant.ts` types the avatar `individual`
+   * and links it to the ascendant with `avatar_of`; `phaseAgentDecision` excludes every
+   * `avatar_of` source from the autonomous decision loop. So the herald takes the same
+   * two marks and inherits the same standing — visible to every sweep, never a Maslow
+   * agent, never picking its own destinations. No new `ActorType`, no new node type:
+   * the load-bearing rule holds because nothing is invented.
+   *
+   * `avatar_of` is `many-to-one` in `EDGE_SCHEMA` and the decision loop reads it through
+   * the plural `getAvatarsOf`, so a second edge is the shape the schema already
+   * sanctions rather than a squeeze past a singleton.
    */
   'hex.send_herald': (graph, col, row) => {
     const places = getLocationsInHex(graph, col, row).filter(isLocationNode);
@@ -522,6 +542,9 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
           name: SEND_HERALD_NAME,
           archetype: 'herald',
           isHerald: true,
+          // THR-1195: the property every agent sweep filters on. Without it the herald
+          // is located but unfindable — the defect this recipe shipped with.
+          actorType: 'individual',
         },
       },
       {
@@ -529,6 +552,15 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
         edgeType: 'located_at',
         source: '$created_0',
         target: destination.id,
+      },
+      {
+        // THR-1195: avatar-class standing. Being `individual` puts the herald in every
+        // sweep, including `phaseAgentDecision`'s; this edge is what takes it back out
+        // of the autonomous half, exactly as it does for the player's own avatar.
+        op: 'add_edge',
+        edgeType: 'avatar_of',
+        source: '$created_0',
+        target: '$actor',
       },
       {
         op: 'add_edge',
