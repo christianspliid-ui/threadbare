@@ -1619,7 +1619,7 @@ const QUIET_OFFER_HAND: readonly StepNudge[] = [
     // Type: Boost — the common option. Acts on the company's work, not on the
     // member: the surest way to end a quiet conversation is to be needed loudly.
     id: 'company.betrayal.the_work_calls',
-    name: 'The Work Calls Them Back',
+    name: 'Call Them to Work',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
