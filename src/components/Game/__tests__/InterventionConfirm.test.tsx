@@ -25,9 +25,15 @@ describe('InterventionConfirm', () => {
   });
 
   it('shows essence cost and detection risk', () => {
-    render(<InterventionConfirm {...baseProps} />);
+    // THR-1451 (Class B): detection risk reads as pips, not `30%` — Law 15 already names
+    // pips the language for odds. Repointed rather than deleted: the row still has to be
+    // there, so the arm now asserts the reading that replaced the numeral.
+    const { baseElement } = render(<InterventionConfirm {...baseProps} />);
     expect(screen.getByText(/2 mind/i)).toBeTruthy();
-    expect(screen.getByText(/30%/)).toBeTruthy();
+    expect(baseElement.textContent).not.toMatch(/%/);
+    const pips = baseElement.querySelector('[data-testid="detection-risk-pips"]');
+    expect(pips).toBeTruthy();
+    expect(pips!.getAttribute('aria-label')).toBeTruthy();
   });
 
   it('calls onConfirm when confirm button clicked', () => {

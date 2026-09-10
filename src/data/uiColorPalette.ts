@@ -185,6 +185,22 @@ export const EVENT_CATEGORY_COLORS: Record<string, string> = {
 // ============================================================================
 // Hostility Color Scale (replaces raw RGB calc in RivalPanel)
 // ============================================================================
+/**
+ * How a rival's hostility reads in words (UI Law 13).
+ *
+ * THR-1451 lifted this out of `RivalPanel`'s component body, where it was a local
+ * closure: `RivalsButton` needed the same reading and, having no access to it,
+ * had been speaking `highest hostility: 73%` into its `aria-label` instead. One
+ * ladder, every surface that draws hostility (UI Law 3). It sits beside
+ * `getHostilityColor` because the two band the same quantity and must agree.
+ */
+export function hostilityLabel(hostility: number): string {
+  return hostility < 0.25 ? 'wary'
+    : hostility < 0.5 ? 'hostile'
+    : hostility < 0.75 ? 'aggressive'
+    : 'wrathful';
+}
+
 export function getHostilityColor(hostility: number): string {
   const clamped = Math.max(0, Math.min(1, hostility));
   if (clamped < 0.5) {

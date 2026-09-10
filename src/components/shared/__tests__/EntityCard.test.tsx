@@ -246,7 +246,11 @@ describe('EntityCard', () => {
     );
     expect(screen.getByTestId('trigger-block')).toBeTruthy();
     expect(screen.getByText(/Critical failure/)).toBeTruthy();
-    expect(screen.getByText(/10%/)).toBeTruthy();
+    // THR-1451 (Class B): a trigger's firing chance reads as pips, not `10%`. Repointed —
+    // the odds row still has to render, and it still has to carry its reading in words.
+    const pips = screen.getByTestId('trigger-odds-pips');
+    expect(pips).toBeTruthy();
+    expect(pips.getAttribute('aria-label')).toBeTruthy();
     expect(screen.getByText('The blade shatters against the shield...')).toBeTruthy();
     expect(screen.getByText(/Lose possession/)).toBeTruthy();
   });
@@ -271,6 +275,8 @@ describe('EntityCard', () => {
       <EntityCard header={mockHeader} sections={sections} onBack={() => {}} onViewCodex={() => {}} />
     );
     expect(screen.getByText(/Any use/)).toBeTruthy();
-    expect(screen.getByText(/100%/)).toBeTruthy();
+    // THR-1451 (Class B): `100%` is now a full pip row. A certainty still has to read as
+    // something, so the arm asserts the row rather than simply dropping the expectation.
+    expect(screen.getByTestId('trigger-odds-pips')).toBeTruthy();
   });
 });

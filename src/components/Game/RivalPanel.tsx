@@ -4,7 +4,7 @@ import { RivalIcon } from '../shared/RivalIcon';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { ListRow } from '../shared/ListRow';
-import { BEHAVIOR_COLORS, BEHAVIOR_COLOR_DEFAULT, BEHAVIOR_ICONS, getHostilityColor } from '../../data/uiColorPalette';
+import { BEHAVIOR_COLORS, BEHAVIOR_COLOR_DEFAULT, BEHAVIOR_ICONS, getHostilityColor, hostilityLabel } from '../../data/uiColorPalette';
 
 interface RivalPanelProps {
   definitions: RivalDefinition[];
@@ -22,9 +22,6 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
       </p>
     );
   }
-
-  const hostilityLabel = (h: number) =>
-    h < 0.25 ? 'wary' : h < 0.5 ? 'hostile' : h < 0.75 ? 'aggressive' : 'wrathful';
 
   return (
     <div className="space-y-2">

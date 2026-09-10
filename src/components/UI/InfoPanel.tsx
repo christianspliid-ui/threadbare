@@ -1,4 +1,5 @@
 import type { HexTile } from '../../types';
+import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../data/geo-word-bands';
 
 const TERRAIN_DISPLAY: Record<string, string> = {
   ocean: 'Ocean',
@@ -105,14 +106,19 @@ export function InfoPanel({ tile }: InfoPanelProps) {
         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{desc}</p>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
+        {/* THR-1451 (Class C): `73%` moisture was a unitless proportion with no unit and
+            nothing else on this panel rendering it. It is not the ruling's drop case,
+            though — `HexDetailView` had already banded this exact quantity to words, so
+            the sanctioned reading existed and this surface simply had not been given it.
+            One ladder, three surfaces (UI Law 3). */}
         {[
-          { label: 'Elevation', value: tile.geoParams.elevation },
-          { label: 'Temperature', value: tile.geoParams.temperature },
-          { label: 'Moisture', value: tile.geoParams.moisture },
-        ].map(({ label, value }) => (
+          { label: 'Elevation', value: tile.geoParams.elevation, bands: ELEVATION_WORDS },
+          { label: 'Temperature', value: tile.geoParams.temperature, bands: TEMPERATURE_WORDS },
+          { label: 'Moisture', value: tile.geoParams.moisture, bands: MOISTURE_WORDS },
+        ].map(({ label, value, bands }) => (
           <div key={label} className="rounded-lg" style={{ padding: 'var(--space-2)', backgroundColor: 'var(--bg-raised)' }}>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{label}</p>
-            <p style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>{(value * 100).toFixed(0)}%</p>
+            <p style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>{geoWord(value, bands)}</p>
           </div>
         ))}
       </div>

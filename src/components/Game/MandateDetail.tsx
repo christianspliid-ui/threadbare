@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
 import type { MandateDefinition, MandateStage, MandateState } from '../../types/mandate';
 import { Modal } from '../shared/Modal';
 import { ProgressBar } from '../shared/ProgressBar';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
-import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
+import { durationLabel, elapsedLabel, sphereDeltaReading } from '../../engine/aftermathWords';
+import { DeltaCluster } from '../shared/DeltaCluster';
 
 interface MandateDetailProps {
   open: boolean;
@@ -37,10 +39,27 @@ function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-function formatDelta(delta: number | undefined): string {
-  if (delta == null || !Number.isFinite(delta)) return '0%';
-  const pct = Math.round(delta * 100);
-  return `${pct > 0 ? '+' : ''}${pct}%`;
+/**
+ * THR-1451 — a sphere delta reads as a cluster of triangles, never `+7%`.
+ *
+ * Law 15's rescope names the delta cluster the sanctioned language for realised
+ * state change, and THR-1424 left a pointer here saying so while it settled the
+ * *proportion* half of this file. This is that pointer discharged.
+ *
+ * A requirement (`Needs`) draws the same way as an observation (`Observed`) on
+ * purpose: the checkpoint asks the player to compare the two, and two runs of
+ * triangles side by side is a comparison the eye makes without reading. Both
+ * are magnitudes on one ladder — the growth ladder — so one language covers
+ * both, and neither gets a numeral.
+ *
+ * Renders nothing at all for a zero or absent delta: a change that did not
+ * happen says so by drawing no marks, not by drawing `0%` (the same contract
+ * `OddsPips` keeps for a card that moves no odds).
+ */
+function DeltaReading({ delta, noun }: { delta: number | undefined; noun: string }) {
+  const reading = sphereDeltaReading(delta, noun);
+  if (!reading) return <span style={{ color: 'var(--text-muted)' }}>unmoved</span>;
+  return <DeltaCluster direction={reading.direction} count={reading.count} label={reading.label} />;
 }
 
 function formatMetricValue(value: number | undefined): string {
@@ -60,7 +79,10 @@ function getNextCheckpoint(definition: MandateDefinition, state: MandateState) {
   );
 }
 
-function SummaryCard({ label, value, color }: { label: string; value: string; color?: string }) {
+// THR-1451: `value` widened from `string` to a node so a card can carry a delta
+// cluster rather than a formatted numeral. Every existing caller passes a string,
+// which is still a valid `ReactNode` — an additive widening (NFP #6).
+function SummaryCard({ label, value, color }: { label: string; value: ReactNode; color?: string }) {
   return (
     <div style={{
       minWidth: '120px',
@@ -122,8 +144,13 @@ function MetricTrack({
         }}>
           {label}
         </span>
+        {/* THR-1451: `+7% / +12%` was a delta pair standing on top of the bar below,
+            which already reads how far this has come toward its target. What the pair
+            added over the bar was the realised change's own size — so that half stays,
+            in the delta cluster's language, and the target half goes to the bar it was
+            duplicating. */}
         <span style={{ fontSize: 'var(--text-xs)', color: color, fontWeight: 700 }}>
-          {formatDelta(delta)} / {formatDelta(target)}
+          <DeltaReading delta={delta} noun={label} />
         </span>
       </div>
       <ProgressBar progress={progress} color={color} glow={progress >= 1} />
@@ -182,11 +209,11 @@ function CheckpointRow({
             {checkpoint.label}
           </div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {/* THR-1424: the `N% doom` half is a unitless proportion and is dropped. The
-                `needs …` half is a sphere delta, a realised-change magnitude whose sanctioned
-                language is the delta cluster (Law 15 rescope) — a different reading, tracked
-                separately, so it is deliberately left untouched here. */}
-            Needs {formatDelta(checkpoint.requiredPrimaryDelta)}
+            {/* THR-1424 dropped the `N% doom` half as a unitless proportion and left this
+                half for the delta cluster (Law 15 rescope). THR-1451 discharges that: the
+                requirement and the observation below now draw in one language, so the
+                comparison the checkpoint asks for is two runs of triangles. */}
+            Needs <DeltaReading delta={checkpoint.requiredPrimaryDelta} noun={checkpoint.label} />
           </div>
         </div>
         <span style={{
@@ -209,7 +236,7 @@ function CheckpointRow({
           {/* THR-1426 (Shape 1): `on tick 412` named the engine's clock on a player-facing
               line (Laws 13/14). When a checkpoint was evaluated matters only relative to
               now, which is what `elapsedLabel` reads. */}
-          Observed {formatDelta(result.observedPrimaryDelta)}{' '}
+          Observed <DeltaReading delta={result.observedPrimaryDelta} noun={checkpoint.label} />{' '}
           {elapsedLabel((currentTick ?? result.evaluatedTick) - result.evaluatedTick)} ago.
         </div>
       )}
@@ -312,8 +339,15 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
 
         {isSphereGrowth && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
-            <SummaryCard label={definition.primarySphere ?? 'Primary'} value={formatDelta(state.primaryDelta)} color={color} />
-            <SummaryCard label={definition.secondarySphere ?? 'Secondary'} value={formatDelta(state.secondaryDelta)} />
+            <SummaryCard
+              label={definition.primarySphere ?? 'Primary'}
+              value={<DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />}
+              color={color}
+            />
+            <SummaryCard
+              label={definition.secondarySphere ?? 'Secondary'}
+              value={<DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />}
+            />
             <SummaryCard
               label="Omens Held"
               value={`${state.checkpointResults?.filter((result) => result.passed).length ?? 0}/${definition.checkpoints?.length ?? 0}`}

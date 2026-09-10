@@ -92,6 +92,7 @@ import type {
 // The bound lives with the component that draws the marks, so the adapter's
 // clamp and the renderer's clamp cannot drift to different numbers.
 import { DELTA_CLUSTER_MAX } from '../../../shared/DeltaCluster';
+import { GROWTH_DELTA_CLUSTER_COLLAPSE } from '../../../../engine/aftermathWords';
 import type {
   EncounterStageConsequenceCategory,
   EncounterStageConsequenceChipModel,
@@ -180,7 +181,10 @@ export const CONSEQUENCE_CATEGORY_ORDER: readonly EncounterStageConsequenceCateg
  * Index is the **ascending** rung `magnitudeBandIndex` returns — 0 is faintest.
  */
 export const DELTA_CLUSTER_BAND_MAP: Record<'growth' | 'reputation' | 'tally', readonly number[]> = {
-  growth: [1, 1, 2, 3, 3],
+  // THR-1451: sourced from the constant beside the ladder, because the mandate
+  // sheet now draws clusters off the same growth rungs. Two literal copies of a
+  // collapse are two things to retune and one to forget.
+  growth: GROWTH_DELTA_CLUSTER_COLLAPSE,
   reputation: [1, 1, 2, 3, 3],
   tally: [1, 1, 2, 3],
 };

@@ -5,6 +5,7 @@ import { getSphereColor } from '../../data/sphereIcons';
 import { SphereIcon } from '../icons';
 import { Button } from '../shared/Button';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { OddsPips } from '../shared/OddsPips';
 
 export interface InterventionConfirmProps {
   interventionType: InterventionType;
@@ -42,7 +43,6 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
 
   const isOutOfRange = rangeStatus === 'out_of_range';
   const isLocal = deliveryMode === 'local';
-  const riskPercent = Math.round(detectionRisk * 100);
   const canAfford = props.availableEssence == null || props.availableEssence >= essenceCost;
   const sphereColor = getSphereColor(sphere);
 
@@ -222,8 +222,15 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
               >
                 Detection
               </span>
+              {/* THR-1451 (Class B): detection risk is a probability, so it is NOT the
+                  "no sanctioned reading" case THR-1424 answered — Law 15 already names
+                  pips the magnitude language for odds, and this quantity is odds-space
+                  in the sense THR-977 requires (it is the chance of being detected, not
+                  a number that merely happens to sit in 0–1). Converted, not dropped. */}
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                {riskPercent}% risk
+                {detectionRisk > 0
+                  ? <OddsPips value={detectionRisk} data-testid="detection-risk-pips" />
+                  : 'none'}
               </span>
             </div>
             {rangeText && (

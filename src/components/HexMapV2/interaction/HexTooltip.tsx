@@ -3,6 +3,7 @@ import type { LocationActivitySummary, AgentActivityThread } from '../../../type
 import { INTERACTION_CONSTANTS } from './HexRaycaster';
 import { LOCATION_ACTIVITY_CONSTANTS } from '../../../engine/deriveLocationActivities';
 import type { RouteTooltipEntry } from '../../../engine/tradeRouteMarkers';
+import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../../data/geo-word-bands';
 
 /** Max trade routes listed per tooltip before the "(N more)" overflow line. */
 const TOOLTIP_MAX_ROUTES = 3;
@@ -55,15 +56,10 @@ interface HexTooltipProps {
   tradeRoutes?: RouteTooltipEntry[];
 }
 
-/** Format a 0-1 float as a percentage string */
-function pct(v: number): string {
-  return `${(v * 100).toFixed(0)}%`;
-}
-
-/** Format a float to 2 decimal places */
-function f2(v: number): string {
-  return v.toFixed(2);
-}
+// THR-1451 (Class C): `pct()` drew `73%` on the geo row. The reading exists —
+// `HexDetailView` bands the same three parameters to words — so this row takes
+// that ladder rather than the numeral. `f2` goes with it: a two-decimal float is
+// the same Law 13 violation wearing a different format.
 
 /** Movement phase badge for agent thread entries */
 function MovementBadge({ phase }: { phase: AgentActivityThread['movementPhase'] }) {
@@ -297,11 +293,15 @@ export function HexTooltip({
         </div>
       )}
 
-      {/* Dev debug: geo parameters */}
+      {/* Geography, in the words the hex detail view already uses (THR-1451). This
+          block was labelled "dev debug" but is not gated on anything — it renders to
+          every player who hovers a hex, which is exactly the case Law 13 binds. */}
       {geoParams && (
         <div style={{ marginTop: 2, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 2 }}>
-          <div style={dimStyle}>elev {f2(geoParams.elevation)} · temp {f2(geoParams.temperature)}</div>
-          <div style={dimStyle}>moist {pct(geoParams.moisture)}</div>
+          <div style={dimStyle}>
+            {geoWord(geoParams.elevation, ELEVATION_WORDS)} · {geoWord(geoParams.temperature, TEMPERATURE_WORDS)}
+          </div>
+          <div style={dimStyle}>{geoWord(geoParams.moisture, MOISTURE_WORDS)}</div>
         </div>
       )}
     </div>

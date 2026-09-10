@@ -139,12 +139,11 @@ export const EncounterLog = memo(function EncounterLog({
               >
                 Leverage
               </span>
-              <span
-                className="text-xs font-mono"
-                style={{ color: leverageColor }}
-              >
-                {Math.round(progress.leverage * 100)}%
-              </span>
+              {/* THR-1451: filed as Class B (pips), but reading the call site reclassified
+                  it to C. The `ProgressBar` directly below already draws this exact value,
+                  so this is the THR-1424 duplicate-rendering case, not the "no sanctioned
+                  reading" case pips answer. Adding an odds row beside a bar would put two
+                  magnitude languages on one quantity — Law 10 in reverse. */}
             </div>
             <ProgressBar
               progress={progress.leverage}
