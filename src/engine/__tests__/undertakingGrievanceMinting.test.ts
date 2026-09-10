@@ -8,8 +8,9 @@
  * that invents both the node shape and the reader's expectation verifies fiction.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
+import { enableTracing, disableTracing, getTraces, clearTraces } from '../traceBuffer';
 import {
   mintAmbitionsFromEvents,
   buildAmbitionAgentSnapshot,
@@ -18,6 +19,7 @@ import {
 import { createUndertakingOutcomeNode } from '../grievance/undertakingOutcomeNode';
 import { UNDERTAKING_MINTING_RULES, HARM_MAGNITUDE_BY_CLASS } from '../../data/ambition-minting-rules';
 import type { StrategicProjectRuntime } from '../../types/strategicAction';
+import type { UndertakingOutcomeEventTrace } from '../../types/trace';
 
 const VICTIM = 'actor.victim';
 const CULPRIT = 'actor.culprit';
@@ -253,5 +255,139 @@ describe('the mint lane reads undertaking outcomes', () => {
         buildAmbitionAgentSnapshot(graph, VICTIM), new Set(), new Map(),
       )).toBeNull();
     }
+  });
+});
+
+/**
+ * THR-1444 — a harm that outlives the place it was aimed at.
+ *
+ * `originLocationId` is a plain string stamped when the undertaking is created;
+ * `WorldGraph.removeNode` cascades incident edges but cannot reach it. A settlement
+ * retired mid-flight therefore left the origin dangling, and the old
+ * `origin ?? actor position` chain never reached its fallback — a dangling string is
+ * still truthy. `addEdge` threw into a `catch` that only warned, and the event landed
+ * durably with **no site**. Nothing reads a `console.warn`, and the sweep that emitted
+ * it printed `PASS`.
+ *
+ * These drive the real lane rather than asserting the guard's own return value: the
+ * claim under test is *the harm is still witnessable*, and only a witness minting can
+ * settle that. Each arm perturbs one input and confirms the perturbation applied.
+ */
+describe('an undertaking that outlives its origin location (THR-1444)', () => {
+  const REFUGE = 'loc.refuge';
+
+  /**
+   * The origin is razed while the undertaking is in flight; the culprit has since
+   * moved to `REFUGE`, where the bystander stands. Returns the world *after* the
+   * removal, with the perturbation confirmed.
+   */
+  function makeWorldWithDeadOrigin(): WorldGraph {
+    const graph = makeWorld();
+    graph.addNode({ id: REFUGE, type: 'location', name: 'Refuge', properties: {} });
+
+    // Move both the culprit and the witness off the doomed site, so the removal
+    // cannot take their `located_at` edges with it.
+    for (const actorId of [CULPRIT, BYSTANDER]) {
+      graph.getOutgoingEdges(actorId, 'located_at').forEach((e) => graph.removeEdge(e.id));
+      graph.addEdge({
+        id: `${actorId}_loc_refuge`, source: actorId, target: REFUGE,
+        type: 'located_at', properties: {},
+      });
+    }
+
+    graph.removeNode(SITE);
+
+    // Confirm the perturbation: the origin the project still names is gone, and the
+    // culprit stands somewhere that is not.
+    expect(graph.getNode(SITE)).toBeUndefined();
+    expect(makeProject().originLocationId).toBe(SITE);
+    expect(graph.getOutgoingEdges(CULPRIT, 'located_at')[0]?.target).toBe(REFUGE);
+    return graph;
+  }
+
+  function traceFor(nodeProjectId: string) {
+    return getTraces().find(
+      (t): t is UndertakingOutcomeEventTrace =>
+        t.category === 'undertaking_outcome_event' && t.projectId === nodeProjectId,
+    );
+  }
+
+  beforeEach(() => {
+    clearTraces();
+    enableTracing();
+  });
+  afterEach(() => {
+    disableTracing();
+    clearTraces();
+  });
+
+  it('stamps the harm where the actor actually stands, so a witness can still see it', () => {
+    const graph = makeWorldWithDeadOrigin();
+    const nodeId = createUndertakingOutcomeNode({
+      graph, project: makeProject(), harmClass: 'property_destroyed',
+      tick: TICK, victimAgentId: VICTIM,
+    })!;
+
+    // The edge exists at all — this is the assertion that was false before the fix.
+    expect(graph.getOutgoingEdges(nodeId, 'occurred_at')[0]?.target).toBe(REFUGE);
+
+    // …and the point of the edge: somebody standing there can witness the harm. An
+    // edge assertion alone would not distinguish a site from a *witnessable* site.
+    const witnessIds = new Set(
+      (UNDERTAKING_MINTING_RULES.property_destroyed.witness ?? []).map((e) => e.templateId),
+    );
+    let witnessed = false;
+    for (let s = 0; s < 80; s++) {
+      const minted = mintAmbitionsFromEvents(
+        graph, BYSTANDER, TICK, s,
+        buildAmbitionAgentSnapshot(graph, BYSTANDER), new Set(), new Map(),
+      );
+      if (minted && witnessIds.has(minted.templateId)) { witnessed = true; break; }
+    }
+    expect(witnessed).toBe(true);
+
+    const trace = traceFor('proj_raze_1');
+    expect(trace?.siteResolution).toBe('actor_position');
+    expect(trace?.siteId).toBe(REFUGE);
+    // The signal that used to be an unread console.warn.
+    expect(trace?.siteOriginStale).toBe(true);
+  });
+
+  it('still prefers the undertaking own origin when that origin is alive', () => {
+    const graph = makeWorld();
+    const nodeId = createUndertakingOutcomeNode({
+      graph, project: makeProject(), harmClass: 'property_destroyed',
+      tick: TICK, victimAgentId: VICTIM,
+    })!;
+
+    // The controlled arm: same lane, same project, one input un-perturbed. A razing
+    // belongs to the place it happened, not to wherever the razer wandered next.
+    expect(graph.getOutgoingEdges(nodeId, 'occurred_at')[0]?.target).toBe(SITE);
+    const trace = traceFor('proj_raze_1');
+    expect(trace?.siteResolution).toBe('origin');
+    expect(trace?.siteOriginStale).toBeUndefined();
+  });
+
+  it('records a deliberately siteless harm rather than throwing, when nothing is left to point at', () => {
+    const graph = makeWorldWithDeadOrigin();
+    // Strip the last anchor too: the culprit is nowhere the graph knows about.
+    graph.getOutgoingEdges(CULPRIT, 'located_at').forEach((e) => graph.removeEdge(e.id));
+    expect(graph.getOutgoingEdges(CULPRIT, 'located_at')).toHaveLength(0);
+
+    const nodeId = createUndertakingOutcomeNode({
+      graph, project: makeProject(), harmClass: 'property_destroyed',
+      tick: TICK, victimAgentId: VICTIM,
+    });
+
+    // Fail-soft (NFP #4): the event is still durably written and still names its
+    // culprit — losing the site must not lose the record of who did it.
+    expect(nodeId).toBeDefined();
+    expect(graph.getNode(nodeId!)!.properties.culpritAgentId).toBe(CULPRIT);
+    expect(graph.getOutgoingEdges(nodeId!, 'occurred_at')).toHaveLength(0);
+
+    const trace = traceFor('proj_raze_1');
+    expect(trace?.siteResolution).toBe('unresolved');
+    expect(trace?.siteId).toBeUndefined();
+    expect(trace?.siteOriginStale).toBe(true);
   });
 });
