@@ -304,8 +304,13 @@ describe('MandateTracker', () => {
       />
     );
 
-    expect(screen.getByText('mind +9%')).toBeInTheDocument();
-    expect(screen.getByText('spirit +4%')).toBeInTheDocument();
+    // THR-1451 (Class A): a sphere delta reads as a delta cluster, not `mind +9%`.
+    // Repointed rather than deleted — the spheres must still be named and their movement
+    // still drawn, so this asserts both halves of what replaced the numeral.
+    expect(screen.getByText(/mind/)).toBeInTheDocument();
+    expect(screen.getByText(/spirit/)).toBeInTheDocument();
+    const clusters = document.body.querySelectorAll('[role="img"]');
+    expect(Array.from(clusters).some((n) => (n.getAttribute('aria-label') ?? '').includes('rose'))).toBe(true);
 
     fireEvent.click(screen.getByText('Witness Ascendancy'));
 

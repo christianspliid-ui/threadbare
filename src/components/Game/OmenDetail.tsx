@@ -40,10 +40,15 @@ function OmenCard({ omen, currentTick, isPrimary }: { omen: ActiveOmen; currentT
   const intensity = intensityLabel(omen, currentTick);
   const ticksLeft = omen.startTick + omen.duration - currentTick;
 
+  // THR-1451 (Class C): `combat +30% · social -10%` printed a magnitude the player has
+  // nothing to compare it against — no bar here, and it is not odds-space in the sense
+  // THR-977 requires of a pip row (it weights which encounters arrive, not the odds of
+  // one succeeding). What the player acts on is the *direction*: which way this omen
+  // leans. Direction is not magnitude, so it survives the drop as a word.
   const biasParts: string[] = [];
   for (const [type, val] of Object.entries(template.encounterBias)) {
-    if (val > 0) biasParts.push(`${type} +${Math.round(val * 100)}%`);
-    else if (val < 0) biasParts.push(`${type} ${Math.round(val * 100)}%`);
+    if (val > 0) biasParts.push(`${type} favoured`);
+    else if (val < 0) biasParts.push(`${type} dampened`);
   }
 
   return (

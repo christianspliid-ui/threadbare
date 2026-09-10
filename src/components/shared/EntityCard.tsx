@@ -1,6 +1,7 @@
 import React from 'react';
 import type { EntityHeader, EntitySection, StructuredBlock } from '../../types/entityDetail';
 import { elapsedLabel } from '../../engine/aftermathWords';
+import { OddsPips } from './OddsPips';
 
 interface EntityCardProps {
   header: EntityHeader;
@@ -203,8 +204,13 @@ export const EntityCard = React.memo(function EntityCard({
           <div className="space-y-2" data-testid="trigger-block">
             {block.triggers.map((trigger, idx) => (
               <div key={idx} style={{ fontSize: 'var(--text-xs)' }}>
-                <div style={{ color: 'var(--text-primary)' }}>
-                  {'\u26A1'} {trigger.condition} ({Math.round(trigger.probability * 100)}%)
+                {/* THR-1451 (Class B): a trigger's firing chance is a probability, which
+                    Law 15 already gives a language \u2014 pips \u2014 so this converts rather than
+                    dropping. The odds row annotates the condition it belongs to, never
+                    replaces it (Law 15: pips annotate words). */}
+                <div style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{'\u26A1'} {trigger.condition}</span>
+                  <OddsPips value={trigger.probability} data-testid="trigger-odds-pips" />
                 </div>
                 {trigger.narrativeTemplate && (
                   <div className="italic" style={{ color: 'var(--text-tertiary)' }}>

@@ -291,12 +291,8 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                         }}
                       />
                     </div>
-                    <span
-                      className="text-xs tabular-nums"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
-                      {Math.round(detail.factionReputation * 100)}%
-                    </span>
+                    {/* THR-1451 (Class C): the standing bar beside this renders the same
+                        number — dropped per the THR-1424 ruling. */}
                   </div>
                 )}
               </div>
@@ -450,7 +446,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                     >
                       Mentorship · {phaseLabel}
                     </span>
-                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{pct}%</span>
+                    {/* THR-1451 (Class C): the training bar below renders this progress —
+                        the numeral was the same number twice. `pct` survives as the bar's
+                        own width, which is CSS geometry, not a reading. */}
                   </div>
                   <div
                     className="text-xs font-medium mb-2"

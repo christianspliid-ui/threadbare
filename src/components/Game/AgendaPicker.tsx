@@ -116,7 +116,11 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
                     fontSize: 'var(--text-sm)',
                   }}
                 >
-                  {agenda.reachBoost.reach} +{Math.round(agenda.reachBoost.bonus * 100)}%
+                  {/* THR-1451 (Class C): the boost's size had no other rendering here and no
+                      ladder — dropped per the ruling's second limb. Which reach an agenda
+                      favours is the choice the player is making; how much is a number they
+                      cannot compare against the card beside it. */}
+                  {agenda.reachBoost.reach} favoured
                 </span>
                 <span
                   className="font-semibold"

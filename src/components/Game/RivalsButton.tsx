@@ -3,6 +3,7 @@ import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalPanel } from './RivalPanel';
 import { IconButton } from '../shared/IconButton';
 import { Dropdown } from '../shared/Dropdown';
+import { hostilityLabel } from '../../data/uiColorPalette';
 
 interface RivalsButtonProps {
   definitions: RivalDefinition[];
@@ -22,7 +23,16 @@ export function RivalsButton({ definitions, states }: RivalsButtonProps) {
             icon={<span>⚔</span>}
             badge={definitions.length > 0 ? definitions.length : undefined}
             active={open}
-            aria-label={`${definitions.length} Rival God${definitions.length !== 1 ? 's' : ''}${maxHostility > 0 ? ` (highest hostility: ${Math.round(maxHostility * 100)}%)` : ''}`}
+            /* THR-1451: Law 13 binds this string. An `aria-label` is prose spoken to a
+               player, so `highest hostility: 73%` put a percentage in one player's ear
+               that no sighted player is shown — the visibility-parity clause running the
+               wrong way. `hostilityLabel` is the reading `RivalPanel` already speaks, so
+               the button now says the same words the panel behind it does.
+
+               Distinct from `RivalPanel`'s `aria-valuenow`, which stays: that is the
+               meter's machine value — the bar itself in accessible form — not a numeral
+               rendered to anyone. Recorded in laws.md so this is not re-litigated. */
+            aria-label={`${definitions.length} Rival God${definitions.length !== 1 ? 's' : ''}${maxHostility > 0 ? ` (highest hostility: ${hostilityLabel(maxHostility)})` : ''}`}
             onClick={() => setOpen(o => !o)}
           />
           <span className="topbar-section-label topbar-compact-hide">Rivals</span>

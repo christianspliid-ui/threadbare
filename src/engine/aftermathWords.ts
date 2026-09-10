@@ -182,6 +182,64 @@ export function magnitudeBandIndex(value: number, bands: readonly MagnitudeBand[
   return 0;
 }
 
+// ─── Delta cluster readings ──────────────────────────────────────────
+
+/**
+ * THR-1451 — band rung → triangles, for the growth ladder.
+ *
+ * The ladders are five rungs deep and the cluster draws three, so this is a
+ * deliberate collapse rather than a mapping bug: the ladder stays full-depth as
+ * *data* and only the drawn run is coarsened. Indexed by the **ascending** rung
+ * `magnitudeBandIndex` returns — 0 is faintest.
+ *
+ * It lives here, beside the ladder it collapses, rather than in either component
+ * that draws from it (UI Law 3, following THR-1426's `sustainFlowSpheres`). The
+ * aftermath adapter's `DELTA_CLUSTER_BAND_MAP` sources its `growth` row from
+ * this constant, so a retune of the collapse moves the ending and the mandate
+ * sheet together instead of letting one drift behind the other.
+ */
+export const GROWTH_DELTA_CLUSTER_COLLAPSE: readonly number[] = [1, 1, 2, 3, 3];
+
+/** The whole reading a `DeltaCluster` needs, with no numeral in it. */
+export interface DeltaClusterReading {
+  readonly direction: 'gain' | 'loss';
+  readonly count: number;
+  /** Words for the hover tier and the `aria-label` — the rung, spelled out. */
+  readonly label: string;
+}
+
+/**
+ * THR-1451 — a sphere delta as a delta-cluster reading.
+ *
+ * Law 15's rescope makes the delta cluster the sanctioned language for a
+ * *realised state change*, which is what a sphere delta is — and it is
+ * explicitly NOT what THR-1424's proportion ruling settles, as the pointer that
+ * ticket left in `MandateDetail` says. So this is a conversion into an existing
+ * language, not a drop.
+ *
+ * Returns `null` below the ladder's own epsilon: a delta that moved nothing says
+ * so by drawing no cluster, never by drawing an empty one — the same contract
+ * `OddsPips` keeps for a card that moves no odds.
+ *
+ * `noun` names what moved, so the label reads as a sentence a screen reader can
+ * speak ("mind rose steadily") rather than a bare adverb.
+ */
+export function sphereDeltaReading(
+  delta: number | undefined,
+  noun: string,
+): DeltaClusterReading | null {
+  if (delta == null || !Number.isFinite(delta) || delta === 0) return null;
+  const rung = magnitudeBandIndex(delta, GROWTH_MAGNITUDE_BANDS);
+  const count = GROWTH_DELTA_CLUSTER_COLLAPSE[rung] ?? 1;
+  const word = magnitudeWord(delta, GROWTH_MAGNITUDE_BANDS);
+  const direction = delta > 0 ? 'gain' : 'loss';
+  return {
+    direction,
+    count,
+    label: `${noun} ${direction === 'gain' ? 'rose' : 'fell'} ${word}`,
+  };
+}
+
 // ─── Counting ────────────────────────────────────────────────────────
 
 /**
