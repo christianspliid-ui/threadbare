@@ -23,7 +23,7 @@
 // no matter what the component draws. This is the third recurrence of that trap (impediment
 // #1009); it is called out here so the fourth does not have to rediscover it.
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { MandateDetail } from '../MandateDetail';
 import { MandateTracker } from '../MandateTracker';
 import { InterventionConfirm } from '../InterventionConfirm';
@@ -77,6 +77,22 @@ const sphereGrowthState: MandateState = {
     { index: 0, passed: true, exceeded: false, evaluatedTick: 20, observedPrimaryDelta: 0.09 },
   ],
 } as MandateState;
+
+// Real union members, not `as never` — an invented prop shape verifies fiction, and the
+// missing REQUIRED fields (`rangeStatus`, `hexDistance`, `description`) were caught by the
+// ratchet rather than the suite, which renders such a fixture perfectly happily.
+const interventionBaseProps = {
+  interventionType: 'deceive' as const,
+  label: 'Deceive',
+  deliveryMode: 'regional' as const,
+  essenceCost: 2,
+  sphere: 'mind' as const,
+  rangeStatus: 'in_range' as const,
+  hexDistance: 2,
+  description: 'Inject false information into world-model',
+  onConfirm: () => {},
+  onCancel: () => {},
+};
 
 const tile = {
   coord: { col: 3, row: 4 },
@@ -163,16 +179,7 @@ describe('Class A — sphere deltas read as the delta cluster (THR-1451)', () =>
 describe('Class B — probabilities read as pips (THR-1451)', () => {
   it('InterventionConfirm draws a detection-risk pip row instead of "N% risk"', () => {
     const { baseElement } = render(
-      <InterventionConfirm
-        interventionType={'dream' as never}
-        label="Send a dream"
-        deliveryMode={'remote' as never}
-        essenceCost={3}
-        sphere={'mind' as never}
-        detectionRisk={0.35}
-        onConfirm={() => {}}
-        onCancel={() => {}}
-      />
+      <InterventionConfirm {...interventionBaseProps} detectionRisk={0.35} />
     );
     expect(baseElement.textContent).toContain('Detection');
     expect(baseElement.textContent).not.toMatch(/%/);
@@ -184,16 +191,7 @@ describe('Class B — probabilities read as pips (THR-1451)', () => {
 
   it('a risk of zero says so in a word rather than drawing an empty row', () => {
     const { baseElement } = render(
-      <InterventionConfirm
-        interventionType={'dream' as never}
-        label="Send a dream"
-        deliveryMode={'remote' as never}
-        essenceCost={3}
-        sphere={'mind' as never}
-        detectionRisk={0}
-        onConfirm={() => {}}
-        onCancel={() => {}}
-      />
+      <InterventionConfirm {...interventionBaseProps} detectionRisk={0} />
     );
     expect(baseElement.textContent).toContain('none');
     expect(baseElement.textContent).not.toMatch(/%/);
