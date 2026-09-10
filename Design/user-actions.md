@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 01:58 local (2026-09-09 23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 02:57 local (2026-09-10 00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -22,7 +22,7 @@ Yes releases batch 3. Anything short of yes is feedback the line can act on. [Ba
 - [Whether a toll moves wealth or gets deleted](https://linear.app/threadbare/issue/THR-1189) — who pays, out of what, on what cadence.
 - [Whether a page you can open mid-game should exist](https://linear.app/threadbare/issue/THR-1315) — no plan doc; an executor would be inventing the surface.
 - [Activate the pressure system or retire it](https://linear.app/threadbare/issue/THR-1318), and [decide whether that is the design](https://linear.app/threadbare/issue/THR-1148).
-- **New tonight:** [the consequence draw can deal a hand no authored content can wire](https://linear.app/threadbare/issue/THR-1446) — the author burns their one swap fighting the engine instead of the fiction. Batch 2 spent two against a budget of one.
+- **Newest:** [the consequence draw can deal a hand no authored content can wire](https://linear.app/threadbare/issue/THR-1446) — the author burns their one swap fighting the engine instead of the fiction. Batch 2 spent two against a budget of one.
 
 **None of these is a design session.** Say **"rule on the backlog"** and they come to you framed in game terms, smallest first.
 
@@ -64,9 +64,11 @@ What remains is genuinely just intent: **In Design, assigned to you, no plan doc
 
 ### 8. Are weekend-long quiet spells normal too?
 
-You ruled **overnight** quiet normal; **weekends are still unruled**, so the probe keeps raising them — last weekend held a 45-hour gap (Fri 04th → Sun 06th) with nothing recorded to explain it. Last night's 18-hour weekday gap recovered on its own and cost nothing.
+You ruled **overnight** quiet normal; **weekends are still unruled**, so the probe keeps raising them. Its words this run:
 
-One word sets a marker and retires the noise for good. Nothing is lost while the lanes are quiet — work waits, it does not disappear.
+> The scheduled lanes went silent for 44.9h (2026-09-04T14:28:53.000Z → 2026-09-06T11:25:14.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time.
+
+Two shorter 18-hour gaps since then recovered on their own and cost nothing. One word sets a marker and retires the noise for good. Nothing is lost while the lanes are quiet — work waits, it does not disappear.
 
 ## Resolved this period
 
