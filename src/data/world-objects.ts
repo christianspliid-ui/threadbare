@@ -182,10 +182,10 @@ const K = (row: WorldObjectKind): WorldObjectKind => row;
 export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   // ── Places ──
   K({
-    id: 'area', gameWord: 'Area', ulTerm: 'Graph.md#area', worldRef: null,
+    id: 'area', gameWord: 'Area', ulTerm: 'Graph.md#area', worldRef: 'area',
     shape: { kind: 'node', nodeType: 'region' },
     owningSystem: 'World Generation, Terrain & Places', writers: ['worldSeed'], status: 'live',
-    note: 'A multi-hex cluster by dominant terrain feature, containing its locations. Geographic only: political territory is a faction\'s `controls` edges, never a second region kind.',
+    note: 'A multi-hex cluster by dominant terrain feature, containing its locations. Every land hex belongs to exactly one (THR-1155), and the map\'s dotted borders are a projection of that membership rather than a second detector\'s. Geographic only: political territory is a faction\'s `controls` edges, never a second region kind.',
   }),
   K({
     id: 'hex', gameWord: 'Hex', ulTerm: 'Graph.md#hextile', worldRef: 'hex',

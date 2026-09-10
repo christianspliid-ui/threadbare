@@ -235,7 +235,7 @@ export interface EncounterAftermathConceptRef {
    * instance is minted per world, so an author reaches for it through an anchor
    * sentinel rather than a literal id, exactly as they do for a faction.
    */
-  readonly visualKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location';
+  readonly visualKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | 'area';
   /** Display name for the visual's alt text and fallback tile. */
   readonly visualName?: string;
 }

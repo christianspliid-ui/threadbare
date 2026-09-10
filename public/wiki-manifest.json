@@ -253,6 +253,8 @@
       "section": "Manual",
       "sources": [
         "src/engine/visibility.ts",
+        "src/engine/areaProjection.ts",
+        "src/engine/regionDetection.ts",
         "src/engine/phaseHexState.ts",
         "src/engine/phaseMagicalSaturation.ts",
         "src/engine/hexActorIndex.ts",

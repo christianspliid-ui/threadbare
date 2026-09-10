@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { TERRAIN_TO_FEATURE, FEATURE_MIN_SIZE, type RegionFeatureType } from '../regionDetection';
 import type { HexTile, TerrainType } from '../../types';
-import { detectRegions, detectRegionsBorderCost, edgeBorderCost, REGION_MIN_SIZE, REGION_MAX_SIZE, type RegionCluster } from '../regionDetection';
+import { detectRegionsBorderCost, edgeBorderCost, REGION_MIN_SIZE, REGION_MAX_SIZE } from '../regionDetection';
 import { generateWorld } from '../hexGrid';
 
 function tile(col: number, row: number, terrain: TerrainType, elevation = 0.5): HexTile {
@@ -123,83 +123,6 @@ describe('edgeBorderCost', () => {
     const current = tile(0, 0, 'mountains', 0.5);
     const neighbor = tile(1, 0, 'ocean', 0.3);
     expect(edgeBorderCost(current, neighbor, false)).toBeCloseTo(1.0);
-  });
-});
-
-describe('RegionCluster interface', () => {
-  it('has an id field on RegionCluster returned from detectRegions', () => {
-    const tiles: HexTile[] = [
-      tile(0, 0, 'mountains'), tile(1, 0, 'mountains'), tile(2, 0, 'mountains'),
-    ];
-    const regions = detectRegions(tiles);
-    const mountain = regions.find(r => r.featureType === 'mountain_range');
-    // id may be undefined in old RegionCluster — test that new interface has it
-    if (mountain) {
-      expect(typeof (mountain as RegionCluster & { id?: number }).id).toBe('number');
-    }
-    // At minimum, the type shape must compile (no runtime error)
-    expect(true).toBe(true);
-  });
-});
-
-describe('detectRegions', () => {
-  it('groups contiguous same-feature hexes into a cluster', () => {
-    const tiles: HexTile[] = [
-      tile(0, 0, 'mountains'), tile(1, 0, 'mountains'), tile(2, 0, 'mountains'),
-      tile(0, 1, 'grassland'), tile(1, 1, 'grassland'), tile(2, 1, 'grassland'),
-    ];
-    const regions = detectRegions(tiles);
-    const mountains = regions.filter(r => r.featureType === 'mountain_range');
-    expect(mountains).toHaveLength(1);
-    expect(mountains[0].hexes).toHaveLength(3);
-  });
-
-  it('splits non-contiguous same-feature hexes into separate clusters', () => {
-    const tiles: HexTile[] = [
-      tile(0, 0, 'mountains'), tile(1, 0, 'grassland'), tile(2, 0, 'mountains'),
-      tile(0, 1, 'grassland'), tile(1, 1, 'grassland'), tile(2, 1, 'grassland'),
-    ];
-    const regions = detectRegions(tiles);
-    const mountains = regions.filter(r => r.featureType === 'mountain_range');
-    expect(mountains).toHaveLength(0); // each single hex below min size 3
-  });
-
-  it('discards clusters below minimum size', () => {
-    const tiles: HexTile[] = [
-      tile(0, 0, 'mountains'), tile(1, 0, 'mountains'),
-      tile(0, 1, 'grassland'), tile(1, 1, 'grassland'),
-      tile(0, 2, 'grassland'), tile(1, 2, 'grassland'),
-      tile(0, 3, 'grassland'), tile(1, 3, 'grassland'),
-      tile(0, 4, 'grassland'), tile(1, 4, 'grassland'),
-      tile(0, 5, 'grassland'), tile(1, 5, 'grassland'),
-    ];
-    const regions = detectRegions(tiles);
-    const mountains = regions.filter(r => r.featureType === 'mountain_range');
-    expect(mountains).toHaveLength(0);
-    const plains = regions.filter(r => r.featureType === 'plains');
-    expect(plains.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('groups related terrain types (e.g., hills + forested_hills)', () => {
-    const tiles: HexTile[] = [
-      tile(0, 0, 'hills'), tile(1, 0, 'forested_hills'),
-      tile(0, 1, 'hills'), tile(1, 1, 'forested_hills'),
-    ];
-    const regions = detectRegions(tiles);
-    const hillRegions = regions.filter(r => r.featureType === 'hill_country');
-    expect(hillRegions).toHaveLength(1);
-    expect(hillRegions[0].hexes).toHaveLength(4);
-  });
-
-  it('computes centroid for each cluster', () => {
-    const tiles: HexTile[] = [
-      tile(0, 0, 'mountains'), tile(1, 0, 'mountains'), tile(2, 0, 'mountains'),
-    ];
-    const regions = detectRegions(tiles);
-    const mountain = regions.find(r => r.featureType === 'mountain_range');
-    expect(mountain).toBeDefined();
-    expect(mountain!.centerCol).toBe(1);
-    expect(mountain!.centerRow).toBe(0);
   });
 });
 

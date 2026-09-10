@@ -85,7 +85,7 @@ describe('WorldRefKind membership', () => {
   it('the runtime list and the type agree — every member is a kind, and the count is pinned', () => {
     // Pinned so an arm added to the type without a disposition anywhere fails loudly
     // here rather than silently defaulting to "not an anchor" downstream.
-    expect(WORLD_REF_KINDS).toHaveLength(12);
+    expect(WORLD_REF_KINDS).toHaveLength(13);
     for (const kind of WORLD_REF_KINDS) expect(isWorldRefKind(kind)).toBe(true);
   });
 
@@ -185,7 +185,7 @@ describe('toNavigationTarget — partial, and partial in the documented places',
         { agentId: 'actor-hero' }) !== undefined,
     );
     expect([...routable].sort()).toEqual(
-      ['agent', 'encounter', 'faction', 'hex', 'journey', 'location', 'receipt', 'sublocation'],
+      ['agent', 'area', 'encounter', 'faction', 'hex', 'journey', 'location', 'receipt', 'sublocation'],
     );
   });
 });
@@ -386,7 +386,7 @@ describe('kind vocabulary reconciliation', () => {
   });
 
   it('every narrative-segment entityKind is a WorldRefKind', () => {
-    const segmentKinds = ['agent', 'faction', 'artifact', 'companion', 'attachment', 'location'];
+    const segmentKinds = ['agent', 'faction', 'artifact', 'companion', 'attachment', 'location', 'area'];
     for (const kind of segmentKinds) expect(isWorldRefKind(kind)).toBe(true);
   });
 

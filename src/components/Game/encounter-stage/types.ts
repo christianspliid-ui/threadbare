@@ -156,7 +156,7 @@ export interface EncounterStageNarrativeSegment {
    * location sheet. Distinct from `referenceId`'s `location:<key>` grammar,
    * which is scene bookkeeping and opens nothing.
    */
-  entityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location';
+  entityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | 'area';
 }
 
 export interface EncounterStageNarrativeParagraph {
@@ -438,7 +438,7 @@ export interface EncounterStageConsequenceChipModel {
    * imported from `NarrativeSegments`: this module is types-only and stays free
    * of component imports.
    */
-  nounEntityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location';
+  nounEntityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | 'area';
   /** Icon-tile fallback glyph when neither an entity nor a reach resolves. */
   categoryGlyph: string;
   /**

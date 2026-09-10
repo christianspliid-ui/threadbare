@@ -16,6 +16,8 @@ export type NavigationTarget =
   | { kind: 'encounter';  encounterId: string; encounterNotification?: EncounterNotification }
   | { kind: 'hex';        col: number; row: number }
   | { kind: 'location';   locationNodeId: string }
+  /** An Area (THR-1155). Focuses its centre hex — the hex chronicle is the Area's surface. */
+  | { kind: 'area';       areaId: string }
   | { kind: 'faction';    factionId: string }
   | { kind: 'journey';    journeyId: string; agentId: string }
   | { kind: 'receipt';    receiptId: string };

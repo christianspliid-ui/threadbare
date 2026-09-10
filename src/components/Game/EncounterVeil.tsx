@@ -66,7 +66,7 @@ export interface EncounterVeilProps {
    * live one's clothes. A host that omits this leaves those names emphasised
    * and unclickable, which is the fail-open behaviour.
    */
-  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact' | 'attachment' | 'location') => void;
+  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact' | 'attachment' | 'location' | 'area') => void;
   /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
   onShowOnMap?: (col: number, row: number) => void;
   /**
@@ -541,7 +541,7 @@ export function EncounterVeil({
      */
     const openEntity = (
       entityId: string | undefined,
-      kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | undefined,
+      kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | 'area' | undefined,
     ): (() => void) | undefined => {
       if (!entityId) return undefined;
       // Absent kind = the narrative linker's cast scan, which has always been
@@ -566,6 +566,12 @@ export function EncounterVeil({
       // list and the hex map already reach. It needed no new destination, only a
       // door — which is why the fix is a union member and a prop widening rather
       // than a surface.
+      //
+      // THR-1155 — `area` joins on the same terms, with one difference worth stating:
+      // an Area has no sheet of its own. Its surface is the hex chronicle, which names
+      // it and tells its history, so the host routes to the Area's centre hex. The
+      // destination existed before the kind did; what was missing was a membership
+      // solid enough for a chip to point at.
       return onSelectEntity ? () => onSelectEntity(entityId, kind) : undefined;
     };
 

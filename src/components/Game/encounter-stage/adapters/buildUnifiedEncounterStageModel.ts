@@ -747,6 +747,11 @@ function buildAftermath(
       // rather than a wrong glyph. `EntityVisualKind` excludes it, so removing
       // this guard is a type error, not a silent regression.
       if (kind === 'attachment') return undefined;
+      // THR-1155 — an Area is the second kind with a route and no tile. It is a
+      // stretch of ground: the map draws its dotted border and its label, and there is
+      // no portrait of a mountain range that a chip could carry. Same guard, same
+      // reason, same compile-time enforcement — `EntityVisualKind` excludes it.
+      if (kind === 'area') return undefined;
       const entityId = concept.entityId ?? concept.visualName ?? concept.text;
       const name = concept.visualName ?? concept.text;
       const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);

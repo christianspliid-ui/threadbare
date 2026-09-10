@@ -655,7 +655,10 @@ describe('concept decorations (THR-1004)', () => {
         // entity-visual family, so the adapter never hands one to a resolver.
         // Mirroring that guard here is what keeps the mock a faithful stand-in;
         // without it the mock would claim to resolve a tile production cannot.
-        if (!concept.visualKind || concept.visualKind === 'attachment') return undefined;
+        // THR-1155 — `area` is the second such kind: a stretch of ground with a route
+        // and no portrait.
+        if (!concept.visualKind) return undefined;
+        if (concept.visualKind === 'attachment' || concept.visualKind === 'area') return undefined;
         return {
           entityId: concept.entityId ?? concept.visualName ?? concept.text,
           kind: concept.visualKind,

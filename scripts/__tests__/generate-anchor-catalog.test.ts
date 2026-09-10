@@ -113,9 +113,16 @@ describe('anchor catalog — the findings it records', () => {
     expect(NODE_TYPE_ROWS['nation' as keyof typeof NODE_TYPE_ROWS]).toBeUndefined();
   });
 
-  it('records `region` as the real "named area", so the gap table stays honest', () => {
+  it('records `region` as the Area — linked since THR-1155, not merely named', () => {
+    // This asserted `named` until THR-1155 slice 1: an Area had a name a player could
+    // read and nothing that could act on it, because membership lived in a
+    // renderer-side cluster list joined to the node by list position. It is now a
+    // partition of the world — every land hex carries its Area's node id, an effect
+    // scoped `region` resolves through it, and a reference of kind `area` routes to
+    // the Area's centre hex. The gap it recorded is closed, so the row moved rather
+    // than the assertion being relaxed.
     expect(nodeTypes).toContain('region');
-    expect(NODE_TYPE_ROWS.region.status).toBe('named');
+    expect(NODE_TYPE_ROWS.region.status).toBe('linked');
   });
 
   it('pins the link-routing set to `visualKind`, which is what openEntity switches on', () => {
@@ -128,8 +135,13 @@ describe('anchor catalog — the findings it records', () => {
     // clickable referent, so a scene could name the ground it stood on and the
     // word could not even declare itself openable. The destination already
     // existed (`LocationProfileModal`, reached by the thread list and the hex
-    // map) — only the door was missing. `region` stays out: it is a named area
-    // with no sheet, and the row above pins that distinction.
+    // map) — only the door was missing.
+    //
+    // **THR-1155 added `area`.** It is the second member with a route and no tile
+    // (`attachment` was the first): the Area has no sheet and no portrait, but it does
+    // now have a destination — its centre hex, where the chronicle names it and tells
+    // its history — and a membership that a chip naming it can be checked against.
+    // Before the slice it stayed out precisely because neither existed.
     expect(parseVisualKinds(aftermathSource, 'src/types/unifiedAction.ts')).toEqual([
       'agent',
       'faction',
@@ -137,6 +149,7 @@ describe('anchor catalog — the findings it records', () => {
       'companion',
       'attachment',
       'location',
+      'area',
     ]);
   });
 
@@ -360,18 +373,18 @@ describe('kind vocabulary — the four chip/segment unions are pinned to each ot
     expect(mirrors).toHaveLength(4);
     for (const mirror of mirrors) {
       expect([...mirror.members].sort()).toEqual(
-        ['agent', 'artifact', 'attachment', 'companion', 'faction', 'location'],
+        ['agent', 'area', 'artifact', 'attachment', 'companion', 'faction', 'location'],
       );
     }
   });
 });
 
 describe('kind vocabulary — the parsers refuse to guess', () => {
-  it('reads all seven `NavigationTarget` arms despite semicolons inside the braces', () => {
+  it('reads all eight `NavigationTarget` arms despite semicolons inside the braces', () => {
     const notificationSource = read('src/types/notification.ts');
     expect(
       parseDiscriminatedUnionKinds(notificationSource, 'NavigationTarget', 'src/types/notification.ts'),
-    ).toEqual(['agent', 'encounter', 'hex', 'location', 'faction', 'journey', 'receipt']);
+    ).toEqual(['agent', 'encounter', 'hex', 'location', 'area', 'faction', 'journey', 'receipt']);
   });
 
   it('is why the plain union parser cannot be used here', () => {
