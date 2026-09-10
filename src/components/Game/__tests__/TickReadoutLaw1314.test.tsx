@@ -274,11 +274,13 @@ describe('THR-1423 — no player-facing surface renders a raw tick count', () =>
     });
     expect(desc.textContent).toContain(`${FOUR_DAYS} remaining`);
     expect(desc.textContent).not.toMatch(/tick/i);
-    // NOT numeral-free as a whole: `strengthPct` is deliberately still a percentage here.
-    // Law 13 bans it outright with no sanctioned alternative, so replacing it is a Law 15
-    // ruling, split to THR-1424 rather than invented in this diff. This arm pins that the
-    // split was deliberate — when THR-1424 lands it should fail and be tightened.
-    expect(desc.textContent).toMatch(/%/);
+    // TIGHTENED BY THR-1424 (2026-09-10), exactly as the previous arm here anticipated. That
+    // arm pinned `toMatch(/%/)` — the deliberate split, recording that `strengthPct` was left
+    // alone pending a Law 15 ruling. The ruling landed: a unitless proportion is dropped, its
+    // reading being whatever the surface renders non-numerically (here, the strength bar). So
+    // the tooltip is now numeral-free as a whole.
+    expect(desc.textContent).not.toMatch(/%/);
+    expect(desc.textContent).not.toMatch(/strength/i);
   });
 
   it('AgentInfoCard: a permanent effect drops the term clause instead of reading it as present', async () => {
@@ -300,12 +302,20 @@ describe('THR-1423 — no player-facing surface renders a raw tick count', () =>
     render(<AgentInfoCard card={card} onViewProfile={() => {}} onBack={() => {}} />);
     fireEvent.focus(screen.getByText('Blessed').closest('span')!);
 
-    const desc = await screen.findByText(/strength/, undefined, {
+    // THR-1424 moved this arm's anchor. It used to find the popup by its `strength` clause,
+    // which was the only text a permanent effect's tooltip still carried once THR-1423 removed
+    // the term clause. That clause is now dropped too, so a permanent effect's tooltip has no
+    // description at all — and anchoring on `role="tooltip"` proves the popup OPENED, which a
+    // text query for absent text never could. Without that proof the three negative arms below
+    // would pass on a tooltip that never rendered.
+    const popup = await screen.findByRole('tooltip', undefined, {
       timeout: TOOLTIP_SHOW_DELAY + 800,
     });
-    expect(desc.textContent).not.toMatch(/undefined/);
-    expect(desc.textContent).not.toMatch(/remaining/);
-    expect(desc.textContent).not.toMatch(/·\s*$/);
+    expect(popup.textContent).not.toMatch(/undefined/);
+    expect(popup.textContent).not.toMatch(/remaining/);
+    expect(popup.textContent).not.toMatch(/·\s*$/);
+    // ...and the percentage that used to sit here is gone with it (Law 13 / Law 15).
+    expect(popup.textContent).not.toMatch(/%/);
   });
 
   // ── AttachmentsTab / ProwessTab (shared entry-row shape) ─────────────────

@@ -43,8 +43,7 @@ export type WorldRefKind =
   | 'army'
   | 'encounter'    // live encounter/action id
   | 'journey'
-  | 'receipt'      // divine receipt id
-  | 'codex';       // reserved — no in-game codex destination exists yet (see WORLD_REF_RESERVED_KINDS)
+  | 'receipt';     // divine receipt id
 
 /**
  * Every `WorldRefKind`, as a runtime value.
@@ -67,19 +66,25 @@ export const WORLD_REF_KINDS: readonly WorldRefKind[] = [
   'encounter',
   'journey',
   'receipt',
-  'codex',
 ];
 
 /**
  * Kinds that are legal to *name* but have no destination to route to yet.
  *
- * `codex` is reserved rather than omitted: `?view=codex` is a full-page navigation
- * that tears down the running simulation, so there is no in-game codex surface for a
- * link to open. Recording it as reserved keeps the gap visible to the catalog instead
- * of letting it read as an oversight; `toNavigationTarget` returns `undefined` for it,
- * which is the fail-soft every other unroutable kind takes (NFP #4, Law 21).
+ * **Empty, deliberately (THR-1315 ruling, 2026-09-10).** `codex` was the sole member
+ * and has left `WorldRefKind` entirely: the only codex surface is `?view=codex`, a
+ * full-page swap that tears down the running simulation, and nothing in the queue
+ * charters a mid-game overlay. A reserved kind nothing can route to is a promise with
+ * no mechanism, and the standing sunset-by-default rule deletes such a promise rather
+ * than keeping it as a placeholder.
+ *
+ * The list is kept rather than removed because re-adding a kind is then additive
+ * (NFP #6): if the Codex project (THR-52) is chartered, `codex` returns with its
+ * `NavigationTarget` arm and its catalog row in the same PR. Two readers depend on
+ * the export — `scripts/generate-world-objects.ts` and the world-objects coverage
+ * test — so an empty list is live machinery, not dead code.
  */
-export const WORLD_REF_RESERVED_KINDS: readonly WorldRefKind[] = ['codex'];
+export const WORLD_REF_RESERVED_KINDS: readonly WorldRefKind[] = [];
 
 /** Whether `kind` names a thing nothing can currently route to. */
 export function isReservedWorldRefKind(kind: WorldRefKind): boolean {

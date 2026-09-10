@@ -340,6 +340,8 @@ Per `Docs/plans/wiring-checklist.md`, each new surface must be wired across engi
 |---|---|---|
 | Orchestrator phase | None — name generation is worldgen-time and birth-time, both outside the tick loop | N/A |
 | GameState flow | Culture nodes gain a new property (`culturePhoneticSignature`). No separate GameState field. | Survives save/load because it's on the graph. |
+
+> **Correction, 2026-09-10 (THR-1134):** there is no save/load, so "survives save/load" is unfalsifiable rather than true. The design decision it justifies — keep the signature on the graph node rather than in a parallel `GameState` field — is still the right one for every other reason, so nothing here needs redesigning; only the stated reason was borrowed from a feature the repo does not have. Worth knowing if save/load is ever built: `JSON.stringify` on a `WorldGraph` yields `{"nodes":{},…}`, so "it's on the graph" would not have carried it anyway.
 | Debug panel | Culture tab gains phonetics sub-panel | New component: `CulturePhoneticsInspector.tsx` |
 | CMS | Culture list row extended | Touches `CultureBrowser.tsx` or equivalent |
 | Traces | `culture_phonetic_signature_built`, `phonetic_name_generated` | Wired via `emitTrace()` from `culturePhonetics.ts` |

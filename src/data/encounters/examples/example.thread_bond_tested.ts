@@ -1,6 +1,12 @@
 // THR-116: Gold-standard example — `when` predicate gating + thread mutation effects.
 // Demonstrates: conditional aftermath reactions, thread_strengthen, thread_weaken.
 // This is not a real game encounter — it is the canonical authoring reference for THR-116.
+//
+// THR-1446: the thread effects below used to carry bare `'self'` / `'actor'` literals,
+// which named no node — so this reference illustrated a shape that could not have worked
+// if anyone had run it, and the `thread` consequence family was unwirable corpus-wide.
+// They now use the real sentinels: `$ascendant` (the player's god, resolved from
+// `GameState.ascendantId`) and `$actor` (the mortal in the scene). Copy this shape.
 
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 
@@ -26,8 +32,8 @@ export const EXAMPLE_THREAD_BOND_TESTED: Partial<UnifiedActionTemplate> = {
         // and an aftermath_effect_skipped_by_when trace is emitted.
         {
           kind: 'thread_strengthen',
-          ascendantId: 'self',
-          mortalId: 'actor',
+          ascendantId: '$ascendant',
+          mortalId: '$actor',
           delta: 0.15,
           reason: 'Proved loyalty under duress',
           when: 'health_high',
@@ -35,8 +41,8 @@ export const EXAMPLE_THREAD_BOND_TESTED: Partial<UnifiedActionTemplate> = {
         // Strengthen by a smaller amount even when health is low (no when = always fires)
         {
           kind: 'thread_strengthen',
-          ascendantId: 'self',
-          mortalId: 'actor',
+          ascendantId: '$ascendant',
+          mortalId: '$actor',
           delta: 0.05,
           reason: 'Loyalty noted, despite wounds',
         },
@@ -55,8 +61,8 @@ export const EXAMPLE_THREAD_BOND_TESTED: Partial<UnifiedActionTemplate> = {
         // Weaken the thread — fires unconditionally on this branch.
         {
           kind: 'thread_weaken',
-          ascendantId: 'self',
-          mortalId: 'actor',
+          ascendantId: '$ascendant',
+          mortalId: '$actor',
           delta: 0.2,
           reason: 'Failed at the critical moment',
         },

@@ -1,5 +1,7 @@
 import React from 'react';
 import type { EntityHeader, EntitySection, StructuredBlock } from '../../types/entityDetail';
+import { elapsedLabel } from '../../engine/aftermathWords';
+import { OddsPips } from './OddsPips';
 
 interface EntityCardProps {
   header: EntityHeader;
@@ -7,6 +9,13 @@ interface EntityCardProps {
   onBack: () => void;
   onViewCodex: () => void;
   onZoomToLocation?: (locationId: string) => void;
+  /**
+   * Current simulation tick, so a timeline block reads how long ago each event was rather
+   * than printing the engine clock index (THR-1426). Optional: no producer builds a timeline
+   * block today, so the branch is unreachable — it was converted anyway so the next caller to
+   * use it does not ship a Law 13/14 violation by default. Absent, rows read `less than a day`.
+   */
+  currentTick?: number;
 }
 
 /**
@@ -19,6 +28,7 @@ export const EntityCard = React.memo(function EntityCard({
   onBack,
   onViewCodex,
   onZoomToLocation,
+  currentTick,
 }: EntityCardProps) {
   const renderStructuredBlock = (block: StructuredBlock): React.ReactNode => {
     switch (block.type) {
@@ -183,7 +193,7 @@ export const EntityCard = React.memo(function EntityCard({
                 <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
                   {event.label}
                 </div>
-                <div style={{ color: 'var(--text-muted)' }}>Tick {event.tick}</div>
+                <div style={{ color: 'var(--text-muted)' }}>{elapsedLabel((currentTick ?? event.tick) - event.tick)} ago</div>
               </div>
             ))}
           </div>
@@ -194,8 +204,13 @@ export const EntityCard = React.memo(function EntityCard({
           <div className="space-y-2" data-testid="trigger-block">
             {block.triggers.map((trigger, idx) => (
               <div key={idx} style={{ fontSize: 'var(--text-xs)' }}>
-                <div style={{ color: 'var(--text-primary)' }}>
-                  {'\u26A1'} {trigger.condition} ({Math.round(trigger.probability * 100)}%)
+                {/* THR-1451 (Class B): a trigger's firing chance is a probability, which
+                    Law 15 already gives a language \u2014 pips \u2014 so this converts rather than
+                    dropping. The odds row annotates the condition it belongs to, never
+                    replaces it (Law 15: pips annotate words). */}
+                <div style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{'\u26A1'} {trigger.condition}</span>
+                  <OddsPips value={trigger.probability} data-testid="trigger-odds-pips" />
                 </div>
                 {trigger.narrativeTemplate && (
                   <div className="italic" style={{ color: 'var(--text-tertiary)' }}>

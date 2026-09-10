@@ -413,8 +413,11 @@ describe('WorldRef no-op gate — declared chip anchors resolve in a seeded worl
       expect(resolved).toBe(hollow);
       expect(namesSomethingReal(graph, 'agent', resolved!)).toBe(false);
 
+      // A malformed hex id: the one reference that drops without consulting the graph
+      // at all, so the drop-log half of the gate is exercised independently of node
+      // lookup. (Was a `codex` ref until THR-1315 removed that kind from the spine.)
       const dropped = resolveWorldRef(
-        { kind: 'codex', id: 'anything' },
+        { kind: 'hex', id: 'anything' },
         { graph, surface: 'noop-gate-falsification' },
       );
       expect(dropped).toBeUndefined();

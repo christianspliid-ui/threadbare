@@ -29,6 +29,18 @@ interface CodexProps {
   runContext?: CodexRunContext | null;
   /** Pre-select a state filter when opening (the character-sheet deep-link passes `acquirable`). */
   initialStateFilter?: CodexRunStateFilter;
+  /**
+   * Open straight to one entry's page, by entry id (THR-1002).
+   *
+   * Law 21 — a named concept reaches its page — is what needs this: the action
+   * card's title is a link, and a link that only opens the catalog has not
+   * reached anything. Action entries are keyed on the bare template id, which is
+   * what `WheelSlot.templateId` carries.
+   *
+   * The category is switched to the entry's own, so the deep link lands on a page
+   * the sidebar agrees is selected rather than on a card filtered out of view.
+   */
+  initialEntryId?: string | null;
   /** Rendered inside the game as an overlay: swaps "Back to Game" for a Close button. */
   embedded?: boolean;
   onClose?: () => void;
@@ -37,15 +49,25 @@ interface CodexProps {
 export default function Codex({
   runContext = null,
   initialStateFilter = 'all',
+  initialEntryId = null,
   embedded = false,
   onClose,
 }: CodexProps = {}) {
   const categories = useMemo(() => getCodexCategories(), []);
   const allEntries = useMemo(() => getAllCodexEntries(), []);
 
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id ?? 'divine');
+  // A deep link names an entry; the category it lives in is derived, never passed
+  // — two parties naming the same page is how they come to disagree about it.
+  const initialEntry = useMemo(
+    () => (initialEntryId ? allEntries.find(e => e.id === initialEntryId) ?? null : null),
+    [allEntries, initialEntryId],
+  );
+
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialEntry?.category ?? categories[0]?.id ?? 'divine',
+  );
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(initialEntry?.id ?? null);
   const [searchQuery, setSearchQuery] = useState('');
   const [starterOnly, setStarterOnly] = useState(false);
   const [stateFilter, setStateFilter] = useState<CodexRunStateFilter>(initialStateFilter);

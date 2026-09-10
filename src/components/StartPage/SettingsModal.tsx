@@ -68,6 +68,10 @@ export function SettingsModal({ open, onClose, volume, onVolumeChange, muted, on
                   cursor: 'pointer',
                 }}
               />
+              {/* THR-1451 (Class D): ruled OUT of Law 13's membership, deliberately and in
+                  writing (laws.md), so the next percentage sweep does not re-litigate it.
+                  A volume slider is an OS-style control reading back its own setting —
+                  chrome the player brought with them, not one of the game's magnitudes. */}
               <span style={{ ...VALUE_STYLE, minWidth: '3ch', textAlign: 'right' }}>
                 {Math.round(volume * 100)}%
               </span>

@@ -401,6 +401,14 @@ exist") is **superseded by this deletion** — the executor closes it as such wh
 > is a **commitment** (kept by working it), not a Freehold possession, so the loop is design, not debris;
 > THR-1287 is live and is designed in `2026-09-09-thr-1287-control-upkeep.md`. Do not close THR-1287 on
 > this paragraph.
+>
+> **Shipped 2026-09-10 (THR-1287).** `renewControlStance` in `strategicActionLifecycle.ts` renews a hold
+> when its holder completes a `use` or `change:raise` cell on the held Location. The loop, grace, rate,
+> `retireControl` and the collapse are unchanged — so nothing here was deleted after all, and this
+> section's deletion clause is now permanently void for the control machine (it still holds for the six
+> retired templates and the pressure scorer, which did go). One repair rode along: `transferHolding`
+> reads `owns` edges only, so a seize of a `controls`-held Location left the loser an active stance over
+> somewhere no longer theirs; the seize completion now retires it.
 The `controls` *edge type* and its 72-file consumer web are **not** this doc: the ownership-edge
 disposition table is doc 2's binding obligation (review §3 row 4). THR-1286's shipped relief
 (cooldown + dead-record hygiene, PR #1647, measured 39.5%→11.3% / 38.7%→5.7% control share) stays

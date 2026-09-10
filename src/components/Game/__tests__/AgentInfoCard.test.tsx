@@ -301,4 +301,37 @@ describe('AgentInfoCard', () => {
     expect(screen.getByText('Prudent')).toBeInTheDocument();
     expect(screen.getByText('Compassionate')).toBeInTheDocument();
   });
+
+  // ─── Active effects: Law 13 / Law 15 (THR-1424) ───
+
+  const effectCard: AgentInfoCardData = {
+    ...knownCard,
+    activeEffects: [
+      // Real `InterventionType` and real `SphereName` — no `as unknown as` cast. A cast here
+      // would hide invented values behind a green test, and the point of these arms is what
+      // the surface actually renders for a real effect.
+      { type: 'inspire_intervention', label: 'Kindled Zeal', sphere: 'spirit', strength: 0.62, ticksRemaining: 36 },
+    ],
+  };
+
+  it('renders an active effect without a percentage numeral (Law 13 / THR-1424)', () => {
+    const { container } = render(
+      <AgentInfoCard card={effectCard} onViewProfile={vi.fn()} onBack={vi.fn()} />
+    );
+    // The effect is on the surface...
+    expect(screen.getByText('Kindled Zeal')).toBeInTheDocument();
+    // ...and its strength reads as the bar, never as `62% strength`.
+    expect(container.textContent).not.toMatch(/%/);
+    expect(container.textContent).not.toMatch(/strength/i);
+  });
+
+  it('keeps the strength bar as the sanctioned reading of effect strength', () => {
+    const { container } = render(
+      <AgentInfoCard card={effectCard} onViewProfile={vi.fn()} onBack={vi.fn()} />
+    );
+    // Falsification arm: without this, the `not.toMatch(/%/)` above would pass on a surface
+    // that dropped the numeral AND the bar, i.e. on no reading at all. The bar's fill width
+    // is CSS geometry, not a player-facing numeral, and is what carries the magnitude.
+    expect(container.querySelector('span[style*="width: 62%"]')).toBeTruthy();
+  });
 });

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { MandateDefinition, MandateState } from '../../types/mandate';
 import { ProgressBar } from '../shared/ProgressBar';
 import { Tooltip } from '../shared/Tooltip';
 import { AnimateMount } from '../shared/AnimateMount';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
+import { sphereDeltaReading } from '../../engine/aftermathWords';
+import { DeltaCluster } from '../shared/DeltaCluster';
 
 interface MandateTrackerProps {
   definition: MandateDefinition;
@@ -46,10 +49,18 @@ function renderStagePip(status: 'filled' | 'half' | 'empty') {
   );
 }
 
-function formatDelta(delta: number | undefined): string {
-  if (delta == null || !Number.isFinite(delta)) return '0%';
-  const pct = Math.round(delta * 100);
-  return `${pct > 0 ? '+' : ''}${pct}%`;
+/**
+ * THR-1451 — a sphere delta reads as a cluster of triangles, never `+7%`.
+ *
+ * The tracker and `MandateDetail` both draw this quantity, so both take the one
+ * reading from `sphereDeltaReading` (which lives beside its ladder, UI Law 3)
+ * rather than each keeping a formatter of its own. Nothing is drawn for a zero
+ * delta — a sphere that has not moved says so in a word, not as `0%`.
+ */
+function DeltaReading({ delta, noun }: { delta: number | undefined; noun: string }) {
+  const reading = sphereDeltaReading(delta, noun);
+  if (!reading) return <span style={{ color: 'var(--text-muted)' }}>unmoved</span>;
+  return <DeltaCluster direction={reading.direction} count={reading.count} label={reading.label} />;
 }
 
 function getNextCheckpoint(definition: MandateDefinition, state: MandateState) {
@@ -65,7 +76,9 @@ function getSecondaryObjectiveProgress(definition: MandateDefinition, state: Man
   return `${current}/${definition.secondaryObjective.target}`;
 }
 
-function SummaryPill({ label, value, color }: { label: string; value: string; color?: string }) {
+// THR-1451: `value` widened to a node so a pill can carry a delta cluster instead
+// of a formatted numeral. Every other caller still passes a string (NFP #6).
+function SummaryPill({ label, value, color }: { label: string; value: ReactNode; color?: string }) {
   return (
     <div style={{
       minWidth: '92px',
@@ -97,8 +110,12 @@ function SummaryPill({ label, value, color }: { label: string; value: string; co
 export function MandateTracker({ definition, state }: MandateTrackerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
-  const pct = Math.round(state.progress * 100);
-  const displayText = state.completed ? 'FULFILLED' : pct === 0 ? 'NEW' : `${pct}%`;
+  // THR-1424 (Law 15 ruling, 2026-09-10): mandate progress is a unitless proportion, and this
+  // tier already renders it twice without a numeral — the stage pips and the `ProgressBar`.
+  // So the percentage is dropped rather than banded to a word (an adverb is the wrong answer
+  // to "how much?", Law 13 amendment 2026-08-12). `FULFILLED` and `NEW` survive: both name a
+  // state of the mandate, not a magnitude, and `NEW` still reads off untouched progress.
+  const displayText = state.completed ? 'FULFILLED' : state.progress <= 0 ? 'NEW' : '';
   const isSphereGrowth = definition.runtimeKind === 'sphere_growth';
   const nextCheckpoint = getNextCheckpoint(definition, state);
   const heldOmens = state.checkpointResults?.filter((result) => result.passed).length ?? 0;
@@ -156,9 +173,11 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               {definition.name}
             </span>
           </Tooltip>
-          <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
-            {displayText}
-          </span>
+          {displayText && (
+            <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
+              {displayText}
+            </span>
+          )}
           <div className="flex gap-0.5 items-center ml-auto">
             {STAGE_ORDER.map((stage) => (
               <span key={stage}>
@@ -174,17 +193,18 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
           >
             <span className="truncate">
-              {definition.primarySphere} {formatDelta(state.primaryDelta)}
+              {definition.primarySphere}{' '}
+              <DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />
             </span>
             <span aria-hidden="true">•</span>
             <span className="truncate">
-              {definition.secondarySphere} {formatDelta(state.secondaryDelta)}
+              {definition.secondarySphere}{' '}
+              <DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />
             </span>
-            {nextCheckpoint && (
-              <span className="ml-auto flex-shrink-0">
-                {Math.round(nextCheckpoint.doomProgressThreshold * 100)}%
-              </span>
-            )}
+            {/* THR-1424: the checkpoint's doom threshold was a bare unitless proportion with
+                no unit and no label — dropped per the Law 15 ruling. The checkpoint's name is
+                carried in the expanded panel below, where it reads as a name rather than a
+                numeral floating at the end of a sphere row. */}
           </div>
         )}
       </div>
@@ -228,10 +248,13 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
                 <SummaryPill
                   label={definition.primarySphere ?? 'Primary'}
-                  value={formatDelta(state.primaryDelta)}
+                  value={<DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />}
                   color={color}
                 />
-                <SummaryPill label={definition.secondarySphere ?? 'Secondary'} value={formatDelta(state.secondaryDelta)} />
+                <SummaryPill
+                  label={definition.secondarySphere ?? 'Secondary'}
+                  value={<DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />}
+                />
                 <SummaryPill label="Omens Held" value={omenCount > 0 ? `${heldOmens}/${omenCount}` : '0'} />
                 <SummaryPill
                   label="Doom Debt"
@@ -259,7 +282,9 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                   fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                 }}>
-                  Next omen: {nextCheckpoint.label} at {Math.round(nextCheckpoint.doomProgressThreshold * 100)}% doom.
+                  {/* THR-1424: `at N% doom` dropped — a unitless proportion with no non-numeric
+                      rendering on this surface reads as nothing rather than as a word ladder. */}
+                  Next omen: {nextCheckpoint.label}.
                 </div>
               )}
             </div>

@@ -33,6 +33,26 @@ export interface DebugActionInfo {
   essenceCost: number;
   steps: number;
   scale: string;
+  /**
+   * The verb chip's word — *Create · Find · Change · Destroy*, or *Control* for a
+   * sustained working (THR-1002).
+   *
+   * This is what the card prints, so asserting on it verifies the face rather than
+   * the schema behind it. `scale` above is the raw key and stays raw: a debug
+   * accessor is not a player surface, and having both lets a verification run
+   * check the translation itself.
+   */
+  verbWord: string;
+  /** The scale chip's word — *Personal · Local · Regional · Cosmic*. */
+  scaleWord: string;
+  /**
+   * **No `forecastTier` here, deliberately.** A forecast belongs to a *slot*, not a
+   * template: it needs a target and the god's capability in the hardest step's
+   * reach, neither of which this accessor has. Reporting one would mean inventing
+   * a capability, and a fabricated tier is precisely the claim this ticket removed
+   * from the card. Read it off the rendered card
+   * (`[data-testid^="action-card-forecast-"]`), which is the only place it is real.
+   */
 }
 
 /**
@@ -98,6 +118,20 @@ export interface DebugPlayerReceiptInfo {
   band: string;
   acknowledged: boolean;
   changeCount: number;
+  /**
+   * The sentence the toast carried (THR-1002) — read off the receipt, not
+   * recomputed, so this is verbatim what the player was shown.
+   *
+   * Undefined only for a receipt created before the field existed.
+   */
+  toastMessage?: string;
+  /**
+   * True when {@link toastMessage} came from the resolver's overview; false when
+   * it fell back to the band's frame line. The fallback *rate* across a run is
+   * the kill criterion's real threshold — sample this rather than eyeballing
+   * toasts.
+   */
+  toastOverviewUsed?: boolean;
 }
 
 export interface DebugPlayerReceiptsResult {
@@ -720,8 +754,37 @@ export interface DebugBridge {
   clearCrashLog: () => Promise<void>;
   /** Aggregate session-health readout — the first stop when the sim "looks wrong" but does not throw. */
   getHealthReport: () => Promise<unknown>;
-  /** Full diagnostic bundle (health + crash log + counters) as one JSON-serializable blob for attaching to an issue. */
+  /**
+   * Full diagnostic bundle (health + crash log + counters) as one JSON-serializable blob.
+   *
+   * THR-1134: `stateMetrics` was `null` on every export before that ticket, because
+   * the bridge invoked the underlying call with no state. It now passes the
+   * registered game state, so the counters block is populated whenever a game is
+   * loaded.
+   */
   exportDiagnostics: () => Promise<unknown>;
+  /**
+   * THR-1134 — build an incident snapshot object *without* downloading it.
+   *
+   * Returns `null` when no game state is registered. The default bundle is the
+   * incident tier (run identity, health, census, the event and metrics rings,
+   * attention, clocks, the active-UI record, the focus neighbourhood, traces if
+   * recording was armed); `{ includeWorld: true }` adds every node, every edge and
+   * every state `Map`, which is megabytes on a large map.
+   *
+   * Serialize with `serializeIncidentBundle` from `engine/incidentBundle` — plain
+   * `JSON.stringify` on the result drops every `Map`. Check
+   * `bundle.serialization.incomplete` and `bundle.failedSections` before trusting a
+   * section.
+   */
+  buildIncidentBundle: (opts?: { includeWorld?: boolean }) => Promise<unknown>;
+  /**
+   * THR-1134 — incident flight-recorder occupancy:
+   * `{ events, metrics, eventsWritten, metricsWritten, misses }`. Returns `null`
+   * when no runtime is registered. A non-zero `misses` means an append threw and
+   * was swallowed, which is itself a finding.
+   */
+  getIncidentRecorderStats: () => Promise<unknown>;
   /**
    * Sweep every authored trait ref against the trait definitions in the live graph
    * (THR-786). `null` when no game state is loaded.

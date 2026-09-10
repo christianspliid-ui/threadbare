@@ -74,6 +74,13 @@ export interface GameViewTopBarProps {
   handleUiVolume: (v: number) => void;
   audioMuted: boolean;
   handleToggleAudioMute: () => void;
+
+  // Trouble — the incident snapshot (THR-1134)
+  recordingTrouble: boolean;
+  handleToggleRecordTrouble: () => void;
+  includeWorldInSnapshot: boolean;
+  handleToggleIncludeWorld: () => void;
+  handleSaveSnapshot: () => void;
 }
 
 export function GameViewTopBar({
@@ -111,6 +118,11 @@ export function GameViewTopBar({
   handleUiVolume,
   audioMuted,
   handleToggleAudioMute,
+  recordingTrouble,
+  handleToggleRecordTrouble,
+  includeWorldInSnapshot,
+  handleToggleIncludeWorld,
+  handleSaveSnapshot,
 }: GameViewTopBarProps) {
   // ═══ Top bar — v7 visual language: solid bg, hairline border, two-tier label/value pattern ═══
   return (
@@ -133,7 +145,6 @@ export function GameViewTopBar({
 
           {/* Time controls */}
           <SimulationControls
-            tick={gameState.tick}
             season={seasonName}
             year={year}
             running={running}
@@ -253,6 +264,11 @@ export function GameViewTopBar({
               onUiVolume={handleUiVolume}
               audioMuted={audioMuted}
               onToggleAudioMute={handleToggleAudioMute}
+              recordingTrouble={recordingTrouble}
+              onToggleRecordTrouble={handleToggleRecordTrouble}
+              includeWorldInSnapshot={includeWorldInSnapshot}
+              onToggleIncludeWorld={handleToggleIncludeWorld}
+              onSaveSnapshot={handleSaveSnapshot}
             />
           </div>
         </div>

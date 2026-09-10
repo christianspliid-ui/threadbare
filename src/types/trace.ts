@@ -255,6 +255,8 @@ export type TraceCategory =
   // Tick-loop observability (THR-580)
   | 'tick_profile'
   | 'distance_matrix_rebuild'
+  // Incident snapshot capture (THR-1134)
+  | 'incident_bundle'
   // Hex→actor index unresolved actors warning (THR-188)
   | 'engine_warning'
   // Effect shells (THR-53)
@@ -666,6 +668,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Tick-loop observability (THR-580)
   'tick_profile',
   'distance_matrix_rebuild',
+  // Incident snapshot capture (THR-1134)
+  'incident_bundle',
   // Hex→actor index unresolved actors warning (THR-188)
   'engine_warning',
   // Effect shells (THR-53)
@@ -2024,6 +2028,21 @@ export interface StrategicProjectProgressTrace extends TraceBase {
 }
 
 /**
+ * Which anchor the outcome's `occurred_at` site came from (THR-1444).
+ *
+ * Three values rather than a bare id, because "the harm has a site" and "the harm has
+ * *its own* site" are different facts and only one of them is what the undertaking
+ * intended. `unresolved` is the case that used to be a swallowed `console.warn`.
+ */
+export type UndertakingOutcomeSiteResolution =
+  /** The undertaking's own `originLocationId`, still in the graph. */
+  | 'origin'
+  /** Where the actor stands now — the origin was absent, or named a node since removed. */
+  | 'actor_position'
+  /** Neither anchor resolves to a live node; the event is deliberately siteless. */
+  | 'unresolved';
+
+/**
  * Trace: a harm-carrying undertaking outcome was written as a graph event node
  * (THR-1298).
  *
@@ -2047,6 +2066,21 @@ export interface UndertakingOutcomeEventTrace extends TraceBase {
   chainDepth: number;
   /** Set when this outcome answers a standing grievance rather than opening one. */
   answersGrievance?: boolean;
+  /**
+   * The location the `occurred_at` edge points at. Absent when `siteResolution` is
+   * `unresolved` — a harm with no site mints no grievance, so its absence is the
+   * single most load-bearing thing an inspector can read here (THR-1444).
+   */
+  siteId?: string;
+  /** Which anchor supplied `siteId` (THR-1444). */
+  siteResolution: UndertakingOutcomeSiteResolution;
+  /**
+   * Set when `originLocationId` was present but named a node the graph no longer
+   * holds — the undertaking outlived its own origin. This is the signal that used to
+   * be an unread `console.warn`; a rising count means locations are being retired out
+   * from under in-flight undertakings.
+   */
+  siteOriginStale?: true;
 }
 
 /** Every state a grievance can move through (THR-1298 slice 5). */
@@ -2493,23 +2527,37 @@ export interface StrategicWorldChangeTrace extends TraceBase {
 }
 
 /**
- * Trace: a control stance ended, or a re-claim was refused by the post-collapse
- * cooldown (THR-1286).
+ * Trace: a control stance ended, was renewed, or a re-claim was refused by the
+ * post-collapse cooldown (THR-1286, THR-1287).
  *
  * `collapsed` fires when neglect degrades a stance to 1 and the record + its
  * `controls` edge are retired; `reclaim_refused` fires when candidate generation
  * declines to re-propose a target the actor let collapse inside the cooldown;
  * `already_held` fires when generation declines a target the actor still actively
- * controls, whose claim could only fail `already_controls`.
+ * controls, whose claim could only fail `already_controls`; `renewed` fires when the
+ * holder works the hold and the neglect clock resets (THR-1287); `seized` fires when
+ * another mortal takes the place and the loser's stance is retired with it.
+ *
+ * Every member is registered on this interface rather than duck-typed at the emit
+ * site: `emitTrace`'s `Omit` collapses the `TraceEntry` union, so an unregistered
+ * field is silently dropped instead of failing to compile.
  */
 export interface StrategicControlLifecycleTrace extends TraceBase {
   category: 'strategic_control_lifecycle';
   actorId: string;
   targetNodeId: string;
-  event: 'collapsed' | 'reclaim_refused' | 'already_held';
+  event: 'collapsed' | 'reclaim_refused' | 'already_held' | 'renewed' | 'seized';
+  /** The cell whose completion renewed the hold; only present on `renewed`. */
+  variant?: UndertakingVerbVariant;
+  /** Degradation before the renewal; only on `renewed`. */
+  degradationBefore?: number;
+  /** Degradation after the renewal, floored at 0; only on `renewed`. */
+  degradationAfter?: number;
+  /** The mortal who took the place; only on `seized`. */
+  seizedById?: string;
   /** Ticks remaining on the cooldown; only present on `reclaim_refused`. */
   cooldownRemaining?: number;
-  /** Whether the dead `controls` edge was found and removed; only on `collapsed`. */
+  /** Whether the dead `controls` edge was found and removed; on `collapsed` and `seized`. */
   edgeReleased?: boolean;
 }
 
@@ -3538,6 +3586,8 @@ export type TraceEntry =
   // Tick-loop observability (THR-580)
   | TickProfileTrace
   | DistanceMatrixRebuildTrace
+  // Incident snapshot capture (THR-1134)
+  | IncidentBundleTrace
   // Hex→actor index engine warning (THR-188)
   | EngineWarningTrace
   // Effect shell traces (THR-53)
@@ -3877,6 +3927,18 @@ export interface PlayerReceiptTrace extends TraceBase {
   changeCount: number;
   /** Only present on `reaction_applied`. */
   reactionId?: string;
+  /**
+   * Which sentence the toast carried (THR-1002): `true` when it was the
+   * aftermath overview's first sentence, `false` when the overview was absent,
+   * blank or still placeholder-laden and the band's frame line stood in.
+   *
+   * Registered here rather than duck-typed onto the payload because `emitTrace`'s
+   * `Omit` collapses the union — an unregistered field is silently dropped, and
+   * the fallback *rate* is the measurement this ticket's kill criterion reads
+   * ("if the first sentence is a fragment or a placeholder on more than a handful
+   * of casts, fall back to the frame line and file the authoring as content work").
+   */
+  toastOverviewUsed?: boolean;
 }
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */
@@ -4316,6 +4378,28 @@ export interface DistanceMatrixRebuildTrace extends TraceBase {
   locationCount: number;
   totalRebuildsThisSession: number;
   durationMs?: number;
+}
+
+/**
+ * Trace: an incident snapshot was captured (THR-1134).
+ *
+ * Emitted once per capture — a person pressing a button, so player-scale, with
+ * nothing to batch. `failedSections` is the load-bearing field: a bundle that
+ * shipped with a section as `{ error }` is still a useful bundle, and this is
+ * where a reader learns which block to distrust.
+ */
+export interface IncidentBundleTrace extends TraceBase {
+  category: 'incident_bundle';
+  /** Whether the opt-in world tier was included. */
+  includeWorld: boolean;
+  /** Serialized size of the downloaded file. */
+  bytes: number;
+  /** Sections that built cleanly. */
+  sections: readonly string[];
+  /** Sections that threw and shipped as `{ error }`. */
+  failedSections: readonly string[];
+  /** Whether trace recording was armed when the snapshot was taken. */
+  tracingWasOn: boolean;
 }
 
 /**

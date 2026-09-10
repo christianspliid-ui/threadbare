@@ -185,17 +185,16 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                         // `undefined ticks remaining`; the clause is now dropped entirely rather
                         // than reading a missing term as a present one (NFP #4).
                         //
-                        // `strengthPct` is the other half and is NOT banded here: Law 13 bans a
-                        // percentage outright with no sanctioned numeric alternative, so replacing
-                        // it is a Law 15 ruling, split out to THR-1424.
-                        [
-                          strengthPct != null ? `${strengthPct}% strength` : null,
-                          effect.ticksRemaining != null
-                            ? `${durationLabel(effect.ticksRemaining)} remaining`
-                            : null,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')
+                        // THR-1424 settles the other half. Law 15 ruling (2026-09-10): a unitless
+                        // proportion is DROPPED, not translated — its reading is whatever the
+                        // surface already renders non-numerically. Here that is the strength bar
+                        // below, so `${strengthPct}% strength` leaves the tooltip entirely. No
+                        // word ladder: the Law 13 amendment of 2026-08-12 is explicit that an
+                        // adverb is the wrong answer to "how much?" (`grew steadily`), so banding
+                        // this would re-derive the very turn that amendment exists to forbid.
+                        effect.ticksRemaining != null
+                          ? `${durationLabel(effect.ticksRemaining)} remaining`
+                          : undefined
                   }
                 >
                   <span

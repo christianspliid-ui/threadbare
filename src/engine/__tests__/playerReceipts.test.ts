@@ -4,7 +4,11 @@ import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceB
 import { processPlayerReceipts } from '../playerReceipts';
 import { resolveAftermathContextForAgent } from '../encounterAftermath';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
-import { RECEIPT_MODAL_RARITY_FLOOR, RECEIPT_QUEUE_MAX } from '../../data/receipt-content';
+import {
+  RECEIPT_MODAL_RARITY_FLOOR,
+  RECEIPT_QUEUE_MAX,
+  RECEIPT_FRAME_LINES,
+} from '../../data/receipt-content';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from '../../data/ascendant-pool-beat-templates';
 import type { GameState } from '../../types/gameState';
 import type {
@@ -262,6 +266,109 @@ describe('phasePlayerReceipts', () => {
     expect((next.playerActionReceipts ?? []).some((r) => r.id === 'receipt_ua-1')).toBe(true);
     expect((next.playerActionReceipts ?? []).some((r) => r.id === 'receipt_old-0')).toBe(false);
     expect(getTraces().some((t) => (t as { event?: string }).event === 'queue_capped')).toBe(true);
+  });
+
+  // ─── The toast's sentence (THR-1002) ────────────────────────────
+  //
+  // These arms did not exist before, and their absence is why the defect lived:
+  // the toast message was never asserted by any test, so `Your <internal name>
+  // <band>.` survived every suite while being the feedback for ~93% of casts
+  // (28 of the 30 templates a beat can grant reach the toast tier, not the modal).
+  // Whatever the message becomes, it is now pinned.
+
+  function toastEventFor(state: GameState): { message: string } | undefined {
+    const next = processPlayerReceipts(state, {}) as GameState;
+    return (next.tickEvents ?? []).find(
+      (e) => e.type === 'player_action_receipt' && e.notification?.channel === 'toast',
+    ) as { message: string } | undefined;
+  }
+
+  it('toasts the overview first sentence, not the template name and band word', () => {
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, {
+        aftermathSummary: summary({
+          overview: 'The fever breaks before dawn. The household sleeps at last.',
+        }),
+      }),
+    ]);
+    const event = toastEventFor(state);
+    expect(event?.message).toBe('The fever breaks before dawn.');
+    // The defect, named: the old message shape must not be reachable here.
+    expect(event?.message).not.toContain(TOAST_TEMPLATE!.name);
+    expect(
+      getTraces().some((t) => (t as { toastOverviewUsed?: boolean }).toastOverviewUsed === true),
+    ).toBe(true);
+  });
+
+  it('records on the receipt itself what the toast said, and where it came from', () => {
+    // THR-1002: the state assertion behind `__DEBUG.listPlayerReceipts()`. The
+    // bridge reports these two fields verbatim rather than re-deriving them, so
+    // an inspector cannot report a sentence the player was never shown — and the
+    // kill criterion's real threshold, the *rate* at which the overview is
+    // unusable, becomes something a run can measure instead of assert.
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, {
+        aftermathSummary: summary({
+          overview: 'The fever breaks before dawn. The household sleeps at last.',
+        }),
+      }),
+    ]);
+    const next = processPlayerReceipts(state, {}) as GameState;
+    const receipt = (next.playerActionReceipts ?? [])[0];
+    expect(receipt?.toastMessage).toBe('The fever breaks before dawn.');
+    expect(receipt?.toastOverviewUsed).toBe(true);
+    // The receipt and the event the player actually saw are one string, not two
+    // independently-composed ones.
+    expect(receipt?.toastMessage).toBe(toastEventFor(state)?.message);
+  });
+
+  it('marks the receipt when the toast fell back to a frame line', () => {
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, { aftermathSummary: summary({ overview: '' }) }),
+    ]);
+    const next = processPlayerReceipts(state, {}) as GameState;
+    const receipt = (next.playerActionReceipts ?? [])[0];
+    expect(receipt?.toastOverviewUsed).toBe(false);
+    expect(Object.values(RECEIPT_FRAME_LINES).flat()).toContain(receipt?.toastMessage);
+  });
+
+  it('uses a one-sentence overview whole', () => {
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, {
+        aftermathSummary: summary({ overview: 'The working settled' }),
+      }),
+    ]);
+    expect(toastEventFor(state)?.message).toBe('The working settled');
+  });
+
+  it('falls back to a band frame line when the overview is blank', () => {
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, { aftermathSummary: summary({ overview: '' }) }),
+    ]);
+    const message = toastEventFor(state)?.message;
+    // A real authored frame line for the band, never the bare template name.
+    const pool = Object.values(RECEIPT_FRAME_LINES).flat();
+    expect(pool).toContain(message);
+    expect(
+      getTraces().some((t) => (t as { toastOverviewUsed?: boolean }).toastOverviewUsed === false),
+    ).toBe(true);
+  });
+
+  it('falls back to a frame line rather than toasting a stripped-placeholder fragment', () => {
+    // Measured, not assumed: `enrichProse` *removes* a token it cannot resolve
+    // rather than leaving it on screen, so this overview reaches the toast as
+    // "walks away unharmed." — no `{` to detect, subject eaten, opening lowercase.
+    // That fragment class is what the plan's kill criterion names, and it is far
+    // likelier than a visible token, so it gets the arm.
+    const state = makeState([
+      makeAction(TOAST_TEMPLATE!.id, {
+        aftermathSummary: summary({ overview: '{cast:subject} walks away unharmed.' }),
+      }),
+    ]);
+    const message = toastEventFor(state)?.message;
+    expect(message).not.toContain('{');
+    expect(message).not.toBe('walks away unharmed.');
+    expect(Object.values(RECEIPT_FRAME_LINES).flat()).toContain(message);
   });
 
   it('builds a fallback receipt trace and no receipt when the template is unknown', () => {

@@ -37,15 +37,33 @@ import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import {
-  RISK_HINT_THRESHOLDS,
-  RISK_HINT_WORDS,
-  riskHintLine,
   ASCENDANT_CAST_BASE_RAW,
   ASCENDANT_CAST_AFFINITY_WEIGHT,
 } from '../../data/player-cast-constants';
+import {
+  castForecastProbability,
+  CARD_READOUT_SPHERE_FACTOR,
+  CARD_READOUT_MODS,
+} from '../playerCastReadout';
+import { applyScaleDifficultyAdjust, MIN_PROBABILITY_BY_SCALE } from '../resolutionScaleAdjust';
+import { computeResolutionThreshold } from '../resolutionService';
+import { classifyForecastTier } from '../encounters/outcomeForecast';
 
 const ASCENDANT_ID = 'asc.witness';
 const SEEDS = 400;
+
+/**
+ * Two cast capabilities inside the **measured** band (THR-1002).
+ *
+ * Ascendant cast capability runs roughly 0.2–0.9 in play — the range
+ * `playerCastReadout.test.ts` sweeps — and these are a fresh god's on a primary
+ * and a secondary reach. Named rather than swept because the truthfulness pin is
+ * an *identity*: it must hold at every capability, so any point in the band
+ * exercises it, and re-sweeping the whole grid here would only re-run the sibling
+ * file's job over the same arithmetic.
+ */
+const FRESH_GOD_PRIMARY_CAPABILITY = 0.55;
+const FRESH_GOD_SECONDARY_CAPABILITY = 0.40;
 
 /** The ascendant's shipped affinity range (THR-503): 2 on a secondary reach, 5 on a primary. */
 const AFFINITY_SECONDARY = 2;
@@ -302,60 +320,106 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
   });
 });
 
-// ─── Verdict 2 — the risk-word cut-points ───────────────────────────────────
+// ─── Verdict 2 — the card's odds word ───────────────────────────────────────
 
-describe('THR-766 — risk words: keep RISK_HINT_THRESHOLDS [0.25, 0.45]', () => {
+/**
+ * **Re-pointed by THR-1002, not deleted.**
+ *
+ * This block used to calibrate `RISK_HINT_THRESHOLDS` — the cut-points behind
+ * the retired `riskHintLine`, a sentence the focused card printed under its
+ * Effect block. Both the sentence and its cut-points are gone: the card now
+ * prints the **forecast tier word**, classified from the probability the roll
+ * will actually use, through the same `classifyForecastTier` the encounter
+ * forecast reads. So the vocabulary the old assertions calibrated no longer
+ * reaches any surface, and a green test on it would have been a green test on a
+ * dead contract.
+ *
+ * What survives is the *purpose*, sharpened. The old purpose was **the card's
+ * word is not decorative** — a spread across the corpus, no word dominant. The
+ * new purpose is stronger and is the one THR-998 asked for: **the card's word
+ * equals the roll's tier**. A spread can be healthy while every individual card
+ * lies; equality cannot. So the spread assertion is kept as the anti-degenerate
+ * guard, and the truthfulness pin is added above it as the primary claim.
+ */
+describe('THR-1002 — the card word equals the roll it forecasts', () => {
   it('reads a slot list large enough for a spread to mean anything', () => {
     // Guard against the vacuous pass: a spread assertion over an empty or tiny
     // pool succeeds while proving nothing. Measured 519 at the time of the verdict.
     expect(actorTargetSlots().length).toBeGreaterThan(100);
   });
 
-  it('produces all three words across the live actor-target slot list, none dominant', () => {
-    // The Done-when: a spread, asserted by re-reading the slot list rather than
-    // assumed. Measured at the verdict: steady 19% / uncertain 50% / perilous 30%.
+  it('classifies every live slot from the probability the resolver would use', () => {
+    // The truthfulness pin, over the **corpus** rather than a swept grid.
     //
-    // THR-998 note — read what this measures. It buckets **authored** difficulty, which
-    // since THR-998 is no longer what the focused card renders (the card buckets the
-    // effective difficulty, and names the scale where the floor capped the price away —
-    // `playerCastReadout.test.ts` owns that contract). This assertion survives as the
-    // calibration of `RISK_HINT_THRESHOLDS` against the corpus, which is not idle: the
-    // floor cap is `capability - MIN_PROBABILITY_BY_SCALE[scale]`, so as a god deepens
-    // more of the authored price passes through intact and the corpus spread becomes
-    // the card spread. A cut-point set that is degenerate here is degenerate for a
-    // deepened god's cards. It is simply no longer a statement about a fresh god's.
+    // `playerCastReadout.test.ts` already pins `castForecastProbability` against
+    // `computeResolutionThreshold` across the measured capability × difficulty
+    // range. This is the same equality asked of the *actual* templates a player
+    // can cast — which is not the same question, because the corpus picks its own
+    // scales and difficulties and can hold a combination the sweep's 0.1 steps
+    // never land on. The two sides come from genuinely different routes: the left
+    // is the card's helper, the right is the resolver's own threshold function.
     //
-    // The ticket's motivating sample ("7 of 10 read perilous") does not reproduce —
-    // it was drawn when the pool held ~84 positive-difficulty templates, before the
-    // WS5 migration grew it to 519. Every widening candidate tested made the spread
-    // worse, not better: [0.35, 0.55] gives 49/38/13 and [0.40, 0.60] gives 61/29/10,
-    // both of which trip the 60% dominance bound below.
-    const slots = actorTargetSlots();
-    const tally: Record<string, number> = { steady: 0, uncertain: 0, perilous: 0 };
-
-    for (const template of slots) {
-      const line = riskHintLine(maxStepDifficulty(template));
-      const word = RISK_HINT_WORDS.find((w) => line?.includes(w));
-      expect(word).toBeDefined();
-      tally[word!] += 1;
+    // Capability is a fresh god's on a primary reach, the case the card is read in
+    // most; the classifier is scale-sensitive, so any capability exercises it.
+    const capability = FRESH_GOD_PRIMARY_CAPABILITY;
+    let compared = 0;
+    for (const template of actorTargetSlots()) {
+      const difficulty = maxStepDifficulty(template);
+      const scale = template.scale;
+      const cardTier = classifyForecastTier(
+        castForecastProbability(difficulty, capability, scale),
+      );
+      const { adjustedDifficulty } = applyScaleDifficultyAdjust(
+        difficulty,
+        capability,
+        CARD_READOUT_SPHERE_FACTOR,
+        CARD_READOUT_MODS,
+        scale ?? 'regional',
+      );
+      // The resolver's full post-process, not just its threshold function
+      // (THR-1002): `stepResolutionCore` lifts a below-floor probability to the
+      // **scale** floor, and `resolveUncontestedStep` short-circuits an unpriced
+      // step to 1 before any of this runs. Pinning against the threshold alone is
+      // what let two divergences ship green — see `playerCastReadout.test.ts`.
+      const resolverTier = classifyForecastTier(
+        difficulty === 0
+          ? 1
+          : Math.max(
+            MIN_PROBABILITY_BY_SCALE[scale ?? 'regional'],
+            computeResolutionThreshold({
+              actorId: ASCENDANT_ID,
+              domain: 'stone',
+              capability,
+              difficulty: Math.max(0, adjustedDifficulty),
+              sphereFactor: CARD_READOUT_SPHERE_FACTOR,
+              actionModifiers: CARD_READOUT_MODS,
+            }),
+          ),
+      );
+      expect(cardTier).toBe(resolverTier);
+      compared += 1;
     }
-
-    for (const word of RISK_HINT_WORDS) {
-      const share = tally[word] / slots.length;
-      // Every word has to earn its place in the vocabulary.
-      expect(share).toBeGreaterThan(0.05);
-      // And none may swallow the card face — the failure the ticket was filed on.
-      expect(share).toBeLessThan(0.60);
-    }
+    // The comparison actually ran over the corpus, rather than over nothing.
+    expect(compared).toBeGreaterThan(100);
   });
 
-  it('escalates monotonically across the shipped cut-points', () => {
-    const [lower, upper] = RISK_HINT_THRESHOLDS;
-    expect(lower).toBeLessThan(upper);
-    expect(riskHintLine(lower - 0.01)).toContain(RISK_HINT_WORDS[0]);
-    expect(riskHintLine(lower)).toContain(RISK_HINT_WORDS[1]);
-    expect(riskHintLine(upper - 0.01)).toContain(RISK_HINT_WORDS[1]);
-    expect(riskHintLine(upper)).toContain(RISK_HINT_WORDS[2]);
+  it('spreads across more than one tier for a fresh god, so the word carries information', () => {
+    // The anti-degenerate guard, inherited from the retired block's purpose. A
+    // classifier that answers `uncertain` for every card in the corpus is
+    // decorative even when it is truthful — the player learns nothing by reading
+    // it. Two tiers is the floor; the old block's per-word 5% bound does not port,
+    // because the tier ladder has five rungs against the old vocabulary's three
+    // and the floor legitimately empties the extremes at some capabilities.
+    const capability = FRESH_GOD_SECONDARY_CAPABILITY;
+    const seen = new Set<string>();
+    for (const template of actorTargetSlots()) {
+      seen.add(classifyForecastTier(castForecastProbability(
+        maxStepDifficulty(template),
+        capability,
+        template.scale,
+      )));
+    }
+    expect(seen.size).toBeGreaterThan(1);
   });
 });
 

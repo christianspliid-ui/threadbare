@@ -515,6 +515,95 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'The kind of thing',
     desc: 'What in the world this undertaking acts on — a place, a company, a standing, a working. Every kind the world keeps has its verbs.',
   },
+
+  // ─── Action card (THR-1002) ───────────────────────────────────────
+  // Every word the action card prints on a chip or in its odds zone is a concept
+  // the player is meeting for the first time on that card, so each carries its
+  // explanation from here (Law 17 — by id, never inline copy on the face).
+  //
+  // Register: plain, second person, addressed to the god. These are read *while
+  // deciding*, so they say what the word means for the choice in front of them
+  // and nothing more (THR-609 — interactive text is always plain).
+
+  // The verb chip: what kind of working this card is.
+  'ui.card.verb.create': {
+    label: 'Create',
+    desc: 'This working brings something into the world that was not there — a bond, a mark, an arrangement. What it makes persists after the moment of making.',
+  },
+  'ui.card.verb.read': {
+    label: 'Find',
+    desc: 'This working turns your sight on something and learns it. Nothing in the world moves; what changes is what you know, and what you can act on next.',
+  },
+  'ui.card.verb.update': {
+    label: 'Change',
+    desc: 'This working takes something that already exists and bends it — a mortal\'s intent, a place\'s fortune, a faction\'s standing. The thing remains; what it is doing does not.',
+  },
+  'ui.card.verb.delete': {
+    label: 'Destroy',
+    desc: 'This working unmakes something. What it undoes does not come back on its own, and the world reorganises around the absence.',
+  },
+  'ui.card.verb.sustained': {
+    label: 'Control',
+    desc: 'This working is not an act but an arrangement: it holds something open and charges you for as long as it holds. Let the upkeep lapse and what it was holding closes.',
+  },
+
+  // The scale chip: how much of the world the working reaches.
+  'ui.card.scale.personal': {
+    label: 'Personal',
+    desc: 'A working the size of one soul. Small reach, and correspondingly hard to get wrong — the world barely has to move to let it happen.',
+  },
+  'ui.card.scale.local': {
+    label: 'Local',
+    desc: 'A working the size of one place. It touches what stands on a single hex and the lives gathered there.',
+  },
+  'ui.card.scale.regional': {
+    label: 'Regional',
+    desc: 'A working the size of a region. It reaches past what you can see, and the world resists more the further you ask it to reach.',
+  },
+  'ui.card.scale.cosmic': {
+    label: 'Cosmic',
+    desc: 'A working the size of the world. The greatest reach a god has, and the least certain — nothing this large is ever simply granted.',
+  },
+
+  // The upkeep channel: what holding it open costs, per turn, in words.
+  'ui.card.upkeep.light': {
+    label: 'Light upkeep',
+    desc: 'Holding this open costs little each turn. You can carry several such arrangements without feeling them.',
+  },
+  'ui.card.upkeep.steady': {
+    label: 'Steady upkeep',
+    desc: 'Holding this open costs a real share of your essence each turn. Worth it while it is doing something; a slow bleed once it is not.',
+  },
+  'ui.card.upkeep.heavy': {
+    label: 'Heavy upkeep',
+    desc: 'Holding this open costs dearly every turn. Few gods can carry two at once — deep spending here is thin spending everywhere else.',
+  },
+
+  // The odds zone: where the cast stands before the roll.
+  //
+  // The same five words the encounter stage's forecast uses, deliberately — a
+  // nudge *moves* the forecast and a cast *rolls* it, but they are the same
+  // ladder, and one vocabulary is the whole point (Law 9).
+  'ui.forecast.doomed': {
+    label: 'Doomed',
+    desc: 'Before the roll, this cast looks all but lost. Fate still rolls it — but you are asking for something the world is set against.',
+  },
+  'ui.forecast.perilous': {
+    label: 'Perilous',
+    desc: 'Before the roll, this cast looks likely to go badly. The essence is spent either way; what you are buying is the chance.',
+  },
+  'ui.forecast.uncertain': {
+    label: 'Uncertain',
+    desc: 'Before the roll, this cast could go either way. No amount of reading the card will settle it — that is what the roll is for.',
+  },
+  'ui.forecast.favorable': {
+    label: 'Favorable',
+    desc: 'Before the roll, this cast looks likely to land. Likely is not certain: fate rolls it, and the tail is always live.',
+  },
+  'ui.forecast.fated': {
+    label: 'Fated',
+    desc: 'This cast is certain. Some divine workings ask nothing of the world — they simply happen, and the roll is a formality.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

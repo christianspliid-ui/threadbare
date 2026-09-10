@@ -1,342 +1,264 @@
 // @vitest-environment jsdom
+/**
+ * ActionCard — the one card face (THR-1002).
+ *
+ * Rewritten from the two-size suite (`hand` / `focused`) that pinned a card no
+ * longer in the game. Almost every arm it held asserted something the grammar now
+ * forbids: the numeral cost badge, the `IRON · CREATE` type line, `{n} hex`, the
+ * `technicalDescription` block, the dispatch pulse and its spent overlay. Pinning
+ * those would be pinning the defects.
+ *
+ * What carried over is the *purpose* of each: a card names its action, says what it
+ * does, shows what it costs, dims with a reason when it cannot be played, and fires
+ * only when it can. Those are all here, asserted against the face that shipped.
+ *
+ * The suite's centre of gravity is the two Laws the retired card broke wholesale —
+ * **13** (no numerals) and **14** (no raw keys). Those are asserted over the card's
+ * whole rendered text rather than zone by zone, so a numeral reaching *any* future
+ * zone fails rather than only the zones someone remembered to check.
+ */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ActionCard } from '../ActionCard';
+import { ACTION_BLOCKED_OUT_OF_RANGE, ACTION_BLOCKED_TIER, ACTION_BLOCKED_GENERIC } from '../../../data/action-card-display';
 import type { WheelSlot } from '../../../engine/wheel';
 
 const baseSlot: WheelSlot = {
-  id: 'dream',
-  label: 'Dream',
-  type: 'intervention',
+  id: 'target_action_action.imbue',
+  templateId: 'action.imbue',
+  label: 'Imbue',
+  type: 'target_action',
   angleDeg: 45,
   available: true,
   lockedReason: null,
-  essenceCost: 1,
-  detectionRisk: 0.1,
+  essenceCost: 3,
   sphere: 'mind',
-  interventionType: 'dream',
-  rangeStatus: 'unlimited',
-  hexDistance: null,
-  description: 'Manipulate selection probabilities during sleep',
+  interventionType: null,
+  rangeStatus: 'in_range',
+  hexDistance: 2,
+  description: 'Presses a sliver of your nature into an artifact',
+  effectsLine: 'Wakes a power in an artifact, shaped by your sphere.',
+  crudType: 'update',
+  reach: 'iron',
+  scale: 'local',
+  scaleWord: 'Local',
+  forecastTier: 'favorable',
+  rarityTier: 2,
 };
 
-describe('ActionCard — hand layout', () => {
-  it('renders action name in hand size', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByText('Dream')).toBeInTheDocument();
+function slot(overrides: Partial<WheelSlot> = {}): WheelSlot {
+  return { ...baseSlot, ...overrides };
+}
+
+/** Everything the card renders, as one string — the surface a player reads. */
+function cardText(s: WheelSlot = baseSlot): string {
+  const { container } = render(<ActionCard slot={s} onClick={vi.fn()} />);
+  return container.textContent ?? '';
+}
+
+describe('ActionCard — what the card says', () => {
+  it('names the action, preferring the spell name', () => {
+    render(<ActionCard slot={slot({ spellName: 'Quicken the Iron' })} onClick={vi.fn()} />);
+    expect(screen.getByText('Quicken the Iron')).toBeTruthy();
   });
 
-  it('shows essence cost in hand layout', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByTestId('action-card-cost')).toHaveTextContent('1');
+  it('falls back to the label when there is no spell name', () => {
+    render(<ActionCard slot={slot()} onClick={vi.fn()} />);
+    expect(screen.getByText('Imbue')).toBeTruthy();
   });
 
-  it('hand card renders name overlay only — description NOT in document', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
-    // The description (flavor text) should NOT appear in hand mode
-    expect(screen.queryByText('Manipulate selection probabilities during sleep')).toBeNull();
+  it('prints the effect line, and not the technical description', () => {
+    // Prose Doctrine v2 + Law 16: the card's one line is its effect. The
+    // description is the codex page's job, and the retired card printed both.
+    const text = cardText(slot({ technicalDescription: 'Applies an artifactPower property.' }));
+    expect(text).toContain('Wakes a power in an artifact');
+    expect(text).not.toContain('artifactPower');
   });
 
-  it('hand card renders spellName when provided', () => {
-    const slot: WheelSlot = { ...baseSlot, spellName: 'Midnight Reverie' };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByText('Midnight Reverie')).toBeInTheDocument();
+  it('prints the verb as a word, and the scale beside it', () => {
+    const text = cardText();
+    expect(text).toContain('Change');   // crudType 'update' → the player's word
+    expect(text).toContain('Local');
   });
 
-  it('hand card falls back to label when spellName absent', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByText('Dream')).toBeInTheDocument();
+  it('files a sustained action under Control, whatever it changes', () => {
+    // A sustained action is an arrangement rather than an act — the card the
+    // player recognises by its upkeep row — so it earns its own verb.
+    const text = cardText(slot({ durationMode: 'sustained', upkeepWord: 'steady' }));
+    expect(text).toContain('Control');
+    expect(text).not.toContain('Change');
   });
 
-  it('shows free cost for observation (scry)', () => {
-    const scry: WheelSlot = {
-      ...baseSlot,
-      id: 'scry',
-      label: 'Scry',
-      type: 'observation',
-      essenceCost: 0,
-      detectionRisk: 0,
-      sphere: null,
-      interventionType: null,
-      description: 'Observe agent psyche and situation',
-    };
-    render(<ActionCard slot={scry} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByTestId('action-card-cost')).toHaveTextContent('Free');
+  it('states upkeep as a band, never a rate', () => {
+    const text = cardText(slot({
+      durationMode: 'sustained',
+      upkeepWord: 'heavy',
+      perTickCostLabel: '0.5 force/tick',
+    }));
+    expect(text).toContain('heavy upkeep');
+    expect(text).not.toContain('0.5');
+    expect(text).not.toContain('/tick');
   });
 
-  it('calls onClick when available hand card is clicked', () => {
+  it('prints the forecast tier word when the slot carries one', () => {
+    expect(screen.queryByText('favorable')).toBeNull();
+    render(<ActionCard slot={slot()} onClick={vi.fn()} />);
+    expect(screen.getByText('favorable')).toBeTruthy();
+  });
+
+  it('renders no odds zone at all when no capability was supplied', () => {
+    // Omitted, never guessed. A card showing `uncertain` by default would be
+    // making a claim nobody computed.
+    const bare = slot();
+    delete (bare as { forecastTier?: string }).forecastTier;
+    const { container } = render(<ActionCard slot={bare} onClick={vi.fn()} />);
+    expect(container.querySelector('[data-forecast-tier]')).toBeNull();
+  });
+});
+
+describe('ActionCard — Law 13 (no numerals) and Law 14 (no raw keys)', () => {
+  it('shows no digit anywhere on a fully-populated card', () => {
+    // The whole surface, not a zone list: the retired card leaked numerals from
+    // four separate zones, and three of them were added after the first was fixed.
+    const text = cardText(slot({
+      essenceCost: 3,
+      hexDistance: 4,
+      rarityTier: 3,
+      maxStepDifficulty: 0.5,
+      effectiveStepDifficulty: 0.25,
+      perTickCostLabel: '0.5 force/tick',
+      durationMode: 'sustained',
+      upkeepWord: 'steady',
+    }));
+    expect(text).not.toMatch(/\d/);
+  });
+
+  it('shows no percentage and no hex count on a dimmed out-of-range card', () => {
+    const text = cardText(slot({
+      available: false,
+      rangeStatus: 'out_of_range',
+      hexDistance: 7,
+      lockedReason: 'Out of range (7 hexes)',
+    }));
+    expect(text).not.toMatch(/\d/);
+    expect(text.toLowerCase()).not.toContain('hex');
+    expect(text).toContain(ACTION_BLOCKED_OUT_OF_RANGE);
+  });
+
+  it('never prints the schema type line the slot id used to be split into', () => {
+    const text = cardText();
+    // `IRON · CREATE` and friends — a developer's axis, printed at the player.
+    expect(text).not.toMatch(/[A-Z]{3,}\s·\s[A-Z]{3,}/);
+  });
+
+  it('speaks the CRUD axis in the player\'s words, not the schema\'s', () => {
+    expect(cardText(slot({ crudType: 'read' }))).toContain('Find');
+    expect(cardText(slot({ crudType: 'read' }))).not.toContain('read');
+    expect(cardText(slot({ crudType: 'delete' }))).toContain('Destroy');
+  });
+});
+
+describe('ActionCard — Law 25 (a dimmed card says why)', () => {
+  it('turns a tier requirement into words', () => {
+    const text = cardText(slot({ available: false, lockedReason: 'Requires tier 2' }));
+    expect(text).toContain(ACTION_BLOCKED_TIER);
+    expect(text).not.toMatch(/\d/);
+  });
+
+  it('keeps a producer\'s own wording when it carries no numeral', () => {
+    const text = cardText(slot({ available: false, lockedReason: 'Not enough mind essence' }));
+    expect(text).toContain('Not enough mind essence');
+  });
+
+  it('falls back to a vaguer true sentence rather than leaking an unknown numeral', () => {
+    // The structural guard: a reason shape nobody anticipated loses precision,
+    // never the law. This is what stops the next producer re-opening Law 13.
+    const text = cardText(slot({
+      available: false,
+      lockedReason: 'Blocked for 12 more turns by the Accord',
+    }));
+    expect(text).toContain(ACTION_BLOCKED_GENERIC);
+    expect(text).not.toMatch(/\d/);
+  });
+
+  it('says nothing about being blocked while the card is playable', () => {
+    expect(cardText()).not.toContain(ACTION_BLOCKED_GENERIC);
+  });
+});
+
+describe('ActionCard — the card is a button (Laws 23, 48)', () => {
+  it('fires the click handler when the card can be played', () => {
     const onClick = vi.fn();
-    render(<ActionCard slot={baseSlot} onClick={onClick} size="hand" />);
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(onClick).toHaveBeenCalledWith('dream');
+    render(<ActionCard slot={slot()} onClick={onClick} />);
+    fireEvent.click(screen.getByTestId('action-card-target_action_action.imbue'));
+    expect(onClick).toHaveBeenCalledWith('target_action_action.imbue');
   });
 
-  it('does NOT call onClick when unavailable hand card is clicked', () => {
+  it('is disabled, not merely unresponsive, while its cast is in flight', () => {
     const onClick = vi.fn();
-    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
-    render(<ActionCard slot={locked} onClick={onClick} size="hand" />);
-    fireEvent.click(screen.getByTestId('action-card-dream'));
+    render(<ActionCard slot={slot()} onClick={onClick} playing />);
+    const button = screen.getByTestId('action-card-target_action_action.imbue') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    fireEvent.click(button);
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it('applies dimmed styling when unavailable', () => {
-    const locked = { ...baseSlot, available: false, lockedReason: 'Not enough essence' };
-    render(<ActionCard slot={locked} onClick={vi.fn()} size="hand" />);
-    const card = screen.getByTestId('action-card-dream');
-    expect(card.className).toContain('opacity-');
+  it('reports the armed state through aria-pressed', () => {
+    const { rerender } = render(<ActionCard slot={slot()} onClick={vi.fn()} />);
+    const testId = 'action-card-target_action_action.imbue';
+    expect(screen.getByTestId(testId).getAttribute('aria-pressed')).toBe('false');
+    rerender(<ActionCard slot={slot()} onClick={vi.fn()} selected />);
+    expect(screen.getByTestId(testId).getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('applies sphere color accent when available', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
-    const card = screen.getByTestId('action-card-dream');
-    // Art background should include sphere gradient
-    expect(card.style.background).toBeTruthy();
-  });
-});
-
-describe('ActionCard — focused layout (MTG frame)', () => {
-  it('renders action name in focused mode', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByText('Dream')).toBeInTheDocument();
-  });
-
-  it('focused card renders spell name from slot.spellName', () => {
-    const slot: WheelSlot = { ...baseSlot, spellName: 'Call to Arms' };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByText('Call to Arms')).toBeInTheDocument();
-  });
-
-  it('focused card falls back to label when spellName absent', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByText('Dream')).toBeInTheDocument();
-  });
-
-  it('focused card renders art image when art asset exists', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    const img = screen.getByTestId('action-card-dream').querySelector('img');
-    expect(img).toBeTruthy();
-    expect(img!.getAttribute('src')).toContain('/assets/actions/');
-  });
-
-  it('focused card renders sphere icon fallback when no art asset', () => {
-    const noArtSlot: WheelSlot = { ...baseSlot, id: 'scry', label: 'Scry', type: 'observation', interventionType: null };
-    render(<ActionCard slot={noArtSlot} onClick={vi.fn()} size="focused" />);
-    const card = screen.getByTestId('action-card-scry');
-    // No <img> should render for cards without art
-    expect(card.querySelector('img')).toBeNull();
-  });
-
-  // THR-1074. `artifact.empower` shipped in THR-996 with no ACTION_ART row, so it took
-  // the fallback branch above — the sphere-glyph card, not an arted one. Asserting the
-  // rendered <img> rather than getActionArt() is deliberate: the defect was entirely
-  // about what reached the surface, and a registry-level assertion would pass unchanged
-  // if the card resolved the right path and painted something else (impediment #546).
-  it('focused card renders the Forge Rite plate for artifact.empower', () => {
-    const empowerSlot: WheelSlot = {
-      ...baseSlot,
-      id: 'artifact.empower',
-      label: 'Empower',
-      type: 'target_action',
-      interventionType: null,
-      sphere: 'force', // Iron reach -> Force, so the frame and the plate agree
-    };
-    render(<ActionCard slot={empowerSlot} onClick={vi.fn()} size="focused" />);
-    const img = screen.getByTestId('action-card-artifact.empower').querySelector('img');
-    expect(img, 'artifact.empower must take the art branch, not the glyph fallback').toBeTruthy();
-    expect(img!.getAttribute('src')).toBe('/assets/actions/forge-rite.jpg');
-  });
-
-  it('focused card renders type line with reach and CRUD type', () => {
-    const targetActionSlot: WheelSlot = {
-      ...baseSlot,
-      id: 'target_action_action.iron.create',
-      type: 'target_action',
-      interventionType: null,
-    };
-    render(<ActionCard slot={targetActionSlot} onClick={vi.fn()} size="focused" />);
-    // Should show reach and crud type
-    expect(screen.getByTestId('action-card-target_action_action.iron.create').textContent)
-      .toMatch(/IRON/);
-    expect(screen.getByTestId('action-card-target_action_action.iron.create').textContent)
-      .toMatch(/CREATE/);
-  });
-
-  it('focused card renders technicalDescription when present', () => {
-    const slot: WheelSlot = { ...baseSlot, technicalDescription: 'Test mechanical description' };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByText('Test mechanical description')).toBeInTheDocument();
-  });
-
-  it('focused card omits technicalDescription section when absent', () => {
-    const slot: WheelSlot = { ...baseSlot };
-    // No technicalDescription set
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    // Card still renders without error
-    expect(screen.getByTestId('action-card-dream')).toBeInTheDocument();
-  });
-
-  it('shows detection risk in focused layout', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByTestId('action-card-risk')).toHaveTextContent('10%');
-  });
-
-  it('shows range info for ranged interventions in focused layout', () => {
-    const ranged = { ...baseSlot, rangeStatus: 'in_range' as const, hexDistance: 3 };
-    render(<ActionCard slot={ranged} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByTestId('action-card-range')).toHaveTextContent('3');
-  });
-
-  it('shows locked reason when unavailable in focused mode', () => {
-    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
-    render(<ActionCard slot={locked} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByText('Requires tier 2')).toBeInTheDocument();
-  });
-
-  it('calls onClick when available focused card is clicked', () => {
+  it('drops the play affordance when the card is pure display', () => {
+    // The Ascendant Beat unlock reveal (THR-639) shows a card being *given*.
     const onClick = vi.fn();
-    render(<ActionCard slot={baseSlot} onClick={onClick} size="focused" />);
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(onClick).toHaveBeenCalledWith('dream');
-  });
-
-  it('does NOT call onClick when unavailable focused card is clicked', () => {
-    const onClick = vi.fn();
-    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
-    render(<ActionCard slot={locked} onClick={onClick} size="focused" />);
-    fireEvent.click(screen.getByTestId('action-card-dream'));
+    render(<ActionCard slot={slot()} onClick={onClick} interactive={false} />);
+    fireEvent.click(screen.getByTestId('action-card-target_action_action.imbue'));
     expect(onClick).not.toHaveBeenCalled();
   });
+});
 
-  it('applies sphere color accent when available in focused mode', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    const card = screen.getByTestId('action-card-dream');
-    const borderLeftColor = (card as HTMLElement).style.borderLeftColor;
-    expect(borderLeftColor).toBeTruthy();
+describe('ActionCard — Law 21 (a named concept reaches its page)', () => {
+  it('links the name to the codex entry, by template id', () => {
+    const onOpenCodexEntry = vi.fn();
+    render(<ActionCard slot={slot()} onClick={vi.fn()} onOpenCodexEntry={onOpenCodexEntry} />);
+    fireEvent.click(screen.getByTestId('action-card-name-link-target_action_action.imbue'));
+    expect(onOpenCodexEntry).toHaveBeenCalledWith('action.imbue');
+  });
+
+  it('renders the name as plain text when there is no page to reach', () => {
+    // *Where a page exists* — never a dead link. A slot with no template id has
+    // no codex entry to open.
+    const bare = slot();
+    delete (bare as { templateId?: string }).templateId;
+    const { container } = render(
+      <ActionCard slot={bare} onClick={vi.fn()} onOpenCodexEntry={vi.fn()} />,
+    );
+    expect(container.querySelector('[data-testid^="action-card-name-link-"]')).toBeNull();
   });
 });
 
-// ─── TB-100: RarityBadge integration ─────────────────────────────
-
-describe('ActionCard — RarityBadge', () => {
-  it('does NOT show rarity badge for tier 1 (Mundane) in hand layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 1 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
-    expect(screen.queryByTestId('action-card-rarity-badge')).toBeNull();
+describe('ActionCard — Law 37 (the ending wears the card\'s chrome)', () => {
+  it('wears the fate word of its own last cast', () => {
+    render(<ActionCard slot={slot()} onClick={vi.fn()} resolvedBand="surge" />);
+    expect(screen.getByText('triumphed')).toBeTruthy();
   });
 
-  it('does NOT show rarity badge when rarityTier is absent in hand layout', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
-    expect(screen.queryByTestId('action-card-rarity-badge')).toBeNull();
-  });
-
-  it('shows rarity badge for tier 2 (Storied) in hand layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 2 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
-  });
-
-  it('shows rarity badge for tier 3 (Mythic) in hand layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 3 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
-  });
-
-  it('shows rarity badge for tier 4 (Legendary) in hand layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 4 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
-    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
-  });
-
-  it('does NOT show rarity badge for tier 1 (Mundane) in focused layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 1 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    expect(screen.queryByTestId('action-card-rarity-badge')).toBeNull();
-  });
-
-  it('shows rarity badge for tier 2 (Storied) in focused layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 2 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
-  });
-
-  it('shows rarity badge for tier 3 (Mythic) in focused layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 3 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
-  });
-
-  it('shows rarity badge for tier 4 (Legendary) in focused layout', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 4 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
-  });
-
-  it('badge text content matches tier name for Storied', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 2 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    const badge = screen.getByTestId('action-card-rarity-badge');
-    expect(badge.textContent).toMatch(/storied/i);
-  });
-
-  it('badge text content matches tier name for Legendary', () => {
-    const slot: WheelSlot = { ...baseSlot, rarityTier: 4 };
-    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    const badge = screen.getByTestId('action-card-rarity-badge');
-    expect(badge.textContent).toMatch(/legendary/i);
+  it('wears nothing when the action has not resolved', () => {
+    expect(cardText()).not.toContain('triumphed');
   });
 });
 
-// THR-739 removed the band-keyed spent overlay: the card's `playing` state is
-// dispatch-time and the band is not known until the action resolves, so no
-// production caller ever passed `outcomeBand`. The band lives on the Divine
-// Receipt (THR-727). What remains to assert is that the overlay is band-agnostic.
-describe('ActionCard — spent overlay', () => {
-  it('playing overlay renders the band-agnostic success face (hand)', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing size="hand" />);
-    const overlay = screen.getByTestId('action-card-spent-overlay');
-    expect(overlay).toBeDefined();
-    expect(overlay.getAttribute('data-outcome-band')).toBeNull();
-    expect(overlay.textContent).toContain('✓');
+describe('ActionCard — rarity', () => {
+  it('shows the rarity badge for Storied and above', () => {
+    render(<ActionCard slot={slot({ rarityTier: 2 })} onClick={vi.fn()} />);
+    expect(screen.getByTestId('action-card-rarity-target_action_action.imbue')).toBeTruthy();
   });
 
-  it('playing overlay renders the band-agnostic success face (focused)', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing size="focused" />);
-    const overlay = screen.getByTestId('action-card-spent-overlay');
-    expect(overlay.getAttribute('data-outcome-band')).toBeNull();
-    expect(overlay.textContent).toContain('✓');
-  });
-
-  it('renders no spent overlay when the card is not playing', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    expect(screen.queryByTestId('action-card-spent-overlay')).toBeNull();
-  });
-});
-
-// THR-1106: the shake timer was cleared only on the re-entry path (a subsequent
-// click), so a card unmounted inside the 400 ms shake window left it armed and the
-// callback ran setShaking on a torn-down component. In jsdom that surfaces as
-// `ReferenceError: window is not defined` from React's resolveUpdatePriority —
-// reported as an unhandled error, which vitest counts separately from test
-// failures, so the suite reads "all passing" and still exits 1.
-describe('ActionCard — shake timer lifecycle (THR-1106)', () => {
-  it('clears the shake timer on unmount instead of firing into a torn-down card', () => {
-    vi.useFakeTimers();
-    try {
-      const locked: WheelSlot = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
-      const { unmount } = render(<ActionCard slot={locked} onClick={vi.fn()} size="hand" />);
-
-      fireEvent.click(screen.getByTestId('action-card-dream'));
-      // Guard against a vacuous pass: the click must actually arm the shake, or
-      // the unmount assertion below would hold for the wrong reason.
-      expect(screen.getByTestId('action-card-dream').className).toContain('anim-shake-no');
-      expect(vi.getTimerCount()).toBe(1);
-
-      unmount();
-
-      expect(vi.getTimerCount()).toBe(0);
-      expect(() => vi.advanceTimersByTime(1_000)).not.toThrow();
-    } finally {
-      vi.useRealTimers();
-    }
+  it('shows no badge for Mundane', () => {
+    const { container } = render(<ActionCard slot={slot({ rarityTier: 1 })} onClick={vi.fn()} />);
+    expect(container.querySelector('[data-testid^="action-card-rarity-"]')).toBeNull();
   });
 });

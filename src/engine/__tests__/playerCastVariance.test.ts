@@ -225,19 +225,19 @@ describe('THR-728 — player cast variance', () => {
   });
 });
 
-describe('THR-728 — risk hint copy', () => {
-  it('says nothing for a guaranteed casting', () => {
-    expect(playerCastConstants.riskHintLine(0)).toBeNull();
-    expect(playerCastConstants.riskHintLine(undefined)).toBeNull();
-    expect(playerCastConstants.riskHintLine(Number.NaN)).toBeNull();
-  });
-
-  it('escalates across the two thresholds, in prose and without numbers', () => {
-    expect(playerCastConstants.riskHintLine(0.1)).toBe('A steady working.');
-    expect(playerCastConstants.riskHintLine(0.3)).toBe('An uncertain working.');
-    expect(playerCastConstants.riskHintLine(0.6)).toBe('A perilous working.');
-    for (const d of [0.1, 0.3, 0.6]) {
-      expect(playerCastConstants.riskHintLine(d)).not.toMatch(/\d/);
-    }
-  });
-});
+// ─── THR-728's risk-hint copy block was deleted by THR-1002 ────────────────
+//
+// It pinned `riskHintLine`'s three sentences — *"A steady working."* and friends —
+// which the focused ActionCard printed under its Effect block. The function, its
+// cut-points and its vocabulary are gone: the card prints a forecast tier word from
+// the one forecast ladder instead, so this block was a green test on a dead
+// contract and would have stayed green forever while proving nothing.
+//
+// Both of its claims survive, re-pointed rather than dropped:
+//
+// - *"says nothing for a guaranteed casting"* → `playerCastReadout.test.ts`,
+//   `reads fated for a zero-difficulty working` — the card no longer goes silent
+//   there, it says the true word, because the resolver returns `probability: 1`.
+// - *"in prose and without numbers"* → the Law 13 sweep in `ActionCard.test.tsx`,
+//   which asserts no digit anywhere on a fully-populated card rather than on three
+//   sampled inputs to one helper.

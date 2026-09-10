@@ -17,8 +17,10 @@ import type {
   UndertakingCapabilityGrowth,
   StrategicRuntimeState,
   UndertakingMomentRecord,
+  UndertakingVerbVariant,
 } from '../types/strategicAction';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
+import { STEP_OUTCOMES } from '../types/unifiedAction';
 import {
   LOCATION_BOOST_EXPIRY_SUFFIX,
   UNDERTAKING_TIMEOUT_TICKS,
@@ -28,6 +30,11 @@ import {
   STRATEGIC_CATALYST_SEED_PRIORITY,
   STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS,
   STRATEGIC_CONTROL_DEGRADATION_RATE,
+  CONTROL_RENEWING_VARIANTS,
+  STRATEGIC_CONTROL_RENEWAL_MIN_BAND,
+  STRATEGIC_CONTROL_RENEWAL_RECOVERY,
+  CONTROL_RENEWAL_EVENT_SIGNIFICANCE,
+  controlRenewalMessage,
   STRATEGIC_HISTORY_WINDOW_TICKS,
   ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES,
   WARBAND_RECRUIT_CAST_KEY,
@@ -36,6 +43,7 @@ import {
   MOMENT_INTERRUPT_SIGNIFICANCE,
   MOMENT_COMPLETION_SIGNIFICANCE,
   HARM_ON_AFFLICT,
+  INSTANT_COMPLETION_BAND,
 } from '../data/strategic-action-constants';
 import {
   createTradeRoute,
@@ -415,6 +423,13 @@ export interface StrategicExecutionResult {
    * not write GameState. Optional and absent on every other execution mode.
    */
   moments?: UndertakingMomentRecord[];
+  /**
+   * Tick events this execution produced (THR-1287) — today only the recovery
+   * chronicle line when working a hold pulled it back from degradation. Same
+   * patches-not-writes contract as `moments`: the caller pushes them onto its own
+   * accumulator. Optional and absent on every path that renews nothing.
+   */
+  events?: import('../types/gameState').TickEvent[];
 }
 
 /**
@@ -424,6 +439,34 @@ export interface StrategicExecutionResult {
 interface InstantMutationResult {
   ops: GraphOpResult[];
   poolInvalidatedLocationIds: string[];
+  /**
+   * The completed cell, when it ran through the one resolver and at least one of its
+   * ops succeeded (THR-1287). The caller folds it through `applyControlRenewal`
+   * against whichever controls accumulator it owns — this function is handed no
+   * strategic state and must not grow one.
+   *
+   * Absent on the template model's hint path and on any cell that refused, which is
+   * what keeps a renewal from ever running for work that did not happen.
+   */
+  renewalRequest?: {
+    actorId: string;
+    targetNodeId?: string;
+    variant?: UndertakingVerbVariant;
+    outcome?: string;
+    /**
+     * Whether the completed cell rolled a checkpoint. An instant cell did not: it
+     * carries `INSTANT_COMPLETION_BAND` because nothing could have gone wrong, not a
+     * band that went missing (THR-1450) — see `renewControlStance`, which skips the
+     * rank test entirely when this is `false`.
+     */
+    checkpointed: boolean;
+  };
+  /**
+   * A `control:seize` that landed (THR-1287). The caller retires any stance the
+   * previous holder still carried on the seized target, so THR-1286's invariant —
+   * *live `controls` edges equal active stances* — survives a change of hands.
+   */
+  seizeRetirement?: { targetNodeId: string; seizedById: string };
 }
 
 /**
@@ -443,9 +486,47 @@ export function executeStrategicAction(
 
   switch (candidate.executionMode) {
     case 'instant': {
-      // Execute the graph mutation immediately
-      const { ops, poolInvalidatedLocationIds } = executeInstantMutation(state, graph, candidate, tick);
+      // Execute the graph mutation immediately.
+      //
+      // THR-1450: the band is stamped here, at the one boundary the bandless path
+      // enters, rather than left for each reader to infer from `undefined`. An instant
+      // cell has no checkpoint and so cannot have failed, and `INSTANT_COMPLETION_BAND`
+      // is where that convention is stated. Leaving it absent is what made
+      // `use × Location`'s harvest pay zero in every live run — `yieldBandScale`
+      // scaled the absent band to 0 while the town still paid the prosperity cost —
+      // and made a survey's clue unspawnable for the same reason. Readers are handed a
+      // real band; none of them re-derives the rule, so none of them can drift out of
+      // it. The multi-tick arm below deliberately still passes a possibly-absent
+      // `lastCheckpoint?.band`: there the absence is a lost reading, not a terminal
+      // nothing could miss, and the failure arm is correct.
+      const {
+        ops, poolInvalidatedLocationIds, renewalRequest, seizeRetirement,
+      } = executeInstantMutation(state, graph, candidate, tick, INSTANT_COMPLETION_BAND);
       graphOps.push(...ops);
+
+      // ── A hold is kept by working it (THR-1287) ──
+      // `use × Location` — the harvest — is an instant cell, so this is the arm most
+      // renewals arrive through. The events and history accumulators are returned to
+      // the caller rather than written here: this module returns patches and does not
+      // write GameState.
+      const controlEvents: import('../types/gameState').TickEvent[] = [];
+      const controlHistory: StrategicHistoryEntry[] = [];
+      let controlsAfterCell: readonly StrategicControlState[] = currentState.controls;
+      if (renewalRequest) {
+        controlsAfterCell = applyControlRenewal(
+          graph, controlsAfterCell,
+          renewalRequest.actorId, renewalRequest.targetNodeId,
+          renewalRequest.variant, renewalRequest.outcome, renewalRequest.checkpointed,
+          tick, controlEvents,
+        );
+      }
+      if (seizeRetirement) {
+        controlsAfterCell = applySeizeRetirement(
+          graph, controlsAfterCell,
+          seizeRetirement.targetNodeId, seizeRetirement.seizedById,
+          tick, controlHistory, controlEvents,
+        );
+      }
 
       // Check for catalyst seeding
       catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
@@ -474,13 +555,16 @@ export function executeStrategicAction(
         candidate, tick, ops, catalystSeeded,
         describeDeed(graph, candidate, undefined, ops.find(o => o.success && o.createdId && graph.getNode(o.createdId))?.createdId),
       );
-      const updatedHistory = pruneHistory([...currentState.history, historyEntry], tick);
+      const updatedHistory = pruneHistory(
+        [...currentState.history, historyEntry, ...controlHistory], tick,
+      );
 
       return {
-        strategicState: { ...currentState, history: updatedHistory },
+        strategicState: { ...currentState, controls: [...controlsAfterCell], history: updatedHistory },
         graphOps,
         catalystSeeded,
         poolInvalidatedLocationIds,
+        ...(controlEvents.length > 0 && { events: controlEvents }),
       };
     }
 
@@ -656,6 +740,11 @@ export function advanceStrategicProjects(
   const events: import('../types/gameState').TickEvent[] = [];
   const pendingEncounterSeeds: PendingEncounterSeed[] = [];
   const moments: UndertakingMomentRecord[] = [];
+  // The controls array this pass works over (THR-1287). A completion below may renew
+  // a hold; the neglect loop at the tail then ticks *that* array, so a hold renewed
+  // this tick is neglected from 0 rather than from wherever it stood. Reassigned, not
+  // mutated — `renewControlStance` is pure and returns a fresh array.
+  let workingControls: readonly StrategicControlState[] = currentState.controls;
 
   // Divine `Sever the Bond` sets a flag on an agent; translating it onto the edge is
   // a once-per-tick sweep, not per-project work (rehomed from phase 2.33).
@@ -903,6 +992,28 @@ export function advanceStrategicProjects(
       completedOps.push(...ops);
       poolInvalidatedLocationIds.push(...mutation.poolInvalidatedLocationIds);
 
+      // ── A hold is kept by working it (THR-1287) ──
+      // The multi-tick arm of the same rule the instant path applies: `change:raise`
+      // — improving the place — is a checkpointed cell, so its band is the one the
+      // resolver was handed, and it renews only at `success_at_cost` or better.
+      if (mutation.renewalRequest) {
+        workingControls = applyControlRenewal(
+          graph, workingControls,
+          mutation.renewalRequest.actorId, mutation.renewalRequest.targetNodeId,
+          mutation.renewalRequest.variant, mutation.renewalRequest.outcome,
+          mutation.renewalRequest.checkpointed,
+          tick, events,
+        );
+      }
+      // A place that changed hands takes the loser's stance with it (THR-1287).
+      if (mutation.seizeRetirement) {
+        workingControls = applySeizeRetirement(
+          graph, workingControls,
+          mutation.seizeRetirement.targetNodeId, mutation.seizeRetirement.seizedById,
+          tick, newHistory, events,
+        );
+      }
+
       const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
 
       // Christening (THR-1291 §2): the work earns its proper name here, between the
@@ -1101,9 +1212,13 @@ export function advanceStrategicProjects(
     }
   }
 
-  // Update controls — tick neglect and degradation
+  // Update controls — tick neglect and degradation.
+  //
+  // Walks `workingControls`, not `currentState.controls` (THR-1287): a hold renewed by
+  // a completion earlier in this same pass has `neglectTicks: 0`, and reading the
+  // tick-start snapshot here would tick the pre-renewal record and discard the reset.
   const updatedControls: StrategicControlState[] = [];
-  for (const control of currentState.controls) {
+  for (const control of workingControls) {
     // A collapsed stance is retired, never carried (THR-1286). Records used to
     // accumulate here forever at `active: false, degradation: 1`, and a dead record
     // was not inert: the control-pressure score read its frozen `neglectTicks` and
@@ -1226,6 +1341,12 @@ function retireControl(
   tick: number,
   history: StrategicHistoryEntry[],
   events: import('../types/gameState').TickEvent[],
+  /**
+   * Set when the stance ended because someone else took the place (THR-1287), rather
+   * than because its holder let it go. Same retirement either way — the record and its
+   * edge go — but the world hears a different sentence and the trace a different event.
+   */
+  seizedById?: string,
 ): void {
   const released = releaseControl(graph, control.actorId, control.targetNodeId);
   const displayName = getStrategicTemplate(control.templateId)?.displayName ?? control.templateId;
@@ -1245,11 +1366,14 @@ function retireControl(
   });
 
   const actorNode = graph.getNode(control.actorId);
+  const seizerName = seizedById ? (graph.getNode(seizedById)?.name ?? seizedById) : undefined;
   events.push({
-    id: `strategic_control_lost_${control.controlId}_${tick}`,
+    id: `strategic_control_${seizedById ? 'seized' : 'lost'}_${control.controlId}_${tick}`,
     tick,
     type: 'agent_action',
-    message: `${actorNode?.name ?? control.actorId} loses control: ${displayName}`,
+    message: seizerName
+      ? `${actorNode?.name ?? control.actorId} loses ${graph.getNode(control.targetNodeId)?.name ?? control.targetNodeId} to ${seizerName}`
+      : `${actorNode?.name ?? control.actorId} loses control: ${displayName}`,
     significance: 0.5,
     actorId: control.actorId,
   });
@@ -1259,10 +1383,189 @@ function retireControl(
     tick,
     actorId: control.actorId,
     targetNodeId: control.targetNodeId,
-    event: 'collapsed',
+    event: seizedById ? 'seized' : 'collapsed',
+    ...(seizedById && { seizedById }),
     edgeReleased: released.success && released.createdId !== undefined,
-    summary: `Control collapsed: ${displayName} (${control.actorId} → ${control.targetNodeId})`,
+    summary: seizedById
+      ? `Control seized: ${displayName} (${control.actorId} → ${control.targetNodeId}, taken by ${seizedById})`
+      : `Control collapsed: ${displayName} (${control.actorId} → ${control.targetNodeId})`,
   } as TraceEntry);
+}
+
+/**
+ * Retire every stance another mortal still holds on a place that has just changed
+ * hands (THR-1287).
+ *
+ * `transferHolding` reads and writes `owns` edges only, so a Location held through a
+ * `controls` stance reads as unowned to it and a seize becomes a grant: the seizer
+ * gets a Freehold and the incumbent keeps a live record *and* a live `controls` edge
+ * over somewhere that is no longer theirs. The stance would then sit out its full
+ * grace-plus-degradation window before collapsing on a place the world had already
+ * handed on. Retiring it here keeps THR-1286's invariant — *live `controls` edges
+ * equal active stances* — exact across a change of hands, and it is the pin's repair.
+ *
+ * The seizer gets no stance: a seized place is a Freehold, not a hold (THR-1280).
+ */
+function applySeizeRetirement(
+  graph: WorldGraph,
+  controls: readonly StrategicControlState[],
+  targetNodeId: string,
+  seizedById: string,
+  tick: number,
+  history: StrategicHistoryEntry[],
+  events: import('../types/gameState').TickEvent[],
+): StrategicControlState[] {
+  const kept: StrategicControlState[] = [];
+  for (const control of controls) {
+    if (control.active && control.targetNodeId === targetNodeId && control.actorId !== seizedById) {
+      retireControl(graph, control, tick, history, events, seizedById);
+      continue;
+    }
+    kept.push(control);
+  }
+  return kept;
+}
+
+// ─── Control Upkeep — a hold is kept by working it (THR-1287) ───────
+
+/** A hold that was renewed, before and after, for the trace and the chronicle line. */
+export interface ControlRenewal {
+  before: StrategicControlState;
+  after: StrategicControlState;
+}
+
+/**
+ * Renew a hold when its holder completes work on the very thing they hold.
+ *
+ * Pure over the controls array — it reads no graph and writes no state, so both the
+ * instant and the multi-tick completion arms can fold its result into whichever
+ * accumulator they own. The caller emits the trace and the chronicle line.
+ *
+ * **Renews when** the completed cell's variant is in `CONTROL_RENEWING_VARIANTS` and
+ * the work cleared the band bar. For a **checkpointed** cell that is a rank test on
+ * the exported `STEP_OUTCOMES` ladder (lower index is better) against
+ * `STRATEGIC_CONTROL_RENEWAL_MIN_BAND` — deliberately **not** `isStepSuccess`, which
+ * admits `near_miss` and would leave the constant decorative. An unknown or absent
+ * band on a checkpointed cell ranks `-1` and renews nothing (fail-soft).
+ *
+ * **An instant cell's band is not a missing one.** `use × Location` — the harvest, and
+ * the primary way a hold is worked — carries `UNDERTAKING_VERB_DURATION.use = [0,0,0]`,
+ * so it synthesises as `instant`: no checkpoints, hence nothing it could have failed,
+ * and the caller has already gated on at least one op succeeding. Reading a bandless
+ * completion as a failure would make the plan's named primary path unreachable by
+ * construction, which is the exact class of defect this ticket exists to remove: a
+ * lever that cannot fire. THR-1450 found that class again in `yieldBandScale` and
+ * closed it at the source — the instant arm now stamps `INSTANT_COMPLETION_BAND`, so
+ * such a cell arrives here carrying the plain-success row rather than `undefined`.
+ * Either way `checkpointed: false` renews on the completion alone and never consults
+ * the band, which is why that fix did not move this function's behaviour.
+ *
+ * A holder can hold a target at most once — the claim arm refuses `already_controls`
+ * and the grid's `control:claim` cell is offered only on `unowned` targets — so the
+ * first active match is the match. Two would mean the claim path regressed, which is
+ * a `console.warn` here and a red test there, never a silent double-renewal.
+ *
+ * **Most completions renew nothing** and take the empty-array early return: a mortal
+ * holding a Location through `owns` (a founded settlement, a seized freehold) has no
+ * `StrategicControlState` at all.
+ */
+export function renewControlStance(
+  controls: readonly StrategicControlState[],
+  actorId: string,
+  targetNodeId: string | undefined,
+  variant: UndertakingVerbVariant | undefined,
+  outcome: string | undefined,
+  checkpointed: boolean,
+): { controls: StrategicControlState[]; renewed?: ControlRenewal } {
+  const unchanged = () => ({ controls: [...controls] });
+
+  if (controls.length === 0) return unchanged();
+  if (!targetNodeId || !variant) return unchanged();
+  if (!CONTROL_RENEWING_VARIANTS.includes(variant)) return unchanged();
+
+  if (checkpointed) {
+    // Rank on the ladder the type is derived from, so a seventh band cannot drift a
+    // hand-written table out of sync. `indexOf` on an absent band is -1, which fails
+    // the `>= 0` guard rather than passing the `<= minRank` comparison by accident.
+    const rank = STEP_OUTCOMES.indexOf(outcome as typeof STEP_OUTCOMES[number]);
+    const minRank = STEP_OUTCOMES.indexOf(STRATEGIC_CONTROL_RENEWAL_MIN_BAND);
+    if (rank < 0 || rank > minRank) return unchanged();
+  }
+
+  const matches = controls.filter(
+    c => c.active && c.actorId === actorId && c.targetNodeId === targetNodeId,
+  );
+  if (matches.length === 0) return unchanged();
+  if (matches.length > 1) {
+    console.warn(
+      `[THR-1287] ${matches.length} active stances for ${actorId} on ${targetNodeId} — renewing the first; the claim path's guard has regressed.`,
+    );
+  }
+
+  const before = matches[0];
+  const after: StrategicControlState = {
+    ...before,
+    neglectTicks: 0,
+    degradation: Math.max(0, before.degradation - STRATEGIC_CONTROL_RENEWAL_RECOVERY),
+  };
+
+  return {
+    controls: controls.map(c => (c === before ? after : c)),
+    renewed: { before, after },
+  };
+}
+
+/**
+ * `renewControlStance` plus the two things the world hears about it: the `renewed`
+ * trace (always) and the recovery chronicle line (only when there was degradation to
+ * recover — a healthy hold being worked is silent).
+ *
+ * `events` is the caller's accumulator for this tick and is mutated in place, matching
+ * `retireControl`'s contract so the collapse and the recovery read as a pair.
+ */
+function applyControlRenewal(
+  graph: WorldGraph,
+  controls: readonly StrategicControlState[],
+  actorId: string,
+  targetNodeId: string | undefined,
+  variant: UndertakingVerbVariant | undefined,
+  outcome: string | undefined,
+  checkpointed: boolean,
+  tick: number,
+  events: import('../types/gameState').TickEvent[],
+): StrategicControlState[] {
+  const result = renewControlStance(controls, actorId, targetNodeId, variant, outcome, checkpointed);
+  if (!result.renewed) return result.controls;
+
+  const { before, after } = result.renewed;
+  const displayName = getStrategicTemplate(before.templateId)?.displayName ?? before.templateId;
+
+  emitTrace({
+    category: 'strategic_control_lifecycle',
+    tick,
+    actorId,
+    targetNodeId: before.targetNodeId,
+    event: 'renewed',
+    variant,
+    degradationBefore: before.degradation,
+    degradationAfter: after.degradation,
+    summary: `Control renewed by ${variant}: ${displayName} (${actorId} → ${before.targetNodeId})`,
+  } as TraceEntry);
+
+  if (before.degradation > 0) {
+    const actorName = graph.getNode(actorId)?.name ?? actorId;
+    const targetName = graph.getNode(before.targetNodeId)?.name ?? before.targetNodeId;
+    events.push({
+      id: `strategic_control_renewed_${before.controlId}_${tick}`,
+      tick,
+      type: 'agent_action',
+      message: controlRenewalMessage(actorName, targetName),
+      significance: CONTROL_RENEWAL_EVENT_SIGNIFICANCE,
+      actorId,
+    });
+  }
+
+  return result.controls;
 }
 
 // ─── Instant Mutation Dispatch ──────────────────────────────────────
@@ -1277,9 +1580,17 @@ function executeInstantMutation(
   candidate: StrategicActionCandidate,
   tick: number,
   /**
-   * The band the work's final checkpoint landed on, when there was one (THR-1428).
-   * The multi-tick completion path below reads it off `lastCheckpoint`; the instant
-   * path has no checkpoint, so its readers take the plain-success row.
+   * The band the work's final checkpoint landed on (THR-1428).
+   *
+   * The multi-tick completion path reads it off `lastCheckpoint`. The instant path has
+   * no checkpoint, so its caller stamps `INSTANT_COMPLETION_BAND` — the plain-success
+   * row — before this runs (THR-1450). That used to be a contract this comment stated
+   * and each reader was trusted to keep; two of them did not, so it is now supplied at
+   * the call site and every reader is simply handed a band.
+   *
+   * Still optional, and still meaningfully absent in one case: a **checkpointed** cell
+   * whose `lastCheckpoint` is missing. There the absence is a lost reading rather than
+   * a terminal nothing could miss, and readers correctly take their failure arm.
    */
   outcome?: string,
 ): InstantMutationResult {
@@ -1313,8 +1624,27 @@ function executeInstantMutation(
       outcome,
     });
     ops.push(...resolution.ops);
-    if (targetId && resolution.ops.some(o => o.success)) poolInvalidatedLocationIds.push(targetId);
-    return { ops, poolInvalidatedLocationIds };
+    const succeeded = resolution.ops.some(o => o.success);
+    if (targetId && succeeded) poolInvalidatedLocationIds.push(targetId);
+    return {
+      ops,
+      poolInvalidatedLocationIds,
+      // THR-1287: a hold is kept by working it. Reported only for a cell that actually
+      // did something — a refused harvest renews nothing, and the clock keeps running.
+      ...(succeeded && {
+        renewalRequest: {
+          actorId: candidate.actorId,
+          targetNodeId: candidate.targetNodeId,
+          variant: template.cellVariant,
+          outcome,
+          checkpointed: template.executionMode === 'multi_tick_project',
+        },
+      }),
+      // THR-1287: a place that changed hands takes the loser's stance with it.
+      ...(succeeded && template.cellVariant === 'control:seize' && candidate.targetNodeId && {
+        seizeRetirement: { targetNodeId: candidate.targetNodeId, seizedById: candidate.actorId },
+      }),
+    };
   }
 
   // ── Hint-driven dispatch: templates declare their mutation via mutationHint ──

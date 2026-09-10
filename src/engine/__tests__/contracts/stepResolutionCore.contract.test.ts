@@ -280,6 +280,16 @@ describe('contract 2 — one band ladder in the engine', () => {
       'encounterScoring.ts',
       'meetingEncounter.ts',
       'plannerForecast.ts',
+      // Added by THR-1002, deliberately and in the open. `playerCastReadout.ts`
+      // imports the two *clamp bounds* only — `PROBABILITY_FLOOR` and
+      // `PROBABILITY_CEILING` — so that `castForecastProbability` ends inside the
+      // identical interval `computeResolutionThreshold` returns. It rolls nothing and
+      // classifies no band: it hands a probability to `classifyForecastTier`, which
+      // is the forecast vocabulary, not the outcome ladder. Importing the bounds is
+      // the *point* — the action card's tier word has to be a reading of the number
+      // the roll will use, and re-typing 0.05 and 0.95 beside the resolver is exactly
+      // the silent drift this pin exists to prevent (and was the shape of THR-998).
+      'playerCastReadout.ts',
       'resolutionScaleAdjust.ts',
       'stepResolutionCore.ts',
     ]);

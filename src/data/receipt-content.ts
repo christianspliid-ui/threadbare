@@ -110,3 +110,66 @@ export function selectReceiptFrameLine(band: OutcomeBand | string | undefined, a
   const index = Math.abs(hash) % pool.length;
   return pool[index];
 }
+
+/**
+ * The toast-tier receipt carries the overview's first sentence (THR-1002).
+ *
+ * Before this, every toast read `` `Your ${template.name} ${outcomeBandWord(band)}.` ``
+ * — the template's *internal* name and one band word, and nothing about what
+ * happened. Measured against the deck a player can actually hold, 28 of 30 casts
+ * land on the toast tier, so that sentence was the feedback for ~93% of casts.
+ * Christian's directive of 2026-08-06: *"when you play one you don't really get
+ * feedback."* The receipt's `overview` — which the resolver had already built and
+ * the modal had always shown — is what the toast should have been saying.
+ *
+ * Off switches back to the bare name, so the change is revertible without a
+ * rebuild of the receipt path (NFP #1).
+ */
+export const RECEIPT_TOAST_USES_OVERVIEW = true;
+
+/**
+ * Longest toast message before it is cut at a word boundary and elided.
+ *
+ * The toast is a glance, not a read — an overview whose first sentence runs long
+ * would push the stack's other toasts off screen, and the modal is one click away
+ * for the whole thing.
+ */
+export const RECEIPT_TOAST_MAX_CHARS = 160;
+
+/**
+ * The first sentence of an overview, for the toast.
+ *
+ * Splits on the first sentence terminator followed by a space, so a decimal or an
+ * abbreviation mid-sentence does not cut the line early; a one-sentence overview
+ * is used whole. Fail-soft in both directions — a blank or placeholder-laden
+ * overview returns `undefined` so the caller falls back to the band frame line
+ * rather than toasting an empty string or a raw `{cast:*}` token.
+ */
+export function receiptToastSentence(overview: string | undefined): string | undefined {
+  if (typeof overview !== 'string') return undefined;
+  const trimmed = overview.trim();
+  if (!trimmed) return undefined;
+  // An unresolved placeholder means enrichment could not finish; the frame line is
+  // a truthful sentence where `{cast:subject}` on screen is a Law 14 violation.
+  if (trimmed.includes('{')) return undefined;
+
+  // A *stripped* placeholder is the commoner failure and the one the plan's kill
+  // criterion names. `enrichProse` removes a token it cannot resolve rather than
+  // leaving it visible, so `"{cast:subject} walks away unharmed."` arrives here as
+  // `"walks away unharmed."` — grammatical-looking, lowercase, and missing its
+  // subject. There is no token left to detect, so the tell is the opening
+  // character: an authored overview is a sentence and starts like one. A line that
+  // does not is a fragment, and the band's frame line is better than a sentence
+  // whose subject the enricher ate.
+  // Only a *lowercase letter* opener is rejected: a quotation mark, a dash or a
+  // capitalised name are all legitimate ways for an authored overview to begin.
+  if (/^\p{Ll}/u.test(trimmed)) return undefined;
+
+  const match = /[.!?](\s|$)/.exec(trimmed);
+  const sentence = match ? trimmed.slice(0, match.index + 1) : trimmed;
+  if (sentence.length <= RECEIPT_TOAST_MAX_CHARS) return sentence;
+
+  const clipped = sentence.slice(0, RECEIPT_TOAST_MAX_CHARS);
+  const lastSpace = clipped.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trimEnd()}…`;
+}

@@ -8,7 +8,7 @@ import { Modal } from '../shared/Modal';
 import type { OmenState, ActiveOmen } from '../../types/omen';
 import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
-import { durationLabel } from '../../engine/aftermathWords';
+import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
 
 const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
   doom_echo: '⊘',
@@ -40,10 +40,15 @@ function OmenCard({ omen, currentTick, isPrimary }: { omen: ActiveOmen; currentT
   const intensity = intensityLabel(omen, currentTick);
   const ticksLeft = omen.startTick + omen.duration - currentTick;
 
+  // THR-1451 (Class C): `combat +30% · social -10%` printed a magnitude the player has
+  // nothing to compare it against — no bar here, and it is not odds-space in the sense
+  // THR-977 requires of a pip row (it weights which encounters arrive, not the odds of
+  // one succeeding). What the player acts on is the *direction*: which way this omen
+  // leans. Direction is not magnitude, so it survives the drop as a word.
   const biasParts: string[] = [];
   for (const [type, val] of Object.entries(template.encounterBias)) {
-    if (val > 0) biasParts.push(`${type} +${Math.round(val * 100)}%`);
-    else if (val < 0) biasParts.push(`${type} ${Math.round(val * 100)}%`);
+    if (val > 0) biasParts.push(`${type} favoured`);
+    else if (val < 0) biasParts.push(`${type} dampened`);
   }
 
   return (
@@ -132,8 +137,12 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
               const t = getOmenTemplateById(h.templateId);
               return (
                 <div key={i} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px', display: 'flex', gap: '8px' }}>
-                  <span style={{ color: 'var(--text-muted)', minWidth: '60px' }}>
-                    t{h.startTick}–{h.endTick}
+                  {/* THR-1426 (Shape 1): `t120–168` is a pair of absolute tick indices — the
+                      engine's clock on a player-facing row (Laws 13/14). A past omen's span
+                      is read as when it ended, not as two indices the player must subtract;
+                      `elapsedLabel` gives that in days, the unit the rest of the UI uses. */}
+                  <span style={{ color: 'var(--text-muted)', minWidth: '90px' }}>
+                    {elapsedLabel(currentTick - h.endTick)} ago
                   </span>
                   <span>{t?.name ?? h.templateId}</span>
                 </div>

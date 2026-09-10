@@ -101,8 +101,8 @@ export function clearWorldRefDrops(): void {
  * Never throws (NFP #4). Every `undefined` is recorded in the drop log, so a surface
  * falling soft to plain text is visible to a developer rather than silent.
  *
- * Two kinds resolve without touching the graph, because their ids are not node ids:
- * `hex` identity is coordinates, and `codex` is reserved with no destination at all.
+ * One kind resolves without touching the graph, because its id is not a node id:
+ * `hex` identity is coordinates.
  */
 export function resolveWorldRef(
   ref: WorldRef,
@@ -117,9 +117,6 @@ function resolveWorldRefInner(
   ref: WorldRef,
   context: WorldRefResolutionContext,
 ): string | undefined {
-  // Reserved: nothing to resolve to, and saying so is the point (see WORLD_REF_RESERVED_KINDS).
-  if (ref.kind === 'codex') return undefined;
-
   // A hex names coordinates, not a node. Validate the form and hand it back unchanged
   // so a caller can route it; a malformed id drops rather than routing to hex NaN,NaN.
   if (ref.kind === 'hex') {

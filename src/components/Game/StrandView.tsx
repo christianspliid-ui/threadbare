@@ -126,9 +126,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
                         <Tooltip id={`reach.${domain.domain}`}>
                           <span className="underline decoration-dotted cursor-help" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{domain.domain}</span>
                         </Tooltip>
-                        <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
-                          {(domain.score * 100).toFixed(0)}%
-                        </span>
+                        {/* THR-1451 (Class C): the reach bar below renders this score —
+                            dropped per the THR-1424 ruling. */}
                       </div>
                       <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-deep)' }}>
                         <div

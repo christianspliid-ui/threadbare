@@ -5,6 +5,7 @@ import {
   STALENESS_BRANCH_AGE_THRESHOLD_MS,
   formatFingerprintTestValue,
   probeBranchStaleness,
+  probeLinearReachability,
   probeNpmSingleTestTiming,
   testProbeAbstentionReason,
   type BranchStalenessResult,
@@ -355,5 +356,168 @@ describe("formatFingerprintTestValue — abstained is its own token", () => {
   it("still renders a duration for a probe that genuinely ran", () => {
     const ran = { name: "test", status: "yes" as const, detail: "ok", durationMs: 1250 };
     expect(formatFingerprintTestValue(ran)).toBe("1.25s");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// probeLinearReachability — the `linear=` fingerprint token (THR-1443)
+// ---------------------------------------------------------------------------
+
+/** Minimal Response stand-in: only the two members the probe actually reads. */
+function jsonResponse(status: number, body: unknown = {}): Response {
+  return {
+    status,
+    json: async () => body,
+  } as unknown as Response;
+}
+
+/** A fetch that records what it was handed, so header assertions have something to read. */
+function makeFetchSpy(handler: (init: RequestInit) => Promise<Response>) {
+  const calls: Array<{ url: string; init: RequestInit }> = [];
+  const impl = async (url: string, init: RequestInit): Promise<Response> => {
+    calls.push({ url, init });
+    return handler(init);
+  };
+  return { impl, calls };
+}
+
+describe("probeLinearReachability — linear=ok", () => {
+  it("reports ok only when an authenticated read returns a viewer", async () => {
+    const { impl } = makeFetchSpy(async () => jsonResponse(200, { data: { viewer: { id: "user_1" } } }));
+    const result = await probeLinearReachability(impl, "lin_api_test");
+    expect(result.linearKey).toBe("ok");
+    expect(result.status).toBe("yes");
+  });
+
+  it("does not report ok for a 200 that carried no viewer payload", async () => {
+    // The vacuity guard: a 200 alone proves the endpoint answered, never that the
+    // board was readable. Only the payload can carry that.
+    const { impl } = makeFetchSpy(async () => jsonResponse(200, { data: {} }));
+    const result = await probeLinearReachability(impl, "lin_api_test");
+    expect(result.linearKey).not.toBe("ok");
+    expect(result.linearKey).toBe("unknown");
+  });
+});
+
+describe("probeLinearReachability — linear=nokey is not a failure", () => {
+  it("reports nokey, not noauth, when the endpoint 401s because no key was supplied", async () => {
+    // The trap this probe was built to avoid. A CC lane reaches Linear through the MCP
+    // connector, which this script cannot see; LINEAR_API_KEY is what *scripts* use.
+    // On the home machine the key is routinely unset while the connector is live — the
+    // exact state of the session that implemented THR-1443. Reporting that as a red
+    // would have hard-stopped a run whose board was perfectly healthy.
+    const { impl } = makeFetchSpy(async () =>
+      jsonResponse(401, { errors: [{ message: "Authentication required, not authenticated" }] }),
+    );
+    const result = await probeLinearReachability(impl, undefined);
+    expect(result.linearKey).toBe("nokey");
+    expect(result.status).not.toBe("no");
+  });
+
+  it("sends no Authorization header when there is no key to send", async () => {
+    const { impl, calls } = makeFetchSpy(async () => jsonResponse(401));
+    await probeLinearReachability(impl, undefined);
+    const headers = calls[0]?.init.headers as Record<string, string>;
+    expect(headers.Authorization).toBeUndefined();
+  });
+
+  it("still distinguishes a reachable endpoint from a dark one when it has no key", async () => {
+    // The half that stays load-bearing without a credential, and the whole reason the
+    // probe calls out at all rather than short-circuiting on the missing key.
+    const { impl: reachable } = makeFetchSpy(async () => jsonResponse(401));
+    const dark = async () => {
+      throw Object.assign(new Error("getaddrinfo ENOTFOUND api.linear.app"), { name: "TypeError" });
+    };
+    expect((await probeLinearReachability(reachable, undefined)).linearKey).toBe("nokey");
+    expect((await probeLinearReachability(dark, undefined)).linearKey).toBe("unreachable");
+  });
+});
+
+describe("probeLinearReachability — linear=noauth", () => {
+  it("reports noauth when a key was supplied and rejected", async () => {
+    const { impl } = makeFetchSpy(async () => jsonResponse(401));
+    const result = await probeLinearReachability(impl, "lin_api_stale");
+    expect(result.linearKey).toBe("noauth");
+    expect(result.status).toBe("no");
+  });
+
+  it("reports noauth for a 200 carrying a GraphQL authentication error", async () => {
+    const { impl } = makeFetchSpy(async () =>
+      jsonResponse(200, { errors: [{ message: "Invalid authentication token" }] }),
+    );
+    expect((await probeLinearReachability(impl, "lin_api_stale")).linearKey).toBe("noauth");
+  });
+
+  it("does not mistake an ordinary GraphQL error for an auth failure", async () => {
+    const { impl } = makeFetchSpy(async () =>
+      jsonResponse(200, { errors: [{ message: "Field nope does not exist on type Query" }] }),
+    );
+    expect((await probeLinearReachability(impl, "lin_api_test")).linearKey).toBe("unknown");
+  });
+
+  it("separates noauth from nokey on the identical wire response", async () => {
+    // Same 401 from the same endpoint; only the credential the caller held differs.
+    // If these ever collapse into one token the probe has stopped saying anything.
+    const { impl } = makeFetchSpy(async () => jsonResponse(401));
+    const withKey = await probeLinearReachability(impl, "lin_api_stale");
+    const withoutKey = await probeLinearReachability(impl, undefined);
+    expect(withKey.linearKey).not.toBe(withoutKey.linearKey);
+  });
+});
+
+describe("probeLinearReachability — linear=unreachable (the 2026-09-06 shape)", () => {
+  it("reports unreachable when the request times out, without throwing", async () => {
+    const timeout = async () => {
+      throw Object.assign(new Error("The operation was aborted"), { name: "TimeoutError" });
+    };
+    const result = await probeLinearReachability(timeout, "lin_api_test");
+    expect(result.linearKey).toBe("unreachable");
+    expect(result.status).toBe("no");
+  });
+
+  it("reports unreachable for a 5xx — reachable but unusable is still unreadable", async () => {
+    const { impl } = makeFetchSpy(async () => jsonResponse(503));
+    const result = await probeLinearReachability(impl, "lin_api_test");
+    expect(result.linearKey).toBe("unreachable");
+    expect(result.detail).toContain("503");
+  });
+
+  it("does not swallow a 5xx into nokey when the key is also missing", async () => {
+    // Ordering guard: the outage verdict has to outrank the missing-credential one, or
+    // the single signal this ticket exists to surface is masked on exactly the machines
+    // that have no key — which is most of them.
+    const { impl } = makeFetchSpy(async () => jsonResponse(503));
+    expect((await probeLinearReachability(impl, undefined)).linearKey).toBe("unreachable");
+  });
+});
+
+describe("probeLinearReachability — cannot block a session (NFP #4)", () => {
+  it("resolves rather than rejects on an arbitrary transport failure", async () => {
+    const exploded = async () => {
+      throw new Error("socket hang up");
+    };
+    await expect(probeLinearReachability(exploded, "lin_api_test")).resolves.toMatchObject({
+      linearKey: "unreachable",
+    });
+  });
+
+  it("resolves rather than rejects when the body is not JSON at all", async () => {
+    const garbage = {
+      status: 200,
+      json: async () => {
+        throw new SyntaxError("Unexpected token < in JSON at position 0");
+      },
+    } as unknown as Response;
+    await expect(
+      probeLinearReachability(async () => garbage, "lin_api_test"),
+    ).resolves.toMatchObject({ linearKey: "unreachable" });
+  });
+
+  it("passes an abort signal, so a hung endpoint cannot outlast the probe budget", async () => {
+    const { impl, calls } = makeFetchSpy(async () =>
+      jsonResponse(200, { data: { viewer: { id: "u" } } }),
+    );
+    await probeLinearReachability(impl, "lin_api_test");
+    expect(calls[0]?.init.signal).toBeDefined();
   });
 });

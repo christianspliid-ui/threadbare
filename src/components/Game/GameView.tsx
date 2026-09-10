@@ -27,6 +27,12 @@ import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useLocationActivities } from './hooks/useLocationActivities';
 import { useAvatarData } from './hooks/useAvatarData';
+import { useIncidentCapture } from './hooks/useIncidentCapture';
+import { getCrashLog } from '../../engine/tickHealthMonitor';
+import {
+  INCIDENT_PROMPT_ON_CRASH,
+  INCIDENT_PROMPT_COOLDOWN_TICKS,
+} from '../../data/incident-snapshot-constants';
 import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
@@ -74,6 +80,13 @@ import { GameViewTopBar } from './GameView/GameViewTopBar';
 import { DoomClockDetail } from './DoomClockDetail';
 import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
+import type { OutcomeBand } from '../../engine/outcomeConsequences';
+import {
+  ACTION_VERB_WORDS,
+  ACTION_CONTROL_VERB_WORD,
+  ACTION_SCALE_WORDS,
+} from '../../data/action-card-display';
+import { ACTION_VERB_FALLBACK_WORD } from './actionCardModel';
 import { HarvestScreen } from './HarvestScreen';
 import { AgentInfoCard } from './AgentInfoCard';
 import { ThreadsPanel } from './ThreadsPanel';
@@ -419,8 +432,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Codex overlay (THR-613 Slice 3b-tail): full three-state path catalog ──
   const [codexOpen, setCodexOpen] = useState(false);
   const [codexInitialFilter, setCodexInitialFilter] = useState<CodexRunStateFilter>('all');
+  const [codexInitialEntryId, setCodexInitialEntryId] = useState<string | null>(null);
   const openCodex = useCallback((filter: CodexRunStateFilter = 'all') => {
     setCodexInitialFilter(filter);
+    setCodexInitialEntryId(null);
+    setCodexOpen(true);
+  }, []);
+  /**
+   * Open the codex straight to one entry (THR-1002, Law 21).
+   *
+   * The action card's title is a link, and this is where it goes. Entry ids for
+   * actions are the bare template id, which is what `WheelSlot.templateId` holds.
+   */
+  const openCodexEntry = useCallback((entryId: string) => {
+    setCodexInitialFilter('all');
+    setCodexInitialEntryId(entryId);
     setCodexOpen(true);
   }, []);
 
@@ -2210,6 +2236,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             essenceCost: t.essenceCost ?? 0,
             steps: t.steps.length,
             scale: t.scale,
+            // THR-1002: the two words the card's chips print, alongside the raw
+            // keys above — so a verification run can check the translation rather
+            // than only the schema.
+            verbWord: t.durationMode === 'sustained'
+              ? ACTION_CONTROL_VERB_WORD
+              : ACTION_VERB_WORDS[t.crudType] ?? ACTION_VERB_FALLBACK_WORD,
+            scaleWord: ACTION_SCALE_WORDS[t.scale] ?? '',
           }));
       },
 
@@ -2692,6 +2725,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerGameStateProvider(() => _gameStateRef.current);
+    // THR-1134: the runtime the bridge hands to `buildIncidentBundle` and
+    // `getIncidentRecorderStats`. `runtimeRef.current` is stable for the session,
+    // so registering once is enough.
+    window.__DEBUG._registerRuntimeProvider(() => runtime);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Debug bridge: synchronous tick batch (THR-689) ────────────────────────
@@ -3193,6 +3230,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     return receipts.find(r => !r.acknowledged && r.presentation === 'modal') ?? null;
   }, [gameState.playerActionReceipts, openedReceiptId]);
+
+  /**
+   * The band each action last resolved to, keyed by template id (THR-1002).
+   *
+   * Law 37: the ending wears the chrome of the card that started it — so the
+   * drawer's card wears the fate word of its own last cast. The receipt queue is
+   * the authority on what a cast came to; the drawer is a second *reader* of it,
+   * never a second computer of it.
+   *
+   * Last write wins: the queue is chronological, so casting the same action again
+   * replaces the word rather than accumulating a history the card cannot show.
+   * Acknowledged receipts are kept — the player dismissing the toast does not
+   * un-happen the ending, and the card should still say how it went.
+   */
+  const resolvedBands = useMemo(() => {
+    const bands: Record<string, OutcomeBand> = {};
+    for (const receipt of gameState.playerActionReceipts ?? []) {
+      bands[receipt.templateId] = receipt.outcomeBand;
+    }
+    return bands;
+  }, [gameState.playerActionReceipts]);
 
   const handleAcknowledgeReceipt = useCallback(() => {
     if (!activeReceipt) return;
@@ -3767,7 +3825,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       available: true,
       lockedReason: null,
       essenceCost: 0,
-      detectionRisk: 0,
       sphere: archetype.sphereAlignment.primary,
       interventionType: null,
       rangeStatus: 'unlimited',
@@ -4102,6 +4159,56 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
   }, [getDebugActiveUIState, getDebugOpenModals]);
 
+  // ── Incident snapshot (THR-1134) ──
+  // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
+  // above — only the *bridge registration* is dev-gated — so the same record the
+  // debug bridge serves is the one the production bundle carries. That is
+  // deliberate: the snapshot's whole point is working where `window.__DEBUG` does
+  // not exist, and a second composer would drift from this one.
+  const incidentCapture = useIncidentCapture({
+    gameState,
+    runtime,
+    mapSize,
+    mapCols: COLS,
+    mapRows: ROWS,
+    getActiveUIState: getDebugActiveUIState,
+    onPushToast: handlePushToast,
+  });
+
+  /**
+   * The crash prompt (THR-1134) — discoverability without a shortcut to memorise.
+   *
+   * When `tickHealthMonitor` catches something the player would otherwise never
+   * see, one toast points at the door. Debounced by tick rather than by wall
+   * clock so a crashing tick loop produces one prompt instead of one per tick,
+   * and it is a toast, never a modal — it must not block the veil, a beat or a
+   * receipt.
+   */
+  const lastCrashPromptTickRef = useRef(-Infinity);
+  const lastCrashCountRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!INCIDENT_PROMPT_ON_CRASH) return;
+    const count = getCrashLog().length;
+    // First observation seeds the baseline: a crash that predates this mount is
+    // history, not news, and must not fire a prompt on load.
+    if (lastCrashCountRef.current === null) {
+      lastCrashCountRef.current = count;
+      return;
+    }
+    if (count <= lastCrashCountRef.current) return;
+    lastCrashCountRef.current = count;
+    if (gameState.tick - lastCrashPromptTickRef.current < INCIDENT_PROMPT_COOLDOWN_TICKS) return;
+    lastCrashPromptTickRef.current = gameState.tick;
+    handlePushToast({
+      id: `incident-crash-${gameState.tick}`,
+      message: 'Something went wrong under the hood. You can save a snapshot from Settings.',
+      count: 1,
+      createdTick: gameState.tick,
+      expiresAt: Date.now() + 10000,
+      onClick: () => setSettingsPanelOpen(true),
+    });
+  }, [gameState.tick, handlePushToast]);
+
   /**
    * THR-935: a revealed-notice snapshot belongs to the surface the badge opened.
    * Once the selection moves elsewhere — or the panel closes — it is news held
@@ -4294,6 +4401,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleUiVolume={handleUiVolume}
         audioMuted={audioMuted}
         handleToggleAudioMute={handleToggleAudioMute}
+        recordingTrouble={incidentCapture.recording}
+        handleToggleRecordTrouble={incidentCapture.toggleRecording}
+        includeWorldInSnapshot={incidentCapture.includeWorld}
+        handleToggleIncludeWorld={incidentCapture.toggleIncludeWorld}
+        handleSaveSnapshot={incidentCapture.captureSnapshot}
       />
 
       {/* ═══ Main content area ═══ */}
@@ -4421,7 +4533,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       deliveryMode={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].deliveryMode}
                       essenceCost={slot.essenceCost}
                       sphere={slot.sphere ?? 'mind'}
-                      detectionRisk={slot.detectionRisk}
+                      // THR-1002: detection is read from its own authority rather
+                      // than from a slot field. `WheelSlot.detectionRisk` was
+                      // hardcoded 0 by every live builder, so this popover has been
+                      // quoting "0% risk" on interventions whose authored risk runs
+                      // 0.1–0.6 — and `computeDetection` (reached in production via
+                      // useAgentInteraction → executeIntervention) rolls against the
+                      // authored value, not the zero. The concept is alive here; it
+                      // was only ever dead on the action card, which is why the field
+                      // retired and this read moved instead of going with it.
+                      detectionRisk={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].detectionRisk}
                       rangeStatus={slot.rangeStatus}
                       hexDistance={slot.hexDistance}
                       description={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].description}
@@ -4621,6 +4742,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
               onClose={handleDrawerClose}
+              resolvedBands={resolvedBands}
+              onOpenCodexEntry={openCodexEntry}
             />
           )}
 
@@ -4634,6 +4757,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               playingCardId={null}
               onSlotClick={handleNonAgentSlotClick}
               onClose={handleCloseNonAgentDrawer}
+              resolvedBands={resolvedBands}
+              onOpenCodexEntry={openCodexEntry}
             />
           )}
         </div>
@@ -4801,7 +4926,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 </div>
                 {gameState.chronicleEntries.length > 0 && (
                   <div style={{ marginTop: 'var(--panel-padding)' }}>
-                    <ChroniclePanel entries={gameState.chronicleEntries} />
+                    <ChroniclePanel entries={gameState.chronicleEntries} currentTick={gameState.tick} />
                   </div>
                 )}
               </div>
@@ -5227,6 +5352,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               onClose={() => setCodexOpen(false)}
               runContext={buildCodexRunContext(gameState)}
               initialStateFilter={codexInitialFilter}
+              initialEntryId={codexInitialEntryId}
             />
           </Suspense>
         </div>
@@ -5248,6 +5374,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onClose={() => setMandateDetailOpen(false)}
           definition={gameState.mandateDefinition}
           state={gameState.mandateState}
+          currentTick={gameState.tick}
         />
       )}
 

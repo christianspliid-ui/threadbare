@@ -61,6 +61,9 @@ import {
   RECEIPT_QUEUE_MAX,
   RECEIPT_EVENT_SIGNIFICANCE_TOAST,
   RECEIPT_EVENT_SIGNIFICANCE_MODAL,
+  RECEIPT_TOAST_USES_OVERVIEW,
+  receiptToastSentence,
+  selectReceiptFrameLine,
 } from '../data/receipt-content';
 
 // ─── Receipt type ────────────────────────────────────────────────────────────────
@@ -88,6 +91,23 @@ export interface PlayerActionReceipt {
   readonly reactions?: readonly EncounterAftermathReaction[];
   readonly presentation: 'modal' | 'toast';
   readonly acknowledged: boolean;
+  /**
+   * The sentence this receipt's toast carried (THR-1002).
+   *
+   * Stored rather than recomputed on demand: this is the feedback ~93% of casts
+   * actually deliver, and an inspector that re-derived it could report a sentence
+   * the player was never shown. Optional because receipts persisted before this
+   * field existed do not carry one.
+   */
+  readonly toastMessage?: string;
+  /**
+   * True when {@link toastMessage} came from the resolver's overview, false when
+   * it fell back to the band's frame line.
+   *
+   * The kill criterion's real threshold is the fallback *rate*, so it has to be
+   * measurable rather than asserted — this is the bit that makes it so.
+   */
+  readonly toastOverviewUsed?: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────────
@@ -187,6 +207,35 @@ function emitReceiptTrace(entry: Omit<PlayerReceiptTrace, 'id' | 'timestamp'>): 
 
 // ─── Phase ───────────────────────────────────────────────────────────────────────
 
+/**
+ * The sentence a receipt's toast carries, and whether it came from the overview.
+ *
+ * Extracted so the debug bridge can report what the player was actually told
+ * without re-deriving it (THR-1002). Two routes to one sentence is how the
+ * inspector and the game come to disagree about what happened — and this is the
+ * inspector for the surface that carries ~93% of all cast feedback, so a
+ * disagreement here would be invisible in exactly the place it matters most.
+ *
+ * Pure: same receipt fields, same reading, no state.
+ */
+export function receiptToastReading(
+  overview: string,
+  band: OutcomeBand,
+  actionId: string,
+  templateWord: string,
+): { message: string; overviewUsed: boolean } {
+  const overviewSentence = RECEIPT_TOAST_USES_OVERVIEW
+    ? receiptToastSentence(overview)
+    : undefined;
+  return {
+    overviewUsed: overviewSentence !== undefined,
+    message: overviewSentence
+      ?? (RECEIPT_TOAST_USES_OVERVIEW
+        ? selectReceiptFrameLine(band, actionId)
+        : `Your ${templateWord} ${outcomeBandWord(band)}.`),
+  };
+}
+
 export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): PhaseResult {
   const candidates = state.unifiedActions.filter(
     (a) =>
@@ -240,7 +289,12 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
         ? 'yourself'
         : targetNode?.name ?? action.targetId;
 
-    const rawOverview = summary?.overview ?? `Your ${template.name} ${outcomeBandWord(band)}.`;
+    // Law 14: the word a player reads for a template is its `spellName` where one
+    // exists — `name` is the internal handle. This fallback is also the only place
+    // the bare-name sentence survives, and only when the resolver wrote no overview
+    // at all.
+    const templateWord = template.spellName ?? template.name;
+    const rawOverview = summary?.overview ?? `Your ${templateWord} ${outcomeBandWord(band)}.`;
     // THR-1050 — the overview and every reaction label/intent share one context,
     // gathered at most once per receipt and only when some field actually carries a
     // placeholder (preserving the original overview-only fast path). Reactions used
@@ -263,6 +317,12 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
     const rarityTier = action.effectiveRarityTier ?? template.rarityTier;
     const presentation = decidePresentation(template.steps?.length ?? 1, rarityTier, changes, reactionCount);
 
+    // Computed before the receipt so the receipt can carry it (THR-1002). The
+    // toast event below reads the same two values rather than deriving its own —
+    // what the player is shown and what the receipt records are one string.
+    const { message: toastMessage, overviewUsed: toastOverviewUsed } =
+      receiptToastReading(overview, band, action.actionId, templateWord);
+
     const receipt: PlayerActionReceipt = {
       id: `receipt_${action.actionId}`,
       actionId: action.actionId,
@@ -281,6 +341,8 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       reactions: reactionCount > 0 ? enrichedReactions : undefined,
       presentation,
       acknowledged: false,
+      toastMessage,
+      toastOverviewUsed,
     };
 
     queue.push(receipt);
@@ -307,7 +369,14 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       id: receipt.id,
       tick: state.tick,
       type: 'player_action_receipt',
-      message: `Your ${template.name} ${outcomeBandWord(band)}.`,
+      // THR-1002: what the cast *did*, not what it was called. The overview is the
+      // sentence the resolver already wrote and the modal already showed; the toast
+      // had been discarding it in favour of the template's internal name and a band
+      // word, which is ~93% of all cast feedback by the reachable-deck measurement.
+      // Falls back to the band's frame line — a truthful sentence — rather than to
+      // the bare name, whenever the overview is missing, blank, or still carries an
+      // unresolved placeholder.
+      message: toastMessage,
       significance,
       sphere: template.sphereAffinity,
       band,
@@ -327,6 +396,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       presentation,
       band,
       changeCount: changes.length,
+      toastOverviewUsed,
       summary: `player_receipt: ${isFallback ? 'fallback ' : ''}${presentation} receipt for ${template.name} (${band})`,
     });
   }

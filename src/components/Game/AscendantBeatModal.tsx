@@ -26,6 +26,7 @@ import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
 import { RevealCard } from '../shared/RevealCard';
 import { ActionCard } from './ActionCard';
+import { CARD_WIDTH_PX } from '../shared/CardFace';
 import type { WheelSlot } from '../../engine/wheel';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -35,6 +36,7 @@ import { DEEPENING_BEAT_PRESENTATION } from '../../data/ascendant-deepening-beat
 import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beats';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { actionEffectsProse } from '../../data/actionEffectsProse';
+import { ACTION_SCALE_WORDS } from '../../data/action-card-display';
 
 // ─── Props ──────────────────────────────────────────────────────────
 
@@ -135,18 +137,18 @@ function humanizeBeatId(beatId: string): string {
 
 // ─── Unlock-reveal cards (THR-639) ──────────────────────────────────
 
-/** Focused ActionCard face size — mirrors ActionCard SIZE_CONFIG.focused (400 × 400·7/5). */
-const FOCUSED_CARD_W = 400;
-const FOCUSED_CARD_H = 560;
-/** Scale factor applied to the focused face inside the beat modal. */
-const UNLOCK_CARD_SCALE = 0.8;
-/** Max cards per row before wrapping to a second row. */
-const UNLOCK_CARD_ROW_MAX = 3;
-/** Gap between reveal cards. */
+/**
+ * Max cards per row before wrapping to a second row.
+ *
+ * Four, not three, since THR-1002: the card is one size now — `CARD_WIDTH_PX`,
+ * the width the whole game's cards share — where the reveal used to scale a
+ * 400×560 focused frame down to 80%. A scaled card is a *different* card at a
+ * glance (its type is smaller than every other card's), so the scale wrapper went
+ * with the frame it was compensating for.
+ */
+const UNLOCK_CARD_ROW_MAX = 4;
+/** Gap between reveal cards — the hand's own gap. */
 const UNLOCK_CARD_GAP_PX = 24;
-
-const SCALED_CARD_W = Math.round(FOCUSED_CARD_W * UNLOCK_CARD_SCALE);
-const SCALED_CARD_H = Math.round(FOCUSED_CARD_H * UNLOCK_CARD_SCALE);
 
 /**
  * Build a display-only WheelSlot from an action template so the real focused
@@ -164,7 +166,6 @@ export function templateToPreviewSlot(template: UnifiedActionTemplate): WheelSlo
     available: true,
     lockedReason: null,
     essenceCost: template.essenceCost ?? 0,
-    detectionRisk: 0,
     sphere: template.sphereAffinity ?? null,
     interventionType: null,
     rangeStatus: 'unlimited',
@@ -179,13 +180,22 @@ export function templateToPreviewSlot(template: UnifiedActionTemplate): WheelSlo
     effectsLine: actionEffectsProse(template),
     narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
     rarityTier: template.rarityTier,
+    // THR-1002: the face's own fields. The reveal shows the card the player is
+    // being *given*, so it must be the card they will hold — same verb chip, same
+    // scale chip, same reach mark. No `forecastTier`: a reveal has no target and
+    // no roll behind it, and the face omits the odds zone rather than guessing.
+    templateId: template.id,
+    crudType: template.crudType,
+    reach: template.reach,
+    scale: template.scale ?? null,
+    scaleWord: ACTION_SCALE_WORDS[template.scale] ?? undefined,
   };
 }
 
 /** Modal max-width sized to hold up to UNLOCK_CARD_ROW_MAX cards in one row. */
 function unlockRowMaxWidth(cardCount: number): number {
   const cols = Math.min(Math.max(cardCount, 1), UNLOCK_CARD_ROW_MAX);
-  return Math.max(600, cols * SCALED_CARD_W + (cols - 1) * UNLOCK_CARD_GAP_PX + 96);
+  return Math.max(600, cols * CARD_WIDTH_PX + (cols - 1) * UNLOCK_CARD_GAP_PX + 96);
 }
 
 const TEXT_FALLBACK_STYLE: React.CSSProperties = {
@@ -242,23 +252,13 @@ function UnlockCardRow({
           <div
             key={actionId}
             data-action-id={actionId}
-            style={{ width: SCALED_CARD_W, height: SCALED_CARD_H, flex: '0 0 auto' }}
+            style={{ width: CARD_WIDTH_PX, flex: '0 0 auto', display: 'flex' }}
           >
-            <div
-              style={{
-                width: FOCUSED_CARD_W,
-                height: FOCUSED_CARD_H,
-                transform: `scale(${UNLOCK_CARD_SCALE})`,
-                transformOrigin: 'top left',
-              }}
-            >
-              <ActionCard
-                slot={slot}
-                size="focused"
-                interactive={interactive}
-                onClick={() => onPick?.(actionId)}
-              />
-            </div>
+            <ActionCard
+              slot={slot}
+              interactive={interactive}
+              onClick={() => onPick?.(actionId)}
+            />
           </div>
         );
       })}

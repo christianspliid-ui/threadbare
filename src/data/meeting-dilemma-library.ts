@@ -118,14 +118,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'belonging'],
       incompatibleWith: ['AX-IRON-02'],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "You feel the pull of compassion — not weakness, but the refusal to let suffering stand unanswered. The boy is an enemy, and the boy is dying, and someone kneels anyway.",
-        echoThreshold: 2,
-        echoProse: "You remember this. The first time you chose to hold instead of strike. Before the hunger had a name.",
-      }
-    ],
     artTags: [],
     // ── Formative test (THR-868). Pole `a` = mercy, pole `b` = ruthlessness,
     // matching the first-named pole of `mercy_ruthlessness` being positive in
@@ -246,14 +238,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: ['AX-IRON-01'],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "You see a starving man who stole to feed his children. The arithmetic of need — one village against another. You know this weight. It is the weight of everyone who ever carried more than they could hold.",
-        echoThreshold: 2,
-        echoProse: "The hunger stirs. You gathered once for reasons just like these — because someone small depended on someone desperate.",
-      }
-    ],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = mercy, pole `b` = ruthlessness.
     // The council scene already happens in the present and needed no rewrite;
@@ -375,14 +359,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "There is someone behind them they are shielding. You know the posture — the body placed between fire and the fragile thing. You remember it in your bones.",
-        echoThreshold: 2,
-        echoProse: "Something ancient stirs. You held this weight once, before it became hunger.",
-      }
-    ],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = mercy, pole `b` = ruthlessness.
     // Here the poles are the two readings of triage rather than kindness and
@@ -504,7 +480,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'compassion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = mercy (shelter him), pole `b` =
     // ruthlessness (turn him out). The risk is to the whole settlement rather
@@ -625,7 +600,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['justice', 'duty'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = mercy (refuse the blade), pole
     // `b` = ruthlessness (carry it out). Note the inversion against the other
@@ -747,7 +721,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = asceticism, pole `b` =
     // extravagance, matching the first-named pole of the pair. The feast is
@@ -869,7 +842,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['devotion', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = asceticism (give the pendant up),
     // pole `b` = extravagance (keep it). The pair reads oddly until you see
@@ -991,7 +963,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'ambition'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = asceticism (report the fraud and
     // lose the position), pole `b` = extravagance (stay, and learn what the
@@ -1113,7 +1084,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['compassion', 'debt'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = asceticism (feed her, book no
     // debt), pole `b` = extravagance (feed her, and have it remembered).
@@ -1235,7 +1205,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['passion', 'art'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = asceticism (walk away), pole `b`
     // = extravagance (buy the dancer). The seed grain is the whole weight
@@ -1361,7 +1330,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['justice', 'truth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = honesty (speak), pole `b` =
     // cunning (hold it). The council seat has to be a real cost or the honest
@@ -1482,7 +1450,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'truth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = honesty, pole `b` = cunning —
     // which INVERTS against the choice ids here: `ax-shadow-02-a` is the
@@ -1605,7 +1572,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['justice', 'truth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = honesty (carry the contents
     // across the border), pole `b` = cunning (seal it and say nothing).
@@ -1727,7 +1693,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'memory'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = honesty (name the real defender),
     // pole `b` = cunning (keep her secret) — the SECOND inversion against the
@@ -1852,7 +1817,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = honesty (sit and look), pole `b`
     // = cunning (walk away and choose the hour). Pole `b` is deliberately not
@@ -1974,7 +1938,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['tradition', 'knowledge'],
       incompatibleWith: ['AX-VEIL-03'],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = tradition (sing the old words),
     // pole `b` = novelty (speak the translation). The scholar is allowed to be
@@ -2096,7 +2059,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'tradition'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = tradition (the herb-keeper),
     // pole `b` = novelty (the foreign method). The hardest difficulty in this
@@ -2218,7 +2180,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['tradition', 'restoration'],
       incompatibleWith: ['AX-VEIL-01'],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = tradition (refit the broken
     // fragments), pole `b` = novelty (the new quarry). {agent.name} is the one
@@ -2340,7 +2301,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['memory', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = tradition (memorise, keep the
     // stories in a voice), pole `b` = novelty (take up the stylus). Both poles
@@ -2462,7 +2422,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'tradition'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = tradition (the covenant holds and
     // is worth holding), pole `b` = novelty (read the seams and never unsee
@@ -2584,14 +2543,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['belonging', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "You see the invisible threads of care — the weight someone carries for others without being asked. The forge is small. The work is slow. But it is tended, and the tending is its own kind of devotion.",
-        echoThreshold: 2,
-        echoProse: "You feel it like a phantom limb — the warmth of a place you chose to stay in, long after staying stopped being easy.",
-      }
-    ],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = loyalty (stay, and the forge stays
     // open), pole `b` = ambition (take the year that buys a decade). The old
@@ -2713,7 +2664,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['loyalty', 'truth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Inverts against the naive reading, and the
     // authored shifts already say so: pole `b` (ambition) is a *refusal*, not a
@@ -2836,14 +2786,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['belonging', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "You see the one who will not leave. The friend spirals, and someone stands at the edge of the spiral and refuses to step back. This is not rescue. It is witness — the quiet insistence that no one falls alone.",
-        echoThreshold: 2,
-        echoProse: "The hunger recognizes itself. You gathered the broken ones before you understood why. You still do.",
-      }
-    ],
     artTags: [],
     // ── Formative test (THR-875). The second inversion in this reach, and again
     // the authored shifts already carry it: pole `b` (ambition) is the refusal.
@@ -2966,7 +2908,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['loyalty', 'oath'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = loyalty (the words go in the
     // ground with the man who said them), pole `b` = ambition (say them, and
@@ -3089,7 +3030,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['loyalty', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = loyalty (the horse goes back
     // because it was lent), pole `b` = ambition (it stays because the eastern
@@ -3211,7 +3151,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'observation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = revelation (say it at council,
     // where saying it costs the elder), pole `b` = discretion (plant barley,
@@ -3333,7 +3272,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['observation', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = revelation (tell the bride what
     // {agent.name} saw and let her do what she likes with it), pole `b` =
@@ -3456,7 +3394,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'memory'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = revelation (say it in the hall,
     // where it costs the agreement), pole `b` = discretion (lift the cup, and
@@ -3579,7 +3516,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'compassion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = revelation (say both halves of him
     // in front of the settlement), pole `b` = discretion (say the bridge, and
@@ -3701,7 +3637,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'loyalty'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = revelation (say it to the mentor's
     // face and take what that costs), pole `b` = discretion (build the river
@@ -3825,7 +3760,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['endurance', 'transformation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole letters here follow the **profile**, as
     // the engine reads them: `poleLean.ts` and `meetingEncounter.ts` both take
@@ -3959,7 +3893,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['ambition', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (+shift, preservation) refuses the
     // arranged yield and pays for the refusal; pole `b` (-shift) takes it. The
@@ -4082,7 +4015,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'creation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (+shift, preservation) keeps the
     // credit and the water both; pole `b` (-shift) says where the method came
@@ -4206,7 +4138,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['revelation', 'vision'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (+shift, preservation) stands where
     // the light was and takes what follows; pole `b` (-shift) refuses the mantle.
@@ -4330,7 +4261,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['ambition', 'clarity'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (+shift, preservation) walks the
     // teacher through the work point by point; pole `b` (-shift) says thank you
@@ -4454,7 +4384,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['sacrifice', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = sacrifice (go in and hold the
     // brace), pole `b` = survival (stay out and run the rescue from above).
@@ -4576,7 +4505,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['sacrifice', 'devotion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = sacrifice (split every meal), pole
     // `b` = survival (eat the full portion and bring the harvest in). Neither
@@ -4698,7 +4626,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['compassion', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = sacrifice (row out and tend them),
     // pole `b` = survival (pole the ship past the breakwater). Setup re-cut:
@@ -4822,7 +4749,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['sacrifice', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Inverts against the naive reading, and the
     // authored shifts carry it: pole `a` (sacrifice) burns the bridge, which is
@@ -4947,7 +4873,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['sacrifice', 'journey'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` = sacrifice (walk the mountains for
     // two people), pole `b` = survival (stay, save who can be saved, and teach
@@ -5069,7 +4994,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['exploration', 'journey'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5101,7 +5025,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['curiosity', 'compassion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5133,7 +5056,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5165,7 +5087,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['curiosity', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5197,7 +5118,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['knowledge', 'curiosity'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5231,7 +5151,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5265,7 +5184,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `courage_prudence`, not iron's
     // `mercy_ruthlessness` — this scene is blade against shield, decisive ending
@@ -5380,7 +5298,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'duty'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `courage_prudence`. Nobody in
     // this ambush is choosing between kindness and cruelty; they are choosing
@@ -5495,7 +5412,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['duty', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `courage_prudence`. The duel is
     // not a question of mercy — it is whether {agent.name} sets the pace or
@@ -5610,7 +5526,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['duty', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5644,7 +5559,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['ambition', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5678,7 +5592,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['debt', 'justice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `honesty_cunning`, not gold's
     // `asceticism_extravagance` — the money is not in question here, the method
@@ -5793,7 +5706,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['obligation', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -5827,7 +5739,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'investigation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `revelation_discretion` — the
     // counterfeit is a fact either way; what is being decided is whether the
@@ -5942,7 +5853,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['ambition', 'growth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `courage_prudence` — the stake
     // is everything {agent.name} has saved, against foothills nobody has
@@ -6057,7 +5967,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['secrets', 'observation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -6091,7 +6000,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['secrets', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `honesty_cunning` — shadow's
     // own pair, and here it is genuinely the question: the same craft detects
@@ -6206,7 +6114,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['secrets', 'loyalty'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `honesty_cunning`. Pole `a` =
     // honesty (naming himself to the counterpart and trading straight), `b` =
@@ -6320,7 +6227,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['observation', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -6354,7 +6260,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['secrets', 'escape'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `courage_prudence` — three
     // seconds, a guard in the doorway, and a two-storey window. Pole `a` =
@@ -6469,7 +6374,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['devotion', 'tradition'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -6503,7 +6407,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['knowledge', 'devotion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -6537,7 +6440,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'devotion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `tradition_novelty` — veil's
     // own pair, and the philosopher's question is exactly it. Pole `a` =
@@ -6652,7 +6554,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['observation', 'truth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `honesty_cunning` — the birds
     // are ambiguous and {agent.name} knows it. Pole `a` = honesty (giving the
@@ -6767,7 +6668,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['wonder', 'discovery'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `tradition_novelty`. Pole `a` =
     // tradition (the figure goes to the grove, among the offering stones, where
@@ -6882,7 +6782,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['community', 'restoration'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -6916,14 +6815,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['community', 'belonging'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "Twelve people carrying everything they own, and three children clutching a dog. You see the moment a door opens or does not. The difference between shelter and exclusion is one person willing to say: they stay.",
-        echoThreshold: 2,
-        echoProse: "This is the oldest pattern. The wanderers arrive. Someone makes room. You have always been the one who makes room.",
-      }
-    ],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `sacrifice_survival` — both
     // answers take the refugees in; what differs is how much of {agent.name}'s
@@ -7038,7 +6929,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['community', 'tradition'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `tradition_novelty` — the
     // festival is dying and the question is whether saving it is allowed to
@@ -7153,7 +7043,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['belonging', 'loyalty'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `preservation_transformation`
     // — five people who swore oaths as children, and one broken confidence.
@@ -7268,14 +7157,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "A four-year-old with no one. Three families with open doors. You watch the child drift toward the noise and the laughter, and you know — the way you always know — where belonging lives. It is not in wealth or wanting. It is in the house that is already full and makes room anyway.",
-        echoThreshold: 2,
-        echoProse: "You ache with recognition. Every orphan you ever sheltered. Every door you held open when the world said close it.",
-      }
-    ],
     artTags: [],
   },
   {
@@ -7309,7 +7190,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -7343,7 +7223,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['investigation', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `courage_prudence` — the
     // pattern is real and the proof is not there yet, and the tannery is the
@@ -7458,7 +7337,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['knowledge', 'legacy'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `preservation_transformation`
     // — one month, three chests, and a notation only a dead man could read.
@@ -7573,7 +7451,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['truth', 'justice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `revelation_discretion` —
     // eye's own pair, and the whole scene is it. Pole `a` = revelation (saying
@@ -7688,7 +7565,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['observation', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -7722,7 +7598,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['restoration', 'structure'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -7756,7 +7631,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['creation', 'structure'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -7790,7 +7664,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['creation', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `preservation_transformation`
     // — stone's own pair, and the kiln is exactly it. Pole `a` = preservation
@@ -7905,14 +7778,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "The river rises and someone builds a wall between the water and the people. Not for glory. Not for craft. Because the homes are behind them, and the children are sleeping, and the wall is what stands between the living and the loss.",
-        echoThreshold: 2,
-        echoProse: "You remember building walls like this. Not of stone — of will. The hunger to shelter was the first thing you ever felt.",
-      }
-    ],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `sacrifice_survival` — seventy
     // hours and a river that is going to arrive regardless. Pole `a` = sacrifice
@@ -8028,7 +7893,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['creation', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `tradition_novelty` — the
     // master's constraint is that the design must suit the hands that build it.
@@ -8144,7 +8008,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['journey', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8178,7 +8041,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['patterns', 'truth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `revelation_discretion` — the
     // prediction is the same either way; what differs is when the settlement
@@ -8293,7 +8155,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['clarity', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `tradition_novelty` — a
     // frightened crowd, a priest declaring divine wrath, and {agent.name}
@@ -8409,7 +8270,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['discovery', 'journey'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8443,7 +8303,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['exploration', 'horizon'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-1062, slot 2). Axis: `courage_prudence` — open
     // water nobody has charted against the islands everybody already sails.
@@ -8556,7 +8415,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['power', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8588,7 +8446,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['power', 'spark'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8627,7 +8484,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['curiosity', 'power'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8666,7 +8522,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['discovery', 'wonder'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8698,7 +8553,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['endurance', 'power'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8737,7 +8591,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['discovery', 'creation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8769,7 +8622,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['creation', 'discovery'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8801,7 +8653,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['wonder', 'memory'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8833,7 +8684,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['wonder', 'structure'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8865,7 +8715,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['transformation', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8897,7 +8746,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['transformation', 'spark'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8929,7 +8777,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['revelation', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8961,7 +8808,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['transformation', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -8993,7 +8839,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['wonder', 'discovery'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9025,7 +8870,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['spark', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9057,7 +8901,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['restoration', 'nurturing'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9089,7 +8932,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['growth', 'restoration'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9121,7 +8963,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['nurturing', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9153,7 +8994,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['restoration', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9192,7 +9032,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['presence', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9224,7 +9063,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['dreams', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9256,7 +9094,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['memory', 'structure'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9288,7 +9125,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['compassion', 'presence'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9327,7 +9163,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['curiosity', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9359,7 +9194,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['nurturing', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9391,7 +9225,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['revelation', 'presence'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9423,7 +9256,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['memory', 'grief'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9455,7 +9287,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['clarity', 'revelation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9487,7 +9318,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['presence', 'devotion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9519,7 +9349,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['grief', 'wonder'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9551,7 +9380,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['memory', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9583,7 +9411,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['investigation', 'revelation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9615,7 +9442,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['remembrance', 'discovery'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9647,7 +9473,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['legacy', 'tradition'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9679,7 +9504,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['observation', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9711,7 +9535,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['remembrance', 'loss'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9743,7 +9566,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['restoration', 'legacy'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9775,7 +9597,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['transformation', 'growth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9807,7 +9628,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['memory', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9839,7 +9659,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'transformation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9884,14 +9703,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'belonging'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "A child follows at twenty paces. Silent. Watchful. Too thin. You feel the absence around them — the shape of everything they have lost. And you feel the moment someone slows down, leaves food behind, waits by the fire. The gathering begins.",
-        echoThreshold: 2,
-        echoProse: "You have always found the lost ones. Before the hunger had a name, before you were anything at all, you were the one who turned around.",
-      }
-    ],
     artTags: [],
   },
   {
@@ -9936,7 +9747,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['ambition', 'belonging'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -9986,7 +9796,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['knowledge', 'restoration'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10036,14 +9845,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [
-      {
-        hungerId: 'gather',
-        perceptionProse: "You feel the current pulling them apart, and the hands that hold on. The bond forged in floodwater is older than language — two bodies in a river, and one refuses to let go. This is gathering at its most elemental.",
-        echoThreshold: 2,
-        echoProse: "You have held on like this. In the dark, in the cold, when the world tried to tear apart what you were gathering. You held.",
-      }
-    ],
     artTags: [],
   },
   {
@@ -10088,7 +9889,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['shelter', 'secrets'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10133,7 +9933,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['loyalty', 'presence'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10178,7 +9977,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['nurturing', 'freedom'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10223,7 +10021,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['presence', 'loyalty'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10268,7 +10065,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['legacy', 'memory'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10313,7 +10109,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['curiosity', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10358,7 +10153,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['journey', 'discovery'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10403,7 +10197,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['growth', 'obligation'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10448,7 +10241,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['observation', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10493,7 +10285,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['creation', 'knowledge'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10543,7 +10334,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['duty', 'protection'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10588,7 +10378,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['devotion', 'tradition'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10633,7 +10422,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['belonging', 'compassion'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10671,7 +10459,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['compassion', 'remembrance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10709,7 +10496,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['art', 'vision'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10747,7 +10533,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['freedom', 'presence'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10785,7 +10570,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['wonder', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10830,7 +10614,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['creation', 'wonder'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10875,7 +10658,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['patterns', 'discovery'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10920,7 +10702,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['legacy', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10951,7 +10732,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['solitude', 'journey'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -10982,7 +10762,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11013,7 +10792,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['oath', 'loyalty'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11051,7 +10829,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['ambition', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11082,7 +10859,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['community', 'art'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11127,7 +10903,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['covenant', 'order'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11158,7 +10933,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['legacy', 'independence'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11189,7 +10963,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['compassion', 'restoration'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11220,7 +10993,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['rebellion', 'secrets'],
       incompatibleWith: ['GR-FACTION-02'],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11251,7 +11023,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['observation', 'patterns'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11282,7 +11053,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['remembrance', 'community'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11313,7 +11083,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['justice', 'truth'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11344,7 +11113,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['ambition', 'endurance'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11375,7 +11143,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['nurturing', 'sacrifice'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11406,7 +11173,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['freedom', 'escape'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11437,7 +11203,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['legacy', 'memory'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11468,7 +11233,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['secrets', 'growth'],
       incompatibleWith: ['GR-FACTION-04'],
     },
-    lensOverlays: [],
     artTags: [],
   },
   {
@@ -11499,7 +11263,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
       driveResonance: ['wonder', 'power'],
       incompatibleWith: [],
     },
-    lensOverlays: [],
     artTags: [],
   },
 ] as const;

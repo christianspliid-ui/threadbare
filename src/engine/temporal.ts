@@ -7,9 +7,7 @@
 import type { WorldGraph } from './graph';
 import type { SimulationClock, ActionInProgress, TickResult } from '../types/temporal';
 import type { ActorType } from '../types/graph';
-import { BASE_AP } from '../types/temporal';
-
-const TICKS_PER_SEASON = 90;
+import { BASE_AP, TICKS_PER_SEASON, deriveSeasonAndYear } from '../types/temporal';
 
 export class TemporalController {
   private clock: SimulationClock;
@@ -36,10 +34,10 @@ export class TemporalController {
   tick(): TickResult {
     this.clock.currentTick++;
 
-    // Check for season change
-    const totalSeasons = Math.floor(this.clock.currentTick / TICKS_PER_SEASON);
-    const newSeason = totalSeasons % 4;
-    const newYear = Math.floor(totalSeasons / 4);
+    // Check for season change. THR-1452: shares the one conversion with the orchestrator
+    // rather than keeping a private copy of the arithmetic.
+    const { season: newSeason, year: newYear } =
+      deriveSeasonAndYear(this.clock.currentTick, this.clock.ticksPerSeason);
     const seasonChanged = newSeason !== this.clock.season || newYear !== this.clock.year;
     this.clock.season = newSeason;
     this.clock.year = newYear;

@@ -9,6 +9,7 @@
 import type { GameState, TickEvent, ActiveComposition } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import { STEALTH_DECAY_PER_TICK } from '../types/gameState';
+import { deriveSeasonAndYear } from '../types/temporal';
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import {
@@ -197,6 +198,7 @@ import {
   BAD_OUTCOME_CATEGORY_WEIGHTS,
 } from './rewardPool';
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
+import { recordTick } from './incidentRecorder';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { phaseChosenFactionPowers } from './chosenFactionPowers';
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
@@ -2869,9 +2871,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     activeDistanceMatrix = legacyDistanceMatrix;
   }
 
-  // Advance clock
-  const newSeason = Math.floor(s.tick / 90) % 4;
-  const newYear = Math.floor(s.tick / 360);
+  // Advance clock. THR-1452: was `Math.floor(s.tick / 90) % 4` and `Math.floor(s.tick / 360)`
+  // spelled inline — two magic literals that ignored `s.clock.ticksPerSeason`, so the
+  // DEFAULT_TICKS_PER_SEASON tunable moved nothing (NFP #1). One conversion now, in types/temporal.
+  const { season: newSeason, year: newYear } = deriveSeasonAndYear(s.tick, s.clock.ticksPerSeason);
   s = { ...s, clock: { ...s.clock, currentTick: s.tick, season: newSeason, year: newYear } };
 
   // THR-603: recompute the doom-phase curation-generosity multiplier once per tick,
@@ -3926,6 +3929,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
 
   // ─── Health Validation ─────────────────────────────────────────
+
+  // THR-1134: the incident flight recorder's one append per tick, beside the
+  // health check because both are tick-end observers of the finished state.
+  // Guarded exactly as the outer tick guard guards the tick: a throwing census
+  // counts a miss and the tick proceeds. Two O(1) array writes; no `shift()`.
+  if (runtime?.incidentRecorder) {
+    try {
+      recordTick(runtime.incidentRecorder, s);
+    } catch {
+      // recordTick guards itself; this is belt to its braces, because the one
+      // thing the recorder must never do is end a tick.
+    }
+  }
 
   const report = validateTickOutput(state, s);
   if (!report.healthy) {

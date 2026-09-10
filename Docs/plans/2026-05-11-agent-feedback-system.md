@@ -467,7 +467,9 @@ This is a *signal*, not a popup — non-intrusive, but discoverable.
 
 ### 9.6 Feedback history storage
 
-A new in-memory ring buffer per thread edge: `feedbackHistory: FeedbackEventRecord[]` with last 20 events. Persisted in save game via the standard graph serialization (since it lives in the thread edge property bag). Used by BondsTab "Recent moments" and by ChroniclePanel.
+A new in-memory ring buffer per thread edge: `feedbackHistory: FeedbackEventRecord[]` with last 20 events. Persisted in save game via the standard graph serialization (since it lives in the thread edge property bag).
+
+> **Correction, 2026-09-10 (THR-1134):** there is no save game and no "standard graph serialization" — `src/` contains no `toJSON`, no `serializeGameState`, and no persisted state of any kind. The buffer is in-memory for the life of the session, full stop. That does not change the design: an edge property bag is still the right home. It does mean the ring is one of the things an incident snapshot has to carry deliberately, which is why `incidentBundle`'s world tier walks `getAllEdges()` by hand. Used by BondsTab "Recent moments" and by ChroniclePanel.
 
 ### 9.7 DebugPanel inspection tab
 

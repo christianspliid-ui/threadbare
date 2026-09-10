@@ -34,10 +34,20 @@ those makes a wired-looking feature inert — which is the general lesson for th
 checklist: a module reaching an import graph is not the same as it reaching a
 player.
 
-**Left dormant on purpose, chartered not smuggled:** the lens *overlay prose*
-engine in the same module (`resolveLensOverlay`, `shouldFireMortalEcho`,
-`composeLensedProse`) still has no caller. Activating it changes what the player
-reads at the bonding beat, which is an experiential decision — THR-1318.
+**Retired rather than activated (THR-1318, 2026-09-10):** the lens *overlay
+prose* engine in the same module (`resolveLensOverlay`, `shouldFireMortalEcho`,
+`composeLensedProse`), the `LensOverlay` type, the
+`EnrichedDilemmaTemplate.lensOverlays` field and its authored prose are all
+deleted, together with the unit test that asserted the dead side. The charter
+allowed either arm; the corpus decided it. Measured at pickup: overlays were
+authored for exactly **one of twelve Hungers (`gather`) on 10 of 167 dilemmas** —
+157 carried `lensOverlays: []`. Activation would have given `gather` gods an
+occasional extra paragraph and the other eleven nothing, and the mortal echo
+(`echoThreshold: 2` on all ten) could not fire at all for the shipped identity,
+whose `driveTags` narrow to a single tag. The Hunger already reaches the meeting
+through *selection* — `emotionalRegister ∩ hunger.dilemmaResonanceTags`, the live
+`hunger-resonance-weighs-the-meeting-deal` contract — so this was a redundant
+second channel, not the god's only voice.
 
 ## Shared anchor machinery — the `WorldRef` type, adapters, and the live resolver (THR-1212 slice 1)
 
@@ -2420,3 +2430,43 @@ a lair hex was unaffiliated, so organic clearings record no faction. That is the
 behaviour — an unaffiliated clearing is a real clearing with nobody to credit — but the
 field still has no organic writer, and a future faction-credited clearing path would need
 affiliated mortals to reach lair hexes.
+
+---
+
+## 2026-09-10 — The incident snapshot (THR-1134)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace | Debug visibility |
+|--------|-------------------|--------------|-----------------|-------|------------------|
+| `engine/incidentRecorder.ts` (new) | one guarded O(1) append at the tick-end site beside `validateTickOutput` | — | **none** — lives on `runtime.incidentRecorder` | — | `__DEBUG.getIncidentRecorderStats()` |
+| `engine/incidentBundle.ts` (new) | — | called by `useIncidentCapture` | reads `state` + `runtime`; writes nothing | `incident_bundle` | `__DEBUG.buildIncidentBundle()` |
+| `components/Game/hooks/useIncidentCapture.ts` (new) | — | SettingsPanel **Trouble** section | — | — | — |
+| `components/shared/downloadTextFile.ts` (new) | — | SettingsPanel, EncounterCacheView (adopted) | — | — | — |
+| `GameView.tsx` / `GameViewTopBar.tsx` (edit) | — | props through; crash-prompt toast | — | — | `getDebugActiveUIState` still registered in dev |
+| `vite.config.ts` / `src/vite-env.d.ts` (new) | — | — | — | — | `__BUILD_SHA__` |
+
+**New player controls:** the *Record what happens* toggle, the *Include the whole world*
+toggle, the *Save a snapshot* button, and the crash prompt's click-through to Settings —
+all four verified firing in the browser rather than assumed (the crash prompt against two
+real `appendCrashLog` entries, which raised exactly one toast inside the cooldown).
+
+**No `GameState` field and no `toJSON` on `WorldGraph`** — deliberately. Those are the two
+largest hubs in the repo (563 and 865 importers). The recorder lives on `SimulationRuntime`
+per the engine-caches-per-session rule, which also removes any `gameInit.ts` touch: a fresh
+runtime per playthrough *is* the reset, so there is no init hook and no reset call to forget.
+
+**The wiring risk here was the opposite of the usual one.** The normal failure is a new
+module nothing calls. Here two *existing* producers — `tickHealthMonitor` (every tick, no
+gate) and `encounterTimeline` (no gate at all) — had been writing to a consumer that does
+not exist in production, because the whole debug bridge sits behind `if (import.meta.env.DEV)`.
+The bundle is the wiring that was missing, and the proof it landed is the production one:
+`vite preview` on the built bundle, `window.__DEBUG === undefined` asserted in the same pass,
+and a real browser download fired from the Settings button.
+
+**Interface map:** six rows added under a new `Diagnostics & Incident Capture` subsystem.
+The generator rejected the first draft of one row — declared read sites present but the
+declared symbol appearing at none of them — which is the mechanical check doing its job;
+the row now names `IncidentUIState`, the type that actually crosses the boundary.
+
+**Wiki pages:** none matched (measured, not assumed). No manifest page's `sources` cover any
+file here, and a manual page for a diagnostic tool would be the wrong surface —
+`Wiki-freshness-exempt: no wiki page owns diagnostics` if the gate ever asks.

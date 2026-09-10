@@ -38,7 +38,8 @@ export function SphereSlider({ sphere, value, onChange }: SphereSliderProps) {
           background: `linear-gradient(to right, ${color} ${value * 100}%, #5a4a3a ${value * 100}%)`,
         }}
       />
-      <span className="w-10 text-right font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{(value * 100).toFixed(0)}%</span>
+      {/* THR-1451 (Class C): the filled track above renders this proportion already —
+          the numeral was a second rendering of one number (THR-1424's ruling). */}
     </div>
   );
 }

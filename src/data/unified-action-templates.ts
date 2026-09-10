@@ -859,7 +859,10 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 14,
     actorAffinities: ['ascendant'],
-    sphereAffinity: 'shadow',
+    // Darkness — "mystery, shadow, concealment". Planting a secret is concealment
+    // fuelled by the dark, not an act of intellect; the `shadow` Reach above already
+    // says what the action does (THR-1114 — was `shadow`, a Reach in a Sphere field).
+    sphereAffinity: 'darkness',
     motivations: ['honesty_cunning', 'loyalty_ambition'],
     targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
     narrativeTemplates: {
@@ -2741,7 +2744,10 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 3,
     actorAffinities: ['ascendant'],
-    sphereAffinity: 'void',
+    // Entropy — "decay, dissolution, transformation". Nullifying an artifact's power
+    // is dissolution; `void` was reaching for an unmaking the twelve already cover
+    // (THR-1114 — was `void`, which is nothing in the current cosmology).
+    sphereAffinity: 'entropy',
     targetCategories: ['artifact', 'artifact_legendary'],
     motivations: ['tradition_novelty', 'courage_prudence'],
     narrativeTemplates: {
@@ -5451,6 +5457,24 @@ export const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[] = [
 // ─── Unified Template Registry ────────────────────────────────────
 
 /**
+ * Apply the authored `ACTION_TECHNICAL_EFFECTS` overlay to one template.
+ *
+ * A template that declares its own `technicalEffect` wins outright — the overlay
+ * fills gaps, it never overrides authored text.
+ *
+ * Named and shared (THR-1002) because it was previously inlined into the
+ * `UNIFIED_ACTION_TEMPLATES` map alone, and `AGENT_INTERVENTION_TEMPLATES` —
+ * assembled separately from the same source arrays — silently skipped it. Two
+ * registries of the same templates disagreeing on a field is the drift this helper
+ * exists to make impossible.
+ */
+function withTechnicalEffectOverlay(t: UnifiedActionTemplate): UnifiedActionTemplate {
+  const authored = ACTION_TECHNICAL_EFFECTS[t.id];
+  if (t.technicalEffect != null || !authored) return t;
+  return { ...t, technicalEffect: authored };
+}
+
+/**
  * Templates surfaced on the agent action hand (THR-501).
  *
  * The legacy tier-based intervention wheel (`engine/wheel.ts::getAgentWheelSlots`) is
@@ -5464,7 +5488,14 @@ export const AGENT_INTERVENTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...DIVINE_ACTION_TEMPLATES,
   ...REVELATION_ACTION_TEMPLATES,
   ...THREAD_CREATION_TEMPLATES,
-];
+  // THR-1002: through the same `ACTION_TECHNICAL_EFFECTS` overlay
+  // `UNIFIED_ACTION_TEMPLATES` applies below. This assembly used to spread the raw
+  // arrays, so 0 of these 44 carried a `technicalEffect` — and since the agent hand
+  // is where most casts happen, the codex page for a divine verb had no mechanical
+  // text and the drawer's Effect block (gated on that field) never rendered there at
+  // all. The overlay was not missing, merely skipped; activating it is the fix, not
+  // a second source of mechanical prose.
+].map(withTechnicalEffectOverlay);
 
 /**
  * All templates in unified format.
@@ -5655,13 +5686,9 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
  * extended, never replaced, so solo agents keep every encounter they had.
  */
 export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
-  RAW_UNIFIED_ACTION_TEMPLATES.map((t) => {
-    const authored = ACTION_TECHNICAL_EFFECTS[t.id];
-    const withEffect = t.technicalEffect != null || !authored
-      ? t
-      : { ...t, technicalEffect: authored };
-    return withGroupAffinity(withDefaultSupportBundle(withEffect));
-  });
+  RAW_UNIFIED_ACTION_TEMPLATES.map((t) =>
+    withGroupAffinity(withDefaultSupportBundle(withTechnicalEffectOverlay(t))),
+  );
 
 /**
  * Location-based branching encounter templates authored in src/data/encounters/.

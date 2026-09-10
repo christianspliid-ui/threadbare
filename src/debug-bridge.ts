@@ -253,6 +253,11 @@ if (import.meta.env.DEV) {
           band: r.outcomeBand,
           acknowledged: r.acknowledged,
           changeCount: r.changes.length,
+          // THR-1002: read off the receipt, not recomputed. The toast sentence is
+          // the feedback ~93% of casts actually deliver, so an inspector that
+          // re-derived it could report a sentence the player was never shown.
+          toastMessage: r.toastMessage,
+          toastOverviewUsed: r.toastOverviewUsed,
         })),
       };
     },
@@ -1708,7 +1713,34 @@ if (import.meta.env.DEV) {
     getCrashLog: () => import('./engine/tickHealthMonitor').then((m) => m.getCrashLog()),
     clearCrashLog: () => import('./engine/tickHealthMonitor').then((m) => m.clearCrashLog()),
     getHealthReport: () => import('./engine/tickHealthMonitor').then((m) => m.getLatestReport()),
-    exportDiagnostics: () => import('./engine/tickHealthMonitor').then((m) => m.exportDiagnostics()),
+    // THR-1134: the call has always wanted the state. Invoked with none since the
+    // bridge was written, so `stateMetrics` has been `null` on every export;
+    // passing the provider's state is the whole repair, and it is the same call
+    // the incident bundle's `census` section makes.
+    exportDiagnostics: () => import('./engine/tickHealthMonitor').then((m) => m.exportDiagnostics(_gameStateProvider?.() ?? undefined)),
+
+    /**
+     * THR-1134 — build an incident snapshot without downloading it. The same two
+     * leaf modules the Settings button calls, so the dev proof and the production
+     * path share one implementation.
+     */
+    buildIncidentBundle: async (opts?: { includeWorld?: boolean }) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const m = await import('./engine/incidentBundle');
+      return m.buildIncidentBundle(state, _runtimeProvider?.() ?? null, {
+        includeWorld: opts?.includeWorld,
+        ui: _activeUIStateProvider?.() as never,
+      });
+    },
+
+    /** THR-1134 — ring occupancy and the swallowed-append count for the flight recorder. */
+    getIncidentRecorderStats: async () => {
+      const runtime = _runtimeProvider?.();
+      if (!runtime?.incidentRecorder) return null;
+      const m = await import('./engine/incidentRecorder');
+      return m.getIncidentRecorderStats(runtime.incidentRecorder);
+    },
 
     /**
      * THR-786 — sweep all six authored trait-ref surfaces against the trait

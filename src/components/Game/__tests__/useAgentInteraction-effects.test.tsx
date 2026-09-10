@@ -119,7 +119,6 @@ function makeTargetActionSlot(overrides?: Partial<WheelSlot>): WheelSlot {
     available: true,
     lockedReason: null,
     essenceCost: 2,
-    detectionRisk: 0.1,
     sphere: 'iron' as any,
     interventionType: null,
     rangeStatus: 'unlimited',

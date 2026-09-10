@@ -67,6 +67,8 @@ interface GameState {
 
 - **Inspectable:** `console.log(gameState)` shows everything
 - **Serializable:** trivial to save/load later (just `JSON.stringify`)
+
+> **Correction, 2026-09-10 (THR-1134):** measured false. `JSON.stringify(state)` on seed 42 / medium at tick 100 returns 1,661,839 bytes of plausible JSON — and throws nothing — with the entire graph rendered as `{"nodes":{},"edges":{},"outgoing":{},"incoming":{}}` (51 characters standing in for 3,262,388) and every `Map` on the state flattened to `{}`. It is not that serialization is hard here; it is that the naive call *appears to succeed*. This line is the origin of the assumption three later plan docs inherited. `src/engine/incidentBundle.ts` does the work the word "trivial" was standing in for: sections built by hand from public getters, a `Map`/`Set` replacer, and a manifest that self-checks collections walked against collections rewritten.
 - **Diffable:** snapshot before tick, snapshot after, diff shows exactly what changed
 - **Testable:** construct a GameState in a test, run a tick function, assert on output
 

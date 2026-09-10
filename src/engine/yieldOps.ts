@@ -53,9 +53,19 @@ function num(props: Record<string, unknown> | undefined, key: string): number | 
 }
 
 /**
- * How much the band multiplies the lump by. A band with no row scales to nothing —
- * and an *absent* band takes the failure arm too, because the instant-execution path
- * has no checkpoint to read and must never silently pay a full harvest.
+ * How much the band multiplies the lump by. A band with no row scales to nothing, and
+ * so does an *absent* band.
+ *
+ * **The absent arm is no longer how an instant cell arrives here (THR-1450).** It once
+ * was, and that was the defect: `use × Location` is instant, its completion carried no
+ * band, this scaled it to 0, and the harvest paid nothing in every live run while the
+ * town still paid the prosperity cost and the holder still paid the standing. The
+ * lifecycle's instant arm now stamps `INSTANT_COMPLETION_BAND` before any reader sees
+ * the completion, so a worked hold reaches this function on the plain-success row.
+ *
+ * What still reaches the absent arm is a **checkpointed** cell whose band went
+ * missing — a lost reading, not a terminal nothing could miss — and refusing to pay a
+ * harvest on one of those is right.
  */
 export function yieldBandScale(outcome: string | undefined): number {
   return outcome ? (YIELD_DRAW_BAND_SCALE[outcome] ?? 0) : 0;

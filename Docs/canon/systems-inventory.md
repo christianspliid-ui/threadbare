@@ -22,6 +22,7 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 
 | Subsystem | Aliases | Domains | Note |
 |---|---|---|---|
+| Diagnostics & Incident Capture | diagnostics, incident, snapshot, health, crash, flight recorder | `diagnostics`, `incident` | THR-1134. The tick-end health validator and crash log, the incident flight recorder on `SimulationRuntime`, and the bundle assembler behind Settings → Trouble → Save a snapshot. **Expect a DORMANT badge on a healthy headless run, and read it as good news:** two of its three activity signals (`tick_health`, `tick_crash`) only fire when something has gone wrong, and the third (`incident_bundle`) only when a person presses the button — neither happens in the inventory's 120-tick sweep. The collector itself runs every tick in every session, production included. |
 | Companies & Group Travel | company, companies, group, party, band, fellowship, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
 | Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
 
@@ -48,6 +49,7 @@ names like `TB-073`) a premise might use.
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
 | **Attention, Chronicle & Narrative** | 🟢 ACTIVE | attention, chronicle, digest, narrative, story, feed | `attention`, `chronicle`, `narrative` | `2a.65`, `6.66`, `5` |
+| **Diagnostics & Incident Capture** | 🟠 DORMANT | diagnostics, incident, snapshot, health, crash, flight recorder | `diagnostics`, `incident` | — |
 | **Omens & Atmospheric Pressure** | 🟢 ACTIVE | omen, pressure, atmosphere, portent, foreshadowing | `omen`, `foreshadowing`, `emittedomen` | `1.7`, `2a.605`, `6.639` |
 | **Strategic Projects & Control** | 🟢 ACTIVE | strategic, project, control, contestation, territory | `strategic`, `contestation`, `control` | `2a.55`, `6.1` |
 | **Ascendant Beats & Progression** | 🟢 ACTIVE | beat, spine, director, ascendant progression, milestone | `ascendantbeat`, `ascendant` | `1.5`, `1.7`, `1.75` |
@@ -76,6 +78,7 @@ names like `TB-073`) a premise might use.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.
 - **Stealth, Detection & Hidden Marks** — Two audiences watch the god: mortals (disbelief→faith) and rivals (signature scans). Hidden-mark decay.
 - **Attention, Chronicle & Narrative** — The attention pool (can't watch everything), the digest, and the run's chronicle/narrative feed.
+- **Diagnostics & Incident Capture** — THR-1134. The tick-end health validator and crash log, the incident flight recorder on `SimulationRuntime`, and the bundle assembler behind Settings → Trouble → Save a snapshot. **Expect a DORMANT badge on a healthy headless run, and read it as good news:** two of its three activity signals (`tick_health`, `tick_crash`) only fire when something has gone wrong, and the third (`incident_bundle`) only when a person presses the button — neither happens in the inventory's 120-tick sweep. The collector itself runs every tick in every session, production included.
 - **Omens & Atmospheric Pressure** — Atmospheric pressure tracks and emitted omens (THR-19); motive-receipt foreshadowing (THR-631).
 - **Strategic Projects & Control** — Multi-tick strategic projects, control degradation, contestation resolution.
 - **Ascendant Beats & Progression** — Ascendant beat director offers beats at doom/tier thresholds (THR-613). Deepening vs milestone beats.
@@ -229,7 +232,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
 | `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `Phase 7`, `TB-073`, `THR-626` |
-| `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
+| `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-1213`, `THR-1318`, `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
 | `attachment` (5) | `attachmentSlotResolver.ts`, `attachmentTemplateDetail.ts`, `attachmentTemplateIndex.ts`, `attachmentTierAdvancement.ts`, `attachmentTooltip.ts` | `THR-1120`, `THR-1122`, `THR-718`, `THR-719`, `THR-723`, `THR-784`, `THR-974`, `THR-996`, `THR-997` |
 | `attention` (2) | `attentionPool.ts`, `attentionTier.ts` | — |
@@ -305,6 +308,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `holding` (1) | `holdingIncome.ts` | `THR-1428`, `THR-822` |
 | `holdings` (1) | `holdings.ts` | `THR-1297` |
 | `idle` (1) | `idleBehavior.ts` | — |
+| `incident` (2) | `incidentBundle.ts`, `incidentRecorder.ts` | `THR-1134` |
 | `influence` (1) | `influence.ts` | — |
 | `insider` (1) | `insiderBeatDetection.ts` | — |
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
@@ -361,6 +365,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | `THR-1394` |
 | `ruins` (9) | `ruins/clueLifecycle.ts`, `ruins/constants.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-148`, `THR-149`, `THR-150`, `THR-151`, `THR-152`, `THR-153`, `THR-156` |
+| `scene` (1) | `sceneSentinels.ts` | `THR-1025`, `THR-1110`, `THR-1143`, `THR-1144`, `THR-1175`, `THR-1446` |
 | `schism` (1) | `schismPlant.ts` | `THR-430` |
 | `scry` (1) | `scry.ts` | — |
 | `secret` (1) | `secretGeneration.ts` | `THR-30` |
@@ -381,7 +386,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `survey` (1) | `surveyProseComposer.ts` | `THR-415` |
 | `target` (3) | `targetActions.ts`, `targetContextBuilders.ts`, `targetTierScaling.ts` | `THR-1073`, `THR-1100`, `THR-996` |
 | `taxonomy` (1) | `taxonomy.ts` | — |
-| `temporal` (1) | `temporal.ts` | — |
+| `temporal` (1) | `temporal.ts` | `THR-1452` |
 | `terrain` (1) | `terrain.ts` | — |
 | `thread` (1) | `threadDigest.ts` | — |
 | `threat` (1) | `threatRating.ts` | — |
@@ -407,4 +412,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 27 registered subsystems (2 dormant) · 100 tick phases · 184 engine domains · 545 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 186 engine domains · 548 modules._

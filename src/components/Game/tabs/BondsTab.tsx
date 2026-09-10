@@ -191,9 +191,8 @@ export function BondsTab({ card, knowledge, onOpenEntity }: BondsTabProps) {
                     }}
                   />
                 </div>
-                <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
-                  {Math.round(card.factionReputation * 100)}%
-                </span>
+                {/* THR-1451 (Class C): the standing bar immediately above draws this
+                    proportion — dropped per the THR-1424 ruling. */}
               </div>
             )}
           </div>

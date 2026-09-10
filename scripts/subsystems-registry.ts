@@ -174,6 +174,14 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     note: 'The attention pool (can\'t watch everything), the digest, and the run\'s chronicle/narrative feed.',
   },
   {
+    name: 'Diagnostics & Incident Capture',
+    aliases: ['diagnostics', 'incident', 'snapshot', 'health', 'crash', 'flight recorder'],
+    activityKeywords: ['incident_bundle', 'tick_health', 'tick_crash'],
+    domains: ['diagnostics', 'incident'],
+    phaseMatch: /\b(health validation|tick health)\b/i,
+    note: 'THR-1134. The tick-end health validator and crash log, the incident flight recorder on `SimulationRuntime`, and the bundle assembler behind Settings → Trouble → Save a snapshot. **Expect a DORMANT badge on a healthy headless run, and read it as good news:** two of its three activity signals (`tick_health`, `tick_crash`) only fire when something has gone wrong, and the third (`incident_bundle`) only when a person presses the button — neither happens in the inventory\'s 120-tick sweep. The collector itself runs every tick in every session, production included.',
+  },
+  {
     name: 'Omens & Atmospheric Pressure',
     aliases: ['omen', 'pressure', 'atmosphere', 'portent', 'foreshadowing'],
     activityKeywords: ['omen', 'foreshadow'],

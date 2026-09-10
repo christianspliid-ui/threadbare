@@ -1,14 +1,23 @@
+import type { ReactNode } from 'react';
 import type { MandateDefinition, MandateStage, MandateState } from '../../types/mandate';
 import { Modal } from '../shared/Modal';
 import { ProgressBar } from '../shared/ProgressBar';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
-import { durationLabel } from '../../engine/aftermathWords';
+import { durationLabel, elapsedLabel, sphereDeltaReading } from '../../engine/aftermathWords';
+import { DeltaCluster } from '../shared/DeltaCluster';
 
 interface MandateDetailProps {
   open: boolean;
   onClose: () => void;
   definition: MandateDefinition;
   state: MandateState;
+  /**
+   * Current simulation tick, so the stage and evaluation rows can read *how long ago*
+   * instead of printing the engine's clock index (THR-1426). Optional so the modal
+   * still renders in a fixture that has no clock — those rows then read `less than a
+   * day`, which is English rather than a crash (NFP #4).
+   */
+  currentTick?: number;
 }
 
 const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
@@ -30,10 +39,27 @@ function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-function formatDelta(delta: number | undefined): string {
-  if (delta == null || !Number.isFinite(delta)) return '0%';
-  const pct = Math.round(delta * 100);
-  return `${pct > 0 ? '+' : ''}${pct}%`;
+/**
+ * THR-1451 — a sphere delta reads as a cluster of triangles, never `+7%`.
+ *
+ * Law 15's rescope names the delta cluster the sanctioned language for realised
+ * state change, and THR-1424 left a pointer here saying so while it settled the
+ * *proportion* half of this file. This is that pointer discharged.
+ *
+ * A requirement (`Needs`) draws the same way as an observation (`Observed`) on
+ * purpose: the checkpoint asks the player to compare the two, and two runs of
+ * triangles side by side is a comparison the eye makes without reading. Both
+ * are magnitudes on one ladder — the growth ladder — so one language covers
+ * both, and neither gets a numeral.
+ *
+ * Renders nothing at all for a zero or absent delta: a change that did not
+ * happen says so by drawing no marks, not by drawing `0%` (the same contract
+ * `OddsPips` keeps for a card that moves no odds).
+ */
+function DeltaReading({ delta, noun }: { delta: number | undefined; noun: string }) {
+  const reading = sphereDeltaReading(delta, noun);
+  if (!reading) return <span style={{ color: 'var(--text-muted)' }}>unmoved</span>;
+  return <DeltaCluster direction={reading.direction} count={reading.count} label={reading.label} />;
 }
 
 function formatMetricValue(value: number | undefined): string {
@@ -53,7 +79,10 @@ function getNextCheckpoint(definition: MandateDefinition, state: MandateState) {
   );
 }
 
-function SummaryCard({ label, value, color }: { label: string; value: string; color?: string }) {
+// THR-1451: `value` widened from `string` to a node so a card can carry a delta
+// cluster rather than a formatted numeral. Every existing caller passes a string,
+// which is still a valid `ReactNode` — an additive widening (NFP #6).
+function SummaryCard({ label, value, color }: { label: string; value: ReactNode; color?: string }) {
   return (
     <div style={{
       minWidth: '120px',
@@ -115,8 +144,13 @@ function MetricTrack({
         }}>
           {label}
         </span>
+        {/* THR-1451: `+7% / +12%` was a delta pair standing on top of the bar below,
+            which already reads how far this has come toward its target. What the pair
+            added over the bar was the realised change's own size — so that half stays,
+            in the delta cluster's language, and the target half goes to the bar it was
+            duplicating. */}
         <span style={{ fontSize: 'var(--text-xs)', color: color, fontWeight: 700 }}>
-          {formatDelta(delta)} / {formatDelta(target)}
+          <DeltaReading delta={delta} noun={label} />
         </span>
       </div>
       <ProgressBar progress={progress} color={color} glow={progress >= 1} />
@@ -135,10 +169,21 @@ function CheckpointRow({
   checkpoint,
   result,
   color,
+  currentTick,
 }: {
   checkpoint: NonNullable<MandateDefinition['checkpoints']>[number];
-  result: MandateState['checkpointResults'] extends Array<infer T> ? T | undefined : undefined;
+  /*
+   * THR-1426: was `MandateState['checkpointResults'] extends Array<infer T> ? T | undefined
+   * : undefined`. `checkpointResults` is optional, so the type being tested is
+   * `Array<…> | undefined`, which does **not** extend `Array<infer T>` — the conditional
+   * always took its false branch and resolved to `undefined`, making every field access on
+   * `result` an error against `never`. The `NonNullable` unwrap is what the original was
+   * reaching for; it also clears the pre-existing `passed` / `exceeded` / `observedPrimaryDelta`
+   * errors this row was already carrying.
+   */
+  result?: NonNullable<MandateState['checkpointResults']>[number];
   color: string;
+  currentTick?: number;
 }) {
   const label = result
     ? result.passed
@@ -164,7 +209,11 @@ function CheckpointRow({
             {checkpoint.label}
           </div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {Math.round(checkpoint.doomProgressThreshold * 100)}% doom · needs {formatDelta(checkpoint.requiredPrimaryDelta)}
+            {/* THR-1424 dropped the `N% doom` half as a unitless proportion and left this
+                half for the delta cluster (Law 15 rescope). THR-1451 discharges that: the
+                requirement and the observation below now draw in one language, so the
+                comparison the checkpoint asks for is two runs of triangles. */}
+            Needs <DeltaReading delta={checkpoint.requiredPrimaryDelta} noun={checkpoint.label} />
           </div>
         </div>
         <span style={{
@@ -184,16 +233,19 @@ function CheckpointRow({
       </div>
       {result && (
         <div style={{ marginTop: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-          Observed {formatDelta(result.observedPrimaryDelta)} on tick {result.evaluatedTick}.
+          {/* THR-1426 (Shape 1): `on tick 412` named the engine's clock on a player-facing
+              line (Laws 13/14). When a checkpoint was evaluated matters only relative to
+              now, which is what `elapsedLabel` reads. */}
+          Observed <DeltaReading delta={result.observedPrimaryDelta} noun={checkpoint.label} />{' '}
+          {elapsedLabel((currentTick ?? result.evaluatedTick) - result.evaluatedTick)} ago.
         </div>
       )}
     </div>
   );
 }
 
-export function MandateDetail({ open, onClose, definition, state }: MandateDetailProps) {
+export function MandateDetail({ open, onClose, definition, state, currentTick }: MandateDetailProps) {
   const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
-  const pct = Math.round(state.progress * 100);
   const typeLabel = MANDATE_TYPE_LABELS[definition.type] ?? 'Unknown';
   const isSphereGrowth = definition.runtimeKind === 'sphere_growth';
   const nextCheckpoint = getNextCheckpoint(definition, state);
@@ -212,7 +264,10 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
   } else if (state.failed) {
     statusLabel = 'Failed';
     statusColor = SENTIMENT_NEGATIVE;
-  } else if (pct > 0) {
+  } else if (state.progress > 0) {
+    // THR-1424: this read the rounded `pct` that fed the dropped Progress row. It reads the
+    // raw progress directly now — the status word is a state, not a magnitude, so it survives
+    // the ruling; only the numeral it happened to share a variable with is gone.
     statusLabel = 'In Progress';
   }
 
@@ -284,8 +339,15 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
 
         {isSphereGrowth && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
-            <SummaryCard label={definition.primarySphere ?? 'Primary'} value={formatDelta(state.primaryDelta)} color={color} />
-            <SummaryCard label={definition.secondarySphere ?? 'Secondary'} value={formatDelta(state.secondaryDelta)} />
+            <SummaryCard
+              label={definition.primarySphere ?? 'Primary'}
+              value={<DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />}
+              color={color}
+            />
+            <SummaryCard
+              label={definition.secondarySphere ?? 'Secondary'}
+              value={<DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />}
+            />
             <SummaryCard
               label="Omens Held"
               value={`${state.checkpointResults?.filter((result) => result.passed).length ?? 0}/${definition.checkpoints?.length ?? 0}`}
@@ -318,7 +380,9 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
 
             <DetailRow label="Type" value={typeLabel} color={color} />
             <DetailRow label="Stage" value={`${STAGE_DISPLAY[state.currentStage]} (${STAGE_ORDER.indexOf(state.currentStage) + 1}/3)`} />
-            <DetailRow label="Progress" value={`${pct}%`} color={color} />
+            {/* THR-1424 (Law 15 ruling, 2026-09-10): the Progress row was a unitless proportion
+                numeral duplicating the `ProgressBar` this modal already renders above. Dropped,
+                not banded — the bar is the reading. */}
             {definition.primarySphere && (
               <DetailRow label="Primary Sphere" value={definition.primarySphere} color={color} />
             )}
@@ -329,10 +393,9 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
               <DetailRow label="Court Shape" value={formatCourtLabel(definition.courtType)} />
             )}
             {nextCheckpoint && (
-              <DetailRow
-                label="Next Omen"
-                value={`${nextCheckpoint.label} (${Math.round(nextCheckpoint.doomProgressThreshold * 100)}%)`}
-              />
+              /* THR-1424: the parenthesised threshold was a unitless proportion — dropped, so
+                 the row carries the omen's name alone. */
+              <DetailRow label="Next Omen" value={nextCheckpoint.label} />
             )}
             {definition.tickLimit && (
               /* THR-1425: a mandate's limit is a duration, so it reads through `durationLabel`.
@@ -340,9 +403,11 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                  spelling `ticks` into it put the engine unit on the surface twice (Law 14). */
               <DetailRow label="Time Limit" value={durationLabel(definition.tickLimit)} color="#ea580c" />
             )}
-            {state.assignedTick != null && (
-              <DetailRow label="Assigned" value={`Tick ${state.assignedTick}`} />
-            )}
+            {/* THR-1426 (Shape 1): the `Assigned: Tick N` row is dropped rather than converted.
+                It printed the engine's clock index (Laws 13/14), and unlike the checkpoint and
+                stage rows there is nothing a player does with when a mandate was handed down —
+                the mandate's live term is already carried by the `Time Limit` row above. A
+                reading nobody acts on is answered by removing the row, not by rephrasing it. */}
 
             {definition.secondaryObjective && (
               <div style={{
@@ -430,6 +495,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                       checkpoint={checkpoint}
                       result={state.checkpointResults?.find((result) => result.index === checkpoint.index)}
                       color={color}
+                      currentTick={currentTick}
                     />
                   ))}
                 </div>
@@ -495,13 +561,16 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                         }}>
                           {STAGE_DISPLAY[stageKey]}
                         </span>
+                        {/* THR-1426 (Shape 1): was `tick {stageCompletedTick}` — the engine's
+                            clock index beside a completed stage (Laws 13/14). A finished stage
+                            is read by when it closed relative to now. */}
                         {isPast && stageCompletedTick != null && (
                           <span style={{
                             fontSize: 'var(--text-xs)',
                             color: 'var(--text-muted)',
                             marginLeft: '8px',
                           }}>
-                            tick {stageCompletedTick}
+                            {elapsedLabel((currentTick ?? stageCompletedTick) - stageCompletedTick)} ago
                           </span>
                         )}
                       </div>

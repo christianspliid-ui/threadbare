@@ -113,9 +113,9 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'src/engine/gameInit.ts', [8, 40],
         'gameInit → hex grid creation'),
       n('DEFAULT_TICKS_PER_SEASON', init.DEFAULT_TICKS_PER_SEASON,
-        'How many ticks make one in-game season. Affects pacing of seasonal events.',
-        'src/engine/gameInit.ts', [10, 500],
-        'gameInit → season/calendar tracking'),
+        'How many ticks make one in-game season. Four seasons make a year, so the year the top bar shows is four times this.',
+        'src/types/temporal.ts', [10, 500],
+        'orchestrator → deriveSeasonAndYear → the top bar\'s season and year'),
     ],
   },
 

@@ -1,332 +1,273 @@
 // @vitest-environment jsdom
+/**
+ * ActionDrawer — the god's hand (THR-1002).
+ *
+ * Rewritten with the drawer. The retired suite's centre was the two-click
+ * focus-then-activate flow and the overlay it opened — the focused card, its
+ * backdrop, the Effect block, the wiring badge and the cast-risk line. None of
+ * those exist: the card face is complete, so nothing expands, and the second click
+ * moved to a **Cast** button in the footer (Law 48 — arm, then fire).
+ *
+ * The arms that carried over are the ones about *the hand*: which cards are in it,
+ * how the layer filter narrows it, that locked cards stay collapsed until asked
+ * for, and that Escape backs out one step at a time. Those questions survived the
+ * rewrite; only the answers' shapes moved.
+ *
+ * Two arms are new and deliberately drawn at the whole-drawer level: the Law 13
+ * numeral sweep and the emoji sweep. Both are the kind of regression that arrives
+ * one zone at a time, so they are asserted over everything the drawer renders
+ * rather than over a list of places someone remembered to look.
+ */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ActionDrawer } from '../ActionDrawer';
 import type { WheelSlot } from '../../../engine/wheel';
 
-const mockSlots: WheelSlot[] = [
-  {
-    id: 'scry', label: 'Scry', type: 'observation', angleDeg: 0,
-    available: true, lockedReason: null, essenceCost: 0, detectionRisk: 0,
-    sphere: null, interventionType: null, rangeStatus: 'unknown', hexDistance: null,
-    description: 'Observe agent psyche and situation',
-  },
-  {
-    id: 'dream', label: 'Dream', type: 'intervention', angleDeg: 45,
-    available: true, lockedReason: null, essenceCost: 1, detectionRisk: 0.1,
-    sphere: 'mind', interventionType: 'dream', rangeStatus: 'unlimited', hexDistance: null,
-    description: 'Manipulate selection probabilities during sleep',
-  },
-  {
-    id: 'center', label: '', type: 'info', angleDeg: -1,
-    available: true, lockedReason: null, essenceCost: 0, detectionRisk: 0,
-    sphere: null, interventionType: null, rangeStatus: 'unknown', hexDistance: null,
+function slot(overrides: Partial<WheelSlot> & Pick<WheelSlot, 'id' | 'label'>): WheelSlot {
+  return {
+    type: 'target_action',
+    angleDeg: 0,
+    available: true,
+    lockedReason: null,
+    essenceCost: 1,
+    sphere: 'mind',
+    interventionType: null,
+    rangeStatus: 'in_range',
+    hexDistance: null,
     description: '',
-  },
+    effectsLine: 'Does a thing to a place.',
+    crudType: 'update',
+    reach: 'iron',
+    scale: 'local',
+    scaleWord: 'Local',
+    forecastTier: 'uncertain',
+    templateId: overrides.id,
+    ...overrides,
+  } as WheelSlot;
+}
+
+const mockSlots: WheelSlot[] = [
+  slot({ id: 'scry', label: 'Scry', type: 'observation', essenceCost: 0, sphere: null }),
+  slot({ id: 'dream', label: 'Dream', type: 'intervention', interventionType: 'dream' }),
+  slot({ id: 'center', label: '', type: 'info', essenceCost: 0, sphere: null }),
 ];
 
-describe('ActionDrawer', () => {
+function renderDrawer(props: Partial<React.ComponentProps<typeof ActionDrawer>> = {}) {
+  return render(
+    <ActionDrawer
+      open
+      slots={mockSlots}
+      targetName="Kael"
+      targetLabel="Devoted"
+      onSlotClick={vi.fn()}
+      onClose={vi.fn()}
+      {...props}
+    />,
+  );
+}
+
+describe('ActionDrawer — the hand', () => {
   it('renders when open', () => {
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    expect(screen.getByTestId('action-drawer')).toBeInTheDocument();
+    renderDrawer();
+    expect(screen.getByTestId('action-drawer')).toBeTruthy();
   });
 
-  it('does not render cards when closed', () => {
-    render(
-      <ActionDrawer open={false} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
+  it('renders nothing when closed', () => {
+    const { container } = render(
+      <ActionDrawer
+        open={false}
+        slots={mockSlots}
+        targetName=""
+        targetLabel=""
+        onSlotClick={vi.fn()}
+        onClose={vi.fn()}
+      />,
     );
-    expect(screen.queryByText('Dream')).not.toBeInTheDocument();
+    expect(container.firstChild).toBeNull();
   });
 
-  it('renders action cards for non-center slots', () => {
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    expect(screen.getByText('Scry')).toBeInTheDocument();
-    expect(screen.getByText('Dream')).toBeInTheDocument();
-    expect(screen.queryByTestId('action-card-center')).not.toBeInTheDocument();
+  it('draws a card for every playable slot, and none for the centre slot', () => {
+    renderDrawer();
+    expect(screen.getByTestId('action-card-scry')).toBeTruthy();
+    expect(screen.getByTestId('action-card-dream')).toBeTruthy();
+    expect(screen.queryByTestId('action-card-center')).toBeNull();
   });
 
-  it('two-click flow: first click focuses, second click activates', () => {
-    const onSlotClick = vi.fn();
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={onSlotClick} onClose={vi.fn()} />
-    );
-    // First click — focuses card (shows backdrop + focused card)
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(onSlotClick).not.toHaveBeenCalled();
-    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
-
-    // Second click on the focused card — activates
-    // There are now two 'Dream' cards (hand + focused), get the focused one
-    const dreamCards = screen.getAllByTestId('action-card-dream');
-    const focusedCard = dreamCards.find(el => el.closest('.anim-card-fly-up'));
-    fireEvent.click(focusedCard || dreamCards[dreamCards.length - 1]);
-    expect(onSlotClick).toHaveBeenCalledWith('dream');
-  });
-
-  // ── Effect block (THR-610) ───────────────────────────────────────────────
-
-  it('shows the Effect block + wiring badge on a focused card that carries technicalEffect', () => {
-    const effectSlots: WheelSlot[] = [
-      {
-        ...mockSlots[1],
-        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action',
-        technicalEffect: "On success, raises the hex-tile's `divineInfluence`.",
-        effectSource: 'engine-bridge',
-      },
-    ];
-    render(
-      <ActionDrawer open={true} slots={effectSlots} targetName="Hex (3,7)" targetLabel="Desert"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    // No Effect block until a card is focused
-    expect(screen.queryByTestId('action-effect-block')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByTestId('action-card-ta:hex.bless_land'));
-    const block = screen.getByTestId('action-effect-block');
-    expect(block).toBeInTheDocument();
-    expect(block).toHaveTextContent("raises the hex-tile's");
-    // effectSource → catalog-mirrored label
-    expect(screen.getByTestId('action-effect-badge')).toHaveTextContent('wired · engine');
-  });
-
-  it('hides the Effect block on a focused card with no technicalEffect', () => {
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    // mockSlots carry no technicalEffect — focusing must not render an empty Effect label
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
-    expect(screen.queryByTestId('action-effect-block')).not.toBeInTheDocument();
-  });
-
-  it('clicking backdrop dismisses focused card', () => {
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    // Focus a card
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
-
-    // Click backdrop
-    fireEvent.click(screen.getByTestId('action-drawer-backdrop'));
-    expect(screen.queryByTestId('action-drawer-backdrop')).not.toBeInTheDocument();
-  });
-
-  it('Escape dismisses focused card first, then closes drawer', () => {
-    const onClose = vi.fn();
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={onClose} />
-    );
-    // Focus a card
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
-
-    // First Escape — dismisses focus
-    fireEvent.keyDown(document, { key: 'Escape' });
-    expect(screen.queryByTestId('action-drawer-backdrop')).not.toBeInTheDocument();
-    expect(onClose).not.toHaveBeenCalled();
-
-    // Second Escape — closes drawer
-    fireEvent.keyDown(document, { key: 'Escape' });
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  // ── Layer filter tabs ────────────────────────────────────────────────────
-
-  it('shows layer filter tabs when slots have narrativeLayer', () => {
-    const hexSlots: WheelSlot[] = [
-      {
-        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
-        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
-        description: 'Bless the land', narrativeLayer: 'land',
-      },
-      {
-        id: 'ta:hex.attune_leyline', label: 'Attune Leyline', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 5, detectionRisk: 0,
-        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
-        description: 'Attune leyline', narrativeLayer: 'soul',
-      },
-    ];
-    render(
-      <ActionDrawer open={true} slots={hexSlots} targetName="Hex (3,7)" targetLabel="Desert"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    expect(screen.getByTestId('layer-filter-tabs')).toBeInTheDocument();
-    expect(screen.getByTestId('layer-tab-land')).toBeInTheDocument();
-    expect(screen.getByTestId('layer-tab-soul')).toBeInTheDocument();
-    // People and ruins have 0 cards — tabs should not render
-    expect(screen.queryByTestId('layer-tab-people')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('layer-tab-ruins')).not.toBeInTheDocument();
-  });
-
-  it('does not show layer tabs for agent intervention slots', () => {
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    expect(screen.queryByTestId('layer-filter-tabs')).not.toBeInTheDocument();
-  });
-
-  it('filters cards when switching layer tabs', () => {
-    const hexSlots: WheelSlot[] = [
-      {
-        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
-        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
-        description: 'Bless the land', narrativeLayer: 'land',
-      },
-      {
-        id: 'ta:hex.attune_leyline', label: 'Attune Leyline', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 5, detectionRisk: 0,
-        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
-        description: 'Attune leyline', narrativeLayer: 'soul',
-      },
-    ];
-    render(
-      <ActionDrawer open={true} slots={hexSlots} targetName="Hex (3,7)" targetLabel="Desert"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    // Land is auto-selected — should show land card, hide soul card
-    expect(screen.getByText('Bless Land')).toBeInTheDocument();
-    expect(screen.queryByText('Attune Leyline')).not.toBeInTheDocument();
-
-    // Switch to soul tab
-    fireEvent.click(screen.getByTestId('layer-tab-soul'));
-    expect(screen.queryByText('Bless Land')).not.toBeInTheDocument();
-    expect(screen.getByText('Attune Leyline')).toBeInTheDocument();
-  });
-
-  it('hides location cards (no narrativeLayer) when layer tabs are active', () => {
-    const mixedSlots: WheelSlot[] = [
-      {
-        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
-        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
-        description: 'Bless the land', narrativeLayer: 'land',
-      },
-      {
-        id: 'ta:loc.ward', label: 'Ward', type: 'target_action', angleDeg: 0,
-        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
-        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
-        description: 'Place a ward', // no narrativeLayer — location card
-      },
-    ];
-    render(
-      <ActionDrawer open={true} slots={mixedSlots} targetName="Hex (3,7)" targetLabel="Desert"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    // Layer tabs active because hex cards present
-    expect(screen.getByTestId('layer-filter-tabs')).toBeInTheDocument();
-    // Hex card visible, location card hidden
-    expect(screen.getByText('Bless Land')).toBeInTheDocument();
-    expect(screen.queryByText('Ward')).not.toBeInTheDocument();
-  });
-
-  it('sorts cards: available first, locked last (IA-003 progressive disclosure)', () => {
-    const mixedSlots: WheelSlot[] = [
-      { ...mockSlots[0] },
-      {
-        id: 'coincidence', label: 'Coincidence', type: 'intervention', angleDeg: 225,
-        available: false, lockedReason: 'Requires tier 3', essenceCost: 4,
-        detectionRisk: 0.6, sphere: 'time', interventionType: 'coincidence',
-        rangeStatus: 'unlimited', hexDistance: null, description: 'Alter environmental prerequisites',
-      },
-      { ...mockSlots[1] },
-      mockSlots[2],
-    ];
-    render(
-      <ActionDrawer open={true} slots={mixedSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
-    );
-    // Available cards are visible immediately
-    const availableCards = screen.getAllByRole('button').filter(el => el.getAttribute('data-testid')?.startsWith('action-card-'));
-    expect(availableCards[0].getAttribute('data-testid')).toBe('action-card-scry');
-
-    // Locked cards hidden by default — toggle reveals them
-    expect(screen.queryByTestId('action-card-coincidence')).toBeNull();
-    const toggleBtn = screen.getByRole('button', { name: /locked/i });
-    fireEvent.click(toggleBtn);
-
-    // After expanding, locked card is visible
-    expect(screen.getByTestId('action-card-coincidence')).toBeInTheDocument();
+  it('lays the cards out in one row rather than a fan', () => {
+    renderDrawer();
+    const row = screen.getByTestId('action-card-row');
+    expect(row.style.flexWrap).toBe('nowrap');
+    // The row scrolls its own axis; the page never does (Law 33 / viewport contract).
+    expect(row.style.overflowX).toBe('auto');
+    expect(row.style.overflowY).toBe('hidden');
   });
 });
 
-// ─── THR-998: the focused card's cast line ──────────────────────────────────
+describe('ActionDrawer — arm, then fire (Law 48)', () => {
+  it('does not cast on the first click', () => {
+    const onSlotClick = vi.fn();
+    renderDrawer({ onSlotClick });
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(onSlotClick).not.toHaveBeenCalled();
+    expect(screen.getByTestId('action-card-dream').getAttribute('aria-pressed')).toBe('true');
+  });
 
-/**
- * DOM-level evidence for THR-998 — the rendered card face, not just the helper.
- *
- * The helper contract is pinned in `src/engine/__tests__/playerCastReadout.test.ts`;
- * these assert that `ActionDrawer` actually renders it, i.e. that the fix reached the
- * surface rather than stopping at the data layer. Both cards below carry the same
- * `scale` and differ only in authored price — the exact pair the ticket was filed on.
- */
-describe('ActionDrawer — cast line (THR-998)', () => {
-  /** A focusable target-action card. `technicalEffect` is required: it gates the block the line lives in. */
-  function castSlot(overrides: Partial<WheelSlot>): WheelSlot {
-    return {
-      id: 'ta:hex.test_working', label: 'Test Working', type: 'target_action', angleDeg: 0,
-      available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
-      sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
-      description: 'A test working', technicalEffect: 'Marks the target.',
-      ...overrides,
-    } as WheelSlot;
-  }
+  it('casts the armed card when Cast is pressed', () => {
+    const onSlotClick = vi.fn();
+    renderDrawer({ onSlotClick });
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    fireEvent.click(screen.getByTestId('action-cast-button'));
+    expect(onSlotClick).toHaveBeenCalledWith('dream');
+  });
 
-  function focusedLineFor(slot: WheelSlot): string | null {
-    const { unmount } = render(
-      <ActionDrawer open={true} slots={[slot]} targetName="The Hollow" targetLabel="Location"
-        onSlotClick={vi.fn()} onClose={vi.fn()} />
+  it('cannot fire with nothing armed, and says so (Law 25)', () => {
+    renderDrawer();
+    const cast = screen.getByTestId('action-cast-button') as HTMLButtonElement;
+    expect(cast.disabled).toBe(true);
+    expect(screen.getByTestId('action-cast-hint').textContent).toBe('Choose a card.');
+  });
+
+  it('disarms when the armed card is clicked again', () => {
+    renderDrawer();
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(screen.getByTestId('action-card-dream').getAttribute('aria-pressed')).toBe('false');
+    expect((screen.getByTestId('action-cast-button') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('drops the arm when the armed card leaves the hand', () => {
+    // A stale arm surviving a layer switch would let Cast fire a card the player
+    // can no longer see. The armed slot is re-resolved against the live hand, so
+    // it cannot.
+    const { rerender } = renderDrawer();
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    rerender(
+      <ActionDrawer
+        open
+        slots={[mockSlots[0]]}
+        targetName="Kael"
+        targetLabel="Devoted"
+        onSlotClick={vi.fn()}
+        onClose={vi.fn()}
+      />,
     );
-    fireEvent.click(screen.getByTestId(`action-card-${slot.id}`));
-    const line = screen.queryByTestId('action-risk-hint')?.textContent ?? null;
-    unmount();
-    return line;
+    expect((screen.getByTestId('action-cast-button') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('Escape disarms first, then closes', () => {
+    const onClose = vi.fn();
+    renderDrawer({ onClose });
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByTestId('action-card-dream').getAttribute('aria-pressed')).toBe('false');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('ActionDrawer — locked cards (IA-003 progressive disclosure)', () => {
+  const withLocked = [
+    ...mockSlots,
+    slot({ id: 'blight', label: 'Blight', available: false, lockedReason: 'Requires tier 2' }),
+  ];
+
+  it('keeps locked cards out of the hand until asked for', () => {
+    render(
+      <ActionDrawer open slots={withLocked} targetName="" targetLabel=""
+        onSlotClick={vi.fn()} onClose={vi.fn()} />,
+    );
+    expect(screen.queryByTestId('action-card-blight')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Show 1 locked action/ }));
+    expect(screen.getByTestId('action-card-blight')).toBeTruthy();
+  });
+
+  it('offers no toggle when nothing is locked', () => {
+    renderDrawer();
+    expect(screen.queryByRole('button', { name: /locked action/ })).toBeNull();
+  });
+});
+
+describe('ActionDrawer — layer filter', () => {
+  const layered = [
+    slot({ id: 'a', label: 'Quarry', narrativeLayer: 'land' }),
+    slot({ id: 'b', label: 'Vigil', narrativeLayer: 'soul' }),
+    slot({ id: 'c', label: 'Market', narrativeLayer: 'people' }),
+    // A location template with no layer — hidden while layer tabs are active.
+    slot({ id: 'd', label: 'Consecrate' }),
+  ];
+
+  function renderLayered() {
+    return render(
+      <ActionDrawer open slots={layered} targetName="" targetLabel=""
+        onSlotClick={vi.fn()} onClose={vi.fn()} />,
+    );
   }
 
-  it('renders the same line for two prices the scale floor capped away', () => {
-    // effectiveStepDifficulty 0 on both — the floor is speaking, so the authored
-    // 0.20 / 0.50 split must not reach the card face. Pre-fix this rendered
-    // "A steady working." and "A perilous working." for these two slots.
-    const easy = focusedLineFor(castSlot({ maxStepDifficulty: 0.20, effectiveStepDifficulty: 0, scale: 'local' }));
-    const hard = focusedLineFor(castSlot({ maxStepDifficulty: 0.50, effectiveStepDifficulty: 0, scale: 'local' }));
-
-    expect(easy).toBe(hard);
-    expect(easy).toBe('A working the size of one place.');
+  it('shows a tab per populated layer and selects the first', () => {
+    renderLayered();
+    expect(screen.getByTestId('layer-filter-tabs')).toBeTruthy();
+    expect(screen.getByTestId('layer-tab-land')).toBeTruthy();
+    expect(screen.getByTestId('layer-tab-soul')).toBeTruthy();
+    expect(screen.queryByTestId('layer-tab-ruins')).toBeNull();
+    expect(screen.getByTestId('action-card-a')).toBeTruthy();
+    expect(screen.queryByTestId('action-card-b')).toBeNull();
   });
 
-  it('renders a risk word where the authored price survives to the roll', () => {
-    // effectiveStepDifficulty > 0 — difficulty genuinely moves the odds, so the card
-    // is entitled to name the risk, and does.
-    expect(focusedLineFor(castSlot({ maxStepDifficulty: 0.50, effectiveStepDifficulty: 0.50, scale: 'regional' })))
-      .toBe('A perilous working.');
-    expect(focusedLineFor(castSlot({ maxStepDifficulty: 0.10, effectiveStepDifficulty: 0.10, scale: 'regional' })))
-      .toBe('A steady working.');
+  it('switches the hand when a tab is chosen', () => {
+    renderLayered();
+    fireEvent.click(screen.getByTestId('layer-tab-soul'));
+    expect(screen.getByTestId('action-card-b')).toBeTruthy();
+    expect(screen.queryByTestId('action-card-a')).toBeNull();
   });
 
-  it('keeps a guaranteed casting silent, with no empty line left behind', () => {
-    // The unchanged face — certainty on the soul-verbs is a design statement. Asserts
-    // absence of the element, not an empty string, so a stray blank <p> would fail.
-    expect(focusedLineFor(castSlot({ maxStepDifficulty: 0, effectiveStepDifficulty: 0, scale: 'local' })))
-      .toBeNull();
+  it('hides layerless cards while the tabs are active', () => {
+    renderLayered();
+    expect(screen.queryByTestId('action-card-d')).toBeNull();
   });
 
-  it('never prints an internal scale key to the player (Law 14)', () => {
-    const line = focusedLineFor(castSlot({ maxStepDifficulty: 0.4, effectiveStepDifficulty: 0, scale: 'cosmic' }));
-    expect(line).toBe('A working the size of the world.');
-    expect(line?.toLowerCase()).not.toContain('cosmic');
+  it('shows no tabs for an agent hand', () => {
+    renderDrawer();
+    expect(screen.queryByTestId('layer-filter-tabs')).toBeNull();
+  });
+});
+
+describe('ActionDrawer — the surface as a whole', () => {
+  it('renders no numeral anywhere (Law 13)', () => {
+    // Every card, every chip, every tab label. The card's own suite guards the
+    // face; this guards the chrome around it, which is where the tab counts and
+    // the locked-card count live.
+    const { container } = render(
+      <ActionDrawer open slots={mockSlots} targetName="Kael" targetLabel="Devoted"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />,
+    );
+    expect(container.textContent ?? '').not.toMatch(/\d/);
+  });
+
+  it('renders no emoji anywhere', () => {
+    // The layer tabs carried four (⛰ ✨ 👤 🏛) plus a padlock. Emoji render in each
+    // platform's own colour font, so they are the one element class guaranteed to
+    // look like a different design system on every machine.
+    const layered = [
+      slot({ id: 'a', label: 'Quarry', narrativeLayer: 'land' }),
+      slot({ id: 'b', label: 'Vigil', narrativeLayer: 'soul' }),
+      slot({ id: 'c', label: 'Market', narrativeLayer: 'people' }),
+      slot({ id: 'e', label: 'Delve', narrativeLayer: 'ruins' }),
+    ];
+    const { container } = render(
+      <ActionDrawer open slots={layered} targetName="" targetLabel=""
+        onSlotClick={vi.fn()} onClose={vi.fn()} />,
+    );
+    expect(container.textContent ?? '').not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+
+  it('carries the resolved band from the receipt queue onto the card that cast it', () => {
+    // Law 37, wired: the drawer is a *reader* of `playerActionReceipts`, keyed by
+    // template id, and never computes a band of its own.
+    renderDrawer({ resolvedBands: { dream: 'setback' } });
+    expect(screen.getByTestId('action-card-resolved-dream')).toBeTruthy();
+    expect(screen.queryByTestId('action-card-resolved-scry')).toBeNull();
   });
 });

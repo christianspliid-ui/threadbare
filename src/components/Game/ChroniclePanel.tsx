@@ -4,6 +4,8 @@ import { ChronicleEntryCard, type ChronicleVoiceMode } from './ChronicleEntryCar
 
 interface ChroniclePanelProps {
   entries: ChronicleEntry[];
+  /** Current simulation tick, so each entry can read how long ago it happened (THR-1426). */
+  currentTick?: number;
 }
 
 const VOICE_LABELS: Record<ChronicleVoiceMode, string> = {
@@ -12,7 +14,7 @@ const VOICE_LABELS: Record<ChronicleVoiceMode, string> = {
   witness: 'Witness',
 };
 
-export function ChroniclePanel({ entries }: ChroniclePanelProps) {
+export function ChroniclePanel({ entries, currentTick }: ChroniclePanelProps) {
   const [voiceMode, setVoiceMode] = useState<ChronicleVoiceMode>('interleaved');
 
   const visibleEntries = [...entries].reverse();
@@ -85,7 +87,7 @@ export function ChroniclePanel({ entries }: ChroniclePanelProps) {
           </p>
         ) : (
           visibleEntries.map(entry => (
-            <ChronicleEntryCard key={entry.id} entry={entry} voiceMode={voiceMode} />
+            <ChronicleEntryCard key={entry.id} entry={entry} voiceMode={voiceMode} currentTick={currentTick} />
           ))
         )}
       </div>

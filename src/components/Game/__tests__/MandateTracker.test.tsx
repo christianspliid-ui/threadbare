@@ -119,14 +119,19 @@ describe('MandateTracker', () => {
     expect(screen.getByText('Node Dominance')).toBeInTheDocument();
   });
 
-  it('renders progress percentage', () => {
-    render(
+  // THR-1424 (Law 15 ruling, 2026-09-10): mandate progress is a unitless proportion this tier
+  // already renders twice without a numeral — the stage pips and the ProgressBar — so the
+  // percentage is dropped rather than banded to a word.
+  it('renders no percentage numeral — the pips and bar are the reading', () => {
+    const { container } = render(
       <MandateTracker
         definition={baseMandateDefinition}
         state={baseMandateState}
       />
     );
-    expect(screen.getByText('50%')).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/%/);
+    // Falsification: the pips must still render, or the arm would pass on an empty tracker.
+    expect(screen.getAllByTestId('stage-pip').length).toBeGreaterThan(0);
   });
 
   it('renders 3 stage pips', () => {
@@ -299,8 +304,13 @@ describe('MandateTracker', () => {
       />
     );
 
-    expect(screen.getByText('mind +9%')).toBeInTheDocument();
-    expect(screen.getByText('spirit +4%')).toBeInTheDocument();
+    // THR-1451 (Class A): a sphere delta reads as a delta cluster, not `mind +9%`.
+    // Repointed rather than deleted — the spheres must still be named and their movement
+    // still drawn, so this asserts both halves of what replaced the numeral.
+    expect(screen.getByText(/mind/)).toBeInTheDocument();
+    expect(screen.getByText(/spirit/)).toBeInTheDocument();
+    const clusters = document.body.querySelectorAll('[role="img"]');
+    expect(Array.from(clusters).some((n) => (n.getAttribute('aria-label') ?? '').includes('rose'))).toBe(true);
 
     fireEvent.click(screen.getByText('Witness Ascendancy'));
 

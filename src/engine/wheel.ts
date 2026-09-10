@@ -11,6 +11,9 @@ import type { EssencePool, InfluenceTier } from '../types/influence';
 import type { RarityTier } from '../types/rarity';
 import type { ActionScale } from '../types/unifiedAction';
 import type { EffectSource } from '../data/actionEffectSource';
+import type { ForecastTier } from '../types/resolution';
+import type { ReachDomain } from '../types/traits';
+import type { ActionCrudType, UpkeepWord } from '../data/action-card-display';
 import type { InterventionType } from '../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../types/dream';
 import { canAfford } from './influence';
@@ -38,8 +41,6 @@ export interface WheelSlot {
   lockedReason: string | null;
   /** Essence cost to use this action */
   essenceCost: number;
-  /** Risk of detection (0.0–1.0) */
-  detectionRisk: number;
   /** Sphere type for this action (used for essence cost), or null for scry/center */
   sphere: SphereName | null;
   /** Intervention type (dream, persuade, etc.), or null for non-interventions */
@@ -95,6 +96,57 @@ export interface WheelSlot {
   effectiveStepDifficulty?: number;
   /** Template scale, carried for the focused card's honest-line fallback (THR-998). */
   scale?: ActionScale | null;
+  /**
+   * The forecast tier word the card prints in its odds zone (THR-1002) —
+   * `classifyForecastTier(castForecastProbability(...))`.
+   *
+   * **Omitted, never guessed**, when the slot was built without a capability map:
+   * a card with no odds zone is honest about not knowing, and a card showing
+   * `uncertain` by default would be a claim nobody made. This is the cast's
+   * counterpart to the nudge card's `OddsPips` — a word rather than pips, because
+   * a cast *rolls* the odds where a nudge *moves* them (Law 10).
+   */
+  forecastTier?: ForecastTier;
+  /** The scale as the player reads it, from `ACTION_SCALE_WORDS` (THR-1002). */
+  scaleWord?: string;
+  /**
+   * Upkeep band for a sustained action (THR-1002) — *light / steady / heavy*, from
+   * `upkeepWord(perTickCost)`. Absent on an instant action, and on a sustained one
+   * whose per-tick cost does not resolve. `perTickCostLabel` keeps the numeral for
+   * the designer view.
+   */
+  upkeepWord?: UpkeepWord;
+  /**
+   * The template id this slot was built from (THR-1002), unprefixed.
+   *
+   * The card's name links to the codex entry, and the codex keys its action
+   * entries on the bare template id — so the link needs the id the slot was made
+   * from rather than `slot.id`, which carries the `target_action_` prefix on one
+   * of the two builders and not the other. Carrying it explicitly is what stops a
+   * third consumer re-deriving it by string surgery, which is how the retired
+   * type line came to exist.
+   */
+  templateId?: string;
+  /**
+   * The CRUD axis the card prints as its verb chip (THR-1002).
+   *
+   * This is the field that killed `parseTypeLine`: the verb used to be recovered
+   * by splitting the slot id on dots and upper-casing the third segment, so a
+   * template whose id did not happen to end in its CRUD type printed the wrong
+   * word — or an empty chip — and a raw schema key reached the face either way
+   * (Law 14). The template declares it; the slot carries it.
+   */
+  crudType?: ActionCrudType;
+  /**
+   * The reach the card's mark shows — the reach of the template's *hardest* step,
+   * not the template's headline reach (THR-1002).
+   *
+   * The hardest step is the one whose difficulty the forecast tier was computed
+   * against, so this is the reach the player's odds actually leaned on. Showing
+   * the headline reach beside a tier word derived from a different one would be
+   * two readings of the same cast that disagree.
+   */
+  reach?: ReachDomain;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────
@@ -210,7 +262,7 @@ const WHEEL_LAYOUT: SlotDefinition[] = [
  * 3. Interventions check: (1) tier >= minTier, AND (2) canAfford(pool, sphere, baseCost)
  * 4. Sphere selection: use primarySphere if in intervention's sphereAffinities,
  *    otherwise use first affinity
- * 5. BaseCost and detectionRisk come from INTERVENTION_DEFINITIONS
+ * 5. BaseCost comes from INTERVENTION_DEFINITIONS
  * 6. Range status computed from avatarPos and targetPos if provided
  *
  * @param params - { tier, pool, primarySphere, avatarPos?, targetPos? }
@@ -237,7 +289,6 @@ export function getAgentWheelSlots(params: {
         available: true,
         lockedReason: null,
         essenceCost: 0,
-        detectionRisk: 0,
         sphere: null,
         interventionType: null,
         rangeStatus: 'unknown',
@@ -257,7 +308,6 @@ export function getAgentWheelSlots(params: {
         available,
         lockedReason: available ? null : `Requires tier ${slotDef.minTier}`,
         essenceCost: 0,
-        detectionRisk: 0,
         sphere: null,
         interventionType: null,
         rangeStatus: 'unknown',
@@ -295,7 +345,6 @@ export function getAgentWheelSlots(params: {
         available: false,
         lockedReason: `Requires tier ${interventionDef.minTier}`,
         essenceCost: interventionDef.baseCost,
-        detectionRisk: interventionDef.detectionRisk,
         sphere: selectSphere(primarySphere, interventionDef.sphereAffinities),
         interventionType,
         rangeStatus,
@@ -318,7 +367,6 @@ export function getAgentWheelSlots(params: {
       available: canAffordIntervention,
       lockedReason: canAffordIntervention ? null : `Not enough ${chosenSphere} essence`,
       essenceCost: interventionDef.baseCost,
-      detectionRisk: interventionDef.detectionRisk,
       sphere: chosenSphere,
       interventionType,
       rangeStatus,

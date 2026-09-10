@@ -141,10 +141,13 @@ export const WorldPulse = React.memo(function WorldPulse({
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Tick</span>
-          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{gameState.tick}</span>
-        </div>
+        {/* THR-1426 (Shape 1): the `Tick N` row is dropped. This panel sits in the player's
+            right rail beside the Chapter Ledger, so it is player-facing chrome and Law 13's
+            developer carve-out does not reach it. The row printed the engine's own clock index
+            (Law 14) — a number with no reading: it is not a duration, and the game has no
+            calendar to date it against. The top bar already carries the season and year for
+            orientation, and the panel's mood line below says what the world feels like, so
+            nothing the player acts on is lost by removing it. */}
         <div className="flex justify-between items-center">
           <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Active Agents</span>
           <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{activeAgents}</span>

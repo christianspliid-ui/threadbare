@@ -181,6 +181,26 @@ export function sustainFlowWord(perTick: number): string {
 }
 
 /**
+ * The same per-tick flow, read **per sphere** — `a steady draw of order and a slight
+ * draw of wild` collapses to `steady order, slight wild` (THR-1426).
+ *
+ * **Why a composition here rather than a second ladder at the call site.** The hex
+ * chronicle's control-effect rows show which sphere a hold drains, not just how much
+ * in total, because which sphere is drained is the part the player acts on. Banding
+ * each entry at the surface would have put a second copy of the flow ladder in a
+ * component — the drift UI Law 3 exists to prevent — so the composition lives beside
+ * the ladder it composes and a retune of `SUSTAIN_FLOW_BANDS` moves both readings.
+ *
+ * Returns `null` for an empty or absent map so the caller owns the empty phrasing:
+ * a cost of nothing and an income of nothing want different sentences.
+ */
+export function sustainFlowSpheres(perTickBySphere: Record<string, number> | undefined): string | null {
+  const entries = Object.entries(perTickBySphere ?? {}).filter(([, v]) => Number.isFinite(v) && v > 0);
+  if (entries.length === 0) return null;
+  return entries.map(([sphere, v]) => `${sustainFlowWord(v)} ${sphere}`).join(', ');
+}
+
+/**
  * Band a runway into a word. An infinite runway (net-positive flow) is not a
  * magnitude at all, so it answers with its own term rather than a top rung.
  */

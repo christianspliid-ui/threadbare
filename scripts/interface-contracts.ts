@@ -134,8 +134,170 @@ const RUINS = 'Ruins, Clues & Delves';
 const TRAITS = 'Personality & Emergent Traits';
 const PROGRESSION = 'Ascendant Beats & Progression';
 const OMENS = 'Omens & Atmospheric Pressure';
+const DIAGNOSTICS = 'Diagnostics & Incident Capture';
 
 export const CONTRACTS: readonly Contract[] = [
+  // ── Diagnostics & Incident Capture → the incident snapshot (THR-1134) ─────
+  // This chain was ⚪ UNAUDITED: `tickHealthMonitor` has run unconditionally every
+  // tick since it was written, keeping a hundred health reports and a hundred crash
+  // entries *with stacks*, and in production nothing could read any of it — the whole
+  // debug bridge sits behind `if (import.meta.env.DEV)`. A producer writing every
+  // tick to a consumer that cannot exist is this map's headline failure shape, and
+  // these rows close it by shipping the reader.
+  {
+    id: 'tick-health-to-incident-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'When the world looks wrong, the engine has already written down what it caught — so the player can hand that record to someone who can read it, instead of describing a screenshot.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['getHealthLog', 'getCrashLog', 'getLatestReport', 'exportDiagnostics'],
+      module: 'src/engine/tickHealthMonitor.ts',
+    },
+    writeSites: [
+      'src/engine/tickHealthMonitor.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/GameView.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. Before this change the health log, the crash log and `stateMetrics` had exactly one consumer between them — the DEV-gated debug bridge — so on the deployed build every one of them was a write with no possible reader. Three read sites now ship in production: `incidentBundle.health` (log + crash log verbatim), `incidentBundle.census` (`exportDiagnostics(state)`), and `GameView`'s crash-prompt effect, which reads `getCrashLog().length` to raise the one toast that tells the player the door exists. `exportDiagnostics` was additionally invoked with no argument at `debug-bridge.ts:1711`, so its `stateMetrics` block had been `null` on every export since the bridge was written; it now receives the registered state. Non-vacuous by `src/engine/__tests__/incidentBundle.test.ts` — the census-section arm spies `exportDiagnostics` into throwing and asserts the section ships as `{ error }` with `failedSections` naming it and every sibling intact, which fails if the bundle stops calling it at all.",
+    },
+  },
+  {
+    id: 'incident-recorder-to-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'A wrong-looking world is noticed long after its cause; the recorder keeps far more history than the hundred events the UI shows, so the cause is still in the file.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['recordTick', 'getRecordedEvents', 'getRecordedMetrics', 'getIncidentRecorderStats'],
+      module: 'src/engine/incidentRecorder.ts',
+    },
+    writeSites: [
+      'src/engine/orchestrator.ts',
+      'src/engine/simulationRuntime.ts',
+    ],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. `recordTick` is called once per tick from the tick-end site beside `validateTickOutput` with `runtime` already in scope, and both rings are read by `incidentBundle`'s `events` and `census` sections plus `__DEBUG.getIncidentRecorderStats()`. Owned on `SimulationRuntime` rather than at module scope, per the load-bearing decision, so a second playthrough cannot inherit the first one's events. Non-vacuous by `src/engine/__tests__/incidentRecorder.test.ts` (wrap behaviour asserted past `INCIDENT_EVENT_RING_SIZE`, oldest-first order across the wrap, and a throwing census that increments `misses`, leaves the tick untouched, and still records the *next* tick — the last clause falsifies the guard rather than confirming it) and by `incidentBundle.test.ts`'s census/recorder assertion.",
+    },
+  },
+  {
+    id: 'trace-ring-to-incident-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'Traces are the causal trail — the one record that answers *why* rather than *what* — so a player who armed recording before the trouble can hand that trail over.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['getTraces', 'isTracingEnabled', 'enableTracing', 'disableTracing'],
+      module: 'src/engine/traceBuffer.ts',
+    },
+    writeSites: ['src/engine/traceBuffer.ts'],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/hooks/useIncidentCapture.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. `enableTracing` had no production caller — the ring was armed only from the DEV bridge and the CLI — so on the deployed build the causal trail could never be turned on at all. The Settings → Trouble toggle is that caller, and `incidentBundle.traces` is the reader. The buffer itself is untouched (358 importers) and stays off by default: `emitTrace` evicts with `shift()` plus a full renumber, which a saturated tick pays per evicted entry, so the toggle names its cost rather than hiding it. Both arms are pinned in `incidentBundle.test.ts`, each setting the module-scope flag itself rather than inheriting a sibling file's — the armed arm emits and asserts a non-empty ring (confirming the arm perturbed something), the disarmed arm asserts the section is the sentence *recording was off* and carries no `entries` key, because an empty array would read as *nothing happened*.",
+    },
+  },
+  {
+    id: 'active-ui-state-to-incident-bundle',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'What the player had open when the world looked wrong is half the question; the bundle carries the same record the debug bridge serves, so the two can never disagree.',
+    mechanism: {
+      kind: 'function',
+      // The record crosses the boundary as a value, not as a call: `GameView`
+      // composes it and the consumers receive it typed. `IncidentUIState` is the
+      // symbol that actually appears on the reading side — declaring only the
+      // composer's own name would name a symbol no consumer contains, which is
+      // how a row passes review and fails the mechanical check.
+      symbols: ['getDebugActiveUIState', 'getDebugOpenModals', 'IncidentUIState', 'getActiveUIState'],
+      module: 'src/components/Game/GameView.tsx',
+    },
+    writeSites: ['src/components/Game/GameView.tsx'],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/hooks/useIncidentCapture.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. The composer already sat outside the `import.meta.env.DEV` guard — only its bridge *registration* is dev-gated — so the production capture path passes the very same callback the bridge registers, rather than a second composer that would drift. `incidentBundle`'s `ui` section stores it and `focus` reads its three selection ids to choose the neighbourhood to dump. Non-vacuous by `incidentBundle.test.ts`: the focus arm asserts the selected actor's neighbours resolve through `getAllEdgesForNode`, and a separate arm asserts a selection id that resolves to no node is marked `missing: true` rather than dropped — a row silently omitted is the failure this section exists to make visible.",
+    },
+  },
+  {
+    id: 'encounter-timeline-to-incident-bundle',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'The mortals the player watches are the ones they will ask about, so each one arrives with the tail of what actually happened to them.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['getTimeline', 'getTrackedAgentIds'],
+      module: 'src/engine/encounterTimeline.ts',
+    },
+    writeSites: [
+      'src/engine/encounterTimeline.ts',
+      'src/engine/encounter.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    readSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/Game/debug/EncounterCacheView.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. The timeline accumulates in production with no DEV gate at all (`encounter.ts`, `orchestrator.ts`, `phaseAgentDecision.ts`) and its only reader was the DEV-only `EncounterCacheView`. `incidentBundle`'s `focus` section is the production reader, taking the last `INCIDENT_TIMELINE_TAIL` entries for the selection and for every followed mortal, plus `getTrackedAgentIds()` so a reader can see who else has history to ask for. The formatter/trigger split this subsystem already used is preserved — the bundle takes the raw events, not the TSV.",
+    },
+  },
+  {
+    id: 'incident-bundle-to-download',
+    producerSystem: DIAGNOSTICS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'The point of the whole chain: one button on the deployed build turns everything above into a file small enough to attach to a message.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildIncidentBundle', 'serializeIncidentBundle', 'downloadTextFile', 'incidentBundleFilename'],
+      module: 'src/engine/incidentBundle.ts',
+    },
+    writeSites: [
+      'src/engine/incidentBundle.ts',
+      'src/components/shared/downloadTextFile.ts',
+    ],
+    readSites: [
+      'src/components/Game/hooks/useIncidentCapture.ts',
+      'src/components/Game/SettingsPanel.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1134. `useIncidentCapture` builds, serializes, downloads and toasts; `SettingsPanel`'s Trouble section is the control, wired through `GameViewTopBar`, and `__DEBUG.buildIncidentBundle()` calls the same assembler so the dev proof and the production path cannot diverge. The serializer is the load-bearing half: `JSON.stringify(state)` does not throw, it returns plausible JSON with the graph as `{\"nodes\":{},…}` and every state `Map` as `{}`, so the bundle is assembled by hand from public getters and the manifest self-check compares collections walked against collections rewritten, tagging `serialization.incomplete` rather than shipping silent. Non-vacuous by `incidentBundle.test.ts`, whose round-trip arm asserts *both* sides against the same live objects — that naive stringify really does lose the `visibilityMap` and the graph, and that the bundle really does carry them — so it fails against the trap rather than against a fixture that never had it. `downloadTextFile` also replaced the two duplicated inline Blob copies in `EncounterCacheView`.",
+    },
+  },
+
   // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
   // Audit-on-touch: this subsystem was ⚪ UNAUDITED until THR-786 unified the six
   // trait-predicate read sites. These two rows cover the predicate boundary only;
@@ -1004,20 +1166,25 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',
     intent:
-      'The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts.',
+      'The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. THR-1002 extended the read to the toast tier: the first sentence of that overview is now the toast message, where the toast previously discarded it and said `Your <internal template name> <band>.` — the payload check this row recorded as unverified, on ~93% of casts.',
     ulTerms: ['Aftermath'],
-    mechanism: { kind: 'function', symbols: ['processPlayerReceipts', 'aftermathSummary'], module: 'src/engine/playerReceipts.ts' },
+    mechanism: { kind: 'function', symbols: ['processPlayerReceipts', 'aftermathSummary', 'receiptToastSentence'], module: 'src/engine/playerReceipts.ts' },
     writeSites: ['src/engine/unifiedActionResolution.ts'],
-    readSites: ['src/engine/playerReceipts.ts'],
+    readSites: ['src/engine/playerReceipts.ts', 'src/data/receipt-content.ts'],
   },
   {
     id: 'player-action-receipts-queue',
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',
-    intent: 'A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue.',
-    mechanism: { kind: 'node-prop', symbols: ['playerActionReceipts'] },
+    intent:
+      'A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast\'s fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed.',
+    mechanism: { kind: 'node-prop', symbols: ['playerActionReceipts', 'resolvedBands'] },
     writeSites: ['src/engine/playerReceipts.ts'],
-    readSites: ['src/components/Game/GameView.tsx', 'src/debug-bridge.ts'],
+    readSites: [
+      'src/components/Game/GameView.tsx',
+      'src/components/Game/ActionDrawer.tsx',
+      'src/debug-bridge.ts',
+    ],
   },
   {
     id: 'receipt-event-band-toast',
@@ -1031,6 +1198,34 @@ export const CONTRACTS: readonly Contract[] = [
 
   // ── Player-cast outcome variance (THR-728) ────────────────────────────────
   {
+    id: 'wheel-slot-card-face',
+    producerSystem: ENCOUNTERS,
+    // The registry classifies by domain rather than by layer, and every other
+    // UI-consuming row is filed under the domain it serves. The action card is
+    // where a god decides to spend essence, so this is the divine economy's
+    // surface — not a "UI" subsystem, which the registry deliberately has none of.
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A `WheelSlot` is read as a `CardFaceModel` by `actionCardModel`, so the action card and the nudge card render the same primitive (THR-1002). Law 28: the registry row\'s rendering *is* this face. The slot carries the words — `crudType`, `reach`, `scaleWord`, `upkeepWord`, `forecastTier`, `templateId` — and the adapter chooses vocabulary for them; it never computes a fact of its own. Every numeral the retired card printed (cost badge, `{n} hex`, `{X}% risk`, the per-tick rate) now lives behind the designer-view line.',
+    ulTerms: ['UnifiedActionTemplate'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['actionCardModel', 'CardFaceModel'],
+      module: 'src/components/Game/actionCardModel.ts',
+    },
+    writeSites: ['src/components/Game/actionCardModel.ts'],
+    readSites: [
+      'src/components/Game/ActionCard.tsx',
+      'src/components/shared/CardFace.tsx',
+      'src/components/StyleGuide/StyleGuide.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        'THR-1002: `getTargetActionSlots` populates `templateId`, `crudType` and the hardest step\'s `reach` alongside the three THR-1002 readout fields; `ActionCard` renders `CardFace` through `actionCardModel` and has no layout of its own. `ActionCard.test.tsx` asserts no digit appears anywhere on a fully-populated card and no `[A-Z]{3,} · [A-Z]{3,}` type line survives; `ActionDrawer.test.tsx` asserts the same over the whole drawer plus no `\\p{Extended_Pictographic}`. `NudgeCard.snapshot.test.tsx` (written before the extraction) still passes unchanged, which is the proof the nudge face was not moved to accommodate the action face.',
+    },
+  },
+  {
     id: 'authored-step-difficulty-player-resolution',
     producerSystem: ENCOUNTERS,
     consumerSystem: ENCOUNTERS,
@@ -1039,11 +1234,15 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Domain Capability', 'UnifiedActionTemplate'],
     mechanism: { kind: 'function', symbols: ['resolveUncontestedStep', 'difficulty'], module: 'src/engine/unifiedActionResolution.ts' },
     writeSites: ['src/data/unified-action-templates.ts'],
-    readSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/targetActions.ts'],
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/targetActions.ts',
+      'src/engine/playerCastReadout.ts',
+    ],
     verifiedLive: {
-      date: '2026-07-25',
+      date: '2026-09-10',
       evidence:
-        'THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === \'player\'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card\'s risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: \'target_tier_scaled\'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target\'s tier. Both sites resolve through the same helper, so the card\'s risk line cannot drift from the roll; a step without the marker is returned unchanged.',
+        'THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === \'player\'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card\'s risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: \'target_tier_scaled\'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target\'s tier. Both sites resolve through the same helper, so the card\'s risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card\'s read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god\'s local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.',
     },
   },
 
@@ -2271,6 +2470,57 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'cell-completion-renews-control-stance',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'A hold is kept by working it (THR-1287). The band and the cell variant an undertaking completion already carries decide whether the holder’s control stance renews — so the neglect loop, which before this had no counterparty at all and could only ever increment, is finally something a mortal can push back against.',
+    ulTerms: ['Outcome Band'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'renewControlStance', 'CONTROL_RENEWING_VARIANTS',
+        'STRATEGIC_CONTROL_RENEWAL_MIN_BAND', 'STRATEGIC_CONTROL_RENEWAL_RECOVERY',
+        // The two numbers the renewal writes are the contract's shared surface — they
+        // are what every consumer below actually reads off the stance record.
+        'neglectTicks', 'degradation',
+      ],
+      module: 'src/engine/strategicActionLifecycle.ts',
+    },
+    writeSites: ['src/engine/strategicActionLifecycle.ts'],
+    readSites: [
+      // The neglect loop is the consumer that matters — it walks the renewed array in
+      // the same pass, which is what makes a reset survive the tick that produced it.
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/strategicTelemetry.ts',
+      'src/engine/strategicPresentation.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        'THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.',
+    },
+  },
+  {
+    id: 'seize-retires-losers-control-stance',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['applySeizeRetirement', 'retireControl', 'transferHolding', 'controls', 'active'],
+      module: 'src/engine/strategicActionLifecycle.ts',
+    },
+    writeSites: ['src/engine/strategicActionLifecycle.ts'],
+    readSites: ['src/engine/strategicActionLifecycle.ts', 'src/engine/strategicTelemetry.ts'],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        'THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.',
+    },
+  },
+  {
     id: 'undertakings-reach-the-player',
     producerSystem: 'Strategic Projects & Control',
     consumerSystem: NARRATIVE,
@@ -3140,9 +3390,9 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/Game/tabs/OverviewTab.tsx',
     ],
     verifiedLive: {
-      date: '2026-09-08',
+      date: '2026-09-10',
       evidence:
-        "THR-1439. `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, inherited from the freehold row:** a mortal-held Location is rare early (a harvest waits on a `claim × Location`), so the live population is thin at low tick counts; that is a supply fact about the producing cell, not a defect in this row.",
+        "**THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.",
     },
   },
   {

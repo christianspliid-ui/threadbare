@@ -366,7 +366,12 @@ export const FactionSheet = React.memo(function FactionSheet({
                           )}
                         </span>
                         <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-                          priority {(summary.activeAmbition.priority * 100).toFixed(0)}% · {summary.activeAmbition.status}
+                          {/* THR-1451 (Class C): `priority 62%` is a unitless proportion with
+                              nothing else on this sheet rendering it, and no ladder of its own
+                              — so the ruling's second limb applies and the number is dropped
+                              rather than translated. The status word beside it is what the
+                              player acts on; the priority was a sort key wearing a readout. */}
+                          {summary.activeAmbition.status}
                           {summary.activeAmbition.kindled ? ' · kindled' : ''}
                         </span>
                       </div>

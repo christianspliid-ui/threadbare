@@ -39,7 +39,6 @@
 | `encounter` | A live encounter or action, by its runtime id. |
 | `journey` | A journey a traveller is on. |
 | `receipt` | A divine receipt — the record of one intervention. |
-| `codex` | A codex entry. Reserved: nothing can route here yet (THR-1315). |
 
 ### Coverage — which vocabulary speaks which kind
 
@@ -59,7 +58,6 @@
 | `encounter` | ✓ | · | · | · | · | ✓ | · |
 | `journey` | · | · | · | · | · | ✓ | · |
 | `receipt` | · | · | · | · | · | ✓ | · |
-| `codex` | · | · | · | · | · | · | · |
 
 **Totals.** 41 union members across 7 vocabularies are `WorldRefKind`s; 3 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
 
@@ -81,7 +79,6 @@ Members: `agent`, `avatar`, `location`, `sublocation`, `encounter`, `faction`, `
 - **`attachment`** — Deliberate (THR-1120). An attachment's art lives on its template node and `AttachmentDetailView` draws it; `resolveIcon` skips the kind rather than resolving a wrong tile. Adding it here would *create* the bug the union prevents at compile time.
 - **`journey`** — An event, not an entity with a portrait.
 - **`receipt`** — A document, not an entity with a portrait.
-- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
 
 #### `EncounterAftermathConceptRef.visualKind`
 
@@ -97,7 +94,6 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 - **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
 - **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
 - **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
-- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
 
 #### `EncounterStageNarrativeSegment.entityKind`
 
@@ -113,7 +109,6 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 - **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
 - **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
 - **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
-- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
 
 #### `ChangeItem.nounEntityKind`
 
@@ -129,7 +124,6 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 - **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
 - **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
 - **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
-- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
 
 #### `NarrativeSegmentRefLike.entityKind`
 
@@ -145,7 +139,6 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 - **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
 - **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
 - **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
-- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
 
 #### `NavigationTarget`
 
@@ -160,7 +153,6 @@ Members: `agent`, `encounter`, `hex`, `location`, `faction`, `journey`, `receipt
 - **`attachment`** — `AttachmentDetailView` opens from the bearer, not from a navigation target.
 - **`companion`** — Read on the company readout, which opens from a member.
 - **`army`** — Read on the war readout, which opens from the map rather than by reference.
-- **`codex`** — Reserved (THR-1315). `?view=codex` is a full-page swap that tears down the running simulation, so there is no destination a link may open. `toNavigationTarget` returns `undefined`, which is the fail-soft every unroutable kind takes (NFP #4, Law 21).
 
 #### `EntityNoticeAnchorKind`
 
@@ -180,7 +172,6 @@ Members: `agent`, `faction`
 - **`encounter`** — Encounters surface as their own notifications and tug badges, not as a notice waiting on a row.
 - **`journey`** — Surfaces on the traveller's row, so the notice anchors to the `agent`.
 - **`receipt`** — Divine receipts have their own surface; a notice would double-report them.
-- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
 
 **The four chip/segment unions are one union spelled four times** — `EncounterAftermathConceptRef.visualKind`, the segment's `entityKind`, `ChangeItem.nounEntityKind` and the adapter's mirror — and the generator fails if they diverge. Three of them already said so in a doc comment and nothing checked it; a copy that claims to be pinned and is not is worse than an unclaimed one, because a reader stops looking. **Change all four together.**
 

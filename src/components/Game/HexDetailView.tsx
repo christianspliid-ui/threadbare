@@ -8,6 +8,7 @@ import { SphereIcon } from '../shared/SphereIcon';
 import { EntityVisual } from '../shared/EntityVisual';
 import { ListRow } from '../shared/ListRow';
 import { Tooltip } from '../shared/Tooltip';
+import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../data/geo-word-bands';
 
 /**
  * How many locations / agents list before the row collapses into a count.
@@ -408,30 +409,6 @@ function dangerLabel(level: number): string {
   return 'Extreme';
 }
 
-/**
- * Geographic word bands (UI Law 13 — no percentages on any mortal-facing
- * surface). Elevation, temperature and moisture arrived here as
- * `${Math.round(v * 100)}%`; the number stays in `tile.geoParams` and the
- * designer view, and the player reads the land instead.
- *
- * NFP #1: five bands, one table each, edited without touching logic.
- */
-type GeoBand = readonly [threshold: number, word: string];
-
-const ELEVATION_WORDS: readonly GeoBand[] = [
-  [0.2, 'Lowland'], [0.4, 'Rolling'], [0.6, 'Upland'], [0.8, 'Highland'], [1.01, 'Alpine'],
-];
-const TEMPERATURE_WORDS: readonly GeoBand[] = [
-  [0.2, 'Frozen'], [0.4, 'Cold'], [0.6, 'Temperate'], [0.8, 'Warm'], [1.01, 'Scorching'],
-];
-const MOISTURE_WORDS: readonly GeoBand[] = [
-  [0.2, 'Arid'], [0.4, 'Dry'], [0.6, 'Moderate'], [0.8, 'Damp'], [1.01, 'Drenched'],
-];
-
-/** Band a 0–1 geo parameter to its word. Out-of-range input clamps to the ends. */
-function geoWord(value: number, bands: readonly GeoBand[]): string {
-  for (const [threshold, word] of bands) {
-    if (value < threshold) return word;
-  }
-  return bands[bands.length - 1][1];
-}
+// THR-1451 moved the geo word ladders to `src/data/geo-word-bands.ts` so the hex
+// tooltip and `InfoPanel` — which were still drawing this quantity as a raw
+// percentage — read from the same table this view already did (UI Law 3).

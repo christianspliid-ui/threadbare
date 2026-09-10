@@ -167,7 +167,12 @@ describe('AgentWheel', () => {
       expect(coincidenceSlot!.essenceCost).toBe(4);
     });
 
-    it('includes essenceCost and detectionRisk from INTERVENTION_DEFINITIONS', () => {
+    // THR-1002: `detectionRisk` left `WheelSlot`. Its authored values are alive and
+    // still asserted in `dream.test.ts`, where `computeDetection` actually reads them
+    // (reached in production via useAgentInteraction → executeIntervention); what
+    // retired is the *slot's* copy, which no live builder ever populated and no
+    // surface may render, since a percentage on the player's face breaks Law 13.
+    it('includes essenceCost from INTERVENTION_DEFINITIONS', () => {
       pool.mind = 10;
       const slots = getAgentWheelSlots({
         tier: 1,
@@ -176,7 +181,6 @@ describe('AgentWheel', () => {
       });
       const dreamSlot = slots.find((s) => s.id === 'dream');
       expect(dreamSlot!.essenceCost).toBe(1); // dream base cost
-      expect(dreamSlot!.detectionRisk).toBe(0.1); // dream detection risk
     });
 
     it('sets sphere to primarySphere when it is in affinities', () => {
