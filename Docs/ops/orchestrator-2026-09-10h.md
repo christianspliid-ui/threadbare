@@ -4,14 +4,14 @@ run: 2026-09-10h
 promoted: 0
 filed: 0
 resolved: 0
-newFindings: 1
+newFindings: 2
 needsChristian: true
 ---
 # Orchestrator — 2026-09-10 (run h, ~10:32–10:50Z)
 
-**The builder is working and the board is healthy on the build side.** [THR-1446](https://linear.app/threadbare/issue/THR-1446) merged at 09:52Z ([PR #1875](https://github.com/christianspliid-ui/threadbare/pull/1875)) and [THR-1450](https://linear.app/threadbare/issue/THR-1450) was claimed at 10:02Z with [PR #1876](https://github.com/christianspliid-ui/threadbare/pull/1876) already open. Two moves in eighty minutes, both the healthy kind. This lane promoted nothing, staged nothing and wrote nothing to Linear.
+**The builder is working and the board is healthy on the build side.** [THR-1446](https://linear.app/threadbare/issue/THR-1446) merged at 09:52Z ([PR #1875](https://github.com/christianspliid-ui/threadbare/pull/1875)) and [THR-1450](https://linear.app/threadbare/issue/THR-1450) was claimed at 10:02Z with [PR #1876](https://github.com/christianspliid-ui/threadbare/pull/1876) already open. Two moves in eighty minutes, both the healthy kind. This lane promoted nothing and staged nothing; its only Linear writes were **two evidence comments, no state changes**.
 
-With promotion barred and staging barred for the eighth consecutive run, the judgement budget went to a column this lane's prescribed scan never reads — `Idea` — and it found a queue of Christian-gated decisions that no lane has ever put in front of him. That is this run's one finding, and it is the reason this report exists rather than being skipped.
+With promotion barred and staging barred for the eighth consecutive run, the judgement budget went to a column this lane's prescribed scan never reads — `Idea` — and it came back with two findings, both consequences of the same blind spot. One is a queue of Christian-gated decisions nobody has ever shown him. The other is two tickets that were finished weeks ago and never closed.
 
 ## Needs Christian
 
@@ -47,6 +47,8 @@ Say **"delegate it"** and I will route that as a rule change; say **"send me the
 
 **Run g's second question has dissolved, as predicted.** The batch-3 session asked whether to wait for a fix to land. [That fix](https://linear.app/threadbare/issue/THR-1446) merged at 09:52Z. Nothing needed from you.
 
+**Nothing else needs you that did not already.** Two jobs turned out to be finished-but-never-closed; that is bookkeeping and it is handled — see § T3 finding 2. No decision of yours is involved.
+
 **Still open, deliberately not re-asked:** the [Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)'s ten questions (all the legwork finished a week ago), [THR-1198](https://linear.app/threadbare/issue/THR-1198) (whose story a run tells), the [five scene images](https://linear.app/threadbare/issue/THR-876) awaiting a yes/no, the [attended screenshot sweep](https://linear.app/threadbare/issue/THR-1133), and [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) — whether you mean to run the traits-wave-2 design pass yourself. That last one has sat in the design column since 15 August and is still the single reason no new design job can be queued.
 
 **Nothing was padded.** The same eight tidying jobs were left alone for the eighth run running.
@@ -55,9 +57,11 @@ Say **"delegate it"** and I will route that as a rule change; say **"send me the
 
 **Promoted: 0. Filed: 0. Held: 0. Blockers cleared: 0.** Promotion ceiling never engaged — shelf at 5, far below the 15-item backed-up threshold.
 
-Board at scan (~10:33Z): **34 `Todo`** (15 `wayfinder:*`, skipped unconditionally) · **5 `Ready for Dev`**, all five carrying `Deferral` · **2 `In Dev`** ([THR-1450](https://linear.app/threadbare/issue/THR-1450) claimed + assigned + PR open; [THR-1130](https://linear.app/threadbare/issue/THR-1130) `Parked`, unassigned) · **1 `In Design`** ([THR-790](https://linear.app/threadbare/issue/THR-790)) · **78 `Idea`** (scanned this run — see the finding).
+Board at scan (~10:33Z): **34 `Todo`** (15 `wayfinder:*`, skipped unconditionally) · **5 `Ready for Dev`**, all five carrying `Deferral` · **2 `In Dev`** ([THR-1450](https://linear.app/threadbare/issue/THR-1450) claimed + assigned + PR open; [THR-1130](https://linear.app/threadbare/issue/THR-1130) `Parked`, unassigned) · **1 `In Design`** ([THR-790](https://linear.app/threadbare/issue/THR-790)) · **78 `Idea`** · **0 `Implementation Planning`**.
 
-Precheck fingerprint: `rg=no git=yes test=1.62s cu=unknown nm=session:healthy linear=nokey freshness=current`. `nokey` is the credential-free probe reporting reachability, not a failure — and the MCP connector answered all sixteen calls this run, so the board was never dark.
+**Four state-filtered calls, not the prescribed two.** T1 § *Scan* names only `Todo` and `Ready for Dev`; `Idea` and `Implementation Planning` were added by hand, as the standing note on this gap requires. `Implementation Planning` came back empty, so nothing was missed there — but the `Idea` call is where both of this run's findings came from, and it is the call the skill does not make.
+
+Precheck fingerprint: `rg=no git=yes test=1.62s cu=unknown nm=session:healthy linear=nokey freshness=current`. `nokey` is the credential-free probe reporting reachability, not a failure — and the MCP connector answered all twenty-two calls this run, so the board was never dark.
 
 **The shelf lost one and gained none, by the healthy exit.** [THR-1450](https://linear.app/threadbare/issue/THR-1450) left `Ready for Dev` by being *claimed* at 10:02:26Z. The five that remain all carry `Deferral`, so **program work on the shelf is 0** for the third consecutive hour.
 
@@ -65,9 +69,21 @@ Precheck fingerprint: `rg=no git=yes test=1.62s cu=unknown nm=session:healthy li
 
 ### Candidates — carried, with one correction
 
-Nine non-wayfinder candidates were re-read in full. **Every verdict matches [run g](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-10g.md)'s table**, which is not restated here. Seven of the nine still decline as *wrong destination* — the ticket wants a design pass, not an executor.
+Nine non-wayfinder `Todo` candidates were re-read in full. **Every verdict matches [run g](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-10g.md)'s table**, which is not restated here. Seven of the nine still decline as *wrong destination* — the ticket wants a design pass, not an executor.
 
 **One line in that table needs correcting.** [THR-1318](https://linear.app/threadbare/issue/THR-1318) (the lens overlay engine) was recorded as *"direction fork **+ soft gate**"*, the soft gate being its body's *"better decided after"* [THR-1213](https://linear.app/threadbare/issue/THR-1213)'s content pass. **That gate is discharged:** THR-1213 went `Done` on 2026-08-28T08:36Z, its slice 4 shipping *"157 scenes learn what they are about"* ([PR #1686](https://github.com/christianspliid-ui/threadbare/pull/1686)) — which is precisely the `emotionalRegister` sparsity the gate was waiting on. The **direction-fork half stands unchanged** and is the whole of the decline now: activating it *"changes what the player reads at the most load-bearing beat in the game."* Recorded so the next sweep does not carry a gate that cleared thirteen days ago.
+
+**`Idea`-column candidates, by the standing predicate** (*a freshly-filed `Deferral` in an active project*, not the ~50-item ungroomed tail):
+
+| Ticket | Verdict | Evidence |
+|---|---|---|
+| [THR-1293](https://linear.app/threadbare/issue/THR-1293) | **Already satisfied** — finding 2 | Contract row 🟢 LIVE, deferral dropped; evidence commented on the ticket |
+| [THR-1295](https://linear.app/threadbare/issue/THR-1295) | **Already satisfied** — finding 2 | Absorbed by THR-1309 (`Done` 08-28); evidence commented on the ticket |
+| [THR-1294](https://linear.app/threadbare/issue/THR-1294) | **Unmet dependency — correctly held** | Five live `TODO(THR-1294)` markers across the strategic packs; its own test note says *"nothing walks an agent to its stage yet"*. Waits on doc 3's binder |
+| [THR-1419](https://linear.app/threadbare/issue/THR-1419) | **Attended** | An attended pixel pass; not executor work |
+| Six `UL-proposal`s | **Human gate** — finding 1 | Approval is human-only by rule; surfaced in § Needs Christian |
+
+**No prior run's own hold was found stranded in `Idea`.** Neither THR-1293 nor THR-1295 carries a native `blockedBy` with a now-cleared release condition — the pattern that cost ~3h32m on 2026-08-28 did not recur this run.
 
 **Standing declines — carried, not re-derived:** THR-1380 (satisfied upstream; re-verified this run by reading the shard, evidence already on the ticket, no lane may close it) · THR-1301 · THR-1088 · THR-984 · THR-1189 · THR-1148 · THR-1218 (blocker THR-1043 still `Todo`) · THR-1026 · THR-964 · THR-1198 · THR-716 · THR-1381 · THR-1156 · THR-789 · THR-1155 · THR-1043 · THR-870 · THR-791 · 15 `wayfinder:*` · THR-1133 (attended).
 
@@ -103,7 +119,7 @@ Non-`Deferral` items in `Ready for Dev` = **0**, against `ORCH_PROGRAM_WORK_FLOO
 
 **Twenty-six days in column.** Its `updatedAt` reads 08:34:46Z this morning, but `stateHistory` shows no state change since it entered on 2026-08-15 and the touch shares a timestamp with THR-1448 to within 200ms — a relation write, not design progress. The predicate reads *activity*, and activity is not the same thing. **Nothing was changed here**: applying `Parked` or demoting is the grooming lane's remit and Christian's call.
 
-**T2's candidate queue, strongest first:** [THR-1053](https://linear.app/threadbare/issue/THR-1053) (unchanged at the top — the only candidate blocking finished work), then [THR-1448](https://linear.app/threadbare/issue/THR-1448) (director direction from this morning, sequencing gate discharged as of 07:44Z), THR-1274, THR-1393, THR-1348, THR-1026, THR-964. **Four of those seven were declined by T1 this very run for wanting the tier that cannot open.**
+**T2's candidate queue, strongest first:** [THR-1053](https://linear.app/threadbare/issue/THR-1053) (unchanged at the top — the only candidate blocking finished work), then [THR-1448](https://linear.app/threadbare/issue/THR-1448) (director direction from this morning, sequencing gate discharged as of 07:44Z), THR-1274, THR-1393, THR-1348, THR-1026, THR-964.
 
 ## T3 — architecture health
 
@@ -115,24 +131,39 @@ Non-`Deferral` items in `Ready for Dev` = **0**, against `ORCH_PROGRAM_WORK_FLOO
 
 **Redundancy: not assessed this sweep.** [Run g](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-10g.md) ran the judgement pass an hour ago and found the Companies `phaseMatch` regex defect; re-running it this hour would re-list one finding, which is the dump this tier forbids. Stated plainly rather than implied — the pass did not happen, and no reachability result is being dressed as one.
 
-### Finding 1 (new) — the `Idea` column holds six Christian-gated decisions, and this lane's scan cannot see it
+**Both findings below come from one cause:** the `Idea` column is outside this lane's prescribed scan, so whatever lands there is unseen until the grooming lane promotes it — and grooming correctly does not promote either a proposal awaiting a human or a ticket that is already finished. Two different things therefore accumulate in the same blind spot.
 
-**The gap is structural, in this lane's own procedure.** T1's § *Scan* prescribes exactly two calls — `Todo` and `Ready for Dev` — while T1's § *Parse* says *"for each `Todo` / `Idea` candidate."* The scan does not implement the second half. So **anything filed straight into `Idea` is invisible to this lane** until the grooming lane promotes it, and grooming correctly does *not* promote a proposal that needs a human's approval rather than a developer.
+### Finding 1 (new) — six Christian-gated decisions are queued where nothing can show them to him
 
-The result is a queue with a gate only Christian can open and no surface that shows it to him. **Measured, not asserted:**
+**The gap is structural, in this lane's own procedure.** T1 § *Scan* prescribes exactly two calls — `Todo` and `Ready for Dev` — while T1 § *Parse* says *"for each `Todo` / `Idea` candidate."* The scan does not implement the second half.
+
+**Measured, not asserted:**
 
 - **Six `UL-proposal` issues sit in `Idea`**: [THR-1449](https://linear.app/threadbare/issue/THR-1449) (today), [THR-1445](https://linear.app/threadbare/issue/THR-1445) (09-09), [THR-1441](https://linear.app/threadbare/issue/THR-1441) (09-08), [THR-1408](https://linear.app/threadbare/issue/THR-1408) (09-04), [THR-1406](https://linear.app/threadbare/issue/THR-1406) (09-03), [THR-633](https://linear.app/threadbare/issue/THR-633) (**2026-07-05 — 67 days**).
 - **Zero of their proposed terms are seated.** Checked by heading grep across all eight shards, not inferred from ticket state. The single hit — `### Cast` in `Encounters.md` — is the **noun** (`supportBindings` viewed as characters, `Status: canonical`); [THR-1445](https://linear.app/threadbare/issue/THR-1445) proposes `cast` as a **verb**, a different sense that would need a disambiguation note against exactly that entry. It is unseated, and the near-collision is the kind of thing the flow exists to arbitrate.
 - **The gate is explicit and human-only.** `Docs/ubiquitous-language/README.md:223` — *"always human-approved, never auto-merged"* — and `Process.md:133` repeats it: *"Approval is always human — no auto-merge."*
 - **Nothing routes them to him.** `Design/briefing.md` on `origin/ops` contains **zero** matches for `UL-proposal` or any of the six ids. `Design/user-actions.md` names THR-1449 once, inside a narration of yesterday's ruling — as a by-product, never as an ask.
-- **This lane has seen them and set them aside.** [Run 09-08g](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-08g.md) listed four of them in one clause — *"UL proposals awaiting arbitration (THR-1441, THR-1408, THR-1406, THR-633) … was not re-opened"* — classifying them as self-declaring from their titles. They *do* self-declare; what nobody did was notice that the arbiter is the one person this report writes to.
-- **A seventh loose end, same class:** the shards carry exactly one `Status: proposed` entry, `Rebuild Road` in `Encounters.md`, which belongs to none of the six — a proposal parked in the glossary itself rather than as a ticket.
+- **This lane has seen them and set them aside.** [Run 09-08g](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-08g.md) listed four in one clause — *"UL proposals awaiting arbitration (THR-1441, THR-1408, THR-1406, THR-633) … was not re-opened"* — classifying them as self-declaring from their titles. They *do* self-declare; what nobody did was notice that the arbiter is the one person this report writes to.
+- **A seventh loose end, same class:** the shards carry exactly one `Status: proposed` entry, `Rebuild Road` in `Encounters.md`, belonging to none of the six — a proposal parked in the glossary itself rather than as a ticket.
 
 **Consequence.** The UL is the terminology authority that wins every disagreement (CLAUDE.md § Session Workflow). An unseated word is a word every agent may use differently, and [THR-1449](https://linear.app/threadbare/issue/THR-1449)'s own body states the live hazard: *hold* and *freehold* "must never be used for each other in player-facing prose" — unenforceable while one of them is not a term.
 
 **Cost/benefit:** costs six yes/no calls in one sitting, or one standing delegation that retires the gate permanently; not fixing it leaves the project's tie-breaking authority accepting new words at roughly one every three days and clearing none, with the drift landing in player-facing prose where it is most expensive to find.
 
-**Surfaced, not filed, and no state written.** Per the process-work throttle, a scheduled lane does not file process tickets — the fix to this lane's own scan is an impediment-log row for the weekly retro to batch, and the six decisions themselves are an ask, which belongs in § *Needs Christian* rather than in a ticket. The two are deliberately separate: **the queue is Christian's to clear; the blind scan is the retro's to fix.**
+### Finding 2 (new) — two tickets are provably finished and were never closed, both with a closing clause that did not fire
+
+Same column, opposite failure: not work waiting to start, but work that finished and left its ticket open. **Both were verified against `origin/main`, and in both cases the repo itself already says the ticket is satisfied** — so the evidence was not inferred from a sibling's PR title, which is the trap this check exists to avoid.
+
+| Ticket | Satisfied by | The clause that did not fire |
+|---|---|---|
+| [THR-1293](https://linear.app/threadbare/issue/THR-1293) — undertaking checkpoints have no player-facing consumer | [THR-1299](https://linear.app/threadbare/issue/THR-1299) slice 3, 2026-09-02 ([PR #1774](https://github.com/christianspliid-ui/threadbare/pull/1774)) | `scripts/interface-contracts.ts:2444`: *"THR-1293's Done-when … is satisfied here and **the ticket is closed by reference in the closeout**."* **8 days open since.** |
+| [THR-1295](https://linear.app/threadbare/issue/THR-1295) — folded found-order has no faction payoff | [THR-1309](https://linear.app/threadbare/issue/THR-1309), `Done` 2026-08-28 ([PR #1690](https://github.com/christianspliid-ui/threadbare/pull/1690)) | THR-1309's own Done-when: *"THR-1295's Done-when satisfied and **that ticket closed against this one**."* **13 days open since.** |
+
+The machine-checkable halves: `undertaking-checkpoint-events` now reads **🟢 LIVE** with an empty remediation column at `Docs/canon/interface-map.generated.md:230` — which *is* THR-1293's third Done-when clause; and THR-1295's `create_group` op is live at `strategicActionLifecycle.ts:1810` with `chartFaction` at `strategicGraphOps.ts:1529`, its Done-when pinned by a named test section (`undertakingT3Kinds.test.ts:445`), and the one surviving `TODO(THR-1295)` string in the tree sitting *inside* the doc comment that narrates the closure.
+
+**Action taken: the evidence is now a comment on each ticket, and no state was changed.** This lane promotes and declines; it does not close. Disposition is a groomer or executor call, and the comment gives whoever takes it a one-read decline instead of this re-derivation. Precedent: run 09-08g did exactly this on THR-1088.
+
+**This is now a six-instance class, and the count is the interesting part.** THR-1301, THR-1380, THR-1441, THR-1088, and now THR-1293 and THR-1295 — all real work that shipped (or became satisfiable) under a sibling id, with no machinery that will ever notice. Run d named the mechanism: *a real dependency between two tickets, stated in prose, that nothing reads*. Both of today's additions sharpen it, because in each case the closing instruction was **written into an acceptance clause** and still did not fire — so the failure is not that nobody wrote the dependency down, it is that a Done-when clause naming another ticket has no executor and no checker. Routed to the weekly retro under the scheduled-lane throttle, not to a ticket from this lane.
 
 ### Standing sub-duties
 
@@ -142,12 +173,15 @@ The result is a queue with a gate only Christian can open and no surface that sh
 
 ### Product vs process — the week
 
-Trailing-week measure **~32 product / 8 process (~80% product)**, up one on the product side: [THR-1446](https://linear.app/threadbare/issue/THR-1446) closed this hour and is engine/content work. This run promoted nothing, so it moves neither side by its own action.
+Trailing-week measure **~32 product / 8 process (~80% product)**, up one on the product side: [THR-1446](https://linear.app/threadbare/issue/THR-1446) closed this hour and is engine/content work. This run promoted nothing, so it moves neither side by its own action. Note the measure is understated by at least two: THR-1293 and THR-1295 are completed product work that no `Done` transition records.
 
-**The headline is unchanged and now has a second face.** Design is the starved tier: seven of nine T1 candidates want a design pass, and the tier that would give them one is held by a single item nobody is working. This run adds that **the same starvation has a Christian-gated twin** — six naming decisions that no lane could even *show* him, because the column they live in is one this lane was never told to read. The build pipeline is fine; the builder claimed work cleanly and has a PR open. What is starved is decision throughput, on both the design and the arbitration side.
+**The headline is unchanged and now has a second face.** Design is the starved tier: seven of nine `Todo` candidates want a design pass, and the tier that would give them one is held by a single item nobody is working. What this run adds is that the same starvation has a **Christian-gated twin** — six naming decisions no lane could even *show* him — and that the blind spot hiding them was also hiding two finished jobs. The build pipeline is fine; the builder claimed work cleanly and has a PR open. What is starved is decision throughput, on both the design and the arbitration side; and the bookkeeping around it is losing track in both directions at once.
 
 ## Escalations
 
 **None raised, none parked.** Discord was not contacted: `keep-work-flowing-cc` owns the doorbell, and the one new ask is a question for Christian that the briefing carries within the hour. Agreed work is not exhausted — there is plenty of it, and it is design-blocked rather than direction-blocked — so the stop-and-ask clause does not fire.
 
-For the retro rather than for Christian: **T1's `Scan` step implements only half its own `Parse` step**, which is what kept the `Idea` column unread for as long as this lane has existed. One impediment-log row; the fix is one additional state-filtered call.
+For the retro rather than for Christian, two rows, related but distinct:
+
+1. **T1's `Scan` step implements only half its own `Parse` step.** `Idea` is unread by prescription, which is what produced both of this run's findings. Fix is one additional state-filtered call (plus `Implementation Planning`, empty today but historically load-bearing). The standing session note already prescribes hand-adding both every run; the skill has not been amended.
+2. **A Done-when clause that names another ticket has no executor.** Six instances now, two of them with the closing instruction written explicitly into an acceptance list. Whatever the fix is, it is not "write the dependency down" — that was already done and it still did not fire.
