@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { DigestEntry } from '../../types/attention';
+import { elapsedLabel } from '../../engine/aftermathWords';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -22,6 +23,13 @@ interface RecentActivityLogProps {
   entries: DigestEntry[];
   lastViewedTick: number;
   maxEntries?: number;
+  /**
+   * Current simulation tick, so each row can read *how long ago* rather than printing
+   * the engine's clock index (THR-1426). Optional because both call sites already pass
+   * `lastViewedTick` and a missing current tick degrades to `less than a day` rather
+   * than throwing — the row still reads as English (NFP #4).
+   */
+  currentTick?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -45,6 +53,7 @@ export const RecentActivityLog = React.memo(function RecentActivityLog({
   entries,
   lastViewedTick,
   maxEntries = MAX_ENTRIES_DEFAULT,
+  currentTick,
 }: RecentActivityLogProps) {
   const sorted = useMemo(
     () => [...entries].sort((a, b) => b.tick - a.tick).slice(0, maxEntries),
@@ -86,17 +95,18 @@ export const RecentActivityLog = React.memo(function RecentActivityLog({
                 color: isMissed ? 'var(--text-muted)' : 'var(--text-primary)',
               }}
             >
-              {/* Tick number */}
+              {/* THR-1426 (Shape 1): was `t{entry.tick}` — the engine's absolute clock index
+                  on a player-facing row (Laws 13/14). The rows are sorted newest-first, so the
+                  index was standing in for *how long ago*; `elapsedLabel` says that outright. */}
               <span
                 style={{
                   color: 'var(--text-tertiary)',
-                  fontVariantNumeric: 'tabular-nums',
                   flexShrink: 0,
-                  minWidth: '2.5rem',
+                  minWidth: '6rem',
                   textAlign: 'right',
                 }}
               >
-                t{entry.tick}
+                {elapsedLabel((currentTick ?? entry.tick) - entry.tick)} ago
               </span>
 
               {/* Reach colour dot */}

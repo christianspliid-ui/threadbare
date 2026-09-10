@@ -69,10 +69,17 @@ export function AttentionPoolIndicator({
 
   const poolDisplay  = attentionState.attentionPool.toFixed(1);
   const capDisplay   = attentionState.attentionCapacity.toFixed(1);
-  const regenDisplay = attentionState.attentionRegen.toFixed(1);
   const stateLabel   = visualState.charAt(0).toUpperCase() + visualState.slice(1);
 
-  const tooltipTitle = `Attention: ${poolDisplay} / ${capDisplay} (${stateLabel})\nRegen: ${regenDisplay}/tick`;
+  /*
+   * THR-1426 (Shape 2): the pool *balance* stays as figures under Law 13's ratified
+   * persistent-chrome exception (2026-08-06, THR-890) — the same carve-out the essence
+   * counter sits under. The exception covers balances, not rates: `regen 1.5/tick` was a
+   * per-tick rate in an engine unit the player never sees named (Law 14), and it is
+   * derivable by watching the bar move, so it is dropped from the bar and this tooltip
+   * rather than banded. The figure stays on the trace.
+   */
+  const tooltipTitle = `Attention: ${poolDisplay} / ${capDisplay} (${stateLabel})`;
 
   return (
     <div
@@ -120,16 +127,6 @@ export function AttentionPoolIndicator({
           </span>
         )}
       </div>
-      <span
-        style={{
-          font: 'var(--type-body-small)',
-          color: 'var(--text-tertiary)',
-          fontStyle: 'italic',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        regen {regenDisplay}/tick
-      </span>
     </div>
   );
 }

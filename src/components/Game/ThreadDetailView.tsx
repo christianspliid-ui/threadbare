@@ -753,7 +753,7 @@ function AgentDetailBody({
         ) : (
           recentEntries.length > 0 && (
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
-              <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+              <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} currentTick={currentTick} />
             </div>
           )
         )}
@@ -833,7 +833,7 @@ function AgentDetailBody({
       ) : (
         recentEntries.length > 0 && (
           <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
-            <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+            <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} currentTick={currentTick} />
           </div>
         )
       )}

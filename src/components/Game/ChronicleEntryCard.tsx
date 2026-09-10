@@ -1,13 +1,16 @@
 import type { ChronicleEntry } from '../../types/narrative';
+import { elapsedLabel } from '../../engine/aftermathWords';
 
 export type ChronicleVoiceMode = 'interleaved' | 'poet' | 'witness';
 
 interface ChronicleEntryCardProps {
   entry: ChronicleEntry;
   voiceMode: ChronicleVoiceMode;
+  /** Current simulation tick, so the heading can read how long ago the entry happened (THR-1426). */
+  currentTick?: number;
 }
 
-export function ChronicleEntryCard({ entry, voiceMode }: ChronicleEntryCardProps) {
+export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleEntryCardProps) {
   const hasPoet = Boolean(entry.poetProse);
   const poetText = entry.poetProse ?? '';
   // Migration shim: legacy prose treated as witness voice when dual-voice fields absent
@@ -37,7 +40,10 @@ export function ChronicleEntryCard({ entry, voiceMode }: ChronicleEntryCardProps
           opacity: 0.7,
         }}
       >
-        t{entry.tick} · {entry.title}
+        {/* THR-1426 (Shape 1): was `t{entry.tick}` — the engine's clock index heading a
+            chronicle entry (Laws 13/14). The chronicle is ordered newest-first, so what the
+            index carried is how long ago the entry happened; `elapsedLabel` says it in days. */}
+        {elapsedLabel((currentTick ?? entry.tick) - entry.tick)} ago · {entry.title}
         {entry.quintessenceDelta != null && (
           <span
             style={{

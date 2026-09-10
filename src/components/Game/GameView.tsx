@@ -4926,7 +4926,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 </div>
                 {gameState.chronicleEntries.length > 0 && (
                   <div style={{ marginTop: 'var(--panel-padding)' }}>
-                    <ChroniclePanel entries={gameState.chronicleEntries} />
+                    <ChroniclePanel entries={gameState.chronicleEntries} currentTick={gameState.tick} />
                   </div>
                 )}
               </div>
@@ -5374,6 +5374,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onClose={() => setMandateDetailOpen(false)}
           definition={gameState.mandateDefinition}
           state={gameState.mandateState}
+          currentTick={gameState.tick}
         />
       )}
 

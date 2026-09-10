@@ -8,7 +8,7 @@ import { Modal } from '../shared/Modal';
 import type { OmenState, ActiveOmen } from '../../types/omen';
 import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
-import { durationLabel } from '../../engine/aftermathWords';
+import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
 
 const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
   doom_echo: '⊘',
@@ -132,8 +132,12 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
               const t = getOmenTemplateById(h.templateId);
               return (
                 <div key={i} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px', display: 'flex', gap: '8px' }}>
-                  <span style={{ color: 'var(--text-muted)', minWidth: '60px' }}>
-                    t{h.startTick}–{h.endTick}
+                  {/* THR-1426 (Shape 1): `t120–168` is a pair of absolute tick indices — the
+                      engine's clock on a player-facing row (Laws 13/14). A past omen's span
+                      is read as when it ended, not as two indices the player must subtract;
+                      `elapsedLabel` gives that in days, the unit the rest of the UI uses. */}
+                  <span style={{ color: 'var(--text-muted)', minWidth: '90px' }}>
+                    {elapsedLabel(currentTick - h.endTick)} ago
                   </span>
                   <span>{t?.name ?? h.templateId}</span>
                 </div>
