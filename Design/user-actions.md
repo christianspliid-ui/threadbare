@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 05:56 local (2026-09-10 03:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 06:54 local (2026-09-10 04:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### 1. Rule on the backlog — one sitting, smallest first
 
-**This is why the queue keeps emptying, and tonight it has a clock on it.** The builder shipped three jobs between 01:56Z and 03:20Z, has two left, and at one job an hour is empty at **06:01Z**. The backlog is forty items deep — every one waiting on a ruling from you, not on effort.
+**This is why the queue keeps emptying, and it has now emptied.** The builder shipped two more jobs overnight and has no game work left; the single item on the shelf is plumbing ([THR-1443](https://linear.app/threadbare/issue/THR-1443)). The backlog is forty items deep — every one waiting on a ruling from you, not on effort.
 
 Roughly fourteen are one- and two-sentence answers, each releasing buildable work. Named so far:
 
@@ -16,6 +16,7 @@ Roughly fourteen are one- and two-sentence answers, each releasing buildable wor
 - [Whether a page you can open mid-game should exist](https://linear.app/threadbare/issue/THR-1315) — no plan doc; an executor would be inventing the surface.
 - [Activate the pressure system or retire it](https://linear.app/threadbare/issue/THR-1318), and [decide whether that is the design](https://linear.app/threadbare/issue/THR-1148).
 - [The consequence draw can deal a hand no authored content can wire](https://linear.app/threadbare/issue/THR-1446) — the author burns their one swap fighting the engine instead of the fiction. Batch 2 spent two against a budget of one.
+- [Should every faction commission ruin expeditions, or only the adventurers' guild?](https://linear.app/threadbare/issue/THR-1026) — reads like a one-line code fix; is actually a question about what the world is like.
 
 **None of these is a design session.** Say **"rule on the backlog"** and they come to you framed in game terms, smallest first.
 
@@ -30,7 +31,7 @@ Yes releases batch 3. Anything short of yes is feedback the line can act on. [Ba
 
 ### 3. The screenshot sweep is unstuck and wants an attended hour — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
-**New this run.** Nine shipped UI changes owe their full-size screen captures — a companions row, the encounter veil's rework, gate duty's card hand, the ascendant bar's tooltips, the premonition portrait, the faction row, a debug tab, a stance word, the aftermath screen. Nineteen captures, one dev-server session.
+Nine shipped UI changes owe their full-size screen captures — a companions row, the encounter veil's rework, gate duty's card hand, the ascendant bar's tooltips, the premonition portrait, the faction row, a debug tab, a stance word, the aftermath screen. Nineteen captures, one dev-server session.
 
 It stalled on **4 September** when an attempt hit three broken debug tools. All three have since been fixed and nobody noticed for six days. Nothing technical blocks it now; it needs you in the session because starting a dev server is your approval to give. It does not feed the builder — it is simply the one job that is ready for an attended hour.
 
@@ -80,8 +81,10 @@ Two shorter 18-hour gaps since then recovered on their own and cost nothing. One
 
 ## Resolved this period
 
-- **2026-09-10 — the card-name clamp released itself and shipped.** [THR-1255](https://linear.app/threadbare/issue/THR-1255) is Done at 03:20Z: nudge card names now clamp at four words instead of six, following the corpus rather than leading it. Its dead mutex was reversed on the record. No input needed.
-- **2026-09-10 — a bug went from filed to shipped in three hours.** [THR-1447](https://linear.app/threadbare/issue/THR-1447) is Done ([PR #1868](https://github.com/christianspliid-ui/threadbare/pull/1868)): an aftermath event's id stopped being unique once the event buffer filled, so two events in the same tick could share one and the second was silently dropped before it reached any screen. Filed 01:28Z, merged 02:31Z.
+- **2026-09-10 — harm stopped outliving the place it happened.** [THR-1444](https://linear.app/threadbare/issue/THR-1444) is Done at 04:32Z: an undertaking's outcome pointed at a location already gone from the world, so the harm landed with no witnesses. No input needed.
+- **2026-09-10 — action cards now speak the encounter cards' language.** [THR-1002](https://linear.app/threadbare/issue/THR-1002) is Done at 01:05Z — one card grammar across both surfaces, and a cast returns a result you can read.
+- **2026-09-10 — the card-name clamp released itself and shipped.** [THR-1255](https://linear.app/threadbare/issue/THR-1255) is Done at 03:20Z: nudge card names now clamp at four words instead of six, following the corpus rather than leading it. Its dead mutex was reversed on the record.
+- **2026-09-10 — a bug went from filed to shipped in three hours.** [THR-1447](https://linear.app/threadbare/issue/THR-1447) is Done ([PR #1868](https://github.com/christianspliid-ui/threadbare/pull/1868)): an aftermath event's id stopped being unique once the event buffer filled, so two events in the same tick could share one and the second was silently dropped before it reached any screen.
 - **2026-09-10 — the incident-capture button shipped.** [THR-1134](https://linear.app/threadbare/issue/THR-1134) is Done. One invited veto sits in the built version (an opt-in *include the whole world* checkbox alongside the small default bundle) — an agent's call unless you say otherwise.
 - **2026-09-09 — batch 2 is built.** [THR-1222](https://linear.app/threadbare/issue/THR-1222) is Done; six encounters composition-complete, gate green 6/6, live-proved 6/6, 37 warnings → 0 ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). Only your two-encounter verdict remains, and it is ask 2 above.
 - **2026-09-09 — batch 2 was approved and ran.** You said *"Batch 2, run the six"*; it shipped the same evening. Six not seven, `shrine_offering` held to batch 3, repair-in-place.

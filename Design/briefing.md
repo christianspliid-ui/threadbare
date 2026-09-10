@@ -1,40 +1,36 @@
 # Briefing
-**Generated:** 2026-09-10 05:56 local (03:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-10 06:54 local (04:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say "rule on the backlog" — the builder runs out of work in about five minutes.** Three jobs shipped tonight between 01:56Z and 03:20Z; two remain, and at one job an hour the shelf is empty at **06:01Z**. The backlog is not empty — it is forty items deep. Every one of them is waiting on a sentence from you, not on effort, so the pile cannot turn itself into work.
+**The builder has run out of game work.** The shelf was predicted empty at 06:01Z; it is empty now, an hour early. One job is left on it — [THR-1443](https://linear.app/threadbare/issue/THR-1443/session-precheck-is-blind-to-linear-so-a-lane-whose-every-invariant-is), which is plumbing, not game. Two more shipped overnight while the last brief was being written: [an undertaking's harm no longer loses the place it happened](https://linear.app/threadbare/issue/THR-1444), and [action cards now speak the encounter cards' vocabulary](https://linear.app/threadbare/issue/THR-1002).
 
-Roughly fourteen are one- and two-sentence rulings, each releasing something buildable. A sample of what is sitting there:
+Nothing is broken and nothing is lost — the builder simply has nothing to pick up next hour. **The backlog is forty deep and every item waits on a ruling from you**, so it cannot turn itself into work.
 
-- [What a Divine Herald is](https://linear.app/threadbare/issue/THR-1195) — three live options; a question about what the thing *is*.
-- [Which Spheres shadow and void belong to](https://linear.app/threadbare/issue/THR-1114) — the ticket forbids the mechanical fix outright.
-- [Whether a toll moves wealth or gets deleted](https://linear.app/threadbare/issue/THR-1189) — who pays, out of what, on what cadence.
-- [Whether the consequence draw may deal a hand no content can wire](https://linear.app/threadbare/issue/THR-1446) — batch 2 spent two swaps against a budget of one.
-
-**This is not a design session.** Say **"rule on the backlog"** and they come to you in game terms, smallest first, in one sitting.
+Say **"rule on the backlog"** and an attended session brings you roughly fourteen short ones in game terms, smallest first — each one releasing buildable work. Full list: [Design/user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md#1-rule-on-the-backlog--one-sitting-smallest-first).
 
 ## Also waiting (8)
 
-- [**Batch 2 — open two encounters and say whether they are worth meeting twice**](https://linear.app/threadbare/issue/THR-1130) — [Ward the Camp](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp) and [Tend to Wounds](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds), the widest tonal gap in the six. Yes releases batch 3.
-- [**The screenshot sweep is unstuck**](https://linear.app/threadbare/issue/THR-1133) — **new.** It has been blocked since 4 September on three broken debug tools; all three are now fixed. Nineteen captures across nine surfaces, one dev-server session with you in it. The one job that is genuinely ready for an attended hour.
-- [**The fight map**](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) — ten questions, all research finished, every one yours. Say *"work the fight map"*.
-- [**Two sketches to react to**](https://linear.app/threadbare/issue/THR-1232) — [twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236); a session builds them, your reaction is the decision.
-- [**Should image spends be gated on you at all?**](https://linear.app/threadbare/issue/THR-876) — the real question behind five quarantined scene plates. Your answer settles every batch after.
-- [**What is a run about?**](https://linear.app/threadbare/issue/THR-1198) — does a run's spine come from what your god remembers, or from a named campaign the world offers?
-- [**Are you still planning Traits wave 2?**](https://linear.app/threadbare/issue/THR-790) — one word. Yes and the asking stops; not getting to it frees a design slot.
-- **Are weekend-long quiet spells normal too?** — you ruled overnight quiet normal; weekends are still unruled, so the probe keeps raising last weekend's 45-hour gap. One word retires the noise.
+- [**Batch 2 — sample the two**](https://linear.app/threadbare/issue/THR-1130) — [Ward the Camp](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp) and [Tend to Wounds](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds); yes releases batch 3. The board's only parked ticket.
+- [**The screenshot sweep wants an attended hour**](https://linear.app/threadbare/issue/THR-1133) — nineteen captures, nine surfaces, one dev-server session. Unblocked since its three broken tools were fixed.
+- [**The fight map**](https://linear.app/threadbare/issue/THR-1258) — ten open questions, all yours, no legwork left. Say *"work the fight map"*.
+- [**Two sketches to react to**](https://linear.app/threadbare/issue/THR-1226) — [twenty spells](https://linear.app/threadbare/issue/THR-1232), [thirty items](https://linear.app/threadbare/issue/THR-1236). A session builds; your reaction is the decision.
+- [**Image credits — gated on you at all?**](https://linear.app/threadbare/issue/THR-876) — five quarantined scene images, and the broader question of who decides an image spend.
+- [**What is a run about?**](https://linear.app/threadbare/issue/THR-1198) — remembrance, or named campaigns. Nothing downstream waits.
+- [**Traits wave 2 — still planning to design it?**](https://linear.app/threadbare/issue/THR-790) — one word either way; *no* frees a design slot.
+- **Are weekend-long quiet spells normal?** — you ruled overnight quiet normal; weekends are still unruled, so the probe keeps raising them.
 
 ## Queue
 
-**Starved — 2 ready, nothing in flight, empty in five minutes.** Both remaining items are small and neither is feature work: [THR-1443](https://linear.app/threadbare/issue/THR-1443) (a lane can't see a Linear outage until it tries to write) and [THR-1444](https://linear.app/threadbare/issue/THR-1444) (an undertaking's harm loses the place it happened). Nothing stale, nothing blocked, no PR waiting to merge.
+**Starved — 1 Ready for Dev**, and it is infrastructure ([THR-1443](https://linear.app/threadbare/issue/THR-1443), Medium). No product work remains for the builder's next pickup.
 
-- **Parked, waiting on you:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) — the batch-2 sample verdict above. Still the only park on the board.
-- **Closed since the last brief:** [THR-1255](https://linear.app/threadbare/issue/THR-1255) at 03:20Z — the card-name clamp followed the corpus down from six words to four.
+- **1 In Dev, parked:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) — held on your batch-2 verdict, which is the second item above. This is a correct park, not a stall.
+- **Nothing stale.** The one ready item was filed yesterday.
+- The orchestrator declined to fill the shelf with the eight housekeeping tickets that would have passed a mechanical check — correct under the standing rule, and recorded as a decision rather than an oversight ([run report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-10c.md)).
 
 ## Health
 
-**Green where it counts.** Site serving the newest commit on `main` (`102ef17e`), CI green, no PR waiting, all 9 scheduled lanes on schedule, tick cost 68 ms/tick (18% *under* the 7-day median of 83). Reaper ran at 05:40.
+All green — site serving the latest commit, CI green on main, all three background jobs and all nine scheduled lanes on schedule, no PRs waiting to merge, tick cost 69 ms/tick (17% under the 7-day median).
 
-- **Heavy simulation tests is red on the latest `main`** (1 h). That suite runs after merge and is deliberately not a merge gate; a follow-up fix is owed by a session, not by you.
-- The lane-silence probe still flags last weekend's 45-hour gap as unexplained — that is the standing weekend question above, not a new fault.
+- *Visibility only, no action:* the lane-silence probe still reports the 44.9h weekend gap (4–6 September) as unruled. Two shorter 18h gaps since then recovered on their own and cost nothing. This is the last item in the also-waiting list.
+- *Executor's, not yours:* the daily architecture sweep found one of its own four detectors passing while a third of it never runs. Logged in the [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-10c.md); the weekly retro is where it gets promoted if it earns a ticket.
