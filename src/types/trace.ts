@@ -486,11 +486,14 @@ export type TraceCategory =
   | 'binding_severed'
   | 'binder_mint'
   // One geography — the Area partition minted at worldgen (THR-1155)
-  | 'area_coverage';
+  | 'area_coverage'
+  // Realms — a nation founded at worldgen (THR-1155)
+  | 'realm_founded';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
   'area_coverage',
+  'realm_founded',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -923,6 +926,26 @@ export interface AreaCoverageTrace extends TraceBase {
   hexes: number;
   /** Land hexes with no Area. Must be 0. */
   unstamped: number;
+}
+
+/**
+ * One Realm founded at worldgen (THR-1155) — one per culture domain.
+ *
+ * `heldLocations` counts the `controls` edges the mint wrote, never *holdings*: that
+ * noun belongs to the `owns` edge (THR-1314), and a Realm does not own its towns, it
+ * holds them. `seatLocationId` is null when the domain seated no settlement at all —
+ * a court with no hall, which the fail-soft table permits and the capital marker skips.
+ */
+export interface RealmFoundedTrace extends TraceBase {
+  category: 'realm_founded';
+  /** The Realm faction node id. */
+  realmId: string;
+  /** The culture whose domain this Realm is. */
+  cultureId: string;
+  /** The Location its court sits in, or null when it holds none. */
+  seatLocationId: string | null;
+  /** How many Locations it holds at tick 0. */
+  heldLocations: number;
 }
 
 // ─── Effect vocabulary activation (THR-1239) ────────────────────────
@@ -3469,6 +3492,7 @@ export type TraceEntry =
   | CacheUpdateTrace
   | EdgeSchemaRefusedTrace
   | AreaCoverageTrace
+  | RealmFoundedTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

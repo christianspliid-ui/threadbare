@@ -43,6 +43,14 @@ import { emitTrace } from './traceBuffer';
 import { hexDistance } from '../lib/hexMath';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
 import { generateRegionName } from './regionNaming';
+import { stampRealmSeat } from './realmSeat';
+import type { DomainRegion } from './regionTypes';
+import type { FactionDefinition } from '../types/faction';
+import {
+  buildRealmDefinition,
+  generateRealmName,
+  REALM_FACTION_CLASS,
+} from '../data/realm-content';
 import { seedLocationResources } from './resourceSeeding';
 import { seedAttachments } from './seedAttachments';
 import { seedGuilds } from './guildSeeding';
@@ -85,7 +93,8 @@ function mulberry32(seed: number): () => number {
 
 /** @deprecated Use AGENT_COUNT_BY_MAP_SIZE from agent-behavior-constants.ts instead */
 export const INDIVIDUAL_COUNT = { min: 8, max: 12 };
-export const FACTION_COUNT = { min: 2, max: 3 };
+// THR-1155: `FACTION_COUNT` retired. The number of Realms is the number of culture
+// domains worldgen seated (2–4), not a roll — a nation exists because a people does.
 /** Location count is now proportional to habitable hexes — see LOCATION_DENSITY */
 export const LOCATION_COUNT = { min: 4, max: 6 }; // legacy fallback only
 /** Fraction of habitable (non-ocean/coastal) hexes that should contain a location */
@@ -164,10 +173,9 @@ const REACH_DOMAINS: ReachDomain[] = [
   'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star',
 ];
 
-const FACTION_NAMES = [
-  'The Iron Covenant', 'The Verdant Circle', 'The Ashen Hand',
-  'The Silver Tide', 'The Obsidian Watch', 'The Gilded Pact',
-];
+// THR-1155: `FACTION_NAMES` retired with the generic-faction mint it named. A Realm
+// carries its domain's name — the same string the map's border label draws — through
+// `generateRealmName` in `src/data/realm-content.ts`.
 
 const ARTIFACT_NAMES = [
   'The Crown of Echoes', 'Griefender', 'The Aegis of Dawn',
@@ -517,6 +525,15 @@ export interface SeedResult {
   cultureIds: string[];
   regionIds: string[];
   historicalCultureIds: string[];
+  /**
+   * The faction definitions this world minted for its Realms (THR-1155), keyed by
+   * `factionDefId`. The caller merges them into `GameState.dynamicFactionDefinitions`
+   * before `publishDynamicFactionDefinitions`, which is the same door
+   * `strategic_found_order` uses for a run-founded order — so `getFactionDefinition`
+   * resolves a Realm exactly as it resolves an authored guild. Never written into the
+   * static `FACTION_DEFINITIONS` catalogue: that map is what the game ships with.
+   */
+  realmDefinitions: Record<string, FactionDefinition>;
 }
 
 // ─── Location Subtype Selection ──────────────────────────────────────
@@ -585,6 +602,14 @@ export function seedWorld(
    * without province capitals to anchor the clusters.
    */
   areaClusters?: RegionCluster[],
+  /**
+   * The culture domains `generateWorld` already grouped (THR-1155). One Realm is minted
+   * per domain, carrying the domain's own name, so the nation in the graph and the
+   * border label on the map are one object rather than two that agree by coincidence.
+   * A caller that has none — every direct-`seedWorld` test — gets the domains derived
+   * here from `provinces` by the same grouping rule, which is where they came from.
+   */
+  domains?: DomainRegion[],
 ): SeedResult {
   const rng = mulberry32(seed + 7919);
   const graph = new WorldGraph();
@@ -1400,47 +1425,119 @@ export function seedWorld(
     cultureIds.push(...generatedCultureIds);
   }
 
-  // ── Factions ─────────────────────────────────────────────
-  const facCount = randomInRange(rng, FACTION_COUNT.min, FACTION_COUNT.max);
-  const usedFacNames = new Set<number>();
+  // ── Realms — a nation is the faction that holds the ground (THR-1155) ────────
+  //
+  // One Realm per culture domain, replacing the two-or-three generically-named
+  // factions this mint used to roll. A Realm is not a new kind of thing: it is an
+  // `actor · actorType: 'faction'` node like any other, distinguished by
+  // `factionClass: 'realm'` and by carrying a *dynamic* faction definition
+  // (`realm.<cultureId>`) minted through the THR-1322 door. That definition is what
+  // makes it act — ambitions, quests, a rank ladder, encounter gates — where the
+  // generic factions were skipped by every one of those systems for having no
+  // `factionDefId` at all.
+  //
+  // **The rng stream shifts here, once, deliberately** (THR-1155 § PRNG callouts): the
+  // count roll and the name roll are gone and the number of Realms is the number of
+  // domains. NFP #3 is *same seed + same inputs → same outputs across runs*, which
+  // holds; stability across code versions is a promise worldgen never made, and a shim
+  // that burned legacy draws to fake it would be a permanent wart with no game meaning.
+  // The seed-42 tick-0 pin is re-taken in the same commit as this change.
+  const realmDefinitions: Record<string, FactionDefinition> = {};
 
-  for (let i = 0; i < facCount; i++) {
-    let nameIdx: number;
-    do { nameIdx = Math.floor(rng() * FACTION_NAMES.length); }
-    while (usedFacNames.has(nameIdx) && usedFacNames.size < FACTION_NAMES.length);
-    usedFacNames.add(nameIdx);
+  // Domains come from `generateWorld` when the caller has them, so the Realm and the
+  // map's border label are one object. A direct-`seedWorld` caller has none; derive
+  // them by the same rule `assignPoliticalRegions` uses — provinces sharing a non-null
+  // `cultureId`, in province order — so both paths mint the same Realms.
+  const effectiveDomains: Array<{ cultureId: string; capitalHex: { col: number; row: number }; name: string }> = [];
+  if (domains && domains.length > 0) {
+    for (const d of domains) {
+      if (!d.cultureId) continue;
+      effectiveDomains.push({ cultureId: d.cultureId, capitalHex: d.capitalHex, name: d.name });
+    }
+  } else if (provinces && provinces.length > 0) {
+    const seen = new Map<string, { capitalHex: { col: number; row: number } }>();
+    for (const province of provinces) {
+      if (!province.cultureId || seen.has(province.cultureId)) continue;
+      seen.set(province.cultureId, { capitalHex: province.capitalHex });
+    }
+    let domainIdx = 0;
+    for (const [cultureId, { capitalHex }] of seen) {
+      const cultureName = pregenCultures?.find(c => c.id === cultureId)?.name;
+      effectiveDomains.push({
+        cultureId,
+        capitalHex,
+        name: generateRealmName(cultureId, seed, domainIdx, cultureName),
+      });
+      domainIdx++;
+    }
+  }
+
+  // A domain whose culture worldgen never registered has no people to be a Realm of.
+  const realmByCulture = new Map<string, string>();
+  for (let i = 0; i < effectiveDomains.length; i++) {
+    const domain = effectiveDomains[i];
+    if (!cultureIds.includes(domain.cultureId)) continue;
+    if (realmByCulture.has(domain.cultureId)) continue;
 
     const id = `faction_${i}`;
+    const definition = buildRealmDefinition({
+      cultureId: domain.cultureId,
+      name: domain.name,
+      reachPreferences: pregenCultures?.find(c => c.id === domain.cultureId)?.identity.reachPreferences,
+    });
+    realmDefinitions[definition.id] = definition;
+
+    // Two draws per Realm, the same two every faction has always taken — the count and
+    // name draws are what left.
     const profile = generateAxiologicalProfile(rng, cosmology);
 
     graph.addNode({
       id,
       type: 'actor',
-      name: FACTION_NAMES[nameIdx],
+      name: domain.name,
       properties: {
         actorType: 'faction',
+        factionDefId: definition.id,
+        factionClass: REALM_FACTION_CLASS,
+        cultureId: domain.cultureId,
+        seatHexCol: domain.capitalHex.col,
+        seatHexRow: domain.capitalHex.row,
         axiologicalProfile: profile,
         domainCapabilities: generateDomainCapabilities(rng),
       },
     });
     factionIds.push(id);
+    realmByCulture.set(domain.cultureId, id);
   }
 
+  // Legacy fallback: a world seeded with no provinces at all (a bare-`seedWorld` test)
+  // has no domains and therefore no Realms. It is a world with no nations, which is a
+  // degraded world and still a world — locations simply go unheld, which is the same
+  // thing `retargetTerritoryByProvince` already produced for an uncultured Location.
+
   // ── Seed graph structures for mandate evaluation ──────────
-  // Give each location 1-2 constructed_by edges (to random factions/individuals later)
-  // and 1 controls edge to the strongest faction at each location
+  // Territory: a Realm holds every Location whose hex its domain covers — written once,
+  // here, by culture rather than by the round-robin this replaced (which handed the
+  // first faction the first location and meant nothing). Locations outside every domain
+  // are held by nobody, and that is the point: wilderness is real.
+  const heldByRealm = new Map<string, string[]>();
   for (let li = 0; li < locationIds.length; li++) {
     const locId = locationIds[li];
-    // Controls: first faction controls first location, etc. (round-robin)
-    if (factionIds.length > 0) {
-      const controllingFaction = factionIds[li % factionIds.length];
+    // Drawn per location whichever way the lookup goes, so the stream does not depend
+    // on how much of the map happened to fall inside a domain.
+    const influence = 0.5 + rng() * 0.3;
+    const holdingRealm = realmByCulture.get(locationCultureMap.get(locId)?.cultureId ?? '');
+    if (holdingRealm) {
       graph.addEdge({
         id: `edge_controls_${li}`,
-        source: controllingFaction,
+        source: holdingRealm,
         target: locId,
         type: 'controls',
-        properties: { influence: 0.5 + rng() * 0.3 },
+        properties: { influence },
       });
+      const held = heldByRealm.get(holdingRealm) ?? [];
+      held.push(locId);
+      heldByRealm.set(holdingRealm, held);
     }
     // Constructed_by: 1-2 structures per location (constructed by factions)
     const structureCount = 1 + Math.floor(rng() * 2);
@@ -1456,6 +1553,28 @@ export function seedWorld(
         });
       }
     }
+  }
+
+  // ── The seat, and the record that a Realm was founded ────────────────────────
+  //
+  // A Realm's seat is the settlement on its domain's capital hex; where the domain
+  // seated no settlement there, the seat is the most town-like Location it holds
+  // (NFP #4 — a court with nowhere to sit is still a court). `stampRealmSeat` owns
+  // that rule for both callers: this mint, and the guild-hall reconciliation pass in
+  // `seedLivingWorld`, which may drop the very edge chosen here.
+  for (const [realmId, heldIds] of heldByRealm) {
+    const realmNode = graph.getNode(realmId);
+    const seatLocationId = stampRealmSeat(graph, realmId);
+
+    emitTrace({
+      category: 'realm_founded',
+      tick: 0,
+      summary: `${realmNode?.name ?? realmId} founded — ${heldIds.length} towns held`,
+      realmId,
+      cultureId: (realmNode?.properties.cultureId as string) ?? 'unknown',
+      seatLocationId,
+      heldLocations: heldIds.length,
+    });
   }
 
   // ── Individuals ──────────────────────────────────────────
@@ -1940,5 +2059,5 @@ export function seedWorld(
     );
   }
 
-  return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
+  return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds, realmDefinitions };
 }

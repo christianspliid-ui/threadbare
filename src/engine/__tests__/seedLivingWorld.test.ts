@@ -72,13 +72,6 @@ function contextFrom(graph: WorldGraph, seed = SEED): LivingWorldContext {
   return { seed, locationIds, individualIds, factionIds, factionDefIds, cultureIds, locationCultureMap };
 }
 
-/** The pre-THR-1437 territory assignment, recomputed from the edge ids the loop stamped. */
-function preplanControlSource(edgeId: string, factionIds: readonly string[]): string | undefined {
-  const match = /^edge_controls_(\d+)$/.exec(edgeId);
-  if (!match || factionIds.length === 0) return undefined;
-  return factionIds[Number(match[1]) % factionIds.length];
-}
-
 function controlsMap(graph: WorldGraph): Map<string, string> {
   const out = new Map<string, string>();
   for (const edge of graph.getEdgesByType('controls')) out.set(edge.id, edge.source);
@@ -198,31 +191,29 @@ describe('seedLivingWorld — counts on a generated small world (THR-1437)', () 
     }
   });
 
-  it('moved at least one cultured Location off the pre-plan round-robin holder', () => {
-    let moved = 0;
-    for (const edge of graph.getEdgesByType('controls')) {
-      const expected = preplanControlSource(edge.id, ctx.factionIds);
-      if (!expected) continue;
-      if (!ctx.locationCultureMap.has(edge.target)) continue;
-      if (edge.source !== expected) moved++;
+  it('holds every cultured Location under its own culture’s Realm (THR-1155)', () => {
+    // Before THR-1155 this asserted that the retarget pass moved a Location off the
+    // round-robin holder worldgen had stamped. There is no round-robin any more: the
+    // Realm mint writes territory by culture in the first place, so what is left to
+    // assert is the invariant the retarget used to reach — and that the pass, run a
+    // second time over its own output, is a fixed point rather than a shuffle.
+    const offenders: string[] = [];
+    for (const [locId, { cultureId }] of ctx.locationCultureMap) {
+      for (const edge of graph.getIncomingEdges(locId, 'controls')) {
+        if (ctx.factionDefIds.includes(edge.source)) continue; // a guild home — its own rule
+        const holderCulture = graph.getNode(edge.source)?.properties.cultureId;
+        if (holderCulture !== undefined && holderCulture !== cultureId) {
+          offenders.push(`${locId}<-${edge.source}`);
+        }
+      }
     }
-    // Locations whose generic edge was dropped as redundant also count as moved.
-    const dropped = ctx.locationIds.filter(id =>
-      ctx.locationCultureMap.has(id)
-      && graph.getIncomingEdges(id, 'controls').every(e => !/^edge_controls_\d+$/.test(e.id))).length;
-    console.log(`[THR-1437] cultured Locations retargeted ${moved} · redundant generic edges dropped ${dropped}`);
-    expect(moved + dropped).toBeGreaterThanOrEqual(1);
-  });
+    expect(offenders).toEqual([]);
 
-  it("'round_robin' mode is inert — the kill switch touches nothing", () => {
     const before = controlsMap(graph);
-    const changed = retargetTerritoryByProvince(graph, ctx, {
-      ...LIVING_WORLD_DEFAULTS,
-      WORLDGEN_TERRITORY_MODE: 'round_robin',
-    });
-    const after = controlsMap(graph);
+    const changed = retargetTerritoryByProvince(graph, ctx, LIVING_WORLD_DEFAULTS);
+    console.log(`[THR-1155] re-running the territory pass moved ${changed} edges`);
     expect(changed).toBe(0);
-    expect([...after.entries()].sort()).toEqual([...before.entries()].sort());
+    expect([...controlsMap(graph).entries()].sort()).toEqual([...before.entries()].sort());
   });
 });
 

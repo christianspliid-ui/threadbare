@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   seedWorld,
   INDIVIDUAL_COUNT,
-  FACTION_COUNT,
   LOCATION_COUNT,
   LOCATION_DENSITY,
   ARTIFACT_COUNT,
@@ -41,7 +40,11 @@ describe('seedWorld', () => {
     // On tiny 10×10 maps, agent count may be below INDIVIDUAL_COUNT.min due to
     // spacing constraints and PRNG sequence. Just verify we get some agents.
     expect(result.individualIds.length).toBeGreaterThanOrEqual(1);
-    expect(result.factionIds.length).toBeGreaterThanOrEqual(FACTION_COUNT.min);
+    // THR-1155: a bare-`seedWorld` call passes no provinces, so there are no culture
+    // domains and therefore no Realms. That is the honest answer — a world with no
+    // nations — and it is what `factionIds` now reports; the Realm mint is asserted on
+    // a generated world in `worldSeed.realms.test.ts`, where domains exist.
+    expect(result.factionIds).toEqual([]);
     // Spacing enforcement may reduce placement on small maps, but we should
     // still get at least the hard minimum number of locations
     expect(result.locationIds.length).toBeGreaterThanOrEqual(LOCATION_COUNT.min);
@@ -235,14 +238,9 @@ describe('seedWorld culture integration', () => {
     expect(withCulture).toBeGreaterThanOrEqual(result.individualIds.length * 0.5);
   });
 
-  it('assigns cultures to factions', () => {
-    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
-    for (const facId of result.factionIds) {
-      const edges = result.graph.getAllEdgesForNode(facId)
-        .filter(e => e.type === 'belongs_to');
-      expect(edges).toHaveLength(1);
-    }
-  });
+  // THR-1155: "assigns cultures to factions" moved to `worldSeed.realms.test.ts`.
+  // A bare-`seedWorld` world has no provinces, so it mints no Realms, and the loop
+  // that used to check them would iterate an empty array and pass on nothing.
 
   it('culture generation is deterministic', () => {
     const a = seedWorld(balancedCosmology(), mockTiles(), 42);

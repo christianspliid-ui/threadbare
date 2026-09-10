@@ -351,6 +351,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `quintessence` (1) | `quintessenceActions.ts` | `Phase 2`, `Phase 3` |
 | `rarity` (2) | `rarity.ts`, `raritySeeding.ts` | — |
 | `reach` (1) | `reachSignatureMarkers.ts` | `THR-550`, `THR-551`, `THR-552`, `THR-554` |
+| `realm` (1) | `realmSeat.ts` | `THR-1155` |
 | `region` (5) | `regionDetection.ts`, `regionLabels.ts`, `regionNaming.ts`, `regionPolitical.ts`, `regionTypes.ts` | — |
 | `rekindle` (1) | `rekindleThread.ts` | `THR-605`, `THR-773` |
 | `relocation` (1) | `relocationIntent.ts` | `THR-1141`, `THR-1142`, `THR-74` |
@@ -413,4 +414,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 187 engine domains · 549 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 188 engine domains · 550 modules._
