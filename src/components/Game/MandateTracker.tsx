@@ -97,8 +97,12 @@ function SummaryPill({ label, value, color }: { label: string; value: string; co
 export function MandateTracker({ definition, state }: MandateTrackerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
-  const pct = Math.round(state.progress * 100);
-  const displayText = state.completed ? 'FULFILLED' : pct === 0 ? 'NEW' : `${pct}%`;
+  // THR-1424 (Law 15 ruling, 2026-09-10): mandate progress is a unitless proportion, and this
+  // tier already renders it twice without a numeral — the stage pips and the `ProgressBar`.
+  // So the percentage is dropped rather than banded to a word (an adverb is the wrong answer
+  // to "how much?", Law 13 amendment 2026-08-12). `FULFILLED` and `NEW` survive: both name a
+  // state of the mandate, not a magnitude, and `NEW` still reads off untouched progress.
+  const displayText = state.completed ? 'FULFILLED' : state.progress <= 0 ? 'NEW' : '';
   const isSphereGrowth = definition.runtimeKind === 'sphere_growth';
   const nextCheckpoint = getNextCheckpoint(definition, state);
   const heldOmens = state.checkpointResults?.filter((result) => result.passed).length ?? 0;
@@ -156,9 +160,11 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               {definition.name}
             </span>
           </Tooltip>
-          <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
-            {displayText}
-          </span>
+          {displayText && (
+            <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
+              {displayText}
+            </span>
+          )}
           <div className="flex gap-0.5 items-center ml-auto">
             {STAGE_ORDER.map((stage) => (
               <span key={stage}>
@@ -180,11 +186,10 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             <span className="truncate">
               {definition.secondarySphere} {formatDelta(state.secondaryDelta)}
             </span>
-            {nextCheckpoint && (
-              <span className="ml-auto flex-shrink-0">
-                {Math.round(nextCheckpoint.doomProgressThreshold * 100)}%
-              </span>
-            )}
+            {/* THR-1424: the checkpoint's doom threshold was a bare unitless proportion with
+                no unit and no label — dropped per the Law 15 ruling. The checkpoint's name is
+                carried in the expanded panel below, where it reads as a name rather than a
+                numeral floating at the end of a sphere row. */}
           </div>
         )}
       </div>
@@ -259,7 +264,9 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                   fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                 }}>
-                  Next omen: {nextCheckpoint.label} at {Math.round(nextCheckpoint.doomProgressThreshold * 100)}% doom.
+                  {/* THR-1424: `at N% doom` dropped — a unitless proportion with no non-numeric
+                      rendering on this surface reads as nothing rather than as a word ladder. */}
+                  Next omen: {nextCheckpoint.label}.
                 </div>
               )}
             </div>

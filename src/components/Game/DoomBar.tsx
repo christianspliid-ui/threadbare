@@ -43,7 +43,6 @@ function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState
 
 export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
-  const pct = Math.round(state.progress * 100);
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
   const stageName = currentStageDef?.name ?? 'Unknown';
@@ -92,9 +91,16 @@ export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
               {stageName}
             </span>
           </div>
-          <span className="font-mono ml-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-            {state.expired ? 'UNMADE' : `${pct}%`}
-          </span>
+          {/* THR-1424 (Law 15 ruling, 2026-09-10): doom progress is a unitless proportion, and
+              this tier already renders it as the `ProgressBar` below plus the stage name beside
+              it. The numeral is dropped, never banded — an adverb is the wrong answer to
+              "how much?" (Law 13 amendment, 2026-08-12). `UNMADE` survives: it is a terminal
+              state, not a proportion. */}
+          {state.expired && (
+            <span className="font-mono ml-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+              UNMADE
+            </span>
+          )}
         </div>
         <div
           className="flex items-center justify-between gap-2"

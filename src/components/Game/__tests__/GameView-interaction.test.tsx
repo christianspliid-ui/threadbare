@@ -137,10 +137,17 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    // DoomBar renders stage name and a progress bar — the doom archetype now uses
-    // a SphereIcon instead of a text glyph. Check for a percentage or stage text.
-    const matches = screen.queryAllByText(/0%|\d+%/);
-    expect(matches.length).toBeGreaterThan(0);
+    // THR-1424 (Law 15 ruling, 2026-09-10): this used to look for `\d+%` — the doom progress
+    // numeral, which the ruling drops. A unitless proportion reads through whatever the surface
+    // already renders non-numerically, so the DoomBar's tier is now proved by its section label
+    // and its progress bar, and the numeral's ABSENCE is asserted alongside them.
+    const doomLabel = screen.getByText('Doom');
+    const doomTier = doomLabel.closest('.topbar-tier');
+    expect(doomTier).toBeTruthy();
+    // The bar is the reading. Scoped to the doom tier so an unrelated percentage elsewhere in
+    // GameView neither satisfies nor breaks this arm.
+    expect(doomTier!.querySelector('div[style*="width"]')).toBeTruthy();
+    expect(doomTier!.textContent).not.toMatch(/%/);
   });
 
   it('renders layout with top bar and right sidebar', () => {
