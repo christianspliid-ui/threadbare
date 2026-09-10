@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-10 02:57 local (00:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-10 03:56 local (01:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -22,13 +22,14 @@ Yes releases batch 3. Anything short of yes is feedback the line can act on. [Ba
 
 ## Queue
 
-**Healthy but thin — 4 ready, 2 in flight.** [THR-1134](https://linear.app/threadbare/issue/THR-1134) (incident snapshot, High) leads; [THR-1443](https://linear.app/threadbare/issue/THR-1443), [THR-1444](https://linear.app/threadbare/issue/THR-1444), [THR-1255](https://linear.app/threadbare/issue/THR-1255) behind it. Nothing stale, nothing blocked.
+**Healthy but thin — 4 ready, 2 in flight.** Nothing stale, nothing blocked. A new bug joined the shelf at 01:32Z: [THR-1447](https://linear.app/threadbare/issue/THR-1447/duplicate-react-keys-on-the-aftermath-reaction-list-children) (an aftermath event can be silently dropped when two share an id), ahead of [THR-1443](https://linear.app/threadbare/issue/THR-1443), [THR-1444](https://linear.app/threadbare/issue/THR-1444) and [THR-1255](https://linear.app/threadbare/issue/THR-1255).
 
 - **Parked, waiting on you:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) — the batch-2 sample verdict above. Still the only park on the board.
-- **In flight:** [THR-1002](https://linear.app/threadbare/issue/THR-1002) (card grammar) — its work merged into `main` an hour ago; the session has not closed the ticket yet.
+- **In flight:** [THR-1134](https://linear.app/threadbare/issue/THR-1134) (the incident-capture button) — [PR #1867](https://github.com/christianspliid-ui/threadbare/pull/1867) is open, armed, waiting on its checks; it merges itself on green.
+- **Closed since the last brief:** [THR-1002](https://linear.app/threadbare/issue/THR-1002) (card grammar) reached Done at 01:05Z.
 
 ## Health
 
-**All green.** Site serving `5fd85f0e`, CI green on main, no PRs waiting to merge, all 9 scheduled lanes on schedule, tick cost 71 ms/tick (15% *under* the 7-day median). Reaper ran at 02:40.
+**All green.** Site serving the newest commit on `main` (`26acd1dd`), CI green, the one open PR armed and waiting on checks, all 9 scheduled lanes on schedule, tick cost 69 ms/tick (18% *under* the 7-day median). Reaper ran at 03:40.
 
 - The lane-silence probe still flags last weekend's 45-hour gap as unexplained — that is the standing weekend question above, not a new fault.
