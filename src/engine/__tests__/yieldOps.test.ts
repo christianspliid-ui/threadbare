@@ -123,7 +123,13 @@ describe('drawYield — the active harvest', () => {
     expect((standing!.properties.score as number)).toBeLessThan(0.5);
   });
 
-  it('treats an absent band as the failure arm rather than a silent full harvest', () => {
+  it('treats a lost band as the failure arm rather than a silent full harvest', () => {
+    // THR-1450: this arm is reached by a *checkpointed* cell whose band went missing,
+    // where refusing to pay is right. It is deliberately no longer how the instant
+    // harvest arrives — that path stamps `INSTANT_COMPLETION_BAND` at the lifecycle
+    // boundary, and reaching this unit with `undefined` was what made `use × Location`
+    // pay nothing in every live run. The unit keeps the strict arm; the caller stopped
+    // handing it an absence that only ever meant success.
     const graph = heldTown(70);
     const before = readWealth(graph.getNode('holder')!.properties);
     drawYield(graph, 'holder', 'town', 24, 'proj', undefined);

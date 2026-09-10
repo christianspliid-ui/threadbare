@@ -43,6 +43,7 @@ import {
   MOMENT_INTERRUPT_SIGNIFICANCE,
   MOMENT_COMPLETION_SIGNIFICANCE,
   HARM_ON_AFFLICT,
+  INSTANT_COMPLETION_BAND,
 } from '../data/strategic-action-constants';
 import {
   createTradeRoute,
@@ -453,9 +454,10 @@ interface InstantMutationResult {
     variant?: UndertakingVerbVariant;
     outcome?: string;
     /**
-     * Whether the completed cell rolled a checkpoint. An instant cell did not, and its
-     * absent band means "nothing could have gone wrong", not "the band went missing" —
-     * see `renewControlStance`.
+     * Whether the completed cell rolled a checkpoint. An instant cell did not: it
+     * carries `INSTANT_COMPLETION_BAND` because nothing could have gone wrong, not a
+     * band that went missing (THR-1450) — see `renewControlStance`, which skips the
+     * rank test entirely when this is `false`.
      */
     checkpointed: boolean;
   };
@@ -484,10 +486,22 @@ export function executeStrategicAction(
 
   switch (candidate.executionMode) {
     case 'instant': {
-      // Execute the graph mutation immediately
+      // Execute the graph mutation immediately.
+      //
+      // THR-1450: the band is stamped here, at the one boundary the bandless path
+      // enters, rather than left for each reader to infer from `undefined`. An instant
+      // cell has no checkpoint and so cannot have failed, and `INSTANT_COMPLETION_BAND`
+      // is where that convention is stated. Leaving it absent is what made
+      // `use × Location`'s harvest pay zero in every live run — `yieldBandScale`
+      // scaled the absent band to 0 while the town still paid the prosperity cost —
+      // and made a survey's clue unspawnable for the same reason. Readers are handed a
+      // real band; none of them re-derives the rule, so none of them can drift out of
+      // it. The multi-tick arm below deliberately still passes a possibly-absent
+      // `lastCheckpoint?.band`: there the absence is a lost reading, not a terminal
+      // nothing could miss, and the failure arm is correct.
       const {
         ops, poolInvalidatedLocationIds, renewalRequest, seizeRetirement,
-      } = executeInstantMutation(state, graph, candidate, tick);
+      } = executeInstantMutation(state, graph, candidate, tick, INSTANT_COMPLETION_BAND);
       graphOps.push(...ops);
 
       // ── A hold is kept by working it (THR-1287) ──
@@ -1434,16 +1448,17 @@ export interface ControlRenewal {
  * admits `near_miss` and would leave the constant decorative. An unknown or absent
  * band on a checkpointed cell ranks `-1` and renews nothing (fail-soft).
  *
- * **An instant cell has no band, and that is not a missing one.** `use × Location` —
- * the harvest, and the primary way a hold is worked — carries
- * `UNDERTAKING_VERB_DURATION.use = [0,0,0]`, so it synthesises as `instant`: no
- * checkpoints, hence nothing it could have failed. `executeInstantMutation`'s own
- * `outcome` contract says so — *"the instant path has no checkpoint, so its readers
- * take the plain-success row"* — and the caller has already gated on at least one op
- * succeeding. Reading `outcome === undefined` as a failure here instead would have
- * made the plan's named primary path unreachable by construction, which is the exact
- * class of defect this ticket exists to remove: a lever that cannot fire. So
- * `checkpointed: false` renews on the completion alone.
+ * **An instant cell's band is not a missing one.** `use × Location` — the harvest, and
+ * the primary way a hold is worked — carries `UNDERTAKING_VERB_DURATION.use = [0,0,0]`,
+ * so it synthesises as `instant`: no checkpoints, hence nothing it could have failed,
+ * and the caller has already gated on at least one op succeeding. Reading a bandless
+ * completion as a failure would make the plan's named primary path unreachable by
+ * construction, which is the exact class of defect this ticket exists to remove: a
+ * lever that cannot fire. THR-1450 found that class again in `yieldBandScale` and
+ * closed it at the source — the instant arm now stamps `INSTANT_COMPLETION_BAND`, so
+ * such a cell arrives here carrying the plain-success row rather than `undefined`.
+ * Either way `checkpointed: false` renews on the completion alone and never consults
+ * the band, which is why that fix did not move this function's behaviour.
  *
  * A holder can hold a target at most once — the claim arm refuses `already_controls`
  * and the grid's `control:claim` cell is offered only on `unowned` targets — so the
@@ -1565,9 +1580,17 @@ function executeInstantMutation(
   candidate: StrategicActionCandidate,
   tick: number,
   /**
-   * The band the work's final checkpoint landed on, when there was one (THR-1428).
-   * The multi-tick completion path below reads it off `lastCheckpoint`; the instant
-   * path has no checkpoint, so its readers take the plain-success row.
+   * The band the work's final checkpoint landed on (THR-1428).
+   *
+   * The multi-tick completion path reads it off `lastCheckpoint`. The instant path has
+   * no checkpoint, so its caller stamps `INSTANT_COMPLETION_BAND` — the plain-success
+   * row — before this runs (THR-1450). That used to be a contract this comment stated
+   * and each reader was trusted to keep; two of them did not, so it is now supplied at
+   * the call site and every reader is simply handed a band.
+   *
+   * Still optional, and still meaningfully absent in one case: a **checkpointed** cell
+   * whose `lastCheckpoint` is missing. There the absence is a lost reading rather than
+   * a terminal nothing could miss, and readers correctly take their failure arm.
    */
   outcome?: string,
 ): InstantMutationResult {
