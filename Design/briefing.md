@@ -1,36 +1,46 @@
 # Briefing
-**Generated:** 2026-09-10 07:57 local (05:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-10 08:58 local (06:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Every lane is now stopped at you.** The builder finished its last job at 07:19 and has nothing left; the one job still open is parked on your verdict; both design slots are held by questions addressed to you. Nothing is broken and nothing is slow — the machine has simply run out of decided work.
+**You answered one question this morning and the builder had work eleven minutes later. There are about fourteen more of exactly that shape.**
 
-Say **"rule on the backlog"** and roughly fourteen short questions come to you in game terms, smallest first. None is a design session; each is a sentence or two that releases buildable work.
+At 06:36 you ruled that a claimed town is a **commitment** — a hold is kept by working it. By 06:47 [THR-1287](https://linear.app/threadbare/issue/THR-1287/control-upkeep-is-structurally-impossible-nothing-ever-resets) was a finished plan sitting in the builder's queue, and two follow-on tickets ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and), [THR-1449](https://linear.app/threadbare/issue/THR-1449/ul-proposal-hold-a-location-kept-by-a-mortals-commitment-the-controls)) were written from your answer without asking you anything further. One sentence, one job, no session.
 
-**Start with the one that is ready this minute:** [when someone claims a town, is holding it a commitment or a possession?](https://linear.app/threadbare/issue/THR-1287/control-upkeep-is-structurally-impossible-nothing-ever-resets) A session wrote the whole plan on Tuesday and stopped on this single fork. Right now a mortal who claims a town loses it on a fixed timer and can do nothing to keep it — while the game tells the player *"a grip you stop renewing slowly opens"*. **Recommendation: commitment** — what a mortal founds or buys, they own; what they merely claim, they must keep holding. One word releases a finished plan the same day.
+That is also the problem. **It is the only job on the shelf**, and the pickup lane runs in two minutes — so by 07:00 the queue is empty again. The forty-item backlog cannot refill it, because nearly every candidate stops at a question rather than at a developer. Rulings are the input the machine is starved of, and this morning measured exactly how fast it converts them.
+
+Roughly fourteen are one- and two-sentence answers. A sample of what is waiting:
+
+- [What a Divine Herald is](https://linear.app/threadbare/issue/THR-1195) — three live options; a question about what the thing *is*.
+- [Which Spheres shadow and void belong to](https://linear.app/threadbare/issue/THR-1114) — the ticket forbids the mechanical fix outright.
+- [Whether a toll moves wealth or gets deleted](https://linear.app/threadbare/issue/THR-1189).
+- [Activate the pressure system or retire it](https://linear.app/threadbare/issue/THR-1318).
+- [Should every faction commission ruin expeditions, or only the adventurers' guild?](https://linear.app/threadbare/issue/THR-1026) — reads like a one-line fix; is really a question about what the world is like.
+- [The consequence draw can deal a hand no authored content can wire](https://linear.app/threadbare/issue/THR-1446).
+
+**Say "rule on the backlog"** and they come to you in game terms, smallest first — the same format as this morning's.
 
 ## Also waiting (8)
 
-- [Batch 2 — sample the two](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — [Ward the Camp](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp) and [Tend to Wounds](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds) are live; your yes releases batch 3. This is the parked job.
-- [The screenshot sweep wants an attended hour](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — unstuck since its three broken tools were fixed; nineteen captures, one dev-server session with you in it.
-- [The fight map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) — ten questions, all legwork finished a week ago; [monster fights](https://linear.app/threadbare/issue/THR-1263) and [duels](https://linear.app/threadbare/issue/THR-1264) open the rest.
-- Two sketches to react to — [twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236); your reaction *is* the design decision.
-- [Should image spends be gated on you at all?](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five off-doctrine scene plates wait on one credit decision that settles every batch after.
-- [What is a run *about*?](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game) — forty-eight authored lines nobody has ever read; remembrance or named campaigns.
-- [Still planning Traits wave 2?](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) — one word; not getting to it frees a design slot.
-- **Are weekend-long quiet spells normal too?** You ruled overnight quiet normal; weekends are unruled, so the probe keeps raising them.
+- [Batch 2 — sample the two](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to): [Ward the Camp](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.ward_the_camp) and [Tend to Wounds](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.tend_to_wounds) — yes releases batch 3. The board's only parked job.
+- [The screenshot sweep](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) wants an attended hour — nineteen captures, nothing technical blocking it.
+- [The fight map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) — ten questions, all legwork finished; [monster fights](https://linear.app/threadbare/issue/THR-1263) and [duels](https://linear.app/threadbare/issue/THR-1264) open the rest.
+- Two sketches to react to: [twenty spells](https://linear.app/threadbare/issue/THR-1232), [thirty items](https://linear.app/threadbare/issue/THR-1236).
+- [Should image spends be gated on you at all?](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — your answer settles five plates and every batch after.
+- [What is a run *about*?](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game) — remembrance, or named campaigns. 48 authored lines no player has read.
+- [Are you still planning to design Traits wave 2?](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) — one word; holds one of two design slots.
+- Are weekend-long quiet spells normal? You ruled overnight quiet normal; weekends are still unruled, so the probe keeps raising them.
 
 ## Queue
 
-**Starved — 0 ready, and the shelf is empty rather than thin.** Nothing in the forty-item backlog can be promoted, because every candidate waits on a ruling rather than on a developer.
+**Starved — 1 ready, and it arrives and leaves within the hour.** [THR-1287](https://linear.app/threadbare/issue/THR-1287/control-upkeep-is-structurally-impossible-nothing-ever-resets) (Medium, Engine) went Ready for Dev at 06:47 on your ruling; the pickup lane fires at 07:00.
 
-- **In Dev: 1, parked** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), held on your two-encounter verdict.
-- **In Design: 2, both yours** — [THR-1287](https://linear.app/threadbare/issue/THR-1287/control-upkeep-is-structurally-impossible-nothing-ever-resets) (new this run) and [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools). Both slots held means the design lane cannot stage new work either.
-- Last job shipped [THR-1443](https://linear.app/threadbare/issue/THR-1443) at 05:20Z — claimed and merged in seventeen minutes.
-- Eight tidying jobs would make the queue look healthy; none was promoted, for the fourth run running. An empty product shelf calls for supply, not padding.
+- **In Dev: 1** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), `Parked` and unassigned, waiting on your two-encounter verdict (above). Not stalled — held on purpose.
+- **In Design: 1** — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), assigned to you, no plan doc.
+- **Todo: 34** (15 wayfinder items). Nothing stale at the top of the ready queue.
 
 ## Health
 
-- **"Heavy simulation tests" is red on the latest main** (~1 h). Post-merge only, not a required check — a session's follow-up, not yours.
-- The scheduled lanes' 44.9 h weekend silence (04 Sep → 06 Sep) is still unruled and still being raised by the probe — it is the last item in *Also waiting*. Two 18-hour gaps since then recovered on their own.
-- Everything else green: site serving the latest commit, CI green on main, all nine scheduled lanes on schedule, no PRs waiting, tick cost 70 ms/tick — 16% under the 7-day median.
+- **The engine got slower and nobody has looked yet.** Probe, verbatim: *tick cost 117 ms/tick steady, 42% above the 7-day median (82, 58 rows since 1c725457); top phase agent_decision, 504 agents. Name the merges between 1c725457 and 910d95b0: `git log --oneline --merges 1c725457..910d95b0`.* Measured twice this run — the first reading overlapped other jobs, so it was re-measured clean and held. A session's job, not yours.
+- **Heavy simulation tests red on the latest main (2 h).** The post-merge-only suite; the required CI check is green and the site is current. A follow-up fix is owed by a session.
+- Site up to date (last publish `ccc1e874`; commits since touched only notes and docs). Automated checks running normally, no PRs waiting to merge, all 9 scheduled tasks on schedule, stale-worktree reaper ran 16 minutes ago.
