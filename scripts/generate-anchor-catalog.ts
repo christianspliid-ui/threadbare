@@ -54,7 +54,6 @@ import { REACH_DOMAINS } from '../src/types/traits';
 import {
   ACTOR_TYPE_ROWS,
   ATTACHMENT_ROWS,
-  CODEX_SURFACE_TICKET,
   CONSUMER_UNION_SPECS,
   EDGE_TYPE_ROWS,
   NODE_TYPE_ROWS,
@@ -566,7 +565,7 @@ function main(): void {
   console.log(
     `anchor-catalog: spine — ${worldRefKinds.length} \`WorldRefKind\`s across ` +
       `${coverages.length} consumer vocabularies; ${mapped} members map to the spine, ` +
-      `${extra} do not (curated). Codex reserved, tracked by ${CODEX_SURFACE_TICKET}.`,
+      `${extra} do not (curated).`,
   );
 }
 

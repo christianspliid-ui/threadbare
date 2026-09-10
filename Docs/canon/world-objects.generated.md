@@ -184,4 +184,3 @@
 | `encounter` | `event`, `encounter_template` |
 | `journey` | `journey` |
 | `receipt` | `divine_receipt` |
-| `codex` | _(reserved)_ |

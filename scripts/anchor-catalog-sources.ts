@@ -652,9 +652,6 @@ export function assertEveryMemberAnnotated(
  */
 export const WORLD_REF_TYPES_REL = 'src/types/worldRef.ts';
 
-/** The codex-surface deferral cited by every `codex` absence row below. */
-export const CODEX_SURFACE_TICKET = 'THR-1315';
-
 /** The ticket that made `attachment`'s absence from `EntityVisualKind` deliberate. */
 const ATTACHMENT_VISUAL_TICKET = 'THR-1120';
 
@@ -683,7 +680,6 @@ export const WORLD_REF_KIND_DESCRIPTIONS: Readonly<Record<string, string>> = {
   encounter: 'A live encounter or action, by its runtime id.',
   journey: 'A journey a traveller is on.',
   receipt: 'A divine receipt — the record of one intervention.',
-  codex: `A codex entry. Reserved: nothing can route here yet (${CODEX_SURFACE_TICKET}).`,
 };
 
 /**
@@ -760,8 +756,8 @@ export interface ConsumerUnionSpec {
    * `WorldRefKind`s this union deliberately lacks, each with its reason.
    *
    * A row whose kind later appears in the union is stale and fails — which is what
-   * makes these rows self-correcting rather than a comment that rots. Adding a
-   * `codex` arm to `NavigationTarget` breaks the build by name.
+   * makes these rows self-correcting rather than a comment that rots. Adding an
+   * `artifact` arm to `NavigationTarget` breaks the build by name.
    */
   readonly absentKinds: Readonly<Record<string, string>>;
 }
@@ -799,7 +795,6 @@ const CHIP_UNION_ABSENT_KINDS: Readonly<Record<string, string>> = {
   receipt:
     'A divine receipt is the record *of* an intervention, written after the veil closes. ' +
     'Authored content cannot name one that does not exist yet.',
-  codex: `Reserved — no in-game codex destination exists (${CODEX_SURFACE_TICKET}).`,
 };
 
 /** The six-member chip/segment union, as every one of its four spellings must read. */
@@ -845,7 +840,6 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
       hex: 'Drawn by the map, not by a tile.',
       journey: 'An event, not an entity with a portrait.',
       receipt: 'A document, not an entity with a portrait.',
-      codex: `Reserved — no in-game codex destination exists (${CODEX_SURFACE_TICKET}).`,
     },
   },
   {
@@ -895,11 +889,6 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
       attachment: '`AttachmentDetailView` opens from the bearer, not from a navigation target.',
       companion: 'Read on the company readout, which opens from a member.',
       army: 'Read on the war readout, which opens from the map rather than by reference.',
-      codex:
-        `Reserved (${CODEX_SURFACE_TICKET}). \`?view=codex\` is a full-page swap that tears ` +
-        'down the running simulation, so there is no destination a link may open. ' +
-        '`toNavigationTarget` returns `undefined`, which is the fail-soft every unroutable ' +
-        'kind takes (NFP #4, Law 21).',
     },
   },
   {
@@ -909,7 +898,7 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
     what: 'Whose row in the Threads panel a notice waits on (THR-666, THR-667).',
     extraMembers: {},
     absentKinds: {
-      // One reason, eleven times: a notice needs a *row to wait on*, and the Threads
+      // One reason, ten times: a notice needs a *row to wait on*, and the Threads
       // panel has rows for threaded agents and factions only. Spelled per kind rather
       // than as a blanket rule so that giving some other kind a row fails here by name.
       location: 'No row in the Threads panel to wait on.',
@@ -924,7 +913,6 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
         'waiting on a row.',
       journey: 'Surfaces on the traveller\'s row, so the notice anchors to the `agent`.',
       receipt: 'Divine receipts have their own surface; a notice would double-report them.',
-      codex: `Reserved — no in-game codex destination exists (${CODEX_SURFACE_TICKET}).`,
     },
   },
 ];
@@ -1007,8 +995,7 @@ export function assertKindUnionCoverage(
       `generate-anchor-catalog: ${where} has ${staleAbsence.length} stale \`absentKinds\` ` +
         `row(s): ${staleAbsence.map((m) => `'${m}'`).join(', ')}. The union now carries ` +
         `them (or they are no longer \`WorldRefKind\`s), so the catalog would keep publishing ` +
-        `an absence that is no longer true. Update the row — and if this is the ` +
-        `${CODEX_SURFACE_TICKET} codex arm landing, the catalog's reserved badge goes with it.`,
+        `an absence that is no longer true. Update the row.`,
     );
   }
 
