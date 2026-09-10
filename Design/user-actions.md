@@ -1,22 +1,32 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 20:00 local (2026-09-10 18:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 21:00 local (2026-09-10 19:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### 1. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+### 1. Should agents be allowed to seat a word in the glossary, keeping you a veto?
 
-**The lead ask, eighth hour — and the shelf is now down to one item.** [THR-1451](https://linear.app/threadbare/issue/THR-1451) went Done at 17:41, leaving [THR-1452](https://linear.app/threadbare/issue/THR-1452) — one Low-priority leftover about the top bar's year, an hour or two of work. Nothing is in flight. After that, nothing.
+Say **"delegate it"**, or **"send me the six"** if you'd rather keep the call.
 
-New program work comes from a design pass; the design bench holds one job at a time; that seat is THR-790 — In Design, assigned to you, no plan doc, unmoved since **15 August (26 days)**. Verified live this run.
+You seated three words yourself in chat at **18:13** today — *calling*, *moment*, *follow* ([THR-1380](https://linear.app/threadbare/issue/THR-1380)). At **18:26**, thirteen minutes later, your own nations design pass filed a new one: [**Realm**](https://linear.app/threadbare/issue/THR-1453), the landed faction that holds a territory and is drawn as a border on the map.
 
-**One word.** *Yes* changes nothing and the asking stops. *Not getting to it* frees the seat. *(Only the `Parked` label frees it; unassigning does not.)*
+**The queue refills faster than a sitting drains it.** Seven wait now, and the rule says only a human may seat one, so they cannot clear themselves. Measured live this run:
 
-Queued behind that seat, all your own direction: [nations and named areas drawn but not simulated](https://linear.app/threadbare/issue/THR-1155), [a held town making you the faction's town-keeper](https://linear.app/threadbare/issue/THR-1448), [ambitions below the spotlight tier never acting](https://linear.app/threadbare/issue/THR-1348), and [the `concepts` ruling](https://linear.app/threadbare/issue/THR-1053) — that last one a session may rule itself under your 2026-08-12 calibration rule.
+[**Realm**](https://linear.app/threadbare/issue/THR-1453) (today) · [**hold**](https://linear.app/threadbare/issue/THR-1449) (1 day) — a town a mortal keeps by *working* it, vs a **freehold**, simply owned · [**cast**](https://linear.app/threadbare/issue/THR-1445) (1 day) — a god *playing* a divine action card · [**agreement**](https://linear.app/threadbare/issue/THR-1441) (2 days) · [**motive gate**](https://linear.app/threadbare/issue/THR-1408) (6 days) · [**composition contract**](https://linear.app/threadbare/issue/THR-1406) (7 days) · [**motive receipt**](https://linear.app/threadbare/issue/THR-633) (67 days)
 
-### 2. Sample two of the camp six — worth meeting twice? — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+The glossary is the tie-breaker when code, docs and an agent disagree about a word — an unseated word is one the project cannot settle an argument about. You have delegated exactly this shape twice already (gate calibration, test calibration): *the lane decides, you keep a veto*. One word retires this ask permanently.
 
-Not blocking anything. Batch 2 ran on your 09-09 approval (*"Batch 2, run the six"*) and shipped that night; batch 3 is drafted and now unblocked. Your standing 2-of-6 rule still owes a verdict on the six that shipped — take it whenever you like.
+### 2. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+
+**Correcting what the last eight briefs told you.** They said one word here unblocked design. That is no longer true: you moved [nations and named areas](https://linear.app/threadbare/issue/THR-1155) into the design seat at 18:26 today and it is being worked. THR-790 is not blocking anything right now.
+
+It becomes the blocker again the moment the nations pass finishes — which could be within the day — because the design bench holds one job at a time and this seat has been yours, untouched, since **15 August (26 days)**.
+
+*Yes* changes nothing and the asking stops. *Not getting to it* frees the seat so the next design job starts the moment nations ends. *(Only the `Parked` label frees it; unassigning does not.)*
+
+### 3. Sample two of the camp six — worth meeting twice? — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+
+Not blocking anything. Batch 2 ran on your 09-09 approval and shipped that night; batch 3 is drafted and unblocked. Your standing 2-of-6 rule still owes a verdict — take it whenever you like.
 
 This pair is the widest tonal gap in the batch, live on the deployed build:
 
@@ -25,23 +35,13 @@ This pair is the widest tonal gap in the batch, live on the deployed build:
 
 [Batch report](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-09-09.md). Anything short of yes is feedback the line can act on.
 
-### 3. Six words the game already uses that the glossary has never blessed
-
-*Folded in from the orchestrator lane.* The glossary is the tie-breaker when code, docs and an agent disagree about a word. Six proposals wait on your yes, and the rule says **only a human may seat one** — so they cannot clear themselves. Measured live this run: none of the six is seated.
-
-[**hold**](https://linear.app/threadbare/issue/THR-1449) (1 day) — a town a mortal keeps by *working* it, vs a **freehold**, simply owned · [**cast**](https://linear.app/threadbare/issue/THR-1445) (2 days) — a god *playing* a divine action card · [**agreement**](https://linear.app/threadbare/issue/THR-1441) (3 days) — the bargains mortals strike · [**motive gate**](https://linear.app/threadbare/issue/THR-1408) (7 days) — the licence every destroy verb needs · [**composition contract**](https://linear.app/threadbare/issue/THR-1406) (8 days) — the encounter line's authoring gate · [**motive receipt**](https://linear.app/threadbare/issue/THR-633) (68 days) — the record of *why* an agent chose.
-
-*hold* / *freehold* is the live example: same word in English, two things in the game, and the proposal's own instruction that they "must never be used for each other" is unenforceable while neither exists in the glossary.
-
-**Recommendation: (b).** Either **(a)** one sitting, six yes/no calls, ~15 minutes; or **(b)** rule once that agents may seat a word with you keeping a veto — as you already delegated gate and test calibration — and the queue drains itself permanently. Say **"delegate it"** or **"send me the six"**. — *from tb-orchestrator*
-
 ### 4. Rule on the backlog — one sitting, smallest first
 
-Roughly eleven backlog items stop at a question rather than at a developer. Named so far: [whether a toll moves wealth or gets deleted](https://linear.app/threadbare/issue/THR-1189) (who pays, out of what, on what cadence) · [whether the pressure system is the design at all](https://linear.app/threadbare/issue/THR-1148) · [should every faction commission ruin expeditions, or only the adventurers' guild?](https://linear.app/threadbare/issue/THR-1026) — reads like a one-line fix; is really a question about what the world is like.
+Roughly ten backlog items stop at a question rather than at a developer. Named so far: [whether a toll moves wealth or gets deleted](https://linear.app/threadbare/issue/THR-1189) · [whether the pressure system is the design at all](https://linear.app/threadbare/issue/THR-1148) · [should every faction commission ruin expeditions, or only the adventurers' guild?](https://linear.app/threadbare/issue/THR-1026) — reads like a one-line fix; is really a question about what the world is like.
 
 Say **"rule on the backlog"** and they come framed in game terms, smallest first.
 
-**Three settled themselves yesterday and today** — [the Divine Herald](https://linear.app/threadbare/issue/THR-1195), [the mid-game codex page](https://linear.app/threadbare/issue/THR-1315), [the unused perception layer](https://linear.app/threadbare/issue/THR-1318) — each ruled by a session and shipped within the day. All three calls look right, which is the same argument ask 3 makes: where a question has a defensible answer and no creative fork in it, a session ruling and reporting beats a queue waiting on you.
+**Four have settled since yesterday** — [the Divine Herald](https://linear.app/threadbare/issue/THR-1195), [the mid-game codex page](https://linear.app/threadbare/issue/THR-1315), [the unused perception layer](https://linear.app/threadbare/issue/THR-1318), and [the spotlight tier](https://linear.app/threadbare/issue/THR-1348) — the first three ruled by a session and shipped within the day, the fourth ruled by you at 18:12. All four calls look right, which is the argument ask 1 makes in a different queue.
 
 ### 5. The screenshot sweep is unstuck and wants an attended hour — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -71,7 +71,7 @@ Say **"work the powers map"** or **"work the item map"**.
 
 **Five Meet-The-First scene images break the art rule** — two have words painted in, two show individual faces, one has old choice buttons as scenery. All five are switched off with substitutes covering the slots, so nothing is broken. Sizes, rules and acceptance are settled; it waits on you for one reason: **it spends image credits.**
 
-**The real question.** The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170)) were listed here for the same reason and a lane made them anyway; a later lane *overruled* a ticket outright ([THR-831](https://linear.app/threadbare/issue/THR-831)). Both judgements look right. So: **do you want image spends gated on you, or decided by the lane and reported after?** Your answer settles these five and every batch after. Until then: *remap where a match is honest, come to you only when it is not.*
+This is ask 1's question in a second queue. The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170)) were listed here for the same reason and a lane made them anyway; a later lane *overruled* a ticket outright ([THR-831](https://linear.app/threadbare/issue/THR-831)). Both judgements look right. If you answer ask 1, say whether it settles this too. Until then: *remap where a match is honest, come to you only when it is not.*
 
 ### 9. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
@@ -89,16 +89,16 @@ Three shorter gaps since (18.6 h, 18.1 h, 10 h) recovered on their own and cost 
 
 ## Resolved this period
 
-- **2026-09-10 — the shelf halved again, which is what makes ask 1 urgent.** [THR-1451](https://linear.app/threadbare/issue/THR-1451) is Done ([PR #1883](https://github.com/christianspliid-ui/threadbare/pull/1883)): deltas, odds and chrome stopped printing bare percentages. One buildable item now remains in the whole project.
-- **2026-09-10 — five shipped in the hour before that.** [THR-1426](https://linear.app/threadbare/issue/THR-1426) (a timestamp now reads as how long ago, a rate reads in words) and [THR-1423](https://linear.app/threadbare/issue/THR-1423) (five surfaces stopped printing raw tick counts), plus three docs-gate fixes ([THR-836](https://linear.app/threadbare/issue/THR-836), [THR-976](https://linear.app/threadbare/issue/THR-976), [THR-896](https://linear.app/threadbare/issue/THR-896)). Nothing owed by you on any of them.
-- **2026-09-10 — a third backlog ruling settled itself, and shipped.** [THR-1318](https://linear.app/threadbare/issue/THR-1318) asked whether a written-but-uncalled perception overlay should be switched on or retired. A session ruled retire and merged it at 17:23 ([PR #1881](https://github.com/christianspliid-ui/threadbare/pull/1881)).
-- **2026-09-10 — the tick-cost alarm closed out as noise.** Four consecutive readings crossed the drift line, then four came back clean (−21%, +3%, +15%, +10% against a 7-day median of 85 ms). A busy machine, not a regression; no session owed and nothing changed.
-- **2026-09-10 — the last substantial job on the shelf shipped.** [THR-1424](https://linear.app/threadbare/issue/THR-1424) is Done ([PR #1880](https://github.com/christianspliid-ui/threadbare/pull/1880)): a proportion on screen now reads as the bar it already had, instead of a bare percentage.
-- **2026-09-10 — a second backlog ruling settled itself, and shipped.** [THR-1315](https://linear.app/threadbare/issue/THR-1315) asked whether a codex page you can open mid-game should exist. A session ruled the honest way — the reserved word left the vocabulary rather than a half-surface being invented — merged at 15:27 ([PR #1879](https://github.com/christianspliid-ui/threadbare/pull/1879)).
-- **2026-09-10 — one backlog ruling settled itself, and shipped.** [THR-1195](https://linear.app/threadbare/issue/THR-1195) — *what a Divine Herald is* — was row one of ask 4. A session took the call and merged it this morning; the Herald is now visible in play.
-- **2026-09-10 — batch 2 shipped, and the ask to approve it was already answered.** Your 09-09 *"Batch 2, run the six"* released the camp six; [THR-1222](https://linear.app/threadbare/issue/THR-1222) went Done the same night ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). What remains on [THR-1130](https://linear.app/threadbare/issue/THR-1130) is a *review* of what shipped, not a gate — ask 2, reframed.
-- **2026-09-10 — batch 3's one open question dissolved without you.** [THR-1130](https://linear.app/threadbare/issue/THR-1130) parked at 08:14 asking whether to wait for [THR-1446](https://linear.app/threadbare/issue/THR-1446); THR-1446 went Done at 09:52, shipping the two scene sentinels that were the blocker. The recommendation was *wait*, and the wait is over.
-- **2026-09-10 — a job that finished instantly stopped reading as a blank.** [THR-1450](https://linear.app/threadbare/issue/THR-1450) is Done ([PR #1876](https://github.com/christianspliid-ui/threadbare/pull/1876)); it now reads as plain success.
+- **2026-09-10 — you worked the board yourself at 18:12–18:34, and four things moved.** You ruled [the spotlight tier](https://linear.app/threadbare/issue/THR-1348), put [nations and named areas](https://linear.app/threadbare/issue/THR-1155) into the design seat, seated the three undertaking words ([THR-1380](https://linear.app/threadbare/issue/THR-1380)), and filed a new word — [Realm](https://linear.app/threadbare/issue/THR-1453) — off the back of the nations pass.
+- **2026-09-10 — "one yes/no unblocks design" was overstated, and is withdrawn.** Eight briefs led with [THR-790](https://linear.app/threadbare/issue/THR-790) on that basis. With nations live in the design seat it is no longer true, and ask 2 now says so rather than carrying the stronger claim forward.
+- **2026-09-10 — the last buildable item shipped.** [THR-1452](https://linear.app/threadbare/issue/THR-1452) is Done at 18:34: the top bar's year agreed with the engine's clock threefold-wrong, and now agrees. Nothing is in flight behind it.
+- **2026-09-10 — the shelf's one remaining item turned out to be already done.** The three words you approved at 18:13 were shipped eight days ago under another ticket; the pickup is a verify-and-close with no diff. Your approval is what lets it close.
+- **2026-09-10 — the red heavy-test run cleared itself.** Last hour's amber is gone; "Heavy simulation tests" is green on the latest `main`. Nothing was owed by you.
+- **2026-09-10 — the shelf halved, twice.** [THR-1451](https://linear.app/threadbare/issue/THR-1451) ([PR #1883](https://github.com/christianspliid-ui/threadbare/pull/1883)) and [THR-1424](https://linear.app/threadbare/issue/THR-1424) ([PR #1880](https://github.com/christianspliid-ui/threadbare/pull/1880)) stopped bare percentages printing on player surfaces.
+- **2026-09-10 — five more shipped in the afternoon.** [THR-1426](https://linear.app/threadbare/issue/THR-1426) and [THR-1423](https://linear.app/threadbare/issue/THR-1423) (tick counts and timestamps now read in words), plus three docs-gate fixes ([THR-836](https://linear.app/threadbare/issue/THR-836), [THR-976](https://linear.app/threadbare/issue/THR-976), [THR-896](https://linear.app/threadbare/issue/THR-896)).
+- **2026-09-10 — three backlog rulings settled themselves and shipped.** [THR-1195](https://linear.app/threadbare/issue/THR-1195) (what a Divine Herald is), [THR-1315](https://linear.app/threadbare/issue/THR-1315) (the mid-game codex page), [THR-1318](https://linear.app/threadbare/issue/THR-1318) (the unused perception layer) — each ruled by a session and merged within the day.
+- **2026-09-10 — batch 3's one open question dissolved without you.** [THR-1130](https://linear.app/threadbare/issue/THR-1130) parked at 08:14 asking whether to wait for [THR-1446](https://linear.app/threadbare/issue/THR-1446); THR-1446 went Done at 09:52, shipping the two scene sentinels that were the blocker.
+- **2026-09-10 — batch 2 shipped on your 09-09 approval.** [THR-1222](https://linear.app/threadbare/issue/THR-1222) went Done the same night ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). What remains on THR-1130 is a *review*, not a gate — ask 3.
 
 ---
 
