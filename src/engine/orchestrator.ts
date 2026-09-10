@@ -9,6 +9,7 @@
 import type { GameState, TickEvent, ActiveComposition } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import { STEALTH_DECAY_PER_TICK } from '../types/gameState';
+import { deriveSeasonAndYear } from '../types/temporal';
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import {
@@ -2870,9 +2871,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     activeDistanceMatrix = legacyDistanceMatrix;
   }
 
-  // Advance clock
-  const newSeason = Math.floor(s.tick / 90) % 4;
-  const newYear = Math.floor(s.tick / 360);
+  // Advance clock. THR-1452: was `Math.floor(s.tick / 90) % 4` and `Math.floor(s.tick / 360)`
+  // spelled inline — two magic literals that ignored `s.clock.ticksPerSeason`, so the
+  // DEFAULT_TICKS_PER_SEASON tunable moved nothing (NFP #1). One conversion now, in types/temporal.
+  const { season: newSeason, year: newYear } = deriveSeasonAndYear(s.tick, s.clock.ticksPerSeason);
   s = { ...s, clock: { ...s.clock, currentTick: s.tick, season: newSeason, year: newYear } };
 
   // THR-603: recompute the doom-phase curation-generosity multiplier once per tick,

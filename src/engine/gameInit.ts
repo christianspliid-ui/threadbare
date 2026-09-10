@@ -26,6 +26,7 @@ import { createGreatChronicle } from './chronicle';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
 import { createStartingEssencePool } from './influence';
 import { DEFAULT_DOOM_TICKS } from '../types/gameState';
+import { TICKS_PER_SEASON } from '../types/temporal';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { generateRememberedMandate } from './mandateGenerator';
 import { createMandateStateWith } from './mandate';
@@ -82,7 +83,11 @@ export const DEFAULT_MAP_SIZE: MapSizePreset = 'medium';
 export const DEFAULT_COLS = MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].cols;
 /** @deprecated Use MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE] instead. Kept for backward compat. */
 export const DEFAULT_ROWS = MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].rows;
-export const DEFAULT_TICKS_PER_SEASON = 90;
+/**
+ * The CMS-facing name for the calendar's one constant. THR-1452 collapsed a second literal
+ * `90` that lived here onto `TICKS_PER_SEASON`, so the tunable and the clock cannot drift apart.
+ */
+export const DEFAULT_TICKS_PER_SEASON = TICKS_PER_SEASON;
 
 
 // ─── Game Initialization ──────────────────────────────────────────
