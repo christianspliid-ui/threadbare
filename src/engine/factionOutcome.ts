@@ -18,11 +18,11 @@ import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import type { TickEvent } from '../types/gameState';
 import {
-  FACTION_DEFINITIONS,
   FACTION_JOIN_STARTING_REPUTATION,
   FACTION_PROMOTION_REPUTATION_BOOST,
   PROMOTION_PARTIAL_SUCCESS_MARGIN,
 } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { applyFactionReputationGain } from './factionReputation';
 import { emitTrace } from './traceBuffer';
@@ -46,7 +46,7 @@ export function processFactionJoinOutcome(
   const meta = FACTION_ENCOUNTER_META.get(progress.encounterId);
   if (!meta) return false;
 
-  const definition = FACTION_DEFINITIONS.get(meta.factionDefId);
+  const definition = getFactionDefinition(meta.factionDefId);
   if (!definition) return false;
 
   // Only process join encounters
@@ -140,7 +140,7 @@ export function processFactionPromotionOutcome(
   const meta = FACTION_ENCOUNTER_META.get(progress.encounterId);
   if (!meta) return null;
 
-  const definition = FACTION_DEFINITIONS.get(meta.factionDefId);
+  const definition = getFactionDefinition(meta.factionDefId);
   if (!definition) return null;
 
   // Only process promotion encounters
@@ -272,7 +272,7 @@ export function processFactionOutcome(
   const meta = FACTION_ENCOUNTER_META.get(progress.encounterId);
   if (!meta) return [];
 
-  const definition = FACTION_DEFINITIONS.get(meta.factionDefId);
+  const definition = getFactionDefinition(meta.factionDefId);
   if (!definition) return [];
 
   const events: TickEvent[] = [];

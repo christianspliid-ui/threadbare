@@ -24,12 +24,12 @@ import { isActionStepBranch } from '../types/unifiedAction';
 import type { FactionDefinition, FactionRankTier } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import {
-  FACTION_DEFINITIONS,
   PROMOTION_PARTIAL_SUCCESS_MARGIN,
   FACTION_REPUTATION_MAINTENANCE_PRIORITY_BOOST,
   FACTION_REPUTATION_MAINTENANCE_THRESHOLD,
   FACTION_REPUTATION_PROMOTION_URGENCY_GAP,
 } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import {
   FACTION_ENCOUNTER_META,
   FACTION_JOIN_TEMPLATE,
@@ -93,7 +93,7 @@ export function generateFactionQuestCandidates(
     const factionDefId = props.factionDefId;
     if (!factionDefId) continue; // Pre-faction member_of edge (economic guilds)
 
-    const definition = FACTION_DEFINITIONS.get(factionDefId);
+    const definition = getFactionDefinition(factionDefId);
     if (!definition) continue; // Unknown faction definition — fail-soft
 
     const reputation = props.reputation ?? 0;
@@ -254,7 +254,7 @@ export function generateFactionLifecycleCandidates(
   const factionDefId = guildHallNode.properties?.factionDefId as string | undefined;
   if (!factionDefId) return candidates;
 
-  const definition = FACTION_DEFINITIONS.get(factionDefId);
+  const definition = getFactionDefinition(factionDefId);
   if (!definition) return candidates;
 
   // Check if agent is already a member of this faction

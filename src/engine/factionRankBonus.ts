@@ -18,7 +18,7 @@ import { getFactionMembershipEdges } from './graphQueries';
 import type { FactionRankBonusType, FactionRankBonus } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { emitTrace } from './traceBuffer';
 
@@ -41,7 +41,7 @@ export function getAgentFactionBonuses(
     const factionDefId = props.factionDefId;
     if (!factionDefId) continue;
 
-    const definition = FACTION_DEFINITIONS.get(factionDefId);
+    const definition = getFactionDefinition(factionDefId);
     if (!definition) continue;
 
     const reputation = props.reputation ?? 0;

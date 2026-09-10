@@ -17,10 +17,10 @@ import type { FactionDefinition, FactionReputationTrace } from '../types/faction
 import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import {
-  FACTION_DEFINITIONS,
   FACTION_REPUTATION_COMPLETION_BONUS,
   FACTION_REPUTATION_INACTIVITY_GRACE_TICKS,
 } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { getEncounterRewardMultiplier, emitFactionBonusTrace } from './factionRankBonus';
 import { resolveFactionNodeId } from './factionMembership';
@@ -81,7 +81,7 @@ export function applyFactionReputationGain(
   const edge = memberEdges[0];
   const props = edge.properties as Partial<MemberOfEdgeProperties>;
   const factionDefId = props.factionDefId;
-  const definition = factionDefId ? FACTION_DEFINITIONS.get(factionDefId) : undefined;
+  const definition = factionDefId ? getFactionDefinition(factionDefId) : undefined;
 
   // THR-1241: `faction_influence_multiplier` owns this site. Standing with a
   // faction moves through exactly one door — this function — so scaling the delta
@@ -182,7 +182,7 @@ export function meetsFactionRankRequirement(
   factionDefId: string,
   minRankId: string,
 ): boolean {
-  const definition = FACTION_DEFINITIONS.get(factionDefId);
+  const definition = getFactionDefinition(factionDefId);
   if (!definition) return true; // fail-open: unknown faction definition
 
   const requiredTier = definition.rankTiers.find(t => t.id === minRankId);
@@ -239,7 +239,7 @@ export function meetsFactionRankRequirement(
 export function getDerivedMembershipRank(edge: GraphEdge, fallback = 0): number {
   const props = edge.properties as Partial<MemberOfEdgeProperties>;
 
-  const definition = props.factionDefId ? FACTION_DEFINITIONS.get(props.factionDefId) : undefined;
+  const definition = props.factionDefId ? getFactionDefinition(props.factionDefId) : undefined;
   if (definition && typeof props.reputation === 'number' && Number.isFinite(props.reputation)) {
     const tier = computeRankFromReputation(props.reputation, definition);
     return definition.rankTiers.indexOf(tier) / Math.max(definition.rankTiers.length - 1, 1);
@@ -275,7 +275,7 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
     const factionNode = graph.getNode(edge.target);
     if (factionNode?.properties?.dissolved) continue;
 
-    const definition = FACTION_DEFINITIONS.get(factionDefId);
+    const definition = getFactionDefinition(factionDefId, state.dynamicFactionDefinitions);
     if (!definition) continue; // Unknown definition — fail-soft
 
     const oldReputation = props.reputation ?? 0;
@@ -375,7 +375,7 @@ export function processFactionEncounterReputation(
 
   // Clear promotionPending flag if this is a promotion encounter completion
   const edgeProps = factionEdge.properties as Partial<import('../types/disposition').MemberOfEdgeProperties>;
-  const definition = edgeProps.factionDefId ? FACTION_DEFINITIONS.get(edgeProps.factionDefId) : undefined;
+  const definition = edgeProps.factionDefId ? getFactionDefinition(edgeProps.factionDefId) : undefined;
   if (encounterCompleted && definition?.promotionEncounterTemplateId === encounterId) {
     factionEdge.properties = {
       ...factionEdge.properties,
@@ -433,7 +433,7 @@ function computeAlignmentMultiplier(
   agentId: string,
   factionDefId: string,
 ): number {
-  const definition = FACTION_DEFINITIONS.get(factionDefId);
+  const definition = getFactionDefinition(factionDefId);
   if (!definition?.reputationAlignment) return 1.0;
 
   const agentTraits = getTraitsForNode(graph, agentId);

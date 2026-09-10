@@ -53,7 +53,7 @@ import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../data/secret-encounter-content';
 import { FACTION_ENCOUNTER_TEMPLATES } from '../data/faction-encounter-content';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
@@ -637,7 +637,7 @@ export function getSharedFactionSocialTemplates(
   const templateIdSet = new Set<string>();
 
   for (const defId of sharedDefIds) {
-    const definition = FACTION_DEFINITIONS.get(defId);
+    const definition = getFactionDefinition(defId);
     if (!definition) continue;
 
     for (const templateId of definition.socialTemplateIds) {

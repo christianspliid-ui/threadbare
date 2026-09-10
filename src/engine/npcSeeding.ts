@@ -24,7 +24,7 @@ import {
   type NpcRole,
   type RoleReachAffinity,
 } from '../types/npc';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { GraphNode } from '../types/graph';
 import type { SublocationProperties } from '../types/sublocation';
 import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
@@ -606,7 +606,7 @@ function factionReachFitScore(
   if (!affinity) return 0;
 
   const factionDefId = factionNode.properties.factionDefId as string | undefined;
-  const weights = factionDefId ? FACTION_DEFINITIONS.get(factionDefId)?.reachWeights : undefined;
+  const weights = factionDefId ? getFactionDefinition(factionDefId)?.reachWeights : undefined;
   if (!weights) return 0;
 
   return (weights[affinity.primary] ?? 0) * FACTION_FIT_PRIMARY_REACH_WEIGHT

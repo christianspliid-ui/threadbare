@@ -13,7 +13,7 @@
 import type { GameState } from '../types/gameState';
 import type { FactionAmbitionType } from '../types/faction';
 import { requiresMilitaryForce } from '../types/faction';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { isEligibleForArmySpawn, selectCommander, spawnArmy } from './armySpawning';
 import { deriveFactionProsperity } from './factionNetwork';
 import { emitTrace } from './traceBuffer';
@@ -78,7 +78,7 @@ export function scoreEligibleAmbitions(
   factionId: string,
   definitionId: string,
 ): AmbitionCandidate[] {
-  const def = FACTION_DEFINITIONS.get(definitionId);
+  const def = getFactionDefinition(definitionId, state.dynamicFactionDefinitions);
   if (!def) return [];
 
   const weights = def.ambitionWeights ?? {};

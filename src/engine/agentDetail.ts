@@ -50,7 +50,7 @@ import {
   type MentorshipSummary, getFactionMembershipEdges } from './graphQueries';
 import type { SphereName } from '../types';
 import type { MemberOfEdgeProperties } from '../types/disposition';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { computeRankFromReputation } from '../types/faction';
 import {
   getGroupOfKinds,
@@ -704,7 +704,7 @@ export function getAgentDetail(
     const memberProps = memberEdge?.properties as Partial<MemberOfEdgeProperties> | undefined;
     factionDefId = memberProps?.factionDefId;
     if (factionDefId) {
-      const definition = FACTION_DEFINITIONS.get(factionDefId);
+      const definition = getFactionDefinition(factionDefId);
       if (definition) {
         factionReputation = memberProps?.reputation ?? 0;
         factionRank = computeRankFromReputation(factionReputation, definition).name;
@@ -1534,7 +1534,7 @@ export function getAgentInfoCard(
           const factionDefId = memberProps.factionDefId;
           if (factionDefId) {
             card.factionDefId = factionDefId;
-            const def = FACTION_DEFINITIONS.get(factionDefId);
+            const def = getFactionDefinition(factionDefId);
             if (def) {
               const rep = memberProps.reputation ?? 0;
               const rank = computeRankFromReputation(rep, def);

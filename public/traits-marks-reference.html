@@ -347,7 +347,7 @@
       <table class="tunables">
         <thead><tr><th>Category</th><th>Static defs</th><th>Contract · producer</th></tr></thead>
         <tbody>
-          <tr><td>reputation</td><td>19</td><td>Minted by standing, fades · <code>phaseReputationTraits.ts</code>, <code>phaseEconomicTraits.ts</code></td></tr>
+          <tr><td>reputation</td><td>19</td><td>Minted by standing, fades · <code>phaseReputationTraits.ts</code>, <code>phaseEconomicTraits.ts</code>. <em>The faction-level aggregation in <code>phaseReputationTraits.ts</code> skips any faction whose definition it cannot resolve, and until THR-1155 slice 2 (2026-09-11) it resolved off the static <code>FACTION_DEFINITIONS</code> map — so a faction chartered mid-run, and a <strong>Realm</strong> minted at worldgen, was aggregated for no reputation trait at all. It now reads <code>getFactionDefinition</code>, one of 21 sites swept across 12 engine modules.</em></td></tr>
           <tr><td>personality</td><td>16</td><td>Threshold-minted from axes, drifts · <code>phases/personalityTraitEmerge.ts</code></td></tr>
           <tr><td>core</td><td>10</td><td>Run-defining, permanent · <code>phases/corePersonality.ts</code></td></tr>
           <tr><td>mastery</td><td>9</td><td>Earned, decays on <code>decayPeriod</code> · seeded by <code>traitDefinitionSeeding.ts</code>, assigned by <code>phaseEncounterTraits.ts</code>, <code>phaseEconomicTraits.ts</code></td></tr>
