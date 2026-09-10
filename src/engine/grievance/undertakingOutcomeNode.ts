@@ -24,7 +24,7 @@ import type { StrategicProjectRuntime, UndertakingHarmClass } from '../../types/
 import { HARM_MAGNITUDE_BY_CLASS } from '../../data/ambition-minting-rules';
 import { getFactionLeaderId } from '../factionNetwork';
 import { emitTrace } from '../traceBuffer';
-import type { TraceEntry } from '../../types/trace';
+import type { TraceEntry, UndertakingOutcomeSiteResolution } from '../../types/trace';
 
 /** Id prefix for undertaking outcome event nodes — distinct from `evt_` (encounters). */
 export const UNDERTAKING_EVENT_NODE_ID_PREFIX = 'evt_und_';
@@ -72,6 +72,54 @@ export interface CreateUndertakingOutcomeParams {
    * would offer them a vendetta against themselves.
    */
   readonly selfFacing?: boolean;
+}
+
+/** What `resolveOutcomeSite` decided, carried into the trace verbatim. */
+export interface ResolvedOutcomeSite {
+  /** Absent when neither anchor named a live node. */
+  readonly siteId?: string;
+  readonly siteResolution: UndertakingOutcomeSiteResolution;
+  /** Only set when the origin was present *and* dead — the recovery signal (THR-1444). */
+  readonly siteOriginStale?: true;
+}
+
+/**
+ * The site to stamp a harm with, resolved against a node the graph actually holds
+ * (THR-1444).
+ *
+ * `project.originLocationId` is a plain string, stamped once when the undertaking is
+ * created and never revisited; undertakings then run for hundreds of ticks.
+ * `WorldGraph.removeNode` cascades incident edges — so a `located_at` edge can never
+ * dangle — but it cannot reach a string held on a project runtime. A settlement
+ * retired mid-flight therefore leaves the origin pointing at nothing, and the old
+ * `origin ?? actor position` chain never reached its fallback, because a dangling
+ * string is still truthy. `addEdge` threw, a `catch` warned, and the event landed
+ * durably with no site at all: a harm nobody can witness, which mints no grievance.
+ * Measured as *every* subsequent cell that actor ran failing identically.
+ *
+ * Preference order is deliberately unchanged where both anchors are live: the
+ * undertaking's own origin wins, because by completion time the actor may have moved
+ * on and a razing belongs to the place it happened. What changes is that a dead origin
+ * now falls through to where the actor stands, and a wholly unresolvable site becomes
+ * a trace field rather than an exception nobody reads.
+ */
+export function resolveOutcomeSite(
+  graph: WorldGraph,
+  project: Pick<StrategicProjectRuntime, 'originLocationId' | 'actorId'>,
+): ResolvedOutcomeSite {
+  const origin = project.originLocationId;
+  if (origin && graph.getNode(origin)) return { siteId: origin, siteResolution: 'origin' };
+
+  // `origin` being set but absent from the graph is the failure this function exists
+  // for; flag it so a rising count is visible instead of silent.
+  const originStale = origin ? { siteOriginStale: true as const } : {};
+
+  const position = graph.getOutgoingEdges(project.actorId, 'located_at')[0]?.target;
+  if (position && graph.getNode(position)) {
+    return { siteId: position, siteResolution: 'actor_position', ...originStale };
+  }
+
+  return { siteResolution: 'unresolved', ...originStale };
 }
 
 /**
@@ -199,11 +247,8 @@ export function createUndertakingOutcomeNode(
   // ── occurred_at: event → site ──
   //
   // The site is what makes witnesses possible: the mint lane finds witnesses by
-  // walking `occurred_at` back from the location they are standing in. Prefer the
-  // undertaking's own origin over the actor's current position — by completion time
-  // the actor may have moved on, and a razing belongs to the place it happened.
-  const siteId = project.originLocationId
-    ?? graph.getOutgoingEdges(project.actorId, 'located_at')[0]?.target;
+  // walking `occurred_at` back from the location they are standing in.
+  const { siteId, siteResolution, siteOriginStale } = resolveOutcomeSite(graph, project);
   if (siteId) {
     try {
       graph.addEdge({
@@ -228,6 +273,9 @@ export function createUndertakingOutcomeNode(
     harmMagnitude,
     chainDepth,
     answersGrievance,
+    ...(siteId && { siteId }),
+    siteResolution,
+    ...(siteOriginStale && { siteOriginStale }),
     summary: culpritAgentId
       ? (victimAgentId
         ? `${harmClass}: ${culpritAgentId} → ${victimAgentId} (magnitude ${harmMagnitude})`

@@ -2028,6 +2028,21 @@ export interface StrategicProjectProgressTrace extends TraceBase {
 }
 
 /**
+ * Which anchor the outcome's `occurred_at` site came from (THR-1444).
+ *
+ * Three values rather than a bare id, because "the harm has a site" and "the harm has
+ * *its own* site" are different facts and only one of them is what the undertaking
+ * intended. `unresolved` is the case that used to be a swallowed `console.warn`.
+ */
+export type UndertakingOutcomeSiteResolution =
+  /** The undertaking's own `originLocationId`, still in the graph. */
+  | 'origin'
+  /** Where the actor stands now — the origin was absent, or named a node since removed. */
+  | 'actor_position'
+  /** Neither anchor resolves to a live node; the event is deliberately siteless. */
+  | 'unresolved';
+
+/**
  * Trace: a harm-carrying undertaking outcome was written as a graph event node
  * (THR-1298).
  *
@@ -2051,6 +2066,21 @@ export interface UndertakingOutcomeEventTrace extends TraceBase {
   chainDepth: number;
   /** Set when this outcome answers a standing grievance rather than opening one. */
   answersGrievance?: boolean;
+  /**
+   * The location the `occurred_at` edge points at. Absent when `siteResolution` is
+   * `unresolved` — a harm with no site mints no grievance, so its absence is the
+   * single most load-bearing thing an inspector can read here (THR-1444).
+   */
+  siteId?: string;
+  /** Which anchor supplied `siteId` (THR-1444). */
+  siteResolution: UndertakingOutcomeSiteResolution;
+  /**
+   * Set when `originLocationId` was present but named a node the graph no longer
+   * holds — the undertaking outlived its own origin. This is the signal that used to
+   * be an unread `console.warn`; a rising count means locations are being retired out
+   * from under in-flight undertakings.
+   */
+  siteOriginStale?: true;
 }
 
 /** Every state a grievance can move through (THR-1298 slice 5). */
