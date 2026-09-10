@@ -859,7 +859,10 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 14,
     actorAffinities: ['ascendant'],
-    sphereAffinity: 'shadow',
+    // Darkness — "mystery, shadow, concealment". Planting a secret is concealment
+    // fuelled by the dark, not an act of intellect; the `shadow` Reach above already
+    // says what the action does (THR-1114 — was `shadow`, a Reach in a Sphere field).
+    sphereAffinity: 'darkness',
     motivations: ['honesty_cunning', 'loyalty_ambition'],
     targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
     narrativeTemplates: {
@@ -2741,7 +2744,10 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 3,
     actorAffinities: ['ascendant'],
-    sphereAffinity: 'void',
+    // Entropy — "decay, dissolution, transformation". Nullifying an artifact's power
+    // is dissolution; `void` was reaching for an unmaking the twelve already cover
+    // (THR-1114 — was `void`, which is nothing in the current cosmology).
+    sphereAffinity: 'entropy',
     targetCategories: ['artifact', 'artifact_legendary'],
     motivations: ['tradition_novelty', 'courage_prudence'],
     narrativeTemplates: {
