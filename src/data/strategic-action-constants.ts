@@ -157,6 +157,53 @@ export const STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS = 10;
 /** Degradation rate per tick after grace period expires (0-1 scale) */
 export const STRATEGIC_CONTROL_DEGRADATION_RATE = 0.05;
 
+// ─── Control upkeep — a hold is kept by working it (THR-1287) ───────
+//
+// A *hold* is a Location a mortal claimed through `control:claim` and keeps by
+// commitment; a *Freehold* (`owns`, THR-1280/THR-1314) is property and has no clock.
+// The two words are never interchangeable in player-facing prose.
+//
+// Before THR-1287 nothing anywhere reset `neglectTicks` or lowered `degradation`, so
+// every hold collapsed at grace + 1/rate ticks whatever its holder did. Renewal is a
+// side effect of the work the holder already does *on the thing they hold* — no new
+// verb (THR-1392 ruled `hold` out), no new cell, no change to the loop above.
+
+/**
+ * The cells whose completion on a held Location renews the hold.
+ *
+ * `use` is THR-1439's harvest (holding court, drawing a tithe by hand) and
+ * `change:raise` is improving the place. Both already cost the holder something and
+ * both require them to be there; neither knows about stances, which is the point —
+ * the rule lives at the lifecycle's completion arm, never inside a semantic.
+ */
+export const CONTROL_RENEWING_VARIANTS: readonly UndertakingVerbVariant[] = ['use', 'change:raise'];
+
+/**
+ * Lowest outcome band that renews a hold, compared by **rank on the `STEP_OUTCOMES`
+ * ladder** — never by `isStepSuccess`, which admits `near_miss` (`unifiedAction.ts`)
+ * and would leave this constant decorative.
+ *
+ * A failed harvest — a court held for nothing, a tithe refused — pays its costs and
+ * renews nothing; the clock keeps running. That is the story, not an oversight.
+ */
+export const STRATEGIC_CONTROL_RENEWAL_MIN_BAND = 'success_at_cost';
+
+/** Degradation recovered per renewal (0-1 scale) — five degrading ticks' worth. */
+export const STRATEGIC_CONTROL_RENEWAL_RECOVERY = 0.25;
+
+/** Significance of the recovery chronicle line — below the collapse's 0.5. */
+export const CONTROL_RENEWAL_EVENT_SIGNIFICANCE = 0.4;
+
+/**
+ * The recovery chronicle line, beside the collapse message it pairs with
+ * (`retireControl` renders *"<name> loses control: <displayName>"*).
+ *
+ * Emitted **only** when a renewal recovers degradation that had already begun — a
+ * routine reset on a healthy hold is noise the player does not need.
+ */
+export const controlRenewalMessage = (actorName: string, targetName: string): string =>
+  `${actorName} keeps their grip on ${targetName}`;
+
 
 // ─── Normalization ──────────────────────────────────────────────────
 

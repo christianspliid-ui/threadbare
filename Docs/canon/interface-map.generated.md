@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 92 |
+| 🟢 LIVE | 94 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **122** |
+| **Total** | **124** |
 
 ## Contracts by producing subsystem
 
@@ -223,7 +223,9 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `calling-derivation` | A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word. | property: `calling`, `callingTitleKey`, `callingSinceTick`, `recomputeCalling`, `getCallingPresentation`, `calling_change` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `cell-completion-renews-control-stance` | A hold is kept by working it (THR-1287). The band and the cell variant an undertaking completion already carries decide whether the holder’s control stance renews — so the neglect loop, which before this had no counterparty at all and could only ever increment, is finally something a mortal can push back against. | function: `renewControlStance`, `CONTROL_RENEWING_VARIANTS`, `STRATEGIC_CONTROL_RENEWAL_MIN_BAND`, `STRATEGIC_CONTROL_RENEWAL_RECOVERY`, `neglectTicks`, `degradation` | Strategic Projects & Control | 🟢 LIVE | — |
 | `mentorship-rides-undertaking-checkpoints` | A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one. | edge-prop: `mentors`, `undertakingId` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `seize-retires-losers-control-stance` | THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs. | function: `applySeizeRetirement`, `retireControl`, `transferHolding`, `controls`, `active` | Strategic Projects & Control | 🟢 LIVE | — |
 | `shared-step-resolution-two-callers` | One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project. | function: `resolveStepCore`, `mapResolverOutcomeToStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `undertaking-checkpoint-events` | What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it. | event: `undertaking_checkpoint`, `undertaking_fork`, `resolveMomentPresentation`, `followedAgentIds`, `pendingUndertakingMoments`, `moment_surface` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `undertaking-completion-grows-capability` | Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them. | property: `domainCapabilities`, `growCapabilityOnCompletion`, `capabilityGrowth`, `UNDERTAKING_COMPLETION_CAPABILITY_GROWTH`, `CAPABILITY_MAX` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -637,6 +639,18 @@ exit
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +61 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
+### `cell-completion-renews-control-stance` — 🟢 LIVE
+
+- **Intent:** A hold is kept by working it (THR-1287). The band and the cell variant an undertaking completion already carries decide whether the holder’s control stance renews — so the neglect loop, which before this had no counterparty at all and could only ever increment, is finally something a mortal can push back against.
+- **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
+- **UL terms:** *Outcome Band*
+- **Module:** `src/engine/strategicActionLifecycle.ts`
+- **Production hits:** 26 total — 1 write, 2 read, 23 unclassified
+- **Write sites:** `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/strategicPresentation.ts`, `src/engine/strategicTelemetry.ts`
+- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +18 more
+- **Verdict:** Verified 2026-09-10: THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) reaches the resolver with no band and renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned.
+
 ### `companion-capability-contribution` — 🟢 LIVE
 
 - **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
@@ -957,10 +971,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
 - **UL terms:** *Faction*, *Encounter*
 - **Module:** `src/engine/factionReputation.ts`
-- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
+- **Production hits:** 18 total — 1 write, 1 read, 16 unclassified
 - **Write sites:** `src/data/faction-encounter-content.ts`
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`
-- **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/holy-order-dawn-encounter-content.ts`, `src/data/lorekeepers-covenant-encounter-content.ts` +10 more
+- **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/holy-order-dawn-encounter-content.ts`, `src/data/lorekeepers-covenant-encounter-content.ts` +11 more
 - **Verdict:** Verified 2026-07-26: THR-805. `FACTION_ENCOUNTER_META.minRank` was authored on ~150 template metas and typed at types/faction.ts:72, with NO production reader — its only non-data references were three tests asserting the data round-trips — so every tier-restricted guild template was drawable by any agent at the right location. filterByPrerequisites now consults it for entries whose questType is senior/elite/leadership (RANK_GATED_QUEST_TYPES); the 123 `standard` quest/social metas stay ungated, since minRank is a REQUIRED field and gating on its presence would have closed the entry tier behind mere membership. Rank is derived from member_of.reputation via computeRankFromReputation on every check, never read from the edge's cached rank/role (those refresh only on a tier change, so a decay in progress reads stale). Non-membership closes the gate; unresolvable data (unknown factionDefId, or a minRank naming no tier) fails OPEN, because a typo that silently orphans content is the worse failure. Two adjacent substrates were rejected and are recorded so they are not revived: the `faction_rank:` predicate in effectPredicates.ts reads agentNode.properties.factionRank, which NOTHING writes (grep the assignment side — every other hit is a local display string), so it is permanently 0 and false for any threshold; and FactionRankTier.encounterAccess prefix allowlists are equally unread AND already drifted (merchant_consortium declares mc_trade.* while its templates are mct.*). Non-vacuous by live payload intersection and measured blast radius: 60 rank-gated metas exist, exactly 12 are present in a live tick-150 seed-42 cache (the guild tail THR-779/THR-803 registered), and a live sweep shows the gate closed for a real low-rank member and open for that same member once promoted past the floor. Locked by src/engine/__tests__/factionRankGate.test.ts (14 tests), falsified at 2-of-14 red with the gate disabled. The gate deliberately does NOT depend on resolving the template — it needs only the id and its meta. That independence was load-bearing when it shipped, because the pipeline's `getAnyEncounterById` returned undefined for every cache-registered regional template, leaving the sibling trait/broken/group gates in the same loop inert for those ids. THR-811 closed that gap on 2026-07-27: the loop now resolves via getUnifiedTemplateById, which covers all 213 cache-registrable ids (43 of them were unresolvable before), so the sibling gates are live for this id set too.
 
 ### `holdings-single-writer-owns-edge` — 🟢 LIVE
@@ -1360,6 +1374,17 @@ exit
 - **Read sites:** `src/engine/groups/bandOpposition.ts`
 - **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-07-25: PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.
+
+### `seize-retires-losers-control-stance` — 🟢 LIVE
+
+- **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
+- **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
+- **Module:** `src/engine/strategicActionLifecycle.ts`
+- **Production hits:** 361 total — 1 write, 1 read, 359 unclassified
+- **Write sites:** `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/strategicTelemetry.ts`
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +354 more
+- **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
 

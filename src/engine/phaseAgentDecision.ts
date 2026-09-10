@@ -1026,6 +1026,9 @@ export function phaseAgentDecision(
             accumulatedStrategicState = stratResult.strategicState;
           }
           if (stratResult.moments?.length) newMoments.push(...stratResult.moments);
+          // THR-1287: the recovery chronicle line when working a hold pulled it back
+          // from degradation. The lifecycle returns patches; this phase owns the feed.
+          if (stratResult.events?.length) newEvents.push(...stratResult.events);
 
           // THR-1184: an instant mutation can mint an edge that changes what a location
           // can host. Refresh that location's encounter pool now, or it waits for an
