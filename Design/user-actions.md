@@ -1,18 +1,18 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 16:00 local (2026-09-10 14:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 16:58 local (2026-09-10 14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### 1. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**The lead ask, fourth hour, and the clock kept running.** Ready shelf: five this morning → four → three → **two**, both low-priority leftovers about wording a number on screen. Roughly an hour or two of builder work left, and the builder's slot is empty now.
+**The lead ask, fifth hour — and the thing it was going to cause has now happened.** [THR-1424](https://linear.app/threadbare/issue/THR-1424) merged at 16:39 and the builder's slot went empty behind it. The shelf is two low-priority leftovers about wording numbers on screen: an hour or two of work, then nothing.
 
-New program work comes from a design pass; the design bench holds one job at a time; that seat is THR-790 — In Design, assigned to you, no plan doc, unmoved since **15 August (26 days)**. Confirmed live: it is the only item on the bench, with seven jobs queued behind it.
+New program work comes from a design pass; the design bench holds one job at a time; that seat is THR-790 — In Design, assigned to you, no plan doc, unmoved since **15 August (26 days)**. Verified live this run.
 
 **One word.** *Yes* changes nothing and the asking stops. *Not getting to it* frees the seat. *(Only the `Parked` label frees it; unassigning does not.)*
 
-The work: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic").
+Queued directly behind that seat, both your own direction: [nations and named areas drawn but not simulated](https://linear.app/threadbare/issue/THR-1155) and [a held town making you the faction's town-keeper](https://linear.app/threadbare/issue/THR-1448). The Traits work itself: location traits going live, artifact traits, draw-by-trait pools ("gain a random #relic").
 
 ### 2. Sample two of the camp six — worth meeting twice? — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
@@ -98,16 +98,16 @@ Three shorter gaps since (18.6 h, 18.1 h, 10 h) recovered on their own and cost 
 
 ## Resolved this period
 
-- **2026-09-10 — a second backlog ruling settled itself, and shipped.** [THR-1315](https://linear.app/threadbare/issue/THR-1315) asked whether a codex page you can open mid-game should exist. A session ruled the honest way — the reserved word left the vocabulary rather than a half-surface being invented — and merged it at 13:27 ([PR #1879](https://github.com/christianspliid-ui/threadbare/pull/1879)). Ask 4 is twelve items.
+- **2026-09-10 — the last substantial job on the shelf shipped, which is what makes ask 1 urgent rather than tidy.** [THR-1424](https://linear.app/threadbare/issue/THR-1424) is Done ([PR #1880](https://github.com/christianspliid-ui/threadbare/pull/1880)): a proportion on screen now reads as the bar it already had, instead of a bare percentage.
+- **2026-09-10 — a second backlog ruling settled itself, and shipped.** [THR-1315](https://linear.app/threadbare/issue/THR-1315) asked whether a codex page you can open mid-game should exist. A session ruled the honest way — the reserved word left the vocabulary rather than a half-surface being invented — and merged it at 13:27 ([PR #1879](https://github.com/christianspliid-ui/threadbare/pull/1879)).
 - **2026-09-10 — one backlog ruling settled itself, and shipped.** [THR-1195](https://linear.app/threadbare/issue/THR-1195) — *what a Divine Herald is* — was row one of ask 4. A session took the call and merged it this morning; the Herald is now visible in play.
 - **2026-09-10 — batch 2 shipped, and the ask to approve it was already answered.** Your 09-09 *"Batch 2, run the six"* released the camp six; [THR-1222](https://linear.app/threadbare/issue/THR-1222) went Done the same night ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). What remains on [THR-1130](https://linear.app/threadbare/issue/THR-1130) is a *review* of what shipped, not a gate — ask 2, reframed.
 - **2026-09-10 — batch 3's one open question dissolved without you.** [THR-1130](https://linear.app/threadbare/issue/THR-1130) parked at 08:14 asking whether to wait for [THR-1446](https://linear.app/threadbare/issue/THR-1446); THR-1446 went Done at 09:52. The recommendation was *wait*, and the wait is over. A session unparks it; nothing is owed by you.
-- **2026-09-10 — the builder's last substantial job shipped, and emptied the shelf behind it.** [THR-1450](https://linear.app/threadbare/issue/THR-1450) is Done ([PR #1876](https://github.com/christianspliid-ui/threadbare/pull/1876)): a job that finished instantly used to read as a blank, and now reads as plain success.
+- **2026-09-10 — a job that finished instantly stopped reading as a blank.** [THR-1450](https://linear.app/threadbare/issue/THR-1450) is Done ([PR #1876](https://github.com/christianspliid-ui/threadbare/pull/1876)); it now reads as plain success.
 - **2026-09-10 — the encounter line's last engine blocker cleared itself in three hours.** [THR-1446](https://linear.app/threadbare/issue/THR-1446) is Done and live ([PR #1875](https://github.com/christianspliid-ui/threadbare/pull/1875)): an encounter can now name your god and the place it is happening at, so the consequences the game deals can actually be built.
-- **2026-09-10 — the `concepts` rule stopped being your problem.** [THR-1053](https://linear.app/threadbare/issue/THR-1053) is gate calibration under your 2026-08-12 rule and a design session will settle it. The orchestrator has re-raised it eight hours running; the decline stands. Say the word if you want it back.
+- **2026-09-10 — the `concepts` rule stopped being your problem.** [THR-1053](https://linear.app/threadbare/issue/THR-1053) is gate calibration under your 2026-08-12 rule and a design session will settle it. The decline stands; say the word if you want it back.
 - **2026-09-10 — the shadow/void Sphere question shipped as a fix.** [THR-1114](https://linear.app/threadbare/issue/THR-1114) merged this morning — two actions stopped claiming a Sphere the cosmology does not have.
 - **2026-09-10 — you ruled that a hold is a commitment, and it was buildable eleven minutes later.** Your words: *a claimed town is a commitment — a hold is kept by working it.* [THR-1287](https://linear.app/threadbare/issue/THR-1287) went Ready for Dev at 06:47 with its plan doc landed; the faction-position half became [THR-1448](https://linear.app/threadbare/issue/THR-1448) and the glossary term [THR-1449](https://linear.app/threadbare/issue/THR-1449) — row one of ask 3.
-- **2026-09-10 — the builder noticed when the board goes dark.** [THR-1443](https://linear.app/threadbare/issue/THR-1443) is Done ([PR #1871](https://github.com/christianspliid-ui/threadbare/pull/1871)) — the session start-up check now reports an unreachable issue board instead of reading it as a quiet queue.
 
 ---
 
