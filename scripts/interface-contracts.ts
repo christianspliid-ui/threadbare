@@ -2470,6 +2470,57 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'cell-completion-renews-control-stance',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'A hold is kept by working it (THR-1287). The band and the cell variant an undertaking completion already carries decide whether the holder’s control stance renews — so the neglect loop, which before this had no counterparty at all and could only ever increment, is finally something a mortal can push back against.',
+    ulTerms: ['Outcome Band'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'renewControlStance', 'CONTROL_RENEWING_VARIANTS',
+        'STRATEGIC_CONTROL_RENEWAL_MIN_BAND', 'STRATEGIC_CONTROL_RENEWAL_RECOVERY',
+        // The two numbers the renewal writes are the contract's shared surface — they
+        // are what every consumer below actually reads off the stance record.
+        'neglectTicks', 'degradation',
+      ],
+      module: 'src/engine/strategicActionLifecycle.ts',
+    },
+    writeSites: ['src/engine/strategicActionLifecycle.ts'],
+    readSites: [
+      // The neglect loop is the consumer that matters — it walks the renewed array in
+      // the same pass, which is what makes a reset survive the tick that produced it.
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/strategicTelemetry.ts',
+      'src/engine/strategicPresentation.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        'THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) reaches the resolver with no band and renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned.',
+    },
+  },
+  {
+    id: 'seize-retires-losers-control-stance',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['applySeizeRetirement', 'retireControl', 'transferHolding', 'controls', 'active'],
+      module: 'src/engine/strategicActionLifecycle.ts',
+    },
+    writeSites: ['src/engine/strategicActionLifecycle.ts'],
+    readSites: ['src/engine/strategicActionLifecycle.ts', 'src/engine/strategicTelemetry.ts'],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        'THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.',
+    },
+  },
+  {
     id: 'undertakings-reach-the-player',
     producerSystem: 'Strategic Projects & Control',
     consumerSystem: NARRATIVE,

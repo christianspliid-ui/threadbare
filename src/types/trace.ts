@@ -2527,23 +2527,37 @@ export interface StrategicWorldChangeTrace extends TraceBase {
 }
 
 /**
- * Trace: a control stance ended, or a re-claim was refused by the post-collapse
- * cooldown (THR-1286).
+ * Trace: a control stance ended, was renewed, or a re-claim was refused by the
+ * post-collapse cooldown (THR-1286, THR-1287).
  *
  * `collapsed` fires when neglect degrades a stance to 1 and the record + its
  * `controls` edge are retired; `reclaim_refused` fires when candidate generation
  * declines to re-propose a target the actor let collapse inside the cooldown;
  * `already_held` fires when generation declines a target the actor still actively
- * controls, whose claim could only fail `already_controls`.
+ * controls, whose claim could only fail `already_controls`; `renewed` fires when the
+ * holder works the hold and the neglect clock resets (THR-1287); `seized` fires when
+ * another mortal takes the place and the loser's stance is retired with it.
+ *
+ * Every member is registered on this interface rather than duck-typed at the emit
+ * site: `emitTrace`'s `Omit` collapses the `TraceEntry` union, so an unregistered
+ * field is silently dropped instead of failing to compile.
  */
 export interface StrategicControlLifecycleTrace extends TraceBase {
   category: 'strategic_control_lifecycle';
   actorId: string;
   targetNodeId: string;
-  event: 'collapsed' | 'reclaim_refused' | 'already_held';
+  event: 'collapsed' | 'reclaim_refused' | 'already_held' | 'renewed' | 'seized';
+  /** The cell whose completion renewed the hold; only present on `renewed`. */
+  variant?: UndertakingVerbVariant;
+  /** Degradation before the renewal; only on `renewed`. */
+  degradationBefore?: number;
+  /** Degradation after the renewal, floored at 0; only on `renewed`. */
+  degradationAfter?: number;
+  /** The mortal who took the place; only on `seized`. */
+  seizedById?: string;
   /** Ticks remaining on the cooldown; only present on `reclaim_refused`. */
   cooldownRemaining?: number;
-  /** Whether the dead `controls` edge was found and removed; only on `collapsed`. */
+  /** Whether the dead `controls` edge was found and removed; on `collapsed` and `seized`. */
   edgeReleased?: boolean;
 }
 
