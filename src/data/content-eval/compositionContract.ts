@@ -46,7 +46,7 @@ import type { EncounterSupportSpec } from '../../types/encounter';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../encounter-image-library';
 import { validateSettingEnvelope } from '../settingClasses';
 import { checkComposedHand, checkNudgeHand, nudgeBearingSteps } from './nudgeHandChecklist';
-import { checkConsequenceDraw, familiesWiredByEffects } from './consequenceDraw';
+import { checkConsequenceDraw, familiesWiredByEffects, sentinelBindabilityViolations } from './consequenceDraw';
 import {
   ANCHOR_SENTINEL_ACTOR,
   ANCHOR_SENTINEL_CAST_PREFIX,
@@ -1569,6 +1569,15 @@ export function checkCompositionContract(
     template,
     familiesWiredByEffects(allAftermathEffects(template), hasRewardPoolRecipe(template)),
   )) {
+    add('draw', problem);
+  }
+
+  // THR-1446 — presence is not resolvability. The check above asks whether an effect of
+  // the family's kind is authored; this one asks whether its sentinel can actually bind
+  // on this template's declared target shape. Unconditional rather than gated on
+  // `consequenceDraw`: a silently no-opping effect is a defect on any template, drawn
+  // hand or not, and the corpus that predates the draw is exactly where it hides.
+  for (const problem of sentinelBindabilityViolations(template, allAftermathEffects(template))) {
     add('draw', problem);
   }
 

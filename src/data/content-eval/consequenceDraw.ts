@@ -39,6 +39,12 @@ import type {
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
 import { drawFromTable } from './drawTable';
+import {
+  SCENE_SENTINEL_FIELD_NAMES,
+  SCENE_SENTINEL_FIELDS,
+  isSceneSentinel,
+  sentinelBindingRefusal,
+} from '../../engine/sceneSentinels';
 
 // ─── Constants (NFP #1 — every magic number is named) ────────────────
 
@@ -326,6 +332,66 @@ export function familiesWiredByEffects(
 
   if (hasRewardPool) wired.add('possession');
   return wired;
+}
+
+// ─── Bindability (THR-1446) ──────────────────────────────────────────
+
+/**
+ * Effects whose scene sentinels cannot bind on this template's target shape.
+ *
+ * **Why this exists.** {@link checkConsequenceDraw} asks whether the encounter wires
+ * *an effect of the family's kind*, and says so explicitly — it is a floor, because no
+ * machine reads the fiction. But a floor that counts presence cannot see
+ * **resolvability**, and the two failures look identical from the outside: an effect
+ * that is authored, typed, and present, whose target sentinel binds nothing at runtime
+ * and no-ops in silence. Batch 2 hit exactly that on `sharpen_blades` — a `place`
+ * consequence wired as `targetLocationId: '$target'` on a template that targets actors,
+ * so `$target` was an agent, the binder's kind check correctly refused it, and the
+ * effect vanished. Every gate in the line passed it.
+ *
+ * That is the vacuous-wiring failure the Composition Contract exists to prevent, so it
+ * belongs to the gate rather than to an author's memory of `SCENE_SENTINEL_FIELDS`.
+ *
+ * **Scope, stated so the next reader does not widen it by accident.** This reports only
+ * what a template *declares*: the field's required node kind against
+ * `targetCategories`. It does not attempt to prove a `$cast:<key>` resolves — that is
+ * `castTargetViolations` (THR-1165), which knows the support bundle — and it does not
+ * guess runtime facts such as whether a given card's actor is the ascendant. A check
+ * that reported what it cannot prove would train authors to ignore it.
+ *
+ * Returns human-readable violations, never throws (NFP #4).
+ */
+export function sentinelBindabilityViolations(
+  template: UnifiedActionTemplate,
+  effects: readonly EncounterAftermathReactionEffect[],
+): readonly string[] {
+  const problems: string[] = [];
+  const reported = new Set<string>();
+
+  for (const effect of effects) {
+    const bag = effect as unknown as Record<string, unknown>;
+    for (const field of SCENE_SENTINEL_FIELD_NAMES) {
+      const value = bag[field];
+      if (!isSceneSentinel(value)) continue;
+
+      const refusal = sentinelBindingRefusal(field, value);
+      if (!refusal) continue;
+
+      // One report per (kind, field, sentinel): the same effect is reachable from
+      // several aftermath faces when a band inherits its variant's reactions, and
+      // three copies of one defect read as three defects.
+      const dedupe = `${effect.kind}|${field}|${value}`;
+      if (reported.has(dedupe)) continue;
+      reported.add(dedupe);
+
+      problems.push(
+        `${effect.kind}.${field} is authored as '${value}' but cannot bind: ${refusal}. `
+          + `The field wants a ${SCENE_SENTINEL_FIELDS[field]}`,
+      );
+    }
+  }
+
+  return problems;
 }
 
 // ─── The gate ────────────────────────────────────────────────────────

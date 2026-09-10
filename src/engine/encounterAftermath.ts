@@ -135,7 +135,16 @@ import {
 import { computeAxisLeans, chooseAlignedReaction } from './encounters/reactionChooser';
 import { getAxisByReach, reachToAxisId } from '../types/axisRegistry';
 import type { AxiologicalProfile } from '../types/agent';
-import { isPlaceNode, isLocationNode } from './sublocationShape';
+import { isPlaceNode, isLocationNode, resolveToParentLocation } from './sublocationShape';
+import {
+  SCENE_SENTINEL_FIELDS,
+  SENTINEL_ACTOR,
+  SENTINEL_CAST_PREFIX,
+  SENTINEL_CAST_LEGACY_PREFIX,
+  SENTINEL_ASCENDANT,
+  SENTINEL_HERE,
+} from './sceneSentinels';
+import type { SceneSentinelField, SceneSentinelKind } from './sceneSentinels';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -642,59 +651,71 @@ export function bindReachSignatureTargets(
  * resolve. It did not: the literal seven-character string passed through the bind pass
  * untouched and was consumed downstream as if it were a node id.
  */
-export const AFTERMATH_ACTOR_SENTINEL = '$actor';
+export const AFTERMATH_ACTOR_SENTINEL = SENTINEL_ACTOR;
 /** `$cast:<key>` sentinel prefix — rebinds via `action.supportBindings`. */
-export const AFTERMATH_CAST_SENTINEL_PREFIX = '$cast:';
+export const AFTERMATH_CAST_SENTINEL_PREFIX = SENTINEL_CAST_PREFIX;
 /** Legacy alias for the cast sentinel (the `src/data/encounters/examples/` files use `role:`). */
-export const AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX = 'role:';
+export const AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX = SENTINEL_CAST_LEGACY_PREFIX;
+
+/**
+ * `$ascendant` sentinel (THR-1446) — the player's god.
+ *
+ * The other four sentinels all name a *scene participant*: `$actor` and `$target` are
+ * the two ends of the card, `$cast:<key>` is someone the scene cast. The ascendant is
+ * none of those — it is the player, standing outside the scene — which is why it had
+ * no sentinel and why the whole `thread` consequence family was unwirable: every
+ * `thread_*` effect takes a literal `ascendantId`, and the node id is minted per run
+ * as `asc.<archetypeId>`, so there is no literal an author could ever write.
+ *
+ * There is exactly one, so it needs no scene referent: it resolves from
+ * `GameState.ascendantId` (handed to the binder as {@link AftermathSceneRefs}) rather
+ * than from `action`. When the caller passes no refs the sentinel is left in place and
+ * the effect no-ops down its existing path, like any other unresolvable sentinel.
+ */
+export const AFTERMATH_ASCENDANT_SENTINEL = SENTINEL_ASCENDANT;
+
+/**
+ * `$here` sentinel (THR-1446) — the place this encounter is happening at.
+ *
+ * `$target` binds a location only when the *card* targets one, so a self-targeted
+ * encounter (`targetId === actorId`, which is most of them) could never wire the
+ * `place` family: the kind check correctly refused to bind an agent to
+ * `targetLocationId`, and the effect no-opped silently. `$here` answers the question
+ * the author was actually asking — *where is this happening* — from the actor's
+ * `located_at` rather than from the card's target.
+ *
+ * Resolution walks the three-tier position model: the actor's `located_at`, then up
+ * through `resolveToParentLocation` when the field wants a Location and the actor
+ * stands at a Place. An ascendant actor has no `located_at` of its own (the *avatar*
+ * carries it — see `ascendant.ts`), so the walk hops through `properties.avatarId`
+ * first; that hop is what makes `$here` work on the divine self-targeted encounters
+ * that motivated it.
+ */
+export const AFTERMATH_HERE_SENTINEL = SENTINEL_HERE;
+
+/**
+ * Scene references the binder cannot read off the action (THR-1446).
+ *
+ * Optional and additive: every existing call site keeps compiling, and an omitted
+ * field simply leaves its sentinel unresolved (fail-soft, NFP #4).
+ */
+export interface AftermathSceneRefs {
+  /** `GameState.ascendantId` — what `$ascendant` binds to. */
+  readonly ascendantId?: string;
+}
 
 /**
  * Effect fields that may carry a scene-targeting sentinel, mapped to the node kind
- * each field expects. `$target` binds only when the action target's kind matches.
+ * each field expects — re-exported from {@link sceneSentinels} so the authoring-time
+ * gate and this binder read one table rather than two copies (THR-1446; the rot class
+ * is impediment #725).
  */
-const SCENE_SENTINEL_FIELDS = {
-  targetAgentId: 'agent',
-  withAgentId: 'agent',
-  // THR-1110 — an `attachment_grant` agreement names its other party here, and the
-  // party is nearly always someone the scene already cast. Registered as 'agent' so
-  // `$cast:<key>` binds the person; a literal faction or location id is not a
-  // sentinel and passes through untouched, then is validated by the handler.
-  counterpartyId: 'agent',
-  // THR-1175 — `favor_creation` names who *owes* here. Registered as 'agent' so
-  // `$cast:<key>` binds the scene's persistent person and the kind check refuses
-  // to bind a location: that refusal is the point, since a place owing a social
-  // favour is an edge no consumer can collect. `$target` re-states the old
-  // implicit behaviour explicitly, and only binds when the target really is a
-  // person.
-  debtorAgentId: 'agent',
-  targetFactionId: 'faction',
-  // THR-1144 — `membership_change` names the faction someone joins or leaves in
-  // `factionId`, not `targetFactionId`, because the *person* is the effect's
-  // target. Registered here rather than special-cased so `$target` binds "the
-  // guild you just impressed" without the author knowing its node id.
-  //
-  // This widens four existing kinds that also carry `factionId`
-  // (`faction_absorb`, `faction_dissolve`, `signature_warhost`,
-  // `faction_reputation_gain`), which could not take a sentinel before. Widening
-  // only: a literal id is not a sentinel and passes through untouched, so no
-  // shipped content changes behaviour.
-  factionId: 'faction',
-  targetSublocationId: 'sublocation',
-  // THR-1143 — a place. `$target` binds when the action targets a location, which
-  // is how "the pass you just closed" reaches the condition without the author
-  // knowing the node id. Registered here rather than handled in the three
-  // condition branches so location targeting composes with every future effect
-  // kind that grows the field, the way the other four do.
-  targetLocationId: 'location',
-} as const;
-
-type SceneSentinelField = keyof typeof SCENE_SENTINEL_FIELDS;
 
 /** Does `nodeId` resolve to a node whose kind matches the sentinel field? Pure, fail-soft. */
 function nodeMatchesSceneField(
   graph: WorldGraph,
   nodeId: string,
-  kind: 'agent' | 'faction' | 'sublocation' | 'location',
+  kind: SceneSentinelKind,
 ): boolean {
   const node = graph.getNode(nodeId);
   if (!node) return false;
@@ -707,6 +728,20 @@ function nodeMatchesSceneField(
     case 'agent':
       // An agent is an individual-scale actor — an actor node that is not a faction/culture.
       return nodeType === 'actor' && actorType !== 'faction' && actorType !== 'culture';
+    case 'mortal':
+      // THR-1446 — `agent` minus the ascendant. Deliberately a *separate* kind rather
+      // than a narrowing of `agent`: four shipped fields (`targetAgentId`,
+      // `withAgentId`, `counterpartyId`, `debtorAgentId`) bind `$actor` on divine
+      // encounters where the actor IS the ascendant, and tightening `agent` would
+      // silently stop resolving them (NFP #6 — additive over destructive). Only
+      // `mortalId` needs the refusal: a thread whose two ends are the same god is not
+      // a relationship any consumer reads.
+      return nodeType === 'actor'
+        && actorType !== 'faction'
+        && actorType !== 'culture'
+        && actorType !== 'ascendant';
+    case 'ascendant':
+      return nodeType === 'actor' && actorType === 'ascendant';
     case 'faction':
       return nodeType === 'faction' || (nodeType === 'actor' && actorType === 'faction');
     case 'sublocation':
@@ -721,6 +756,47 @@ function nodeMatchesSceneField(
       // same node to two fields with different tax and gating semantics.
       return isLocationNode(node);
   }
+}
+
+/**
+ * THR-1446 — resolve `$here` for a sentinel field: the place the acting agent stands in,
+ * walked to the tier the field wants.
+ *
+ * Three-tier position model (CLAUDE.md § Load-Bearing Architectural Decisions): an agent
+ * holds exactly one `located_at` edge, pointing at the most specific node it occupies.
+ * So a `sublocation` field takes that node when it is a Place, and a `location` field
+ * walks up through `resolveToParentLocation`.
+ *
+ * The ascendant hop is the reason this is a function rather than one line at the call
+ * site: an ascendant node carries no `located_at` of its own — its *avatar* does — and
+ * the divine self-targeted encounter is precisely the shape that could not wire `place`
+ * before. Fail-soft throughout: any unresolvable link returns `null` and leaves the
+ * sentinel in place (NFP #4).
+ */
+function resolveSceneHere(
+  graph: WorldGraph,
+  actorId: string | undefined,
+  kind: SceneSentinelKind,
+): string | null {
+  if (!actorId) return null;
+  if (kind !== 'location' && kind !== 'sublocation') return null;
+
+  let locatedId = graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
+  if (!locatedId) {
+    const avatarId = graph.getNode(actorId)?.properties?.avatarId;
+    if (typeof avatarId === 'string' && avatarId.length > 0) {
+      locatedId = graph.getOutgoingEdges(avatarId, 'located_at')[0]?.target;
+    }
+  }
+  if (!locatedId) return null;
+
+  const located = graph.getNode(locatedId);
+  if (!located) return null;
+
+  if (kind === 'sublocation') return isPlaceNode(located) ? located.id : null;
+
+  const parent = resolveToParentLocation(graph, located);
+  return parent && isLocationNode(parent) ? parent.id : null;
 }
 
 export interface SceneSentinelTraceContext {
@@ -738,11 +814,16 @@ export interface SceneSentinelTraceContext {
  * effect kind. Composes *after* `bindReachSignatureTargets` (signature pass first),
  * so `$primary` and the three signature kinds keep their behavior.
  *
- * For each field in { targetAgentId, targetFactionId, targetSublocationId, withAgentId }
- * whose value is a sentinel string:
+ * For each field in {@link SCENE_SENTINEL_FIELDS} — read the table, not this comment;
+ * an enumeration here is a second copy no gate re-derives, and the last one rotted
+ * through four additions before impediment #725 was paid for reading it — whose value
+ * is a sentinel string:
  *   • `'$actor'`       → `action.actorId`, iff the resolved node kind matches the field.
  *   • `'$target'`      → `action.targetId`, iff the resolved node kind matches the field.
  *   • `'$cast:<key>'`  → `action.supportBindings[key].nodeId` (legacy alias `'role:<key>'`).
+ *   • `'$ascendant'`   → `scene.ascendantId` (THR-1446), iff it resolves to an ascendant.
+ *   • `'$here'`        → the actor's `located_at`, walked to the tier the field wants
+ *                        (THR-1446). See {@link resolveSceneHere}.
  *
  * An unresolvable sentinel (missing target/binding, kind mismatch) is left in place —
  * the effect then no-ops down its existing invalid-target path (fail-soft, NFP #4).
@@ -755,6 +836,7 @@ export function bindAftermathSceneTargets(
   action: UnifiedAction | undefined,
   graph: WorldGraph,
   traceCtx?: SceneSentinelTraceContext,
+  scene?: AftermathSceneRefs,
 ): EncounterAftermathReactionEffect {
   const source = effect as unknown as Record<string, unknown>;
   let next: Record<string, unknown> | undefined;
@@ -765,10 +847,15 @@ export function bindAftermathSceneTargets(
 
     const isActorSentinel = value === AFTERMATH_ACTOR_SENTINEL;
     const isTargetSentinel = value === AFTERMATH_TARGET_SENTINEL;
+    const isAscendantSentinel = value === AFTERMATH_ASCENDANT_SENTINEL;
+    const isHereSentinel = value === AFTERMATH_HERE_SENTINEL;
     const isCastSentinel =
       value.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ||
       value.startsWith(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX);
-    if (!isActorSentinel && !isTargetSentinel && !isCastSentinel) continue;
+    if (
+      !isActorSentinel && !isTargetSentinel && !isCastSentinel
+      && !isAscendantSentinel && !isHereSentinel
+    ) continue;
 
     let resolvedNodeId: string | null = null;
     if (isActorSentinel) {
@@ -776,6 +863,17 @@ export function bindAftermathSceneTargets(
       if (actorId && nodeMatchesSceneField(graph, actorId, SCENE_SENTINEL_FIELDS[field])) {
         resolvedNodeId = actorId;
       }
+    } else if (isAscendantSentinel) {
+      // THR-1446 — the one sentinel that reads nothing from the scene. Kind-checked
+      // like every other so a caller handing a stale or wrong id binds nothing rather
+      // than minting an edge from a node that is not a god.
+      const ascendantId = scene?.ascendantId;
+      if (ascendantId && nodeMatchesSceneField(graph, ascendantId, SCENE_SENTINEL_FIELDS[field])) {
+        resolvedNodeId = ascendantId;
+      }
+    } else if (isHereSentinel) {
+      const here = resolveSceneHere(graph, action?.actorId, SCENE_SENTINEL_FIELDS[field]);
+      if (here) resolvedNodeId = here;
     } else if (isTargetSentinel) {
       const targetId = action?.targetId;
       if (targetId && nodeMatchesSceneField(graph, targetId, SCENE_SENTINEL_FIELDS[field])) {
@@ -1020,6 +1118,9 @@ export function applyEncounterAftermathReaction(
         action,
         state.graph,
         { tick, actionId, actorAgentId, encounterId, reactionId: reaction.id, effectIndex: i },
+        // THR-1446: `$ascendant` names the player's god, which is not a scene
+        // participant and so cannot be read off `action`.
+        { ascendantId: state.ascendantId },
       ),
       state.graph,
       actorAgentId,
