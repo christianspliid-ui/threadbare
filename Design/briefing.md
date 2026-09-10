@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-10 03:56 local (01:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-10 04:58 local (02:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -12,7 +12,7 @@ Yes releases batch 3. Anything short of yes is feedback the line can act on. [Ba
 
 ## Also waiting (7)
 
-- [**Rule on the backlog**](https://linear.app/threadbare/issue/THR-1195) — ~14 tickets waiting on a sentence from you, not on effort. Say *"rule on the backlog"* and they arrive smallest first. **This is why the shelf keeps emptying.**
+- [**Rule on the backlog**](https://linear.app/threadbare/issue/THR-1195) — ~14 tickets waiting on a sentence from you, not on effort. Say *"rule on the backlog"* and they arrive smallest first. **The shelf is down to three and nothing is in flight — this is why.**
 - [**The fight map**](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) — ten questions, all research finished, every one yours. Say *"work the fight map"*.
 - [**Two sketches to react to**](https://linear.app/threadbare/issue/THR-1232) — [twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236); a session builds them, your reaction is the decision.
 - [**Should image spends be gated on you at all?**](https://linear.app/threadbare/issue/THR-876) — the real question behind five quarantined scene plates. Your answer settles every batch after.
@@ -22,14 +22,13 @@ Yes releases batch 3. Anything short of yes is feedback the line can act on. [Ba
 
 ## Queue
 
-**Healthy but thin — 4 ready, 2 in flight.** Nothing stale, nothing blocked. A new bug joined the shelf at 01:32Z: [THR-1447](https://linear.app/threadbare/issue/THR-1447/duplicate-react-keys-on-the-aftermath-reaction-list-children) (an aftermath event can be silently dropped when two share an id), ahead of [THR-1443](https://linear.app/threadbare/issue/THR-1443), [THR-1444](https://linear.app/threadbare/issue/THR-1444) and [THR-1255](https://linear.app/threadbare/issue/THR-1255).
+**Thin — 3 ready, nothing in flight.** Nothing stale, nothing blocked, no PR open. The bug that joined the shelf at 01:32Z was built and merged before this brief: [THR-1447](https://linear.app/threadbare/issue/THR-1447/duplicate-react-keys-on-the-aftermath-reaction-list-children) is Done (an aftermath event could be silently dropped when two shared an id; [PR #1868](https://github.com/christianspliid-ui/threadbare/pull/1868)). What is left on the shelf: [THR-1443](https://linear.app/threadbare/issue/THR-1443), [THR-1444](https://linear.app/threadbare/issue/THR-1444), [THR-1255](https://linear.app/threadbare/issue/THR-1255).
 
 - **Parked, waiting on you:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) — the batch-2 sample verdict above. Still the only park on the board.
-- **In flight:** [THR-1134](https://linear.app/threadbare/issue/THR-1134) (the incident-capture button) — [PR #1867](https://github.com/christianspliid-ui/threadbare/pull/1867) is open, armed, waiting on its checks; it merges itself on green.
-- **Closed since the last brief:** [THR-1002](https://linear.app/threadbare/issue/THR-1002) (card grammar) reached Done at 01:05Z.
+- **Closed since the last brief:** [THR-1447](https://linear.app/threadbare/issue/THR-1447) at 02:31Z and [THR-1134](https://linear.app/threadbare/issue/THR-1134) (the incident-capture button) at 01:56Z.
 
 ## Health
 
-**All green.** Site serving the newest commit on `main` (`26acd1dd`), CI green, the one open PR armed and waiting on checks, all 9 scheduled lanes on schedule, tick cost 69 ms/tick (18% *under* the 7-day median). Reaper ran at 03:40.
+**All green.** Site serving the newest commit on `main` (`bb6a7288`), CI green, no PR waiting to merge, all 9 scheduled lanes on schedule, tick cost 69 ms/tick (17% *under* the 7-day median of 84). Reaper ran at 04:40.
 
 - The lane-silence probe still flags last weekend's 45-hour gap as unexplained — that is the standing weekend question above, not a new fault.

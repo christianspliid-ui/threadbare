@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 03:56 local (2026-09-10 01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 04:58 local (2026-09-10 02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -72,16 +72,16 @@ Two shorter 18-hour gaps since then recovered on their own and cost nothing. One
 
 ## Resolved this period
 
+- **2026-09-10 — a bug went from filed to shipped in three hours.** [THR-1447](https://linear.app/threadbare/issue/THR-1447) is Done ([PR #1868](https://github.com/christianspliid-ui/threadbare/pull/1868)): an aftermath event's id stopped being unique once the event buffer filled, so two events in the same tick could share one and the second was silently dropped before it reached any screen. Filed 01:28Z, merged 02:31Z. No input needed.
 - **2026-09-09 — batch 2 is built.** [THR-1222](https://linear.app/threadbare/issue/THR-1222) is Done; six encounters composition-complete, gate green 6/6, live-proved 6/6, 37 warnings → 0 ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). Only your two-encounter verdict remains, and it is ask 1 above.
 - **2026-09-09 — the card-name clamp released itself.** [THR-1255](https://linear.app/threadbare/issue/THR-1255) opened the moment the camp six merged, and its dead mutex was reversed on the record. On the shelf now; no input needed.
-- **2026-09-09 — the incident-capture button no longer needs you.** [THR-1134](https://linear.app/threadbare/issue/THR-1134) got its design pass and is queued to build. One invited veto sits in the plan (an opt-in *include the whole world* checkbox alongside the small default bundle) — an agent's call unless you say otherwise.
+- **2026-09-10 — the incident-capture button shipped.** [THR-1134](https://linear.app/threadbare/issue/THR-1134) is Done. One invited veto sits in the built version (an opt-in *include the whole world* checkbox alongside the small default bundle) — an agent's call unless you say otherwise.
 - **2026-09-09 — batch 2 was approved and ran.** You said *"Batch 2, run the six"*; it shipped the same evening. Six not seven, `shrine_offering` held to batch 3, repair-in-place.
 - **2026-09-09 — the shelf's last item is gone** ([THR-1256](https://linear.app/threadbare/issue/THR-1256), [PR #1861](https://github.com/christianspliid-ui/threadbare/pull/1861)). A two-week review of a documentation gate ended by retiring it rather than switching it on. An agent's call, made and recorded.
 - **2026-09-08 — the census, and the five kinds of work nobody wants.** You said retire the five; [THR-1402](https://linear.app/threadbare/issue/THR-1402) and [THR-1403](https://linear.app/threadbare/issue/THR-1403) are Done — four templates retired, 64 migrated, `UNDERTAKING_MODEL` flipped to `cells` on `main`.
 - **2026-09-08 — the undertaking retirement list** ([THR-1392](https://linear.app/threadbare/issue/THR-1392)). Your *"see the list before anything is deleted"* gate was satisfied inside the flip above; closed as superseded unless you object.
 - **2026-09-08 — the Linear connector re-auth.** No longer blocking any lane.
 - **2026-09-08 — owning people-things is live** ([THR-1438](https://linear.app/threadbare/issue/THR-1438)). Claiming a company, seizing an army and standing for a faction seat all shipped. Recorded because the grip on what a mortal holds still expires with no way to renew it ([THR-1287](https://linear.app/threadbare/issue/THR-1287)) — now true of people as well as places.
-- **2026-09-08 — the undertakings map is delivered** ([THR-1396](https://linear.app/threadbare/issue/THR-1396)). Every decision on that map is resolved and built.
 
 ---
 
