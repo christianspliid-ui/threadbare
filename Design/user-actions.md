@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 15:00 local (2026-09-10 13:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 16:00 local (2026-09-10 14:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### 1. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**The lead ask, third hour, now with a clock.** Ready shelf: five this morning → four → **three**, all low-priority leftovers. Roughly two to three hours of builder work left.
+**The lead ask, fourth hour, and the clock kept running.** Ready shelf: five this morning → four → three → **two**, both low-priority leftovers about wording a number on screen. Roughly an hour or two of builder work left, and the builder's slot is empty now.
 
 New program work comes from a design pass; the design bench holds one job at a time; that seat is THR-790 — In Design, assigned to you, no plan doc, unmoved since **15 August (26 days)**. Confirmed live: it is the only item on the bench, with seven jobs queued behind it.
 
@@ -42,14 +42,15 @@ The camp six are live on the deployed build. This pair is the widest tonal gap i
 
 ### 4. Rule on the backlog — one sitting, smallest first
 
-Roughly thirteen backlog items stop at a question rather than at a developer. Named so far:
+Roughly twelve backlog items stop at a question rather than at a developer. Named so far:
 
 - [Whether a toll moves wealth or gets deleted](https://linear.app/threadbare/issue/THR-1189) — who pays, out of what, on what cadence.
-- [Whether a page you can open mid-game should exist](https://linear.app/threadbare/issue/THR-1315) — no plan doc; an executor would be inventing the surface.
 - [Activate the pressure system or retire it](https://linear.app/threadbare/issue/THR-1318), and [decide whether that is the design](https://linear.app/threadbare/issue/THR-1148).
 - [Should every faction commission ruin expeditions, or only the adventurers' guild?](https://linear.app/threadbare/issue/THR-1026) — reads like a one-line fix; is really a question about what the world is like.
 
 Say **"rule on the backlog"** and they come framed in game terms, smallest first.
+
+**Two of these settled themselves today** — [the Divine Herald](https://linear.app/threadbare/issue/THR-1195) and [the mid-game codex page](https://linear.app/threadbare/issue/THR-1315) — each ruled by a session and shipped within the day. Both calls look right. That is the same argument ask 3 makes about the glossary: where a question has a defensible answer and no creative fork in it, a session ruling and reporting beats a queue waiting on you.
 
 ### 5. The screenshot sweep is unstuck and wants an attended hour — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -97,7 +98,8 @@ Three shorter gaps since (18.6 h, 18.1 h, 10 h) recovered on their own and cost 
 
 ## Resolved this period
 
-- **2026-09-10 — one backlog ruling settled itself, and shipped.** [THR-1195](https://linear.app/threadbare/issue/THR-1195) — *what a Divine Herald is* — was row one of ask 4. A session took the call and merged it this morning; the Herald is now visible in play. Ask 4 is thirteen items, not fourteen.
+- **2026-09-10 — a second backlog ruling settled itself, and shipped.** [THR-1315](https://linear.app/threadbare/issue/THR-1315) asked whether a codex page you can open mid-game should exist. A session ruled the honest way — the reserved word left the vocabulary rather than a half-surface being invented — and merged it at 13:27 ([PR #1879](https://github.com/christianspliid-ui/threadbare/pull/1879)). Ask 4 is twelve items.
+- **2026-09-10 — one backlog ruling settled itself, and shipped.** [THR-1195](https://linear.app/threadbare/issue/THR-1195) — *what a Divine Herald is* — was row one of ask 4. A session took the call and merged it this morning; the Herald is now visible in play.
 - **2026-09-10 — batch 2 shipped, and the ask to approve it was already answered.** Your 09-09 *"Batch 2, run the six"* released the camp six; [THR-1222](https://linear.app/threadbare/issue/THR-1222) went Done the same night ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). What remains on [THR-1130](https://linear.app/threadbare/issue/THR-1130) is a *review* of what shipped, not a gate — ask 2, reframed.
 - **2026-09-10 — batch 3's one open question dissolved without you.** [THR-1130](https://linear.app/threadbare/issue/THR-1130) parked at 08:14 asking whether to wait for [THR-1446](https://linear.app/threadbare/issue/THR-1446); THR-1446 went Done at 09:52. The recommendation was *wait*, and the wait is over. A session unparks it; nothing is owed by you.
 - **2026-09-10 — the builder's last substantial job shipped, and emptied the shelf behind it.** [THR-1450](https://linear.app/threadbare/issue/THR-1450) is Done ([PR #1876](https://github.com/christianspliid-ui/threadbare/pull/1876)): a job that finished instantly used to read as a blank, and now reads as plain success.
@@ -106,7 +108,6 @@ Three shorter gaps since (18.6 h, 18.1 h, 10 h) recovered on their own and cost 
 - **2026-09-10 — the shadow/void Sphere question shipped as a fix.** [THR-1114](https://linear.app/threadbare/issue/THR-1114) merged this morning — two actions stopped claiming a Sphere the cosmology does not have.
 - **2026-09-10 — you ruled that a hold is a commitment, and it was buildable eleven minutes later.** Your words: *a claimed town is a commitment — a hold is kept by working it.* [THR-1287](https://linear.app/threadbare/issue/THR-1287) went Ready for Dev at 06:47 with its plan doc landed; the faction-position half became [THR-1448](https://linear.app/threadbare/issue/THR-1448) and the glossary term [THR-1449](https://linear.app/threadbare/issue/THR-1449) — row one of ask 3.
 - **2026-09-10 — the builder noticed when the board goes dark.** [THR-1443](https://linear.app/threadbare/issue/THR-1443) is Done ([PR #1871](https://github.com/christianspliid-ui/threadbare/pull/1871)) — the session start-up check now reports an unreachable issue board instead of reading it as a quiet queue.
-- **2026-09-10 — action cards now speak the encounter cards' language.** [THR-1002](https://linear.app/threadbare/issue/THR-1002) is Done — one card grammar across both surfaces.
 
 ---
 
