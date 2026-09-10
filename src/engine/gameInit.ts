@@ -144,11 +144,14 @@ export function initializeGameState(
   // onto renderer clusters by `region_${geo.id}` — is deleted with the second detector
   // it existed to paper over. Names now reach the map through `areaProjection`, which
   // reads the nodes.
-  const { graph, individualIds } = seedWorld(
+  const { graph, individualIds, realmDefinitions } = seedWorld(
     cosmology, tiles, seed, undefined, fundament,
     pregenCultures, worldGenResult.provinceIds, worldGenResult.provinces,
     worldGenResult.provinceRoles,
     worldGenResult.regionData?.geographicRegions,
+    // THR-1155: the Realms are minted from the very domains `generateWorld` grouped, so
+    // the nation in the graph and the border label on the map carry one name.
+    worldGenResult.regionData?.domains,
   );
 
   // Register action template nodes so createAction can add performing edges
@@ -387,6 +390,14 @@ export function initializeGameState(
     echoStates: [],
     chronicle: createGreatChronicle(),
   };
+
+  // THR-1155: a Realm's definition is minted at worldgen and recorded here, on the
+  // same field a run-founded order writes to, so `getFactionDefinition` resolves a
+  // Realm exactly as it resolves an authored guild. Recorded *before* the publish
+  // below, so the overlay carries the Realms from the first tick with no extra call.
+  if (Object.keys(realmDefinitions).length > 0) {
+    state.dynamicFactionDefinitions = { ...state.dynamicFactionDefinitions, ...realmDefinitions };
+  }
 
   // The run-founded faction overlay is a projection of this state, so a new
   // world republishes it rather than inheriting the previous run's entries

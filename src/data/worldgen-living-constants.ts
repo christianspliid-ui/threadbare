@@ -9,14 +9,12 @@
  * `knows_secret_of` or `hostile_to`; every number here is one a later session raises
  * or zeroes without touching logic (NFP #1).
  *
- * Every pass is a number, and `0` (or `'round_robin'` for territory) disables it.
+ * Every pass is a number, and `0` disables it. (Territory had a `round_robin` kill
+ * switch until THR-1155 made the Realm the only thing that can hold a town.)
  */
 
 import type { ReachDomain } from '../types/traits';
 import type { SublocationTag } from '../engine/settlementGenome/types';
-
-/** How generic-faction territory is assigned. `'round_robin'` is the pre-THR-1437 behaviour — the kill switch. */
-export const WORLDGEN_TERRITORY_MODE: 'province' | 'round_robin' = 'province';
 
 /** How far a definition faction's home Location reaches for territory, in hexes — beyond it the culture's generic faction holds the ground. */
 export const WORLDGEN_TERRITORY_MAX_HEXES = 10;
@@ -76,7 +74,6 @@ export const WORLDGEN_LIVING_PRIMES: readonly number[] = [
  * overrides without reaching for module mocks.
  */
 export interface LivingWorldConstants {
-  WORLDGEN_TERRITORY_MODE: 'province' | 'round_robin';
   WORLDGEN_TERRITORY_MAX_HEXES: number;
   WORLDGEN_TRADE_ROUTES_PER_CULTURE: number;
   WORLDGEN_TRADE_ROUTE_MAX_HEXES: number;
@@ -93,7 +90,6 @@ export interface LivingWorldConstants {
 }
 
 export const LIVING_WORLD_DEFAULTS: LivingWorldConstants = {
-  WORLDGEN_TERRITORY_MODE,
   WORLDGEN_TERRITORY_MAX_HEXES,
   WORLDGEN_TRADE_ROUTES_PER_CULTURE,
   WORLDGEN_TRADE_ROUTE_MAX_HEXES,

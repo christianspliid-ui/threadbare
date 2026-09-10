@@ -26,6 +26,7 @@ import type { GameState } from '../types/gameState';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
 import { hexDistance } from '../lib/hexMath';
+import { stampRealmSeat } from './realmSeat';
 import type { HexCoord } from '../types/index';
 import { LOCATION_CLASSES, placeClassOf } from '../data/world-objects';
 import { isPlaceNode } from './sublocationShape';
@@ -214,94 +215,60 @@ export function findCapital(
 // ─── W2 — territory by province ────────────────────────────────────────────
 
 /**
- * Retarget generic-faction `controls` edges so a cultured Location is held by a
- * faction of its own culture.
+ * Reconcile a Realm's worldgen territory with the definition factions that keep a
+ * hall of their own (THR-1155).
  *
- * **Retargets, never adds.** The edge id is preserved (readers key on
- * `getIncomingEdges(loc, 'controls')[0]?.source`, THR-1297's warning), and the move
- * goes through `retargetEdgeSource` rather than `updateEdge({ source })` — the latter
- * rewrites the record without reindexing the adjacency maps, so the edge would still
- * answer for the old holder and never for the new one.
+ * The Realm mint writes the territory: at worldgen every Location inside a culture
+ * domain gets one `controls` edge from that culture's Realm, which is what makes the
+ * red border on the map the towns a nation holds. What this pass is still for is the
+ * one collision that mint cannot see from where it stands — a definition faction's
+ * **home** Location already carries a `controls` edge from that faction
+ * (`ensureFactionControlAtHomeLocations`, seeded after the mint), so the Realm's edge
+ * there is a second holder on one town, a shape no other writer produces and the shape
+ * THR-1297 warns about (readers key on `getIncomingEdges(loc, 'controls')[0]?.source`).
+ * The guild's own hall is the guild's; the Realm's redundant edge is dropped.
  *
- * Definition-home and monster-lair control edges are untouched: only an edge whose
- * current source is a *generic* faction is a candidate.
+ * **What this pass deliberately no longer does.** Before THR-1155 it also *moved* a
+ * cultured Location's edge to the nearest same-culture definition-faction home within
+ * `WORLDGEN_TERRITORY_MAX_HEXES`, and round-robined whatever was left over the
+ * culture list. Both existed because the holder it was moving away from was one of two
+ * or three generically-named factions that no system could see — moving the ground to a
+ * guild at least gave it a holder that meant something. Measured on seed 42 medium, that
+ * reach took **37 of the 40** Locations inside a domain, which under this plan is a
+ * merchants' guild holding a kingdom's towns and a nation with three. A Realm is the
+ * political holder; a guild holds its hall.
+ *
+ * @returns how many Realm edges were dropped as redundant.
  */
 export function retargetTerritoryByProvince(
   graph: WorldGraph,
   ctx: LivingWorldContext,
-  k: LivingWorldConstants,
+  _k: LivingWorldConstants,
 ): number {
-  if (k.WORLDGEN_TERRITORY_MODE !== 'province') return 0;
+  const realmFactions = new Set(ctx.factionIds);
+  if (realmFactions.size === 0) return 0;
 
-  const genericFactions = new Set(ctx.factionIds);
-  const sortedCultures = [...ctx.cultureIds].sort();
-  if (sortedCultures.length === 0) return 0;
+  const definitionFactions = new Set(ctx.factionDefIds);
 
-  // Definition factions grouped by the culture their home Location sits in.
-  const defHomesByCulture = new Map<string, Array<{ factionId: string; hex: HexCoord }>>();
-  for (const factionId of [...ctx.factionDefIds].sort()) {
-    const node = graph.getNode(factionId);
-    const homeId = node?.properties.homeLocationId as string | undefined;
-    if (typeof homeId !== 'string') continue;
-    const cultureId = ctx.locationCultureMap.get(homeId)?.cultureId;
-    if (!cultureId) continue;
-    const hex = hexOf(graph, homeId);
-    if (!hex) continue;
-    const bucket = defHomesByCulture.get(cultureId) ?? [];
-    bucket.push({ factionId, hex });
-    defHomesByCulture.set(cultureId, bucket);
-  }
-
-  // Round-robin over *cultures* (stable — the culture list does not depend on where
-  // a Location happened to land in `locationIds`).
-  const genericByCulture = new Map<string, string>();
-  const genericList = [...ctx.factionIds];
-  if (genericList.length > 0) {
-    sortedCultures.forEach((cultureId, i) => {
-      genericByCulture.set(cultureId, genericList[i % genericList.length]);
-    });
-  }
-
-  let retargeted = 0;
+  let dropped = 0;
   for (const locId of [...ctx.locationCultureMap.keys()].sort()) {
-    const cultureId = ctx.locationCultureMap.get(locId)?.cultureId;
-    if (!cultureId) continue;
-
     const controlEdges = graph.getIncomingEdges(locId, 'controls').slice().sort(byId);
-    const edge = controlEdges.find(e => genericFactions.has(e.source));
-    if (!edge) continue; // held by a definition faction or a lair — not ours to move
+    const realmEdge = controlEdges.find(e => realmFactions.has(e.source));
+    if (!realmEdge) continue;
 
-    const locHex = hexOf(graph, locId);
-    let newSource: string | undefined;
+    const heldByDefinition = controlEdges.some(
+      e => e.id !== realmEdge.id && definitionFactions.has(e.source),
+    );
+    if (!heldByDefinition) continue;
 
-    if (locHex) {
-      let bestDistance = Number.POSITIVE_INFINITY;
-      for (const candidate of defHomesByCulture.get(cultureId) ?? []) {
-        const distance = hexDistance(locHex, candidate.hex);
-        if (distance > k.WORLDGEN_TERRITORY_MAX_HEXES) continue;
-        if (distance < bestDistance) { bestDistance = distance; newSource = candidate.factionId; }
-      }
-    }
-    newSource ??= genericByCulture.get(cultureId);
-
-    if (!newSource || newSource === edge.source) continue;
-
-    // A definition faction's *home* Location already carries a `controls` edge from
-    // that faction (`ensureFactionControlAtHomeLocations`), and it is also the nearest
-    // same-culture home by construction — so retargeting here would leave two identical
-    // `controls` edges on one Location, a shape no other writer produces. Drop the
-    // now-redundant generic edge instead; the correct holder is already recorded.
-    const alreadyHeld = controlEdges.some(e => e.id !== edge.id && e.source === newSource);
-    if (alreadyHeld) {
-      graph.removeEdge(edge.id);
-      retargeted++;
-      continue;
-    }
-
-    graph.retargetEdgeSource(edge.id, newSource);
-    retargeted++;
+    const lostSeat = realmEdge.properties.role === 'seat';
+    graph.removeEdge(realmEdge.id);
+    dropped++;
+    // The Realm may have been seated on the very town the guild's hall stands in.
+    // Re-seat it rather than leave a court with no hall it still holds.
+    if (lostSeat) stampRealmSeat(graph, realmEdge.source);
   }
-  return retargeted;
+  return dropped;
 }
 
 // ─── W3 — trade routes ─────────────────────────────────────────────────────
@@ -721,7 +688,7 @@ export function seedLivingWorld(
 
 /** The one console line the pass reports itself with — checked against the census, never trusted. */
 export function formatLivingWorldSummary(s: LivingWorldSummary): string {
-  const base = `[WorldGen] Living world: territory retargeted ${s.territoryRetargeted}`
+  const base = `[WorldGen] Living world: realm edges dropped at guild halls ${s.territoryRetargeted}`
     + ` · routes ${s.routes} · freeholds ${s.freeholds} · possessions ${s.possessions}`
     + ` · quarrels ${s.quarrels} · marks ${s.marks} · garrisons ${s.garrisons}`;
   return s.failedPasses.length > 0 ? `${base} · failed: ${s.failedPasses.join(', ')}` : base;

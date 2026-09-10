@@ -25,6 +25,7 @@ import type { HexCoord } from '../types';
 import type { RegionCluster, ProvinceRegion, DomainRegion } from './regionTypes';
 import type { Province } from './worldgen/types';
 import { hexKey, hexKeyFromCoord } from '../lib/hexKey';
+import { generateRealmName } from '../data/realm-content';
 
 // ─── Province name vocabulary (NFP #1: Tunability) ───────────────────────────
 //
@@ -63,13 +64,6 @@ const PROVINCE_VOCAB_DEFAULT: ProvinceVocab = {
                'stead', 'bridge', 'cross', 'hall', 'fen', 'glen', 'mere', 'tor', 'burn'],
 };
 
-// ─── Domain name vocabulary ───────────────────────────────────────────────────
-
-const DOMAIN_NOUNS = [
-  'realm', 'dominion', 'throne', 'crown', 'lands', 'hold', 'empire', 'domain',
-  'sovereignty', 'principality', 'duchy', 'march', 'kingdom',
-];
-
 // ─── Seeded PRNG (mulberry32) ─────────────────────────────────────────────────
 
 /**
@@ -100,44 +94,6 @@ function generateProvinceName(id: number, seed: number, foundationBias?: string)
   const vocab = (foundationBias && PROVINCE_VOCAB_BY_FOUNDATION[foundationBias])
     ?? PROVINCE_VOCAB_DEFAULT;
   return pickRandom(vocab.adjectives, rng) + pickRandom(vocab.nouns, rng);
-}
-
-/**
- * Derive a short domain-label form from a full culture name.
- * Strips leading articles/phrases and truncates at " of the ".
- * Examples:
- *   "The Wild Storm of the Deepwood"      → "Wild Storm"
- *   "Children of the Shadow-Kept Mires"   → "Shadow-Kept Mires"
- *   "The Blade Heights"                    → "Blade Heights"
- *   "Stone-Set Iron"                       → "Stone-Set Iron"
- */
-function toDomainShortName(cultureName: string): string {
-  let s = cultureName;
-  for (const prefix of ['Children of the ', 'Keepers of the ', 'The ']) {
-    if (s.startsWith(prefix)) { s = s.slice(prefix.length); break; }
-  }
-  const ofTheIdx = s.indexOf(' of the ');
-  if (ofTheIdx > 0) s = s.slice(0, ofTheIdx);
-  return s;
-}
-
-function generateDomainName(
-  cultureId: string,
-  seed: number,
-  idx: number,
-  cultureName?: string,
-): string {
-  const rng = mulberry32(seed + idx * 3331 + cultureId.charCodeAt(0) * 17);
-  const noun = pickRandom(DOMAIN_NOUNS, rng);
-  if (cultureName) {
-    const short = toDomainShortName(cultureName);
-    return `${noun} of ${short}`;
-  }
-  // Fallback when no cultureNameMap provided
-  const prefix = cultureId.length > 4
-    ? cultureId.slice(0, 1).toUpperCase() + cultureId.slice(1, 4)
-    : cultureId.slice(0, 1).toUpperCase() + cultureId.slice(1);
-  return `${prefix} ${noun}`;
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────
@@ -287,7 +243,7 @@ export function assignPoliticalRegions(
       capitalHex: capitalProvince.capitalHex,
       provinceIds: sortedProvIds,
       centroid: { col: meanCol, row: meanRow },
-      name: generateDomainName(cultureId, seed, domainId, cultureNameMap?.get(cultureId)),
+      name: generateRealmName(cultureId, seed, domainId, cultureNameMap?.get(cultureId)),
     });
   }
 
