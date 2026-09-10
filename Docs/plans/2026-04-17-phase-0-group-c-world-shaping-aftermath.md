@@ -332,6 +332,8 @@ Per `Docs/plans/wiring-checklist.md`:
 |---|---|
 | **Orchestrator** | Existing: `applyEncounterAftermathReaction` is called from the unified action stage adapter during aftermath resolution. No new orchestrator phase for effect execution. **New:** `phaseEmittedOmenDecay` added adjacent to the omen phase block (after `phaseOmenAgenda`) to expire `EmittedOmen` entries. Single phase, no PRNG, O(n). |
 | **GameState** | New optional field: `emittedOmens?: EmittedOmen[]`. Defaults to empty. Persisted in save/load per existing `GameState` serialization patterns. |
+
+> **Correction, 2026-09-10 (THR-1134):** there is no save/load and there never has been — no `toJSON`, no `serializeGameState`, no persisted game state anywhere in `src/`. The "existing serialization patterns" this row leans on do not exist. Nothing above depended on them at runtime; the row was a persistence claim about a feature the repo lacks. `src/engine/incidentBundle.ts` is the first serializer in the codebase, and it is a one-way diagnostic capture, not a save file.
 | **WorldGraph** | Uses existing `addNode`, `addEdge`, `removeEdge`, node property mutation. All writes call `touchWorld()` + `touchStructure()` per the "graph mutated in place" load-bearing decision. |
 | **Traces** | Eight new categories (see Tracing section). Added to `TRACE_CATEGORIES` array in `src/types/trace.ts` and to the DebugPanel filter. |
 | **UI — Chronicle** | Reads `recentEvents` as today — no changes required. Each effect appends exactly one TickEvent. |

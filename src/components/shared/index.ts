@@ -22,6 +22,7 @@ export type {
   CardFaceKeyword,
 } from './CardFace';
 export { Divider } from './Divider';
+export { downloadTextFile } from './downloadTextFile';
 export { DetailBreadcrumb } from './DetailBreadcrumb';
 export { DetailModal } from './DetailModal';
 export { DomainCard } from './DomainCard';

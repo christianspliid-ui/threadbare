@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconButton } from '../shared/IconButton';
+import { Button } from '../shared/Button';
 import type { NotificationPreferences, NotificationCategoryKey, NotificationMode } from '../../types/notification';
 import { NOTIFICATION_CATEGORY_ORDER, NOTIFICATION_CATEGORY_LABELS } from '../../types/notification';
 import {
@@ -35,6 +36,15 @@ interface SettingsPanelProps {
   onUiVolume: (v: number) => void;
   audioMuted: boolean;
   onToggleAudioMute: () => void;
+  // Trouble — the incident snapshot (THR-1134). Optional so every existing
+  // construction site stays valid; the section renders only when wired.
+  /** Whether the trace ring is armed. */
+  recordingTrouble?: boolean;
+  onToggleRecordTrouble?: () => void;
+  /** Whether the next snapshot carries the whole world. */
+  includeWorldInSnapshot?: boolean;
+  onToggleIncludeWorld?: () => void;
+  onSaveSnapshot?: () => void;
 }
 
 export function SettingsPanel({
@@ -58,6 +68,11 @@ export function SettingsPanel({
   onUiVolume,
   audioMuted,
   onToggleAudioMute,
+  recordingTrouble,
+  onToggleRecordTrouble,
+  includeWorldInSnapshot,
+  onToggleIncludeWorld,
+  onSaveSnapshot,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [paletteId, setPaletteId] = useState<PaletteThemeId>(getActivePaletteId());
@@ -170,6 +185,14 @@ export function SettingsPanel({
     fontSize: 'var(--text-xs)',
     color: 'var(--text-primary)',
     flex: 1,
+  };
+
+  /** Second line under a setting label — what the control costs, in plain words. */
+  const settingHintStyle: React.CSSProperties = {
+    fontSize: 'var(--text-xs)',
+    color: 'var(--text-tertiary)',
+    marginTop: '2px',
+    lineHeight: 1.3,
   };
 
   const toggleStyle = (enabled: boolean): React.CSSProperties => ({
@@ -395,6 +418,59 @@ export function SettingsPanel({
             </label>
           </div>
         </div>
+
+        {/* Trouble Section — the incident snapshot (THR-1134).
+            Renders only when wired, so the panel's other construction sites are
+            unaffected. Law 21: no gold emphasis added — Save is `secondary`, not
+            `primary`, because the panel's one gold accent is the toggle state. */}
+        {onSaveSnapshot && (
+          <div style={sectionStyle}>
+            <div style={sectionHeaderStyle}>Trouble</div>
+            <div style={settingRowStyle}>
+              <div style={settingLabelStyle}>
+                <label htmlFor="trouble-record">Record what happens</label>
+                <div style={settingHintStyle}>Slows the world a little while it is on.</div>
+              </div>
+              <button
+                id="trouble-record"
+                onClick={onToggleRecordTrouble}
+                style={toggleStyle(!!recordingTrouble)}
+                aria-pressed={!!recordingTrouble}
+                aria-label="Toggle recording what happens"
+                title={recordingTrouble ? 'Recording is on' : 'Recording is off'}
+              >
+                <div style={toggleDotStyle(!!recordingTrouble)} />
+              </button>
+            </div>
+            <div style={settingRowStyle}>
+              <div style={settingLabelStyle}>
+                <label htmlFor="trouble-world">Include the whole world</label>
+                <div style={settingHintStyle}>A much larger file.</div>
+              </div>
+              <button
+                id="trouble-world"
+                onClick={onToggleIncludeWorld}
+                style={toggleStyle(!!includeWorldInSnapshot)}
+                aria-pressed={!!includeWorldInSnapshot}
+                aria-label="Include the whole world in the snapshot"
+                title={includeWorldInSnapshot ? 'The whole world is included' : 'Only the incident is included'}
+              >
+                <div style={toggleDotStyle(!!includeWorldInSnapshot)} />
+              </button>
+            </div>
+            <div style={{ padding: '8px 16px' }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                fullWidth
+                onClick={onSaveSnapshot}
+                title="Save a file describing what the world is doing right now"
+              >
+                Save a snapshot
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Debug Section */}
         <div style={sectionStyle}>

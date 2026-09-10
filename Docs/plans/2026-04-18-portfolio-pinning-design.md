@@ -328,6 +328,8 @@ Unit tests in `src/engine/__tests__/portfolio.test.ts`:
 7. `listPortfolio` returns only pinned, sorted by id, stable across calls.
 8. `worldVersion` increments on pin and unpin.
 9. Serialize → deserialize → flag survives round trip (explicit-false is preserved).
+
+> **Correction, 2026-09-10 (THR-1134):** test step 9 is unwritable as stated — nothing in `src/` serializes or deserializes game state, so there is no round trip to make. The *reason* behind the step survives and is worth keeping: explicit-`false` must not be conflated with absent, because `undefined` and `false` mean different things to the pin predicate. Assert that distinction directly on the property rather than through a persistence layer that does not exist.
 10. Pin, then kill the agent (set `isDead: true`) — `isPortfolioPinned` is still true (cleanup is out of scope for PR 0; pinned-dead is valid state); `listPortfolio` still returns them. Future PR may add auto-unpin on death, but that's a separate decision.
 
 Integration test: debug-bridge `pinToPortfolio` → agent's `node.properties.isPortfolioPinned === true` → `listPortfolio` contains id.

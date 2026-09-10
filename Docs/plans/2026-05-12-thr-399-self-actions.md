@@ -262,6 +262,8 @@ nextActionTierBoost?: { boost: number; appliedTick: number };
 
 Both optional, default undefined. Cleared after consumption. **Persistence:** these survive a save/load via the existing graph-snapshot serialization (node properties are JSON-serialized as-is).
 
+> **Correction, 2026-09-10 (THR-1134):** the "existing graph-snapshot serialization" has never existed. This is the sharpest of the four stale persistence claims because it names a specific mechanism and states how it behaves; a reader would reasonably go looking for it. There is nothing to find — no `toJSON`, no `serializeGameState`, no `structuredClone` in `src/`. The parenthetical is also the trap in miniature: `JSON.stringify` on a live `WorldGraph` returns `{"nodes":{},"edges":{},"outgoing":{},"incoming":{}}`, fifty-one characters standing in for three megabytes, and throws nothing while doing it.
+
 ## 5. Content — prose tables
 
 The four templates each carry three Threadbearer-voice strings: `narrativeTemplates.initiation` / `.success` / `.failure`. See §3 for per-template prose. The constraints:
