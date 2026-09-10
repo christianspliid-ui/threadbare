@@ -386,7 +386,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `survey` (1) | `surveyProseComposer.ts` | `THR-415` |
 | `target` (3) | `targetActions.ts`, `targetContextBuilders.ts`, `targetTierScaling.ts` | `THR-1073`, `THR-1100`, `THR-996` |
 | `taxonomy` (1) | `taxonomy.ts` | — |
-| `temporal` (1) | `temporal.ts` | — |
+| `temporal` (1) | `temporal.ts` | `THR-1452` |
 | `terrain` (1) | `terrain.ts` | — |
 | `thread` (1) | `threadDigest.ts` | — |
 | `threat` (1) | `threatRating.ts` | — |

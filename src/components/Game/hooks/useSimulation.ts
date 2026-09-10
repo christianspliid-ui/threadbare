@@ -196,7 +196,10 @@ export function useSimulation({
 
   // Derived display values
   const seasonName = SEASONS[gameState.clock.season % 4] ?? 'spring';
-  const year = Math.floor(gameState.tick / 120) + 1;
+  // THR-1452: was `Math.floor(gameState.tick / 120) + 1` — a divisor of the top bar's own that
+  // disagreed threefold with the season rendered beside it. Both halves are the engine's clock
+  // now; `+ 1` is display convention only (the engine's year is 0-based).
+  const year = gameState.clock.year + 1;
   const maxEssence = useMemo(
     () => computeMaxEssence(gameState.graph, gameState.ascendantId),
     // TB-086: Key off worldVersion, not graph identity (graph is mutated in place)

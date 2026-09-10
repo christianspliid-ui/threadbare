@@ -818,9 +818,10 @@ export const HexChronicle = memo(function HexChronicle({
             </p>
             {/* THR-1426 (Shape 1): `turn 412` is an absolute tick index — a point in time,
                 not a span, so neither `durationLabel` nor a raw numeral serves it. The game
-                has no calendar to date it against (the top bar's season/year pair is derived
-                from two different divisors and disagrees with itself), so the reading the
-                caption actually needs is how long ago the survey was taken. */}
+                has no calendar to date it against — the top bar's season and year now agree
+                with each other (THR-1452 put both on the engine's clock) but they still place
+                no single tick, so the reading the caption actually needs is how long ago the
+                survey was taken. */}
             {surveyPeopleProseTick != null && tick != null && (
               <p style={surveyAttributionStyle}>— surveyed {elapsedLabel(tick - surveyPeopleProseTick)} ago</p>
             )}

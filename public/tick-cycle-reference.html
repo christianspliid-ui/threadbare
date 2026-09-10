@@ -617,6 +617,7 @@ const ACTS = [
     color: 'var(--act-doom)',
     summary: 'The world advances — doom ticks, narrative beats fire',
     phases: [
+      { id: '0.5', name: 'Calendar Advance', fn: 'deriveSeasonAndYear()', desc: 'Roll the tick counter into the calendar before any phase runs: season and year are both derived from the live clock\'s ticksPerSeason, so the two halves of the top bar\'s readout can never disagree (THR-1452 — the engine\'s clock is canonical). Reads the tunable off the clock rather than a literal, so DEFAULT_TICKS_PER_SEASON actually moves the calendar.', reads: ['tick', 'clock.ticksPerSeason'], writes: ['clock (currentTick, season, year)'], tags: [] },
       { id: '1', name: 'Doom Advance', fn: 'phaseDoom()', desc: 'Advance the doom clock by one tick. On tier crossing, escalate entropy and push sphere pressure to all locations.', reads: ['doomClock', 'doomDefinition'], writes: ['doomClock', 'tickEvents', 'pendingSpherePressures'], tags: [] },
       { id: '1.5', name: 'Journey Beat', fn: 'phaseJourneyBeat()', desc: 'Check if doom clock crossed a narrative beat threshold for The First. Emit milestone events that mark story progression.', reads: ['doomClock', 'JOURNEY_BEAT_TEMPLATES'], writes: ['tickEvents'], tags: [] }
     ]
