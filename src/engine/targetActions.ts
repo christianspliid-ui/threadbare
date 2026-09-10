@@ -84,7 +84,7 @@ function hardestStep(
  */
 type CastReadoutFields = Pick<
   WheelSlot,
-  'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale' | 'forecastTier' | 'scaleWord'
+  'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale' | 'forecastTier' | 'scaleWord' | 'reach'
 >;
 
 function castDifficultyFields(
@@ -99,6 +99,11 @@ function castDifficultyFields(
     // The scale chip is a property of the template alone, so it is always
     // available — unlike the forecast, which needs the god's capability.
     scaleWord: ACTION_SCALE_WORDS[template.scale] ?? undefined,
+    // THR-1002: the reach the odds actually leaned on, which is the hardest
+    // step's — the same one `effectiveStepDifficulty` and `forecastTier` are
+    // computed against below. The template's headline reach can differ, and a
+    // mark disagreeing with the word beside it is two readings of one cast.
+    reach,
   };
   if (capabilities) {
     fields.effectiveStepDifficulty = effectiveCastDifficulty(
@@ -470,6 +475,11 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       // THR-1002: the band the card prints. `perTickCostLabel` keeps the numeral
       // for the designer view, which is the only place it is allowed (Law 13).
       upkeepWord: upkeepWord(maxPerTickCost),
+      // THR-1002: carried, not re-derived. The card links its name to the codex
+      // entry, which is keyed on the bare template id — and the verb chip reads
+      // the declared CRUD type rather than the third dot-segment of the slot id.
+      templateId: template.id,
+      crudType: template.crudType,
       spellName: template.spellName,
       technicalDescription: template.description,
       technicalEffect: template.technicalEffect,

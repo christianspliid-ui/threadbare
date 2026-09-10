@@ -338,12 +338,20 @@ const STYLEGUIDE_ACTION_FACE: CardFaceModel = {
     // `getActionArt`, and its fallback tile is the generic one.
     kind: 'unknown',
   },
-  keyword: { label: 'Change', icon: '⟳' },
-  secondaryKeyword: { label: 'Local' },
+  // Every chip on the action face carries its registry tooltip (Laws 1 + 17), and
+  // the specimen names them so a designer can hover the sheet and read the same
+  // copy the game shows. The nudge model above names none — that face's tooltips
+  // are its own ticket, and its rendered DOM is pinned meanwhile.
+  keyword: { label: 'Change', icon: '⟳', tooltipId: 'ui.card.verb.update' },
+  secondaryKeyword: { label: 'Local', tooltipId: 'ui.card.scale.local' },
   reach: 'stone',
   sphere: 'life',
+  markTooltips: true,
   cost: 3,
-  costChannels: [{ id: 'upkeep', icon: '↻', label: 'steady upkeep', delta: 0 }],
+  costChannels: [{
+    id: 'upkeep', icon: '↻', label: 'steady upkeep', delta: 0,
+    tooltipId: 'ui.card.upkeep.steady',
+  }],
   name: 'Mend The Blight',
   effectLine: 'The rot draws back from the roots.',
   odds: { kind: 'forecast', tier: 'favorable' },

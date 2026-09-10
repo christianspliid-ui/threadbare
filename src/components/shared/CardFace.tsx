@@ -152,6 +152,11 @@ export interface CardFaceCostChannel {
    * pips; relief is stated in the label alone rather than drawn as a price.
    */
   readonly delta: number;
+  /**
+   * Registry id for the channel's concept (Law 17) — `ui.card.upkeep.steady`.
+   * Opt-in for the same reason as {@link CardFaceKeyword.tooltipId}.
+   */
+  readonly tooltipId?: string;
 }
 
 /** Where a card came from, when that is worth saying. Parts, never a sentence. */
@@ -175,6 +180,19 @@ export interface CardFaceProvenance {
 export interface CardFaceKeyword {
   readonly label: string;
   readonly icon?: string;
+  /**
+   * Registry id for the concept this chip names (Law 17) — `ui.card.verb.create`,
+   * `ui.card.scale.local`. Present ⇒ the chip is wrapped in its tooltip.
+   *
+   * **Opt-in rather than required, deliberately.** The nudge card's rendered DOM
+   * is pinned by `NudgeCard.snapshot.test.tsx`, whose whole claim is that the
+   * extraction moved that face toward nothing; wrapping every chip unconditionally
+   * would break that pin for a card this ticket does not touch. A nudge chip that
+   * should carry a tooltip is a change to the nudge card, made on its own terms
+   * with its own snapshot regenerated — not a side effect of the action card
+   * arriving.
+   */
+  readonly tooltipId?: string;
 }
 
 export interface CardFaceModel {
@@ -195,6 +213,16 @@ export interface CardFaceModel {
   readonly secondaryKeyword?: CardFaceKeyword;
   readonly reach?: ReachDomain;
   readonly sphere?: SphereName;
+  /**
+   * Wrap the reach and sphere marks in their registry tooltips — `reach.<name>`,
+   * `sphere.<name>` (Laws 1 and 17).
+   *
+   * Opt-in for the same reason the chip's own id is
+   * (see {@link CardFaceKeyword.tooltipId}): the nudge card draws a sphere mark,
+   * and turning this on unconditionally would move a pinned face this ticket does
+   * not touch.
+   */
+  readonly markTooltips?: boolean;
   /** Effective essence price, after any discount. */
   readonly cost: number;
   /** Emphasise the price, as an unaffordable card does. */
@@ -244,6 +272,21 @@ export interface CardFaceModel {
 }
 
 // ── Component ──────────────────────────────────────────────────────
+
+/**
+ * Wrap a zone in its registry tooltip when the producer named one, and render it
+ * bare when it did not.
+ *
+ * The bare branch returns the child **untouched** — no wrapper element, no
+ * fragment that would change the DOM. That is the whole point: the nudge card
+ * names no ids, so every zone it draws comes out byte-identical to the DOM its
+ * snapshot pinned before the extraction, while the action card gets its Law 17
+ * tooltips on the same zones. One face, two callers, one pin still valid.
+ */
+function MaybeTooltip({ id, children }: { id?: string; children: React.ReactNode }) {
+  if (!id) return <>{children}</>;
+  return <Tooltip id={id}>{children}</Tooltip>;
+}
 
 /**
  * The card is a button (Law 23) — a keyboard player must be able to see which
@@ -323,28 +366,34 @@ export function CardFace({
               the extraction's whole claim is that the nudge face did not move. */}
           {model.keyword && model.secondaryKeyword ? (
             <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+              <MaybeTooltip id={model.keyword.tooltipId}>
+                <CardKeywordChip
+                  keyword={model.keyword.label}
+                  icon={model.keyword.icon}
+                  muted={dimmed}
+                  data-testid={`${p}-keyword-${id}`}
+                />
+              </MaybeTooltip>
+              <MaybeTooltip id={model.secondaryKeyword.tooltipId}>
+                <CardKeywordChip
+                  keyword={model.secondaryKeyword.label}
+                  icon={model.secondaryKeyword.icon}
+                  // The second chip is always muted: it is a refinement of the
+                  // first, and two chips at equal weight read as two kinds.
+                  muted
+                  data-testid={`${p}-scale-${id}`}
+                />
+              </MaybeTooltip>
+            </span>
+          ) : model.keyword ? (
+            <MaybeTooltip id={model.keyword.tooltipId}>
               <CardKeywordChip
                 keyword={model.keyword.label}
                 icon={model.keyword.icon}
                 muted={dimmed}
                 data-testid={`${p}-keyword-${id}`}
               />
-              <CardKeywordChip
-                keyword={model.secondaryKeyword.label}
-                icon={model.secondaryKeyword.icon}
-                // The second chip is always muted: it is a refinement of the
-                // first, and two chips at equal weight read as two kinds.
-                muted
-                data-testid={`${p}-scale-${id}`}
-              />
-            </span>
-          ) : model.keyword ? (
-            <CardKeywordChip
-              keyword={model.keyword.label}
-              icon={model.keyword.icon}
-              muted={dimmed}
-              data-testid={`${p}-keyword-${id}`}
-            />
+            </MaybeTooltip>
           ) : (
             // A one-off authored option is not in the library and prints no
             // keyword. The slot still holds its ground so the price stays right-
@@ -357,8 +406,16 @@ export function CardFace({
               what stops the essence row and the odds row below from reading as
               the same kind of thing. */}
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-            {model.reach && <ReachIcon reach={model.reach} size={CARD_REACH_ICON_PX} />}
-            {model.sphere && <SphereIcon sphere={model.sphere} size={CARD_SPHERE_ICON_PX} />}
+            {model.reach && (
+              <MaybeTooltip id={model.markTooltips ? `reach.${model.reach}` : undefined}>
+                <ReachIcon reach={model.reach} size={CARD_REACH_ICON_PX} />
+              </MaybeTooltip>
+            )}
+            {model.sphere && (
+              <MaybeTooltip id={model.markTooltips ? `sphere.${model.sphere}` : undefined}>
+                <SphereIcon sphere={model.sphere} size={CARD_SPHERE_ICON_PX} />
+              </MaybeTooltip>
+            )}
             <CostPips
               cost={model.cost}
               size={CARD_COST_PIP_PX}
@@ -419,17 +476,18 @@ export function CardFace({
         {model.costChannels && model.costChannels.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {model.costChannels.map((channel) => (
-              <span
-                key={channel.id}
-                data-testid={`${p}-channel-${id}-${channel.id}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
-              >
-                <span aria-hidden="true">{channel.icon}</span>
-                {channel.label}
-                {/* Only a worsening delta earns penalty pips; relief is stated
-                    in the label alone rather than drawn as a price. */}
-                {channel.delta > 0 && <OddsPips value={-channel.delta} size={10} muted={dimmed} />}
-              </span>
+              <MaybeTooltip key={channel.id} id={channel.tooltipId}>
+                <span
+                  data-testid={`${p}-channel-${id}-${channel.id}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
+                >
+                  <span aria-hidden="true">{channel.icon}</span>
+                  {channel.label}
+                  {/* Only a worsening delta earns penalty pips; relief is stated
+                      in the label alone rather than drawn as a price. */}
+                  {channel.delta > 0 && <OddsPips value={-channel.delta} size={10} muted={dimmed} />}
+                </span>
+              </MaybeTooltip>
             ))}
           </div>
         )}
