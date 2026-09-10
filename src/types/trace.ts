@@ -484,10 +484,13 @@ export type TraceCategory =
   // The binder — scored cast/stage binding + persistence ledger (THR-1296)
   | 'binding_decision'
   | 'binding_severed'
-  | 'binder_mint';
+  | 'binder_mint'
+  // One geography — the Area partition minted at worldgen (THR-1155)
+  | 'area_coverage';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
+  'area_coverage',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -899,6 +902,27 @@ export interface EdgeSchemaRefusedTrace extends TraceBase {
   /** Resolved node types; `undefined` when the node did not exist. */
   sourceNodeType?: string;
   targetNodeType?: string;
+}
+
+/**
+ * One geography — emitted once per world at the Area mint (THR-1155).
+ *
+ * `unstamped` is the count of land hexes the detector left with no `regionId` after
+ * the nearest-cluster fill. It must be 0: an Area is a game object a hex belongs to,
+ * so a land hex without one is a hole that an `'region'`-scoped effect, an `$area`
+ * sentinel or the chronicle's region line will fall through. The coverage test
+ * asserts it against generated worlds rather than a fixture, because the hole this
+ * replaces was a property of real terrain (islands the watershed could not reach),
+ * and no fixture would have had one.
+ */
+export interface AreaCoverageTrace extends TraceBase {
+  category: 'area_coverage';
+  /** Areas minted — one `region` node each. */
+  areas: number;
+  /** Land hexes the partition covers. */
+  hexes: number;
+  /** Land hexes with no Area. Must be 0. */
+  unstamped: number;
 }
 
 // ─── Effect vocabulary activation (THR-1239) ────────────────────────
@@ -3444,6 +3468,7 @@ export type TraceEntry =
   | FactionAwarenessTrace
   | CacheUpdateTrace
   | EdgeSchemaRefusedTrace
+  | AreaCoverageTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

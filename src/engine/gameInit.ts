@@ -138,23 +138,18 @@ export function initializeGameState(
   const tiles = worldGenResult.tiles;
 
   // 3. Seed the world graph with actors, locations, artifacts — territory-aware
+  // THR-1155: the Areas are minted from the very clusters `generateWorld` detected, so
+  // the graph's `region_N` nodes and the map's geography are one partition. The index
+  // join that used to reconcile two different partitions here — copying graph names
+  // onto renderer clusters by `region_${geo.id}` — is deleted with the second detector
+  // it existed to paper over. Names now reach the map through `areaProjection`, which
+  // reads the nodes.
   const { graph, individualIds } = seedWorld(
     cosmology, tiles, seed, undefined, fundament,
     pregenCultures, worldGenResult.provinceIds, worldGenResult.provinces,
     worldGenResult.provinceRoles,
+    worldGenResult.regionData?.geographicRegions,
   );
-
-  // Sync graph region names back to regionData.geographicRegions.
-  // seedWorld() names regions with culture-aware names (via regionNaming.ts),
-  // but regionData still has simple placeholder names from hexGrid.ts.
-  if (worldGenResult.regionData) {
-    for (const geo of worldGenResult.regionData.geographicRegions) {
-      const regionNode = graph.getNode(`region_${geo.id}`);
-      if (regionNode && regionNode.name) {
-        geo.name = regionNode.name;
-      }
-    }
-  }
 
   // Register action template nodes so createAction can add performing edges
   for (const template of ACTION_TEMPLATES) {

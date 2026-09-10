@@ -38,7 +38,8 @@ import {
 import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import { CULTURE_SETTLEMENT_QUOTA } from '../types/culture';
 import { generatePhoneticName } from './culturePhonetics';
-import { detectRegions } from './regionDetection';
+import { detectRegionsBorderCost, TERRAIN_TO_FEATURE, type RegionCluster } from './regionDetection';
+import { emitTrace } from './traceBuffer';
 import { hexDistance } from '../lib/hexMath';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
 import { generateRegionName } from './regionNaming';
@@ -575,6 +576,15 @@ export function seedWorld(
   provinceIds?: Int16Array,
   provinces?: Province[],
   provinceRoles?: Uint8Array,
+  /**
+   * The Area partition, from the one detector (THR-1155). `gameInit` hands in the
+   * clusters `generateWorld` already computed, so the graph's Areas and the map's
+   * geography are the same partition by construction rather than by a join. A caller
+   * that has none — every direct-`seedWorld` test — gets an unseeded watershed run
+   * here; the detector auto-places seeds, so the world is still partitioned, just
+   * without province capitals to anchor the clusters.
+   */
+  areaClusters?: RegionCluster[],
 ): SeedResult {
   const rng = mulberry32(seed + 7919);
   const graph = new WorldGraph();
@@ -596,8 +606,35 @@ export function seedWorld(
   const regionIds: string[] = [];
   const historicalCultureIds: string[] = [];
 
-  // Detect geographic regions via flood-fill
-  const clusters = detectRegions(tiles);
+  // ── The Area mint — one geography (THR-1155) ─────────────
+  //
+  // Areas come from the watershed detector, the one the player has been looking at:
+  // its clusters are what `GeoBorderMesh` draws and what the labels name. Before this
+  // the graph minted its Areas from a second, flood-fill partition and `gameInit`
+  // joined the two by list position (`region_${geo.id}`), so the name a player read
+  // over a mountain range belonged to whichever unrelated cluster shared its index.
+  // One detector, one partition, one set of nodes; the renderer reads a projection of
+  // these nodes rather than a private pipeline of its own.
+  //
+  // The stamp is total over land — see the detector's nearest-cluster fill. The
+  // `area_coverage` trace below reports what is left over, and it must be zero.
+  //
+  // NFP #4: the fallback detector run is guarded the way `hexGrid`'s is. Detection
+  // failing must not take worldgen with it — a world with no Areas is degraded (no
+  // borders, no region line, an `'region'` scope that resolves to nothing) and still a
+  // world, which is the trade `generateWorld` already makes on the same call.
+  const areaGridCols = tiles.reduce((max, t) => Math.max(max, t.coord.col), 0) + 1;
+  let clusters: RegionCluster[] = areaClusters ?? [];
+  if (!areaClusters) {
+    try {
+      clusters = detectRegionsBorderCost(tiles, [], areaGridCols, []).regions;
+    } catch (err) {
+      console.warn('[seedWorld] Area detection failed; seeding a world with no Areas', err);
+    }
+  }
+
+  const tileByAreaHex = new Map<string, HexTile>();
+  for (const t of tiles) tileByAreaHex.set(`${t.coord.col},${t.coord.row}`, t);
 
   // Create region nodes (unnamed for now)
   for (let i = 0; i < clusters.length; i++) {
@@ -617,9 +654,28 @@ export function seedWorld(
 
     // Set regionId on each hex tile
     for (const h of clusters[i].hexes) {
-      const tile = tiles.find(t => t.coord.col === h.col && t.coord.row === h.row);
+      const tile = tileByAreaHex.get(`${h.col},${h.row}`);
       if (tile) tile.regionId = id;
     }
+  }
+
+  {
+    let landHexes = 0;
+    let unstamped = 0;
+    for (const t of tiles) {
+      const feature = TERRAIN_TO_FEATURE[t.terrain];
+      if (feature === undefined || feature === 'sea') continue;
+      landHexes++;
+      if (!t.regionId) unstamped++;
+    }
+    emitTrace({
+      tick: 0,
+      category: 'area_coverage',
+      summary: `Areas minted: ${clusters.length} over ${landHexes} land hexes, ${unstamped} unstamped`,
+      areas: clusters.length,
+      hexes: landHexes,
+      unstamped,
+    });
   }
 
   // Generate historical cultures
@@ -1164,11 +1220,12 @@ export function seedWorld(
   //   O(locations × tiles) — ~557k comparisons on a medium map, ~2.9M on an epic one —
   //   for what is a plain key lookup.
   //
-  // The 15 unlinked locations are on tiles outside every flood-filled region cluster
-  // (`detectRegions`), which is a worldgen property, not an oversight here: 115 of 768
-  // tiles carry no `regionId` at all. Locations seeded *after* worldSeed — lairs,
-  // elder ruins, transient nodes — are likewise unlinked; a sublocation resolves
-  // through its parent instead, and anything still unresolved fails soft to `false`.
+  // The 15 unlinked locations were on tiles outside every flood-filled region cluster
+  // — 115 of 768 tiles carried no `regionId` at all. THR-1155 closed that: the Area
+  // partition is total over land, so a top-level location on a land hex always has an
+  // Area to be contained by. Locations seeded *after* worldSeed — lairs, elder ruins,
+  // transient nodes — are still unlinked here; a sublocation resolves through its
+  // parent instead, and anything still unresolved fails soft to `false`.
   const tileByHex = new Map<string, HexTile>();
   for (const t of tiles) tileByHex.set(`${t.coord.col},${t.coord.row}`, t);
 

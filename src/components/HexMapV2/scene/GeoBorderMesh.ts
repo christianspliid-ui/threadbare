@@ -1,9 +1,14 @@
 /**
  * GeoBorderMesh.ts — Geographic region border polylines for the Three.js hex renderer.
  *
- * Renders dim, dotted borders between geographic regions detected by
- * detectRegionsBorderCost(). These borders convey the historical/ephemeral nature
- * of geographic naming — distinct from the bold red political borders.
+ * Renders dim, dotted borders between Areas — the geography the world keeps.
+ *
+ * Membership comes from `areaProjection` (THR-1155), a projection of the graph's
+ * `region` nodes and the tiles' stamps, so what this draws and what an Area-scoped
+ * effect resolves are the same partition. It used to come from a second detector run
+ * inside the renderer, which is how the map and the world came to hold two different
+ * geographies. These borders convey the historical/ephemeral nature of geographic
+ * naming — distinct from the bold red political borders.
  *
  * Uses THREE.LineSegments with LineDashedMaterial for a dotted appearance.
  *
@@ -20,7 +25,7 @@
 
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
-import type { RegionData } from '../../../engine/regionTypes';
+import type { AreaProjection } from '../../../engine/areaProjection';
 import { hexNeighbors } from '../../../lib/hexMath';
 import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
 import { getActivePalette } from '../palette/activePalette';
@@ -86,14 +91,17 @@ function getEdgePoints(hexCenter: Point2D, dir: number, size: number): { start: 
  * Edges that are already political borders (different kingdom or barony)
  * are excluded to avoid visual clutter.
  *
- * @param regionData - Region data from worldgen (with hexRegionId, hexProvinceId maps)
+ * @param areaProjection - The Area partition, projected from the graph (THR-1155)
+ * @param hexProvinceId - "col,row" → province id, for suppressing edges a political
+ *   border already draws
  * @param tiles - All hex tiles in the world
  */
 export function createGeoBorderMesh(
-  regionData: RegionData,
+  areaProjection: AreaProjection,
+  hexProvinceId: Map<string, number>,
   tiles: HexTile[],
 ): THREE.LineSegments {
-  const { hexRegionId, hexProvinceId } = regionData;
+  const hexAreaId = areaProjection.hexAreaId;
 
   const positions: number[] = [];
 
@@ -110,7 +118,7 @@ export function createGeoBorderMesh(
     const { col, row } = tile.coord;
     const hKey = hexKeyFn(col, row);
 
-    const geoA = hexRegionId.get(hKey);
+    const geoA = hexAreaId.get(hKey);
     if (geoA === undefined) continue;
 
     const provinceA = hexProvinceId.get(hKey);
@@ -129,9 +137,9 @@ export function createGeoBorderMesh(
       if (processedEdges.has(edgeKey)) continue;
 
       const neighborExists = tileSet.has(neighborKey);
-      const geoB = neighborExists ? hexRegionId.get(neighborKey) : undefined;
+      const geoB = neighborExists ? hexAreaId.get(neighborKey) : undefined;
 
-      // Only draw border between different geographic regions
+      // Only draw a border between different Areas
       if (geoB === undefined || geoA === geoB) continue;
 
       // Skip edges that are already political borders (kingdom or barony differ)
@@ -146,10 +154,14 @@ export function createGeoBorderMesh(
     }
   }
 
+  // NFP #4: the attribute is set unconditionally, empty included. `computeLineDistances`
+  // below reads `position.count` and throws on a geometry that has no position attribute
+  // at all, so the old `if (positions.length > 0)` guard turned "this world has nothing to
+  // draw" into a crash. A world with one Area draws no geographic border and must render
+  // — a state that was unreachable while the layer read a detector that always produced
+  // several clusters, and is reachable now that membership comes from the graph.
   const geo = new THREE.BufferGeometry();
-  if (positions.length > 0) {
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
   // computeLineDistances() is required for LineDashedMaterial to work —
   // it calculates cumulative distances along each line segment pair.

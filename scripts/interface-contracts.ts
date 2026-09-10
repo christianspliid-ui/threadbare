@@ -135,8 +135,53 @@ const TRAITS = 'Personality & Emergent Traits';
 const PROGRESSION = 'Ascendant Beats & Progression';
 const OMENS = 'Omens & Atmospheric Pressure';
 const DIAGNOSTICS = 'Diagnostics & Incident Capture';
+const WORLDGEN = 'World Generation, Terrain & Places';
 
 export const CONTRACTS: readonly Contract[] = [
+  // -- World Generation -> the map (THR-1155) -------------------------------
+  // The failure this row exists to make impossible: the world kept one geography
+  // and the map drew another. `worldSeed` minted `region` nodes from a flood-fill
+  // partition while `hexGrid` ran a watershed for the renderer, and `gameInit`
+  // reconciled the two by list position - an index join between two different
+  // partitions, so the name a player read over a mountain range belonged to
+  // whichever unrelated cluster shared its position in a list. One detector now,
+  // one set of nodes, and every surface reads a projection of them.
+  {
+    id: 'area-partition-to-map',
+    producerSystem: WORLDGEN,
+    consumerSystem: WORLDGEN,
+    intent:
+      'There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own.',
+    ulTerms: ['Area'],
+    // The contract is a NEGATIVE first: no module may detect regions for itself.
+    // `detectRegionsBorderCost` has exactly two callers - `hexGrid`, which hands its
+    // clusters to the mint, and `worldSeed`, which falls back to it when handed none.
+    // The flood-fill `detectRegions` that was the second detector is deleted rather
+    // than deprecated: a spare detector nobody calls is how the two grew apart.
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['buildAreaProjection', 'ensureAreaProjection', 'detectRegionsBorderCost'],
+      module: 'src/engine/areaProjection.ts',
+    },
+    writeSites: [
+      'src/engine/worldSeed.ts',
+      'src/engine/regionDetection.ts',
+    ],
+    readSites: [
+      'src/engine/areaProjection.ts',
+      'src/engine/simulationRuntime.ts',
+      'src/engine/effectScope.ts',
+      'src/engine/regionLabels.ts',
+      'src/engine/hexRegion.ts',
+      'src/components/HexMapV2/scene/GeoBorderMesh.ts',
+      'src/components/Game/hooks/useSimulation.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-10',
+      evidence:
+        "THR-1155 slice 1. Measured on `main` before the change: the flood-fill left 22-198 land hexes with no region across seeds 42/99/7 at all four map sizes, and the watershed left 0-24 - so BOTH partitions had holes, in different places, and `gameInit` joined them by list position. Two defects surfaced on the way and are fixed here rather than filed. (1) The watershed split pass never pruned `hexSet`, so a later chunk BFS re-collected an earlier chunk hexes and listed them twice: 147 hexes in two clusters on a seed-42 medium world, 1735 in two or three on an epic one, which inflated every split region hexes.length, its label-size gate and its Area hexCount. (2) `edgeBorderCost` read `geoParams.elevation` unguarded, which only became reachable from fixture tiles once the watershed was the one detector. Coverage is asserted on GENERATED worlds, never a fixture, because the holes were a property of real terrain - islands no province capital sat on - and a hand-built grid would not have had one. The controlled arm builds exactly such an island and confirms the nearest-cluster fill is what closes it, not the assertion. `effectScope('region')` was a radius-4 disc around the caster and is now real Area membership, tested against a fixture where the two answers disagree in both directions. Tests: `src/engine/__tests__/worldSeed.areas.test.ts` (16), `effectScope.region.test.ts` (3), `GeoBorderMesh.test.ts` (6), `RegionLabelOverlay.area.test.tsx` (3), `regionLabels.test.ts` (17). Full suite 19855 green; heavy lane 202 green; 30-tick seed-42 smoke reached tick 30, 495 agents, 61 events.",
+    },
+  },
   // ── Diagnostics & Incident Capture → the incident snapshot (THR-1134) ─────
   // This chain was ⚪ UNAUDITED: `tickHealthMonitor` has run unconditionally every
   // tick since it was written, keeping a hundred health reports and a hundred crash

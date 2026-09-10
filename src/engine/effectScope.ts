@@ -22,6 +22,22 @@
 import type { WorldGraph } from './graph';
 import type { EffectScope } from '../types/effects';
 import { SCOPE_REGION_MAX_HEXES } from '../data/effect-constants';
+import type { AreaProjection } from './areaProjection';
+import { hexKey } from '../lib/hexKey';
+
+/**
+ * A `'region'` scope resolved without an Area partition is a wiring bug, not a game
+ * state — warn once so a run does not drown, and never silently.
+ */
+let warnedMissingAreaProjection = false;
+function warnOnceMissingAreaProjection(): void {
+  if (warnedMissingAreaProjection) return;
+  warnedMissingAreaProjection = true;
+  console.warn(
+    "[resolveScope] a 'region'-scoped effect was resolved with no areaProjection; "
+    + 'it affects nothing. Pass the runtime projection (ensureAreaProjection) at the call site.',
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // Scope Resolution
@@ -49,6 +65,13 @@ export function resolveScope(
   scope: EffectScope,
   casterId: string,
   targetId?: string,
+  /**
+   * The Area partition (THR-1155), required by the `'region'` scope and ignored by
+   * every other. Optional so the many scopes that do not need geography keep a
+   * two-argument call; a `'region'` scope without it resolves to nothing rather than
+   * to the radius approximation it replaced.
+   */
+  areaProjection?: AreaProjection,
 ): ScopeResolution {
   switch (scope.scope) {
     case 'self':
@@ -107,14 +130,39 @@ export function resolveScope(
     }
 
     case 'region': {
-      // Region-scoped effects affect all agents in a named region
-      // For now: collect agents on hexes belonging to the region
-      // Simplified: use hex distance from caster as proxy
-      const center = resolveAgentHex(graph, casterId);
-      if (!center) return { affectedAgents: [], affectedHexes: [], truncated: false };
+      // A region-scoped effect lands on the caster's Area — the real one (THR-1155).
+      //
+      // This used to be a radius-4 disc around the caster, which is not a region by any
+      // reading: it crossed every border, stopped inside large Areas, and gave the same
+      // answer on a hex the player is told belongs to the Iron Crags as on one two
+      // ranges away. The word claimed a membership the code did not have, because there
+      // was no membership to have — Areas lived in a renderer-side cluster list. There
+      // is one now, and it is what the map draws.
+      if (!areaProjection) {
+        // Fail-soft, and deliberately not a fallback to the disc: a caller with no
+        // projection gets nothing rather than a plausible wrong answer. Loud once so a
+        // future wiring that forgets the projection is found by reading the console
+        // rather than by noticing an effect landed on the wrong side of a mountain.
+        warnOnceMissingAreaProjection();
+        return { affectedAgents: [], affectedHexes: [], truncated: false };
+      }
 
-      // Use a default region radius of ~4 hexes, capped by SCOPE_REGION_MAX_HEXES
-      const hexes = getHexesInRadius(center.col, center.row, 4);
+      // `regionId` has always been part of the scope's declared shape and the disc
+      // never read it — a `'region'` scope naming a specific Area resolved around the
+      // caster regardless. It names an Area node id now; `'self_region'` keeps meaning
+      // whichever Area the caster is standing in.
+      let areaId: string | undefined;
+      if (scope.regionId === 'self_region') {
+        const center = resolveAgentHex(graph, casterId);
+        if (!center) return { affectedAgents: [], affectedHexes: [], truncated: false };
+        areaId = areaProjection.hexAreaId.get(hexKey(center.col, center.row));
+      } else {
+        areaId = scope.regionId;
+      }
+      if (!areaId) return { affectedAgents: [], affectedHexes: [], truncated: false };
+
+      const area = areaProjection.areas.find(a => a.id === areaId);
+      const hexes = area?.hexes ?? [];
       const capped = hexes.slice(0, SCOPE_REGION_MAX_HEXES);
       const agents: string[] = [];
       for (const hex of capped) {
@@ -122,7 +170,7 @@ export function resolveScope(
       }
       return {
         affectedAgents: agents,
-        affectedHexes: capped,
+        affectedHexes: capped.map(h => ({ col: h.col, row: h.row })),
         truncated: hexes.length > SCOPE_REGION_MAX_HEXES,
       };
     }

@@ -155,14 +155,17 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   },
   region: {
     anchor: 'Named area (region)',
-    declare: '`entityId` = the region node id; **no `visualKind` member exists**',
-    surface: 'The hex chronicle names the region a hex belongs to',
-    status: 'named',
+    declare: '`entityId` = the Area node id; `visualKind: \'area\'` routes without a tile',
+    surface: 'The hex chronicle names the Area a hex belongs to; the map draws its border and label',
+    status: 'linked',
     note:
-      'This is the director\'s "named area", and it is real: `worldSeed` flood-fills ' +
-      'regions, then names them from historical culture ownership, so a region has a ' +
-      'name a player can read. It has no page and no click route. See the borders gap ' +
-      'note below for what is still missing.',
+      'The director\'s "named area", and now a first-class reference (THR-1155 slice 1). ' +
+      '`worldSeed` mints one Area per watershed cluster and stamps every land hex, so ' +
+      'membership is a fact of game state rather than a renderer-side cluster list: an ' +
+      'effect scoped `region` lands on the Area, and a reference of kind `area` routes to ' +
+      'its centre hex, where the chronicle names it. It carries no entity-visual tile — ' +
+      'there is no portrait of a mountain range — so it takes the `attachment` treatment ' +
+      'for the icon: a route and a name, no wrong picture.',
   },
   ambition: {
     anchor: 'Ambition',
@@ -672,6 +675,7 @@ export const WORLD_REF_KIND_DESCRIPTIONS: Readonly<Record<string, string>> = {
   faction: 'An organisation — an `actor` node with `actorType: \'faction\'`. Authored form is `$faction:<defId>`.',
   location: 'A place-tier location node: a settlement, a ruin, a place of power.',
   sublocation: 'A place inside a place — a `location` node carrying `parentLocationId` (THR-1183).',
+  area: 'A named stretch of ground — a `region` node. Every land hex belongs to exactly one (THR-1155), so naming an Area names a real membership: the map draws its border and label, and an effect scoped `region` lands on it.',
   hex: 'A map tile, identified by its coordinates (`<col>,<row>`) rather than by a node id.',
   artifact: 'An `artifact` or `artifact_legendary` node.',
   attachment: 'An attachment **template** node id — committed content, never a granted instance.',
@@ -805,6 +809,9 @@ const CHIP_UNION_MEMBERS: readonly string[] = [
   'companion',
   'attachment',
   'location',
+  // THR-1155: an Area is the second member with a route and no tile. It routes to its
+  // centre hex, where the chronicle names it; there is no portrait of a mountain range.
+  'area',
 ];
 
 /**
@@ -838,6 +845,11 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
         'resolving a wrong tile. Adding it here would *create* the bug the union prevents at ' +
         'compile time.',
       hex: 'Drawn by the map, not by a tile.',
+      area:
+        'Deliberate (THR-1155). An Area is a stretch of ground: the map draws it as a ' +
+        'dotted border and a label, and the chronicle names it. There is no portrait of a ' +
+        'mountain range, and a generic terrain glyph would say less than its name already ' +
+        'does — so the kind routes and never resolves a tile, as `attachment` does.',
       journey: 'An event, not an entity with a portrait.',
       receipt: 'A document, not an entity with a portrait.',
     },
@@ -904,6 +916,7 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
       location: 'No row in the Threads panel to wait on.',
       sublocation: 'No row in the Threads panel to wait on.',
       hex: 'No row in the Threads panel to wait on.',
+      area: 'No row in the Threads panel to wait on.',
       artifact: 'No row in the Threads panel to wait on.',
       attachment: 'No row in the Threads panel to wait on.',
       companion: 'No row in the Threads panel to wait on.',

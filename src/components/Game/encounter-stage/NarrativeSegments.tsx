@@ -63,7 +63,13 @@ export type NarrativeEntityKind =
   // Routed to `LocationProfileModal`, the same sheet the thread list and the hex
   // map already open — a destination that existed the whole time and had no door
   // from here.
-  | 'location';
+  | 'location'
+  // THR-1155 — an Area, named by its region node id. The Area is a partition of the
+  // world now, so a scene naming the Iron Crags names a membership every land hex
+  // carries; the route opens the Area's centre hex, where the chronicle names it and
+  // tells its history. Like 'attachment' it carries no entity-visual tile — there is no
+  // portrait of a mountain range.
+  | 'area';
 
 export interface NarrativeSegmentsProps {
   paragraph: EncounterStageNarrativeParagraph;

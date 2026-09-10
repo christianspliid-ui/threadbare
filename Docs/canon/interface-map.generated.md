@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 94 |
+| 🟢 LIVE | 95 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **124** |
+| **Total** | **125** |
 
 ## Contracts by producing subsystem
 
@@ -242,6 +242,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ## Evidence
@@ -339,6 +340,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/ambitionTick.ts`
 - **Other hits:** `src/data/ambition-templates.ts`, `src/engine/agentResidence.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-23: 15-tick cadence; milestone events observed firing. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `area-partition-to-map` — 🟢 LIVE
+
+- **Intent:** There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own.
+- **Producer → Consumer:** World Generation, Terrain & Places → World Generation, Terrain & Places
+- **UL terms:** *Area*
+- **Module:** `src/engine/areaProjection.ts`
+- **Production hits:** 10 total — 2 write, 4 read, 4 unclassified
+- **Write sites:** `src/engine/regionDetection.ts`, `src/engine/worldSeed.ts`
+- **Read sites:** `src/components/Game/hooks/useSimulation.ts`, `src/engine/areaProjection.ts`, `src/engine/effectScope.ts`, `src/engine/simulationRuntime.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/hexGrid.ts`, `src/engine/regionPolitical.ts`, `src/engine/regionTypes.ts`
+- **Verdict:** Verified 2026-09-10: THR-1155 slice 1. Measured on `main` before the change: the flood-fill left 22-198 land hexes with no region across seeds 42/99/7 at all four map sizes, and the watershed left 0-24 - so BOTH partitions had holes, in different places, and `gameInit` joined them by list position. Two defects surfaced on the way and are fixed here rather than filed. (1) The watershed split pass never pruned `hexSet`, so a later chunk BFS re-collected an earlier chunk hexes and listed them twice: 147 hexes in two clusters on a seed-42 medium world, 1735 in two or three on an epic one, which inflated every split region hexes.length, its label-size gate and its Area hexCount. (2) `edgeBorderCost` read `geoParams.elevation` unguarded, which only became reachable from fixture tiles once the watershed was the one detector. Coverage is asserted on GENERATED worlds, never a fixture, because the holes were a property of real terrain - islands no province capital sat on - and a hand-built grid would not have had one. The controlled arm builds exactly such an island and confirms the nearest-cluster fill is what closes it, not the assertion. `effectScope('region')` was a radius-4 disc around the caster and is now real Area membership, tested against a fixture where the two answers disagree in both directions. Tests: `src/engine/__tests__/worldSeed.areas.test.ts` (16), `effectScope.region.test.ts` (3), `GeoBorderMesh.test.ts` (6), `RegionLabelOverlay.area.test.tsx` (3), `regionLabels.test.ts` (17). Full suite 19855 green; heavy lane 202 green; 30-tick seed-42 smoke reached tick 30, 495 agents, 61 events.
 
 ### `ascendant-affinity-cast-capability` — 🟢 LIVE
 

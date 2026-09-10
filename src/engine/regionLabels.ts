@@ -10,6 +10,7 @@
  */
 
 import type { RegionLabel, RegionData } from './regionTypes';
+import type { AreaProjection } from './areaProjection';
 import type { RiverPath } from './worldGenData';
 import { hexToPixel } from '../lib/hexMath';
 import { REGION_MAP_LABEL_MIN_SIZE } from './regionDetection';
@@ -84,11 +85,13 @@ function computeHexesWorldWidth(hexes: { col: number; row: number }[]): number {
 // ─── Label generators ─────────────────────────────────────────────────────────
 
 /**
- * Generates region labels for domains, provinces, and geographic regions.
+ * Generates the political label tiers — domains and provinces.
  *
  * - Domains: one label at geographic centroid of all domain hexes.
  * - Provinces: one label at centroid.
- * - Geographic regions >= REGION_MAP_LABEL_MIN_SIZE: one label at center.
+ *
+ * The geographic tier moved to generateAreaLabels (THR-1155), which reads the Area
+ * nodes rather than a renderer-side cluster list.
  *
  * NFP #4 Fail-soft: Returns empty array if regionData is invalid.
  */
@@ -154,20 +157,36 @@ export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
     }
   }
 
-  // Geographic labels — only regions large enough to label
-  for (const g of regionData.geographicRegions) {
+  return labels;
+}
+
+/**
+ * Generates the geographic label tier — one label per Area large enough to carry one.
+ *
+ * Split out of `generateRegionLabels` by THR-1155: the name a player reads over a
+ * mountain range now comes from the Area's own graph node, through `areaProjection`,
+ * rather than from a renderer-side cluster joined to that node by list position. The
+ * political tiers still read `RegionData` until Realms replace them.
+ *
+ * NFP #4 Fail-soft: a malformed Area is skipped, not thrown.
+ */
+export function generateAreaLabels(areaProjection: AreaProjection): RegionLabel[] {
+  const labels: RegionLabel[] = [];
+
+  for (const area of areaProjection.areas) {
     try {
-      if (g.hexes.length < REGION_MAP_LABEL_MIN_SIZE) continue;
-      const { x, y } = hexToWorld(g.centerCol, g.centerRow);
+      if (area.hexes.length < REGION_MAP_LABEL_MIN_SIZE) continue;
+      if (!area.name) continue; // an Area worldgen never named carries no label
+      const { x, y } = hexToWorld(area.center.col, area.center.row);
       labels.push({
-        id: `geo-${g.id}`,
+        id: `geo-${area.id}`,
         tier: 'geographic',
-        text: g.name,
+        text: area.name,
         worldX: x,
         worldY: y,
       });
     } catch {
-      // Fail-soft: skip malformed geo region entry
+      // Fail-soft: skip malformed Area entry
     }
   }
 

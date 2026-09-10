@@ -9,6 +9,8 @@ interface NotificationNavigationDeps {
   onOpenFaction?: (factionId: string) => void;
   onOpenJourney?: (journeyId: string, agentId: string) => void;
   onOpenLocation?: (nodeId: string) => void;
+  /** An Area reference (THR-1155) — focus its centre hex, where the chronicle names it. */
+  onFocusArea?: (areaId: string) => void;
   /** Divine Receipt toast click-through → open the receipt dialogue (THR-727). */
   onOpenReceipt?: (receiptId: string) => void;
 }
@@ -36,6 +38,11 @@ export function useNotificationNavigation(deps: NotificationNavigationDeps) {
           deps.onOpenLocation(target.locationNodeId);
         }
         break;
+      case 'area':
+        if (deps.onFocusArea) {
+          deps.onFocusArea(target.areaId);
+        }
+        break;
       case 'faction':
         if (deps.onOpenFaction) {
           deps.onOpenFaction(target.factionId);
@@ -52,5 +59,5 @@ export function useNotificationNavigation(deps: NotificationNavigationDeps) {
         }
         break;
     }
-  }, [deps.onSelectAgent, deps.onFocusHex, deps.onOpenEncounter, deps.onOpenFaction, deps.onOpenJourney, deps.onOpenLocation, deps.onOpenReceipt]);
+  }, [deps.onSelectAgent, deps.onFocusHex, deps.onOpenEncounter, deps.onOpenFaction, deps.onOpenJourney, deps.onOpenLocation, deps.onFocusArea, deps.onOpenReceipt]);
 }

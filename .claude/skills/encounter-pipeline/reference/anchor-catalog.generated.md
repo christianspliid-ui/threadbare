@@ -19,7 +19,7 @@
 | — not an anchor | Machinery. Not a thing a chip can be *about*. |
 | 🕳️ gap | The director named it as legal and the game has no representation yet. |
 
-**`named` is not second-class.** Both `linked` and `named` satisfy Law 56. The only difference is whether `openEntity` has a route for the kind — it switches on `visualKind`, whose members are exactly `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`. Do not fold a chip merely because its anchor cannot click; fold it when the referent is not a real object at all.
+**`named` is not second-class.** Both `linked` and `named` satisfy Law 56. The only difference is whether `openEntity` has a route for the kind — it switches on `visualKind`, whose members are exactly `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, `area`. Do not fold a chip merely because its anchor cannot click; fold it when the referent is not a real object at all.
 
 ## The kind vocabulary — `WorldRefKind` and its projections
 
@@ -30,6 +30,7 @@
 | `agent` | A person — an `actor` node with a person-like `actorType`. The UI word wins over the graph's `actor`. |
 | `faction` | An organisation — an `actor` node with `actorType: 'faction'`. Authored form is `$faction:<defId>`. |
 | `location` | A place-tier location node: a settlement, a ruin, a place of power. |
+| `area` | A named stretch of ground — a `region` node. Every land hex belongs to exactly one (THR-1155), so naming an Area names a real membership: the map draws its border and label, and an effect scoped `region` lands on it. |
 | `sublocation` | A place inside a place — a `location` node carrying `parentLocationId` (THR-1183). |
 | `hex` | A map tile, identified by its coordinates (`<col>,<row>`) rather than by a node id. |
 | `artifact` | An `artifact` or `artifact_legendary` node. |
@@ -49,6 +50,7 @@
 | `agent` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `faction` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `location` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · |
+| `area` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · |
 | `sublocation` | ✓ | · | · | · | · | · | · |
 | `hex` | · | · | · | · | · | ✓ | · |
 | `artifact` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · |
@@ -59,7 +61,7 @@
 | `journey` | · | · | · | · | · | ✓ | · |
 | `receipt` | · | · | · | · | · | ✓ | · |
 
-**Totals.** 41 union members across 7 vocabularies are `WorldRefKind`s; 3 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
+**Totals.** 46 union members across 7 vocabularies are `WorldRefKind`s; 3 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
 
 #### `EntityVisualKind`
 
@@ -75,6 +77,7 @@ Members: `agent`, `avatar`, `location`, `sublocation`, `encounter`, `faction`, `
 
 *Deliberately absent:*
 
+- **`area`** — Deliberate (THR-1155). An Area is a stretch of ground: the map draws it as a dotted border and a label, and the chronicle names it. There is no portrait of a mountain range, and a generic terrain glyph would say less than its name already does — so the kind routes and never resolves a tile, as `attachment` does.
 - **`hex`** — Drawn by the map, not by a tile.
 - **`attachment`** — Deliberate (THR-1120). An attachment's art lives on its template node and `AttachmentDetailView` draws it; `resolveIcon` skips the kind rather than resolving a wrong tile. Adding it here would *create* the bug the union prevents at compile time.
 - **`journey`** — An event, not an entity with a portrait.
@@ -84,7 +87,7 @@ Members: `agent`, `avatar`, `location`, `sublocation`, `encounter`, `faction`, `
 
 What an aftermath chip may claim its referent is. The declaration vocabulary. — `src/types/unifiedAction.ts`
 
-Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, `area`
 
 *Deliberately absent:*
 
@@ -99,7 +102,7 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 
 What a linked noun inside encounter prose points at. — `src/components/Game/encounter-stage/types.ts`
 
-Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, `area`
 
 *Deliberately absent:*
 
@@ -114,7 +117,7 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 
 What a consequence row's subject noun points at (THR-1153). — `src/components/Game/encounter-stage/types.ts`
 
-Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, `area`
 
 *Deliberately absent:*
 
@@ -129,7 +132,7 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 
 The adapter's structural mirror of the segment union, so `src/types/` need not import a component tree. — `src/types/worldRefAdapters.ts`
 
-Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, `area`
 
 *Deliberately absent:*
 
@@ -144,7 +147,7 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
 
 Where `openEntity` can actually route. The arms are discriminated by `kind`. — `src/types/notification.ts`
 
-Members: `agent`, `encounter`, `hex`, `location`, `faction`, `journey`, `receipt`
+Members: `agent`, `encounter`, `hex`, `location`, `area`, `faction`, `journey`, `receipt`
 
 *Deliberately absent:*
 
@@ -163,6 +166,7 @@ Members: `agent`, `faction`
 *Deliberately absent:*
 
 - **`location`** — No row in the Threads panel to wait on.
+- **`area`** — No row in the Threads panel to wait on.
 - **`sublocation`** — No row in the Threads panel to wait on.
 - **`hex`** — No row in the Threads panel to wait on.
 - **`artifact`** — No row in the Threads panel to wait on.
@@ -187,7 +191,7 @@ Members: `agent`, `faction`
 | `action_template` | — | — not an anchor | — | — |
 | `event` | — | — not an anchor | — | — |
 | `cosmology` | Sphere / foundation | 📍 named | `tooltipId` on the concept; no `entityId` | The tooltip, and the cosmology readouts |
-| `region` | Named area (region) | 📍 named | `entityId` = the region node id; **no `visualKind` member exists** | The hex chronicle names the region a hex belongs to |
+| `region` | Named area (region) | 🔗 linked | `entityId` = the Area node id; `visualKind: 'area'` routes without a tile | The hex chronicle names the Area a hex belongs to; the map draws its border and label |
 | `sublocation` | Sublocation | 🔗 linked | `entityId` = the sublocation node id, `visualKind: 'location'` | The location sheet of its parent, and the hex it sits on |
 | `ambition` | Ambition | 📍 named | `entityId` = the ambition node id; no `visualKind` member | The pursuing actor's sheet |
 | `encounter_template` | — | — not an anchor | — | — |
@@ -200,7 +204,7 @@ Members: `agent`, `faction`
 - **`artifact_legendary`** — Same declaration as a common artifact — `$artifact` finds a legendary mint too, since the tier is chosen by the effect and is not the author's to name. Legendary ones carry their own trait graph.
 - **`action_template`** — Action template — a definition, not an object in the world the player can be pointed at
 - **`event`** — Event — the record of a resolution. A chip *is* a report of one; pointing a chip at its own event record says nothing new
-- **`region`** — This is the director's "named area", and it is real: `worldSeed` flood-fills regions, then names them from historical culture ownership, so a region has a name a player can read. It has no page and no click route. See the borders gap note below for what is still missing.
+- **`region`** — The director's "named area", and now a first-class reference (THR-1155 slice 1). `worldSeed` mints one Area per watershed cluster and stamps every land hex, so membership is a fact of game state rather than a renderer-side cluster list: an effect scoped `region` lands on the Area, and a reference of kind `area` routes to its centre hex, where the chronicle names it. It carries no entity-visual tile — there is no portrait of a mountain range — so it takes the `attachment` treatment for the icon: a route and a name, no wrong picture.
 - **`sublocation`** — Registered in `NodeType` by THR-1177 so readers stay legal for saved worlds; since THR-1183 no producer writes the bare type — every sublocation is minted as a `location` node carrying `parentLocationId`. Resolve and test the shape through `src/engine/sublocationShape.ts` (`isPlaceNode` / `resolveToParentLocation`); never hand-roll the two-shape check.
 - **`encounter_template`** — Encounter template — the encounter itself. A planted seed anchors through its **carrier** — the agent or location it was planted on — never through the template id
 - **`companion`** — The one kind that is in the `visualKind` union and still does not click, on purpose: a companion is a person but not an agent node, so both the agent drawer and the stub-modal path would open the wrong sheet. Its tile renders; the click is withheld because non-interactive beats wrong.

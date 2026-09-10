@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateRegionLabels, generateRiverLabels, LABEL_PRIORITY } from '../regionLabels';
+import { generateRegionLabels, generateAreaLabels, generateRiverLabels, LABEL_PRIORITY } from '../regionLabels';
+import type { AreaProjection } from '../areaProjection';
 import type { RegionData } from '../regionTypes';
 import type { RiverPath } from '../worldGenData';
 import type { RegionCluster, ProvinceRegion, DomainRegion } from '../regionTypes';
@@ -33,6 +34,29 @@ function makeGeoRegion(id: number, hexCount: number): RegionCluster {
     centerRow: 0,
     name: `Region ${id}`,
   };
+}
+
+/**
+ * An Area projection carrying `count` Areas of `hexCount` hexes each (THR-1155).
+ *
+ * The geographic tier reads this now rather than `RegionData.geographicRegions`: the
+ * name a player sees over a mountain range comes from the Area's own graph node, not
+ * from a renderer-side cluster joined to that node by list position.
+ */
+function makeAreaProjection(sizes: number[]): AreaProjection {
+  const hexAreaId = new Map<string, string>();
+  const areas = sizes.map((hexCount, id) => {
+    const hexes = Array.from({ length: hexCount }, (_, i) => ({ col: i, row: id }));
+    for (const h of hexes) hexAreaId.set(`${h.col},${h.row}`, `region_${id}`);
+    return {
+      id: `region_${id}`,
+      name: `Region ${id}`,
+      featureType: 'plains' as const,
+      hexes,
+      center: { col: Math.floor(hexCount / 2), row: id },
+    };
+  });
+  return { areas, hexAreaId };
 }
 
 function makeProvinceRegion(id: number): ProvinceRegion {
@@ -95,44 +119,26 @@ describe('generateRegionLabels', () => {
     expect(provinceLabels[0].id).toBe('province-0');
   });
 
-  it('produces one label per geographic region >= REGION_MAP_LABEL_MIN_SIZE (30)', () => {
+  it('draws no geographic tier of its own — that is generateAreaLabels (THR-1155)', () => {
+    // The political generator is handed a RegionData that still *carries* clusters, and
+    // must ignore them: two label sources for one tier is how the map came to name a
+    // range after an unrelated cluster in the first place.
     const rd = makeRegionData({
-      geographicRegions: [
-        makeGeoRegion(0, 30),
-        makeGeoRegion(1, 45),
-      ],
+      geographicRegions: [makeGeoRegion(0, 45), makeGeoRegion(1, 45)],
     });
-    const labels = generateRegionLabels(rd);
-    const geoLabels = labels.filter(l => l.tier === 'geographic');
-    expect(geoLabels).toHaveLength(2);
-  });
-
-  it('produces NO label for geographic regions smaller than REGION_MAP_LABEL_MIN_SIZE (30)', () => {
-    const rd = makeRegionData({
-      geographicRegions: [
-        makeGeoRegion(0, 29),
-        makeGeoRegion(1, 10),
-        makeGeoRegion(2, 5),
-      ],
-    });
-    const labels = generateRegionLabels(rd);
-    const geoLabels = labels.filter(l => l.tier === 'geographic');
-    expect(geoLabels).toHaveLength(0);
+    expect(generateRegionLabels(rd).filter(l => l.tier === 'geographic')).toHaveLength(0);
   });
 
   it('label text matches the region name', () => {
     const rd = makeRegionData({
       domains: [makeDomainRegion(0)],
       provinces: [makeProvinceRegion(0)],
-      geographicRegions: [makeGeoRegion(0, 35)],
     });
     const labels = generateRegionLabels(rd);
     const domain = labels.find(l => l.tier === 'domain');
     const province = labels.find(l => l.tier === 'province');
-    const geo = labels.find(l => l.tier === 'geographic');
     expect(domain?.text).toBe('Domain 0');
     expect(province?.text).toBe('Province 0');
-    expect(geo?.text).toBe('Region 0');
   });
 
   it('suppresses province label for the capital province of each domain', () => {
@@ -222,5 +228,41 @@ describe('generateRiverLabels', () => {
     const labels = generateRiverLabels(rivers, 42);
     expect(labels[0].tier).toBe('river');
     expect(labels[0].id).toMatch(/^river-/);
+  });
+});
+
+describe('generateAreaLabels — the geographic tier reads the Area nodes (THR-1155)', () => {
+  it('produces one label per Area at or above REGION_MAP_LABEL_MIN_SIZE (30)', () => {
+    const labels = generateAreaLabels(makeAreaProjection([30, 45]));
+    expect(labels.filter(l => l.tier === 'geographic')).toHaveLength(2);
+    expect(labels.map(l => l.id)).toEqual(['geo-region_0', 'geo-region_1']);
+  });
+
+  it('produces no label for an Area below the threshold', () => {
+    const labels = generateAreaLabels(makeAreaProjection([29, 10, 5]));
+    expect(labels).toHaveLength(0);
+  });
+
+  it('labels a big Area and skips a small one in the same world', () => {
+    // The mixed population is the point: a threshold guard tested only on a uniform
+    // set passes whether it filters or not.
+    const labels = generateAreaLabels(makeAreaProjection([45, 5]));
+    expect(labels).toHaveLength(1);
+    expect(labels[0].id).toBe('geo-region_0');
+  });
+
+  it('takes its text from the Area node name, and its anchor from the node centre', () => {
+    const projection = makeAreaProjection([35]);
+    const labels = generateAreaLabels(projection);
+    expect(labels[0].text).toBe('Region 0');
+    // The centre is a hex inside the Area, so the label never lands off it.
+    const centre = projection.areas[0].center;
+    expect(projection.areas[0].hexes.some(h => h.col === centre.col && h.row === centre.row)).toBe(true);
+  });
+
+  it('skips an Area worldgen never named rather than drawing an empty label', () => {
+    const projection = makeAreaProjection([40]);
+    projection.areas[0] = { ...projection.areas[0], name: '' };
+    expect(generateAreaLabels(projection)).toHaveLength(0);
   });
 });

@@ -9,7 +9,7 @@ import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, 
 import type { MapSizePreset } from '../../../engine/gameInit';
 import type { AscendantIdentity } from '../../../types/remembrance';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
-import { createSimulationRuntime, resetRuntimeCaches } from '../../../engine/simulationRuntime';
+import { createSimulationRuntime, resetRuntimeCaches, ensureAreaProjection } from '../../../engine/simulationRuntime';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import {
   startTwilight,
@@ -206,6 +206,16 @@ export function useSimulation({
     [gameState.graph, gameState.ascendantId, runtimeRef.current.worldVersion],
   );
 
+  // THR-1155: the Area partition the map draws. The runtime owns it — this memo only
+  // re-reads it — so the borders, the labels and anything that resolves an Area come
+  // from one projection. Keyed on structuralCacheVersion because that is what the
+  // `ensure` rebuilds on; an Area's membership is worldgen-fixed, so a per-tick
+  // recompute would be waste.
+  const areaProjection = useMemo(
+    () => ensureAreaProjection(runtimeRef.current, gameState.graph, tiles),
+    [gameState.graph, tiles, runtimeRef.current.structuralCacheVersion],
+  );
+
   return {
     gameState,
     setGameState,
@@ -213,6 +223,7 @@ export function useSimulation({
     riverPaths,
     lakeIds,
     regionData,
+    areaProjection,
     running,
     speed,
     setSpeed,

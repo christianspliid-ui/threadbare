@@ -35,6 +35,7 @@ export type WorldRefKind =
   | 'agent'        // graph: actor node (person-like actorType); the UI word wins over the graph's 'actor'
   | 'faction'      // actor node with actorType 'faction'; authored form is $faction:<defId>
   | 'location'     // place-tier location node
+  | 'area'         // region node — the map's terrain partition, one Area per land hex (THR-1155)
   | 'sublocation'  // location node carrying parentLocationId (THR-1183 shape)
   | 'hex'          // id serialized `<col>,<row>` — hex identity is coordinates, not a node id
   | 'artifact'     // artifact | artifact_legendary node
@@ -57,6 +58,7 @@ export const WORLD_REF_KINDS: readonly WorldRefKind[] = [
   'agent',
   'faction',
   'location',
+  'area',
   'sublocation',
   'hex',
   'artifact',

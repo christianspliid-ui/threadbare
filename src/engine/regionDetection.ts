@@ -1,5 +1,5 @@
 import type { HexCoord, HexTile, TerrainType } from '../types';
-import { hexNeighbors } from '../lib/hexMath';
+import { hexNeighbors, hexDistance } from '../lib/hexMath';
 import { hexKeyFromCoord } from '../lib/hexKey';
 
 /** Geographic feature categories for region clustering */
@@ -128,8 +128,16 @@ export function edgeBorderCost(
     return BORDER_COSTS.RIVER;
   }
 
-  // Steep elevation change — moderate barrier
-  const elevDiff = Math.abs(current.geoParams.elevation - neighbor.geoParams.elevation);
+  // Steep elevation change — moderate barrier.
+  //
+  // NFP #4: a tile with no `geoParams` reads as elevation 0 rather than throwing. The
+  // field is optional in practice — hand-built tiles across the test corpus omit it —
+  // and this function only became reachable from them when THR-1155 made the watershed
+  // the one detector. A missing elevation means "no steep barrier here"; the biome and
+  // same-terrain rules below still separate the hexes.
+  const currentElev = current.geoParams?.elevation ?? 0;
+  const neighborElev = neighbor.geoParams?.elevation ?? 0;
+  const elevDiff = Math.abs(currentElev - neighborElev);
   if (elevDiff > BORDER_COSTS.ELEVATION_THRESHOLD) {
     return BORDER_COSTS.STEEP_ELEVATION;
   }
@@ -210,7 +218,9 @@ class MinHeap {
  *    Each edge costs edgeBorderCost() — high cost = strong natural boundary.
  * 3. Merge regions below REGION_MIN_SIZE into lowest-cost neighbor.
  * 4. Split regions above REGION_MAX_SIZE.
- * 5. Snap centroid to nearest in-region hex.
+ * 5. Fill orphan land hexes into the nearest cluster — the partition is total over
+ *    land (THR-1155); every land hex belongs to exactly one region.
+ * 6. Snap centroid to nearest in-region hex.
  *
  * NFP #1 Tunability: See BORDER_COSTS, REGION_TARGET_SIZE, REGION_MIN_SIZE, REGION_MAX_SIZE.
  * NFP #2 Inspectability: Returns hexRegionId map for per-hex traceability.
@@ -436,6 +446,17 @@ export function detectRegionsBorderCost(
       }
 
       const chunkKeys = new Set(chunk.map(h => hexKeyFromCoord(h)));
+
+      // Take this chunk's hexes out of the pool the *next* chunk's BFS may reach.
+      // Without this, `hexSet` still held every hex of the original region, so a
+      // later chunk's flood fill walked back over hexes an earlier chunk had already
+      // claimed and listed them a second time (THR-1155). `remaining` was filtered,
+      // but `hexSet` — the thing the BFS actually consults — was not. Measured on
+      // `main` before the fix: 147 hexes in two clusters on a seed-42 medium world,
+      // 1735 in two or three on an epic one, which inflated every split region's
+      // `hexes.length` and so its label-size gate and its Area `hexCount`.
+      for (const key of chunkKeys) hexSet.delete(key);
+
       const newId = remaining === hexes ? regionId : nextId++;
       finalRegions.set(newId, chunk);
       for (const h of chunk) {
@@ -446,6 +467,51 @@ export function detectRegionsBorderCost(
       const remainingAfter = remaining.filter(h => !chunkKeys.has(hexKeyFromCoord(h)));
       remaining.length = 0;
       remaining.push(...remainingAfter);
+    }
+  }
+
+  // ── Nearest-cluster fill: the partition must be total (THR-1155) ────────────
+  //
+  // The watershed only reaches land connected to a seed, so an island carrying no
+  // province capital came back with no region at all — measured 0–24 orphan land
+  // hexes per world across seeds 42/99/7 at every map size. That was tolerable
+  // while a region was a thing the map drew; it is not tolerable now that an Area
+  // is a game object a hex belongs to, because an effect scoped to a region, an
+  // `$area` sentinel and the chronicle's region line all resolve through
+  // `tile.regionId`. A hex with no Area is a hole in the world.
+  //
+  // Each orphan joins the cluster holding the nearest hex by hex distance; ties
+  // break on the lower cluster id, and orphans are visited in coordinate order, so
+  // the fill is deterministic (NFP #3). Orphans do not become fill targets for one
+  // another — every orphan measures against the watershed's own output — so an
+  // island attaches as a unit rather than chaining away from the mainland.
+  //
+  // Cost is O(orphans × assigned land hexes). The orphan count is exactly what the
+  // watershed could not reach, two orders of magnitude below the assigned count on
+  // every measured world: a few tens of thousands of comparisons on an epic map.
+  const assignedHexes: Array<{ hex: HexCoord; regionId: number }> = [];
+  for (const [regionId, hexes] of finalRegions) {
+    for (const hex of hexes) assignedHexes.push({ hex, regionId });
+  }
+
+  if (assignedHexes.length > 0) {
+    const orphans = landHexes
+      .filter(t => !hexRegionId.has(hexKeyFromCoord(t.coord)))
+      .map(t => t.coord)
+      .sort((a, b) => a.col - b.col || a.row - b.row);
+
+    for (const orphan of orphans) {
+      let bestRegionId = -1;
+      let bestDist = Infinity;
+      for (const candidate of assignedHexes) {
+        const d = hexDistance(orphan, candidate.hex);
+        if (d < bestDist || (d === bestDist && candidate.regionId < bestRegionId)) {
+          bestDist = d;
+          bestRegionId = candidate.regionId;
+        }
+      }
+      finalRegions.get(bestRegionId)!.push(orphan);
+      hexRegionId.set(hexKeyFromCoord(orphan), bestRegionId);
     }
   }
 
@@ -509,66 +575,15 @@ export function detectRegionsBorderCost(
   return { regions: clusters, hexRegionId };
 }
 
-// ─── Legacy Flood-Fill Detection (backward compat) ────────────────────────────
-
-/**
- * Detect geographic regions by flood-filling contiguous hexes of related terrain types.
- * Clusters below FEATURE_MIN_SIZE are discarded.
- * Sea/ocean clusters are always discarded (not named).
- *
- * @deprecated Use detectRegionsBorderCost for new code. Kept for backward compat.
- */
-export function detectRegions(tiles: HexTile[]): RegionCluster[] {
-  // Build lookup: "col,row" → HexTile
-  const tileMap = new Map<string, HexTile>();
-  for (const t of tiles) {
-    tileMap.set(hexKeyFromCoord(t.coord), t);
-  }
-
-  const visited = new Set<string>();
-  const clusters: RegionCluster[] = [];
-  let nextId = 0;
-
-  for (const t of tiles) {
-    const tKey = hexKeyFromCoord(t.coord);
-    if (visited.has(tKey)) continue;
-
-    const feature = TERRAIN_TO_FEATURE[t.terrain];
-    if (!feature) { visited.add(tKey); continue; }
-
-    // Flood-fill
-    const queue: HexCoord[] = [t.coord];
-    const clusterHexes: HexCoord[] = [];
-    visited.add(tKey);
-
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      clusterHexes.push(current);
-
-      for (const neighbor of hexNeighbors(current)) {
-        const nKey = hexKeyFromCoord(neighbor);
-        if (visited.has(nKey)) continue;
-        const nTile = tileMap.get(nKey);
-        if (!nTile) continue;
-        const nFeature = TERRAIN_TO_FEATURE[nTile.terrain];
-        if (nFeature !== feature) continue;
-        visited.add(nKey);
-        queue.push(neighbor);
-      }
-    }
-
-    // Discard sea clusters and undersized clusters
-    if (feature === 'sea') continue;
-    if (clusterHexes.length < FEATURE_MIN_SIZE[feature]) continue;
-
-    // Compute centroid
-    const sumCol = clusterHexes.reduce((s, h) => s + h.col, 0);
-    const sumRow = clusterHexes.reduce((s, h) => s + h.row, 0);
-    const centerCol = Math.round(sumCol / clusterHexes.length);
-    const centerRow = Math.round(sumRow / clusterHexes.length);
-
-    clusters.push({ id: nextId++, featureType: feature, hexes: clusterHexes, centerCol, centerRow });
-  }
-
-  return clusters;
-}
+// ─── Legacy Flood-Fill Detection — deleted (THR-1155) ─────────────────────────
+//
+// `detectRegions` flood-filled contiguous same-feature hexes into clusters and
+// discarded anything under `FEATURE_MIN_SIZE`. It was the graph's Area source while
+// `detectRegionsBorderCost` was the map's, which is how the world came to hold two
+// different geographies: on a seed-42 medium world the flood-fill made 21 clusters
+// and left 55 land hexes in none, the watershed made 16 and left 5, and `gameInit`
+// joined the two by list position. One geography now, from the watershed; the
+// flood-fill is deleted rather than deprecated, because a second detector nobody
+// calls is the thing that grew back last time.
+//
+// `FEATURE_MIN_SIZE` outlives it — the label and naming layers still read it.

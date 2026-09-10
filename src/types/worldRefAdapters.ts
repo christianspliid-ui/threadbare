@@ -32,7 +32,7 @@ import { hexRefId, parseHexRefId } from './worldRef';
 export interface NarrativeSegmentRefLike {
   readonly entityId?: string;
   readonly tooltipId?: string;
-  readonly entityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location';
+  readonly entityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | 'area';
 }
 
 /**
@@ -60,6 +60,9 @@ export interface EntityVisualRefLike {
  * - `hex`, `encounter`, `journey`, `receipt` — no entity-visual family. A hex is drawn
  *   by the map, not by a tile; the other three are events and documents, not entities
  *   with portraits.
+ * - `area` (THR-1155) — an Area is a stretch of ground, drawn by the map's dotted
+ *   borders and named by its label. There is no portrait of the Iron Crags, and a
+ *   generic terrain glyph would say less than the name already does.
  *
  * `EntityVisualKind` additionally carries `avatar`, `npc-role` and `unknown`, which are
  * render-time refinements rather than referenceable kinds — they are projections *out*
@@ -107,6 +110,10 @@ export function toNavigationTarget(
     case 'location':
     case 'sublocation':
       return { kind: 'location', locationNodeId: ref.id };
+    // An Area has no sheet; its surface is the hex chronicle, which already names it
+    // and tells its history. Routing to the Area's own centre hex opens exactly that.
+    case 'area':
+      return { kind: 'area', areaId: ref.id };
     case 'hex': {
       const coords = parseHexRefId(ref.id);
       return coords ? { kind: 'hex', col: coords.col, row: coords.row } : undefined;
@@ -199,5 +206,7 @@ export function fromNavigationTarget(target: NavigationTarget): WorldRef {
       return { kind: 'journey', id: target.journeyId };
     case 'hex':
       return { kind: 'hex', id: hexRefId(target.col, target.row) };
+    case 'area':
+      return { kind: 'area', id: target.areaId };
   }
 }

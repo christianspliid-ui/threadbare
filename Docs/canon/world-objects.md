@@ -14,7 +14,7 @@ Two words for one thing is the drift this page exists to stop. Where the code wo
 
 | Kind | What it is | Shape | Classes |
 |---|---|---|---|
-| **Area** | A multi-hex cluster by dominant terrain, containing its Locations. Geographic only — political territory is a Faction's `controls` edges. | `region` node | — |
+| **Area** | A multi-hex cluster by dominant terrain, containing its Locations. **Every land hex belongs to exactly one** (THR-1155); the map's dotted borders and labels are a projection of these nodes. Geographic only — political territory is a Faction's `controls` edges. | `region` node | `area` |
 | **Hex** | A tile: terrain, features, fog. The one thing that is not a node. | `GameState.tiles[]` | — |
 | **Location** | The outer place tier: where mortals live, hold, ruin and wonder. | `location` node without `parentLocationId`; `locationSubtype` | settlement · stronghold · holy_place · ruin · wild · wonder · deposit |
 | **Place** | The inner tier — an inn, a granary, a gatehouse, a grove, a spring — inside a Location. Not always built. (Code word: *sublocation*.) | `location` node with `parentLocationId`; `sublocationTypeId` | military · scholarly · arcane · commerce · religious · cultural · underworld · nature · authority · borderlands |

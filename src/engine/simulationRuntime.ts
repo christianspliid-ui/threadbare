@@ -29,6 +29,8 @@ import { buildDistanceMatrix } from './distanceMatrix';
 import { buildTraitRefIndex } from './traitRefIndex';
 import type { TraitRefIndex } from './traitRefIndex';
 import { buildRoleCensus } from './binding/roleCensus';
+import { buildAreaProjection } from './areaProjection';
+import type { AreaProjection } from './areaProjection';
 import type { RoleCensus } from './binding/roleCensus';
 import { createBindingIndex, type BindingIndex } from './binding/bindingRegistry';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -213,6 +215,20 @@ export interface SimulationRuntime {
   /** structuralCacheVersion at which roleCensus was last built. */
   roleCensusBuiltAt: number;
 
+  // ── The Area partition the map draws (THR-1155) ──
+  /**
+   * Every hex to its Area and every Area to its hexes, projected from the graph.
+   *
+   * Owned here rather than in a React state or at module scope, for the two reasons
+   * the encounter cache is: a module singleton carries one playthrough's geography
+   * into the next, and a React state cannot be read by the engine — which is exactly
+   * how the renderer came to keep a second, private partition. One owner means the
+   * border layer, the labels and anything that resolves an Area cannot disagree.
+   */
+  areaProjection: AreaProjection | null;
+  /** structuralCacheVersion at which areaProjection was last built. */
+  areaProjectionBuiltAt: number;
+
   // ── The binder's reverse binding index (THR-1296 §4) ──
   /**
    * nodeId → ledger positions, so the `removeNode` hook is one Map lookup rather
@@ -302,6 +318,8 @@ export function createSimulationRuntime(): SimulationRuntime {
     traitRefIndexBuiltAt: -1,
     roleCensus: null,
     roleCensusBuiltAt: -1,
+    areaProjection: null,
+    areaProjectionBuiltAt: -1,
     bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
     aftermathEventSeq: 0,
@@ -504,6 +522,35 @@ export function ensureRoleCensus(
 }
 
 /**
+ * Ensure the Area partition is up to date (THR-1155).
+ *
+ * Rebuilds when `structuralCacheVersion` has advanced — an Area's name or its node
+ * going away are structural, and the hex stamps themselves are worldgen-fixed, so a
+ * per-tick rebuild would be waste.
+ *
+ * Fail-soft (NFP #4): a throwing build leaves the previous projection in place with
+ * its `BuiltAt` unchanged, so the next structural bump retries and the map draws the
+ * last good geography rather than none. The very first build failing returns an empty
+ * projection — no borders, no labels, no crash.
+ */
+export function ensureAreaProjection(
+  runtime: SimulationRuntime,
+  graph: WorldGraph,
+  tiles: HexTile[],
+): AreaProjection {
+  if (!runtime.areaProjection || runtime.areaProjectionBuiltAt < runtime.structuralCacheVersion) {
+    try {
+      runtime.areaProjection = buildAreaProjection(tiles, graph);
+      runtime.areaProjectionBuiltAt = runtime.structuralCacheVersion;
+    } catch (err) {
+      console.warn('[ensureAreaProjection] build failed; keeping the last good projection', err);
+      return runtime.areaProjection ?? { areas: [], hexAreaId: new Map() };
+    }
+  }
+  return runtime.areaProjection;
+}
+
+/**
  * Reset all runtime caches and timelines (e.g. for cycle transitions).
  * Does NOT reset version counters — those monotonically increase within a session.
  * Does NOT reset balance telemetry — telemetry spans the full session by design.
@@ -522,6 +569,8 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.traitRefIndexBuiltAt = -1;
   runtime.roleCensus = null;
   runtime.roleCensusBuiltAt = -1;
+  runtime.areaProjection = null;
+  runtime.areaProjectionBuiltAt = -1;
   // The ledger survives a cache reset (it is game state); the index over it does not.
   runtime.bindingIndex = createBindingIndex();
   clearTimelines();

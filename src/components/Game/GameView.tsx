@@ -319,7 +319,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Use simulation hook ──
   const {
-    gameState, setGameState, tiles, riverPaths, lakeIds, regionData,
+    gameState, setGameState, tiles, riverPaths, lakeIds, regionData, areaProjection,
     running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
@@ -1221,6 +1221,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const interruptsSuppressed = interruptSuppressedUntilTick !== null && gameState.tick < interruptSuppressedUntilTick;
 
   // ── Notification navigation hook ──
+  // THR-1155: where an Area opens. It has no sheet of its own — its surface is the hex
+  // chronicle, which names it and tells its history — so both routes to an Area (a
+  // notification's navigation target and an aftermath chip's link) focus the Area's own
+  // centre hex. The centre is a hex inside the Area by construction, so the camera never
+  // lands in the sea; an Area whose node has gone is a no-op rather than a jump to (0,0).
+  // One definition, because two would drift into two different destinations.
+  const handleFocusArea = useCallback((areaId: string) => {
+    const node = gameState.graph.getNode(areaId);
+    const col = node?.properties.centerCol as number | undefined;
+    const row = node?.properties.centerRow as number | undefined;
+    if (col === undefined || row === undefined) return;
+    handleHexClick({ col, row });
+    if (hexMapRef.current) {
+      const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
+      hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
+    }
+  }, [gameState.graph, handleHexClick, hexMapRef]);
+
   const handleNotificationNavigate = useNotificationNavigation({
     onSelectAgent: handleAgentSelect,
     onFocusHex: (col: number, row: number) => {
@@ -1230,6 +1248,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       }
     },
     onOpenLocation: handleLocationClick,
+    onFocusArea: handleFocusArea,
     // THR-727: clicking a divine-receipt toast opens the receipt dialogue.
     onOpenReceipt: (receiptId: string) => setOpenedReceiptId(receiptId),
   });
@@ -4461,6 +4480,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   riverPaths={riverPaths}
                   lakeIds={lakeIds}
                   regionData={regionData}
+                  areaProjection={areaProjection}
                   locations={locationNodes}
                   anomalies={anomalyNodes}
                   roadPaths={roadPaths}
@@ -5193,6 +5213,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               // The place was always openable from the thread list and the hex
               // map; what was missing was upstream, in the kind union the veil
               // could declare.
+              // THR-1155 — an Area is not a `ThreadCategory`: it has no thread row and no
+              // sheet, so the stub-modal path has nothing to open. Its surface is the hex
+              // chronicle, and `handleFocusArea` is the one definition of how to reach it.
+              if (kind === 'area') {
+                handleFocusArea(entityId);
+                return;
+              }
               setStubModalState({ nodeId: entityId, category: kind });
             }}
             onCommitNudges={handleCommitNudges}

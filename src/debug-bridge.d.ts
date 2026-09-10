@@ -784,6 +784,16 @@ export interface DebugBridge {
    * when no runtime is registered. A non-zero `misses` means an append threw and
    * was swallowed, which is itself a finding.
    */
+  /**
+   * THR-1155 — the Area partition the map draws:
+   * `{ areas, stampedHexes, landHexes, unstamped, builtAt, structuralCacheVersion, sample }`.
+   * `null` when no game state or no runtime is registered.
+   *
+   * `unstamped` is land hexes with no Area and must be 0 — an Area is a game object a
+   * hex belongs to, so a hole there is a hole in the world. The projection is the same
+   * one `GeoBorderMesh` and the geographic label tier render from.
+   */
+  getAreaProjection: () => Promise<unknown>;
   getIncidentRecorderStats: () => Promise<unknown>;
   /**
    * Sweep every authored trait ref against the trait definitions in the live graph

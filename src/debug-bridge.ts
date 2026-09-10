@@ -1734,6 +1734,42 @@ if (import.meta.env.DEV) {
       });
     },
 
+    /**
+     * THR-1155 — the Area partition the map draws, read from the runtime that owns it.
+     *
+     * This is the same projection the dotted geographic borders and the geographic
+     * label tier render from, so a disagreement between what this reports and what is
+     * on screen is a defect rather than two views of two models — which is the state it
+     * replaced. `unstamped` is the count of land hexes with no Area and must be 0.
+     */
+    getAreaProjection: async () => {
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state || !runtime) return null;
+      const { ensureAreaProjection } = await import('./engine/simulationRuntime');
+      const { TERRAIN_TO_FEATURE } = await import('./engine/regionDetection');
+      const projection = ensureAreaProjection(runtime, state.graph, state.tiles);
+      let landHexes = 0;
+      let unstamped = 0;
+      for (const tile of state.tiles) {
+        const feature = TERRAIN_TO_FEATURE[tile.terrain];
+        if (feature === undefined || feature === 'sea') continue;
+        landHexes++;
+        if (!tile.regionId) unstamped++;
+      }
+      return {
+        areas: projection.areas.length,
+        stampedHexes: projection.hexAreaId.size,
+        landHexes,
+        unstamped,
+        builtAt: runtime.areaProjectionBuiltAt,
+        structuralCacheVersion: runtime.structuralCacheVersion,
+        sample: projection.areas.slice(0, 5).map((a) => ({
+          id: a.id, name: a.name, featureType: a.featureType, hexes: a.hexes.length,
+        })),
+      };
+    },
+
     /** THR-1134 — ring occupancy and the swallowed-append count for the flight recorder. */
     getIncidentRecorderStats: async () => {
       const runtime = _runtimeProvider?.();
