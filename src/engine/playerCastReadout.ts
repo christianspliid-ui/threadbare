@@ -71,6 +71,17 @@ export const CARD_READOUT_SPHERE_FACTOR = 0;
 export const CARD_READOUT_MODS = 0;
 
 /**
+ * The probability of a cast whose step is authored at difficulty 0.
+ *
+ * Not a tunable — it mirrors `resolveUncontestedStep`'s *"Divine actions
+ * (difficulty 0) always succeed"* early return, which hands back
+ * `probability: 1`. Named rather than inlined so the two are greppable from each
+ * other: if that early return ever grows a condition, this constant is the site
+ * that has to move with it.
+ */
+export const CERTAIN_CAST_PROBABILITY = 1;
+
+/**
  * The difficulty that actually reaches the roll for this cast.
  *
  * Runs the resolver's own `applyScaleDifficultyAdjust` rather than re-deriving the
@@ -160,11 +171,30 @@ export function castCapabilityByReach(
  * number would read `perilous` on a cast that resolves `favorable` — the precise
  * lie this module exists to prevent.
  *
- * A zero-difficulty step reads `fated` for a capable god at `personal` or `local`,
- * where the scale offset is negative and nothing is left to subtract. It does **not**
- * at `cosmic`, whose +0.10 offset the resolver applies to an unpriced step like any
- * other — see the comment in the body. The word follows the roll, including where
- * that is less flattering than the template suggests.
+ * ─── Two corrections, both measured against the resolver (THR-1002) ───
+ *
+ * This function shipped with two divergences from the roll, and both were found
+ * by pinning it against `resolveUncontestedStep` rather than against
+ * `computeResolutionThreshold`. That distinction is the lesson: the threshold
+ * function is not the last word on a cast's probability, so a pin against it can
+ * be green while the card is wrong.
+ *
+ * 1. **The floor for a below-floor actor is the *scale* floor, not the global
+ *    one.** `stepResolutionCore` sets `probability: scaleMinP` outright whenever
+ *    the raw probability falls under it. This function previously reasoned that
+ *    such an actor "gets lifted to the global `PROBABILITY_FLOOR`" and returned
+ *    their bare capability. Measured at a fresh god (capability 0.354): the card
+ *    said 0.354 → `perilous` where the roll gives 0.65 → `favorable`, at every
+ *    `local` and `personal` cast in the game. It understated the odds of the two
+ *    scales a new god casts at most.
+ *
+ * 2. **A zero-difficulty step is `fated` at every scale.** `resolveUncontestedStep`
+ *    returns `probability: 1` from an early return keyed on `step.difficulty === 0`,
+ *    *before* any scale adjustment runs — so `cosmic`'s +0.10 offset never touches
+ *    an unpriced step. The note that used to stand here (and impediment #996) said
+ *    the opposite; it reasoned from `applyScaleDifficultyAdjust` in isolation and
+ *    the early return makes that path unreachable. The divine verbs are certain,
+ *    and the card now says so.
  *
  * Fail-soft: a non-finite capability or difficulty returns the scale floor rather
  * than propagating NaN onto the card face — the floor is the weakest true claim
@@ -178,22 +208,27 @@ export function castForecastProbability(
   const resolvedScale: ActionScale = scale ?? 'regional';
   const floor = MIN_PROBABILITY_BY_SCALE[resolvedScale] ?? PROBABILITY_FLOOR;
 
+  const authored = typeof maxDifficulty === 'number' && Number.isFinite(maxDifficulty)
+    ? Math.max(0, maxDifficulty)
+    : 0;
+
+  // Correction 2 — the divine verbs are certain, at every scale.
+  //
+  // `resolveUncontestedStep` returns `probability: 1` from an early return keyed on
+  // `step.difficulty === 0`, and that return sits *above* every scale adjustment,
+  // so `cosmic`'s +0.10 offset never reaches an unpriced step. This has to be
+  // checked before the capability guard: a zero-difficulty cast is certain whether
+  // or not anyone told us how capable the god is.
+  if (authored === 0) return CERTAIN_CAST_PROBABILITY;
+
   if (typeof capability !== 'number' || !Number.isFinite(capability)) return floor;
 
-  // NOT `effectiveCastDifficulty`, deliberately — and this is the one subtle thing
-  // in the module.
-  //
-  // That function early-returns 0 for an unpriced step, because its job is to answer
-  // *"may the card claim a risk?"*, and at 0 the answer is no. But the resolver does
-  // not skip the scale offset for an unpriced step: it runs
-  // `applyScaleDifficultyAdjust(0, …)`, which at `cosmic` **adds** +0.10. So a
-  // zero-difficulty cosmic working really does roll harder than the god's bare
-  // capability, and a readout built on the presentation helper would have quoted
-  // capability flat — overstating the odds on exactly the scale where the stakes are
-  // highest. Measured, not reasoned: the cross-check against
-  // `computeResolutionThreshold` caught it at cap 0.2 / diff 0 / cosmic (0.2 vs 0.1).
+  // NOT `effectiveCastDifficulty`, deliberately. That function early-returns 0 for
+  // an unpriced step because its job is the presentation question — *"may the card
+  // claim a risk?"* — and at 0 the answer is no. Here we want the number the roll
+  // will use, which is a different question with a different answer.
   const { adjustedDifficulty } = applyScaleDifficultyAdjust(
-    typeof maxDifficulty === 'number' && Number.isFinite(maxDifficulty) ? Math.max(0, maxDifficulty) : 0,
+    authored,
     capability,
     CARD_READOUT_SPHERE_FACTOR,
     CARD_READOUT_MODS,
@@ -203,19 +238,19 @@ export function castForecastProbability(
   const raw = capability + CARD_READOUT_SPHERE_FACTOR - difficulty + CARD_READOUT_MODS;
   if (!Number.isFinite(raw)) return floor;
 
-  // Which floor applies depends on the actor, and the two are not the same number.
-  //
-  // `applyScaleDifficultyAdjust` has *already* enforced the scale floor for an
-  // actor capable enough to clear it — it caps difficulty from above precisely so
-  // `raw >= MIN_PROBABILITY_BY_SCALE[scale]` holds — so for that actor there is
-  // nothing left to lift here. An actor *below* the scale floor gets
-  // `maxDifficultyForFloor = 0` instead, leaving `raw === capability`, and the
-  // resolver lifts that one to the global `PROBABILITY_FLOOR` in its own
-  // post-process. Reading the scale floor for them would overstate their odds —
-  // which is the same class of lie as understating them.
   // The resolver's own clamp, not a [0, 1] bound: `computeResolutionThreshold`
   // returns inside [PROBABILITY_FLOOR, PROBABILITY_CEILING], so a readout clamped
-  // any wider would disagree with the roll at the extremes — which is the whole
-  // class of defect this module exists to close.
-  return Math.min(PROBABILITY_CEILING, Math.max(PROBABILITY_FLOOR, raw));
+  // any wider would disagree with the roll at the extremes.
+  const threshold = Math.min(PROBABILITY_CEILING, Math.max(PROBABILITY_FLOOR, raw));
+
+  // Correction 1 — the scale floor, applied exactly as `stepResolutionCore` does.
+  //
+  // For an actor capable enough to clear the floor this is a no-op:
+  // `applyScaleDifficultyAdjust` has already capped difficulty from above so that
+  // `raw >= floor` holds. It bites only for an actor *below* the floor, whose
+  // `maxDifficultyForFloor` clamps to 0 — leaving `raw === capability` — and whom
+  // the resolver then lifts to `scaleMinP` outright. That is the whole population
+  // of fresh gods at `local` and `personal`, i.e. most of the cards in the drawer
+  // on the first evening of a run.
+  return Math.max(floor, threshold);
 }

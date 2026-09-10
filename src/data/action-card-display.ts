@@ -15,7 +15,7 @@
  * Spec: `Docs/plans/2026-09-09-thr-1002-card-grammar.md` § Content pillar.
  */
 
-import type { ActionScale, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ActionScale, NarrativeLayer, UnifiedActionTemplate } from '../types/unifiedAction';
 
 /** The CRUD axis a template declares. Mirrors `UnifiedActionTemplate.crudType`. */
 export type ActionCrudType = UnifiedActionTemplate['crudType'];
@@ -120,14 +120,23 @@ export function upkeepChannelLabel(word: UpkeepWord): string {
 }
 
 /**
- * Authoring guardrail for an effect line, in words.
+ * There is deliberately **no word cap** on an effect line.
  *
- * Warn-level in the content-eval sweep rather than a build failure: a line one
- * word over is a nudge to the author, not a broken card. The cap exists because
- * the card's body is a fixed width and a long line pushes the footer out of
- * alignment across the row.
+ * The plan specified `ACTION_EFFECT_LINE_MAX_WORDS = 14` alongside the existing
+ * `EFFECTS_LINE_MAX_CHARS = 140`. Measured against the shipped corpus, 36 of the
+ * authored lines run 15–21 words while every one of them sits inside 140
+ * characters — so the word cap was not a guardrail the content could meet, and it
+ * was picked without measuring. Calibrating it upward to 21 would have made it
+ * toothless instead.
+ *
+ * More to the point, the two caps answer the same question. What actually
+ * constrains the line is the card's fixed width, and characters measure that
+ * directly where words only proxy for it — *"Turns your sight on a mortal"* and
+ * *"Reconfigures the psychological substrate"* are six words apart in length. One
+ * guardrail per concept is the same rule this ticket applied to the odds
+ * vocabulary and the risk words; `EFFECTS_LINE_MAX_CHARS` is that one, it is
+ * asserted in `actionEffectsProse.test.ts`, and the corpus meets it.
  */
-export const ACTION_EFFECT_LINE_MAX_WORDS = 14;
 
 /**
  * First-contact legend for the action hand (Law 12).
@@ -144,3 +153,84 @@ export const ACTION_CARD_GLYPH_LEGEND: readonly { readonly glyph: string; readon
 
 /** Blocked reason for a target outside the action's reach — words, not a hex count. */
 export const ACTION_BLOCKED_OUT_OF_RANGE = 'Too far from here.';
+
+/** Blocked reason for an action above the god's present influence tier. */
+export const ACTION_BLOCKED_TIER = 'Beyond your present standing.';
+
+/**
+ * Last-resort blocked reason, used when a producer's own wording carries a
+ * numeral. See {@link actionBlockedReason} for why this exists.
+ */
+export const ACTION_BLOCKED_GENERIC = 'Not yet within your power.';
+
+/** Matches any digit — the shape Law 13 forbids on a player-facing surface. */
+const NUMERAL = /\d/;
+
+/**
+ * The card's blocked reason, in words, from a slot's structured state and its
+ * producer's `lockedReason` string.
+ *
+ * **Why this is a function and not a pass-through.** Three of the four
+ * `lockedReason` producers interpolate a number — `Out of range (3 hexes)`,
+ * `Target out of range (3 hexes)`, `Requires tier 2` — and the card is a Law 13
+ * surface. Matching those three phrasings would work until the fourth arrives, so
+ * the guard is on the *shape*: a reason that still contains a digit after the
+ * known cases are handled is replaced wholesale by {@link ACTION_BLOCKED_GENERIC}.
+ * A future producer inventing a new numeral phrasing degrades to a vaguer true
+ * sentence instead of leaking a numeral, which is the right way round — the
+ * player loses a little precision, never the law.
+ *
+ * `rangeStatus` is read ahead of the string because it is the structured fact;
+ * the string is only consulted for reasons the slot does not model.
+ */
+export function actionBlockedReason(
+  lockedReason: string | null | undefined,
+  rangeStatus: 'in_range' | 'out_of_range' | 'unlimited' | 'unknown',
+): string | undefined {
+  if (rangeStatus === 'out_of_range') return ACTION_BLOCKED_OUT_OF_RANGE;
+  if (!lockedReason) return undefined;
+  if (/\btier\b/i.test(lockedReason)) return ACTION_BLOCKED_TIER;
+  if (/out of range/i.test(lockedReason)) return ACTION_BLOCKED_OUT_OF_RANGE;
+  return NUMERAL.test(lockedReason) ? ACTION_BLOCKED_GENERIC : lockedReason;
+}
+
+/**
+ * Registry id (Law 17) for a verb chip. `sustained` is the Control verb's key,
+ * which is not a {@link ActionCrudType} — it is the arrangement-shaped card.
+ */
+export function verbTooltipId(crud: ActionCrudType | 'sustained'): string {
+  return `ui.card.verb.${crud}`;
+}
+
+/** Registry id for a scale chip. */
+export function scaleTooltipId(scale: ActionScale): string {
+  return `ui.card.scale.${scale}`;
+}
+
+/** Registry id for an upkeep channel. */
+export function upkeepTooltipId(word: UpkeepWord): string {
+  return `ui.card.upkeep.${word}`;
+}
+
+/**
+ * Glyph per narrative layer, for the drawer's layer tabs.
+ *
+ * These replaced `⛰ ✨ 👤 🏛` — four emoji, which render in each platform's own
+ * colour font and so are the one element class in the UI guaranteed to look like
+ * a different design system on every machine (taste profile: no emoji in the UI).
+ * The replacements are drawn from the same typographic family the codex
+ * categories and the card's verb chips already use, so the drawer's chrome reads
+ * as one hand rather than three.
+ *
+ * Build-enforced on the live union (Law 9): a narrative layer added without a
+ * glyph is a type error rather than a tab with a hole in it.
+ */
+export const NARRATIVE_LAYER_ICONS: Readonly<Record<NarrativeLayer, string>> = {
+  land: '⬡',   // ⬡ — the hex itself
+  soul: '✧',   // ✧ — the unseen
+  people: '⁂', // ⁂ — a cluster of figures
+  ruins: '⌂',  // ⌂ — a structure, still standing
+};
+
+/** Glyph for a layer the player has not revealed yet. */
+export const NARRATIVE_LAYER_LOCKED_ICON = '⊘'; // ⊘
