@@ -158,7 +158,7 @@ describe('run-founded definitions reach the engine consumers (THR-1155)', () => 
     // ladder; whether this order's `sworn` tier carries bonuses is content, so the
     // assertion is that the reader ran, not that it found something.
     expect(() =>
-      getAgentFactionBonuses(state.graph, 'actor_member', 'encounter_access'),
+      getAgentFactionBonuses(state.graph, 'actor_member', 'encounter_reward_multiplier'),
     ).not.toThrow();
   });
 });
