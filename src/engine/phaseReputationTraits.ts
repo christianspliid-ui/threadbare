@@ -62,7 +62,7 @@ import {
   FACTION_REP_AGGREGATION_INTERVAL_TICKS,
   FACTION_REP_DECAY_PER_AGGREGATION,
 } from '../data/agent-behavior-constants';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { computeRankFromReputation } from '../types/faction';
 
@@ -309,7 +309,7 @@ function aggregateFactionReputations(graph: WorldGraph, tick: number): void {
     const factionId = factionNode.id;
     const factionDefId = factionNode.properties.factionDefId as string | undefined;
 
-    const definition = factionDefId ? FACTION_DEFINITIONS.get(factionDefId) : undefined;
+    const definition = factionDefId ? getFactionDefinition(factionDefId) : undefined;
     if (!definition) {
       emitTrace({
         tick,

@@ -27,9 +27,9 @@ import { resolveToParentLocation } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { computeRankFromReputation } from '../types/faction';
 import {
-  FACTION_DEFINITIONS,
   FACTION_JOIN_STARTING_REPUTATION,
 } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_RANK_MAX } from '../data/agent-behavior-constants';
 
 /** Why a membership write did nothing. `null` outcome reason means it succeeded. */
@@ -231,7 +231,7 @@ export function findMembershipEdge(
 function startingRole(graph: WorldGraph, factionId: string): string {
   const defId = graph.getNode(factionId)?.properties?.factionDefId as string | undefined;
   if (!defId) return 'member';
-  const definition = FACTION_DEFINITIONS.get(defId);
+  const definition = getFactionDefinition(defId);
   if (!definition) return 'member';
   try {
     return computeRankFromReputation(FACTION_JOIN_STARTING_REPUTATION, definition).id;

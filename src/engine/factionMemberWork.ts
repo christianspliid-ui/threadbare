@@ -47,7 +47,7 @@ import type { GraphNode } from '../types/graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import type { FactionMemberWorkTrace } from '../types/factionAction';
 import { computeRankFromReputation } from '../types/faction';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { getAccessibleTemplates } from './factionQuestGeneration';
 import { processFactionEncounterReputation } from './factionReputation';
@@ -224,7 +224,7 @@ function resolveForFaction(state: GameState, faction: GraphNode, events: TickEve
 
   for (const member of window) {
     try {
-      const definition = FACTION_DEFINITIONS.get(member.factionDefId);
+      const definition = getFactionDefinition(member.factionDefId, state.dynamicFactionDefinitions);
       if (!definition) { skippedNoTemplate++; continue; }
 
       // Rank is always derived from reputation, never read from the edge's cached

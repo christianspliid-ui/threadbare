@@ -55,7 +55,7 @@ import type { BearerTraitRefs } from './traitRefIndex';
 import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { FactionEncounterMeta } from '../types/faction';
 import { meetsFactionRankRequirement } from './factionReputation';
 import { meetsReputationWithRequirement } from './reputation';
@@ -364,7 +364,7 @@ export function filterByPrerequisites(
     if (entry.templateId.endsWith('.join')) {
       const meta = FACTION_ENCOUNTER_META.get(entry.templateId);
       if (meta) {
-        const def = FACTION_DEFINITIONS.get(meta.factionDefId);
+        const def = getFactionDefinition(meta.factionDefId);
         if (def?.joinPrerequisites) {
           let meetsAll = true;
           for (const [reach, minCap] of Object.entries(def.joinPrerequisites)) {
