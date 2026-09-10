@@ -164,7 +164,11 @@ function CheckpointRow({
             {checkpoint.label}
           </div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {Math.round(checkpoint.doomProgressThreshold * 100)}% doom · needs {formatDelta(checkpoint.requiredPrimaryDelta)}
+            {/* THR-1424: the `N% doom` half is a unitless proportion and is dropped. The
+                `needs …` half is a sphere delta, a realised-change magnitude whose sanctioned
+                language is the delta cluster (Law 15 rescope) — a different reading, tracked
+                separately, so it is deliberately left untouched here. */}
+            Needs {formatDelta(checkpoint.requiredPrimaryDelta)}
           </div>
         </div>
         <span style={{
@@ -193,7 +197,6 @@ function CheckpointRow({
 
 export function MandateDetail({ open, onClose, definition, state }: MandateDetailProps) {
   const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
-  const pct = Math.round(state.progress * 100);
   const typeLabel = MANDATE_TYPE_LABELS[definition.type] ?? 'Unknown';
   const isSphereGrowth = definition.runtimeKind === 'sphere_growth';
   const nextCheckpoint = getNextCheckpoint(definition, state);
@@ -212,7 +215,10 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
   } else if (state.failed) {
     statusLabel = 'Failed';
     statusColor = SENTIMENT_NEGATIVE;
-  } else if (pct > 0) {
+  } else if (state.progress > 0) {
+    // THR-1424: this read the rounded `pct` that fed the dropped Progress row. It reads the
+    // raw progress directly now — the status word is a state, not a magnitude, so it survives
+    // the ruling; only the numeral it happened to share a variable with is gone.
     statusLabel = 'In Progress';
   }
 
@@ -318,7 +324,9 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
 
             <DetailRow label="Type" value={typeLabel} color={color} />
             <DetailRow label="Stage" value={`${STAGE_DISPLAY[state.currentStage]} (${STAGE_ORDER.indexOf(state.currentStage) + 1}/3)`} />
-            <DetailRow label="Progress" value={`${pct}%`} color={color} />
+            {/* THR-1424 (Law 15 ruling, 2026-09-10): the Progress row was a unitless proportion
+                numeral duplicating the `ProgressBar` this modal already renders above. Dropped,
+                not banded — the bar is the reading. */}
             {definition.primarySphere && (
               <DetailRow label="Primary Sphere" value={definition.primarySphere} color={color} />
             )}
@@ -329,10 +337,9 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
               <DetailRow label="Court Shape" value={formatCourtLabel(definition.courtType)} />
             )}
             {nextCheckpoint && (
-              <DetailRow
-                label="Next Omen"
-                value={`${nextCheckpoint.label} (${Math.round(nextCheckpoint.doomProgressThreshold * 100)}%)`}
-              />
+              /* THR-1424: the parenthesised threshold was a unitless proportion — dropped, so
+                 the row carries the omen's name alone. */
+              <DetailRow label="Next Omen" value={nextCheckpoint.label} />
             )}
             {definition.tickLimit && (
               /* THR-1425: a mandate's limit is a duration, so it reads through `durationLabel`.

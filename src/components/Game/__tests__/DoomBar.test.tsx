@@ -40,9 +40,14 @@ describe('DoomBar', () => {
     expect(screen.getByText('Signs')).toBeInTheDocument();
   });
 
-  it('renders progress percentage', () => {
-    render(<DoomBar definition={mockDefinition} state={mockState} />);
-    expect(screen.getByText('25%')).toBeInTheDocument();
+  // THR-1424 (Law 15 ruling, 2026-09-10): doom progress is a unitless proportion and this tier
+  // already renders it as the ProgressBar. The numeral is dropped, so the arm inverts — it
+  // asserts no percentage reaches the surface, and that the bar still carries the reading.
+  it('renders no percentage numeral — the progress bar is the reading', () => {
+    const { container } = render(<DoomBar definition={mockDefinition} state={mockState} />);
+    expect(container.textContent).not.toMatch(/%/);
+    // Falsification: the bar must still be there, or this arm would pass on an empty render.
+    expect(container.querySelector('div[style*="width: 25%"]')).toBeTruthy();
   });
 
   it('shows expired state as UNMADE', () => {
@@ -62,9 +67,10 @@ describe('DoomBar', () => {
 
   it('renders correct stage name at different progress levels', () => {
     const stage4State: DoomClockState = { ...mockState, currentStage: 4, progress: 0.75 };
-    render(<DoomBar definition={mockDefinition} state={stage4State} />);
+    const { container } = render(<DoomBar definition={mockDefinition} state={stage4State} />);
     expect(screen.getByText('Crisis')).toBeInTheDocument();
-    expect(screen.getByText('75%')).toBeInTheDocument();
+    // THR-1424: the stage NAME is the reading at every progress level; the numeral is gone.
+    expect(container.textContent).not.toMatch(/%/);
   });
 
   it('renders progress bar with correct width', () => {

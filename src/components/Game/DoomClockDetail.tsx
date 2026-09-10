@@ -42,7 +42,10 @@ function getNextBeatLabel(definition: DoomClockDefinition, state: DoomClockState
   const nextStage = definition.stages.find((stage) => stage.stage > state.currentStage);
   if (!nextStage) return 'Final omen';
 
-  return `${nextStage.name} @ ${Math.round(nextStage.tickThreshold * 100)}%`;
+  // THR-1424 (Law 15 ruling, 2026-09-10): the threshold is a unitless proportion, and this
+  // surface already renders where each stage sits — the stage list below orders them and
+  // styles past/current/future. The numeral is dropped, not banded.
+  return nextStage.name;
 }
 
 function formatEffectType(effectType: string | undefined): string {
@@ -66,7 +69,6 @@ export function DoomClockDetail({
 }: DoomClockDetailProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   const glyph = DOOM_ARCHETYPE_GLYPHS[definition.archetype] ?? '◈';
-  const pct = Math.round(state.progress * 100);
   const flavor = DOOM_ARCHETYPE_FLAVOR[definition.archetype] ?? '';
   const ticksRemaining = Math.max(0, state.totalTicks - state.currentTick);
   const nextBeatLabel = getNextBeatLabel(definition, state);
@@ -151,34 +153,43 @@ export function DoomClockDetail({
                   );
                 })}
               </svg>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <span style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '28px',
-                  fontWeight: 700,
-                  color: state.expired ? '#dc2626' : color,
-                  lineHeight: 1,
-                  textShadow: `0 0 12px ${color}40`,
+              {/* THR-1424 (Law 15 ruling, 2026-09-10): the ring center used to read
+                  `${pct}% / elapsed`, a third rendering of a quantity this surface already
+                  states twice — the ring arc itself, and `Current Chapter N of 5` below.
+                  A unitless proportion is DROPPED where the surface already renders it
+                  non-numerically; it is not translated into a word ladder, because the Law 13
+                  amendment of 2026-08-12 rules an adverb the wrong answer to "how much?".
+                  The center now carries only the terminal state, which is not a proportion. */}
+              {state.expired && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
-                  {state.expired ? '∞' : `${pct}%`}
-                </span>
-                <span style={{
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--text-muted)',
-                  marginTop: '4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                }}>
-                  {state.expired ? 'UNMADE' : 'elapsed'}
-                </span>
-              </div>
+                  <span style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: '#dc2626',
+                    lineHeight: 1,
+                    textShadow: `0 0 12px ${color}40`,
+                  }}>
+                    {'∞'}
+                  </span>
+                  <span style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    marginTop: '4px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                  }}>
+                    UNMADE
+                  </span>
+                </div>
+              )}
             </div>
 
             <div style={{ width: '100%' }}>
@@ -294,14 +305,10 @@ export function DoomClockDetail({
                             Climax
                           </span>
                         )}
-                        <span style={{
-                          fontSize: 'var(--text-xs)',
-                          fontFamily: 'var(--font-mono, monospace)',
-                          color: isPast ? `${color}80` : 'var(--text-muted)',
-                          opacity: isFuture ? 0.5 : 1,
-                        }}>
-                          {Math.round(stage.tickThreshold * 100)}%
-                        </span>
+                        {/* THR-1424: the stage's threshold was a unitless proportion numeral.
+                            The list's own order plus its past/current/future styling is the
+                            surface's existing non-numeric rendering of where each stage sits,
+                            so the numeral is dropped rather than banded (Law 15 ruling). */}
                       </div>
                     </div>
 

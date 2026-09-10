@@ -22,7 +22,12 @@ interface JourneyVignetteModalProps {
 
 // ─── Phase Badge ────────────────────────────────────────────────────
 
-function PhaseBadge({ phase, doomPercent }: { phase: string; doomPercent: number }) {
+// THR-1424 (Law 15 ruling, 2026-09-10): the badge carried `${n}% doom` beside the phase.
+// A unitless proportion is dropped, not translated — and where the surface has no existing
+// non-numeric rendering of that quantity (this one has none: the badge names the journey
+// phase, not the doom), the number goes rather than becoming a word ladder. The doom clock's
+// own surfaces — `DoomBar` and `DoomClockDetail` — are where that proportion is read.
+function PhaseBadge({ phase }: { phase: string }) {
   return (
     <div style={{
       display: 'flex',
@@ -43,12 +48,6 @@ function PhaseBadge({ phase, doomPercent }: { phase: string; doomPercent: number
         color: 'var(--accent-gold)',
       }}>
         {phase}
-      </span>
-      <span style={{
-        fontSize: 'var(--text-xs)',
-        color: 'var(--text-muted)',
-      }}>
-        {Math.round(doomPercent * 100)}% doom
       </span>
     </div>
   );
@@ -167,7 +166,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
       </Modal.Header>
 
       <Modal.Body>
-        <PhaseBadge phase={phaseName} doomPercent={vignette.doomClockPercent} />
+        <PhaseBadge phase={phaseName} />
 
         {/* Setup prose */}
         <div style={{
