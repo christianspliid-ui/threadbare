@@ -255,6 +255,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
             profile={profile}
             knowledge={knowledge}
             scrollToNewStrata={scrollToNewStrata}
+            currentTick={gameState?.tick}
           />
         )}
         {activeTab === 'chapters' && (

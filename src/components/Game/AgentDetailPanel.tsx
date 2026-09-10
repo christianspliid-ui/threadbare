@@ -18,6 +18,7 @@ import { QUINTESSENCE_TOOLTIPS } from '../../data/quintessence-content';
 import { QUINTESSENCE_LEXICON } from '../../data/quintessence-content';
 import { RecentActivityLog } from './RecentActivityLog';
 import { queryDigest } from '../../engine/digestBuffer';
+import { elapsedLabel } from '../../engine/aftermathWords';
 
 /** Max attachment rows shown per section before overflow */
 const MAX_ATTACHMENT_ROWS = 5;
@@ -890,11 +891,15 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                       key={`${ir.tick}-${idx}`}
                       className="flex items-center gap-2 text-xs"
                     >
+                      {/* THR-1426 (Shape 1): `t412` is an absolute tick index — the engine's
+                          own clock reading on a player-facing row (Laws 13/14). These rows are
+                          ordered newest-first, so what the index was carrying is *when relative
+                          to now*, which `elapsedLabel` says in the unit the player already has. */}
                       <span
-                        className="w-8 text-right flex-shrink-0"
+                        className="w-16 text-right flex-shrink-0"
                         style={{ color: 'var(--text-muted)' }}
                       >
-                        t{ir.tick}
+                        {elapsedLabel((currentTick ?? ir.tick) - ir.tick)} ago
                       </span>
                       <span title={`Actor: ${ir.actorMove}`}>
                         {ir.actorMove === 'cooperate' ? '✓' : '✗'}
@@ -987,7 +992,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           className="px-4 py-2"
           style={{ borderTop: '1px solid var(--border-subtle)' }}
         >
-          <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} />
+          <RecentActivityLog entries={recentEntries} lastViewedTick={lastViewedTick} currentTick={currentTick} />
         </div>
       )}
 

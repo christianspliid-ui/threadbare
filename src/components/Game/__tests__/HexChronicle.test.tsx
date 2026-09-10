@@ -179,13 +179,24 @@ describe('HexChronicle', () => {
     expect(screen.getByText('The marshlands hum with old grief and new hunger.')).toBeTruthy();
   });
 
-  it('renders attribution caption with tick when surveyPeopleProse and tick are present', () => {
+  it('reads the attribution caption as an elapsed span, never a turn index (THR-1426)', () => {
+    // `turn 42` was an absolute tick index — Laws 13/14. `tick` is 90 here and the survey was
+    // taken at 42, so the caption exercises the real multi-day branch (48 ticks = four days)
+    // rather than `elapsedLabel`'s `less than a day` floor, which would pass against almost
+    // any wiring and prove nothing about the reading chosen.
     render(
       <HexChronicle
-        {...makeTestProps({ surveyPeopleProse: 'Wanderers pass through without settling.', surveyPeopleProseTick: 42 })}
+        {...makeTestProps({
+          surveyPeopleProse: 'Wanderers pass through without settling.',
+          surveyPeopleProseTick: 42,
+          tick: 90,
+        })}
       />
     );
-    expect(screen.getByText('— surveyed, turn 42')).toBeTruthy();
+    const caption = screen.getByText(/^— surveyed /);
+    expect(caption.textContent).toBe('— surveyed four days ago');
+    expect(caption.textContent).not.toMatch(/\d/);
+    expect(caption.textContent).not.toMatch(/tick|turn/i);
   });
 
   it('renders static fallback when surveyPeopleProse is absent', () => {
@@ -194,13 +205,13 @@ describe('HexChronicle', () => {
     });
     render(<HexChronicle {...props} />);
     // Static fallback text should appear since no surveyPeopleProse
-    expect(screen.queryByText(/— surveyed, turn/)).toBeNull();
+    expect(screen.queryByText(/^— surveyed /)).toBeNull();
   });
 
   it('renders static fallback when surveyPeopleProse is empty string', () => {
     render(<HexChronicle {...makeTestProps({ surveyPeopleProse: '' })} />);
     // Empty string is falsy — attribution caption must not appear
-    expect(screen.queryByText(/— surveyed, turn/)).toBeNull();
+    expect(screen.queryByText(/^— surveyed /)).toBeNull();
   });
 
   it('renders structured lists in both surveyed and unsurveyed branches', () => {

@@ -67,10 +67,16 @@ describe('ChronicleEntryCard', () => {
     expect(container).toBeDefined();
   });
 
-  it('shows tick and title in header', () => {
-    render(<ChronicleEntryCard entry={dualVoiceEntry} voiceMode="witness" />);
-    expect(screen.getByText(/t42/)).toBeDefined();
-    expect(screen.getByText(/The Fall of Iron Gate/)).toBeDefined();
+  it('heads the entry with an elapsed reading and the title, never a tick index (THR-1426)', () => {
+    // `t42` was the engine's clock index on a player-facing heading (Laws 13/14). A current
+    // tick of 90 against the entry's 42 is 48 ticks — four days — so this exercises the real
+    // multi-day branch rather than `elapsedLabel`'s `less than a day` floor, which a missing
+    // `currentTick` would also produce and which would therefore prove nothing.
+    render(<ChronicleEntryCard entry={dualVoiceEntry} voiceMode="witness" currentTick={90} />);
+    const heading = screen.getByText(/The Fall of Iron Gate/);
+    expect(heading.textContent).toContain('four days ago · The Fall of Iron Gate');
+    expect(heading.textContent).not.toMatch(/\bt\d/);
+    expect(heading.textContent).not.toMatch(/tick/i);
   });
 
   it('renders positive Q-delta annotation in green', () => {

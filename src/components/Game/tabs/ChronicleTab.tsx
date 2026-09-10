@@ -6,6 +6,7 @@ import { readIntentionFromCard } from '../../../engine/intentionReading';
 import { BACKSTORY_CONSTANTS } from '../../../types/prose';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { getSphereColor } from '../../../data/sphereIcons';
+import { elapsedLabel } from '../../../engine/aftermathWords';
 
 // ─── Stratum locked-tier placeholder text ────────────────────────
 
@@ -22,9 +23,14 @@ interface ChronicleTabProps {
   profile?: AgentFullProfileData;
   knowledge?: AgentKnowledge;
   scrollToNewStrata?: boolean;
+  /**
+   * Current simulation tick, so the timeline, interaction and ambition rows read *how long
+   * ago* rather than the engine clock index they used to print (THR-1426, Shape 1).
+   */
+  currentTick?: number;
 }
 
-export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata }: ChronicleTabProps) {
+export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata, currentTick }: ChronicleTabProps) {
   const backstorySectionRef = useRef<HTMLDivElement>(null);
   const [fadedStrata, setFadedStrata] = useState<Set<number>>(new Set());
 
@@ -158,7 +164,7 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata }: Ch
           <div className="space-y-2">
             {[...timelineEvents].reverse().map((entry, idx) => (
               <div key={idx} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                <span style={{ color: 'var(--accent-gold)' }}>t{entry.tick}</span>
+                <span style={{ color: 'var(--accent-gold)' }}>{elapsedLabel((currentTick ?? entry.tick) - entry.tick)} ago</span>
                 {' — '}
                 <span style={{ color: 'var(--text-tertiary)' }}>{entry.event}</span>
               </div>
@@ -189,7 +195,7 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata }: Ch
             {profile.dispositionRecord.map((record, idx) => (
               <div key={idx} className="text-xs p-2 rounded" style={{ backgroundColor: 'var(--bg-raised)', color: 'var(--text-secondary)' }}>
                 <div className="flex justify-between mb-1">
-                  <span style={{ color: 'var(--accent-gold)' }}>t{record.tick}</span>
+                  <span style={{ color: 'var(--accent-gold)' }}>{elapsedLabel((currentTick ?? record.tick) - record.tick)} ago</span>
                   <span className="capitalize" style={{ color: 'var(--accent-gold)' }}>{record.context}</span>
                 </div>
                 <div className="flex justify-between">
@@ -213,7 +219,7 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata }: Ch
               <div key={ambition.ambitionId} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {ambition.resolvedTick != null && (
                   <>
-                    <span style={{ color: 'var(--accent-gold)' }}>t{ambition.resolvedTick}</span>
+                    <span style={{ color: 'var(--accent-gold)' }}>{elapsedLabel((currentTick ?? ambition.resolvedTick) - ambition.resolvedTick)} ago</span>
                     {' — '}
                   </>
                 )}

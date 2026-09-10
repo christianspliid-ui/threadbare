@@ -2,13 +2,20 @@ import type { MandateDefinition, MandateStage, MandateState } from '../../types/
 import { Modal } from '../shared/Modal';
 import { ProgressBar } from '../shared/ProgressBar';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
-import { durationLabel } from '../../engine/aftermathWords';
+import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
 
 interface MandateDetailProps {
   open: boolean;
   onClose: () => void;
   definition: MandateDefinition;
   state: MandateState;
+  /**
+   * Current simulation tick, so the stage and evaluation rows can read *how long ago*
+   * instead of printing the engine's clock index (THR-1426). Optional so the modal
+   * still renders in a fixture that has no clock — those rows then read `less than a
+   * day`, which is English rather than a crash (NFP #4).
+   */
+  currentTick?: number;
 }
 
 const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
@@ -135,10 +142,21 @@ function CheckpointRow({
   checkpoint,
   result,
   color,
+  currentTick,
 }: {
   checkpoint: NonNullable<MandateDefinition['checkpoints']>[number];
-  result: MandateState['checkpointResults'] extends Array<infer T> ? T | undefined : undefined;
+  /*
+   * THR-1426: was `MandateState['checkpointResults'] extends Array<infer T> ? T | undefined
+   * : undefined`. `checkpointResults` is optional, so the type being tested is
+   * `Array<…> | undefined`, which does **not** extend `Array<infer T>` — the conditional
+   * always took its false branch and resolved to `undefined`, making every field access on
+   * `result` an error against `never`. The `NonNullable` unwrap is what the original was
+   * reaching for; it also clears the pre-existing `passed` / `exceeded` / `observedPrimaryDelta`
+   * errors this row was already carrying.
+   */
+  result?: NonNullable<MandateState['checkpointResults']>[number];
   color: string;
+  currentTick?: number;
 }) {
   const label = result
     ? result.passed
@@ -188,14 +206,18 @@ function CheckpointRow({
       </div>
       {result && (
         <div style={{ marginTop: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-          Observed {formatDelta(result.observedPrimaryDelta)} on tick {result.evaluatedTick}.
+          {/* THR-1426 (Shape 1): `on tick 412` named the engine's clock on a player-facing
+              line (Laws 13/14). When a checkpoint was evaluated matters only relative to
+              now, which is what `elapsedLabel` reads. */}
+          Observed {formatDelta(result.observedPrimaryDelta)}{' '}
+          {elapsedLabel((currentTick ?? result.evaluatedTick) - result.evaluatedTick)} ago.
         </div>
       )}
     </div>
   );
 }
 
-export function MandateDetail({ open, onClose, definition, state }: MandateDetailProps) {
+export function MandateDetail({ open, onClose, definition, state, currentTick }: MandateDetailProps) {
   const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
   const typeLabel = MANDATE_TYPE_LABELS[definition.type] ?? 'Unknown';
   const isSphereGrowth = definition.runtimeKind === 'sphere_growth';
@@ -347,9 +369,11 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                  spelling `ticks` into it put the engine unit on the surface twice (Law 14). */
               <DetailRow label="Time Limit" value={durationLabel(definition.tickLimit)} color="#ea580c" />
             )}
-            {state.assignedTick != null && (
-              <DetailRow label="Assigned" value={`Tick ${state.assignedTick}`} />
-            )}
+            {/* THR-1426 (Shape 1): the `Assigned: Tick N` row is dropped rather than converted.
+                It printed the engine's clock index (Laws 13/14), and unlike the checkpoint and
+                stage rows there is nothing a player does with when a mandate was handed down —
+                the mandate's live term is already carried by the `Time Limit` row above. A
+                reading nobody acts on is answered by removing the row, not by rephrasing it. */}
 
             {definition.secondaryObjective && (
               <div style={{
@@ -437,6 +461,7 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                       checkpoint={checkpoint}
                       result={state.checkpointResults?.find((result) => result.index === checkpoint.index)}
                       color={color}
+                      currentTick={currentTick}
                     />
                   ))}
                 </div>
@@ -502,13 +527,16 @@ export function MandateDetail({ open, onClose, definition, state }: MandateDetai
                         }}>
                           {STAGE_DISPLAY[stageKey]}
                         </span>
+                        {/* THR-1426 (Shape 1): was `tick {stageCompletedTick}` — the engine's
+                            clock index beside a completed stage (Laws 13/14). A finished stage
+                            is read by when it closed relative to now. */}
                         {isPast && stageCompletedTick != null && (
                           <span style={{
                             fontSize: 'var(--text-xs)',
                             color: 'var(--text-muted)',
                             marginLeft: '8px',
                           }}>
-                            tick {stageCompletedTick}
+                            {elapsedLabel((currentTick ?? stageCompletedTick) - stageCompletedTick)} ago
                           </span>
                         )}
                       </div>

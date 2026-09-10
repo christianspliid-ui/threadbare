@@ -12,6 +12,7 @@ import { LocationCard, SoulCard, FactionEntry, SubLocationEntry, EventBlock, Exp
 import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { elapsedLabel } from '../../engine/aftermathWords';
+import { sustainFlowSpheres } from '../../data/sustained-control-status-prose';
 import { mulberry32 } from '../../lib/prng';
 import { useNarration } from '../../services/narration/useNarration';
 import {
@@ -815,8 +816,13 @@ export const HexChronicle = memo(function HexChronicle({
             <p className="chronicle-prose drop-cap" style={proseStyle}>
               {renderProseWithIPK(surveyPeopleProse)}
             </p>
-            {surveyPeopleProseTick != null && (
-              <p style={surveyAttributionStyle}>— surveyed, turn {surveyPeopleProseTick}</p>
+            {/* THR-1426 (Shape 1): `turn 412` is an absolute tick index — a point in time,
+                not a span, so neither `durationLabel` nor a raw numeral serves it. The game
+                has no calendar to date it against (the top bar's season/year pair is derived
+                from two different divisors and disagrees with itself), so the reading the
+                caption actually needs is how long ago the survey was taken. */}
+            {surveyPeopleProseTick != null && tick != null && (
+              <p style={surveyAttributionStyle}>— surveyed {elapsedLabel(tick - surveyPeopleProseTick)} ago</p>
             )}
           </>
         ) : (
@@ -1242,12 +1248,19 @@ export const HexChronicle = memo(function HexChronicle({
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  {/* THR-1426 (Shape 2): these read `Cost: 2/order, 1/wild/tick` — a per-tick
+                      rate whose figures are raw magnitudes (Law 13) in an engine unit the
+                      player never sees named (Law 14), behind a `Cost:` head Law 16 outlaws.
+                      They band through `sustainFlowWord`, the same ladder THR-1008 used on the
+                      ThreadsPanel sustain row, and keep that row's `⤓`/`⤒` glyphs as the
+                      direction cue. Per-sphere rather than the total, because which sphere is
+                      drained is the part the player acts on; the figures stay on the trace. */}
                   <span>
-                    Cost: {Object.entries(effect.perTickCost).map(([sphere, cost]) => `${cost}/${sphere}`).join(', ') || 'free'}/tick
+                    ⤓ {sustainFlowSpheres(effect.perTickCost) ?? 'nothing'} each turn
                   </span>
                   {effect.perTickIncome && Object.keys(effect.perTickIncome).length > 0 && (
                     <span style={{ color: 'var(--accent-gold)' }}>
-                      Income: {Object.entries(effect.perTickIncome).map(([sphere, inc]) => `+${inc}/${sphere}`).join(', ')}/tick
+                      ⤒ {sustainFlowSpheres(effect.perTickIncome)} in return
                     </span>
                   )}
                   {/* THR-1425: `40 ticks active` is a raw magnitude (Law 13) in an engine unit

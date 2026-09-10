@@ -145,7 +145,6 @@ export function GameViewTopBar({
 
           {/* Time controls */}
           <SimulationControls
-            tick={gameState.tick}
             season={seasonName}
             year={year}
             running={running}

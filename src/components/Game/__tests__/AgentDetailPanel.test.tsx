@@ -136,11 +136,21 @@ describe('AgentDetailPanel', () => {
     expect(screen.getByText(/no known strategy/i)).toBeTruthy();
   });
 
-  it('renders recent interaction history icons', () => {
-    render(<AgentDetailPanel detail={mockDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
-    // Should show tick numbers for the 2 interactions
-    expect(screen.getByText('t10')).toBeTruthy();
-    expect(screen.getByText('t7')).toBeTruthy();
+  it('reads each recent interaction as an elapsed span, never a tick index (THR-1426)', () => {
+    // `t10` / `t7` printed the engine's clock on a player-facing row (Laws 13/14). A current
+    // tick of 58 puts both interactions four days back, exercising the real multi-day branch
+    // rather than `elapsedLabel`'s sub-day floor — which is what a missing `currentTick` would
+    // render, so an arm that omitted it would pass against unwired code.
+    render(<AgentDetailPanel detail={mockDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} currentTick={58} />);
+    const rows = screen.getAllByText(/ ago$/);
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row.textContent).toBe('four days ago');
+      expect(row.textContent).not.toMatch(/\d/);
+      expect(row.textContent).not.toMatch(/tick/i);
+    }
+    expect(screen.queryByText('t10')).toBeNull();
+    expect(screen.queryByText('t7')).toBeNull();
   });
 
   it('renders possessions section when possessions exist', () => {
