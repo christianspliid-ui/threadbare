@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-10 10:55 local (2026-09-10 08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-10 11:57 local (2026-09-10 09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,11 +13,11 @@ The camp six shipped and are live on the deployed build. Your rule 6 samples two
 
 Yes releases batch 3 — a single encounter, Leave a Shrine Offering, whose [brief is already drafted](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-09-10-retrofit-batch-3-brief.md) and waiting. Anything short of yes is feedback the line can act on. [Batch report](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-09-09.md).
 
-*Not your call, named so it is not invisible:* that brief parked asking whether to wait a day for [THR-1446](https://linear.app/threadbare/issue/THR-1446) before authoring. That is sequencing — the agent's under your 2026-08-12 rule — and THR-1446 is a 1–3 hour job sitting on the builder's shelf, so it very likely answers itself. The last two of the sixteen still wait on [THR-1053](https://linear.app/threadbare/issue/THR-1053), also an agent call.
+*Resolved since last hour, no longer yours:* that brief parked asking whether to wait for [THR-1446](https://linear.app/threadbare/issue/THR-1446) before authoring — batch 3 had been dealt two consequence kinds no encounter could actually build. **THR-1446 shipped at 11:52** ([PR #1875](https://github.com/christianspliid-ui/threadbare/pull/1875)) and is live: encounters can now name *your god* and *the place the scene happens at*. Batch 3 can be built with its dealt hand and no compromise. The last two of the sixteen still wait on [THR-1053](https://linear.app/threadbare/issue/THR-1053), also an agent call.
 
 ### 2. Rule on the backlog — one sitting, smallest first
 
-The shelf is healthy (8 jobs, none blocked), so this is not urgent — but it is still the cheapest work you can do. Roughly fourteen backlog items stop at a question rather than at a developer. Named so far:
+The shelf is healthy (6 jobs, none blocked), so this is not urgent — but it is still the cheapest work you can do. Roughly fourteen backlog items stop at a question rather than at a developer. Named so far:
 
 - [What a Divine Herald is](https://linear.app/threadbare/issue/THR-1195) — three live options; a question about what the thing *is*.
 - [Which Spheres shadow and void belong to](https://linear.app/threadbare/issue/THR-1114) — the ticket forbids the mechanical fix outright.
@@ -80,7 +80,8 @@ Two shorter 18-hour gaps since then recovered on their own and cost nothing. One
 
 ## Resolved this period
 
-- **2026-09-10 — the `concepts` rule stopped being your problem.** [THR-1053](https://linear.app/threadbare/issue/THR-1053) was briefed yesterday morning as needing your ruling; it is gate calibration under your 2026-08-12 rule and a design session will settle it against what the narrative linker actually reaches. Say the word if you want it back.
+- **2026-09-10 — the encounter line's last engine blocker cleared itself in three hours.** [THR-1446](https://linear.app/threadbare/issue/THR-1446) is Done and live ([PR #1875](https://github.com/christianspliid-ui/threadbare/pull/1875)): an encounter can now name your god and the place it is happening at, so the consequences the game deals can actually be built. It was filed last night by batch 2, and it unblocks batch 3 — see ask 1.
+- **2026-09-10 — the `concepts` rule stopped being your problem.** [THR-1053](https://linear.app/threadbare/issue/THR-1053) was briefed yesterday morning as needing your ruling; it is gate calibration under your 2026-08-12 rule and a design session will settle it against what the narrative linker actually reaches. The orchestrator re-raised it this morning; the decline stands. Say the word if you want it back.
 - **2026-09-10 — the shelf refilled without you.** Six deferrals were promoted to Ready for Dev; the queue went 1 → 8 and nothing on it is blocked. The builder's constraint this hour is hands, not answers.
 - **2026-09-10 — you ruled that a hold is a commitment, and it was buildable eleven minutes later.** Your words: *a claimed town is a commitment — a hold is kept by working it.* [THR-1287](https://linear.app/threadbare/issue/THR-1287/control-upkeep-is-structurally-impossible-nothing-ever-resets) went Ready for Dev at 06:47 with its plan doc landed; the faction-position half became [THR-1448](https://linear.app/threadbare/issue/THR-1448) and the glossary term [THR-1449](https://linear.app/threadbare/issue/THR-1449).
 - **2026-09-10 — the builder's last job shipped.** [THR-1443](https://linear.app/threadbare/issue/THR-1443) is Done ([PR #1871](https://github.com/christianspliid-ui/threadbare/pull/1871)) — the session start-up check now notices when the issue board itself cannot be read.
@@ -89,7 +90,6 @@ Two shorter 18-hour gaps since then recovered on their own and cost nothing. One
 - **2026-09-10 — the card-name clamp released itself and shipped.** [THR-1255](https://linear.app/threadbare/issue/THR-1255) is Done: nudge card names clamp at four words, following the corpus rather than leading it.
 - **2026-09-10 — a bug went from filed to shipped in three hours.** [THR-1447](https://linear.app/threadbare/issue/THR-1447) is Done ([PR #1868](https://github.com/christianspliid-ui/threadbare/pull/1868)): two aftermath events in one tick could share an id and the second was silently dropped.
 - **2026-09-10 — the incident-capture button shipped.** [THR-1134](https://linear.app/threadbare/issue/THR-1134) is Done. One invited veto sits in it (an opt-in *include the whole world* checkbox) — an agent's call unless you say otherwise.
-- **2026-09-09 — batch 2 is built.** [THR-1222](https://linear.app/threadbare/issue/THR-1222) is Done; six encounters composition-complete, gate green 6/6, live-proved 6/6 ([PR #1864](https://github.com/christianspliid-ui/threadbare/pull/1864)). Only your two-encounter verdict remains — ask 1 above.
 
 ---
 
