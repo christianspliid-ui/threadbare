@@ -267,43 +267,47 @@ export const NUDGE_WORD_BUDGETS = {
 /**
  * `StepNudge.name` **hard** word cap — the clamp, not the target.
  *
- * Deliberately still 6 while {@link NUDGE_WORD_BUDGETS.name} is 4, and the two
- * numbers are not drift. They answer different questions:
+ * Equal to {@link NUDGE_WORD_BUDGETS.name} since THR-1255, and they are still
+ * two numbers answering two questions rather than one number written twice:
  *
- * - **6 is the clamp** — past it a card label stops fitting its face, so it is
- *   a legibility failure and `checkNudgeHand` reports it as a violation.
- * - **4 is the doctrine target** — past it the name is probably carrying a mood
- *   instead of an instruction, which is a *register* judgment, so the audit
- *   reports it as a warning and a human decides.
+ * - **The clamp** is legibility — past it a card label stops fitting its face,
+ *   so `checkNudgeHand` reports it as a violation, at error level.
+ * - **The budget** is register — past it the name is probably carrying a mood
+ *   instead of an instruction, so the audit reports it as a warning and a human
+ *   decides.
  *
- * **The tightening to 4 was attempted under THR-1225 and reverted, measured.**
- * That ticket's premise was "once THR-1223's card-name rewrite lands, the clamp
- * follows the corpus". THR-1223 did land — but it **excluded the camp seven by
- * design** ("they ride THR-1222's retrofit"), so the corpus it left behind is
- * only partly migrated. At 4, `check:encounter --all` fails four cards across
- * three templates that pass at 6:
+ * They coincide at 4 because the corpus finally reads that way, not because the
+ * distinction dissolved. **The clamp follows the corpus, never leads it** — that
+ * rule is why this sat at 6 from the 2026-07-25 pilot until 2026-09-10, and it
+ * still binds any future tightening. Lowering an error-level cap under content
+ * nobody has migrated turns a green corpus red for work ticketed elsewhere;
+ * THR-1224 declined the tightening for that reason and THR-1225 attempted it,
+ * measured it red on four cards, and reverted.
  *
- * - `encounter.sharpen_blades` → `sharpen.turn_it_to_the_light` (5 words)
- * - `encounter.ward_the_camp` → `ward_camp.a_gap_in_the_wind`,
- *   `ward_camp.set_a_star_over_it` (5 words each)
- * - `encounter.company.quiet_offer` → `company.betrayal.the_work_calls` (5 words)
+ * What cleared it: THR-1222 retrofitted `sharpen_blades` and `ward_the_camp`
+ * (merged `6d77c36c`), taking their three 5-word names to 3–4 words, and
+ * THR-1255 renamed the one card on no retrofit list —
+ * `company.betrayal.the_work_calls`, "The Work Calls Them Back" → "Call Them to
+ * Work". `check:encounter --all` is green at 4 with nothing waived.
  *
- * The first two are on `RETROFIT_PENDING` and owned by **THR-1222**, which is
- * parked in `Todo` behind a director approval that has not fired. The third is
- * on no retrofit list and no ticket names it.
+ * ─── Corollary: `doctrineV2Checks`'s name-budget arm ─────────────────
+ * **Kept.** Re-checked at equal numbers, as THR-1255 asked. In its one live
+ * path it is now strictly redundant: `check-encounter.ts` runs
+ * `doctrineV2Warnings` and `checkNudgeHand` over the same template in the same
+ * run, so every over-length name the arm warns about is already an error on the
+ * line above — and `cardNameShapeProblem` checks length *after* its two opener
+ * guards, so its population is a subset of the clamp's, never wider.
  *
- * So the original reason still holds verbatim: lowering an error-level cap under
- * content nobody has migrated turns a green corpus red for work that is already
- * ticketed elsewhere. **The clamp follows the corpus, never leads it.** Tighten
- * this to 4 when THR-1222 ships *and* `company.quiet_offer`'s card is renamed —
- * not before, and not because the budget says 4. Tracked as **THR-1255**, which
- * carries the measured evidence and both unblock conditions.
- *
- * Corollary for `doctrineV2Checks`'s name-budget arm: it still earns its place.
- * With the two numbers apart, it is the only thing that reports a 5-word name,
- * and the clamp does not subsume it.
+ * It stays anyway, for the reason `NUDGE_WORD_BUDGETS` states about itself: a
+ * doctrine row with no constant is a rule no machine reports, and this arm is
+ * the budget's only reader. Deleting it would leave the doctrine's name row
+ * enforced solely by a *legibility* cap that happens to sit at the same number
+ * — and the two are independently tunable by design. The clamp has already been
+ * apart from the budget once, for six weeks, which is the case the arm exists
+ * for. The cost of keeping it is one warn line trailing one error line on names
+ * that are already blocked.
  */
-export const NUDGE_NAME_MAX_WORDS = 6;
+export const NUDGE_NAME_MAX_WORDS = 4;
 
 /**
  * Paragraph count the v2 opening skeleton admits.
