@@ -85,7 +85,7 @@ describe('WorldRefKind membership', () => {
   it('the runtime list and the type agree — every member is a kind, and the count is pinned', () => {
     // Pinned so an arm added to the type without a disposition anywhere fails loudly
     // here rather than silently defaulting to "not an anchor" downstream.
-    expect(WORLD_REF_KINDS).toHaveLength(13);
+    expect(WORLD_REF_KINDS).toHaveLength(12);
     for (const kind of WORLD_REF_KINDS) expect(isWorldRefKind(kind)).toBe(true);
   });
 
@@ -98,10 +98,17 @@ describe('WorldRefKind membership', () => {
     expect(isWorldRefKind('agent')).toBe(true);
   });
 
-  it('reserved kinds are a subset of the kinds, and codex is the one', () => {
-    for (const kind of WORLD_REF_RESERVED_KINDS) expect(WORLD_REF_KINDS).toContain(kind);
-    expect(isReservedWorldRefKind('codex')).toBe(true);
+  it('reserves nothing — codex left the vocabulary rather than sitting unroutable (THR-1315)', () => {
+    // Pinned as an exact value, not swept: a `for` loop over an empty list passes
+    // vacuously and would keep passing if a reserved kind crept back in unannounced.
+    expect(WORLD_REF_RESERVED_KINDS).toEqual([]);
+    expect(isWorldRefKind('codex')).toBe(false);
+    expect(WORLD_REF_KINDS).not.toContain('codex');
     expect(isReservedWorldRefKind('agent')).toBe(false);
+  });
+
+  it('keeps the subset invariant available for whenever a kind is reserved again', () => {
+    for (const kind of WORLD_REF_RESERVED_KINDS) expect(WORLD_REF_KINDS).toContain(kind);
   });
 });
 
@@ -152,10 +159,6 @@ describe('toNavigationTarget — partial, and partial in the documented places',
       .toEqual({ kind: 'location', locationNodeId: 'loc-inn-3' });
   });
 
-  it('drops codex — reserved, because no in-game codex destination exists', () => {
-    expect(toNavigationTarget({ kind: 'codex', id: 'codex.reach.star' })).toBeUndefined();
-  });
-
   it('routes a journey only when the caller supplies the traveller', () => {
     const ref: WorldRef = { kind: 'journey', id: 'journey-7' };
     expect(toNavigationTarget(ref)).toBeUndefined();
@@ -202,7 +205,7 @@ describe('toEntityVisualRef — attachment is absent on purpose', () => {
   });
 
   it('drops the kinds that are events or documents rather than entities with portraits', () => {
-    for (const kind of ['hex', 'encounter', 'journey', 'receipt', 'codex'] as const) {
+    for (const kind of ['hex', 'encounter', 'journey', 'receipt'] as const) {
       expect(toEntityVisualRef({ kind, id: 'x' })).toBeUndefined();
     }
   });
@@ -310,10 +313,6 @@ describe('resolveWorldRef — the live half', () => {
     expect(resolveWorldRef({ kind: 'hex', id: 'x' }, ctx(graph))).toBeUndefined();
   });
 
-  it('drops a codex ref — reserved, nothing to resolve to', () => {
-    expect(resolveWorldRef({ kind: 'codex', id: 'codex.reach.star' }, ctx(graph)))
-      .toBeUndefined();
-  });
 });
 
 describe('the drop log', () => {
@@ -340,14 +339,15 @@ describe('the drop log', () => {
   });
 
   it('falls back to markers rather than dropping the record when context is thin', () => {
-    resolveWorldRef({ kind: 'codex', id: 'c' }, { graph });
+    // A malformed hex id is the cheapest guaranteed drop that never touches the graph.
+    resolveWorldRef({ kind: 'hex', id: 'c' }, { graph });
     expect(getWorldRefDrops()[0]).toMatchObject({ surface: 'unknown', tick: -1 });
   });
 
   it('caps at WORLDREF_DROP_LOG_MAX, keeping the newest', () => {
     const overflow = WORLDREF_DROP_LOG_MAX + 25;
     for (let i = 0; i < overflow; i += 1) {
-      resolveWorldRef({ kind: 'codex', id: `c-${i}` }, ctx(graph));
+      resolveWorldRef({ kind: 'hex', id: `c-${i}` }, ctx(graph));
     }
     const drops = getWorldRefDrops();
     expect(drops).toHaveLength(WORLDREF_DROP_LOG_MAX);
@@ -357,7 +357,7 @@ describe('the drop log', () => {
   });
 
   it('hands back a copy — a caller cannot corrupt the evidence it came to read', () => {
-    resolveWorldRef({ kind: 'codex', id: 'c' }, ctx(graph));
+    resolveWorldRef({ kind: 'hex', id: 'c' }, ctx(graph));
     (getWorldRefDrops() as unknown as unknown[]).length = 0;
     expect(getWorldRefDrops()).toHaveLength(1);
   });

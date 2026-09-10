@@ -24,7 +24,6 @@ import * as path from 'path';
 import {
   ACTOR_TYPE_ROWS,
   ATTACHMENT_ROWS,
-  CODEX_SURFACE_TICKET,
   CONSUMER_UNION_SPECS,
   EDGE_TYPE_ROWS,
   NODE_TYPE_ROWS,
@@ -225,7 +224,7 @@ describe('kind vocabulary — the spine parses and every consumer union is cover
     // ever stops being true this still passes, but the header says why it matters.
     expect(worldRefKinds.length).toBeGreaterThan(0);
     expect(worldRefKinds).toContain('agent');
-    expect(worldRefKinds).toContain('codex');
+    expect(worldRefKinds).toContain('receipt');
   });
 
   it.each(CONSUMER_UNION_SPECS.map((spec) => [spec.label, spec] as const))(
@@ -266,7 +265,12 @@ describe('kind vocabulary — the hub-and-spoke falsification test', () => {
     expect(extras).toEqual(['avatar', 'npc-role', 'unknown']);
   });
 
-  it('leaves `codex` unspoken by every consumer union, which is what reserved means', () => {
+  it('has no `codex` left to disposition — the kind left the spine (THR-1315)', () => {
+    // The ruling of 2026-09-10: references may not route to a codex, so rather than
+    // carry a reserved kind nothing can reach, `codex` left `WorldRefKind` outright.
+    // Both halves are pinned — gone from the spine, and unspoken by every consumer —
+    // because the second alone would pass vacuously for any word never in the union.
+    expect(worldRefKinds).not.toContain('codex');
     const speaks = liveCoverages.filter((c) => c.members.includes('codex'));
     expect(speaks.map((c) => c.spec.label)).toEqual([]);
   });
@@ -297,13 +301,16 @@ describe('kind vocabulary — the coverage lint actually fires', () => {
     );
   });
 
-  it('names a stale `absentKinds` row the day the codex arm lands', () => {
-    // The promise made to THR-1315 in its coordination block: add a `codex` arm and
-    // the generator refuses to keep publishing the reserved badge. This is that
-    // promise, executable — the union is mutated as if the arm shipped.
+  it('names a stale `absentKinds` row the day a dispositioned kind gains an arm', () => {
+    // Executable form of the catalog's central promise: a curated absence cannot
+    // outlive the absence it describes. `artifact` is absent-with-a-reason from
+    // `NavigationTarget` today, so the union is mutated as if its arm shipped.
+    // (This arm used to be `codex`; THR-1315 removed that kind from the spine, which
+    // would now fire the undispositioned-extra-member branch instead — a real throw
+    // for the wrong reason, and the kind of green-for-nothing this file guards.)
     expect(() =>
-      assertKindUnionCoverage(spec, [...members, 'codex'], worldRefKinds),
-    ).toThrow(/stale `absentKinds` row\(s\): 'codex'/);
+      assertKindUnionCoverage(spec, [...members, 'artifact'], worldRefKinds),
+    ).toThrow(/stale `absentKinds` row\(s\): 'artifact'/);
   });
 });
 
@@ -426,15 +433,17 @@ describe('kind vocabulary — the spine annotation is complete in both direction
 describe('kind vocabulary — the committed artifact carries the spine', () => {
   const OUTPUT_REL = '.claude/skills/encounter-pipeline/reference/anchor-catalog.generated.md';
 
-  it('renders the spine section, every kind, and the codex deferral', () => {
+  it('renders the spine section and every kind, with no reserved row left to cite', () => {
     const body = read(OUTPUT_REL);
     expect(body).toContain('## The kind vocabulary');
     for (const kind of worldRefKinds) {
       expect(body).toContain(`\`${kind}\``);
     }
-    // The reserved row must cite a ticket, or it reads as an oversight — which is
-    // the whole reason THR-1315 was filed before this catalog was rendered.
-    expect(body).toContain(CODEX_SURFACE_TICKET);
+    // This used to assert the codex row cited THR-1315, so the reserved badge could
+    // not read as an oversight. THR-1315 ruled the kind out of the vocabulary instead,
+    // so the assertion inverts: the retired kind must not survive in the artifact.
+    expect(body).not.toContain('THR-1315');
+    expect(body).not.toContain('`codex`');
   });
 
   it('names every consumer vocabulary it checked', () => {

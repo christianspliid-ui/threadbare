@@ -57,9 +57,9 @@ export interface EntityVisualRefLike {
  *   `AttachmentDetailView` draws it. `resolveIcon` skips this kind rather than
  *   resolving a wrong tile, so mapping it here would *create* the bug the union
  *   currently prevents at compile time.
- * - `hex`, `encounter`, `journey`, `receipt`, `codex` — no entity-visual family. A
- *   hex is drawn by the map, not by a tile; the other three are events and documents,
- *   not entities with portraits.
+ * - `hex`, `encounter`, `journey`, `receipt` — no entity-visual family. A hex is drawn
+ *   by the map, not by a tile; the other three are events and documents, not entities
+ *   with portraits.
  *
  * `EntityVisualKind` additionally carries `avatar`, `npc-role` and `unknown`, which are
  * render-time refinements rather than referenceable kinds — they are projections *out*
@@ -81,8 +81,6 @@ const ENTITY_VISUAL_KIND_BY_WORLD_REF_KIND: Partial<Record<WorldRefKind, EntityV
  * Partial by design:
  * - `journey` needs an `agentId` the reference does not carry — the caller supplies it
  *   via {@link ToNavigationTargetOptions}, and without it the journey does not route.
- * - `codex` is reserved: no in-game codex destination exists (`?view=codex` tears down
- *   the running simulation), so it returns `undefined` until that surface is chartered.
  * - `sublocation` routes to the location sheet, which is the surface that draws it.
  * - `attachment` and `hex` have no `NavigationTarget` arm; `hex` is deliberately
  *   supported because the union *does* carry one, parsed from the `<col>,<row>` id.
@@ -122,7 +120,6 @@ export function toNavigationTarget(
     case 'attachment':
     case 'companion':
     case 'army':
-    case 'codex':
       return undefined;
   }
 }
