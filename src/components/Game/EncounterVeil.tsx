@@ -2758,6 +2758,15 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
   );
 }
 
+/**
+ * Two display strings reduced to the form that decides whether they say the
+ * same thing (THR-1465). Case and surrounding/inner whitespace only — nothing
+ * that would make two genuinely different roles collide.
+ */
+function normalizeForSameWord(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/gu, ' ');
+}
+
 // ── CastStrip sub-component (THR-1041) ─────────────────────────────
 /**
  * The scene's bound cast, as image + name + role chips.
@@ -2810,15 +2819,31 @@ function CastStrip({
           // unbound spec has no node, so the chip stays a plain name rather
           // than a control that does nothing when clicked.
           const canSelect = Boolean(member.nodeId && onSelectAgent);
-          const roleLine = member.roleLabel ?? member.role;
+          const rawRoleLine = member.roleLabel ?? member.role;
+          // Laws 13/14 (THR-1465): an unbound spec's name falls back to its
+          // `spawnName`, which for a generic walk-on *is* its role — so the chip
+          // read "Wayside Keeper / Wayside Keeper", the same words twice, one of
+          // them dressed as a person's name. When the two lines say the same
+          // thing, only the name survives: a duplicate is not a second fact.
+          // Compared case- and space-insensitively, because the two strings come
+          // from different producers (`spawnName` vs `supportRoleWord`) and a
+          // difference in casing alone is still the same word to the player.
+          const roleLine = normalizeForSameWord(rawRoleLine) === normalizeForSameWord(member.name)
+            ? undefined
+            : rawRoleLine;
           // Law 17: the hover *explanation* goes through the Tooltip primitive.
           // `title` survives only as the assistive-tech duplicate of
           // `aria-label`, which the law explicitly permits — the raw-`title`
           // tooltip pattern is what it retires.
-          const description = member.reused
-            ? `${roleLine}. Already part of this world before the scene.`
-            : `${roleLine}. Drawn into the scene for this encounter.`;
-          const label = canSelect ? `View ${member.name}` : `${member.name} — ${roleLine}`;
+          const presence = member.reused
+            ? 'Already part of this world before the scene.'
+            : 'Drawn into the scene for this encounter.';
+          const description = roleLine ? `${roleLine}. ${presence}` : presence;
+          const label = canSelect
+            ? `View ${member.name}`
+            : roleLine
+              ? `${member.name} — ${roleLine}`
+              : member.name;
 
           return (
             <Tooltip key={member.id} label={member.name} desc={description}>
@@ -2868,16 +2893,18 @@ function CastStrip({
                 >
                   {member.name}
                 </span>
-                <span
-                  style={{
-                    fontFamily: FONT_PROSE,
-                    fontStyle: 'italic',
-                    fontSize: 'var(--text-xs)',
-                    color: TEXT_WHISPER,
-                  }}
-                >
-                  {roleLine}
-                </span>
+                {roleLine && (
+                  <span
+                    style={{
+                      fontFamily: FONT_PROSE,
+                      fontStyle: 'italic',
+                      fontSize: 'var(--text-xs)',
+                      color: TEXT_WHISPER,
+                    }}
+                  >
+                    {roleLine}
+                  </span>
+                )}
               </span>
             </button>
             </Tooltip>

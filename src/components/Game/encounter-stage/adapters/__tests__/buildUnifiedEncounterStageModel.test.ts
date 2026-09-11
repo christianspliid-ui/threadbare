@@ -10,6 +10,8 @@ import type {
   ActionStep,
 } from '../../../../../types/unifiedAction';
 import { buildUnifiedEncounterStageModel } from '../buildUnifiedEncounterStageModel';
+import { UNIFIED_ACTION_TEMPLATES } from '../../../../../data/unified-action-templates';
+import { isDefaultSupportSpec } from '../../../../../data/default-support-bundles';
 import { enrichProse, gatherNarrativeContext } from '../../../../../engine/proseEnrichment';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
@@ -1683,6 +1685,120 @@ describe('buildUnifiedEncounterStageModel', () => {
         expect(member.nodeId).toBeUndefined();
         expect(member.name.length).toBeGreaterThan(0);
       }
+    });
+  });
+
+  // ─── THR-1465: an unbound *default* is not in the scene ───────────
+  //
+  // Read off the live catalog rather than a fixture, because the defect is a
+  // property of shipped content: `withDefaultSupportBundle` attaches the wayside
+  // trio to every slice parent, and on a wayside hex with no hermit, wanderer or
+  // ranger to bind, all three stay unresolved. A fixture asserting this would
+  // invent both the bundle and the verdict; the catalog cannot.
+  describe('unbound default specs stay out of the cast model (THR-1465)', () => {
+    /** Every slice parent named in THR-1465's census, as the game assembles it. */
+    function sliceParent(id: string): UnifiedActionTemplate {
+      const template = UNIFIED_ACTION_TEMPLATES.find(t => t.id === id);
+      if (!template) throw new Error(`${id} is not in the live catalog`);
+      return template;
+    }
+
+    function castFor(
+      template: UnifiedActionTemplate,
+      supportBindings: UnifiedAction['supportBindings'],
+    ) {
+      return buildUnifiedEncounterStageModel({
+        template,
+        activeAction: {
+          actionId: 'ua_slice_cast',
+          actorId: 'agent.scout',
+          templateId: template.id,
+          targetId: 'loc.waystation',
+          scale: 'local',
+          source: 'agent',
+          startTick: 10,
+          currentStep: 0,
+          stepProgress: 0,
+          stepDuration: 3,
+          resolved: false,
+          stepOutcomes: [],
+          supportBindings,
+        },
+        notification: buildNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      }).cast;
+    }
+
+    const SLICE_PARENTS = [
+      'encounter.slice.unsafe_bridge',
+      'encounter.slice.snow_on_the_pass',
+      'encounter.slice.riders_behind_caravan',
+      'encounter.slice.bargain_at_crossroads',
+      'encounter.slice.swindled_family',
+    ];
+
+    // The precondition the whole ticket rests on: these templates really do
+    // carry the wayside/urban defaults. If assembly ever stops merging them the
+    // arms below would pass vacuously, so assert it rather than assume it.
+    it('every slice parent still carries default specs (guard against a vacuous pass)', () => {
+      for (const id of SLICE_PARENTS) {
+        const defaults = (sliceParent(id).supportBundle ?? []).filter(isDefaultSupportSpec);
+        expect(defaults.length, `${id} carries no default specs`).toBeGreaterThan(0);
+      }
+    });
+
+    it('renders no chip for a default spec that bound nobody — the THR-1465 census, at zero', () => {
+      for (const id of SLICE_PARENTS) {
+        const template = sliceParent(id);
+        const defaultKeys = new Set(
+          (template.supportBundle ?? []).filter(isDefaultSupportSpec).map(spec => spec.key),
+        );
+        const cast = castFor(template, []);
+        // The three wayside strangers — `Wayside Keeper` / `Fellow Traveler` /
+        // `Road Outrider` — are gone from every one of the five.
+        expect(cast.filter(c => defaultKeys.has(c.id)).map(c => c.name), `${id} still shows unbound defaults`)
+          .toEqual([]);
+      }
+    });
+
+    // The two the ticket singles out: their bundle is *nothing but* default, so
+    // with nobody to bind the strip has no chips at all and does not render.
+    it('Snow on the Pass and The Swindled Family show an empty scene rather than three strangers', () => {
+      for (const id of ['encounter.slice.snow_on_the_pass', 'encounter.slice.swindled_family']) {
+        const template = sliceParent(id);
+        expect(
+          (template.supportBundle ?? []).every(isDefaultSupportSpec),
+          `${id} now declares an authored spec — re-check this arm`,
+        ).toBe(true);
+        expect(castFor(template, []), `${id} still renders cast`).toEqual([]);
+      }
+    });
+
+    it('a default that DID bind keeps its chip — the filter is about binding, not provenance', () => {
+      const bridge = sliceParent('encounter.slice.unsafe_bridge');
+      const keeper = (bridge.supportBundle ?? []).find(isDefaultSupportSpec);
+      expect(keeper).toBeDefined();
+      const cast = castFor(bridge, [
+        { key: keeper!.key, nodeId: 'npc.tessaly', kind: 'actor', delivery: 'pre-seeded', persistence: 'must-persist', reused: true },
+      ]);
+      expect(cast.map(c => c.id)).toContain(keeper!.key);
+      expect(cast.find(c => c.id === keeper!.key)?.nodeId).toBe('npc.tessaly');
+    });
+
+    // The other side of the rule, and the reason it is not simply "hide every
+    // unbound spec": THR-1041's premise still holds for an authored bundle,
+    // whose encounter wrote the person into its own prose.
+    it('an unbound AUTHORED spec still renders inert (THR-1041 unchanged)', () => {
+      const authored = (RIVAL_SHRINE_BETRAYAL_TEMPLATE.supportBundle ?? [])
+        .filter(spec => spec.kind === 'actor');
+      expect(authored.every(spec => !isDefaultSupportSpec(spec))).toBe(true);
+
+      const cast = castFor(RIVAL_SHRINE_BETRAYAL_TEMPLATE, []);
+      expect(cast.length).toBe(authored.length);
+      expect(cast.every(c => c.nodeId === undefined)).toBe(true);
     });
   });
 });
