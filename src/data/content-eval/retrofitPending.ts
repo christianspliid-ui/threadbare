@@ -170,7 +170,6 @@ export const RETROFIT_PENDING: readonly string[] = [
   'encounter.shell_proof.tiered_proving',
   'encounter.shore_up_shelter',
   'encounter.shore_up_the_mine',
-  'encounter.shrine_offering',
   'encounter.siege_defense_planning',
   'encounter.slice.riders_behind_caravan',
   'encounter.slice.snow_on_the_pass',

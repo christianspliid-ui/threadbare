@@ -16,7 +16,7 @@ document fails a build. A thin cell is a scene not yet written.
 | templates in the pool | 697 |
 | drawable at ≥1 location subtype | 464 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 30 |
+| declaring a setting envelope | 31 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -37,7 +37,7 @@ be dealt?", not "how many templates exist".
 | `sacred` | 7 | 9 | 4 | 17 | 11 | 8 | 6 | 24 | **86** |
 | `arcane` | 5 | 5 | 7 | 20 | 6 | 26 | 5 | 11 | **85** |
 | `ruin` | 16 | 10 | 10 | 11 | 12 | 26 | 14 | 8 | **107** |
-| `wayside` | 27 | 17 | 11 | 7 | 16 | 30 | 13 | 12 | **133** |
+| `wayside` | 27 | 17 | 11 | 7 | 16 | 30 | 13 | 13 | **134** |
 | `battlefield` | 10 | 5 | 5 | 3 | 7 | 5 | 9 | 5 | **49** |
 
 ## Thin cells
