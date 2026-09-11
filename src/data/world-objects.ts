@@ -238,7 +238,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     id: 'faction', gameWord: 'Faction', ulTerm: 'Agents.md#faction', worldRef: 'faction',
     shape: { kind: 'node', nodeType: 'actor', discriminator: { key: 'actorType', values: ['faction'] } },
     owningSystem: 'Factions & Succession', writers: ['worldSeed', 'strategicGraphOps'], status: 'live',
-    note: 'A structured social entity holding territory through `controls`; chapters share a def.',
+    note: 'A structured social entity holding territory through `controls`; chapters share a def. A **Realm** (game word for a nation) is the `factionClass: \'realm\'` variant minted per culture domain at worldgen (THR-1155) — a landed polity with a seat, a court ladder and a per-world definition id `realm.<cultureId>`. It is a class, not a kind: a Realm is a Faction in every mechanical respect, so it takes no registry row of its own and `factionClass` is deliberately not a `classes` map here, which groups the discriminator\'s own values.',
   }),
   K({
     id: 'culture', gameWord: 'Culture', ulTerm: 'Agents.md#actortype', worldRef: null,

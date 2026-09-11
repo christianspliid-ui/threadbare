@@ -19,6 +19,8 @@ You are an **Ascendant** — a transcended mortal. You watch the world from a he
 
 A procedurally generated hex map. Hexes are mutable state (not graph nodes). Everything else — actors, locations, sublocations, factions, cultures, artifacts, traits — is a graph node connected by typed edges. Agents pursue their own goals through a Maslow needs pipeline. Above the cycle: a **Doom Clock** ticking toward an Unmaking. Beneath it: a **World-Soul** carrying echoes from prior cycles.
 
+**Two borders, two meanings.** Dotted = an **Area**, the named ground; every land hex is in exactly one, and it never changes hands. Red = a **Realm** (a nation): a landed Faction with a seat and a court a mortal can climb. The red border is not stored — it is the towns the Realm holds, so **conquest moves the map**.
+
 ## The Three-Beat Turn
 
 **Scan → Curated Moment → Aftermath.** Each tick is two in-world hours; 12 ticks per day. The world advances only when you say so. Order is load-bearing: scan means you chose to look; encounter is the chapter; aftermath is the breath before the next scan.

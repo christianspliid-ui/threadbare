@@ -76,6 +76,18 @@ Factions are `actorType: 'faction'` actor nodes. Agents join via `member_of` gra
 - Faction rank progression fires on tier promotion events.
 - Agent→faction relationships are graph edges, not property fields (load-bearing: see CLAUDE.md "Relationships between entities").
 
+### Realms — the landed class of Faction
+
+A **Realm** is the game word for a nation, and mechanically it is a Faction carrying `factionClass: 'realm'` (THR-1155). One is minted per culture domain at worldgen, so its definition is built **per world** rather than read from the static table: `factionDefId: realm.<cultureId>` over a generated culture, with a seat (`role: 'seat'` on one `controls` edge), a `belongs_to` culture edge, and the court ladder *stranger · subject · yeoman · sworn · thane · counsel*.
+
+Three consequences bind anything that touches one:
+
+- **Resolve the definition, never `FACTION_DEFINITIONS.get(id)`.** A Realm's definition exists only in the running world, so every by-id read goes through `getFactionDefinition` ([src/data/faction-definition-lookup.ts](../../src/data/faction-definition-lookup.ts)); `faction-definition-lookup.readsites.test.ts` is the tripwire. A static read does not throw — it returns `undefined` and each consumer fails soft in its own direction, so the symptom is a court that quietly stops paying standing.
+- **The red border is derived, never stored.** A Realm's territory is its `controls` edges; the per-hex political map is a projection rebuilt from them ([src/engine/realmProjection.ts](../../src/engine/realmProjection.ts)), owned by `SimulationRuntime` behind a fingerprint belt. Nothing else may hold a per-hex realm stamp.
+- **Content names a Realm by class, not by id.** No authored string can name `realm.<generated culture>`, so a `FACTION_ENCOUNTER_META` row scopes itself with `factionClass: 'realm'` and resolves per agent through `resolveMetaFactionDefId` ([src/engine/factionMetaScope.ts](../../src/engine/factionMetaScope.ts)); in aftermath effects the `$realm` sentinel asks the **map** for the Realm holding `$here`'s Location. Asking the town's holder instead would return guilds and monster factions, which is why the class test lives inside the projection rather than at the call site.
+
+**Source:** [Docs/ubiquitous-language/Agents.md](../ubiquitous-language/Agents.md) → Realm, Faction; [Docs/canon/world-objects.md](world-objects.md) (Faction row); `src/data/realm-content.ts`.
+
 ## Archetypes — cite cosmology, don't duplicate
 
 Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the Cosmological Pattern). See [Docs/canon/cosmology.md](cosmology.md) §Cosmological Pattern for the authoritative reach × archetype-axis table. Do not reproduce the table here — that Canon page is the single source of truth for the archetype pairs.
