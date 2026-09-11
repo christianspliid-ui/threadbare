@@ -24,6 +24,7 @@ import {
 } from '../data/faction-definitions';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
+import { resolveMetaFactionDefId } from './factionMetaScope';
 import { applyFactionReputationGain } from './factionReputation';
 import { emitTrace } from './traceBuffer';
 
@@ -46,7 +47,9 @@ export function processFactionJoinOutcome(
   const meta = FACTION_ENCOUNTER_META.get(progress.encounterId);
   if (!meta) return false;
 
-  const definition = getFactionDefinition(meta.factionDefId);
+  const definition = getFactionDefinition(
+    resolveMetaFactionDefId(graph, progress.actorId, meta),
+  );
   if (!definition) return false;
 
   // Only process join encounters
@@ -140,7 +143,9 @@ export function processFactionPromotionOutcome(
   const meta = FACTION_ENCOUNTER_META.get(progress.encounterId);
   if (!meta) return null;
 
-  const definition = getFactionDefinition(meta.factionDefId);
+  const definition = getFactionDefinition(
+    resolveMetaFactionDefId(graph, progress.actorId, meta),
+  );
   if (!definition) return null;
 
   // Only process promotion encounters
@@ -272,7 +277,9 @@ export function processFactionOutcome(
   const meta = FACTION_ENCOUNTER_META.get(progress.encounterId);
   if (!meta) return [];
 
-  const definition = getFactionDefinition(meta.factionDefId);
+  const definition = getFactionDefinition(
+    resolveMetaFactionDefId(graph, progress.actorId, meta),
+  );
   if (!definition) return [];
 
   const events: TickEvent[] = [];

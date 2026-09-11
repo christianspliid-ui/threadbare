@@ -55,6 +55,7 @@ import type { BearerTraitRefs } from './traitRefIndex';
 import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
+import { resolveMetaFactionDefId } from './factionMetaScope';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { FactionEncounterMeta } from '../types/faction';
 import { meetsFactionRankRequirement } from './factionReputation';
@@ -364,7 +365,12 @@ export function filterByPrerequisites(
     if (entry.templateId.endsWith('.join')) {
       const meta = FACTION_ENCOUNTER_META.get(entry.templateId);
       if (meta) {
-        const def = getFactionDefinition(meta.factionDefId);
+        // THR-1155: a class-scoped row names no definition until an agent and a place
+        // are in hand. `entry.locationId` is where the join is offered, which for a
+        // Realm is the court whose ground it is — the agent is not a member yet.
+        const def = getFactionDefinition(
+          resolveMetaFactionDefId(graph, agentId, meta, entry.locationId),
+        );
         if (def?.joinPrerequisites) {
           let meetsAll = true;
           for (const [reach, minCap] of Object.entries(def.joinPrerequisites)) {
@@ -435,7 +441,9 @@ export function filterByPrerequisites(
     if (!entry.templateId.endsWith('.join')) {
       const rankMeta = FACTION_ENCOUNTER_META.get(entry.templateId);
       if (rankMeta && RANK_GATED_QUEST_TYPES.has(rankMeta.questType)) {
-        if (!meetsFactionRankRequirement(graph, agentId, rankMeta.factionDefId, rankMeta.minRank)) continue;
+        const rankDefId = resolveMetaFactionDefId(graph, agentId, rankMeta, entry.locationId);
+        if (!rankDefId) continue;
+        if (!meetsFactionRankRequirement(graph, agentId, rankDefId, rankMeta.minRank)) continue;
       }
     }
 

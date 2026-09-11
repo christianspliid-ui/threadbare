@@ -34,6 +34,7 @@ import {
   FACTION_ENCOUNTER_META,
   FACTION_JOIN_TEMPLATE,
   FACTION_PROMOTION_TEMPLATE,
+  metaBelongsToDefinitionId,
 } from '../data/faction-encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import type { MemberOfEdgeProperties } from '../types/disposition';
@@ -207,7 +208,7 @@ export function getAccessibleTemplates(
 
   return [...FACTION_ENCOUNTER_META.entries()]
     .filter(([id, meta]) =>
-      meta.factionDefId === definition.id &&
+      metaBelongsToDefinitionId(meta, definition.id) &&
       accessPrefixes.some(prefix => id.startsWith(prefix)))
     .map(([id]) => getUnifiedTemplateById(id))
     .filter((t): t is UnifiedActionTemplate => t !== undefined);

@@ -20,6 +20,7 @@ import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
+import { resolveMetaFactionDefId } from './factionMetaScope';
 import { emitTrace } from './traceBuffer';
 
 // ─── Lookup ─────────────────────────────────────────────────────────────
@@ -74,7 +75,8 @@ export function getEncounterRewardMultiplier(
 
   const bonuses = getAgentFactionBonuses(graph, agentId, 'encounter_reward_multiplier');
   // Find the bonus for this encounter's faction
-  const match = bonuses.find(b => b.factionDefId === meta.factionDefId);
+  const metaDefId = resolveMetaFactionDefId(graph, agentId, meta);
+  const match = bonuses.find(b => b.factionDefId === metaDefId);
   return match ? match.bonus.value : 1.0;
 }
 
@@ -94,7 +96,8 @@ export function getScoringBoost(
   if (!meta) return 0.0; // Not a faction encounter
 
   const bonuses = getAgentFactionBonuses(graph, agentId, 'scoring_boost');
-  const match = bonuses.find(b => b.factionDefId === meta.factionDefId);
+  const metaDefId = resolveMetaFactionDefId(graph, agentId, meta);
+  const match = bonuses.find(b => b.factionDefId === metaDefId);
   return match ? match.bonus.value : 0.0;
 }
 

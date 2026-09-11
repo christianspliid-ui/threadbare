@@ -339,6 +339,20 @@ export function realmDefinitionId(cultureId: string): string {
   return `${REALM_DEFINITION_ID_PREFIX}${cultureId}`;
 }
 
+/**
+ * Whether a `factionDefId` names a Realm.
+ *
+ * For the two places that hold an id or a definition but no node, and so cannot read
+ * `factionClass` — the enumeration sites that ask *which templates belong to this
+ * definition* (THR-1155 slice 3). Everywhere a node is in hand, read
+ * `factionClass === REALM_FACTION_CLASS` instead; the stamp is the discriminator and
+ * this is its shadow, derived from the same prefix {@link realmDefinitionId} writes
+ * rather than from a convention remembered at the call site.
+ */
+export function isRealmDefinitionId(factionDefId: string | null | undefined): boolean {
+  return typeof factionDefId === 'string' && factionDefId.startsWith(REALM_DEFINITION_ID_PREFIX);
+}
+
 export interface RealmDefinitionInput {
   /** The culture whose domain this Realm is. */
   cultureId: string;
