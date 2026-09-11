@@ -65,10 +65,15 @@ export function stampRealmSeat(graph: WorldGraph, realmId: string): string | nul
     const shouldBeSeat = edge.id === chosen.id;
     const isSeat = edge.properties.role === 'seat';
     if (shouldBeSeat === isSeat) continue;
-    const properties = { ...edge.properties };
-    if (shouldBeSeat) properties.role = 'seat';
-    else delete properties.role;
-    graph.updateEdge(edge.id, { properties });
+    // Written in place on the live properties bag, the way `phaseSchismResolution`
+    // clears its own keys — **not** through `updateEdge`, which merges
+    // (`{ ...existing.properties, ...updates.properties }`, `graph.ts:208`). A copy with
+    // `delete properties.role` passed to `updateEdge` re-acquires `role` from the
+    // existing bag on the way in, so the *clear* silently did nothing and a re-seated
+    // Realm kept its old seat beside its new one. The graph is mutated in place by
+    // design (a load-bearing decision), so this is the sanctioned way to remove a key.
+    if (shouldBeSeat) edge.properties.role = 'seat';
+    else delete edge.properties.role;
   }
 
   return chosen.target;

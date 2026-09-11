@@ -23,7 +23,7 @@ function makeLabel(
 
 describe('estimateBBox', () => {
   it('returns finite left/right/top/bottom for a label', () => {
-    const label = makeLabel('k0', 'domain', 100, 100);
+    const label = makeLabel('k0', 'realm', 100, 100);
     const bbox = estimateBBox(label);
     expect(Number.isFinite(bbox.left)).toBe(true);
     expect(Number.isFinite(bbox.right)).toBe(true);
@@ -32,7 +32,7 @@ describe('estimateBBox', () => {
   });
 
   it('bbox is centered on screenX/screenY', () => {
-    const label = makeLabel('k0', 'domain', 200, 150);
+    const label = makeLabel('k0', 'realm', 200, 150);
     const bbox = estimateBBox(label);
     const cx = (bbox.left + bbox.right) / 2;
     const cy = (bbox.top + bbox.bottom) / 2;
@@ -47,30 +47,30 @@ describe('removeOverlaps', () => {
   it('returns both visible when two labels do not overlap', () => {
     // Place labels far apart
     const labels: ScreenLabel[] = [
-      makeLabel('k0', 'domain', 100, 100),
-      makeLabel('b0', 'province', 900, 100), // Far away — no overlap
+      makeLabel('k0', 'realm', 100, 100),
+      makeLabel('b0', 'area', 900, 100), // Far away — no overlap
     ];
     const result = removeOverlaps(labels);
     expect(result.find(l => l.id === 'k0')?.visible).toBe(true);
     expect(result.find(l => l.id === 'b0')?.visible).toBe(true);
   });
 
-  it('hides lower-priority label when two labels overlap: domain over province', () => {
+  it('hides lower-priority label when two labels overlap: realm over area', () => {
     // Both at same position — guaranteed overlap
     const labels: ScreenLabel[] = [
-      makeLabel('k0', 'domain', 100, 100),
-      makeLabel('b0', 'province', 100, 100), // Same position = overlap
+      makeLabel('k0', 'realm', 100, 100),
+      makeLabel('b0', 'area', 100, 100), // Same position = overlap
     ];
     const result = removeOverlaps(labels);
     expect(result.find(l => l.id === 'k0')?.visible).toBe(true);
     expect(result.find(l => l.id === 'b0')?.visible).toBe(false);
   });
 
-  it('hides province overlapping domain regardless of input order', () => {
-    // Barony first in input — should still be hidden because domain has higher priority
+  it('hides an area label overlapping a realm regardless of input order', () => {
+    // Area first in input — still hidden, because the realm tier has higher priority
     const labels: ScreenLabel[] = [
-      makeLabel('b0', 'province', 100, 100),
-      makeLabel('k0', 'domain', 100, 100),
+      makeLabel('b0', 'area', 100, 100),
+      makeLabel('k0', 'realm', 100, 100),
     ];
     const result = removeOverlaps(labels);
     expect(result.find(l => l.id === 'k0')?.visible).toBe(true);
@@ -79,9 +79,9 @@ describe('removeOverlaps', () => {
 
   it('three labels: #2 overlaps #1, #3 does not overlap either — #1 visible, #2 hidden, #3 visible', () => {
     const labels: ScreenLabel[] = [
-      makeLabel('k0', 'domain', 100, 100),  // domain, placed first
-      makeLabel('b0', 'province', 105, 100),   // province, overlaps k0
-      makeLabel('b1', 'province', 900, 100),   // province, far away — no overlap
+      makeLabel('k0', 'realm', 100, 100),  // realm, placed first
+      makeLabel('b0', 'area', 105, 100),   // area, overlaps k0
+      makeLabel('b1', 'area', 900, 100),   // area, far away — no overlap
     ];
     const result = removeOverlaps(labels);
     expect(result.find(l => l.id === 'k0')?.visible).toBe(true);
@@ -89,19 +89,9 @@ describe('removeOverlaps', () => {
     expect(result.find(l => l.id === 'b1')?.visible).toBe(true);
   });
 
-  it('geographic label hidden when overlapping domain', () => {
+  it('river label hidden when overlapping an area', () => {
     const labels: ScreenLabel[] = [
-      makeLabel('k0', 'domain', 100, 100),
-      makeLabel('g0', 'geographic', 100, 100),
-    ];
-    const result = removeOverlaps(labels);
-    expect(result.find(l => l.id === 'k0')?.visible).toBe(true);
-    expect(result.find(l => l.id === 'g0')?.visible).toBe(false);
-  });
-
-  it('river label hidden when overlapping geographic', () => {
-    const labels: ScreenLabel[] = [
-      makeLabel('g0', 'geographic', 100, 100),
+      makeLabel('g0', 'area', 100, 100),
       makeLabel('rv0', 'river', 100, 100),
     ];
     const result = removeOverlaps(labels);
@@ -114,7 +104,7 @@ describe('removeOverlaps', () => {
   });
 
   it('returns single label as visible', () => {
-    const labels: ScreenLabel[] = [makeLabel('k0', 'domain', 100, 100)];
+    const labels: ScreenLabel[] = [makeLabel('k0', 'realm', 100, 100)];
     const result = removeOverlaps(labels);
     expect(result).toHaveLength(1);
     expect(result[0].visible).toBe(true);

@@ -1,26 +1,32 @@
 /**
- * BorderMesh.ts — Political border polylines for the Three.js hex renderer.
+ * BorderMesh.ts — the red border, drawn from the towns Realms hold.
  *
- * Renders kingdom and barony borders as red quad-strip meshes along hex edges.
- * Only political boundaries are rendered — geographic region differences produce
- * no geometry (REGN-06 compliance).
+ * **One tier since THR-1155.** The layer used to draw two: thick lines around domains
+ * and thin lines around provinces, both from per-hex political stamps written once at
+ * worldgen and never written again. The thin tier is gone — REGN-06's rule *draw only
+ * what is political* now reads *draw only what is held*, and a province is worldgen
+ * scaffolding for culture and naming rather than a thing the player can act on. What
+ * remains is the boundary of a **Realm's claim**, read from `realmProjection`, so a
+ * Realm that takes a town moves its border and a Realm that loses its last one has none.
  *
- * Border strategy:
- *   - Walk every hex pair (check 3 of 6 directions to avoid double-counting).
- *   - If two adjacent hexes belong to different kingdoms → kingdom border edge.
- *   - Else if different baronies → barony border edge.
+ * Border strategy (the geometry is unchanged; the source is new):
+ *   - Walk every hex pair once (a canonical edge key deduplicates).
+ *   - Two adjacent hexes claimed by different Realms → border edge.
+ *   - A claimed hex beside unclaimed ground or the map edge → border edge. Wilderness
+ *     is real, so the outside of a Realm is as much a border as the line between two.
  *   - Build quad-strip geometry per edge using two triangles (same pattern as RiverMesh).
  *
  * NFP #1 Tunability: All sizes and colors in named constants.
- * NFP #2 Inspectability: Separate kingdom and barony meshes for easy toggle/debug.
- * NFP #3 Determinism: Pure geometry from input data — no randomness.
- * NFP #4 Fail-soft: Hexes with no barony/kingdom assignment are skipped silently.
- * NFP #7 Performance: Two merged BufferGeometry objects (one per tier), minimal draw calls.
+ * NFP #2 Inspectability: one mesh, one meaning — every edge in it separates two claims.
+ * NFP #3 Determinism: Pure geometry from the projection — no randomness.
+ * NFP #4 Fail-soft: an unclaimed hex is skipped; an empty projection draws nothing and
+ * never throws.
+ * NFP #7 Performance: one merged BufferGeometry, one draw call.
  */
 
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
-import type { RegionData } from '../../../engine/regionTypes';
+import type { RealmProjection } from '../../../engine/realmProjection';
 import { hexNeighbors } from '../../../lib/hexMath';
 import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
 import { getActivePalette } from '../palette/activePalette';
@@ -30,11 +36,8 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 
 // ─── Border rendering constants (NFP #1: Tunability) ─────────────────────────
 
-/** Half-width of domain borders in world units (visual width = 2 * DOMAIN_HALF_WIDTH) */
-const DOMAIN_HALF_WIDTH = 0.75;
-
-/** Half-width of province borders in world units (visual width = 2 * PROVINCE_HALF_WIDTH) */
-const PROVINCE_HALF_WIDTH = 0.375;
+/** Half-width of realm borders in world units (visual width = 2 * REALM_HALF_WIDTH) */
+const REALM_HALF_WIDTH = 0.75;
 
 /** How far to extend each edge endpoint along its direction to close corner gaps */
 const EDGE_EXTENSION = 0.35;
@@ -174,28 +177,24 @@ function buildGeometry(positions: number[]): THREE.BufferGeometry {
 // ─── Factory ─────────────────────────────────────────────────────────────────
 
 /**
- * Create domain and province border meshes from region data.
+ * Create the realm border mesh from the political projection.
  *
- * Returns two separate THREE.Mesh objects:
- *   - domainMesh:   thick borders along domain boundaries
- *   - provinceMesh: thin borders along province boundaries (within same domain)
+ * One mesh, because there is one political tier that the player can act on. An edge
+ * enters the geometry when the claim differs across it — a different Realm, unclaimed
+ * ground, or the edge of the map. A hex no Realm claims contributes no edges of its
+ * own; its neighbours draw the line, so wilderness reads as the absence of a border
+ * rather than as a border around nothing.
  *
- * REGN-06: Only political boundaries produce geometry. Geographic region
- * differences without province/domain differences produce nothing.
- *
- * @param regionData - Region data from worldgen (with hexProvinceId + hexDomainId maps)
+ * @param realmProjection - The political partition, projected from `controls` (THR-1155)
  * @param tiles - All hex tiles in the world
- * @param cols - Grid width
  */
 export function createBorderMesh(
-  regionData: RegionData,
+  realmProjection: RealmProjection,
   tiles: HexTile[],
-  cols: number,
-): { domainMesh: THREE.Mesh; provinceMesh: THREE.Mesh } {
-  const { hexProvinceId, hexDomainId } = regionData;
+): { realmMesh: THREE.Mesh } {
+  const { hexRealmId } = realmProjection;
 
-  const domainPositions: number[] = [];
-  const provincePositions: number[] = [];
+  const realmPositions: number[] = [];
 
   // Build fast tile set for O(1) lookup (only need existence check)
   const tileSet = new Set<string>();
@@ -212,11 +211,11 @@ export function createBorderMesh(
     const { col, row } = tile.coord;
     const hKey = hexKeyFn(col, row);
 
-    const provinceA = hexProvinceId.get(hKey);
-    const domainA = hexDomainId.get(hKey);
+    const realmA = hexRealmId.get(hKey);
 
-    // Skip hexes with no political assignment (NFP #4 Fail-soft)
-    if (provinceA === undefined) continue;
+    // An unclaimed hex draws no border of its own (NFP #4 Fail-soft). Its claimed
+    // neighbours draw the line between them and it, from their side.
+    if (realmA === undefined) continue;
 
     const hexCenter: Point2D = hexToWorld({ col, row }, size);
 
@@ -232,34 +231,16 @@ export function createBorderMesh(
       if (processedEdges.has(edgeKey)) continue;
 
       const neighborExists = tileSet.has(neighborKey);
-      const provinceB = neighborExists ? hexProvinceId.get(neighborKey) : undefined;
-      const domainB = neighborExists ? hexDomainId.get(neighborKey) : undefined;
+      const realmB = neighborExists ? hexRealmId.get(neighborKey) : undefined;
 
-      let borderType: 'domain' | 'province' | null = null;
-
-      if (!neighborExists || provinceB === undefined) {
-        // Outer boundary — use domain border if hex belongs to a domain, else province border.
-        borderType = domainA !== undefined ? 'domain' : 'province';
-      } else if (domainA !== undefined && domainB !== undefined && domainA !== domainB) {
-        // Domain boundary — thick border
-        borderType = 'domain';
-      } else if (provinceA !== provinceB) {
-        // Province boundary within same domain — thin border
-        borderType = 'province';
-      }
-      // Same province and same domain = no border
-
-      if (borderType === null) continue;
+      // Same Realm on both sides = no border. Everything else is one: a different
+      // Realm, unclaimed ground, or off the map.
+      if (realmB === realmA) continue;
 
       processedEdges.add(edgeKey);
 
       const { start, end } = getEdgePoints(hexCenter, dirIdx, size);
-
-      if (borderType === 'domain') {
-        buildThickEdge(start.x, start.y, end.x, end.y, DOMAIN_HALF_WIDTH, BORDER_Z, domainPositions);
-      } else {
-        buildThickEdge(start.x, start.y, end.x, end.y, PROVINCE_HALF_WIDTH, BORDER_Z, provincePositions);
-      }
+      buildThickEdge(start.x, start.y, end.x, end.y, REALM_HALF_WIDTH, BORDER_Z, realmPositions);
     }
   }
 
@@ -270,13 +251,9 @@ export function createBorderMesh(
     opacity: BORDER_OPACITY,
   });
 
-  const domainGeo = buildGeometry(domainPositions);
-  const domainMesh = new THREE.Mesh(domainGeo, mat.clone());
-  domainMesh.renderOrder = RENDER_ORDER.BORDERS;
+  const realmGeo = buildGeometry(realmPositions);
+  const realmMesh = new THREE.Mesh(realmGeo, mat);
+  realmMesh.renderOrder = RENDER_ORDER.BORDERS;
 
-  const provinceGeo = buildGeometry(provincePositions);
-  const provinceMesh = new THREE.Mesh(provinceGeo, mat.clone());
-  provinceMesh.renderOrder = RENDER_ORDER.BORDERS;
-
-  return { domainMesh, provinceMesh };
+  return { realmMesh };
 }

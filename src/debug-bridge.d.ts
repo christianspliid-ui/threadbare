@@ -794,6 +794,23 @@ export interface DebugBridge {
    * one `GeoBorderMesh` and the geographic label tier render from.
    */
   getAreaProjection: () => Promise<unknown>;
+  /**
+   * THR-1155 — the political map, projected from the `controls` edges Realms hold:
+   * `{ realms: [{ id, name, seatLocationId, hexCount, heldLocationIds }], claimedHexes,
+   * unclaimedHexes, builtAt, structuralCacheVersion }`. `null` when no game state or no
+   * runtime is registered.
+   *
+   * The same projection the red border, the seat markers and the realm label tier render
+   * from — so this is how you assert the map without screenshotting it. `unclaimedHexes`
+   * is wilderness, not a hole: unlike the Area partition's `unstamped`, a non-zero value
+   * here is the design working. It counts every unclaimed tile, **water included** — the
+   * sea is nobody's — so it is not a measure of land wilderness. A Realm that holds no
+   * town is absent, because it has no border.
+   *
+   * The `heldLocationIds` name is deliberate: a Realm *holds* towns through `controls`;
+   * *holdings* is the `owns` edge and belongs to a mortal's sheet (THR-1314).
+   */
+  getRealmProjection: () => Promise<unknown>;
   getIncidentRecorderStats: () => Promise<unknown>;
   /**
    * Sweep every authored trait ref against the trait definitions in the live graph

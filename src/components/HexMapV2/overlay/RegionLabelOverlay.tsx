@@ -1,7 +1,7 @@
 /**
  * RegionLabelOverlay.tsx — HTML label overlay for the Three.js hex map canvas.
  *
- * Renders region names (kingdom, barony, geographic feature, river) as positioned
+ * Renders map names (realm, area, river) as positioned
  * <div> elements over the canvas using camera.project() for world→screen mapping.
  *
  * Features:
@@ -63,7 +63,7 @@ const LABEL_BASE: CSSProperties = {
 
 const palette = getActivePalette();
 
-const DOMAIN_STYLE: CSSProperties = {
+const REALM_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
   fontSize: '20px',
@@ -75,17 +75,7 @@ const DOMAIN_STYLE: CSSProperties = {
   lineHeight: '1.1',
 };
 
-const PROVINCE_STYLE: CSSProperties = {
-  ...LABEL_BASE,
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--text-sm)',
-  fontWeight: 400,
-  color: palette.labelLandColor,
-  textShadow: LAND_HALO,
-  lineHeight: '1.2',
-};
-
-const GEOGRAPHIC_STYLE: CSSProperties = {
+const AREA_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
   fontSize: 'var(--text-xs)',
@@ -108,25 +98,23 @@ const RIVER_STYLE: CSSProperties = {
 };
 
 const TIER_STYLES: Record<RegionLabel['tier'], CSSProperties> = {
-  domain: DOMAIN_STYLE,
-  province: PROVINCE_STYLE,
-  geographic: GEOGRAPHIC_STYLE,
+  realm: REALM_STYLE,
+  area: AREA_STYLE,
   river: RIVER_STYLE,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Fraction of province width that the label text should span at continental zoom */
-const PROVINCE_LABEL_WIDTH_FRACTION = 0.5;
+/** Fraction of a realm's width that its label text should span at continental zoom */
+const REALM_LABEL_WIDTH_FRACTION = 0.5;
 
 /** Approximate character width as fraction of font size (for font scaling calc) */
 const LABEL_CHAR_WIDTH = 0.6;
 
-/** Base font sizes per tier (px) — used as minimum; scaled up to fill province width */
+/** Base font sizes per tier (px) — used as minimum; scaled up to fill the realm's width */
 const TIER_BASE_FONT_SIZE: Record<RegionLabel['tier'], number> = {
-  domain: 20,
-  province: 14,
-  geographic: 12,
+  realm: 20,
+  area: 12,
   river: 12,
 };
 
@@ -146,7 +134,7 @@ function projectLabel(
     const sx = (vec.x + 1) / 2 * canvasWidth;
     const sy = (1 - vec.y) / 2 * canvasHeight;
 
-    // Compute screen-space province width if worldWidth is available
+    // Compute screen-space realm width if worldWidth is available
     let screenWidth: number | undefined;
     if (label.worldWidth && label.worldWidth > 0) {
       const left = new THREE.Vector3(label.worldX - label.worldWidth / 2, label.worldY, 0);
@@ -178,19 +166,16 @@ function projectLabel(
  * but MAX_ZOOM was bumped from 10→15, creating a k=10-15 band where both
  * region and location labels rendered with independent collision detection.
  *
- * Zoom tier mapping:
- * - Kingdom: continental + lower regional (zoomLevel < 10)
- * - Barony: continental + lower regional (1.5 <= zoom < 10)
- * - Geographic: lower regional only (5 <= zoom < 10)
+ * Zoom tier mapping (THR-1155 — the province tier retired with the stamps it read):
+ * - Realm: continental + lower regional (zoomLevel < 10)
+ * - Area: lower regional only (5 <= zoom < 10)
  * - River: lower regional only (5 <= zoom < 10)
  */
 function isTierVisible(tier: RegionLabel['tier'], zoomLevel: number): boolean {
   switch (tier) {
-    case 'domain':
+    case 'realm':
       return zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
-    case 'province':
-      return zoomLevel >= ZOOM_THRESHOLDS.FULL_WORLD_MAX && zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
-    case 'geographic':
+    case 'area':
     case 'river':
       return zoomLevel >= ZOOM_THRESHOLDS.CONTINENTAL_MAX && zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
   }
@@ -204,9 +189,9 @@ function toTitleCase(text: string): string {
 
 /** Apply display text transform per tier */
 function displayText(label: RegionLabel): string {
-  // Domain: uppercase handled by CSS textTransform: 'uppercase'
-  // Province/Geographic/River: title case
-  if (label.tier === 'domain') return label.text;
+  // Realm: uppercase handled by CSS textTransform: 'uppercase'
+  // Area/River: title case
+  if (label.tier === 'realm') return label.text;
   return toTitleCase(label.text);
 }
 
@@ -234,7 +219,7 @@ interface ProjectedLabel {
   screenY: number;
   visible: boolean;
   inViewport: boolean;
-  /** Screen-space province width for letter-spacing at continental zoom */
+  /** Screen-space realm width for letter-spacing at continental zoom */
   screenWidth?: number;
 }
 
@@ -355,11 +340,11 @@ export function RegionLabelOverlay({
         const tierStyle = TIER_STYLES[pl.tier];
         const opacity = pl.visible ? 1 : 0;
 
-        // At continental zoom (k < 5), scale font size so text fills ~50% of province width
+        // At continental zoom (k < 5), scale font size so text fills ~50% of the realm's width
         let scaledFontSize: number | undefined;
         if (zoomLevel < ZOOM_THRESHOLDS.CONTINENTAL_MAX && pl.screenWidth && pl.text.length > 0) {
           const baseFontSize = TIER_BASE_FONT_SIZE[pl.tier];
-          const targetWidth = pl.screenWidth * PROVINCE_LABEL_WIDTH_FRACTION;
+          const targetWidth = pl.screenWidth * REALM_LABEL_WIDTH_FRACTION;
           // fontSize that makes text.length * fontSize * CHAR_WIDTH = targetWidth
           const needed = targetWidth / (pl.text.length * LABEL_CHAR_WIDTH);
           if (needed > baseFontSize) {

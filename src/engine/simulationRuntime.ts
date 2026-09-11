@@ -31,6 +31,8 @@ import type { TraitRefIndex } from './traitRefIndex';
 import { buildRoleCensus } from './binding/roleCensus';
 import { buildAreaProjection } from './areaProjection';
 import type { AreaProjection } from './areaProjection';
+import { buildRealmProjection, emptyRealmProjection, fingerprintFactionControls } from './realmProjection';
+import type { RealmProjection } from './realmProjection';
 import type { RoleCensus } from './binding/roleCensus';
 import { createBindingIndex, type BindingIndex } from './binding/bindingRegistry';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -229,6 +231,28 @@ export interface SimulationRuntime {
   /** structuralCacheVersion at which areaProjection was last built. */
   areaProjectionBuiltAt: number;
 
+  // ── The political map the map draws (THR-1155) ──
+  /**
+   * Every hex to the Realm that claims it and every Realm to its hexes, projected
+   * from the `controls` edges Realms hold.
+   *
+   * Owned here for the Area projection's reasons, plus one of its own: unlike the Area
+   * partition, this one *moves*. A won siege changes which faction holds a town, and
+   * the border must follow within the tick. A React state could not be read by the
+   * engine and a module singleton would carry one playthrough's borders into the next;
+   * either way the map and `$realm` could disagree, which is the bug this replaces.
+   */
+  realmProjection: RealmProjection | null;
+  /** structuralCacheVersion at which realmProjection was last built. */
+  realmProjectionBuiltAt: number;
+  /**
+   * The faction-`controls` fingerprint the current projection was built from — the belt
+   * behind the version check. A writer that moves an edge without `touchStructure`
+   * leaves the version equal and this string different, which is what makes the
+   * omission traceable rather than silent.
+   */
+  realmProjectionFingerprint: string | null;
+
   // ── The binder's reverse binding index (THR-1296 §4) ──
   /**
    * nodeId → ledger positions, so the `removeNode` hook is one Map lookup rather
@@ -320,6 +344,9 @@ export function createSimulationRuntime(): SimulationRuntime {
     roleCensusBuiltAt: -1,
     areaProjection: null,
     areaProjectionBuiltAt: -1,
+    realmProjection: null,
+    realmProjectionBuiltAt: -1,
+    realmProjectionFingerprint: null,
     bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
     aftermathEventSeq: 0,
@@ -551,6 +578,77 @@ export function ensureAreaProjection(
 }
 
 /**
+ * Ensure the political map is up to date (THR-1155).
+ *
+ * Two triggers, and the second is the point. **The version check** is the ordinary
+ * path: a writer moved a `controls` edge, called `touchStructure`, and the next reader
+ * gets a rebuilt border. **The fingerprint belt** covers the writer that forgot — it
+ * compares the faction-`controls` edge set against the one the current projection was
+ * built from and rebuilds on a difference even when the version matches, tracing
+ * `reason: 'fingerprint'`. Without it a missed `touchStructure` would leave the map
+ * quietly wrong, which is indistinguishable from the pre-THR-1155 world where the
+ * border could not move at all. With it, the map is right one read late and the
+ * omission is named in the trace.
+ *
+ * The belt is affordable because the fingerprint is the thing it guards: ~112 sorted
+ * `source>target` pairs on a medium world, against a projection rebuild that walks
+ * every tile against every held town. Never per tick — only when something asks.
+ *
+ * Fail-soft (NFP #4): a throwing build keeps the previous projection and its
+ * `BuiltAt`/fingerprint, so the next structural bump retries and the map draws the last
+ * good border rather than none. The very first build failing returns an empty
+ * projection — no borders, no markers, no crash.
+ */
+export function ensureRealmProjection(
+  runtime: SimulationRuntime,
+  graph: WorldGraph,
+  tiles: HexTile[],
+  tick: number,
+): RealmProjection {
+  const versionStale = !runtime.realmProjection
+    || runtime.realmProjectionBuiltAt < runtime.structuralCacheVersion;
+
+  // The fingerprint is only worth taking when the version says the projection is
+  // current — that is the one case where a difference means a writer skipped the bump.
+  let reason: 'version' | 'fingerprint' | null = versionStale ? 'version' : null;
+  let fingerprint: string | null = null;
+  if (!versionStale) {
+    try {
+      fingerprint = fingerprintFactionControls(graph);
+      if (fingerprint !== runtime.realmProjectionFingerprint) reason = 'fingerprint';
+    } catch (err) {
+      // A fingerprint we cannot take is not a reason to rebuild; the version check
+      // still governs. Never let the belt be the thing that throws.
+      console.warn('[ensureRealmProjection] fingerprint failed; version check stands', err);
+    }
+  }
+
+  if (reason === null) return runtime.realmProjection!;
+
+  try {
+    const projection = buildRealmProjection(graph, tiles);
+    runtime.realmProjection = projection;
+    runtime.realmProjectionBuiltAt = runtime.structuralCacheVersion;
+    runtime.realmProjectionFingerprint = fingerprint ?? fingerprintFactionControls(graph);
+
+    emitTrace({
+      category: 'realm_projection_rebuilt',
+      tick,
+      summary: `political map rebuilt (${reason}) — ${projection.realms.length} realms, ${projection.hexRealmId.size} hexes held`,
+      reason,
+      realms: projection.realms.length,
+      claimedHexes: projection.hexRealmId.size,
+      unclaimedHexes: projection.unclaimedHexes,
+      structuralCacheVersion: runtime.structuralCacheVersion,
+    });
+    return projection;
+  } catch (err) {
+    console.warn('[ensureRealmProjection] build failed; keeping the last good projection', err);
+    return runtime.realmProjection ?? emptyRealmProjection();
+  }
+}
+
+/**
  * Reset all runtime caches and timelines (e.g. for cycle transitions).
  * Does NOT reset version counters — those monotonically increase within a session.
  * Does NOT reset balance telemetry — telemetry spans the full session by design.
@@ -571,6 +669,9 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.roleCensusBuiltAt = -1;
   runtime.areaProjection = null;
   runtime.areaProjectionBuiltAt = -1;
+  runtime.realmProjection = null;
+  runtime.realmProjectionBuiltAt = -1;
+  runtime.realmProjectionFingerprint = null;
   // The ledger survives a cache reset (it is game state); the index over it does not.
   runtime.bindingIndex = createBindingIndex();
   clearTimelines();

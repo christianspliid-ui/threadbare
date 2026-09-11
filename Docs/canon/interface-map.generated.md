@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 95 |
+| 🟢 LIVE | 96 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **125** |
+| **Total** | **126** |
 
 ## Contracts by producing subsystem
 
@@ -174,6 +174,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `realm-holdings-to-political-map` | The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth. | module-export: `buildRealmProjection`, `ensureRealmProjection`, `fingerprintFactionControls`, `stampRealmSeat` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `reputation-with-unified-read` | Reputation means one thing wherever the game asks it — the social score between a and b — so a standing earned in a town, a guild or a friendship reads in one vocabulary and moves the same things. | function: `getReputationWith`, `applyReputationWithDelta`, `meetsReputationWithRequirement`, `reputationLeverageTerm`, `getNotableStandings` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Intelligence, Knowledge & Familiarity
@@ -646,10 +647,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 77 total — 4 write, 7 read, 66 unclassified
+- **Production hits:** 78 total — 4 write, 7 read, 67 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +61 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useSimulation.ts` +62 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
@@ -996,10 +997,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 130 total — 3 write, 7 read, 120 unclassified
+- **Production hits:** 131 total — 3 write, 7 read, 121 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +115 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +116 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1231,6 +1232,18 @@ exit
 - **Other hits:** `src/data/action-technical-effects.ts`, `src/data/nudge-constants.ts`, `src/engine/brokenState.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/graphOp.ts`
 - **Verdict:** Pinned by badgeOverride: Read sites are wired and tested, but gated behind BROKEN_GATE_ENABLED = false until WS5 authors the rebuild encounters. Erosion scaling + brokenSince bookkeeping are live; candidacy exclusion + broken_drift are not.
 
+### `realm-holdings-to-political-map` — 🟢 LIVE
+
+- **Intent:** The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth.
+- **Producer → Consumer:** Factions & Succession → World Generation, Terrain & Places
+- **UL terms:** *Realm*, *Faction*, *Location*
+- **Module:** `src/engine/realmProjection.ts`
+- **Production hits:** 7 total — 2 write, 4 read, 1 unclassified
+- **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
+- **Read sites:** `src/components/Game/hooks/useSimulation.ts`, `src/debug-bridge.ts`, `src/engine/realmProjection.ts`, `src/engine/simulationRuntime.ts`
+- **Other hits:** `src/engine/realmSeat.ts`
+- **Verdict:** Verified 2026-09-11: THR-1155 slice 2 step 2. Measured live on a generated seed-42 medium world: three Realms claim 375 of 768 tiles (180 / 60 / 135 hexes from 17 / 10 / 6 held towns) and 393 tiles are unclaimed — water and wilderness, which the old domain stamp had no way to express. Retargeting one `controls` edge (loc_10, faction_1 -> faction_0) and bumping moved 17 hexes of border in the next read (60 -> 43 and 180 -> 197) with `builtAt` advancing 0 -> 1: the first time the political map has ever moved. The belt is falsified, not assumed — a sibling test moves the same edge WITHOUT `touchStructure` and asserts the rebuild traces `reason: 'fingerprint'`, and a third asserts a mortal's `controlType: 'strategic'` edge does not move the fingerprint at all, so a stance never rebuilds the border (THR-1448 owns that question). One defect surfaced on the way and is fixed here rather than filed: `stampRealmSeat` cleared a stale seat through `graph.updateEdge`, which MERGES properties (`graph.ts:208`), so `delete properties.role` was undone on the way in and a re-seated Realm carried `role: 'seat'` on two edges — the projection then reported whichever edge order visited last. Cleared in place now, as `phaseSchismResolution` does, with a test that re-seats onto a city and asserts exactly one seat edge. The province border tier and `borders_province` are deleted, not hidden: *draw only what is held*. Tests: `src/engine/__tests__/realmProjection.test.ts` (12), `BorderMesh.test.ts` (12), `RegionLabelOverlay.realm.test.tsx` (4), `regionLabels.test.ts` (18), `GeoBorderMesh.test.ts` (6). Full suite 1215 files / 19888 green; heavy lane 30 files / 202 green; 30-tick seed-42 smoke reached tick 30, 488 agents, 67 events.
+
 ### `receipt-event-band-toast` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
@@ -1393,10 +1406,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 362 total — 1 write, 1 read, 360 unclassified
+- **Production hits:** 364 total — 1 write, 1 read, 362 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +355 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +357 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -1634,10 +1647,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 230 total — 2 write, 6 read, 222 unclassified
+- **Production hits:** 231 total — 2 write, 6 read, 223 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +217 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +218 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `yield-is-a-verb` — 🟢 LIVE

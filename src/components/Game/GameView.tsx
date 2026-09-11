@@ -319,7 +319,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Use simulation hook ──
   const {
-    gameState, setGameState, tiles, riverPaths, lakeIds, regionData, areaProjection,
+    gameState, setGameState, tiles, riverPaths, lakeIds, areaProjection, realmProjection,
     running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
@@ -4479,8 +4479,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   selectedHex={selectedHexCoord ?? selectedHex}
                   riverPaths={riverPaths}
                   lakeIds={lakeIds}
-                  regionData={regionData}
                   areaProjection={areaProjection}
+                  realmProjection={realmProjection}
                   locations={locationNodes}
                   anomalies={anomalyNodes}
                   roadPaths={roadPaths}

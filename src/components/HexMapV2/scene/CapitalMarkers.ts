@@ -1,21 +1,21 @@
 /**
- * CapitalMarkers.ts — Red dot markers at political capital hexes.
+ * CapitalMarkers.ts — a dot where each Realm's court sits.
  *
- * Renders capital dots as THREE.Points objects:
- *   - Domain capitals: larger dots (size 6)
- *   - Province-only capitals: smaller dots (size 3)
+ * **One tier since THR-1155.** The layer used to draw two sizes of dot from worldgen's
+ * province list: a big one on a domain's capital hex and a small one on every other
+ * province's. Provinces are not objects the player can act on, so the small tier is
+ * gone; what remains marks the seat of a **Realm** — the town its `controls` edge
+ * carries `role: 'seat'` on, read through `realmProjection`. A Realm whose seat is
+ * sacked and re-stamped moves its dot, which is the same promise the border makes.
  *
- * Two separate THREE.Points objects are returned in a THREE.Group
- * since PointsMaterial doesn't support per-point sizes.
- *
- * NFP #1 Tunability: All sizes and colors in named constants.
- * NFP #4 Fail-soft: Empty provinces/domains produce empty group.
- * NFP #7 Performance: Two Points objects regardless of capital count.
+ * NFP #1 Tunability: sizes and colors in named constants.
+ * NFP #4 Fail-soft: a Realm with no seat (it holds nothing seatable) contributes no
+ * dot; an empty projection produces an empty group.
+ * NFP #7 Performance: one THREE.Points object regardless of Realm count.
  */
 
 import * as THREE from 'three';
-import type { RegionData } from '../../../engine/regionTypes';
-import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
+import type { RealmProjection } from '../../../engine/realmProjection';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
@@ -23,11 +23,8 @@ import { getActivePalette } from '../palette/activePalette';
 
 // ─── Capital marker constants (NFP #1: Tunability) ────────────────────────────
 
-/** Pixel size of domain capital dots (sizeAttenuation: false = screen pixels) */
-const DOMAIN_CAPITAL_SIZE = 6;
-
-/** Pixel size of province-only capital dots */
-const PROVINCE_CAPITAL_SIZE = 3;
+/** Pixel size of a Realm seat dot (sizeAttenuation: false = screen pixels) */
+const REALM_SEAT_SIZE = 6;
 
 /** Z offset: above borders (0.035), below labels */
 const CAPITAL_Z = 0.04;
@@ -35,62 +32,42 @@ const CAPITAL_Z = 0.04;
 // ─── Factory ─────────────────────────────────────────────────────────────────
 
 /**
- * Create red dot capital markers for all political capitals.
+ * Create the seat markers for every Realm with a seated court.
  *
- * @param regionData - Region data with provinces and domains
- * @returns THREE.Group containing up to two THREE.Points (domain + province-only)
+ * @param realmProjection - The political partition, projected from `controls` (THR-1155)
+ * @returns THREE.Group containing one THREE.Points, or empty when no Realm is seated
  */
-export function createCapitalMarkers(regionData: RegionData): THREE.Group {
+export function createCapitalMarkers(realmProjection: RealmProjection): THREE.Group {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.LOCATIONS;
 
-  const { provinces, domains } = regionData;
-
-  // NFP #4 Fail-soft: empty input produces empty group
-  if (provinces.length === 0) return group;
-
   const size = HEX_CONSTANTS.HEX_SIZE;
+  const positions: number[] = [];
 
-  // Determine which provinces are domain capitals
-  const domainCapitalHexKeys = new Set<string>();
-  for (const domain of domains) {
-    domainCapitalHexKeys.add(hexKeyFromCoord(domain.capitalHex));
+  for (const realm of realmProjection.realms) {
+    // A court with no hall draws no dot rather than a dot at the origin — the
+    // fail-soft table permits the state, and (0,0) is a real hex.
+    if (!realm.seatHex) continue;
+    const { x: wx, y: wy } = hexToWorld(realm.seatHex, size);
+    positions.push(wx, wy, CAPITAL_Z);
   }
 
-  const domainPositions: number[] = [];
-  const provincePositions: number[] = [];
+  // NFP #4 Fail-soft: empty input produces an empty group
+  if (positions.length === 0) return group;
 
-  for (const province of provinces) {
-    const { x: wx, y: wy } = hexToWorld(province.capitalHex, size);
-    const hKey = hexKeyFn(province.capitalHex.col, province.capitalHex.row);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
-    if (domainCapitalHexKeys.has(hKey)) {
-      domainPositions.push(wx, wy, CAPITAL_Z);
-    } else {
-      provincePositions.push(wx, wy, CAPITAL_Z);
-    }
-  }
+  const mat = new THREE.PointsMaterial({
+    color: getActivePalette().capitalColor,
+    size: REALM_SEAT_SIZE,
+    sizeAttenuation: false,
+    vertexColors: false,
+  });
 
-  const addPoints = (positions: number[], dotSize: number): void => {
-    if (positions.length === 0) return;
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-
-    const mat = new THREE.PointsMaterial({
-      color: getActivePalette().capitalColor,
-      size: dotSize,
-      sizeAttenuation: false,
-      vertexColors: false,
-    });
-
-    const points = new THREE.Points(geo, mat);
-    points.renderOrder = RENDER_ORDER.LOCATIONS;
-    group.add(points);
-  };
-
-  addPoints(domainPositions, DOMAIN_CAPITAL_SIZE);
-  addPoints(provincePositions, PROVINCE_CAPITAL_SIZE);
+  const points = new THREE.Points(geo, mat);
+  points.renderOrder = RENDER_ORDER.LOCATIONS;
+  group.add(points);
 
   return group;
 }

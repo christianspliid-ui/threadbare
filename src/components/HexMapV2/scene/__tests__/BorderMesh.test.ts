@@ -1,7 +1,18 @@
+/**
+ * The red border and the seat markers, read from the political projection (THR-1155).
+ *
+ * These assertions moved from `RegionData`'s per-hex political stamps to
+ * `RealmProjection`. The shape of the suite is the same because the geometry is: what
+ * changed is that the input can now differ between two ticks of one world, which is why
+ * the last test here builds two projections and asserts the geometry differs — the
+ * property the old layer could not have, since a domain stamp was written once at
+ * worldgen and never again.
+ */
+
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import type { HexTile, TerrainType } from '../../../../types';
-import type { RegionData } from '../../../../engine/regionTypes';
+import type { RealmProjection, RealmProjectionEntry } from '../../../../engine/realmProjection';
 import { createBorderMesh } from '../BorderMesh';
 import { createCapitalMarkers } from '../CapitalMarkers';
 
@@ -15,143 +26,138 @@ function makeTile(col: number, row: number, terrain: TerrainType = 'grassland'):
   };
 }
 
-/** Build a minimal RegionData for testing */
-function makeRegionData(
-  hexProvinceId: Map<string, number>,
-  hexDomainId: Map<string, number>,
-  provinces: RegionData['provinces'] = [],
-  domains: RegionData['domains'] = [],
-): RegionData {
+/**
+ * Build a projection from a `"col,row" → realmId` map, deriving the per-Realm entries
+ * from it so the two halves cannot disagree — a fixture that let them would be
+ * verifying its own fiction rather than the layer.
+ */
+function makeProjection(
+  hexRealmId: Map<string, string>,
+  seats: Record<string, { col: number; row: number }> = {},
+): RealmProjection {
+  const byRealm = new Map<string, RealmProjectionEntry>();
+  for (const [key, realmId] of hexRealmId) {
+    const [col, row] = key.split(',').map(Number);
+    let entry = byRealm.get(realmId);
+    if (!entry) {
+      entry = {
+        id: realmId,
+        name: realmId,
+        seatHex: seats[realmId],
+        seatLocationId: seats[realmId] ? `loc_${realmId}` : null,
+        heldLocationIds: [`loc_${realmId}`],
+        hexes: [],
+      };
+      byRealm.set(realmId, entry);
+    }
+    entry.hexes.push({ col, row });
+  }
   return {
-    geographicRegions: [],
-    provinces,
-    domains,
-    labels: [],
-    hexRegionId: new Map(),
-    hexProvinceId,
-    hexDomainId,
+    realms: [...byRealm.values()],
+    hexRealmId,
+    unclaimedHexes: 0,
   };
 }
 
 // ─── createBorderMesh Tests ───────────────────────────────────────────────────
 
 describe('createBorderMesh', () => {
-  it('returns an object with domainMesh and provinceMesh as THREE.Mesh instances', () => {
+  it('returns one realmMesh as a THREE.Mesh instance', () => {
     const tiles = [makeTile(0, 0), makeTile(1, 0)];
+    const projection = makeProjection(new Map([['0,0', 'faction_0'], ['1,0', 'faction_1']]));
 
-    const hexProvinceId = new Map<string, number>([
-      ['0,0', 0],
-      ['1,0', 1],
-    ]);
-    const hexDomainId = new Map<string, number>([
-      ['0,0', 0],
-      ['1,0', 0],
-    ]);
+    const result = createBorderMesh(projection, tiles);
 
-    const regionData = makeRegionData(hexProvinceId, hexDomainId);
-    const result = createBorderMesh(regionData, tiles, 4);
-
-    expect(result.domainMesh).toBeInstanceOf(THREE.Mesh);
-    expect(result.provinceMesh).toBeInstanceOf(THREE.Mesh);
+    expect(result.realmMesh).toBeInstanceOf(THREE.Mesh);
   });
 
-  it('produces >0 vertices when two adjacent hexes belong to different provinces', () => {
+  it('produces >0 vertices when two adjacent hexes are claimed by different Realms', () => {
     const cols = 3;
     const tiles: HexTile[] = [];
-    const hexProvinceId = new Map<string, number>();
-    const hexDomainId = new Map<string, number>();
+    const hexRealmId = new Map<string, string>();
 
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < cols; c++) {
         tiles.push(makeTile(c, r));
-        const provinceId = c < 2 ? 0 : 1;
-        hexProvinceId.set(`${c},${r}`, provinceId);
-        hexDomainId.set(`${c},${r}`, 0); // same domain
+        hexRealmId.set(`${c},${r}`, c < 2 ? 'faction_0' : 'faction_1');
       }
     }
 
-    const regionData = makeRegionData(hexProvinceId, hexDomainId);
-    const result = createBorderMesh(regionData, tiles, cols);
+    const result = createBorderMesh(makeProjection(hexRealmId), tiles);
 
-    const pos = result.provinceMesh.geometry.getAttribute('position');
+    const pos = result.realmMesh.geometry.getAttribute('position');
     expect(pos).toBeDefined();
     expect(pos.count).toBeGreaterThan(0);
   });
 
-  it('produces >0 vertices when two adjacent hexes belong to different domains', () => {
-    const cols = 2;
+  it('a claimed hex beside unclaimed ground carries a border — wilderness has an edge', () => {
     const tiles = [makeTile(0, 0), makeTile(1, 0)];
-    const hexProvinceId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
-    const hexDomainId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
+    // Only the first hex is claimed; the second is wilderness.
+    const result = createBorderMesh(makeProjection(new Map([['0,0', 'faction_0']])), tiles);
 
-    const regionData = makeRegionData(hexProvinceId, hexDomainId);
-    const result = createBorderMesh(regionData, tiles, cols);
-
-    const pos = result.domainMesh.geometry.getAttribute('position');
-    expect(pos).toBeDefined();
+    const pos = result.realmMesh.geometry.getAttribute('position');
     expect(pos.count).toBeGreaterThan(0);
   });
 
-  it('REGN-06: geographic-only differences produce zero INTERNAL border geometry (no province/domain difference)', () => {
+  it('one Realm holding every hex draws only its outer ring, never an internal line', () => {
     const cols = 3;
     const tiles: HexTile[] = [];
-    const hexProvinceId = new Map<string, number>();
-    const hexDomainId = new Map<string, number>();
-
+    const hexRealmId = new Map<string, string>();
     for (let r = 0; r < 2; r++) {
       for (let c = 0; c < cols; c++) {
         tiles.push(makeTile(c, r));
-        hexProvinceId.set(`${c},${r}`, 0); // all same province
-        hexDomainId.set(`${c},${r}`, 0);   // all same domain
+        hexRealmId.set(`${c},${r}`, 'faction_0');
       }
     }
 
-    const regionData = makeRegionData(hexProvinceId, hexDomainId);
-    const result = createBorderMesh(regionData, tiles, cols);
+    const all = createBorderMesh(makeProjection(hexRealmId), tiles);
+    const allVertices = all.realmMesh.geometry.getAttribute('position').count;
 
-    // No province borders (province borders are for different provinces within same domain)
-    const provincePos = result.provinceMesh.geometry.getAttribute('position');
-    const provinceVertices = provincePos ? provincePos.count : 0;
-    expect(provinceVertices).toBe(0);
+    // Falsification arm: split the same ground between two Realms and the internal seam
+    // appears. Without this the assertion above would pass on a layer that drew nothing.
+    const split = new Map(hexRealmId);
+    for (const [key] of split) if (key.startsWith('2,')) split.set(key, 'faction_1');
+    const splitVertices = createBorderMesh(makeProjection(split), tiles)
+      .realmMesh.geometry.getAttribute('position').count;
 
-    // Domain border geometry will exist — the outer ring where the domain meets map edge.
-    const domainPos = result.domainMesh.geometry.getAttribute('position');
-    const domainVertices = domainPos ? domainPos.count : 0;
-    expect(domainVertices).toBeGreaterThan(0);
+    expect(allVertices).toBeGreaterThan(0);          // the outer ring
+    expect(splitVertices).toBeGreaterThan(allVertices); // plus the seam
   });
 
-  it('domain border geometry is separate from province border geometry', () => {
-    const cols = 3;
-    const tiles = [makeTile(0, 0), makeTile(1, 0), makeTile(2, 0)];
-    const hexProvinceId = new Map<string, number>([['0,0', 0], ['1,0', 1], ['2,0', 2]]);
-    const hexDomainId = new Map<string, number>([['0,0', 0], ['1,0', 1], ['2,0', 1]]);
-
-    const regionData = makeRegionData(hexProvinceId, hexDomainId);
-    const result = createBorderMesh(regionData, tiles, cols);
-
-    expect(result.domainMesh).not.toBe(result.provinceMesh);
-    expect(result.domainMesh.geometry).not.toBe(result.provinceMesh.geometry);
-  });
-
-  it('uses MeshBasicMaterial on both meshes', () => {
+  it('uses MeshBasicMaterial', () => {
     const tiles = [makeTile(0, 0), makeTile(1, 0)];
-    const hexProvinceId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
-    const hexDomainId = new Map<string, number>([['0,0', 0], ['1,0', 0]]);
+    const result = createBorderMesh(
+      makeProjection(new Map([['0,0', 'faction_0'], ['1,0', 'faction_0']])),
+      tiles,
+    );
 
-    const regionData = makeRegionData(hexProvinceId, hexDomainId);
-    const result = createBorderMesh(regionData, tiles, 2);
-
-    expect(result.provinceMesh.material).toBeInstanceOf(THREE.MeshBasicMaterial);
-    expect(result.domainMesh.material).toBeInstanceOf(THREE.MeshBasicMaterial);
+    expect(result.realmMesh.material).toBeInstanceOf(THREE.MeshBasicMaterial);
   });
 
-  it('hexes with no province assignment are skipped (fail-soft)', () => {
+  it('an empty projection draws nothing and does not throw (fail-soft)', () => {
     const tiles = [makeTile(0, 0), makeTile(1, 0), makeTile(2, 0)];
-    const hexProvinceId = new Map<string, number>([['0,0', 0]]); // only first hex assigned
-    const hexDomainId = new Map<string, number>([['0,0', 0]]);
+    const empty: RealmProjection = { realms: [], hexRealmId: new Map(), unclaimedHexes: 3 };
 
-    const regionData = makeRegionData(hexProvinceId, hexDomainId);
-    expect(() => createBorderMesh(regionData, tiles, 3)).not.toThrow();
+    expect(() => createBorderMesh(empty, tiles)).not.toThrow();
+    const pos = createBorderMesh(empty, tiles).realmMesh.geometry.getAttribute('position');
+    expect(pos ? pos.count : 0).toBe(0);
+  });
+
+  it('the border moves when a hex changes hands — the property the stamp could not have', () => {
+    const tiles = [makeTile(0, 0), makeTile(1, 0), makeTile(2, 0)];
+
+    const before = new Map([['0,0', 'faction_0'], ['1,0', 'faction_0'], ['2,0', 'faction_1']]);
+    const after = new Map([['0,0', 'faction_0'], ['1,0', 'faction_1'], ['2,0', 'faction_1']]);
+
+    const posOf = (m: Map<string, string>): number[] => {
+      const attr = createBorderMesh(makeProjection(m), tiles).realmMesh
+        .geometry.getAttribute('position');
+      return Array.from(attr.array as Float32Array);
+    };
+
+    // The seam sat between hexes 1 and 2; now it sits between 0 and 1, so the geometry
+    // is different vertex data even though both worlds have exactly one seam.
+    expect(posOf(before)).not.toEqual(posOf(after));
   });
 });
 
@@ -159,68 +165,39 @@ describe('createBorderMesh', () => {
 
 describe('createCapitalMarkers', () => {
   it('returns a THREE.Group', () => {
-    const regionData = makeRegionData(new Map(), new Map(), [], []);
-    const result = createCapitalMarkers(regionData);
+    const result = createCapitalMarkers({ realms: [], hexRealmId: new Map(), unclaimedHexes: 0 });
     expect(result).toBeInstanceOf(THREE.Group);
   });
 
-  it('returns empty group when no provinces exist', () => {
-    const regionData = makeRegionData(new Map(), new Map(), [], []);
-    const result = createCapitalMarkers(regionData);
+  it('returns an empty group when no Realm exists', () => {
+    const result = createCapitalMarkers({ realms: [], hexRealmId: new Map(), unclaimedHexes: 0 });
     expect(result.children.length).toBe(0);
   });
 
-  it('produces Points with position count matching number of capital hexes', () => {
-    const provinces: RegionData['provinces'] = [
-      {
-        id: 0, cultureId: 'human', capitalHex: { col: 0, row: 0 },
-        geographicRegionIds: [], hexes: [{ col: 0, row: 0 }],
-        centroid: { col: 0, row: 0 }, name: 'Province A',
-      },
-      {
-        id: 1, cultureId: 'elven', capitalHex: { col: 2, row: 0 },
-        geographicRegionIds: [], hexes: [{ col: 2, row: 0 }],
-        centroid: { col: 2, row: 0 }, name: 'Province B',
-      },
-    ];
+  it('produces one point per seated Realm', () => {
+    const projection = makeProjection(
+      new Map([['0,0', 'faction_0'], ['2,0', 'faction_1']]),
+      { faction_0: { col: 0, row: 0 }, faction_1: { col: 2, row: 0 } },
+    );
 
-    const domains: RegionData['domains'] = [
-      {
-        id: 0, cultureId: 'human', capitalHex: { col: 0, row: 0 },
-        provinceIds: [0], centroid: { col: 0, row: 0 }, name: 'Domain A',
-      },
-    ];
+    const result = createCapitalMarkers(projection);
+    const pointChildren = result.children.filter(c => c instanceof THREE.Points) as THREE.Points[];
+    expect(pointChildren.length).toBe(1);
 
-    const regionData = makeRegionData(new Map(), new Map(), provinces, domains);
-    const result = createCapitalMarkers(regionData);
-
-    const pointChildren = result.children.filter(c => c instanceof THREE.Points);
-    expect(pointChildren.length).toBeGreaterThan(0);
-
-    let totalPoints = 0;
-    for (const child of pointChildren) {
-      const pos = (child as THREE.Points).geometry.getAttribute('position');
-      if (pos) totalPoints += pos.count;
-    }
-    expect(totalPoints).toBe(provinces.length);
+    const count = pointChildren[0].geometry.getAttribute('position').count;
+    expect(count).toBe(2);
   });
 
-  it('uses PointsMaterial with sizeAttenuation: false', () => {
-    const provinces: RegionData['provinces'] = [
-      {
-        id: 0, cultureId: 'human', capitalHex: { col: 0, row: 0 },
-        geographicRegionIds: [], hexes: [{ col: 0, row: 0 }],
-        centroid: { col: 0, row: 0 }, name: 'Province A',
-      },
-    ];
+  it('a Realm with no seat contributes no dot — never one at the origin', () => {
+    // faction_1 holds ground but has no seat; (0,0) is a real hex, so a fallback there
+    // would be a marker in the wrong place rather than a missing one.
+    const projection = makeProjection(
+      new Map([['0,0', 'faction_0'], ['2,0', 'faction_1']]),
+      { faction_0: { col: 0, row: 0 } },
+    );
 
-    const regionData = makeRegionData(new Map(), new Map(), provinces, []);
-    const result = createCapitalMarkers(regionData);
-
-    const pointsChild = result.children.find(c => c instanceof THREE.Points) as THREE.Points | undefined;
-    expect(pointsChild).toBeDefined();
-    const mat = pointsChild!.material as THREE.PointsMaterial;
-    expect(mat).toBeInstanceOf(THREE.PointsMaterial);
-    expect(mat.sizeAttenuation).toBe(false);
+    const result = createCapitalMarkers(projection);
+    const points = result.children.filter(c => c instanceof THREE.Points) as THREE.Points[];
+    expect(points[0].geometry.getAttribute('position').count).toBe(1);
   });
 });

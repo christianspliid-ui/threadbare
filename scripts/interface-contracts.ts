@@ -182,6 +182,59 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1155 slice 1. Measured on `main` before the change: the flood-fill left 22-198 land hexes with no region across seeds 42/99/7 at all four map sizes, and the watershed left 0-24 - so BOTH partitions had holes, in different places, and `gameInit` joined them by list position. Two defects surfaced on the way and are fixed here rather than filed. (1) The watershed split pass never pruned `hexSet`, so a later chunk BFS re-collected an earlier chunk hexes and listed them twice: 147 hexes in two clusters on a seed-42 medium world, 1735 in two or three on an epic one, which inflated every split region hexes.length, its label-size gate and its Area hexCount. (2) `edgeBorderCost` read `geoParams.elevation` unguarded, which only became reachable from fixture tiles once the watershed was the one detector. Coverage is asserted on GENERATED worlds, never a fixture, because the holes were a property of real terrain - islands no province capital sat on - and a hand-built grid would not have had one. The controlled arm builds exactly such an island and confirms the nearest-cluster fill is what closes it, not the assertion. `effectScope('region')` was a radius-4 disc around the caster and is now real Area membership, tested against a fixture where the two answers disagree in both directions. Tests: `src/engine/__tests__/worldSeed.areas.test.ts` (16), `effectScope.region.test.ts` (3), `GeoBorderMesh.test.ts` (6), `RegionLabelOverlay.area.test.tsx` (3), `regionLabels.test.ts` (17). Full suite 19855 green; heavy lane 202 green; 30-tick seed-42 smoke reached tick 30, 495 agents, 61 events.",
     },
   },
+  // -- The Realms' holdings -> the political map (THR-1155 slice 2) ----------
+  // The failure this row exists to make impossible: the red border could not move.
+  // It was drawn from `RegionData.hexDomainId`, a per-hex stamp written once at
+  // worldgen, so a nation's extent on screen was a picture of a decision taken
+  // before tick 0 — and no runtime writer of a faction `controls` edge could have
+  // changed it even if one had existed. The border is a projection of the towns
+  // Realms hold now, owned by `SimulationRuntime` and rebuilt on
+  // `structuralCacheVersion`, with a fingerprint belt so a writer that forgets to
+  // bump is traced rather than silently stale.
+  {
+    id: 'realm-holdings-to-political-map',
+    producerSystem: FACTIONS,
+    consumerSystem: WORLDGEN,
+    intent:
+      "The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth.",
+    ulTerms: ['Realm', 'Faction', 'Location'],
+    // The contract is a NEGATIVE first: no module may store a per-hex realm stamp.
+    // `buildRealmProjection` is the only function that answers which Realm claims a
+    // hex, and `ensureRealmProjection` is the only way to reach it.
+    mechanism: {
+      kind: 'module-export',
+      symbols: [
+        'buildRealmProjection',
+        'ensureRealmProjection',
+        'fingerprintFactionControls',
+        // The producer half's symbol. A Realm's seat is edge-internal data and
+        // `stampRealmSeat` is its only writer — worldgen stamps it, and the guild-hall
+        // reconciliation pass re-stamps it when the town it chose loses its edge. Named
+        // here so this contract's write side is a real grep rather than an assertion.
+        'stampRealmSeat',
+      ],
+      module: 'src/engine/realmProjection.ts',
+    },
+    writeSites: [
+      'src/engine/worldSeed.ts',
+      'src/engine/seedLivingWorld.ts',
+    ],
+    readSites: [
+      'src/engine/realmProjection.ts',
+      'src/engine/simulationRuntime.ts',
+      'src/engine/regionLabels.ts',
+      'src/components/HexMapV2/scene/BorderMesh.ts',
+      'src/components/HexMapV2/scene/CapitalMarkers.ts',
+      'src/components/HexMapV2/scene/GeoBorderMesh.ts',
+      'src/components/Game/hooks/useSimulation.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-11',
+      evidence:
+        "THR-1155 slice 2 step 2. Measured live on a generated seed-42 medium world: three Realms claim 375 of 768 tiles (180 / 60 / 135 hexes from 17 / 10 / 6 held towns) and 393 tiles are unclaimed — water and wilderness, which the old domain stamp had no way to express. Retargeting one `controls` edge (loc_10, faction_1 -> faction_0) and bumping moved 17 hexes of border in the next read (60 -> 43 and 180 -> 197) with `builtAt` advancing 0 -> 1: the first time the political map has ever moved. The belt is falsified, not assumed — a sibling test moves the same edge WITHOUT `touchStructure` and asserts the rebuild traces `reason: 'fingerprint'`, and a third asserts a mortal's `controlType: 'strategic'` edge does not move the fingerprint at all, so a stance never rebuilds the border (THR-1448 owns that question). One defect surfaced on the way and is fixed here rather than filed: `stampRealmSeat` cleared a stale seat through `graph.updateEdge`, which MERGES properties (`graph.ts:208`), so `delete properties.role` was undone on the way in and a re-seated Realm carried `role: 'seat'` on two edges — the projection then reported whichever edge order visited last. Cleared in place now, as `phaseSchismResolution` does, with a test that re-seats onto a city and asserts exactly one seat edge. The province border tier and `borders_province` are deleted, not hidden: *draw only what is held*. Tests: `src/engine/__tests__/realmProjection.test.ts` (12), `BorderMesh.test.ts` (12), `RegionLabelOverlay.realm.test.tsx` (4), `regionLabels.test.ts` (18), `GeoBorderMesh.test.ts` (6). Full suite 1215 files / 19888 green; heavy lane 30 files / 202 green; 30-tick seed-42 smoke reached tick 30, 488 agents, 67 events.",
+    },
+  },
   // ── Diagnostics & Incident Capture → the incident snapshot (THR-1134) ─────
   // This chain was ⚪ UNAUDITED: `tickHealthMonitor` has run unconditionally every
   // tick since it was written, keeping a hundred health reports and a hundred crash

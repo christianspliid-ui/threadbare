@@ -62,6 +62,31 @@ export const REALM_DEFINITION_ID_PREFIX = 'realm.';
 /** The `factionClass` a Realm's node carries. */
 export const REALM_FACTION_CLASS: FactionClass = 'realm';
 
+// ─── The political map's reach (THR-1155 § Engine C) ──────────────────────────
+
+/**
+ * How many hexes from a town it holds a Realm's border reaches.
+ *
+ * Beyond it the hex is **unclaimed** and draws no border — wilderness is real, and a
+ * nation is as large as the ground its towns can hold rather than as large as the
+ * culture region it was drawn inside. Lowering this is how a designer makes the map
+ * emptier; raising it makes neighbours touch. The kill criterion is interleaving: if
+ * two Realms' borders read as noise, this halves before any smoothing is invented
+ * (smoothing is a new design, not a tuning).
+ */
+export const REALM_FILL_RADIUS = 3;
+
+/**
+ * Which Realm takes a hex equidistant from two Realms' held towns.
+ *
+ * `'more_held_locations'` — the Realm holding more Locations absorbs the contested
+ * march, and an exact tie there goes to the lower faction id. Recorded as a constant
+ * because it is a game decision (the larger nation wins the borderland) rather than an
+ * implementation detail, and because a future `'fewer_held_locations'` is a legible
+ * knob for a world where small nations cling harder.
+ */
+export const REALM_TIEBREAK = 'more_held_locations' as const;
+
 // ─── Naming ───────────────────────────────────────────────────────────────────
 
 /**

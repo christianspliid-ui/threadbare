@@ -89,16 +89,17 @@ describe('createGeoBorderMesh — borders follow Area membership', () => {
     expect(vertexCount(fourWay)).toBeGreaterThan(vertexCount(twoWay));
   });
 
-  it('suppresses an Area edge that a political border already draws', () => {
-    // The clutter rule this layer has always had, preserved across the source swap:
-    // where two hexes differ in *both* Area and province, the red political border
-    // carries the line and the dotted one stands down.
+  it('suppresses an Area edge that the realm border already draws', () => {
+    // The clutter rule this layer has always had, preserved across two source swaps:
+    // where two hexes differ in *both* Area and Realm, the red political border carries
+    // the line and the dotted one stands down. THR-1155 moved the suppression from the
+    // province stamp to the realm claim, because provinces are no longer drawn.
     const projection = projectionBy(h => (h.col < 2 ? 'region_0' : 'region_1'));
-    const hexProvinceId = new Map<string, number>();
+    const hexRealmId = new Map<string, string>();
     for (const tile of grid()) {
-      hexProvinceId.set(hexKey(tile.coord.col, tile.coord.row), tile.coord.col < 2 ? 0 : 1);
+      hexRealmId.set(hexKey(tile.coord.col, tile.coord.row), tile.coord.col < 2 ? 'faction_0' : 'faction_1');
     }
-    const suppressed = createGeoBorderMesh(projection, hexProvinceId, grid());
+    const suppressed = createGeoBorderMesh(projection, hexRealmId, grid());
     const unsuppressed = createGeoBorderMesh(projection, new Map(), grid());
     expect(vertexCount(unsuppressed)).toBeGreaterThan(0);
     expect(vertexCount(suppressed)).toBe(0);
