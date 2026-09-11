@@ -36,6 +36,7 @@ import { grantHolding } from './holdings';
 import { instantiateReward } from './rewardPool';
 import { writeGrudge } from './grievance/grudgeEdge';
 import { spawnArmy } from './armySpawning';
+import { REALM_FACTION_CLASS } from '../data/realm-content';
 import { REWARD_POSSESSIONS } from '../data/reward-attachment-catalog';
 import {
   UNDERTAKING_DEFAULT_MARK_SECRET_TYPE,
@@ -532,9 +533,34 @@ export function seedGarrisons(
     const capital = graph.getNode(capitalId);
     if (!capital) continue;
 
-    // The controller *after* W2 — lowest edge id when a capital somehow carries two.
+    // Whose garrison this is: the culture's **Realm**, where one exists (THR-1155).
+    //
+    // This pass predates Realms and read the controller off the capital's `controls`
+    // edges, lowest id first — a proxy for "who holds this seat" that was the best
+    // available when the holder was a nameless generic faction. It is now wrong twice
+    // over on seed 42: the guild-hall reconciliation drops the Realm's edge at a
+    // Location a definition faction calls home, so at two of the three capitals the
+    // Realm holds no edge at all and the *only* remaining holder is the guild. The
+    // captain of the capital's garrison therefore swore to the Arcane Circle at `loc_9`
+    // and to the Temple of Spheres at `loc_1`, and each took the "hold the seat" army
+    // with them — a library guild fielding a host to hold a nation's capital.
+    //
+    // A Realm is the political holder of its culture's ground whether or not a guild
+    // keeps a hall on the seat, so the culture answers the question the edge was only
+    // approximating. The edge rule stays as the fallback for a culture with no Realm
+    // (a bare-`seedWorld` world with no domains — see the mint's legacy note).
+    //
+    // This is why it matters here rather than as a tidy-up: the captain carries
+    // `WORLDGEN_GARRISON_CAPTAIN_IRON`, and ambient NPCs carry no `domainCapabilities`
+    // at all, so the captain is the only member of a Realm's court who can clear
+    // `ARMY_SPAWN_IRON_TIER_MIN`. Losing them to a guild is losing the Realm's only
+    // possible commander.
+    const realmId = graph.getNodesByType('actor').find(
+      n => n.properties.factionClass === REALM_FACTION_CLASS
+        && n.properties.cultureId === cultureId,
+    )?.id;
     const controlEdge = graph.getIncomingEdges(capitalId, 'controls').slice().sort(byId)[0];
-    const factionId = controlEdge?.source;
+    const factionId = realmId ?? controlEdge?.source;
     if (!factionId || !graph.getNode(factionId)) continue;
 
     const captainId = `agent_garrison_${cultureId}`;
@@ -590,7 +616,22 @@ export function seedGarrisons(
         },
       });
 
-      // The faction's ambition, shared when one faction holds two capitals.
+      // The garrison's ambition — the *host's*, not the faction's (THR-1155).
+      //
+      // This node exists because `spawnArmy` requires one to hang the army's own
+      // `pursues` edge on. It used to be given to the faction as well, which was
+      // harmless while exactly one faction per world held a garrison and wanted
+      // nothing else. It stops being harmless the moment every Realm has one:
+      // `phaseFactionAmbitions` scores a want only for a faction with **no** active
+      // `pursues` edge, and this ambition carries `targetNodeId: null`, so it is never
+      // abandoned — it is permanent by construction. Three garrisons would therefore
+      // have pinned all three Realms to `resource_acquisition` for the life of the run
+      // and locked every one of them out of `territorial_expansion`, which is the gate
+      // the whole conquest path opens through. Measured: with the faction edge written,
+      // no Realm held a territorial want at tick 150; without it, `faction_1` does.
+      //
+      // A garrison is a standing commitment, not a nation's want. The host keeps the
+      // seat; what the Realm *wants* is scored from its definition like any faction's.
       const ambitionId = `amb_${factionId}_garrison`;
       if (!graph.getNode(ambitionId)) {
         graph.addNode({
@@ -605,13 +646,6 @@ export function seedGarrisons(
             grievanceDecay: 0,
             createdTick: 0,
           },
-        });
-        graph.addEdge({
-          id: `e_pursues_${factionId}_garrison`,
-          source: factionId,
-          target: ambitionId,
-          type: 'pursues',
-          properties: { priority: 0.5, status: 'active', milestones: [] },
         });
       }
 
