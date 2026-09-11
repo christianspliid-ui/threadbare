@@ -87,6 +87,29 @@ export const REALM_FILL_RADIUS = 3;
  */
 export const REALM_TIEBREAK = 'more_held_locations' as const;
 
+// ─── Conquest (THR-1155 § Engine E) ───────────────────────────────────────────
+
+/**
+ * The siege-victory severity at which the victor's faction **takes** the town.
+ *
+ * `'total'` is today's vacuum threshold, so this constant changes nothing on the way
+ * in: the same sack that used to empty a town now hands it over. A designer who wants
+ * a lesser victory to move the border sets `'major'` here and the border starts moving
+ * at roughly three times the rate — which is the whole knob, because conquest is the
+ * only runtime producer of a faction's `controls` edge.
+ */
+export const REALM_CONQUEST_SEVERITY = 'total' as const;
+
+/**
+ * Prominence of the *takes* / *loses* line in the event feed.
+ *
+ * Above the unthreaded army notifications (0.3) and below a battle's own resolution —
+ * a border moving is worth reading about even when no threaded mortal stood in it,
+ * because the map itself changes shape. There is deliberately no toast: the map moving
+ * *is* the notification (§ UI).
+ */
+export const REALM_TERRITORY_EVENT_SIGNIFICANCE = 0.7;
+
 // ─── Naming ───────────────────────────────────────────────────────────────────
 
 /**

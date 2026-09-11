@@ -107,6 +107,8 @@ export interface TickEvent {
     | 'anomaly_discovered'
   // Army/battle events (TB-073)
     | 'army_mobilization' | 'army_disbanded' | 'battle_started' | 'battle_resolved' | 'siege_established' | 'siege_breach' | 'army_attrition'
+  // A town changed hands, so the political border moved (THR-1155)
+    | 'realm_territory_change'
   // Quintessence events
     | 'dissolution_event'
   // NPC graduation events

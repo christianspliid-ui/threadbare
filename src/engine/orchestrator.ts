@@ -3265,7 +3265,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   timeInlinePhase('battle_detection', s, () => phaseBattleDetection(s));
 
   // Phase 2.357: Battle Tick (TB-073 — process active battles: attrition, momentum, resolution)
-  timeInlinePhase('battle_tick', s, () => phaseBattleTick(s));
+  timeInlinePhase('battle_tick', s, () => phaseBattleTick(s, runtime));
 
   // Phase 2.3575: Lair Escalation (M2.5 — tier upgrades, sphere feedback, spawn)
   timeInlinePhase('lair_escalation', s, () => phaseLairEscalation(s, runtime));

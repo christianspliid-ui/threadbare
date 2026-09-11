@@ -35,6 +35,7 @@ import {
   BREACH_FORTIFICATION_REDUCTION,
 } from '../types/battle';
 import { calculateInitialMomentum, resolveBattle } from './battleResolution';
+import type { SimulationRuntime } from './simulationRuntime';
 import { emitTrace } from './traceBuffer';
 import { hexDistance } from './delivery';
 import type { BattleResolutionType } from '../types/battle';
@@ -140,7 +141,10 @@ function resolveSiegeFocusCourtPosition(
   const attackerFaction = state.graph.getOutgoingEdges(bs.attackerArmyId, 'member_of')[0]?.target;
   if (attackerFaction) siegeFactionIds.add(attackerFaction);
   if (bs.settlementId) {
-    const defenderFaction = state.graph.getOutgoingEdges(bs.settlementId, 'controlled_by')[0]?.target;
+    // THR-1155: was `controlled_by`, an unregistered edge whose only writer was a test
+    // fixture — so the besieged town never joined the siege's faction set at all. The
+    // holder is the `controls` source, and this read is live for the first time.
+    const defenderFaction = state.graph.getIncomingEdges(bs.settlementId, 'controls')[0]?.source;
     if (defenderFaction) siegeFactionIds.add(defenderFaction);
   }
 
@@ -301,7 +305,7 @@ export function createSiegeNode(
  * Process one tick of an active siege.
  * Extends tickBattle with siege-specific pacing and regional encounters.
  */
-export function tickSiege(state: GameState, siegeNodeId: string): void {
+export function tickSiege(state: GameState, siegeNodeId: string, runtime?: SimulationRuntime): void {
   const graph = state.graph;
   const siegeNode = graph.getNode(siegeNodeId);
   if (!siegeNode) return;
@@ -316,7 +320,7 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
   // Get attacker army
   const attackerNode = graph.getNode(bs.attackerArmyId);
   if (!attackerNode) {
-    resolveBattle(state, siegeNodeId, 'defender_victory');
+    resolveBattle(state, siegeNodeId, 'defender_victory', runtime);
     return;
   }
   const attackerState = attackerNode.properties.armyState as ArmyState;
@@ -491,18 +495,18 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
   if (Math.abs(newMomentum) >= SIEGE_RESOLUTION_THRESHOLD) {
     const resolutionType: BattleResolutionType = newMomentum > 0
       ? 'attacker_victory' : 'defender_victory';
-    resolveBattle(state, siegeNodeId, resolutionType);
+    resolveBattle(state, siegeNodeId, resolutionType, runtime);
     return;
   }
 
   if (ticksElapsed >= SIEGE_MAX_DURATION) {
     // Stalemate on timeout — attacker withdraws
-    resolveBattle(state, siegeNodeId, 'stalemate');
+    resolveBattle(state, siegeNodeId, 'stalemate', runtime);
     return;
   }
 
   if (newAttackerQ <= 0) {
-    resolveBattle(state, siegeNodeId, 'defender_victory');
+    resolveBattle(state, siegeNodeId, 'defender_victory', runtime);
     return;
   }
 }
@@ -653,8 +657,10 @@ function selectRegionalEncounterType(
   // Allied with defender?
   const defenderFaction = graph.getOutgoingEdges(bs.defenderArmyId, 'member_of')[0]?.target;
   const settleNode = bs.settlementId ? graph.getNode(bs.settlementId) : null;
+  // THR-1155: same unregistered-edge sweep — a townsfolk's allegiance to the besieged
+  // town's holder now resolves, where the `controlled_by` read always returned undefined.
   const settleFaction = settleNode
-    ? graph.getOutgoingEdges(bs.settlementId!, 'controlled_by')[0]?.target
+    ? graph.getIncomingEdges(bs.settlementId!, 'controls')[0]?.source
     : undefined;
   const isDefenderAllied = (actorFaction !== undefined) &&
     (actorFaction === defenderFaction || actorFaction === settleFaction);

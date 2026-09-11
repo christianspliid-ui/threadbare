@@ -356,18 +356,40 @@ describe('applyAftermath', () => {
     expect(() => applyAftermath(state, bs, 'attacker_victory')).not.toThrow();
   });
 
-  it('removes controls edges on total destruction (power vacuum)', () => {
+  it('hands the sacked town to the victor on total destruction (THR-1155 conquest)', () => {
     const graph = new WorldGraph();
     setupSettlementBattle(graph, { loserQ: 2, loserQMax: 30, addControlEdge: true });
     const state = makeState(10, graph);
     const bs = makeBattleState({ momentum: TOTAL_DESTRUCTION_THRESHOLD });
 
-    // Verify edge exists before
+    // Verify edge exists before, held by the defender
     expect(graph.getIncomingEdges('settlement1', 'controls')).toHaveLength(1);
+    expect(graph.getIncomingEdges('settlement1', 'controls')[0].source).toBe('f_def');
 
     applyAftermath(state, bs, 'attacker_victory');
 
-    // Controls edge should be removed
+    // This assertion was `toHaveLength(0)` until THR-1155. A sack used to empty the town
+    // into a power vacuum, which meant the political border could only ever shrink — the
+    // map had no way to record that anyone had *won* anything. The rule now is *the army
+    // that sacks a town takes it for its faction*.
+    const held = graph.getIncomingEdges('settlement1', 'controls');
+    expect(held).toHaveLength(1);
+    expect(held[0].source).toBe('f_atk');
+    expect(held[0].properties.via).toBe('conquest');
+  });
+
+  it('still falls into the vacuum when the victor belongs to no faction', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph, { loserQ: 2, loserQMax: 30, addControlEdge: true });
+    // A rebel host or a monster horde sacks a town; it does not rule it. This is the
+    // arm that keeps the conquest assertion above meaningful — without it, "the town is
+    // held afterwards" could be true of every sack regardless of who won.
+    graph.removeEdge('e_mem_a');
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: TOTAL_DESTRUCTION_THRESHOLD });
+
+    applyAftermath(state, bs, 'attacker_victory');
+
     expect(graph.getIncomingEdges('settlement1', 'controls')).toHaveLength(0);
   });
 
