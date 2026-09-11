@@ -95,7 +95,7 @@ A Faction may carry a **class** (`factionClass`) naming what kind of Faction it 
 ### Realm
 
 **Aliases:** nation
-**Also see:** `[[Faction]]`, `[[Area]]`, `[[Culture]]`, `[[Holding]]`, `[[World Object]]`
+**Also see:** `[[Faction]]`, `[[Area]]`, `[[Culture]]`, `[[hold]]`, `[[World Object]]`
 **Status:** canonical
 
 A **Faction whose class is *realm*** (`factionClass: 'realm'`): the landed polity of a culture, holding a territory of Locations through `controls` edges, seated at a capital Location, with a court rank ladder and a leader the succession seam derives or seats. What the map draws as a red political border is the towns the Realm holds, projected onto hexes. A Realm is a Faction in every mechanical respect — ambitions, quests, encounters, reputation, war — and the class only says what kind of Faction it is.
@@ -474,10 +474,10 @@ When you read `'broken'` in a `QuintessenceThresholdState` comparison, that is t
 ### Undertaking Verb
 
 **Aliases:** verb × object, cell (a verb on one object type), `UndertakingVerb` / `UndertakingVerbVariant` (engine)
-**Also see:** `[[Undertaking]]`, `[[Work]]`, `[[World Object]]`, `[[Rivalry]]`, `[[Grudge]]`
+**Also see:** `[[Undertaking]]`, `[[Work]]`, `[[World Object]]`, `[[Rivalry]]`, `[[Grudge]]`, `[[Motive gate]]`
 **Status:** canonical
 
-The six things a mortal's work can do to a thing the world keeps (Christian, 2026-09-03): **Create** makes one; **Change** alters one — *raise* one's own, *lower* another's; **Use** spends what one gives; **Control** takes one — *claim* an unheld one, *seize* another's; **Destroy** unmakes one (the object as it was is gone — ruined, razed, disbanded, split, exposed); **Observe** learns one. The four data verbs plus the two the game adds, ownership and yield. Lower, seize and destroy are motive-gated — licensed only by a `[[Grudge]]`, a `[[Rivalry]]`, a contested ambition or a faction war held toward whoever owns the target. A *cell* is one verb on one `[[World Object]]` kind; the grid of every kind × every verb is generated (`Docs/canon/undertaking-grid.generated.md`). The plain verb is the model's; the word the player reads is the object's (a warband is *raised*, a masterwork *crafted*).
+The six things a mortal's work can do to a thing the world keeps (Christian, 2026-09-03): **Create** makes one; **Change** alters one — *raise* one's own, *lower* another's; **Use** spends what one gives; **Control** takes one — *claim* an unheld one, *seize* another's; **Destroy** unmakes one (the object as it was is gone — ruined, razed, disbanded, split, exposed); **Observe** learns one. The four data verbs plus the two the game adds, ownership and yield. Lower, seize and destroy are `[[Motive gate]]`d — licensed only by a `[[Grudge]]`, a `[[Rivalry]]`, a contested ambition or a faction war held toward whoever owns the target. A *cell* is one verb on one `[[World Object]]` kind; the grid of every kind × every verb is generated (`Docs/canon/undertaking-grid.generated.md`). The plain verb is the model's; the word the player reads is the object's (a warband is *raised*, a masterwork *crafted*).
 
 ---
 
@@ -754,3 +754,74 @@ A `[[Grievance]]`'s decaying urgency. It opens at the founding harm's magnitude 
 **Player-facing as three words, never a numeral:** *burning* (≥ `GRIEVANCE_HEAT_BAND_BURNING`) · *hot* (≥ `GRIEVANCE_HEAT_BAND_HOT`) · *cooling* (below it, down to the demotion threshold — a real window an agent lives in, not a floor label nobody sees). Heat is a real quantity in the engine and the player has no instrument that reads it. The thresholds live in tuning and the words in content, so moving a threshold moves which word is on screen without either file learning the other's job. The band function fails soft over the whole real line rather than the 0–1 band alone: an over-ceiling heat reads `burning`, a negative or non-finite one reads `cooling` — a grievance rendering no word at all would be worse than one rendering the mildest, since the drive is on the board either way.
 
 Code anchors: `src/data/grievance-constants.ts` (the tuning constants plus the two band thresholds), `src/data/grievance-prose.ts` (`getGrievanceHeatWord`, `GrievanceHeatWord`), `src/engine/grievance/grievanceLifecycle.ts` (`decayGrievance`, `grievanceHeat01`, `demoteGrievanceToGrudge`).
+
+---
+
+### hold
+
+**Aliases:** the `controls` edge; `StrategicControlState`; "holds the Saltway"
+**Also see:** `[[Freehold]]`, `[[Undertaking]]`, `[[Undertaking Verb]]`, `[[Work]]`, `[[Motive gate]]`
+**Status:** canonical (seated by THR-1449, delegated seating 2026-09-11)
+
+A place or resource kept by a mortal's ongoing **commitment** — the `controls` edge, backed by a `StrategicControlState` that records when control was established, how long it has gone unworked (`neglectTicks`), whether it is still `active`, and how far it has decayed (`degradation`, 0 healthy → 1 about to collapse).
+
+**A hold is a commitment, not a possession, and that is the whole distinction from `[[Freehold]]`.** A freehold is *owned* — the `owns` edge is its authority and it persists whether or not anyone tends it. A hold is *kept*, renewed by working it, and it degrades when it is not. The two words are never used for each other: if the question is "whose is it?" the answer is a freehold; if the question is "who is still holding it?" the answer is a hold.
+
+**Upkeep is the live gap, not a documented behaviour.** `neglectTicks` is incremented and never reset by any shipped path, so degradation is currently one-directional — tracked as THR-1287. The word is seated on what the model *means* (renewed by working it) rather than on today's arithmetic, so the entry does not have to move when the reset lands.
+
+Code anchors: `src/types/strategicAction.ts` (`StrategicControlState`), `src/types/graph.ts` (`'controls'`), `src/engine/undertakingMotive.ts` (`resolveTargetOwners` reads `controls` first when asking who holds a target).
+
+---
+
+### Agreement
+
+**Aliases:** favour (`owes_favor`) · mark (`knows_secret_of`); "leverage"
+**Also see:** `[[Means]]`, `[[Reputation]]`, `[[Undertaking Verb]]`, `[[Grievance]]`
+**Status:** canonical (seated by THR-1441, delegated seating 2026-09-11)
+
+A standing obligation between two actors, in two classes: a **favour** (`owes_favor`, debtor → creditor) and a **mark** (`knows_secret_of`, discoverer → secret subject). Both are what one actor can call on from another, and together they are the game's leverage economy.
+
+**An Agreement is an edge, never a node.** There is no agreement object to spawn, look up, or attach — the relation *is* the thing, which is why theft of one is a `retargetEdgeSource` (the edge moves, its id survives for every reader keyed on it, and the holder genuinely loses it) rather than a copy. A copied secret would make theft free.
+
+**The two classes are held from opposite ends, and the difference is not cosmetic.** An edge object is held by its **source**, which is right for seizing a mark and wrong for calling in a favour — so the `use` and `destroy` verbs carry `ownershipOverride: 'any'` and the eligibility hooks gate per class. Reading "the holder" off the edge direction without asking the class is how a favour ends up owned by the wrong party.
+
+Code anchors: `src/types/graph.ts` (`'owes_favor'` / `OwesFavorEdgeProperties`, `'knows_secret_of'` / `KnowsSecretOfEdgeProperties`), `src/data/undertaking-objects.ts` (the Agreement kind row and its `ownedVia`).
+
+---
+
+### Means
+
+**Aliases:** the `wealth` property (engine literal only)
+**Also see:** `[[Agreement]]`, `[[Freehold]]`, `[[Work]]`, `[[Reputation]]`
+**Status:** canonical (seated by THR-1441, delegated seating 2026-09-11)
+
+The player word for what an actor can afford — the narrative face of the engine's `wealth`. Banked through `bankWealth`, the single funnel both the active harvest and the passive tithe write through.
+
+**Always a tier word, never a number (Laws 4 and 13).** The quantity is real in the engine and the player has no instrument that reads it, so every surface says a band. A numeral on screen is the defect, not a precision improvement — the same engine-term/narrative-term split `[[Freehold]]`/`'holding'` and `[[Group]]`/`[[Company]]` already use.
+
+Code anchors: `src/engine/holdingIncome.ts` (`bankWealth`, `payHoldingIncome`).
+
+---
+
+### Motive gate
+
+**Aliases:** the destroy motive gate; `motiveGate` (template field); `evaluateMotiveGate`
+**Also see:** `[[Undertaking Verb]]`, `[[Grievance]]`, `[[Grudge]]`, `[[Rivalry]]`, `[[hold]]`, `[[Agreement]]`
+**Status:** canonical (seated by THR-1408, delegated seating 2026-09-11)
+
+The licence a destroy verb needs before it may fire: a template naming a `motiveGate` is refused unless the actor holds one of the named motives toward whoever owns the target. **No motiveless demolition** — every destroy is narratable, which is what the downstream grievance minting consumes.
+
+**Four motives, each reading a mechanism the world already writes.** The gate introduces no relation of its own:
+
+- **grudge** — a `hostile_to` edge minted by a specific past injury (its provenance names the harm)
+- **rivalry** — any other standing `hostile_to` from actor toward owner
+- **contested ambition** — actor and owner both actively `pursues` the same ambition node
+- **faction war** — the two factions are declared rivals (`relates_to.isRival`)
+
+*Contested ambition* and *faction war* are senses of this word, not headwords of their own; `[[Grudge]]` and `[[Rivalry]]` are separately seated because they exist outside the gate too.
+
+**Three properties that are easy to get backwards.** The gate is **opt-in** — an ungated template is allowed unconditionally, which is what keeps it additive over the templates that never needed it. An **unowned** target is **refused**, not allowed: a gated verb asked for a reason and the world supplied none, and a destroy that fires unaimed costs the chronicle its "why". And a type may **un-gate** one verb for a relation the actor holds toward the holder (THR-1436 — curing an ally's wound needs no quarrel), consulted before the owner walk and failing closed, so a reader that throws leaves the gate standing.
+
+The result names *which* motive licensed the verb (NFP #2), so a trace can say why a razing was allowed rather than only that it was.
+
+Code anchors: `src/engine/undertakingMotive.ts` (`evaluateMotiveGate`, `holdsMotive`, `resolveTargetOwners`, `resolveGateExemption`), `src/types/strategicAction.ts` (`MotiveKind`, `MotiveGateResult`).

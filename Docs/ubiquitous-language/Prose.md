@@ -131,3 +131,21 @@ The scope a prose field is linted under by the vagueness detectors: `outcome` (p
 **Status:** canonical (added 2026-08-29, THR-1372; calibration verdict THR-1250)
 
 The deterministic prose-QA dimension (`window.__DEBUG.proseQualityReport()`) measuring register drift: sentence length, rare-word density, figurative-image density, interactive-label plainness. **Report-only by settled verdict (THR-1250, 2026-08-25)** — it ranks, it does not identify defects, and a blocking version damaged the prose it protected (THR-899 precedent). Re-open only when the corpus's doctrine-v2 warning count reaches zero *and* a register regression ships through a clean brief.
+
+---
+
+### Motive Receipt
+
+**Aliases:** the `motiveReceipt` node property; `MotiveReceipt`
+**Also see:** `[[Thread Tug]]`, `[[Resolver]]`, `[[Chronicle Entry]]`, `[[Forecast tier]]` (`Encounters.md`)
+**Status:** canonical (seated by THR-633, delegated seating 2026-09-11)
+
+The decision-time causal record behind an agent's encounter choice: the labeled contribution terms the scorer computes every tick and would otherwise discard, kept as the answer to *why did this agent choose this?* It carries the template and location chosen, the top-weighted contributions with their provenance, the intel tier, the expectation, the dominant reach, and the tick it was decided at.
+
+**Prose renders the receipt; it never reconstructs it.** This is the load-bearing rule. Foreshadowing prose, the trace and the debug panel all read the *same* receipt off the *same* node, so "why did this agent choose this?" has one answer everywhere. A resolver that re-derives causality from present state would produce a *plausible* reason rather than the real one, and the two diverge the moment anything in the world moves between decision and render.
+
+**It is a property, not an edge, and it is overwritten per selection.** No system traverses encounter → "agents who chose me because X", so there is nothing for an edge to serve. Because it is overwritten, a receipt is only used when it *matches* the encounter being foreshadowed — a receipt naming a different template or location is rejected and the caller falls to the composed-generic path (fail-soft).
+
+**Three things it is not.** It is not the Intelligence Record — it *reads* that record's reliability to derive its `intelTier`, which is real intel and deliberately not `completionProb`. It is not the funnel scores — it is the surviving, normalized, top-N slice of them. And its `expectation` is a `[[Forecast tier]]`, **reused** rather than re-derived, so the receipt can say what the agent expected going in, not what befell them.
+
+Code anchors: `src/types/foreshadowing.ts` (`MotiveReceipt`, `MotiveContribution`, `MotiveContributionKind`), `src/engine/foreshadowing/motiveReceipt.ts` (the builder), `src/engine/foreshadowing/receiptRead.ts` (the match-or-fall-soft read), `src/engine/foreshadowing/constants.ts` (`RECEIPT_TOP_CONTRIBUTIONS`, `RECEIPT_MIN_WEIGHT`).

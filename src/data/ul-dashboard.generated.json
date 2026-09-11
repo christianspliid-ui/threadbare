@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 52,
+      "termCount": 56,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 37,
+      "termCount": 40,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -38,7 +38,7 @@
       "filename": "Prose.md",
       "title": "Prose",
       "contentAdjacent": true,
-      "termCount": 13,
+      "termCount": 14,
       "blurb": "Content-adjacent shard. Terms covering the prose doctrine (narrator mode, registers), the prose pipeline (resolvers, enrichment, strata, lexicon), and narrative output. *(Shard refreshed 2026-08-29, THR-1372 — it predated the register model and Prose Doctrine v2 entirely; the doctrine-era terms below were added then.)*"
     },
     {
@@ -593,9 +593,9 @@
           "resolvedSlug": null
         },
         {
-          "raw": "Holding",
-          "termName": "Holding",
-          "resolvedSlug": null
+          "raw": "hold",
+          "termName": "hold",
+          "resolvedSlug": "agents#hold"
         },
         {
           "raw": "World Object",
@@ -1531,7 +1531,7 @@
       ],
       "status": "canonical",
       "oneLiner": "create · change (raise | lower) · use · control (claim | seize) · destroy · observe; a *cell* is one verb on one World Object kind, and the grid of all of them is generated",
-      "body": "The six things a mortal's work can do to a thing the world keeps (Christian, 2026-09-03): **Create** makes one; **Change** alters one — *raise* one's own, *lower* another's; **Use** spends what one gives; **Control** takes one — *claim* an unheld one, *seize* another's; **Destroy** unmakes one (the object as it was is gone — ruined, razed, disbanded, split, exposed); **Observe** learns one. The four data verbs plus the two the game adds, ownership and yield. Lower, seize and destroy are motive-gated — licensed only by a `[[Grudge]]`, a `[[Rivalry]]`, a contested ambition or a faction war held toward whoever owns the target. A *cell* is one verb on one `[[World Object]]` kind; the grid of every kind × every verb is generated (`Docs/canon/undertaking-grid.generated.md`). The plain verb is the model's; the word the player reads is the object's (a warband is *raised*, a masterwork *crafted*).",
+      "body": "The six things a mortal's work can do to a thing the world keeps (Christian, 2026-09-03): **Create** makes one; **Change** alters one — *raise* one's own, *lower* another's; **Use** spends what one gives; **Control** takes one — *claim* an unheld one, *seize* another's; **Destroy** unmakes one (the object as it was is gone — ruined, razed, disbanded, split, exposed); **Observe** learns one. The four data verbs plus the two the game adds, ownership and yield. Lower, seize and destroy are `[[Motive gate]]`d — licensed only by a `[[Grudge]]`, a `[[Rivalry]]`, a contested ambition or a faction war held toward whoever owns the target. A *cell* is one verb on one `[[World Object]]` kind; the grid of every kind × every verb is generated (`Docs/canon/undertaking-grid.generated.md`). The plain verb is the model's; the word the player reads is the object's (a warband is *raised*, a masterwork *crafted*).",
       "seeAlso": [
         {
           "raw": "Undertaking",
@@ -1557,6 +1557,11 @@
           "raw": "Grudge",
           "termName": "Grudge",
           "resolvedSlug": "agents#grudge"
+        },
+        {
+          "raw": "Motive gate",
+          "termName": "Motive gate",
+          "resolvedSlug": "agents#motive-gate"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#undertaking-verb",
@@ -2139,6 +2144,161 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#heat",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "hold",
+      "name": "hold",
+      "aliases": [
+        "the `controls` edge; `StrategicControlState`; \"holds the Saltway\""
+      ],
+      "status": "unknown",
+      "oneLiner": "a place kept by a mortal's ongoing commitment (`controls` + `StrategicControlState`), renewed by working it; never the `owns` edge, which is a Freehold",
+      "body": "A place or resource kept by a mortal's ongoing **commitment** — the `controls` edge, backed by a `StrategicControlState` that records when control was established, how long it has gone unworked (`neglectTicks`), whether it is still `active`, and how far it has decayed (`degradation`, 0 healthy → 1 about to collapse).\n\n**A hold is a commitment, not a possession, and that is the whole distinction from `[[Freehold]]`.** A freehold is *owned* — the `owns` edge is its authority and it persists whether or not anyone tends it. A hold is *kept*, renewed by working it, and it degrades when it is not. The two words are never used for each other: if the question is \"whose is it?\" the answer is a freehold; if the question is \"who is still holding it?\" the answer is a hold.\n\n**Upkeep is the live gap, not a documented behaviour.** `neglectTicks` is incremented and never reset by any shipped path, so degradation is currently one-directional — tracked as THR-1287. The word is seated on what the model *means* (renewed by working it) rather than on today's arithmetic, so the entry does not have to move when the reset lands.\n\nCode anchors: `src/types/strategicAction.ts` (`StrategicControlState`), `src/types/graph.ts` (`'controls'`), `src/engine/undertakingMotive.ts` (`resolveTargetOwners` reads `controls` first when asking who holds a target).",
+      "seeAlso": [
+        {
+          "raw": "Freehold",
+          "termName": "Freehold",
+          "resolvedSlug": "agents#freehold"
+        },
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        },
+        {
+          "raw": "Undertaking Verb",
+          "termName": "Undertaking Verb",
+          "resolvedSlug": "agents#undertaking-verb"
+        },
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Motive gate",
+          "termName": "Motive gate",
+          "resolvedSlug": "agents#motive-gate"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#hold",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "agreement",
+      "name": "Agreement",
+      "aliases": [
+        "favour (`owes_favor`) · mark (`knows_secret_of`); \"leverage\""
+      ],
+      "status": "unknown",
+      "oneLiner": "a standing obligation as an *edge*, never a node: a favour (`owes_favor`) or a mark (`knows_secret_of`); the leverage economy, held from opposite ends",
+      "body": "A standing obligation between two actors, in two classes: a **favour** (`owes_favor`, debtor → creditor) and a **mark** (`knows_secret_of`, discoverer → secret subject). Both are what one actor can call on from another, and together they are the game's leverage economy.\n\n**An Agreement is an edge, never a node.** There is no agreement object to spawn, look up, or attach — the relation *is* the thing, which is why theft of one is a `retargetEdgeSource` (the edge moves, its id survives for every reader keyed on it, and the holder genuinely loses it) rather than a copy. A copied secret would make theft free.\n\n**The two classes are held from opposite ends, and the difference is not cosmetic.** An edge object is held by its **source**, which is right for seizing a mark and wrong for calling in a favour — so the `use` and `destroy` verbs carry `ownershipOverride: 'any'` and the eligibility hooks gate per class. Reading \"the holder\" off the edge direction without asking the class is how a favour ends up owned by the wrong party.\n\nCode anchors: `src/types/graph.ts` (`'owes_favor'` / `OwesFavorEdgeProperties`, `'knows_secret_of'` / `KnowsSecretOfEdgeProperties`), `src/data/undertaking-objects.ts` (the Agreement kind row and its `ownedVia`).",
+      "seeAlso": [
+        {
+          "raw": "Means",
+          "termName": "Means",
+          "resolvedSlug": "agents#means"
+        },
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
+        },
+        {
+          "raw": "Undertaking Verb",
+          "termName": "Undertaking Verb",
+          "resolvedSlug": "agents#undertaking-verb"
+        },
+        {
+          "raw": "Grievance",
+          "termName": "Grievance",
+          "resolvedSlug": "agents#grievance"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#agreement",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "means",
+      "name": "Means",
+      "aliases": [
+        "the `wealth` property (engine literal only)"
+      ],
+      "status": "unknown",
+      "oneLiner": "the player word for the engine's `wealth`; always a tier word, never a number (Laws 4/13)",
+      "body": "The player word for what an actor can afford — the narrative face of the engine's `wealth`. Banked through `bankWealth`, the single funnel both the active harvest and the passive tithe write through.\n\n**Always a tier word, never a number (Laws 4 and 13).** The quantity is real in the engine and the player has no instrument that reads it, so every surface says a band. A numeral on screen is the defect, not a precision improvement — the same engine-term/narrative-term split `[[Freehold]]`/`'holding'` and `[[Group]]`/`[[Company]]` already use.\n\nCode anchors: `src/engine/holdingIncome.ts` (`bankWealth`, `payHoldingIncome`).",
+      "seeAlso": [
+        {
+          "raw": "Agreement",
+          "termName": "Agreement",
+          "resolvedSlug": "agents#agreement"
+        },
+        {
+          "raw": "Freehold",
+          "termName": "Freehold",
+          "resolvedSlug": "agents#freehold"
+        },
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#means",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "motive-gate",
+      "name": "Motive gate",
+      "aliases": [
+        "the destroy motive gate; `motiveGate` (template field); `evaluateMotiveGate`"
+      ],
+      "status": "unknown",
+      "oneLiner": "the licence a destroy verb needs: grudge, rivalry, contested ambition or faction war toward the owner; opt-in, and an unowned target is refused",
+      "body": "The licence a destroy verb needs before it may fire: a template naming a `motiveGate` is refused unless the actor holds one of the named motives toward whoever owns the target. **No motiveless demolition** — every destroy is narratable, which is what the downstream grievance minting consumes.\n\n**Four motives, each reading a mechanism the world already writes.** The gate introduces no relation of its own:\n\n- **grudge** — a `hostile_to` edge minted by a specific past injury (its provenance names the harm)\n- **rivalry** — any other standing `hostile_to` from actor toward owner\n- **contested ambition** — actor and owner both actively `pursues` the same ambition node\n- **faction war** — the two factions are declared rivals (`relates_to.isRival`)\n\n*Contested ambition* and *faction war* are senses of this word, not headwords of their own; `[[Grudge]]` and `[[Rivalry]]` are separately seated because they exist outside the gate too.\n\n**Three properties that are easy to get backwards.** The gate is **opt-in** — an ungated template is allowed unconditionally, which is what keeps it additive over the templates that never needed it. An **unowned** target is **refused**, not allowed: a gated verb asked for a reason and the world supplied none, and a destroy that fires unaimed costs the chronicle its \"why\". And a type may **un-gate** one verb for a relation the actor holds toward the holder (THR-1436 — curing an ally's wound needs no quarrel), consulted before the owner walk and failing closed, so a reader that throws leaves the gate standing.\n\nThe result names *which* motive licensed the verb (NFP #2), so a trace can say why a razing was allowed rather than only that it was.\n\nCode anchors: `src/engine/undertakingMotive.ts` (`evaluateMotiveGate`, `holdsMotive`, `resolveTargetOwners`, `resolveGateExemption`), `src/types/strategicAction.ts` (`MotiveKind`, `MotiveGateResult`).",
+      "seeAlso": [
+        {
+          "raw": "Undertaking Verb",
+          "termName": "Undertaking Verb",
+          "resolvedSlug": "agents#undertaking-verb"
+        },
+        {
+          "raw": "Grievance",
+          "termName": "Grievance",
+          "resolvedSlug": "agents#grievance"
+        },
+        {
+          "raw": "Grudge",
+          "termName": "Grudge",
+          "resolvedSlug": "agents#grudge"
+        },
+        {
+          "raw": "Rivalry",
+          "termName": "Rivalry",
+          "resolvedSlug": "agents#rivalry"
+        },
+        {
+          "raw": "hold",
+          "termName": "hold",
+          "resolvedSlug": "agents#hold"
+        },
+        {
+          "raw": "Agreement",
+          "termName": "Agreement",
+          "resolvedSlug": "agents#agreement"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#motive-gate",
       "contentAdjacent": true
     },
     {
@@ -2768,7 +2928,7 @@
         {
           "raw": "Cast",
           "termName": "Cast",
-          "resolvedSlug": "encounters#cast"
+          "resolvedSlug": "encounters#cast-verb"
         },
         {
           "raw": "Target",
@@ -2820,6 +2980,11 @@
           "raw": "Encounter",
           "termName": "Encounter",
           "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "cast (verb)",
+          "termName": "cast (verb)",
+          "resolvedSlug": "encounters#cast-verb"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#cast",
@@ -2871,7 +3036,7 @@
         {
           "raw": "Cast",
           "termName": "Cast",
-          "resolvedSlug": "encounters#cast"
+          "resolvedSlug": "encounters#cast-verb"
         },
         {
           "raw": "Scene",
@@ -3445,6 +3610,111 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#batch-brief",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "cast-verb",
+      "name": "cast (verb)",
+      "aliases": [
+        "to cast; player cast; \"playing a card\""
+      ],
+      "status": "unknown",
+      "oneLiner": "what a god does with a divine action card; rolls the mortal ladder with one asymmetry, a floor at success-at-cost. Unrelated to the noun [Cast](./Encounters.md#cast)",
+      "body": "What a god does with a divine action card: pays its essence price and puts it into the world. **Not related to the noun `[[Cast]]`** — an encounter *has* a cast; a god *casts*. Both words are kept because both are the natural English in their own place, and the collision is defused by always writing the verb lower-case in prose about the player's action.\n\n**A cast rolls the same ladder a mortal does, with one asymmetry: it can never outright fail.** Before THR-728 a player cast auto-succeeded — `resolveUncontestedStep` returned `{ outcome: 'success', probability: 1 }` before consulting capability, difficulty or shapers — so the 82 ascendant-castable templates' authored step difficulties were silently thrown away and the Divine Receipt (THR-727) could report only two of its six bands. Casts now roll for real, and a rolled `failure` or `critical_failure` is raised to **`success_at_cost`**: `onSuccess` still runs, so the essence always bought something. The miracle lands crooked, but it lands. Christian's verdict (chat, 2026-07-24): *\"Yes, with a safety floor.\"*\n\n**The floor is deliberately a second floor, stacked after THR-571's.** The two keep distinguishable trace markers (`[floor↑]`, `[player-floor↑]`) so *\"the incapable scraped through\"* and *\"the god cannot fail\"* are never read as the same event. The upside is untouched — `critical_success` and near-miss pass through; only the bottom is closed off.\n\nCode anchors: `src/engine/stepResolutionCore.ts` (the player floor), `src/data/player-cast-constants.ts` (`PLAYER_CAST_VARIANCE_ENABLED`, `PLAYER_CAST_OUTCOME_FLOOR`), `src/engine/playerCastDispatch.ts` (`preparePlayerCast`, `commitPlayerCast` — the single construction path), `src/engine/playerCastReadout.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Cast",
+          "termName": "Cast",
+          "resolvedSlug": "encounters#cast-verb"
+        },
+        {
+          "raw": "Forecast tier",
+          "termName": "Forecast tier",
+          "resolvedSlug": "encounters#forecast-tier"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#cast-verb",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "forecast-tier",
+      "name": "Forecast tier",
+      "aliases": [
+        "`ForecastTier`; the pre-roll odds word"
+      ],
+      "status": "unknown",
+      "oneLiner": "the five-word **pre-roll** odds reading (*doomed · perilous · uncertain · favorable · fated*); never an outcome word, and never interconverts with one",
+      "body": "The five-word odds reading shown to the player **before** a roll: *doomed · perilous · uncertain · favorable · fated*. It is the game's way of naming a probability without printing one (Laws 4 and 13).\n\n**Pre-roll, and that is the whole distinction from the two outcome vocabularies it is mistaken for.** A Forecast tier is what the odds *look like*; `StepOutcome` and `EncounterOutcomeBand` are what actually *happened*. They are different types over different domains and never interconvert — a `favorable` forecast that resolves `failure` is an ordinary event, not an inconsistency. Reading a forecast word as an outcome word is the recurring error this entry exists to stop.\n\n**It is reused, not re-derived, wherever a system needs \"how did this look going in\".** The `[[Motive Receipt]]`'s `expectation` field is a Forecast tier computed from `completionProb`, which is why the receipt can say what an agent expected rather than only what befell them.\n\nCode anchors: `src/types/resolution.ts` (`ForecastTier`, alongside `OutcomeType` so the contrast is visible at the definition), `src/types/foreshadowing.ts` (`MotiveReceipt.expectation`).",
+      "seeAlso": [
+        {
+          "raw": "cast (verb)",
+          "termName": "cast (verb)",
+          "resolvedSlug": "encounters#cast-verb"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Motive Receipt",
+          "termName": "Motive Receipt",
+          "resolvedSlug": "prose#motive-receipt"
+        },
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#forecast-tier",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "composition-contract",
+      "name": "Composition Contract",
+      "aliases": [
+        "the composition contract; `check:encounter` (the command that runs it)"
+      ],
+      "status": "unknown",
+      "oneLiner": "the encounter line’s authoring gate; shrinking ratchet, no exemptions; not the Undertaking Contract, and it scopes to the `encounter.*` prefix",
+      "body": "The authoring-time contract an encounter template must satisfy to be **composition-complete** — the encounter factory's machine gate. It asks whether a template *declares* its blocks: steps, nudge hand, setting envelope, cast, rewards, aftermath, systems quota, images, register.\n\n**Not the `[[Undertaking Contract]]`, and passing one says nothing about the other.** They share a shape — same blocks-and-violations structure, same warn channel that prints without failing — over different substrates. **Law 56 inverts between them**: undertaking chips are engine-derived, so chip backing holds by construction and the leak there is prose *claiming* state; encounter chips are authored, so backing is the thing that must be checked.\n\n**A named, shrinking ratchet instead of exemptions** (ruling 3, 2026-08-08). `RETROFIT_PENDING` holds the templates that predate the contract; there is no per-template escape hatch. The runner exits non-zero when an unlisted template fails **and equally when a listed one now passes** — a stale entry is a lie about the corpus, and that second exit condition is what makes the list shrink.\n\n**Live caveat: it scopes to the `encounter.*` prefix.** `ENCOUNTER_ID_PREFIXES` is `['encounter.']`, so a template whose id does not start with that string is not measured by this gate at all — including when it lives in `src/data/encounters/`. A sweep that reports \"the corpus is clean\" is reporting on the prefix, not the directory.\n\nCode anchors: `src/data/content-eval/compositionContract.ts` (`checkCompositionContract`), `src/data/content-eval/retrofitPending.ts` (`RETROFIT_PENDING`), `scripts/check-encounter.ts` (`ENCOUNTER_ID_PREFIXES`), `Docs/plans/2026-08-08-encounter-factory-workflow.md` §1.",
+      "seeAlso": [
+        {
+          "raw": "Undertaking Contract",
+          "termName": "Undertaking Contract",
+          "resolvedSlug": "agents#undertaking-contract"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Aftermath",
+          "termName": "Aftermath",
+          "resolvedSlug": "encounters#aftermath"
+        },
+        {
+          "raw": "Cast",
+          "termName": "Cast",
+          "resolvedSlug": "encounters#cast-verb"
+        },
+        {
+          "raw": "Batch Brief",
+          "termName": "Batch Brief",
+          "resolvedSlug": "encounters#batch-brief"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#composition-contract",
       "contentAdjacent": true
     },
     {
@@ -4320,6 +4590,41 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Prose.md#register-compliance",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "prose",
+      "slug": "motive-receipt",
+      "name": "Motive Receipt",
+      "aliases": [
+        "the `motiveReceipt` node property; `MotiveReceipt`"
+      ],
+      "status": "unknown",
+      "oneLiner": "the decision-time causal record behind an encounter choice; prose *renders* it and never reconstructs it, so every surface gives one answer",
+      "body": "The decision-time causal record behind an agent's encounter choice: the labeled contribution terms the scorer computes every tick and would otherwise discard, kept as the answer to *why did this agent choose this?* It carries the template and location chosen, the top-weighted contributions with their provenance, the intel tier, the expectation, the dominant reach, and the tick it was decided at.\n\n**Prose renders the receipt; it never reconstructs it.** This is the load-bearing rule. Foreshadowing prose, the trace and the debug panel all read the *same* receipt off the *same* node, so \"why did this agent choose this?\" has one answer everywhere. A resolver that re-derives causality from present state would produce a *plausible* reason rather than the real one, and the two diverge the moment anything in the world moves between decision and render.\n\n**It is a property, not an edge, and it is overwritten per selection.** No system traverses encounter → \"agents who chose me because X\", so there is nothing for an edge to serve. Because it is overwritten, a receipt is only used when it *matches* the encounter being foreshadowed — a receipt naming a different template or location is rejected and the caller falls to the composed-generic path (fail-soft).\n\n**Three things it is not.** It is not the Intelligence Record — it *reads* that record's reliability to derive its `intelTier`, which is real intel and deliberately not `completionProb`. It is not the funnel scores — it is the surviving, normalized, top-N slice of them. And its `expectation` is a `[[Forecast tier]]`, **reused** rather than re-derived, so the receipt can say what the agent expected going in, not what befell them.\n\nCode anchors: `src/types/foreshadowing.ts` (`MotiveReceipt`, `MotiveContribution`, `MotiveContributionKind`), `src/engine/foreshadowing/motiveReceipt.ts` (the builder), `src/engine/foreshadowing/receiptRead.ts` (the match-or-fall-soft read), `src/engine/foreshadowing/constants.ts` (`RECEIPT_TOP_CONTRIBUTIONS`, `RECEIPT_MIN_WEIGHT`).",
+      "seeAlso": [
+        {
+          "raw": "Thread Tug",
+          "termName": "Thread Tug",
+          "resolvedSlug": "prose#thread-tug"
+        },
+        {
+          "raw": "Resolver",
+          "termName": "Resolver",
+          "resolvedSlug": "prose#resolver"
+        },
+        {
+          "raw": "Chronicle Entry",
+          "termName": "Chronicle Entry",
+          "resolvedSlug": "prose#chronicle-entry"
+        },
+        {
+          "raw": "Forecast tier",
+          "termName": "Forecast tier",
+          "resolvedSlug": "encounters#forecast-tier"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Prose.md#motive-receipt",
       "contentAdjacent": true
     },
     {
@@ -5821,6 +6126,54 @@
     },
     {
       "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "hold",
+      "detail": "Unrecognized status value \"canonical (seated by THR-1449, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "hold",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "agreement",
+      "detail": "Unrecognized status value \"canonical (seated by THR-1441, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "agreement",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "means",
+      "detail": "Unrecognized status value \"canonical (seated by THR-1441, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "means",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "motive-gate",
+      "detail": "Unrecognized status value \"canonical (seated by THR-1408, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "agents",
+      "termSlug": "motive-gate",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
       "shardId": "encounters",
       "termSlug": "encountertemplate",
       "detail": "Unrecognized status value \"retired (THR-108; entry corrected 2026-08-28, THR-1339)\"."
@@ -5853,6 +6206,42 @@
       "kind": "missing_status",
       "shardId": "encounters",
       "termSlug": "court-position",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "cast-verb",
+      "detail": "Unrecognized status value \"canonical (seated by THR-1445, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "cast-verb",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "forecast-tier",
+      "detail": "Unrecognized status value \"canonical (seated by THR-1445, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "forecast-tier",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "composition-contract",
+      "detail": "Unrecognized status value \"canonical (seated by THR-1406, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "composition-contract",
       "detail": "No `**Status:**` line found."
     },
     {
@@ -5916,6 +6305,18 @@
       "detail": "No `**Status:**` line found."
     },
     {
+      "kind": "missing_status",
+      "shardId": "prose",
+      "termSlug": "motive-receipt",
+      "detail": "Unrecognized status value \"canonical (seated by THR-633, delegated seating 2026-09-11)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "prose",
+      "termSlug": "motive-receipt",
+      "detail": "No `**Status:**` line found."
+    },
+    {
       "kind": "unresolved_see_also",
       "shardId": "agents",
       "termSlug": "agent",
@@ -5932,12 +6333,6 @@
       "shardId": "agents",
       "termSlug": "realm",
       "detail": "See-Also \"Culture\" did not resolve to a known term."
-    },
-    {
-      "kind": "unresolved_see_also",
-      "shardId": "agents",
-      "termSlug": "realm",
-      "detail": "See-Also \"Holding\" did not resolve to a known term."
     },
     {
       "kind": "unresolved_see_also",
