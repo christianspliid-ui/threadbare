@@ -172,7 +172,10 @@ describe('THR-1244 — condition → damaged/healed proxy', () => {
       }
       // Pins the population so a catalog that stops exporting its conditions fails
       // here rather than shrinking the sweep to nothing and still reading green.
-      expect(checked).toBe(60);
+      // 60 → 61 with THR-1130 batch 3: `trait.condition.location.tended_shrine`
+      // joined `condition-trait-content`, and the pin is meant to require exactly
+      // this deliberate bump rather than absorbing the change silently.
+      expect(checked).toBe(61);
     });
 
     it('classifies wounds and curses as harm, boons as not', () => {

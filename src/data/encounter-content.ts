@@ -11261,7 +11261,19 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.shrine_offering',
     name: 'Leave a Shrine Offering',
-    locationTypes: ['shrine', 'temple', 'ruins'],
+    // THR-1130 (batch 3) — the widest honest envelope. The old
+    // `locationTypes: ['shrine', 'temple', 'ruins']` maps to exactly `sacred` +
+    // `ruin`; `wayside` is the deliberate widening, because the rite needs
+    // stones and a hollow, not a roof. A cairn at a crossroads is a shrine to
+    // whoever kneels at it, and the opening says so rather than assuming it.
+    // Not `urban` — a city shrine has a keeper and an offering box, which is a
+    // different scene about a different kind of giving.
+    settings: ['sacred', 'ruin', 'wayside'],
+    openings: {
+      sacred: '{name} comes up to the stones at {location} with the pack already half open, which is a thing decided a long way back down the road.',
+      ruin: '{name} finds the shrine at {location} under its own fallen roof, and the hollow in the altar stone still holding rain.',
+      wayside: '{name} stops at the cairn above the road at {location}, where the stones are stacked by people who did not stay to watch.',
+    },
     reachPrimary: 'star',
     reachSecondary: 'heart',
     encounterType: 'create',
@@ -11312,6 +11324,273 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         addNudgeIds: ['shrine.wait_one_hour_more'],
       },
     ],
+    /**
+     * THR-1130 (batch 3) — the one who came before, whose gift is still in the
+     * hollow. Declared rather than inherited because the envelope spans three
+     * classes (THR-1044), and this is the cast that is honest in all three: a
+     * temple has a keeper and a ruin does not, but *somebody gave here last*
+     * is true of a forecourt, a fallen roof and a roadside cairn alike.
+     *
+     * It is also the cast the scene needs rather than the cast it could have.
+     * The paired half — `encounter.offer_small_prayer` — names the absent
+     * subject a prayer is *for*; this one names the stranger the gift is
+     * *measured against*, which is what turns "leave an item on a rock" into a
+     * scene with a second person's judgement in it.
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'the_one_before',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        supportRole: 'prior_petitioner',
+        spawnNpcRole: 'wanderer',
+        spawnName: 'The One Who Came Before',
+      },
+    ],
+    /**
+     * Drawn hand, wired as drawn — **no swap**, and that is the whole news of
+     * batch 3.
+     *
+     * The batch-3 brief recorded this hand as unwirable 2-of-2 and recommended
+     * waiting: `thread_*` took a literal `ascendantId`/`mortalId` no template
+     * could know, and the `place` family needed a location in `$target`, which
+     * a self-targeted rite never has. THR-1446 then shipped both sentinels —
+     * `$ascendant` for the divine end of a thread, `$here` for the ground the
+     * scene stands on — so the hand the brief called impossible is authored
+     * here at full weight, and the swap budget is untouched.
+     *
+     * - `thread` (weight 8 in star) — `thread_strengthen` / `thread_weaken`
+     *   between `$ascendant` and `$actor`. This is the encounter's actual
+     *   subject: a mortal gives to a god and waits to hear back, so the line
+     *   between them is the thing the outcome moves. It is a mutation, not a
+     *   creation — an unthreaded mortal's offering strengthens nothing and
+     *   traces `edge_missing`, which is the honest reading of a stranger
+     *   leaving a comb on some stones.
+     * - `place` (weight 4 in star) — `apply_condition` on `$here`, landing
+     *   `trait.condition.location.tended_shrine` on the stones themselves.
+     */
+    consequenceDraw: ['thread', 'place'],
+    /**
+     * `branchOnStep` is inert on a linear template — there are no choiceIds to
+     * key `variants` on, so `fallback` carries the whole ending and the bands
+     * layer over it (THR-969). Kept at 0 to match the batch-2 shape.
+     *
+     * Four `byOutcome` bands against ruling 7's floor of three. The axis is the
+     * one the fiction already has: did anything answer, and what did the giving
+     * cost. Every chip is backed by a write in its own band's reaction (Law 56)
+     * — `thread_strengthen`, `apply_condition`, `encounter_seed`, and
+     * `thread_weaken` on the way down.
+     */
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The gift is in the hollow and the knees are wet, and the walk back starts whether '
+          + 'or not anything came of it. Stones keep no record. The one who left the last gift '
+          + 'here never learned what happened to it either.',
+        changes: [],
+        reactions: [
+          {
+            id: 'shrine_offering.start_the_walk_back',
+            label: 'Start the walk back',
+            intent: 'The rite is done either way, and the light is going.',
+            effects: [],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'What arrives is not a voice. It is a heading — the plain sense of which way to '
+              + 'go, arriving whole, the way a hand laid on the shoulder turns someone without '
+              + 'saying anything. The gift stays in the hollow and is gone by morning. Behind, '
+              + 'the stones sit differently: a shrine that has been given to and has answered '
+              + 'is a shrine people start stopping at.',
+            changes: [
+              {
+                id: 'shrine_offering.the_line_pulls_tight',
+                kind: 'trait',
+                title: 'The Line Pulls Tight',
+                causeClause: 'They gave the one thing that cost them and stayed to hear the reply',
+                detail: 'The thread between god and giver runs shorter than it did at dusk.',
+                polarity: 'gain',
+                category: 'bond',
+                direction: 'gain',
+                stateNoun: { text: 'thread', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'runs shorter than it did at dusk' }],
+              },
+              {
+                id: 'shrine_offering.tended_stones',
+                kind: 'trait',
+                title: 'A Tended Shrine',
+                causeClause: 'The hollow was filled properly and did not stay full',
+                detail: 'The stones here are being kept, and the next traveller up the road will see it.',
+                polarity: 'gain',
+                category: 'boon',
+                direction: 'gain',
+                stateNoun: {
+                  text: 'tended',
+                  entityId: 'trait.condition.location.tended_shrine',
+                  visualKind: 'attachment',
+                },
+                concepts: [{ text: 'being kept' }],
+              },
+              {
+                id: 'shrine_offering.a_heading',
+                kind: 'trait',
+                title: 'A Heading',
+                causeClause: 'The answer came as a direction rather than a sentence',
+                detail: 'There is somewhere to be now, and the road ahead has one fork fewer on it.',
+                polarity: 'gain',
+                category: 'path',
+                direction: 'opens',
+                stateNoun: { text: 'a heading', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'one fork fewer on it' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'shrine_offering.follow_the_heading',
+                label: 'Follow the heading',
+                intent: 'It arrived plain enough to walk on. Waiting for a second one would be greed.',
+                effects: [
+                  {
+                    kind: 'thread_strengthen',
+                    ascendantId: '$ascendant',
+                    mortalId: '$actor',
+                    delta: 0.12,
+                    reason: 'Gave at the stones and stayed for the reply.',
+                  },
+                  {
+                    kind: 'apply_condition',
+                    conditionTraitId: 'trait.condition.location.tended_shrine',
+                    targetLocationId: '$here',
+                    intensity: 0.55,
+                    durationTicks: 72,
+                  },
+                  {
+                    kind: 'encounter_seed',
+                    delayTicks: 6,
+                    seedLabel: 'The heading taken at the stones',
+                    priority: 0.6,
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'Something answers, and it is worth what it cost, and what it cost is still '
+              + 'standing. The ring went into the hollow — the ring that was meant to settle a '
+              + 'debt somebody else is still counting. The stones took it without comment, '
+              + 'which is how stones take everything.',
+            changes: [
+              {
+                id: 'shrine_offering.paid_in_the_wrong_coin',
+                kind: 'trait',
+                title: 'Paid in the Wrong Coin',
+                causeClause: 'The gift that was heard was the gift that was owed elsewhere',
+                detail: 'The thread runs shorter, and there is a debt still standing behind it.',
+                polarity: 'gain',
+                category: 'bond',
+                direction: 'gain',
+                stateNoun: { text: 'thread', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'a debt still standing behind it' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'shrine_offering.let_the_debt_wait',
+                label: 'Leave the debt standing',
+                intent: 'It was going to be settled late in any case. Now it will be settled later.',
+                effects: [
+                  {
+                    kind: 'thread_strengthen',
+                    ascendantId: '$ascendant',
+                    mortalId: '$actor',
+                    delta: 0.07,
+                    reason: 'Gave what was owed elsewhere, and was heard.',
+                  },
+                  {
+                    kind: 'recent_event',
+                    eventType: 'narrative',
+                    message: 'The ring went to the shrine and the debt it was meant for is still open.',
+                    significance: 0.4,
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview:
+              'Wind, and the stones, and the light going out of the sky in the order it always '
+              + 'does. The gift sits in the hollow looking like an item on a rock. No part of '
+              + 'the rite was done badly. It simply was not answered, which is most of what '
+              + 'happens at shrines.',
+            changes: [],
+            reactions: [
+              {
+                id: 'shrine_offering.walk_out_in_the_dark',
+                label: 'Walk out in the dark',
+                intent: 'Nothing came. The road home does not care either way.',
+                effects: [
+                  {
+                    kind: 'recent_event',
+                    eventType: 'narrative',
+                    message: 'A gift was left at the stones and nothing came of it.',
+                    significance: 0.25,
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The wind does all the talking and it gets taken for an answer. What walks out of '
+              + 'the shrine is a certainty built on site out of cold and wanting, and it points '
+              + 'the way the wind happened to be blowing. A god that is spoken for has less to '
+              + 'say next time.',
+            changes: [
+              {
+                id: 'shrine_offering.answered_themselves',
+                kind: 'trait',
+                title: 'Answered Themselves',
+                causeClause: 'They put a voice into the hush and then believed it',
+                detail: 'The thread between god and giver has gone slack, and neither end pulled it.',
+                polarity: 'loss',
+                category: 'bond',
+                direction: 'loss',
+                stateNoun: { text: 'thread', entityId: '$actor', visualKind: 'agent' },
+                concepts: [{ text: 'gone slack' }],
+              },
+            ],
+            reactions: [
+              {
+                id: 'shrine_offering.set_off_on_it',
+                label: 'Set off on it',
+                intent: 'It felt like an answer at the time, and there is no second opinion to be had out here.',
+                effects: [
+                  {
+                    kind: 'thread_weaken',
+                    ascendantId: '$ascendant',
+                    mortalId: '$actor',
+                    delta: 0.1,
+                    reason: 'Manufactured a reply at the stones and left on it.',
+                  },
+                  {
+                    kind: 'recent_event',
+                    eventType: 'narrative',
+                    message: 'They left the shrine sure of a heading nobody gave them.',
+                    significance: 0.5,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
     steps: [
       {
         id: 'shrine_offering.select',
@@ -11369,8 +11648,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             },
           },
           {
-            id: 'shrine.let_the_grain_show',
-            name: 'Let the grain show',
+            // THR-1130 (batch 3) — was `shrine.let_the_grain_show` / "Let the
+            // grain show". Batch 2's calibration applied to the residue: `Let`
+            // can open an imperative, so it is not a lexicon gap — but the
+            // doctrine's bar is an *instruction*, and "Let the grain show" is a
+            // permission. Renamed rather than widening the verb list, id and
+            // name together so the two cannot drift.
+            id: 'shrine.read_the_grain',
+            name: 'Read the grain',
             sphere: 'matter',
             essenceCost: 2,
             forecastDelta: 0.09,
@@ -11430,7 +11715,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'An offering is placed, never dropped. {actor} kneels at the weathered stones, holds the gift a while on both palms, and sets it in the hollow where rain has worn a dish.',
         successAtCostAfterimage: 'It went down right. {Their} knees will be stiff for two days, and {they} left the walking-staff leaning at the stones.',
         criticalSuccessAfterimage: 'The gift went into the hollow as though the hollow had been cut for it, and the whole shrine felt aimed at {them} for a breath.',
-        criticalFailureAfterimage: 'They fumbled it. The ring went off the stone into wet grass, and {they} left it there rather than kneel again.',
+        criticalFailureAfterimage: 'They fumbled it. The ring went off the stone into wet grass, and {they} left it there sooner than kneel again.',
         nudges: [
           {
             // Shared generic pool — the `focus` family.
@@ -11484,8 +11769,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             },
           },
           {
-            id: 'shrine.let_it_fall_true',
-            name: 'Let it fall true',
+            // THR-1130 (batch 3) — was `shrine.let_it_fall_true` / "Let it fall
+            // true". Same calibration; "Trust the hand" is the instruction the
+            // permission was standing in for, and keeps the chaos-sphere sense
+            // that aiming is the problem.
+            id: 'shrine.trust_the_hand',
+            name: 'Trust the hand',
             sphere: 'chaos',
             essenceCost: 2,
             forecastDelta: 0.09,
@@ -11575,8 +11864,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             },
           },
           {
-            id: 'shrine.let_the_dark_come',
-            name: 'Let the dark come',
+            // THR-1130 (batch 3) — was `shrine.let_the_dark_come` / "Let the
+            // dark come". Same calibration. Waiting for the dark is the act;
+            // permitting it was never something the player could do.
+            id: 'shrine.wait_for_dark',
+            name: 'Wait for dark',
             sphere: 'darkness',
             essenceCost: 2,
             forecastDelta: 0.09,

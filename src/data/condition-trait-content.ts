@@ -396,6 +396,39 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+  {
+    // THR-1130 (retrofit batch 3) — the state a shrine is left in when a gift
+    // goes down properly and something answers. Written because the `place`
+    // family drawn for `encounter.shrine_offering` had no honest kind to land
+    // on: `festival` and `under_watch` describe other things entirely, and
+    // `standing_welcome` is retired to read-tolerance (zero writers, above).
+    //
+    // Class-honest across the template's whole envelope — `sacred`, `ruin` and
+    // `wayside` — because the noun is the *stones*, not the building. A temple
+    // forecourt, a shrine gone to ruin and a roadside cairn are all tended or
+    // not tended by exactly the same test: has anyone given here lately, and
+    // did it take.
+    //
+    // Positive and public, like `festival`: a traveller coming over the rise
+    // can see a shrine that is being kept. No `domainContributions` — a place
+    // has no capabilities; the readers are the census and the aftermath chip
+    // that names it.
+    id: 'trait.condition.location.tended_shrine',
+    type: 'trait',
+    name: 'A Tended Shrine',
+    properties: {
+      subcategory: 'condition',
+      description: 'Gifts have been left at these stones lately and at least one of them was taken. The place is being kept, and it shows.',
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the census and the gate.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#sacred', '#positive'],
+      flavorText: 'The hollow has not been empty in a season, and the moss has given up on it.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
 ];
 
 /** Map of condition trait IDs to their default durations */
