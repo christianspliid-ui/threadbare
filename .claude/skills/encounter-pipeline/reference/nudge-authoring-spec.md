@@ -211,7 +211,7 @@ code wins.
 | **Setting** | `settings` declared and the envelope valid (`validateSettingEnvelope`, § envelopes) |
 | **Cast** | ≥1 actor binding on the *resolved* support bundle — a THR-1044 family default satisfies it exactly as an explicit bundle does; every `{cast:<key>}` token names a declared key |
 | **Rewards** | something persists: a `rewardPool` draw on a step outcome **or** an aftermath effect that leaves a mark on the world (`spawn_artifact`, a condition, a seed, a favor, …). An effect that only prints is scene dressing, not a reward |
-| **Aftermath** | `aftermathConfig` present; the `byOutcome` floor (ruling 7): ≥3 bands — one success-side, one failure-side, one extreme; every variant carries an `overview`; every change declares `concepts` (Law 2) |
+| **Aftermath** | `aftermathConfig` present; the `byOutcome` floor (ruling 7): ≥3 bands — one success-side, one failure-side, one extreme; every variant carries an `overview`; every change declares an anchor — `stateNoun` or `concepts` (Law 2) |
 | **Systems** | ≥3 game-system connections, counted from the authored manifest — `cast` / `rewards` / `seeds` / `conditions` / `reputation` / `factions`. Prose counts for nothing: an encounter that *names* a faction but touches no faction surface has not connected to it |
 | **Images** | every card `imageTag` resolves to a library row (the gate resolves, never trusts — a dead tag falls back silently at render); `illustrationUrl`, when declared, is public-absolute |
 
@@ -717,11 +717,19 @@ rather than beside it.
   rolls, so they go unwritten unless a contract asks for them. Watch the domain:
   `byOutcome` keys on `UnifiedActionOutcome` (the *action's* resolved band), not the
   six-value per-step `StepOutcome` that `bandProse` uses.
-- **Every variant carries an `overview`; every change declares `concepts`** (Law 2) —
-  the substring of `detail` that names a game concept, with its tooltip id, so the
-  chip can explain itself. (`EncounterAftermathChange.concepts`' own type comment
-  still describes the pre-contract convention; the contract's ruling is later and
-  wins — the reconciliation is THR-1053.)
+- **Every variant carries an `overview`; every change declares an anchor** (Law 2) —
+  either a `stateNoun` naming the state that changed (which also draws the chip's
+  icon tile and its `CATEGORY · NOUN` tag), or a `concepts` entry: the substring of
+  `detail` naming a game concept, with its tooltip id, so the chip can explain
+  itself. **Prefer `stateNoun`** — it is what the surface resolves first, `concepts`
+  being its fallback.
+  You do **not** owe a `concepts` entry for every entity the sentence names: the
+  narrative linker runs on `detail` unconditionally, so anything it can scan for is
+  already reachable. `concepts` is for the *derived* vocabulary no scan can find — a
+  reach name, a standing tier, a reward. (THR-1053 narrowed this row from the
+  original "every change declares `concepts`", which asked authors to re-declare what
+  the linker already decorates and failed all 191 templates; ruling 3 is untouched,
+  since no template gets a waiver.)
 - **Every `changes` entry is backed by a write** (UI Law 56; § Consequences rule 0) —
   a chip on a band must correspond to an effect that actually fires on that band (a
   reaction effect, a step-outcome effect, a reward-pool draw, or a planted seed).

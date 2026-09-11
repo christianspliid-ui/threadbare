@@ -317,8 +317,22 @@ export interface EncounterAftermathChange {
   readonly actorName?: string;
   /**
    * THR-1004 — the game concepts `detail` names, declared by whoever built the
-   * sentence. Absent on authored changes, which are prose written by a human
-   * and carry their entity links through the narrative linker instead.
+   * sentence.
+   *
+   * Optional, and usually absent on authored changes: the narrative linker runs
+   * on `detail` unconditionally, so an entity it can scan for is already
+   * reachable without being declared here. What this field adds is the *derived*
+   * vocabulary no scan can find — a reach name, a standing tier, a reward — and
+   * a segment the linker already claimed is left alone, because its entity link
+   * is the richer one.
+   *
+   * THR-1053 corrected this comment's earlier claim that the field is simply
+   * "absent on authored changes". That was written before {@link stateNoun}
+   * existed (THR-1164) and read as though a chip need declare nothing at all. It
+   * must declare *an* anchor — `stateNoun` for the state that changed, or this
+   * field — and the Composition Contract enforces exactly that pair. Which one
+   * is the author's call, and matches how the surface resolves: `stateNoun`
+   * drives the tile, `concepts` is its fallback.
    */
   readonly concepts?: readonly EncounterAftermathConceptRef[];
   /**

@@ -31,7 +31,7 @@ A per-encounter manifest, validated like `validateSettingEnvelope` — not prose
 | Setting envelope | `settings` + one `openings` entry per declared class | `validateSettingEnvelope` (exists) |
 | **Cast** | ≥1 named scene actor as a **support binding** (bundle or `encounter.*` family default — mechanical enablement is part of implementation), referenced via `{cast:*}` in prose | **new** |
 | **Rewards/penalties** | `rewardPool` draw from the attachment library **or** aftermath effect (`spawn_artifact`, condition, …) — something persistent, per THR-973's bar | **new** |
-| **Aftermath** | `byOutcome` bands (≥ success / failure / one extreme), ≥1 seed or persistent consequence across variants, `concepts` declared per change (Law 2) | **new** |
+| **Aftermath** | `byOutcome` bands (≥ success / failure / one extreme), ≥1 seed or persistent consequence across variants, an anchor declared per change — `stateNoun` or `concepts` (Law 2) | **new** |
 | Systems quota | ≥3 game-system connections (Christian's standing rule, spec §262–276) — cast, rewards, seeds, conditions, reputation, factions each count | **new** (count from the manifest) |
 | Images | step illustration tag + card art tags resolving in the image library | **new** (resolve, don't trust) |
 | Register | vagueness 0, no numerals, no second person, no raw tokens | detectors (exist) |
@@ -87,6 +87,18 @@ BRIEF ─▶ DRAFT ─▶ CRITIC LOOP ─▶ MACHINE GATES ─▶ LIVE PROOF ─
 7. **byOutcome floor is 3 bands** (success / failure / one extreme); a floor, not a norm — author more wherever the encounter warrants.
 8. **Retrofit all 15** nudge-era encounters to the full contract — the slice five (riding THR-973) *and* the camp seven + sequels. The retrofit is the pilot volume.
 9. **The THR-883 sitting collapses into a review**: Fable drafts the amended spec + one full-contract exemplar encounter; Christian's chat review of those two artifacts is the sitting.
+
+### Amendment — the Aftermath row's anchor requirement (THR-1053, 2026-09-11)
+
+§1's Aftermath row read *"`concepts` declared per change (Law 2)"*. It now reads **an anchor declared per change — `stateNoun` or `concepts`**. The row's stated ground did not survive reading the surface it governs (`src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`):
+
+- `link(id, enrich(body))` runs on the change's `detail` **unconditionally**, never gated on `concepts` — so the narrative linker already delivers Law 2 reachability for every entity it can resolve.
+- `applyConceptDecorations` returns the paragraph untouched when `concepts` is absent, and the module documents both paths as fail-open by design.
+- The chip's icon tile is driven by `stateNoun`; `concepts` is only its fallback. The row named the fallback and not the primary.
+
+What `concepts` genuinely adds is the *derived* vocabulary no scan can find (a reach, a standing tier, a reward) — valuable, but narrower than the row claimed. Requiring it on every change asked authors to re-declare what the linker already decorates, or to invent a concept for a sentence naming none; it failed all 191 templates and was a large share of the seeded `RETROFIT_PENDING` ratchet.
+
+**The floor was narrowed, not removed.** Law 56 clause 2 excludes the chip declaring *neither* anchor on the explicit ground that this rule holds it; deleting the rule would have opened that hole silently. **Ruling 3 is untouched** — it forbids an exemption *mechanism*, and every template is still measured by the same predicate, with no per-template waiver. This is gate calibration on a measured fact, delegated to the agents (CLAUDE.md § User review interface, rule 4); Christian's veto window closed 2026-09-11.
 
 ## Substrate inventory
 

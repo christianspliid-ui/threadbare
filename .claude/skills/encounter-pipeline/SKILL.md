@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-08-29
+last_validated_against: 2026-09-11
 validated_doctrine: prose@2
 ---
 
@@ -395,8 +395,8 @@ npm run check:encounter-live -- <templateId>
 
 Spawns the encounter on the ascendant in a seeded world, commits a hand, ticks to
 resolution, and reads the running state for what the template promised — cast bound,
-reward landed, seed planted, a keyed aftermath variant rather than the fallback, concepts
-on every change.
+reward landed, seed planted, a keyed aftermath variant rather than the fallback, an
+anchor (`stateNoun` or `concepts`) on every change.
 
 **Read the verdict, not the exit code.** Three verdicts:
 

@@ -1483,19 +1483,51 @@ export function checkCompositionContract(
     }
   }
 
-  // `concepts` per change (Law 2). Plan §1's Aftermath row.
+  // An anchor per change (Law 2). Plan §1's Aftermath row.
   //
-  // TODO(THR-1053): this rule and `EncounterAftermathChange.concepts`' own
-  // doc comment disagree — the type says `concepts` is "absent on authored
-  // changes … carry their entity links through the narrative linker instead"
-  // (THR-1004), the plan requires it on every change and ruling 3 forbids
-  // exemptions. The plan is followed here because it is the later, explicitly
-  // ruled decision; THR-1053 settles which stands. Note the cost of being wrong
-  // is bounded and visible: `concepts` is authored nowhere in the corpus, so
-  // this one rule is a large share of why the ratchet holds all 191 templates.
+  // THR-1053 settled this against the shipped renderer. The rule used to demand
+  // `concepts` specifically, on the stated ground that Law 2 wants every named
+  // game concept reachable. `buildAftermathConsequences.ts` does not support that
+  // ground, in three readings taken off the code rather than from the plan:
+  //
+  //   1. `link(id, enrich(body))` runs **unconditionally** on the change's
+  //      `detail` (`:660,:666`) — never gated on `concepts`. So the linker
+  //      already delivers reachability for every entity it can resolve.
+  //   2. `applyConceptDecorations` returns the paragraph untouched when
+  //      `concepts` is absent (`:537`), and the module doc calls both paths
+  //      fail-open by design (`:78-82`).
+  //   3. The chip's icon tile is driven by `stateNoun`; `concepts` is only its
+  //      fallback (`:668-670`). A rule naming just the fallback is the contract
+  //      disagreeing with the code it governs.
+  //
+  // What `concepts` actually buys is narrower than Law 2 compliance: per its own
+  // doc it decorates the *derived* vocabulary — reaches, standing, factions,
+  // rewards — "that no scan could find", and leaves any segment the linker
+  // already claimed alone. So demanding it on every change asks an author either
+  // to re-declare what the linker decorates, or to invent a concept for a
+  // sentence that names none ("Jorun walks with her now" names no vocabulary at
+  // all). That is mechanism for its own sake, and it failed all 191 templates.
+  //
+  // **Why this narrows rather than deletes.** Law 56 clause 2
+  // ({@link chipAnchorViolations}) excludes the chip that declares *neither*
+  // anchor, explicitly "because … the `concepts` rule plus the composition
+  // ratchet already hold those templates". Delete this rule and that exclusion
+  // becomes a hole: nothing would require a chip to say what it points at. So
+  // the floor stays and only its shape changes — declare an anchor, either one —
+  // which is also the renderer's own precedence order.
+  //
+  // **Ruling 3 (no exemptions) is untouched.** That ruling forbids an exemption
+  // *mechanism* — a per-template opt-out. Every template is still measured by
+  // this same predicate; none gets an escape hatch.
   for (const change of allAftermathChanges(template)) {
-    if ((change.concepts?.length ?? 0) === 0) {
-      add('aftermath', `change '${change.id}' declares no \`concepts\` (Law 2)`);
+    const anchors = (change.stateNoun ? 1 : 0) + (change.concepts?.length ?? 0);
+    if (anchors === 0) {
+      add(
+        'aftermath',
+        `change '${change.id}' declares no anchor (Law 2) — give it a \`stateNoun\` `
+          + 'naming the state that changed, or a `concepts` entry for vocabulary the '
+          + 'narrative linker cannot reach on its own',
+      );
     }
   }
 
