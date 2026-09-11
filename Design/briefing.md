@@ -1,48 +1,40 @@
 # Briefing
-**Generated:** 2026-09-11 06:00 local (04:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-11 07:00 local (05:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of).**
+**Pick the word your red borders draw: [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of).**
 
-Sixth hour, same ask, and this hour it stopped being a map word. [The map and the sheet say the same thing](https://github.com/christianspliid-ui/threadbare/pull/1892) merged at 05:48 and **closes slice 2**: until now the border was the only thing in the game that knew a realm held a town. Click that town and its own page said nothing; open the hex and it would list four guilds with people standing there and never name the nation whose border it sat inside.
+Overnight the nation stopped being a drawing. It has a seat, a territory of towns, a court to climb, a border that moves when a town is taken — and as of [04:27 this morning](https://github.com/christianspliid-ui/threadbare/pull/1893), a way for written content to *name* it. Three named ones exist in a seeded world: **hold of Witness Skyfield** (17 towns) · **march of Shadow-Kept light** (10) · **sovereignty of Open Earth** (6).
 
-Now both read **Held by — <name>**, with the holder's sigil and a link. Ground nobody holds says *Unclaimed* as a word, because a border stopping is a designed fact, not a blank. Checked headlessly across every held settlement at once: **33 checked, 0 disagreements** between what the map draws and what the sheet says.
+The write-up proposes **Realm** over **Nation** on register grounds — a nation is a modern political word, a realm is what a fantasy map draws and what a court sits over — and says outright you may veto the headword. Same object either way; only the word the player reads changes.
 
-So the word you have not yet picked is now printed on the location profile and the hex chronicle, on top of the map's label tier — three player-facing surfaces, plus three named things the world contains: *hold of Witness Skyfield* (17 towns) · *march of Shadow-Kept light* (10) · *sovereignty of Open Earth* (6).
+**Why now rather than later:** the map and the town sheet already print it, and [realm content](https://linear.app/threadbare/issue/THR-1454) — court summons, border levy, tithe — is queued behind. Vetoing today is a rename. Vetoing after that content is a rewrite of shipped prose.
 
-**The write-up proposes _Realm_ over _Nation_ and says outright you may veto the headword.** The argument is register: a nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes. Vetoing now is a rename. Vetoing after the [realm content](https://linear.app/threadbare/issue/THR-1454) queued behind it — court summons, border levy, tithe — is a rewrite of shipped prose.
+Two more want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from 10 September, already the first word of a realm's name above — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing a divine action card.
 
-Two smaller ones want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from 10 September, already the first word of *hold of Witness Skyfield* — and [**cast**](https://linear.app/threadbare/issue/THR-1445).
+## Also waiting (11)
 
-## Also waiting (12)
-
-- [Delegate the glossary seat, keep a veto?](https://linear.app/threadbare/issue/THR-1453) — seven words wait; three are the ask above. One word retires this permanently.
-- [Traits wave 2 — still yours?](https://linear.app/threadbare/issue/THR-790) — the design bench is idle and this is the only thing on it, untouched 27 days.
-- [A veto is invited on an encounter quality rule](https://linear.app/threadbare/issue/THR-1053) — the sole reason two written encounters keep being binned. One of three items on the build shelf.
-- [One Done click, no work behind it](https://linear.app/threadbare/issue/THR-1380) — the three words you approved had already shipped; nothing is left in it.
-- [Sample two of the camp six](https://linear.app/threadbare/issue/THR-1130) — your standing 2-of-6 rule still owes a verdict. Blocking nothing.
-- [Rule on the backlog — one sitting, smallest first](https://linear.app/threadbare/issue/THR-1189) — ~10 items stop at a question rather than a developer.
-- [The screenshot sweep wants an attended hour](https://linear.app/threadbare/issue/THR-1133) — 19 captures, one dev-server session; unstuck since 4 September.
-- [The fight map — ten open, every one yours](https://linear.app/threadbare/issue/THR-1258) — all research done; two are the head.
-- [Two sketches ready to build for you to react to](https://linear.app/threadbare/issue/THR-1232) — [spells](https://linear.app/threadbare/issue/THR-1232) and [items](https://linear.app/threadbare/issue/THR-1236); your reaction is the decision.
-- [Image credits — should the spend be gated on you at all?](https://linear.app/threadbare/issue/THR-876) — five quarantined plates, everything settled but the credit spend.
-- [What is a run *about*?](https://linear.app/threadbare/issue/THR-1198) — remembrance, or named campaigns. Nothing downstream waits.
-- [Are weekend-long quiet spells normal too?](https://linear.app/threadbare/issue/THR-1077) — you ruled overnight quiet normal; weekends are still unruled, so the probe keeps raising them.
+- [**Delegate the glossary?**](https://linear.app/threadbare/issue/THR-1380) — seven words queued, only a human may seat one. Say *"delegate it"* and keep a veto.
+- [**THR-1053**](https://linear.app/threadbare/issue/THR-1053) — a veto window on an encounter quality rule the agents judged theirs to calibrate; now in the build queue.
+- [**THR-1380**](https://linear.app/threadbare/issue/THR-1380) — one **Done** click, no work behind it.
+- [**THR-1130**](https://linear.app/threadbare/issue/THR-1130) — sample two of the camp six; your standing 2-of-6 verdict, blocking nothing.
+- **Rule on the backlog** — ~10 items stop at a question, not a developer. Say *"rule on the backlog"*.
+- [**THR-1133**](https://linear.app/threadbare/issue/THR-1133) — nineteen owed screen captures want one attended dev-server hour.
+- [**The fight map**](https://linear.app/threadbare/issue/THR-1258) — ten questions researched and written up, all yours. Say *"work the fight map"*.
+- [**Powers**](https://linear.app/threadbare/issue/THR-1232) and [**items**](https://linear.app/threadbare/issue/THR-1236) — two sketches a session can build for you to react to.
+- [**THR-876**](https://linear.app/threadbare/issue/THR-876) — five off-doctrine scene images; waits only because redrawing spends image credits.
+- [**THR-1198**](https://linear.app/threadbare/issue/THR-1198) — does a run's spine come from what your god remembers, or from a named campaign?
+- **Weekend quiet** — you ruled overnight quiet normal; weekends are still unruled, so the probe keeps raising them.
 
 ## Queue
 
-**Healthy — 3 jobs ready, 1 building.** Unchanged in count since the last brief; nothing stalled and nothing new was needed.
+**Healthy, thin at 3 ready** — [THR-1456](https://linear.app/threadbare/issue/THR-1456) (High, a monster raid corrupting a town's prosperity and defense) · [THR-1053](https://linear.app/threadbare/issue/THR-1053) (Medium) · [THR-1455](https://linear.app/threadbare/issue/THR-1455) (Low). Three In Dev.
 
-- **[THR-1155](https://linear.app/threadbare/issue/THR-1155) (realms) holds the single work slot and closed slice 2 this hour** — six pull requests merged in seven hours ([sweep](https://github.com/christianspliid-ui/threadbare/pull/1887) 00:28, [mint](https://github.com/christianspliid-ui/threadbare/pull/1888) 01:46, [moving borders](https://github.com/christianspliid-ui/threadbare/pull/1889) 02:50, [conquest](https://github.com/christianspliid-ui/threadbare/pull/1890) 03:32, [the court](https://github.com/christianspliid-ui/threadbare/pull/1891) 04:56, [map and sheet agree](https://github.com/christianspliid-ui/threadbare/pull/1892) 05:48). Slice 3 next. No action from you.
-  - Worth knowing, because it was found rather than predicted: the check written to catch a *future* mistake caught an existing one. A monster faction seizing a lair also takes ground, and nothing told the map — so the border was one rebuild late and the world's distance reasoning was blind to a faction that had just taken a place. It predates the realm work entirely; it is fixed.
-- **[THR-1456](https://linear.app/threadbare/issue/THR-1456) is still the most serious thing on the shelf** — monster-raid content meant to knock a town's prosperity down by a few points instead writes the instruction itself into the number, so prosperity and defence come out as nonsense rather than as damage. High priority, queued, unclaimed, no decision in it.
-- **[THR-1455](https://linear.app/threadbare/issue/THR-1455)** — the hex sidebar shows an area's type as a raw code word and its size as a bare numeral. Waiting.
-- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unblocked work that nothing can reach** — `In Dev` + parked + unowned, so the pickup lane cannot see it, ~15 hours now. Its park is discharged: the thing it waited on shipped, and both branches of its question now lead to the same action. The grooming lane fixes exactly this and runs at 09:16.
-- **[THR-1380](https://linear.app/threadbare/issue/THR-1380)** parked awaiting your Done click — also-waiting item 4.
+- **[THR-1155](https://linear.app/threadbare/issue/THR-1155) is the only thing building**, and it is mid-slice, not finished: slice 3's first bullet merged at 04:27; four remain (a rank ladder read, a realm's encounter-meta entry, the *takes / loses* chronicle line, and the registry/canon/wiki/UL rows — where your word above lands).
+- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unreachable where it sits** — `In Dev` + `Parked` + unassigned, which no pickup lane looks at. Its park was discharged by events 17 h ago. The grooming lane's next pass (09:16) is the right owner and is due shortly; no action of yours.
+- **[THR-790](https://linear.app/threadbare/issue/THR-790) came off your list this run.** It has blocked the design bench for five runs, and the previous brief said it would become an ask. The orchestrator looked closer: the exit is a label inside the grooming lane's remit, not a question for you. Routed there instead.
 
 ## Health
 
-All green. The live site is already serving the commit that merged eleven minutes ago (`587626f8`); CI and the post-merge heavy-test lane are both green on main; no pull requests are waiting; all nine scheduled lanes are on schedule; the worktree reaper ran at 05:40. Engine tick cost measured **100 ms/tick, 16% above its 7-day median** across 77 measurements — inside the band that would flag it, and no session is needed.
-
-The three quiet gaps the lane probe reports are unchanged: two overnight-shaped ones covered by your ruling, and the 44.9-hour weekend one that is also-waiting item 12.
+All green. Deploy serving latest `main`, CI and all three scheduled jobs green, no PRs waiting, every scheduled task on time, engine tick cost 95 ms/tick (+9% on the 7-day median — inside tolerance). One non-green signal, and it is ask 11 above: the lane-silence probe still raises the 44.9 h weekend gap (04–06 Sep) because no ruling covers weekends.
