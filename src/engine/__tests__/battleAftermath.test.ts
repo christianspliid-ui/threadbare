@@ -347,6 +347,28 @@ describe('applyAftermath', () => {
     expect(() => applyAftermath(state, bs, 'attacker_victory')).not.toThrow();
   });
 
+  it('survives a settlement whose prosperity is not a number (THR-1456)', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph);
+    // The shape `applyNodeChanges` writes when content authors a change as
+    // `{ prosperity: { delta: -25 } }` instead of the relative string `'-25'` —
+    // measured on origin/main at tick 300 of seed 42, where three Locations carry it
+    // in `properties.defense`. THR-1456 owns the corruption; this arm owns the rule
+    // that the tick loop survives bad data whoever wrote it (NFP #4).
+    //
+    // Falsified by restoring `(…prosperity as number) ?? 0`: `??` passes a wrong
+    // *type* straight through, and the trace line's `.toFixed(2)` throws
+    // `prosperityBefore.toFixed is not a function` inside `runTick`.
+    graph.updateNode('settlement1', { properties: { prosperity: { delta: -25 } } });
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: 4 });
+
+    expect(() => applyAftermath(state, bs, 'attacker_victory')).not.toThrow();
+    // Degraded to the floor rather than left as an object: the next reader gets a
+    // number, so the corruption stops here instead of propagating.
+    expect(typeof graph.getNode('settlement1')?.properties.prosperity).toBe('number');
+  });
+
   it('handles no sublocations gracefully', () => {
     const graph = new WorldGraph();
     setupSettlementBattle(graph, { addSublocations: 0, loserQ: 2 });

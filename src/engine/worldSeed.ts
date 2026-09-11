@@ -1499,6 +1499,14 @@ export function seedWorld(
         actorType: 'faction',
         factionDefId: definition.id,
         factionClass: REALM_FACTION_CLASS,
+        // Stamped on the node as well as declared on the definition, because the
+        // readers split: `factionNetwork.ts:268` falls back to the definition, but
+        // `pickFactionForNpc`'s type bracket reads the *node* property, as does
+        // `factionSeeding.ts:252`'s own mint. A Realm with no node-level type was
+        // invisible to the bracket that routes a guard to a political faction — which
+        // is why no Realm had a single member, and therefore no commander to field an
+        // army with (the finding slice 2 part 2 recorded).
+        factionType: definition.factionType,
         cultureId: domain.cultureId,
         seatHexCol: domain.capitalHex.col,
         seatHexRow: domain.capitalHex.row,
@@ -1964,7 +1972,21 @@ export function seedWorld(
   // ── Faction territory + NPC institutional wiring ─────────────────────
   // Data-driven factions should visibly command the places where they operate.
   ensureFactionControlAtHomeLocations(graph, factionDefIds);
-  const factionLocationMap = buildDataDrivenFactionLocationMap(graph, factionDefIds);
+  // Realms join the recruiting map, guilds and orders do not change (THR-1155).
+  //
+  // Nobody was a subject of a nation: this map was built from `factionDefIds` alone —
+  // the *static*-definition roster — so a Realm, whose definition is dynamic, could not
+  // appear in it at any Location, and `assignFactionsToExistingNpcs` had nothing to
+  // route to it. A Realm with no `member_of` edge cannot field an army, because
+  // `selectCommander` picks the highest-Iron *member*, so the whole army path was
+  // closed by construction rather than by any check failing.
+  //
+  // `ensureFactionControlAtHomeLocations` above keeps the static roster only — a Realm
+  // has no `homeLocationId`; its ground is the territory the mint wrote.
+  const factionLocationMap = buildDataDrivenFactionLocationMap(
+    graph,
+    [...factionDefIds, ...realmByCulture.values()],
+  );
 
   // ── Settlement genome — second pass (THR-1344) ───────────────────────
   // The eager pass above runs at the only point in this seeder where settlements

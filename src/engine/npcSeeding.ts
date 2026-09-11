@@ -25,6 +25,7 @@ import {
   type RoleReachAffinity,
 } from '../types/npc';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
+import { REALM_FACTION_CLASS } from '../data/realm-content';
 import type { GraphNode } from '../types/graph';
 import type { SublocationProperties } from '../types/sublocation';
 import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
@@ -647,7 +648,23 @@ function pickFactionForNpc(
       break;
     }
   }
-  const candidates = bracket ?? factions;
+  // A Realm recruits its court, not its census (THR-1155).
+  //
+  // A Realm holds every town of its domain, so it is present at almost every Location
+  // this map covers — where a guild is present at one. Left in the untyped fallback it
+  // would therefore absorb every role whose preferred types are absent locally: a mason
+  // in a guildless town, a brewer, a wanderer. That is ~1000 `member_of` edges on a
+  // medium world against the ~190 that exist, and it is the wrong reading of the rank
+  // ladder, whose lowest rung is *stranger* — a mortal not of the court. One becomes a
+  // *subject* by joining (`realm.join`, content owed by THR-1454), not by being born in
+  // a town the Realm holds.
+  //
+  // So a Realm is a candidate only for a role that names `political` or `military` —
+  // the guards, captains, nobles, stewards and heralds a court is actually made of —
+  // and it wins those through the bracket above on merit, as any faction does. Where
+  // the fallback empties, the NPC stays unaffiliated, which is what they were before.
+  const candidates = bracket ?? factions.filter(node => node.properties.factionClass !== REALM_FACTION_CLASS);
+  if (candidates.length === 0) return null;
   if (candidates.length === 1) return candidates[0].id;
 
   // Stage 2 — score on merit, penalised by the share of the bracket already held.
