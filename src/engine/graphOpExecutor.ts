@@ -470,15 +470,54 @@ function executeUpdateNode(graph: WorldGraph, op: GraphOp, ctx: GraphOpContext):
 }
 
 /**
+ * A relative change authored as an object — `{ delta: -25 }` (THR-1456).
+ *
+ * Returns the numeric delta, or `null` when `value` is not this shape. `null` means
+ * "not a relative change", not "a broken one": a broken one is caught by
+ * `isMisshapenNumericChange` below so it can be reported rather than written.
+ */
+function asRelativeDeltaObject(value: unknown): number | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+  const keys = Object.keys(value as Record<string, unknown>);
+  if (keys.length !== 1 || keys[0] !== 'delta') return null;
+  const delta = (value as { delta: unknown }).delta;
+  return typeof delta === 'number' && !isNaN(delta) ? delta : null;
+}
+
+/**
+ * Is this write about to drop a non-numeric value onto a numeric property?
+ *
+ * Deliberately narrow. Object-valued properties are legitimate elsewhere, so warning on
+ * every object replacement would be noise; what is never wanted is an object landing on
+ * a key the readers treat as a number, or a `delta`-keyed object whose delta is not one.
+ */
+function isMisshapenNumericChange(previous: unknown, value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  if (Array.isArray(value)) return typeof previous === 'number';
+  if ('delta' in (value as Record<string, unknown>)) return true;
+  return typeof previous === 'number';
+}
+
+/**
  * Apply a changes object to existing node properties.
  *
- * Supports relative changes: string values starting with '+' or '-' are
- * parsed as numeric deltas and added to the current value.
- *   e.g. { unrest: '+20' } → adds 20 to current unrest
- *        { magicalSaturation: '+0.15' } → adds 0.15 to current saturation
+ * Supports relative changes in two spellings, both added to the current value:
+ *   - a **string** prefixed '+' or '-' — `{ unrest: '+20' }`, `{ magicalSaturation: '+0.15' }`
+ *   - a **`{ delta: n }` object** — `{ prosperity: { delta: -25 } }` (THR-1456)
  * All other values are direct replacements (existing behavior).
  *
- * Fail-soft: strings that parse as NaN are skipped with a console.warn.
+ * The object spelling is the one `monster-encounter-content.ts` has always authored, and
+ * until THR-1456 it fell through to the replacement branch — so a horde raid wrote the
+ * literal `{ delta: -25 }` into `properties.prosperity`. Every guarded reader then saw
+ * that settlement's prosperity as `0` (a devastating raid and a merely severe one became
+ * indistinguishable, and the settlement could never recover), and the one unguarded
+ * reader crashed the tick loop. Teaching the executor the shape is the additive
+ * direction (NFP #6) over rewriting the content, and it restores what the constants
+ * already declared the raid should do.
+ *
+ * Fail-soft (NFP #4): a change that parses as NaN is skipped, and a mis-shaped value is
+ * written but reported. Both paths warn — before THR-1456 only the string path did,
+ * which is why the object corruption sat on `main` silently.
  */
 function applyNodeChanges(
   current: Record<string, unknown>,
@@ -494,9 +533,23 @@ function applyNodeChanges(
       }
       const prev = typeof result[key] === 'number' ? (result[key] as number) : 0;
       result[key] = prev + delta;
-    } else {
-      result[key] = value;
+      continue;
     }
+
+    const objectDelta = asRelativeDeltaObject(value);
+    if (objectDelta !== null) {
+      // Same `prev` rule as the string branch: a non-number current value counts as 0.
+      // The original number is unrecoverable once corrupted, but the corruption does not
+      // survive the next delta that touches the key.
+      const prev = typeof result[key] === 'number' ? (result[key] as number) : 0;
+      result[key] = prev + objectDelta;
+      continue;
+    }
+
+    if (isMisshapenNumericChange(result[key], value)) {
+      console.warn(`[graphOpExecutor] applyNodeChanges: non-numeric change ${JSON.stringify(value)} for numeric key "${key}" — written verbatim; author it as { delta: n } or a '+n'/'-n' string`);
+    }
+    result[key] = value;
   }
   return result;
 }

@@ -479,14 +479,16 @@ export function applyAftermath(
     // the unchanged state, so the tick stopped advancing and every later tick re-threw:
     // 300 `runTick` calls reached tick 167, and the run's events repeated forever.
     //
-    // The corrupt value is real and predates this ticket. `applyNodeChanges`
-    // (`graphOpExecutor.ts:488`) understands a relative change written as the string
-    // `'-25'` but not the object `{ delta: -25 }`, and `monster-encounter-content.ts`
-    // authors the horde raid's prosperity and defence hits in the object form — so the
-    // executor writes the object verbatim into the property. Measured on `origin/main`
-    // at tick 300 of seed 42: three Locations already carry `{ delta: n }` in
-    // `properties.defense`. THR-1456 owns that; this guard owns the tick loop, which
-    // must survive bad data whoever wrote it.
+    // The corrupt value was real and predated this guard: `applyNodeChanges` understood
+    // a relative change written as the string `'-25'` but not the object `{ delta: -25 }`
+    // that `monster-encounter-content.ts` authors, so the executor wrote the object
+    // verbatim into the property (measured on `origin/main` at tick 300 of seed 42:
+    // three Locations carrying `{ delta: n }` in `properties.defense`).
+    //
+    // THR-1456 has since closed that writer — the executor now understands the object
+    // spelling — so no *current* writer produces this shape. The guard stays anyway, and
+    // deliberately: it owns the tick loop, which must survive bad data whoever wrote it
+    // (NFP #4), and the next mis-shaped writer is not required to announce itself.
     const rawProsperity = settlementNode.properties.prosperity;
     prosperityBefore = typeof rawProsperity === 'number' ? rawProsperity : 0;
     const prosperityLoss = severity === 'total' ? 1.0
