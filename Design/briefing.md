@@ -1,19 +1,19 @@
 # Briefing
-**Generated:** 2026-09-11 02:57 local (00:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-11 03:57 local (01:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of).**
 
-Third hour with the same ask, and each hour it has cost a little more. This hour the word reached the map.
+Fourth hour with the same ask. Last hour the word reached the map; this hour it reached the *war*.
 
-[The political map moved for the first time](https://github.com/christianspliid-ui/threadbare/pull/1889), merged 02:50. The red border used to be a picture painted before the world started — a decision taken at tick 0 that nothing in the running game could change. It is now drawn from who actually holds which towns: retarget one town to a different holder and **17 hexes of border move on the next frame**. Alongside it, the map's label tier was rewritten and now reads **realm · area · river**.
+[A sacked town changes hands](https://github.com/christianspliid-ui/threadbare/pull/1890), merged 03:32 — the fourth realm pull request tonight. Take a town by force and it now leaves the loser's territory and joins the victor's: the holding moves, the border redraws, the counts follow. Conquest was the executor's own next step after last hour's moving borders, and it landed inside the hour.
 
-That is the change since the last brief: *realm* is no longer only in filenames an agent reads. It is the word the map labels itself with.
+So the word is now in three places a player can see — the map's label tier (**realm · area · river**), the three realms the world already contains (*hold of Witness Skyfield*, 17 towns · *march of Shadow-Kept light*, 10 · *sovereignty of Open Earth*, 6), and the ground that changes hands when one of them wins.
 
-**The write-up proposes _Realm_ over _Nation_ and says outright you may veto the headword.** The argument is register — a nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way; only the word the player reads changes. Vetoing it tonight is a rename. Vetoing it after the [realm content](https://linear.app/threadbare/issue/THR-1454) queued behind it — court summons, border levy, tithe — is a rewrite of shipped prose.
+**The write-up proposes _Realm_ over _Nation_ and says outright you may veto the headword.** The argument is register — a nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way; only the word the player reads changes. Vetoing tonight is a rename. Vetoing after the [realm content](https://linear.app/threadbare/issue/THR-1454) queued behind it — court summons, border levy, tithe — is a rewrite of shipped prose.
 
-Two smaller ones want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from yesterday, and already the first word of *hold of Witness Skyfield* — and [**cast**](https://linear.app/threadbare/issue/THR-1445).
+Two smaller ones want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from yesterday, already the first word of *hold of Witness Skyfield* — and [**cast**](https://linear.app/threadbare/issue/THR-1445).
 
 ## Also waiting (12)
 
@@ -32,15 +32,15 @@ Two smaller ones want a yes rather than a decision: [**hold**](https://linear.ap
 
 ## Queue
 
-**Starved — 1 job ready, 1 building.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) (realms) holds the single work slot and is the fastest-moving thing on the board: three pull requests merged in the last four hours ([sweep](https://github.com/christianspliid-ui/threadbare/pull/1887) 00:28, [mint](https://github.com/christianspliid-ui/threadbare/pull/1888) 01:46, [moving borders](https://github.com/christianspliid-ui/threadbare/pull/1889) 02:50). The one item behind it is [THR-1053](https://linear.app/threadbare/issue/THR-1053) — the same ticket also-waiting item 3 invites you to veto.
+**Starved — 1 job ready, 1 building.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) (realms) still holds the single work slot and is still the fastest thing on the board: four pull requests merged in five hours ([sweep](https://github.com/christianspliid-ui/threadbare/pull/1887) 00:28, [mint](https://github.com/christianspliid-ui/threadbare/pull/1888) 01:46, [moving borders](https://github.com/christianspliid-ui/threadbare/pull/1889) 02:50, [conquest](https://github.com/christianspliid-ui/threadbare/pull/1890) 03:32).
 
-- **What is left before realms are finished**, in the executor's own order: conquest (a victor takes the loser's ground), then **subjects** — nobody currently belongs to a realm, so a realm cannot raise an army — then the counts and the sheet lines. That is the rest of slice 2; slice 3 follows. No action from you.
-- **One defect fixed on the way, worth a sentence**: seizing a rival's capital silently carried the *court* along with it, so a conquest would have moved a throne it never meant to move. Caught by running the world, not by reading the plan.
-- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unblocked work that nothing can reach** — `In Dev` + parked + unowned, so the pickup lane cannot see it, ~12 hours now. No decision left in it. The grooming lane fixes exactly this and runs at 09:16. No action from you.
+- **What is left before realms are finished**, in the executor's own order: **subjects** — nobody currently belongs to a realm, so a realm cannot raise an army — then the counts and the sheet lines, which closes slice 2; slice 3 follows. No action from you.
+- **[THR-1053](https://linear.app/threadbare/issue/THR-1053) sat through a third executor window unclaimed, and that is correct** — one job at a time, and the realm build holds the slot. It is queued, not refused; the orchestrator checked the ticket directly and found no bounce.
+- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unblocked work that nothing can reach** — `In Dev` + parked + unowned, so the pickup lane cannot see it, ~13 hours now. No decision left in it. The grooming lane fixes exactly this and runs at 09:16. No action from you.
 - **[THR-1380](https://linear.app/threadbare/issue/THR-1380)** parked awaiting your Done click — also-waiting item 4.
 
 ## Health
 
-All green. Deploy is serving the newest commit (`e7eac1ee`), CI and the post-merge heavy-test lane both green on main, no pull requests waiting to merge, all nine scheduled lanes on schedule, the worktree reaper ran 14 minutes ago. Engine tick cost **87 ms/tick, 1% above** its 7-day median across 74 measurements — flat, and the spike two days ago stays unwound.
+All green. Deploy is serving the newest commit (`e9437e55`), CI and the post-merge heavy-test lane both green on main, no pull requests waiting to merge, all nine scheduled lanes on schedule, the worktree reaper ran 17 minutes ago. Engine tick cost **80 ms/tick, 8% _below_ its 7-day median** across 75 measurements — the best reading in the window, and the spike two days ago stays unwound.
 
-The three quiet gaps the lane probe still reports are unchanged from last hour: two overnight-shaped ones covered by your ruling, and the 44.9-hour weekend one that is also-waiting item 12.
+The three quiet gaps the lane probe still reports are unchanged: two overnight-shaped ones covered by your ruling, and the 44.9-hour weekend one that is also-waiting item 12.
