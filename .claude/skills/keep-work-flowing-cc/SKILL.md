@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-09-02
+last_validated_against: 2026-09-11
 ---
 
 # Keep Work Flowing (CC)
@@ -67,7 +67,7 @@ npm run check:tick-cost --silent -- --input .cache/tick-cost.json --write Docs/o
 | healthy verdicts (`deployed`, `healthy`, `ok`, `active`, `waiting`) | Silence |
 | `unknown`, or a probe that failed to run | One § Health line; **never read `unknown` as healthy** |
 
-Standing declines: nightly-shaped `recovered` gaps in lane-silence are declined per Christian's 2026-08-08 ruling ("overnight quiet is normal") with one visibility line. Freshness special cases: never report a behind-count off a detached HEAD; detached-with-unique-commits → surface the SHAs, offer no repair command.
+Standing declines: nightly-shaped **and weekend-shaped** `recovered` gaps in lane-silence are declined per Christian's 2026-08-08 ruling ("overnight quiet is normal") and its 2026-09-11 extension to weekends (`Docs/canon/process.md` § User review interface, rule 4) with one visibility line — a `recovered` verdict is an ask only on a weekday gap with no pause marker. Do not carry a `UL-proposal`, an image-credit spend inside a ticket's stated batch, or a `wayfinder:*` decision ticket as a standing ask — all three are delegated by the same rule. Freshness special cases: never report a behind-count off a detached HEAD; detached-with-unique-commits → surface the SHAs, offer no repair command.
 
 **Sibling fold:** newest `orchestrator-*` / `backlog-grooming-*` / `weekly-hygiene-*` report **per producing task** from `origin/ops` (`git ls-tree -r --name-only origin/ops -- Docs/ops/`; the working-tree copies are a frozen pre-cutover archive), ≤36 h old. Fold each `## Needs Christian` section in **verbatim with attribution** (`— from daily-backlog-grooming`), dedupe against your own items, skip empty states. A gap in a sibling's reports is not a fault — no-op runs write no file.
 
