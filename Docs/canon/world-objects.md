@@ -22,7 +22,7 @@ Two words for one thing is the drift this page exists to stop. Where the code wo
 | **Mortal** | An individual actor. (Engine word: *agent*.) One undertaking cell acts on a Mortal and only one: `destroy` — the plot, a premeditated killing (THR-1430). A dead Mortal is retained, carrying `deceased`, `deathCause` and `slainBy`, so the chronicle can still name them. | `actor` · `actorType: individual` | roles, callings, spotlight tiers are variants |
 | **Ascendant** | The player and rival ascendants; an ordinary actor architecturally. | `actor` · `actorType: ascendant` | — |
 | **God / Spirit** | Gods and place-spirits; dormant. | `actor` · `actorType: god \| place_spirit` | — |
-| **Faction** | A structured social entity holding territory through `controls`. | `actor` · `actorType: faction` | — |
+| **Faction** | A structured social entity holding territory through `controls`. A **Realm** — the game word for a nation — is the `factionClass: 'realm'` variant: the landed polity of a culture, seated at a capital, with a court ladder, minted per domain at worldgen with a per-world definition id `realm.<cultureId>` (THR-1155). A class, not a kind; a Realm is a Faction in every mechanical respect. | `actor` · `actorType: faction` | realm (via `factionClass`, not the node discriminator) |
 | **Culture** | A people; mortals and locations `belongs_to` one. | `actor` · `actorType: culture` | — |
 | **Company** | A travelling group; never "party". | `actor` · `groupKind: company` | — |
 | **Army** | A company kind with stance, supply, momentum. | `actor` · `groupKind: army` | — |
@@ -52,6 +52,7 @@ Templates (`action_template`, `encounter_template`) are authored content that ha
 - **A Route is an edge first.** Traversal walks edges. The identity node is grown, never minted first, and only the trade route grows one today. A `road` edge carries `routeKind` (`road` or `trail`); the other classes are their own edge types.
 - **The helpers speak the game words.** `isLocationNode` / `isPlaceNode` / `getLocationNodes` / `getPlaceNodes` in `src/engine/sublocationShape.ts`; the code-word names are deprecated aliases for one release.
 - **Holding is ownership, not a thing.** The undertaking model targets the Location, Place or Route; the Holding is what a `hold` verb creates.
+- **The map keeps two partitions, and they are different objects.** The **Area** is geography — a `region` node, every land hex in exactly one, drawn as the dotted border. The **Realm** is politics — a Faction of class `realm`, drawn as the red border, which is *not stored*: it is a projection of the towns the Realm holds through `controls` (`src/engine/realmProjection.ts`, `REALM_FILL_RADIUS`), so seizing a town moves the border and nothing keeps a second per-hex political truth. They may cross freely; neither derives from the other. A Realm's territory is `controls`, never `owns` — `owns` is the Freehold's edge (THR-1155, THR-1453).
 
 ## The four guards
 

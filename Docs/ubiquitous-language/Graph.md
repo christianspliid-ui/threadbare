@@ -17,7 +17,7 @@ A kind of thing the world keeps, named in game words: a node type (or an edge ty
 ### Area
 
 **Aliases:** Region (code word), `region` node
-**Also see:** `[[World Object]]`, `[[HexTile]]`, `[[Location]]`
+**Also see:** `[[World Object]]`, `[[HexTile]]`, `[[Location]]`, `[[Realm]]`
 **Status:** canonical
 
 A multi-hex cluster by dominant terrain feature, containing its Locations. Geographic only: political territory is a Faction's `controls` edges, never a second region kind. The code word is *region*; the game word is Area.

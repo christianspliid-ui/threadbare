@@ -118,7 +118,7 @@
 <li><strong>Mortal</strong> <code>mortal</code> — The game word for an individual actor; "agent" is the engine word. Roles, callings and spotlight tiers are variants.</li>
 <li><strong>Ascendant</strong> <code>ascendant</code> — The player, and rival ascendants: architecturally an ordinary actor.</li>
 <li><strong>God / Spirit</strong> <code>god</code> — Gods and place-spirits share the actor shape; neither is minted on the census seeds.</li>
-<li><strong>Faction</strong> <code>faction</code> — A structured social entity holding territory through `controls`; chapters share a def.</li>
+<li><strong>Faction</strong> <code>faction</code> — A structured social entity holding territory through `controls`; chapters share a def. A **Realm** (game word for a nation) is the `factionClass: 'realm'` variant minted per culture domain at worldgen (THR-1155) — a landed polity with a seat, a court ladder and a per-world definition id `realm.&lt;cultureId&gt;`. It is a class, not a kind: a Realm is a Faction in every mechanical respect, so it takes no registry row of its own and `factionClass` is deliberately not a `classes` map here, which groups the discriminator's own values.</li>
 <li><strong>Culture</strong> <code>culture</code> — A people: foundation bias and phonetic signature; mortals and locations `belongs_to` one.</li>
 <li><strong>Company</strong> <code>company</code> — The game word for a travelling group; never "party". Its position is its leader's.</li>
 <li><strong>Army</strong> <code>army</code> — A company kind with a stance, supply and momentum.</li>

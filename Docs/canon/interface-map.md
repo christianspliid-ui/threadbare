@@ -260,6 +260,32 @@ carrier is deliberately **not** `state.emittedOmens`: an omen is addressed to a 
 catches whoever passes, a compulsion to a person and travels with them, and that difference
 is the card ("steer them, not the world").
 
+**Two contracts added by THR-1155 (2026-09-10/11), and both are *negative first*** —
+`area-partition-to-map` and `realm-holdings-to-political-map`. They earn a line here because
+of the shape they were written to forbid rather than the wiring they record. The map used to
+answer "which Area is this hex in" and "which nation holds this hex" **twice**: once from the
+graph, once from a detector or a stamp living inside the render layer, with nothing
+reconciling them. Neither half was missing, so no audit that greps for symbols would have
+flagged either. The contracts are therefore written as prohibitions — *no module may run a
+second Area detector*, *no module may store a per-hex realm stamp* — with one named producer
+(`buildAreaProjection` / `buildRealmProjection`) and one named accessor (`ensureAreaProjection`
+/ `ensureRealmProjection`) apiece.
+
+What that buys is the thing the old shape could not do: because the political map is
+*derived* from the `controls` edges rather than stored beside them, a town changing hands
+moves the border in the same tick, and conquest became expressible at all. It also means the
+contract has three readers that must never disagree — the border mesh, the `getLocationHolder`
+point reader behind the *held by* line, and the `$realm` scene sentinel — so each is pinned to
+the same generated-world population (33 Realm-held towns on seed 42 / medium, 0 disagreements)
+rather than to a fixture of its own. A fingerprint belt traces `reason: 'fingerprint'` when a
+writer forgets to `touchStructure`, and a participation tripwire enumerates all 14 production
+modules that mutate a faction `controls` edge and fails on an unclassified one. That tripwire
+already caught an uncounted writer (`lairEscalation` → `seedMonsterFaction`). Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
+This moves **War & Armies** and **Factions & Succession** off the unaudited list only for the
+territorial seam — the rest of both subsystems is still audit-on-touch.
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

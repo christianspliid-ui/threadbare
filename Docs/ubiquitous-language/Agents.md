@@ -88,6 +88,30 @@ Code anchors: `src/engine/retinue.ts` (`getRetinueAgents`, `RetinueAgent`), `src
 
 A structured social entity modeled as an actor node with `actorType: 'faction'`. Agents join factions via `member_of` edges. Factions have agency, goals, and can be created or dissolved dynamically during simulation. Faction behavior is simulation-driven, not hand-scripted.
 
+A Faction may carry a **class** (`factionClass`) naming what kind of Faction it is. `realm` is the first — see `[[Realm]]`.
+
+---
+
+### Realm
+
+**Aliases:** nation
+**Also see:** `[[Faction]]`, `[[Area]]`, `[[Culture]]`, `[[Holding]]`, `[[World Object]]`
+**Status:** canonical
+
+A **Faction whose class is *realm*** (`factionClass: 'realm'`): the landed polity of a culture, holding a territory of Locations through `controls` edges, seated at a capital Location, with a court rank ladder and a leader the succession seam derives or seats. What the map draws as a red political border is the towns the Realm holds, projected onto hexes. A Realm is a Faction in every mechanical respect — ambitions, quests, encounters, reputation, war — and the class only says what kind of Faction it is.
+
+Approved by Christian in attended chat, 2026-09-11 (THR-1453), shipped with THR-1155.
+
+**Never *holdings*** — that noun belongs to the Freehold and the `owns` edge. A Realm's territory is `controls`; a mortal's `[[Holding]]` is `owns`. On Realm surfaces the plain verb is *holds* (*held by the Realm of Wild Storm*), pending the `[[hold]]` arbitration in THR-1449; never `hold` as a code identifier.
+
+**Retired from player-facing surfaces:** *kingdom*, *barony*, *domain*, *province*. The first two survive only as flavour inside a Realm's **name** (*the Kingdom of Wild Storm*), never as a second object; the last two were code words for the same thing and name nothing the player reads.
+
+**Why Realm over Nation as the headword:** register. A nation is a modern political noun; a realm is what a fantasy map draws and what a court sits over — and it leaves *nation* free as the everyday alias.
+
+**A Realm is not an `[[Area]]`.** The two partitions of the map are different objects and may cross: an Area is geography and does not change hands; a Realm is politics and does. Neither derives from the other.
+
+**Its definition is per-world, not static.** A Realm is minted per culture domain at worldgen with `factionDefId: realm.<cultureId>` over a *generated* culture, so no authored string can name one: every by-id definition read goes through `getFactionDefinition`, content scopes itself by class rather than by id, and an aftermath effect reaches one through the `$realm` sentinel. Court ladder: *stranger · subject · yeoman · sworn · thane · counsel*.
+
 ---
 
 ### Reputation

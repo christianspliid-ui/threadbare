@@ -1852,14 +1852,22 @@ if (import.meta.env.DEV) {
       // — the army that sacks a town takes it for its faction. A throwaway member of the
       // faction stands in for one, and is removed again, so the world is left with the
       // territory change and nothing else.
+      // Shaped like a real army, not merely named one: `actorType: 'group'` with
+      // `groupKind: 'army'` (armySpawning.ts), and the three `member_of` properties the
+      // edge schema requires. A proxy carrying `actorType: 'army'` still conquered — the
+      // engine reads only the `member_of` edge — but it is a value no world-object kind
+      // claims, so every use of this lever tripped the write-time schema guard and three
+      // edge warnings into the console of the browser session the lever exists to serve,
+      // where console cleanliness is itself part of the evidence.
       const proxyId = `dbg_conquest_army_${state.tick}_${location.id}`;
       graph.addNode({
         id: proxyId, type: 'actor', name: 'debug host',
-        properties: { actorType: 'army' },
+        properties: { actorType: 'group', groupKind: 'army' },
       });
       graph.addEdge({
         id: `e_${proxyId}_member`, source: proxyId, target: faction.id,
-        type: 'member_of', properties: {},
+        type: 'member_of',
+        properties: { role: 'member', rank: 0, joinedTick: state.tick },
       });
       try {
         const { applyConquestOrVacuum } = await import('./engine/battleAftermath');
