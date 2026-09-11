@@ -1,5 +1,5 @@
 {
-  "total": 2905,
+  "total": 2903,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -106,14 +106,13 @@
     "src/components/HexMapV2/lab/vignette/__tests__/landmarkRaycaster.test.ts": 8,
     "src/components/HexMapV2/lab/vignette/ChunkedLandmarkLayer.ts": 1,
     "src/components/HexMapV2/overlay/__tests__/LocationLabelOverlay.test.ts": 3,
-    "src/components/HexMapV2/overlay/LocationLabelOverlay.tsx": 1,
     "src/components/HexMapV2/palette/colorUtils.ts": 2,
     "src/components/HexMapV2/scene/__tests__/CoastlineMesh.test.ts": 1,
     "src/components/HexMapV2/scene/__tests__/FogCulling.test.ts": 2,
     "src/components/HexMapV2/scene/__tests__/LocationIconMesh.test.ts": 2,
     "src/components/HexMapV2/scene/__tests__/RoadMesh.test.ts": 1,
     "src/components/HexMapV2/scene/BattleIndicatorMesh.ts": 1,
-    "src/components/HexMapV2/scene/BorderMesh.ts": 2,
+    "src/components/HexMapV2/scene/BorderMesh.ts": 1,
     "src/components/HexMapV2/scene/FogCulling.ts": 5,
     "src/components/HexMapV2/scene/HexGridLines.ts": 1,
     "src/components/HexMapV2/scene/LocationIconMesh.ts": 2,

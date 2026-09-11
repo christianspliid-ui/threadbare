@@ -15,7 +15,7 @@
  * Border strategy:
  *   - Walk every hex pair (dedup edges via canonical key).
  *   - If two adjacent land hexes belong to different geographic regions → geo border edge.
- *   - Skip edges that are already political borders (kingdom or barony) to avoid clutter.
+ *   - Skip edges the red realm border already draws, to avoid two lines on one edge.
  *
  * NFP #1 Tunability: All sizes, colors, and dash params in named constants.
  * NFP #3 Determinism: Pure geometry from input data — no randomness.
@@ -88,17 +88,18 @@ function getEdgePoints(hexCenter: Point2D, dir: number, size: number): { start: 
  * Create a geographic region border mesh from region data.
  *
  * Returns THREE.LineSegments with LineDashedMaterial for a dotted look.
- * Edges that are already political borders (different kingdom or barony)
- * are excluded to avoid visual clutter.
+ * Edges the red realm border already draws are excluded to avoid two lines on one
+ * hex edge (THR-1155: the suppression reads the realm claim, since provinces are no
+ * longer drawn).
  *
  * @param areaProjection - The Area partition, projected from the graph (THR-1155)
- * @param hexProvinceId - "col,row" → province id, for suppressing edges a political
- *   border already draws
+ * @param hexRealmId - "col,row" → Realm id, for suppressing edges the political border
+ *   already draws
  * @param tiles - All hex tiles in the world
  */
 export function createGeoBorderMesh(
   areaProjection: AreaProjection,
-  hexProvinceId: Map<string, number>,
+  hexRealmId: Map<string, string>,
   tiles: HexTile[],
 ): THREE.LineSegments {
   const hexAreaId = areaProjection.hexAreaId;
@@ -121,7 +122,7 @@ export function createGeoBorderMesh(
     const geoA = hexAreaId.get(hKey);
     if (geoA === undefined) continue;
 
-    const provinceA = hexProvinceId.get(hKey);
+    const realmA = hexRealmId.get(hKey);
 
     const hexCenter: Point2D = hexToWorld({ col, row }, size);
     const neighbors = hexNeighbors({ col, row });
@@ -142,9 +143,12 @@ export function createGeoBorderMesh(
       // Only draw a border between different Areas
       if (geoB === undefined || geoA === geoB) continue;
 
-      // Skip edges that are already political borders (kingdom or barony differ)
-      const provinceB = neighborExists ? hexProvinceId.get(neighborKey) : undefined;
-      if (provinceA !== undefined && provinceB !== undefined && provinceA !== provinceB) continue;
+      // Skip edges the realm border already draws. Only a claim-to-claim difference
+      // is suppressed: a claimed hex beside unclaimed ground carries a red border too,
+      // but the dotted Area line there says something the red one does not (which Area
+      // the wilderness belongs to), so it stays.
+      const realmB = neighborExists ? hexRealmId.get(neighborKey) : undefined;
+      if (realmA !== undefined && realmB !== undefined && realmA !== realmB) continue;
 
       processedEdges.add(edgeKey);
 

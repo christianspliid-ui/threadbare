@@ -37,8 +37,7 @@ export interface UseZoomLayerVisibilityParams {
     gridLines: React.MutableRefObject<THREE.Mesh | null>;
     elevTicks: React.MutableRefObject<THREE.Mesh | null>;
     geoBorder: React.MutableRefObject<THREE.LineSegments | null>;
-    borderDomain: React.MutableRefObject<THREE.Mesh | null>;
-    borderProvince: React.MutableRefObject<THREE.Mesh | null>;
+    borderRealm: React.MutableRefObject<THREE.Mesh | null>;
     coastline: React.MutableRefObject<THREE.Group | null>;
     /** Army shield sprites — controlled by 'armies' matrix entry (Plan 13-04) */
     armies?: React.MutableRefObject<THREE.Group | null>;
@@ -76,8 +75,7 @@ export function useZoomLayerVisibility({
     if (groups.roads.current) groups.roads.current.visible = ZOOM_VISIBILITY_MATRIX.roads[tier];
     if (groups.gridLines.current) groups.gridLines.current.visible = ZOOM_VISIBILITY_MATRIX.grid_lines[tier];
     if (groups.geoBorder.current) groups.geoBorder.current.visible = ZOOM_VISIBILITY_MATRIX.geo_borders[tier];
-    if (groups.borderDomain.current) groups.borderDomain.current.visible = ZOOM_VISIBILITY_MATRIX.borders_domain[tier];
-    if (groups.borderProvince.current) groups.borderProvince.current.visible = ZOOM_VISIBILITY_MATRIX.borders_province[tier];
+    if (groups.borderRealm.current) groups.borderRealm.current.visible = ZOOM_VISIBILITY_MATRIX.borders_realm[tier];
 
     // Agent tiers (portrait/dot/retinue)
     const agentGroup = agentSpriteGroup.current;

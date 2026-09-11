@@ -9,8 +9,8 @@ import {
 import * as THREE from 'three';
 import type { HexCoord, HexTile } from '../../types';
 import type { RiverPath } from '../../engine/worldGenData';
-import type { RegionData } from '../../engine/regionTypes';
 import type { AreaProjection } from '../../engine/areaProjection';
+import type { RealmProjection } from '../../engine/realmProjection';
 import type { VisibilityMap } from '../../types/visibility';
 import { hexKey } from '../../lib/hexKey';
 import { hexToWorld, worldToHex } from '../../lib/worldPosition';
@@ -112,7 +112,7 @@ import {
   SLOT_RING_RADIUS,
   VERTEX_ANGLES_DEG,
 } from '../../data/agent-visual-content';
-import { generateRegionLabels, generateAreaLabels, generateRiverLabels } from '../../engine/regionLabels';
+import { generateRealmLabels, generateAreaLabels, generateRiverLabels } from '../../engine/regionLabels';
 
 // ─── Location offset for trail endpoints ──────────────────────────────────────
 
@@ -281,10 +281,11 @@ export interface HexMapV2Props {
   riverPaths?: RiverPath[];
   /** Lake hex IDs from worldgen — stored in ref for use by lake coloring (Plan 03-01+) */
   lakeIds?: Int16Array;
-  /** Political region data from worldgen — baronies, kingdoms, borders, and capital markers (Plan 04-02+).
-   *  The geographic half moved to `areaProjection` (THR-1155); this carries the political
-   *  tiers only, until Realms replace them. */
-  regionData?: RegionData;
+  /** The political partition, projected from the `controls` edges Realms hold (THR-1155).
+   *  Drives the red border, the seat markers and the realm label tier — all three of which
+   *  used to read per-hex political stamps written once at worldgen, so the map could not
+   *  move when a nation did. */
+  realmProjection?: RealmProjection;
   /** The Area partition, projected from the graph (THR-1155). Drives the dotted geographic
    *  borders and the geographic label tier — both of which used to read a second region
    *  partition detected inside this component and joined to the graph by list position. */
@@ -527,7 +528,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -647,8 +648,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const riverGroupRef      = useRef<THREE.Group | null>(null);
     const gridLinesRef       = useRef<THREE.Mesh | null>(null);
     const elevTicksRef       = useRef<THREE.Mesh | null>(null);
-    const borderDomainRef   = useRef<THREE.Mesh | null>(null);
-    const borderProvinceRef    = useRef<THREE.Mesh | null>(null);
+    const borderRealmRef     = useRef<THREE.Mesh | null>(null);
     const geoBorderRef       = useRef<THREE.LineSegments | null>(null);
     const coastlineRef       = useRef<THREE.Group | null>(null);
 
@@ -955,29 +955,24 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Renders at RENDER_ORDER.GEO_BORDERS, below political borders
         let geoBorderMesh: THREE.Mesh | null = null;
         if (areaProjection && areaProjection.hexAreaId.size > 0) {
-          geoBorderMesh = createGeoBorderMesh(areaProjection, regionData?.hexProvinceId ?? new Map(), tiles);
+          geoBorderMesh = createGeoBorderMesh(areaProjection, realmProjection?.hexRealmId ?? new Map(), tiles);
           scene.add(geoBorderMesh);
         }
         geoBorderRef.current = geoBorderMesh;
 
-        // Build political border polylines — red quad-strip borders for domains and provinces
-        // Renders at RENDER_ORDER.BORDERS, above geographic borders.
-        // Geographic-only differences produce no geometry (REGN-06).
-        let borderDomainMesh: THREE.Mesh | null = null;
-        let borderProvinceMesh: THREE.Mesh | null = null;
+        // Build the realm border — one red quad-strip tier around the ground each Realm
+        // holds (THR-1155). Renders at RENDER_ORDER.BORDERS, above geographic borders.
+        // The province tier is gone: *draw only what is held*.
+        let borderRealmMesh: THREE.Mesh | null = null;
         let capitalMarkers: THREE.Group | null = null;
-        if (regionData && (regionData.provinces.length > 0 || regionData.hexProvinceId.size > 0)) {
-          const borders = createBorderMesh(regionData, tiles, cols);
-          borderDomainMesh = borders.domainMesh;
-          borderProvinceMesh = borders.provinceMesh;
-          scene.add(borderDomainMesh);
-          scene.add(borderProvinceMesh);
+        if (realmProjection && realmProjection.hexRealmId.size > 0) {
+          borderRealmMesh = createBorderMesh(realmProjection, tiles).realmMesh;
+          scene.add(borderRealmMesh);
 
-          capitalMarkers = createCapitalMarkers(regionData);
+          capitalMarkers = createCapitalMarkers(realmProjection);
           scene.add(capitalMarkers);
         }
-        borderDomainRef.current = borderDomainMesh;
-        borderProvinceRef.current = borderProvinceMesh;
+        borderRealmRef.current = borderRealmMesh;
 
         // Build road network — solid major roads + dashed trails (Plan 07-02)
         // Renders at RENDER_ORDER.ROADS, initially hidden (zoom matrix controls visibility)
@@ -1121,14 +1116,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         animStates.clear();
 
         // Generate HTML region labels (Plan 04-03; THR-1155).
-        // The political tiers come from regionData; the geographic tier comes from the
-        // Area projection, so a name over a mountain range is that Area's own name.
+        // Both tiers now read a projection of the graph: the realm name sits over the
+        // ground its Realm holds, the area name over that Area's own hexes.
         if (
-          (regionData && (regionData.domains.length > 0 || regionData.provinces.length > 0))
+          (realmProjection && realmProjection.realms.length > 0)
           || (areaProjection && areaProjection.areas.length > 0)
         ) {
           const allLabels = [
-            ...(regionData ? generateRegionLabels(regionData) : []),
+            ...(realmProjection ? generateRealmLabels(realmProjection) : []),
             ...(areaProjection ? generateAreaLabels(areaProjection) : []),
             ...generateRiverLabels(riverPathsRef.current, seed),
           ];
@@ -1391,8 +1386,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           coastlineRef.current = null;
           gridLinesRef.current = null;
           elevTicksRef.current = null;
-          borderDomainRef.current   = null;
-          borderProvinceRef.current = null;
+          borderRealmRef.current = null;
           geoBorderRef.current = null;
           hexPulseMeshRef.current?.dispose();
           hexPulseMeshRef.current = null;
@@ -1456,13 +1450,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             }
           }
           // Dispose border meshes
-          if (borderDomainMesh) {
-            borderDomainMesh.geometry.dispose();
-            (borderDomainMesh.material as THREE.Material).dispose();
-          }
-          if (borderProvinceMesh) {
-            borderProvinceMesh.geometry.dispose();
-            (borderProvinceMesh.material as THREE.Material).dispose();
+          if (borderRealmMesh) {
+            borderRealmMesh.geometry.dispose();
+            (borderRealmMesh.material as THREE.Material).dispose();
           }
           // Dispose capital markers
           if (capitalMarkers) {
@@ -1572,7 +1562,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // animation state (prevPositions, animStates, trailGroup) and preventing movement
     // animations from ever triggering.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths, regionData, areaProjection, locations, anomalies, roadPaths]);
+    }, [tiles, cols, rows, seed, riverPaths, realmProjection, areaProjection, locations, anomalies, roadPaths]);
 
     // ── Fog update — delegated to useFogCulling hook ──
     useFogCulling({
@@ -1601,8 +1591,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         gridLines: gridLinesRef,
         elevTicks: elevTicksRef,
         geoBorder: geoBorderRef,
-        borderDomain: borderDomainRef,
-        borderProvince: borderProvinceRef,
+        borderRealm: borderRealmRef,
         coastline: coastlineRef,
       },
       agentSpriteGroup: agentSpriteGroupRef,

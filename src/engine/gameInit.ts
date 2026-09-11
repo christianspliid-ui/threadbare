@@ -13,8 +13,8 @@ import type { GameState } from '../types/gameState';
 import type { AscendantIdentity } from '../types/remembrance';
 import { deriveCosmologyFromIdentity, deriveMapSize } from './remembrance';
 import { generateWorld } from './hexGrid';
-import type { RiverPath } from './worldGenData';
 import type { RegionData } from './regionTypes';
+import type { RiverPath } from './worldGenData';
 import { createAscendant } from './ascendant';
 import { createInitialAscendantBeatState } from './ascendantBeat';
 import { seedWorld } from './worldSeed';
@@ -411,6 +411,9 @@ export function initializeGameState(
     tiles,
     riverPaths: worldGenResult.riverPaths,
     lakeIds: worldGenResult.lakeIds,
+    // Worldgen scaffolding, not a render source: the provinces and domains a Realm is
+    // minted from. The renderer's copy of this is what THR-1155 deleted — the political
+    // map is `realmProjection` now — but the worldgen assertions read the domains here.
     regionData: worldGenResult.regionData,
   };
 }

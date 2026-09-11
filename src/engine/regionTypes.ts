@@ -70,7 +70,15 @@ export interface DomainRegion {
  */
 export interface RegionLabel {
   id: string;
-  tier: 'domain' | 'province' | 'geographic' | 'river';
+  /**
+   * Which map tier the label names (THR-1155).
+   *
+   * `realm` and `area` replaced `domain` / `province` / `geographic`: a Realm and an
+   * Area are objects the player can act on, and a province is worldgen scaffolding the
+   * map no longer draws. One word per tier on the map, in the chronicle and in the
+   * codex (Law 37).
+   */
+  tier: 'realm' | 'area' | 'river';
   text: string;
   /** World-space X coordinate (Three.js scene space) */
   worldX: number;

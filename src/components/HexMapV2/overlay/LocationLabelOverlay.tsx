@@ -367,16 +367,20 @@ export function LocationLabelOverlay({
 
 /**
  * Maps LocationImportance to the ScreenLabel tier format used by labelCollision.ts.
- * 'capital' → 'barony' (similar priority), 'city'/'town'/'small' → 'geographic'.
+ * 'capital' → 'realm', 'city'/'town' → 'area', 'small' → 'river'.
  *
  * This is a compatibility shim — location labels participate in collision detection
- * with region labels but use the closest available tier for priority ordering.
+ * with region labels but borrow the map tier whose *priority* matches their importance;
+ * the words name map tiers, not what a location is. THR-1155 retargeted it when the
+ * tiers became realm/area/river, and fixed a pre-existing miss on the way: 'capital'
+ * returned 'barony', a tier that had not existed in the union for some time, so a
+ * capital's label carried no priority at all.
  */
 function importanceToTier(importance: LocationImportance): ScreenLabel['tier'] {
   switch (importance) {
-    case 'capital': return 'barony';
-    case 'city':    return 'geographic';
-    case 'town':    return 'geographic';
+    case 'capital': return 'realm';
+    case 'city':    return 'area';
+    case 'town':    return 'area';
     case 'small':   return 'river';
   }
 }

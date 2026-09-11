@@ -1770,6 +1770,41 @@ if (import.meta.env.DEV) {
       };
     },
 
+    /**
+     * THR-1155 — the political map, read from the runtime that owns it.
+     *
+     * The same projection `BorderMesh`, `CapitalMarkers` and the realm label tier render
+     * from, so what this reports and what is on screen cannot be two models of one world.
+     * Every Realm here holds at least one town: a Realm that holds nothing has no border
+     * and is deliberately absent.
+     *
+     * `unclaimedHexes` is not a defect — it is wilderness, the ground beyond every
+     * Realm's reach, and a world where it is 0 would mean the fill radius swallowed the
+     * map. Call it before and after a `controls` change to see the border move.
+     */
+    getRealmProjection: async () => {
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state || !runtime) return null;
+      const { ensureRealmProjection } = await import('./engine/simulationRuntime');
+      const projection = ensureRealmProjection(
+        runtime, state.graph, state.tiles, state.clock.currentTick,
+      );
+      return {
+        realms: projection.realms.map((r) => ({
+          id: r.id,
+          name: r.name,
+          seatLocationId: r.seatLocationId,
+          hexCount: r.hexes.length,
+          heldLocationIds: r.heldLocationIds,
+        })),
+        claimedHexes: projection.hexRealmId.size,
+        unclaimedHexes: projection.unclaimedHexes,
+        builtAt: runtime.realmProjectionBuiltAt,
+        structuralCacheVersion: runtime.structuralCacheVersion,
+      };
+    },
+
     /** THR-1134 — ring occupancy and the swallowed-append count for the flight recorder. */
     getIncidentRecorderStats: async () => {
       const runtime = _runtimeProvider?.();

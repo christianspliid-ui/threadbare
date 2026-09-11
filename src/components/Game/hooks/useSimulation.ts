@@ -4,12 +4,11 @@ import type { AscendantArchetype } from '../../../types/influence';
 import type { CosmologyProfile } from '../../../types';
 import type { GameState } from '../../../types/gameState';
 import type { RiverPath } from '../../../engine/worldGenData';
-import type { RegionData } from '../../../engine/regionTypes';
 import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, devSeedAscendantTestPackage, devPlaceAvatarAtSettlement, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
 import type { MapSizePreset } from '../../../engine/gameInit';
 import type { AscendantIdentity } from '../../../types/remembrance';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
-import { createSimulationRuntime, resetRuntimeCaches, ensureAreaProjection } from '../../../engine/simulationRuntime';
+import { createSimulationRuntime, resetRuntimeCaches, ensureAreaProjection, ensureRealmProjection } from '../../../engine/simulationRuntime';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import {
   startTwilight,
@@ -87,7 +86,6 @@ export function useSimulation({
   const [tiles] = useState<HexTile[]>(initial.tiles);
   const [riverPaths] = useState<RiverPath[]>(initial.riverPaths);
   const [lakeIds] = useState<Int16Array>(initial.lakeIds);
-  const [regionData] = useState<RegionData | undefined>(initial.regionData);
   const [running, setRunning] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
@@ -216,14 +214,25 @@ export function useSimulation({
     [gameState.graph, tiles, runtimeRef.current.structuralCacheVersion],
   );
 
+  // THR-1155: the political map. Same ownership as the Area partition and the same
+  // memo key — but unlike it, this one moves: a conquest bumps
+  // `structuralCacheVersion`, the memo re-reads, and the red border follows the towns
+  // the Realms now hold. The setter-less `regionData` state this replaced could not.
+  const realmProjection = useMemo(
+    () => ensureRealmProjection(runtimeRef.current, gameState.graph, tiles, gameState.clock.currentTick),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the tick is read, not keyed on:
+    // keying it would rebuild the projection every tick, which is what the version counter exists to avoid.
+    [gameState.graph, tiles, runtimeRef.current.structuralCacheVersion],
+  );
+
   return {
     gameState,
     setGameState,
     tiles,
     riverPaths,
     lakeIds,
-    regionData,
     areaProjection,
+    realmProjection,
     running,
     speed,
     setSpeed,

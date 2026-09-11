@@ -488,12 +488,15 @@ export type TraceCategory =
   // One geography — the Area partition minted at worldgen (THR-1155)
   | 'area_coverage'
   // Realms — a nation founded at worldgen (THR-1155)
-  | 'realm_founded';
+  | 'realm_founded'
+  // Realms — the political map rebuilt from the towns they hold (THR-1155)
+  | 'realm_projection_rebuilt';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
   'area_coverage',
   'realm_founded',
+  'realm_projection_rebuilt',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -946,6 +949,29 @@ export interface RealmFoundedTrace extends TraceBase {
   seatLocationId: string | null;
   /** How many Locations it holds at tick 0. */
   heldLocations: number;
+}
+
+/**
+ * The political map rebuilt (THR-1155) — once per rebuild, never per tick.
+ *
+ * `reason` is the point of this trace. `'version'` is the healthy path: a writer moved
+ * a `controls` edge and called `touchStructure`, so the projection rebuilt when it was
+ * asked for. `'fingerprint'` means the edges changed and the version did **not** — a
+ * writer forgot to bump, the belt caught it, and the map is right one read late. A
+ * `'fingerprint'` line in a test run is a defect to fix at its writer, not a feature to
+ * rely on.
+ */
+export interface RealmProjectionTrace extends TraceBase {
+  category: 'realm_projection_rebuilt';
+  reason: 'version' | 'fingerprint';
+  /** Realms with territory — a Realm holding nothing is not on the map. */
+  realms: number;
+  /** Hexes some Realm claims. */
+  claimedHexes: number;
+  /** Hexes beyond every Realm's reach. Wilderness, reported rather than hidden. */
+  unclaimedHexes: number;
+  /** The counter the version check read, so a stale read is legible after the fact. */
+  structuralCacheVersion: number;
 }
 
 // ─── Effect vocabulary activation (THR-1239) ────────────────────────
@@ -3493,6 +3519,7 @@ export type TraceEntry =
   | EdgeSchemaRefusedTrace
   | AreaCoverageTrace
   | RealmFoundedTrace
+  | RealmProjectionTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

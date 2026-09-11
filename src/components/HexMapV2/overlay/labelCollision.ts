@@ -2,8 +2,8 @@
  * labelCollision.ts — AABB collision detection for HTML label overlay.
  *
  * Implements screen-space axis-aligned bounding box (AABB) sweep to determine
- * which labels to show when they would overlap. Higher-priority labels (domain)
- * win over lower-priority labels (province, geographic, river).
+ * which labels to show when they would overlap. Higher-priority labels (realm)
+ * win over lower-priority labels (area, river).
  *
  * NFP #1 Tunability: Font size estimates and priority order are named constants.
  * NFP #4 Fail-soft: Returns empty array on empty input, never throws.
@@ -13,12 +13,12 @@
 
 export interface ScreenLabel {
   id: string;
-  tier: 'domain' | 'province' | 'geographic' | 'river';
+  tier: 'realm' | 'area' | 'river';
   text: string;
   screenX: number;
   screenY: number;
   visible: boolean;
-  /** Screen-space width of the province/region (pixels), for letter-spacing calc */
+  /** Screen-space width of the realm/area (pixels), for letter-spacing calc */
   screenWidth?: number;
 }
 
@@ -36,9 +36,8 @@ export interface ScreenBBox {
  * Should match the actual rendered sizes in RegionLabelOverlay.tsx.
  */
 const TIER_FONT_SIZE: Record<ScreenLabel['tier'], number> = {
-  domain: 20,
-  province: 14,
-  geographic: 12,
+  realm: 20,
+  area: 12,
   river: 12,
 };
 
@@ -55,13 +54,12 @@ const BBOX_PADDING_PX = 8;
 
 /**
  * Collision priority: lower number = higher priority = placed first.
- * domain wins over province wins over geographic wins over river.
+ * realm wins over area wins over river.
  */
 const TIER_PRIORITY: Record<ScreenLabel['tier'], number> = {
-  domain: 0,
-  province: 1,
-  geographic: 2,
-  river: 3,
+  realm: 0,
+  area: 1,
+  river: 2,
 };
 
 // ─── Implementation ───────────────────────────────────────────────────────────
@@ -79,9 +77,9 @@ export function estimateBBox(label: ScreenLabel): ScreenBBox {
   const charWidth = fontSize * CHAR_WIDTH_FACTOR;
   let width = label.text.length * charWidth;
   let height = fontSize * LINE_HEIGHT_FACTOR;
-  // If screenWidth is set (province width for scaled font), use the wider/taller estimate
+  // If screenWidth is set (the realm's width for scaled font), use the wider/taller estimate
   if (label.screenWidth) {
-    const scaledWidth = label.screenWidth * 0.5; // 50% of province width
+    const scaledWidth = label.screenWidth * 0.5; // 50% of the realm's width
     if (scaledWidth > width) {
       const scale = scaledWidth / width;
       width = scaledWidth;
@@ -122,7 +120,7 @@ function intersects(a: ScreenBBox, b: ScreenBBox): boolean {
 export function removeOverlaps(labels: ScreenLabel[], prePlaced: ScreenBBox[] = []): ScreenLabel[] {
   if (labels.length === 0) return [];
 
-  // Sort by priority ascending (domain=0 placed first)
+  // Sort by priority ascending (realm=0 placed first)
   const sorted = [...labels].sort(
     (a, b) => TIER_PRIORITY[a.tier] - TIER_PRIORITY[b.tier],
   );

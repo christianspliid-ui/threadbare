@@ -1,40 +1,14 @@
 /**
- * regionLabels.test.ts — Tests for generateRegionLabels and generateRiverLabels.
+ * regionLabels.test.ts — the three label tiers: realm, area, river (THR-1155).
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateRegionLabels, generateAreaLabels, generateRiverLabels, LABEL_PRIORITY } from '../regionLabels';
+import { generateRealmLabels, generateAreaLabels, generateRiverLabels, LABEL_PRIORITY } from '../regionLabels';
 import type { AreaProjection } from '../areaProjection';
-import type { RegionData } from '../regionTypes';
 import type { RiverPath } from '../worldGenData';
-import type { RegionCluster, ProvinceRegion, DomainRegion } from '../regionTypes';
+import type { RealmProjection } from '../realmProjection';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function makeRegionData(overrides: Partial<RegionData> = {}): RegionData {
-  return {
-    geographicRegions: [],
-    provinces: [],
-    domains: [],
-    labels: [],
-    hexRegionId: new Map(),
-    hexProvinceId: new Map(),
-    hexDomainId: new Map(),
-    ...overrides,
-  };
-}
-
-function makeGeoRegion(id: number, hexCount: number): RegionCluster {
-  const hexes = Array.from({ length: hexCount }, (_, i) => ({ col: i, row: 0 }));
-  return {
-    id,
-    featureType: 'plains',
-    hexes,
-    centerCol: Math.floor(hexCount / 2),
-    centerRow: 0,
-    name: `Region ${id}`,
-  };
-}
 
 /**
  * An Area projection carrying `count` Areas of `hexCount` hexes each (THR-1155).
@@ -59,125 +33,90 @@ function makeAreaProjection(sizes: number[]): AreaProjection {
   return { areas, hexAreaId };
 }
 
-function makeProvinceRegion(id: number): ProvinceRegion {
-  return {
-    id,
-    cultureId: 'c1',
-    capitalHex: { col: id * 5, row: 0 },
-    geographicRegionIds: [id],
-    hexes: [{ col: id * 5, row: 0 }],
-    centroid: { col: id * 5 + 2, row: 1 },
-    name: `Province ${id}`,
-  };
-}
-
-function makeDomainRegion(id: number): DomainRegion {
-  return {
-    id,
-    cultureId: 'c1',
-    capitalHex: { col: id * 20, row: 5 },
-    provinceIds: [id],
-    centroid: { col: id * 20 + 5, row: 3 },
-    name: `Domain ${id}`,
-  };
+/**
+ * A political projection carrying one Realm per entry in `sizes`, each holding that
+ * many hexes on its own row (THR-1155).
+ */
+function makeRealmProjection(sizes: number[]): RealmProjection {
+  const hexRealmId = new Map<string, string>();
+  const realms = sizes.map((hexCount, id) => {
+    const hexes = Array.from({ length: hexCount }, (_, i) => ({ col: i, row: id }));
+    for (const h of hexes) hexRealmId.set(`${h.col},${h.row}`, `faction_${id}`);
+    return {
+      id: `faction_${id}`,
+      name: `Realm ${id}`,
+      seatHex: hexes[0],
+      seatLocationId: `loc_${id}`,
+      heldLocationIds: [`loc_${id}`],
+      hexes,
+    };
+  });
+  return { realms, hexRealmId, unclaimedHexes: 0 };
 }
 
 // ─── LABEL_PRIORITY ───────────────────────────────────────────────────────────
 
 describe('LABEL_PRIORITY', () => {
-  it('has domain=0, province=1, geographic=2, river=3', () => {
-    expect(LABEL_PRIORITY.domain).toBe(0);
-    expect(LABEL_PRIORITY.province).toBe(1);
-    expect(LABEL_PRIORITY.geographic).toBe(2);
-    expect(LABEL_PRIORITY.river).toBe(3);
+  it('has realm=0, area=1, river=2 — the province tier retired with its stamps (THR-1155)', () => {
+    expect(LABEL_PRIORITY.realm).toBe(0);
+    expect(LABEL_PRIORITY.area).toBe(1);
+    expect(LABEL_PRIORITY.river).toBe(2);
+    expect(Object.keys(LABEL_PRIORITY).sort()).toEqual(['area', 'realm', 'river']);
   });
 });
 
-// ─── generateRegionLabels ─────────────────────────────────────────────────────
+// ─── generateRealmLabels ──────────────────────────────────────────────────────
 
-describe('generateRegionLabels', () => {
-  it('produces one label per domain with tier=domain', () => {
-    const rd = makeRegionData({
-      domains: [makeDomainRegion(0), makeDomainRegion(1)],
-      provinces: [makeProvinceRegion(0), makeProvinceRegion(1)],
-    });
-    const labels = generateRegionLabels(rd);
-    const domainLabels = labels.filter(l => l.tier === 'domain');
-    expect(domainLabels).toHaveLength(2);
-    expect(domainLabels[0].id).toBe('domain-0');
-    expect(domainLabels[1].id).toBe('domain-1');
+describe('generateRealmLabels — the political tier reads the projection (THR-1155)', () => {
+  it('produces one label per Realm with tier=realm', () => {
+    const labels = generateRealmLabels(makeRealmProjection([6, 4]));
+    expect(labels.filter(l => l.tier === 'realm')).toHaveLength(2);
+    expect(labels.map(l => l.id)).toEqual(['realm-faction_0', 'realm-faction_1']);
   });
 
-  it('produces one label per province with tier=province', () => {
-    const rd = makeRegionData({
-      provinces: [makeProvinceRegion(0), makeProvinceRegion(1), makeProvinceRegion(2)],
-      domains: [],
-    });
-    const labels = generateRegionLabels(rd);
-    const provinceLabels = labels.filter(l => l.tier === 'province');
-    expect(provinceLabels).toHaveLength(3);
-    expect(provinceLabels[0].id).toBe('province-0');
+  it('takes its text from the Realm name', () => {
+    const labels = generateRealmLabels(makeRealmProjection([5]));
+    expect(labels[0].text).toBe('Realm 0');
   });
 
-  it('draws no geographic tier of its own — that is generateAreaLabels (THR-1155)', () => {
-    // The political generator is handed a RegionData that still *carries* clusters, and
-    // must ignore them: two label sources for one tier is how the map came to name a
-    // range after an unrelated cluster in the first place.
-    const rd = makeRegionData({
-      geographicRegions: [makeGeoRegion(0, 45), makeGeoRegion(1, 45)],
-    });
-    expect(generateRegionLabels(rd).filter(l => l.tier === 'geographic')).toHaveLength(0);
+  it('anchors the label at the centroid of the ground the Realm holds, not at its seat', () => {
+    // The seat is hex (0, 0); the claim runs to (9, 0). A label at the seat would sit on
+    // the Realm's edge — the old domain label's failure mode, a name off to one side of
+    // the territory it named.
+    const projection = makeRealmProjection([10]);
+    const labels = generateRealmLabels(projection);
+    const seatWorldX = -0; // hexToWorld(0, 0).x is 0 for the first column
+    expect(labels[0].worldX).toBeGreaterThan(seatWorldX);
   });
 
-  it('label text matches the region name', () => {
-    const rd = makeRegionData({
-      domains: [makeDomainRegion(0)],
-      provinces: [makeProvinceRegion(0)],
-    });
-    const labels = generateRegionLabels(rd);
-    const domain = labels.find(l => l.tier === 'domain');
-    const province = labels.find(l => l.tier === 'province');
-    expect(domain?.text).toBe('Domain 0');
-    expect(province?.text).toBe('Province 0');
-  });
+  it('the label moves when the Realm does — what a worldgen centroid could not do', () => {
+    const before = generateRealmLabels(makeRealmProjection([4]))[0];
 
-  it('suppresses province label for the capital province of each domain', () => {
-    // Capital province — capitalHex matches domain's capitalHex
-    const capitalProvince: ProvinceRegion = {
-      id: 0,
-      cultureId: 'c1',
-      capitalHex: { col: 10, row: 5 },
-      geographicRegionIds: [],
-      hexes: [{ col: 10, row: 5 }],
-      centroid: { col: 10, row: 5 },
-      name: 'CapitalProvince',
+    // The same Realm, four hexes further east: a conquest moved its claim.
+    const moved = makeRealmProjection([4]);
+    moved.realms[0] = {
+      ...moved.realms[0],
+      hexes: moved.realms[0].hexes.map(h => ({ col: h.col + 4, row: h.row })),
     };
-    const nonCapitalProvince = makeProvinceRegion(1);
-    const domain: DomainRegion = {
-      id: 0,
-      cultureId: 'c1',
-      capitalHex: { col: 10, row: 5 }, // matches capitalProvince.capitalHex
-      provinceIds: [0, 1],
-      centroid: { col: 10, row: 5 },
-      name: 'Domain 0',
-    };
-    const rd = makeRegionData({
-      provinces: [capitalProvince, nonCapitalProvince],
-      domains: [domain],
-    });
-    const labels = generateRegionLabels(rd);
-    const provinceLabels = labels.filter(l => l.tier === 'province');
-    // Capital province label suppressed; only the non-capital province gets one
-    expect(provinceLabels).toHaveLength(1);
-    expect(provinceLabels[0].id).toBe('province-1');
+    const after = generateRealmLabels(moved)[0];
+
+    expect(after.worldX).toBeGreaterThan(before.worldX);
+  });
+
+  it('a Realm that claims no hexes carries no label — it has no border to name either', () => {
+    const projection = makeRealmProjection([3]);
+    projection.realms[0] = { ...projection.realms[0], hexes: [] };
+    expect(generateRealmLabels(projection)).toHaveLength(0);
+  });
+
+  it('skips a Realm with no name rather than drawing an empty label', () => {
+    const projection = makeRealmProjection([5]);
+    projection.realms[0] = { ...projection.realms[0], name: '' };
+    expect(generateRealmLabels(projection)).toHaveLength(0);
   });
 
   it('labels have worldX and worldY as finite numbers', () => {
-    const rd = makeRegionData({
-      domains: [makeDomainRegion(0)],
-      provinces: [makeProvinceRegion(0)],
-    });
-    const labels = generateRegionLabels(rd);
+    const labels = generateRealmLabels(makeRealmProjection([7]));
     expect(Number.isFinite(labels[0].worldX)).toBe(true);
     expect(Number.isFinite(labels[0].worldY)).toBe(true);
   });
@@ -231,11 +170,11 @@ describe('generateRiverLabels', () => {
   });
 });
 
-describe('generateAreaLabels — the geographic tier reads the Area nodes (THR-1155)', () => {
+describe('generateAreaLabels — the area tier reads the Area nodes (THR-1155)', () => {
   it('produces one label per Area at or above REGION_MAP_LABEL_MIN_SIZE (30)', () => {
     const labels = generateAreaLabels(makeAreaProjection([30, 45]));
-    expect(labels.filter(l => l.tier === 'geographic')).toHaveLength(2);
-    expect(labels.map(l => l.id)).toEqual(['geo-region_0', 'geo-region_1']);
+    expect(labels.filter(l => l.tier === 'area')).toHaveLength(2);
+    expect(labels.map(l => l.id)).toEqual(['area-region_0', 'area-region_1']);
   });
 
   it('produces no label for an Area below the threshold', () => {
@@ -248,7 +187,7 @@ describe('generateAreaLabels — the geographic tier reads the Area nodes (THR-1
     // set passes whether it filters or not.
     const labels = generateAreaLabels(makeAreaProjection([45, 5]));
     expect(labels).toHaveLength(1);
-    expect(labels[0].id).toBe('geo-region_0');
+    expect(labels[0].id).toBe('area-region_0');
   });
 
   it('takes its text from the Area node name, and its anchor from the node centre', () => {

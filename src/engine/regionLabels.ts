@@ -1,7 +1,13 @@
 /**
- * regionLabels.ts — Label data generation from region data.
+ * regionLabels.ts — the names the player reads on the map.
  *
- * Produces RegionLabel arrays for kingdoms, baronies, geographic regions, and rivers.
+ * Three tiers since THR-1155, each from the object it names: **realm** from
+ * `realmProjection` (the Realm whose border encloses the label), **area** from
+ * `areaProjection` (the Area node), **river** from the river paths. The domain and
+ * province tiers are gone with the stamps they read — a name over a nation now moves
+ * when the nation does, because it is placed at the centre of the ground the Realm
+ * actually holds rather than at the centroid of a worldgen culture region.
+ *
  * Label positions are in Three.js world space (Y-flipped from hex pixel space).
  *
  * NFP #1 Tunability: All thresholds are named constants.
@@ -9,8 +15,9 @@
  * NFP #4 Fail-soft: Functions return empty arrays on invalid input, never throw.
  */
 
-import type { RegionLabel, RegionData } from './regionTypes';
+import type { RegionLabel } from './regionTypes';
 import type { AreaProjection } from './areaProjection';
+import type { RealmProjection } from './realmProjection';
 import type { RiverPath } from './worldGenData';
 import { hexToPixel } from '../lib/hexMath';
 import { REGION_MAP_LABEL_MIN_SIZE } from './regionDetection';
@@ -26,10 +33,9 @@ export const RIVER_LABEL_MIN_LENGTH = 5;
 
 /** Label priority (lower = higher priority in collision detection) */
 export const LABEL_PRIORITY: Record<RegionLabel['tier'], number> = {
-  domain: 0,
-  province: 1,
-  geographic: 2,
-  river: 3,
+  realm: 0,
+  area: 1,
+  river: 2,
 };
 
 // ─── River name word pools (NFP #3: seeded selection) ────────────────────────
@@ -85,75 +91,42 @@ function computeHexesWorldWidth(hexes: { col: number; row: number }[]): number {
 // ─── Label generators ─────────────────────────────────────────────────────────
 
 /**
- * Generates the political label tiers — domains and provinces.
+ * Generates the political label tier — one name per Realm, over the ground it holds.
  *
- * - Domains: one label at geographic centroid of all domain hexes.
- * - Provinces: one label at centroid.
+ * Replaced `generateRegionLabels` (THR-1155). The old function placed a domain label at
+ * the centroid of the culture region worldgen drew and a second, thinner label per
+ * province; both were fixed for the life of the world. A Realm's label sits at the
+ * centroid of its *claimed hexes*, so when it takes or loses towns the name moves with
+ * the border — and the province tier is gone, because a province is not something the
+ * player can act on.
  *
- * The geographic tier moved to generateAreaLabels (THR-1155), which reads the Area
- * nodes rather than a renderer-side cluster list.
- *
- * NFP #4 Fail-soft: Returns empty array if regionData is invalid.
+ * NFP #4 Fail-soft: a malformed Realm entry is skipped, not thrown; a Realm with no
+ * claimed hexes carries no label (it has no border to name either).
  */
-export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
+export function generateRealmLabels(realmProjection: RealmProjection): RegionLabel[] {
   const labels: RegionLabel[] = [];
 
-  // Domain labels — at geographic centroid of all domain hexes, width from same.
-  for (const d of regionData.domains) {
+  for (const realm of realmProjection.realms) {
     try {
-      const domainHexes = regionData.provinces
-        .filter(p => d.provinceIds.includes(p.id))
-        .flatMap(p => p.hexes);
+      if (realm.hexes.length === 0) continue;
+      if (!realm.name) continue; // a Realm with no name carries no label
       let sumX = 0;
       let sumY = 0;
-      for (const h of domainHexes) {
+      for (const h of realm.hexes) {
         const w = hexToWorld(h.col, h.row);
         sumX += w.x;
         sumY += w.y;
       }
-      const cx = domainHexes.length > 0 ? sumX / domainHexes.length : hexToWorld(d.capitalHex.col, d.capitalHex.row).x;
-      const cy = domainHexes.length > 0 ? sumY / domainHexes.length : hexToWorld(d.capitalHex.col, d.capitalHex.row).y;
       labels.push({
-        id: `domain-${d.id}`,
-        tier: 'domain',
-        text: d.name,
-        worldX: cx,
-        worldY: cy,
-        worldWidth: computeHexesWorldWidth(domainHexes),
+        id: `realm-${realm.id}`,
+        tier: 'realm',
+        text: realm.name,
+        worldX: sumX / realm.hexes.length,
+        worldY: sumY / realm.hexes.length,
+        worldWidth: computeHexesWorldWidth(realm.hexes),
       });
     } catch {
-      // Fail-soft: skip malformed domain entry
-    }
-  }
-
-  // Identify capital provinces — one per domain. Their province label is suppressed
-  // because the domain label already names the capital territory.
-  const capitalProvinceIds = new Set<number>();
-  for (const d of regionData.domains) {
-    const capitalProvince = regionData.provinces.find(
-      p => d.provinceIds.includes(p.id) &&
-           p.capitalHex.col === d.capitalHex.col &&
-           p.capitalHex.row === d.capitalHex.row
-    );
-    if (capitalProvince) capitalProvinceIds.add(capitalProvince.id);
-  }
-
-  // Province labels — at centroid, width from province hexes.
-  // Capital provinces (covered by the domain label) are skipped.
-  for (const p of regionData.provinces) {
-    try {
-      if (capitalProvinceIds.has(p.id)) continue;
-      const { x, y } = hexToWorld(p.centroid.col, p.centroid.row);
-      labels.push({
-        id: `province-${p.id}`,
-        tier: 'province',
-        text: p.name,
-        worldX: x,
-        worldY: y,
-        worldWidth: computeHexesWorldWidth(p.hexes),
-      });
-    } catch {
-      // Fail-soft: skip malformed province entry
+      // Fail-soft: skip malformed Realm entry
     }
   }
 
@@ -161,12 +134,11 @@ export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
 }
 
 /**
- * Generates the geographic label tier — one label per Area large enough to carry one.
+ * Generates the area label tier — one label per Area large enough to carry one.
  *
- * Split out of `generateRegionLabels` by THR-1155: the name a player reads over a
- * mountain range now comes from the Area's own graph node, through `areaProjection`,
- * rather than from a renderer-side cluster joined to that node by list position. The
- * political tiers still read `RegionData` until Realms replace them.
+ * Split out of the old `generateRegionLabels` by THR-1155: the name a player reads over
+ * a mountain range comes from the Area's own graph node, through `areaProjection`,
+ * rather than from a renderer-side cluster joined to that node by list position.
  *
  * NFP #4 Fail-soft: a malformed Area is skipped, not thrown.
  */
@@ -179,8 +151,8 @@ export function generateAreaLabels(areaProjection: AreaProjection): RegionLabel[
       if (!area.name) continue; // an Area worldgen never named carries no label
       const { x, y } = hexToWorld(area.center.col, area.center.row);
       labels.push({
-        id: `geo-${area.id}`,
-        tier: 'geographic',
+        id: `area-${area.id}`,
+        tier: 'area',
         text: area.name,
         worldX: x,
         worldY: y,
