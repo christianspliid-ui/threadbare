@@ -220,7 +220,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Wiring Checklist](./Process.md#wiring-checklist)** — `Docs/plans/wiring-checklist.md`; verification that new modules are connected across all surfaces
 - **[Drift Scan](./Process.md#drift-scan)** — weekly GitHub Action producing `drift-scan`-labeled Linear issues from four codebase health signals
 - **[Retrospective](./Process.md#retrospective)** — weekly synthesis of impediment log + drift scan issues; run via `retrospective` skill
-- **[UL-proposal](./Process.md#ul-proposal)** — Linear issue label for proposed new terms or retirements; always human-approved, never auto-merged
+- **[UL-proposal](./Process.md#ul-proposal)** — Linear issue label for proposed new terms or retirements; seated by an agent under delegation with Christian's veto retained (process.md rule 4, 2026-09-11), never auto-merged
 - **[Implementation Plan](./Process.md#implementation-plan)** — design-session-authored artifact in Docs/plans/; the executor's input
 - **[claim-without-anchor](./Process.md#claim-without-anchor)** — interface text names a simulation object without declaring a referent; alias *Law 56-hollow*; badged 🟣 HOLLOW on the interface map
 - **[write-without-consumer](./Process.md#write-without-consumer)** — a write nothing acts on; the interface map's 🔴 LEAKED class, now derived by the consumption ledger rather than asserted

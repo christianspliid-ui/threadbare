@@ -130,7 +130,7 @@ The weekly synthesis of the impediment log (`Docs/impediments.md`) + drift scan 
 **Also see:** `[[Ubiquitous Language]]`, `[[Drift Scan]]`
 **Status:** canonical
 
-The Linear issue label used by the `ubiquitous-language` skill when proposing a new canonical term or a retirement of a stale term. Issues land in Continuous Improvement with this label. A `UL-proposal` issue must include: proposed term + definition, where/why it was encountered (with quote), its relationship to existing terms, and content-adjacency assessment. Approval is always human — no auto-merge.
+The Linear issue label used by the `ubiquitous-language` skill when proposing a new canonical term or a retirement of a stale term. Issues land in Continuous Improvement with this label. A `UL-proposal` issue must include: proposed term + definition, where/why it was encountered (with quote), its relationship to existing terms, and content-adjacency assessment. Seating is delegated to agents with Christian's veto retained (`Docs/canon/process.md` § User review interface, rule 4, 2026-09-11); a drift-scan filing still never auto-merges — a session reads it, records `seated by delegation <date>` on the issue, and lands the entry.
 
 ---
 
