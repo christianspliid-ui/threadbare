@@ -1,20 +1,20 @@
 # User Action Required
 
-**Last updated:** 2026-09-11 03:57 local (01:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-11 04:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### 1. Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of)
 
-**This hour the word reached the war.** [A sacked town changes hands](https://github.com/christianspliid-ui/threadbare/pull/1890) (03:32): take a town by force and it leaves the loser's territory and joins the victor's — holding moves, border redraws, counts follow. Last hour the border itself became derived rather than painted.
+**This hour the word got subjects.** [A nation keeps a court](https://github.com/christianspliid-ui/threadbare/pull/1891) (04:50): until now nobody *belonged* to one, so no realm could raise an army. Each now recruits a court — guards, captains, nobles, stewards, heralds — and you become a subject by joining, not by birth. Seed 42: membership 3/3/6 → **29/18/15**; realms fielding a host at tick 0, **1 → 3**.
 
-The world already contains three of these things, named by the map's own generator, seated at a capital, with a court to climb — **hold of Witness Skyfield** (17 towns) · **march of Shadow-Kept light** (10) · **sovereignty of Open Earth** (6). The map's label tier reads **realm · area · river**.
+The world contains three of these, seated at a capital, with a border that moves and ground that changes hands in war: **hold of Witness Skyfield** (17 towns) · **march of Shadow-Kept light** (10) · **sovereignty of Open Earth** (6). The map's label tier reads **realm · area · river**.
 
 **The write-up proposes *Realm* over *Nation*, and says outright you may veto the headword.** The argument is register: a nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes.
 
 Vetoing tonight is a rename. Vetoing after the [realm content](https://linear.app/threadbare/issue/THR-1454) queued behind it — court summons, border levy, tithe — is a rewrite of shipped prose.
 
-Two more want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from 10 September, already the first word of a realm's name above — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing a divine action card.
+Two more want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your ruling from 10 September, already the first word of a realm's name above — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing a divine action card.
 
 ### 2. Should agents be allowed to seat a word in the glossary, keeping you a veto?
 
@@ -22,17 +22,15 @@ Say **"delegate it"**, or **"send me the six"** if you'd rather keep the call.
 
 Ask 1 is three of these. **The queue refills faster than a sitting drains it** — seven wait, measured live this run: [**Realm**](https://linear.app/threadbare/issue/THR-1453) (1 day) · [**hold**](https://linear.app/threadbare/issue/THR-1449) (1 day) · [**cast**](https://linear.app/threadbare/issue/THR-1445) (2 days) · [**agreement**](https://linear.app/threadbare/issue/THR-1441) (3 days) · [**motive gate**](https://linear.app/threadbare/issue/THR-1408) (7 days) · [**composition contract**](https://linear.app/threadbare/issue/THR-1406) (8 days) · [**motive receipt**](https://linear.app/threadbare/issue/THR-633) (68 days).
 
-You seated three yourself in chat on 10 September ([THR-1380](https://linear.app/threadbare/issue/THR-1380)); thirteen minutes later your own realms pass filed a new one. The rule says only a human may seat a word, so the queue cannot clear itself — and the glossary is the tie-breaker when code, docs and an agent disagree.
+You seated three yourself in chat on 10 September ([THR-1380](https://linear.app/threadbare/issue/THR-1380)); thirteen minutes later your own realms pass filed a new one. Only a human may seat a word, so the queue cannot clear itself — and the glossary is the tie-breaker when code, docs and an agent disagree.
 
 You have delegated exactly this shape twice already (gate calibration, test calibration): *the lane decides, you keep a veto*. One word retires this ask permanently.
 
 ### 3. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**The design bench is idle and the shelf behind it holds one item.** One job is building ([realms](https://linear.app/threadbare/issue/THR-1155) — four pull requests merged tonight), one waits behind it, and the bench that refills the shelf is empty.
+**The design bench is idle.** One job is building ([realms](https://linear.app/threadbare/issue/THR-1155) — five pull requests merged tonight), three wait behind it, and the bench that refills the shelf is empty.
 
 The bench takes one job at a time, and the only thing on it is this one — yours, untouched since **15 August (27 days)**.
-
-The single shelf item is [THR-1053](https://linear.app/threadbare/issue/THR-1053) — the same ticket ask 4 invites you to veto. Veto it and the shelf is empty.
 
 *Yes* changes nothing and the asking stops. *Not getting to it* frees the seat and the next design job starts tonight. *(Only the `Parked` label frees it; unassigning does not.)*
 
@@ -97,13 +95,13 @@ Say **"work the powers map"** or **"work the item map"**.
 
 **Five Meet-The-First scene images break the art rule** — two have words painted in, two show individual faces, one has old choice buttons as scenery. All five are switched off with substitutes covering the slots, so nothing is broken. Sizes, rules and acceptance are settled; it waits on you for one reason: **it spends image credits.**
 
-This is ask 2's question in a second queue. The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170)) were listed here for the same reason and a lane made them anyway; a later lane *overruled* a ticket outright ([THR-831](https://linear.app/threadbare/issue/THR-831)). Both judgements look right. If you answer ask 2, say whether it settles this too. Until then: *remap where a match is honest, come to you only when it is not.*
+This is ask 2's question in a second queue. The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170)) were listed here for the same reason and a lane made them anyway; a later lane *overruled* a ticket outright ([THR-831](https://linear.app/threadbare/issue/THR-831)). Both judgements look right. If you answer ask 2, say whether it settles this too.
 
 ### 12. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
 Forty-eight authored lines narrate a campaign's milestones. They are wired and working, but written for **twelve named campaigns**, while every live game derives its spine from **what your god remembers**. Correct, connected, unreachable; the game falls back to generated text and nothing is broken.
 
-**Does a run's spine come from what the god remembers, or from a named campaign the world offers?** *Remembrance* — write the milestone prose for the twelve hungers instead. *Named campaigns* — give them a route back into play, which changes how a run's purpose is chosen. No urgency: [the wiring shipped](https://linear.app/threadbare/issue/THR-1197) and nothing downstream waits.
+**Does a run's spine come from what the god remembers, or from a named campaign the world offers?** *Remembrance* — write the milestone prose for the twelve hungers instead. *Named campaigns* — give them a route back into play, which changes how a run's purpose is chosen. No urgency: [the wiring shipped](https://linear.app/threadbare/issue/THR-1197).
 
 ### 13. Are weekend-long quiet spells normal too?
 
@@ -115,15 +113,15 @@ Two shorter gaps since (18.6 h, 18.1 h) are overnight-shaped and already covered
 
 ## Resolved this period
 
-- **2026-09-11 — a conquered town now changes hands.** [PR #1890](https://github.com/christianspliid-ui/threadbare/pull/1890) (03:32): sack a town and it leaves the loser's territory for the victor's — holding, border and counts all follow. Fourth realm pull request tonight.
+- **2026-09-11 — a realm has subjects, and therefore an army.** [PR #1891](https://github.com/christianspliid-ui/threadbare/pull/1891) (04:50): each realm recruits a court rather than its census; membership 3/3/6 → 29/18/15, realms able to field a host at tick 0 went 1 → 3.
+- **2026-09-11 — a garrison would have frozen what every realm wants.** Three capital garrisons would have pinned all three realms to one ambition for the life of a run, permanently shutting the territorial want that conquest opens through. Found and fixed in the same pass.
+- **2026-09-11 — a conquered town now changes hands.** [PR #1890](https://github.com/christianspliid-ui/threadbare/pull/1890) (03:32): sack a town and it leaves the loser's territory for the victor's — holding, border and counts all follow.
 - **2026-09-11 — the political map moved for the first time.** [PR #1889](https://github.com/christianspliid-ui/threadbare/pull/1889) (02:50): the border is derived from who holds which towns, not painted before tick 0. Moving one town moves 17 hexes of border.
-- **2026-09-11 — a conquest would have stolen a throne by accident.** Seizing a rival's capital silently carried the court with it; found and fixed inside the same pass.
-- **2026-09-11 — the world now contains realms, not just drawings of them.** The [read-site sweep](https://github.com/christianspliid-ui/threadbare/pull/1887) and [the mint](https://github.com/christianspliid-ui/threadbare/pull/1888) landed: three named realms, seated, holding 17/10/6 towns, one already pursuing expansion.
-- **2026-09-11 — running the world caught what reading the plan did not.** The mint's 150-tick run found that a realm has no subjects, so it cannot field an army; the executor made that the next step of its own slice.
+- **2026-09-11 — the world now contains realms, not just drawings of them.** The [read-site sweep](https://github.com/christianspliid-ui/threadbare/pull/1887) and [the mint](https://github.com/christianspliid-ui/threadbare/pull/1888) landed: three named realms, seated, holding 17/10/6 towns.
+- **2026-09-11 — running the world caught what reading the plan did not.** The mint's 150-tick run found a realm had no subjects; the executor made that the next step of its own slice and closed it four hours later.
+- **2026-09-11 — the build shelf tripled without anything stalling.** One ready job an hour ago, three now, including a high-priority engine defect found in passing.
 - **2026-09-11 — the red post-merge test lane cleared itself.** The heavy simulation suite was failing on main and is green on the latest commit. No session was needed.
-- **2026-09-10 — the nations pass took the design seat and emptied it again.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) merged its plan doc at 21:52 with intent judge Allow and three audits passed, and was claimed for build at 22:02 — which is what ask 3 turns on.
-- **2026-09-10 — the empty shelf refilled the same hour.** It hit zero at 21:02 and stood at two by 21:52. No starvation gap opened.
-- **2026-09-10 — the tick-cost alarm cleared and stayed clear.** Reported 34% over its week's median at its peak; now 8% *below* it — the best reading in the window. It was the busy machine, not a regression.
+- **2026-09-10 — the tick-cost alarm cleared and stayed clear.** Reported 34% over its week's median at its peak; flat against it since. It was the busy machine, not a regression.
 
 ---
 
