@@ -67,6 +67,16 @@ const HORDE_RAID_REPEL_DIFFICULTY = 0.70;
 /** Drive-back step for horde raid — the climactic counterpush. */
 const HORDE_RAID_DRIVE_DIFFICULTY = 0.80;
 
+// The three constants below are spent as `changes: { <key>: { delta: <constant> } }`.
+//
+// That object spelling is a supported relative change — do not "correct" it to a
+// `'-25'` string. It was *not* supported until THR-1456: `applyNodeChanges` understood
+// only the string form, so these hits fell through to its replacement branch and wrote
+// the literal `{ delta: -25 }` into the property. Every guarded reader then saw that
+// settlement's prosperity as 0, which meant a devastating raid and a merely severe one
+// were indistinguishable and the settlement could never recover. The executor learned
+// the shape rather than the content losing it; these numbers are what a raid does.
+
 /** Prosperity damage to a settlement when the horde is repelled at cost (THR-103). */
 const HORDE_RAID_SURVIVOR_PROSPERITY_HIT = -8;
 

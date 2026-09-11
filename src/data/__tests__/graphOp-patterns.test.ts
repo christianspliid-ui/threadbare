@@ -18,9 +18,14 @@
  *   Migration doc updated: wounds must use has_trait, not has_attachment.
  *
  * Task 5 — Trait modifier as update_node:
- *   Verified: update_node supports relative changes via string prefix syntax ('+N' / '-N').
- *   The design doc stated { delta: N } object syntax — that is INCORRECT for the
- *   current executor. Use '+0.1' string values, not { delta: 0.1 } objects.
+ *   update_node supports relative changes in two spellings, both additive: the string
+ *   prefix syntax ('+N' / '-N') and the { delta: N } object the design doc specified.
+ *
+ *   This docblock used to record the object form as "INCORRECT for the current executor".
+ *   That was accurate about the executor and wrong about which side should move: the
+ *   content had been authoring the object form all along, so the executor silently wrote
+ *   it verbatim into numeric properties and corrupted them. THR-1456 taught the executor
+ *   the shape instead. Both spellings are now supported.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../../engine/graph';
@@ -121,9 +126,15 @@ describe('GraphOp patterns (THR-90)', () => {
     expect(actor!.properties.courage as number).toBeCloseTo(0.3, 10); // 0.5 - 0.2
   });
 
-  it('task 5 design doc correction: { delta: N } object syntax replaces, does not increment', () => {
-    // The design doc stated { delta: 0.1 } object syntax — the executor treats objects
-    // as direct property replacements, NOT numeric deltas. Use '+0.1' string syntax instead.
+  it('task 5, corrected by THR-1456: { delta: N } object syntax increments, like the string form', () => {
+    // This arm used to assert the opposite — that an object replaced the property and
+    // `courage` ended up as `{ delta: 0.1 }`, not a number. That was a real reading of the
+    // executor at the time, but it pinned a *defect* as the contract: the design doc's
+    // object syntax was the shape `monster-encounter-content.ts` had been authoring all
+    // along, so every horde raid wrote `{ delta: -25 }` into `properties.prosperity` and
+    // the economy read that settlement as 0 forever. THR-1456 taught the executor the
+    // shape rather than rewriting the content, so the doc was right and this test was
+    // green on the wrong side of the contract.
     const result = executeGraphOps(graph, [{
       op: 'update_node',
       nodeId: '$actor',
@@ -132,7 +143,6 @@ describe('GraphOp patterns (THR-90)', () => {
     expect(result.allSucceeded).toBe(true);
 
     const actor = graph.getNode('actor.test');
-    // Object replaces the value — courage is now { delta: 0.1 }, not a number
-    expect(typeof actor!.properties.courage).not.toBe('number');
+    expect(actor!.properties.courage as number).toBeCloseTo(0.6, 10); // 0.5 + 0.1
   });
 });
