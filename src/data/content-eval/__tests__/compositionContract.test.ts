@@ -111,20 +111,62 @@ describe('Composition Contract — each block falsified from the passing exempla
       .toBe(true);
   });
 
-  it('aftermath: a change without `concepts` names the aftermath block (Law 2)', () => {
+  it('aftermath: a change declaring no anchor at all names the aftermath block (Law 2)', () => {
     const fallback = NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback;
-    const noConcepts: UnifiedActionTemplate = {
+    const noAnchor: UnifiedActionTemplate = {
       ...NUDGE_GOLDEN_EXEMPLAR,
       aftermathConfig: {
         ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!,
         fallback: {
           ...fallback,
-          changes: fallback.changes.map(({ concepts: _dropped, ...rest }) => rest),
+          changes: fallback.changes.map(
+            ({ concepts: _dropped, stateNoun: _alsoDropped, ...rest }) => rest,
+          ),
         },
       },
     };
-    const violations = checkCompositionContract(noConcepts).violations;
-    expect(violations.some(v => v.block === 'aftermath' && v.message.includes('concepts'))).toBe(true);
+    const violations = checkCompositionContract(noAnchor).violations;
+    expect(violations.some(v => v.block === 'aftermath' && v.message.includes('declares no anchor')))
+      .toBe(true);
+  });
+
+  // THR-1053's falsification arm — the one assertion that fails if the rule is
+  // reverted to demanding `concepts` specifically.
+  //
+  // The arm above is NOT that assertion, and cannot be: the exemplar carries no
+  // `stateNoun` on any change (verified — 0 occurrences in the fixture), so
+  // stripping `concepts` leaves zero anchors and the violation fires under the
+  // narrowed rule *and* under the old one. It is green for a reason that no
+  // longer matches what it claims to test. This arm supplies the missing half —
+  // a change anchored by `stateNoun` alone must now pass, which is exactly what
+  // the old rule forbade.
+  it('aftermath: `stateNoun` alone satisfies the anchor rule — `concepts` is not owed (THR-1053)', () => {
+    const fallback = NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback;
+    const stateNounOnly: UnifiedActionTemplate = {
+      ...NUDGE_GOLDEN_EXEMPLAR,
+      aftermathConfig: {
+        ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!,
+        fallback: {
+          ...fallback,
+          changes: fallback.changes.map(({ concepts: _dropped, ...rest }) => ({
+            ...rest,
+            // No `entityId`: the point is that the *bare* noun anchors the chip.
+            // A declared-but-dead `entityId` is Law 56 clause 2's business, and
+            // asserting through one would couple this arm to that rule.
+            stateNoun: { text: rest.detail.slice(0, 8), tooltipId: 'ui.standing' },
+          })),
+        },
+      },
+    };
+    const violations = checkCompositionContract(stateNounOnly).violations;
+    expect(violations.some(v => v.message.includes('declares no anchor'))).toBe(false);
+  });
+
+  // Guard against the arm above passing vacuously: it asserts an *absence*, so
+  // it would read green on an empty `changes` array. Confirm the perturbation
+  // actually had something to perturb.
+  it('the exemplar carries aftermath changes for the anchor arms to strip (fixture guard)', () => {
+    expect(NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback.changes.length).toBeGreaterThan(0);
   });
 
   it('rewards: with no persistent effect anywhere, nothing carries out of the scene', () => {
@@ -228,9 +270,17 @@ describe('Composition Contract — red on a non-compliant template', () => {
   // one improvement at a time, so it is taken now rather than re-pointed at the
   // next victim.
   //
-  // Stripping `changes` of their `concepts` is the exact Law 2 violation the
+  // Stripping `changes` of every anchor is the exact Law 2 violation the
   // aftermath block exists to catch, so the fixture stays faithful to what the
   // rule is for while owing nothing to the state of the corpus.
+  //
+  // THR-1053 — `stateNoun` is dropped alongside `concepts` now that either one
+  // satisfies the rule. The exemplar happens to carry no `stateNoun` today, so
+  // this changes nothing at the moment; it is written this way so that giving
+  // the exemplar a state noun (a plain content improvement, and the direction
+  // the authoring spec now steers toward) does not silently turn this fixture
+  // compliant and this whole block vacuous — the precise failure the comment
+  // above was written about.
   const nonCompliant: UnifiedActionTemplate = {
     ...NUDGE_GOLDEN_EXEMPLAR,
     aftermathConfig: {
@@ -238,7 +288,7 @@ describe('Composition Contract — red on a non-compliant template', () => {
       fallback: {
         ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback,
         changes: (NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback.changes ?? []).map(
-          ({ concepts: _dropped, ...rest }) => rest,
+          ({ concepts: _dropped, stateNoun: _alsoDropped, ...rest }) => rest,
         ),
       },
     },
