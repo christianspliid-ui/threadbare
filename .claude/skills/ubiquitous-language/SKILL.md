@@ -1,7 +1,7 @@
 ---
 name: ubiquitous-language
 description: Maintain the canonical glossary in `Docs/ubiquitous-language`, including proposal, retirement, and arbitration workflows.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-09-11
 ---
 
 # Ubiquitous Language Skill
@@ -36,6 +36,8 @@ Maintain and enforce the canonical glossary at `Docs/ubiquitous-language/`. Load
 When you encounter a concept used in code, docs, or plans that has no UL entry, open a Linear issue using the template below.
 
 **Trigger:** capitalized identifier, defined struct name, or repeated concept phrase in `src/**`, `Docs/**`, or Obsidian that doesn't appear in the UL index.
+
+> **Who seats it (Christian, 2026-09-11 — authority:** `Docs/canon/process.md` **§ User review interface, rule 4):** an agent. Read the proposal against the shards and its code anchors, decide, record `seated by delegation <date>` on the issue, and land the entry (or decline with the reason). Christian keeps a veto by chat; a proposal is never held for his approval, and a drift-scan filing still never auto-merges. Several open proposals seat best as **one** docs-only ticket that carries a close line per proposal ([THR-1457](https://linear.app/threadbare/issue/THR-1457) is the shape) — the shard edits and the dashboard regeneration then happen once.
 
 **How to open:**
 
