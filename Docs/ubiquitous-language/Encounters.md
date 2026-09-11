@@ -223,7 +223,7 @@ The world context of one action or encounter: its Target, its Cast, and its plac
 ### Cast
 
 **Aliases:** Encounter Cast, Cast Bindings
-**Also see:** `[[Scene]]`, `[[Support Bundle]]`, `[[Encounter]]`
+**Also see:** `[[Scene]]`, `[[Support Bundle]]`, `[[Encounter]]`, `[[cast (verb)]]` — the unrelated verb sense; a god *casts*, an encounter *has* a cast
 **Status:** canonical
 
 An encounter's support-bundle bindings viewed as characters: the keyed `supportBindings` on a `UnifiedAction` (`EncounterSupportBinding` — key, bound node id, actor/location kind, delivery, persistence, reuse flag). Prose references cast members with `{cast:<key>}` tokens; the declared-key invariant guarantees a declared key always resolves — bound keys render the live graph node's name, unbound keys fall back to the spec's `spawnName`. Aftermath effects may address cast members via `$cast:<key>` / `role:<key>` sentinels.
@@ -490,3 +490,53 @@ The short planning document that opens a factory batch — **the one place a hum
 **Agent-drafted, Christian-approved in chat** — the one HITL gate on either line, presented per THR-608 as the grid, the six mechanical fixes one line each, two links and one yes/no question. A brief he has not approved is a suggestion, not a batch.
 
 Code anchors: `.claude/skills/undertaking-pipeline/reference/batch-brief-format.md` (undertaking sense), `.claude/skills/encounter-pipeline/reference/batch-brief-format.md` (encounter sense), `Docs/plans/2026-09-02-thr-1300-undertaking-factory.md` § Stage 0.
+
+---
+
+### cast (verb)
+
+**Aliases:** to cast; player cast; "playing a card"
+**Also see:** `[[Cast]]` — the unrelated noun sense, an encounter's bound scene actors; `[[Forecast tier]]`, `[[Nudge]]`
+**Status:** canonical (seated by THR-1445, delegated seating 2026-09-11)
+
+What a god does with a divine action card: pays its essence price and puts it into the world. **Not related to the noun `[[Cast]]`** — an encounter *has* a cast; a god *casts*. Both words are kept because both are the natural English in their own place, and the collision is defused by always writing the verb lower-case in prose about the player's action.
+
+**A cast rolls the same ladder a mortal does, with one asymmetry: it can never outright fail.** Before THR-728 a player cast auto-succeeded — `resolveUncontestedStep` returned `{ outcome: 'success', probability: 1 }` before consulting capability, difficulty or shapers — so the 82 ascendant-castable templates' authored step difficulties were silently thrown away and the Divine Receipt (THR-727) could report only two of its six bands. Casts now roll for real, and a rolled `failure` or `critical_failure` is raised to **`success_at_cost`**: `onSuccess` still runs, so the essence always bought something. The miracle lands crooked, but it lands. Christian's verdict (chat, 2026-07-24): *"Yes, with a safety floor."*
+
+**The floor is deliberately a second floor, stacked after THR-571's.** The two keep distinguishable trace markers (`[floor↑]`, `[player-floor↑]`) so *"the incapable scraped through"* and *"the god cannot fail"* are never read as the same event. The upside is untouched — `critical_success` and near-miss pass through; only the bottom is closed off.
+
+Code anchors: `src/engine/stepResolutionCore.ts` (the player floor), `src/data/player-cast-constants.ts` (`PLAYER_CAST_VARIANCE_ENABLED`, `PLAYER_CAST_OUTCOME_FLOOR`), `src/engine/playerCastDispatch.ts` (`preparePlayerCast`, `commitPlayerCast` — the single construction path), `src/engine/playerCastReadout.ts`.
+
+---
+
+### Forecast tier
+
+**Aliases:** `ForecastTier`; the pre-roll odds word
+**Also see:** `[[cast (verb)]]`, `[[Nudge]]`, `[[Motive Receipt]]`, `[[Reputation]]`
+**Status:** canonical (seated by THR-1445, delegated seating 2026-09-11)
+
+The five-word odds reading shown to the player **before** a roll: *doomed · perilous · uncertain · favorable · fated*. It is the game's way of naming a probability without printing one (Laws 4 and 13).
+
+**Pre-roll, and that is the whole distinction from the two outcome vocabularies it is mistaken for.** A Forecast tier is what the odds *look like*; `StepOutcome` and `EncounterOutcomeBand` are what actually *happened*. They are different types over different domains and never interconvert — a `favorable` forecast that resolves `failure` is an ordinary event, not an inconsistency. Reading a forecast word as an outcome word is the recurring error this entry exists to stop.
+
+**It is reused, not re-derived, wherever a system needs "how did this look going in".** The `[[Motive Receipt]]`'s `expectation` field is a Forecast tier computed from `completionProb`, which is why the receipt can say what an agent expected rather than only what befell them.
+
+Code anchors: `src/types/resolution.ts` (`ForecastTier`, alongside `OutcomeType` so the contrast is visible at the definition), `src/types/foreshadowing.ts` (`MotiveReceipt.expectation`).
+
+---
+
+### Composition Contract
+
+**Aliases:** the composition contract; `check:encounter` (the command that runs it)
+**Also see:** `[[Undertaking Contract]]` (`Agents.md`) — the sibling gate; `[[Encounter]]`, `[[Aftermath]]`, `[[Cast]]`, `[[Batch Brief]]`
+**Status:** canonical (seated by THR-1406, delegated seating 2026-09-11)
+
+The authoring-time contract an encounter template must satisfy to be **composition-complete** — the encounter factory's machine gate. It asks whether a template *declares* its blocks: steps, nudge hand, setting envelope, cast, rewards, aftermath, systems quota, images, register.
+
+**Not the `[[Undertaking Contract]]`, and passing one says nothing about the other.** They share a shape — same blocks-and-violations structure, same warn channel that prints without failing — over different substrates. **Law 56 inverts between them**: undertaking chips are engine-derived, so chip backing holds by construction and the leak there is prose *claiming* state; encounter chips are authored, so backing is the thing that must be checked.
+
+**A named, shrinking ratchet instead of exemptions** (ruling 3, 2026-08-08). `RETROFIT_PENDING` holds the templates that predate the contract; there is no per-template escape hatch. The runner exits non-zero when an unlisted template fails **and equally when a listed one now passes** — a stale entry is a lie about the corpus, and that second exit condition is what makes the list shrink.
+
+**Live caveat: it scopes to the `encounter.*` prefix.** `ENCOUNTER_ID_PREFIXES` is `['encounter.']`, so a template whose id does not start with that string is not measured by this gate at all — including when it lives in `src/data/encounters/`. A sweep that reports "the corpus is clean" is reporting on the prefix, not the directory.
+
+Code anchors: `src/data/content-eval/compositionContract.ts` (`checkCompositionContract`), `src/data/content-eval/retrofitPending.ts` (`RETROFIT_PENDING`), `scripts/check-encounter.ts` (`ENCOUNTER_ID_PREFIXES`), `Docs/plans/2026-08-08-encounter-factory-workflow.md` §1.
