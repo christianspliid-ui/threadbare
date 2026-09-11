@@ -468,8 +468,27 @@ export function applyAftermath(
   let tradeRoutesSevered: string[] = [];
 
   if (settlementNode && isAttackerVictory) {
-    // Prosperity damage
-    prosperityBefore = (settlementNode.properties.prosperity as number) ?? 0;
+    // Prosperity damage.
+    //
+    // Read through a `typeof` guard, as `phaseUnrest`, `guildSeeding`, `sublocation`
+    // and `complicationEffects` all already do. The `as number` cast this replaces was
+    // the only unguarded reader of the field, and `?? 0` catches null but not a value
+    // of the wrong *type* — so a settlement carrying a non-number went straight into
+    // `prosperityBefore.toFixed(2)` in the trace line below and **threw inside the
+    // tick loop** (NFP #4: a tick must never crash). `runTick`'s catch then returned
+    // the unchanged state, so the tick stopped advancing and every later tick re-threw:
+    // 300 `runTick` calls reached tick 167, and the run's events repeated forever.
+    //
+    // The corrupt value is real and predates this ticket. `applyNodeChanges`
+    // (`graphOpExecutor.ts:488`) understands a relative change written as the string
+    // `'-25'` but not the object `{ delta: -25 }`, and `monster-encounter-content.ts`
+    // authors the horde raid's prosperity and defence hits in the object form — so the
+    // executor writes the object verbatim into the property. Measured on `origin/main`
+    // at tick 300 of seed 42: three Locations already carry `{ delta: n }` in
+    // `properties.defense`. THR-1456 owns that; this guard owns the tick loop, which
+    // must survive bad data whoever wrote it.
+    const rawProsperity = settlementNode.properties.prosperity;
+    prosperityBefore = typeof rawProsperity === 'number' ? rawProsperity : 0;
     const prosperityLoss = severity === 'total' ? 1.0
       : severity === 'major' ? PROSPERITY_LOSS_MAJOR
       : PROSPERITY_LOSS_MINOR;
