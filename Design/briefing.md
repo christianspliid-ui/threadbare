@@ -1,15 +1,19 @@
 # Briefing
-**Generated:** 2026-09-11 00:57 local (2026-09-10 22:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-11 01:58 local (2026-09-10 23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of).**
 
-Unchanged from an hour ago, and more load-bearing now than it was then: the realm code kept building while you were away. Slice 1 shipped tonight; [slice 2's first half merged at 22:20](https://github.com/christianspliid-ui/threadbare/pull/1887) — a realm can now carry a real faction identity, which is what lets the world act on it at all.
+Same ask as an hour ago, and it just stopped being hypothetical. [The mint landed at 23:38](https://github.com/christianspliid-ui/threadbare/pull/1888): the world now actually contains three of these things, minted one per culture, each named by the map's own name generator, seated at a capital, holding towns, with a court to climb — and one of them is already pursuing territorial expansion.
 
-The write-up proposes **Realm** over **Nation** and says outright you may veto the headword. A nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes. Two smaller ones want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) (your own ruling this morning, written up) and [**cast**](https://linear.app/threadbare/issue/THR-1445).
+Their names on seed 42, straight out of the run: **hold of Witness Skyfield** (17 towns) · **march of Shadow-Kept light** (10) · **sovereignty of Open Earth** (6).
 
-The realm content — court summons, border levy, tithe — is queued directly behind the code. A word seated now costs a minute; a word seated after that content is authored means re-reading prose that already shipped.
+The write-up proposes **Realm** over **Nation** and says outright you may veto the headword. A nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes.
+
+**The cost of waiting went up tonight, and that is the only thing that changed.** The code now says *realm* in its own filenames and identifiers. That is cheap to rename tonight while nothing reads it; it gets steadily less cheap as the [realm content](https://linear.app/threadbare/issue/THR-1454) queued behind it — court summons, border levy, tithe — starts being authored against the word.
+
+Two smaller ones want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from yesterday, and already the first word of a realm's name above — and [**cast**](https://linear.app/threadbare/issue/THR-1445).
 
 ## Also waiting (12)
 
@@ -28,11 +32,14 @@ The realm content — court summons, border levy, tithe — is queued directly b
 
 ## Queue
 
-**Starved — 1 job ready, 1 building.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) (realms) is mid-build on slice 2 of 3 and holding the single work slot correctly. The one item behind it is [THR-1053](https://linear.app/threadbare/issue/THR-1053) — the same ticket also-waiting item 3 invites you to veto.
+**Starved — 1 job ready, 1 building.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) (realms) holds the single work slot correctly and is moving fast: slice 2's [sweep](https://github.com/christianspliid-ui/threadbare/pull/1887) and [mint](https://github.com/christianspliid-ui/threadbare/pull/1888) both landed in the last 100 minutes, two of slice 2's three parts. The one item behind it is [THR-1053](https://linear.app/threadbare/issue/THR-1053) — the same ticket also-waiting item 3 invites you to veto.
 
-- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unblocked work that nothing can reach.** Its park was discharged by events at 13:32Z — the ticket it waited on shipped, and both answers to its question now lead to the same action, so no decision is left in it. But it sits `In Dev` + parked + unowned, and the pickup lane only reads the ready queue, so it has been invisible for ~9 hours. The grooming lane fixes exactly this and runs at 09:16 tomorrow; an attended session could free it sooner. No action from you either way.
+- **One finding worth knowing, no action needed.** The mint run found that **nobody is a subject of a nation** — a realm has no members, so it cannot field an army, because membership is handed out from the old fixed roster that cannot see a realm. The executor wrote it down and made it the next step of its own slice. Caught by running the world for 150 ticks rather than by reading the plan.
+- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unblocked work that nothing can reach** — `In Dev` + parked + unowned, so the pickup lane never sees it, for ~10 hours now. No decision is left in it. The grooming lane fixes exactly this and runs at 09:16; an attended session could free it sooner. No action from you either way.
 - **[THR-1380](https://linear.app/threadbare/issue/THR-1380)** parked awaiting your Done click — also-waiting item 4.
 
 ## Health
 
-All green. The post-merge heavy-test lane that was red an hour ago is green on the latest main. Deploy is serving `135a1de0`, CI green, no PRs waiting to merge, all nine scheduled lanes on schedule, the worktree reaper ran 17 minutes ago. Engine tick cost 91 ms/tick, +5% against its 7-day median — normal.
+All green. Deploy is serving the newest commit (`4f0d33ba`), CI and the post-merge heavy-test lane both green on main, no PRs waiting to merge, all nine scheduled lanes on schedule, the worktree reaper ran 18 minutes ago. Engine tick cost **79 ms/tick, 9% below** its 7-day median — the +34% spike two days ago is fully unwound.
+
+Two overnight quiet gaps (18.6 h, 18.1 h) are covered by your "overnight quiet is normal" ruling and are noted, not raised; the unruled weekend one is also-waiting item 12.

@@ -1,18 +1,18 @@
 # User Action Required
 
-**Last updated:** 2026-09-11 00:57 local (2026-09-10 22:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-11 01:58 local (2026-09-10 23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### 1. Name the thing your red borders draw — [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of)
 
-The map's political borders have stopped being decoration. [Slice 1](https://github.com/christianspliid-ui/threadbare/pull/1886) is live and [slice 2's first half merged at 22:20](https://github.com/christianspliid-ui/threadbare/pull/1887): a realm is a landed faction, seated at a capital, holding a territory of towns, with a court to climb — and it can now carry a real faction identity, which is what lets the world act on it.
+The world now contains these things. [The mint landed at 23:38](https://github.com/christianspliid-ui/threadbare/pull/1888): one per culture, named by the map's own generator, seated at a capital, holding towns, with a court to climb — **hold of Witness Skyfield** (17 towns) · **march of Shadow-Kept light** (10) · **sovereignty of Open Earth** (6), and the second is pursuing territorial expansion.
 
 **The write-up proposes *Realm* over *Nation*, and says outright you may veto the headword.** The argument is register: a nation is a modern political word; a realm is what a fantasy map draws and what a court sits over. Same object either way — only the word the player reads changes.
 
-Two more want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — a town a mortal keeps by *working* it, your own ruling from 10 September — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing a divine action card.
+The code now says *realm* in its own filenames and identifiers. Cheap to rename tonight while nothing reads it; less cheap once the [realm content](https://linear.app/threadbare/issue/THR-1454) queued behind it is authored against the word.
 
-Worth a minute rather than a week: the first realm content (court summons, border levy, tithe) is queued behind the code, and content authored before a word is seated is authored against a word nothing can check.
+Two more want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from 10 September, and already the first word of a realm's name above — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing a divine action card.
 
 ### 2. Should agents be allowed to seat a word in the glossary, keeping you a veto?
 
@@ -26,7 +26,7 @@ You have delegated exactly this shape twice already (gate calibration, test cali
 
 ### 3. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**The design bench is idle and the shelf behind it holds one item.** One job is building ([realms](https://linear.app/threadbare/issue/THR-1155), slice 2 of 3), one waits behind it, and the bench that refills the shelf is empty.
+**The design bench is idle and the shelf behind it holds one item.** One job is building ([realms](https://linear.app/threadbare/issue/THR-1155), two of slice 2's three parts landed tonight), one waits behind it, and the bench that refills the shelf is empty.
 
 The bench takes one job at a time, and the only thing on it is this one — yours, untouched since **15 August (27 days)**.
 
@@ -113,18 +113,14 @@ Two shorter gaps since (18.6 h, 18.1 h) are overnight-shaped and already covered
 
 ## Resolved this period
 
-- **2026-09-11 — the realms build kept moving overnight.** [Slice 2's first half merged at 22:20Z](https://github.com/christianspliid-ui/threadbare/pull/1887): a realm can now carry a real faction identity, the thing that lets the world act on it. Slice 1 shipped earlier the same evening; one slice and a half remain.
-- **2026-09-11 — the red post-merge test lane cleared itself.** The heavy simulation suite was failing on main an hour ago and is green on the latest commit. No session was needed.
-- **2026-09-10 — the nations pass is building, and slice one is live.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) took the design seat at 20:26, merged its plan doc at 21:52 with intent judge Allow and three audits passed, and was claimed for build at 22:02. It also emptied the design seat, which is what ask 3 turns on.
+- **2026-09-11 — the world now contains realms, not just drawings of them.** Slice 2's [read-site sweep](https://github.com/christianspliid-ui/threadbare/pull/1887) (22:20Z) and [the mint itself](https://github.com/christianspliid-ui/threadbare/pull/1888) (23:38Z) both landed: three named realms, seated, holding 17/10/6 towns, one already pursuing expansion. Two of slice 2's three parts done.
+- **2026-09-11 — running the world caught what reading the plan did not.** The mint's 150-tick run found that a realm has no subjects, so it cannot field an army; the executor made that the next step of its own slice rather than shipping the gap.
+- **2026-09-11 — the red post-merge test lane cleared itself.** The heavy simulation suite was failing on main two hours ago and is green on the latest commit. No session was needed.
+- **2026-09-10 — the nations pass took the design seat and emptied it again.** [THR-1155](https://linear.app/threadbare/issue/THR-1155) merged its plan doc at 21:52 with intent judge Allow and three audits passed, and was claimed for build at 22:02 — which is what ask 3 turns on.
 - **2026-09-10 — the empty shelf refilled the same hour.** It hit zero at 21:02 and stood at two by 21:52. No starvation gap opened.
-- **2026-09-10 — the tick-cost alarm cleared and kept falling.** Reported 34% over its week's median at its peak; now +5%. It was the busy machine, not a regression.
-- **2026-09-10 — you worked the board yourself at 20:12–20:34, and four things moved.** You ruled [the spotlight tier](https://linear.app/threadbare/issue/THR-1348), put [realms](https://linear.app/threadbare/issue/THR-1155) into the design seat, seated the three undertaking words ([THR-1380](https://linear.app/threadbare/issue/THR-1380)), and filed a new word — [Realm](https://linear.app/threadbare/issue/THR-1453) — which is now ask 1.
-- **2026-09-10 — the last buildable item shipped.** [THR-1452](https://linear.app/threadbare/issue/THR-1452) is Done at 20:34: the top bar's year disagreed with the engine's clock threefold, and now agrees.
-- **2026-09-10 — the shelf halved, twice.** [THR-1451](https://linear.app/threadbare/issue/THR-1451) ([PR #1883](https://github.com/christianspliid-ui/threadbare/pull/1883)) and [THR-1424](https://linear.app/threadbare/issue/THR-1424) ([PR #1880](https://github.com/christianspliid-ui/threadbare/pull/1880)) stopped bare percentages printing on player surfaces.
-- **2026-09-10 — five more shipped in the afternoon.** [THR-1426](https://linear.app/threadbare/issue/THR-1426) and [THR-1423](https://linear.app/threadbare/issue/THR-1423) (tick counts and timestamps now read in words), plus three docs-gate fixes ([THR-836](https://linear.app/threadbare/issue/THR-836), [THR-976](https://linear.app/threadbare/issue/THR-976), [THR-896](https://linear.app/threadbare/issue/THR-896)).
-- **2026-09-10 — batch 3's one open question dissolved without you.** [THR-1130](https://linear.app/threadbare/issue/THR-1130) parked at 10:14 asking whether to wait for [THR-1446](https://linear.app/threadbare/issue/THR-1446); THR-1446 went Done at 11:52, shipping the two scene sentinels that were the blocker.
+- **2026-09-10 — the tick-cost alarm cleared and kept falling.** Reported 34% over its week's median at its peak; now 9% *below* it. It was the busy machine, not a regression.
 
 ---
 
-Older resolved entries and every prior revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
-Hourly brief: [Design/briefing.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/briefing.md).
+Older resolved items and every earlier version of this file: `git log -p origin/ops -- Design/user-actions.md`.
+The hourly brief that leads with one of these: [`Design/briefing.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/briefing.md).
