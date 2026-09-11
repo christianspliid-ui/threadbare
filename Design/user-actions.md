@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-11 10:57 local (08:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-11 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -12,12 +12,13 @@ The second half of your own sentence from 10 September: a claimed town *"is a co
 
 The second half is the interesting one: when a mortal keeps a town, the faction starts treating them as **its** town-keeper — sending them work it would not send a stranger, and bending what that mortal does next toward the town and the faction that cares about it.
 
-The ticket is now staged on the design desk, unassigned, with the five questions the plan must answer and the reading it should start from already written in. Nothing is wanted from you but the hour.
+The ticket is staged on the design desk, unassigned, with the five questions the plan must answer and the reading it should start from already written in. Nothing is wanted from you but the hour — and as of this run nothing else is in flight to compete with it.
 
 *This is the only open ask.*
 
 ## Resolved this period
 
+- **2026-09-11 — the Encounter Factory's pilot volume is finished** ([THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1043](https://linear.app/threadbare/issue/THR-1043)): fourteen of the fifteen nudge-era encounters now carry the full contract. Two are held on one rules question ([THR-1053](https://linear.app/threadbare/issue/THR-1053)).
 - **2026-09-11 — the realm content is unblocked** ([THR-1454](https://linear.app/threadbare/issue/THR-1454)): court summons, border levy and tithe are queued, the first encounters to spend the Realm work.
 - **2026-09-11 — the screenshot sweep is done** ([THR-1133](https://linear.app/threadbare/issue/THR-1133)). Nine passes, nineteen full-size captures, three defects found and filed ([THR-1459](https://linear.app/threadbare/issue/THR-1459), [THR-1460](https://linear.app/threadbare/issue/THR-1460), [THR-1461](https://linear.app/threadbare/issue/THR-1461)). Your approved hour bought all of it.
 - **2026-09-11 — the camp-six sample is closed** ([THR-1130](https://linear.app/threadbare/issue/THR-1130)): your blanket approval covered it, recorded as *"batch 2 sample: yes"*. Listing it as still owed after that was this lane's error.
@@ -26,7 +27,6 @@ The ticket is now staged on the design desk, unassigned, with the five questions
 - **2026-09-11 — the word is Realm.** [THR-1453](https://linear.app/threadbare/issue/THR-1453) ruled by delegation; *nation* is the alias.
 - **2026-09-11 — agents may seat a glossary word, your veto retained.** Six more land in one pass ([THR-1457](https://linear.app/threadbare/issue/THR-1457)).
 - **2026-09-11 — a run's spine is what your god remembers.** [THR-1198](https://linear.app/threadbare/issue/THR-1198) ruled; named campaigns declined, milestone prose gets written for the twelve hungers instead.
-- **2026-09-11 — image spend inside a ticket's stated batch no longer asks you** ([THR-876](https://linear.app/threadbare/issue/THR-876) unblocked); the closeout discloses the actual count.
 - **2026-09-11 — the [fight](https://linear.app/threadbare/issue/THR-1258), [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) maps are the design sessions' to settle** — twelve open decisions left your queue.
 
 ---
