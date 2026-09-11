@@ -16,6 +16,27 @@
  * snapshot.* Updating this file to match a changed face would destroy the only
  * evidence the extraction was faithful, so it is never the right fix.
  *
+ * ─── The one update since, and the bar it had to clear (THR-1464) ───────
+ *
+ * The snapshots were re-recorded once, on 2026-09-11, when `CardFace`'s chip row
+ * gained `flex-wrap: wrap`, `row-gap` and `margin-left: auto` to stop an
+ * over-wide row painting its chips on top of the price. Three of the snapshot's
+ * style strings changed; **no rendered geometry did**.
+ *
+ * That distinction is the bar, and it was met by measurement, not by argument:
+ * the three declarations were injected into five live nudge cards on the deployed
+ * build at 1920×1080, and the row, the right-hand group and the price badge all
+ * came back byte-identical on `getBoundingClientRect` to sub-pixel precision
+ * (`GEOMETRY_UNCHANGED: true` ×5). Each declaration is inert on a row that fits:
+ * `flex-wrap` only engages on overflow, `row-gap` only applies across lines, and
+ * an `auto` left margin on the last item of a `space-between` row puts it exactly
+ * where `space-between` already had it.
+ *
+ * So the rule above stands unweakened, and this is what it takes to move the pin:
+ * a *measured* demonstration on the real composed surface that the nudge face did
+ * not move. "It should be a no-op" is not that demonstration — the measurement is.
+ * Absent one, the failing snapshot still means the primitive is wrong.
+ *
  * ─── Why a hand-built card model is correct here, unusually ───
  *
  * This repo's `fixture_invents_both_sides` trap says a fixture that supplies

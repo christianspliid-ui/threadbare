@@ -21,6 +21,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ActionCard } from '../ActionCard';
 import { ACTION_BLOCKED_OUT_OF_RANGE, ACTION_BLOCKED_TIER, ACTION_BLOCKED_GENERIC } from '../../../data/action-card-display';
+import { CARD_CHIP_ROW_GAP_PX } from '../../shared/CardFace';
 import type { WheelSlot } from '../../../engine/wheel';
 
 const baseSlot: WheelSlot = {
@@ -260,5 +261,88 @@ describe('ActionCard — rarity', () => {
   it('shows no badge for Mundane', () => {
     const { container } = render(<ActionCard slot={slot({ rarityTier: 1 })} onClick={vi.fn()} />);
     expect(container.querySelector('[data-testid^="action-card-rarity-"]')).toBeNull();
+  });
+});
+
+describe('ActionCard — THR-1464: the chip row wraps instead of overlapping', () => {
+  /**
+   * The defect, measured on the deployed build at 1920×1080 before the fix:
+   * `Agent Thread`'s chip row needed 315px of content in a 184px row (keyword 94 +
+   * gap 4 + scale 77 + gap 6 + right group 134). The grouping span holding the two
+   * chips carries `min-width: 0`, so it absorbed the whole 131px deficit and shrank
+   * to 44px — and because its chips are `inline-flex` + `white-space: nowrap` with
+   * visible overflow, they kept painting past its edge, straight through the price.
+   * The scale chip overlapped the price badge by its full 77px width.
+   *
+   * jsdom has no layout engine, so the *pixel* proof lives in the ticket (a Playwright
+   * re-measure of the live surface with these exact declarations injected took every
+   * overlap to zero area). What this suite pins is the three declarations that proof
+   * depended on — each one falsified below by the shape that made the row collapse.
+   */
+
+  /** The row is the parent of the group that holds the keyword chip. */
+  function chipRow(container: HTMLElement): HTMLElement {
+    const kw = container.querySelector('[data-testid^="action-card-keyword-"]');
+    if (!kw) throw new Error('no keyword chip rendered — fixture no longer reaches the chip row');
+    // keyword → (tooltip wrapper?) → grouping span → row
+    let el = kw.parentElement;
+    while (el && !(el.tagName === 'DIV' && el.style.justifyContent === 'space-between')) {
+      el = el.parentElement;
+    }
+    if (!el) throw new Error('chip row not found above the keyword chip');
+    return el;
+  }
+
+  /** The two-chip card is the failing shape: it is the only one with a grouping span. */
+  const twoChipSlot = slot({ scale: 'cosmic', scaleWord: 'Cosmic', essenceCost: 10 });
+
+  it('renders the failing shape — two chips and an overflowing price', () => {
+    // Falsification guard: if the fixture ever stops producing both chips, every
+    // assertion below would pass vacuously against a row that cannot overflow.
+    const { container } = render(<ActionCard slot={twoChipSlot} onClick={vi.fn()} />);
+    expect(container.querySelector('[data-testid^="action-card-keyword-"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid^="action-card-scale-"]')).toBeTruthy();
+    const cost = container.querySelector('[data-testid^="action-card-cost-"]') as HTMLElement;
+    // The price is shown IN FULL — six pips plus the overflow glyph, never ellipsised
+    // away. Wrapping is what buys the room for it (the ticket's explicit choice).
+    expect(cost.textContent).toBe('✦'.repeat(6) + '⋯');
+  });
+
+  it('lets the row wrap, so content that will not fit takes a second line', () => {
+    const { container } = render(<ActionCard slot={twoChipSlot} onClick={vi.fn()} />);
+    const row = chipRow(container);
+    expect(row.style.flexWrap).toBe('wrap');
+    // `nowrap` is precisely what forced the collapse — pin its absence, not merely
+    // the presence of a value.
+    expect(row.style.flexWrap).not.toBe('nowrap');
+  });
+
+  it('keeps the price against the right edge on a wrapped line', () => {
+    // `justify-content: space-between` does not right-align a line holding one item,
+    // so without this the price would pack to the left when it wraps.
+    const { container } = render(<ActionCard slot={twoChipSlot} onClick={vi.fn()} />);
+    const cost = container.querySelector('[data-testid^="action-card-cost-"]') as HTMLElement;
+    const rightGroup = cost.parentElement as HTMLElement;
+    expect(rightGroup.style.marginLeft).toBe('auto');
+    expect(rightGroup.style.flexShrink).toBe('0');
+  });
+
+  it('lets the chip group itself wrap, so min-width:0 can no longer shrink it under its chips', () => {
+    const { container } = render(<ActionCard slot={twoChipSlot} onClick={vi.fn()} />);
+    const kw = container.querySelector('[data-testid^="action-card-keyword-"]') as HTMLElement;
+    const row = chipRow(container);
+    let group = kw.parentElement as HTMLElement;
+    while (group.parentElement !== row) group = group.parentElement as HTMLElement;
+    // Both halves of the defect, asserted together: the group may still shrink
+    // (min-width: 0), but it may no longer do so while forbidding its chips to wrap.
+    expect(group.style.minWidth).toBe('0px');
+    expect(group.style.flexWrap).toBe('wrap');
+  });
+
+  it('uses one gap for both axes, so a wrapped row reads as one strip', () => {
+    const { container } = render(<ActionCard slot={twoChipSlot} onClick={vi.fn()} />);
+    const row = chipRow(container);
+    expect(row.style.rowGap).toBe(`${CARD_CHIP_ROW_GAP_PX}px`);
+    expect(row.style.gap).toContain(`${CARD_CHIP_ROW_GAP_PX}px`);
   });
 });

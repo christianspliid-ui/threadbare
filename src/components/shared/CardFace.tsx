@@ -125,6 +125,14 @@ export const CARD_COST_PIP_PX = 14;
 export const CARD_ODDS_PIP_PX = 14;
 /** Reach mark on the card's chip row — sized to sit level with the sphere mark. */
 export const CARD_REACH_ICON_PX = 16;
+/**
+ * Gap between the chip row's two groups, used for both axes (THR-1464).
+ *
+ * One constant for column *and* row gap on purpose: when the row wraps, the space
+ * between the chips and the price below them is the same separation that sat
+ * between them side by side, so the two lines read as one strip rather than two.
+ */
+export const CARD_CHIP_ROW_GAP_PX = 6;
 
 // ── Model ──────────────────────────────────────────────────────────
 
@@ -360,12 +368,32 @@ export function CardFace({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 12px 12px', flex: 1 }}>
         {/* ── Kind chips + reach + sphere + price ──────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+        {/* THR-1464 — the row WRAPS. A card whose chips and price together exceed
+            the face's width used to paint them on top of each other: the grouping
+            span below carries `min-width: 0`, so it absorbed the whole deficit and
+            shrank below its contents, while its chips are `nowrap` with visible
+            overflow and so kept drawing past its edge — straight through the price.
+            Measured on the deployed build at 1920×1080: `Agent Thread` needed 315px
+            of content in a 184px row, the group shrank to 44px, and the 77px
+            `COSMIC` chip landed entirely inside the price badge.
+            Wrapping is the fix rather than truncation because every one of the three
+            readings is load-bearing — the verb, the scale and the price are three
+            vocabularies, and an ellipsised one is a Law 13/14 regression. A card that
+            fits is laid out exactly as before; only one that cannot takes the second
+            line, and `marginLeft: auto` on the price keeps it right-aligned there. */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: CARD_CHIP_ROW_GAP_PX,
+          flexWrap: 'wrap',
+          rowGap: CARD_CHIP_ROW_GAP_PX,
+        }}>
           {/* A card with a second chip needs a grouping span; a card with one
               must NOT have it, because the nudge card's pinned DOM does not —
               the extraction's whole claim is that the nudge face did not move. */}
           {model.keyword && model.secondaryKeyword ? (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0, flexWrap: 'wrap' }}>
               <MaybeTooltip id={model.keyword.tooltipId}>
                 <CardKeywordChip
                   keyword={model.keyword.label}
@@ -405,7 +433,16 @@ export function CardFace({
               read (not 13px) and the price is framed as a token. The frame is
               what stops the essence row and the odds row below from reading as
               the same kind of thing. */}
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <span style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: CARD_CHIP_ROW_GAP_PX,
+            flexShrink: 0,
+            // THR-1464 — holds the price against the right edge on a wrapped row,
+            // where `justify-content: space-between` no longer does (a line with a
+            // single item packs to the start).
+            marginLeft: 'auto',
+          }}>
             {model.reach && (
               <MaybeTooltip id={model.markTooltips ? `reach.${model.reach}` : undefined}>
                 <ReachIcon reach={model.reach} size={CARD_REACH_ICON_PX} />
