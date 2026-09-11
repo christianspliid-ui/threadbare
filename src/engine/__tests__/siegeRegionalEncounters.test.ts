@@ -85,7 +85,11 @@ function addSettlement(graph: WorldGraph, id: string, hexId: string, subtype: st
   });
   graph.addEdge({ id: `e_settloc_${id}`, source: id, target: hexId, type: 'located_at', properties: {} });
   if (factionId) {
-    graph.addEdge({ id: `e_ctrl_${id}`, source: id, target: factionId, type: 'controlled_by', properties: {} });
+    // THR-1155: this fixture was the *only* writer of `controlled_by` anywhere — an edge
+    // type registered in neither `EdgeType` nor `edgeSchema`, so the four production
+    // reads of it could never resolve. The holder is a faction-sourced `controls` edge,
+    // in that direction; the fixture no longer gets to define a shape the world lacks.
+    graph.addEdge({ id: `e_ctrl_${id}`, source: factionId, target: id, type: 'controls', properties: {} });
   }
 }
 

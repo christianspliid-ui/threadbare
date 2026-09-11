@@ -17,6 +17,10 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import type { SphereName } from '../types/index';
 import { emitTrace } from './traceBuffer';
 import { disbandArmy } from './armyAttrition';
+import { stampRealmSeat } from './realmSeat';
+import { touchStructure } from './simulationRuntime';
+import type { SimulationRuntime } from './simulationRuntime';
+import { REALM_CONQUEST_SEVERITY } from '../data/realm-content';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -243,27 +247,172 @@ function buildSpherePressureEvents(
   return events;
 }
 
-// ─── Power Vacuum ────────────────────────────────────────────────────────
+// ─── Conquest ────────────────────────────────────────────────────────────
 
 /**
- * After total destruction: remove faction's `controls` edges at the location.
- * This creates uncontested hex control opportunities for other factions.
- * Fail-soft: if no controls edge exists, skip silently.
+ * A town changes hands (THR-1155 § Engine E) — **the one runtime producer of a
+ * faction's `controls` edge**.
+ *
+ * Before this, a won siege at total severity ran a power vacuum: the defender's edges
+ * were deleted and the town was left nobody's. The victor's faction was already known
+ * here and used only for sphere pressure. So the political border could shrink and
+ * never grow, and *{Realm} takes {Location}* was a chronicle line with no producer —
+ * which is why the map this feeds could only ever lose territory.
+ *
+ * The rule is *the army that sacks a town takes it for its faction*, which resolves
+ * four ways:
+ *
+ * - the town has a faction holder → that edge is **retargeted** to the victor's faction
+ *   (`retargetEdgeSource`, never delete-and-add — the edge id is the audit trail) and
+ *   re-stamped `establishedTick` / `via: 'conquest'`;
+ * - the town has none → the victor's faction **gains a fresh one**, because the rule is
+ *   *takes it*, not *takes it from someone*: an earlier vacuum's leavings and wilds no
+ *   Realm ever held are both takeable;
+ * - the holder already **is** the victor's faction (a double aftermath) → nothing is
+ *   written and the trace says `'retained'`;
+ * - the victor army belongs to **no** faction (a rebel host, a monster horde with no
+ *   definition) → the town falls into the vacuum exactly as it did before.
+ *
+ * A mortal's `controlType: 'strategic'` hold is deliberately **not** touched: the hold
+ * is a commitment to the town, not to the faction, and what it means inside a new Realm
+ * is THR-1448's question.
+ *
+ * NFP #4 (fail-soft): every graph write is guarded; a missing node, a vanished edge or
+ * an absent runtime each degrade to less happening, never to a throw inside the tick.
  */
-function applyPowerVacuum(state: GameState, settlementId: string): void {
+export function applyConquestOrVacuum(
+  state: GameState,
+  settlementId: string,
+  victorArmyId: string,
+  runtime?: SimulationRuntime,
+): void {
   const graph = state.graph;
 
-  // Remove all controls → settlement edges (faction side)
-  const controlsEdges = graph.getIncomingEdges(settlementId, 'controls');
-  for (const edge of controlsEdges) {
-    try { graph.removeEdge(edge.id); } catch { /* already removed */ }
+  const isFactionSourced = (edgeSource: string): boolean =>
+    graph.getNode(edgeSource)?.properties.actorType === 'faction';
+
+  const victorFactionId = graph.getOutgoingEdges(victorArmyId, 'member_of')[0]?.target;
+  const victorIsFaction = victorFactionId !== undefined && isFactionSourced(victorFactionId);
+
+  // The faction-sourced holders. A mortal's strategic stance also rides `controls`, so
+  // the filter is what keeps conquest off THR-1448's ground.
+  const factionEdges = graph.getIncomingEdges(settlementId, 'controls')
+    .filter(e => isFactionSourced(e.source));
+  const priorHolderId = factionEdges[0]?.source ?? null;
+
+  // ── Vacuum: a victor with no faction takes nothing, exactly as before ──
+  if (!victorIsFaction) {
+    for (const edge of factionEdges) {
+      try { graph.removeEdge(edge.id); } catch { /* already removed */ }
+    }
+    if (factionEdges.length > 0 && runtime) touchStructure(runtime);
+    emitConquestTrace(state, {
+      outcome: 'vacated',
+      locationId: settlementId,
+      fromFactionId: priorHolderId,
+      toFactionId: null,
+      victorArmyId,
+      seatMoved: false,
+    });
+    // A Realm that just lost a town may have lost its seat with it.
+    if (priorHolderId) { try { stampRealmSeat(graph, priorHolderId); } catch { /* fail-soft */ } }
+    return;
   }
 
-  // Also remove controlled_by edges pointing from settlement to faction
-  const controlledByEdges = graph.getOutgoingEdges(settlementId, 'controlled_by');
-  for (const edge of controlledByEdges) {
-    try { graph.removeEdge(edge.id); } catch { /* already removed */ }
+  // ── Retained: a double aftermath over the victor's own town writes nothing ──
+  if (factionEdges.length > 0 && factionEdges.every(e => e.source === victorFactionId)) {
+    emitConquestTrace(state, {
+      outcome: 'retained',
+      locationId: settlementId,
+      fromFactionId: victorFactionId!,
+      toFactionId: victorFactionId!,
+      victorArmyId,
+      seatMoved: false,
+    });
+    return;
   }
+
+  // A seat rides on the *edge*, so retargeting one hands the loser's court to the
+  // victor by accident. Noticed on the projection measurement (faction_1's seat went
+  // null when faction_0 took `loc_10`): both sides are re-stamped below, and the trace
+  // records that a court moved rather than leaving it to be discovered on the map.
+  const seatMoved = factionEdges.some(e => e.properties.role === 'seat');
+
+  let outcome: 'taken' | 'claimed';
+  if (factionEdges.length > 0) {
+    outcome = 'taken';
+    for (const edge of factionEdges) {
+      try {
+        graph.retargetEdgeSource(edge.id, victorFactionId!);
+        graph.updateEdge(edge.id, {
+          properties: { establishedTick: state.tick, via: 'conquest' },
+        });
+      } catch { /* fail-soft: edge removed mid-aftermath */ }
+    }
+  } else {
+    outcome = 'claimed';
+    try {
+      graph.addEdge({
+        id: `e_controls_conquest_${victorFactionId}_${settlementId}_${state.tick}`,
+        source: victorFactionId!,
+        target: settlementId,
+        type: 'controls',
+        properties: { establishedTick: state.tick, via: 'conquest' },
+      });
+    } catch { /* fail-soft: duplicate id on a double aftermath */ }
+  }
+
+  if (runtime) touchStructure(runtime);
+
+  // Re-stamp both courts. The victor may have inherited a `role: 'seat'` it never chose;
+  // the loser may have been left seatless. `stampRealmSeat` is idempotent and returns
+  // null for a Realm holding nothing, which is the fail-soft answer, not an error.
+  try { stampRealmSeat(graph, victorFactionId!); } catch { /* fail-soft */ }
+  if (priorHolderId && priorHolderId !== victorFactionId) {
+    try { stampRealmSeat(graph, priorHolderId); } catch { /* fail-soft */ }
+  }
+
+  emitConquestTrace(state, {
+    outcome,
+    locationId: settlementId,
+    fromFactionId: outcome === 'taken' ? priorHolderId : null,
+    toFactionId: victorFactionId!,
+    victorArmyId,
+    seatMoved,
+  });
+}
+
+/** The *takes / loses* line, in the words the chronicle reads (§ Content). */
+function emitConquestTrace(
+  state: GameState,
+  fields: {
+    outcome: 'taken' | 'claimed' | 'retained' | 'vacated';
+    locationId: string;
+    fromFactionId: string | null;
+    toFactionId: string | null;
+    victorArmyId: string;
+    seatMoved: boolean;
+  },
+): void {
+  const graph = state.graph;
+  const nameOf = (id: string | null): string =>
+    (id ? (graph.getNode(id)?.name ?? id) : 'no one');
+  const place = nameOf(fields.locationId);
+
+  const summary = fields.outcome === 'taken'
+    ? `${nameOf(fields.toFactionId)} takes ${place} from ${nameOf(fields.fromFactionId)}`
+    : fields.outcome === 'claimed'
+      ? `${nameOf(fields.toFactionId)} takes ${place}`
+      : fields.outcome === 'retained'
+        ? `${nameOf(fields.toFactionId)} holds ${place} still`
+        : `${nameOf(fields.fromFactionId)} loses ${place}`;
+
+  emitTrace({
+    tick: state.tick,
+    category: 'realm_territory_change',
+    summary,
+    ...fields,
+  });
 }
 
 // ─── Aftermath Application ──────────────────────────────────────────────
@@ -277,6 +426,7 @@ export function applyAftermath(
   state: GameState,
   battleState: BattleState,
   resolutionType: BattleResolutionType,
+  runtime?: SimulationRuntime,
 ): void {
   const graph = state.graph;
 
@@ -378,9 +528,9 @@ export function applyAftermath(
     }
   }
 
-  // ── Power vacuum (total destruction only) ──
-  if (settlementId && settlementNode && isAttackerVictory && severity === 'total') {
-    applyPowerVacuum(state, settlementId);
+  // ── Conquest (the sack severity only) ──
+  if (settlementId && settlementNode && isAttackerVictory && severity === REALM_CONQUEST_SEVERITY) {
+    applyConquestOrVacuum(state, settlementId, victorArmyId, runtime);
   }
 
   // ── Sphere pressure ──

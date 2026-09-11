@@ -28,6 +28,7 @@ import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
 import { applyAftermath } from './battleAftermath';
+import type { SimulationRuntime } from './simulationRuntime';
 import { selectSpotlight, hasThreadToBattle } from './battleSpotlights';
 // NOTE: this module carries its own local `mulberry32` / `hashString` (below) —
 // do not import the shared ones here, the names collide.
@@ -279,7 +280,7 @@ export function createBattleNode(
  * 4. If spotlight due, shift momentum
  * 5. Check resolution conditions
  */
-export function tickBattle(state: GameState, battleNodeId: string): void {
+export function tickBattle(state: GameState, battleNodeId: string, runtime?: SimulationRuntime): void {
   const graph = state.graph;
   const battleNode = graph.getNode(battleNodeId);
   if (!battleNode) return;
@@ -298,7 +299,7 @@ export function tickBattle(state: GameState, battleNodeId: string): void {
     const resolutionType: BattleResolutionType = !attackerNode && !defenderNode
       ? 'mutual_destruction'
       : !attackerNode ? 'defender_victory' : 'attacker_victory';
-    resolveBattle(state, battleNodeId, resolutionType);
+    resolveBattle(state, battleNodeId, resolutionType, runtime);
     return;
   }
 
@@ -430,7 +431,7 @@ export function tickBattle(state: GameState, battleNodeId: string): void {
   if (Math.abs(newMomentum) >= BATTLE_RESOLUTION_THRESHOLD) {
     const resolutionType: BattleResolutionType = newMomentum > 0
       ? 'attacker_victory' : 'defender_victory';
-    resolveBattle(state, battleNodeId, resolutionType);
+    resolveBattle(state, battleNodeId, resolutionType, runtime);
     return;
   }
 
@@ -439,17 +440,17 @@ export function tickBattle(state: GameState, battleNodeId: string): void {
     const resolutionType: BattleResolutionType =
       Math.abs(newMomentum) < 2 ? 'stalemate'
         : newMomentum > 0 ? 'attacker_victory' : 'defender_victory';
-    resolveBattle(state, battleNodeId, resolutionType);
+    resolveBattle(state, battleNodeId, resolutionType, runtime);
     return;
   }
 
   // Army collapse check
   if (newAttackerQ <= 0 && newDefenderQ <= 0) {
-    resolveBattle(state, battleNodeId, 'mutual_destruction');
+    resolveBattle(state, battleNodeId, 'mutual_destruction', runtime);
   } else if (newAttackerQ <= 0) {
-    resolveBattle(state, battleNodeId, 'defender_victory');
+    resolveBattle(state, battleNodeId, 'defender_victory', runtime);
   } else if (newDefenderQ <= 0) {
-    resolveBattle(state, battleNodeId, 'attacker_victory');
+    resolveBattle(state, battleNodeId, 'attacker_victory', runtime);
   }
 }
 
@@ -463,6 +464,7 @@ export function resolveBattle(
   state: GameState,
   battleNodeId: string,
   resolutionType: BattleResolutionType,
+  runtime?: SimulationRuntime,
 ): void {
   const graph = state.graph;
   const battleNode = graph.getNode(battleNodeId);
@@ -494,7 +496,7 @@ export function resolveBattle(
   raiseBattleEvent(state, bs.attackerArmyId, bs.defenderArmyId, 'combat_ended', 'battle_resolved', 107);
 
   // Apply aftermath consequences (destruction, commander fate, etc.)
-  applyAftermath(state, bs, resolutionType);
+  applyAftermath(state, bs, resolutionType, runtime);
 
   // Remove battle node (cleans up participates_in and located_at edges)
   graph.removeNode(battleNodeId);
@@ -576,8 +578,9 @@ export function phaseBattleDetection(state: GameState): void {
       }
 
       for (const settlementId of settlementIds) {
-        const settlementFaction = graph.getOutgoingEdges(settlementId, 'controlled_by')[0]?.target
-          ?? graph.getIncomingEdges(settlementId, 'controls')[0]?.source;
+        // THR-1155: `controlled_by` was never a registered edge type — its only writer
+        // was a test fixture, so this read always fell through. `controls` is the holder.
+        const settlementFaction = graph.getIncomingEdges(settlementId, 'controls')[0]?.source;
 
         if (!settlementFaction) continue;
 
@@ -622,16 +625,16 @@ function areHostile(state: GameState, armyA: string, armyB: string): boolean {
  * Tick all active battles and sieges. Runs each tick.
  * Routes to tickBattle for field battles, tickSiege for sieges.
  */
-export function phaseBattleTick(state: GameState): void {
+export function phaseBattleTick(state: GameState, runtime?: SimulationRuntime): void {
   const battleNodes = state.graph.getNodesByType('actor')
     .filter(n => n.properties.battleState != null);
 
   for (const battle of battleNodes) {
     const bs = battle.properties.battleState as BattleState;
     if (bs.battleType === 'siege') {
-      tickSiege(state, battle.id);
+      tickSiege(state, battle.id, runtime);
     } else {
-      tickBattle(state, battle.id);
+      tickBattle(state, battle.id, runtime);
     }
   }
 }

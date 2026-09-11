@@ -490,13 +490,16 @@ export type TraceCategory =
   // Realms — a nation founded at worldgen (THR-1155)
   | 'realm_founded'
   // Realms — the political map rebuilt from the towns they hold (THR-1155)
-  | 'realm_projection_rebuilt';
+  | 'realm_projection_rebuilt'
+  // Realms — a town changed hands, so the border moved (THR-1155)
+  | 'realm_territory_change';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
   'area_coverage',
   'realm_founded',
   'realm_projection_rebuilt',
+  'realm_territory_change',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -972,6 +975,33 @@ export interface RealmProjectionTrace extends TraceBase {
   unclaimedHexes: number;
   /** The counter the version check read, so a stale read is legible after the fact. */
   structuralCacheVersion: number;
+}
+
+/**
+ * A town changed hands (THR-1155) — the one runtime producer of a faction's `controls`
+ * edge, emitted once per conquered Location.
+ *
+ * `outcome` says which of the four things happened, and the three that are *not* a
+ * transfer are the reason this trace exists rather than a boolean. `'taken'` is a
+ * retarget (the town had a holder and now has another); `'claimed'` is a fresh edge on
+ * ground nobody held, which is the rule *the army that sacks a town takes it* rather
+ * than *takes it from someone*; `'retained'` is a double aftermath over the victor's
+ * own town, where nothing is written and saying so is the point; `'vacated'` is the old
+ * power vacuum, still reached when the victor army belongs to no faction at all.
+ */
+export interface RealmTerritoryChangeTrace extends TraceBase {
+  category: 'realm_territory_change';
+  outcome: 'taken' | 'claimed' | 'retained' | 'vacated';
+  /** The Location that changed hands. */
+  locationId: string;
+  /** The Realm that held it, or `null` on `'claimed'` — nobody held it. */
+  fromFactionId: string | null;
+  /** The Realm that holds it now, or `null` on `'vacated'` — nobody holds it. */
+  toFactionId: string | null;
+  /** The army whose victory did it, so the line can name the war it came from. */
+  victorArmyId: string;
+  /** Whether a seat moved with the town — the court a conquest can take by accident. */
+  seatMoved: boolean;
 }
 
 // ─── Effect vocabulary activation (THR-1239) ────────────────────────
@@ -3520,6 +3550,7 @@ export type TraceEntry =
   | AreaCoverageTrace
   | RealmFoundedTrace
   | RealmProjectionTrace
+  | RealmTerritoryChangeTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

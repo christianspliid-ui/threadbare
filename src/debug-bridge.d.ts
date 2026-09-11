@@ -811,6 +811,26 @@ export interface DebugBridge {
    * *holdings* is the `owns` edge and belongs to a mortal's sheet (THR-1314).
    */
   getRealmProjection: () => Promise<unknown>;
+  /**
+   * THR-1155 — hand a town to a Realm the way a won siege does, and report what moved:
+   * `{ locationId, fromFactionId, toFactionId, structuralCacheVersion }`, or `null` when
+   * either ref does not resolve (one `console.warn`, never a throw).
+   *
+   * Both refs match by exact node id, then id prefix, then case-insensitive name
+   * substring — the bridge's usual semantics. The faction ref must resolve to an
+   * `actorType: 'faction'` actor; anything else is a miss rather than a coercion.
+   *
+   * **This is the real conquest path**, not a graph poke: it routes through
+   * `applyConquestOrVacuum` with the registered runtime, so `touchStructure`, the seat
+   * re-stamp on both courts, the `realm_territory_change` trace and the *takes* chronicle
+   * line all fire. Follow it with `tick(1)` and the border on screen has moved;
+   * `getRealmProjection()` before and after shows which hexes changed hands, which is how
+   * a moved border is asserted without a screenshot.
+   *
+   * `fromFactionId` is `null` when nobody held the town (the victor *claims* it rather
+   * than taking it from someone).
+   */
+  conquerLocation: (locationRef: string, factionRef: string) => Promise<unknown>;
   getIncidentRecorderStats: () => Promise<unknown>;
   /**
    * Sweep every authored trait ref against the trait definitions in the live graph

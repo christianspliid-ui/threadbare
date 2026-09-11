@@ -22,8 +22,10 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
+import type { WorldRef } from '../types/worldRef';
 import { getTraces } from './traceBuffer';
 import { getThreadedAgents, getFactionMembershipEdges } from './graphQueries';
+import { REALM_TERRITORY_EVENT_SIGNIFICANCE } from '../data/realm-content';
 
 // ── Significance constants ───────────────────────────────────────────────────
 
@@ -79,9 +81,15 @@ export function phaseArmyNotifications(
   const newEvents: TickEvent[] = [];
 
   // Get current-tick traces only (avoid reprocessing previous ticks)
-  const currentTickTraces = getTraces().filter(t => t.tick === tick && t.category === 'faction_ambition');
+  const thisTick = getTraces().filter(t => t.tick === tick);
+  const currentTickTraces = thisTick.filter(t => t.category === 'faction_ambition');
+  // THR-1155: a town changing hands is a war outcome, so it is read here — the phase
+  // that already runs right after `battle_tick` and already turns war traces into lines.
+  const territoryTraces = thisTick.filter(t => t.category === 'realm_territory_change');
 
-  if (currentTickTraces.length === 0) return {};
+  if (currentTickTraces.length === 0 && territoryTraces.length === 0) return {};
+
+  newEvents.push(...buildTerritoryEvents(state, territoryTraces, tick, nextEventIdFn));
 
   // Build threaded agent set for visibility determination
   const threadedAgents = buildThreadedAgentSet(state);
@@ -266,6 +274,72 @@ export function phaseArmyNotifications(
   return {
     tickEvents: [...state.tickEvents, ...newEvents],
   };
+}
+
+// ── Territory (THR-1155) ──────────────────────────────────────────────────────
+
+/**
+ * *{Realm} takes {Location} from {Realm}* / *{Realm} loses {Location}* — the chronicle
+ * line for a border that moved.
+ *
+ * Only the three outcomes that *changed* the map produce a line. `'retained'` is a
+ * double aftermath over a Realm's own town: real enough to trace, not news.
+ *
+ * Significance is flat rather than thread-gated, unlike the army lines above. A border
+ * moving is a fact about the world's shape rather than about anyone's acquaintance with
+ * it, and the player sees the map redraw whether or not a threaded mortal stood in the
+ * town. There is no toast for the same reason — the map moving is the notification.
+ *
+ * Law 2 / Law 56: the producer declares what the line is about. The refs carry the
+ * Location and both Realms as graph-node references, so a chronicle surface links them
+ * without parsing the sentence.
+ */
+function buildTerritoryEvents(
+  state: GameState,
+  traces: readonly { readonly summary: string }[],
+  tick: number,
+  nextEventIdFn: () => string,
+): TickEvent[] {
+  const events: TickEvent[] = [];
+
+  for (const trace of traces) {
+    const data = trace as unknown as Record<string, unknown>;
+    const outcome = data['outcome'] as string | undefined;
+    if (outcome !== 'taken' && outcome !== 'claimed' && outcome !== 'vacated') continue;
+
+    const locationId = data['locationId'] as string | undefined;
+    if (!locationId) continue;
+    const fromFactionId = data['fromFactionId'] as string | null | undefined;
+    const toFactionId = data['toFactionId'] as string | null | undefined;
+
+    const refs: WorldRef[] = [];
+    const pushRef = (kind: 'location' | 'faction', id: string | null | undefined): void => {
+      if (!id) return;
+      const node = state.graph.getNode(id);
+      if (!node) return;
+      refs.push({
+        kind,
+        id,
+        name: node.name,
+        tooltipId: kind === 'faction' ? 'ui.realm' : undefined,
+      });
+    };
+    pushRef('location', locationId);
+    pushRef('faction', toFactionId);
+    if (fromFactionId && fromFactionId !== toFactionId) pushRef('faction', fromFactionId);
+
+    events.push({
+      id: nextEventIdFn(),
+      tick,
+      type: 'realm_territory_change',
+      message: trace.summary,
+      significance: REALM_TERRITORY_EVENT_SIGNIFICANCE,
+      factionId: toFactionId ?? fromFactionId ?? undefined,
+      refs,
+    });
+  }
+
+  return events;
 }
 
 // ── Helper ────────────────────────────────────────────────────────────────────

@@ -1805,6 +1805,80 @@ if (import.meta.env.DEV) {
       };
     },
 
+    /**
+     * THR-1155 — move a town from one Realm to another the way a won siege does.
+     *
+     * The write lever behind the browser Done-when: a border that moves is *constructed*
+     * here rather than waited for, because a siege reaching `total` severity on a town a
+     * rival Realm holds is rare enough that waiting for one is not a verification plan.
+     * It routes through the real `applyConquestOrVacuum` with the real runtime, so
+     * `touchStructure`, the seat re-stamp, the `realm_territory_change` trace and the
+     * *takes* line all fire exactly as they would from the war path — this is the same
+     * code, not a shortcut past it.
+     *
+     * Fail-soft (NFP #4): an unresolvable ref warns once and returns `null`.
+     */
+    conquerLocation: async (locationRef: string, factionRef: string) => {
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state) { console.warn('[__DEBUG.conquerLocation] no game state'); return null; }
+      const graph = state.graph;
+
+      type Candidate = ReturnType<typeof graph.getNodesByType>[number];
+      const match = (ref: string, candidates: Candidate[]): Candidate | undefined => {
+        const lower = ref.toLowerCase();
+        return graph.getNode(ref)
+          ?? candidates.find((n) => n.id.startsWith(ref))
+          ?? candidates.find((n) => n.name?.toLowerCase().includes(lower));
+      };
+
+      const location = match(locationRef, graph.getNodesByType('location'));
+      if (!location) {
+        console.warn(`[__DEBUG.conquerLocation] no location matching "${locationRef}"`);
+        return null;
+      }
+      const factions = graph.getNodesByType('actor')
+        .filter((n) => n.properties.actorType === 'faction');
+      const faction = match(factionRef, factions);
+      if (!faction || faction.properties.actorType !== 'faction') {
+        console.warn(`[__DEBUG.conquerLocation] no faction matching "${factionRef}"`);
+        return null;
+      }
+
+      const before = graph.getIncomingEdges(location.id, 'controls')
+        .find((e) => graph.getNode(e.source)?.properties.actorType === 'faction')?.source ?? null;
+
+      // A conquest needs a victor *army*, because that is what the engine's rule is about
+      // — the army that sacks a town takes it for its faction. A throwaway member of the
+      // faction stands in for one, and is removed again, so the world is left with the
+      // territory change and nothing else.
+      const proxyId = `dbg_conquest_army_${state.tick}_${location.id}`;
+      graph.addNode({
+        id: proxyId, type: 'actor', name: 'debug host',
+        properties: { actorType: 'army' },
+      });
+      graph.addEdge({
+        id: `e_${proxyId}_member`, source: proxyId, target: faction.id,
+        type: 'member_of', properties: {},
+      });
+      try {
+        const { applyConquestOrVacuum } = await import('./engine/battleAftermath');
+        applyConquestOrVacuum(state, location.id, proxyId, runtime ?? undefined);
+      } finally {
+        try { graph.removeNode(proxyId); } catch { /* already gone */ }
+      }
+
+      const after = graph.getIncomingEdges(location.id, 'controls')
+        .find((e) => graph.getNode(e.source)?.properties.actorType === 'faction')?.source ?? null;
+
+      return {
+        locationId: location.id,
+        fromFactionId: before,
+        toFactionId: after,
+        structuralCacheVersion: runtime?.structuralCacheVersion ?? null,
+      };
+    },
+
     /** THR-1134 — ring occupancy and the swallowed-append count for the flight recorder. */
     getIncidentRecorderStats: async () => {
       const runtime = _runtimeProvider?.();
