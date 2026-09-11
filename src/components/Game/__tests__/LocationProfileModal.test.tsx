@@ -12,8 +12,8 @@
  * `prosperity` float the sheet must not surface.
  */
 
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { LocationProfileModal } from '../LocationProfileModal';
 import { WorldGraph } from '../../../engine/graph';
 import { seedEncounterTraitDefinitions } from '../../../engine/traitDefinitionSeeding';
@@ -344,5 +344,79 @@ describe('LocationProfileModal — active conditions (THR-1143)', () => {
       expect(content.desc.length).toBeLessThanOrEqual(200);
       expect(content.desc).not.toContain('trait.condition');
     }
+  });
+});
+
+/**
+ * The *held by* line (THR-1155 slice 2).
+ *
+ * The sheet described a place and never said whose it was. The red border on the map
+ * said a nation held it; the sheet a click away said nothing, because the sheet had no
+ * reader for the `controls` edge the border is projected from. Both read it now.
+ */
+describe('LocationProfileModal — held by (THR-1155)', () => {
+  function withRealm(graph: WorldGraph, opts: { seat?: boolean } = {}): WorldGraph {
+    graph.addNode({
+      id: 'faction_0',
+      type: 'actor',
+      name: 'hold of Witness Skyfield',
+      properties: { actorType: 'faction', factionClass: 'realm' },
+    } as never);
+    graph.addEdge({
+      id: 'e_controls_0',
+      source: 'faction_0',
+      target: 'loc_0',
+      type: 'controls',
+      properties: opts.seat ? { role: 'seat' } : {},
+    } as never);
+    return graph;
+  }
+
+  it('names the Realm that holds the place', () => {
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={withRealm(graphWithKeep(), { seat: true })}
+        onClose={() => {}}
+      />,
+    );
+
+    const block = screen.getByTestId('location-profile-held-by');
+    expect(block.textContent).toContain('hold of Witness Skyfield');
+    expect(block.textContent).toContain('seat of the court');
+  });
+
+  it('says Unclaimed rather than hiding the row', () => {
+    // The same sheet with the edge removed. Law 4 — a place nobody holds is an answer
+    // about the world, and a section that vanished would read as one that failed.
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graphWithKeep()}
+        onClose={() => {}}
+      />,
+    );
+
+    const block = screen.getByTestId('location-profile-held-by');
+    expect(block.textContent).toContain('Unclaimed');
+    expect(screen.queryByText('hold of Witness Skyfield')).toBeNull();
+  });
+
+  it('opens the holder\'s sheet from the line', () => {
+    const onOpenFaction = vi.fn();
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={withRealm(graphWithKeep())}
+        onOpenFaction={onOpenFaction}
+        onClose={() => {}}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /hold of Witness Skyfield/ }));
+    expect(onOpenFaction).toHaveBeenCalledWith('faction_0');
   });
 });

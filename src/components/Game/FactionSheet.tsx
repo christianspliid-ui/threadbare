@@ -15,6 +15,7 @@ import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 import type { FactionActionRecord } from '../../types/factionAction';
 import { getReputationWord } from '../../data/domain-words';
 import { getWealthTier } from '../../engine/wealth';
+import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../data/realm-content';
 import { durationLabel } from '../../engine/aftermathWords';
 
 interface FactionSheetProps {
@@ -98,6 +99,27 @@ export const FactionSheet = React.memo(function FactionSheet({
   const displayName = summary?.name ?? name;
   const factionType = summary?.factionType ?? definition?.factionType ?? 'faction';
   const themeColor = definition?.themeColor ?? summary?.definition?.themeColor ?? '#D4A574';
+
+  // THR-1155 — a Realm reads as a **Realm**, not as `political`.
+  //
+  // The chip renders `factionType` title-cased, and a Realm's stored value is
+  // `'political'` — a raw enum key on a player surface, the Law 14 failure. `Realm` is
+  // the headword (THR-1453); the discriminator is `factionClass` on the node, never the
+  // name and never the type, because a guild whose definition happens to say `political`
+  // is still a guild.
+  const isRealm = factionNode?.properties?.factionClass === REALM_FACTION_CLASS;
+  const kindWord = isRealm ? REALM_HEADWORD : factionType;
+
+  // A Realm's court sits in one town — the `role: 'seat'` edge the projection and the
+  // conquest re-stamp both read. Shown only for a Realm: a guild's hall is already the
+  // *Halls & Seats* section, and a second word for it would be two names for one thing.
+  const seatName = isRealm && graph
+    ? (() => {
+        const seatEdge = graph.getOutgoingEdges(factionId, 'controls')
+          .find(edge => edge.properties?.role === 'seat');
+        return seatEdge ? (graph.getNode(seatEdge.target)?.name ?? null) : null;
+      })()
+    : null;
 
   // THR-400 — read governance signals from faction properties. No numbers
   // surface to the player; the ambient shadow scales with dissentLevel,
@@ -201,9 +223,25 @@ export const FactionSheet = React.memo(function FactionSheet({
                 color: themeColor,
                 textTransform: 'capitalize',
               }}
+              data-testid="faction-type-chip"
             >
-              {factionType}
+              {kindWord}
             </span>
+            {seatName && (
+              <span
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                  border: '1px solid rgba(245, 158, 11, 0.25)',
+                  color: 'var(--accent-gold)',
+                }}
+                data-testid="faction-seat-chip"
+              >
+                Court at {seatName}
+              </span>
+            )}
             {summary?.governingSeats.length ? (
               <span
                 style={{

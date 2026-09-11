@@ -100,6 +100,34 @@ export const REALM_TIEBREAK = 'more_held_locations' as const;
  */
 export const REALM_CONQUEST_SEVERITY = 'total' as const;
 
+// ─── The words the player reads (THR-1155 § UI) ───────────────────────────────
+
+/**
+ * The headword. Never *kingdom*, *domain* or *province* on a player surface except
+ * inside a Realm's own name (THR-1453, *nation* as the alias).
+ *
+ * It exists as a constant because the faction sheet would otherwise render a Realm's
+ * `factionType` — the stored value `'political'` — title-cased into the type chip, and
+ * a raw enum key on a player surface is the Law 14 failure this ticket is full of
+ * examples of.
+ */
+export const REALM_HEADWORD = 'Realm';
+
+/** The label over the *held by* line on a place's surfaces. */
+export const REALM_HELD_BY_LABEL = 'Held by';
+
+/**
+ * What a place with no faction holder reads as.
+ *
+ * A word, not a blank and not an em-dash: ground no nation holds is a **fact about the
+ * world** — the border on the map stops there for a reason — and a designed state gets
+ * a designed line (Law 4). It is the same word the projection's `unclaimedHexes` counts.
+ */
+export const REALM_UNCLAIMED_COPY = 'Unclaimed';
+
+/** The seat marker beside a holder's name when this town is where its court sits. */
+export const REALM_SEAT_COPY = 'seat of the court';
+
 /**
  * Prominence of the *takes* / *loses* line in the event feed.
  *

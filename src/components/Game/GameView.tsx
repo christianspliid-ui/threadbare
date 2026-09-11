@@ -5113,6 +5113,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   viewerAgentId={
                     getAvatarsOf(gameState.graph, gameState.ascendantId)[0]?.id
                   }
+                  // THR-1155 — the *held by* line is a door. Same route the chronicle's
+                  // faction entries take, so a holder opens the sheet a player already
+                  // knows rather than a second faction surface.
+                  onOpenFaction={(factionId) => handleThreadNodeSelect(factionId, 'faction')}
                   onClose={onClose}
                 />
               );

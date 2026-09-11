@@ -19,6 +19,8 @@ import { generateArchetypes } from '../ascendant';
 import { WorldGraph } from '../graph';
 import { buildRealmProjection, fingerprintFactionControls } from '../realmProjection';
 import { stampRealmSeat } from '../realmSeat';
+import { getLocationHolder } from '../realmHolder';
+import { getLocationNodes } from '../sublocationShape';
 import {
   createSimulationRuntime,
   ensureRealmProjection,
@@ -370,3 +372,57 @@ function hexDistanceOffset(
   const [bx, by, bz] = toCube(b);
   return Math.max(Math.abs(ax - bx), Math.abs(ay - by), Math.abs(az - bz));
 }
+
+/**
+ * The map and the sheet read one source (THR-1155 slice 2, § UI).
+ *
+ * The line on a place's sheet and the border on the map are two renderings of the same
+ * `controls` edges, and the whole reason the political map stopped being a per-hex stamp
+ * is that a stamp beside the edges is a second truth. So the agreement is worth
+ * asserting rather than assuming: on a generated world, every Location the projection
+ * reports a Realm holding is a Location whose point reader names that same Realm.
+ *
+ * This is the headless form of the browser Done-when *"the chronicle's held-by line
+ * names the Realm the border is drawn from"* — it holds over every settlement in the
+ * world at once rather than over the one a screenshot happens to show.
+ */
+describe('the held-by line agrees with the border (THR-1155)', () => {
+  it('every Location the projection says a Realm holds reads that Realm on its sheet', () => {
+    const projection = buildRealmProjection(state.graph, tiles);
+    expect(projection.realms.length).toBeGreaterThan(0);
+
+    const disagreements: string[] = [];
+    let checked = 0;
+    for (const realm of projection.realms) {
+      for (const locationId of realm.heldLocationIds) {
+        checked += 1;
+        const holder = getLocationHolder(state.graph, locationId);
+        if (holder?.id !== realm.id) {
+          disagreements.push(`${locationId}: border ${realm.id}, sheet ${holder?.id ?? 'unclaimed'}`);
+        }
+      }
+    }
+
+    // The non-vacuity half: a projection with no held Locations would report perfect
+    // agreement about nothing.
+    expect(checked).toBeGreaterThan(30);
+    expect(disagreements).toEqual([]);
+  });
+
+  it('a Realm holding a town is reported as a Realm, and a guild is not', () => {
+    const projection = buildRealmProjection(state.graph, tiles);
+    const realmHeld = projection.realms[0].heldLocationIds[0];
+    expect(getLocationHolder(state.graph, realmHeld)?.isRealm).toBe(true);
+
+    // The guild-hall reconciliation leaves towns held by an authored faction; the reader
+    // names them without calling them nations. Without such a town this arm would be
+    // asserting the absence of a case, so its presence is asserted first.
+    const projected = new Set(projection.realms.flatMap(r => r.heldLocationIds));
+    const guildHeld = getLocationNodes(state.graph)
+      .map(node => ({ node, holder: getLocationHolder(state.graph, node.id) }))
+      .find(({ node, holder }) => holder && !holder.isRealm && !projected.has(node.id));
+
+    expect(guildHeld, 'a generated world has towns held by an authored faction').toBeDefined();
+    expect(guildHeld!.holder!.isRealm).toBe(false);
+  });
+});

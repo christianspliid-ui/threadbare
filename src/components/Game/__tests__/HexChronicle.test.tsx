@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { HexChronicle } from '../HexChronicle';
 import type { WorldGraph } from '../../../engine/graph';
+import type { SphereName } from '../../../types';
 
 function makeTestProps(overrides: Partial<any> = {}) {
   // Create a minimal mock graph
@@ -62,7 +63,10 @@ function makeTestProps(overrides: Partial<any> = {}) {
         name: 'The Star-Readers',
         templateName: 'The Star-Readers',
         foundationBias: 'chaos',
-        veneratedSpheres: ['time', 'energy'],
+        // `as const` so the array does not widen to `string[]` — without it every
+        // `render(<HexChronicle {...makeTestProps()} />)` in this file is a type error
+        // (20 of them before THR-1155 added four more), all from this one line.
+        veneratedSpheres: ['time', 'energy'] as SphereName[],
         ruinDescriptors: ['shattered observatories', 'cracked lenses'],
         legacyFlavor: 'They read the heavens until the heavens read them back.',
       },
@@ -225,5 +229,88 @@ describe('HexChronicle', () => {
 
     rerender(<HexChronicle {...makeTestProps()} />);
     expect(screen.getByText('The People')).toBeTruthy();
+  });
+});
+
+/**
+ * The *held by* line (THR-1155 slice 2).
+ *
+ * The chronicle already listed *Factions Present* — everyone with people on the hex —
+ * and that is not title. A hex could name four guilds and never name the nation whose
+ * border it sat inside, because nothing in the UI read the `controls` edge the political
+ * map is projected from. These arms hold that it does now, and that a settlement nobody
+ * holds still answers.
+ */
+describe('HexChronicle — held by (THR-1155)', () => {
+  /** A graph whose one settlement is held by the Realm, or by nobody. */
+  function graphHolding(held: boolean): WorldGraph {
+    const realm = {
+      id: 'faction_0',
+      type: 'actor' as const,
+      name: 'march of Shadow-Kept light',
+      properties: { actorType: 'faction', factionClass: 'realm' },
+    };
+    const edge = {
+      id: 'e_controls_0',
+      source: 'faction_0',
+      target: 'loc1',
+      type: 'controls' as const,
+      properties: { role: 'seat' },
+    };
+    return {
+      getNode: (id: string) => (id === 'faction_0' ? realm : null),
+      getOutgoingEdges: () => [],
+      getIncomingEdges: (id: string, type: string) =>
+        held && id === 'loc1' && type === 'controls' ? [edge] : [],
+      getNodesByType: () => [],
+    } as unknown as WorldGraph;
+  }
+
+  it('names the Realm that holds the hex\'s settlement, with its seat', () => {
+    render(<HexChronicle {...makeTestProps({ graph: graphHolding(true) })} />);
+
+    const block = screen.getByTestId('chronicle-held-by');
+    expect(block.textContent).toContain('Held by');
+    expect(block.textContent).toContain('march of Shadow-Kept light');
+    expect(block.textContent).toContain('seat of the court');
+  });
+
+  it('says Unclaimed for a settlement no faction holds', () => {
+    render(<HexChronicle {...makeTestProps({ graph: graphHolding(false) })} />);
+
+    // The falsifying pair for the arm above: the same hex, the same settlement, and the
+    // only difference is the edge. A block that rendered the holder from the faction
+    // list rather than the edge would name someone here.
+    expect(screen.getByTestId('chronicle-held-by').textContent).toContain('Unclaimed');
+    expect(screen.queryByText('march of Shadow-Kept light')).toBeNull();
+  });
+
+  it('renders no allegiance block on a hex with no settlement', () => {
+    // Wilderness answers through the border, not through a row that says nothing.
+    render(<HexChronicle {...makeTestProps({ locations: [], agentsByLocation: {}, graph: graphHolding(true) })} />);
+
+    expect(screen.queryByTestId('chronicle-held-by')).toBeNull();
+  });
+
+  it('reads the outer tier — a hex whose only entry is a Place has no allegiance line', () => {
+    // A `controls` edge points at a settlement, never at the tavern inside it. Without
+    // the place-tier filter the line would read a sublocation's holder, which is
+    // reliably nobody, and print *Unclaimed* over a town a Realm holds.
+    render(
+      <HexChronicle
+        {...makeTestProps({
+          locations: [{
+            id: 'sub1',
+            type: 'location' as const,
+            name: 'The Gilded Cup',
+            properties: { locationSubtype: 'tavern', parentLocationId: 'loc1' },
+          }],
+          agentsByLocation: {},
+          graph: graphHolding(true),
+        })}
+      />,
+    );
+
+    expect(screen.queryByTestId('chronicle-held-by')).toBeNull();
   });
 });
