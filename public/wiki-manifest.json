@@ -102,6 +102,7 @@
       "section": "Manual",
       "sources": [
         "src/engine/encounter*.ts",
+        "src/engine/sceneSentinels.ts",
         "src/engine/resolution*.ts",
         "src/engine/domainCapability.ts",
         "src/engine/hiddenMark*.ts",
