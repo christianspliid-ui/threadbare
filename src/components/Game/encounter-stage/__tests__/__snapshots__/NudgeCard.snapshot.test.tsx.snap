@@ -29,11 +29,11 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless on
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span />
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="2 essence"
@@ -118,7 +118,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span
         data-card-keyword="Boost"
@@ -133,7 +133,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
         Boost
       </span>
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="force"
@@ -273,7 +273,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span
         data-card-keyword="Boost"
@@ -288,7 +288,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
         Boost
       </span>
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="force"
@@ -422,7 +422,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span
         data-card-keyword="Boost"
@@ -437,7 +437,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
         Boost
       </span>
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="force"
@@ -611,7 +611,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span
         data-card-keyword="Boost"
@@ -626,7 +626,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         Boost
       </span>
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="force"
@@ -781,7 +781,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span
         data-card-keyword="Boost"
@@ -796,7 +796,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         Boost
       </span>
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="force"
@@ -937,7 +937,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span
         data-card-keyword="Boost"
@@ -952,7 +952,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
         Boost
       </span>
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="force"
@@ -1094,7 +1094,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
     style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1 1 0%;"
   >
     <div
-      style="display: flex; align-items: center; justify-content: space-between; gap: 6px;"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; row-gap: 6px;"
     >
       <span
         data-card-keyword="Boost"
@@ -1109,7 +1109,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
         Boost
       </span>
       <span
-        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+        style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
           aria-label="force"
