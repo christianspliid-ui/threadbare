@@ -171,8 +171,6 @@ export const RETROFIT_PENDING: readonly string[] = [
   'encounter.shore_up_shelter',
   'encounter.shore_up_the_mine',
   'encounter.siege_defense_planning',
-  'encounter.slice.riders_behind_caravan',
-  'encounter.slice.snow_on_the_pass',
   'encounter.smuggle_goods',
   'encounter.smuggler_pact',
   'encounter.spar_with_a_stranger',
