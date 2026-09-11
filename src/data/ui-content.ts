@@ -386,6 +386,13 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Reputation',
     desc: 'The social score between you and someone — a person, a faction, or a place. It shifts what they offer, what they let you near, and what they hear you out about. It fades if nothing keeps it alive.',
   },
+  // THR-1155 — the concept behind the *held by* line on a place's surfaces and behind
+  // the red border on the map. One tooltip for both, because they are one fact: the
+  // `controls` edge the projection draws from is the same edge this line reads.
+  'ui.held_by': {
+    label: 'Held By',
+    desc: 'Whose writ runs here. A Realm holds the towns of its domain; a guild or an order can hold the town its hall stands in. Ground nobody holds is unclaimed, and the border on the map stops there.',
+  },
   'ui.aftermath_toll': {
     label: 'A Toll',
     desc: 'Something the ending took. A toll is a price already paid, not a threat — the scene resolved, and this is what it cost the mortal to get there.',

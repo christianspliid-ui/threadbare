@@ -34,6 +34,8 @@ import { RarityBadge } from '../shared/RarityBadge';
 import { SectionHeading } from '../shared/SectionHeading';
 import { ListRow } from '../shared/ListRow';
 import { Tooltip } from '../shared/Tooltip';
+import { HeldByLine } from '../shared/HeldByLine';
+import { getLocationHolder } from '../../engine/realmHolder';
 import { clampRarityTier } from '../../types/rarity';
 import { locationSubtypeName } from '../../data/location-words';
 import { durationLabel } from '../../engine/aftermathWords';
@@ -58,6 +60,14 @@ interface LocationProfileModalProps {
    * which is the correct behaviour for a surface with no viewer (the codex, tests).
    */
   viewerAgentId?: string;
+  /**
+   * Opens the holding faction's sheet from the *held by* line (THR-1155).
+   *
+   * Omitted → the holder's name renders as plain text. The line itself always renders:
+   * who holds a town is a fact about the place, and a surface that cannot route to a
+   * faction sheet should still be able to say it.
+   */
+  onOpenFaction?: (factionId: string) => void;
 }
 
 /** Copy shown when the graph holds no prose for this place (a designed state, Law 4). */
@@ -125,6 +135,7 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
   locationId,
   graph,
   viewerAgentId,
+  onOpenFaction,
 }: LocationProfileModalProps) {
   const node = locationId && graph ? graph.getNode(locationId) : undefined;
   const props = node?.properties ?? {};
@@ -155,6 +166,16 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
     // Same in-place-mutation reasoning as `conditions` below: the modal remounts per
     // open, and that is this surface's refresh.
     [graph, locationId, viewerAgentId],
+  );
+
+  // THR-1155 — who holds this place. Read from the same `controls` edges the political
+  // border is projected from, so the line and the map cannot disagree. `null` is the
+  // *Unclaimed* case and renders as a word, not as a missing row.
+  const holder = React.useMemo(
+    () => (graph && locationId ? getLocationHolder(graph, locationId) : null),
+    // Same in-place-mutation reasoning as `conditions` below — the modal remounts per
+    // open, and a conquest during an open sheet is not a case worth a subscription.
+    [graph, locationId],
   );
 
   // THR-1143 — what the world has done to this place, and for how much longer.
@@ -220,6 +241,19 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
           >
             {flavor ?? NO_DETAIL_COPY}
           </p>
+
+          {/* Held by (THR-1155) — the nation or faction whose writ runs here, with its
+              sigil, the one `ui.held_by` tooltip and a door to its sheet. Unlike
+              Standing below, this row renders unconditionally: *Unclaimed* is an answer
+              about the world, and a place that answered nothing would be the same
+              surface as one that failed to load (Law 4). It sits above Standing because
+              who holds a town is a fact about the town; standing is about the viewer. */}
+          {locationId && (
+            <div data-testid="location-profile-held-by">
+              <SectionHeading>Allegiance</SectionHeading>
+              <HeldByLine holder={holder} graph={graph ?? null} onOpenFaction={onOpenFaction} />
+            </div>
+          )}
 
           {/* Standing (THR-1206) — the social score between the viewer and this place,
               as a word and never a number (Law 13). The tooltip is the one registry

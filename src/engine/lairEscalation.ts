@@ -372,6 +372,19 @@ export function phaseLairEscalation(state: GameState, runtime?: SimulationRuntim
   // Seeded PRNG: unique multiplier 71 avoids collision with other phases
   const rng = mulberry32(seed + tick * 71);
 
+  /**
+   * Lairs that minted a monster faction this pass (THR-1155).
+   *
+   * `seedMonsterFaction` writes a **faction-sourced `controls` edge** — faction → lair —
+   * and a legendary escalation is the one runtime path other than conquest that does.
+   * It has to ride the bump below: the political projection's fingerprint belt reads
+   * every faction-sourced `controls` edge, so a mint with no `touchStructure` leaves the
+   * border one rebuild late and traces `reason: 'fingerprint'`, which is a defect rather
+   * than a feature. The distance matrix and the encounter cache want it for the same
+   * reason — a new faction now holds ground.
+   */
+  const factionSeededThisPass: string[] = [];
+
   // ── Collect all lair and cleared_lair nodes ──────────────────────────────
   const allLairNodes = graph.getNodesByType('location').filter(
     n => n.properties.locationSubtype === 'lair',
@@ -435,6 +448,7 @@ export function phaseLairEscalation(state: GameState, runtime?: SimulationRuntim
     if (lairTier === 'major' && ticksElapsed >= LAIR_LEGENDARY_MIN_TICKS) {
       // Seed monster faction
       seedMonsterFaction(state, lairNode, dominantSphere);
+      factionSeededThisPass.push(lairNode.id);
 
       // Get the updated node (seedMonsterFaction may have updated properties)
       const updatedNode = graph.getNode(lairNode.id);
@@ -569,10 +583,11 @@ export function phaseLairEscalation(state: GameState, runtime?: SimulationRuntim
     } as Parameters<typeof emitTrace>[0]);
   }
 
-  // A subtype moved in either direction, so encounter scoring and the distance matrix
-  // are now stale. Bumped once per pass rather than per lair — the caches are rebuilt
-  // lazily, so N bumps and one bump invalidate identically.
-  if (runtime && (clearedThisPass.length > 0 || reinfestedThisPass.length > 0)) {
+  // A subtype moved in either direction, or a monster faction took a lair, so encounter
+  // scoring, the distance matrix and the political projection are now stale. Bumped once
+  // per pass rather than per lair — the caches are rebuilt lazily, so N bumps and one
+  // bump invalidate identically.
+  if (runtime && (clearedThisPass.length > 0 || reinfestedThisPass.length > 0 || factionSeededThisPass.length > 0)) {
     touchStructure(runtime);
   }
 }

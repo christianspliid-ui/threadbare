@@ -51,6 +51,7 @@ import type { ActivityKind } from '../shared/ActivityIcon';
 import { ProgressBand } from '../shared/ProgressBand';
 import { Divider } from '../shared/Divider';
 import { EntityLink } from '../shared/EntityLink';
+import { HeldByLine } from '../shared/HeldByLine';
 import { DetailBreadcrumb } from '../shared/DetailBreadcrumb';
 import { DetailModal } from '../shared/DetailModal';
 import { Section } from '../shared/Section';
@@ -130,6 +131,7 @@ const SECTIONS = [
   { id: 'animatemount', label: 'AnimateMount' },
   { id: 'entitycard', label: 'EntityCard' },
   { id: 'entity-link', label: 'EntityLink (THR-1298)' },
+  { id: 'held-by-line', label: 'HeldByLine (THR-1155)' },
   { id: 'entity-visual', label: 'EntityVisual (THR-637)' },
   { id: 'domaincard', label: 'DomainCard' },
   { id: 'activityicon', label: 'ActivityIcon' },
@@ -885,6 +887,30 @@ export default function StyleGuide() {
                   There is blood between them and <EntityLink id="ind_0" name="Oswen" />
                   {' — an old wrong that never quite closed.'}
                 </p>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── HeldByLine (THR-1155) ──────────────────────────── */}
+          <section id="section-held-by-line" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>HeldByLine</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <GameErrorBoundary>
+                <Label>A Realm's seat — the town its court sits in.</Label>
+                <HeldByLine
+                  holder={{ id: 'faction_0', name: 'hold of Witness Skyfield', isRealm: true, isSeat: true, edgeId: 'e_controls_0' }}
+                  onOpenFaction={() => {}}
+                />
+                <Label>A guild that holds the town its hall stands in — no seat, same line.</Label>
+                <HeldByLine
+                  holder={{ id: 'faction_def_arcane_circle', name: 'The Arcane Circle', isRealm: false, isSeat: false, edgeId: 'e_controls_1' }}
+                  onOpenFaction={() => {}}
+                />
+                <Label>
+                  Unclaimed — Law 4: ground no faction holds is a fact about the world, so it gets
+                  a word rather than a missing row.
+                </Label>
+                <HeldByLine holder={null} onOpenFaction={() => {}} />
               </GameErrorBoundary>
             </div>
           </section>

@@ -20,6 +20,9 @@
  * `--out`.
  *
  *   npm run census:seeded-world -- --seeds 42,99 --map medium [--ticks 0] [--out <file>]
+ *
+ * THR-1155 adds the realm block: one Realm per culture domain, and every Location
+ * inside a domain held by someone. Predicate and verdict live in `scripts/realm-census.ts`.
  */
 import { writeFileSync } from 'fs';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -33,6 +36,7 @@ import { isAutonomousDecisionActor } from '../src/engine/strategicKindReachabili
 import { UNDERTAKING_OBJECT_TYPES, enumerateObjectHandles, resolveObjectOwners } from '../src/data/undertaking-objects';
 import { ROUTE_IDENTITY_SUBTYPE } from '../src/data/strategic-action-constants';
 import { isArmyGroupNode } from '../src/engine/groupShape';
+import { buildRealmCensus, realmCensusVerdict, type RealmCensus } from './realm-census';
 import type { GameState } from '../src/types/gameState';
 import type { EdgeType } from '../src/types/graph';
 
@@ -69,6 +73,8 @@ interface Snapshot {
   routeIdentityNodes: number;
   armies: number;
   edgeCounts: Record<string, number>;
+  /** THR-1155 — the nations and what they hold. */
+  realmCensus: RealmCensus;
 }
 
 function snapshot(state: GameState): Snapshot {
@@ -102,7 +108,7 @@ function snapshot(state: GameState): Snapshot {
   const edgeCounts: Record<string, number> = {};
   for (const t of SEEDED_EDGE_TYPES) edgeCounts[t] = g.getEdgesByType(t).length;
 
-  return { tick: state.tick, deciding: deciding.size, individuals: individuals.size, rows, nodeTypes, spotlightMortals, routeIdentityNodes, armies, edgeCounts };
+  return { tick: state.tick, deciding: deciding.size, individuals: individuals.size, rows, nodeTypes, spotlightMortals, routeIdentityNodes, armies, edgeCounts, realmCensus: buildRealmCensus(g) };
 }
 
 /** `kind | objects | owned | by a deciding mortal` — the reduced table THR-1437 reads. */
@@ -124,6 +130,25 @@ function printAddedCounts(snap: Snapshot): void {
     + ` · knows_secret_of ${e.knows_secret_of} · trades_with ${e.trades_with} · commanded_by ${e.commanded_by}`,
   );
   console.log(`deciding ${snap.deciding} · individuals ${snap.individuals}`);
+  printRealmCensus(snap.realmCensus);
+}
+
+/** The political map, in two lines and a verdict (THR-1155). */
+function printRealmCensus(census: RealmCensus): void {
+  const verdict = realmCensusVerdict(census);
+  const held = Object.entries(census.heldPerRealm)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([id, n]) => `${id} ${n}`)
+    .join(' · ');
+  console.log(
+    `realms ${census.realms} / domains ${census.domains}`
+    + ` · domain locations ${census.locationsInDomain}`
+    + ` (held by their realm ${census.heldByTheirRealm}`
+    + ` · ceded to a definition faction ${census.cededToDefinitionFaction}`
+    + ` · unheld ${census.unheld})`,
+  );
+  console.log(`realm holdings: ${held || '(none)'}`);
+  console.log(`realm census: ${verdict.ok ? 'OK' : 'FAIL'} — ${verdict.reason}`);
 }
 
 const args = parseArgs();

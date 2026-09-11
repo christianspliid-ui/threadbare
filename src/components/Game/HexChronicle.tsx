@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import { Play, Square, Loader2 } from 'lucide-react';
 import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, SphereInfluence, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
@@ -9,6 +10,9 @@ import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import { LocationCard, SoulCard, FactionEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
+import { HeldByLine } from '../shared/HeldByLine';
+import { getLocationHolder } from '../../engine/realmHolder';
+import { isLocationNode } from '../../engine/sublocationShape';
 import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { elapsedLabel } from '../../engine/aftermathWords';
@@ -87,6 +91,20 @@ function getSoulLevel(value: number): HexSoulLevel {
 // ── Fallbacks ────────────────────────────────────────────────────────
 
 const FALLBACK_TERRAIN_PROSE = 'An unremarkable stretch of land, waiting for someone to give it meaning.';
+
+/**
+ * The small-caps label over a block in the People layer. Lifted to module scope when
+ * THR-1155's *held by* block became the second user — two inline copies of one heading
+ * is how a surface stops having one voice.
+ */
+const factionBlockHeadingStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 'var(--text-xs)',
+  color: 'var(--text-tertiary)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  marginBottom: '4px',
+};
 
 // ── Component ────────────────────────────────────────────────────────
 
@@ -299,6 +317,26 @@ export const HexChronicle = memo(function HexChronicle({
 
   const dominantCulture = useMemo(() => cultures.length > 0 ? cultures[0] : null, [cultures]);
   const dominantFaction = useMemo(() => factions.length > 0 ? factions[0] : null, [factions]);
+
+  /**
+   * The hex's principal settlement — the thing a Realm can actually hold (THR-1155).
+   *
+   * Place-tier only: a `controls` edge points at the outer tier, and a hex whose only
+   * entries are the sublocations *inside* a settlement would otherwise read its holder
+   * off a tavern. A hex with no settlement at all has no allegiance line, which is
+   * correct — wilderness answers through the border, not through a row.
+   */
+  const heldByLocation = useMemo(
+    () => locations.find(isLocationNode) ?? null,
+    [locations],
+  );
+
+  const hexHolder = useMemo(
+    () => (heldByLocation ? getLocationHolder(graph, heldByLocation.id) : null),
+    // `graph` is mutated in place, so its identity is not a change signal; the chronicle
+    // re-derives on every prose recomposition, which is this surface's refresh.
+    [graph, heldByLocation],
+  );
 
   const cultureProse = useMemo(() => {
     if (!dominantCulture?.foundationBias) return null;
@@ -857,17 +895,30 @@ export const HexChronicle = memo(function HexChronicle({
           </p>
         )}
 
+        {/* Held by (THR-1155) — whose writ runs over this hex's principal settlement.
+            Distinct from *Factions Present* below, which lists everyone who has people
+            here: presence is not title, and before this the chronicle could only say
+            the first, so a hex could list four guilds and never name the nation whose
+            border it sits inside. The same component the location profile uses, on the
+            same `controls` edges the map's border is projected from. */}
+        {heldByLocation && (
+          <div style={{ marginTop: '12px' }} data-testid="chronicle-held-by">
+            <div style={factionBlockHeadingStyle}>
+              {heldByLocation.name ?? 'This Ground'}
+            </div>
+            <HeldByLine
+              holder={hexHolder}
+              graph={graph}
+              onOpenFaction={onFactionClick}
+              data-testid="chronicle-held-by-line"
+            />
+          </div>
+        )}
+
         {/* Factions present at this hex */}
         {allFactions.length > 0 && (
           <div style={{ marginTop: '12px' }}>
-            <div style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-tertiary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: '4px',
-            }}>
+            <div style={factionBlockHeadingStyle}>
               Factions Present
             </div>
             {allFactions.map(faction => {
