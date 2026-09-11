@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 51,
+      "termCount": 52,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -545,7 +545,7 @@
       ],
       "status": "canonical",
       "oneLiner": "structured social entity; `actorType: 'faction'`; agents join via `member_of` edges",
-      "body": "A structured social entity modeled as an actor node with `actorType: 'faction'`. Agents join factions via `member_of` edges. Factions have agency, goals, and can be created or dissolved dynamically during simulation. Faction behavior is simulation-driven, not hand-scripted.",
+      "body": "A structured social entity modeled as an actor node with `actorType: 'faction'`. Agents join factions via `member_of` edges. Factions have agency, goals, and can be created or dissolved dynamically during simulation. Faction behavior is simulation-driven, not hand-scripted.\n\nA Faction may carry a **class** (`factionClass`) naming what kind of Faction it is. `realm` is the first — see `[[Realm]]`.",
       "seeAlso": [
         {
           "raw": "Actor",
@@ -564,6 +564,46 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#faction",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "realm",
+      "name": "Realm",
+      "aliases": [
+        "nation"
+      ],
+      "status": "canonical",
+      "oneLiner": "*(alias: nation)* a Faction of class `realm`: a culture's landed polity, seated at a capital, holding towns through `controls`; the map's red border is a projection of them, never a stored stamp",
+      "body": "A **Faction whose class is *realm*** (`factionClass: 'realm'`): the landed polity of a culture, holding a territory of Locations through `controls` edges, seated at a capital Location, with a court rank ladder and a leader the succession seam derives or seats. What the map draws as a red political border is the towns the Realm holds, projected onto hexes. A Realm is a Faction in every mechanical respect — ambitions, quests, encounters, reputation, war — and the class only says what kind of Faction it is.\n\nApproved by Christian in attended chat, 2026-09-11 (THR-1453), shipped with THR-1155.\n\n**Never *holdings*** — that noun belongs to the Freehold and the `owns` edge. A Realm's territory is `controls`; a mortal's `[[Holding]]` is `owns`. On Realm surfaces the plain verb is *holds* (*held by the Realm of Wild Storm*), pending the `[[hold]]` arbitration in THR-1449; never `hold` as a code identifier.\n\n**Retired from player-facing surfaces:** *kingdom*, *barony*, *domain*, *province*. The first two survive only as flavour inside a Realm's **name** (*the Kingdom of Wild Storm*), never as a second object; the last two were code words for the same thing and name nothing the player reads.\n\n**Why Realm over Nation as the headword:** register. A nation is a modern political noun; a realm is what a fantasy map draws and what a court sits over — and it leaves *nation* free as the everyday alias.\n\n**A Realm is not an `[[Area]]`.** The two partitions of the map are different objects and may cross: an Area is geography and does not change hands; a Realm is politics and does. Neither derives from the other.\n\n**Its definition is per-world, not static.** A Realm is minted per culture domain at worldgen with `factionDefId: realm.<cultureId>` over a *generated* culture, so no authored string can name one: every by-id definition read goes through `getFactionDefinition`, content scopes itself by class rather than by id, and an aftermath effect reaches one through the `$realm` sentinel. Court ladder: *stranger · subject · yeoman · sworn · thane · counsel*.",
+      "seeAlso": [
+        {
+          "raw": "Faction",
+          "termName": "Faction",
+          "resolvedSlug": "agents#faction"
+        },
+        {
+          "raw": "Area",
+          "termName": "Area",
+          "resolvedSlug": "graph#area"
+        },
+        {
+          "raw": "Culture",
+          "termName": "Culture",
+          "resolvedSlug": null
+        },
+        {
+          "raw": "Holding",
+          "termName": "Holding",
+          "resolvedSlug": null
+        },
+        {
+          "raw": "World Object",
+          "termName": "World Object",
+          "resolvedSlug": "graph#world-object"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#realm",
       "contentAdjacent": true
     },
     {
@@ -4355,6 +4395,11 @@
           "raw": "Location",
           "termName": "Location",
           "resolvedSlug": "graph#location"
+        },
+        {
+          "raw": "Realm",
+          "termName": "Realm",
+          "resolvedSlug": "agents#realm"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Graph.md#area",
@@ -5881,6 +5926,18 @@
       "shardId": "agents",
       "termSlug": "faction",
       "detail": "See-Also \"Member Of\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "agents",
+      "termSlug": "realm",
+      "detail": "See-Also \"Culture\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "agents",
+      "termSlug": "realm",
+      "detail": "See-Also \"Holding\" did not resolve to a known term."
     },
     {
       "kind": "unresolved_see_also",

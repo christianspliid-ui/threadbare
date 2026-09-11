@@ -141,7 +141,7 @@
 - **Mortal** (`mortal`, UL `Agents.md#agent`, chip kind `agent`) — The game word for an individual actor; "agent" is the engine word. Roles, callings and spotlight tiers are variants.
 - **Ascendant** (`ascendant`, UL `Agents.md#ascendant`, chip kind `agent`) — The player, and rival ascendants: architecturally an ordinary actor.
 - **God / Spirit** (`god`, UL `Agents.md#actortype`, chip kind `agent`) — Gods and place-spirits share the actor shape; neither is minted on the census seeds.
-- **Faction** (`faction`, UL `Agents.md#faction`, chip kind `faction`) — A structured social entity holding territory through `controls`; chapters share a def.
+- **Faction** (`faction`, UL `Agents.md#faction`, chip kind `faction`) — A structured social entity holding territory through `controls`; chapters share a def. A **Realm** (game word for a nation) is the `factionClass: 'realm'` variant minted per culture domain at worldgen (THR-1155) — a landed polity with a seat, a court ladder and a per-world definition id `realm.<cultureId>`. It is a class, not a kind: a Realm is a Faction in every mechanical respect, so it takes no registry row of its own and `factionClass` is deliberately not a `classes` map here, which groups the discriminator's own values.
 - **Culture** (`culture`, UL `Agents.md#actortype`) — A people: foundation bias and phonetic signature; mortals and locations `belongs_to` one.
 - **Company** (`company`, UL `Agents.md#company`) — The game word for a travelling group; never "party". Its position is its leader's.
 - **Army** (`army`, UL `Agents.md#group`, chip kind `army`) — A company kind with a stance, supply and momentum.
