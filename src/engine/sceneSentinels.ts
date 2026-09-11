@@ -60,6 +60,41 @@ export const SENTINEL_ASCENDANT = '$ascendant';
  */
 export const SENTINEL_HERE = '$here';
 
+/**
+ * `$realm` (THR-1155) — the Realm whose political map claims the scene's hex.
+ *
+ * `$here` names the *place*; this names the *nation that holds it*. The two are
+ * different questions with different answers: a town is a Location, and the Realm
+ * holding it is a faction node minted per world with a name no author can write —
+ * exactly the shape `$faction:<defId>` solves for the committed orders and cannot
+ * solve here, because a Realm's definition id is `realm.<cultureId>` and the culture
+ * is itself generated.
+ *
+ * **Binds a Realm or nothing.** The projection contains only `factionClass: 'realm'`
+ * factions, so a guild's town outside every Realm leaves the sentinel unbound rather
+ * than binding the guild. That refusal is the design (THR-1155 § D): *the realm that
+ * holds this town* must never quietly become *whoever holds this town*, or a tithe
+ * demanded by a nation would be demanded by a thieves' guild.
+ */
+export const SENTINEL_REALM = '$realm';
+
+/**
+ * `$area` (THR-1155) — the named Area the scene happens in.
+ *
+ * Registered here so the vocabulary is complete and an author writing it is *told*
+ * rather than ignored. **No aftermath effect field takes an Area**, verified across
+ * the whole `EncounterAftermathReactionEffect` union: every node-id field on it names
+ * an agent, a faction, a location, a sublocation, an ascendant, or a template. So
+ * `$area` refuses on every field, and {@link sentinelBindingRefusal} says where it
+ * does belong — a chip's anchor, whose `visualKind` gained `'area'` for this.
+ *
+ * Registering a refusing sentinel is strictly better than leaving it unregistered.
+ * Unregistered, `'$area'` is not a sentinel, so the binder passes the literal string
+ * through untouched and the effect consumes it as a node id — authored, typed,
+ * present, and dead, which is the silent failure THR-1446 built this gate to end.
+ */
+export const SENTINEL_AREA = '$area';
+
 // ─── The field table ─────────────────────────────────────────────────
 
 /**
@@ -123,6 +158,8 @@ export function isSceneSentinel(value: unknown): value is string {
     || value === SENTINEL_TARGET
     || value === SENTINEL_ASCENDANT
     || value === SENTINEL_HERE
+    || value === SENTINEL_REALM
+    || value === SENTINEL_AREA
     || value.startsWith(SENTINEL_CAST_PREFIX)
     || value.startsWith(SENTINEL_CAST_LEGACY_PREFIX)
   );
@@ -186,6 +223,28 @@ export function sentinelBindingRefusal(
     return kind === 'location' || kind === 'sublocation'
       ? null
       : `'${SENTINEL_HERE}' names the place the scene happens at, which is not a ${kind}`;
+  }
+
+  // THR-1155 — `$realm` resolves a faction and only a faction. Decidable from the
+  // field alone; whether *this* scene's hex is claimed by a Realm is a runtime fact,
+  // and the binder's projection lookup is the honest place for that half.
+  if (sentinel === SENTINEL_REALM) {
+    return kind === 'faction'
+      ? null
+      : `'${SENTINEL_REALM}' names the Realm that holds this ground, which is not a ${kind}`
+        + `${kind === 'location' || kind === 'sublocation' ? `; use '${SENTINEL_HERE}' for the place itself` : ''}`;
+  }
+
+  // THR-1155 — `$area` refuses everywhere, because no effect field takes an Area.
+  // The message names the surface that does, so the gate redirects rather than only
+  // forbidding: an author reaching for the Area wants to *name* it, and a chip anchor
+  // (`visualKind: 'area'`) is where naming it reaches a page.
+  if (sentinel === SENTINEL_AREA) {
+    return (
+      `no aftermath effect field takes an Area, so '${SENTINEL_AREA}' on ${field} `
+      + `(a ${kind}) binds nothing — name the Area on a chip anchor instead, or use `
+      + `'${SENTINEL_HERE}' for the place the scene happens at`
+    );
   }
 
   if (sentinel === SENTINEL_ACTOR) {

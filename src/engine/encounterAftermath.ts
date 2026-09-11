@@ -23,7 +23,7 @@ import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName, CreationSphereName } from '../types';
 import { CREATION_SPHERE_NAMES } from '../types';
 import type { SimulationRuntime } from './simulationRuntime';
-import { touchWorld, touchStructure } from './simulationRuntime';
+import { touchWorld, touchStructure, ensureRealmProjection } from './simulationRuntime';
 import {
   rebindLocatedAt,
   resolveRelocationDestination,
@@ -143,8 +143,12 @@ import {
   SENTINEL_CAST_LEGACY_PREFIX,
   SENTINEL_ASCENDANT,
   SENTINEL_HERE,
+  SENTINEL_REALM,
+  SENTINEL_AREA,
 } from './sceneSentinels';
 import type { SceneSentinelField, SceneSentinelKind } from './sceneSentinels';
+import type { RealmProjection } from './realmProjection';
+import { hexKeyFromCoord } from '../lib/hexKey';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -694,6 +698,28 @@ export const AFTERMATH_ASCENDANT_SENTINEL = SENTINEL_ASCENDANT;
 export const AFTERMATH_HERE_SENTINEL = SENTINEL_HERE;
 
 /**
+ * `$realm` sentinel (THR-1155) — the Realm that holds the ground this scene is on.
+ *
+ * Resolves through the political map, not through a second walk of the `controls`
+ * edges: `$here` gives the Location, the Location gives its hex, and the hex gives
+ * the Realm from the same `realmProjection` the border is drawn from. That is the
+ * point — the plan's rule is that if the map and `$realm` can ever disagree, there
+ * are two projections and one of them is wrong. There is one, and it lives on
+ * `SimulationRuntime`.
+ */
+export const AFTERMATH_REALM_SENTINEL = SENTINEL_REALM;
+
+/**
+ * `$area` sentinel (THR-1155) — registered, and refuses on every field.
+ *
+ * See {@link SENTINEL_AREA}: no field in the aftermath effect union takes an Area, so
+ * this binds nothing anywhere. It is registered so the binder *consumes* it — leaving
+ * the field unresolved and tracing `UNRESOLVED` — rather than passing the literal
+ * string `'$area'` downstream to be read as a node id.
+ */
+export const AFTERMATH_AREA_SENTINEL = SENTINEL_AREA;
+
+/**
  * Scene references the binder cannot read off the action (THR-1446).
  *
  * Optional and additive: every existing call site keeps compiling, and an omitted
@@ -702,6 +728,18 @@ export const AFTERMATH_HERE_SENTINEL = SENTINEL_HERE;
 export interface AftermathSceneRefs {
   /** `GameState.ascendantId` — what `$ascendant` binds to. */
   readonly ascendantId?: string;
+  /**
+   * The political map, **lazily** (THR-1155) — called at most once per effect, and
+   * only when a `$realm` sentinel is actually present.
+   *
+   * A thunk rather than the projection itself because `ensureRealmProjection` takes a
+   * fingerprint of every faction-`controls` edge on each call when the version is
+   * current (the belt that catches a writer who skipped `touchStructure`). That is
+   * cheap against a rebuild and wasteful against the overwhelming majority of
+   * aftermath effects, which carry no `$realm` at all. Returning `null` — or throwing,
+   * which is caught — leaves the sentinel unbound (NFP #4).
+   */
+  readonly realmProjection?: () => RealmProjection | null;
 }
 
 /**
@@ -799,6 +837,57 @@ function resolveSceneHere(
   return parent && isLocationNode(parent) ? parent.id : null;
 }
 
+/**
+ * THR-1155 — resolve `$realm`: the Realm whose political map claims the hex the acting
+ * agent is standing on.
+ *
+ * Three hops, each one already the sanctioned way to ask its question:
+ * `resolveSceneHere` for the Location (so `$realm` inherits the avatar hop and the
+ * three-tier walk rather than re-deriving them), the Location's `hexCol`/`hexRow` for
+ * the ground, and `realmProjection.hexRealmId` for the nation — the same map the
+ * border mesh draws.
+ *
+ * **Reading the hex rather than the Location's holder is deliberate.** A Location's
+ * holder can be a guild, an order or a monster faction; the projection contains Realms
+ * only. Asking the map therefore *cannot* return a non-Realm, where asking the town
+ * would need a `factionClass` filter bolted on to be safe — and a filter that is
+ * merely remembered is a filter that is one day forgotten.
+ *
+ * Fail-soft throughout (NFP #4): no actor, no position, a Location with no stamped hex,
+ * an unclaimed hex, a projection that throws, or a claimed hex whose Realm node has
+ * since gone away all return `null`, and the sentinel stays in place.
+ */
+function resolveSceneRealm(
+  graph: WorldGraph,
+  actorId: string | undefined,
+  kind: SceneSentinelKind,
+  projection: (() => RealmProjection | null) | undefined,
+): string | null {
+  if (kind !== 'faction' || !projection) return null;
+
+  const locationId = resolveSceneHere(graph, actorId, 'location');
+  if (!locationId) return null;
+
+  const col = graph.getNode(locationId)?.properties?.hexCol;
+  const row = graph.getNode(locationId)?.properties?.hexRow;
+  if (typeof col !== 'number' || typeof row !== 'number') return null;
+
+  let realmId: string | undefined;
+  try {
+    realmId = projection()?.hexRealmId.get(hexKeyFromCoord({ col, row }));
+  } catch {
+    // The projection is a cache behind a belt; a build that throws is already traced
+    // by `ensureRealmProjection`. Never let a sentinel lookup be what breaks a tick.
+    return null;
+  }
+  if (!realmId) return null;
+
+  // The projection is rebuilt on structural change, so a stale entry is not the
+  // expected case — but binding an id to a node that is gone would mint an edge into
+  // nothing, which is worse than an unbound sentinel.
+  return graph.getNode(realmId) ? realmId : null;
+}
+
 export interface SceneSentinelTraceContext {
   readonly tick: number;
   readonly actionId: string;
@@ -849,12 +938,17 @@ export function bindAftermathSceneTargets(
     const isTargetSentinel = value === AFTERMATH_TARGET_SENTINEL;
     const isAscendantSentinel = value === AFTERMATH_ASCENDANT_SENTINEL;
     const isHereSentinel = value === AFTERMATH_HERE_SENTINEL;
+    const isRealmSentinel = value === AFTERMATH_REALM_SENTINEL;
+    // THR-1155 — consumed so the literal never passes through as a node id, then left
+    // unbound: no effect field takes an Area. See {@link SENTINEL_AREA}.
+    const isAreaSentinel = value === AFTERMATH_AREA_SENTINEL;
     const isCastSentinel =
       value.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ||
       value.startsWith(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX);
     if (
       !isActorSentinel && !isTargetSentinel && !isCastSentinel
       && !isAscendantSentinel && !isHereSentinel
+      && !isRealmSentinel && !isAreaSentinel
     ) continue;
 
     let resolvedNodeId: string | null = null;
@@ -874,6 +968,20 @@ export function bindAftermathSceneTargets(
     } else if (isHereSentinel) {
       const here = resolveSceneHere(graph, action?.actorId, SCENE_SENTINEL_FIELDS[field]);
       if (here) resolvedNodeId = here;
+    } else if (isRealmSentinel) {
+      // THR-1155 — the nation holding the ground `$here` names. Kind-gated inside the
+      // resolver so a `$realm` on an agent field binds nothing rather than a faction.
+      const realm = resolveSceneRealm(
+        graph,
+        action?.actorId,
+        SCENE_SENTINEL_FIELDS[field],
+        scene?.realmProjection,
+      );
+      if (realm) resolvedNodeId = realm;
+    } else if (isAreaSentinel) {
+      // Consumed, never bound — the trace records `UNRESOLVED`, which is the honest
+      // report and the reason registering it beats leaving it to pass through.
+      resolvedNodeId = null;
     } else if (isTargetSentinel) {
       const targetId = action?.targetId;
       if (targetId && nodeMatchesSceneField(graph, targetId, SCENE_SENTINEL_FIELDS[field])) {
@@ -1120,7 +1228,14 @@ export function applyEncounterAftermathReaction(
         { tick, actionId, actorAgentId, encounterId, reactionId: reaction.id, effectIndex: i },
         // THR-1446: `$ascendant` names the player's god, which is not a scene
         // participant and so cannot be read off `action`.
-        { ascendantId: state.ascendantId },
+        // THR-1155: `$realm` names the nation holding the ground, which is not on
+        // `action` either — it is on the political map the runtime owns. Lazy, so an
+        // effect with no `$realm` never pays the projection's fingerprint walk.
+        {
+          ascendantId: state.ascendantId,
+          realmProjection: () =>
+            ensureRealmProjection(runtime, state.graph, state.tiles, tick),
+        },
       ),
       state.graph,
       actorAgentId,
