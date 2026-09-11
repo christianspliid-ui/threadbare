@@ -1,21 +1,24 @@
 # Briefing
-**Generated:** 2026-09-11 07:00 local (05:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-11 08:00 local (06:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Pick the word your red borders draw: [Realm, or Nation](https://linear.app/threadbare/issue/THR-1453/ul-proposal-realm-nation-the-landed-faction-that-holds-a-territory-of).**
+**One yes/no, and design work restarts after six hours stopped: [may Traits wave 2 give up the design desk?](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)**
 
-Overnight the nation stopped being a drawing. It has a seat, a territory of towns, a court to climb, a border that moves when a town is taken — and as of [04:27 this morning](https://github.com/christianspliid-ui/threadbare/pull/1893), a way for written content to *name* it. Three named ones exist in a seeded world: **hold of Witness Skyfield** (17 towns) · **march of Shadow-Kept light** (10) · **sovereignty of Open Earth** (6).
+Design here happens one system at a time — one desk, one system on it until its plan is written. **Traits wave 2** has held that desk for **26 days** with your name on the ticket, and nothing else can be designed while it sits there.
 
-The write-up proposes **Realm** over **Nation** on register grounds — a nation is a modern political word, a realm is what a fantasy map draws and what a court sits over — and says outright you may veto the headword. Same object either way; only the word the player reads changes.
+It is a good system: places and things start carrying character. A town turns **blood-soaked** after enough battles on its ground, a shrine **veil-thin** where the world wears through, a sword **cursed** or **storied** by what it has done — and an encounter can then simply say *"gain a random relic"* and let the world pick. It has not moved since 15 August.
 
-**Why now rather than later:** the map and the town sheet already print it, and [realm content](https://linear.app/threadbare/issue/THR-1454) — court summons, border levy, tithe — is queued behind. Vetoing today is a rename. Vetoing after that content is a rewrite of shipped prose.
+**Setting it aside keeps everything** — its place, its notes, its priority. It just stops holding the desk.
 
-Two more want a yes rather than a decision: [**hold**](https://linear.app/threadbare/issue/THR-1449) — your own ruling from 10 September, already the first word of a realm's name above — and [**cast**](https://linear.app/threadbare/issue/THR-1445), a god playing a divine action card.
+**If yes, the next system steps up immediately, and it is one you already approved.** Yesterday evening you said *"ok lets go"* to the fix for [the world's builders being invisible](https://linear.app/threadbare/issue/THR-1348) — the merchants and smiths who hold real ambitions but sit outside the handful of mortals the game actually watches, so their whole line of work never happens. That ruling is on record and names what the design pass must settle. It waits only on the desk.
 
-## Also waiting (11)
+**Why this is back after yesterday's brief took it off your list.** Last night's run handed it to the tidy-up lane instead. The orchestrator then read that lane's instructions: it is told to *flag* stalled design work, never to set anything aside. The hand-off could not have been acted on, so the call is genuinely yours. — *from tb-orchestrator, [run 2026-09-11c](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-11c.md#needs-christian)*
 
-- [**Delegate the glossary?**](https://linear.app/threadbare/issue/THR-1380) — seven words queued, only a human may seat one. Say *"delegate it"* and keep a veto.
+## Also waiting (12)
+
+- [**Realm, or Nation?**](https://linear.app/threadbare/issue/THR-1453) — the word your red borders draw. Yesterday's lead ask, unchanged; two more words ([hold](https://linear.app/threadbare/issue/THR-1449), [cast](https://linear.app/threadbare/issue/THR-1445)) want a yes rather than a decision.
+- **Delegate the glossary?** — seven words queued, only a human may seat one. Say *"delegate it"* and keep a veto.
 - [**THR-1053**](https://linear.app/threadbare/issue/THR-1053) — a veto window on an encounter quality rule the agents judged theirs to calibrate; now in the build queue.
 - [**THR-1380**](https://linear.app/threadbare/issue/THR-1380) — one **Done** click, no work behind it.
 - [**THR-1130**](https://linear.app/threadbare/issue/THR-1130) — sample two of the camp six; your standing 2-of-6 verdict, blocking nothing.
@@ -29,12 +32,12 @@ Two more want a yes rather than a decision: [**hold**](https://linear.app/thread
 
 ## Queue
 
-**Healthy, thin at 3 ready** — [THR-1456](https://linear.app/threadbare/issue/THR-1456) (High, a monster raid corrupting a town's prosperity and defense) · [THR-1053](https://linear.app/threadbare/issue/THR-1053) (Medium) · [THR-1455](https://linear.app/threadbare/issue/THR-1455) (Low). Three In Dev.
+**Healthy, thin at 3 ready** — [THR-1456](https://linear.app/threadbare/issue/THR-1456) (High, a monster raid corrupting a town's prosperity and defense) · [THR-1053](https://linear.app/threadbare/issue/THR-1053) (Medium) · [THR-1455](https://linear.app/threadbare/issue/THR-1455) (Low). Three In Dev, one of them actually building.
 
-- **[THR-1155](https://linear.app/threadbare/issue/THR-1155) is the only thing building**, and it is mid-slice, not finished: slice 3's first bullet merged at 04:27; four remain (a rank ladder read, a realm's encounter-meta entry, the *takes / loses* chronicle line, and the registry/canon/wiki/UL rows — where your word above lands).
-- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is unreachable where it sits** — `In Dev` + `Parked` + unassigned, which no pickup lane looks at. Its park was discharged by events 17 h ago. The grooming lane's next pass (09:16) is the right owner and is due shortly; no action of yours.
-- **[THR-790](https://linear.app/threadbare/issue/THR-790) came off your list this run.** It has blocked the design bench for five runs, and the previous brief said it would become an ask. The orchestrator looked closer: the exit is a label inside the grooming lane's remit, not a question for you. Routed there instead.
+- **[THR-1155](https://linear.app/threadbare/issue/THR-1155) is the only live build.** Slice 3's sentinel half merged at 06:36 ([PR #1893](https://github.com/christianspliid-ui/threadbare/pull/1893)); nothing has merged against it in the 85 minutes since. Four boxes remain — a court-rank read, a realm's encounter-meta entry, the *takes / loses* chronicle line, and the registry/canon/wiki/UL rows, where the Realm-or-Nation word lands.
+- **[THR-1130](https://linear.app/threadbare/issue/THR-1130) is still unreachable where it sits** — `In Dev` + `Parked` + unassigned, the one shape no pickup lane looks at. Its park was discharged by events yesterday afternoon: the fix it waited on landed, and both branches of its question now lead to the same action. The grooming lane owns the unpark and runs at **09:16**, in about an hour. No action of yours; it is on your list above only for the optional 2-of-6 sample.
+- **[THR-1380](https://linear.app/threadbare/issue/THR-1380) is parked for your click alone.** An executor claimed it, verified every clause against live code, wrote no diff — the work had shipped eight days earlier under a sibling ticket. No lane here may set **Done**.
 
 ## Health
 
-All green. Deploy serving latest `main`, CI and all three scheduled jobs green, no PRs waiting, every scheduled task on time, engine tick cost 95 ms/tick (+9% on the 7-day median — inside tolerance). One non-green signal, and it is ask 11 above: the lane-silence probe still raises the 44.9 h weekend gap (04–06 Sep) because no ruling covers weekends.
+All green. Deploy serving latest `main`, CI and all three scheduled jobs green, no PRs waiting, all nine scheduled tasks on time, the worktree reaper ran 20 minutes ago, engine tick cost 99 ms/tick (+14% on the 7-day median of 87 — inside tolerance). One non-green signal, and it is ask 12 above: the lane-silence probe still raises the 44.9 h weekend gap (04–06 Sep) because no ruling covers weekends.
