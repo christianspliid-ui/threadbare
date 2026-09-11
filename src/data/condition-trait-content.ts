@@ -32,7 +32,7 @@
  * read off an *agent's* traits to move that agent's capability, and a place has no
  * capability to move. A location condition's readers are the two in
  * `LOCATION_CONDITION_MOVEMENT_TAX` (movement cost) and `requiredTargetTraits`
- * (template gating). The five below are declared with `satisfies` rather than the
+ * (template gating). All seven below are declared with `satisfies` rather than the
  * `as` cast the personal set uses, so the required-field contract is actually
  * checked at authoring time instead of asserted past.
  *
@@ -46,9 +46,13 @@
  * | CONDITION_STANDING_WELCOME_DURATION | 120     | Ticks (10 game days)          |
  * | LOCATION_IMPASSABLE_MULTIPLIER      | 8       | Soft-block movement tax        |
  *
- * Five of the six are things that happen *to* a place and read negative;
+ * Five of the seven are things that happen *to* a place and read negative;
  * `standing_welcome` (THR-1175) is the first that a person earns and the first
- * that reads positive. It exists because a gratitude beat was expressing "a roof
+ * that reads positive, and `tended_shrine` (THR-1130 batch 3) is the second —
+ * the state a shrine is left in when a gift goes down properly and something
+ * answers. It is also the first location condition written through `$here`
+ * rather than `$target`, which is what makes it reachable from a rite an agent
+ * performs on themselves. It exists because a gratitude beat was expressing "a roof
  * that opens for them" as an `owes_favor` edge owed by the *town* — schema-illegal
  * and, worse, uncollectable, since every favour consumer is individual-shaped.
  * The condition is the honest shape of that fiction, and the gate is what makes
