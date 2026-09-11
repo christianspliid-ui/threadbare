@@ -22,6 +22,7 @@ import {
 } from '../data/faction-definitions';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
+import { resolveMetaFactionDefId } from './factionMetaScope';
 import { getEncounterRewardMultiplier, emitFactionBonusTrace } from './factionRankBonus';
 import { resolveFactionNodeId } from './factionMembership';
 import { emitTrace } from './traceBuffer';
@@ -365,10 +366,14 @@ export function processFactionEncounterReputation(
   if (!stepSuccess) return; // No reputation for failed steps
 
   // Find the agent's membership in this faction
+  // THR-1155: a class-scoped row resolves to the Realm this agent has standing with, so
+  // the reputation a court's work pays lands on the court's own ladder.
+  const metaDefId = resolveMetaFactionDefId(graph, agentId, meta);
+  if (!metaDefId) return;
   const memberEdges = getFactionMembershipEdges(graph, agentId);
   const factionEdge = memberEdges.find(e => {
     const props = e.properties as Partial<MemberOfEdgeProperties>;
-    return props.factionDefId === meta.factionDefId;
+    return props.factionDefId === metaDefId;
   });
 
   if (!factionEdge) return; // Agent not a member of this faction
@@ -390,7 +395,7 @@ export function processFactionEncounterReputation(
   }
 
   // Apply reputation alignment multiplier — aligned traits boost, misaligned penalize
-  const alignmentMultiplier = computeAlignmentMultiplier(graph, agentId, meta.factionDefId);
+  const alignmentMultiplier = computeAlignmentMultiplier(graph, agentId, metaDefId);
   const effectiveMultiplier = rewardMultiplier * alignmentMultiplier * rewardScale;
 
   // Apply per-step reputation gain (multiplied by rank + alignment bonuses)

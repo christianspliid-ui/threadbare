@@ -61,6 +61,8 @@ import { UNDERKING_COURT_ENCOUNTER_META } from './underking-court-encounter-cont
 import { HOLY_ORDER_DAWN_ENCOUNTER_META } from './holy-order-dawn-encounter-content';
 import { BUILDERS_FELLOWSHIP_ENCOUNTER_META } from './builders-fellowship-encounter-content';
 import { LOREKEEPERS_COVENANT_ENCOUNTER_META } from './lorekeepers-covenant-encounter-content';
+import { REALM_FACTION_CLASS, isRealmDefinitionId } from './realm-content';
+import { CLASS_SCOPED_META_DEF_ID } from './faction-constants';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -112,6 +114,26 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
   ...HOLY_ORDER_DAWN_ENCOUNTER_META,
   ...BUILDERS_FELLOWSHIP_ENCOUNTER_META,
   ...LOREKEEPERS_COVENANT_ENCOUNTER_META,
+  // Realms (THR-1155 slice 3) — class-scoped, because a Realm's definition id is minted
+  // per world. These two ids are not speculative: `buildRealmDefinition` already names
+  // them as every Realm's `joinEncounterTemplateId` / `promotionEncounterTemplateId`, so
+  // the rows complete a promise the shipped definition already makes. The templates
+  // themselves are THR-1454's content; until they exist the rows are inert, because
+  // every consumer looks the meta up *by template id*.
+  ['realm.join', {
+    factionDefId: CLASS_SCOPED_META_DEF_ID,
+    factionClass: REALM_FACTION_CLASS,
+    minRank: 'stranger',
+    reputationReward: 0.0,
+    questType: 'standard',
+  }],
+  ['realm.promotion', {
+    factionDefId: CLASS_SCOPED_META_DEF_ID,
+    factionClass: REALM_FACTION_CLASS,
+    minRank: 'subject',
+    reputationReward: 0.0,
+    questType: 'standard',
+  }],
 ]);
 
 // ─── Templates ───────────────────────────────────────────────────────────
@@ -1301,6 +1323,22 @@ export function getFactionEncounterById(id: string): UnifiedActionTemplate | und
  */
 export function getFactionTemplateIds(factionDefId: string): string[] {
   return [...FACTION_ENCOUNTER_META.entries()]
-    .filter(([, meta]) => meta.factionDefId === factionDefId)
+    .filter(([, meta]) => metaBelongsToDefinitionId(meta, factionDefId))
     .map(([id]) => id);
+}
+
+/**
+ * Whether a meta row is content for the definition `factionDefId` names.
+ *
+ * An authored row matches one id exactly. A class-scoped row (THR-1155 slice 3) matches
+ * every definition of its class — `realm.quest.*` is the court work of *every* Realm,
+ * because the content is authored once and the Realms are minted per world.
+ */
+export function metaBelongsToDefinitionId(
+  meta: FactionEncounterMeta,
+  factionDefId: string,
+): boolean {
+  if (meta.factionClass === REALM_FACTION_CLASS) return isRealmDefinitionId(factionDefId);
+  if (meta.factionClass) return false;
+  return meta.factionDefId === factionDefId;
 }

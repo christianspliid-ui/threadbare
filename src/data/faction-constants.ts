@@ -99,3 +99,22 @@ export const FACTION_PROSE_CONDITIONAL_MIN_PER_TEMPLATE = 1;
 
 /** Minimum voice-bible lexicon hits per template (voice lint advisory) */
 export const FACTION_PROSE_VOICE_LEXICON_MIN_HITS = 3;
+
+// ─── Class-scoped encounter meta (THR-1155 slice 3) ───────────────────────────
+
+/**
+ * The `factionDefId` a **class-scoped** `FactionEncounterMeta` carries.
+ *
+ * `FACTION_ENCOUNTER_META` is keyed `templateId → { factionDefId … }`, and every
+ * authored row names one definition from the static catalogue. A Realm's definition
+ * is minted per world (`realm.<cultureId>` over a *generated* culture), so no static
+ * string can name one — the same wall `$realm` hit in slice 3 part 1, and answered the
+ * same way: ask at read time.
+ *
+ * A row that sets `factionClass` therefore parks this token in `factionDefId` rather
+ * than a plausible-looking id. It resolves to no definition anywhere, so a read site
+ * that forgets {@link resolveMetaFactionDefId} gets `null` and skips — fail-soft, and
+ * greppable in a trace rather than silently attaching realm work to some other faction
+ * whose id happened to look right. The tripwire test is what makes the forgetting loud.
+ */
+export const CLASS_SCOPED_META_DEF_ID = '__class_scoped__';

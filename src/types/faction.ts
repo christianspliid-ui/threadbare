@@ -13,6 +13,7 @@
 
 import type { ReachDomain, ReputationPolarity } from './traits';
 import type { LocationSubtype } from './index';
+import type { FactionClass } from '../data/realm-content';
 
 // ─── Rank Bonuses ────────────────────────────────────────────────────────
 
@@ -66,8 +67,28 @@ export interface ExpulsionConsequence {
  * Stored alongside standard EncounterTemplate data.
  */
 export interface FactionEncounterMeta {
-  /** Which faction definition this belongs to */
+  /**
+   * Which faction definition this belongs to.
+   *
+   * On a **class-scoped** row (see {@link FactionEncounterMeta.factionClass}) this is
+   * `CLASS_SCOPED_META_DEF_ID`, not a resolvable id — read it through
+   * `resolveMetaFactionDefId` rather than directly.
+   */
   factionDefId: string;
+  /**
+   * Set when the row belongs to a *class* of factions rather than one authored
+   * definition (THR-1155 slice 3).
+   *
+   * A Realm's definition id is minted per world, so `realm.quest.*` content cannot
+   * name its faction the way `ag.quest.*` names the Adventurers Guild. Such a row says
+   * `factionClass: 'realm'` and the faction is resolved per agent at read time: the
+   * Realm they already hold standing with, else the Realm holding the ground they
+   * stand on — joining being how standing begins.
+   *
+   * Absent on every authored row, which is what keeps the sweep behaviour-neutral for
+   * the ~150 guild metas.
+   */
+  factionClass?: FactionClass;
   /** Rank tier ID required ('journeyman', 'sergeant', etc.) */
   minRank: string;
   /** Faction reputation gained on completion */
