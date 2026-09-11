@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { EncounterVeil } from '../EncounterVeil';
 import type { EncounterStageModel } from '../encounter-stage/types';
 import {
@@ -14,6 +14,10 @@ import {
 } from '../encounter-stage/adapters/buildAftermathConsequences';
 import type { ChipSentenceLinker } from '../encounter-stage/adapters/buildAftermathConsequences';
 import { SLICE_GRATEFUL_KIN } from '../../../data/encounters/vertical-slice';
+import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
+import { buildUnifiedEncounterStageModel } from '../encounter-stage/adapters/buildUnifiedEncounterStageModel';
+import type { EncounterSupportBinding } from '../../../types/encounter';
+import { isDefaultSupportSpec } from '../../../data/default-support-bundles';
 import { WorldGraph } from '../../../engine/graph';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
@@ -1895,6 +1899,60 @@ describe('EncounterVeil — cast strip (THR-1041)', () => {
     expect(onSelectAgent).not.toHaveBeenCalled();
   });
 
+  // ─── THR-1465 ────────────────────────────────────────────────────
+  // An unbound spec falls back to its `spawnName`, which for a generic walk-on
+  // *is* its role — so the chip said "Wayside Keeper / Wayside Keeper", the same
+  // words twice with one of them dressed as a person's name (Laws 13/14).
+  it('LAWS 13/14: a role line identical to the name is not rendered twice', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={castModel([
+          { id: 'keeper', name: 'Wayside Keeper', role: 'subject', roleLabel: 'Wayside Keeper' },
+        ])}
+      />,
+    );
+    const chip = screen.getByTestId('veil-cast-chip-keeper');
+    expect(chip).toHaveTextContent('Wayside Keeper');
+    // The words appear once in the chip's own text, and the accessible label
+    // does not repeat them either.
+    expect(chip.textContent?.match(/Wayside Keeper/gu) ?? []).toHaveLength(1);
+    expect(chip).toHaveAttribute('aria-label', 'Wayside Keeper');
+  });
+
+  // Case alone is not a second fact: `spawnName` and `supportRoleWord` are
+  // different producers, so the two strings can differ only in casing.
+  it('LAWS 13/14: the duplicate check ignores case and spacing', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={castModel([
+          { id: 'outrider', name: 'Road Outrider', role: 'support', roleLabel: 'road  outrider' },
+        ])}
+      />,
+    );
+    const chip = screen.getByTestId('veil-cast-chip-outrider');
+    expect(chip).toHaveAttribute('aria-label', 'Road Outrider');
+    expect(chip.textContent?.toLowerCase().match(/outrider/gu) ?? []).toHaveLength(1);
+  });
+
+  // The falsification arm — a genuinely different role still gets both lines,
+  // so the collapse above is not just "never render the role".
+  it('LAWS 13/14: a role that differs from the name still renders both lines', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={castModel([
+          { id: 'ghost', name: 'A waiting stranger', role: 'witness', roleLabel: 'witness' },
+        ])}
+      />,
+    );
+    const chip = screen.getByTestId('veil-cast-chip-ghost');
+    expect(chip).toHaveTextContent('A waiting stranger');
+    expect(chip).toHaveTextContent('witness');
+    expect(chip).toHaveAttribute('aria-label', 'A waiting stranger — witness');
+  });
+
   it('LAW 21: no handler wired means no live link, however well-bound the cast', () => {
     render(<EncounterVeil {...defaultProps} model={castModel(boundCast)} />);
     expect(screen.getByTestId('veil-cast-chip-tessaly')).toBeDisabled();
@@ -2296,5 +2354,134 @@ describe('EncounterVeil — footer clearance (THR-1410)', () => {
     const column = screen.getByTestId('veil-content-column');
     expect(column.style.paddingBottom).not.toMatch(/vh$/);
     expect(px(column.style.paddingBottom)).toBeGreaterThan(0);
+  });
+});
+
+// ─── THR-1465: the composed surface, end to end ────────────────────
+//
+// Browser-verify substitution (jsdom-render): this run could not start a dev
+// server, so the screenshot is replaced by rendering the real component from a
+// model the **real adapter** built out of the **real shipped template**. That is
+// the same path the veil takes in the browser, minus the paint — so it proves
+// what the census screenshot proved: which chips are on screen, what each says,
+// and which can be opened.
+describe('EncounterVeil — slice cast, composed surface (THR-1465)', () => {
+  function sliceTemplate(id: string): UnifiedActionTemplate {
+    const template = UNIFIED_ACTION_TEMPLATES.find(t => t.id === id);
+    if (!template) throw new Error(`${id} is not in the live catalog`);
+    return template;
+  }
+
+  function sliceGraph(): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'agent.scout', type: 'actor', name: 'Kael the Scout', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'loc.waystation', type: 'location', name: 'Northern Waystation', properties: {} });
+    graph.addNode({ id: 'npc.hermit', type: 'actor', name: '老 Marrow', properties: { actorType: 'individual' } });
+    return graph;
+  }
+
+  function renderSlice(id: string, supportBindings: EncounterSupportBinding[] = []) {
+    const template = sliceTemplate(id);
+    const model = buildUnifiedEncounterStageModel({
+      template,
+      activeAction: {
+        actionId: 'ua_slice_veil',
+        actorId: 'agent.scout',
+        templateId: template.id,
+        targetId: 'loc.waystation',
+        scale: 'local',
+        source: 'agent',
+        startTick: 10,
+        currentStep: 0,
+        stepProgress: 0,
+        stepDuration: 3,
+        resolved: false,
+        stepOutcomes: [],
+        supportBindings,
+      },
+      notification: {
+        id: 'notif-slice',
+        agentId: 'agent.scout',
+        agentName: 'Kael the Scout',
+        courtPosition: 'the_first',
+        encounterId: template.id,
+        encounterName: template.name,
+        prose: 'The road narrows.',
+        choices: [],
+        tick: 10,
+        threadTier: 'strong',
+      } as unknown as EncounterNotification,
+      agentName: 'Kael the Scout',
+      threadTier: 'strong',
+      graph: sliceGraph(),
+      essence: 10,
+    });
+    render(<EncounterVeil {...defaultProps} model={model} onSelectAgent={vi.fn()} />);
+    return model;
+  }
+
+  /** Every cast chip on screen, as the THR-1465 census read them. */
+  function domCensus() {
+    return [...document.querySelectorAll<HTMLButtonElement>('[data-testid^="veil-cast-chip-"]')]
+      .map(b => ({ label: b.getAttribute('aria-label'), disabled: b.disabled }));
+  }
+
+  const THE_THREE_STRANGERS = ['Wayside Keeper', 'Fellow Traveler', 'Road Outrider'];
+
+  /**
+   * The live condition THR-1465 measured: the encounter's **authored** cast is
+   * bound (it materializes or reuses on trigger, which is why the census showed
+   * The Keeper at the Crossing openable), and the wayside **defaults** bind
+   * nobody, because a wayside hex carries no hermit, wanderer or ranger to reuse.
+   */
+  function liveBindings(id: string): EncounterSupportBinding[] {
+    return (sliceTemplate(id).supportBundle ?? [])
+      .filter(spec => spec.kind === 'actor' && !isDefaultSupportSpec(spec))
+      .map(spec => ({
+        key: spec.key,
+        nodeId: 'npc.hermit',
+        kind: 'actor' as const,
+        delivery: 'lazy-materialize-on-trigger' as const,
+        persistence: 'must-persist' as const,
+        reused: false,
+      }));
+  }
+
+  it.each([
+    'encounter.slice.unsafe_bridge',
+    'encounter.slice.snow_on_the_pass',
+    'encounter.slice.riders_behind_caravan',
+    'encounter.slice.bargain_at_crossroads',
+    'encounter.slice.swindled_family',
+  ])('%s shows no unopenable chip, and none of the three strangers', (id) => {
+    renderSlice(id, liveBindings(id));
+    const census = domCensus();
+    // Done-when 1: every chip either opens something or is not shown.
+    expect(census.filter(c => c.disabled), `${id} census: ${JSON.stringify(census)}`).toEqual([]);
+    // Done-when 2/3: the walk-ons are gone, name-duplicating labels with them.
+    for (const stranger of THE_THREE_STRANGERS) {
+      expect(document.body.textContent, `${id} still names ${stranger} in the scene row`)
+        .not.toContain(stranger);
+    }
+  });
+
+  it('The Swindled Family and Snow on the Pass render no scene row at all', () => {
+    for (const id of ['encounter.slice.swindled_family', 'encounter.slice.snow_on_the_pass']) {
+      renderSlice(id);
+      expect(screen.queryByTestId('veil-cast-strip'), `${id} still renders a scene row`)
+        .not.toBeInTheDocument();
+      cleanup();
+    }
+  });
+
+  // The row is not simply suppressed: give the world a hermit for the wayside
+  // keeper to be, and the chip comes back — openable, under the world's name
+  // for them rather than the archetype's.
+  it('a default that binds is shown, openable, under the bound node\'s name', () => {
+    renderSlice('encounter.slice.snow_on_the_pass', [
+      { key: 'keeper', nodeId: 'npc.hermit', kind: 'actor', delivery: 'pre-seeded', persistence: 'must-persist', reused: true },
+    ]);
+    const census = domCensus();
+    expect(census).toEqual([{ label: 'View 老 Marrow', disabled: false }]);
   });
 });

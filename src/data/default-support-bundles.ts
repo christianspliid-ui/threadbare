@@ -32,7 +32,7 @@
  * fallback name for a declared-but-unbound key (Slice C cast context).
  */
 
-import type { EncounterSupportBundle } from '../types/encounter';
+import type { EncounterSupportBundle, EncounterSupportSpec } from '../types/encounter';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { SETTING_CLASSES, settingClassForSubtype, type SettingClass } from './settingClasses';
 
@@ -695,4 +695,30 @@ export function hasOnlyDefaultSupportBundle(template: UnifiedActionTemplate): bo
   const defaults = defaultSupportBundleFor(template);
   if (!defaults) return false;
   return bundle.every(spec => defaults.includes(spec));
+}
+
+/**
+ * Whether this exact spec object came out of a default table (THR-1465).
+ *
+ * The per-spec companion to {@link hasOnlyDefaultSupportBundle}, and the one a
+ * **mixed** bundle needs. Four of the five vertical-slice parents compose their
+ * cast as `[...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside, <authored spec>]` — the
+ * spread copies the array but shares the spec objects — so the template-level
+ * question ("is this bundle entirely default?") answers `false` for them while
+ * three of their four specs are defaults all the same.
+ *
+ * Scanned across **every** default table rather than only the one this template
+ * would resolve to, so the answer never depends on `primarySettingClass`
+ * agreeing with whichever table the author spread in. Identity, not value: a
+ * template that hand-authors a spec with identical fields still reads as
+ * authored, which is the answer we want — it wrote the promise itself.
+ */
+export function isDefaultSupportSpec(spec: EncounterSupportSpec): boolean {
+  for (const bundle of Object.values(DEFAULT_FAMILY_SUPPORT_BUNDLES)) {
+    if (bundle.includes(spec)) return true;
+  }
+  for (const bundle of Object.values(DEFAULT_SETTING_SUPPORT_BUNDLES)) {
+    if (bundle.includes(spec)) return true;
+  }
+  return false;
 }

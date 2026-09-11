@@ -21,6 +21,7 @@ import { resolveAnchorDeclaration } from '../../../../data/content-eval/chipAnch
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
 import { supportRoleWord } from '../../../../engine/supportRoleWords';
+import { isDefaultSupportSpec } from '../../../../data/default-support-bundles';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
@@ -274,6 +275,21 @@ function buildCast(
 
   return template.supportBundle
     .filter((spec): spec is EncounterSupportActorSpec => spec.kind === 'actor')
+    // THR-1465: a **default** spec that found nobody is not in the scene, so it
+    // does not get a chip. THR-1041 kept unbound specs on the strip for a stated
+    // reason — "the actor is still in the prose, so hiding it would be worse
+    // than showing it inert" — and that reason is exactly what separates the two
+    // sources. An authored spec is a promise the encounter's own prose makes, so
+    // it keeps its inert chip. A default is the opposite: `withDefaultSupportBundle`
+    // attaches it bind-only, and per THR-1132 a default that finds nobody "stays
+    // unresolved … which is the honest outcome rather than a spawned prop". On a
+    // wayside hex with no hermit, wanderer or ranger to bind, all three wayside
+    // defaults stay unresolved — which is how every one of the five slice
+    // parents came to show the same three strangers, two of them (Snow on the
+    // Pass, The Swindled Family) with *no* other cast and prose naming no such
+    // people. A scene row that lists people who are not present and cannot be
+    // opened is not scenery, it is a false claim about the world (Law 13).
+    .filter(spec => Boolean(bindings.find(b => b.key === spec.key)?.nodeId) || !isDefaultSupportSpec(spec))
     .map((spec) => {
       const binding = bindings.find(b => b.key === spec.key);
       // `spawnName` is optional on the spec, so the placeholder key is the last

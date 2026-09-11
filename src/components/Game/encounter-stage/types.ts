@@ -86,6 +86,14 @@ export interface EncounterStageCastModel {
    * bundle spec never bound (the world had nobody to reuse and nothing spawned),
    * in which case the chip renders as an unlinked name: the actor is still in
    * the prose, so hiding it would be worse than showing it inert.
+   *
+   * THR-1465 narrowed *which* unbound specs reach this model at all. The reason
+   * above holds for an **authored** spec, whose encounter wrote the person into
+   * its own prose. It does not hold for a **default** spec, which
+   * `withDefaultSupportBundle` attaches bind-only to a template that never
+   * mentioned it — so an unbound default is dropped in `buildCast` rather than
+   * rendered, and an absent `nodeId` here now always means an authored promise
+   * the world could not keep.
    */
   nodeId?: string;
   /**
