@@ -333,7 +333,8 @@ describe('ensureRealmProjection — one owner, and a belt (THR-1155)', () => {
     // THR-1448 owns what a mortal's hold means inside a Realm; it is not the political
     // map, and a border that rebuilt on every stance taken would spend the belt's budget
     // on something it does not watch.
-    const { graph, tiles: built } = buildTwoRealmWorld(10);
+    // Tiles unused here: the fingerprint is over edges, not ground.
+    const { graph } = buildTwoRealmWorld(10);
     graph.addNode({
       id: 'mortal_1', type: 'actor', name: 'Someone',
       // A Mortal is `actorType: 'individual'` in the world-object registry (THR-1394);
