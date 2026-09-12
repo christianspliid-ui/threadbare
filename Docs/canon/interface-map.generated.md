@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 101 |
+| 🟢 LIVE | 102 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **130** |
+| **Total** | **131** |
 
 ## Contracts by producing subsystem
 
@@ -88,6 +88,7 @@ remediation ticket or the build fails.
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔵 UNVERIFIED-OK | — |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `companion-capability-contribution` | A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name. | edge-prop: `accompanies`, `domainContributions`, `getCompanions` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `content-query-one-resolver-engine-and-gate` | Content names content by kind and tags rather than by literal id, and exactly one resolver answers — so the engine that pays out a prize and the gate that swears the prize exists cannot disagree about what a filter matches. The reward pool is the first consumer, moved onto the resolver under a byte-identical shared-path test; the condition pool is the second. The gate calls resolveContentQuery rather than mirroring it, which is the failure this contract exists to prevent: a gate that re-states the runtime rule agrees only while someone keeps checking (THR-1487, slice 3 of THR-1481). | function: `resolveContentQuery`, `drawFromContentQuery`, `contentQueryHasCandidates`, `graphContentCatalogs`, `nodeContentCatalogs`, `traceContentQuery`, `CONTENT_QUERY_MAX_CANDIDATES` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `undertaking-ownership-agrees-with-writers` | The undertaking object registry reads who holds a thing through the edges the world actually writes — a faction through the leader the succession seam derives, a companion through `accompanies`, a condition as one mortal’s borne `has_trait` edge, a standing as one ordered pair from `reputation_with` or the seeded `relates_to`, an item never a catalog template, a route as the identity node the cell now mints — so the verbs a kind declares find something to act on instead of refusing `no_owned_object` on every seed. | function: `resolveObjectOwners`, `ownersOf`, `gateExemption`, `eligibility`, `edgeTypes`, `CATALOG_TEMPLATE_IDS`, `mintRouteIdentity`, `ownershipCensus` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ### Attention, Chronicle & Narrative
@@ -165,7 +166,7 @@ remediation ticket or the build fails.
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags`, `toContentQuery` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
@@ -449,10 +450,10 @@ exit
 - **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 12 total — 2 write, 2 read, 8 unclassified
+- **Production hits:** 13 total — 2 write, 2 read, 9 unclassified
 - **Write sites:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/nudgeGrantLiveness.ts` +3 more
+- **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/attachmentTemplateDetail.ts`, `src/engine/contentQuery.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/effectEventDispatch.ts` +4 more
 - **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-grants-trait-while-held` — 🟢 LIVE
@@ -513,10 +514,10 @@ exit
 - **Intent:** Worldgen seeds starting possessions so agents begin already carrying history.
 - **Producer → Consumer:** Agent Lifecycle → Attachments, Items & Possessions
 - **Module:** `src/engine/seedAttachments.ts`
-- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
 - **Write sites:** `src/engine/seedAttachments.ts`
 - **Read sites:** `src/engine/worldSeed.ts`
-- **Other hits:** `src/data/world-objects.ts`, `src/engine/nudgeGrantLiveness.ts`
+- **Other hits:** `src/data/world-objects.ts`, `src/engine/contentQuery.ts`, `src/engine/nudgeGrantLiveness.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `aura-reaches-resolution-modifiers` — 🟢 LIVE
@@ -766,11 +767,23 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **UL terms:** *Content Object*, *Content Tag*, *Content Query*
 - **Module:** `src/data/content-objects.ts`
-- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
+- **Production hits:** 8 total — 2 write, 1 read, 5 unclassified
 - **Write sites:** `src/data/content-objects.ts`, `src/data/contentCatalogs.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/data/content-eval/attachmentContract.ts`, `src/engine/contentEntryResolver.ts`
+- **Other hits:** `src/data/content-eval/attachmentContract.ts`, `src/data/contentEntryTags.ts`, `src/engine/contentCatalogView.ts`, `src/engine/contentEntryResolver.ts`, `src/engine/contentQuery.ts`
 - **Verdict:** Verified 2026-09-12: THR-1485 slice 1. Twelve kinds claim 1138 entries across 32 catalogs; src/data/__tests__/contentObjects.test.ts pins nine claims against the real catalogs (never a fixture) and each was falsified once: every catalog id is claimed by a kind (break a prefix -> 206 unclaimed); a shared catalog's kinds have disjoint prefixes (give the condition kind the item's anomaly catalog -> named); a shared prefix is declared with a reason; every catalog module+export exists and is wired into the loader both ways; every ulTerm resolves to a real UL heading; owningSystem is a verbatim subsystem name; instantiatesAs is a registered world-object kind; every content-status world-object row points back; every projection names a field entries carry. That last guard caught two registry errors on its first run - items declare sphereAffinity but 0 of 134 entries carry it, and an omen's sphere is nested under sphereTrigger on 6 of 44 tracks - both recorded as seams rather than papered over. npm run generate-content-objects:check is green at zero drift and exits 1 when a prefix is broken. No engine path reads the registry yet: this contract is the vocabulary, and slice 3's resolver is its first runtime consumer.
+
+### `content-query-one-resolver-engine-and-gate` — 🟢 LIVE
+
+- **Intent:** Content names content by kind and tags rather than by literal id, and exactly one resolver answers — so the engine that pays out a prize and the gate that swears the prize exists cannot disagree about what a filter matches. The reward pool is the first consumer, moved onto the resolver under a byte-identical shared-path test; the condition pool is the second. The gate calls resolveContentQuery rather than mirroring it, which is the failure this contract exists to prevent: a gate that re-states the runtime rule agrees only while someone keeps checking (THR-1487, slice 3 of THR-1481).
+- **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
+- **UL terms:** *Content Query*, *Content Object*, *Content Tag*
+- **Module:** `src/engine/contentQuery.ts`
+- **Production hits:** 7 total — 2 write, 4 read, 1 unclassified
+- **Write sites:** `src/engine/contentCatalogView.ts`, `src/engine/contentQuery.ts`
+- **Read sites:** `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/rewardPool.ts`
+- **Other hits:** `src/types/trace.ts`
+- **Verdict:** Verified 2026-09-12: THR-1487 slice 3. The shared-path test (src/engine/__tests__/contentQuerySharedPath.test.ts) runs the resolver and a frozen copy of the pre-change predicate over every shipped RewardPoolRecipe and asserts identical candidate sets - 14 arms green, and falsified by swapping the ALL-of tag rule for ANY-of, which reddens the corpus sweep with named divergences (encounter.forbidden_tome possession: legacy 5 vs resolver 32). The frozen predicate is a deliberate duplicate: getCandidateNodes now calls the resolver, so importing it would compare the resolver to itself. The condition pool is compared the same way at both tier caps and both tags. Coverage finding, recorded because it is the reason the gate needed generalising at all: the old sweep walked only the reward_draw effect, which is 1 recipe in the corpus, while the step route carries 481 - and widening to both surfaced 16 step-route recipes that promise a prize and draw nothing, grandfathered in CONTENT_QUERY_RETROFIT_PENDING with a ratchet that fails in both directions (THR-1496 repairs them). Traces content.query_resolved / content.query_empty fire at reward_draw, step_reward_pool and condition_pool; window.__DEBUG.queryContent and the CLI query command answer the plan's worked example against a live world.
 
 ### `content-ref-opens-codex-overlay` — 🟢 LIVE
 
@@ -790,10 +803,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **UL terms:** *Content Tag*, *Content Object*
 - **Module:** `src/data/content-tags.ts`
-- **Production hits:** 8 total — 2 write, 3 read, 3 unclassified
+- **Production hits:** 12 total — 2 write, 3 read, 7 unclassified
 - **Write sites:** `src/data/content-eval/contentTagRetrofitPending.ts`, `src/data/content-tags.ts`
 - **Read sites:** `src/components/Codex/CodexTagFilter.tsx`, `src/components/Game/AttachmentDetailView.tsx`, `src/data/content-eval/attachmentContract.ts`
-- **Other hits:** `src/data/contentCatalogs.ts`, `src/engine/contentEntryResolver.ts`, `src/engine/contentPageGenerator.ts`
+- **Other hits:** `src/data/contentCatalogs.ts`, `src/data/contentEntryTags.ts`, `src/engine/contentCatalogView.ts`, `src/engine/contentEntryResolver.ts`, `src/engine/contentPageGenerator.ts` +2 more
 - **Verdict:** Verified 2026-09-12: THR-1486 slice 2. 96 tags seated (8 reach + 12 sphere derived, 2 polarity, 74 authored) against 153 spellings measured in the registry's own catalogs: 16 bare spellings rewritten with their #, 63 removed from their entries under the seating rule (>=1 runtime reader OR >= CONTENT_TAG_MIN_BEARERS bearers), the rest moved onto the derived axes. contentTags.test.ts pins every claim against the real catalogs and each arm was falsified: an unseated tag on starter_iron_blade fails by name in both the test and check:attachment; a ratchet entry that passes is reported STALE by both; dropping a family tag from companion.wayfarer fails required_axes. check:attachment -- --all is green over 224 entries across the six attachment kinds. The ratchet is empty, which is what let ArtifactTemplate/CompanionTemplate/AgreementRewardTemplate/SpellTemplate tags tighten to readonly ContentTag[]. The census adapters moved off dominantReachFromEffects onto the tag axis — the derivation disagreed with the author's own tag on 9 of 106 attachments, 3 of 5 spells and 6 of 33 conditions, which is what closes THR-477 in favour of authoring; the 18 entries that had a reach only by derivation were authored at the migration. censusTag kept its scale half (132 of 193 literals carried scale and nothing else, and contentCensus/matrix.ts reads it) against the plan's call to retire the field outright.
 
 ### `contested-outcome-band-reaches-the-player` — 🟢 LIVE
@@ -1037,10 +1050,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 139 total — 3 write, 7 read, 129 unclassified
+- **Production hits:** 140 total — 3 write, 7 read, 130 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +124 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +125 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1185,10 +1198,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 75 total — 2 write, 3 read, 70 unclassified
+- **Production hits:** 76 total — 2 write, 3 read, 71 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/attachment-slot-constants.ts`, `src/data/choice-set-catalog.ts` +65 more
+- **Other hits:** `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/attachment-slot-constants.ts`, `src/data/choice-set-catalog.ts` +66 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1359,10 +1372,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Attachment*, *Outcome Band*
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
+- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/nudgeGrantLiveness.ts`
-- **Other hits:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/contentQuery.ts`, `src/engine/rewardPool.ts`, `src/types/attachments.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ring-is-a-group-that-stays` — 🔵 UNVERIFIED-OK
@@ -1700,10 +1713,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 238 total — 2 write, 6 read, 230 unclassified
+- **Production hits:** 239 total — 2 write, 6 read, 231 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +225 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +226 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `yield-is-a-verb` — 🟢 LIVE
