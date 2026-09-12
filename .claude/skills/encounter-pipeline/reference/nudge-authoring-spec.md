@@ -484,7 +484,45 @@ the rest generalize the prototypes and are open for iteration on this list.
 | **Danger – Confrontation – Aftermath** | 2–3 | A threat announces itself, then arrives. The watch, then the rush; the reading, then the meeting. |
 | **Personality Fork** | 1 + branch | The mortal makes a choice: a test, then an agent-decided branch on a value axis (THR-894), pole-specific continuations. |
 | **Opt-in Complication** | gate + shape | The agent can decline: waiting/walking away is a cheap, legible exit (a delay, a toll), and engaging opens one of the shapes above. The engage/decline gate is itself agent-decided (personality). |
-| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. **"Later, elsewhere" is load-bearing (THR-1476):** the seed promises a tick and a cast, never a place, and never makes the mortal travel — so the parent's prose may not tell the mortal where to be (prose rule 7b). |
+| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` **or** `query` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. **"Later, elsewhere" is load-bearing (THR-1476):** the seed promises a tick and a cast, never a place, and never makes the mortal travel — so the parent's prose may not tell the mortal where to be (prose rule 7b). |
+
+#### Seeded Sequel — the two operands, and which to reach for (THR-1488)
+
+**`templateId`** names *one* sequel. Use it when the follow-up is a specific authored
+scene and nothing else will do — the crossroads promise falls due, and it falls due as
+*that* collection.
+
+**`query`** names a *family* — `{ kind: 'encounter_template', tags: ['#circle_errand'] }`
+— and the resolver draws one member when the seed comes due. Use it when the sequel is
+"one of these" rather than "this one": the guild has work for them, the watch takes an
+interest, a delve opens up.
+
+Prefer `query` whenever the fiction is a *kind* of follow-up, for a reason measured
+rather than asserted: the operand it replaces was `encounterFamily`, which named an id
+**prefix**, and on 2026-09-12 **41 of the 51 families the corpus authored matched no
+template at all** — every one of those sequels had been withering on arrival, silently,
+since it was written. A tag cannot rot that way: a renamed template keeps its family,
+and a newly authored one joins by carrying the word.
+
+Rules:
+
+- **The family tag must be seated** in `reference/content-tag-catalog.generated.md`. A
+  new family is a design-session decision (a tag, plus the tag on its members), not a
+  keystroke — an unseated spelling fails `contentTags.test.ts` by name.
+- **A family tag is a game word, never an id spelling.** `#circle_errand`, not
+  `#ac_quest`. The word reaches the player through the withered-seed narrative event, so
+  it has to read as English.
+- **Both operands are gated and both are fatal.** `check:encounter` fails a `templateId`
+  that names nothing and a `query` that resolves to nothing, so "the sequel exists" is
+  proved before the PR exists rather than discovered in a run dump.
+- **`encounterFamily` is deprecated.** Do not author it in new content. Shipped seeds
+  keep working through `ENCOUNTER_FAMILY_TAGS`, a one-release alias table that rewrites
+  the prefix into the family tag.
+- **A query sequel keeps the family draw's eligibility filter** — individual-performable,
+  and the target's current location subtype must be one the template accepts — where a
+  `templateId` sequel skips it. So a query sequel can wither for being in the wrong
+  place. If the follow-up must arrive regardless of where the mortal wandered, name it
+  by `templateId`.
 
 Rules: a route-flavored objective (bribe with Gold, intimidate with Iron, persuade
 with Heart, toward the same door) is a **Personality Fork** whose poles are routes.
@@ -780,8 +818,17 @@ rather than beside it.
      silently empty pool, the THR-844 rot class in a new place. Note
      `successMetadata` fires on `isStepSuccess`, which counts `near_miss` as a
      success.
+
+     **The recipe *is* a content query** (THR-1487): `categoryWeights` + `tagFilters`
+     project onto `{ kind, tags }` and the one resolver answers, so the tags you write
+     here come from the same closed vocabulary a seed's family tag comes from —
+     `reference/content-tag-catalog.generated.md`, with the `#` — and the same gate
+     proves both. "Verified live in the attachment library" is no longer something to
+     check by eye: `check:encounter` fails an empty pool by name, at every site,
+     including the step route it could not see before slice 3.
   2. **A persistent aftermath effect** — `spawn_artifact`, a condition, an
-     `encounter_seed`, a favor, a hidden mark, …. The validator's list is
+     `encounter_seed` (by `templateId` *or* `query` — see the Seeded Sequel shape for
+     which), a favor, a hidden mark, …. The validator's list is
      `PERSISTENT_EFFECT_KINDS` in `compositionContract.ts`; an effect that only
      prints (`recent_event`, `emit_omen`) is dressing and does not count.
 - **Prizes, tolls, and seeds as object references** — ids the modal system resolves —

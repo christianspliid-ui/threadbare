@@ -628,6 +628,7 @@ const step2AnswerTheWarden: ActionStep = {
 
 export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.delve.the_drowned_archive',
+  tags: ['#delve'],
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Drowned Archive',

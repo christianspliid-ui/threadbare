@@ -59,6 +59,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.catalogue_ruins',
+    tags: ['#covenant_errand'],
     name: 'Catalogue the Ruins',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -184,6 +185,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.translate_text',
+    tags: ['#covenant_errand'],
     name: 'Translate the Text',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -311,6 +313,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.recover_tome',
+    tags: ['#covenant_errand'],
     name: 'Recover a Missing Tome',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -444,6 +447,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.map_ley_lines',
+    tags: ['#covenant_errand'],
     name: 'Map the Ley Lines',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -557,6 +561,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.interview_elder',
+    tags: ['#covenant_errand'],
     name: 'Interview an Elder',
     rarityTier: 1,
     intrinsicTier: 'shaping',

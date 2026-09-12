@@ -1995,14 +1995,31 @@ function maybeSeedCatalyst(
   rng: () => number,
 ): boolean {
   const template = getStrategicTemplate(candidate.templateId);
-  if (!template?.catalystEncounterIds?.length) return false;
+  const catalystQuery = template?.catalystQuery;
+  const catalystIds = template?.catalystEncounterIds ?? [];
+  if (!catalystQuery && catalystIds.length === 0) return false;
 
   if (rng() > STRATEGIC_CATALYST_SEED_CHANCE) return false;
 
-  // Pick a random catalyst encounter from the template's list
-  const catalystId = template.catalystEncounterIds[
-    Math.floor(rng() * template.catalystEncounterIds.length)
-  ];
+  // THR-1488 — a query names the catalyst by kind and tags, and is resolved at *fire*
+  // time by `evaluateEncounterSeeds` rather than here, so the catalyst path and the
+  // aftermath path share one resolution site. This is the migration direction and the
+  // query wins where both are authored.
+  //
+  // The literal-id path below is kept for one release for packs that have not
+  // migrated, and it has never once worked: every id the packs spell is
+  // `encounter_<name>` while the corpus spells encounters `encounter.<name>`, so all
+  // thirty-three resolve to nothing and the seed they plant withers on arrival. That
+  // is why `catalystQuery` is not merely nicer — it is the first version of this
+  // feature that can fire. `check:undertaking` fails an unresolvable literal, which is
+  // what empties the field.
+  //
+  // PRNG note (NFP #3): the id path still makes its two calls (chance, then pick) so
+  // an un-migrated pack's stream is unchanged; the query path makes only the chance
+  // call here and spends its draw at the seeding site.
+  const catalystId = catalystQuery
+    ? undefined
+    : catalystIds[Math.floor(rng() * catalystIds.length)];
 
   // Seed it through the existing pending encounter seed mechanism.
   //
@@ -2021,6 +2038,7 @@ function maybeSeedCatalyst(
     sourceEncounterId: candidate.candidateId,
     sourceReactionId: 'strategic_catalyst',
     templateId: catalystId,
+    query: catalystQuery,
     targetAgentId: candidate.actorId,
     eligibleAfterTick: tick + STRATEGIC_CATALYST_SEED_DELAY_TICKS,
     priority: STRATEGIC_CATALYST_SEED_PRIORITY,

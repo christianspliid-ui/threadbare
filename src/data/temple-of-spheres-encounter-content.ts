@@ -59,6 +59,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.tend_shrine',
+    tags: ['#temple_errand'],
     name: 'Tend the Shrine',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -182,6 +183,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.heal_the_sick',
+    tags: ['#temple_errand'],
     name: 'Heal the Sick',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -308,6 +310,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.meditate_on_spheres',
+    tags: ['#temple_errand'],
     name: 'Meditate on the Spheres',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -437,6 +440,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.consecrate_ground',
+    tags: ['#temple_errand'],
     name: 'Consecrate the Ground',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -578,6 +582,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.copy_scriptures',
+    tags: ['#temple_errand'],
     name: 'Copy the Scriptures',
     rarityTier: 1,
     intrinsicTier: 'shaping',

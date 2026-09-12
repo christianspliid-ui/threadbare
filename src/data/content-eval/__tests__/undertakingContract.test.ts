@@ -20,9 +20,12 @@ import {
   failedBlocks,
   findMotivationDefects,
   UNDERTAKING_BLOCKS,
+  undertakingWriteSet,
   type UndertakingBlock,
   type UndertakingContractContext,
 } from '../undertakingContract';
+import { contentQueryHasCandidates, describeContentQuery } from '../../../engine/contentQuery';
+import { staticContentCatalogs } from '../../../engine/contentCatalogView';
 import { UNDERTAKING_RETROFIT_PENDING, isUndertakingRetrofitPending } from '../undertakingRetrofitPending';
 import { UNDERTAKING_TIER_PAYOFF_BANDS } from '../undertakingConstants';
 
@@ -232,5 +235,67 @@ describe('the ratchet', () => {
       const order = failedBlocks(r).map(b => UNDERTAKING_BLOCKS.indexOf(b));
       expect([...order].sort((a, b) => a - b)).toEqual(order);
     }
+  });
+});
+
+// ─── Catalysts by query (THR-1488) ────────────────────────────────────
+
+describe('the catalysts block and the write set (THR-1488)', () => {
+  const PACKS = getAllStrategicTemplates();
+
+  it('every shipped pack catalyst is a query, and every query resolves', () => {
+    // The migration's predicate, not a count: zero literal lists remain, and each query
+    // names content that exists. A count would rot the moment a pack is added.
+    const literals = PACKS.filter(t => (t.catalystEncounterIds?.length ?? 0) > 0);
+    expect(
+      literals.map(t => t.id),
+      'literal catalystEncounterIds remain — every one of the 33 shipped ids resolved to nothing',
+    ).toEqual([]);
+
+    const withQuery = PACKS.filter(t => t.catalystQuery);
+    expect(withQuery.length, 'no pack declares a catalystQuery — the sweep below is vacuous').toBeGreaterThan(10);
+    const emptyQueries = withQuery.filter(
+      t => !contentQueryHasCandidates(t.catalystQuery!, staticContentCatalogs()),
+    );
+    expect(
+      emptyQueries.map(t => `${t.id} → ${describeContentQuery(t.catalystQuery!)}`),
+      'catalyst queries that resolve to nothing',
+    ).toEqual([]);
+  });
+
+  it('the write set records the query, so migrating does not read as going vacuous', () => {
+    // Load-bearing rather than cosmetic: for several pack templates the catalyst list is
+    // the only write they declare, and `empty` is the non-vacuity rule (Law 56's inverse).
+    // Recording nothing would have reported a regression the migration did not cause.
+    const withQuery = PACKS.filter(t => t.catalystQuery);
+    for (const t of withQuery) {
+      const set = undertakingWriteSet(t);
+      expect(set.catalysts, `${t.id}: the query is missing from the write set`).toContain(
+        describeContentQuery(t.catalystQuery!),
+      );
+      expect(set.empty, `${t.id}: declares a catalyst yet reads as an empty write set`).toBe(false);
+    }
+  });
+
+  it('the catalysts block fails an unresolvable query', () => {
+    // Falsification in-place, so the gate's teeth are asserted rather than trusted.
+    const victim = PACKS.find(t => t.catalystQuery)!;
+    const broken = { ...victim, catalystQuery: { kind: 'encounter_template' as const, tags: ['#no_such_family'] } };
+    const ctx = buildUndertakingContractContext([...PACKS, broken]);
+    const report = checkUndertakingContract(broken, ctx);
+    const catalystViolations = report.violations.filter(v => v.block === 'catalysts');
+    expect(catalystViolations.length, 'an unresolvable catalyst query passed the gate').toBe(1);
+    expect(catalystViolations[0].message).toContain('matches no content');
+  });
+
+  it('the catalysts block fails a literal id that names no template', () => {
+    const victim = PACKS.find(t => t.catalystQuery)!;
+    const broken = { ...victim, catalystQuery: undefined, catalystEncounterIds: ['encounter_ruin_trap'] };
+    const ctx = buildUndertakingContractContext([...PACKS, broken]);
+    const report = checkUndertakingContract(broken, ctx);
+    expect(
+      report.violations.filter(v => v.block === 'catalysts').map(v => v.message).join(''),
+      'the deprecated literal form is ungated',
+    ).toContain("'encounter_ruin_trap'");
   });
 });

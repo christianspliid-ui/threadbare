@@ -60,6 +60,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.trail_patrol',
+    tags: ['#ranger_errand'],
     name: 'Trail Patrol',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -182,6 +183,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.track_beast',
+    tags: ['#ranger_errand'],
     name: 'Track a Beast',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -339,6 +341,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.survey_border',
+    tags: ['#ranger_errand'],
     name: 'Border Survey',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -473,6 +476,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.clear_threat',
+    tags: ['#ranger_errand'],
     name: 'Clear the Threat',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -599,6 +603,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.wilderness_rescue',
+    tags: ['#ranger_errand'],
     name: 'Wilderness Rescue',
     rarityTier: 1,
     intrinsicTier: 'shaping',

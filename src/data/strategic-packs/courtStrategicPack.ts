@@ -69,7 +69,12 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The office is secured. A title, a seal, and the power they imply.',
     ],
-    catalystEncounterIds: ['encounter_political_rival', 'encounter_court_intrigue'],
+    // THR-1488 — the catalyst names its follow-up by family instead of by a literal
+    // id. Every id this pack used to spell was `encounter_<name>` where the corpus
+    // spells encounters `encounter.<name>`, so not one of them ever resolved and
+    // every catalyst seed this pack planted withered on arrival. The family chosen
+    // for this pack: a court's own errands are what a rival, a succession or an exposed informant turns into.
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'castle'] },
     resourceHint: { wealthCost: 60, reachFloor: { heart: 0.3, gold: 0.2 } },
     motivations: ['loyalty_ambition', 'asceticism_extravagance'],
@@ -92,7 +97,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The network is woven. Names that answer when called, hands that move when directed.',
     ],
-    catalystEncounterIds: ['encounter_betrayal', 'encounter_loyalty_test'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
     resourceHint: { wealthCost: 80, reachFloor: { heart: 0.3, gold: 0.3 } },
     motivations: ['loyalty_ambition', 'asceticism_extravagance'],
@@ -115,7 +120,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The dynasty seat stands. A place for the name to live after the person is gone.',
     ],
-    catalystEncounterIds: ['encounter_succession_crisis', 'encounter_rival_claim'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'town'] },
     resourceHint: { wealthCost: 100, reachFloor: { gold: 0.4, stone: 0.2 } },
     motivations: ['asceticism_extravagance', 'preservation_transformation'],
@@ -143,7 +148,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The order has a hall, a seal, and members who answer to it. It exists.',
     ],
-    catalystEncounterIds: ['encounter_guild_dispute'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 20, reachFloor: { heart: 0.25, gold: 0.15 } },
     checkpointDifficulty: 0.6,
@@ -204,7 +209,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The square is full and loud. For a few days the place forgets what it was worried about.',
     ],
-    catalystEncounterIds: ['encounter_festival_brawl'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
     resourceHint: { wealthCost: 10, reachFloor: { heart: 0.25 } },
     // The boost expires via `EXPIRING_LOCATION_PROPERTIES`, swept in phaseStrategicProjects —
@@ -235,7 +240,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The city talks to you now, in the small hours, through people nobody looks at twice.',
     ],
-    catalystEncounterIds: ['encounter_informant_exposed'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
     resourceHint: { wealthCost: 18, reachFloor: { shadow: 0.3, eye: 0.2 } },
     checkpointDifficulty: 0.5,
@@ -276,7 +281,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The network answers from further out than it did. Nobody travelled to make that true.',
     ],
-    catalystEncounterIds: ['encounter_informant_exposed'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'town'] },
     resourceHint: { wealthCost: 12, reachFloor: { shadow: 0.3 } },
     checkpointDifficulty: 0.5,
@@ -307,7 +312,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The network stops answering. Some of it walked away; some of it simply stopped existing.',
     ],
-    catalystEncounterIds: ['encounter_informant_exposed'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
     resourceHint: { reachFloor: { shadow: 0.35 } },
     checkpointDifficulty: 0.55,
@@ -340,7 +345,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'They tell you something they should not have. The shape of the hold is set now.',
     ],
-    catalystEncounterIds: ['encounter_informant_exposed'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     targetRule: {
       type: 'colocated_actor',
       roles: ['clerk', 'attendant', 'steward', 'innkeeper', 'entertainer', 'guard', 'scribe'],
@@ -479,7 +484,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The band does not lose a battle. It simply stops being a band — paid apart, one captain at a time.',
     ],
-    catalystEncounterIds: ['encounter_desertion', 'encounter_warband_rivalry'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#court_errand'] },
     // A band the actor does **not** command. `other_commander` is what makes the verb
     // a counter rather than a self-spend, and it is checked at *selection*, so the
     // verb is never offered against the actor's own people (THR-1309 trap 1).

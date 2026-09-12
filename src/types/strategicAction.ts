@@ -8,6 +8,7 @@ import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { EdgeType } from './graph';
 import type { CluePrecision } from './knowledge';
+import type { ContentQuery } from './contentQuery';
 // The group family's discriminator, imported rather than restated (THR-1309). A
 // literal copy of the union here would be a second authority on what a group kind
 // is, which is exactly the drift `groupShape.ts` was created to end (THR-1297 §4).
@@ -143,8 +144,32 @@ export interface StrategicActionTemplate {
   /** Prose templates for completion */
   readonly completionProse: readonly string[];
 
-  /** Encounter template IDs that can be seeded as catalyst follow-ups */
+  /**
+   * Encounter template IDs that can be seeded as catalyst follow-ups.
+   *
+   * @deprecated Use {@link catalystQuery}. Every id the seven packs spell here is
+   * `encounter_<something>` while the corpus spells encounters `encounter.<something>`,
+   * so **not one of the thirty-three literals resolves** — the catalyst path has
+   * planted seeds that wither on arrival since it was written (THR-1481's substrate
+   * inventory records the field as DORMANT for exactly this reason). Kept for one
+   * release so a pack that has not migrated still type-checks; `check:undertaking`
+   * fails an unresolvable entry, which is what empties it.
+   */
   readonly catalystEncounterIds?: readonly string[];
+
+  /**
+   * The catalyst follow-up named by kind and tags instead of by literal id
+   * (THR-1488, slice 4 of THR-1481).
+   *
+   * Read by `maybeSeedCatalyst`, which stores the query on the planted
+   * `PendingEncounterSeed` and lets the one seeding site resolve it when the seed
+   * comes due — the same path an aftermath `encounter_seed.query` takes, so the two
+   * planters cannot drift about what a dead reference does.
+   *
+   * Preferred over {@link catalystEncounterIds}, which wins only when no query is
+   * authored (the migration order: land the query, then delete the ids).
+   */
+  readonly catalystQuery?: ContentQuery;
 
   /** Target validation: what kind of graph target this step needs */
   readonly targetRule: StrategicTargetRule;

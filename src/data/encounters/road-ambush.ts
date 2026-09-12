@@ -552,6 +552,7 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'liminal.quest.road_ambush',
+  tags: ['#threshold_errand'],
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Road Ambush',

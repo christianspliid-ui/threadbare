@@ -4,11 +4,14 @@
  * Seeds are planted by encounter aftermath reactions (encounter_seed effect kind)
  * and become eligible when `tick >= eligibleAfterTick`.
  *
- * Evaluation paths:
+ * Evaluation paths, in descending order of specificity:
  * - templateId set + template exists → create a unified action for the target agent
- * - encounterFamily set (no templateId) → THR-697 (Slice D): draw a concrete template from
- *   the family (id-prefix match) and spawn it; if no eligible template, fall back to the v1
- *   withered narrative event (byte-identical)
+ * - `query` set, or `encounterFamily` with a row in {@link ENCOUNTER_FAMILY_TAGS} →
+ *   THR-1488: resolve through the shared content-query resolver, filter to what this
+ *   agent at this location can actually perform, draw one; nothing eligible falls back
+ *   to the withered narrative event
+ * - encounterFamily with no alias row → THR-697 (Slice D), kept one release: draw from
+ *   the family by id prefix; nothing eligible → the same withered narrative event
  * - Neither produces a result → fail-soft expired event, seed removed
  *
  * THR-697 (Slice D) also threads inherited scene context: seeds planted with
@@ -34,11 +37,173 @@ import { emitTrace } from './traceBuffer';
 import { getAgentLocation } from './graphQueries';
 import { getGroupMembers, isAgentGone, isBandNode } from './groups/groupQueries';
 import { FAMILY_SEED_MAX_CANDIDATES } from '../data/effect-constants';
+import {
+  CONTENT_QUERY_MAX_CANDIDATES,
+  describeContentQuery,
+  resolveContentQuery,
+  traceContentQuery,
+} from './contentQuery';
+import { sessionContentCatalogs } from './contentCatalogView';
+import type { ContentQuery } from '../types/contentQuery';
+import type { ContentTag } from '../data/content-tags';
 
 interface FamilyMatchResult {
   readonly templateId: string;
   readonly template: UnifiedActionTemplate;
   readonly candidateCount: number;
+}
+
+/**
+ * The one-release alias table: a legacy `encounterFamily` id prefix → the family tag
+ * that names the same set in game words (THR-1488, slice 4 of THR-1481).
+ *
+ * **What it is for.** Shipped aftermath content plants sequels by *id prefix*
+ * (`encounterFamily: 'ac.quest'`). A prefix is a literal id one level up and rots the
+ * same way: measured over the corpus on 2026-09-12, **41 of the 51 families the
+ * aftermath names match no template at all**, and every one of those seeds has been
+ * withering on arrival since it was written. The ten that do resolve are the rows
+ * below; each names a family tag now carried by exactly the templates the prefix used
+ * to match, so a shipped seed keeps finding the same set while the *mechanism* moves
+ * onto the shared resolver.
+ *
+ * **A prefix with no row here is not an error.** It falls through to
+ * {@link matchFamilyTemplate}, the pre-change prefix scan, for one release — which is
+ * what keeps the forty-one dead families behaving exactly as they do today (they match
+ * nothing and take the withered-narrative path) instead of turning a silent nothing
+ * into a different silent nothing. `check:encounter` and the corpus sweep are where a
+ * dead family is *reported*; this table is not a gate.
+ *
+ * **New content should author `query` instead.** The table exists to carry the corpus
+ * across one release, not to be extended: a new family is a tag plus a seed that names
+ * it, with no prefix in between.
+ */
+export const ENCOUNTER_FAMILY_TAGS: Readonly<Record<string, ContentTag>> = {
+  // The twelve faction quest families (`fa.` has no quest templates, so no row).
+  'ag.quest': '#guild_errand',
+  'ac.quest': '#circle_errand',
+  'bf.quest': '#fellowship_errand',
+  'cg.quest': '#watch_errand',
+  'hod.quest': '#dawn_errand',
+  'lk.quest': '#covenant_errand',
+  'mc.quest': '#company_errand',
+  'mct.quest': '#consortium_errand',
+  'rb.quest': '#ranger_errand',
+  'ts.quest': '#temple_errand',
+  'tg.quest': '#thieves_errand',
+  'uk.quest': '#court_errand',
+  // The four that are not a faction's posting.
+  tavern: '#tavern_night',
+  'encounter.delve': '#delve',
+  'liminal.quest': '#threshold_errand',
+  'broker.quest': '#broker_errand',
+  'crafting.quest': '#craft_commission',
+};
+
+/**
+ * The query a seed resolves by, or `undefined` when it has none.
+ *
+ * Authored `query` wins over an aliased family, so a migration can land the query
+ * beside the old prefix and delete the prefix a release later.
+ */
+export function seedContentQuery(seed: PendingEncounterSeed): ContentQuery | undefined {
+  if (seed.query) return seed.query;
+  const tag = seed.encounterFamily ? ENCOUNTER_FAMILY_TAGS[seed.encounterFamily] : undefined;
+  return tag ? { kind: 'encounter_template', tags: [tag] } : undefined;
+}
+
+/**
+ * The `'query:<kind>'` token the plan's fail-soft table specifies for a withered
+ * query-only seed, delegated to the one describer in `contentQuery.ts` so a trace here
+ * and a gate line there name the same query the same way.
+ */
+function describeSeedQuery(query: ContentQuery | undefined): string {
+  return query ? describeContentQuery(query) : 'none';
+}
+
+/**
+ * The family tag's own word, for the one player-facing sentence a withered query-only
+ * seed produces — `#circle_errand` → `circle errand`.
+ *
+ * Safe to read as prose *because of how the tags were named*: a family tag is required
+ * to be the word the codex would use (THR-1488), never the id spelling, so unwrapping
+ * one cannot leak `ac.quest` into a narrative event the way the prefix form does.
+ */
+function seedQueryPhrase(query: ContentQuery | undefined): string | undefined {
+  const first = query?.tags?.[0] ?? query?.anyTags?.[0];
+  return first ? first.slice(1).replace(/_/gu, ' ') : undefined;
+}
+
+/**
+ * Resolve a seed's query to one concrete template (THR-1488).
+ *
+ * Three steps, in this order, and the order is the point:
+ *
+ * 1. **The shared resolver decides what the query names.** `resolveContentQuery` over
+ *    the session catalogs — never a second tag predicate here, which is the failure
+ *    `content-query-one-resolver-engine-and-gate` exists to prevent.
+ * 2. **The seeding site decides what it can spawn.** Membership in a family is not
+ *    eligibility: a template must still be individual-performable and must still
+ *    accept the target's current location subtype, exactly as
+ *    {@link matchFamilyTemplate} required. Folding these into the query would mean
+ *    teaching the resolver about actors and locations, which is a different question
+ *    from "what content is this".
+ * 3. **One seeded `rng()` call over the capped head**, so the draw stays a single
+ *    PRNG consumption (NFP #3) and a pathologically wide query is bounded.
+ *
+ * Two behaviour notes, both deliberate and both visible in the trace:
+ *
+ * - **Candidate order is now total** (registry kind order, then id ascending) where the
+ *   prefix scan used catalog array order. For every family that resolves today the
+ *   *set* is identical — the widest is `#tavern_night` at ten — so this changes which
+ *   member a given seed draws, not which members were available. A total order is the
+ *   determinism the resolver promises; array order was an accident of file layout.
+ * - **The cap rises from `FAMILY_SEED_MAX_CANDIDATES` (12) to
+ *   {@link CONTENT_QUERY_MAX_CANDIDATES} (64)**, per the plan's retirement of the
+ *   former into the latter. No family in the corpus reaches either, so nothing shipped
+ *   changes; what changes is that one number now bounds every query site instead of
+ *   each site carrying its own.
+ */
+function resolveSeedByQuery(
+  graph: WorldGraph,
+  seed: PendingEncounterSeed,
+  query: ContentQuery,
+  rng: () => number,
+  tick: number,
+): FamilyMatchResult | undefined {
+  const locationNode = getAgentLocation(graph, seed.targetAgentId);
+  const subtype = locationNode
+    ? ((locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined)
+    : undefined;
+
+  const eligible: UnifiedActionTemplate[] = [];
+  for (const hit of resolveContentQuery(query, sessionContentCatalogs(graph))) {
+    const template = getUnifiedTemplateById(hit.id);
+    if (!template) continue;
+    if (!template.actorAffinities?.includes('individual')) continue;
+    if (template.locationSubtypes && template.locationSubtypes.length > 0) {
+      if (!subtype || !template.locationSubtypes.includes(subtype)) continue;
+    }
+    eligible.push(template);
+    if (eligible.length >= CONTENT_QUERY_MAX_CANDIDATES) break;
+  }
+
+  // Traced on both outcomes, so a family that went hungry is distinguishable from a
+  // site that never ran — the indistinguishability the 41 dead families hid behind.
+  const pick = eligible.length > 0
+    ? eligible[Math.floor(rng() * eligible.length)]
+    : undefined;
+  traceContentQuery({
+    site: 'encounter_seed',
+    query,
+    candidateCount: eligible.length,
+    tick,
+    pickedId: pick?.id,
+    actorId: seed.targetAgentId,
+    templateId: seed.sourceEncounterId,
+  });
+
+  if (!pick) return undefined;
+  return { templateId: pick.id, template: pick, candidateCount: eligible.length };
 }
 
 /**
@@ -240,7 +405,10 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
       continue;
     }
 
-    // Resolve the template to spawn: a direct templateId, or (Slice D) a family match.
+    // Resolve the template to spawn, in three descending degrees of specificity:
+    // a direct `templateId`, then a `query` (THR-1488 — either authored, or the
+    // alias table's rewrite of a legacy `encounterFamily` prefix), then the
+    // pre-change prefix scan for a family with no alias row.
     let template: UnifiedActionTemplate | undefined;
     let resolvedTemplateId: string | undefined;
     let familyMatch: FamilyMatchResult | undefined;
@@ -248,10 +416,22 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
     if (seed.templateId) {
       template = getUnifiedTemplateById(seed.templateId);
       if (template) resolvedTemplateId = seed.templateId;
-      // templateId set but not found → fall through to family / fail-soft below.
+      // templateId set but not found → fall through to query / family / fail-soft below.
     }
-    if (!template && seed.encounterFamily) {
-      // THR-697 (Slice D): activate the family stub — draw a concrete template.
+    const query = template ? undefined : seedContentQuery(seed);
+    if (!template && query) {
+      // THR-1488: the shared content-query resolver, for an authored query and for
+      // every family the alias table can name.
+      familyMatch = resolveSeedByQuery(state.graph, seed, query, rng, tick);
+      if (familyMatch) {
+        template = familyMatch.template;
+        resolvedTemplateId = familyMatch.templateId;
+      }
+    }
+    if (!template && !query && seed.encounterFamily) {
+      // THR-697 (Slice D), kept for one release: a family with no alias row still
+      // resolves by id prefix, so the forty-one dead families behave exactly as they
+      // do today rather than changing shape on the way to being reported.
       familyMatch = matchFamilyTemplate(state.graph, seed, rng);
       if (familyMatch) {
         template = familyMatch.template;
@@ -276,7 +456,9 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
           tick, category: 'encounter_seed_family_matched',
           agentId: seed.targetAgentId,
           seedId: seed.seedId,
-          family: seed.encounterFamily ?? '',
+          // THR-1488: a query-only seed has no prefix to name, so the trace names the
+          // query instead of printing an empty string that reads like a missing field.
+          family: seed.encounterFamily ?? describeSeedQuery(query),
           candidateCount: familyMatch.candidateCount,
           resolvedTemplateId,
           summary: `Family seed matched: "${seed.seedLabel}" → ${resolvedTemplateId} (${familyMatch.candidateCount} candidate${familyMatch.candidateCount === 1 ? '' : 's'})`,
@@ -359,7 +541,12 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
 
     // Family-only seed with no eligible template → v1 withered narrative event, preserved
     // byte-identical (THR-697 fail-soft: no eligible → existing withered path unchanged).
-    if (seed.encounterFamily) {
+    //
+    // THR-1488: a seed carrying only a `query` fails into the same path, because
+    // "the family I promised is empty right now" is the same event whether the family
+    // was named by prefix or by tag. `describeSeedQuery` supplies the noun the message
+    // and the trace need.
+    if (seed.encounterFamily || query) {
       // THR-143: family-only fires are advisory — no action is spawned, so no event node
       // will be created and no caused_by edge is possible in v1 scope.
       const familyEventId = `${seed.seedId}_family_ready`;
@@ -374,11 +561,15 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         });
       }
 
+      // A prefix seed keeps its existing sentence verbatim; a query-only seed borrows
+      // the family tag's own word, which is a game word by construction (that is the
+      // rule the tags were named under) rather than an id spelling.
+      const familyNoun = seed.encounterFamily ?? seedQueryPhrase(query) ?? 'kindred';
       const familyEvent: TickEvent = {
         id: familyEventId,
         tick,
         type: 'narrative',
-        message: `The consequences of ${seed.seedLabel} are stirring — a ${seed.encounterFamily} encounter may surface soon.`,
+        message: `The consequences of ${seed.seedLabel} are stirring — a ${familyNoun} encounter may surface soon.`,
         significance: 0.55,
         actorId: seed.targetAgentId,
       };
@@ -391,9 +582,11 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         seedId: seed.seedId,
         targetAgentId: seed.targetAgentId,
         ticksBetweenPlantAndTrigger: ticksSincePlant,
-        resolvedTemplateId: `family:${seed.encounterFamily}`,
+        resolvedTemplateId: seed.encounterFamily
+          ? `family:${seed.encounterFamily}`
+          : describeSeedQuery(query),
         outcome: 'fired',
-        summary: `Seed fired (family-only narrative): "${seed.seedLabel}" → ${seed.encounterFamily}`,
+        summary: `Seed fired (family-only narrative): "${seed.seedLabel}" → ${seed.encounterFamily ?? describeSeedQuery(query)}`,
       });
       continue;
     }

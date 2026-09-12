@@ -28,6 +28,9 @@
 
 import type { StrategicActionTemplate, UndertakingKindRow } from '../../types/strategicAction';
 import { UNDERTAKING_PROSE_TOKENS } from '../../engine/undertakingProse';
+import { contentQueryHasCandidates, describeContentQuery } from '../../engine/contentQuery';
+import { staticContentCatalogs } from '../../engine/contentCatalogView';
+import { getUnifiedTemplateById } from '../unified-action-templates';
 import { getUndertakingObjectType } from '../undertaking-objects';
 import { isCellTemplateId } from '../undertaking-cells';
 import { UNDERTAKING_DEFAULT_TIER } from '../strategic-action-constants';
@@ -71,11 +74,13 @@ export type UndertakingBlock =
   | 'board'
   | 'reachability'
   | 'register'
-  | 'tokens';
+  | 'tokens'
+  /** THR-1488 — the catalyst a completed work seeds must name content that exists. */
+  | 'catalysts';
 
 export const UNDERTAKING_BLOCKS: readonly UndertakingBlock[] = [
   'identity', 'kind_membership', 'counter_play', 'cast', 'creation',
-  'bands', 'board', 'reachability', 'register', 'tokens',
+  'bands', 'board', 'reachability', 'register', 'tokens', 'catalysts',
 ];
 
 export interface UndertakingViolation {
@@ -246,7 +251,16 @@ export interface UndertakingWriteSet {
   readonly kind?: { readonly kindId: string; readonly ownable: boolean; readonly lexicon: string };
   /** `must-persist` cast slots, which bind or mint a named person or place. */
   readonly persistentCast: readonly string[];
-  /** Encounter templates the work may seed. */
+  /**
+   * Encounter templates the work may seed — one entry per literal id, plus one naming
+   * the query when the template declares `catalystQuery` (THR-1488).
+   *
+   * The query has to be *in* this set, not beside it. `empty` below is the write-set
+   * non-vacuity rule (Law 56's inverse), and for a handful of pack templates the
+   * catalyst list is the only write they declare. Migrating those onto a query without
+   * recording it here would have flipped them to "a work whose only product is prose"
+   * — a gate reporting a regression that the migration did not cause.
+   */
   readonly catalysts: readonly string[];
   /** True when the set is empty beyond prose — the work whose only product is a sentence. */
   readonly empty: boolean;
@@ -256,7 +270,10 @@ export function undertakingWriteSet(template: StrategicActionTemplate, row = row
   const creationBands = (['onAdvance', 'onAtCost', 'onCritFailure'] as const)
     .filter(b => (template.creationEffects?.[b]?.length ?? 0) > 0);
   const persistentCast = (template.cast ?? []).filter(s => s.persistence === 'must-persist').map(s => s.key);
-  const catalysts = [...(template.catalystEncounterIds ?? [])];
+  const catalysts = [
+    ...(template.catalystEncounterIds ?? []),
+    ...(template.catalystQuery ? [describeContentQuery(template.catalystQuery)] : []),
+  ];
   const object = template.cellVariant && template.objectTypeId
     ? { verb: template.cellVariant, objectTypeId: template.objectTypeId }
     : undefined;
@@ -398,6 +415,28 @@ export function checkUndertakingContract(
     if (/\d/.test(s)) fail('register', `${where}: carries a numeral`);
     if (s.includes('!')) fail('register', `${where}: exclamation mark`);
     if (/\b(was|were|had|did)\b/i.test(s)) warnings.push(`${where}: past-tense marker — the doctrine narrates in the present`);
+  }
+
+  // ── Catalysts (THR-1488) ──
+  //
+  // A catalyst is the one promise an undertaking makes about *after*: finish this, and
+  // something comes of it. Until this slice nothing checked the promise, and none of it
+  // was kept — every id the seven packs spelled was `encounter_<name>` where the corpus
+  // spells encounters `encounter.<name>`, so all thirty-three references resolved to
+  // nothing and every catalyst seed planted since the feature shipped withered on
+  // arrival. The field sat in the substrate inventory as DORMANT for exactly that reason.
+  //
+  // Both operands are fatal, and deliberately so: this gate is what keeps the field from
+  // going dormant a second time. A literal id must name a registered template; a query
+  // must resolve to at least one, asked through the same resolver the seeding site uses
+  // rather than a second predicate here.
+  for (const id of template.catalystEncounterIds ?? []) {
+    if (!getUnifiedTemplateById(id)) {
+      fail('catalysts', `catalystEncounterIds names '${id}', which is not a registered encounter template — prefer \`catalystQuery\` naming the family by tag`);
+    }
+  }
+  if (template.catalystQuery && !contentQueryHasCandidates(template.catalystQuery, staticContentCatalogs())) {
+    fail('catalysts', `catalystQuery matches no content: ${describeContentQuery(template.catalystQuery)}`);
   }
 
   // ── Enrichment dry-run ──

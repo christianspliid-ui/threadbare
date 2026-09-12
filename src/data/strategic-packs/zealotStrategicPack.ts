@@ -65,7 +65,12 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The shrine stands. Small, but the flame burns steadily.',
     ],
-    catalystEncounterIds: ['encounter_shrine_desecration', 'encounter_pilgrimage'],
+    // THR-1488 — the catalyst names its follow-up by family instead of by a literal
+    // id. Every id this pack used to spell was `encounter_<name>` where the corpus
+    // spells encounters `encounter.<name>`, so not one of them ever resolved and
+    // every catalyst seed this pack planted withered on arrival. The family chosen
+    // for this pack: the Temple of Spheres sets the observance a desecration or a vision happens inside.
+    catalystQuery: { kind: 'encounter_template', tags: ['#temple_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'camp'] },
     resourceHint: { wealthCost: 40, reachFloor: { star: 0.3, stone: 0.2 } },
     motivations: ['sacrifice_survival', 'preservation_transformation'],
@@ -88,7 +93,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The site hums with sacred energy. The ground remembers the rite.',
     ],
-    catalystEncounterIds: ['encounter_divine_manifestation'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#temple_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['shrine', 'temple', 'town', 'city', 'ruins'] },
     resourceHint: { reachFloor: { star: 0.4, veil: 0.2 } },
     motivations: ['sacrifice_survival', 'tradition_novelty'],
@@ -111,7 +116,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The route is consecrated. Pilgrims will follow where the faithful walked first.',
     ],
-    catalystEncounterIds: ['encounter_bandit_pilgrimage', 'encounter_sacred_vision'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#temple_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['shrine', 'temple', 'town', 'city'] },
     resourceHint: { wealthCost: 30, reachFloor: { star: 0.3 } },
     motivations: ['sacrifice_survival', 'preservation_transformation'],
@@ -137,7 +142,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The site holds the rite now. Pilgrims will feel it before anyone tells them what it is.',
     ],
-    catalystEncounterIds: ['encounter_shrine_desecration', 'encounter_sacred_vision'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#temple_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['ruins', 'shrine', 'temple', 'town', 'hamlet'] },
     resourceHint: { wealthCost: 12, reachFloor: { star: 0.3, veil: 0.2 } },
     motivations: ['sacrifice_survival', 'tradition_novelty'],

@@ -292,6 +292,35 @@ export function contentQueryHasCandidates(query: ContentQuery, catalogs: Content
   return resolveContentQuery(query, catalogs).length > 0;
 }
 
+/**
+ * One short, stable string naming a query — `query:encounter_template#circle_errand`
+ * (THR-1488).
+ *
+ * It lives here, with the resolver, because three places need to *say* what a query was
+ * and they must say it the same way: a seed trace's `resolvedTemplateId` slot, the
+ * undertaking write set (where it stands in for a catalyst id in a list of strings), and
+ * a gate's failure line. Three local stringifiers would drift, and then a report and a
+ * trace about the same query would not be greppable together.
+ *
+ * Every narrowing field appears, so two queries that differ anywhere describe
+ * differently — a describer that dropped `tier` or `exclude` would make a real
+ * divergence invisible in exactly the report meant to reveal it.
+ */
+export function describeContentQuery(query: ContentQuery): string {
+  const kinds = Array.isArray(query.kind) ? [...query.kind].join('+') : query.kind;
+  const parts = [`query:${kinds}`];
+  if (query.classes?.length) parts.push(`:${query.classes.join(',')}`);
+  for (const t of query.tags ?? []) parts.push(t);
+  if (query.anyTags?.length) parts.push(`(${query.anyTags.join('|')})`);
+  if (query.tier !== undefined) {
+    parts.push(typeof query.tier === 'number'
+      ? `@t${query.tier}`
+      : `@t${query.tier.min ?? ''}-${query.tier.max ?? ''}`);
+  }
+  if (query.exclude?.length) parts.push(`-[${query.exclude.join(',')}]`);
+  return parts.join('');
+}
+
 // ─── The one seeded pick ────────────────────────────────────────────
 
 /**

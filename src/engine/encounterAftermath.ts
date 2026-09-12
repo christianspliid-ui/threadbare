@@ -1736,6 +1736,10 @@ export function applyEncounterAftermathReaction(
           sourceReactionId: reaction.id,
           encounterFamily: effect.encounterFamily,
           templateId: effect.templateId,
+          // THR-1488: the query travels with the seed and is resolved when the seed
+          // comes due, not here. Planting a drawn id would freeze the family as it
+          // stood twenty ticks before the sequel is owed.
+          query: effect.query,
           targetAgentId: effect.targetAgentId ?? actorAgentId ?? '',
           eligibleAfterTick: tick + effect.delayTicks,
           priority: effect.priority ?? 1.0,

@@ -51,6 +51,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.repair_wall',
+    tags: ['#fellowship_errand'],
     name: 'Repair the Wall',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -192,6 +193,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.lay_foundation',
+    tags: ['#fellowship_errand'],
     name: 'Lay a Foundation',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -327,6 +329,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.forge_tools',
+    tags: ['#fellowship_errand'],
     name: 'Forge New Tools',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -474,6 +477,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.survey_site',
+    tags: ['#fellowship_errand'],
     name: 'Survey a Building Site',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -630,6 +634,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.craft_commission',
+    tags: ['#fellowship_errand'],
     name: 'Fulfill a Craft Commission',
     rarityTier: 2,
     intrinsicTier: 'shaping',

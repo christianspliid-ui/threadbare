@@ -57,6 +57,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.ley_survey',
+    tags: ['#circle_errand'],
     name: 'Ley Line Survey',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -204,6 +205,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.reagent_gather',
+    tags: ['#circle_errand'],
     name: 'Gather Arcane Reagents',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -331,6 +333,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.ward_inspection',
+    tags: ['#circle_errand'],
     name: 'Ward Inspection',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -473,6 +476,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.translate_tome',
+    tags: ['#circle_errand'],
     name: 'Translate an Ancient Tome',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -637,6 +641,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.anomaly_report',
+    tags: ['#circle_errand'],
     name: 'Investigate Arcane Anomaly',
     rarityTier: 1,
     intrinsicTier: 'shaping',
