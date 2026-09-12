@@ -1,32 +1,28 @@
 # Briefing
-**Generated:** 2026-09-12 08:05 local (06:05 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-12 09:05 local (07:05 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Play the five encounters, in one sitting** — [THR-1220](https://linear.app/threadbare/issue/THR-1220)
+**Finish the sitting — two encounters left, then the one question** — [THR-1220](https://linear.app/threadbare/issue/THR-1220)
 
-This is the invitation you have been waiting on since 24 August, and it is the first time it has been allowed to reach you. The verification pass finished last night at 16:25 local and ruled the slice **level**: every component — the writing, the choices, the endings, the rewards, the interface — is shipped to the surface you will open, verified on the live site rather than merely merged.
+You are in the middle of it. Four batches of feedback landed on the checkpoint between 08:33 and 08:50 local, and every one of them turned into a ticket the same minute. What remains is the rest of the roster and the ruling.
 
-**The one question for the sitting:** *is the integrated encounter experience at an acceptable state?*
+**Opened and fed back on:**
 
-Each link drops you straight into that encounter:
+- [Snow on the Pass](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) — the scar row: character-sheet words, shorter chip sentences, tooltips that say what a condition does
+- [A Bargain at the Crossroads](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) — the full-moon promise the engine cannot keep, and `BOND · AGREEMENT`
+- [The Swindled Family](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) — the scene screen's duplicated strip, plus the agent's name doing nothing when clicked
+
+**Still unopened:**
 
 1. [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
-2. [Snow on the Pass](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass)
-3. [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
-4. [A Bargain at the Crossroads](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads)
-5. [The Swindled Family](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family)
+2. [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-**Two rough edges you will actually meet, named up front so they do not surprise you.** Both were judged noticeable but not session-spoiling, and both are already ticketed:
+**Then the question the sitting exists for:** *is the integrated encounter experience at an acceptable state?* A yes makes *"slice validated"* real for the first time and opens the charting of the next chapter — the encounter interface reaching factions, war, economy and divine actions. A no charters the gaps instead.
 
-- A few sentences stumble over a name twice: *"The keeper, The Keeper at the Crossing, takes two coppers."* Three of the five do this once each. ([THR-1466](https://linear.app/threadbare/issue/THR-1466))
-- Where an ending grants two blessings of the same kind, the two reward tags read identically — and one word inside them is underlined as if you could click it, but nothing happens. ([THR-1467](https://linear.app/threadbare/issue/THR-1467))
+**Your feedback is already work.** Seven tickets filed from the four batches, five of them High, all in Ready for Dev with nothing else claimed ahead of them: [THR-1472](https://linear.app/threadbare/issue/THR-1472) (scar and boon nouns become sheet words), [THR-1473](https://linear.app/threadbare/issue/THR-1473) (chips capped at 15 words, no retelling the overview), [THR-1474](https://linear.app/threadbare/issue/THR-1474) (no pipeline stage reads the aftermath page whole — now it will), [THR-1475](https://linear.app/threadbare/issue/THR-1475) (a condition's hover finally says what it does), [THR-1476](https://linear.app/threadbare/issue/THR-1476) (prose may not promise what no effect enacts), [THR-1477](https://linear.app/threadbare/issue/THR-1477) (the agent's name opens the sheet over the encounter), [THR-1478](https://linear.app/threadbare/issue/THR-1478) (the nudge stage's two panels merge into one). Nothing there is waiting on you — they are written and queued.
 
-A third ticket ([THR-1468](https://linear.app/threadbare/issue/THR-1468), two encounters having no written "you failed" ending) you cannot see while playing — only a reviewer forcing that outcome can — so it is listed for completeness, not as something to watch for.
-
-If the answer is yes, *"the slice is validated"* becomes true for the first time, and the next chapter — the encounter interface reaching factions, war, economy and divine actions — can be charted. If the answer is no, what is missing gets charted instead.
-
-The full verification record, with the measurement behind every claim above: [the verdict comment on THR-1220](https://linear.app/threadbare/issue/THR-1220).
+Keep going as you are: feedback per screen, verdict at the end. The record is the [checkpoint's comment thread](https://linear.app/threadbare/issue/THR-1220).
 
 ## Also waiting (0)
 
@@ -34,13 +30,14 @@ Nothing else.
 
 ## Queue
 
-**Healthy — 12 ready, 0 in dev, 1 on the design desk.** Nothing claimed, nothing parked, nothing stale.
+**Backed up — 20 ready, 0 in dev, 1 on the design desk.** That is your sitting working exactly as intended: the queue was 12 an hour ago and the seven new tickets are all yours. Nothing claimed, nothing parked, nothing stale.
 
-- **The held-town design is no longer listed as an ask on you** ([THR-1448](https://linear.app/threadbare/issue/THR-1448)). It led the last two briefs asking you to say *"work the held-town design"* — on review, that was this lane mislabelling it. You already gave the direction on 10 September; the four questions the ticket leaves open are questions for the designer, not forks in what the game should mean. It sits staged on the design desk for a design lane to pick up. Nothing is wanted from you; say the word only if you want it moved up or dropped.
-- The five slice-polish tickets sit below the sitting ([THR-1459](https://linear.app/threadbare/issue/THR-1459), [THR-1466](https://linear.app/threadbare/issue/THR-1466), [THR-1467](https://linear.app/threadbare/issue/THR-1467), [THR-1461](https://linear.app/threadbare/issue/THR-1461), [THR-1460](https://linear.app/threadbare/issue/THR-1460), [THR-1468](https://linear.app/threadbare/issue/THR-1468)) — all presentation, none re-writing an encounter.
-- Longest-dwelling ready items ([THR-876](https://linear.app/threadbare/issue/THR-876), [THR-1026](https://linear.app/threadbare/issue/THR-1026), [THR-1198](https://linear.app/threadbare/issue/THR-1198)) sit behind higher-priority work, not stalled.
+- The executor lane fires on the hour and will start eating into the five High items from this morning's feedback.
+- The held-town design ([THR-1448](https://linear.app/threadbare/issue/THR-1448)) sits on the design desk, unclaimed and **not an ask on you** — the open questions there are the designer's.
+- Longest-dwelling ready items ([THR-876](https://linear.app/threadbare/issue/THR-876), [THR-1026](https://linear.app/threadbare/issue/THR-1026)) sit behind higher-priority work, not stalled.
 
 ## Health
 
-- **Green where it counts.** The site is serving the build the verification ran against (`7fb58715`), CI and all three scheduled jobs healthy, no PRs waiting to merge, the worktree reaper ran 25 minutes ago. The simulation is at 77 ms/tick — 14% *below* the 7-day median of 90 across 78 measurements, so nothing is slowing down.
-- **Two probes are red and neither is yours.** Both are the same fact seen twice: this machine was off from yesterday afternoon until 08:01 this morning, so no scheduled lane wrote anything for 15.5 hours. Overnight quiet is normal by your own 8 August ruling. The second probe reads it as `tb-orchestrator` being stalled 15 hours behind — that is a false alarm from its own logic: it treats a lane that fired at 08:01 as proof the machine was up all night, when in fact every lane's last run clusters in that same one-minute wake-up burst. The orchestrator's slot is :26, which this morning has not reached yet. **It should fire at 08:26** — if it has not by the next brief, that becomes a real finding and you will see it here.
+- **All green.** The site is serving the latest commit on main (`ccc866da`), CI and all three scheduled jobs healthy, no PRs waiting to merge, all nine scheduled lanes on schedule, the worktree reaper ran at 08:40. The simulation is at 73 ms/tick — 18% *below* the 7-day median of 89 across 79 measurements.
+- **Last brief's one open question closed itself, as predicted.** The orchestrator was reported possibly stalled; it fired at 08:26 on its own slot. That was the probe's false alarm, not a fault, and it is now resolved rather than carried.
+- **The overnight quiet is the expected shape.** The lane-silence probe reports the machine being off from yesterday afternoon to this morning — normal by your 8 August ruling, and not an ask.
