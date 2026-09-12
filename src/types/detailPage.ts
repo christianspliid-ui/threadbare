@@ -39,6 +39,26 @@ export const DETAIL_EVENT_W = 800;
 /** Event detail height in px — accommodates richer event prose context. */
 export const DETAIL_EVENT_H = 720;
 
+/**
+ * Group detail width / height in px.
+ *
+ * Equal to the default today, and named anyway (NFP #1): a group card that wants more
+ * room for its roster should then be a number someone changes, not a branch someone adds.
+ */
+export const DETAIL_GROUP_W = 720;
+
+/** Group detail height in px. See {@link DETAIL_GROUP_W}. */
+export const DETAIL_GROUP_H = 620;
+
+/** Hover-card dwell before the card opens. Below it, only the tooltip (Law 20 Tier 1). */
+export const HOVER_CARD_DELAY_MS = 350;
+
+/** Sections shown in the hover variant beyond the header. */
+export const HOVER_CARD_MAX_SECTIONS = 1;
+
+/** Hover card width in px — narrower than a card, because it is a glance, not a read. */
+export const HOVER_CARD_W = 420;
+
 /** Default prose tier for authored showcase sections. */
 export const DETAIL_AUTHORED_DEFAULT_TIER: ProseTier = 'notable';
 
@@ -47,8 +67,20 @@ export const DETAIL_FAILSOFT_STUB_SPHERE = 'time';
 
 // ─── Discriminated types ──────────────────────────────────────────────────────
 
-/** Five detail page types, one per primitive kind. */
-export type DetailPageKind = 'actor' | 'item' | 'faction' | 'place' | 'event';
+/**
+ * Detail page types, one per primitive kind.
+ *
+ * `'group'` joined in THR-1490: an Army is the one `WorldRefKind` whose card is neither a
+ * person nor a place nor a thing nor a happening — it is a body of people with a
+ * commander and a stance, and rendering it as an `actor` page would ask the actor
+ * resolvers for a disposition and a portrait that a column of soldiers does not have.
+ *
+ * A note the intent-judge recorded and this file inherits rather than originates: the
+ * value `'place'` here overloads the UL game word *Place* (the inner tier). On this page
+ * kind it means the place tier *and* the outer Location tier *and* the Area *and* the
+ * hex — every kind of ground.
+ */
+export type DetailPageKind = 'actor' | 'item' | 'faction' | 'place' | 'event' | 'group';
 
 /** Section type discriminator. UI dispatches on `kind`. */
 export type SectionKind = 'prose' | 'chips' | 'event-card' | 'panel' | 'portrait';

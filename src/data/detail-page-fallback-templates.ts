@@ -116,6 +116,36 @@ export const EVENT_FALLBACK_TEMPLATES = {
   ],
 } as const;
 
+// ─── Group fallbacks ──────────────────────────────────────────────────────────
+//
+// THR-1490. A group is a body of people — an army today, a company or a network when
+// those kinds get a route. The pools describe a muster in words and never in figures:
+// `types/army.ts` already commits to headcount, cohesion and supply being private
+// scalars, and a fallback that leaked one would be the first surface to break that.
+
+export const GROUP_FALLBACK_TEMPLATES = {
+  /** Who they are, when the state bag says nothing usable. */
+  muster_unknown: [
+    '{Name}. A body of armed people, and no account of their strength.',
+    'They are gathered. What they number, and how well, is not visible from here.',
+    '{Name} stands mustered. The rest is rumour.',
+    'A column under a banner. Nothing more is known of it.',
+    'They hold together. Whether well or badly, no one here can say.',
+  ],
+  /** What they are doing, when no objective is set or none can be phrased. */
+  intent_none: [
+    'No march has been ordered.',
+    'They wait, and the waiting is the whole of it.',
+    'Standing where they were raised, with nothing asked of them yet.',
+  ],
+  /** Who leads them, when no commander edge resolves. */
+  command_unknown: [
+    'No one has taken command of them.',
+    'Whoever leads them does not answer to a name you know.',
+    'The banner is raised; the hand holding it is not recorded.',
+  ],
+} as const;
+
 // ─── Unknown-entity stub prose ────────────────────────────────────────────────
 
 export const UNKNOWN_ENTITY_PROSE =

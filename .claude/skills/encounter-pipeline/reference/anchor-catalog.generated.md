@@ -53,15 +53,15 @@
 | `area` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · |
 | `sublocation` | ✓ | · | · | · | · | · | · |
 | `hex` | · | · | · | · | · | ✓ | · |
-| `artifact` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · |
-| `attachment` | · | ✓ | ✓ | ✓ | ✓ | · | · |
+| `artifact` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · |
+| `attachment` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · |
 | `companion` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · |
-| `army` | ✓ | · | · | · | · | · | · |
+| `army` | ✓ | · | · | · | · | ✓ | · |
 | `encounter` | ✓ | · | · | · | · | ✓ | · |
 | `journey` | · | · | · | · | · | ✓ | · |
 | `receipt` | · | · | · | · | · | ✓ | · |
 
-**Totals.** 46 union members across 7 vocabularies are `WorldRefKind`s; 3 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
+**Totals.** 49 union members across 7 vocabularies are `WorldRefKind`s; 3 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
 
 #### `EntityVisualKind`
 
@@ -147,15 +147,12 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, 
 
 Where `openEntity` can actually route. The arms are discriminated by `kind`. — `src/types/notification.ts`
 
-Members: `agent`, `encounter`, `hex`, `location`, `area`, `faction`, `journey`, `receipt`
+Members: `agent`, `encounter`, `hex`, `location`, `area`, `faction`, `journey`, `receipt`, `artifact`, `attachment`, `army`
 
 *Deliberately absent:*
 
 - **`sublocation`** — Routes through the `location` arm — same node id, and the location sheet is the surface that draws a sublocation.
-- **`artifact`** — No sheet of its own yet; an artifact is read on its holder's sheet.
-- **`attachment`** — `AttachmentDetailView` opens from the bearer, not from a navigation target.
-- **`companion`** — Read on the company readout, which opens from a member.
-- **`army`** — Read on the war readout, which opens from the map rather than by reference.
+- **`companion`** — Withheld, not missing (THR-1096): a companion is not an agent node and not a thread, so both sheet paths would open the wrong person's page. Its *card* opens like anything else — `SURFACE_BY_WORLD_REF.companion` carries `sheet: null` with this ruling quoted.
 
 #### `EntityNoticeAnchorKind`
 

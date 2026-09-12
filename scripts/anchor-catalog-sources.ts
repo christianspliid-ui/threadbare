@@ -897,10 +897,16 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
       sublocation:
         'Routes through the `location` arm — same node id, and the location sheet is the ' +
         'surface that draws a sublocation.',
-      artifact: 'No sheet of its own yet; an artifact is read on its holder\'s sheet.',
-      attachment: '`AttachmentDetailView` opens from the bearer, not from a navigation target.',
-      companion: 'Read on the company readout, which opens from a member.',
-      army: 'Read on the war readout, which opens from the map rather than by reference.',
+      // `artifact`, `attachment` and `army` left this list in THR-1490. Each row here
+      // claimed the kind had no sheet to route to; each was wrong — `ArtifactSheet`,
+      // `AttachmentDetailView` and `ArmySheet` were all mounted and the union simply had
+      // no arm to name them by. The three arms exist now, so the absence is gone rather
+      // than re-worded.
+      companion:
+        'Withheld, not missing (THR-1096): a companion is not an agent node and not a ' +
+        'thread, so both sheet paths would open the wrong person\'s page. Its *card* ' +
+        'opens like anything else — `SURFACE_BY_WORLD_REF.companion` carries `sheet: null` ' +
+        'with this ruling quoted.',
     },
   },
   {

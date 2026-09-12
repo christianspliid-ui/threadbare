@@ -126,7 +126,17 @@ import { WorldPulse } from './WorldPulse';
 import { ChroniclePanel } from './ChroniclePanel';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
-import { useNotificationNavigation } from './hooks/useNotificationNavigation';
+import { useNotificationNavigation, useSheetOpeners } from './hooks/useNotificationNavigation';
+import { useRefRouter } from '../../hooks/useRefRouter';
+import { RefRouterProvider } from '../../contexts/RefRouterContext';
+import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
+import { DetailModal } from '../shared/DetailModal';
+import { HoverCard } from '../shared/HoverCard';
+import type { WorldRef } from '../../types/worldRef';
+import {
+  WORLD_REF_KIND_BY_THREAD_CATEGORY,
+  WORLD_REF_KIND_BY_VISUAL_KIND,
+} from '../../types/worldRefAdapters';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { IdentityChip } from './IdentityChip';
 import { AscendantBar } from './ascendant-bar/AscendantBar';
@@ -1240,19 +1250,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
   }, [gameState.graph, handleHexClick, hexMapRef]);
 
-  const handleNotificationNavigate = useNotificationNavigation({
-    onSelectAgent: handleAgentSelect,
-    onFocusHex: (col: number, row: number) => {
-      if (hexMapRef.current) {
-        const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-        hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
-      }
-    },
-    onOpenLocation: handleLocationClick,
-    onFocusArea: handleFocusArea,
-    // THR-727: clicking a divine-receipt toast opens the receipt dialogue.
-    onOpenReceipt: (receiptId: string) => setOpenedReceiptId(receiptId),
-  });
+  const handleFocusHex = useCallback((col: number, row: number) => {
+    if (hexMapRef.current) {
+      const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
+      hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
+    }
+  }, [hexMapRef]);
 
   // ── Notification system hook ──
   const {
@@ -3777,6 +3780,64 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // thread the god holds — it is a thing that happened to someone.
   const [attachmentSheetId, setAttachmentSheetId] = useState<string | null>(null);
 
+  // ═══ The one ref router (THR-1490) ═══════════════════════════════════════
+  //
+  // Built here rather than in a provider because GameView's own handlers call `open`,
+  // and a component cannot consume a context it renders. It is published to the tree
+  // below through `RefRouterProvider`, and the detail stack it owns through
+  // `DetailModalStackValueProvider` — mounted once, for the whole game.
+  //
+  // Placed at this line and not beside the other handlers because the Tier-3 openers it
+  // needs (`setStubModalState`, `setAttachmentSheetId`) are declared just above.
+
+  /**
+   * Tier 3 — the sheets, by `NavigationTarget` arm.
+   *
+   * Every arm is the destination that arm already had; this is a gathering, not a
+   * redesign. Three are new because THR-1490 gave `NavigationTarget` three arms for
+   * sheets that already existed (artifact, attachment, army) and had no address.
+   *
+   * `encounter` and `journey` stay unwired deliberately — no sheet exists for either, and
+   * the router turns an unwired arm into that thing's *card* rather than a dead click.
+   */
+  const sheetOpeners = useSheetOpeners({
+    onSelectAgent: handleAgentSelect,
+    onFocusHex: handleFocusHex,
+    onOpenLocation: handleLocationClick,
+    onFocusArea: handleFocusArea,
+    // THR-727: clicking a divine-receipt toast opens the receipt dialogue.
+    onOpenReceipt: (receiptId: string) => setOpenedReceiptId(receiptId),
+    onOpenFaction: (factionId: string) => setStubModalState({ nodeId: factionId, category: 'faction' }),
+    onOpenArtifact: (artifactId: string) => setStubModalState({ nodeId: artifactId, category: 'artifact' }),
+    onOpenArmy: (armyId: string) => setStubModalState({ nodeId: armyId, category: 'army' }),
+    // THR-1120 — the attachment *template* node id, not the granted instance.
+    onOpenAttachment: setAttachmentSheetId,
+  });
+
+  const refRouter = useRefRouter({
+    graph: gameState.graph,
+    tick: gameState.tick,
+    seed: gameState.seed,
+    runtime,
+    protagonistId: avatarNodeId ?? gameState.ascendantId,
+    openSheet: sheetOpeners,
+  });
+
+  // Notifications keep their exact behaviour: the adapter maps the target to a ref and
+  // asks for the sheet, and the sheet is the same handler it always called.
+  const handleNotificationNavigate = useNotificationNavigation(refRouter);
+
+  // `__DEBUG.openRef` drives the live router. Unregistered on unmount so a torn-down
+  // game view cannot be driven into a stack that no longer renders.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const open = (ref: { kind: string; id: string }, mode: 'card' | 'sheet') => {
+      refRouter.open(ref as WorldRef, mode, { via: 'debug' });
+    };
+    window.__DEBUG?._registerRefRouterOpen?.(open);
+    return () => window.__DEBUG?._registerRefRouterOpen?.(null);
+  }, [refRouter]);
+
   // ── Debug modal auto-opener (dev-only, tree-shaken in prod) ──
   useDebugOpenModal(_gameStateRef, {
     openAgentProfileForId,
@@ -3973,15 +4034,30 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleHexDetailClose();
   }, [manualTargetContext, handleHexDetailClose]);
 
-  // ── Profile modal routing for thread detail view ──
+  /**
+   * The thread panel's "view profile" — the `ThreadCategory` adapter (THR-1490).
+   *
+   * This control, not `handleThreadNodeSelect`, is the one that *opens* something: the
+   * select handler picks a row in the panel, and routing that to a card would pop a modal
+   * on every row click. Same union, same five kinds, wired to the control that has always
+   * opened a sheet.
+   *
+   * The `agent` arm stays on `handleViewProfile` rather than the router's `agent` arm:
+   * the sheet it opens is gated on `selectedAgentId`, which this panel has already set by
+   * selecting the row. Going through the router would re-select and reopen the drawer —
+   * the exact two-id hazard THR-1477 fixed, arrived at from the other side.
+   */
   const handleOpenProfileModal = useCallback((nodeId: string, category: import('../../engine/retinue').ThreadCategory) => {
     if (category === 'agent') {
-      // Use existing agent profile modal flow (selectedAgentId must match for agentInfoCard to load)
       handleViewProfile();
-    } else {
-      setStubModalState({ nodeId, category });
+      return;
     }
-  }, [handleViewProfile]);
+    refRouter.open(
+      { kind: WORLD_REF_KIND_BY_THREAD_CATEGORY[category], id: nodeId },
+      'sheet',
+      { via: 'thread' },
+    );
+  }, [handleViewProfile, refRouter]);
 
   // ── Attention mode toggle (TB-040) ──
   const handleToggleAttentionMode = useCallback((threadEdgeId: string) => {
@@ -4415,6 +4491,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   return (
     <GameErrorBoundary>
+      <DetailModalStackValueProvider value={refRouter.stack}>
+      <RefRouterProvider router={refRouter}>
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
       {/* ═══ Top bar — extracted to GameViewTopBar (THR-579) ═══ */}
       <GameViewTopBar
@@ -5246,34 +5324,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             // same root cause on the premonition's name control; this ticket
             // builds the primitive, that one repoints its own surfaces.
             onSelectAgent={openAgentSheetForId}
+            // THR-1490 — the veil's `visualKind` adapter. Everything the four branches
+            // this replaced used to do by hand — attachment to its sheet, faction and
+            // artifact to the stub modal, Area to its centre hex — the router now does
+            // from one table, and it does it for every kind rather than the five anyone
+            // remembered to wire.
+            //
+            // **Card, not sheet, and that is the point.** The detail stack mounts above
+            // the veil's z-index, so a chip now opens the thing's card *over* the
+            // encounter and closing it returns you to the scene. The old stub-modal
+            // route was a sheet on an unrelated z-band, and the `location` arm's other
+            // destination (`handleLocationClick`) changes the whole view level — under a
+            // veil that is a click that looks live and does nothing, the same Law 21
+            // defect THR-1477 fixed for the agent's name. The card's own footer carries
+            // "open its sheet ↗" for the player who wants the whole of it.
             onSelectEntity={(entityId, kind) => {
-              // THR-1120 — a granted condition/blessing/curse/power opens the
-              // attachment sheet. `entityId` is the template node id; see
-              // `engine/attachmentTemplateDetail.ts` for why a template and not
-              // the granted instance.
-              if (kind === 'attachment') {
-                setAttachmentSheetId(entityId);
-                return;
-              }
-              // THR-1004 — the UI Law's link half for non-person entities named
-              // on an aftermath chip. Routes to the same stub-modal path the
-              // thread list uses, so a faction or a reward opens its own sheet
-              // rather than the agent drawer.
-              //
-              // THR-1172 — `location` needed no arm of its own here: every
-              // remaining kind is a `ThreadCategory`, and `'location'` has mapped
-              // to `LocationProfileModal` since the stub-modal path was built.
-              // The place was always openable from the thread list and the hex
-              // map; what was missing was upstream, in the kind union the veil
-              // could declare.
-              // THR-1155 — an Area is not a `ThreadCategory`: it has no thread row and no
-              // sheet, so the stub-modal path has nothing to open. Its surface is the hex
-              // chronicle, and `handleFocusArea` is the one definition of how to reach it.
-              if (kind === 'area') {
-                handleFocusArea(entityId);
-                return;
-              }
-              setStubModalState({ nodeId: entityId, category: kind });
+              refRouter.open(
+                { kind: WORLD_REF_KIND_BY_VISUAL_KIND[kind], id: entityId },
+                'card',
+                { via: 'veil' },
+              );
             }}
             onCommitNudges={handleCommitNudges}
             onShowOnMap={(col, row) => {
@@ -5465,7 +5535,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         onDismiss={handleDismissPopup}
         onChoice={handlePopupChoice}
       />
+
+      {/* ═══ The detail stack (THR-1490, resolving THR-966 as mount) ═══
+          Built in 2026-05 (THR-301 Phase E) and imported by nothing but the style guide
+          ever since: generator, resolvers, fallback prose, breadcrumbs, snapshot tests,
+          and no consumer. This is the mount. Both components portal to `document.body`,
+          so their position in this tree costs nothing and their z-band is their own —
+          the card at 70+2·depth, above every sheet and every interrupt, because it is
+          the thing you opened *from* one of those. */}
+      <DetailModal />
+      {refRouter.hoverCard && (
+        <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} />
+      )}
     </div>
+      </RefRouterProvider>
+      </DetailModalStackValueProvider>
     </GameErrorBoundary>
   );
 }

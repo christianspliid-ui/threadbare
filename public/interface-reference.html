@@ -9,7 +9,7 @@
   Player-manual prose first ("How it plays"), Designer Notes second.
   Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W9. Source spine and
   synthesis authority for this page is the IA manifest — src/data/ia-manifest.ts
-  (IA_SURFACES: 62 surfaces, view/mount/reads[] commitment) — browsable in-game at
+  (IA_SURFACES: 65 surfaces, view/mount/reads[] commitment) — browsable in-game at
   ?view=cms#ia-surfaces. Viewport contract (1920×1080, html/body/#root height:100dvh
   overflow:hidden) is enforced in src/index.css:201-202 and documented in CLAUDE.md
   (## Viewport Contract). The shared wiki nav between the WIKI-NAV markers is injected
@@ -295,6 +295,15 @@
   </section>
 
   <section class="section">
+    <h2>Three depths, one gesture<span class="lead">Anything the game names can be hovered for a glance, clicked for a card, and opened in full. The same gesture works on every kind of thing, from every surface.</span></h2>
+    <p>Whatever you are reading — a name in a line of prose, a consequence chip on an encounter's ending, a row in the Threads panel, a notification that just arrived — the thing it names answers to the same three depths:</p>
+    <div class="surf-grid">
+      <div class="surf"><h4>Hover — the glance</h4><p>Rest on a name and, after a moment, a small card appears beside it: who or what this is, and its first line. It never covers what you were reading, and it goes when you look away.</p></div>
+      <div class="surf"><h4>Click — the card</h4><p>The card proper, over whatever you were doing. It stacks: open a person from an encounter, then the faction they belong to, and a trail across the top says where you have been. Escape steps back one; the encounter underneath is untouched.</p></div>
+      <div class="surf"><h4>Open its sheet — the whole record</h4><p>From the card's footer, for the things that have one. This is the full dossier below.</p></div>
+    </div>
+    <p>The rule this rests on is that the game keeps one table of what each kind of thing opens, and one piece of code that reads it. A name that could not be opened used to be a matter of whether that particular screen had been taught about that particular kind — which is why an artifact's name was plain text on a screen where a faction's name was a link. There is no longer a kind of thing without a card.</p>
+
     <h2>The deeper sheets<span class="lead">One more layer down are the full dossiers — modals you open when a compact card is not enough. They cover the whole cast of the world.</span></h2>
     <p>When you want everything about a thing, you open its <span class="term">sheet</span> — a modal that takes over the screen with the full record. Each entity in the world has one:</p>
     <div class="surf-grid">
@@ -385,10 +394,10 @@
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
         <tbody>
-          <tr><td>IA_SURFACES.length</td><td>62</td><td>Total committed surfaces · <code>src/data/ia-manifest.ts</code></td></tr>
+          <tr><td>IA_SURFACES.length</td><td>65</td><td>Total committed surfaces · <code>src/data/ia-manifest.ts</code></td></tr>
           <tr><td>SurfaceView</td><td>7</td><td>start·ascendant·game·codex·styleguide·cms·ul · <code>ia-manifest.ts:9</code></td></tr>
           <tr><td>SurfaceMount</td><td>3</td><td>always·modal·drillin · <code>ia-manifest.ts:8</code></td></tr>
-          <tr><td>game-view surfaces</td><td>47</td><td>17 always · 11 drillin · 19 modal</td></tr>
+          <tr><td>game-view surfaces</td><td>50</td><td>17 always · 12 drillin · 21 modal</td></tr>
           <tr><td>viewport</td><td>1920×1080</td><td>Contractual resolution · CLAUDE.md § Viewport Contract</td></tr>
           <tr><td>height / overflow</td><td>100dvh / hidden</td><td>No-scroll enforcement · <code>src/index.css:201–202</code></td></tr>
           <tr><td>modal max-height</td><td>85vh</td><td>Modal primitive cap · CLAUDE.md § Viewport Contract</td></tr>

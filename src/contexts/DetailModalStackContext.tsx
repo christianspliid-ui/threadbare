@@ -20,9 +20,20 @@ interface DetailModalStackState {
 
 const DetailModalStackContext = createContext<DetailModalStackState | null>(null);
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
+export type { DetailModalStackState };
 
-export function DetailModalStackProvider({ children }: { children: ReactNode }) {
+// ─── State ────────────────────────────────────────────────────────────────────
+
+/**
+ * The stack, as a hook.
+ *
+ * Split out of the provider by THR-1490 because the ref router owns the pushes, and the
+ * router is built in `GameView`'s own scope — a component cannot consume a context it
+ * renders. So `GameView` holds the state through this hook, hands it to the router, and
+ * publishes the same object to its descendants through
+ * {@link DetailModalStackValueProvider}. The stack is still mounted exactly once.
+ */
+export function useDetailModalStackState(): DetailModalStackState {
   const [stack, setStack] = useState<DetailPage[]>([]);
   const isOpen = stack.length > 0;
 
@@ -68,10 +79,34 @@ export function DetailModalStackProvider({ children }: { children: ReactNode }) 
     return () => document.removeEventListener('keydown', handleKey);
   }, [isOpen]);
 
+  return { stack, push, pop, popTo, replace, isOpen };
+}
+
+// ─── Providers ────────────────────────────────────────────────────────────────
+
+/** Owns the stack and publishes it. The self-contained form — styleguide, tests. */
+export function DetailModalStackProvider({ children }: { children: ReactNode }) {
+  const value = useDetailModalStackState();
   return (
-    <DetailModalStackContext.Provider value={{ stack, push, pop, popTo, replace, isOpen }}>
-      {children}
-    </DetailModalStackContext.Provider>
+    <DetailModalStackContext.Provider value={value}>{children}</DetailModalStackContext.Provider>
+  );
+}
+
+/**
+ * Publishes a stack the caller already owns.
+ *
+ * `GameView` uses this one: the router holds the state, so a second `useState` here would
+ * be a second, empty stack that `DetailModal` would render instead of the real one.
+ */
+export function DetailModalStackValueProvider({
+  value,
+  children,
+}: {
+  value: DetailModalStackState;
+  children: ReactNode;
+}) {
+  return (
+    <DetailModalStackContext.Provider value={value}>{children}</DetailModalStackContext.Provider>
   );
 }
 

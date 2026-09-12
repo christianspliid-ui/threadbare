@@ -18,6 +18,10 @@ const NAV_GLYPHS: Record<NavigationTarget['kind'], string> = {
   faction:   '⚑',
   journey:   '↝',
   receipt:   '✦',
+  // THR-1490 — three arms for three sheets that already shipped without an address.
+  artifact:  '◈',
+  attachment:'❖',
+  army:      '⚔',
 };
 
 /** Tooltip text for each navigation kind */
@@ -30,6 +34,9 @@ const NAV_TOOLTIPS: Record<NavigationTarget['kind'], string> = {
   faction:   'Click to view faction',
   journey:   'Click to view journey',
   receipt:   'Click to view the receipt',
+  artifact:  'Click to view the artifact',
+  attachment:'Click to view what was granted',
+  army:      'Click to view the army',
 };
 
 /** Opacity for navigation glyph */

@@ -118,6 +118,23 @@ export interface WorldObjectKind {
    * Required on every `content` row; absent everywhere else.
    */
   readonly contentKind?: ContentObjectKindId;
+  /**
+   * For a kind with no `worldRef`: the kind whose card *shows* this one, as a section or
+   * a chip (THR-1490). A Standing is chips on the two parties' cards; a Holding is the
+   * owned place's card; a Battle is read off the armies engaged in it.
+   *
+   * The reachability pin (`src/data/__tests__/surfaceRegistry.test.ts`) walks this: the
+   * named kind must itself resolve — directly, or through its own `via` — to a
+   * `worldRef`, so a chain can neither end nowhere nor cycle.
+   */
+  readonly via?: WorldObjectKindId;
+  /**
+   * The quotable ruling for a kind reachable by *nothing* — no route, no bearer's card,
+   * no catalog. Deliberately narrow: the reachability pin holds an explicit allowlist of
+   * the ids permitted to carry it, so a fourth is a test edit someone has to argue for
+   * rather than a free-text escape from the pin.
+   */
+  readonly noSurface?: string;
   /** The decision recorded when the kind was ratified — the sentence a designer needs. */
   readonly note: string;
 }
@@ -216,7 +233,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     note: 'The inner tier — an inn, a granary, a gatehouse, a grove, a spring — inside a Location. Not always built. The code word is *sublocation*; the game word is Place (Christian, 2026-09-03).',
   }),
   K({
-    id: 'route', gameWord: 'Route', ulTerm: 'Graph.md#route', worldRef: null,
+    id: 'route', gameWord: 'Route', ulTerm: 'Graph.md#route', worldRef: null, via: 'location',
     shape: { kind: 'edge', edgeTypes: ['road', 'trades_with', 'sacred_route'], identityNode: { nodeType: 'location', key: 'locationSubtype', value: ROUTE_IDENTITY_LOCATION_SUBTYPE } },
     classes: { road: ['road'], trail: [], trade_lane: ['trades_with'], pilgrim_way: ['sacred_route'], portal: [] },
     owningSystem: 'Mortal Economy & Prosperity', writers: ['roadNetwork', 'tradeRoute', 'strategicGraphOps'], status: 'live',
@@ -249,13 +266,13 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     note: 'A structured social entity holding territory through `controls`; chapters share a def. A **Realm** (game word for a nation) is the `factionClass: \'realm\'` variant minted per culture domain at worldgen (THR-1155) — a landed polity with a seat, a court ladder and a per-world definition id `realm.<cultureId>`. It is a class, not a kind: a Realm is a Faction in every mechanical respect, so it takes no registry row of its own and `factionClass` is deliberately not a `classes` map here, which groups the discriminator\'s own values.',
   }),
   K({
-    id: 'culture', gameWord: 'Culture', ulTerm: 'Agents.md#actortype', worldRef: null,
+    id: 'culture', gameWord: 'Culture', ulTerm: 'Agents.md#actortype', worldRef: null, via: 'mortal',
     shape: { kind: 'node', nodeType: 'actor', discriminator: { key: 'actorType', values: ['culture'] } },
     owningSystem: 'Culture', writers: ['worldSeed'], status: 'live',
     note: 'A people: foundation bias and phonetic signature; mortals and locations `belongs_to` one.',
   }),
   K({
-    id: 'company', gameWord: 'Company', ulTerm: 'Agents.md#company', worldRef: null,
+    id: 'company', gameWord: 'Company', ulTerm: 'Agents.md#company', worldRef: null, via: 'mortal',
     shape: { kind: 'node', nodeType: 'actor', refines: { key: 'actorType', value: 'group' }, discriminator: { key: 'groupKind', values: ['company'] } },
     owningSystem: 'Companies & Group Travel', writers: ['groups/groupFormation', 'strategicGraphOps'], status: 'live',
     note: 'The game word for a travelling group; never "party". Its position is its leader\'s.',
@@ -267,13 +284,13 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     note: 'A company kind with a stance, supply and momentum.',
   }),
   K({
-    id: 'network', gameWord: 'Network', ulTerm: 'Agents.md#group', worldRef: null,
+    id: 'network', gameWord: 'Network', ulTerm: 'Agents.md#group', worldRef: null, via: 'mortal',
     shape: { kind: 'node', nodeType: 'actor', refines: { key: 'actorType', value: 'group' }, discriminator: { key: 'groupKind', values: ['network'] } },
     owningSystem: 'Companies & Group Travel', writers: ['strategicGraphOps'], status: 'dormant',
     note: 'A company kind that does not travel — a ring, a spy network.',
   }),
   K({
-    id: 'battle', gameWord: 'Battle', ulTerm: 'Agents.md#group', worldRef: null,
+    id: 'battle', gameWord: 'Battle', ulTerm: 'Agents.md#group', worldRef: null, via: 'army',
     shape: { kind: 'node', nodeType: 'actor', refines: { key: 'actorType', value: 'group' }, discriminator: { key: 'groupKind', values: ['battle'] } },
     owningSystem: 'War, Armies & Battles', writers: ['battleResolution'], status: 'live',
     note: 'An engine detail kept as an actor node so participants can `participates_in` it; not a player object.',
@@ -300,7 +317,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     note: 'An item with its own trait graph, bonded rather than possessed.',
   }),
   K({
-    id: 'holding', gameWord: 'Holding', ulTerm: 'Agents.md#work', worldRef: null,
+    id: 'holding', gameWord: 'Holding', ulTerm: 'Agents.md#work', worldRef: null, via: 'location',
     shape: { kind: 'edge', edgeTypes: ['owns'], identityNode: { nodeType: 'artifact', key: 'attachmentCategory', value: 'holding' } },
     owningSystem: 'Attachments, Items & Possessions', writers: ['holdings'], status: 'live',
     note: 'Not a thing — the ownership of a Location, Place or Route. The `owns` edge is the truth; the mirror artifact face (`attachmentCategory: \'holding\'`) is a sheet convenience and never a target. The player word is *freehold*.',
@@ -320,20 +337,20 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     note: 'Wounds, diseases, strains; blessings and curses as signed conditions; scars as permanent ones. Shared definitions, per-bearer state on the `has_trait` edge (THR-1395): the seeded catalogue was already one node per kind, and `spellActivation`\'s `condition_inflict` — the one writer that minted a node per application — now points every bearer of a template at the same definition. The undertaking *object* for a Condition is not this definition but one mortal\'s bearing of it — the `has_trait` edge (THR-1436): the one kind where the two registries\' shapes differ on purpose, because what a healer cures is a wound on a person, never the wound as a kind.',
   }),
   K({
-    id: 'trait', gameWord: 'Trait', ulTerm: 'Traits.md#trait', worldRef: null,
+    id: 'trait', gameWord: 'Trait', ulTerm: 'Traits.md#trait', worldRef: null, via: 'mortal',
     shape: { kind: 'node', nodeType: 'trait', discriminator: { key: 'subcategory', values: TRAIT_SUBCATEGORIES } },
     owningSystem: 'Personality & Emergent Traits', writers: ['gameInit', 'culturalTraits', 'capabilityGrowth', 'encounterChains', 'reputation'], status: 'live',
     note: 'The graph\'s vocabulary of what a thing *is*: shared definition nodes, per-bearer state on `has_trait`. Tags refine traits; they are not a general object taxonomy. THR-1395 brought the `experience` subcategory back to that rule — encounter growth and chain mastery minted one node per bearer (44 nodes for 44 bearers on a seeded medium world at tick 30) and now share one per domain and one per chain.',
   }),
   K({
-    id: 'agreement', gameWord: 'Agreement', ulTerm: 'Traits.md#attachment', worldRef: null,
+    id: 'agreement', gameWord: 'Agreement', ulTerm: 'Traits.md#attachment', worldRef: null, via: 'mortal',
     shape: { kind: 'edge', edgeTypes: ['owes_favor', 'knows_secret_of'] },
     classes: { favor: ['owes_favor'], mark: ['knows_secret_of'] },
     owningSystem: 'Secrets & Favors', writers: ['secretGeneration', 'strategicGraphOps'], status: 'live',
     note: 'A favour owed, or a mark — a secret held as leverage. Both between two parties; both edges.',
   }),
   K({
-    id: 'standing', gameWord: 'Standing', ulTerm: 'Agents.md#reputation', worldRef: null,
+    id: 'standing', gameWord: 'Standing', ulTerm: 'Agents.md#reputation', worldRef: null, via: 'mortal',
     shape: { kind: 'edge', edgeTypes: ['reputation_with', 'relates_to', 'hostile_to'] },
     classes: { reputation: ['reputation_with'], relationship: ['relates_to'], quarrel: ['hostile_to'] },
     owningSystem: 'Reputation & Influence', writers: ['reputation', 'factionSeeding', 'grievance/grudgeEdge'], status: 'live',
@@ -342,13 +359,13 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
 
   // ── Wants, works, happenings ──
   K({
-    id: 'ambition', gameWord: 'Ambition', ulTerm: 'Agents.md#undertaking', worldRef: null,
+    id: 'ambition', gameWord: 'Ambition', ulTerm: 'Agents.md#undertaking', worldRef: null, via: 'mortal',
     shape: { kind: 'node', nodeType: 'ambition' },
     owningSystem: 'Ambitions & Undertakings', writers: ['ambitionAssignment', 'ambitionTick', 'ambitionShape'], status: 'live',
     note: 'What a mortal wants; pursued through `pursues`.',
   }),
   K({
-    id: 'undertaking', gameWord: 'Undertaking', ulTerm: 'Agents.md#undertaking', worldRef: null,
+    id: 'undertaking', gameWord: 'Undertaking', ulTerm: 'Agents.md#undertaking', worldRef: null, via: 'mortal',
     shape: { kind: 'state', path: 'GameState.strategicState.projects[]' },
     owningSystem: 'Ambitions & Undertakings', writers: ['strategicActionLifecycle'], status: 'live',
     note: 'A work in progress — bookkeeping, not an entity (ratified THR-1280); its outcome is an Event.',
@@ -376,12 +393,14 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   // ── The cosmos ──
   K({
     id: 'sphere', gameWord: 'Sphere', ulTerm: 'Cosmology.md#sphere', worldRef: null,
+    noSurface: 'An axis, not an object (this row\'s own note, ratified THR-1394). A Sphere is not something you open — it is the accent every card is already coloured by, and the word every chip already carries. Giving it a card would be inventing a thing where the model says there is a dimension.',
     shape: { kind: 'state', path: 'GameState.cosmology' },
     owningSystem: 'Spheres & Quintessence', writers: ['cosmology'], status: 'live',
     note: 'An axis of the cosmos, not an object. Twelve; foundation and creation.',
   }),
   K({
     id: 'reach', gameWord: 'Reach', ulTerm: 'Cosmology.md#reach', worldRef: null,
+    noSurface: 'An axis, not an object (this row\'s own note). A Reach is a column of every mortal\'s capability, read on their card; there is no Reach standing apart from the people who have one.',
     shape: { kind: 'state', path: 'ReachDomain (a type union; capability per reach on the actor)' },
     owningSystem: 'Spheres & Quintessence', writers: ['capabilityGrowth'], status: 'live',
     note: 'An axis, not an object. Eight.',
@@ -407,6 +426,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   // `relates_to` edge (the Standing kind).
   K({
     id: 'cosmology_node', gameWord: '(cosmology node — dormant)', ulTerm: 'Graph.md#nodetype', worldRef: null,
+    noSurface: 'Never minted, so there is nothing to open. A surface for a node no writer produces would be a promise with no mechanism — the same sunset rule that emptied WORLD_REF_RESERVED_KINDS. When the repoint at GameState.cosmology lands, this row leaves the union rather than gaining a card.',
     shape: { kind: 'node', nodeType: 'cosmology' },
     owningSystem: 'Spheres & Quintessence', writers: [], status: 'dormant',
     note: 'Never minted; `contextBuilder` reads it by value at two sites that are dead in a live world (no `aligned_with` edge targets a cosmology node). Kept DORMANT: the repoint at `GameState.cosmology` needs its integration test rewritten, which is its own ticket, not a green-test flip.',

@@ -40,6 +40,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { SURFACE_BY_WORLD_REF } from '../../../data/surface-registry';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const componentsDir = resolve(here, '../..');
@@ -158,6 +159,97 @@ describe('styleguide sync (UI Law 29)', () => {
     it('fails a primitive absent from the source entirely', () => {
       expect(assertCoverage(styleGuideSource, 'NotAPrimitive')).toBe(false);
     });
+  });
+});
+
+// ─── Sheet mounts (THR-1490) ────────────────────────────────────────────────
+//
+// The gate above proves a *shared primitive* is documented. It says nothing about the
+// Tier-3 sheets under `src/components/Game/`, which are not primitives and were never in
+// its membership — and that is the gap the THR-1482 assessment measured: the agent had
+// six card components and two of them (`AgentDetailPanel`, `NpcDetailView`) had no
+// production mount at all, while both still carried rows in `component-selection.md`. A
+// doc row for a component nothing renders is worse than no row: it reads as an
+// instruction to use it.
+//
+// So the predicate here is *mount*, not documentation. A sheet is mounted when something
+// outside tests and the style guide imports it. That is deliberately the weakest claim
+// that catches the measured defect — asserting a render would need every sheet's props
+// and context stood up, and would go green on a sheet imported into a branch no state
+// can reach, which this does not pretend to catch either.
+
+/** The Tier-3 sheets the surface registry can route to. Each must have a production mount. */
+const ROUTED_SHEETS = [
+  'AgentProfileModal',
+  'LocationProfileModal',
+  'FactionSheet',
+  'ArmySheet',
+  'ArtifactSheet',
+  'AttachmentDetailView',
+  'AscendantSheet',
+] as const;
+
+/** Files that importing a sheet does *not* count as mounting it. */
+function isProductionModule(path: string): boolean {
+  return !path.includes('__tests__') && !path.includes('StyleGuide') && !path.endsWith('.test.tsx');
+}
+
+function listProductionSources(dir: string, acc: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = resolve(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === '__tests__' || entry.name === 'StyleGuide') continue;
+      listProductionSources(full, acc);
+    } else if ((entry.name.endsWith('.tsx') || entry.name.endsWith('.ts')) && isProductionModule(full)) {
+      acc.push(full);
+    }
+  }
+  return acc;
+}
+
+describe('routed sheets have a production mount (THR-1490)', () => {
+  const sources = listProductionSources(componentsDir).map(p => ({ path: p, text: readFileSync(p, 'utf8') }));
+
+  /** Modules that import `sheet` by name, excluding the sheet's own file. */
+  function importersOf(sheet: string): string[] {
+    return sources
+      .filter(s => !s.path.endsWith(`${sheet}.tsx`))
+      .filter(s => new RegExp(`from '[^']*${sheet}'`).test(s.text))
+      .map(s => s.path);
+  }
+
+  it.each(ROUTED_SHEETS)('%s is imported by a production module', (sheet) => {
+    expect(
+      importersOf(sheet).length,
+      `${sheet} is a sheet the surface registry routes to and nothing outside tests and the ` +
+        `styleguide imports it. Either mount it, or take its surface-registry row and its ` +
+        `component-selection.md row out in the same PR — a documented sheet with no mount is ` +
+        `an instruction to use something that does not exist.`,
+    ).toBeGreaterThan(0);
+  });
+
+  it('detects an unmounted component — negative control', () => {
+    // The Done-when: this gate demonstrably fails on a `Game/` component with no mount.
+    // Run against a name nothing imports rather than by deleting a real import, so the
+    // proof stays in the suite.
+    expect(importersOf('NoSuchSheetComponent')).toEqual([]);
+  });
+
+  it('every sheet the registry promises is covered by this gate', () => {
+    // Pins the hand-written list above against the registry, so a sheet added to a
+    // surface row without being added here cannot slip past unmounted.
+    // (`agent` → AgentProfileModal, `hex` → HexDetailView, `area` → the hex chronicle:
+    // the three arms whose destination is not a modal sheet are excluded by name.)
+    const NON_SHEET_ARMS = new Set(['hex', 'area', 'encounter', 'journey', 'receipt']);
+    const promised = Object.values(SURFACE_BY_WORLD_REF)
+      .map(row => row.sheet)
+      .filter((s): s is NonNullable<typeof s> => s !== null && !NON_SHEET_ARMS.has(s));
+    // Every promised arm maps to one of the sheets listed above; the mapping is by
+    // convention (arm 'faction' → FactionSheet) and is asserted loosely by name.
+    for (const arm of promised) {
+      const matched = ROUTED_SHEETS.some(s => s.toLowerCase().includes(arm.toLowerCase()));
+      expect(matched, `surface registry promises sheet arm "${arm}" and ROUTED_SHEETS names no component for it`).toBe(true);
+    }
   });
 });
 

@@ -171,10 +171,25 @@ describe('toNavigationTarget — partial, and partial in the documented places',
     expect(toNavigationTarget({ kind: 'hex', id: 'not-a-hex' })).toBeUndefined();
   });
 
-  it('drops every kind with no NavigationTarget arm', () => {
-    for (const kind of ['artifact', 'attachment', 'companion', 'army'] as const) {
-      expect(toNavigationTarget({ kind, id: 'x' })).toBeUndefined();
-    }
+  it('routes the three kinds whose sheets had no address until THR-1490', () => {
+    // These returned `undefined` from THR-1212 until THR-1490, and the comment above the
+    // switch read as though that were a ruling. It was not: `ArtifactSheet`,
+    // `AttachmentDetailView` and `ArmySheet` all shipped, and the only thing missing was
+    // a `NavigationTarget` arm to name them by. A sheet with no address is unreachable
+    // from every chip in the game, which is what the measurement found.
+    expect(toNavigationTarget({ kind: 'artifact', id: 'art-1' }))
+      .toEqual({ kind: 'artifact', artifactId: 'art-1' });
+    expect(toNavigationTarget({ kind: 'attachment', id: 'tmpl-1' }))
+      .toEqual({ kind: 'attachment', templateNodeId: 'tmpl-1' });
+    expect(toNavigationTarget({ kind: 'army', id: 'army-1' }))
+      .toEqual({ kind: 'army', armyId: 'army-1' });
+  });
+
+  it('drops companion — the one arm that is genuinely withheld', () => {
+    // THR-1096, restated as the surface registry's `sheet: null` row: a companion is not
+    // an agent node and not a thread, so both sheet paths open the wrong person's page.
+    // Its *card* opens like anything else — see `surfaceRegistry.test.ts`.
+    expect(toNavigationTarget({ kind: 'companion', id: 'x' })).toBeUndefined();
   });
 
   it('every kind is handled — none falls through to undefined by accident', () => {
@@ -185,7 +200,8 @@ describe('toNavigationTarget — partial, and partial in the documented places',
         { agentId: 'actor-hero' }) !== undefined,
     );
     expect([...routable].sort()).toEqual(
-      ['agent', 'area', 'encounter', 'faction', 'hex', 'journey', 'location', 'receipt', 'sublocation'],
+      ['agent', 'area', 'army', 'artifact', 'attachment', 'encounter', 'faction', 'hex',
+        'journey', 'location', 'receipt', 'sublocation'],
     );
   });
 });

@@ -860,6 +860,37 @@ export const IA_SURFACES: IASurface[] = [
     "notes": "Encounter-in-progress overlay (watched mode).\n"
   },
   {
+    "surface": "game.detail-card",
+    "view": "game",
+    "mount": "modal",
+    "reads": [
+      {
+        "state_path": "graph",
+        "reader": "DetailModal",
+        "visible_when": "a ref was opened at card tier"
+      },
+      {
+        "state_path": "tick",
+        "reader": "DetailModal",
+        "visible_when": "always (the card is composed per tick and cached)"
+      }
+    ],
+    "notes": "Law 20 Tier 2 — what any thing in the world looks like when you open it (THR-1490, resolving THR-966 as mount). One card renderer for every WorldRefKind; which page kind a kind gets is data, in src/data/surface-registry.ts, and the only thing that pushes onto its stack is useRefRouter. Stacks to MAX_DETAIL_STACK_DEPTH with a breadcrumb; ESC closes the top, ← steps back. Footer CTA 'open its sheet ↗' renders only when the kind's row has a sheet.\n"
+  },
+  {
+    "surface": "game.hover-card",
+    "view": "game",
+    "mount": "modal",
+    "reads": [
+      {
+        "state_path": "graph",
+        "reader": "HoverCard",
+        "visible_when": "an EntityLink was dwelt on for HOVER_CARD_DELAY_MS and no card is open"
+      }
+    ],
+    "notes": "Law 20 Tier 1½ (THR-1490) — the glance between a tooltip and a card: header plus HOVER_CARD_MAX_SECTIONS sections, anchored beside the name, dismissed on leave. Never stacks on a modal and is never interactive (pointerEvents: none), so there is no hover-gap to fall into.\n"
+  },
+  {
     "surface": "game.debug-panel",
     "view": "game",
     "mount": "modal",

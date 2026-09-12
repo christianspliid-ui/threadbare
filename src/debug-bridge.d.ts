@@ -1264,6 +1264,32 @@ export interface DebugBridge {
   _registerHexAtViewport(fn: (x: number, y: number) => { col: number; row: number } | null): void;
   /** @internal GameView registers open-modal provider here */
   _registerOpenModalsProvider(fn: () => string[]): void;
+  /**
+   * Both surface records the ref router dispatches on (THR-1490).
+   *
+   * `worldRef` is a total `Record<WorldRefKind, { card, sheet, note? }>` — every kind has
+   * a row by type, so a missing key here means the build is not the one you think.
+   * The state assertion for any browser-verify run that opens a card.
+   */
+  getSurfaceRegistry(): Promise<{
+    worldRef: Record<string, { card: string; sheet: string | null; note?: string }>;
+  }>;
+  /**
+   * Open a reference through the live router, headlessly.
+   *
+   * Returns the routing decision — `{ kind, id, mode, card, sheet }` — or `null` when the
+   * kind is not a `WorldRefKind`, no router is mounted, or `mode` is `'hover'` (a hover
+   * needs an anchor element, which a headless call has not got; ask for `'card'`).
+   */
+  openRef(
+    kind: string,
+    id: string,
+    mode?: 'hover' | 'card' | 'sheet',
+  ): Promise<{ kind: string; id: string; mode: string; card: string; sheet: string | null } | null>;
+  /** @internal GameView registers the live router's `open` here */
+  _registerRefRouterOpen(
+    fn: ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void) | null,
+  ): void;
   /** @internal GameView registers active UI state provider here */
   _registerActiveUIStateProvider(fn: () => DebugActiveUIState): void;
 
