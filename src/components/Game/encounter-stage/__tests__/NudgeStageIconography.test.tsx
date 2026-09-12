@@ -29,9 +29,15 @@ import type {
 import {
   MOTIVE_INTRO_VARIANTS,
   MOTIVE_MISSION_FALLBACK,
+  NUDGE_READING_LEGEND_ENTRIES,
   TEST_GLYPH,
 } from '../../../../data/nudge-stage-content';
 import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
+import {
+  FORECAST_TIER_PIPS,
+  generateDifficultyScalesSvg,
+  generateForecastDieSvg,
+} from '../../../icons';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 
@@ -55,6 +61,10 @@ const STEP: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate: 'The vault door has not moved in a hundred years.',
+  // THR-1478 — the step authors an objective so the "objective is gone from the
+  // player surface" arm has something to fail on. Without it that assertion
+  // passes against an empty model and proves nothing.
+  purposeLine: 'force the door',
   nudges: NUDGES,
   factorLines: [{ text: 'The hinges were set by a careful hand.', polarity: 'against' }],
 };
@@ -265,20 +275,118 @@ describe('THR-972 · test panel', () => {
     expect(document.body.innerHTML).not.toContain('/assets/reaches/');
   });
 
-  it('frames the test glyph together with the difficulty word', () => {
+  it('draws the difficulty as a tilted balance and spends no word on it', () => {
     const phase = buildPhase();
     render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
 
     const unit = screen.getByTestId('nudge-test-unit');
-    const word = screen.getByTestId('nudge-difficulty-word');
+    const band = phase.testPanel.difficultyWord;
 
-    // The whole point of the directive: one frame containing both, so the word
-    // cannot stand alone. Assert containment, not mere co-presence.
-    expect(unit.contains(word), 'difficulty word is outside the test frame').toBe(true);
-    expect(unit.textContent).toContain(TEST_GLYPH);
-    expect(unit.textContent).toContain(phase.testPanel.difficultyWord);
+    // THR-1478, director ask 2026-09-12: *"find a way to iconify the difficulty
+    // (fair) without a text."* The pairing rule — assert the mark AND the
+    // absence of the word, because a frame drawing both looks exactly like the
+    // bug the directive was filed against.
+    expect(screen.queryByTestId('nudge-difficulty-word'), 'difficulty word survived').toBeNull();
+    expect(unit.textContent, 'the frame still spells the band').not.toContain(band);
+    expect(unit.textContent, 'the glyph the SVG replaced is back').not.toContain(TEST_GLYPH);
     // Ruling 6 — the numeral stays designer-view only.
     expect(unit.textContent).not.toMatch(/\d/);
+
+    // The frame survives the word: *"the difficulty cant stand alone"* was a
+    // ruling about the reading, not about the word, so the anchor stays.
+    const scales = unit.querySelector('svg');
+    expect(scales, 'difficulty drew no scales').toBeTruthy();
+    expect(unit.getAttribute('data-difficulty-band')).toBe(band);
+
+    // Law 11 — a glyph carrying meaning alone states its reading in words one
+    // hover away. Without this the icon is a picture nobody can read.
+    expect(unit.getAttribute('aria-label')).toContain(band);
+
+    // The tilt is the shape channel that colour alone could not be (Law 11).
+    // Falsify it across the *whole* vocabulary: four bands must draw four
+    // beams, or the ladder is one icon in four colours and a player without
+    // colour vision reads nothing.
+    const beams = (['gentle', 'fair', 'steep', 'severe'] as const)
+      .map((b) => generateDifficultyScalesSvg(b, 30));
+    expect(new Set(beams).size, 'two bands draw the same beam').toBe(4);
+    // And the tilt is monotone in difficulty — the beam falls further away from
+    // the mortal as the step hardens, rather than merely differing per band.
+    const angle = (svg: string) => Number(/rotate\((-?[\d.]+)/.exec(svg)![1]);
+    const angles = beams.map(angle);
+    expect(angles).toEqual([...angles].sort((a, b) => a - b));
+
+    // Fail-soft (NFP #4): an unbanded word draws a level beam, never nothing.
+    expect(generateDifficultyScalesSvg('nonsense', 30)).toBe(
+      generateDifficultyScalesSvg('fair', 30),
+    );
+  });
+
+  it('draws the forecast as a die whose pips are its rung on the ladder', () => {
+    const phase = buildPhase();
+    render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
+
+    // *"remove the word forecast. make the forecast score 'uncertain' into an
+    // icon like a dice."* Both halves asserted: the die is present, the label
+    // and the tier word are gone from the surface.
+    const die = screen.getByTestId('nudge-forecast-die');
+    expect(screen.queryByTestId('nudge-forecast-word'), 'tier word survived').toBeNull();
+    expect(screen.queryByTestId('nudge-forecast-pips'), 'the pip row survived beside the die').toBeNull();
+    expect(die.textContent, 'the die spells its tier').not.toMatch(/doomed|perilous|uncertain|favorable|fated/i);
+    expect(die.querySelector('svg'), 'forecast drew no die').toBeTruthy();
+    expect(die.getAttribute('data-forecast-tier')).toBe(phase.baseForecast.tier);
+
+    // Law 11 again — the word is the die's accessible name.
+    expect(die.getAttribute('aria-label')).toContain(phase.baseForecast.word);
+
+    // The pip count *is* the ladder, so the five tiers must draw five faces.
+    // Counting distinct renderings is what makes this an ordinal test rather
+    // than a "does it render" one.
+    const tiers = ['doomed', 'perilous', 'uncertain', 'favorable', 'fated'] as const;
+    const faces = tiers.map((tier) => generateForecastDieSvg(tier, 30));
+    expect(new Set(faces).size, 'two tiers share a die face').toBe(5);
+
+    // Ordinal, not merely distinct: the pip count rises with the tier, and the
+    // drawn face carries that count. A die that differed per tier without
+    // ordering would be five arbitrary symbols to memorise.
+    const counts = tiers.map((t) => FORECAST_TIER_PIPS[t]);
+    expect(counts).toEqual([...counts].sort((a, b) => a - b));
+    faces.forEach((svg, i) => {
+      expect((svg.match(/<circle/g) ?? []).length, `${tiers[i]} drew the wrong pip count`)
+        .toBe(counts[i]);
+    });
+  });
+
+  it('drops the objective line from the player surface', () => {
+    // *"remove the objective (hear them out). it is noise."* The model still
+    // carries it — the designer view reads it — so asserting on the rendered
+    // surface rather than on the model is the whole test.
+    const phase = buildPhase();
+    expect(phase.testPanel.purposeLine, 'fixture has no objective to remove').toBeTruthy();
+
+    render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
+    expect(
+      screen.getByTestId('nudge-test-panel').textContent,
+    ).not.toContain(phase.testPanel.purposeLine);
+  });
+
+  it('names the three marks at first contact (Law 12)', () => {
+    localStorage.removeItem('threadbare.ui.nudgeReadingLegendSeen');
+    const phase = buildPhase();
+    render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
+
+    // Three glyph-only readings landed on one row; a vocabulary the player has
+    // to infer from context is the failure Law 12 names.
+    for (const entry of NUDGE_READING_LEGEND_ENTRIES) {
+      expect(
+        screen.getByTestId(`nudge-reading-legend-${entry.id}`).textContent,
+      ).toContain(entry.label);
+    }
+
+    // The Balance disposition (THR-1478 item 5): the per-sentence hover is gone
+    // and the colour vocabulary it taught lives in the legend instead. The
+    // registry entry it used survives as that legend item's tooltip, so this
+    // asserts a move, not a deletion.
+    expect(NUDGE_READING_LEGEND_ENTRIES.map((e) => e.tooltipId)).toContain('ui.nudge_factors');
   });
 
   it('resolves the acting agent into the portrait slot', () => {

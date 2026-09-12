@@ -120,6 +120,64 @@ export const TEST_GLYPH = '⚖';
 /** Accessible name for the framed test unit — the glyph alone says nothing aloud. */
 export const TEST_UNIT_LABEL = 'Test difficulty';
 
+// ─── Reading marks (THR-1478) ────────────────────────────────────────
+//
+// Director ask, 2026-09-12: the difficulty and the forecast both lose their
+// words on the surface and become marks. The words did not die — they moved to
+// the accessible name, the tooltip, and the first-contact legend below. What
+// lives here is the *ladder colour* each mark takes; the shapes themselves are
+// `DifficultyScales` and `ForecastDie` in the shared icon set, and they are
+// colour-agnostic by design (`currentColor`), so this is the one place the
+// difficulty's colour reading is decided (NFP #1).
+
+/**
+ * Difficulty band → colour, on the same loss→gold→gain ladder the forecast and
+ * the consequence chips already read.
+ *
+ * The direction is the mortal's, not the god's: a `gentle` step is good news, so
+ * it takes the gain colour, and `severe` takes loss at full strength. `steep`
+ * sits at the dimmer loss so the two hard bands stay distinguishable by more
+ * than tilt alone.
+ */
+export const DIFFICULTY_BAND_COLORS: Readonly<Record<string, string>> = {
+  gentle: 'rgb(var(--veil-gain-rgb) / 0.85)',
+  fair: 'rgb(var(--veil-gold-rgb) / 0.85)',
+  steep: 'rgb(var(--veil-loss-rgb) / 0.8)',
+  severe: 'rgb(var(--veil-loss-rgb) / 1)',
+};
+
+/** Fail-soft (NFP #4): an unbanded word reads as gold, never as an unstyled mark. */
+export const DIFFICULTY_BAND_COLOR_FALLBACK = 'rgb(var(--veil-gold-rgb) / 0.85)';
+
+/**
+ * Law 51 — the stage's reading legend is dismissed once, not once per encounter.
+ * Namespaced alongside `threadbare.ui.consequenceLegendSeen`.
+ */
+export const NUDGE_READING_LEGEND_STORE_KEY = 'threadbare.ui.nudgeReadingLegendSeen';
+
+export interface NudgeReadingLegendEntry {
+  readonly id: 'difficulty' | 'forecast' | 'balance';
+  /** Tooltip registry id — the legend teaches, the tooltip explains (Law 17). */
+  readonly tooltipId: string;
+  /** One or two words. A legend names a vocabulary; it does not define it. */
+  readonly label: string;
+}
+
+/**
+ * Law 12 — the three readings the merged header now carries as marks, named at
+ * first contact so none of them has to be inferred from context.
+ *
+ * `balance` is the entry that replaced the per-sentence "The Balance" hover
+ * (THR-1478 item 5): the factor lines carry their polarity in their own colour,
+ * and a colour vocabulary belongs in the legend rather than in a rulebook
+ * tooltip repeated on every line.
+ */
+export const NUDGE_READING_LEGEND_ENTRIES: readonly NudgeReadingLegendEntry[] = [
+  { id: 'difficulty', tooltipId: 'ui.nudge_difficulty', label: 'how hard' },
+  { id: 'forecast', tooltipId: 'ui.nudge_forecast', label: 'how it looks' },
+  { id: 'balance', tooltipId: 'ui.nudge_factors', label: 'what weighs' },
+];
+
 /**
  * Why a dimmed card cannot be played. Only `essence_unavailable` reaches the
  * player stage — the other codes are withheld (ruling 4) and read in the

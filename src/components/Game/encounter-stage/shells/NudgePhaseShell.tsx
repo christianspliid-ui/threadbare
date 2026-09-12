@@ -16,9 +16,8 @@
 import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
-import { ReachIcon } from '../../../icons';
-import { CostPips, OddsPips } from '../../../shared/OddsPips';
-import { CardFace, FORECAST_TIER_COLORS, HAND_MAX_HEIGHT_PX } from '../../../shared/CardFace';
+import { CostPips } from '../../../shared/OddsPips';
+import { CardFace, HAND_MAX_HEIGHT_PX } from '../../../shared/CardFace';
 import { formatEssencePool } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
@@ -28,15 +27,14 @@ import {
   NUDGE_COMMIT_LABEL,
   NUDGE_EMPTY_HAND_LINE,
   NUDGE_HAND_HEADING,
-  TEST_GLYPH,
-  TEST_UNIT_LABEL,
 } from '../../../../data/nudge-stage-content';
 import { NudgeMotiveIntro } from './NudgeMotiveIntro';
+import { NudgeBalance, NudgeReadingMarks } from './NudgeStageHeader';
 import {
   isNudgeDesignerViewEnabled,
   subscribeNudgeDesignerView,
 } from '../designerView';
-import { useNudgeHand, type NudgeHandCard } from '../useNudgeHand';
+import { useNudgeHand, type NudgeHandCard, type UseNudgeHandResult } from '../useNudgeHand';
 import type { EncounterStageNudgePhaseModel } from '../types';
 
 // ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
@@ -51,35 +49,13 @@ const TEXT_WHISPER = 'var(--veil-text-whisper)';
 const FONT_PROSE = 'var(--font-prose)';
 const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
-/**
- * Factor-sentence polarity. These colour whole sentences, so Law 45 binds both.
- * `against` takes the measured loss-text floor — at 0.7, chosen to sit near the
- * green's 0.75, it painted 3.95:1 against `--veil-void`.
- */
-const FACTOR_POLARITY_COLORS: Record<string, string> = {
-  for: 'rgb(var(--veil-gain-rgb) / 0.75)',
-  against: 'rgb(var(--veil-loss-rgb) / var(--veil-loss-text-alpha))',
-  neutral: TEXT_WARM,
-};
-
-/**
- * Factor-line pip row (THR-970). One notch below the card row's default so the
- * pips read as an annotation on the sentence rather than a second card face.
- */
-const FACTOR_PIP_SIZE = 10;
-const FACTOR_PIP_GAP = 6;
-
-// ── Test-panel iconography (THR-972) ───────────────────────────────
-
-/**
- * Reach chip edge. Larger than the 28px PNG it replaces: the icon now carries the
- * reach *alone*, with no text label beside it, so it has to be readable as a
- * symbol rather than merely present as a decoration.
- */
-const REACH_ICON_PX = 34;
-
-/** Scales glyph, sized to sit level with the difficulty word inside the frame. */
-const TEST_GLYPH_PX = 15;
+// ── The reading moved out (THR-1478) ───────────────────────────────
+// The reach chip, the difficulty unit, the forecast and the factor lines now
+// live in `NudgeStageHeader`, because `EncounterVeil` renders them *above* its
+// prose — inside its own context strip — and this shell cannot reach that
+// subtree from inside itself. The tokens and constants they used went with
+// them. The standalone path below draws the same two components, so there is
+// one implementation of the reading and two placements of it.
 
 // ── Legend glyph size ──────────────────────────────────────────────
 // The card's own glyph sizes moved to `shared/CardFace` with the zones that
@@ -113,6 +89,26 @@ export interface NudgePhaseShellProps {
    * inside its own subtree.
    */
   renderMotiveIntro?: boolean;
+  /**
+   * Render the reading — reach, difficulty, forecast, factor lines — inside this
+   * shell (THR-1478).
+   *
+   * Same shape as {@link renderMotiveIntro}, for the same reason. Defaults to
+   * true so a host that mounts the shell whole (the meeting beats) keeps the
+   * panel. `EncounterVeil` passes **false** and draws the marks inside its own
+   * context strip above the prose, which is the merge the director asked for.
+   */
+  renderTestHeader?: boolean;
+  /**
+   * Externally-owned hand state (THR-1478).
+   *
+   * The merged header shows the *live* forecast, which moves as cards toggle —
+   * so the veil, which renders that header, has to own the selection the cards
+   * change. When supplied, this shell drives that hand instead of its own; the
+   * single source of truth is what keeps the die above the prose and the cards
+   * below it from ever disagreeing.
+   */
+  hand?: UseNudgeHandResult;
 }
 
 // ── Card ───────────────────────────────────────────────────────────
@@ -207,6 +203,8 @@ export function NudgePhaseShell({
   onCommit,
   onOpenMotive,
   renderMotiveIntro = true,
+  renderTestHeader = true,
+  hand: externalHand,
 }: NudgePhaseShellProps) {
   const designerView = useSyncExternalStore(
     subscribeNudgeDesignerView,
@@ -216,7 +214,12 @@ export function NudgePhaseShell({
     isNudgeDesignerViewEnabled,
   );
 
-  const hand = useNudgeHand(phase);
+  // Hooks cannot be called conditionally, but their *arguments* can: passing
+  // `undefined` when a host owns the hand takes the documented fail-soft path
+  // (an inert hand) rather than standing up a second selection state that would
+  // silently diverge from the one the header is reading.
+  const ownHand = useNudgeHand(externalHand ? undefined : phase);
+  const hand = externalHand ?? ownHand;
   const { testPanel } = phase;
 
   return (
@@ -237,195 +240,61 @@ export function NudgePhaseShell({
         </div>
       )}
 
-      {/* ── Test panel ─────────────────────────────────────────── */}
-      <div
-        data-testid="nudge-test-panel"
-        style={{
-          display: 'flex',
-          gap: 18,
-          padding: '14px 16px',
-          borderRadius: 10,
-          border: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
-          background: 'rgba(255, 255, 255, 0.015)',
-        }}
-      >
-        {/* ── The acting mortal ──────────────────────────────────
-            THR-972 directive 1, option (a): the slot is the *agent's* portrait,
-            not an encounter-image placeholder, so it resolves like one. The
-            resolver path (`entity`) replaces a hand-built descriptor, which means
-            this tile now inherits the shared knowledge gate and the same bespoke →
-            archetype source chain the veil header uses; the companion fix in
-            `buildUnifiedEncounterStageModel` is what actually makes `portraitUrl`
-            arrive populated for slice-visible agents. Gradient identity keys on
-            the agent rather than the action, so the same mortal keeps their
-            fallback colour across encounters. */}
-        <EntityVisual
-          size="portrait"
-          entity={{
-            id: focalActorId ?? phase.actionId,
-            kind: 'agent',
-            name: agentName ?? 'The mortal',
-            knownSrc: portraitUrl,
+      {/* ── The reading (THR-1478) ──────────────────────────────
+          One block, and on the veil's path it is not this one. `EncounterVeil`
+          passes `renderTestHeader={false}` and draws the same two components
+          inside its context strip above the prose — the merge the director
+          asked for, which also retires the second portrait and the second reach
+          icon that used to sit down here.
+
+          What remains is the standalone placement: the meeting beats mount this
+          shell with no context strip above them, so the panel is where their
+          reading lives. Portrait, then marks, then the balance beneath. */}
+      {renderTestHeader && (
+        <div
+          data-testid="nudge-test-panel"
+          style={{
+            display: 'flex',
+            gap: 18,
+            padding: '14px 16px',
+            borderRadius: 10,
+            border: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
+            background: 'rgba(255, 255, 255, 0.015)',
           }}
-          data-testid="nudge-actor-portrait"
-          aria-label={agentName ?? 'The mortal'}
-          style={{ width: 64, flexShrink: 0 }}
-        />
-
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            {/* ── Reach ────────────────────────────────────────
-                THR-972 directive 2: the shared icon set's `ReachIcon`, which
-                draws the reach's own heraldic charge in its sphere colour, in
-                place of the tiered PNG *and* the text label beside it. The name
-                is not lost — it is the chip's accessible name and title, and the
-                `reach.*` tooltip chain (THR-926) still answers "what is Stone". */}
-            <Tooltip id={`reach.${testPanel.reach}`}>
-              <span
-                data-testid="nudge-reach-chip"
-                data-reach={testPanel.reach}
-                role="img"
-                aria-label={testPanel.reachLabel}
-                title={testPanel.reachLabel}
-                style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}
-              >
-                <ReachIcon reach={testPanel.reach} size={REACH_ICON_PX} />
-              </span>
-            </Tooltip>
-            {testPanel.purposeLine && (
-              <Tooltip id="ui.nudge_objective">
-                <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
-                  {testPanel.purposeLine}
-                </span>
-              </Tooltip>
-            )}
-            {/* ── The test ─────────────────────────────────────
-                THR-972 directive 4: glyph and word inside one frame, so `FAIR`
-                reads as the bar being cleared rather than as an adjective on the
-                scene. The frame is the whole point — the word alone was the
-                director's find ("the difficulty cant stand alone"), and binding
-                it to the scales makes the category legible without spending a
-                sentence on it. The numeral stays designer-view only (ruling 6). */}
-            <Tooltip id="ui.nudge_difficulty">
-              <span
-                data-testid="nudge-test-unit"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '3px 9px',
-                  borderRadius: 6,
-                  border: '1px solid rgb(var(--veil-gold-rgb) / 0.35)',
-                  background: 'rgb(var(--veil-gold-rgb) / 0.07)',
-                  flexShrink: 0,
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{ fontSize: TEST_GLYPH_PX, lineHeight: 1, color: GOLD }}
-                >
-                  {TEST_GLYPH}
-                </span>
-                <span
-                  data-testid="nudge-difficulty-word"
-                  aria-label={`${TEST_UNIT_LABEL}: ${testPanel.difficultyWord}`}
-                  style={{
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--veil-text-bright)',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {testPanel.difficultyWord}
-                </span>
-              </span>
-            </Tooltip>
-            {designerView && (
-              <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
-                d={testPanel.difficultyValue.toFixed(2)}
-              </span>
-            )}
-          </div>
-
-          {testPanel.factors.length > 0 && (
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {testPanel.factors.map((factor) => (
-                <li
-                  key={factor.id}
-                  data-testid={`nudge-factor-${factor.id}`}
-                  style={{
-                    fontFamily: FONT_PROSE,
-                    fontSize: 'var(--text-xs)',
-                    color: FACTOR_POLARITY_COLORS[factor.polarity] ?? TEXT_WARM,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: FACTOR_PIP_GAP,
-                  }}
-                >
-                  <Tooltip id="ui.nudge_factors">
-                    <span>{factor.text}</span>
-                  </Tooltip>
-                  {/* THR-970 — the magnitude beside the sentence, in the same pip
-                      vocabulary the cards use. Polarity stays on the text colour;
-                      the pips carry size. An absent delta draws nothing at all
-                      (the model's documented contract) rather than an empty row
-                      promising a magnitude the line does not have — and OddsPips
-                      independently returns null below the vocabulary's epsilon,
-                      so a sub-threshold delta is silent too. */}
-                  {factor.delta !== undefined && (
-                    <OddsPips
-                      value={factor.delta}
-                      size={FACTOR_PIP_SIZE}
-                      data-testid={`nudge-factor-pips-${factor.id}`}
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Forecast — the tier word is the only probability surface. */}
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <Tooltip id="ui.nudge_forecast">
-          <div style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            Forecast
-          </div>
-          <div
-            data-testid="nudge-forecast-word"
-            data-forecast-tier={hand.forecast.tier}
-            style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-lg)',
-              color: FORECAST_TIER_COLORS[hand.forecast.tier] ?? GOLD,
-              transition: 'color 0.3s ease',
+        >
+          {/* THR-972 directive 1, option (a): the slot is the *agent's*
+              portrait, not an encounter-image placeholder, so it resolves like
+              one — inheriting the shared knowledge gate and the same bespoke →
+              archetype source chain the veil header uses. Gradient identity keys
+              on the agent rather than the action, so the same mortal keeps their
+              fallback colour across encounters. */}
+          <EntityVisual
+            size="portrait"
+            entity={{
+              id: focalActorId ?? phase.actionId,
+              kind: 'agent',
+              name: agentName ?? 'The mortal',
+              knownSrc: portraitUrl,
             }}
-          >
-            {hand.forecast.word}
-          </div>
-          {/* THR-890 — the forecast joins the card row's odds language, so the
-              player reads one vocabulary across the whole surface instead of
-              comparing a word against a pip row. */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 3 }}>
-            <OddsPips
-              value={hand.forecast.probability}
-              size={13}
-              data-testid="nudge-forecast-pips"
-            />
-          </div>
-          {hand.forecastMoved && (
-            <div data-testid="nudge-forecast-moved" style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontStyle: 'italic' }}>
-              was {hand.baseForecast.word}
+            data-testid="nudge-actor-portrait"
+            aria-label={agentName ?? 'The mortal'}
+            style={{ width: 64, flexShrink: 0 }}
+          />
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <NudgeReadingMarks
+                testPanel={testPanel}
+                forecast={hand.forecast}
+                baseForecast={hand.baseForecast}
+                forecastMoved={hand.forecastMoved}
+                designerView={designerView}
+              />
             </div>
-          )}
-          </Tooltip>
-          {designerView && (
-            <div style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
-              p={hand.forecast.probability.toFixed(3)}
-            </div>
-          )}
+            <NudgeBalance testPanel={testPanel} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── The hand ───────────────────────────────────────────── */}
       <div style={{ marginTop: 22 }}>
