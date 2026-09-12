@@ -473,11 +473,22 @@ describe('One Body Short — short.the_unsaid tells the truth', () => {
     chip: byOutcome?.[band]?.changes?.find((c) => c.id === 'short.the_unsaid'),
   }));
 
-  it('renders on both success-side bands and anchors the survivor', () => {
+  /**
+   * THR-1480 — the `stateNoun` half was "anchors the survivor" (`$cast:survivor`,
+   * `agent`) with the noun reading *'a mark nobody can see'*. That is the hidden mark
+   * described rather than named, and THR-1472 ruled the carrier anchor its tell: the
+   * mark sits *on* the survivor, it is not the survivor. `ui.hidden_mark` is the UL's
+   * own term, added with the slice for exactly this family.
+   *
+   * The `concepts` half is untouched and still asserted — those genuinely do point at
+   * the survivor, and the rule THR-1472 wrote binds `stateNoun` alone.
+   */
+  it('renders on both success-side bands and names the mark, not its bearer', () => {
     for (const { band, chip } of chips) {
       expect(chip, `band "${band}" should carry short.the_unsaid`).toBeDefined();
-      expect(chip?.stateNoun?.entityId).toBe('$cast:survivor');
-      expect(chip?.stateNoun?.visualKind).toBe('agent');
+      expect(chip?.stateNoun?.text).toBe('hidden mark');
+      expect(chip?.stateNoun?.tooltipId).toBe('ui.hidden_mark');
+      expect(chip?.stateNoun?.entityId, `band "${band}"`).toBeUndefined();
       for (const concept of chip?.concepts ?? []) {
         expect(concept.entityId).toBe('$cast:survivor');
       }

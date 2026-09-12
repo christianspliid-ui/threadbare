@@ -744,7 +744,7 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
               title: 'A tablet closed early',
               causeClause: 'Less taken than the column was owed',
               detail: 'The serjeant, {cast:serjeant}, owes {actor} a favour now — and owes the column an explanation.',
-              stateNoun: { text: 'a favour owed', entityId: '$cast:serjeant', visualKind: 'agent' },
+              stateNoun: { text: 'a favour owed', tooltipId: 'ui.favour_owed' },
               concepts: [{ text: 'The serjeant', entityId: '$cast:serjeant', visualKind: 'agent' }],
             },
             // SCAR "a wound" is deliberately not authored on this band: a
@@ -806,7 +806,7 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
               title: 'An easy row',
               causeClause: 'A row the column found easy',
               detail: "{actor}'s standing with the mercenary company went down. The company thinks less of them than it did before the column stopped.",
-              stateNoun: { text: 'standing with the company', entityId: '$faction:mercenary_company', visualKind: 'faction' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$faction:mercenary_company', visualKind: 'faction', tooltipId: 'ui.reputation_with' },
               concepts: [
                 { text: 'standing', tooltipId: 'ui.standing' },
                 { text: 'the mercenary company', entityId: '$faction:mercenary_company', visualKind: 'faction' },

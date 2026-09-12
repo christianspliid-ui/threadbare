@@ -343,11 +343,19 @@ describe('The Sign Over the Ruin — aftermath', () => {
     }
   });
 
-  it('the critical_success chip carries visualKind: location on its stateNoun (THR-1172 live click)', () => {
+  /**
+   * THR-1480 — was "carries visualKind: location … (THR-1172 live click)", pinning
+   * `$target`/`location`. THR-1172's concern was that the noun be *clickable*, and it
+   * still is: the anchor moves from the place to the condition the band actually writes
+   * on it (`trait.condition.location.under_watch`, granted here as a
+   * `condition_attachment`), which is the state THR-1472 asks a chip to name. The place
+   * is where the state sits, not the state.
+   */
+  it('the critical_success chip anchors the condition the band writes, live (THR-1480)', () => {
     const chip = byOutcome?.critical_success?.changes?.find((c) => c.id === 'sign.the_place_is_watched');
     expect(chip).toBeDefined();
-    expect(chip?.stateNoun?.visualKind).toBe('location');
-    expect(chip?.stateNoun?.entityId).toBe('$target');
+    expect(chip?.stateNoun?.visualKind).toBe('attachment');
+    expect(chip?.stateNoun?.entityId).toBe('trait.condition.location.under_watch');
     expect(chip?.category).toBe('scar');
   });
 });

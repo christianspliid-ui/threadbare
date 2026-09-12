@@ -1250,8 +1250,11 @@ Three consequences that catch most drafts:
   naming a state. The one lawful exception is `reputation with {target}`, whose
   referent genuinely is the other party.
 
-`check:encounter` reports every chip failing this as a `chip-state-noun` finding
-(`compositionContract.ts` → `chipStateNounWordingViolations`).
+`check:encounter` **fails** on every chip breaking this (`compositionContract.ts` →
+`chipStateNounWordingViolations`, reported in the `aftermath` block beside the two Law 56
+clauses). It shipped warn-only under THR-1472, when 57 retrofit findings were still
+standing; THR-1480 drained them and the clamp followed the corpus, so a scene-phrase noun
+is now a red gate rather than a line in a report.
 
 **3. Pick the category the *character* would recognise**, not the mechanism:
 

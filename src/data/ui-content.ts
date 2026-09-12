@@ -409,6 +409,41 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Knowledge',
     desc: 'Something a mortal knows and did not before — a road and who runs it, a season, a rival\'s circuit. It opens options the ignorant never see, and it can be wrong: each record says how far to trust it.',
   },
+  // THR-1480 — five concepts the retrofit corpus was describing instead of naming.
+  // Each backs a chip whose band writes a real state the game had no player-facing
+  // word for, so the fix is the word (the THR-1472 / THR-1171 route), not a better
+  // phrase: a chip may not name a state nothing wrote, and it may not reach for the
+  // scene when the state is real but unnamed.
+  //
+  // The thread is the game's own title concept, and three shrine chips were tagging
+  // it `thread` anchored at `$actor` — the mortal is one end of it, not the thing.
+  'ui.thread': {
+    label: 'A Thread',
+    desc: 'The live line between an ascendant and a mortal they have touched. It is how a god reaches anyone at all — and it shortens with use and frays with neglect.',
+  },
+  // `short.something_gave` tagged `quintessence` anchored at the mortal carrying it.
+  'ui.quintessence': {
+    label: 'Quintessence',
+    desc: 'The measure of what a mortal has left to spend of themselves — the reserve that hard work, hard nights and hard choices draw down. Spent low, everything they attempt costs more than it should.',
+  },
+  // `gp.the_figure_follows` — the `plant_compulsion` write, previously spelled out
+  // as the scene phrase 'a compulsion to earn'.
+  'ui.compulsion': {
+    label: 'A Compulsion',
+    desc: 'A pull a mortal did not choose and cannot simply put down. For as long as it holds, it reorders what they take on first — the errand, the road and the rest all wait behind it.',
+  },
+  // `seal.crit_fail.the_wanting` — a `growth` write naming the ambition the mortal
+  // now pursues. The ambition is the state; the mortal is who carries it.
+  'ui.ambition': {
+    label: 'An Ambition',
+    desc: 'Something a mortal has decided to want. It picks their next moves for them long after the scene that set it, and it is the reason they turn up where nobody sent them.',
+  },
+  // `granary.neg.success.goods` — recovered possessions, previously 'their own
+  // goods, back', which describes the moment rather than naming what they hold.
+  'ui.goods': {
+    label: 'Goods',
+    desc: 'Portable worth in a mortal\'s hands — grain, cloth, tools. Goods are spent, traded, stolen and eaten; unlike a possession with a name, they are counted rather than kept.',
+  },
   'ui.held_by': {
     label: 'Held By',
     desc: 'Whose writ runs here. A Realm holds the towns of its domain; a guild or an order can hold the town its hall stands in. Ground nobody holds is unclaimed, and the border on the map stops there.',

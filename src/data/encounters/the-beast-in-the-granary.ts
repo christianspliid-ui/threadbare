@@ -424,11 +424,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Feast Day',
                 causeClause: 'The store held through the night and the winter is whole',
                 detail: '{location} kept its winter, and will spend three days saying so.',
-                stateNoun: {
-                  text: 'a feast day',
-                  entityId: '$target',
-                  visualKind: 'location',
-                },
+                stateNoun: { text: 'festival', entityId: 'trait.condition.location.festival', visualKind: 'attachment' },
                 concepts: [
                   {
                     text: 'a feast day',
@@ -451,11 +447,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Place In The Watch',
                 causeClause: 'The watch saw who moved the animal off their winter',
                 detail: 'The watch at {location} has asked {actor} to stand with them.',
-                stateNoun: {
-                  text: 'a place in the watch',
-                  entityId: '$faction:civic_guard',
-                  visualKind: 'faction',
-                },
+                stateNoun: { text: 'seed', entityId: '$faction:civic_guard', visualKind: 'faction', tooltipId: 'ui.aftermath_seed' },
                 concepts: [
                   {
                     text: 'a place in the watch',
@@ -513,11 +505,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Feast Day',
                 causeClause: 'The store held through the night',
                 detail: '{location} kept its winter.',
-                stateNoun: {
-                  text: 'a feast day',
-                  entityId: '$target',
-                  visualKind: 'location',
-                },
+                stateNoun: { text: 'festival', entityId: 'trait.condition.location.festival', visualKind: 'attachment' },
                 concepts: [
                   {
                     text: 'a feast day',
@@ -603,11 +591,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Hungry Season',
                 causeClause: 'The store burned with the door left open and the bear still loose',
                 detail: '{location} burned its own store and will be short until spring.',
-                stateNoun: {
-                  text: 'a hungry season',
-                  entityId: '$target',
-                  visualKind: 'location',
-                },
+                stateNoun: { text: 'blighted', entityId: 'trait.condition.location.harvest_blight', visualKind: 'attachment' },
                 concepts: [
                   {
                     text: 'a hungry season',
@@ -672,11 +656,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'Their Own Goods, Back',
                 causeClause: 'They took only what was theirs and got clear',
                 detail: 'What {actor} was owed came out of the store in {their} own hands.',
-                stateNoun: {
-                  text: 'their own goods, back',
-                  entityId: '$actor',
-                  visualKind: 'agent',
-                },
+                stateNoun: { text: 'goods', tooltipId: 'ui.goods' },
                 concepts: [
                   {
                     text: 'their own goods, back',
@@ -694,11 +674,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Hungry Season',
                 causeClause: 'The settlement burned the store at dawn as it had always planned to',
                 detail: '{location} burned its own store and will be short until spring.',
-                stateNoun: {
-                  text: 'a hungry season',
-                  entityId: '$target',
-                  visualKind: 'location',
-                },
+                stateNoun: { text: 'blighted', entityId: 'trait.condition.location.harvest_blight', visualKind: 'attachment' },
                 concepts: [
                   {
                     text: 'a hungry season',
@@ -764,11 +740,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Hungry Season',
                 causeClause: 'The settlement burned the store, and now the store\'s last night has a name attached to it',
                 detail: '{location} burned its own store and will be short until spring.',
-                stateNoun: {
-                  text: 'a hungry season',
-                  entityId: '$target',
-                  visualKind: 'location',
-                },
+                stateNoun: { text: 'blighted', entityId: 'trait.condition.location.harvest_blight', visualKind: 'attachment' },
                 concepts: [
                   {
                     text: 'a hungry season',
@@ -857,11 +829,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Hungry Season',
                 causeClause: 'The store burned that morning as it was always going to',
                 detail: '{location} burned its own store and will be short until spring.',
-                stateNoun: {
-                  text: 'a hungry season',
-                  entityId: '$target',
-                  visualKind: 'location',
-                },
+                stateNoun: { text: 'blighted', entityId: 'trait.condition.location.harvest_blight', visualKind: 'attachment' },
                 concepts: [
                   {
                     text: 'a hungry season',
@@ -950,11 +918,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 title: 'A Hungry Season',
                 causeClause: 'The store burned at noon with the near bar hanging off its seat',
                 detail: '{location} burned its own store and will be short until spring.',
-                stateNoun: {
-                  text: 'a hungry season',
-                  entityId: '$target',
-                  visualKind: 'location',
-                },
+                stateNoun: { text: 'blighted', entityId: 'trait.condition.location.harvest_blight', visualKind: 'attachment' },
                 concepts: [
                   {
                     text: 'a hungry season',

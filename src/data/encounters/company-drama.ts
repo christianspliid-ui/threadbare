@@ -1442,11 +1442,7 @@ export const COMPANY_THIRD_WATCH: UnifiedActionTemplate = {
               // own referent (Law 56 clause 2). The chip anchors to the one
               // person on this scene who is written: the member who keeps
               // writing the list, and whose next chance this seed schedules.
-              stateNoun: {
-                text: 'the list they keep chalking up',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [{ text: 'the night it is a question about who went back for whom' }],
             },
           ],
@@ -1949,11 +1945,7 @@ export const COMPANY_QUIET_OFFER: UnifiedActionTemplate = {
               // own referent (Law 56 clause 2). The chip anchors to the one
               // person here who is written: the member the standing offer
               // belongs to, and whose next hearing of it this seed schedules.
-              stateNoun: {
-                text: 'the offer they did not answer',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [{ text: 'a month from now, with less coin in the company' }],
             },
           ],
@@ -2004,11 +1996,7 @@ export const COMPANY_QUIET_OFFER: UnifiedActionTemplate = {
               // the chip anchors to the effect on this band that does name a
               // person: the `hidden_mark` below, which takes no `targetAgentId`
               // and so lands on the actor.
-              stateNoun: {
-                text: 'what they took the coin for',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
               concepts: [{ text: 'the next ask, which will be larger' }],
             },
           ],

@@ -374,7 +374,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'The Cold Reliquary',
               causeClause: 'Lifted out clean on the first reach',
               detail: "The Cold Reliquary is in {actor}'s possessions now — black iron, and still cold to hold.",
-              stateNoun: { text: 'the relic in their possessions', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'The Cold Reliquary', entityId: '$artifact', visualKind: 'artifact' },
               concepts: [{ text: 'The Cold Reliquary' }],
             },
             {
@@ -386,7 +386,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'Respect Earned',
               causeClause: 'They told the other claimant how it was done',
               detail: '{cast:claimant} thinks better of them for it, and says so.',
-              stateNoun: { text: 'a bond warmed', entityId: '$cast:claimant', visualKind: 'agent' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$cast:claimant', visualKind: 'agent', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'bond' }],
             },
           ],
@@ -420,7 +420,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'The Cold Reliquary',
               causeClause: 'It came out of the ring on the third try',
               detail: "The Cold Reliquary is in {actor}'s possessions now — black iron, and still cold to hold.",
-              stateNoun: { text: 'the relic in their possessions', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'The Cold Reliquary', entityId: '$artifact', visualKind: 'artifact' },
               concepts: [{ text: 'The Cold Reliquary' }],
             },
             {
@@ -440,7 +440,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               // claim that no such member existed; this chip's first pass followed the
               // catalog and omitted it, which left it rendering a tier below its sibling in
               // the same batch.
-              stateNoun: { text: 'a place under watch', entityId: '$target', visualKind: 'location' },
+              stateNoun: { text: 'under watch', entityId: 'trait.condition.location.under_watch', visualKind: 'attachment' },
               concepts: [
                 { text: 'under watch', entityId: 'trait.condition.location.under_watch', visualKind: 'attachment' },
               ],
@@ -475,7 +475,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'The Cold Reliquary',
               causeClause: 'It came out, and the iron kept what it touched',
               detail: "The Cold Reliquary is in {actor}'s possessions now — black iron, and still cold to hold.",
-              stateNoun: { text: 'the relic in their possessions', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'The Cold Reliquary', entityId: '$artifact', visualKind: 'artifact' },
               concepts: [{ text: 'The Cold Reliquary' }],
             },
             {
@@ -531,7 +531,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'Shared Failure',
               causeClause: 'They failed at the same thing in front of each other',
               detail: '{cast:claimant} knows them now, and thinks no less of them.',
-              stateNoun: { text: 'a bond warmed', entityId: '$cast:claimant', visualKind: 'agent' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$cast:claimant', visualKind: 'agent', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'bond' }],
             },
           ],
@@ -577,7 +577,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'Kept at a Distance',
               causeClause: 'A stranger had to drag them out of the cold',
               detail: '{cast:claimant} pulled them out, and has kept their distance since.',
-              stateNoun: { text: 'a bond soured', entityId: '$cast:claimant', visualKind: 'agent' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$cast:claimant', visualKind: 'agent', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'bond' }],
             },
           ],
