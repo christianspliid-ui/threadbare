@@ -140,6 +140,13 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // no catalogue. Both outputs come from one generator; listing both keeps either honest.
   { path: "Docs/canon/world-objects.generated.md", command: "npm run generate-world-objects" },
   { path: "public/world-objects-reference.html", command: "npm run generate-world-objects" },
+  // ~1s, no worldgen — content is authored, never minted, so the census is a static
+  // read of the catalogs. The content-object catalogue (THR-1485), sibling of the
+  // world-object one: a stale copy reports an UNCLAIMED verdict the corpus no longer
+  // has, or hides one it does. Both outputs come from one generator; listing both
+  // keeps either honest.
+  { path: "Docs/canon/content-objects.generated.md", command: "npm run generate-content-objects" },
+  { path: "public/content-objects-reference.html", command: "npm run generate-content-objects" },
   // ~2s. The undertaking grid (THR-1392 slice 4): every world-object kind × every verb,
   // live cells from the registry, the rest curated. Christian asked for this map to be
   // kept current as undertakings are developed; a stale committed copy would be the

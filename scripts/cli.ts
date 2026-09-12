@@ -103,6 +103,8 @@ import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-att
 import { getCompanions } from '../src/engine/companions';
 import { COMPANION_MAX } from '../src/data/companion-templates';
 import { WORLD_OBJECT_KINDS, barePlaceTypeId } from '../src/data/world-objects';
+import { CONTENT_OBJECT_KINDS } from '../src/data/content-objects';
+import { CONTENT_CATALOGS, catalogKey, entriesOfKind } from '../src/data/contentCatalogs';
 import { nodeSchemaWarningsSoFar } from '../src/types/nodeSchema';
 import { getAgentGrudges } from '../src/engine/agentDetail';
 import { getAgentAttachments } from '../src/engine/agentAttachments';
@@ -1316,6 +1318,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}spawn undertaking${RESET} <agent|@first> <templateId> [--target <location|actor>] [--band <band>]  Start an undertaking for review (THR-1300)`);
   console.log(`  ${BOLD}undertakings${RESET} [agent|@first]  Active undertakings, with the review pin's verdict when one is set`);
   console.log(`  ${BOLD}objects${RESET} [kind]          World-object kinds with their live counts in this world, and the write-time guard's warnings (THR-1394)`);
+  console.log(`  ${BOLD}content${RESET} [kind]          Content-object kinds with their authored catalog sizes — what an author may write (THR-1485)`);
   console.log(`  ${BOLD}follow${RESET} <agent|@first>       Follow a mortal (their moments interrupt)`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
   console.log(`  ${BOLD}spawn companion${RESET} <agent|@hero> <companionTemplateId|profession> Mint a companion onto an agent (THR-1413)`);
@@ -1808,6 +1811,46 @@ ${BOLD}Write-time guard${RESET}: ${warned.length === 0 ? GREEN + 'no unregistere
   for (const w of warned) console.log(`  ${YELLOW}${w}${RESET}`);
 }
 
+/**
+ * `content [kind]` — every content-object kind with its authored catalog size (THR-1485).
+ *
+ * The sibling of `objects`: that command counts what the *running world* holds, this one
+ * counts what an *author has written*, which does not depend on the world at all. So the
+ * numbers are identical on every seed and every tick — that is the point, not a bug. A
+ * kind reading 0 means its prefixes claim nothing in its own catalogs, which the
+ * contract test and the generator both fail on.
+ */
+function handleContent(kindQuery: string): void {
+  const rows = CONTENT_OBJECT_KINDS.filter(
+    k => !kindQuery || k.id === kindQuery || k.gameWord.toLowerCase() === kindQuery.toLowerCase(),
+  );
+  if (rows.length === 0) { console.log(`${RED}No content-object kind matching "${kindQuery}"${RESET}`); return; }
+  const total = rows.reduce((n, k) => n + entriesOfKind(k.id).length, 0);
+  console.log(`
+${BOLD}Content objects${RESET} — ${rows.length} kind${rows.length === 1 ? '' : 's'}, ${total} authored entries (registry: src/data/content-objects.ts)`);
+  for (const k of rows) {
+    const count = entriesOfKind(k.id).length;
+    const badge = count > 0 ? GREEN + String(count) + RESET : RED + '0' + RESET;
+    const gate = k.gate ? `gate ${k.gate}` : `${YELLOW}ungated${RESET}`;
+    const becomes = k.instantiatesAs ? `→ ${k.instantiatesAs}` : '→ (nothing)';
+    console.log(`  ${BOLD}${k.gameWord.padEnd(20)}${RESET} ${badge.padEnd(16)} ${DIM}${becomes.padEnd(24)}${RESET} ${gate}`);
+    if (kindQuery) {
+      console.log(`    ${DIM}${k.note}${RESET}`);
+      console.log(`    prefixes: ${k.idPrefixes.join(' ')}`);
+      for (const ref of k.catalogs) {
+        const key = catalogKey(ref);
+        const entries = CONTENT_CATALOGS[key] ?? [];
+        const claimed = entries.filter(e => k.idPrefixes.some(p => e.id.startsWith(p))).length;
+        console.log(`    catalog: ${key} — ${claimed}/${entries.length} claimed`);
+      }
+      console.log(`    status: ${k.status} · UL: ${k.ulTerm}`);
+    }
+  }
+  const ungated = rows.filter(k => k.gate === null).length;
+  console.log(`
+${DIM}${ungated} of ${rows.length} kinds ungated. Tag axes and the content query land in later THR-1481 slices.${RESET}`);
+}
+
 /** `undertakings [agent|@first]` — active undertakings and the pin verdict (THR-1300 slice 2). */
 function handleUndertakings(agentQuery: string): void {
   const projects = state.strategicState?.projects.filter(p => p.status === 'active') ?? [];
@@ -2128,6 +2171,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'objects':
       handleObjects(arg);
+      break;
+    case 'content':
+      handleContent(arg);
       break;
     case 'follow':
       handleFollow(arg);

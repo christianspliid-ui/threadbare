@@ -1700,6 +1700,34 @@ if (import.meta.env.DEV) {
       return state?.encounterNoveltyRecord ?? null;
     },
 
+    /**
+     * Every content-object kind with its authored catalog size (THR-1485) — the CLI
+     * `content` command's twin, and the browser-side answer to "what may an author
+     * write, and how much of it is there?".
+     *
+     * Reads the catalogs, never the world, so the numbers are identical on every seed
+     * and at every tick. That is the point: a kind reading 0 is a registry row pointing
+     * at nothing, which `contentObjects.test.ts` and `generate-content-objects` both
+     * fail on. Async like its siblings so the registry stays out of the prod bundle.
+     */
+    getContentObjects: async () => {
+      const [registry, catalogs] = await Promise.all([
+        import('./data/content-objects'),
+        import('./data/contentCatalogs'),
+      ]);
+      return registry.CONTENT_OBJECT_KINDS.map((k) => ({
+        id: k.id,
+        gameWord: k.gameWord,
+        entries: catalogs.entriesOfKind(k.id).length,
+        catalogs: k.catalogs.map((ref) => catalogs.catalogKey(ref)),
+        idPrefixes: [...k.idPrefixes],
+        instantiatesAs: k.instantiatesAs,
+        gate: k.gate,
+        owningSystem: k.owningSystem,
+        status: k.status,
+      }));
+    },
+
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),

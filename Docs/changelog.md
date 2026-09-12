@@ -4110,3 +4110,15 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-12 | `src/components/Game/__tests__/encounterVeilNudgeHeaderMerge.test.tsx` | THR-1478 — new: the merge asserted as composition, with two anti-vacuity guards | Presence arms go green on a surface that drew a *second* block below the prose |
 | 2026-09-12 | `src/components/Game/__tests__/encounterVeilLaws.test.ts` | THR-1478 — the four file-list law sweeps now name `NudgeStageHeader` | The tokens and polarity colours moved there; a guard stopping where the code went has a hole |
 | 2026-09-12 | `Docs/status/2026-09-12-thr-1478.md` | THR-1478 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-12 | `src/data/content-objects.ts` | THR-1485 — new: the content-object registry, 12 kinds in game words | Nothing said what an *author* may write; literal-id references rot (THR-844) |
+| 2026-09-12 | `src/data/contentCatalogs.ts` | THR-1485 — new: the static imports behind the registry's catalog refs | esbuild cannot build an import from a string; both lists pinned against each other |
+| 2026-09-12 | `src/data/__tests__/contentObjects.test.ts` | THR-1485 — new: nine guards against the real catalogs, each falsified once | Three caught errors in the registry on their first run |
+| 2026-09-12 | `scripts/generate-content-objects.ts` | THR-1485 — new: the census + drift generator; boots no world | ~1s against its sibling's ~40s, so it can afford to be blocking |
+| 2026-09-12 | `Docs/canon/content-objects.md` | THR-1485 — new canon page: the rule, three guards, known seams, rejected approaches | Step 0 for any work that adds, names or retires a kind of authored content |
+| 2026-09-12 | `Docs/canon/content-objects.generated.md`, `public/content-objects-reference.html` | THR-1485 — new generated catalogue + served wiki page | A count in a hand page is a snapshot that rots |
+| 2026-09-12 | `Docs/ubiquitous-language/Encounters.md` | THR-1485 — seated Content Object, Content Tag, Content Query **and Omen** | The ulTerm-resolves guard found no `Omen` term in any shard |
+| 2026-09-12 | `src/data/world-objects.ts` | THR-1485 — `contentKind` pointer on the two `content`-status rows | The two registries reference each other; a content row naming no kind now fails |
+| 2026-09-12 | `src/debug-bridge.ts` + `.d.ts`, `scripts/cli.ts` | THR-1485 — `getContentObjects()` and CLI `content [kind]` | Both read catalogs, not the world — stated, since a stable number reads as stale |
+| 2026-09-12 | `scripts/interface-contracts.ts`, `scripts/subsystems-registry.ts` | THR-1485 — `content-objects-registry` contract; content-model search keys on two rows | A premise saying "tag vocabulary" should find the subsystem, not green-field one |
+| 2026-09-12 | `scripts/generated-artifact-sources.ts`, `scripts/check-generated-freshness.ts`, `public/wiki-manifest.json`, `package.json` | THR-1485 — registered the generator under the blocking freshness gate | A stale catalogue reports a drift verdict the corpus no longer has |
+| 2026-09-12 | `Docs/status/2026-09-12-thr-1485.md` | THR-1485 — new status fragment | One file per entry since THR-1016 |

@@ -3069,6 +3069,34 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'content-objects-registry',
+    producerSystem: 'Encounters & Dilemmas',
+    consumerSystem: 'Attachments, Items & Possessions',
+    intent:
+      'Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485).',
+    ulTerms: ['Content Object', 'Content Tag', 'Content Query'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['CONTENT_OBJECT_KINDS', 'CONTENT_CATALOGS', 'entriesOfKind', 'contentKindsForId', 'contentKindsForWorldObject', 'SHARED_ID_PREFIXES'],
+      module: 'src/data/content-objects.ts',
+    },
+    writeSites: [
+      'src/data/content-objects.ts',
+      'src/data/contentCatalogs.ts',
+    ],
+    readSites: [
+      'scripts/generate-content-objects.ts',
+      'scripts/cli.ts',
+      'src/debug-bridge.ts',
+      'src/data/__tests__/contentObjects.test.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        "THR-1485 slice 1. Twelve kinds claim 1138 entries across 32 catalogs; src/data/__tests__/contentObjects.test.ts pins nine claims against the real catalogs (never a fixture) and each was falsified once: every catalog id is claimed by a kind (break a prefix -> 206 unclaimed); a shared catalog's kinds have disjoint prefixes (give the condition kind the item's anomaly catalog -> named); a shared prefix is declared with a reason; every catalog module+export exists and is wired into the loader both ways; every ulTerm resolves to a real UL heading; owningSystem is a verbatim subsystem name; instantiatesAs is a registered world-object kind; every content-status world-object row points back; every projection names a field entries carry. That last guard caught two registry errors on its first run - items declare sphereAffinity but 0 of 134 entries carry it, and an omen's sphere is nested under sphereTrigger on 6 of 44 tracks - both recorded as seams rather than papered over. npm run generate-content-objects:check is green at zero drift and exits 1 when a prefix is broken. No engine path reads the registry yet: this contract is the vocabulary, and slice 3's resolver is its first runtime consumer."
+    },
+  },
+  {
     id: 'undertaking-object-types',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Strategic Projects & Control',

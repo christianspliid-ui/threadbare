@@ -90,7 +90,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
   },
   {
     name: 'Encounters & Dilemmas',
-    aliases: ['encounter', 'dilemma', 'aftermath', 'chapter', 'reaction'],
+    aliases: ['encounter', 'dilemma', 'aftermath', 'chapter', 'reaction', 'content object', 'content tag', 'content query', 'tag vocabulary'],
     activityKeywords: ['encounter', 'dilemma', 'aftermath', 'reaction'],
     domains: ['encounter', 'encounters', 'dilemma'],
     phaseMatch: /\b(encounter|dilemma|aftermath)\b/i,
@@ -138,7 +138,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
   },
   {
     name: 'Attachments, Items & Possessions',
-    aliases: ['attachment', 'attachments', 'item', 'items', 'possession', 'possessions', 'artifact', 'equipment', 'blessing', 'retainer', 'agreement'],
+    aliases: ['attachment', 'attachments', 'item', 'items', 'possession', 'possessions', 'artifact', 'equipment', 'blessing', 'retainer', 'agreement', 'content object', 'content tag', 'content query', 'tag vocabulary'],
     // Measured against the standard 120-tick seed-42 run, not guessed: the activity
     // vocabulary contains `artifact` and `slot` but no `attachment`/`possession`/`reward`
     // token. Guessing the obvious nouns badged this subsystem DORMANT while possesses
