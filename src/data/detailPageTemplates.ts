@@ -12,7 +12,7 @@
  * (`src/components/shared/Section.tsx`).
  */
 
-import type { DetailPageKind } from '../types/detailPage';
+import type { GraphPageKind } from '../types/detailPage';
 import type { SectionResolver } from '../engine/detailPageResolvers';
 import {
   ACTOR_RESOLVERS,
@@ -59,7 +59,7 @@ export interface SectionSchemaEntry {
 }
 
 /** Full per-kind registry. */
-export type DetailPageRegistry = Record<DetailPageKind, SectionSchemaEntry[]>;
+export type DetailPageRegistry = Record<GraphPageKind, SectionSchemaEntry[]>;
 
 // ─── Per-kind schemas ─────────────────────────────────────────────────────────
 
@@ -286,7 +286,7 @@ export const DETAIL_PAGE_REGISTRY: DetailPageRegistry = {
 };
 
 /** Page kind → display label for the modal header. */
-export const KIND_LABELS: Record<DetailPageKind, string> = {
+export const KIND_LABELS: Record<GraphPageKind, string> = {
   actor: 'ACTOR',
   item: 'ITEM',
   faction: 'FACTION',

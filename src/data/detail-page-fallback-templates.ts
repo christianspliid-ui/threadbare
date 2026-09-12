@@ -146,7 +146,47 @@ export const GROUP_FALLBACK_TEMPLATES = {
   ],
 } as const;
 
+// ─── Content page ─────────────────────────────────────────────────────────────
+//
+// THR-1491. A content card is a *reference* page: it describes a kind of thing an author
+// wrote, not an instance of it in the world. The register therefore shifts one step back
+// from the world — these lines describe the rule rather than the mortal it lands on, and
+// none of them may promise a mechanic, because the entry the card names may author no
+// numbers at all.
+
+export const CONTENT_FALLBACK_TEMPLATES = {
+  /** What it does, when the entry authored no description and no mechanical summary. */
+  description_unwritten: [
+    'What this does is recorded in the world it happens to, not here.',
+    'The rule exists. Its account of itself does not.',
+    'No one wrote down what this comes to. It still comes to something.',
+    'This is named, and named only. What follows from it is learned by meeting it.',
+    'The entry is real; the description was never set down.',
+  ],
+  /** Its voice, when the entry carries no flavour, tagline or opening line. */
+  flavour_unwritten: [
+    'It has no voice of its own yet.',
+    'Nothing has been said about how this feels to meet.',
+    'The words for it have not been found.',
+  ],
+  /** Its tags, when the entry wears none — the query cannot reach it by kind alone. */
+  tags_none: [
+    'It wears no marks, so nothing can ask for it by kind.',
+  ],
+} as const;
+
 // ─── Unknown-entity stub prose ────────────────────────────────────────────────
 
 export const UNKNOWN_ENTITY_PROSE =
   'This entity is no longer reachable. The thread that named it has slackened.';
+
+/**
+ * The stub prose for a content reference whose id is in no catalog of its kind.
+ *
+ * Distinct from {@link UNKNOWN_ENTITY_PROSE} because the two failures are different and a
+ * player can tell: a world object that is gone *was* there, and a template id that matches
+ * nothing was never right. Saying "no longer reachable" about a misspelled template id
+ * would invent a history the thing never had.
+ */
+export const UNKNOWN_CONTENT_PROSE =
+  'Nothing by that name was ever written. The reference points past the end of the library.';

@@ -27,7 +27,7 @@
  */
 
 import { useCallback, useRef } from 'react';
-import type { WorldRef } from '../../types/worldRef';
+import type { AnyRef } from '../../types/contentRef';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 
 interface EntityLinkProps {
@@ -38,8 +38,13 @@ interface EntityLinkProps {
    *
    * Preferred over `onOpenEntity`: it routes by kind through the one router rather than
    * by whatever the host happened to wire.
+   *
+   * THR-1491 widened this from `WorldRef` to `AnyRef`, so a name that means a *template*
+   * — an item a reward pool may hand out, an undertaking a mortal may take on — links to
+   * its content card by the same call that links a person to their sheet. The prop shape
+   * did not change; the vocabulary it accepts did.
    */
-  entityRef?: WorldRef;
+  entityRef?: AnyRef;
   /** @deprecated THR-1490 — pass `entityRef` instead. Kept one release for un-migrated callers. */
   onOpenEntity?: (id: string) => void;
 }

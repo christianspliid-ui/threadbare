@@ -61,16 +61,29 @@ You write TWO files:
 
    Flag as a finding, and name the truthful shape: the other party *finds* them at the appointed time, the promise is a claim they carry (`attachment_grant` + `durationOverride`), or the offer simply comes round again. An appointment primitive is designed under [THR-1479](https://linear.app/threadbare/issue/THR-1479); until it ships, treat a placed-and-timed promise as BLOCKED, not as prose to wave through.
 
-5. **New Hooks Needed** — New roles, sublocation types, state fields, content entries. Scope estimate for each.
+5. **Chip referents resolve (THR-1490/THR-1491).** You hold the declared ids, so this one
+   is yours too. **A chip's referent must be a `WorldRef` or a `ContentRef`, never free
+   text.** Since the one router landed, every anchor kind is clickable: one surface
+   registry (`src/data/surface-registry.ts`) is total over both vocabularies, and every
+   kind in it has a card. So the old question — "does a click route for this kind?" — has
+   one answer, yes, and the replacement question is whether the *referent exists*: does the
+   `entityId` name a world object the encounter actually mints or finds (or a sentinel that
+   resolves to one), or a catalog entry of a named content kind. A chip whose referent is
+   only a phrase in the prose is a finding, and the fix is to fold the chip or make the
+   object real — never to leave a chip pointing at fiction. `anchor-catalog.generated.md`
+   is the reference, and its `linked` / `named` column is now *derived from the registry*
+   rather than hand-written, so it can be trusted against the running code.
 
-6. **Implementation File Map** — Every file to create/modify **beyond the compiled set** (engine hooks, types, new primitives, art). The standard content files are fixed by `compile:encounter` (THR-1246): the package at `Docs/plans/encounters/<slug>.package.json` compiles into the encounter module, its structural test, and both registrations — do not list those as hand-edits.
+6. **New Hooks Needed** — New roles, sublocation types, state fields, content entries. Scope estimate for each.
 
-7. **Verdict** — One of:
+7. **Implementation File Map** — Every file to create/modify **beyond the compiled set** (engine hooks, types, new primitives, art). The standard content files are fixed by `compile:encounter` (THR-1246): the package at `Docs/plans/encounters/<slug>.package.json` compiles into the encounter module, its structural test, and both registrations — do not list those as hand-edits.
+
+8. **Verdict** — One of:
    - **READY FOR IMPLEMENTATION** — can be implemented now
    - **READY WITH CAVEATS** — can be implemented with listed pre-tasks
    - **BLOCKED** — depends on missing primitives that can't be degraded
 
-8. **Primitive Disposition** — For each missing primitive: BUILD NOW (with dev spec) or BACKLOG (with actionable spec). If none: "No missing primitives identified."
+9. **Primitive Disposition** — For each missing primitive: BUILD NOW (with dev spec) or BACKLOG (with actionable spec). If none: "No missing primitives identified."
 
 ### File 2: Final Merged Document → `Docs/plans/encounters/{{SLUG}}-final.md`
 

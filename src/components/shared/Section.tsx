@@ -13,6 +13,7 @@ import {
   useDetailPageOpener,
   type OpenByRef,
 } from '../../contexts/DetailPageOpenerContext';
+import { Tooltip } from './Tooltip';
 
 function SectionLabel({ label, gold, tier }: { label: string; gold: boolean; tier?: string }) {
   // Notable / chronicle tiers add a thin gold underline (per plan §5.4). Routine
@@ -81,7 +82,7 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
   const handleClick = () => {
     if (clickable && chip.clickRef && open) open(chip.clickRef);
   };
-  return (
+  const pill = (
     <span
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
@@ -115,6 +116,16 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
       {chip.label}
       {chip.flavour && <em style={{ marginLeft: '4px', opacity: 0.7 }}>{chip.flavour}</em>}
     </span>
+  );
+
+  // A chip that names a *concept* explains itself on hover (Law 17). The wrapper sets
+  // `focusable={false}` because the pill already owns its own tab stop when it is
+  // clickable, and a second one around the same box is two focus rings for one thing.
+  if (!chip.tooltipId) return pill;
+  return (
+    <Tooltip id={chip.tooltipId} focusable={!clickable}>
+      {pill}
+    </Tooltip>
   );
 }
 

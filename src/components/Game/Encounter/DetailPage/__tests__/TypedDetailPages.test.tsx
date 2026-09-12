@@ -17,7 +17,7 @@ import { DetailPageOpenerProvider } from '../../../../../contexts/DetailPageOpen
 import { generateDetailPage } from '../../../../../engine/detailPageGenerator';
 import { WorldGraph } from '../../../../../engine/graph';
 import type { GraphEdge, GraphNode } from '../../../../../types/graph';
-import type { DetailPageKind, NodeRef } from '../../../../../types/detailPage';
+import type { GraphPageKind, NodeRef } from '../../../../../types/detailPage';
 
 // ─── Fixture (mirrors engine generator tests) ────────────────────────────────
 
@@ -129,13 +129,13 @@ function fixtureGraph() {
 // ─── Harness ─────────────────────────────────────────────────────────────────
 
 interface OpenerProps {
-  initial: { nodeId: string; pageKind: DetailPageKind }[];
+  initial: { nodeId: string; pageKind: GraphPageKind }[];
 }
 
 function StackPusher({ initial }: OpenerProps) {
   const { push } = useDetailStack();
   const graph = fixtureGraph();
-  const buildPage = (nodeId: string, pageKind: DetailPageKind) =>
+  const buildPage = (nodeId: string, pageKind: GraphPageKind) =>
     generateDetailPage({
       nodeId,
       pageKind,
@@ -157,7 +157,7 @@ function StackPusher({ initial }: OpenerProps) {
 }
 
 interface HarnessProps {
-  initial: { nodeId: string; pageKind: DetailPageKind }[];
+  initial: { nodeId: string; pageKind: GraphPageKind }[];
   onOpenRef?: (ref: NodeRef) => void;
 }
 
@@ -183,7 +183,7 @@ beforeAll(() => {
 // THR-577: detail-page cache ownership moved to SimulationRuntime; these render tests
 // pass no runtime, so each generateDetailPage call composes fresh — no isolation reset needed.
 
-const KINDS: { kind: DetailPageKind; nodeId: string; expected: string }[] = [
+const KINDS: { kind: GraphPageKind; nodeId: string; expected: string }[] = [
   { kind: 'actor', nodeId: 'veiren', expected: 'Captain Veiren' },
   { kind: 'item', nodeId: 'token', expected: 'Veirens Token' },
   { kind: 'faction', nodeId: 'iron-guard', expected: 'The Iron Guard' },

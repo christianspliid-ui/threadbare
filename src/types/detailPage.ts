@@ -50,6 +50,18 @@ export const DETAIL_GROUP_W = 720;
 /** Group detail height in px. See {@link DETAIL_GROUP_W}. */
 export const DETAIL_GROUP_H = 620;
 
+/**
+ * Content detail width / height in px (THR-1491).
+ *
+ * Equal to the default, and named for the same reason `DETAIL_GROUP_W` is: a content card
+ * is four short things — name, kind word, prose, tags — and if it ever needs a shape of
+ * its own that should be a number, not a branch.
+ */
+export const DETAIL_CONTENT_W = 720;
+
+/** Content detail height in px. See {@link DETAIL_CONTENT_W}. */
+export const DETAIL_CONTENT_H = 620;
+
 /** Hover-card dwell before the card opens. Below it, only the tooltip (Law 20 Tier 1). */
 export const HOVER_CARD_DELAY_MS = 350;
 
@@ -75,12 +87,31 @@ export const DETAIL_FAILSOFT_STUB_SPHERE = 'time';
  * commander and a stance, and rendering it as an `actor` page would ask the actor
  * resolvers for a disposition and a portrait that a column of soldiers does not have.
  *
+ * `'content'` joined in THR-1491, and is the one member that is **not** about a thing in
+ * the world at all: it renders a piece of authored content — a template, a definition, a
+ * rule someone wrote — which is a `ContentRef`, never a `WorldRef`.
+ *
  * A note the intent-judge recorded and this file inherits rather than originates: the
  * value `'place'` here overloads the UL game word *Place* (the inner tier). On this page
  * kind it means the place tier *and* the outer Location tier *and* the Area *and* the
  * hex — every kind of ground.
  */
-export type DetailPageKind = 'actor' | 'item' | 'faction' | 'place' | 'event' | 'group';
+export type DetailPageKind = 'actor' | 'item' | 'faction' | 'place' | 'event' | 'group' | 'content';
+
+/**
+ * The page kinds {@link DetailPage} can be built for **from the world graph**.
+ *
+ * Every kind but `'content'`. A content object is a catalog entry rather than a node, so
+ * `generateDetailPage` — which begins by asking the graph for a node and gives up when
+ * there is none — cannot build its page and must not be asked to: `generateContentPage`
+ * does, from `CONTENT_RESOLVERS`.
+ *
+ * This exclusion is why `DETAIL_PAGE_REGISTRY` and `KIND_LABELS` key on this narrower
+ * union. The alternative — a `content: []` row in the schema registry — would compile, and
+ * would mean "this page kind has no sections", which is false and reads like a bug. The
+ * type saying *the graph generator cannot be asked for this* is the honest shape.
+ */
+export type GraphPageKind = Exclude<DetailPageKind, 'content'>;
 
 /** Section type discriminator. UI dispatches on `kind`. */
 export type SectionKind = 'prose' | 'chips' | 'event-card' | 'panel' | 'portrait';
@@ -90,11 +121,17 @@ export type ProseTier = 'routine' | 'notable' | 'chronicle';
 
 // ─── Sub-descriptors ──────────────────────────────────────────────────────────
 
-/** Reference to a graph node for click-to-open behaviour. */
+/**
+ * Reference to a graph node for click-to-open behaviour.
+ *
+ * `GraphPageKind`, not `DetailPageKind`: a `NodeRef` is by definition a node, and a
+ * content card has no node to point at. Content chips carry a `tooltipId` instead — a tag
+ * explains itself (Law 17 Tier 1) rather than opening a page of its own.
+ */
 export interface NodeRef {
   nodeId: string;
   /** The page type to open. Computed at resolve time so UI doesn't dispatch. */
-  pageKind: DetailPageKind;
+  pageKind: GraphPageKind;
 }
 
 /** A single chip rendered in a `chips` section. */
@@ -109,6 +146,15 @@ export interface ChipDescriptor {
   flavour?: string;
   /** Optional click target — opens another DetailModal. */
   clickRef?: NodeRef;
+  /**
+   * Optional concept explanation (`tooltipResolver` id), Law 17 Tier 1.
+   *
+   * THR-1491: what a content card's tag chips carry. A tag is a *concept* — `#weapon`
+   * names a family, not a thing — so it explains itself on hover and opens nothing, which
+   * is the distinction Law 20's ladder draws between a tooltip and a card. A chip may
+   * carry both this and a `clickRef`; nothing today does.
+   */
+  tooltipId?: string;
 }
 
 // ─── Section base + variants ──────────────────────────────────────────────────

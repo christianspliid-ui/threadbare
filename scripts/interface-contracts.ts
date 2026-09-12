@@ -706,6 +706,51 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'content-ref-opens-codex-overlay',
+    producerSystem: 'Attention, Chronicle & Narrative',
+    consumerSystem: 'Attention, Chronicle & Narrative',
+    intent:
+      'Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card\'s sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491).',
+    ulTerms: ['Content object'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['SURFACE_BY_CONTENT_KIND', 'generateContentPage', 'resolveContentEntry'],
+      module: 'src/data/surface-registry.ts',
+    },
+    writeSites: [
+      'src/data/surface-registry.ts',
+      'src/engine/contentPageGenerator.ts',
+      'src/engine/contentEntryResolver.ts',
+    ],
+    readSites: [
+      'src/hooks/useRefRouter.ts',
+      'src/components/Game/GameView.tsx',
+      'src/components/shared/EntityLink.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        'GameView wires openCodexEntry and codexHasEntry into the router; the sheet arm reaches the codex overlay for the six catalogued kinds and falls back to the card otherwise. contentPage.test.ts resolves every kind against the shipped catalogs and pins the two-condition CTA; surfaceRegistry.test.ts pins that no content kind routes to a world sheet and no world kind to the codex.',
+    },
+  },
+  // ─── `anchor-status-derived-from-surface-registry` is deliberately NOT a row here ───
+  //
+  // THR-1491 derives the anchor catalog's `linked` / `named` column from
+  // `SURFACE_BY_WORLD_REF` and fails `generate-anchor-catalog` by name on a curated row
+  // that contradicts it. That is a real contract, and the plan asked for it here — but it
+  // cannot be stated in this map honestly: its consumer is
+  // `scripts/generate-anchor-catalog.ts`, and `collectSources` walks `src/` only. A row
+  // whose read site the scanner cannot see classifies LEAKED on every run, which would
+  // mean carrying a permanent deferral ticket for a defect that does not exist — the exact
+  // "green tests on a dead contract" pathology this map exists to kill, inverted.
+  //
+  // The contract is guarded where it lives instead: `assertCuratedStatusAgrees` runs in
+  // `generate-anchor-catalog:check`, which is a required CI gate, and was falsified on
+  // 2026-09-12 by curating `NodeType.companion` back to `named`. That is a stronger gate
+  // than a map row, not a weaker one. Re-add the row only if this map's scanner is ever
+  // widened past `src/`.
+  {
     id: 'attachment-character-sheet-display',
     producerSystem: ATTACHMENTS,
     consumerSystem: 'Attention, Chronicle & Narrative',

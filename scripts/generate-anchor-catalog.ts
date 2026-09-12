@@ -52,13 +52,14 @@ import { fileURLToPath } from 'url';
 
 import { REACH_DOMAINS } from '../src/types/traits';
 import {
-  ACTOR_TYPE_ROWS,
-  ATTACHMENT_ROWS,
+  ACTOR_TYPE_ROWS as CURATED_ACTOR_TYPE_ROWS,
+  ATTACHMENT_ROWS as CURATED_ATTACHMENT_ROWS,
   CONSUMER_UNION_SPECS,
-  EDGE_TYPE_ROWS,
-  NODE_TYPE_ROWS,
+  EDGE_TYPE_ROWS as CURATED_EDGE_TYPE_ROWS,
+  NODE_TYPE_ROWS as CURATED_NODE_TYPE_ROWS,
   WORLD_REF_KIND_DESCRIPTIONS,
   WORLD_REF_TYPES_REL,
+  assertCuratedStatusAgrees,
   assertEveryKindDescribed,
   assertEveryMemberAnnotated,
   assertKindUnionCoverage,
@@ -67,12 +68,33 @@ import {
   parsePropertyUnionMembers,
   parseUnionMembers,
   parseVisualKinds,
+  renderOpensCell,
+  resolveRowSet,
   stripLineComments,
   type AnchorRow,
   type AnchorStatus,
   type ConsumerUnionSpec,
   type KindUnionCoverage,
 } from './anchor-catalog-sources.ts';
+import { SURFACE_BY_WORLD_REF } from '../src/data/surface-registry.ts';
+
+// ─── Derived routing status (THR-1491) ────────────────────────────────────────
+//
+// The four row sets, with `linked` / `named` taken from the surface registry wherever the
+// row names a `WorldRefKind`. Everything downstream — the tables, the status tally, the
+// "Opens" column — reads these rather than the curated originals, so the catalog cannot
+// print a routing claim the router does not make. `assertCuratedStatusAgrees` in `main`
+// is the other half: it fails the build by name when a curated row still says otherwise,
+// rather than letting this quietly paper over it.
+
+const NODE_TYPE_ROWS = resolveRowSet('NodeType', CURATED_NODE_TYPE_ROWS, SURFACE_BY_WORLD_REF);
+const ACTOR_TYPE_ROWS = resolveRowSet('ActorType', CURATED_ACTOR_TYPE_ROWS, SURFACE_BY_WORLD_REF);
+const EDGE_TYPE_ROWS = resolveRowSet('EdgeType', CURATED_EDGE_TYPE_ROWS, SURFACE_BY_WORLD_REF);
+const ATTACHMENT_ROWS = resolveRowSet(
+  'AttachmentCategory',
+  CURATED_ATTACHMENT_ROWS,
+  SURFACE_BY_WORLD_REF,
+);
 
 // ─── Tunable constants (NFP #1) ───────────────────────────────────────────────
 
@@ -104,14 +126,21 @@ const STATUS_BADGE: Readonly<Record<AnchorStatus, string>> = {
   gap: '🕳️ gap',
 };
 
-function renderTable(members: readonly string[], rows: Readonly<Record<string, AnchorRow>>): string[] {
+function renderTable(
+  members: readonly string[],
+  rows: Readonly<Record<string, AnchorRow>>,
+  unionName: string,
+): string[] {
   const lines: string[] = [];
-  lines.push('| Member | Anchor | Status | How the chip declares it | Where the player sees it |');
-  lines.push('|---|---|---|---|---|');
+  lines.push(
+    '| Member | Anchor | Status | Opens | How the chip declares it | Where the player sees it |',
+  );
+  lines.push('|---|---|---|---|---|---|');
   for (const member of members) {
     const row = rows[member];
+    const opens = renderOpensCell(unionName, member, SURFACE_BY_WORLD_REF);
     lines.push(
-      `| \`${member}\` | ${row.anchor} | ${STATUS_BADGE[row.status]} | ${row.declare} | ${row.surface} |`,
+      `| \`${member}\` | ${row.anchor} | ${STATUS_BADGE[row.status]} | ${opens} | ${row.declare} | ${row.surface} |`,
     );
   }
 
@@ -356,7 +385,7 @@ function render(input: {
 
   lines.push('## Nodes');
   lines.push('');
-  lines.push(...renderTable(nodeTypes, NODE_TYPE_ROWS));
+  lines.push(...renderTable(nodeTypes, NODE_TYPE_ROWS, 'NodeType'));
   lines.push('');
 
   lines.push('## Actors, by `actorType`');
@@ -366,7 +395,7 @@ function render(input: {
       'director\'s *agent*, *faction* and *culture* anchors live.',
   );
   lines.push('');
-  lines.push(...renderTable(actorTypes, ACTOR_TYPE_ROWS));
+  lines.push(...renderTable(actorTypes, ACTOR_TYPE_ROWS, 'ActorType'));
   lines.push('');
 
   lines.push('## Attachments');
@@ -378,7 +407,7 @@ function render(input: {
       'effects, which apply after the player picks, by which time the veil has closed.',
   );
   lines.push('');
-  lines.push(...renderTable(attachmentCategories, ATTACHMENT_ROWS));
+  lines.push(...renderTable(attachmentCategories, ATTACHMENT_ROWS, 'AttachmentCategory'));
   lines.push('');
 
   lines.push('## Relationships (edges)');
@@ -389,7 +418,7 @@ function render(input: {
       'the relationship becomes visible.',
   );
   lines.push('');
-  lines.push(...renderTable(edgeTypes, EDGE_TYPE_ROWS));
+  lines.push(...renderTable(edgeTypes, EDGE_TYPE_ROWS, 'EdgeType'));
   lines.push('');
 
   lines.push('## Stats');
@@ -507,10 +536,18 @@ function main(): void {
     WORLD_REF_TYPES_REL,
   );
 
-  assertEveryMemberAnnotated(nodeTypes, NODE_TYPE_ROWS, 'NodeType');
-  assertEveryMemberAnnotated(actorTypes, ACTOR_TYPE_ROWS, 'ActorType');
-  assertEveryMemberAnnotated(edgeTypes, EDGE_TYPE_ROWS, 'EdgeType');
-  assertEveryMemberAnnotated(attachmentCategories, ATTACHMENT_ROWS, 'AttachmentCategory');
+  assertEveryMemberAnnotated(nodeTypes, CURATED_NODE_TYPE_ROWS, 'NodeType');
+  assertEveryMemberAnnotated(actorTypes, CURATED_ACTOR_TYPE_ROWS, 'ActorType');
+  assertEveryMemberAnnotated(edgeTypes, CURATED_EDGE_TYPE_ROWS, 'EdgeType');
+  assertEveryMemberAnnotated(attachmentCategories, CURATED_ATTACHMENT_ROWS, 'AttachmentCategory');
+
+  // The routing claim in the source must match the registry the router reads (THR-1491).
+  // Checked against the *curated* rows, not the resolved ones — resolving is what would
+  // hide the drift.
+  assertCuratedStatusAgrees('NodeType', CURATED_NODE_TYPE_ROWS, SURFACE_BY_WORLD_REF);
+  assertCuratedStatusAgrees('ActorType', CURATED_ACTOR_TYPE_ROWS, SURFACE_BY_WORLD_REF);
+  assertCuratedStatusAgrees('EdgeType', CURATED_EDGE_TYPE_ROWS, SURFACE_BY_WORLD_REF);
+  assertCuratedStatusAgrees('AttachmentCategory', CURATED_ATTACHMENT_ROWS, SURFACE_BY_WORLD_REF);
   assertEveryKindDescribed(worldRefKinds);
 
   const coverages = CONSUMER_UNION_SPECS.map((spec) =>

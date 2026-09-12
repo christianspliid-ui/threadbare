@@ -22,11 +22,12 @@
  * The registry is data. The dispatch that reads it is `src/hooks/useRefRouter.ts`, and
  * nothing else in the tree may push onto the detail stack.
  *
- * `SURFACE_BY_CONTENT_KIND` — the same record over `ContentObjectKindId` — lands in slice
- * 2 (THR-1491) together with `ContentRef`, because it needs the content-object registry's
- * `surface` column and the codex-overlay sheet arm. Slice 1 is world objects only.
+ * `SURFACE_BY_CONTENT_KIND` — the same record over `ContentObjectKindId` — arrived with
+ * slice 2 (THR-1491) together with `ContentRef`, and fills the content-object registry's
+ * `surface` column from here, so the two can never disagree.
  */
 
+import type { ContentObjectKindId } from '../types/contentRef';
 import type { NavigationTarget } from '../types/notification';
 import type { WorldRefKind } from '../types/worldRef';
 
@@ -37,9 +38,11 @@ import type { WorldRefKind } from '../types/worldRef';
  * (a Location, a Place, an Area and a Hex are all places), and the card is about *shape
  * of page*, while the kind is about *what the thing is*.
  *
- * `'content'` is declared here and unused in slice 1 — its rows arrive with
- * `SURFACE_BY_CONTENT_KIND` in slice 2. It is declared now so `DetailPageKind` and this
- * union stay one edit apart rather than two.
+ * `'content'` is the one member that is *not* a projection of `WorldRefKind`: it is what
+ * every `SURFACE_BY_CONTENT_KIND` row carries, because a content object's page has one
+ * shape regardless of kind. It is also the one card the graph generator cannot build — a
+ * template is a catalog entry, not a node — so `GraphPageKind` excludes it and
+ * `generateContentPage` builds it instead (THR-1491).
  */
 export type CardKind = 'actor' | 'faction' | 'place' | 'item' | 'event' | 'group' | 'content';
 
@@ -95,9 +98,92 @@ export const SURFACE_BY_WORLD_REF: Readonly<Record<WorldRefKind, SurfaceRow>> = 
   receipt: { card: 'event', sheet: 'receipt' },
 };
 
+/**
+ * Every `ContentObjectKindId`, and what it opens (THR-1491).
+ *
+ * **Every row is `card: 'content'`.** A content object has one shape of page — a name, the
+ * word for what it is, its prose, its tags — and that shape does not vary by kind, which
+ * is the whole claim of "one card, one router" applied to the author's side of the line.
+ *
+ * **`sheet` is `'codex'` exactly where the codex has the entry, and `null` where it has
+ * not, and that split was measured rather than assumed.** Probing every catalog id in this
+ * registry against `getAllCodexEntries()` on 2026-09-12 found six kinds with codex
+ * coverage and six with none:
+ *
+ * | kind | ids | in codex | category |
+ * |---|---|---|---|
+ * | `action_template` | 239 | 239 | divine · hex · location · artifact · company · threads · actions |
+ * | `item_template` | 134 | 119 | possessions |
+ * | `undertaking_template` | 116 | 60 | undertakings |
+ * | `condition_template` | 46 | 40 | conditions |
+ * | `power_template` | 25 | 12 | conditions |
+ * | `agreement_template` | 7 | 7 | agreements |
+ * | `encounter_template` | 557 | **0** | — |
+ * | `omen_template` | 44 | **0** | — |
+ * | `nudge_card` | 37 | **0** | — |
+ * | `ambition_template` | 20 | **0** | — |
+ * | `companion_template` | 9 | **0** | — |
+ * | `legendary_template` | 3 | **0** | — |
+ *
+ * The plan named four kinds as lacking a category (encounters, companions, ambitions,
+ * omens); the measurement found **six** — `legendary_template` and `nudge_card` are also
+ * absent, and the first is the surprising one, because a `possessions` category exists and
+ * simply does not read `ARTIFACT_TEMPLATES`. All six are the deferral this slice files.
+ *
+ * **A `'codex'` row is a claim about the kind, not about every entry of it** — four of the
+ * six covered kinds are covered *partially* (an undertaking template has a codex card only
+ * where its grid cell is live). So the CTA asks `contentSheetFor(ref)`, which checks the
+ * entry, not just the row; the row alone would render an "open in codex ↗" that opens
+ * nothing for 56 undertaking templates, which is the Law 25 failure this registry exists
+ * to remove.
+ */
+export const SURFACE_BY_CONTENT_KIND: Readonly<Record<ContentObjectKindId, SurfaceRow>> = {
+  encounter_template: {
+    card: 'content',
+    sheet: null,
+    note: 'No codex category catalogues encounters — 0 of 557 ids resolve to a codex entry (measured 2026-09-12). Chartering one is THR-1495.',
+  },
+  action_template: { card: 'content', sheet: 'codex' },
+  undertaking_template: { card: 'content', sheet: 'codex' },
+  item_template: { card: 'content', sheet: 'codex' },
+  legendary_template: {
+    card: 'content',
+    sheet: null,
+    note: 'The `possessions` category reads the reward and starter catalogs, never `ARTIFACT_TEMPLATES` — 0 of 3 legendary ids resolve to a codex entry (measured 2026-09-12). THR-1495.',
+  },
+  condition_template: { card: 'content', sheet: 'codex' },
+  power_template: { card: 'content', sheet: 'codex' },
+  agreement_template: { card: 'content', sheet: 'codex' },
+  companion_template: {
+    card: 'content',
+    sheet: null,
+    note: 'No codex category catalogues companions — 0 of 9 ids resolve (measured 2026-09-12). THR-1495. The world-object side is withheld for its own reason; see the `companion` row above.',
+  },
+  ambition_template: {
+    card: 'content',
+    sheet: null,
+    note: 'No codex category catalogues ambitions — 0 of 20 ids resolve (measured 2026-09-12). THR-1495.',
+  },
+  omen_template: {
+    card: 'content',
+    sheet: null,
+    note: 'No codex category catalogues omens — 0 of 44 ids resolve (measured 2026-09-12). THR-1495.',
+  },
+  nudge_card: {
+    card: 'content',
+    sheet: null,
+    note: 'No codex category catalogues nudge cards — 0 of 37 ids resolve (measured 2026-09-12). THR-1495.',
+  },
+};
+
 /** The row for a kind. Total, so this never returns undefined. */
 export function surfaceFor(kind: WorldRefKind): SurfaceRow {
   return SURFACE_BY_WORLD_REF[kind];
+}
+
+/** The row for a content kind. Total, so this never returns undefined. */
+export function contentSurfaceFor(kind: ContentObjectKindId): SurfaceRow {
+  return SURFACE_BY_CONTENT_KIND[kind];
 }
 
 /**

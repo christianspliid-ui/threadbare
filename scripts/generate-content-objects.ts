@@ -80,6 +80,17 @@ interface Drift {
   readonly ungated: readonly string[];
 }
 
+/**
+ * What a reference to this kind opens, in one cell (THR-1491).
+ *
+ * Every kind has a card; what varies is the Tier-3 sheet. `card only` is a real answer,
+ * not a deficiency — it means the codex has no category for the kind yet (THR-1495), and
+ * the kind's `note` in the registry carries the measurement that says so.
+ */
+function surfaceText(v: KindView): string {
+  return v.surface.sheet ? `card → ${v.surface.sheet}` : 'card only';
+}
+
 function buildViews(): KindView[] {
   return CONTENT_OBJECT_KINDS.map(k => {
     const perCatalog = k.catalogs.map(ref => {
@@ -175,10 +186,10 @@ function renderMarkdown(views: readonly KindView[], drift: Drift): string {
   L.push('');
   L.push('## Kinds');
   L.push('');
-  L.push('| Kind | Game word | Entries | Catalogs (claimed/total) | Instantiates as | Gate | Owning system | Badge |');
+  L.push('| Kind | Game word | Entries | Catalogs (claimed/total) | Instantiates as | Opens | Gate | Owning system | Badge |');
   L.push('|---|---|---|---|---|---|---|---|');
   for (const v of views) {
-    L.push(`| \`${v.id}\` | ${v.gameWord} | ${v.count} | ${catalogsText(v)} | ${v.instantiatesAs ? `\`${v.instantiatesAs}\`` : '_(nothing)_'} | ${v.gate ? `\`npm run ${v.gate}\`` : '—'} | ${v.owningSystem} | ${BADGE_LABEL[v.badge]} |`);
+    L.push(`| \`${v.id}\` | ${v.gameWord} | ${v.count} | ${catalogsText(v)} | ${v.instantiatesAs ? `\`${v.instantiatesAs}\`` : '_(nothing)_'} | ${surfaceText(v)} | ${v.gate ? `\`npm run ${v.gate}\`` : '—'} | ${v.owningSystem} | ${BADGE_LABEL[v.badge]} |`);
   }
   L.push('');
   L.push('## Tag axes');
@@ -229,7 +240,7 @@ function esc(s: string): string {
 }
 
 function renderHtml(views: readonly KindView[], drift: Drift): string {
-  const rows = views.map(v => `<tr class="badge-${v.badge}"><td><code>${esc(v.id)}</code></td><td><strong>${esc(v.gameWord)}</strong></td><td>${v.count}</td><td>${esc(v.perCatalog.map(c => `${c.key.split('#')[1]} (${c.claimed}/${c.total})`).join(' · '))}</td><td>${v.instantiatesAs ? `<code>${esc(v.instantiatesAs)}</code>` : '—'}</td><td>${v.gate ? `<code>${esc(v.gate)}</code>` : '—'}</td><td>${esc(v.owningSystem)}</td><td>${BADGE_LABEL[v.badge]}</td></tr>`).join('\n');
+  const rows = views.map(v => `<tr class="badge-${v.badge}"><td><code>${esc(v.id)}</code></td><td><strong>${esc(v.gameWord)}</strong></td><td>${v.count}</td><td>${esc(v.perCatalog.map(c => `${c.key.split('#')[1]} (${c.claimed}/${c.total})`).join(' · '))}</td><td>${v.instantiatesAs ? `<code>${esc(v.instantiatesAs)}</code>` : '—'}</td><td>${esc(surfaceText(v))}</td><td>${v.gate ? `<code>${esc(v.gate)}</code>` : '—'}</td><td>${esc(v.owningSystem)}</td><td>${BADGE_LABEL[v.badge]}</td></tr>`).join('\n');
   const prefixRows = views.map(v => `<tr><td><code>${esc(v.id)}</code></td><td>${v.idPrefixes.map(p => `<code>${esc(p)}</code>`).join(' ')}</td></tr>`).join('\n');
   const notes = views.map(v => `<li><strong>${esc(v.gameWord)}</strong> <code>${esc(v.id)}</code> — ${esc(v.note)}</li>`).join('\n');
   const shared = Object.entries(SHARED_ID_PREFIXES).map(([p, r]) => `<li><code>${esc(p)}</code> — ${esc(r)}</li>`).join('\n');
@@ -270,7 +281,7 @@ ${wikiNav()}
 <div class="drift">${driftList.length ? `<ul>${driftList.map(d => `<li><code>${esc(d)}</code></li>`).join('')}</ul>` : '<p>No drift: every catalog id is claimed by a kind, and every kind\'s prefixes claim entries in its own catalogs.</p>'}<p><strong>${drift.ungated.length} of ${views.length} kinds are ungated</strong> — counted, not fatal: <code>${esc(drift.ungated.join(', '))}</code>.</p></div>
 <h2>Kinds</h2>
 <div class="wrap"><table>
-<thead><tr><th>Kind</th><th>Game word</th><th>Entries</th><th>Catalogs (claimed/total)</th><th>Instantiates as</th><th>Gate</th><th>Owning system</th><th>Badge</th></tr></thead>
+<thead><tr><th>Kind</th><th>Game word</th><th>Entries</th><th>Catalogs (claimed/total)</th><th>Instantiates as</th><th>Opens</th><th>Gate</th><th>Owning system</th><th>Badge</th></tr></thead>
 <tbody>
 ${rows}
 </tbody></table></div>

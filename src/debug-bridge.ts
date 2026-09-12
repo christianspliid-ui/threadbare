@@ -1038,8 +1038,8 @@ if (import.meta.env.DEV) {
      * screenshot of an open card cannot.
      */
     getSurfaceRegistry: async () => {
-      const { SURFACE_BY_WORLD_REF } = await import('./data/surface-registry');
-      return { worldRef: SURFACE_BY_WORLD_REF };
+      const { SURFACE_BY_WORLD_REF, SURFACE_BY_CONTENT_KIND } = await import('./data/surface-registry');
+      return { worldRef: SURFACE_BY_WORLD_REF, content: SURFACE_BY_CONTENT_KIND };
     },
     /**
      * Drive the router headlessly. Returns what it resolved, so a verification run can
@@ -1049,16 +1049,18 @@ if (import.meta.env.DEV) {
      */
     openRef: async (kind: string, id: string, mode: 'hover' | 'card' | 'sheet' = 'card') => {
       const { isWorldRefKind } = await import('./types/worldRef');
-      if (!isWorldRefKind(kind)) {
-        console.warn(`[__DEBUG.openRef] "${kind}" is not a WorldRefKind`);
+      const { isContentObjectKindId } = await import('./types/contentRef');
+      const isContent = isContentObjectKindId(kind);
+      if (!isWorldRefKind(kind) && !isContent) {
+        console.warn(`[__DEBUG.openRef] "${kind}" is neither a WorldRefKind nor a ContentObjectKindId`);
         return null;
       }
       if (!_refRouterOpen) {
         console.warn('[__DEBUG.openRef] no ref router mounted — is the game view open?');
         return null;
       }
-      const { SURFACE_BY_WORLD_REF } = await import('./data/surface-registry');
-      const row = SURFACE_BY_WORLD_REF[kind];
+      const { SURFACE_BY_WORLD_REF, SURFACE_BY_CONTENT_KIND } = await import('./data/surface-registry');
+      const row = isContent ? SURFACE_BY_CONTENT_KIND[kind] : SURFACE_BY_WORLD_REF[kind];
       // A hover needs an anchor element and there is none in a headless call, so it is
       // refused by name rather than silently doing nothing.
       if (mode === 'hover') {
