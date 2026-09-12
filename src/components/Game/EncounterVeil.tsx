@@ -55,14 +55,30 @@ export interface EncounterVeilProps {
   onDisregard: () => void;
   onAcknowledgeAftermath: () => void;
   onAftermathReaction: (reactionId: string) => void;
-  /** THR-636 — clicking the character chip opens the agent's detail surface. */
+  /**
+   * THR-1477 — the id of the aftermath reaction the player has already taken on
+   * this encounter, if any. The pick no longer closes the veil (so the sheet
+   * opened from the aftermath can show what the ending wrote), which means the
+   * reactions have to stop looking pickable once the choice is spent: the taken
+   * one stays legible and the rest go quiet. A host that omits this gets the
+   * previous always-live rendering, which is correct for a host that still
+   * closes on the pick.
+   */
+  aftermathReactionTakenId?: string | null;
+  /**
+   * THR-636 — clicking the character chip opens the agent's detail surface.
+   * THR-1477 — that surface is the *character sheet*, opened above this veil,
+   * not the action drawer (which renders below it and so read as a dead click).
+   * The veil stays mounted underneath: closing the sheet returns to the
+   * encounter exactly where it was.
+   */
   onSelectAgent?: (agentId: string) => void;
   /**
    * THR-1004 — open a non-person entity's sheet (a faction, an artifact). The
    * UI Law's link half: an aftermath chip that names a faction or a reward is
    * only fully present when the player can go look at it. Kept separate from
-   * `onSelectAgent` because that handler selects an *agent* and opens the agent
-   * drawer — routing an artifact through it would be a dead link wearing a
+   * `onSelectAgent` because that handler opens a *person's* sheet — routing an
+   * artifact through it would be a dead link wearing a
    * live one's clothes. A host that omits this leaves those names emphasised
    * and unclickable, which is the fail-open behaviour.
    */
@@ -359,6 +375,7 @@ export function EncounterVeil({
   onDisregard,
   onAcknowledgeAftermath,
   onAftermathReaction,
+  aftermathReactionTakenId,
   onSelectAgent,
   onSelectEntity,
   onShowOnMap,
@@ -1288,7 +1305,10 @@ export function EncounterVeil({
                 acknowledge path does. So what was wrong was the framing, not the
                 control. Remove the question; keep the affordance.
               */}
-              {aftermath.reactionPrompt && aftermath.reactions.length > 1 && (
+              {/* THR-1477 — and once the choice is taken the question is answered:
+                  a "which do you choose" prompt standing above a spent set is the
+                  same Law 25 defect the length check above fixes, one beat later. */}
+              {aftermath.reactionPrompt && aftermath.reactions.length > 1 && !aftermathReactionTakenId && (
                 <div
                   data-testid="aftermath-reaction-prompt"
                   style={{
@@ -1303,34 +1323,52 @@ export function EncounterVeil({
                   {aftermath.reactionPrompt}
                 </div>
               )}
-              {aftermath.reactions.map((reaction) => (
+              {aftermath.reactions.map((reaction) => {
+                // THR-1477 — once a reaction is taken the whole set is spent:
+                // the encounter now stays open so the player can go read the
+                // sheet, and a set of buttons that still look pickable after
+                // the decision is made is a Law 21 dead control. The taken one
+                // keeps its full legibility and is marked; the others go quiet.
+                const choiceSpent = Boolean(aftermathReactionTakenId);
+                const isTakenReaction = reaction.id === aftermathReactionTakenId;
+                const inert = reaction.disabled || choiceSpent;
+                const dimmed = reaction.disabled || (choiceSpent && !isTakenReaction);
+                return (
                 <button
                   className="focus-ring"
                   key={reaction.id}
-                  disabled={reaction.disabled}
-                  onClick={() => onAftermathReaction(reaction.id)}
+                  disabled={inert}
+                  data-testid={isTakenReaction ? 'aftermath-reaction-taken' : undefined}
+                  aria-label={isTakenReaction ? `${reaction.label} — chosen` : undefined}
+                  onClick={inert ? undefined : () => onAftermathReaction(reaction.id)}
                   style={{
-                    background: 'rgb(var(--veil-gold-rgb) / 0.03)',
-                    border: '1px solid rgb(var(--veil-gold-rgb) / 0.1)',
+                    background: isTakenReaction
+                      ? 'rgb(var(--veil-gold-rgb) / 0.08)'
+                      : 'rgb(var(--veil-gold-rgb) / 0.03)',
+                    border: isTakenReaction
+                      ? '1px solid rgb(var(--veil-gold-rgb) / 0.28)'
+                      : '1px solid rgb(var(--veil-gold-rgb) / 0.1)',
                     borderRadius: 2,
                     fontFamily: FONT_PROSE,
                     fontStyle: 'italic',
                     fontSize: 'var(--text-xs)',
                     letterSpacing: '0.04em',
-                    color: reaction.disabled ? TEXT_GHOST : TEXT_WARM,
-                    cursor: reaction.disabled ? 'default' : 'pointer',
+                    color: dimmed ? TEXT_GHOST : TEXT_WARM,
+                    cursor: inert ? 'default' : 'pointer',
                     padding: '12px 16px',
                     textAlign: 'left',
-                    opacity: reaction.disabled ? 0.4 : 1,
+                    opacity: dimmed ? 0.4 : 1,
                     transition: 'background-color 0.4s ease, color 0.4s ease, opacity 0.4s ease',
                   }}
                   onMouseEnter={(e) => {
-                    if (!reaction.disabled) {
+                    if (!inert) {
                       e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.06)';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.03)';
+                    e.currentTarget.style.background = isTakenReaction
+                      ? 'rgb(var(--veil-gold-rgb) / 0.08)'
+                      : 'rgb(var(--veil-gold-rgb) / 0.03)';
                   }}
                 >
                   {/*
@@ -1393,7 +1431,8 @@ export function EncounterVeil({
                     </div>
                   )}
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
 

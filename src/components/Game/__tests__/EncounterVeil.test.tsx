@@ -1562,6 +1562,80 @@ describe('aftermath mode', () => {
     expect(onAftermathReaction).toHaveBeenCalledWith('slice.bridge.look_back');
   });
 
+  // ── THR-1477: the pick no longer closes the veil ──────────────────
+  //
+  // The encounter stays open after a reaction is taken so the player can open
+  // the character sheet and see what the ending wrote. That makes the spent
+  // choice a rendering problem: buttons that still look pickable after the
+  // decision is made are exactly the Law 21 dead control this ticket removes.
+
+  it('leaves every reaction live while no pick has been taken (THR-1477 control arm)', () => {
+    const onAftermathReaction = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(twoReactions)}
+        onAftermathReaction={onAftermathReaction}
+      />,
+    );
+    // Falsifies the guard below: without this arm a rendering that disabled
+    // every reaction unconditionally would pass the spent-choice assertions.
+    const live = screen.getByTestId('aftermath-reaction-label-slice.bridge.look_back').closest('button')!;
+    expect(live).not.toBeDisabled();
+    expect(screen.queryByTestId('aftermath-reaction-taken')).not.toBeInTheDocument();
+    expect(screen.getByTestId('aftermath-reaction-prompt')).toBeInTheDocument();
+  });
+
+  it('marks the taken reaction and makes the whole set inert once a pick lands (THR-1477)', () => {
+    const onAftermathReaction = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(twoReactions)}
+        aftermathReactionTakenId="slice.bridge.look_back"
+        onAftermathReaction={onAftermathReaction}
+      />,
+    );
+
+    const taken = screen.getByTestId('aftermath-reaction-taken');
+    expect(taken).toHaveAttribute('aria-label', 'Look back at the span — chosen');
+
+    // Both buttons — the taken one and the road not taken — stop being pickable.
+    for (const id of ['slice.bridge.walk_on', 'slice.bridge.look_back']) {
+      expect(screen.getByTestId(`aftermath-reaction-label-${id}`).closest('button')).toBeDisabled();
+    }
+
+    // And a second click cannot re-apply the reaction.
+    fireEvent.click(screen.getByTestId('aftermath-reaction-label-slice.bridge.look_back'));
+    expect(onAftermathReaction).not.toHaveBeenCalled();
+  });
+
+  it('drops the choice prompt once the choice is answered (THR-1477, Law 25)', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(twoReactions)}
+        aftermathReactionTakenId="slice.bridge.walk_on"
+      />,
+    );
+    expect(screen.queryByTestId('aftermath-reaction-prompt')).not.toBeInTheDocument();
+    expect(screen.queryByText('Choose what to carry forward.')).not.toBeInTheDocument();
+  });
+
+  it('keeps "Return to the world" as the exit after a pick — the encounter is escapable (THR-1477)', () => {
+    const onAcknowledgeAftermath = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(twoReactions)}
+        aftermathReactionTakenId="slice.bridge.walk_on"
+        onAcknowledgeAftermath={onAcknowledgeAftermath}
+      />,
+    );
+    fireEvent.click(screen.getByText('Return to the world'));
+    expect(onAcknowledgeAftermath).toHaveBeenCalled();
+  });
+
   it('FAIL-SOFT: a reaction with no authored intent still renders its label', () => {
     render(<EncounterVeil {...defaultProps} model={reactionModel([{ id: 'r1', label: 'Move on' }])} />);
     expect(screen.getByTestId('aftermath-reaction-label-r1')).toHaveTextContent('Move on');
