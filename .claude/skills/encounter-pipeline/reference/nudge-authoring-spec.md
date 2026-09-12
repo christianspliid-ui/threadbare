@@ -979,6 +979,12 @@ events**, never textures.
 | Band fragment | 25 words |
 | `effectLine` | 25 words |
 | `name` | 4 words — imperative verb + noun |
+| Chip sentence (`causeClause` + `detail` together) | 15 words |
+
+The chip row is **both fields summed**, because the surface draws them as one
+sentence (`causeClause — detail`) beside the tag. Budgeting them apart would admit
+15 + 15 as a lawful 30-word chip, which is the length this row exists to cut. The
+em-dash is punctuation, not a word, and is not charged.
 
 ### Lineage note
 
@@ -1211,6 +1217,33 @@ The anti-example is a real line that shipped, and it is what this rule exists to
 That sentence names no game state, no direction, and no cause a player watched happen.
 "Something" is not a consequence. A chip whose sentence could be pasted into any other
 encounter in the game is not a consequence either — it is filler wearing a chip's frame.
+
+**1b. Fifteen words, and the cause is one clause at most (Christian, 2026-09-12,
+THR-1473).** Rule 1 asks for cause *then* change, and read alone it invites the chip to
+re-tell the cause the overview has already told — which is exactly what the corpus did:
+at filing the vertical slice's 56 categorised chips ran a **median of 31 words**, 47 of
+them over this budget, because this was the one player-facing prose field with no row in
+§ *Word budgets*.
+
+The chip is a **caption beside its tag**, under a paragraph the player has just read. So:
+
+- **The change is the sentence.** The cause earns one short clause, and only when the
+  reader could not otherwise tell which beat produced this state.
+- **Never repeat a fact the band `overview` already carries.** `check:encounter` reports
+  any run of four words shared between the chip's sentence and its band's overview — a
+  lower bound on retelling, not a proof of its absence. A chip that paraphrases the
+  overview in fresh words passes the machine and still fails this rule.
+- **Both fields together fit the budget**, because the surface draws them as one
+  sentence.
+
+Christian, reading the Snow on the Pass aftermath: *"for both scars the flavour text is
+way too long. I suggest we keep it to max 15 words, and a test that it does not
+communicate any of the same info as the aftermath."* The chip under review said *"The
+snow caught them below the saddle and the fire had to be made twice — They walk down
+worn through, having burned every dry scrap they were carrying to see morning"*: 31
+words, and the overview above it had already told the reader about the fire and the
+kindling. It now reads *"A night bought with everything dry they carried — They walk down
+worn through."*
 
 **2. Name the state noun, and declare it.** Every chip declares `stateNoun`,
 `direction`, and `category` as structured fields — not as English for the surface to

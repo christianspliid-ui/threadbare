@@ -1,6 +1,6 @@
 /**
- * Prose Doctrine v2 structural checks — card-name shape and the opening
- * skeleton. THR-1224.
+ * Prose Doctrine v2 structural checks — card-name shape, the opening skeleton,
+ * and the chip sentence. THR-1224, extended by THR-1473.
  *
  * Contract: `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`
  * § *Prose doctrine v2 — narrator mode (hard rules)*. Where this file and that
@@ -18,6 +18,13 @@
  * So the dependency stays one-way — this module reads constants, the constants
  * read the lexicon — and `check:encounter` merges both lists into one warn
  * channel at the point of report.
+ *
+ * THR-1473 added one more edge, `compositionContract` → here being the direction
+ * that would close a cycle and **this** being the one that does not:
+ * `compositionContract.ts` imports the constants and the hand checklists and has
+ * never imported this module. The chip-sentence check reuses its `aftermathFaces`
+ * walk rather than re-deriving the (variant × band) resolution — a second walk
+ * over the same config is a second answer waiting to drift from the first.
  *
  * ─── Warn-level, and what that means here ────────────────────────────
  * Nothing in this file fails a build. Both checks are *register* judgments —
@@ -38,10 +45,12 @@
 
 import type { StepNudge, UnifiedActionTemplate } from '../../types/unifiedAction';
 import {
+  CHIP_OVERVIEW_OVERLAP_RUN_WORDS,
   NUDGE_OPENING_PARAGRAPHS_MAX,
   NUDGE_OPENING_PARAGRAPHS_MIN,
   NUDGE_WORD_BUDGETS,
 } from './nudgeAuthoringConstants';
+import { aftermathFaces } from './compositionContract';
 
 // ─── Card-name shape (doctrine: imperative verb + noun) ──────────────
 
@@ -284,6 +293,131 @@ export function templateOpeningProblems(template: UnifiedActionTemplate): readon
   return problems;
 }
 
+// ─── The chip sentence (THR-1473) ────────────────────────────────────
+
+/**
+ * The sentence a chip actually draws — `causeClause` then `detail`, exactly as
+ * `EncounterVeil` composes them beside the tag.
+ *
+ * Joined with the em-dash the surface uses, so a word count here counts what the
+ * player reads. Either half may be absent; a chip with neither has no sentence.
+ */
+export function chipSentenceOf(
+  change: { readonly causeClause?: string; readonly detail?: string },
+): string {
+  return [change.causeClause?.trim(), change.detail?.trim()].filter(Boolean).join(' — ');
+}
+
+/**
+ * Words in a chip's sentence, counted **per field and summed** rather than off
+ * {@link chipSentenceOf}.
+ *
+ * The separator is punctuation the surface draws, not a word the player reads,
+ * and `wordsOf` splits on whitespace — so counting the joined string prices every
+ * two-field chip one word higher than the prose it contains and turns a budget of
+ * 15 into an unannounced 14. Measured: the first re-authoring pass landed 15 chips
+ * on exactly 16, every one of them 15 words of prose plus the em-dash.
+ */
+export function chipSentenceWordCount(
+  change: { readonly causeClause?: string; readonly detail?: string },
+): number {
+  return [change.causeClause, change.detail]
+    .map(field => (field?.trim() ? wordsOf(field).length : 0))
+    .reduce((a, b) => a + b, 0);
+}
+
+/**
+ * Normalised word runs of length `n`, for the overlap test.
+ *
+ * Punctuation and case are stripped through {@link normaliseWord} so *"twice.
+ * They walk"* and *"twice — they walk"* are the same run, and enrichment tokens
+ * are left intact as words: a `{cast:keeper}` shared between a chip and its
+ * overview is a genuine repetition of the same named person, which is precisely
+ * the retelling this looks for.
+ */
+function wordRuns(text: string, n: number): ReadonlySet<string> {
+  const words = wordsOf(text).map(normaliseWord).filter(Boolean);
+  const runs = new Set<string>();
+  for (let i = 0; i + n <= words.length; i += 1) {
+    runs.add(words.slice(i, i + n).join(' '));
+  }
+  return runs;
+}
+
+/**
+ * THR-1473 — a chip's sentence is a **caption on a sheet entry**, not a second
+ * telling of the ending.
+ *
+ * Two judgments, both warn-level, reported per `(face, change)`:
+ *
+ *   1. **Length** — `causeClause` + `detail` together, against
+ *      {@link NUDGE_WORD_BUDGETS.chipSentence}. This field was the one
+ *      player-facing prose surface with no budget row, and it grew to a median
+ *      of 31 words because nothing ever reported it.
+ *   2. **Redundancy** — any run of {@link CHIP_OVERVIEW_OVERLAP_RUN_WORDS} words
+ *      the chip shares with the overview it renders under. The overview has
+ *      already told the reader what happened; the chip's job is the *state that
+ *      changed*, and a shared clause means it spent its budget re-telling the
+ *      cause instead.
+ *
+ * **Scoped to categorised chips**, matching {@link
+ * import('./compositionContract').chipStateNounWordingViolations}: an
+ * uncategorised change is not drawn as a `CATEGORY · NOUN` tag with a caption
+ * beside it, so neither judgment describes what the player sees.
+ *
+ * **Deduplicated by change id.** A change authored on a variant and inherited by
+ * three bands is one authored sentence and gets one finding — the same rule the
+ * chip-noun check applies, for the same reason: a report that scales with band
+ * count tells an author to fix one line four times. The *overlap* arm is the
+ * exception and is keyed by `(change, face)`, because the same sentence can be
+ * clean under one band's overview and redundant under another's, and only the
+ * face names which.
+ *
+ * Warn-level on purpose, and the clamp-follows-the-corpus rule says it stays
+ * that way until the corpus is drained (`nudgeAuthoringConstants.ts`; the
+ * THR-1225 lesson). THR-1473 drains the vertical slice; the retrofit corpus is
+ * ticketed separately, so gating now would turn it red for work nobody has been
+ * asked to do yet.
+ */
+export function chipSentenceProblems(template: UnifiedActionTemplate): readonly string[] {
+  const problems: string[] = [];
+  const lengthReported = new Set<string>();
+
+  for (const face of aftermathFaces(template)) {
+    const where = face.band ? `${face.variantKey}/${face.band}` : face.variantKey;
+    const overviewRuns = wordRuns(face.overview, CHIP_OVERVIEW_OVERLAP_RUN_WORDS);
+
+    for (const change of face.changes) {
+      // Uncategorised changes draw no tag, so there is no caption to budget.
+      if (!change.category) continue;
+      const sentence = chipSentenceOf(change);
+      if (!sentence) continue;
+
+      const words = chipSentenceWordCount(change);
+      if (words > NUDGE_WORD_BUDGETS.chipSentence && !lengthReported.has(change.id)) {
+        lengthReported.add(change.id);
+        problems.push(
+          `change '${change.id}' on ${where} runs ${words} words `
+            + `(budget ${NUDGE_WORD_BUDGETS.chipSentence}). A chip is a caption beside its tag — `
+            + 'one clause of cause at most, then the change (THR-1473)',
+        );
+      }
+
+      const shared = [...wordRuns(sentence, CHIP_OVERVIEW_OVERLAP_RUN_WORDS)]
+        .filter(run => overviewRuns.has(run));
+      if (shared.length > 0) {
+        problems.push(
+          `change '${change.id}' on ${where} retells its overview — shares `
+            + `${shared.map(run => `'${run}'`).join(', ')}. The overview already told the reader `
+            + 'what happened; the chip names the state that changed (THR-1473)',
+        );
+      }
+    }
+  }
+
+  return problems;
+}
+
 // ─── The warn channel ────────────────────────────────────────────────
 
 /**
@@ -297,5 +431,6 @@ export function doctrineV2Warnings(template: UnifiedActionTemplate): readonly st
   return [
     ...templateOpeningProblems(template).map(line => `[opening] ${line}`),
     ...cardNameShapeProblems(template).map(line => `[card name] ${line}`),
+    ...chipSentenceProblems(template).map(line => `[chip sentence] ${line}`),
   ];
 }

@@ -262,6 +262,25 @@ export const NUDGE_WORD_BUDGETS = {
   effectLine: 25,
   /** A card's `name` — imperative verb + noun, and little else. */
   name: 4,
+  /**
+   * A chip's sentence — `causeClause` and `detail` **together** (THR-1473).
+   *
+   * The one player-facing prose field that had no row here, which is exactly why
+   * it grew to novel length: at filing the vertical slice's 56 categorised chips
+   * ran a **median of 31 words**, 47 of them over this budget and 39 over 25.
+   * Nothing reported it because nothing priced it.
+   *
+   * Director ruling, 2026-09-12, on the Snow on the Pass aftermath: *"for both
+   * scars the flavour text is way too long. I suggest we keep it to max 15
+   * words."* The chip sits **beside its tag, under the band overview** — it is a
+   * caption on a sheet entry, not a second paragraph of the ending. Fifteen words
+   * is one clause of cause plus one of change, which is the whole job.
+   *
+   * Priced across both fields together because the surface draws them as one
+   * sentence (`causeClause — detail`); budgeting them apart would let 15 + 15
+   * through as a 30-word chip, which is the corpus median this row exists to cut.
+   */
+  chipSentence: 15,
 } as const;
 
 /**
@@ -426,3 +445,25 @@ export const CHIP_STATE_NOUN_MAX_WORDS = 3;
  * scene-phrase noun. Ruled legal in THR-1472's own filing.
  */
 export const CHIP_STATE_NOUN_REPUTATION_FORM = 'reputation with {target}';
+
+/**
+ * THR-1473 — the shared-run length at which a chip sentence counts as *retelling*
+ * the band overview it sits under.
+ *
+ * The second half of the director's ask — *"and a test that it does not
+ * communicate any of the same info as the aftermath"* — needs a machine-readable
+ * stand-in for "the same info", and an n-gram overlap is the honest one: it
+ * catches the shape the corpus actually produces, which is the overview's own
+ * clause pasted into the chip. The EXHAUSTED chip on Snow on the Pass shared
+ * *"the fire had to be"* with an overview that had already said it.
+ *
+ * **Four, not three or five.** Three admits ordinary English collocations that
+ * are not retelling (`out of the cold`, `the rest of the`); five misses the
+ * commonest real case, a re-quoted four-word clause.
+ *
+ * A **lower bound on retelling, never a proof of its absence** — a chip that
+ * paraphrases the overview in fresh words passes this and is still redundant.
+ * That residue belongs to the human critic, which is why this reports at warn
+ * level and why THR-1474's whole-page read is filed alongside it.
+ */
+export const CHIP_OVERVIEW_OVERLAP_RUN_WORDS = 4;

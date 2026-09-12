@@ -430,15 +430,28 @@ function authoredBands(template: UnifiedActionTemplate): readonly UnifiedActionO
  * lands on an outcome the variant did not override. It is reachable on nearly
  * every template, since no encounter authors all seven bands.
  */
-interface AftermathFace {
+export interface AftermathFace {
   readonly variantKey: string;
   readonly band?: UnifiedActionOutcome;
   readonly changes: readonly EncounterAftermathChange[];
   readonly reactions: readonly EncounterAftermathReaction[];
+  /**
+   * The closing prose this face renders above its chips (THR-1473).
+   *
+   * Resolved by the same `??` substitution as `changes` and `reactions`, so a band
+   * that overrides only its consequences still carries the variant's overview —
+   * which is the text its chips will actually sit under, and therefore the text a
+   * redundancy check has to compare them against.
+   *
+   * Carried here rather than re-walked by the caller for the reason this project
+   * keeps re-learning: a second walk over the same config is a second answer
+   * waiting to drift from the first.
+   */
+  readonly overview: string;
 }
 
 /** Every (variant × band) ending the config can render, resolved as the engine does. */
-function aftermathFaces(template: UnifiedActionTemplate): readonly AftermathFace[] {
+export function aftermathFaces(template: UnifiedActionTemplate): readonly AftermathFace[] {
   const config = template.aftermathConfig;
   if (!config) return [];
   const out: AftermathFace[] = [];
@@ -455,7 +468,8 @@ function aftermathFaces(template: UnifiedActionTemplate): readonly AftermathFace
     // module never throws (NFP #4).
     const baseChanges = variant.changes ?? [];
     const baseReactions = variant.reactions ?? [];
-    out.push({ variantKey, changes: baseChanges, reactions: baseReactions });
+    const baseOverview = variant.overview ?? '';
+    out.push({ variantKey, changes: baseChanges, reactions: baseReactions, overview: baseOverview });
 
     for (const [band, override] of Object.entries(variant.byOutcome ?? {})) {
       if (!override) continue;
@@ -465,6 +479,7 @@ function aftermathFaces(template: UnifiedActionTemplate): readonly AftermathFace
         // `??`, not a merge: this is the resolver's own substitution rule.
         changes: override.changes ?? baseChanges,
         reactions: override.reactions ?? baseReactions,
+        overview: override.overview ?? baseOverview,
       });
     }
   }
