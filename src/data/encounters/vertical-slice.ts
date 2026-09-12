@@ -989,7 +989,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
           polarity: 'info',
           category: 'path',
           direction: 'opens',
-          stateNoun: { text: 'what they know of this pass now', entityId: '$actor', visualKind: 'agent' },
+          stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
         },
       ],
       reactions: [
@@ -1053,11 +1053,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
               // chip may only link an attachment its own band grants. Linking the
               // exhaustion here would open the page for a thing the mortal no
               // longer has — a live link telling the opposite of the sentence.
-              stateNoun: {
-                text: 'the weariness they carried up',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'rested', tooltipId: 'ui.consequence.boon' },
             },
           ],
           reactions: [
@@ -1134,7 +1130,11 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'the nerve they came down with', entityId: '$actor', visualKind: 'agent' },
+              // THR-1472 — was 'the nerve they came down with' anchored to `$actor`:
+              // a scene phrase for a state the engine had no word for (the
+              // `quintessence_shift` below wrote a number and named nothing). The
+              // condition now exists, the reaction grants it, and the chip names it.
+              stateNoun: { text: 'shaken', entityId: 'trait.condition.shaken', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -1144,6 +1144,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
               intent: 'The road is below the snow line. They take it slowly.',
               effects: [
                 { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+                { kind: 'condition_attachment', templateId: 'trait.condition.shaken' },
                 {
                   kind: 'quintessence_shift',
                   delta: SLICE_NERVE_EROSION,
@@ -1506,11 +1507,7 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
           polarity: 'info',
           category: 'path',
           direction: 'opens',
-          stateNoun: {
-            text: 'what they know of the caravan roads',
-            entityId: '$actor',
-            visualKind: 'agent',
-          },
+          stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
         },
       ],
       reactions: [
@@ -1592,7 +1589,7 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'the face they showed the column', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
             },
           ],
           reactions: [
@@ -1629,7 +1626,11 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'the nerve they walked in with', entityId: '$actor', visualKind: 'agent' },
+              // THR-1472 — the slice's second nerve scar, same fix as
+              // `slice.pass.what_the_dark_took`: the state now has a word, the
+              // reaction grants it, and the tag reads on a sheet without this
+              // encounter in memory.
+              stateNoun: { text: 'shaken', entityId: 'trait.condition.shaken', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -1638,6 +1639,7 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
               label: 'Part ways at the gates',
               intent: 'The column scatters into the town, and the riders come down off the ridge at their leisure.',
               effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.shaken' },
                 {
                   kind: 'quintessence_shift',
                   delta: SLICE_NERVE_EROSION,
@@ -1967,7 +1969,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             // took a `tooltipId` rather than a `visualKind` because an agreement has
             // no art, and the type's rule is that a concept with no tile takes a
             // tooltip instead of a wrong one.
-            stateNoun: { text: 'the promise at the crossroads', tooltipId: 'ui.agreement' },
+            stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
             concepts: [{ text: 'a claim', tooltipId: 'ui.agreement' }],
           },
         ],
@@ -2020,7 +2022,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 polarity: 'info',
                 category: 'bond',
                 direction: 'loss',
-                stateNoun: { text: 'the promise at the crossroads', tooltipId: 'ui.agreement' },
+                stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
                 concepts: [{ text: 'The claim', tooltipId: 'ui.agreement' }],
               },
             ],
@@ -2040,7 +2042,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: { text: 'the promise they gave at the crossroads', tooltipId: 'ui.agreement' },
+                stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
                 concepts: [{ text: 'The first night’s sleep' }],
               },
             ],
@@ -2060,7 +2062,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: { text: 'their own given word', tooltipId: 'ui.agreement' },
+                stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
                 concepts: [{ text: 'the full moon' }],
               },
             ],
@@ -2114,11 +2116,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: {
-                  text: 'the stranger under the dead tree',
-                  entityId: '$cast:stranger',
-                  visualKind: 'agent',
-                },
+                stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
                 concepts: [{ text: 'what they want most' }],
               },
             ],
@@ -2161,11 +2159,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
           polarity: 'info',
           category: 'path',
           direction: 'opens',
-          stateNoun: {
-            text: 'the road back they carry with them',
-            entityId: '$actor',
-            visualKind: 'agent',
-          },
+          stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
           concepts: [{ text: 'that dead tree' }],
         },
       ],
@@ -2369,7 +2363,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
           // is real now, and the gift lands in their possessions where the noun
           // says it does. A `$spawned:` form is what would let this click straight
           // to the item; see the G1 note on the ticket.
-          stateNoun: { text: 'the parcel in their hands', entityId: '$actor', visualKind: 'agent' },
+          stateNoun: { text: 'The Crossroads Gift', entityId: '$artifact', visualKind: 'artifact' },
           concepts: [{ text: 'The parcel' }],
         },
       ],
@@ -2383,6 +2377,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               kind: 'spawn_artifact',
               category: 'talisman',
               targetAgentId: '$actor',
+              nameOverride: 'The Crossroads Gift',
               messageOverride: 'The crossroads gift, collected under the full moon.',
             },
           ],
@@ -2405,7 +2400,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               // G1: carrier-anchored — see the note on 'slice.fullmoon.the_gift'.
-              stateNoun: { text: 'the parcel in their hands', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'The Crossroads Gift', entityId: '$artifact', visualKind: 'artifact' },
               concepts: [{ text: 'theirs outright' }],
             },
             {
@@ -2418,7 +2413,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
-              stateNoun: { text: 'the promise at the crossroads', tooltipId: 'ui.agreement' },
+              stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
               concepts: [{ text: 'a claim' }],
             },
           ],
@@ -2443,7 +2438,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               // G1: carrier-anchored — see the note on 'slice.fullmoon.the_gift'.
-              stateNoun: { text: 'the parcel in their hands', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'The Crossroads Gift', entityId: '$artifact', visualKind: 'artifact' },
               concepts: [{ text: 'The gift' }],
             },
             {
@@ -2456,11 +2451,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'bond',
               direction: 'loss',
-              stateNoun: {
-                text: 'the second appointment they now carry',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [{ text: 'a meeting they never agreed to' }],
             },
           ],
@@ -2474,6 +2465,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
                   kind: 'spawn_artifact',
                   category: 'talisman',
                   targetAgentId: '$actor',
+                  nameOverride: 'The Crossroads Gift',
                   messageOverride: 'The crossroads gift, collected under the full moon.',
                 },
                 {
@@ -2504,7 +2496,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               // G1: carrier-anchored — see the note on 'slice.fullmoon.the_gift'.
-              stateNoun: { text: 'the parcel in their hands', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'The Crossroads Gift', entityId: '$artifact', visualKind: 'artifact' },
               concepts: [{ text: 'no clause' }],
             },
             {
@@ -2517,7 +2509,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'bond',
               direction: 'loss',
-              stateNoun: { text: 'the page he keeps them on', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
               concepts: [{ text: 'his books' }],
             },
           ],
@@ -2871,7 +2863,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: { text: 'a day of their own road', entityId: '$actor', visualKind: 'agent' },
+                stateNoun: { text: 'delay', tooltipId: 'ui.consequence.scar' },
                 concepts: [{ text: 'a day behind' }],
               },
               // THR-1130 — `slice.family.south_regardless` deleted, not folded
@@ -2935,7 +2927,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             polarity: 'info',
             category: 'path',
             direction: 'opens',
-            stateNoun: { text: 'their own road', entityId: '$actor', visualKind: 'agent' },
+            stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
             concepts: [{ text: 'the fen' }],
           },
         ],
@@ -2991,7 +2983,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 polarity: 'info',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: { text: 'their own certainty', entityId: '$actor', visualKind: 'agent' },
+                stateNoun: { text: 'shaken', entityId: 'trait.condition.shaken', visualKind: 'attachment' },
                 concepts: [{ text: 'lie awake counting' }],
               },
             ],
@@ -3001,6 +2993,10 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 label: 'Make the town by dark',
                 intent: 'The planned road, at the planned pace, and a long evening at the end of it.',
                 effects: [
+                  // THR-1472 — the chip names `shaken`, so the band grants it.
+                  // The shift alone wrote a number and no word, which is why the
+                  // noun used to read 'their own certainty'.
+                  { kind: 'condition_attachment', templateId: 'trait.condition.shaken' },
                   {
                     kind: 'quintessence_shift',
                     delta: SLICE_NERVE_EROSION,
@@ -3051,11 +3047,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           polarity: 'info',
           category: 'path',
           direction: 'opens',
-          stateNoun: {
-            text: 'what they know of the fen road east',
-            entityId: '$actor',
-            visualKind: 'agent',
-          },
+          stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
           concepts: [{ text: 'east of here' }],
         },
       ],
@@ -3363,7 +3355,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: { text: 'the face they showed him', entityId: '$actor', visualKind: 'agent' },
+                stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
                 concepts: [{ text: 'the face that came for him' }],
               },
             ],
@@ -3496,11 +3488,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
           polarity: 'info',
           category: 'path',
           direction: 'opens',
-          stateNoun: {
-            text: 'what they know of his circuit',
-            entityId: '$actor',
-            visualKind: 'agent',
-          },
+          stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
           concepts: [{ text: 'his pitch' }],
         },
       ],
@@ -3844,11 +3832,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               // G1: carrier-anchored — see the note on 'slice.fullmoon.the_gift'.
-              stateNoun: {
-                text: 'the keepsake they carry',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'The Pressed Keepsake', entityId: '$artifact', visualKind: 'artifact' },
               concepts: [{ text: 'a keepsake from the fen road' }],
             },
           ],
@@ -4437,11 +4421,7 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
                 polarity: 'gain' as const,
                 category: 'boon' as const,
                 direction: 'gain' as const,
-                stateNoun: {
-                  text: 'the lamp they carry',
-                  entityId: '$actor',
-                  visualKind: 'agent' as const,
-                },
+                stateNoun: { text: 'The Causeway Lamp', entityId: '$artifact', visualKind: 'artifact' as const },
                 concepts: [{ text: 'the causeway lamp' }],
               },
             ],
@@ -4594,11 +4574,7 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
                 polarity: 'gain' as const,
                 category: 'boon' as const,
                 direction: 'gain' as const,
-                stateNoun: {
-                  text: 'the loading order they carry',
-                  entityId: '$actor',
-                  visualKind: 'agent' as const,
-                },
+                stateNoun: { text: 'The Loading Order', entityId: '$artifact', visualKind: 'artifact' as const },
                 concepts: [{ text: 'the loading order' }],
               },
             ],

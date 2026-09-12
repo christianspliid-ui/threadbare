@@ -56,6 +56,10 @@ import {
 // THR-1172 — the same predicate the renderer styles on, so the gate and the
 // pixels cannot disagree about which nouns answer.
 import { tooltipResolves } from '../../engine/tooltipResolver';
+import {
+  CHIP_STATE_NOUN_MAX_WORDS,
+  CHIP_STATE_NOUN_REPUTATION_FORM,
+} from './nudgeAuthoringConstants';
 
 // ─── Contract constants (NFP #1 — every magic number is named) ───────
 
@@ -789,6 +793,98 @@ export function chipsWithoutReferent(template: UnifiedActionTemplate): readonly 
     }
   }
   return [...out];
+}
+
+/**
+ * THR-1472 — a chip's `stateNoun` must be a **character-sheet word**.
+ *
+ * Clause 2 ({@link chipAnchorViolations}) asks whether the chip's referent
+ * *resolves*. This asks whether its noun is *readable* — which is a different
+ * failure and, until this shipped, an unmeasured one: `SCAR · THE NERVE THEY CAME
+ * DOWN WITH` declares a perfectly resolvable anchor (`$actor`) and still tells the
+ * player nothing, because reading it requires holding this encounter in memory.
+ * A tag the player cannot read without the encounter is not a state, it is a
+ * souvenir, and the sheet is where it ends up.
+ *
+ * Director ruling, 2026-09-12, reviewing the Snow on the Pass aftermath: the first
+ * scar reads `EXHAUSTED` — *"generic & self-sufficient in its explanatory power and
+ * so works in different contexts"* — and the second *"does not work for this exact
+ * reason, it is contextually connected to this encounter"*.
+ *
+ * **The cover-the-title test, mechanised.** Cover the title and the overview: does
+ * the tag alone still say what the mortal now has? Two signals stand in for it,
+ * either of which is a finding:
+ *
+ *   1. **The noun runs long** — over {@link CHIP_STATE_NOUN_MAX_WORDS} words. A
+ *      state name is short by nature (`exhausted`, `wounded`, `agreement`); length
+ *      is the reliable tell that the author described the scene instead.
+ *   2. **The anchor is a cast placeholder** — `$actor`, `$target`, `$cast:*`. The
+ *      referent should be the state object the band wrote
+ *      (`trait.condition.exhausted`), not the mortal carrying it. Pointing at the
+ *      person is what an author does when there is no state object to point at —
+ *      and that is the deeper defect: the two nerve scars were backed by a bare
+ *      `quintessence_shift`, so no word for their state existed to be written.
+ *
+ * **Scoped to categorised chips.** An uncategorised `shell_state` change is not
+ * drawn as a `CATEGORY · NOUN` tag, so there is no sheet entry to be unreadable.
+ *
+ * **One exemption, and only one.** {@link CHIP_STATE_NOUN_REPUTATION_FORM} is
+ * already core game vocabulary and its referent genuinely is the other party, so it
+ * is lawful on both halves. Near-misses in the retrofit corpus (`standing with the
+ * company`, `trust with the quartermaster`) are reported on purpose: they should
+ * become the reputation form or the generic word, not a second spelling of it.
+ *
+ * **Warn-tier by ruling, for now.** `check-encounter.ts` reports these through the
+ * `[warn]` channel, which never affects the exit code — the clamp-follows-the-corpus
+ * rule from `nudgeAuthoringConstants.ts`. The vertical slice is migrated (THR-1472);
+ * the retrofit corpus is not, and gating on it would turn a green corpus red for work
+ * ticketed elsewhere. Promotion to a gating violation belongs with that migration.
+ *
+ * Read through {@link aftermathFaces} — the same walk clause 2 and
+ * {@link chipsWithoutReferent} use, so all three describe the same corpus.
+ */
+export function chipStateNounWordingViolations(
+  template: UnifiedActionTemplate,
+): readonly string[] {
+  const out: string[] = [];
+  const reported = new Set<string>();
+
+  for (const face of aftermathFaces(template)) {
+    const where = face.band ? `${face.variantKey}/${face.band}` : face.variantKey;
+    for (const change of face.changes) {
+      if (reported.has(change.id)) continue;
+      // Uncategorised changes are not drawn as a tag — nothing to read on a sheet.
+      if (!change.category) continue;
+      const noun = change.stateNoun;
+      if (!noun) continue;
+      // The reputation form is lawful on both halves of the rule.
+      if (noun.text === CHIP_STATE_NOUN_REPUTATION_FORM) continue;
+
+      const words = noun.text.trim().split(/\s+/).filter(Boolean);
+      if (words.length > CHIP_STATE_NOUN_MAX_WORDS) {
+        reported.add(change.id);
+        out.push(
+          `change '${change.id}' on ${where} names a scene phrase, not a state: `
+            + `'${noun.text}' runs ${words.length} words (max ${CHIP_STATE_NOUN_MAX_WORDS}). `
+            + 'A chip noun is a character-sheet word — cover the title and the overview, '
+            + 'and the tag alone must still say what the mortal now has (THR-1472)',
+        );
+        continue;
+      }
+
+      const anchor = noun.entityId;
+      if (anchor && (anchor === '$actor' || anchor === '$target' || anchor.startsWith('$cast:'))) {
+        reported.add(change.id);
+        out.push(
+          `change '${change.id}' on ${where} anchors its noun to the carrier `
+            + `('${anchor}'), not to the state the band wrote. Point \`stateNoun\` at the `
+            + 'state object (a condition id, an item, an agreement); if none exists, the '
+            + 'chip is claiming a state nothing named — write the condition (THR-1472)',
+        );
+      }
+    }
+  }
+  return out;
 }
 
 /** One anchor a chip declares, with enough context to say where it was written. */

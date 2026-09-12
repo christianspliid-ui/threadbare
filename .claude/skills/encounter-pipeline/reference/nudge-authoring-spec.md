@@ -1214,8 +1214,44 @@ encounter in the game is not a consequence either — it is filler wearing a chi
 
 **2. Name the state noun, and declare it.** Every chip declares `stateNoun`,
 `direction`, and `category` as structured fields — not as English for the surface to
-parse back out (Law 2). The noun is what appears on the tag: `SCAR · TWISTED ANKLE`.
+parse back out (Law 2). The noun is what appears on the tag: `SCAR · EXHAUSTED`.
 If you cannot name the noun, you do not yet have a consequence.
+
+**The noun is a character-sheet word (THR-1472).** Generic, self-sufficient, and
+readable with no memory of the encounter that wrote it — because that is where it
+ends up. The noun is the *name of the state the engine wrote*: a condition template's
+`name`, a reach, an item's name, an agreement (the generic word), `reputation with
+{target}`. Never a phrase minted for the scene.
+
+> **The cover-the-title test.** Cover the encounter title and the overview. Does the
+> tag alone still tell the player what they now have? `SCAR · EXHAUSTED` passes — it
+> points at one condition, works in any context, and reads on a sheet a month later.
+> `SCAR · THE NERVE THEY CAME DOWN WITH` fails: the player has to hold this encounter
+> in memory and reconstruct the connection before the tag means anything, which is
+> not a state, it is a souvenir.
+
+Director ruling, 2026-09-12, on the Snow on the Pass aftermath: *"it is generic &
+self-sufficient in its explanatory power and so works in different contexts. the second
+scar 'the nerve they came down with' does not work for this exact reason … instead …
+you would pick a mental condition like 'Unsure' or 'Diffident' or 'Stressed'."*
+
+Three consequences that catch most drafts:
+
+- **If no state word exists, write one.** The two nerve scars claimed a state the
+  engine had no name for (a bare `quintessence_shift`). The fix is a one-word condition
+  in `condition-trait-content.ts` that the band actually grants — not a better phrase.
+  A noun with nothing behind it is a Law 56 failure whatever it is worded like.
+- **An agreement's noun is the generic word**, not the pact's own title:
+  `BOND · AGREEMENT`, with the specifics one hover or click away. Same principle as
+  THR-1205 — core game vocabulary on the tag, detail behind it.
+- **`entityId: '$actor'` on a categorised chip is the tell.** The anchor should be the
+  state object the band wrote (`trait.condition.exhausted`), not the mortal carrying it.
+  When it points at the mortal, the noun is usually describing the scene rather than
+  naming a state. The one lawful exception is `reputation with {target}`, whose
+  referent genuinely is the other party.
+
+`check:encounter` reports every chip failing this as a `chip-state-noun` finding
+(`compositionContract.ts` → `chipStateNounWordingViolations`).
 
 **3. Pick the category the *character* would recognise**, not the mechanism:
 

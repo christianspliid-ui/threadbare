@@ -80,6 +80,7 @@ import { runnableStepSites } from '../src/types/unifiedAction';
 import {
   authoredProse,
   checkCompositionContract,
+  chipStateNounWordingViolations,
   type CompositionReport,
 } from '../src/data/content-eval/compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
@@ -275,7 +276,16 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
   ];
   const tokens = tokenProblems(template);
   const forecast = forecastProblems(template);
-  const warnings = [...audit.warnings, ...doctrineV2Warnings(template)];
+  // THR-1472 — chip nouns that are not character-sheet words. Warn-tier for the
+  // same reason the doctrine budgets are: the rule shipped with the vertical slice
+  // migrated and the retrofit corpus not, so gating would turn a green corpus red
+  // for work ticketed elsewhere. `--all` still *reports* every member, which is
+  // what the ruling asked for — the population has to be visible before it drains.
+  const warnings = [
+    ...audit.warnings,
+    ...doctrineV2Warnings(template),
+    ...chipStateNounWordingViolations(template),
+  ];
 
   // Deliberately does NOT read `warnings`. The doctrine's budgets and register
   // rules are warn-level by ruling, and the shipped corpus is expected to warn

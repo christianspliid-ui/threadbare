@@ -540,6 +540,7 @@ The editorial agent:
 29. **Unreadable compression** — a sentence that needs two readings, a paragraph carrying a larger story than its word count can hold, or clue information front-loaded in the opening that the shape puts behind an investigation gate (rule zero: game prose, not novel prose — clarity beats compression, dialogue welcome)
 30. **A shape invented on the fly** — the encounter does not name its shape from the catalog, or its step structure contradicts the shape it names
 31. **Invented game state in base prose** — a relationship, debt, prior visit, or standing between the agent and the world asserted in scene prose with no backing state read (prose rule 7: consume state through a gate or placeholder, produce it through grants/aftermath, never declare it in narration)
+32. **A chip noun that is not a character-sheet word** — a `stateNoun` the player cannot read without remembering this encounter. Apply the cover-the-title test (spec § Consequence Draw rule 2): cover the title and the overview, and if the tag alone no longer says what the mortal now has, it fails. `SCAR · EXHAUSTED` passes; `SCAR · THE NERVE THEY CAME DOWN WITH` does not. The noun names the state the engine wrote — a condition's `name`, a reach, an item, `AGREEMENT`, `reputation with {target}` — never a phrase minted for the scene. If no state word exists, the fix is a one-word condition the band grants, not a better phrase (THR-1472)
 
 ### Pass 3: Systems Audit + Final Merge
 

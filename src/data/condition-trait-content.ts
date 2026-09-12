@@ -269,6 +269,41 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
     } satisfies TraitDefinitionProperties,
   },
 
+  {
+    // THR-1472 — the same shape as `grieving` above, found the same way. Two
+    // vertical-slice scars claimed a mortal came off a bad night "less sure of
+    // themselves", backed only by a bare `quintessence_shift`: the engine wrote a
+    // number and no word, so the chips reached for scene phrases instead — "the
+    // nerve they came down with", "the nerve they walked in with". A tag the
+    // player cannot read without remembering that encounter is not a state
+    // (director ruling 2026-09-12), and the fix for a missing word is the word,
+    // not better phrasing.
+    //
+    // Christian's own candidates were "Unsure", "Diffident", "Stressed".
+    // `Shaken` is chosen over those three because it names the *event's residue*
+    // rather than a temperament — a mortal is shaken by something and recovers,
+    // which is what a duration-bearing condition models; "diffident" reads as who
+    // they are, not what last night did to them.
+    id: 'trait.condition.shaken',
+    type: 'trait',
+    name: 'Shaken',
+    properties: {
+      subcategory: 'condition',
+      description: 'Their own judgement is the thing they trust least right now.',
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // Lost nerve is not lost strength. It costs them where a decision has to be
+      // made under someone's eye — `star` (holding a course) and `heart` (facing
+      // people while unsure) — and deliberately leaves `iron` alone, which is what
+      // separates this from `exhausted`.
+      domainContributions: { star: -0.08, heart: -0.05 },
+      tags: ['#condition', '#social', '#negative'],
+      flavorText: 'They talk themselves through it twice before moving, and still move late.',
+      censusTag: { scale: 'personal' },
+    } satisfies TraitDefinitionProperties,
+  },
+
   // ─── Location conditions (THR-1143) ───────────────────────────────────────
   // Carried by a place. `censusTag.scale` is 'local' — the census counts these
   // against the world's state, not against any person's.
