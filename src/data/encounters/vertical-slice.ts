@@ -4347,10 +4347,35 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
    */
   requiredReputationWith: { atLeast: SLICE_TABLE_GATE_BAND },
   settings: ['rural', 'urban'],
-  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (TABLE_STEP).
+  /**
+   * P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (TABLE_STEP).
+   *
+   * THR-1493 — the place token is `{target:place}`, not `{location}`, and the
+   * openings no longer assert a return journey.
+   *
+   * `{location}` enriches to the agent's *current* position. This scene arrives
+   * by seed (`SLICE_TABLE_SEED`, 12 ticks after The Grateful Kin) and an
+   * `encounter_seed` has no spatial field — it fires wherever the agent has
+   * drifted to. So the old openings named whatever place the traveler happened
+   * to be standing in and called *that* the town that keeps a door open for
+   * them, while the `reputation_with` edge the parent wrote sat on a different
+   * town entirely. The standing was real; the opening pointed at the wrong node.
+   *
+   * `{target:place}` points at the right one on both arrival paths, which is why
+   * it replaces the token rather than joining it: on the organic draw the target
+   * *is* the place the scene stands in (the same node `requiredReputationWith`
+   * is checked against), and on the seeded path `inheritContext` carries the
+   * parent's `targetId` — the town whose regard that reaction just moved.
+   *
+   * The `returns to` / `comes back to` verbs are gone because no effect performs
+   * the journey (prose rule 7b, the THR-1476 sweep's finding). What survives is
+   * what the graph can vouch for: a named town, and a standing with it. The
+   * traveler being in the room is the scene's own present tense, the same
+   * arrival every opening in this file narrates.
+   */
   openings: {
-    rural: '{name} returns to {location}, the town that keeps a door open for them.',
-    urban: '{name} comes back to {location}, where a door is kept open for them.',
+    rural: '{name} is inside the door {target:place} keeps open for them, and the room is already divided.',
+    urban: 'The door {target:place} keeps open for {name} lets them into a room already taking sides.',
   },
   locationSubtypes: expandSettings(['rural', 'urban']),
   supportBundle: TABLE_SUPPORT_BUNDLE,

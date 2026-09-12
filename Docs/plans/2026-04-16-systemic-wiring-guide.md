@@ -77,6 +77,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{target}` | Scene target — the entity the encounter is *with* (THR-694). Falls back to "the other party" | "Serafina" |
 | `{target:they\|them\|their\|s}` (+ capitalized) | Target's pronouns; neutral fallback | "she/her/her/s" |
 | `{target:faction}` | Target's faction name; falls back to "their people" | "The Iron Wardens" |
+| `{target:place}` | **The place the scene is *about*** (THR-1493). On the organic draw that is the place the scene stands in, so it equals `{location}`; on a seed planted with `inheritContext: true` it is the *parent beat's* target, which `{location}` cannot name because a seed fires wherever the agent has drifted to. Falls back to the current location whenever the target is not a place (dead inherited target, or an agent-kind target) — a place token degrades to a place, never to "the other party". **Use this, not `{location}`, in any prose a seeded encounter may render** | "Ardenmor Keep" |
 | `{cast:<key>}` | Scene cast — a `supportBundle` member by spec key (THR-696). Renders the *bound* entity's live name | "Captain Merrow" |
 | `{econ_adj}` | Economic mood adjective (THR-725) — boom/bust coloration of the settlement the scene plays out in. Strips silently in the neutral prosperity band | "grain-heavy" (boom) / "shuttered" (bust) |
 | `{econ_noun}` | Economic mood noun phrase | "wagons queued past the gate" / "shuttered stalls" |
