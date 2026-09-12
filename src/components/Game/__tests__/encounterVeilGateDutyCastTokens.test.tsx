@@ -171,7 +171,7 @@ function renderGateDutyEnding(opts: { bindCourier: boolean }) {
     essence: 0.34,
   });
 
-  const view = render(
+  render(
     <EncounterVeil
       open
       model={model}
