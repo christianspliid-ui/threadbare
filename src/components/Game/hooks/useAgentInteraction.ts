@@ -621,6 +621,29 @@ export function useAgentInteraction({
     setProfileModalAgentId(null);
   }, []);
 
+  /**
+   * THR-1477 — open a named agent's character sheet directly, from a surface
+   * that is not the drawer.
+   *
+   * `openAgentProfileForId` (i.e. bare `setProfileModalAgentId`) is NOT enough
+   * on its own and never was: `agentInfoCard` is memoised on `selectedAgentId`,
+   * and GameView renders the sheet on `profileModalAgentId && agentInfoCard`.
+   * So setting only the profile id either renders nothing (no agent selected —
+   * the dead click on the encounter veil this ticket removes) or renders the
+   * *previously selected* agent's sheet under the new agent's id.
+   *
+   * This sets both, so the sheet that opens is the sheet that was asked for.
+   * Unlike `handleAgentSelect` it does not open the ActionDrawer: a caller
+   * behind a full-screen interrupt wants the sheet on top, not a drawer
+   * changing state underneath it.
+   */
+  const openAgentSheetForId = useCallback((agentId: string) => {
+    setSelectedAgentId(agentId);
+    setStrandViewAgent(null);
+    setDrawerOpen(false);
+    setProfileModalAgentId(agentId);
+  }, []);
+
   const handleThreadNodeSelect = useCallback((nodeId: string, category: ThreadCategory) => {
     if (category === 'agent') {
       // Use existing agent selection flow for agents
@@ -732,6 +755,7 @@ export function useAgentInteraction({
     handleViewProfile,
     handleCloseProfile,
     openAgentProfileForId: setProfileModalAgentId,
+    openAgentSheetForId,
     closeAllAgentOverlays,
   };
 }

@@ -534,6 +534,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleViewProfile,
     handleCloseProfile,
     openAgentProfileForId,
+    openAgentSheetForId,
     closeAllAgentOverlays,
     handleThreadDetailClose,
     selectedHexCoord,
@@ -1330,6 +1331,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     activeActionSnapshot?: UnifiedAction;
     clearanceGateStateSnapshot?: ClearanceGateRuntimeState;
   } | null>(null);
+
+  // THR-1477 — which aftermath reaction the player has already taken on the
+  // open encounter, or null. The pick no longer closes the veil, so the veil
+  // needs to know the decision is spent: without this the same buttons keep
+  // their live chrome after the choice is made (Law 21), and the second click
+  // would be a no-op the surface never admitted to. Cleared whenever an
+  // encounter opens or closes, so it can only ever describe the open one.
+  const [aftermathReactionTakenId, setAftermathReactionTakenId] = useState<string | null>(null);
+
+  // The flag belongs to exactly one open encounter. Keying the reset on the
+  // veil's subject — rather than clearing at each of the six
+  // `setTieredEncounterState` call sites — means a new call site cannot forget
+  // it, and a pick can never leak onto the next encounter.
+  const openEncounterKey = tieredEncounterState
+    ? `${tieredEncounterState.agentId}::${tieredEncounterState.notification?.id ?? tieredEncounterState.template.id}`
+    : null;
+  useEffect(() => {
+    setAftermathReactionTakenId(null);
+  }, [openEncounterKey]);
 
   // ── Encounter adapter routing: gate duty uses its specialized adapter,
   // other qualifying unified encounters use the general adapter,
@@ -3233,10 +3253,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       setInterruptSuppressedUntilTick(gameState.tick + 1);
     }
 
-    if (result.closeAfterSelection ?? true) {
-      closeEncounterModalAndResume(tieredEncounterState.openedAsInterrupt);
-    }
-  }, [applyAftermathReactionForAgent, closeEncounterModalAndResume, gameState.tick, tieredEncounterState]);
+    // THR-1477 — the pick lands its effects and the encounter STAYS OPEN.
+    //
+    // Before this, the reaction applied and closed the veil on the same click
+    // (`closeAfterSelection ?? true`), so there was no moment when the grants
+    // the aftermath chips describe had been written *and* the encounter was
+    // still on screen — opening the sheet beforehand shows the pre-encounter
+    // agent, which is the opposite of what the director asked for. Now the
+    // aftermath keeps "Return to the world" (already rendered beneath the
+    // reaction box) as its single exit, and the sheet opened from here shows
+    // the encounter's writes.
+    //
+    // `closeAfterSelection` is authored content and is still returned by
+    // `applyAftermathReactionForAgent` for its non-modal callers; it no longer
+    // decides when the modal closes, because the player does.
+    setAftermathReactionTakenId(result.reactionId ?? reactionId);
+  }, [applyAftermathReactionForAgent, gameState.tick, tieredEncounterState]);
 
   // ── Divine Receipt (THR-727) ──
   // The active receipt: an explicitly opened toast-tier receipt, else the oldest
@@ -5196,7 +5228,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onDisregard={handleEncounterDisregard}
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
-            onSelectAgent={handleAgentSelect}
+            aftermathReactionTakenId={aftermathReactionTakenId}
+            // THR-1477 — the veil's name opens the *character sheet*, not the
+            // action drawer. `handleAgentSelect` opens ActionDrawer, which sits
+            // below the veil's z-index 50 and is therefore invisible while the
+            // veil holds the screen: a control that looks live and does nothing
+            // (Law 21). `AgentProfileModal` mounts at MODAL_Z_ABOVE_INTERRUPT
+            // (65) precisely so it can stack above an interrupt (THR-1139), so
+            // the sheet opens on top and closing it returns to the encounter —
+            // the veil is never unmounted, so its step, hand and essence are
+            // untouched.
+            //
+            // It is `openAgentSheetForId`, not `openAgentProfileForId`: the
+            // latter sets only the modal id, while the card the modal renders
+            // is memoised on `selectedAgentId`, so on its own it shows nothing
+            // (no selection) or the previously selected agent. THR-1461 is the
+            // same root cause on the premonition's name control; this ticket
+            // builds the primitive, that one repoints its own surfaces.
+            onSelectAgent={openAgentSheetForId}
             onSelectEntity={(entityId, kind) => {
               // THR-1120 — a granted condition/blessing/curse/power opens the
               // attachment sheet. `entityId` is the template node id; see
