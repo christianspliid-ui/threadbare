@@ -21,6 +21,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ActionStep, UnifiedActionTemplate } from '../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../types/unifiedAction';
+import type { ContentQuery } from '../../../types/contentQuery';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../../__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
 import {
@@ -255,6 +256,115 @@ describe('Composition Contract — each block falsified from the passing exempla
     };
     expect(systemConnections(stripped).length).toBeLessThan(COMPOSITION_SYSTEMS_QUOTA_MIN);
     expect(blocksOf(stripped)).toContain('systems');
+  });
+
+  // ── content_query as a counted connection (THR-1489) ──
+  //
+  // Both arms off one base template, so the only difference between the failing
+  // and passing runs is the `query` field under test. The base is built *down*
+  // to one system short of the quota rather than up from nothing, because a
+  // template with no steps or aftermath fails for a dozen other reasons and the
+  // `systems` block would then be true by accident.
+  describe('systems: the content query counts toward the quota', () => {
+    // A base carrying **no** system connections at all: the exemplar with its
+    // support bundle, aftermath and every step-metadata grant removed. Measured
+    // rather than assumed — the first assertion below pins it at zero, so a
+    // future change to the exemplar that reintroduces a connection turns this
+    // block red instead of quietly moving the arithmetic under it.
+    const { supportBundle: _sb, aftermathConfig: _ac, ...bare } = NUDGE_GOLDEN_EXEMPLAR;
+    const EMPTY_BASE = {
+      ...(bare as UnifiedActionTemplate),
+      steps: NUDGE_GOLDEN_EXEMPLAR.steps.map(step =>
+        'nudges' in step
+          ? {
+            ...step,
+            nudges: step.nudges?.map(({ grants: _g, ...n }) => n),
+            successMetadata: undefined,
+            failureMetadata: undefined,
+          }
+          : step,
+      ),
+    } as UnifiedActionTemplate;
+
+    /**
+     * The empty base plus an aftermath carrying a seed, with or without a query.
+     *
+     * No support bundle: the aftermath alone contributes `rewards` and `seeds`,
+     * which lands the no-query arm at exactly one short of the quota. Adding the
+     * cast back would put it *at* the quota and the block could not flip — the
+     * arithmetic is what makes this a both-arms test rather than two passes.
+     */
+    const withSeed = (query: ContentQuery | undefined): UnifiedActionTemplate => ({
+      ...EMPTY_BASE,
+      aftermathConfig: {
+        ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!,
+        // The exemplar's band overrides carry item changes, which would add
+        // `rewards` and put the no-query arm *at* the quota rather than one
+        // short — the arithmetic this block depends on. Dropped explicitly, and
+        // the `toEqual` assertions below are what keep it dropped.
+        variants: {},
+        fallback: {
+          ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback,
+          changes: [],
+          byOutcome: {},
+          reactions: [
+            {
+              id: 'thr_1489_probe',
+              label: 'Follow it up',
+              effects: [
+                {
+                  kind: 'encounter_seed' as const,
+                  encounterFamily: 'encounter.slice',
+                  delayTicks: 4,
+                  seedLabel: 'the debt comes due',
+                  ...(query ? { query } : {}),
+                },
+              ],
+            },
+          ],
+        },
+      },
+    }) as UnifiedActionTemplate;
+
+    it('counts `content_query` only when a query literal is authored', () => {
+      const literal = systemConnections(withSeed(undefined));
+      const queried = systemConnections(
+        withSeed({ kind: 'encounter_template', tags: ['#slice_errand'] }),
+      );
+
+      // Falsification: the seed naming a family by *prefix* is the pre-THR-1488
+      // authoring route, and must NOT earn the new key — counting it would hand
+      // the key to the whole legacy corpus and make the census measure nothing.
+      expect(literal).toContain('seeds');
+      expect(literal).not.toContain('content_query');
+
+      // The controlled arm: same template, same seed, one field added.
+      expect(queried).toContain('seeds');
+      expect(queried).toContain('content_query');
+      expect(queried.length).toBe(literal.length + 1);
+    });
+
+    it('a template one system short of the quota passes with a query and fails without', () => {
+      // The preconditions, asserted rather than assumed — without them this test
+      // could pass while measuring nothing.
+      expect(systemConnections(EMPTY_BASE), 'base carries no connections').toEqual([]);
+
+      const withoutQuery = withSeed(undefined);
+      const withQuery = withSeed({ kind: 'encounter_template', tags: ['#slice_errand'] });
+
+      // rewards + seeds = 2, exactly one short of the quota of 3 …
+      expect(systemConnections(withoutQuery)).toEqual(['rewards', 'seeds']);
+      expect(systemConnections(withoutQuery).length)
+        .toBe(COMPOSITION_SYSTEMS_QUOTA_MIN - 1);
+
+      // … and the query is the single connection that closes the gap.
+      expect(systemConnections(withQuery)).toEqual(['rewards', 'seeds', 'content_query']);
+      expect(systemConnections(withQuery).length).toBe(COMPOSITION_SYSTEMS_QUOTA_MIN);
+
+      // The Done-when's actual claim, both arms.
+      expect(blocksOf(withoutQuery)).toContain('systems');
+      expect(blocksOf(withQuery)).not.toContain('systems');
+    });
   });
 });
 

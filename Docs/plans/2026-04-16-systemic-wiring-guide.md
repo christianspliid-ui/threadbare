@@ -3765,3 +3765,60 @@ anyone writing the tag twice. Never author a tag on an axis the kind's registry 
 **One thing a query cannot express, deliberately:** a filter that depends on the *recipient*.
 Companions and agreements keep their own catalog filters, because "not at the companion cap"
 and "this unique is not already in the world" are facts about the bearer, not about the content.
+
+## Capability 30: The query is *measured* — the brief die, the quota key, the census (THR-1489)
+
+Capability 29 made the content query exist. This is what stops it dying quietly, which is the
+failure mode the plan named in its own kill criteria: *"if two encounter batches after slice 5
+author zero queries, the retro names it a dead primitive."* A capability is alive only when the
+brief can roll it, a gate counts it, the live proof proves it, and the census reports it — so
+all four exist, and an author meets them in that order.
+
+**1. The brief rolls it.** Decision-shape die B has an eighth face, `query_prize`, with a
+**floor of one per batch of six**. A slot that rolls it still picks a step structure; what it
+owes on top is an ending that hands out its prize *by query, not by id*:
+
+```ts
+// Not this — one item, pinned forever, dead the day it is renamed:
+{ kind: 'reward_draw', templateId: 'item.silver_compass' }
+
+// This — the family the scene wants, and the world supplies a fitting member:
+{ kind: 'reward_draw', query: { kind: 'item_template', tags: ['#navigation', '#veil'] } }
+```
+
+It is the only **floor** on that die, where every other bound is a cap, because the two axes rot
+in opposite directions: a capped axis converges, an unreached primitive is simply never written.
+`npm run draw:packet` forces it onto the last slot that can still meet it, so a batch never needs
+a re-roll to comply, and `check:authoring-brief` fails a brief of six recording zero.
+
+**2. A gate counts it.** `content_query` is a systems-quota connection key. A template carrying
+an authored query literal earns it *in addition to* `seeds` — so a seed naming a family by query
+is worth two of the quota's three where one naming a literal id is worth one. **That double
+count is the incentive, not an oversight:** a quota that priced the query identically to the
+literal would give an author no reason to prefer it. Counted off an explicit `ContentQuery` only —
+a legacy `RewardPoolRecipe` projects onto a query at resolution time but is not *authored* as one,
+and counting it would hand the key to the whole legacy corpus on day one.
+
+**3. The live proof proves it.** `check:encounter-live` claims `content_query_resolved` — read
+off the `content.query_resolved` trace, not off the planted seed, because a seed carrying both a
+`templateId` and a `query` plants either way and `pendingEncounterSeeds` cannot tell a resolved
+query from a bypassed one. `check:undertaking-live` claims `catalyst_seeded` the same way.
+
+**4. The census reports it.** `npm run check:content-model-census` (weekly hygiene § 11) answers the
+two questions no gate can: which tags are **DEAD** (zero bearers — an author writes one and gets
+an empty pool with no error), and which query sites got **no hits** over a seeded 200-tick run.
+The batch reports print queries authored per batch.
+
+**Read a silent site carefully — it has three possible causes and they want opposite fixes.**
+Measured 2026-09-13: `undertaking_catalyst` reports zero hits not because nobody authored a query
+there but because the site is **unreachable** — all 35 `catalystQuery` carriers are legacy-arm
+pack templates and `UNDERTAKING_MODEL: 'cells'` does not walk a profile's `templateIds`
+(THR-1497). A second cause is *authored but unreached on this seed*. A third is the trace buffer's
+2000-entry ring evicting an early firing, which biases the census toward over-reporting death —
+lower `--ticks` to tell *alive-but-early* from *actually silent* before filing anything.
+
+**The lesson worth carrying to the next primitive.** That catalyst contract is wired, gated,
+contract-green and 🟢 LIVE on the interface map, and no player will ever meet it. Every
+connectivity hook was satisfied; none of them asked *"is this site on the path the live decision
+board walks?"* Reachability under the live model is a separate question from wiring, and only a
+census hit answers it.

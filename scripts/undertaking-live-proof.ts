@@ -54,7 +54,9 @@ import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import { clearTraces, enableTracing, getTraces } from '../src/engine/traceBuffer';
-import { getStrategicTemplate } from '../src/engine/strategicActionCandidates';
+import { getStrategicTemplate, getAllStrategicTemplates } from '../src/engine/strategicActionCandidates';
+import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
+import { describeContentQuery } from '../src/engine/contentQuery';
 import { isAutonomousDecisionActor } from '../src/engine/strategicKindReachability';
 import {
   clearUndertakingBandPin,
@@ -317,8 +319,96 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     claims.push({ name: 'harm_recorded', status: 'not_declared', detail: writes.harmClass ? `run ended ${final?.status}` : 'no harmClass' });
   }
 
+  // ── catalyst_seeded (THR-1489) ──
+  //
+  // Gated on the write set like every delivery claim above: a template declaring
+  // no `catalystQuery` is `not_declared`, one that declares it must show the
+  // query resolving at its own site.
+  //
+  // **Why this claim is expected to be `not_declared` on today's corpus, and why
+  // that is the honest answer rather than a hidden failure.** THR-1497 measured
+  // it: all 35 `catalystQuery` carriers are legacy-arm *pack* templates, and
+  // under the live `UNDERTAKING_MODEL: 'cells'` a profile's `templateIds` are not
+  // walked — so zero of the 60 cell templates carry the field and the
+  // `undertaking_catalyst` site is unreachable from the live board. Asserting a
+  // pass here against a pack template reached by a review lever would be a green
+  // check on an uncovered condition, which is the exact pathology this slice's
+  // census exists to catch.
+  //
+  // So the claim is real and falsifiable where it can be, and the gap is
+  // reported *loudly* by `catalystCorpusGap()` on every run rather than left to
+  // be inferred from a quiet `not_declared`. THR-1497 is the ticket that makes
+  // this claim reachable; when it lands, nothing here changes.
+  const catalystQuery = template.catalystQuery;
+  if (!catalystQuery) {
+    claims.push({
+      name: 'catalyst_seeded',
+      status: 'not_declared',
+      detail: (template.catalystEncounterIds?.length ?? 0) > 0
+        ? `catalysts named by ${template.catalystEncounterIds!.length} literal id(s), not by query`
+        : 'no catalystQuery',
+    });
+  } else {
+    const resolvedAtSite = traces.filter(
+      t => (t as { category?: string; site?: string }).category === 'content.query_resolved'
+        && (t as { site?: string }).site === 'undertaking_catalyst',
+    );
+    const emptyAtSite = traces.filter(
+      t => (t as { category?: string; site?: string }).category === 'content.query_empty'
+        && (t as { site?: string }).site === 'undertaking_catalyst',
+    );
+    claims.push({
+      name: 'catalyst_seeded',
+      status: resolvedAtSite.length > 0 ? 'pass' : 'fail',
+      detail: resolvedAtSite.length > 0
+        ? `${resolvedAtSite.length} undertaking_catalyst resolution(s) for `
+          + `${describeContentQuery(catalystQuery)}`
+        : emptyAtSite.length > 0
+          ? `${describeContentQuery(catalystQuery)} resolved empty at undertaking_catalyst `
+            + `${emptyAtSite.length}×`
+          : `declares ${describeContentQuery(catalystQuery)} but no content.query_* trace fired `
+            + 'at undertaking_catalyst — the site was never reached (THR-1497: the catalyst '
+            + "site is unreachable under UNDERTAKING_MODEL 'cells')",
+    });
+  }
+
   const verdict = computeVerdict(claims);
   return { templateId, seed, actorId, projectId, ticksRun, finalStatus: final?.status, claims, verdict };
+}
+
+/**
+ * The corpus-level reachability of the `undertaking_catalyst` query site (THR-1489).
+ *
+ * Printed on every run, not only when a claim fires. A `catalyst_seeded` reading
+ * `not_declared` is indistinguishable — from the report alone — between "this
+ * template chose not to use the primitive" and "no reachable template *can*",
+ * and those want opposite responses. This line says which, in numbers, off the
+ * live registry rather than off a comment that would rot.
+ */
+export function catalystCorpusGap(): {
+  readonly carriers: number;
+  readonly reachableCarriers: number;
+  readonly note: string;
+} {
+  // Both arms, exactly as `undertakingPackageIndex` composes the corpus — packs
+  // plus cells — so the denominator is the whole authored population and not
+  // whichever half this script happened to import.
+  const carriers = [...getAllStrategicTemplates(), ...UNDERTAKING_CELL_TEMPLATES]
+    .filter(t => t.catalystQuery !== undefined);
+  // Reachable = the arm the live model actually walks. A cell template carries a
+  // `cellVariant`; a pack is reached only through a profile's `templateIds`,
+  // which the cells model does not read.
+  const reachableCarriers = carriers.filter(t => t.cellVariant !== undefined);
+  return {
+    carriers: carriers.length,
+    reachableCarriers: reachableCarriers.length,
+    note: reachableCarriers.length === 0 && carriers.length > 0
+      ? `${carriers.length} template(s) declare catalystQuery and none is reachable under `
+        + "UNDERTAKING_MODEL 'cells' — the undertaking_catalyst query site is dead on the "
+        + 'live board (THR-1497)'
+      : `${reachableCarriers.length} of ${carriers.length} catalystQuery carrier(s) reachable `
+        + 'under the live undertaking model',
+  };
 }
 
 /** Did the completion's mutation leave the kind's object in the graph? Read by hint type. */
@@ -392,9 +482,15 @@ if (isMain) {
   const { ids, seeds, map, band, json } = parseArgs(process.argv.slice(2));
   const runs: ProofRun[] = [];
   for (const id of ids) for (const seed of seeds) runs.push(proveTemplate(id, seed, map, band));
+  const catalystGap = catalystCorpusGap();
   if (json) {
-    console.log(JSON.stringify({ runs }, null, 2));
+    console.log(JSON.stringify({ runs, catalystGap }, null, 2));
   } else {
+    // Printed before the runs, not after: a reader scanning a wall of
+    // `catalyst_seeded · no catalystQuery` rows needs to know *why* they all
+    // read that way before they read them (THR-1489).
+    console.log(`  catalyst query site — ${catalystGap.note}`);
+    console.log('');
     for (const r of runs) {
       const mark = r.verdict === 'proved' ? '✓' : r.verdict === 'failed' ? '✗' : '○';
       console.log(`${mark} ${r.templateId} seed ${r.seed} — ${r.verdict}${r.actorId ? ` (actor ${r.actorId}, ${r.ticksRun} ticks, ${r.finalStatus})` : ''}`);

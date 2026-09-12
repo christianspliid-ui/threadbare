@@ -269,7 +269,8 @@ export type SystemConnection =
   | 'seeds'
   | 'conditions'
   | 'reputation'
-  | 'factions';
+  | 'factions'
+  | 'content_query';
 
 /**
  * Canonical order, so two templates connecting to the same systems report
@@ -284,6 +285,7 @@ export const SYSTEM_CONNECTIONS: readonly SystemConnection[] = [
   'conditions',
   'reputation',
   'factions',
+  'content_query',
 ];
 
 export interface CompositionReport {
@@ -1123,6 +1125,28 @@ export function systemConnections(
   if (effects.some(e => e.kind === 'encounter_seed')) found.add('seeds');
   if (effects.some(e => CONDITION_EFFECT_KINDS.has(e.kind))) found.add('conditions');
 
+  // THR-1489 — the content query as a counted connection.
+  //
+  // **The double count is the mechanism, not an oversight.** A seed carrying a
+  // query scores both `seeds` and `content_query`, so it is worth two of the
+  // quota's three where a seed naming a literal id is worth one. That is
+  // deliberate: THR-1481's kill criterion is that the primitive dies by never
+  // being reached for, and a quota that priced the query identically to the
+  // literal would give an author no reason to prefer it. The cheaper route *is*
+  // the incentive. What it costs is that a template can reach quota with two
+  // authored systems instead of three, which is the trade the slice accepts —
+  // and the brief die's floor (`query_prize`) is the other half, so reaching for
+  // the query is rolled rather than merely rewarded.
+  //
+  // Counted off an explicit `ContentQuery` literal only. A legacy
+  // `RewardPoolRecipe` *projects* onto a query at resolution time (slice 3), but
+  // it is not authored as one, and counting it would hand the new key to the
+  // whole legacy corpus on day one — which would make the census measure
+  // nothing and the "new factory output required to carry it" rule unenforceable.
+  if (effects.some(e => e.kind === 'encounter_seed' && e.query !== undefined)) {
+    found.add('content_query');
+  }
+
   const reputationChange = changes.some(
     c => c.kind === 'reputation' || c.kind === 'reputation_tally' || c.kind === 'faction_reputation',
   );
@@ -1231,6 +1255,9 @@ function systemsOfEffect(effect: EncounterAftermathReactionEffect): readonly Sys
   const out: SystemConnection[] = [];
   if (PERSISTENT_EFFECT_KINDS.has(effect.kind)) out.push('rewards');
   if (effect.kind === 'encounter_seed') out.push('seeds');
+  // Same predicate as `systemConnections`'s arm, so the Stage 3 union answer and
+  // the Stage 4 per-band answer cannot disagree about whether a query is here.
+  if (effect.kind === 'encounter_seed' && effect.query !== undefined) out.push('content_query');
   if (CONDITION_EFFECT_KINDS.has(effect.kind)) out.push('conditions');
   if (REPUTATION_EFFECT_KINDS.has(effect.kind)) out.push('reputation');
   if (FACTION_EFFECT_KINDS.has(effect.kind)) out.push('factions');

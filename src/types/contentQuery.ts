@@ -106,3 +106,30 @@ export type ContentQuerySite =
   | 'undertaking_catalyst'
   | 'condition_pool'
   | 'debug';
+
+/**
+ * Every site, enumerable at runtime (THR-1489).
+ *
+ * The census needs to report the sites that produced **no** hits over a run, and
+ * an absence cannot be read off the traces — only the presences can. So the
+ * denominator has to exist as a value, not merely as a union.
+ *
+ * Typed `readonly ContentQuerySite[]` and exhaustive by the assertion below, so a
+ * seventh site added to the union and missed here is a compile error rather than
+ * a site the census silently stops watching.
+ */
+export const CONTENT_QUERY_SITES: readonly ContentQuerySite[] = [
+  'reward_draw',
+  'step_reward_pool',
+  'encounter_seed',
+  'undertaking_catalyst',
+  'condition_pool',
+  'debug',
+];
+
+/** Compile-time exhaustiveness: every union member appears in the array above. */
+type _AllSitesEnumerated = ContentQuerySite extends (typeof CONTENT_QUERY_SITES)[number]
+  ? true
+  : never;
+const _sitesAreExhaustive: _AllSitesEnumerated = true;
+void _sitesAreExhaustive;

@@ -60,7 +60,7 @@ const OUTPUT_REL = path.join('.claude', 'skills', 'encounter-pipeline', 'referen
 
 // ─── Census ─────────────────────────────────────────────────────────────────
 
-interface TagView {
+export interface TagView {
   readonly def: ContentTagDef;
   /** Bearer count per kind — authored only, since a projected tag is not an authoring choice. */
   readonly perKind: ReadonlyMap<ContentObjectKindId, number>;
@@ -70,7 +70,7 @@ interface TagView {
   readonly dead: boolean;
 }
 
-function buildViews(): { views: TagView[]; unknownKinds: string[] } {
+export function buildViews(): { views: TagView[]; unknownKinds: string[] } {
   const authoredCounts = new Map<string, Map<ContentObjectKindId, number>>();
   const effectiveCounts = new Map<string, number>();
   const unknownKinds: string[] = [];
@@ -224,4 +224,15 @@ function main(): void {
   );
 }
 
-main();
+// Only generate when this module is the entry point — `content-census.ts` imports
+// `buildViews` for the DEAD-tag half of the weekly hygiene report, and an
+// unguarded `main()` would make *reading* the census write the catalog as a side
+// effect (THR-686's hazard, exactly).
+//
+// Gated on the entry file's basename rather than `import.meta.url`, because
+// `esbuild --bundle` rewrites `import.meta.url` to the bundle's own path and the
+// usual guard evaluates true inside a bundle.
+const entryBasename = path.basename(process.argv[1] ?? '');
+if (entryBasename.startsWith('generate-content-tag-catalog')) {
+  main();
+}

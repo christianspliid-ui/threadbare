@@ -157,6 +157,23 @@ The blocking wiki-freshness gate (`check:wiki-freshness:blocking` in CI) catches
 
 Glob extensions and page-update tickets are agent-owned technical verdicts (THR-608); surface to Christian under `## Needs Christian` only when a genuinely undocumented system needs a creative call on whether/how to document it.
 
+### 11. Content-model census (THR-1489)
+
+```bash
+npm run check:content-model-census -- --ticks 200 --seed 42 --map medium
+```
+
+Paste its rendered block into the report under `## Content model census`. It answers the two questions THR-1481's kill criterion turns on — *is the content model reached, or merely present?* — and neither is answerable by reading code:
+
+1. **DEAD tags.** A tag with zero effective bearers is a query nothing can answer: an author writes it, gets an empty pool, and no error fires. Counted through the catalog generator's own `buildViews`, so the census and `Docs/canon/content-objects.generated.md` cannot disagree.
+2. **Silent query sites.** A site with no hits over the seeded run is either *unreachable from the live board* or *unauthored* — opposite problems with opposite fixes. Check reachability before recording a silent site as a content gap; `undertaking_catalyst` is known-unreachable under `UNDERTAKING_MODEL: 'cells'` (THR-1497) and should not be re-filed while that ticket stands.
+
+**Read the eviction caveat before filing anything.** The trace buffer is a 2000-entry ring, so a site that fired only in the opening ticks can read as silent at tick 200. The bias is toward over-reporting dead sites, never under-reporting them: re-run at a lower `--ticks` to separate *alive-but-early* from *actually silent* before a finding leaves this lane.
+
+**Baseline, 2026-09-13 (seed 42, 200 ticks, medium):** 106 live tags, 7 DEAD (`#blackmail_evidence`, `#community`, `#contraband`, `#light`, `#military`, `#stewardship`, `#supply`); `step_reward_pool` live with 8 resolutions, the other four non-debug sites silent. Movement against this baseline is the finding — the absolute numbers are not.
+
+This is a **report**, not a gate: the script always exits 0. Two consecutive encounter batches authoring zero queries is the retro's "dead primitive" finding, and that judgement is a human's to make with this report in hand.
+
 ## Recording findings
 
 **This lane does not file tickets** (CLAUDE.md § Continuous Improvement, Christian 2026-08-10). Measured that week: 32 of 35 Ready-for-Dev items were Low-priority process cleanup and zero were feature or content work, with the lanes still filing more. The materiality bar governed what *qualified*; nothing governed *who files*. So a scheduled lane logs what it finds and moves on, and the **weekly retro is the single promotion point** — it batches the log and files the few items that clear the bar, with the accumulated cost quoted.
@@ -189,6 +206,9 @@ Write to `Docs/ops/weekly-hygiene-YYYY-MM-DD.md`:
 
 ## Findings
 (THR-XXX — title, one line each)
+
+## Content model census
+(paste `check:content-model-census` output; note movement against the 2026-09-13 baseline)
 
 ## Clean checks
 (one line per section that passed)
