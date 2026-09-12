@@ -1,25 +1,28 @@
 # User Action Required
 
-**Last updated:** 2026-09-11 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-12 08:05 local (06:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### 1. Open a session for the held-town design — [THR-1448](https://linear.app/threadbare/issue/THR-1448)
+### 1. Play the five encounters in one sitting — [THR-1220](https://linear.app/threadbare/issue/THR-1220)
 
-Say **"work the held-town design"**.
+The question: *is the integrated encounter experience at an acceptable state?*
 
-The second half of your own sentence from 10 September: a claimed town *"is a commitment and probably also a faction position? it could open up specific encounters within that faction and influence what undertakings are prioritized."* The first half is built and merged — a hold is now kept by working it.
+This is the checkpoint you asked for on 24 August — *"i don't think i have seen a prototype where all the components from different systems are at an acceptable state."* It is the first time every component has been level at once, verified on the live site last night rather than merely merged.
 
-The second half is the interesting one: when a mortal keeps a town, the faction starts treating them as **its** town-keeper — sending them work it would not send a stranger, and bending what that mortal does next toward the town and the faction that cares about it.
+1. [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · 2. [Snow on the Pass](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · 3. [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · 4. [A Bargain at the Crossroads](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · 5. [The Swindled Family](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family)
 
-The ticket is staged on the design desk, unassigned, with the five questions the plan must answer and the reading it should start from already written in. Nothing is wanted from you but the hour — and with the board empty of in-flight work, nothing is competing with it.
+Two known rough edges, both ticketed, neither session-spoiling: a name said twice in one sentence ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and two identical-looking reward tags with an underline that does nothing ([THR-1467](https://linear.app/threadbare/issue/THR-1467)).
+
+A yes makes *"slice validated"* real and opens the charting of the next chapter. A no charters the gaps instead.
 
 *This is the only open ask.*
 
 ## Resolved this period
 
-- **2026-09-11 — both slice-blocking faults are fixed** ([THR-1464](https://linear.app/threadbare/issue/THR-1464), [THR-1465](https://linear.app/threadbare/issue/THR-1465), both merged). The first divine choice no longer paints its cards on top of itself, and encounters no longer list three strangers as present in scenes they appear nowhere in. One verification pass ([THR-1469](https://linear.app/threadbare/issue/THR-1469)) now stands between you and the sitting.
-- **2026-09-11 — the slice sitting is correctly on hold, not forgotten** ([THR-1220](https://linear.app/threadbare/issue/THR-1220)). The pre-flight played all five encounters and found the two faults above; the fix-then-recheck work is wired in front of the invitation so it cannot reach you early.
+- **2026-09-12 — the held-town design is no longer an ask on you** ([THR-1448](https://linear.app/threadbare/issue/THR-1448)). It led the last two briefs; on review that was this lane's error. You gave the direction on 10 September, and the questions the ticket leaves open are the designer's, not yours. Staged for a design lane to pick up.
+- **2026-09-11 — the slice passed verification and the invitation is released** ([THR-1469](https://linear.app/threadbare/issue/THR-1469)). All five encounters re-walked end to end on the live build; verdict **level**. This is what stood between you and the sitting.
+- **2026-09-11 — both slice-blocking faults are fixed** ([THR-1464](https://linear.app/threadbare/issue/THR-1464), [THR-1465](https://linear.app/threadbare/issue/THR-1465)). The first divine choice no longer paints its cards on top of itself, and encounters no longer list three strangers as present in scenes they appear nowhere in.
 - **2026-09-11 — the aftermath rules question is settled** ([THR-1053](https://linear.app/threadbare/issue/THR-1053)): an aftermath change has to name something you can click, not carry a separate concept list. The last two encounters held behind it are free.
 - **2026-09-11 — your delegations are now in the agents' own instructions** ([THR-1458](https://linear.app/threadbare/issue/THR-1458), [THR-1457](https://linear.app/threadbare/issue/THR-1457) both merged). This brief stops re-offering you decisions you already handed over.
 - **2026-09-11 — the Encounter Factory's pilot volume is finished** ([THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1043](https://linear.app/threadbare/issue/THR-1043)): fifteen nudge-era encounters brought up to the full contract.
@@ -27,7 +30,6 @@ The ticket is staged on the design desk, unassigned, with the five questions the
 - **2026-09-11 — the screenshot sweep is done** ([THR-1133](https://linear.app/threadbare/issue/THR-1133)). Nine passes, nineteen full-size captures, three defects found and filed ([THR-1459](https://linear.app/threadbare/issue/THR-1459), [THR-1460](https://linear.app/threadbare/issue/THR-1460), [THR-1461](https://linear.app/threadbare/issue/THR-1461)). Your approved hour bought all of it.
 - **2026-09-11 — the camp-six sample is closed** ([THR-1130](https://linear.app/threadbare/issue/THR-1130)): your blanket approval covered it, recorded as *"batch 2 sample: yes"*. Listing it as still owed after that was this lane's error.
 - **2026-09-11 — Realms and Areas are simulated, not drawn** ([THR-1155](https://linear.app/threadbare/issue/THR-1155)), all three slices merged and live on the deployed build.
-- **2026-09-11 — you cleared eleven standing asks in one sentence.** *"all recommendations accepted"*, then *"you are approved to unblock everything here. none of it seems dangerous or problematic or requires an important verdict from me."* Recorded as four named delegations in [`Docs/canon/process.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md).
 
 ---
 
