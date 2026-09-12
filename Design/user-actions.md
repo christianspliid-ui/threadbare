@@ -1,19 +1,19 @@
 # User Action Required
 
-**Last updated:** 2026-09-12 21:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-12 22:58 local (20:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is shipped, merged and live. Since then the scene prose improved again: a scene now names **the place it is about** separately from wherever the mortal is standing ([THR-1493](https://linear.app/threadbare/issue/THR-1493), merged 21:27).
+You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is shipped, merged and live, and nothing has changed on these two screens in the last hour.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Two blemishes you may still meet are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)) and a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)); both are faults in what writes the prose, both queued.
+The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Two blemishes you may meet are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)) and a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)); both are faults in what writes the prose, both queued. A reward defect filed at 22:29 ([THR-1496](https://linear.app/threadbare/issue/THR-1496)) cannot reach these two — all sixteen sites are army, tavern, quest and anomaly scenes.
 
-The wider design map (fights, items, powers) waits behind eight questions only you can answer. Deliberately not chased while the sitting is live — say **"work the map"** in a chat when you are ready to work them one at a time.
+The wider design maps — fights, items, powers — have now finished all the homework an agent can do, and wait behind twelve questions only you can answer. Deliberately not chased while the sitting is live: say **"work the map"** in a chat when you are ready to work them one at a time.
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 

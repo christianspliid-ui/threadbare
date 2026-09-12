@@ -1,16 +1,18 @@
 # Briefing
-**Generated:** 2026-09-12 21:56 local (19:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-12 22:58 local (20:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Two encounters left in the sitting, and nothing is in the way.** [THR-1220](https://linear.app/threadbare/issue/THR-1220) — the integrated slice checkpoint. Everything from your four morning batches is merged and serving, and two more improvements landed in the last hour, one of them to the scene prose itself: a scene now names **the place it is about** separately from wherever the mortal happens to be standing. The live site is on the newest commit. Nothing you open is stale.
+**Two encounters left in the sitting, and the path through them is clean.** [THR-1220](https://linear.app/threadbare/issue/THR-1220) — the integrated slice checkpoint. Nothing has merged since the two fixes an hour ago, so nothing on these screens has moved under you: everything your four morning batches produced is shipped and serving, and the live site is on the newest commit.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 **The question: is the integrated encounter experience at an acceptable state?** A pass charters the hub map — factions, war, economy and divine actions all hang off this interface.
 
-Two blemishes you may still meet on those screens are **already decided and are not asks** — both are faults in what writes the prose, not in what draws it: a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)) and a cast name that collides with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)). Both are queued. Read past them.
+Two blemishes you may still meet are **already decided and are not asks** — both are faults in what writes the prose, not in what draws it: a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)) and a cast name that collides with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)). Both are queued. Read past them.
+
+A third defect was filed in the last hour — sixteen encounters that promise a reward and hand over nothing. **It cannot reach these two screens**: all sixteen are army, tavern, quest and anomaly scenes, none of them a slice encounter. If a prize fails to arrive on the bridge or the caravan, that is a new finding and worth telling me.
 
 ## Also waiting (2)
 
@@ -20,28 +22,18 @@ Two blemishes you may still meet on those screens are **already decided and are 
 
   That is the knowledge system working as designed, but it sits against what you asked the name-click *for*. **Should an encounter's own consequences be exempt from the familiarity gate — because you were there and watched it happen — or does the fog stay honest?** Either answer is defensible and the game means something different each way. Saying nothing leaves it as-is, which is also a real answer. You will likely meet it during the sitting.
 
-- **What is a player allowed to leaf through?** Four questions about what the codex is *for*. *(— from tb-orchestrator)*
-
-  Building the content cards measured which kinds of thing a player can actually look up, and found six with no reference page at all. Two are plain oversights the lane will fix without asking you. Four are yours:
-
-  - Should a player be able to leaf through all **557 encounters**? Or only the ones they have already lived — a chronicle rather than a catalogue, which is a different and possibly better game?
-  - Do **omens** lose something if you can look them up? They are meant to arrive, not be consulted.
-  - Is an **ambition** a thing with a definition page, or only something you read off the person carrying it?
-  - Same for **companions**.
-
-  Nothing is broken while these sit — the cards open, they are just shallower. Filed as [THR-1495](https://linear.app/threadbare/issue/THR-1495), not urgent, deliberately not promoted to the build queue.
+- **What is a player allowed to leaf through?** Four questions about what the codex is *for* — all **557 encounters** browsable or only the ones already lived; whether **omens** lose something if you can look them up; whether an **ambition** and a **companion** are definition pages or only read off the person carrying them. Filed as [THR-1495](https://linear.app/threadbare/issue/THR-1495); nothing is broken while these sit. *(— from tb-orchestrator)*
 
 ## Queue
 
-**Backed up — 18 ready, nothing in dev, nothing parked, nothing stale.**
+**Backed up — 17 ready, 1 in dev, nothing parked, nothing stale.**
 
-- **Two things shipped in the last hour and the builder then went idle.** [THR-1487](https://linear.app/threadbare/issue/THR-1487) — the one rule that lets any content hand out any other content — merged at 21:00 ([#1922](https://github.com/christianspliid-ui/threadbare/pull/1922)). [THR-1493](https://linear.app/threadbare/issue/THR-1493) — the scene-prose fix named above — merged at 21:27 ([#1923](https://github.com/christianspliid-ui/threadbare/pull/1923)). Both are live.
-- **Nothing is being built right now.** No issue is claimed, no PR is open, and eighteen things are waiting for a builder. The pickup lane runs at the top of the hour; this is the gap between two of its runs, not a stall — but it does mean nothing you say or don't say this hour changes the pace.
-- **[THR-1488](https://linear.app/threadbare/issue/THR-1488) joined the queue at 21:28** — the next content-model slice, teaching encounters and undertakings to use the rule that just landed. It went straight to the front. *(— from tb-orchestrator)*
-- **Six of the 18 are low-priority deferrals**; the rest were touched in the last two days. Nothing has sat longer than a week.
-- The wider map — fights, items, powers — still waits behind eight questions only you can answer, deliberately not chased while the sitting is live. Say **"work the map"** in a chat when the sitting is done. *(— from tb-orchestrator)*
+- **A builder picked up the next content-model slice at 22:43.** [THR-1488](https://linear.app/threadbare/issue/THR-1488) — teaching encounters and undertakings to use the hand-out rule that landed at 21:00. No PR yet; twelve minutes old, healthy. Last hour's brief said nothing was being built; that gap has closed on its own.
+- **A promise the game is currently breaking joined the queue at 22:29.** [THR-1496](https://linear.app/threadbare/issue/THR-1496) — sixteen encounters tell the player they have been paid and then draw nothing. It surfaced because the rule that shipped at 19:01 widened a check which had been looking at one recipe in 482 and calling the whole corpus clean. Nine need an author's judgment about what the scene *should* hand out; seven are plain typos. No decision from you; a builder can take it. *(— from tb-orchestrator)*
+- **All three design maps have now finished waiting.** Every piece of homework an agent could do on **fights**, **items** and **powers & spellcraft** is done — nine research tickets, all nine closed. Twelve questions remain across the three, and each is one only you can answer; nothing further can be designed or built on any of them until you do. Deliberately not chased while the sitting is live — say **"work the map"** in a chat when it is done and they get worked one at a time. *(— from tb-orchestrator)*
+- **Nothing else is stuck.** Nothing needs you for the building work, no PR is open anywhere, six of the 17 are low-priority deferrals, and nothing has sat longer than a week.
 
 ## Health
 
-- **All green.** Site serving the newest commit on main (`cb952de7`). CI and all three post-merge jobs green, no PR waiting to merge, all nine lanes on schedule, reaper ran at 21:40. Engine speed is 64 ms/tick — 25% **faster** than the seven-day median.
-- **The lane-silence probe still reports the same three old gaps, and still is not being carried to you.** The newest is Friday afternoon into Saturday morning — the weekend shape you ruled normal on 11 September. The two older ones are four and five days past, self-resolved, and the machine has shipped many times since; an answer now would change nothing. The probe's window is long enough that resolved gaps never age out of it, which is why this line repeats — a calibration matter for the lane, logged for the weekly review rather than raised with you.
+- **All green.** Site serving the newest commit on main (`cb952de7`). CI and all three post-merge jobs green, no PR waiting to merge, all nine lanes on schedule, reaper ran at 22:40. Engine speed is 63 ms/tick — 26% **faster** than the seven-day median across 93 measurements.
+- **The lane-silence probe still reports the same three old gaps, and still is not being carried to you.** The newest ended this morning — Friday afternoon into Saturday, the weekend shape you ruled normal on 11 September. The two older ones are four and five days past, self-resolved, and the machine has shipped many times since; an answer now would change nothing. The probe's window is long enough that resolved gaps never age out of it, which is why this line repeats — a calibration matter for the lane, logged for the weekly review rather than raised with you.
