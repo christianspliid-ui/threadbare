@@ -11,6 +11,9 @@
  *   {ally:strongest}    → strongest ally name, or fallback
  *   {them}/{they}/{s}   → gendered pronouns (default: they/them)
  *   {location}          → current location name
+ *   {target:place}      → the place the scene is about (seeded: the inherited
+ *                         target; organic: the place the scene stands in), or
+ *                         the current location when the target is not a place
  *   {?has_X}...{/has_X} → conditional block (rendered if condition true)
  *   {?no_X}...{/no_X}   → inverse conditional block
  */
@@ -633,6 +636,21 @@ export function enrichProse(
   result = result.replace(/\{target:them\}/g, tgtP?.them ?? 'them');
   result = result.replace(/\{target:their\}/g, tgtP?.their ?? 'their');
   result = result.replace(/\{target:s\}/g, tgtP?.s ?? '');
+  // THR-1493 — `{target:place}` is "the place this scene is about", and it is the only
+  // token that is true on both of an encounter's two arrival paths. On the organic draw
+  // the target *is* the place the scene stands in, so it equals `{location}`. On a
+  // `templateId` seed with `inheritContext`, `resolveSeedInheritance` carries the source
+  // action's `targetId` through to the spawned action, so the target is the place the
+  // parent beat was about — which `{location}` cannot name, because that reads the
+  // agent's *current* position and a seed fires wherever the agent has drifted to.
+  // The fallback is `currentLocationName` rather than the bare-`{target}` "the other
+  // party": a place token must degrade to a place. That covers both ways the target can
+  // fail to be one — a dead inherited target (which falls back to self-target, and
+  // `resolveSceneTargetContext` returns undefined for self) and an agent-kind target.
+  result = result.replace(
+    /\{target:place\}/g,
+    tgt?.kind === 'location' ? tgt.name : ctx.currentLocationName,
+  );
   // Residual strip: unknown {target:*} tokens never leak (matches only the colon form).
   result = result.replace(/\{target:[^}]+\}/g, '');
   result = result.replace(/\{target\}/g, tgt?.name ?? 'the other party');

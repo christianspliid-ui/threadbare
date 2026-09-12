@@ -4170,3 +4170,9 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-12 | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | THR-1487 — Capability 29: content tags and the content query | A capability the guide does not name is one content agents will not use |
 | 2026-09-12 | `Docs/canon/content-objects.md` | THR-1487 — § The content query; new rejected approach (gating one route of two) | Step 0 for content authoring |
 | 2026-09-12 | `Docs/status/2026-09-12-thr-1487.md` | THR-1487 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-12 | `src/engine/proseEnrichment.ts` | THR-1493 — new `{target:place}` token: the place the scene is *about*, falling back to the current location rather than to "the other party" | A seeded encounter's `{location}` is the place the agent drifted to, not the place the parent beat was about |
+| 2026-09-12 | `src/data/encounters/vertical-slice.ts` | THR-1493 — The Table That Holds' two openings read `{target:place}` and drop the return-journey verb | The prose named the wrong town and asserted a journey no effect performs (prose rule 7b) |
+| 2026-09-12 | `src/engine/__tests__/targetPlacePlaceholder.test.ts` | THR-1493 — three arms against a generated world (seed 42, medium), falsification arm in-test | The two nodes under assertion are only distinct because worldgen made them so |
+| 2026-09-12 | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | THR-1493 — `{target:place}` added to the enrichment placeholder table | A capability the guide does not name is one content agents will not use |
+| 2026-09-12 | `public/attention-story-reference.html` | THR-1493 — place tokens split by which place they mean | `src/engine/prose*.ts` is one of this page's sources |
+| 2026-09-12 | `Docs/status/2026-09-12-thr-1493.md` | THR-1493 — new status fragment | One file per entry since THR-1016 |
