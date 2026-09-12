@@ -24,7 +24,14 @@ import culturalConvergence from './mandates/cultural-convergence.json';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
-/** JSON shape: mandate definition + co-located prose */
+/**
+ * JSON shape: a mandate template definition.
+ *
+ * Carried a co-located `prose` block until THR-1198 ruled the run's spine is
+ * remembrance-derived. No code path instantiates a template mandate, so that
+ * prose had no reader; milestone prose now lives in
+ * `mandate-remembrance-prose.ts`, keyed to the ids a live game mints.
+ */
 export interface MandateJsonShape {
   id: string;
   type: string;
@@ -41,7 +48,6 @@ export interface MandateJsonShape {
       params: Record<string, unknown>;
     }>;
   }>;
-  prose: Record<string, string>;
 }
 
 /** MandateTemplate = MandateDefinition + sphereAffinities (same shape as before) */
@@ -55,7 +61,6 @@ const VALID_CONDITION_TYPES = new Set(['node_count', 'edge_count', 'sphere_weigh
 const VALID_STAGES: MandateStage[] = ['setup', 'escalation', 'culmination'];
 const VALID_TYPES = new Set(['graph_state', 'narrative', 'sphere_dominance', 'simulation_achievable']);
 const VALID_SPHERES = new Set<string>(['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy']);
-const REQUIRED_PROSE_KEYS = ['setup_to_escalation', 'escalation_to_culmination', 'completed', 'failed'];
 
 // ─── Validation ─────────────────────────────────────────────────────
 
@@ -95,14 +100,6 @@ export function validateMandateJson(raw: unknown, filename: string): MandateTemp
       if (!cond.params || typeof cond.params !== 'object') {
         throw new Error(`${filename}: condition in '${stage.stage}' missing params`);
       }
-    }
-  }
-
-  // Prose
-  if (!data.prose || typeof data.prose !== 'object') throw new Error(`${filename}: missing prose object`);
-  for (const key of REQUIRED_PROSE_KEYS) {
-    if (!data.prose[key] || typeof data.prose[key] !== 'string') {
-      throw new Error(`${filename}: missing prose key '${key}'`);
     }
   }
 
@@ -150,19 +147,4 @@ const RAW_MANDATES: Array<{ data: unknown; filename: string }> = [
 /** Load and validate all 12 mandate templates from JSON files. */
 export function loadMandateTemplates(): MandateTemplate[] {
   return RAW_MANDATES.map(({ data, filename }) => validateMandateJson(data, filename));
-}
-
-/** Load milestone prose from all mandate JSON files, keyed by mandateId.transition. */
-export function loadMandateMilestoneProse(): Record<string, string> {
-  const prose: Record<string, string> = {};
-  for (const { data, filename } of RAW_MANDATES) {
-    // Validate first to ensure JSON is well-formed
-    validateMandateJson(data, filename);
-    const rawJson = data as MandateJsonShape;
-    const mandateKey = rawJson.id.replace('mandate.', '');
-    for (const [transition, text] of Object.entries(rawJson.prose)) {
-      prose[`${mandateKey}.${transition}`] = text;
-    }
-  }
-  return prose;
 }

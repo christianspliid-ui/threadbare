@@ -1174,10 +1174,9 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     data: constants(
       ['DEFAULT_DOOM_TICKS', gameConfig.DEFAULT_DOOM_TICKS, 'Total ticks for a standard game length'],
       ['TWILIGHT_TICKS', gameConfig.TWILIGHT_TICKS, 'Ticks of twilight phase before game end'],
-      ['MANDATE_PRIMARY_WEIGHT', gameConfig.MANDATE_PRIMARY_WEIGHT, 'Score weight for primary mandate conditions'],
-      ['MANDATE_SECONDARY_WEIGHT', gameConfig.MANDATE_SECONDARY_WEIGHT, 'Score weight for secondary mandate conditions'],
-      ['MANDATE_BASE_WEIGHT', gameConfig.MANDATE_BASE_WEIGHT, 'Base score weight for all mandate conditions'],
-      ['MANDATE_ACHIEVABLE_MULTIPLIER', gameConfig.MANDATE_ACHIEVABLE_MULTIPLIER, 'Multiplier for achievable mandate conditions'],
+      // The four MANDATE_*_WEIGHT / _MULTIPLIER rows were retired with
+      // `generateMandate` (THR-1198) — they weighted template selection, and
+      // nothing selects a template mandate any more.
     ),
     viewer: 'constants',
     sourceFile: 'src/data/game-config.ts',

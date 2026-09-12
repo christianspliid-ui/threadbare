@@ -929,13 +929,12 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['resolveMilestoneProse', 'MANDATE_MILESTONE_PROSE'],
       module: 'src/engine/mandateMilestoneProse.ts',
     },
-    writeSites: ['src/data/mandates/**', 'src/data/mandate-loader.ts', 'src/data/mandate-content.ts'],
+    writeSites: ['src/data/mandate-remembrance-prose.ts', 'src/data/mandate-content.ts'],
     readSites: ['src/engine/mandateMilestoneProse.ts', 'src/engine/phaseMandate.ts'],
-    badgeOverride: {
-      badge: 'PARTIAL',
-      reason:
-        'THR-1197 wired both phaseMandate evaluators through resolveMilestoneProse, so the consumer half is real and traced. The producer half does not reach it: the 48 authored strings are keyed to the 12 template mandate ids, and no live game instantiates one — both gameInit writers call generateRememberedMandate, and generateMandate has no production caller. Every live resolution therefore takes the fallback branch. Mechanically LIVE, in effect PARTIAL until the fork is ruled.',
-      deferralTicket: 'THR-1198',
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        'THR-1198 closed the producer half. The fork was ruled for remembrance, so the prose is now keyed to the two ids a live game mints — remembrance.{hunger} (identity path) and remembrance.{primary}_{secondary}, the latter resolved through the primary sphere family because its own key space is 132 ordered pairs. Live CLI proof, seed 42 / map medium, tick 75: mandate_milestone_prose trace reads `Mandate "Chaos Ascendancy" narrates its setup_to_escalation beat from authored prose (remembrance.sphere.chaos.setup_to_escalation)` — authored: true, the branch that had never fired. The 48 template strings and generateMandate were retired in the same change rather than left as data with no reader.',
     },
   },
   {

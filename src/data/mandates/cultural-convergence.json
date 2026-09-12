@@ -3,7 +3,10 @@
   "type": "simulation_achievable",
   "name": "Cultural Convergence",
   "description": "Cultures spread and take root. Identity becomes destiny.",
-  "sphereAffinities": ["life", "mind"],
+  "sphereAffinities": [
+    "life",
+    "mind"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -47,11 +50,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "Three mortals claim identity within new cultures. Belonging takes shape—a root deeper than flesh and blood.",
-    "escalation_to_culmination": "Six souls now carry cultural identity. Heritage spreads through bloodlines and choice alike. Convergence is inevitable now.",
-    "completed": "Ten cultural bonds trace themselves through the realm. Identity has become destiny. The Convergence is written into being itself.",
-    "failed": "The cultures fail to take root. Identity remains fractured and scattered. People resist the shape you were trying to impose."
-  }
+  ]
 }

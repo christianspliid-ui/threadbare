@@ -3,7 +3,10 @@
   "type": "graph_state",
   "name": "Dominion of Stone",
   "description": "Control settlements across the realm. Establish architectural supremacy.",
-  "sphereAffinities": ["matter", "force"],
+  "sphereAffinities": [
+    "matter",
+    "force"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -53,11 +56,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "Stone answers the call. Two settlements bend their walls toward your will. The architecture shifts—support beams align like prayer.",
-    "escalation_to_culmination": "Four cities now pulse with your dominion. Their stones hum in unison, a chorus of matter aligned to purpose. The realm is becoming blueprint.",
-    "completed": "Five settlements stand as monuments to your reign. The world has been remade in stone and vision. You have shaped the very bones of the earth.",
-    "failed": "The stones slip from your grasp. Settlements refuse your dominion. The earth remembers older gods."
-  }
+  ]
 }

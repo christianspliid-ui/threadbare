@@ -16,16 +16,16 @@
  * map keeps one source of truth (the JSON) and leaves the miss explicit and
  * traceable at the call site via `ResolvedMilestoneProse.authored`.
  *
- * TODO(THR-1198): the 48 authored strings are keyed to the 12 template mandate ids,
- * and no live game instantiates one — both `gameInit` writers call
- * `generateRememberedMandate`, and `generateMandate` (the only route to a
- * `MANDATE_TEMPLATES` id) has no production caller. So every live resolution today
- * takes the fallback branch. The wiring is correct and waiting on content or a
- * design ruling, not on more engine work; watch the `mandate_milestone_prose` trace
- * for `authored: true` to know when that lands.
+ * THR-1198 closed the gap this module was built ahead of. The fork — does a run's
+ * spine come from what the god remembers, or from a named campaign the world
+ * offers — was ruled for remembrance, so the authored prose is now keyed to the
+ * two ids a live game actually mints and the template prose was retired with
+ * `generateMandate`. See `src/data/mandate-remembrance-prose.ts` for the content
+ * and the two-table rationale.
  */
 
 import { MANDATE_MILESTONE_PROSE } from '../data/mandate-content';
+import type { SphereName } from '../types/index';
 import type { MandateStage } from '../types/mandate';
 
 /** The four authored transitions every mandate JSON is required to carry. */
@@ -35,10 +35,17 @@ export type MandateProseTransition =
   | 'completed'
   | 'failed';
 
-/** Lookup result. `authored` records whether the JSON supplied the text. */
+/** Lookup result. `authored` records whether the content supplied the text. */
 export interface ResolvedMilestoneProse {
   text: string;
   authored: boolean;
+  /**
+   * The key that produced `text`, or `undefined` on the fallback branch. Traced
+   * so a run that narrates from the sphere family rather than the god's own
+   * Hunger is visible as such rather than indistinguishable from an exact hit
+   * (NFP #2).
+   */
+  key?: string;
 }
 
 const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
@@ -74,19 +81,52 @@ export function transitionForStageChange(
     : 'setup_to_escalation';
 }
 
+/** The sphere-family key a remembrance mandate falls back to. */
+function sphereFamilyKey(
+  primarySphere: SphereName,
+  transition: MandateProseTransition,
+): string {
+  return `remembrance.sphere.${primarySphere}.${transition}`;
+}
+
+function lookup(key: string): string | undefined {
+  const text = MANDATE_MILESTONE_PROSE[key];
+  return typeof text === 'string' && text.length > 0 ? text : undefined;
+}
+
 /**
  * Resolve the authored line for `{mandateId}.{transition}`, falling back to
  * `fallback` when nothing was authored for this mandate.
+ *
+ * Two authored branches, tried in order:
+ *
+ * 1. The mandate's own id — `remembrance.{hunger}` on the identity path, which is
+ *    what every real playthrough holds.
+ * 2. `primarySphere`'s family, when given. This is what carries the identity-less
+ *    path (`remembrance.{primary}_{secondary}`): its key space is 132 ordered
+ *    pairs, so it is authored per primary sphere — 12 rows covering all 132 —
+ *    rather than per pair. Passing the sphere from the live `MandateDefinition`
+ *    keeps the derivation out of id string-parsing, where a Hunger named after a
+ *    sphere would one day collide.
+ *
+ * Never throws (NFP #4): an id with nothing authored on either branch narrates
+ * from `fallback`, and the caller's trace records which branch won.
  */
 export function resolveMilestoneProse(
   mandateId: string,
   transition: MandateProseTransition,
   fallback: string,
+  primarySphere?: SphereName,
 ): ResolvedMilestoneProse {
-  const key = `${toProseKeyPrefix(mandateId)}.${transition}`;
-  const authored = MANDATE_MILESTONE_PROSE[key];
-  if (typeof authored === 'string' && authored.length > 0) {
-    return { text: authored, authored: true };
+  const exactKey = `${toProseKeyPrefix(mandateId)}.${transition}`;
+  const exact = lookup(exactKey);
+  if (exact) return { text: exact, authored: true, key: exactKey };
+
+  if (primarySphere) {
+    const familyKey = sphereFamilyKey(primarySphere, transition);
+    const family = lookup(familyKey);
+    if (family) return { text: family, authored: true, key: familyKey };
   }
+
   return { text: fallback, authored: false };
 }

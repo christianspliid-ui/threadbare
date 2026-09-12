@@ -1,29 +1,22 @@
+/**
+ * Mandate evaluation integration tests.
+ *
+ * THR-1198 retired `generateMandate` and the one test here that exercised it —
+ * the run's spine is remembrance-derived, so nothing instantiates a template
+ * mandate and a test asserting that it could was green on a dead contract.
+ *
+ * What remains is deliberately kept: `evaluateMandate`, `advanceMandateStage`
+ * and `evaluateCondition` are live (`phaseMandate.ts` calls all three), and the
+ * templates are still a valid `MandateDefinition` fixture for them — the only
+ * one carrying graph-condition stages. These are coverage of live functions, not
+ * of the retired instantiation route.
+ */
 import { describe, it, expect } from 'vitest';
-import { generateMandate } from '../mandateGenerator';
 import { createMandateState, evaluateMandate, advanceMandateStage, evaluateCondition } from '../mandate';
 import { WorldGraph } from '../graph';
 import { MANDATE_TEMPLATES } from '../../data/mandate-content';
-import type { SphereName } from '../../types/index';
 
 describe('mandate integration — full lifecycle', () => {
-  it('generate → create state → evaluate → advance through all stages', () => {
-    const cosmology: Record<SphereName, number> = {
-      force: 0.1, matter: 0.3, energy: 0.1, life: 0.1,
-      mind: 0.1, spirit: 0.1, time: 0.1, entropy: 0.1,
-    };
-
-    // 1. Generate mandate
-    const mandate = generateMandate(cosmology, { primary: 'spirit', secondary: 'mind' }, 42);
-    expect(mandate.id).toBeTruthy();
-    expect(mandate.stages).toHaveLength(3);
-
-    // 2. Create initial state
-    let state = createMandateState(mandate.id, 0);
-    expect(state.currentStage).toBe('setup');
-    expect(state.progress).toBe(0);
-    expect(state.completed).toBe(false);
-  });
-
   it('actor_tier mandate: full cycle with graph changes', () => {
     // Pick a mandate that uses actor_tier
     const mandate = MANDATE_TEMPLATES.find(t => t.id === 'mandate.devoted_circle')!; // Devoted Circle

@@ -15,8 +15,8 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 96 |
-| 🟠 PARTIAL | 2 |
+| 🟢 LIVE | 97 |
+| 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
@@ -187,7 +187,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `mandate-milestone-prose-narrates-transitions` | The campaign spine narrates its own turns — a mandate stage advance, completion or failure reads in the authored voice of that mandate, not a generated stub. | function: `resolveMilestoneProse`, `MANDATE_MILESTONE_PROSE` | Attention, Chronicle & Narrative | 🟠 PARTIAL | THR-1198 |
+| `mandate-milestone-prose-narrates-transitions` | The campaign spine narrates its own turns — a mandate stage advance, completion or failure reads in the authored voice of that mandate, not a generated stub. | function: `resolveMilestoneProse`, `MANDATE_MILESTONE_PROSE` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
 ### Mortal Economy & Prosperity
 
@@ -973,10 +973,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 64 total — 1 write, 2 read, 61 unclassified
+- **Production hits:** 65 total — 1 write, 2 read, 62 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +56 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +57 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -1048,16 +1048,17 @@ exit
 - **Other hits:** `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx`, `src/components/Game/useDebugOpenModal.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
-### `mandate-milestone-prose-narrates-transitions` — 🟠 PARTIAL
+### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
 
 - **Intent:** The campaign spine narrates its own turns — a mandate stage advance, completion or failure reads in the authored voice of that mandate, not a generated stub.
 - **Producer → Consumer:** Mandate → Attention, Chronicle & Narrative
 - **UL terms:** *Victory Mandate*
 - **Module:** `src/engine/mandateMilestoneProse.ts`
-- **Production hits:** 4 total — 2 write, 2 read, 0 unclassified
-- **Write sites:** `src/data/mandate-content.ts`, `src/data/mandate-loader.ts`
+- **Production hits:** 5 total — 2 write, 2 read, 1 unclassified
+- **Write sites:** `src/data/mandate-content.ts`, `src/data/mandate-remembrance-prose.ts`
 - **Read sites:** `src/engine/mandateMilestoneProse.ts`, `src/engine/phaseMandate.ts`
-- **Verdict:** Pinned by badgeOverride: THR-1197 wired both phaseMandate evaluators through resolveMilestoneProse, so the consumer half is real and traced. The producer half does not reach it: the 48 authored strings are keyed to the 12 template mandate ids, and no live game instantiates one — both gameInit writers call generateRememberedMandate, and generateMandate has no production caller. Every live resolution therefore takes the fallback branch. Mechanically LIVE, in effect PARTIAL until the fork is ruled.
+- **Other hits:** `src/data/mandate-loader.ts`
+- **Verdict:** Verified 2026-09-12: THR-1198 closed the producer half. The fork was ruled for remembrance, so the prose is now keyed to the two ids a live game mints — remembrance.{hunger} (identity path) and remembrance.{primary}_{secondary}, the latter resolved through the primary sphere family because its own key space is 132 ordered pairs. Live CLI proof, seed 42 / map medium, tick 75: mandate_milestone_prose trace reads `Mandate "Chaos Ascendancy" narrates its setup_to_escalation beat from authored prose (remembrance.sphere.chaos.setup_to_escalation)` — authored: true, the branch that had never fired. The 48 template strings and generateMandate were retired in the same change rather than left as data with no reader.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
 

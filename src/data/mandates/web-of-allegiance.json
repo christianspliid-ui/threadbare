@@ -3,7 +3,10 @@
   "type": "graph_state",
   "name": "Web of Allegiance",
   "description": "Form deep alliances. Unite factions under a shared vision.",
-  "sphereAffinities": ["mind", "spirit"],
+  "sphereAffinities": [
+    "mind",
+    "spirit"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -47,11 +50,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "Two factions bind themselves to your cause. The threads of alliance form—fragile but real. Politics bends toward your will.",
-    "escalation_to_culmination": "Four nations now move as one. Regional blocs align beneath your vision. The web of allegiance becomes a net strong enough to catch destiny.",
-    "completed": "Six powers stand united under your purpose. The realm is bound by oath and thread. Division has yielded to the singular vision of your ascendancy.",
-    "failed": "The alliances shatter like glass. Trust breaks. The nations turn from your vision and remember their own hunger."
-  }
+  ]
 }

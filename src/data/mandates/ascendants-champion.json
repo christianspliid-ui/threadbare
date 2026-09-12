@@ -3,7 +3,10 @@
   "type": "narrative",
   "name": "The Ascendant's Champion",
   "description": "Raise an agent to Aspect tier. Elevate a mortal to divine status.",
-  "sphereAffinities": ["spirit", "mind"],
+  "sphereAffinities": [
+    "spirit",
+    "mind"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -55,11 +58,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "One mortal rises beyond the veil. Demigod now, they bear your mark. The world begins to see that divinity can be granted.",
-    "escalation_to_culmination": "One ascends to true divinity while three demigodsstand as proof of your power. Your champions multiply. The age of mortals is ending.",
-    "completed": "Aspect tier is achieved. One of your champions now sits among the eternal. They are your eternal voice in the world. Immortality given and received.",
-    "failed": "Your chosen ones fall back to lesser stations. Elevation slips through your fingers. Perhaps mortals were never meant to touch the divine."
-  }
+  ]
 }
