@@ -289,11 +289,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               title: 'The Telling Spreads',
               causeClause: 'The reading was given where everyone could hear it',
               detail: 'The story of a rite against death, stopped by a reader, is being carried out of {location}.',
-              stateNoun: {
-                text: 'an omen abroad',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [
                 {
                   text: 'omen',
@@ -357,11 +353,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               title: 'The Telling Spreads',
               causeClause: 'The reading was given in front of the makers',
               detail: 'Word of an unfinished rite against death is travelling out of {location}.',
-              stateNoun: {
-                text: 'an omen abroad',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [
                 {
                   text: 'omen',
@@ -425,11 +417,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               title: 'The Keeper Turned',
               causeClause: 'They said the working would not hold, and said it out loud',
               detail: '{cast:keeper} does not want them back at {location}.',
-              stateNoun: {
-                text: 'a bond soured',
-                entityId: '$cast:keeper',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'reputation with {target}', entityId: '$cast:keeper', visualKind: 'agent', tooltipId: 'ui.reputation_with' },
               concepts: [
                 {
                   text: 'bond',
@@ -488,11 +476,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               title: 'The Telling Spreads',
               causeClause: 'A paid reader blessed a working nobody had read',
               detail: 'Word is travelling that a rite against death was blessed without being understood.',
-              stateNoun: {
-                text: 'an omen abroad',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [
                 {
                   text: 'omen',
@@ -556,11 +540,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               title: 'The Telling Spreads',
               causeClause: 'The reader who came to rule had to be carried out',
               detail: 'The story leaving {location} is that the working beat the person sent to read it.',
-              stateNoun: {
-                text: 'an omen abroad',
-                entityId: '$actor',
-                visualKind: 'agent',
-              },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [
                 {
                   text: 'omen',

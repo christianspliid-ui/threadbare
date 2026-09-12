@@ -261,13 +261,13 @@ describe('The Broken Seal — aftermath', () => {
     expect(variant?.addNudgeIds).toEqual(['seal.draw_on_character']);
   });
 
-  it('carries two individual-anchored chips (THR-1317 restored the ambition carrier)', () => {
+  it('carries no carrier-anchored chip at all (THR-1480)', () => {
+    // Was "two individual-anchored chips (THR-1317 restored the ambition carrier)".
+    // Both were `$actor`/`agent`: the ambition and a future_hook. THR-1472 ruled a
+    // carrier anchor the tell of a missing state object, and both states now have a
+    // word — `ui.ambition` and `ui.aftermath_seed`.
     const allChanges = Object.values(byOutcome ?? {}).flatMap((band) => band?.changes ?? []);
-    const individualAnchored = allChanges.filter((c) => c.stateNoun?.visualKind === 'agent');
-    expect(individualAnchored.map((c) => c.id).sort()).toEqual([
-      'seal.crit_fail.the_wanting',
-      'seal.fail.driven_out',
-    ]);
+    expect(allChanges.filter((c) => c.stateNoun?.visualKind === 'agent').map((c) => c.id)).toEqual([]);
   });
 
   /**
@@ -282,20 +282,31 @@ describe('The Broken Seal — aftermath', () => {
    * instead fails `check:chip-anchors` outright — clause 2 wants an `entityId` or a
    * resolving `tooltipId`, and no tooltip concept names an ambition.
    *
-   * So the assertion is inverted rather than deleted: the carrier route the correction
-   * asked for is now the one that actually exists.
+   * So the assertion was inverted rather than deleted: the carrier route the correction
+   * asked for became the one that actually existed.
+   *
+   * THR-1480 closes it properly. That comment names its own blocker in one clause —
+   * *"no tooltip concept names an ambition"* — so the carrier anchor was never the
+   * intent, only the sole shape that rendered. `ui.ambition` is now written, which is
+   * the option THR-1317 would have taken, and THR-1472's rule makes it the required
+   * one: the state object is the ambition, not the mortal pursuing it.
    */
-  it('the ambition chip on critical_failure anchors the actor as the ambition carrier', () => {
+  it('the ambition chip on critical_failure names the ambition, not its carrier', () => {
     const chip = byOutcome?.critical_failure?.changes?.find((c) => c.id === 'seal.crit_fail.the_wanting');
     expect(chip).toBeDefined();
-    expect(chip?.stateNoun?.entityId).toBe('$actor');
-    expect(chip?.stateNoun?.visualKind).toBe('agent');
+    expect(chip?.stateNoun?.text).toBe('ambition');
+    expect(chip?.stateNoun?.tooltipId).toBe('ui.ambition');
+    expect(chip?.stateNoun?.entityId).toBeUndefined();
   });
 
-  it('carries exactly one location-anchored chip', () => {
+  it('anchors the shut-pass chip at the condition, not the location (THR-1480)', () => {
+    // Was `visualKind: 'location'` on `$target`. The band grants
+    // `trait.condition.location.pass_closed`; that condition is the state object.
     const allChanges = Object.values(byOutcome ?? {}).flatMap((band) => band?.changes ?? []);
-    const locationAnchored = allChanges.filter((c) => c.stateNoun?.visualKind === 'location');
-    expect(locationAnchored.map((c) => c.id)).toEqual(['seal.crit_fail.shut']);
+    expect(allChanges.filter((c) => c.stateNoun?.visualKind === 'location').map((c) => c.id)).toEqual([]);
+    const shut = allChanges.find((c) => c.id === 'seal.crit_fail.shut');
+    expect(shut?.stateNoun?.entityId).toBe('trait.condition.location.pass_closed');
+    expect(shut?.stateNoun?.visualKind).toBe('attachment');
   });
 
   it('carries no reputation_tally chip', () => {

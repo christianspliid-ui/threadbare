@@ -373,12 +373,22 @@ describe("The Garrison's Price — package-critic fix list", () => {
     expect(gainEffect?.kind === 'reputation_with' && gainEffect.delta).toBe(0.1);
   });
 
-  it('fix #2: gp.quartermaster_cooled’s stateNoun reads "the quartermaster’s regard", and the failure bond_change carries no trustDelta', () => {
+  /**
+   * THR-1480 — fix #2's noun was pinned to *"the quartermaster's regard"*, chosen to
+   * avoid claiming trust moved when the failure `bond_change` carries no `trustDelta`.
+   * THR-1206 unified this concept and THR-1472 made `reputation with {target}` its one
+   * lawful multi-word form, so the shade is gone and the concept stays.
+   *
+   * The fix's substance is preserved, not dropped: the assertion that the chip does not
+   * say *trust* is kept verbatim below, and the `trustDelta` half is untouched.
+   * `reputation` is broader than `regard` and so still cannot over-claim.
+   */
+  it('fix #2: gp.quartermaster_cooled’s stateNoun claims reputation, not trust, and the failure bond_change carries no trustDelta', () => {
     const failureChip = THE_GARRISONS_PRICE_TEMPLATE.aftermathConfig?.fallback.byOutcome?.failure?.changes?.find(
       (c) => c.id === 'gp.quartermaster_cooled',
     );
     expect(failureChip).toBeDefined();
-    expect(failureChip?.stateNoun?.text).toBe("the quartermaster's regard");
+    expect(failureChip?.stateNoun?.text).toBe('reputation with {target}');
     expect(failureChip?.stateNoun?.text).not.toBe('trust with the quartermaster');
 
     const step1BondEffect = (step1.failureMetadata?.effects ?? []).find(
@@ -391,11 +401,18 @@ describe("The Garrison's Price — package-critic fix list", () => {
     expect(step2BondEffect?.kind === 'bond_change' && step2BondEffect.trustDelta).toBeUndefined();
   });
 
-  it('the boon-side quartermaster chip keeps its "trust" state noun, matching a write that moves both sentiment and trust', () => {
+  /**
+   * THR-1480 — was "keeps its 'trust' state noun". The boon-side write *does* move both
+   * sentiment and trust, so "trust" was accurate; it was also a second spelling of a
+   * concept THR-1206 unified, which is the near-miss THR-1472's filing called out by
+   * name. The write is still asserted below — that half was the point.
+   */
+  it('the boon-side quartermaster chip names reputation, over a write that moves both sentiment and trust', () => {
     const boonChip = THE_GARRISONS_PRICE_TEMPLATE.aftermathConfig?.fallback.byOutcome?.success?.changes?.find(
       (c) => c.id === 'gp.quartermaster_bond',
     );
-    expect(boonChip?.stateNoun?.text).toBe('trust with the quartermaster');
+    expect(boonChip?.stateNoun?.text).toBe('reputation with {target}');
+    expect(boonChip?.stateNoun?.tooltipId).toBe('ui.reputation_with');
 
     const step2SuccessBondEffect = (step2.successMetadata?.effects ?? []).find(
       (e) => e.kind === 'bond_change' && e.withAgentId === '$cast:officer',

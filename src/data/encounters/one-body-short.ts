@@ -517,7 +517,7 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
               category: 'path',
               direction: 'opens',
               title: 'What was not said',
-              stateNoun: { text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' },
+              stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
               detail:
                 '{cast:survivor} watched the missing one walk off this ground and told nobody. What is left on ' +
                 '{cast:survivor} is a mark nobody can see, and a later road along the border can bring it up.',
@@ -540,7 +540,7 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
               category: 'path',
               direction: 'opens',
               title: 'What was not said',
-              stateNoun: { text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' },
+              stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
               detail:
                 '{cast:survivor} knows why one place on this ground is empty and did not say it. What is left on ' +
                 '{cast:survivor} is a mark nobody can see, and a later road along the border can bring it up.',
@@ -692,7 +692,7 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
               category: 'scar',
               direction: 'loss',
               title: 'Worn through',
-              stateNoun: { text: 'quintessence', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'quintessence', tooltipId: 'ui.quintessence' },
               detail: 'Counting ground that would not stay counted wore at their quintessence.',
               polarity: 'loss',
               causeClause: 'Three passes over the same ground and three different numbers',

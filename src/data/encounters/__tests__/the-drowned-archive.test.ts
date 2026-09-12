@@ -297,23 +297,37 @@ describe('The Drowned Archive — aftermath', () => {
     expect(variant?.addNudgeIds).toEqual(['archive.draw_on_character']);
   });
 
-  it('carries six individual-anchored chips (THR-1317 made the five knowledge chips live)', () => {
+  /**
+   * THR-1480 — was "six individual-anchored chips (THR-1317 made the five knowledge
+   * chips live)".
+   *
+   * THR-1317 anchored the five knowledge chips at `$actor`/`agent` so the click would
+   * land on the sheet holding the record. THR-1472's director ruling (2026-09-12) then
+   * made a carrier anchor the *tell* of a missing state object — a chip naming the
+   * mortal rather than the thing — and its own slice migration replaced exactly this
+   * family with `{ text: 'knowledge', tooltipId: 'ui.knowledge' }`. THR-1480 follows
+   * that precedent across the corpus, so the five now carry a tooltip instead of an
+   * agent tile, and `keeper_trusts` carries the reputation form.
+   *
+   * The trade is recorded rather than hidden: these five lose a click-through to the
+   * actor and gain a hover naming the concept. That is the ruling's deliberate shape —
+   * one concept everywhere, the particulars one hover away.
+   */
+  it('leaves one agent-anchored chip — the reputation one (THR-1480)', () => {
     const allChanges = Object.values(byOutcome ?? {}).flatMap((band) => band?.changes ?? []);
     const individualAnchored = allChanges.filter((c) => c.stateNoun?.visualKind === 'agent');
-    expect(individualAnchored.map((c) => c.id).sort()).toEqual([
-      'archive.cost.charter_known',
-      'archive.crit.charter_known',
-      'archive.crit.keeper_trusts',
-      'archive.crit_fail.one_line',
-      'archive.fail.kept_name',
-      'archive.success.charter_known',
-    ]);
+    expect(individualAnchored.map((c) => c.id).sort()).toEqual(['archive.crit.keeper_trusts']);
   });
 
-  it('carries exactly one location-anchored chip', () => {
+  it('anchors the watched-place chip at the condition, not the location (THR-1480)', () => {
     const allChanges = Object.values(byOutcome ?? {}).flatMap((band) => band?.changes ?? []);
-    const locationAnchored = allChanges.filter((c) => c.stateNoun?.visualKind === 'location');
-    expect(locationAnchored.map((c) => c.id)).toEqual(['archive.success.watched']);
+    // Was `visualKind: 'location'` anchored at `$target`. The band grants
+    // `trait.condition.location.under_watch`, so that condition is the state object the
+    // rule asks for, and the chip's own `concepts` entry already named it.
+    expect(allChanges.filter((c) => c.stateNoun?.visualKind === 'location').map((c) => c.id)).toEqual([]);
+    const watched = allChanges.find((c) => c.id === 'archive.success.watched');
+    expect(watched?.stateNoun?.entityId).toBe('trait.condition.location.under_watch');
+    expect(watched?.stateNoun?.visualKind).toBe('attachment');
   });
 
   it('carries no reputation_tally chip', () => {
@@ -322,21 +336,22 @@ describe('The Drowned Archive — aftermath', () => {
   });
 
   /**
-   * THR-1317 — was "…anchor $actor with no visualKind".
+   * THR-1480 — was THR-1317's "the five knowledge chips anchor $actor as an agent",
+   * itself a correction of an earlier "…with no visualKind".
    *
-   * The A1 correction re-anchored these five from `$target`/`location` to `$actor` so
-   * the click would land where the `intelligence` write actually lands, and dropped the
-   * `visualKind` to shed the wrong location tile. Shedding the kind sheds the whole
-   * reference: `fromConceptRef` returns `undefined` unless `entityId` *and* `visualKind`
-   * are both set, so these five rendered as plain text carrying a `$actor` sentinel no
-   * consumer ever read — the click landed nowhere, which is the opposite of what A1 asked
-   * for. `visualKind: 'agent'` is what that intent compiles to, and the tile it draws is
-   * the actor's, which is correct here: the sentence is about a record *they* gained.
+   * The history is worth keeping because it is the same question asked twice. A1 moved
+   * these five off `$target`/`location` so the click would land where the `intelligence`
+   * write lands; THR-1317 then added `visualKind: 'agent'`, because `fromConceptRef`
+   * returns `undefined` unless `entityId` *and* `visualKind` are both set and the chips
+   * were rendering as inert text. Both passes were answering "whose tile does this
+   * draw?" — and THR-1472 ruled the question itself wrong for this family: a record is
+   * not the mortal holding it, and reaching for the mortal is what an author does when
+   * the state has no word. The word is `Knowledge`, added by THR-1472 with the slice.
    *
    * A1's other half is untouched and still asserted below — `targetEntityId` is not a
    * scene-sentinel field and no intelligence effect authors one.
    */
-  it('package-critic fix (A1): the five knowledge chips anchor $actor as an agent', () => {
+  it('the five knowledge chips name the concept, not the carrier (THR-1480)', () => {
     const knowledgeChipIds = [
       'archive.crit.charter_known',
       'archive.success.charter_known',
@@ -348,8 +363,9 @@ describe('The Drowned Archive — aftermath', () => {
     for (const id of knowledgeChipIds) {
       const chip = allChanges.find((c) => c.id === id);
       expect(chip, `chip "${id}" should exist`).toBeDefined();
-      expect(chip?.stateNoun?.entityId, `chip "${id}" should anchor $actor`).toBe('$actor');
-      expect(chip?.stateNoun?.visualKind, `chip "${id}" should anchor as an agent`).toBe('agent');
+      expect(chip?.stateNoun?.text, `chip "${id}" names the concept`).toBe('knowledge');
+      expect(chip?.stateNoun?.tooltipId, `chip "${id}" explains it on hover`).toBe('ui.knowledge');
+      expect(chip?.stateNoun?.entityId, `chip "${id}" no longer anchors its carrier`).toBeUndefined();
     }
   });
 

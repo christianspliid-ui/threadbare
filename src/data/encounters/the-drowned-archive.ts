@@ -731,7 +731,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               // agent end — see the comment on the reaction's `intelligence`
               // effect below — so the tile has to open the agent's own sheet,
               // not the settlement's.
-              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
               concepts: [{ text: 'intelligence record' }],
             },
             {
@@ -744,7 +744,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               causeClause: 'A stranger with no claim brought the record up',
               detail: '{cast:keeper} thinks well of {actor} now and will say so to anyone who asks.',
               // The encounter's one `individual`-anchored chip (brief ceiling: 1).
-              stateNoun: { text: 'a bond warmed', entityId: '$cast:keeper', visualKind: 'agent' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$cast:keeper', visualKind: 'agent', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'bond' }],
             },
           ],
@@ -802,7 +802,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'The Vault Is Watched',
               causeClause: 'The page is public and the rest of the records are not',
               detail: '{target} is under watch now. Quiet work here is seen, and everyone with a claim knows how to get down there.',
-              stateNoun: { text: 'a place under watch', entityId: '$target', visualKind: 'location' },
+              stateNoun: { text: 'under watch', entityId: 'trait.condition.location.under_watch', visualKind: 'attachment' },
               concepts: [
                 { text: 'under watch', entityId: 'trait.condition.location.under_watch', visualKind: 'attachment' },
               ],
@@ -818,7 +818,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               detail:
                 '{actor} carries an intelligence record on {location}: the founding families were granted ' +
                 'this ground by another house.',
-              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],
@@ -879,7 +879,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               detail:
                 "{actor} carries an intelligence record on {location}, bought at the warden's price: the " +
                 'founding families held this ground on a grant.',
-              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],
@@ -933,7 +933,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'One Name Kept',
               causeClause: 'They read one line before the warden turned them out',
               detail: '{actor} carries an unreliable intelligence record on {location}: one name from the charter, and no proof of it.',
-              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],
@@ -1002,7 +1002,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'One Line Remembered',
               causeClause: 'They read a line off the charter before the shelf tipped',
               detail: '{actor} carries an unreliable intelligence record on {location}: one line of a charter nobody can produce now.',
-              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],

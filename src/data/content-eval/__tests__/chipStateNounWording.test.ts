@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
-import { chipStateNounWordingViolations } from '../compositionContract';
+import { checkCompositionContract, chipStateNounWordingViolations } from '../compositionContract';
 import {
   CHIP_STATE_NOUN_MAX_WORDS,
   CHIP_STATE_NOUN_REPUTATION_FORM,
@@ -170,5 +170,50 @@ describe('THR-1472 — the vertical slice is migrated', () => {
       chipStateNounWordingViolations(t).map(v => `${t.id}: ${v}`),
     );
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * THR-1480 — the promotion arm.
+ *
+ * The rule shipped advisory: `check-encounter.ts` printed these through `[warn]`,
+ * which never touches the exit code, because 57 retrofit findings were still
+ * standing and gating would have turned a green corpus red for work ticketed here.
+ * Both halves of that bargain are now due, so both are asserted — the corpus is
+ * drained, *and* a finding actually fails the contract. Asserting only the drained
+ * corpus would leave the gate advisory and the corpus free to drift straight back.
+ */
+describe('THR-1480 — the clamp follows the corpus', () => {
+  const encounters = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('encounter.'));
+
+  it('finds the corpus to measure', () => {
+    // Population guard — an empty filter passes the sweep below vacuously.
+    expect(encounters.length).toBeGreaterThan(50);
+  });
+
+  it('leaves no chip in the whole encounter corpus naming a scene phrase or a carrier', () => {
+    const offenders = encounters.flatMap(t =>
+      chipStateNounWordingViolations(t).map(v => `${t.id}: ${v}`),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('reaches `checkCompositionContract` as a gating aftermath violation', () => {
+    const offending = withChip({ text: 'the nerve they came down with', entityId: '$actor' });
+    const found = checkCompositionContract(offending).violations.filter(
+      v => v.block === 'aftermath' && v.message.includes('THR-1472'),
+    );
+    expect(found).toHaveLength(1);
+  });
+
+  it('falsification: the same chip with a character-sheet word raises no such violation', () => {
+    // Without this arm the assertion above could be satisfied by any aftermath
+    // violation the fixture happens to trip — it is a bare fixture, so it trips
+    // several — rather than by this rule firing.
+    const compliant = withChip({ text: 'shaken', entityId: 'trait.condition.shaken' });
+    const found = checkCompositionContract(compliant).violations.filter(
+      v => v.block === 'aftermath' && v.message.includes('THR-1472'),
+    );
+    expect(found).toEqual([]);
   });
 });

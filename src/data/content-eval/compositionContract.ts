@@ -834,11 +834,13 @@ export function chipsWithoutReferent(template: UnifiedActionTemplate): readonly 
  * company`, `trust with the quartermaster`) are reported on purpose: they should
  * become the reputation form or the generic word, not a second spelling of it.
  *
- * **Warn-tier by ruling, for now.** `check-encounter.ts` reports these through the
- * `[warn]` channel, which never affects the exit code — the clamp-follows-the-corpus
- * rule from `nudgeAuthoringConstants.ts`. The vertical slice is migrated (THR-1472);
- * the retrofit corpus is not, and gating on it would turn a green corpus red for work
- * ticketed elsewhere. Promotion to a gating violation belongs with that migration.
+ * **Gating since THR-1480.** This shipped warn-tier under THR-1472 — the
+ * clamp-follows-the-corpus rule from `nudgeAuthoringConstants.ts`: the vertical slice
+ * was migrated and the retrofit corpus was not, so gating then would have turned a
+ * green corpus red for work ticketed elsewhere. THR-1480 drained all 57 findings, and
+ * the clamp followed: it is now added as an `aftermath` violation in
+ * {@link checkCompositionContract}, beside the two Law 56 clauses it sits next to in
+ * an author's head. A rule left advisory past its corpus is re-broken for free.
  *
  * Read through {@link aftermathFaces} — the same walk clause 2 and
  * {@link chipsWithoutReferent} use, so all three describe the same corpus.
@@ -1645,6 +1647,16 @@ export function checkCompositionContract(
   // again: a chip anchored to `$cast:x` and a bond written to `$cast:x` fail together
   // and are fixed by the same spec.
   for (const violation of castTargetViolations(template)) add('aftermath', violation);
+
+  // THR-1480 — promoted from the warn channel now that the corpus is drained.
+  // Clause 2 above asks whether the referent *resolves*; this asks whether the noun
+  // is *readable*, so it belongs beside its siblings rather than in a report nobody
+  // fails on. The clamp follows the corpus (`nudgeAuthoringConstants.ts`): THR-1472
+  // shipped this warn-tier with 57 findings standing, because gating then would have
+  // turned a green corpus red for work ticketed elsewhere. That work is this ticket,
+  // the findings are zero, and a rule left advisory past its corpus is a rule the
+  // next author re-breaks for free.
+  for (const violation of chipStateNounWordingViolations(template)) add('aftermath', violation);
 
   // ─── Systems quota ─────────────────────────────────────────────────
   const systems = systemConnections(template);

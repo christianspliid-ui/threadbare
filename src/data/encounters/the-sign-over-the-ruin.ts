@@ -663,7 +663,7 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
               detail:
                 '{target} carries Under Watch now — people keep eyes on it, and quiet work here is harder and ' +
                 'likelier to be seen.',
-              stateNoun: { text: 'a watched place', entityId: '$target', visualKind: 'location' },
+              stateNoun: { text: 'under watch', entityId: 'trait.condition.location.under_watch', visualKind: 'attachment' },
               concepts: [
                 { text: 'Under Watch', entityId: 'trait.condition.location.under_watch', visualKind: 'attachment' },
               ],
@@ -690,7 +690,7 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
               title: 'Carried Off This Ground',
               causeClause: 'The reading landed, and half the camp wanted it said again where more people could hear it',
               detail: '{actor} is set on the road to the nearest settlement, to say it where it will travel further.',
-              stateNoun: { text: 'a journey set', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [{ text: 'the nearest settlement' }],
             },
           ],
@@ -763,7 +763,7 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
               title: 'A Road Out',
               causeClause: 'Both sides settled on the same answer about who was to blame, and it was the one who read it',
               detail: '{actor} is set on the road away from {target}, with no destination past being elsewhere.',
-              stateNoun: { text: 'a journey set', entityId: '$actor', visualKind: 'agent' },
+              stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
               concepts: [{ text: 'the road away' }],
             },
           ],

@@ -276,15 +276,14 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
   ];
   const tokens = tokenProblems(template);
   const forecast = forecastProblems(template);
-  // THR-1472 — chip nouns that are not character-sheet words. Warn-tier for the
-  // same reason the doctrine budgets are: the rule shipped with the vertical slice
-  // migrated and the retrofit corpus not, so gating would turn a green corpus red
-  // for work ticketed elsewhere. `--all` still *reports* every member, which is
-  // what the ruling asked for — the population has to be visible before it drains.
+  // THR-1480 — `chipStateNounWordingViolations` used to be reported here, warn-tier,
+  // because THR-1472 shipped the rule with 57 retrofit findings still standing. The
+  // corpus is drained, so it is now a gating `aftermath` violation inside
+  // `checkCompositionContract` and reaches `failed` through `composition.violations`
+  // below. Reporting it in both channels would double-print every finding.
   const warnings = [
     ...audit.warnings,
     ...doctrineV2Warnings(template),
-    ...chipStateNounWordingViolations(template),
   ];
 
   // Deliberately does NOT read `warnings`. The doctrine's budgets and register
