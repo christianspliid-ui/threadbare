@@ -138,10 +138,21 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
       + 'the tier is chosen by the effect and is not the author\'s to name. Legendary ones '
       + 'carry their own trait graph.',
   },
-  action_template: NOT_AN_ANCHOR(
-    'Action template',
-    'a definition, not an object in the world the player can be pointed at',
-  ),
+  action_template: {
+    anchor: 'Action template',
+    declare: 'not a chip anchor — see the note',
+    surface: 'Its content card, and the codex entry behind it',
+    status: 'not-an-anchor',
+    note:
+      'A definition, not an object in the world — so no *chip* anchors one, and that is '
+      + 'unchanged. What changed with THR-1491 is that a definition is now reachable: a '
+      + '`ContentRef{kind: \'action_template\'}` opens its content card, and the codex is '
+      + 'that card\'s sheet. The distinction to hold is which reference type you are '
+      + 'writing. A chip reports what happened to someone and takes a `WorldRef`; a '
+      + 'cross-link in a codex entry or a batch report names the rule itself and takes a '
+      + '`ContentRef`. Pointing an aftermath chip at a template would say "this happened '
+      + 'to a definition", which is still not a sentence.',
+  },
   event: NOT_AN_ANCHOR(
     'Event',
     'the record of a resolution. A chip *is* a report of one; pointing a chip at its own ' +
@@ -173,11 +184,19 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     surface: 'The pursuing actor\'s sheet',
     status: 'named',
   },
-  encounter_template: NOT_AN_ANCHOR(
-    'Encounter template',
-    'the encounter itself. A planted seed anchors through its **carrier** — the agent or ' +
-      'location it was planted on — never through the template id',
-  ),
+  encounter_template: {
+    anchor: 'Encounter template',
+    declare: 'not a chip anchor — anchor the carrier instead; see the note',
+    surface: 'Its content card (no codex category yet — THR-1495)',
+    status: 'not-an-anchor',
+    note:
+      'The encounter itself. A planted seed anchors through its **carrier** — the agent or '
+      + 'location it was planted on — never through the template id, and that rule is '
+      + 'unchanged. As with `action_template`, THR-1491 made the definition *reachable* '
+      + 'without making it chip-anchorable: a `ContentRef{kind: \'encounter_template\'}` '
+      + 'opens a content card. Its sheet is `null` — no codex category catalogues '
+      + 'encounters (0 of 557 ids resolve, measured 2026-09-12), which is THR-1495.',
+  },
   sublocation: {
     anchor: 'Sublocation',
     declare: '`entityId` = the sublocation node id, `visualKind: \'location\'`',
@@ -193,13 +212,15 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   companion: {
     anchor: 'Companion',
     declare: '`entityId` = the companion node id, `visualKind: \'companion\'`',
-    surface: 'The Companions row on the bearer\'s own surface',
-    status: 'named',
+    surface: 'Its own card; and the Companions row on the bearer\'s surface',
+    status: 'linked',
     note:
-      'The one kind that is in the `visualKind` union and still does not click, on ' +
-      'purpose: a companion is a person but not an agent node, so both the agent drawer ' +
-      'and the stub-modal path would open the wrong sheet. Its tile renders; the click ' +
-      'is withheld because non-interactive beats wrong.',
+      'The click was withheld until THR-1490 and is now live at Tier 2 only. The old ' +
+      'reason still stands at Tier 3 — a companion is a person but not an agent node, ' +
+      'so the agent drawer and the stub-modal path would each open the wrong *sheet*, ' +
+      'and `SURFACE_BY_WORLD_REF.companion` records `sheet: null` for exactly that. ' +
+      'What changed is that a card is not a sheet: a companion is a face with a name ' +
+      'and a bearer, which is a card, so the chip opens one. Anchor it and let it click.',
   },
 };
 
@@ -311,16 +332,18 @@ export const ATTACHMENT_ROWS: Readonly<Record<string, AnchorRow>> = {
   companion: {
     anchor: 'Attachment · companion',
     declare: '`entityId` = the companion node id, `visualKind: \'companion\'`',
-    surface: 'The Companions row on the bearer\'s own surface',
-    status: 'named',
-    note: 'Declared as a companion, not an attachment — see the `companion` node row.',
+    surface: 'Its own card; and the Companions row on the bearer\'s surface',
+    status: 'linked',
+    note: 'Declared as a companion, not an attachment — see the `companion` node row, '
+      + 'which carries the Tier-2 / Tier-3 split THR-1490 introduced.',
   },
   holding: {
     anchor: 'Attachment · holding',
     declare: '`entityId` = the **owned place\'s** node id (a location or resource), '
       + '`visualKind: \'location\'`',
-    surface: 'The Holdings section of the bearer\'s Attachments tab',
-    status: 'named',
+    surface: 'The place\'s own card and location sheet; and the Holdings section '
+      + 'of the bearer\'s Attachments tab',
+    status: 'linked',
     note: 'Anchor the PLACE, never the bearer-side face node (THR-1297): the face is '
       + 'bookkeeping that mirrors the `owns` edge, and a chip pointing at it would open a '
       + 'sheet for a record rather than for the mill the player just took. A holding chip '
@@ -469,6 +492,172 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   // Rival schemes
   sponsors_scheme: RELATIONAL('The target location, and the sponsor\'s sheet'),
 };
+
+// ─── Derived routing status (THR-1491) ────────────────────────────────────────
+
+/**
+ * Which anchor rows name a `WorldRefKind`, and which one.
+ *
+ * **The point of this table.** `linked` versus `named` is a claim about *routing* — can a
+ * chip pointing at this thing carry a click — and until now it was hand-written in the row
+ * above, which means it was a claim nothing could check. It went stale exactly as you would
+ * expect: the `location` row said "no `visualKind` member exists" for months after THR-1172
+ * gave it one, and a package pass shipped two location anchors at different tiers in one
+ * batch because of it (see that row's own correction note).
+ *
+ * Since THR-1490 the code *does* say. `SURFACE_BY_WORLD_REF` is total over `WorldRefKind`
+ * and every row has a card, so **a kind with a surface row is `linked`, full stop** — the
+ * router opens its card from any surface, and Tier 3 is a further question this column was
+ * never asking. {@link deriveAnchorStatus} therefore overrides the curated status for every
+ * row named here, and {@link assertCuratedStatusAgrees} fails the generator by name on a
+ * curated row that still claims otherwise, so the two can never drift apart again.
+ *
+ * **Rows absent from this table keep their curated status, and most should be.** A trait, a
+ * sphere, a culture and an edge are concepts or relationships rather than `WorldRefKind`s;
+ * they are `named` because there is nothing to route *to*, not because nobody wired it. The
+ * mapping is deliberately curated rather than derived from the row's `declare` text: a
+ * regex over prose would be a fifth hand-kept thing, and a wrong entry here is worse than a
+ * missing one, because it would promise a click the router cannot make.
+ */
+export const WORLD_REF_BY_ANCHOR: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  NodeType: {
+    location: 'location',
+    sublocation: 'sublocation',
+    artifact: 'artifact',
+    artifact_legendary: 'artifact',
+    region: 'area',
+    companion: 'companion',
+  },
+  ActorType: {
+    god: 'agent',
+    ascendant: 'agent',
+    individual: 'agent',
+    place_spirit: 'agent',
+    faction: 'faction',
+  },
+  AttachmentCategory: {
+    possession: 'attachment',
+    condition: 'attachment',
+    blessing: 'attachment',
+    curse: 'attachment',
+    bestowed_power: 'attachment',
+    agreement: 'attachment',
+    spell: 'attachment',
+    companion: 'companion',
+    // The holding chip anchors the **owned place**, never the bearer-side face node
+    // (THR-1297) — so what it routes to is a location, and the location row is `linked`.
+    holding: 'location',
+  },
+};
+
+/** The surface registry, as this generator reads it. Injected so the guard is testable. */
+export interface SurfaceRegistryView {
+  readonly [kind: string]: { readonly card: string; readonly sheet: string | null };
+}
+
+/**
+ * The status a row *must* have, or `null` when this row names no `WorldRefKind`.
+ *
+ * Every mapped kind derives to `linked`, because every surface row has a card. The function
+ * is written as a lookup rather than a constant so that a future registry with a card-less
+ * kind — which the type forbids today — would flow through rather than lie.
+ */
+export function deriveAnchorStatus(
+  unionName: string,
+  member: string,
+  registry: SurfaceRegistryView,
+): AnchorStatus | null {
+  const kind = WORLD_REF_BY_ANCHOR[unionName]?.[member];
+  if (kind === undefined) return null;
+  const row = registry[kind];
+  if (row === undefined) {
+    throw new Error(
+      `generate-anchor-catalog: \`${unionName}.${member}\` maps to world-ref kind '${kind}', ` +
+        `which has no row in the surface registry. Either the kind was renamed or ` +
+        `WORLD_REF_BY_ANCHOR is stale — fix the mapping in scripts/anchor-catalog-sources.ts.`,
+    );
+  }
+  return row.card ? 'linked' : 'named';
+}
+
+/**
+ * The row as the catalog should print it: curated annotation, derived status.
+ *
+ * Prose, declaration form and note stay hand-written — those are editorial and no registry
+ * knows them. Only the status and the Tier-3 half of the surface are taken from the code.
+ */
+export function resolveAnchorRow(
+  unionName: string,
+  member: string,
+  row: AnchorRow,
+  registry: SurfaceRegistryView,
+): AnchorRow {
+  const derived = deriveAnchorStatus(unionName, member, registry);
+  return derived === null ? row : { ...row, status: derived };
+}
+
+/** Every row of one union, with derived statuses applied. */
+export function resolveRowSet(
+  unionName: string,
+  rows: Readonly<Record<string, AnchorRow>>,
+  registry: SurfaceRegistryView,
+): Readonly<Record<string, AnchorRow>> {
+  return Object.fromEntries(
+    Object.entries(rows).map(([member, row]) => [member, resolveAnchorRow(unionName, member, row, registry)]),
+  );
+}
+
+/**
+ * What the registry says this anchor *opens*, rendered for the catalog's own column.
+ *
+ * `—` for a row that names no `WorldRefKind` — a trait or an edge opens nothing, and a
+ * dash is the honest cell. `card only` is a real answer and not a deficiency: a companion's
+ * card is the whole of what a companion has, by ruling.
+ */
+export function renderOpensCell(
+  unionName: string,
+  member: string,
+  registry: SurfaceRegistryView,
+): string {
+  const kind = WORLD_REF_BY_ANCHOR[unionName]?.[member];
+  if (kind === undefined) return '—';
+  const row = registry[kind]!;
+  return row.sheet === null ? `\`${row.card}\` card only` : `\`${row.card}\` card → \`${row.sheet}\` sheet`;
+}
+
+/**
+ * Fails when a curated row contradicts what the surface registry says it routes to.
+ *
+ * This is the falsifiable half of the derivation, and the reason it is a *separate* check
+ * rather than a silent override: {@link resolveAnchorRow} would quietly fix the printed
+ * table, and the curated row would stay wrong for the next reader of the source. So the
+ * override keeps the *output* honest and this keeps the *input* honest, by name.
+ */
+export function assertCuratedStatusAgrees(
+  unionName: string,
+  rows: Readonly<Record<string, AnchorRow>>,
+  registry: SurfaceRegistryView,
+): void {
+  const contradictions: string[] = [];
+  for (const [member, row] of Object.entries(rows)) {
+    const derived = deriveAnchorStatus(unionName, member, registry);
+    if (derived !== null && row.status !== derived) {
+      contradictions.push(
+        `'${unionName}.${member}' is curated '${row.status}' but the surface registry ` +
+          `routes kind '${WORLD_REF_BY_ANCHOR[unionName]![member]}' — derived '${derived}'`,
+      );
+    }
+  }
+  if (contradictions.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${contradictions.length} curated anchor row(s) contradict the ` +
+        `surface registry:\n  ${contradictions.join('\n  ')}\n` +
+        `The registry is the authority on routing (THR-1490). Either correct the curated ` +
+        `status in scripts/anchor-catalog-sources.ts, or — if the kind genuinely stopped ` +
+        `routing — change its row in src/data/surface-registry.ts and say why in the note.`,
+    );
+  }
+}
 
 // ─── Source parsing ───────────────────────────────────────────────────────────
 

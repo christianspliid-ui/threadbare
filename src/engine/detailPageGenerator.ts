@@ -14,7 +14,7 @@
 
 import type {
   DetailPage,
-  DetailPageKind,
+  GraphPageKind,
   ProseSection,
   Section,
   SectionBase,
@@ -49,7 +49,7 @@ import { UNKNOWN_ENTITY_PROSE } from '../data/detail-page-fallback-templates';
 // (tests, isolated previews) the page is composed fresh without caching. Session
 // reset clears it via `resetRuntimeCaches()`.
 
-function cacheKey(nodeId: string, pageKind: DetailPageKind, tick: number): string {
+function cacheKey(nodeId: string, pageKind: GraphPageKind, tick: number): string {
   return `${pageKind}:${nodeId}:${tick}`;
 }
 
@@ -59,7 +59,7 @@ export interface GenerateDetailPageInput {
   /** The node to detail. */
   nodeId: string;
   /** Which page type to render. */
-  pageKind: DetailPageKind;
+  pageKind: GraphPageKind;
   /** World graph (read-only). */
   graph: WorldGraph;
   /** Current tick. Drives cache invalidation. */
@@ -255,7 +255,7 @@ function sectionFromAuthored(
 
 function unknownStub(
   nodeId: string,
-  pageKind: DetailPageKind,
+  pageKind: GraphPageKind,
   breadcrumbRoot: string[],
 ): DetailPage {
   return {
@@ -285,7 +285,7 @@ function unknownStub(
 function nodeMatchesKind(
   nodeType: string,
   actorType: unknown,
-  pageKind: DetailPageKind,
+  pageKind: GraphPageKind,
 ): boolean {
   switch (pageKind) {
     case 'actor':
@@ -327,7 +327,7 @@ function sphereForNode(node: { properties: Record<string, unknown> }): string {
 
 function subtitleForNode(
   node: { name: string; properties: Record<string, unknown> },
-  pageKind: DetailPageKind,
+  pageKind: GraphPageKind,
 ): string {
   switch (pageKind) {
     case 'actor':
@@ -351,7 +351,7 @@ function subtitleForNode(
 }
 
 function hasFullSheetFor(
-  pageKind: DetailPageKind,
+  pageKind: GraphPageKind,
   node: { id: string; properties: Record<string, unknown> },
   protagonistId: string | undefined,
 ): boolean {

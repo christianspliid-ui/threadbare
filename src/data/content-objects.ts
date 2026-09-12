@@ -36,6 +36,7 @@
  * § Known seams.
  */
 import type { WorldObjectKindId } from './world-objects';
+import { SURFACE_BY_CONTENT_KIND, type SurfaceRow } from './surface-registry';
 
 // ─── Shapes ─────────────────────────────────────────────────────────
 
@@ -106,8 +107,15 @@ export interface ContentObjectKind {
   readonly instantiatesAs: WorldObjectKindId | null;
   /** The machine gate that validates this kind (`npm run <script>`), or null while none exists. */
   readonly gate: string | null;
-  /** Filled by THR-1482 slice 2: the card kind and the sheet a reference to this kind opens. */
-  readonly surface: { readonly card: string | null; readonly sheet: string | null };
+  /**
+   * The card kind and the sheet a reference to this kind opens (THR-1491).
+   *
+   * **Derived, never written on the row.** The value comes from `SURFACE_BY_CONTENT_KIND`
+   * in `src/data/surface-registry.ts`, which is where the router reads it — so the column
+   * and the dispatch cannot disagree, rather than agreeing because a test says they must.
+   * A row literal carrying its own `surface` would not compile.
+   */
+  readonly surface: SurfaceRow;
   /** The systems-inventory subsystem that owns the kind's readers. Verbatim. */
   readonly owningSystem: string;
   readonly status: ContentObjectStatus;
@@ -132,7 +140,17 @@ export const SHARED_ID_PREFIXES: Readonly<Record<string, string>> = {
 
 // ─── The registry ───────────────────────────────────────────────────
 
-const K = (row: ContentObjectKind): ContentObjectKind => row;
+/**
+ * Seats one row, stamping its `surface` from the surface registry.
+ *
+ * Taking `Omit<…, 'surface'>` is what makes the derivation load-bearing: a row that tried
+ * to state its own surface is a type error, so there is exactly one place the answer can
+ * come from (THR-1491).
+ */
+const K = (row: Omit<ContentObjectKind, 'surface'>): ContentObjectKind => ({
+  ...row,
+  surface: SURFACE_BY_CONTENT_KIND[row.id],
+});
 
 export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
   // ── What a mortal walks into ──
@@ -156,7 +174,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: { reach: 'reach', sphere: 'sphereAffinity' },
     instantiatesAs: 'encounter_template',
     gate: 'check:encounter',
-    surface: { card: null, sheet: null },
     owningSystem: 'Encounters & Dilemmas',
     status: 'live',
     note: 'The curated chapter a mortal meets — branching authored encounters and systemic linear templates, one format (`UnifiedActionTemplate`). Shares its array with the action kind: the two are told apart by id prefix, and the contract test pins that the two prefix sets are disjoint and together cover every id. `check:encounter` scopes to the `encounter.` prefix only, so most of this kind is ungated until slice 4.',
@@ -184,7 +201,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: { reach: 'reach', sphere: 'sphereAffinity' },
     instantiatesAs: 'action_template',
     gate: null,
-    surface: { card: null, sheet: null },
     owningSystem: 'Encounters & Dilemmas',
     status: 'live',
     note: 'The verbs the player and the world play rather than walk into — divine interventions, hex workings, location and artifact verbs, the thread cards. Same `UnifiedActionTemplate` shape as an encounter; the difference is who acts, which the id prefix records. It shares the pooled arrays with the encounter kind: the prefix sets partition them, so each row counts its own half and the two halves add up to the pool.',
@@ -211,7 +227,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: 'undertaking',
     gate: 'check:undertaking',
-    surface: { card: null, sheet: null },
     owningSystem: 'Ambitions & Undertakings',
     status: 'live',
     note: 'A multi-tick work a mortal commits to — the seven authored packs, the factory\'s compiled output, and the synthesised cells (verb × object type) that superseded the hand-written packs under the `cells` model. `catalystEncounterIds` on these templates is the dormant literal-id path slice 4 replaces with a query.',
@@ -242,7 +257,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: 'item',
     gate: 'check:attachment',
-    surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
     note: 'Arms, mounts, tomes, relics, tools, provisions — the possession catalog the reward pool already draws from by tag (`reward_draw`, THR-1146), which makes this the one kind the content query is modelled on rather than added to. Entries are `GraphNode` literals, not a template type, so the tag axes are the only vocabulary they share.',
@@ -258,7 +272,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: 'legendary_artifact',
     gate: 'check:attachment',
-    surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
     note: 'An item with its own trait graph, bonded rather than possessed. Three entries, each its own id namespace — the one kind whose prefixes are entity names, because there are too few for a family to have formed. A fourth artifact adds a fourth prefix; when that is tiresome, the kind takes a shared `legendary_` prefix and this note is the reason it did not start with one.',
@@ -280,7 +293,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: 'condition',
     gate: 'check:attachment',
-    surface: { card: null, sheet: null },
     owningSystem: 'Effects & Conditions',
     status: 'live',
     note: 'Wounds, diseases, strains; blessings and curses as signed conditions. Entries are shared `trait` definition nodes with `subcategory: condition | scar` — one node per kind, per-bearer state on the `has_trait` edge (THR-1395). The `#positive` / `#negative` polarity the proxy-event classifier already reads is the seed of slice 2\'s polarity axis.',
@@ -300,7 +312,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: { sphere: 'sphereAffinity' },
     instantiatesAs: 'power',
     gate: 'check:attachment',
-    surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
     note: 'A god\'s gift (`bestowed`) and a spell a mortal learned (`spell`) — two classes of one kind, per THR-1429. The bestowed half is `trait` definition nodes in the reward catalogs; the spell half is `SpellTemplate` literals seeded into the same node shape. Two catalog shapes, one kind, because what a query asks for is "a power", never "a power in the literal form of a trait node".',
@@ -316,7 +327,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: 'agreement',
     gate: 'check:attachment',
-    surface: { card: null, sheet: null },
     owningSystem: 'Secrets & Favors',
     status: 'live',
     note: 'A favour owed or a mark held — an edge between two parties, so the template names a relationship rather than a thing. Its `tier` is a bare `number` today where every sibling catalog carries a `RarityTier`; slice 2 retypes it, which is why the content query\'s tier window is specified over `RarityTier` and not over the field.',
@@ -332,7 +342,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: 'companion',
     gate: 'check:attachment',
-    surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
     note: 'A face that walks with one mortal and grants small always-on bonuses; never an agent. Already tag-bearing, and already drawn by the reward pool — the second kind the content query costs nothing to serve.',
@@ -353,7 +362,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: 'ambition',
     gate: null,
-    surface: { card: null, sheet: null },
     owningSystem: 'Ambitions & Undertakings',
     status: 'live',
     note: 'What a mortal wants, and the shape of the work it offers. Three catalogs by how one is minted — assigned at seeding, grown from a grievance, or minted by an event — which is a provenance distinction, not a kind distinction, so they share one row.',
@@ -372,7 +380,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: null,
     gate: null,
-    surface: { card: null, sheet: null },
     owningSystem: 'Omens & Atmospheric Pressure',
     status: 'live',
     note: 'A track of signs the world shows before something breaks — breach, convergence, reckoning, sphere surge, cultural. Instantiates as nothing: an omen track is pressure the doom clock reads, never an object a mortal holds, which is why `instantiatesAs` is null rather than an oversight.',
@@ -389,7 +396,6 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     projections: {},
     instantiatesAs: null,
     gate: null,
-    surface: { card: null, sheet: null },
     owningSystem: 'Encounters & Dilemmas',
     status: 'live',
     note: 'The god\'s repertoire — what a player may commit to a step to lean a roll. Instantiates as nothing: a card is played and spent, never granted as a world object. Its `DealContextTag` vocabulary (`might`, `finesse`, …) is a *card-context* vocabulary and deliberately not a spelling of the eight reaches; slice 2 leaves it alone and records the seam.',

@@ -178,47 +178,47 @@ Members: `agent`, `faction`
 
 ## Nodes
 
-| Member | Anchor | Status | How the chip declares it | Where the player sees it |
-|---|---|---|---|---|
-| `actor` | Actor (see the Actor table below) | 🔗 linked | `entityId` = the actor node id, `visualKind` per its `actorType` | Routed by `actorType` — see the Actor subtype rows |
-| `location` | Location / sublocation | 🔗 linked | `entityId` = the location node id, `visualKind: 'location'` | The location's own profile, opened from the chip; plus the hex detail view from the map |
-| `trait` | Trait | 📍 named | `tooltipId` on the concept; no `entityId` | The tooltip, and the bearer's trait list on their sheet |
-| `artifact` | Artifact (common) | 🔗 linked | `entityId: '$artifact'`, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
-| `artifact_legendary` | Artifact (legendary) | 🔗 linked | `entityId: '$artifact'`, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
-| `action_template` | — | — not an anchor | — | — |
-| `event` | — | — not an anchor | — | — |
-| `cosmology` | Sphere / foundation | 📍 named | `tooltipId` on the concept; no `entityId` | The tooltip, and the cosmology readouts |
-| `region` | Named area (region) | 🔗 linked | `entityId` = the Area node id; `visualKind: 'area'` routes without a tile | The hex chronicle names the Area a hex belongs to; the map draws its border and label |
-| `sublocation` | Sublocation | 🔗 linked | `entityId` = the sublocation node id, `visualKind: 'location'` | The location sheet of its parent, and the hex it sits on |
-| `ambition` | Ambition | 📍 named | `entityId` = the ambition node id; no `visualKind` member | The pursuing actor's sheet |
-| `encounter_template` | — | — not an anchor | — | — |
-| `companion` | Companion | 📍 named | `entityId` = the companion node id, `visualKind: 'companion'` | The Companions row on the bearer's own surface |
+| Member | Anchor | Status | Opens | How the chip declares it | Where the player sees it |
+|---|---|---|---|---|---|
+| `actor` | Actor (see the Actor table below) | 🔗 linked | — | `entityId` = the actor node id, `visualKind` per its `actorType` | Routed by `actorType` — see the Actor subtype rows |
+| `location` | Location / sublocation | 🔗 linked | `place` card → `location` sheet | `entityId` = the location node id, `visualKind: 'location'` | The location's own profile, opened from the chip; plus the hex detail view from the map |
+| `trait` | Trait | 📍 named | — | `tooltipId` on the concept; no `entityId` | The tooltip, and the bearer's trait list on their sheet |
+| `artifact` | Artifact (common) | 🔗 linked | `item` card → `artifact` sheet | `entityId: '$artifact'`, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
+| `artifact_legendary` | Artifact (legendary) | 🔗 linked | `item` card → `artifact` sheet | `entityId: '$artifact'`, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
+| `action_template` | Action template | — not an anchor | — | not a chip anchor — see the note | Its content card, and the codex entry behind it |
+| `event` | — | — not an anchor | — | — | — |
+| `cosmology` | Sphere / foundation | 📍 named | — | `tooltipId` on the concept; no `entityId` | The tooltip, and the cosmology readouts |
+| `region` | Named area (region) | 🔗 linked | `place` card → `area` sheet | `entityId` = the Area node id; `visualKind: 'area'` routes without a tile | The hex chronicle names the Area a hex belongs to; the map draws its border and label |
+| `sublocation` | Sublocation | 🔗 linked | `place` card → `location` sheet | `entityId` = the sublocation node id, `visualKind: 'location'` | The location sheet of its parent, and the hex it sits on |
+| `ambition` | Ambition | 📍 named | — | `entityId` = the ambition node id; no `visualKind` member | The pursuing actor's sheet |
+| `encounter_template` | Encounter template | — not an anchor | — | not a chip anchor — anchor the carrier instead; see the note | Its content card (no codex category yet — THR-1495) |
+| `companion` | Companion | 🔗 linked | `actor` card only | `entityId` = the companion node id, `visualKind: 'companion'` | Its own card; and the Companions row on the bearer's surface |
 
 - **`actor`** — The umbrella row. `actorType` decides the anchor kind and the route.
 - **`location`** — A real, resolvable object that **does** carry the click, since THR-1172. Declare `visualKind: 'location'` — the member exists on `EncounterAftermathConceptRef` (`unifiedAction.ts`), `EncounterVeil.openEntity` routes it, and `onSelectEntity` accepts it, so the chip both draws the place's tile and opens its sheet. Reach for it through an anchor sentinel rather than a literal id: the instance is minted per world, exactly as a faction's is. **Corrected 2026-08-24 (THR-1221):** this row previously read "no `visualKind` member exists" and told authors to name the place without promising a link. That predated THR-1172 and contradicted this same file's own preamble, which has always listed `location` among the `visualKind` members. It was not stale output — the sentence is hand-written here, so the generator reported the catalog current while it said the opposite of the type. A package pass followed it and omitted `visualKind` from a shipped chip, leaving two location anchors in one batch rendering at different tiers.
 - **`trait`** — A trait is a concept, not an entity with art — it takes a tooltip and no tile, rather than a wrong one.
 - **`artifact`** — Reach for it through the `$artifact` sentinel, never a literal id (THR-1275). `spawn_artifact` keys its node `artifact_spawned_<encounterId>_<reactionId>_<i>_<tick>`, so the id carries the tick and the effect index and no author can write it — this row previously said "`entityId` = the artifact node id", which was an instruction nobody could follow, so every `possession` chip in the corpus anchored the *holder* instead. The sentinel resolves to the artifact this encounter minted, preferring the one the actor now holds. `check:encounter` refuses `$artifact` on a template that authors no `spawn_artifact` effect.
 - **`artifact_legendary`** — Same declaration as a common artifact — `$artifact` finds a legendary mint too, since the tier is chosen by the effect and is not the author's to name. Legendary ones carry their own trait graph.
-- **`action_template`** — Action template — a definition, not an object in the world the player can be pointed at
+- **`action_template`** — A definition, not an object in the world — so no *chip* anchors one, and that is unchanged. What changed with THR-1491 is that a definition is now reachable: a `ContentRef{kind: 'action_template'}` opens its content card, and the codex is that card's sheet. The distinction to hold is which reference type you are writing. A chip reports what happened to someone and takes a `WorldRef`; a cross-link in a codex entry or a batch report names the rule itself and takes a `ContentRef`. Pointing an aftermath chip at a template would say "this happened to a definition", which is still not a sentence.
 - **`event`** — Event — the record of a resolution. A chip *is* a report of one; pointing a chip at its own event record says nothing new
 - **`region`** — The director's "named area", and now a first-class reference (THR-1155 slice 1). `worldSeed` mints one Area per watershed cluster and stamps every land hex, so membership is a fact of game state rather than a renderer-side cluster list: an effect scoped `region` lands on the Area, and a reference of kind `area` routes to its centre hex, where the chronicle names it. It carries no entity-visual tile — there is no portrait of a mountain range — so it takes the `attachment` treatment for the icon: a route and a name, no wrong picture.
 - **`sublocation`** — Registered in `NodeType` by THR-1177 so readers stay legal for saved worlds; since THR-1183 no producer writes the bare type — every sublocation is minted as a `location` node carrying `parentLocationId`. Resolve and test the shape through `src/engine/sublocationShape.ts` (`isPlaceNode` / `resolveToParentLocation`); never hand-roll the two-shape check.
-- **`encounter_template`** — Encounter template — the encounter itself. A planted seed anchors through its **carrier** — the agent or location it was planted on — never through the template id
-- **`companion`** — The one kind that is in the `visualKind` union and still does not click, on purpose: a companion is a person but not an agent node, so both the agent drawer and the stub-modal path would open the wrong sheet. Its tile renders; the click is withheld because non-interactive beats wrong.
+- **`encounter_template`** — The encounter itself. A planted seed anchors through its **carrier** — the agent or location it was planted on — never through the template id, and that rule is unchanged. As with `action_template`, THR-1491 made the definition *reachable* without making it chip-anchorable: a `ContentRef{kind: 'encounter_template'}` opens a content card. Its sheet is `null` — no codex category catalogues encounters (0 of 557 ids resolve, measured 2026-09-12), which is THR-1495.
+- **`companion`** — The click was withheld until THR-1490 and is now live at Tier 2 only. The old reason still stands at Tier 3 — a companion is a person but not an agent node, so the agent drawer and the stub-modal path would each open the wrong *sheet*, and `SURFACE_BY_WORLD_REF.companion` records `sheet: null` for exactly that. What changed is that a card is not a sheet: a companion is a face with a name and a bearer, which is a card, so the chip opens one. Anchor it and let it click.
 
 ## Actors, by `actorType`
 
 An `actor` node's anchor kind comes from `properties.actorType`. This is where the director's *agent*, *faction* and *culture* anchors live.
 
-| Member | Anchor | Status | How the chip declares it | Where the player sees it |
-|---|---|---|---|---|
-| `god` | God | 🔗 linked | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
-| `ascendant` | Ascendant | 🔗 linked | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
-| `faction` | Faction | 🔗 linked | `entityId` = the actor node id, `visualKind: 'faction'` | The faction sheet |
-| `culture` | Culture | 📍 named | `entityId` = the actor node id; no `visualKind` member | The culture's own readouts, and the members' sheets |
-| `group` | Group | 📍 named | `entityId` = the actor node id; no `visualKind` member | The members' sheets |
-| `individual` | Agent (individual) | 🔗 linked | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
-| `place_spirit` | Place spirit | 🔗 linked | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
+| Member | Anchor | Status | Opens | How the chip declares it | Where the player sees it |
+|---|---|---|---|---|---|
+| `god` | God | 🔗 linked | `actor` card → `agent` sheet | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
+| `ascendant` | Ascendant | 🔗 linked | `actor` card → `agent` sheet | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
+| `faction` | Faction | 🔗 linked | `faction` card → `faction` sheet | `entityId` = the actor node id, `visualKind: 'faction'` | The faction sheet |
+| `culture` | Culture | 📍 named | — | `entityId` = the actor node id; no `visualKind` member | The culture's own readouts, and the members' sheets |
+| `group` | Group | 📍 named | — | `entityId` = the actor node id; no `visualKind` member | The members' sheets |
+| `individual` | Agent (individual) | 🔗 linked | `actor` card → `agent` sheet | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
+| `place_spirit` | Place spirit | 🔗 linked | `actor` card → `agent` sheet | `entityId` = the actor node id, `visualKind: 'agent'` | The agent drawer |
 
 - **`ascendant`** — Includes the player's own ascendant — the cast actor a player-facing aftermath resolves to.
 - **`faction`** — Anchor to the faction **node** id, not its `factionDefId` — chapters of one faction share a def id, so a def id does not identify the body the player dealt with.
@@ -229,80 +229,80 @@ An `actor` node's anchor kind comes from `properties.actorType`. This is where t
 
 The director's *attachment* anchor — condition, item, artifact, spell, and the rest. All seven non-companion categories share one declaration form, and `entityId` is the **template** node id, never a granted instance: the grant is written by the reaction's effects, which apply after the player picks, by which time the veil has closed.
 
-| Member | Anchor | Status | How the chip declares it | Where the player sees it |
-|---|---|---|---|---|
-| `possession` | Attachment · possession | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
-| `condition` | Attachment · condition | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
-| `blessing` | Attachment · blessing | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
-| `curse` | Attachment · curse | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
-| `bestowed_power` | Attachment · bestowed power | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
-| `agreement` | Attachment · agreement | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
-| `spell` | Attachment · spell | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
-| `companion` | Attachment · companion | 📍 named | `entityId` = the companion node id, `visualKind: 'companion'` | The Companions row on the bearer's own surface |
-| `holding` | Attachment · holding | 📍 named | `entityId` = the **owned place's** node id (a location or resource), `visualKind: 'location'` | The Holdings section of the bearer's Attachments tab |
+| Member | Anchor | Status | Opens | How the chip declares it | Where the player sees it |
+|---|---|---|---|---|---|
+| `possession` | Attachment · possession | 🔗 linked | `item` card → `attachment` sheet | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
+| `condition` | Attachment · condition | 🔗 linked | `item` card → `attachment` sheet | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
+| `blessing` | Attachment · blessing | 🔗 linked | `item` card → `attachment` sheet | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
+| `curse` | Attachment · curse | 🔗 linked | `item` card → `attachment` sheet | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
+| `bestowed_power` | Attachment · bestowed power | 🔗 linked | `item` card → `attachment` sheet | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
+| `agreement` | Attachment · agreement | 🔗 linked | `item` card → `attachment` sheet | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
+| `spell` | Attachment · spell | 🔗 linked | `item` card → `attachment` sheet | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
+| `companion` | Attachment · companion | 🔗 linked | `actor` card only | `entityId` = the companion node id, `visualKind: 'companion'` | Its own card; and the Companions row on the bearer's surface |
+| `holding` | Attachment · holding | 🔗 linked | `place` card → `location` sheet | `entityId` = the **owned place's** node id (a location or resource), `visualKind: 'location'` | The place's own card and location sheet; and the Holdings section of the bearer's Attachments tab |
 
 - **`condition`** — An injury is a condition with a duration edge and a negative reach modifier.
 - **`agreement`** — The director's "agreement" anchor — a pact the simulation holds both sides to.
-- **`companion`** — Declared as a companion, not an attachment — see the `companion` node row.
+- **`companion`** — Declared as a companion, not an attachment — see the `companion` node row, which carries the Tier-2 / Tier-3 split THR-1490 introduced.
 - **`holding`** — Anchor the PLACE, never the bearer-side face node (THR-1297): the face is bookkeeping that mirrors the `owns` edge, and a chip pointing at it would open a sheet for a record rather than for the mill the player just took. A holding chip is always backed by a real `owns` write (Law 56) — holdings are earned through undertakings and never drawn from a reward pool.
 
 ## Relationships (edges)
 
 The director's *"a particular relationship (edge) between objects"*. An edge has no page of its own, so an edge anchor is declared by naming **both endpoints**; the row says where the relationship becomes visible.
 
-| Member | Anchor | Status | How the chip declares it | Where the player sees it |
-|---|---|---|---|---|
-| `contains` | — | — not an anchor | — | — |
-| `adjacent` | — | — not an anchor | — | — |
-| `has_trait` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The bearer's trait list |
-| `possesses` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The bearer's possessions, and the artifact sheet |
-| `bonded_to` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The bearer's possessions, and the legendary artifact's own page |
-| `accompanies` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The Companions row on the bearer's surface |
-| `controls` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The controlling faction's holdings |
-| `owns` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The Holdings section of the owner's Attachments tab, and the owned place's own page |
-| `relates_to` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The cast tile, and both actors' sheets |
-| `hostile_to` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both actors' sheets |
-| `member_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet's roster, and the member's own sheet |
-| `belongs_to` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The culture's readouts, and the member's sheet |
-| `thread` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The thread row, and the thread detail view |
-| `aspect_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The thread detail view |
-| `mentors` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both parties' sheets |
-| `enchanted` | — | ⛔ reserved | — | — |
-| `warded` | — | ⛔ reserved | — | — |
-| `cursed` | — | ⛔ reserved | — | — |
-| `blessed` | — | ⛔ reserved | — | — |
-| `located_at` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The map, and the actor's current-position readout |
-| `avatar_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The avatar and ascendant surfaces |
-| `performing` | — | — not an anchor | — | — |
-| `aligned_with` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The alignment readouts |
-| `sphere_influence` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The sphere influence readouts |
-| `pursues` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The actor's sheet |
-| `road` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The map's road layer |
-| `encounter_at` | — | — not an anchor | — | — |
-| `gates_to` | — | — not an anchor | — | — |
-| `spawns_from` | — | — not an anchor | — | — |
-| `enables` | — | — not an anchor | — | — |
-| `trades_with` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both actors' sheets, and the trade readouts |
-| `participated_in` | — | — not an anchor | — | — |
-| `occurred_at` | — | — not an anchor | — | — |
-| `constructed_by` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The structure's own page |
-| `commanded_by` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The war readout, and the commander's sheet |
-| `participates_in` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The war readout |
-| `knows_spell` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's spell list |
-| `caused_by` | — | — not an anchor | — | — |
-| `knows_secret_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's sheet |
-| `owes_favor` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both parties' sheets |
-| `knows_clue_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's sheet |
-| `knows_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's sheet |
-| `holds_place_of_power` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The place-of-power inspector |
-| `embodies_spirit_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The location, and the spirit's own sheet |
-| `will_succeed` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
-| `leads` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
-| `commissions` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the quest itself |
-| `issues` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the bounty itself |
-| `sacred_route` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The consecrating actor sheet, and the destination location |
-| `reputation_with` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The counterparty profile — the Location Profile standing row, or the agent Standings section |
-| `sponsors_scheme` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The target location, and the sponsor's sheet |
+| Member | Anchor | Status | Opens | How the chip declares it | Where the player sees it |
+|---|---|---|---|---|---|
+| `contains` | — | — not an anchor | — | — | — |
+| `adjacent` | — | — not an anchor | — | — | — |
+| `has_trait` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The bearer's trait list |
+| `possesses` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The bearer's possessions, and the artifact sheet |
+| `bonded_to` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The bearer's possessions, and the legendary artifact's own page |
+| `accompanies` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The Companions row on the bearer's surface |
+| `controls` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The controlling faction's holdings |
+| `owns` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The Holdings section of the owner's Attachments tab, and the owned place's own page |
+| `relates_to` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The cast tile, and both actors' sheets |
+| `hostile_to` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both actors' sheets |
+| `member_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet's roster, and the member's own sheet |
+| `belongs_to` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The culture's readouts, and the member's sheet |
+| `thread` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The thread row, and the thread detail view |
+| `aspect_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The thread detail view |
+| `mentors` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both parties' sheets |
+| `enchanted` | — | ⛔ reserved | — | — | — |
+| `warded` | — | ⛔ reserved | — | — | — |
+| `cursed` | — | ⛔ reserved | — | — | — |
+| `blessed` | — | ⛔ reserved | — | — | — |
+| `located_at` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The map, and the actor's current-position readout |
+| `avatar_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The avatar and ascendant surfaces |
+| `performing` | — | — not an anchor | — | — | — |
+| `aligned_with` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The alignment readouts |
+| `sphere_influence` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The sphere influence readouts |
+| `pursues` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The actor's sheet |
+| `road` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The map's road layer |
+| `encounter_at` | — | — not an anchor | — | — | — |
+| `gates_to` | — | — not an anchor | — | — | — |
+| `spawns_from` | — | — not an anchor | — | — | — |
+| `enables` | — | — not an anchor | — | — | — |
+| `trades_with` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both actors' sheets, and the trade readouts |
+| `participated_in` | — | — not an anchor | — | — | — |
+| `occurred_at` | — | — not an anchor | — | — | — |
+| `constructed_by` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The structure's own page |
+| `commanded_by` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The war readout, and the commander's sheet |
+| `participates_in` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The war readout |
+| `knows_spell` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's spell list |
+| `caused_by` | — | — not an anchor | — | — | — |
+| `knows_secret_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's sheet |
+| `owes_favor` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both parties' sheets |
+| `knows_clue_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's sheet |
+| `knows_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The knower's sheet |
+| `holds_place_of_power` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The place-of-power inspector |
+| `embodies_spirit_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The location, and the spirit's own sheet |
+| `will_succeed` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
+| `leads` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
+| `commissions` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the quest itself |
+| `issues` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the bounty itself |
+| `sacred_route` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The consecrating actor sheet, and the destination location |
+| `reputation_with` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The counterparty profile — the Location Profile standing row, or the agent Standings section |
+| `sponsors_scheme` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The target location, and the sponsor's sheet |
 
 - **`contains`** — Structural edge — containment is map plumbing; anchor the location itself
 - **`adjacent`** — Structural edge — adjacency is geometry, not a relationship the player has with anything

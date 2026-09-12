@@ -18,7 +18,7 @@
 import type {
   ChipDescriptor,
   ChipsSection,
-  DetailPageKind,
+  GraphPageKind,
   EventCardSection,
   PanelSection,
   PortraitSection,
@@ -55,7 +55,7 @@ export interface SectionResolverContext {
   /** The node being detailed. */
   nodeId: string;
   /** Page type (so multi-purpose resolvers can branch). */
-  pageKind: DetailPageKind;
+  pageKind: GraphPageKind;
   /** World graph (read-only). */
   graph: WorldGraph;
   /** Seeded PRNG seed for deterministic prose pick. */
@@ -131,7 +131,7 @@ function topSphere(node: GraphNode | null | undefined): string {
 }
 
 /** Coerce a node's "kind" for click-through routing. */
-function nodeRefKindFor(node: GraphNode | null | undefined): DetailPageKind | null {
+function nodeRefKindFor(node: GraphNode | null | undefined): GraphPageKind | null {
   if (!node) return null;
   switch (node.type) {
     case 'actor':

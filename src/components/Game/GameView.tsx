@@ -3814,6 +3814,47 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     onOpenAttachment: setAttachmentSheetId,
   });
 
+  /**
+   * Tier 3 for content — the codex overlay (THR-1491).
+   *
+   * `openCodexEntry` already exists for the action card's title link (THR-1002); this is
+   * the same door, reached by a `ContentRef` instead. The router asks whether the overlay
+   * can actually show an id, because the registry row promises only that the *kind* is
+   * catalogued: `undertaking_template` is `sheet: 'codex'` and 56 of its 116 templates
+   * have no codex card, so a caller trusting the row alone would draw an "open in codex ↗"
+   * that opens nothing (Law 25).
+   *
+   * **The id set is hydrated lazily, and that is the point.** `Codex` is a lazy chunk and
+   * `codexRunState` imports the registry type-only, so `codexRegistry` — the whole catalog
+   * plus its art registries — is not in the main bundle today. A static import here to
+   * answer one membership question would put it there (NFP #7). Until the dynamic import
+   * lands the set is empty, which costs a content card its footer CTA for the few
+   * milliseconds after mount and never draws a dead one.
+   */
+  const [codexEntryIds, setCodexEntryIds] = useState<ReadonlySet<string>>(() => new Set());
+  useEffect(() => {
+    let live = true;
+    void import('../Codex/codexRegistry')
+      .then((m) => {
+        if (live) setCodexEntryIds(new Set(m.getAllCodexEntries().map((e) => e.id)));
+      })
+      // A failed chunk load costs the CTA, never the card (NFP #4).
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const codexHasEntry = useCallback((entryId: string) => codexEntryIds.has(entryId), [codexEntryIds]);
+  const openCodexSheet = useCallback(
+    (entryId: string) => {
+      if (!codexHasEntry(entryId)) return false;
+      openCodexEntry(entryId);
+      return true;
+    },
+    [codexHasEntry, openCodexEntry],
+  );
+
   const refRouter = useRefRouter({
     graph: gameState.graph,
     tick: gameState.tick,
@@ -3821,6 +3862,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     runtime,
     protagonistId: avatarNodeId ?? gameState.ascendantId,
     openSheet: sheetOpeners,
+    openCodexEntry: openCodexSheet,
+    codexHasEntry,
   });
 
   // Notifications keep their exact behaviour: the adapter maps the target to a ref and

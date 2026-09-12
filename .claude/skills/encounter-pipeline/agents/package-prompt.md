@@ -48,11 +48,17 @@ Three rules that decide the verdict, and one trap:
 - **`bind`** when the referent *could* be real but this encounter can spawn where it is
   not. The fix is the setting envelope, not the sentence.
 - **`anchored`** when the referent is a catalog member and the prose names it.
-- **The trap: do not fold a chip because its anchor cannot be clicked.** Only `agent`,
-  `faction`, `artifact` and `attachment` route a click. Locations, cultures, regions,
-  bonds and traits are all `named` — real objects, fully lawful anchors. Folding those
-  would strip the corpus of most of its legitimate consequences. Anchoring is about
-  whether the referent *exists*, never about whether it is clickable.
+- **The trap: do not fold a chip because its anchor cannot be clicked.** Anchoring is
+  about whether the referent *exists*, never about whether it is clickable — and since
+  THR-1490/THR-1491 the second half of that sentence has almost stopped applying anyway:
+  **every anchor kind is clickable now.** One router reads one surface registry, every
+  kind in it has a card, and a chip's referent is a `WorldRef` (a thing in the world) or a
+  `ContentRef` (a template the game hands out) — never free text. What still varies is how
+  *deep* the click goes: a `linked` anchor reaches a full sheet, a card-only anchor stops
+  at Tier 2. Both are live links; neither is a reason to fold. Cultures, bonds and traits
+  stay `named` because they are concepts rather than objects, and a concept takes a
+  tooltip. Read the status off `anchor-catalog.generated.md`, which now derives it from the
+  registry rather than asserting it by hand.
 
 Half A fails if **any** chip verdicts `fold` or `bind` and the draft has not already
 applied it. Say which, and stop — do not rewrite the encounter yourself.

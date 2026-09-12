@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
-import type { DetailPage } from '../../types/detailPage';
+import type { DetailPage, DetailPageKind } from '../../types/detailPage';
 import {
   DETAIL_DEFAULT_H,
   DETAIL_DEFAULT_W,
@@ -8,6 +8,8 @@ import {
   DETAIL_EVENT_H,
   DETAIL_EVENT_W,
   DETAIL_GROUP_H,
+  DETAIL_CONTENT_H,
+  DETAIL_CONTENT_W,
   DETAIL_GROUP_W,
   DETAIL_PLACE_H,
   DETAIL_PLACE_W,
@@ -151,7 +153,20 @@ function DetailProseNarration({ page }: { page: DetailPage }) {
   return <ProseTtsButton text={paragraphs} label={`Narrate ${page.displayName}`} />;
 }
 
-function DetailFooter({ hasFullSheet }: { hasFullSheet: boolean }) {
+/**
+ * The Tier-3 invitation, when there is one (Law 25).
+ *
+ * The label follows the page kind because the destinations are different rooms: a world
+ * object opens *its own sheet*, a content object opens the *codex* — the reference shelf
+ * the template lives on. One label for both would send the player looking for a page that
+ * is not there (THR-1491).
+ */
+function ctaLabel(kind: DetailPageKind): string {
+  return kind === 'content' ? 'open in codex ↗' : 'open her sheet ↗';
+}
+
+function DetailFooter({ page }: { page: DetailPage }) {
+  const hasFullSheet = page.hasFullSheet;
   return (
     <div
       style={{
@@ -187,7 +202,7 @@ function DetailFooter({ hasFullSheet }: { hasFullSheet: boolean }) {
             padding: '4px 10px',
           }}
         >
-          open her sheet ↗
+          {ctaLabel(page.kind)}
         </button>
       )}
     </div>
@@ -203,6 +218,9 @@ function getPanelSize(page: DetailPage): { width: number; height: number } {
   }
   if (page.kind === 'group') {
     return { width: DETAIL_GROUP_W, height: DETAIL_GROUP_H };
+  }
+  if (page.kind === 'content') {
+    return { width: DETAIL_CONTENT_W, height: DETAIL_CONTENT_H };
   }
   return { width: DETAIL_DEFAULT_W, height: DETAIL_DEFAULT_H };
 }
@@ -276,7 +294,7 @@ function DetailModalPanel({
             <Section key={`${section.typeId}-${index}`} section={section} />
           ))}
         </div>
-        <DetailFooter hasFullSheet={page.hasFullSheet} />
+        <DetailFooter page={page} />
       </div>
     </div>
   );

@@ -254,6 +254,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `companions` (1) | `companions.ts` | `THR-1096` |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | `THR-1143`, `THR-761` |
+| `content` (2) | `contentEntryResolver.ts`, `contentPageGenerator.ts` | `THR-1482`, `THR-1485`, `THR-1486`, `THR-1491` |
 | `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-472`, `THR-490`, `THR-501`, `THR-523`, `THR-573`, `THR-609`, `THR-659` |
 | `contentcensus` (5) | `contentCensus/adapters.ts`, `contentCensus/constants.ts`, `contentCensus/index.ts`, `contentCensus/matrix.ts`, `contentCensus/types.ts` | — |
 | `contestation` (1) | `contestation.ts` | `Phase 3`, `THR-731` |
@@ -414,4 +415,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 188 engine domains · 553 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 189 engine domains · 555 modules._

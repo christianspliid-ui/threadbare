@@ -23,20 +23,20 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 
 ## Kinds
 
-| Kind | Game word | Entries | Catalogs (claimed/total) | Instantiates as | Gate | Owning system | Badge |
+| Kind | Game word | Entries | Catalogs (claimed/total) | Instantiates as | Opens | Gate | Owning system | Badge |
 |---|---|---|---|---|---|---|---|
-| `encounter_template` | Encounter | 510 | `UNIFIED_ACTION_TEMPLATES` (510/697)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (47/47) | `encounter_template` | `npm run check:encounter` | Encounters & Dilemmas | 🟢 LIVE |
-| `action_template` | Action | 187 | `UNIFIED_ACTION_TEMPLATES` (187/697)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (0/47)<br>`THREAD_CREATION_TEMPLATES` (6/6)<br>`THREAD_MANAGEMENT_TEMPLATES` (2/2)<br>`AGENT_INTERVENTION_TEMPLATES` (44/44) | `action_template` | — | Encounters & Dilemmas | 🟢 LIVE |
-| `undertaking_template` | Undertaking | 116 | `MERCHANT_STRATEGIC_TEMPLATES` (6/6)<br>`BUILDER_STRATEGIC_TEMPLATES` (9/9)<br>`SCHOLAR_STRATEGIC_TEMPLATES` (7/7)<br>`ZEALOT_STRATEGIC_TEMPLATES` (6/6)<br>`COURT_STRATEGIC_TEMPLATES` (15/15)<br>`WARLORD_STRATEGIC_TEMPLATES` (9/9)<br>`WANDERER_STRATEGIC_TEMPLATES` (4/4)<br>`FACTORY_STRATEGIC_TEMPLATES` (0/0)<br>`UNDERTAKING_CELL_TEMPLATES` (60/60) | `undertaking` | `npm run check:undertaking` | Ambitions & Undertakings | 🟢 LIVE |
-| `item_template` | Item | 134 | `REWARD_POSSESSIONS` (111/111)<br>`TREASURE_MAPS` (5/5)<br>`STARTER_POSSESSIONS` (8/8)<br>`ANOMALY_SIGNATURE_ARTIFACTS` (10/10) | `item` | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `legendary_template` | Legendary artifact | 3 | `ARTIFACT_TEMPLATES` (3/3) | `legendary_artifact` | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `condition_template` | Condition | 46 | `REWARD_CONDITIONS` (35/35)<br>`STARTER_CONDITIONS` (5/5)<br>`ANOMALY_CONDITIONS` (6/6) | `condition` | `npm run check:attachment` | Effects & Conditions | 🟢 LIVE |
-| `power_template` | Power | 25 | `REWARD_BESTOWED_POWERS` (12/12)<br>`ANOMALY_BESTOWED_POWERS` (8/8)<br>`SPELL_TEMPLATES` (5/5) | `power` | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `agreement_template` | Agreement | 7 | `AGREEMENT_REWARD_TEMPLATES` (7/7) | `agreement` | `npm run check:attachment` | Secrets & Favors | 🟢 LIVE |
-| `companion_template` | Companion | 9 | `COMPANION_TEMPLATES` (9/9) | `companion` | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `ambition_template` | Ambition | 20 | `AMBITION_TEMPLATES` (10/10)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | — | Ambitions & Undertakings | 🟢 LIVE |
-| `omen_template` | Omen | 44 | `OMEN_TEMPLATES` (44/44) | _(nothing)_ | — | Omens & Atmospheric Pressure | 🟢 LIVE |
-| `nudge_card` | Card | 37 | `NUDGE_CARD_LIBRARY` (37/37) | _(nothing)_ | — | Encounters & Dilemmas | 🟢 LIVE |
+| `encounter_template` | Encounter | 510 | `UNIFIED_ACTION_TEMPLATES` (510/697)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (47/47) | `encounter_template` | card only | `npm run check:encounter` | Encounters & Dilemmas | 🟢 LIVE |
+| `action_template` | Action | 187 | `UNIFIED_ACTION_TEMPLATES` (187/697)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (0/47)<br>`THREAD_CREATION_TEMPLATES` (6/6)<br>`THREAD_MANAGEMENT_TEMPLATES` (2/2)<br>`AGENT_INTERVENTION_TEMPLATES` (44/44) | `action_template` | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
+| `undertaking_template` | Undertaking | 116 | `MERCHANT_STRATEGIC_TEMPLATES` (6/6)<br>`BUILDER_STRATEGIC_TEMPLATES` (9/9)<br>`SCHOLAR_STRATEGIC_TEMPLATES` (7/7)<br>`ZEALOT_STRATEGIC_TEMPLATES` (6/6)<br>`COURT_STRATEGIC_TEMPLATES` (15/15)<br>`WARLORD_STRATEGIC_TEMPLATES` (9/9)<br>`WANDERER_STRATEGIC_TEMPLATES` (4/4)<br>`FACTORY_STRATEGIC_TEMPLATES` (0/0)<br>`UNDERTAKING_CELL_TEMPLATES` (60/60) | `undertaking` | card → codex | `npm run check:undertaking` | Ambitions & Undertakings | 🟢 LIVE |
+| `item_template` | Item | 134 | `REWARD_POSSESSIONS` (111/111)<br>`TREASURE_MAPS` (5/5)<br>`STARTER_POSSESSIONS` (8/8)<br>`ANOMALY_SIGNATURE_ARTIFACTS` (10/10) | `item` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
+| `legendary_template` | Legendary artifact | 3 | `ARTIFACT_TEMPLATES` (3/3) | `legendary_artifact` | card only | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
+| `condition_template` | Condition | 46 | `REWARD_CONDITIONS` (35/35)<br>`STARTER_CONDITIONS` (5/5)<br>`ANOMALY_CONDITIONS` (6/6) | `condition` | card → codex | `npm run check:attachment` | Effects & Conditions | 🟢 LIVE |
+| `power_template` | Power | 25 | `REWARD_BESTOWED_POWERS` (12/12)<br>`ANOMALY_BESTOWED_POWERS` (8/8)<br>`SPELL_TEMPLATES` (5/5) | `power` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
+| `agreement_template` | Agreement | 7 | `AGREEMENT_REWARD_TEMPLATES` (7/7) | `agreement` | card → codex | `npm run check:attachment` | Secrets & Favors | 🟢 LIVE |
+| `companion_template` | Companion | 9 | `COMPANION_TEMPLATES` (9/9) | `companion` | card only | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
+| `ambition_template` | Ambition | 20 | `AMBITION_TEMPLATES` (10/10)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | card only | — | Ambitions & Undertakings | 🟢 LIVE |
+| `omen_template` | Omen | 44 | `OMEN_TEMPLATES` (44/44) | _(nothing)_ | card only | — | Omens & Atmospheric Pressure | 🟢 LIVE |
+| `nudge_card` | Card | 37 | `NUDGE_CARD_LIBRARY` (37/37) | _(nothing)_ | card only | — | Encounters & Dilemmas | 🟢 LIVE |
 
 ## Tag axes
 

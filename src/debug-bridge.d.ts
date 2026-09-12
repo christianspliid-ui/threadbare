@@ -1265,20 +1265,31 @@ export interface DebugBridge {
   /** @internal GameView registers open-modal provider here */
   _registerOpenModalsProvider(fn: () => string[]): void;
   /**
-   * Both surface records the ref router dispatches on (THR-1490).
+   * Both surface records the ref router dispatches on (THR-1490, THR-1491).
    *
-   * `worldRef` is a total `Record<WorldRefKind, { card, sheet, note? }>` — every kind has
-   * a row by type, so a missing key here means the build is not the one you think.
-   * The state assertion for any browser-verify run that opens a card.
+   * `worldRef` is a total `Record<WorldRefKind, { card, sheet, note? }>` and `content` a
+   * total `Record<ContentObjectKindId, …>` — every kind has a row by type, so a missing
+   * key in either means the build is not the one you think. The state assertion for any
+   * browser-verify run that opens a card.
+   *
+   * Every `content` row carries `card: 'content'`; its `sheet` is `'codex'` for the six
+   * kinds the codex catalogues and `null` for the six it does not (THR-1495), each `null`
+   * carrying its measured reason in `note`.
    */
   getSurfaceRegistry(): Promise<{
     worldRef: Record<string, { card: string; sheet: string | null; note?: string }>;
+    content: Record<string, { card: string; sheet: string | null; note?: string }>;
   }>;
   /**
    * Open a reference through the live router, headlessly.
    *
+   * `kind` may be a `WorldRefKind` **or** a `ContentObjectKindId` (THR-1491) — the two
+   * unions are disjoint, so the spelling alone decides which record is read and which
+   * generator builds the page. A content kind's `'sheet'` mode reaches the codex overlay
+   * and falls back to the card when that entry is not catalogued.
+   *
    * Returns the routing decision — `{ kind, id, mode, card, sheet }` — or `null` when the
-   * kind is not a `WorldRefKind`, no router is mounted, or `mode` is `'hover'` (a hover
+   * kind is in neither vocabulary, no router is mounted, or `mode` is `'hover'` (a hover
    * needs an anchor element, which a headless call has not got; ask for `'card'`).
    */
   openRef(
