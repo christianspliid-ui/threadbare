@@ -437,6 +437,11 @@ export type TraceCategory =
   | 'choice_set_player_resolved'
   | 'complication_partial_progress'
   | 'consequence_applied'
+  // The content query's two traces (THR-1487). Dotted rather than underscored so the
+  // `content` category reads as one family in the inspector's filter list, the way the
+  // sites that emit them read as one system.
+  | 'content.query_resolved'
+  | 'content.query_empty'
   | 'death_site_spirit_pressure'
   | 'debug_tick_batch'
   | 'divine_premonition'
@@ -851,6 +856,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'companion_joined',
   'complication_partial_progress',
   'consequence_applied',
+  'content.query_resolved',
+  'content.query_empty',
   'death_site_spirit_pressure',
   'debug_tick_batch',
   'divine_premonition',
@@ -3011,6 +3018,72 @@ export interface RewardDrawEmptyTrace extends TraceBase {
 }
 
 /**
+ * A `ContentQuery` as a trace carries it (THR-1487).
+ *
+ * Structurally identical to `ContentQuery` in `src/types/contentQuery.ts`, and widened
+ * in exactly two places — `kind` to `string` and the tier bounds to `number` — so that
+ * this file does not have to import the content-object registry. `trace.ts` is imported
+ * by most of the engine; pulling a data module in behind it would drag the registry into
+ * every one of those import graphs to buy nothing.
+ *
+ * **Declared rather than `Record<string, unknown>`** because a cast at an `emitTrace`
+ * boundary is what THR-1065's ratchet exists to prevent: it tells the compiler not to
+ * check the payload, and two payloads had silently diverged from their interfaces behind
+ * exactly that. A `ContentQuery` is assignable to this, so the emit sites carry no cast.
+ */
+export interface TracedContentQuery {
+  readonly kind: string | readonly string[];
+  readonly classes?: readonly string[];
+  readonly tags?: readonly string[];
+  readonly anyTags?: readonly string[];
+  readonly tier?: number | { readonly min?: number; readonly max?: number };
+  readonly exclude?: readonly string[];
+}
+
+/**
+ * Trace: a content query resolved to something (THR-1487).
+ *
+ * The generalisation of {@link RewardDrawTrace} to every site that names content by kind
+ * and tags rather than by literal id. The reward traces keep their own names — they
+ * carry the prize and the instance it became, which is more than a query resolution
+ * knows — so this is a companion, not a replacement.
+ *
+ * `query` is carried whole rather than summarised, for the same reason
+ * {@link RewardDrawEmptyTrace} carries its recipe: the trace has to be enough to fix the
+ * content from, without the reader having to find the template first.
+ */
+export interface ContentQueryResolvedTrace extends TraceBase {
+  category: 'content.query_resolved';
+  /** Which system asked. A `ContentQuerySite` (`src/types/contentQuery.ts`). */
+  site: string;
+  query: TracedContentQuery;
+  candidateCount: number;
+  /** The set exceeded `CONTENT_QUERY_MAX_CANDIDATES`; a draw saw only the sorted head. */
+  truncated: boolean;
+  /** Present when the site drew rather than merely resolved. */
+  pickedId?: string;
+  actorId?: string;
+  /** The encounter or undertaking that carried the query. */
+  templateId?: string;
+}
+
+/**
+ * Trace: a content query matched nothing, and the site fail-softed (THR-1487).
+ *
+ * The THR-844 rot class, caught at runtime and named. The authoring gate
+ * (`validateContentQueries`) fails an empty query before it ships, so a live one means
+ * the world differs from the library it was authored against — which is exactly the case
+ * a gate cannot see and a trace can.
+ */
+export interface ContentQueryEmptyTrace extends TraceBase {
+  category: 'content.query_empty';
+  site: string;
+  query: TracedContentQuery;
+  actorId?: string;
+  templateId?: string;
+}
+
+/**
  * Trace: a travel intent ended (THR-1142) — the agent reached the destination, or
  * gave up when the TTL lapsed.
  *
@@ -3682,6 +3755,9 @@ export type TraceEntry =
   | MembershipChangeTrace
   | RewardDrawTrace
   | RewardDrawEmptyTrace
+  // The content query (THR-1487)
+  | ContentQueryResolvedTrace
+  | ContentQueryEmptyTrace
   | RelocationResolvedTrace
   // Companions (THR-1096)
   | CompanionJoinedTrace

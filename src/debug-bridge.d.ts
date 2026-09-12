@@ -740,6 +740,40 @@ export interface DebugBridge {
     owningSystem: string;
     status: 'live' | 'dormant' | 'legacy';
   }>>;
+  /**
+   * Run a content query against the **live session's** catalogs (THR-1487) — the one-line
+   * answer to "would this filter match anything?".
+   *
+   * **Reads the world, not the library.** Deliberately the opposite of
+   * `getContentObjects`: that counts what an author may write and is identical on every
+   * seed; this counts what a draw could reach *right now*, so a prize minted three ticks
+   * ago is a candidate and a template the world never seeded is not. That is the question
+   * you have when a `content.query_empty` trace has just fired.
+   *
+   * Tags carry their `#` — `'weapon'` matches nothing, `'#weapon'` does (THR-1146), and
+   * every tag in `tags` must be present (ALL-of). `classes` narrows within a kind:
+   * `{ kind: 'power_template', classes: ['bestowed'] }` is a god's gift and not a learned
+   * spell. `truncated` says the set is larger than a *draw* would see — resolution itself
+   * is uncapped.
+   *
+   * Returns `null` when there is no game state. Always `await` it.
+   *
+   * @example
+   *   await window.__DEBUG.queryContent({ kind: 'item_template', tags: ['#weapon', '#entropy'] })
+   */
+  queryContent: (query: {
+    kind: string | readonly string[];
+    classes?: readonly string[];
+    tags?: readonly string[];
+    anyTags?: readonly string[];
+    tier?: number | { min?: number; max?: number };
+    exclude?: readonly string[];
+  }) => Promise<{
+    query: unknown;
+    candidateCount: number;
+    truncated: boolean;
+    hits: ReadonlyArray<{ kind: string; id: string; tier: number | null }>;
+  } | null>;
   /** Snapshot of the trace ring buffer. Empty unless tracing was enabled first. */
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   /**

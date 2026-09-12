@@ -24,7 +24,7 @@
  *                            abstract-noun measure is a suffix proxy that counts
  *                            domain vocabulary against a template, so it ranks
  *                            rather than gates.
- *   3. Reference liveness    `validateNudgeGrantRefs` + `validateRewardDrawPools`
+ *   3. Reference liveness    `validateNudgeGrantRefs` + `validateContentQueries`
  *                            + `validateFavorDebtors` — every id a card grants,
  *                            every pool it draws from, and every favour's debtor
  *                            resolves against built content. This is the
@@ -86,7 +86,7 @@ import {
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
 import { doctrineV2Warnings } from '../src/data/content-eval/doctrineV2Checks';
-import { validateNudgeGrantRefs, validateRewardDrawPools, validateFavorDebtors } from '../src/engine/nudgeGrantLiveness';
+import { validateNudgeGrantRefs, validateContentQueries, validateFavorDebtors } from '../src/engine/nudgeGrantLiveness';
 import { invalidTallyKeyProblems } from '../src/data/content-eval/tallyKeys';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 
@@ -246,12 +246,18 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     ...validateNudgeGrantRefs([template]).dead.map(
       d => `${d.site} ${d.effectKind} → unknown ${d.refKind} '${d.ref}'`,
     ),
-    // THR-1146 — a `reward_draw` whose recipe matches no live attachment is the
-    // same rot in a different shape: nothing is misspelled, the query just
-    // selects nothing, and at runtime the prose promises a prize that never
-    // arrives. Tags carry their `#` — `'weapon'` matches nothing, `'#weapon'` does.
-    ...validateRewardDrawPools([template]).empty.map(
-      e => `${e.site} reward_draw → no candidate matches [${e.categoryWeights.join('/')}]`
+    // THR-1146 — a recipe that matches no live attachment is the same rot in a
+    // different shape: nothing is misspelled, the query just selects nothing, and at
+    // runtime the prose promises a prize that never arrives. Tags carry their `#` —
+    // `'weapon'` matches nothing, `'#weapon'` does.
+    //
+    // THR-1487 widened this to the **step route** (`successMetadata.rewardPool`), which
+    // carries 481 of the corpus's 482 recipes and had never been swept. Entries named in
+    // `CONTENT_QUERY_RETROFIT_PENDING` come back under `grandfathered` and are
+    // deliberately not fatal here; the ratchet's own test is what keeps that list
+    // shrinking.
+    ...validateContentQueries([template]).empty.map(
+      e => `${e.site} reward pool → no candidate matches [${e.categoryWeights.join('/')}]`
         + `${e.tagFilters.length ? ` tags ${e.tagFilters.join(' ')}` : ' (no tag filter)'}`,
     ),
     // THR-1175 — the third liveness shape: not a dead id and not an empty query,

@@ -29,6 +29,9 @@ import type { GameState } from '../types/gameState';
 import type { WorldGraph } from '../engine/graph';
 import type { GraphEdge, GraphNode, NodeType, EdgeType } from '../types/graph';
 import type { GraphOp } from '../types/graphOp';
+import type { RarityTier } from '../types/rarity';
+import { resolveContentQuery, graphContentCatalogs, traceContentQuery } from '../engine/contentQuery';
+import type { ContentQuery } from '../types/contentQuery';
 import type {
   MotiveKind,
   UndertakingHarmClass,
@@ -1003,17 +1006,34 @@ export function resolveConditionSign(
   return null;
 }
 
-/** The condition-template pool for a sign, as catalog tags rather than an id list (NFP #1). */
-function conditionPool(graph: WorldGraph, tag: string, tierCap: number): GraphNode[] {
-  return graph.getNodesByType('trait')
-    .filter(n => {
-      if (n.properties.subcategory !== 'condition') return false;
-      const tags = n.properties.tags;
-      if (!Array.isArray(tags) || !tags.includes(tag)) return false;
-      const tier = num(n.properties, 'tier');
-      return tier === null || tier <= tierCap;
-    })
-    .sort((a, b) => a.id.localeCompare(b.id));
+/**
+ * The condition-template pool for a sign, as catalog tags rather than an id list (NFP #1).
+ *
+ * THR-1487: this was the second place in the engine that hand-rolled *"trait nodes, of
+ * the condition class, carrying this tag, at or under this tier, sorted by id"* — the
+ * reward pool being the first. It is now one {@link ContentQuery}, which is the whole
+ * point of the slice: the sentence is written once, and the day the vocabulary or the
+ * class carve changes, both sites change with it. The candidates are identical, asserted
+ * by a shared-path test; the tier rule in particular is preserved exactly, including that
+ * an untiered template passes every cap.
+ */
+function conditionPool(graph: WorldGraph, tag: string, tierCap: number, tick: number): GraphNode[] {
+  const query: ContentQuery = {
+    kind: 'condition_template',
+    classes: ['condition'],
+    tags: [tag],
+    // `CONDITION_TIER_CAP_BY_BAND` is 1 or 2 and `CONDITION_TIER_CAP_DEFAULT` is 1
+    // (pinned by `strategic-action-constants.test.ts`), so the clamp is a type narrowing
+    // rather than a behaviour change — no band can ask for a cap outside the ladder.
+    tier: { max: Math.max(1, Math.min(4, Math.round(tierCap))) as RarityTier },
+  };
+  const hits = resolveContentQuery(query, graphContentCatalogs(graph));
+  traceContentQuery({ site: 'condition_pool', query, candidateCount: hits.length, tick });
+  // Back to nodes: the callers read `properties` off the template they picked, and the
+  // hit carries only identity. Already sorted by id, so no re-sort.
+  return hits
+    .map(hit => graph.getNode(hit.id))
+    .filter((n): n is GraphNode => n !== undefined);
 }
 
 /**
@@ -2359,7 +2379,7 @@ const CONDITION: UndertakingObjectType = {
       }
 
       const tag = signed.sign === 'blessing' ? CONDITION_BLESSING_TAG : CONDITION_CURSE_TAG;
-      const pool = conditionPool(ctx.graph, tag, conditionTierCap(ctx.outcome));
+      const pool = conditionPool(ctx.graph, tag, conditionTierCap(ctx.outcome), ctx.tick);
       const template = pickConditionTemplate(ctx.graph, ctx.actorId, pool);
       if (!template) {
         emitKindTrace({

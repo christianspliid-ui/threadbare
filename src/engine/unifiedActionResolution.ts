@@ -1143,6 +1143,10 @@ function resolveUnifiedReward(
     tick,
     actorId: action.actorId,
     templateId: action.templateId,
+    // THR-1487: name the route, so `content.query_*` can tell the step route from the
+    // aftermath one. Until this slice the step route carried 481 of the corpus's 482
+    // recipes and was invisible to both the gate and the traces.
+    site: 'step_reward_pool',
     // THR-1241: the recipient's `reward_tier_bonus` reads here.
     overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
   });

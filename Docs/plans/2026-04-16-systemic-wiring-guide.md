@@ -3672,3 +3672,61 @@ For the player, the vocabulary is now a surface rather than a key: the codex gai
 row on possessions, conditions, agreements and undertakings (chips grouped by axis, ALL-of
 narrowing — the reward pool's own rule), and the attachment sheet renders its tags as chips
 carrying the tag's word and its `tag.*` tooltip instead of printing `#iron`.
+
+## Capability 29: Content tags and the content query (THR-1487)
+
+An author can now ask for content **by kind and tags** instead of naming an id. One resolver
+answers, and the same resolver is what the gate runs — so a filter that passes the gate is a
+filter the runtime will match.
+
+```ts
+// an entropy-themed encounter whose crit ending hands out a fitting weapon
+{ kind: 'item_template', tags: ['#weapon', '#entropy'] }
+```
+
+Why this is a capability and not plumbing: literal ids rot. 67 of 115 reveal families matched
+zero templates before THR-844 aliased them, and undertaking `catalystEncounterIds` spell
+`encounter_` where the corpus spells `encounter.`, so not one of them can resolve. A query
+names a *shape* rather than a row, so it keeps meaning something when the catalog grows.
+
+**The query.** `ContentQuery` in `src/types/contentQuery.ts`; `resolveContentQuery` /
+`drawFromContentQuery` in `src/engine/contentQuery.ts`.
+
+| Field | Meaning |
+|---|---|
+| `kind` | one `ContentObjectKindId` or several; the resolver unions them in registry order |
+| `classes` | narrows within a kind — `['bestowed']` is a god's gift, not a learned spell |
+| `tags` | **every** one must be present (ALL-of, the reward pool's rule). Tags carry their `#` |
+| `anyTags` | at least one must be present |
+| `tier` | a tier, or `{ min, max }` inclusive. **An untiered entry passes every window** |
+| `exclude` | ids never returned — the running encounter's own template, a prize already granted |
+
+**The four sites it works at today.** `reward_draw` (the aftermath effect), `step_reward_pool`
+(`ActionStepOutcomeMetadata.rewardPool`), `condition_pool` (what `inflict_condition` reaches
+for), and `debug`. `encounter_seed` and `undertaking_catalyst` are the next slice's.
+
+**Projection beats authoring** (the slice-2 rule, applied here): a candidate's tags are
+`authored ∪ projected`, so an encounter typed `reach: 'iron'` is found by `#iron` without
+anyone writing the tag twice. Never author a tag on an axis the kind's registry row projects.
+
+**What an author needs to know:**
+
+- **An empty query is a gate failure, not a runtime surprise.** `check:encounter` is fatal on a
+  recipe that resolves to nothing, on **both** routes — the `reward_draw` effect and the step
+  route. Before THR-1487 only the first was swept, which is 1 recipe of 482 in the corpus; the
+  other 481 shipped unchecked, and widening the gate found sixteen that promise a prize and
+  hand over nothing (grandfathered in `contentQueryRetrofitPending.ts`, repaired by THR-1496).
+- **Ask before you write.** `window.__DEBUG.queryContent({ kind, tags })` in the browser, or
+  `query {"kind":"item_template","tags":["#weapon"]}` at the CLI, answers "would this match
+  anything?" against a live world in one line.
+- **Read the traces when a prize fails to arrive.** `content.query_resolved` carries the whole
+  query, the candidate count and what was picked; `content.query_empty` fires when a site went
+  hungry and names the site, so an empty pool is never indistinguishable from a site that
+  never ran.
+- **A resolve is uncapped; a draw is capped** at `CONTENT_QUERY_MAX_CANDIDATES` (64), with
+  `truncated: true` on the trace. A caller that weights the set itself — the reward pool does —
+  sees all of it, or its weights would stop summing to what they summed to.
+
+**One thing a query cannot express, deliberately:** a filter that depends on the *recipient*.
+Companions and agreements keep their own catalog filters, because "not at the companion cap"
+and "this unique is not already in the world" are facts about the bearer, not about the content.
