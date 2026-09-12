@@ -82,7 +82,10 @@ A **new node or edge type** additionally keeps the load-bearing rule (full desig
 
 - **Headless:** `npm run cli` → `objects` prints every kind with its live count in the running world and the write-time warnings raised so far.
 - **Browser:** the served [World Objects](../../public/world-objects-reference.html) reference page (Design Reference Wiki → Deep Reference).
-- **Chips:** every kind names the `WorldRefKind` it projects onto; a kind with `worldRef: null` is one no chip can route to yet (see [`src/types/worldRef.ts`](../../src/types/worldRef.ts), THR-1212).
+- **Chips, and every other link: every kind routes (THR-1490).** A chip, a name in prose, a thread row, a notification — all of them open through one dispatcher, `useRefRouter`, which reads [`src/data/surface-registry.ts`](../../src/data/surface-registry.ts). That registry maps every `WorldRefKind` to the card it opens and the sheet it reaches, and is **total by type**: a kind added to the vocabulary without a row is a build failure. Every kind has a card; only three withhold a *sheet*, and each row quotes the ruling that withheld it.
+- **A `worldRef: null` row is not unreachable** — it is reached through its bearer. Such a row carries `via`, naming the kind whose card shows it: a Standing is chips on the two parties' cards, a Holding is the owned place's card, a Battle is read off the armies engaged in it. `surfaceRegistry.test.ts` walks those chains and fails on one that ends nowhere or cycles.
+- **Three rows are reachable by nothing, and say so.** Sphere and Reach are axes rather than objects — a Sphere is the accent every card is already coloured by — and the cosmology node is never minted. They carry `noSurface` with the reason, and the pin holds an explicit allowlist of exactly those three, so a fourth is a test edit someone has to argue for.
+- The `WorldRefKind` vocabulary itself: [`src/types/worldRef.ts`](../../src/types/worldRef.ts) (THR-1212).
 
 ## Stale sources to avoid
 

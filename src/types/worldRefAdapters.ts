@@ -122,11 +122,21 @@ export function toNavigationTarget(
       return options.agentId
         ? { kind: 'journey', journeyId: ref.id, agentId: options.agentId }
         : undefined;
-    // No NavigationTarget arm exists for these, by design (see the doc comment).
+    // THR-1490 — three arms that were missing rather than withheld. `ArtifactSheet`,
+    // `AttachmentDetailView` and `ArmySheet` all ship; until now no `NavigationTarget`
+    // could name them, so every caller holding one of these refs fell through to the
+    // fail-open text branch and the sheet was unreachable from a chip.
     case 'artifact':
+      return { kind: 'artifact', artifactId: ref.id };
     case 'attachment':
-    case 'companion':
+      return { kind: 'attachment', templateNodeId: ref.id };
     case 'army':
+      return { kind: 'army', armyId: ref.id };
+    // Companion stays `undefined`, and this is the one real withholding in the switch
+    // (THR-1096, restated as the surface registry's `sheet: null` row): a companion is
+    // not an agent node and not a thread, so both sheet paths would open the wrong
+    // person's page. Its card still opens; only the Tier-3 arm is absent.
+    case 'companion':
       return undefined;
   }
 }
@@ -177,6 +187,49 @@ export function fromNarrativeSegment(segment: NarrativeSegmentRefLike): WorldRef
   };
 }
 
+/**
+ * A thread row's category, as a `WorldRefKind` (THR-1490).
+ *
+ * `ThreadCategory` is the divine-court vocabulary (`engine/retinue.ts`): the five kinds
+ * of thing the player can hold a thread to. Every member has a `WorldRefKind`, so this is
+ * total and returns no `undefined` — which is the point. The thread panel's own router
+ * used to branch on the category and reach five different openers; now it maps and calls.
+ *
+ * Declared as a `Record` rather than a switch so the coverage test can walk it, and typed
+ * against the source union so a sixth `ThreadCategory` fails to compile here rather than
+ * falling through to a default arm nobody would notice.
+ */
+export const WORLD_REF_KIND_BY_THREAD_CATEGORY: Readonly<
+  Record<'agent' | 'location' | 'faction' | 'army' | 'artifact', WorldRefKind>
+> = {
+  agent: 'agent',
+  location: 'location',
+  faction: 'faction',
+  army: 'army',
+  artifact: 'artifact',
+};
+
+/**
+ * An encounter veil's `visualKind`, as a `WorldRefKind` (THR-1490).
+ *
+ * The seven kinds a chip or a named entity in encounter prose can be. Every member maps;
+ * `companion` maps too, and what makes it different is the *surface registry's*
+ * `sheet: null`, not an absence here — a companion has a card like anything else, and
+ * conflating "no sheet" with "no kind" is what made companions unclickable rather than
+ * merely card-only.
+ */
+export const WORLD_REF_KIND_BY_VISUAL_KIND: Readonly<
+  Record<'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | 'area', WorldRefKind>
+> = {
+  agent: 'agent',
+  faction: 'faction',
+  artifact: 'artifact',
+  companion: 'companion',
+  attachment: 'attachment',
+  location: 'location',
+  area: 'area',
+};
+
 /** Build a `hex` reference from coordinates. */
 export function hexRef(col: number, row: number): WorldRef {
   return { kind: 'hex', id: hexRefId(col, row) };
@@ -208,5 +261,11 @@ export function fromNavigationTarget(target: NavigationTarget): WorldRef {
       return { kind: 'hex', id: hexRefId(target.col, target.row) };
     case 'area':
       return { kind: 'area', id: target.areaId };
+    case 'artifact':
+      return { kind: 'artifact', id: target.artifactId };
+    case 'attachment':
+      return { kind: 'attachment', id: target.templateNodeId };
+    case 'army':
+      return { kind: 'army', id: target.armyId };
   }
 }

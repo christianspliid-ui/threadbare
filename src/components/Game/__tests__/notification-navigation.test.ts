@@ -2,7 +2,7 @@
 /**
  * WIRE-01 verification: notification hex click → camera animation chain.
  *
- * Verifies that useNotificationNavigation correctly dispatches 'hex' targets
+ * Verifies that the sheet dispatch correctly routes 'hex' targets
  * to the onFocusHex callback with the correct col/row values.
  *
  * The full chain is:
@@ -12,20 +12,20 @@
  *   → HexMapV2 imperative handle → animateCameraTo(canvas, zoom, x, y, scale, JUMP_TO_DURATION_MS)
  */
 import { describe, it, expect, vi } from 'vitest';
-import { useNotificationNavigation } from '../hooks/useNotificationNavigation';
+import { useSheetOpeners } from '../hooks/useNotificationNavigation';
 import type { NavigationTarget } from '../../../types/notification';
 
 // useNotificationNavigation is a React hook using useCallback.
 // renderHook is needed to call it in the hook rules environment.
 import { renderHook } from '@testing-library/react';
 
-describe('useNotificationNavigation — WIRE-01 camera chain', () => {
+describe('useSheetOpeners — WIRE-01 camera chain', () => {
   it('calls onFocusHex with correct col/row when target kind is hex', () => {
     const onSelectAgent = vi.fn();
     const onFocusHex = vi.fn();
 
     const { result } = renderHook(() =>
-      useNotificationNavigation({ onSelectAgent, onFocusHex })
+      useSheetOpeners({ onSelectAgent, onFocusHex })
     );
 
     const target: NavigationTarget = { kind: 'hex', col: 5, row: 3 };
@@ -41,7 +41,7 @@ describe('useNotificationNavigation — WIRE-01 camera chain', () => {
     const onFocusHex = vi.fn();
 
     const { result } = renderHook(() =>
-      useNotificationNavigation({ onSelectAgent, onFocusHex })
+      useSheetOpeners({ onSelectAgent, onFocusHex })
     );
 
     const target: NavigationTarget = { kind: 'agent', agentId: 'agent.alice' };
@@ -55,11 +55,11 @@ describe('useNotificationNavigation — WIRE-01 camera chain', () => {
     // Type-level check: the function should accept exactly (col: number, row: number).
     // If this compiles and the hook returns a function that accepts NavigationTarget,
     // the chain is type-safe end-to-end.
-    const onFocusHex = vi.fn<[col: number, row: number], void>();
+    const onFocusHex = vi.fn<(col: number, row: number) => void>();
     const onSelectAgent = vi.fn();
 
     const { result } = renderHook(() =>
-      useNotificationNavigation({ onSelectAgent, onFocusHex })
+      useSheetOpeners({ onSelectAgent, onFocusHex })
     );
 
     expect(typeof result.current).toBe('function');
@@ -74,7 +74,7 @@ describe('useNotificationNavigation — WIRE-01 camera chain', () => {
     const onFocusHex = vi.fn();
 
     const { result, rerender } = renderHook(() =>
-      useNotificationNavigation({ onSelectAgent, onFocusHex })
+      useSheetOpeners({ onSelectAgent, onFocusHex })
     );
 
     const firstRef = result.current;

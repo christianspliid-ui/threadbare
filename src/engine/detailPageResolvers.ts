@@ -36,9 +36,17 @@ import {
   ACTOR_FALLBACK_TEMPLATES,
   EVENT_FALLBACK_TEMPLATES,
   FACTION_FALLBACK_TEMPLATES,
+  GROUP_FALLBACK_TEMPLATES,
   ITEM_FALLBACK_TEMPLATES,
   PLACE_FALLBACK_TEMPLATES,
 } from '../data/detail-page-fallback-templates';
+import {
+  ARMY_NO_OBJECTIVE_COPY,
+  armyObjectiveSentence,
+  getArmyCohesionWord,
+  getArmySizeName,
+  getArmySupplyWord,
+} from '../data/army-words';
 
 // ─── Resolver context ─────────────────────────────────────────────────────────
 
@@ -842,6 +850,127 @@ export const PLACE_RESOLVERS = {
   memory: placeMemoryResolver,
 } satisfies Record<string, SectionResolver>;
 
+// ─── Group resolvers (THR-1490) ───────────────────────────────────────────────
+//
+// A group is a body of people under a banner: today an Army, and — when the Company and
+// Network kinds get a route of their own — those too. The three sections answer the only
+// three questions a glance at one asks: who they are, who leads them, what they are
+// doing.
+//
+// Every figure stays behind a word. `ArmySheet` already established this for the same
+// subject (headcount 10000, cohesion 94.15 — both private), and the words come from the
+// same table it reads, `data/army-words.ts`, rather than a second vocabulary that would
+// drift from it by the first tuning pass.
+
+/** Read a group node's `armyState` bag, or null when it carries none. */
+function groupStateOf(node: GraphNode | null | undefined): Record<string, unknown> | null {
+  const bag = node?.properties?.armyState;
+  return bag && typeof bag === 'object' ? (bag as Record<string, unknown>) : null;
+}
+
+/** WHO THEY ARE — size, condition and provisioning, as words. */
+const groupMusterResolver: SectionResolver = (ctx) => {
+  const node = ctx.graph.getNode(ctx.nodeId);
+  if (!node) return null;
+  const state = groupStateOf(node);
+  if (!state) return null;
+
+  const size = getArmySizeName(state.size);
+  const cohesion = getArmyCohesionWord(state.cohesion, state.cohesionMax);
+  const supply = getArmySupplyWord(state.supplyTier);
+  // Every part is independently optional — an army raised before the supply system
+  // carries no tier, and one with a malformed cohesion pair reads as neither.
+  const clauses = [size, cohesion, supply].filter((w): w is string => Boolean(w));
+  if (clauses.length === 0) return null;
+
+  const section: ProseSection = {
+    kind: 'prose',
+    typeId: 'who_they_are',
+    label: 'WHO THEY ARE',
+    gold: true,
+    tier: 'routine',
+    source: 'groupMusterResolver',
+    prose: `${node.name} — ${clauses.join(', ')}.`,
+  };
+  return section;
+};
+
+/** WHO LEADS THEM — the commander and the banner they answer to, both clickable. */
+const groupCommandResolver: SectionResolver = (ctx) => {
+  const chips: ChipDescriptor[] = [];
+
+  // `commanded_by` runs army → commander; `member_of` runs army → faction.
+  const commanderId = ctx.graph.getOutgoingEdges(ctx.nodeId, 'commanded_by')[0]?.target;
+  const commander = commanderId ? ctx.graph.getNode(commanderId) : null;
+  if (commander) {
+    chips.push({
+      label: commander.name,
+      flavour: 'in command',
+      sphere: topSphere(commander),
+      clickRef: { nodeId: commander.id, pageKind: 'actor' },
+    });
+  }
+
+  const factionId = ctx.graph.getOutgoingEdges(ctx.nodeId, 'member_of')[0]?.target;
+  const faction = factionId ? ctx.graph.getNode(factionId) : null;
+  if (faction) {
+    chips.push({
+      label: faction.name,
+      flavour: 'raised them',
+      sphere: topSphere(faction),
+      clickRef: { nodeId: faction.id, pageKind: 'faction' },
+    });
+  }
+
+  if (chips.length === 0) return null;
+
+  const section: ChipsSection = {
+    kind: 'chips',
+    typeId: 'who_leads_them',
+    label: 'WHO LEADS THEM',
+    gold: false,
+    tier: 'routine',
+    source: 'groupCommandResolver',
+    chips,
+  };
+  return section;
+};
+
+/** WHAT THEY ARE DOING — the objective as a sentence, never as an objective type. */
+const groupIntentResolver: SectionResolver = (ctx) => {
+  const node = ctx.graph.getNode(ctx.nodeId);
+  const state = groupStateOf(node);
+  const objective = state?.objective as { type?: unknown; targetId?: unknown } | null | undefined;
+
+  let prose: string | null = null;
+  if (objective) {
+    const targetId = typeof objective.targetId === 'string' ? objective.targetId : undefined;
+    const targetName = targetId ? (ctx.graph.getNode(targetId)?.name ?? null) : null;
+    prose = armyObjectiveSentence(objective.type, targetName);
+  }
+  // No objective, an unphraseable one, or a target that has left the world all land
+  // here — a muster standing idle is a supported state, not a missing section.
+  prose ??= pickFrom(GROUP_FALLBACK_TEMPLATES.intent_none, seedFor(ctx, 'what_they_are_doing'))
+    ?? ARMY_NO_OBJECTIVE_COPY;
+
+  const section: ProseSection = {
+    kind: 'prose',
+    typeId: 'what_they_are_doing',
+    label: 'WHAT THEY ARE DOING',
+    gold: false,
+    tier: 'routine',
+    source: 'groupIntentResolver',
+    prose,
+  };
+  return section;
+};
+
+export const GROUP_RESOLVERS = {
+  who_they_are: groupMusterResolver,
+  who_leads_them: groupCommandResolver,
+  what_they_are_doing: groupIntentResolver,
+} satisfies Record<string, SectionResolver>;
+
 export const EVENT_RESOLVERS = {
   what_happened: whatHappenedResolver,
   who_was_there: whoWasThereResolver,
@@ -919,6 +1048,29 @@ export const placeWantsFallback: SectionResolver = (ctx) => {
     tier: 'routine',
     source: 'placeWantsFallback',
     prose: tpl ? fillPlaceholders(tpl, { Name: place.name, sphere }) : '',
+  };
+  return section;
+};
+
+/**
+ * Group fallback: a muster with no readable state still says who it is.
+ *
+ * Reached when `groupMusterResolver` returns null — a group node carrying no `armyState`
+ * bag, or one whose size, cohesion and supply are all unreadable. The section is
+ * mandatory, so without this the page would fall to the generator's `…` stub.
+ */
+export const groupMusterFallback: SectionResolver = (ctx) => {
+  const node = ctx.graph.getNode(ctx.nodeId);
+  if (!node) return null;
+  const tpl = pickFrom(GROUP_FALLBACK_TEMPLATES.muster_unknown, seedFor(ctx, 'who_they_are'));
+  const section: ProseSection = {
+    kind: 'prose',
+    typeId: 'who_they_are',
+    label: 'WHO THEY ARE',
+    gold: true,
+    tier: 'routine',
+    source: 'groupMusterFallback',
+    prose: tpl ? fillPlaceholders(tpl, { Name: node.name }) : node.name,
   };
   return section;
 };

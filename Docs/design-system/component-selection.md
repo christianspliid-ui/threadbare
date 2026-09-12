@@ -15,19 +15,28 @@
 
 ### Show entity details
 
-| Need | Component | Zone | Trigger |
-|------|-----------|------|---------|
-| Quick agent summary (name, tier, status) | `AgentInfoCard` | Embed in any list | Inline |
-| Agent detail with traits, attachments, activity | `AgentDetailPanel` | Right panel | Click agent on map/list |
-| Full agent deep-dive (6 tabs) | `AgentProfileModal` | Modal overlay | Button from AgentDetailPanel |
-| Location contents (agents, sublocations) | `HexDetailView` | Right panel | Click hex |
-| Full location tree | `LocationProfileModal` | Modal overlay | Click location name |
-| Faction network and members | `FactionSheet` | Modal overlay | Click faction |
-| Army composition and siege | `ArmySheet` | Modal overlay | Click army |
-| Artifact properties and bearer | `ArtifactSheet` | Modal overlay | Click artifact |
-| Ascendant sphere attunement | `AscendantSheet` | Modal overlay | Click ascendant |
-| NPC (lightweight agent variant) | `NpcDetailView` | Right panel | Click NPC |
-| Inline entity reference | `IdentityChip` | Inline in text | Always visible |
+**One row (THR-1490).** This table used to list eleven components and left every caller to
+pick one by the kind of thing it held — which is how an artifact chip ended up as plain
+text on a surface where a faction chip was a link. Routing is now data, not judgment:
+
+| Need | How |
+|------|-----|
+| Open **any** world object or content reference | `useRefRouterContext()?.open(ref)` — `ref` is a `WorldRef`; the kind decides the surface |
+
+`src/data/surface-registry.ts` is the table that decides: it maps every `WorldRefKind` to
+its card kind and its sheet, is total by type, and is the only place that answers "what
+does this open". `open(ref, 'card')` (the default) stacks a `DetailModal`; `open(ref,
+'sheet')` reaches the bespoke sheet below, falling back to the card when a kind has none;
+`EntityLink` hovers into a `HoverCard` after a dwell without the caller doing anything.
+
+The sheets are still the Tier-3 surfaces, reached *through* the router rather than
+selected by hand — `AgentProfileModal`, `LocationProfileModal`, `FactionSheet`,
+`ArmySheet`, `ArtifactSheet`, `AttachmentDetailView`, `AscendantSheet`. `AgentInfoCard`
+(inline summary), `HexDetailView` (a hex's contents in the right panel) and `IdentityChip`
+(inline reference) are not detail surfaces and are unaffected.
+
+`AgentDetailPanel` and `NpcDetailView` have no production mount and are deleted in slice 3
+(THR-1492); do not build on either.
 
 ### Show a list of things
 
@@ -194,13 +203,15 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `ActivityIcon` | What an agent is doing | Fixed glyph vocabulary (`boot`, `swords`, `coin`, `hammer`, `bandage`, `hourglass`). One vocabulary per element class (Law 9) — do not add ad-hoc activity emoji beside it. |
 | `Section` | Detail-page section renderer | Dispatches on `SectionKind` (`prose`, `chips`, `event-card`, `panel`, `portrait`). Part of the detail-page cluster — see the note below. |
 | `DetailBreadcrumb` | Depth orientation trail | Law 24: any surface deeper than two levels shows where you are. Collapses to an ellipsis past `DETAIL_BREADCRUMB_COLLAPSE_AT`. Detail-page cluster. |
+| `HoverCard` | The glance before the card | Law 20 Tier 1½ (THR-1490): header + first section, anchored beside an `EntityLink` after a dwell. Never stacks on a modal; never interactive. |
 | `DetailModal` | Stacked detail-page overlay | Renders the `DetailModalStackContext` stack; draws nothing while empty. Detail-page cluster. |
 
-> **The detail-page cluster (`Section`, `DetailBreadcrumb`, `DetailModal`) has no production mount.**
-> Its three members import only each other, and THR-966 defers the mount-vs-prune decision to a
-> coordinated call with THR-951. They render at `?view=styleguide` with sample data so Law 29 holds
-> either way — do **not** read a styleguide entry as evidence the cluster is reachable, and do not
-> build a new surface on it without resolving THR-966 first.
+> **The detail-page cluster is mounted (THR-1490, resolving THR-966 as *mount*).**
+> `Section`, `DetailBreadcrumb` and `DetailModal` are live in `GameView`, and `HoverCard`
+> joins them. THR-966 held the mount-versus-prune decision from 2026-08-02 and is closed by
+> the mount commit. **Build on them through `useRefRouter` and nothing else** — the router
+> is the only thing that may push onto `DetailModalStackContext`, which is what keeps "every
+> link routes by kind" (Law 21) a property of the system rather than of each caller.
 
 ---
 

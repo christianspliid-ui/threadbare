@@ -135,6 +135,9 @@ if (import.meta.env.DEV) {
   let _hexAtViewport: ((x: number, y: number) => { col: number; row: number } | null) | null = null;
   // GameView registers modal + UI state providers for playtest assertions
   let _openModalsProvider: (() => string[]) | null = null;
+  let _refRouterOpen:
+    | ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void)
+    | null = null;
   let _activeUIStateProvider: (() => ActiveUIState) | null = null;
   // GameView registers the narrative-interrupt dismisser + suppression setter (THR-1019).
   // One pass over the currently-open beat surfaces; the drain loop lives in `dismissBeats`.
@@ -1027,6 +1030,48 @@ if (import.meta.env.DEV) {
     _registerViewportForHex: (fn: (col: number, row: number) => ViewportHexProjection | null) => { _viewportForHex = fn; },
     _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
     _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
+
+    // ── The ref router (THR-1490) ───────────────────────────────────────────
+    /**
+     * Both surface records, as data. The state assertion a browser-verify run cites: it
+     * proves the registry the router read is the one this build shipped, which a
+     * screenshot of an open card cannot.
+     */
+    getSurfaceRegistry: async () => {
+      const { SURFACE_BY_WORLD_REF } = await import('./data/surface-registry');
+      return { worldRef: SURFACE_BY_WORLD_REF };
+    },
+    /**
+     * Drive the router headlessly. Returns what it resolved, so a verification run can
+     * assert the *routing decision* rather than infer it from pixels.
+     *
+     * Returns null when no router is mounted (no game view on screen).
+     */
+    openRef: async (kind: string, id: string, mode: 'hover' | 'card' | 'sheet' = 'card') => {
+      const { isWorldRefKind } = await import('./types/worldRef');
+      if (!isWorldRefKind(kind)) {
+        console.warn(`[__DEBUG.openRef] "${kind}" is not a WorldRefKind`);
+        return null;
+      }
+      if (!_refRouterOpen) {
+        console.warn('[__DEBUG.openRef] no ref router mounted — is the game view open?');
+        return null;
+      }
+      const { SURFACE_BY_WORLD_REF } = await import('./data/surface-registry');
+      const row = SURFACE_BY_WORLD_REF[kind];
+      // A hover needs an anchor element and there is none in a headless call, so it is
+      // refused by name rather than silently doing nothing.
+      if (mode === 'hover') {
+        console.warn('[__DEBUG.openRef] hover needs an anchor element; use "card"');
+        return null;
+      }
+      _refRouterOpen({ kind, id }, mode);
+      return { kind, id, mode, card: row.card, sheet: row.sheet };
+    },
+    /** @internal GameView registers the live router's `open` here */
+    _registerRefRouterOpen: (fn: ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void) | null) => {
+      _refRouterOpen = fn;
+    },
     _registerActiveUIStateProvider: (fn: () => ActiveUIState) => { _activeUIStateProvider = fn; },
 
     // ── Narrative-interrupt levers for browser verification (THR-1019) ───────

@@ -20,7 +20,18 @@ export type NavigationTarget =
   | { kind: 'area';       areaId: string }
   | { kind: 'faction';    factionId: string }
   | { kind: 'journey';    journeyId: string; agentId: string }
-  | { kind: 'receipt';    receiptId: string };
+  | { kind: 'receipt';    receiptId: string }
+  /**
+   * Three arms added by THR-1490, for three sheets that already existed and had no
+   * way to be named. `toNavigationTarget` returned `undefined` for all three — not
+   * because nothing could open them (`ArtifactSheet`, `AttachmentDetailView` and
+   * `ArmySheet` are all mounted), but because this union had no word for them. A
+   * sheet with no arm is a destination with no address.
+   */
+  | { kind: 'artifact';   artifactId: string }
+  /** The attachment *template* node id — see `engine/attachmentTemplateDetail.ts` for why a template and not the granted instance. */
+  | { kind: 'attachment'; templateNodeId: string }
+  | { kind: 'army';       armyId: string };
 
 // ─── Notification Preferences ──────────────────────────────────
 

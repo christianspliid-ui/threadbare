@@ -7,7 +7,7 @@
  * No game state dependency — all sample data is hardcoded.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
 import { Card } from '../shared/Card';
@@ -54,6 +54,7 @@ import { EntityLink } from '../shared/EntityLink';
 import { HeldByLine } from '../shared/HeldByLine';
 import { DetailBreadcrumb } from '../shared/DetailBreadcrumb';
 import { DetailModal } from '../shared/DetailModal';
+import { HoverCard } from '../shared/HoverCard';
 import { Section } from '../shared/Section';
 import { DetailModalStackProvider, useDetailStack } from '../../contexts/DetailModalStackContext';
 import {
@@ -242,6 +243,29 @@ function SampleDetailModalLauncher() {
       </Button>
       <DetailModal />
     </>
+  );
+}
+
+/**
+ * HoverCard anchors to a live element and portals to `document.body`, so a styleguide
+ * entry needs an anchor that exists in the DOM before the card renders — hence the
+ * element ref and the toggle rather than a bare render.
+ */
+function SampleHoverCardLauncher() {
+  const anchor = useRef<HTMLSpanElement | null>(null);
+  const [shown, setShown] = useState(false);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <span ref={anchor} style={{ color: 'var(--accent-gold)', textDecoration: 'underline' }}>
+        Kael Thornweaver
+      </span>
+      <Button variant="secondary" size="sm" onClick={() => setShown(v => !v)}>
+        {shown ? 'Hide hover card' : 'Show hover card'}
+      </Button>
+      {shown && anchor.current && (
+        <HoverCard page={SAMPLE_DETAIL_PAGE} anchorEl={anchor.current} />
+      )}
+    </div>
   );
 }
 
@@ -1282,14 +1306,16 @@ export default function StyleGuide() {
 
           {/* ── Detail page cluster ───────────────────────────── */}
           <section id="section-detail-page" style={{ marginBottom: SECTION_GAP }}>
-            <SectionHeading ornamental>DetailBreadcrumb / Section / DetailModal</SectionHeading>
+            <SectionHeading ornamental>DetailBreadcrumb / Section / DetailModal / HoverCard</SectionHeading>
             <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <GameErrorBoundary>
                 <Label>
-                  The detail-page cluster. Reachability is undecided — THR-966 defers the mount-vs-prune
-                  call to a coordinated decision with THR-951, so these three render here with sample
-                  data to satisfy Law 29 without prejudging that outcome. If the cluster is pruned, this
-                  section goes with it.
+                  The detail-page cluster — live in the game since THR-1490, which resolved THR-966
+                  as <em>mount</em>. Everything here is reached through one dispatcher,
+                  {' '}<code>useRefRouter</code>, which reads <code>src/data/surface-registry.ts</code>
+                  {' '}to decide what a kind opens. Nothing else may push onto the stack; that is what
+                  makes "every link routes by kind" (Law 21) a property of the system rather than of
+                  each caller remembering.
                 </Label>
 
                 <div>
@@ -1329,6 +1355,16 @@ export default function StyleGuide() {
                   <DetailModalStackProvider>
                     <SampleDetailModalLauncher />
                   </DetailModalStackProvider>
+                </div>
+
+                <div>
+                  <Label>
+                    HoverCard — Law 20's Tier 1½. In the game it appears beside a name after
+                    HOVER_CARD_DELAY_MS of dwell and carries the card's header plus
+                    HOVER_CARD_MAX_SECTIONS sections; here it anchors to a stand-in so the surface
+                    itself is inspectable
+                  </Label>
+                  <SampleHoverCardLauncher />
                 </div>
               </GameErrorBoundary>
             </div>

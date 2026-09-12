@@ -26,12 +26,12 @@ are specified by this table plus their styleguide entry.
 | `CardKeywordChip` | `keyword`, `icon?`, `muted?` | Glyph keyed on the live card-type union — a new type without an icon is a **build failure** (Law 9). | #section-card-keyword-chip |
 | `CardFace` | `model: CardFaceModel`, `designerView`, `onToggle` | **The** card face — every card in the game renders through it (Law 28). Ten zones in one reading order: picture band, kind chips, name, alternate costs, provenance, effect line + odds, spacer, rarity, resolved band, blocked reason. Numerals live only in `designerLine` (Law 13); the price is framed and the odds are not (Law 10) — `odds.kind: 'delta'` draws pips for a card that *moves* the odds, `'forecast'` draws the tier word for one that *rolls* them. | #section-card-face |
 | `DetailBreadcrumb` | `trail`, `onNavigate` | Collapses to a leading ellipsis past `DETAIL_BREADCRUMB_COLLAPSE_AT` (4). Last crumb is never clickable. Law 24. | #section-detail-page |
-| `DetailModal` | *(none — reads `DetailModalStackContext`)* | Renders the page stack; draws nothing while empty. Escape / ArrowLeft pops. **Unmounted cluster** — see note. | #section-detail-page |
+| `DetailModal` | *(none — reads `DetailModalStackContext`)* | Renders the page stack; draws nothing while empty. Escape / ArrowLeft pops. Mounted once in `GameView` (THR-1490); pushed onto only by `useRefRouter`. | #section-detail-page |
 | `Divider` | `gold?` | Plain rule; gold variant for primary separations. | #section-divider |
 | `DomainCard` | `reach`, `tier`, `agentName`, `gender?`, `revealed` | Reach art + tier prose. `revealed: false` renders the unknown state, not a blank. | #section-domaincard |
 | `Dropdown` | `trigger`, `open`, `onOpenChange`, `align?` | Portal-based (z 9999). Compound: `.Item`. Escape / outside-click close. | #section-dropdown |
 | `EntityCard` | `header`, `sections`, `onBack`, `onViewCodex`, `onZoomToLocation?` | Structured block renderer: member_list, keyword_cloud, trait_grid, bond_list, domain_grid, timeline. Not for plain text. | #section-entitycard |
-| `EntityLink` | `id`, `name`, `onOpenEntity?` | A named entity inside prose, clickable where the surface can route (Law 21) and plain text where it cannot (Law 25). Lifted out of `ChapterView` by THR-1298. | #section-entity-link |
+| `EntityLink` | `id`, `name`, `entityRef?`, `onOpenEntity?` (deprecated) | A named entity inside prose. With an `entityRef` it routes itself by kind through `useRefRouter` — hover opens a `HoverCard` after a dwell, click opens the card (THR-1490) — and reads as plain text where no router is in scope (Laws 21, 25). Lifted out of `ChapterView` by THR-1298. | #section-entity-link |
 | `HeldByLine` | `holder`, `graph?`, `onOpenFaction?` | Whose writ runs over a place — the holder's sigil, the one `ui.held_by` tooltip and a door to its sheet; renders *Unclaimed* in words for ground no faction holds (Law 4). One line for the location profile and the hex chronicle, on the `controls` edges the political border is projected from (THR-1155). | #section-held-by-line |
 | `EntityVisual` | `size`, `descriptor?`, `entity?`, `graph?`, `shape?`, `onClick?` | **The one art path** (Law 3). `hero` 16:9 · `portrait` 3:4 · `chip` 40px. Missing art → authored glyph on id-hashed gradient (Law 4). Person art knowledge-gated, fail-open (Law 8). | #section-entity-visual |
 | `FlavorQuote` | `children?`, `attribution?`, `divider?` | Inset quote well. Renders **nothing** when empty — safe to leave unconditional. | #section-flavorquote |
@@ -48,17 +48,21 @@ are specified by this table plus their styleguide entry.
 | `RarityBorderBox` | `tier`, `children` | Left-border rarity accent. Wraps anything. | #section-rarity |
 | `RevealCard` | `open`, `onClose`, `maxWidth?` | Ceremonial reveal, composed on `Modal`. Inside an existing modal use `RevealCard.Frame` — `<RevealCard>` portals its own backdrop. | #section-revealcard |
 | `RivalIcon` | `spheres`, `size?`, `title?` | Overlapping sphere circles for rival affinity. | #section-rivalicon |
-| `Section` | `section` (`ProseSection \| ChipsSection \| EventCardSection \| PanelSection \| PortraitSection`) | Dispatches on `kind`. Gold label = primary; `notable`/`chronicle` tiers add a gold underline. **Unmounted cluster** — see note. | #section-detail-page |
+| `HoverCard` | `page`, `anchorEl` | Law 20 Tier 1½ (THR-1490): header + `HOVER_CARD_MAX_SECTIONS` sections, anchored beside an `EntityLink` after `HOVER_CARD_DELAY_MS`. Never stacks, never interactive. | #section-detail-page |
+| `Section` | `section` (`ProseSection \| ChipsSection \| EventCardSection \| PanelSection \| PortraitSection`) | Dispatches on `kind`. Gold label = primary; `notable`/`chronicle` tiers add a gold underline. Mounted (THR-1490). | #section-detail-page |
 | `SectionHeading` | `children`, `count?`, `as?`, `ornamental?` | Heading with optional count and ornamental rules. | #section-sectionheading |
 | `SphereIcon` | `sphere?`, `sphereName?`, `size?`, `monochrome?`, `useImage?`, `variant?` | SVG primary, PNG fallback. The sphere vocabulary (Law 9). | #section-spheres |
 | `StepDots` | `totalSteps`, `currentStepIndex`, `size?`, `variant?` | Discrete steps. No-op replay dots render **disabled, not clickable** (Law 25, THR-1003). | #section-stepdots |
 | `Tooltip` | `id?`, `label?`, `desc?`, `depth?`, `as?`, `focusable?` | Tier 1 of the disclosure ladder. Copy resolves through `resolveTooltip`, ≤200 chars, chains to `TOOLTIP_MAX_CHAIN_DEPTH` (Laws 17–19). Components pass **ids**, never inline copy. The trigger is keyboard-reachable by default — see `interactions.md` § Tooltip Pattern for the predicate and the one caller override. | #section-tooltip |
 
-> **The detail-page cluster — `Section`, `DetailBreadcrumb`, `DetailModal` — has no production
-> mount.** All three import only each other; THR-966 defers the mount-vs-prune decision to a
-> coordinated call with THR-951. They carry styleguide entries and rows here so Law 29 holds
-> whichever way that goes. A styleguide entry is **not** evidence a surface is reachable — check
-> importers before building on one.
+> **The detail-page cluster is mounted (THR-1490, resolving THR-966 as *mount*).**
+> `Section`, `DetailBreadcrumb` and `DetailModal` are live in `GameView`, joined by
+> `HoverCard`. Reach them through `useRefRouter().open(ref)` — the router is the only thing
+> permitted to push onto `DetailModalStackContext`, because Law 21's "the link routes by
+> kind" is a property of having one dispatcher, not of each caller getting it right.
+>
+> The general warning that outlived the specific one: a styleguide entry is **not** evidence
+> a surface is reachable. Check importers before building on one.
 
 Build order among the original seven still matters — later primitives depend on earlier ones:
 ```

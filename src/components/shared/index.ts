@@ -29,6 +29,7 @@ export { DomainCard } from './DomainCard';
 export { Dropdown } from './Dropdown';
 export { EntityCard } from './EntityCard';
 export { EntityLink } from './EntityLink';
+export { HoverCard } from './HoverCard';
 export { HeldByLine } from './HeldByLine';
 export {
   EntityVisual,

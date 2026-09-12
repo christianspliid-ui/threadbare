@@ -298,6 +298,12 @@ function nodeMatchesKind(
       return nodeType === 'location' || nodeType === 'region';
     case 'event':
       return nodeType === 'event';
+    // THR-1490 — a group is an `actor` node like a person and a faction, told apart by
+    // `actorType: 'group'` (see `engine/groupShape.ts`). The actor arm above excludes
+    // only factions, so without this arm an army would resolve as an `actor` page and be
+    // asked for a portrait and a disposition that a column of soldiers does not have.
+    case 'group':
+      return nodeType === 'actor' && actorType === 'group';
     default:
       return false;
   }
@@ -338,6 +344,9 @@ function subtitleForNode(
         ?? 'place';
     case 'event':
       return (node.properties?.eventType as string | undefined) ?? 'event';
+    case 'group':
+      // The group kind is the subtitle: a Host reads differently from a Network.
+      return (node.properties?.groupKind as string | undefined) ?? 'company';
   }
 }
 
@@ -356,6 +365,7 @@ function hasFullSheetFor(
     case 'faction':
     case 'place':
     case 'event':
+    case 'group':
       return true;
   }
 }

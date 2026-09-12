@@ -7,12 +7,15 @@ import {
   DETAIL_DIM_BENEATH_PCT,
   DETAIL_EVENT_H,
   DETAIL_EVENT_W,
+  DETAIL_GROUP_H,
+  DETAIL_GROUP_W,
   DETAIL_PLACE_H,
   DETAIL_PLACE_W,
 } from '../../types/detailPage';
 import { useDetailStack } from '../../contexts/DetailModalStackContext';
 import { DetailBreadcrumb } from './DetailBreadcrumb';
 import { Section } from './Section';
+import { ProseTtsButton } from '../Game/Encounter/ProseTtsButton';
 
 interface HeaderProps {
   page: DetailPage;
@@ -38,6 +41,7 @@ function DetailHeader({ page, onClose, onPop, onPopTo, canGoBack }: HeaderProps)
           <DetailBreadcrumb trail={page.trail} onNavigate={onPopTo} />
         </div>
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }}>
+          <DetailProseNarration page={page} />
           {canGoBack && (
             <button
               onClick={onPop}
@@ -113,6 +117,40 @@ function DetailHeader({ page, onClose, onPop, onPopTo, canGoBack }: HeaderProps)
   );
 }
 
+/**
+ * The card's prose, as speech (THR-966's own Done-when, delivered by THR-1490's mount).
+ *
+ * THR-348 built narration for the encounter veil and the detail page was the other
+ * surface it was meant for; it could not have it, because nothing mounted the detail
+ * page. Now that something does, the button reads the card's prose in section order.
+ *
+ * **Prose is not only the `prose` sections.** Filtering on `kind === 'prose'` alone was
+ * the first implementation and it put no button on the *actor* card — the most common
+ * card in the game — because an actor page leads with `portrait_with_disposition`, a
+ * `portrait` section whose paragraph lives in `bodyProse`. An event card's body is
+ * likewise on `event-card`. All three are prose someone would want read aloud; chips and
+ * panels are labels and rows, and a narration that read chip labels would be worse than
+ * none.
+ *
+ * Renders nothing when the page has no prose at all, so a chips-only card shows no
+ * control that does nothing (Law 25).
+ */
+function narratableProse(page: DetailPage): string[] {
+  const strip = (s: string) => s.replace(/<[^>]+>/g, '').trim();
+  const out: string[] = [];
+  for (const section of page.sections) {
+    if (section.kind === 'prose' || section.kind === 'event-card') out.push(strip(section.prose));
+    else if (section.kind === 'portrait' && section.bodyProse) out.push(strip(section.bodyProse));
+  }
+  return out.filter(Boolean);
+}
+
+function DetailProseNarration({ page }: { page: DetailPage }) {
+  const paragraphs = narratableProse(page);
+  if (paragraphs.length === 0) return null;
+  return <ProseTtsButton text={paragraphs} label={`Narrate ${page.displayName}`} />;
+}
+
 function DetailFooter({ hasFullSheet }: { hasFullSheet: boolean }) {
   return (
     <div
@@ -162,6 +200,9 @@ function getPanelSize(page: DetailPage): { width: number; height: number } {
   }
   if (page.kind === 'event') {
     return { width: DETAIL_EVENT_W, height: DETAIL_EVENT_H };
+  }
+  if (page.kind === 'group') {
+    return { width: DETAIL_GROUP_W, height: DETAIL_GROUP_H };
   }
   return { width: DETAIL_DEFAULT_W, height: DETAIL_DEFAULT_H };
 }

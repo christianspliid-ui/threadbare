@@ -22,6 +22,7 @@ import type {
 } from './traces/mentorship-traces';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
+import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -492,7 +493,11 @@ export type TraceCategory =
   // Realms — the political map rebuilt from the towns they hold (THR-1155)
   | 'realm_projection_rebuilt'
   // Realms — a town changed hands, so the border moved (THR-1155)
-  | 'realm_territory_change';
+  | 'realm_territory_change'
+  // The ref router — where the player's navigation went, and where it did not (THR-1490).
+  // Interfaces in `src/types/traces/ui-traces.ts`.
+  | 'ui_ref_opened'
+  | 'ui_ref_unroutable';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -500,6 +505,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'realm_founded',
   'realm_projection_rebuilt',
   'realm_territory_change',
+  'ui_ref_opened',
+  'ui_ref_unroutable',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -3551,6 +3558,9 @@ export type TraceEntry =
   | RealmFoundedTrace
   | RealmProjectionTrace
   | RealmTerritoryChangeTrace
+  // The ref router — where the player navigation went (THR-1490)
+  | UiRefOpenedTrace
+  | UiRefUnroutableTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

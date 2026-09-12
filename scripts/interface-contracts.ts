@@ -681,6 +681,31 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: { date: '2026-07-23', evidence: `effectWalker is the single suppression seam. ${AUDIT_EVIDENCE}` },
   },
   {
+    id: 'world-ref-opens-one-card',
+    producerSystem: 'Attention, Chronicle & Narrative',
+    consumerSystem: 'Attention, Chronicle & Narrative',
+    intent:
+      'Anything the game names opens the same way. One router dispatches on WorldRefKind; the surface registry says what each kind opens; a kind with no row is a build failure, not a dead link (THR-1490, Law 21 as amended).',
+    ulTerms: ['World object'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['SURFACE_BY_WORLD_REF', 'useRefRouter'],
+      module: 'src/data/surface-registry.ts',
+    },
+    writeSites: ['src/data/surface-registry.ts', 'src/hooks/useRefRouter.ts'],
+    readSites: [
+      'src/components/Game/GameView.tsx',
+      'src/components/Game/hooks/useNotificationNavigation.ts',
+      'src/components/shared/EntityLink.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        'DetailModal + HoverCard mounted in GameView behind RefRouterProvider; the veil, the thread panel and notification click-through all route through it. surfaceRegistry.test.ts pins totality and reachability; refRouterAdapters.coverage.test.ts pins all three source vocabularies. __DEBUG.getSurfaceRegistry() reads the shipped record.',
+    },
+  },
+  {
     id: 'attachment-character-sheet-display',
     producerSystem: ATTACHMENTS,
     consumerSystem: 'Attention, Chronicle & Narrative',

@@ -316,14 +316,17 @@ describe('kind vocabulary — the coverage lint actually fires', () => {
 
   it('names a stale `absentKinds` row the day a dispositioned kind gains an arm', () => {
     // Executable form of the catalog's central promise: a curated absence cannot
-    // outlive the absence it describes. `artifact` is absent-with-a-reason from
+    // outlive the absence it describes. `companion` is absent-with-a-reason from
     // `NavigationTarget` today, so the union is mutated as if its arm shipped.
-    // (This arm used to be `codex`; THR-1315 removed that kind from the spine, which
-    // would now fire the undispositioned-extra-member branch instead — a real throw
-    // for the wrong reason, and the kind of green-for-nothing this file guards.)
+    //
+    // The example kind has moved twice, and each move is this guard working rather than
+    // this guard breaking. It was `codex` until THR-1315 removed that kind from the
+    // spine; it was `artifact` until THR-1490 gave artifact, attachment and army the
+    // arms their already-shipped sheets had always deserved — and the suite went red the
+    // hour those arms landed, which is precisely the day this test names.
     expect(() =>
-      assertKindUnionCoverage(spec, [...members, 'artifact'], worldRefKinds),
-    ).toThrow(/stale `absentKinds` row\(s\): 'artifact'/);
+      assertKindUnionCoverage(spec, [...members, 'companion'], worldRefKinds),
+    ).toThrow(/stale `absentKinds` row\(s\): 'companion'/);
   });
 });
 
@@ -380,11 +383,15 @@ describe('kind vocabulary — the four chip/segment unions are pinned to each ot
 });
 
 describe('kind vocabulary — the parsers refuse to guess', () => {
-  it('reads all eight `NavigationTarget` arms despite semicolons inside the braces', () => {
+  it('reads all eleven `NavigationTarget` arms despite semicolons inside the braces', () => {
     const notificationSource = read('src/types/notification.ts');
     expect(
       parseDiscriminatedUnionKinds(notificationSource, 'NavigationTarget', 'src/types/notification.ts'),
-    ).toEqual(['agent', 'encounter', 'hex', 'location', 'area', 'faction', 'journey', 'receipt']);
+    ).toEqual([
+      'agent', 'encounter', 'hex', 'location', 'area', 'faction', 'journey', 'receipt',
+      // THR-1490 — three sheets that shipped without an address.
+      'artifact', 'attachment', 'army',
+    ]);
   });
 
   it('is why the plain union parser cannot be used here', () => {

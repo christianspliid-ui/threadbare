@@ -18,11 +18,13 @@ import {
   ACTOR_RESOLVERS,
   EVENT_RESOLVERS,
   FACTION_RESOLVERS,
+  GROUP_RESOLVERS,
   ITEM_RESOLVERS,
   PLACE_RESOLVERS,
   actorPortraitFallback,
   eventSkeletalFallback,
   factionRepFallback,
+  groupMusterFallback,
   itemIconFallback,
   placeWantsFallback,
 } from '../engine/detailPageResolvers';
@@ -242,12 +244,45 @@ const EVENT_SCHEMA: SectionSchemaEntry[] = [
   },
 ];
 
+/**
+ * The group page (THR-1490) — an Army, and the Company / Network kinds when they route.
+ *
+ * Three rows, because a body of people under a banner raises exactly three questions.
+ * Only the first is mandatory: a muster with no commander and no orders is a real state
+ * of the world, not a half-resolved page.
+ */
+const GROUP_SCHEMA: SectionSchemaEntry[] = [
+  {
+    typeId: 'who_they_are',
+    order: 1,
+    mandatory: true,
+    defaultResolver: GROUP_RESOLVERS.who_they_are,
+    showcaseOverridable: true,
+    fallbackResolver: groupMusterFallback,
+  },
+  {
+    typeId: 'who_leads_them',
+    order: 2,
+    mandatory: false,
+    defaultResolver: GROUP_RESOLVERS.who_leads_them,
+    showcaseOverridable: false,
+  },
+  {
+    typeId: 'what_they_are_doing',
+    order: 3,
+    mandatory: false,
+    defaultResolver: GROUP_RESOLVERS.what_they_are_doing,
+    showcaseOverridable: true,
+  },
+];
+
 export const DETAIL_PAGE_REGISTRY: DetailPageRegistry = {
   actor: ACTOR_SCHEMA,
   item: ITEM_SCHEMA,
   faction: FACTION_SCHEMA,
   place: PLACE_SCHEMA,
   event: EVENT_SCHEMA,
+  group: GROUP_SCHEMA,
 };
 
 /** Page kind → display label for the modal header. */
@@ -257,4 +292,5 @@ export const KIND_LABELS: Record<DetailPageKind, string> = {
   faction: 'FACTION',
   place: 'PLACE',
   event: 'EVENT',
+  group: 'COMPANY',
 };
