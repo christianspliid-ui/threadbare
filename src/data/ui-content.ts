@@ -389,6 +389,26 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // THR-1155 — the concept behind the *held by* line on a place's surfaces and behind
   // the red border on the map. One tooltip for both, because they are one fact: the
   // `controls` edge the projection draws from is the same edge this line reads.
+  // THR-1472 — the concept behind every `kind: 'hidden_mark'` write. Three slice
+  // scars described the mark instead of naming it ("the face they showed the
+  // column", "the face they showed him"), which reads only to a player still
+  // holding the encounter. The tag now carries the UL term itself — `[[Hidden
+  // Mark]]`, `Docs/ubiquitous-language/Encounters.md` — rather than minting a
+  // player-facing synonym for a concept the glossary already names.
+  'ui.hidden_mark': {
+    label: 'A Hidden Mark',
+    desc: 'Something a mortal did that someone else noticed and has not acted on. It sits unseen on them and can surface later — a grudge, a price, a knock at the door — in the hands of whoever holds it.',
+  },
+  // THR-1472 — the concept behind every `kind: 'intelligence'` write, and the
+  // generic word four vertical-slice PATH chips reached past. Each had spelled its
+  // own record out on the tag — "what they know of the caravan roads", "what they
+  // know of his circuit" — which is the record's *label*, not a word the player can
+  // read off a sheet. Same ruling as `ui.reputation_with` (THR-1206): one concept
+  // everywhere, the particulars one hover away.
+  'ui.knowledge': {
+    label: 'Knowledge',
+    desc: 'Something a mortal knows and did not before — a road and who runs it, a season, a rival\'s circuit. It opens options the ignorant never see, and it can be wrong: each record says how far to trust it.',
+  },
   'ui.held_by': {
     label: 'Held By',
     desc: 'Whose writ runs here. A Realm holds the towns of its domain; a guild or an order can hold the town its hall stands in. Ground nobody holds is unclaimed, and the border on the map stops there.',

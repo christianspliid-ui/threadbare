@@ -59,7 +59,7 @@ You write TWO files:
 
    **Aftermath & Consequence**
    10. Aftermath has reflective prose landing?
-   11. Consequence outcomes actor-centered with names and faces?
+   11. Consequence outcomes actor-centered with names and faces — **and is every chip's `stateNoun` a character-sheet word?** Cover the encounter title and the overview: does the tag alone still say what the mortal now has? `SCAR · EXHAUSTED` passes; `SCAR · THE NERVE THEY CAME DOWN WITH` fails, because reading it needs this encounter held in memory. The noun names the state the engine wrote (a condition's `name`, a reach, an item, the generic `AGREEMENT`, `reputation with {target}`) — never a phrase minted for the scene, and `entityId: '$actor'` on a categorised chip is the usual tell. If no state word exists, REVISE for a one-word condition the band grants, not for better wording (THR-1472)
    12. Medium+ scale: aftermath offers reaction choices?
    13. Reaction choices represent philosophical stances?
 

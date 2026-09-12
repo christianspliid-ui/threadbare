@@ -555,10 +555,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Quintessence*, *Aftermath*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 18 total — 1 write, 1 read, 16 unclassified
+- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/phaseQuintessence.ts`
-- **Other hits:** `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/toll-of-blades.ts` +11 more
+- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts` +12 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE

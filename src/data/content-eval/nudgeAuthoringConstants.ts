@@ -399,3 +399,30 @@ export const SHARED_GENERIC_NUDGE_FAMILIES: readonly string[] = [
  * content wearing a generic name.
  */
 export const GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN = 3;
+
+/**
+ * THR-1472 — the word cap on a chip's `stateNoun.text`.
+ *
+ * A chip tag is a character-sheet entry: `SCAR · EXHAUSTED`, `BOND · AGREEMENT`.
+ * Past a handful of words the noun has stopped naming a state and started
+ * describing the scene — `SCAR · THE NERVE THEY CAME DOWN WITH` is the director's
+ * own counter-example (2026-09-12), unreadable without holding that encounter in
+ * memory. Three is the widest a genuine state name runs in the corpus once the
+ * reputation form below is excluded.
+ *
+ * Tunable rather than inlined (NFP #1): tightening this is a content-doctrine
+ * decision, not a rewrite of {@link chipStateNounWordingViolations}.
+ */
+export const CHIP_STATE_NOUN_MAX_WORDS = 3;
+
+/**
+ * The one lawful multi-word `stateNoun`, exempt from
+ * {@link CHIP_STATE_NOUN_MAX_WORDS} and from the placeholder-anchor half of the
+ * rule.
+ *
+ * `reputation with {target}` is already core game vocabulary — it names standing,
+ * a quantity the sheet carries — and its referent genuinely *is* the other party,
+ * so `entityId: '$target'` is the correct anchor rather than the tell of a
+ * scene-phrase noun. Ruled legal in THR-1472's own filing.
+ */
+export const CHIP_STATE_NOUN_REPUTATION_FORM = 'reputation with {target}';
