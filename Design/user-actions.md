@@ -1,17 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live. One merge landed since the last brief and it did not touch either screen.
+You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live — re-verified from the board this run, not carried forward. Nothing has changed on either screen since the last brief.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Three blemishes are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen reward recipes that draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496), none of them reachable from these two). A raw `{cast:…}` token on either screen would be new.
+The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Three blemishes are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494), fix in flight but not landed), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen reward recipes that draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496), none of them reachable from these two). A raw `{cast:…}` token on either screen would be new.
 
 The wider design maps — fights, items, powers — have finished all the homework an agent can do, and wait behind twelve questions only you can answer. Deliberately not chased while the sitting is live: say **"work the map"** in a chat when you are ready to work them one at a time.
 
