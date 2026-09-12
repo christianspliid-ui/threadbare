@@ -155,3 +155,45 @@ describe('THR-971 — the crossroads ending admits what it planted', () => {
     }
   });
 });
+
+describe('THR-1476 — the ending the player reads promises nothing the seed cannot perform', () => {
+  /**
+   * The surface-level half of prose rule 7b, asserted through the *real* stage
+   * adapter rather than against the template literals: what reaches
+   * `model.aftermath` is what the encounter stage paints, so a truthful template
+   * that the adapter re-decorates into a promise would still fail here.
+   *
+   * The untruth this pins out: `encounter_seed` has no spatial field —
+   * `encounterSeeding` fires it on the agent wherever they stand — and no
+   * appointment, rendezvous or return-to drive exists, so nothing brings the
+   * mortal back to that crossroads. The accept ending used to congratulate them
+   * for an appointment they were never made to keep.
+   */
+  const renderedAcceptText = (): string => {
+    const aftermath = aftermathFor('negative');
+    const chips = (aftermath?.consequences ?? []).map((c) =>
+      c.sentence.segments.map((s) => s.text).join(''),
+    );
+    return [aftermath?.overview ?? '', ...chips].join('\n');
+  };
+
+  it('the accept ending names no appointment and no place the mortal must reach', () => {
+    const text = renderedAcceptText();
+    // Population guard: an empty render would pass every assertion below.
+    expect(text.length, 'the adapter produced no aftermath text').toBeGreaterThan(80);
+
+    expect(text).not.toMatch(/\bappointments?\b/i);
+    expect(text).not.toMatch(/\bcollect it here\b/i);
+    expect(text).not.toMatch(/\bcomes? back (here|to the crossroads)\b/i);
+  });
+
+  it('and still says the true thing: a claim that falls due at the full moon', () => {
+    // The counterweight to the test above. Removal-only rewrites can pass a
+    // "says nothing false" gate by saying nothing at all, so this pins that the
+    // ending still carries the two facts the effects actually wrote — the claim
+    // (`attachment_grant` with a term) and its due date (the seed's delay).
+    const text = renderedAcceptText();
+    expect(text).toMatch(/full moon/i);
+    expect(text.toLowerCase()).toContain('claim');
+  });
+});

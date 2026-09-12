@@ -27,6 +27,7 @@ import type {
 } from '../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../types/unifiedAction';
 import {
+  SLICE_FULL_MOON_DELAY_TICKS,
   SLICE_KIN_WELCOME_DELTA,
   SLICE_KIN_WELCOME_DELTA_FUMBLED,
   SLICE_KIN_WELCOME_DELTA_WARM,
@@ -745,5 +746,195 @@ describe('vertical slice — The Table That Holds (THR-1182)', () => {
     expect(
       meetsReputationWithRequirement(graph, HERO, WELCOMING_TOWN, SLICE_TABLE_GATE_BAND),
     ).toBe(true);
+  });
+});
+
+describe('vertical slice — the crossroads chain promises only what the seed performs (THR-1476)', () => {
+  /**
+   * Prose rule 7b: prose may not set a constraint on future world behaviour that
+   * no effect enacts. `encounter_seed` carries `delayTicks`, `targetAgentId` and
+   * `inheritContext` and **nothing spatial** — `encounterSeeding` fires it on the
+   * agent wherever they stand — and no appointment, rendezvous or return-to drive
+   * exists. So this chain may promise a *time* and the *same cast*, never a place
+   * and never a journey the mortal makes.
+   *
+   * **What this gate is, honestly.** A regression pin on the specific
+   * constructions THR-1476 removed, not a general 7b enforcer: rule 7b is a
+   * judgment about whether an effect enacts a sentence, and no regex decides
+   * that. The enforcement surface is the authoring spec (prose rule 7b), the
+   * critic's design-conformance pass, and the systems auditor's Aftermath
+   * Supportability question. This test stops *these* sentences coming back.
+   *
+   * Falsified against the pre-fix strings: the opening's "collect it here at the
+   * next full moon", the carry-the-promise intent's "an appointment at the end of
+   * it", the sequel's "Keep the appointment" purposeLine, its "The appointment was
+   * kept" band, the "walk back" card band, the base gift chip's "They kept the
+   * night they promised", and the refuse path's "The road bends back toward a dead
+   * tree" seed label each trip a pattern below.
+   */
+  const CHAIN_IDS: readonly string[] = [
+    SLICE_TEMPLATE_IDS.crossroads,
+    SLICE_TEMPLATE_IDS.fullMoon,
+  ];
+
+  /**
+   * Every string on a template the player can read. Walks openings, the step
+   * spine (including branch variants and their nudges), and the whole aftermath
+   * tree down to band reactions and their seed labels — the five surfaces the
+   * ticket's sweep predicate names.
+   */
+  function playerFacingStrings(
+    template: UnifiedActionTemplate,
+  ): { where: string; text: string }[] {
+    const out: { where: string; text: string }[] = [];
+    const push = (where: string, text: string | undefined): void => {
+      if (typeof text === 'string' && text.length > 0) out.push({ where, text });
+    };
+
+    for (const [cls, opening] of Object.entries(template.openings ?? {})) {
+      push(`openings.${cls}`, opening);
+    }
+    push('description', template.description);
+    for (const [key, line] of Object.entries(template.narrativeTemplates ?? {})) {
+      push(`narrativeTemplates.${key}`, line);
+    }
+
+    const walkStep = (step: ActionStep, where: string): void => {
+      push(`${where}.purposeLine`, step.purposeLine);
+      push(`${where}.narrativeTemplate`, step.narrativeTemplate);
+      push(`${where}.successAfterimage`, step.successAfterimage);
+      push(`${where}.failureAfterimage`, step.failureAfterimage);
+      push(`${where}.successAtCostAfterimage`, step.successAtCostAfterimage);
+      push(`${where}.criticalSuccessAfterimage`, step.criticalSuccessAfterimage);
+      push(`${where}.criticalFailureAfterimage`, step.criticalFailureAfterimage);
+      for (const nudge of step.nudges ?? []) {
+        push(`${where}.${nudge.id}.effectLine`, nudge.effectLine);
+        for (const [band, line] of Object.entries(nudge.bandProse ?? {})) {
+          push(`${where}.${nudge.id}.bandProse.${band}`, line);
+        }
+      }
+    };
+
+    template.steps.forEach((entry, i) => {
+      const branch = entry as ActionStepBranch;
+      if (typeof branch.branchOnStep === 'number') {
+        for (const [pole, variant] of Object.entries(branch.variants)) {
+          walkStep(variant, `steps[${i}].${pole}`);
+        }
+        if (branch.fallback) walkStep(branch.fallback, `steps[${i}].fallback`);
+        return;
+      }
+      walkStep(entry as ActionStep, `steps[${i}]`);
+    });
+
+    const config = template.aftermathConfig;
+    if (config) {
+      const variants: [string, AftermathVariant][] = [
+        ...Object.entries(config.variants),
+        ['fallback', config.fallback],
+      ];
+      for (const [vKey, variant] of variants) {
+        const walkVariantBody = (body: Partial<AftermathVariant>, where: string): void => {
+          push(`${where}.overview`, body.overview);
+          for (const change of body.changes ?? []) {
+            push(`${where}.${change.id}.causeClause`, change.causeClause);
+            push(`${where}.${change.id}.detail`, change.detail);
+          }
+          for (const reaction of body.reactions ?? []) {
+            push(`${where}.${reaction.id}.label`, reaction.label);
+            push(`${where}.${reaction.id}.intent`, reaction.intent);
+            for (const effect of reaction.effects) {
+              if (effect.kind === 'encounter_seed') {
+                push(`${where}.${reaction.id}.seedLabel`, effect.seedLabel);
+              }
+            }
+          }
+        };
+        walkVariantBody(variant, `aftermath.${vKey}`);
+        for (const [band, body] of Object.entries(variant.byOutcome ?? {})) {
+          if (body) walkVariantBody(body, `aftermath.${vKey}.${band}`);
+        }
+      }
+    }
+    return out;
+  }
+
+  /**
+   * The constructions that made the untruth. Each asserts either a *place* the
+   * mortal is told to meet, or an appointment they are credited with keeping —
+   * the two things the seed cannot make true.
+   *
+   * `appointment` is banned outright on this chain rather than pattern-matched:
+   * every use of it here was the defect, and the truthful register ("he finds
+   * them", "a second visit") costs nothing. Elsewhere the word can be honest, so
+   * the ban stays scoped to the two templates above.
+   */
+  const BANNED: readonly { pattern: RegExp; why: string }[] = [
+    { pattern: /\bappointments?\b/i, why: 'the seed schedules no meeting the mortal attends' },
+    { pattern: /\bcollect it here\b/i, why: 'the seed carries no location' },
+    { pattern: /\bwalk back\b/i, why: 'nothing walks the mortal back' },
+    {
+      pattern: /\bcomes? back (here|to the crossroads)\b/i,
+      why: 'nothing returns the mortal to a place',
+    },
+    {
+      pattern: /\b(be|been) (here|there) (at|by|when) the (next )?full moon\b/i,
+      why: 'the mortal is never placed',
+    },
+    {
+      pattern: /\bkept the night they promised\b/i,
+      why: 'the mortal kept nothing — he arrived',
+    },
+    {
+      pattern: /\bthe road bends back\b/i,
+      why: 'the re-seed does not bend the road back to the tree',
+    },
+  ];
+
+  it('names no place or kept appointment the engine cannot perform', () => {
+    const chain = VERTICAL_SLICE_TEMPLATES.filter((t) => CHAIN_IDS.includes(t.id));
+    // Population guard: both templates must be found. Zero or one here means the
+    // chain was renamed and this gate went blind rather than clean.
+    expect(chain.map((t) => t.id).sort()).toEqual([...CHAIN_IDS].sort());
+
+    const hits: string[] = [];
+    let inspected = 0;
+    for (const template of chain) {
+      const strings = playerFacingStrings(template);
+      expect(strings.length, `${template.id}: walker found no prose`).toBeGreaterThan(20);
+      inspected += strings.length;
+      for (const { where, text } of strings) {
+        for (const { pattern, why } of BANNED) {
+          if (pattern.test(text)) {
+            hits.push(`${template.id} ${where}: /${pattern.source}/ — ${why}`);
+          }
+        }
+      }
+    }
+    expect(inspected).toBeGreaterThan(50);
+    expect(hits, `prose rule 7b violations:\n${hits.join('\n')}`).toEqual([]);
+  });
+
+  it('the accept path still plants the seed and the claim the truthful prose describes', () => {
+    // The rewrite is truthful by *removal*, so this pins that nothing load-bearing
+    // left with the words: the promise is still a claim with a term, and the
+    // sequel is still planted at the delay the prose counts forward to.
+    const crossroads = VERTICAL_SLICE_TEMPLATES.find(
+      (t) => t.id === SLICE_TEMPLATE_IDS.crossroads,
+    )!;
+    const effects = allAftermathEffects(crossroads);
+
+    const seed = effects.find(
+      (e) => e.kind === 'encounter_seed' && e.templateId === SLICE_TEMPLATE_IDS.fullMoon,
+    );
+    expect(seed, 'the accept path no longer plants The Full Moon Collection').toBeDefined();
+    expect(seed && seed.kind === 'encounter_seed' ? seed.delayTicks : undefined).toBe(
+      SLICE_FULL_MOON_DELAY_TICKS,
+    );
+
+    const grant = effects.find(
+      (e) => e.kind === 'attachment_grant' && e.templateId === 'agreement.bargain.promise_given',
+    );
+    expect(grant, 'the promise is no longer a claim the bearer holds').toBeDefined();
   });
 });

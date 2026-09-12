@@ -391,6 +391,34 @@ before the first sentence of prose**:
    (name the surface: gate, placeholder, variant), or a state *write* (name the
    grant/aftermath that mints it) — prose rule 7: base prose may never assert agent
    history the graph does not hold.
+
+   **Prose rule 7b — the forward-looking twin (THR-1476, director 2026-09-12).**
+   *Prose may not set a constraint on future world behaviour that no effect enacts.*
+   Rule 7 governs the past tense: do not assert state the world never **wrote**.
+   7b governs the future tense: do not promise behaviour the world will never
+   **perform**. If the scene tells the mortal to be somewhere, do something, or
+   refrain from something *later*, name the effect that makes it true — an
+   `encounter_seed`, a `condition_attachment`, an `attachment_grant` with a term, a
+   drive. If no such effect exists, the prose says what the engine will actually do,
+   or says nothing about later.
+
+   **The trap this rule was written from.** `encounter_seed` carries `delayTicks`,
+   `targetAgentId` and `inheritContext` — **and nothing spatial**. `encounterSeeding`
+   ripens a seed by tick and fires it on the agent **wherever they stand**; its only
+   location read is the subtype filter on *family* seeds, and a `templateId` seed
+   skips the eligibility filter entirely. So a seed can promise a *time* and it can
+   promise the *same cast*, but it can never promise a *place* and it can never make
+   the mortal travel. A Bargain at the Crossroads said *"collect it here at the next
+   full moon"* and planted a placeless seed; the sequel then congratulated the mortal
+   for keeping an appointment nobody had made them keep. No appointment, rendezvous
+   or return-to primitive exists — movement comes from ambition targets, strategic
+   winners and idle drift only. An appointment primitive is designed under
+   [THR-1479](https://linear.app/threadbare/issue/THR-1479); **until it ships, a
+   scene that needs a placed, timed promise is a scene we do not author.**
+
+   Truthful shapes that cost nothing: the other party *finds* them at the appointed
+   time (which is exactly what the seed does); the promise is a claim they carry
+   (`attachment_grant` with `durationOverride`); the offer simply comes round again.
 5. **What are the rewards, and where does the tension sit?** Prizes, tolls, and seeds
    (step 6's object references) sketched now, with the quintessence stakes — the
    erosion class failing here costs. **Penalty-avoidance is a valid reward shape**
@@ -456,7 +484,7 @@ the rest generalize the prototypes and are open for iteration on this list.
 | **Danger – Confrontation – Aftermath** | 2–3 | A threat announces itself, then arrives. The watch, then the rush; the reading, then the meeting. |
 | **Personality Fork** | 1 + branch | The mortal makes a choice: a test, then an agent-decided branch on a value axis (THR-894), pole-specific continuations. |
 | **Opt-in Complication** | gate + shape | The agent can decline: waiting/walking away is a cheap, legible exit (a delay, a toll), and engaging opens one of the shapes above. The engage/decline gate is itself agent-decided (personality). |
-| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. |
+| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. **"Later, elsewhere" is load-bearing (THR-1476):** the seed promises a tick and a cast, never a place, and never makes the mortal travel — so the parent's prose may not tell the mortal where to be (prose rule 7b). |
 
 Rules: a route-flavored objective (bribe with Gold, intimidate with Iron, persuade
 with Heart, toward the same door) is a **Personality Fork** whose poles are routes.
@@ -808,7 +836,10 @@ design block** and reports against:
    plainly rather than encoded in scene furniture (Doctrine v2 reverses the old
    "announced instead of foreshadowed" check); does any base-prose sentence
    assert agent history — a relationship, debt, prior visit, standing — with no
-   backing state read (prose rule 7)? **Count the connected systems** (design-block
+   backing state read (prose rule 7)? Does any sentence bind the mortal to a later
+   place, time or obligation — *be here at the full moon*, *come back before the
+   week is out*, *do not cross that road again* — that no effect on that path
+   enacts (prose rule 7b)? **Count the connected systems** (design-block
    question 8) and report the number — under three beyond the core test is a
    finding; a personalization the engine could have made but the prose hard-coded
    (a generic address where the cast surface exists) is a finding.

@@ -1796,7 +1796,7 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     imageTag: 'generic.memory',
     effectLine: 'The promise is counted forward to the full moon, so the price is measured in something real.',
     bandProse: {
-      critical_success: 'The whole bargain unfolded like a route on a map: the gift, the moon, the walk back, the standing still.',
+      critical_success: 'The whole bargain unfolded like a route on a map: the gift, the moon, the debt, the man who comes for it.',
       failure: 'The days counted forward cleanly, and stopped counting at the full moon like a road stopping at a cliff.',
     },
   },
@@ -1829,7 +1829,7 @@ const CROSSROADS_MEASURE_STEP: ActionStep = {
   narrativeTemplate:
     'A stranger, {cast:stranger}, waits under the dead tree — no horse, no pack, no mud on his boots. He ' +
     'greets the traveler by name, offers a gift shaped to their own quiet wanting, and asks in payment only ' +
-    'a promise: collect it here at the next full moon.\n\n' +
+    'a promise. He will bring it at the full moon and find them himself.\n\n' +
     'Take the measure of a man who knows too much, then give the word or keep walking.',
   successAfterimage: 'The traveler took the stranger’s measure and kept their own counsel about it.',
   failureAfterimage: 'The stranger was easy to look at and impossible to read, and gave back only manners.',
@@ -1963,7 +1963,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
           {
             id: 'slice.crossroads.carry_the_promise',
             label: 'Carry the promise',
-            intent: 'The road goes on, with an appointment at the end of it.',
+            intent: 'The road goes on. At the next full moon, he finds them on it.',
             effects: [
               {
                 // THR-1110 — the promise is a real claim the bearer holds, not only
@@ -2017,7 +2017,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             overview:
               'The word is given and the stranger is gone. The first payment came due that ' +
               'same night, in sleep. Every evening between here and the full moon has the ' +
-              'appointment in it.',
+              'promise sitting in it.',
             changes: [
               {
                 id: 'slice.crossroads.a_nights_sleep',
@@ -2153,16 +2153,22 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
           intent: 'The treeline takes the road back.',
           effects: [
             // Law 56 (THR-1141): 'The Marker and the Tree' claims they know the
-            // road back if they ever want the offer again. The seed is what makes
-            // "again" a thing the world holds — `inheritContext` keeps the same
-            // stranger under the same tree (THR-1110), so the sentence describes
-            // a scheduled return rather than a mood.
+            // road back if they ever want the offer again. The knowing is what the
+            // `intelligence` effect below writes, and the seed is what makes the
+            // offer itself come again — `inheritContext` keeps the same stranger
+            // (THR-1110).
+            //
+            // THR-1476: the seed does *not* carry the agent back to that
+            // crossroads. `encounter_seed` has no spatial field and
+            // `encounterSeeding` fires it on the agent wherever they stand, so the
+            // label says what the world will actually do — the offer comes round
+            // again — and not that the road bends back to the tree.
             {
               kind: 'encounter_seed',
               templateId: SLICE_TEMPLATE_IDS.crossroads,
               targetAgentId: '$actor',
               delayTicks: SLICE_CROSSROADS_RETURN_DELAY_TICKS,
-              seedLabel: 'The road bends back toward a dead tree and an offer left unanswered.',
+              seedLabel: 'An offer left unanswered has a way of finding the road again.',
               inheritContext: true,
             },
             {
@@ -2215,7 +2221,7 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     imageTag: 'generic.focus',
     effectLine: 'Their breathing stays even while the moonlight fills, and the meeting starts with a level head.',
     bandProse: {
-      success: 'The appointment was kept with a level head, and it showed.',
+      success: 'The exchange was met with a level head, and it showed.',
       failure: 'The nerve held through the greeting. The parcel’s weight undid it.',
     },
   },
@@ -2282,16 +2288,20 @@ const FULL_MOON_STEP: ActionStep = {
   reach: 'star',
   duration: { min: 1, max: 1 },
   difficulty: 0.3,
-  purposeLine: 'Keep the appointment',
+  purposeLine: 'Stand the exchange',
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
   // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
   // at instantiation. No cast token — this template declares no bundle; the
   // stranger arrives through the parent seed's inherited context.
+  //
+  // THR-1476: he finds them, they do not come to him. The parent's seed fires
+  // on the agent wherever the road has taken them, so the prose says so.
   narrativeTemplate:
-    'The stranger from the crossroads is there before the light finishes arriving — same coat, same clean ' +
-    'boots — holding a wrapped parcel the size of the gift he described. He is pleased the promise held.\n\n' +
+    'The stranger from the crossroads finds the road they are on before the light finishes arriving — ' +
+    'same coat, same clean boots — holding a wrapped parcel the size of the gift he described. He is ' +
+    'pleased the promise held.\n\n' +
     'All that remains is to take the gift from his hands, and to stand the exchange well.',
   successAfterimage: 'The gift changed hands under the full moon, and the stranger bowed like a merchant after a fair sale.',
   failureAfterimage: 'The parcel passed to the traveler’s hands cold and heavier than it looked.',
@@ -2334,7 +2344,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
           id: 'slice.fullmoon.the_gift',
           kind: 'item',
           title: 'The Crossroads Gift',
-          causeClause: 'They kept the night they promised',
+          causeClause: 'The moon came full and he found them',
           detail: 'The parcel is theirs, entire.',
           polarity: 'gain',
           category: 'boon',
@@ -2403,7 +2413,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
         success_at_cost: {
           overview:
             'He said the extra sentence lightly, the way a man mentions a second ' +
-            'appointment while handing over the first parcel, and then the moonlight had ' +
+            'visit while handing over the first parcel, and then the moonlight had ' +
             'nobody in it but them.',
           // Two chips, not one mixed chip. A single `item`/`mixed` change
           // classifies as TOLL and quietly under-reports that the gift was in
@@ -2454,7 +2464,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
                   templateId: SLICE_TEMPLATE_IDS.crossroads,
                   targetAgentId: '$actor',
                   delayTicks: SLICE_FULL_MOON_DELAY_TICKS,
-                  seedLabel: 'The stranger mentioned a second appointment, and he keeps his appointments.',
+                  seedLabel: 'The stranger mentioned a second visit, and he is good at finding people.',
                   inheritContext: true,
                 },
               ],
@@ -2500,7 +2510,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'A promise made at a crossroads falls due tonight.',
     success: 'The promise was kept, and the gift is real.',
-    failure: 'The appointment was kept, and it cost more sleep than it should have.',
+    failure: 'The exchange was made, and it cost more sleep than it should have.',
   },
   description:
     'A promise made at a crossroads falls due tonight, and the one who holds it has come to ' +
