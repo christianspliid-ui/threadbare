@@ -40,12 +40,12 @@ names like `TB-073`) a premise might use.
 | **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
 | **Mandate** | 🟢 ACTIVE | mandate, divine mandate, objective | `mandate` | `mandate` |
 | **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source | `essence`, `essencesource`, `control`, `player` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715` |
-| **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction | `encounter`, `encounters`, `dilemma` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
+| **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction, content object, content tag, content query, tag vocabulary | `encounter`, `encounters`, `dilemma` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits` | `6.626` |
 | **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo, holding, freehold, wealth, tithe, toll | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity`, `holding`, `yield` | `6.62`, `6.628`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
 | **Ambitions & Undertakings** | 🟢 ACTIVE | ambition, undertaking, initiative, goal, mentorship, apprentice | `ambition`, `undertaking`, `mentorship` | — |
-| **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement | `attachment`, `seed`, `holdings`, `companions`, `reward` | `2a.85` |
+| **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement, content object, content tag, content query, tag vocabulary | `attachment`, `seed`, `holdings`, `companions`, `reward` | `2a.85` |
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
 | **Attention, Chronicle & Narrative** | 🟢 ACTIVE | attention, chronicle, digest, narrative, story, feed | `attention`, `chronicle`, `narrative` | `2a.65`, `6.66`, `5` |
