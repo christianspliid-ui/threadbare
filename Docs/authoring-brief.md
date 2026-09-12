@@ -4,7 +4,7 @@
 > **Sources:**
 >   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 41ef1cfb66c7b130894406556ec8c09d65f85042)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
->   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 29eb1f6a0c2c327b099486a2ec5dbc9f2102f383)
+>   - .claude/skills/encounter-pipeline/SKILL.md (sha1: a13522874a7882243c34c7230d240d7d43d02c16)
 >   - Docs/canon/undertakings.md (sha1: 8f5de7885faa47c3a7b7c68b3af71312db702870)
 >   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
@@ -261,6 +261,7 @@ The following trigger **REVISE BEFORE CONTINUING** (non-negotiable — address b
 31. **Invented game state in base prose** — a relationship, debt, prior visit, or standing between the agent and the world asserted in scene prose with no backing state read (prose rule 7: consume state through a gate or placeholder, produce it through grants/aftermath, never declare it in narration)
 32. **A chip noun that is not a character-sheet word** — a `stateNoun` the player cannot read without remembering this encounter. Apply the cover-the-title test (spec § Consequence Draw rule 2): cover the title and the overview, and if the tag alone no longer says what the mortal now has, it fails. `SCAR · EXHAUSTED` passes; `SCAR · THE NERVE THEY CAME DOWN WITH` does not. The noun names the state the engine wrote — a condition's `name`, a reach, an item, `AGREEMENT`, `reputation with {target}` — never a phrase minted for the scene. If no state word exists, the fix is a one-word condition the band grants, not a better phrase (THR-1472)
 33. **A chip sentence that runs long or retells the ending** — `causeClause` + `detail` together over 15 words, or sharing a four-word run with the band `overview` it sits under. The chip is a caption beside its tag, not a second paragraph: state the *change*, give the cause one short clause at most, and never repeat a fact the overview already carried (spec § Consequence Draw rule 1b; `check:encounter` reports both arms) (THR-1473)
+34. **A constraint on later world behaviour with no enacting effect** — prose that binds the mortal to a later place, time, or obligation the engine will never make true: *"collect it here at the next full moon"*, *"be back before the week is out"*, *"never take that road again"*. Rule 31's forward-looking twin (prose rule 7b): rule 31 forbids asserting state the world never **wrote**; this forbids promising behaviour the world will never **perform**. Name the effect that enacts it — a seed, a condition, an agreement with a term, a drive — or say what the engine will actually do. **`encounter_seed` has no spatial field**: it promises a tick and (with `inheritContext`) a cast, never a place, and nothing moves the mortal to one. Until the appointment primitive ships ([THR-1479](https://linear.app/threadbare/issue/THR-1479)), the truthful shape is that the other party *finds* them (THR-1476)
 
 > Source: encounter-pipeline SKILL.md — Automatic REVISE triggers (extracted at generation time)
 

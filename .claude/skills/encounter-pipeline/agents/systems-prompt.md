@@ -55,6 +55,12 @@ You write TWO files:
 
 4. **Aftermath Supportability** — Reputation channels real? Conditions creatable? Follow-on hooks exist?
 
+   **Does every later-tense promise in the prose name the effect that performs it? (prose rule 7b, THR-1476.)** You are the agent holding the effects list, so this check is yours. Walk every sentence that says something *will* happen, or tells the mortal to be somewhere, do something, or refrain from something later — openings, band prose, chip `causeClause`/`detail`, reaction `intent`, `seedLabel` — and for each one name the effect on that same path that enacts it. No effect, no sentence.
+
+   The trap: **`encounter_seed` has no spatial field.** It carries `delayTicks`, `targetAgentId`, `inheritContext` and nothing else; `encounterSeeding` fires it on the agent **wherever they stand**, and a `templateId` seed skips the eligibility filter besides. A seed can promise a *time* and the *same cast*; it can never promise a *place*, and nothing in the engine moves a mortal to one — no appointment, rendezvous, or return-to drive exists (movement is ambition targets, strategic winners, idle drift). Also note that `{location}` enriches to the agent's **current** location, never a seed's inherited target — so an opening that says "returns to {location}" asserts a journey that did not happen.
+
+   Flag as a finding, and name the truthful shape: the other party *finds* them at the appointed time, the promise is a claim they carry (`attachment_grant` + `durationOverride`), or the offer simply comes round again. An appointment primitive is designed under [THR-1479](https://linear.app/threadbare/issue/THR-1479); until it ships, treat a placed-and-timed promise as BLOCKED, not as prose to wave through.
+
 5. **New Hooks Needed** — New roles, sublocation types, state fields, content entries. Scope estimate for each.
 
 6. **Implementation File Map** — Every file to create/modify **beyond the compiled set** (engine hooks, types, new primitives, art). The standard content files are fixed by `compile:encounter` (THR-1246): the package at `Docs/plans/encounters/<slug>.package.json` compiles into the encounter module, its structural test, and both registrations — do not list those as hand-edits.
