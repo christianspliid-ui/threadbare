@@ -2254,6 +2254,10 @@ export const CONTRACTS: readonly Contract[] = [
         // The category/tag predicate the authoring-time gate reuses verbatim.
         'rewardCategoryNodeQuery',
         'rewardCandidateMatchesTags',
+        // THR-1487: the projection onto the shared content query. Both the runtime and
+        // the gate now go through it, which is what closes the asymmetry noted below —
+        // the two routes shared a draw and did not share a gate.
+        'toContentQuery',
       ],
       module: 'src/engine/rewardPool.ts',
     },
@@ -2299,6 +2303,16 @@ export const CONTRACTS: readonly Contract[] = [
     // did — so companion category weights were silently unreachable from step
     // metadata. Verified inert on the shipped corpus before the change: no content
     // sets a `companion` weight in a step `rewardPool`.
+    //
+    // THR-1487 closed the gate half of this contract, and the measurement is the
+    // reason to record it here rather than in a changelog line: the gate walked only
+    // the `reward_draw` aftermath effect, which is **1 recipe in the shipped corpus**,
+    // while `ActionStepOutcomeMetadata.rewardPool` carries **481**. So a contract whose
+    // whole point is "the two routes cannot pay out differently" was gated on 0.2% of
+    // what it covers, and reported the corpus clean. `validateContentQueries` now walks
+    // both routes through `allTemplateRewardRecipes`, and it surfaced sixteen step-route
+    // recipes that promise a prize and draw nothing — grandfathered in
+    // `CONTENT_QUERY_RETROFIT_PENDING`, tracked for repair by THR-1496.
   },
   {
     id: 'nudge-card-cost-channels-detection-and-doom',
@@ -3136,6 +3150,43 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-03',
       evidence:
         "THR-1394 slice 1. The registry claims every NodeType, every LocationSubtype (each in exactly one of seven Location classes, or the Route identity subtype), every SUBLOCATION_TYPE_CATEGORY id (as a Place class member), and every non-reserved WorldRefKind; src/data/__tests__/worldObjects.test.ts pins each claim against the union itself through the anchor catalog's parser, never a copy, and runs a 20-tick seed-42 small world through validateNodeAgainstRegistry asserting zero unregistered values. The write-time guard is wired in WorldGraph.addNode behind import.meta.env.DEV and WORLD_OBJECT_VALIDATION_ENABLED, warn-once per (type, value) per world (reset in initializeGameState), WORLD_OBJECT_THROW_ON_UNKNOWN consulted. The first census (seeds 42 + 99, medium, tick 30) found one unregistered value — actor actorType=group, the group kinds had been registered on a key the writers do not use — and five phantom content target names (market, port, trading_post in three packs and the cells' FOUND_SITE_RULE; fortress and construction_site in ambition-templates), all fixed in the same PR; --check is green at zero drift.",
+    },
+  },
+  {
+    id: 'content-query-one-resolver-engine-and-gate',
+    producerSystem: 'Attachments, Items & Possessions',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent:
+      'Content names content by kind and tags rather than by literal id, and exactly one resolver answers — so the engine that pays out a prize and the gate that swears the prize exists cannot disagree about what a filter matches. The reward pool is the first consumer, moved onto the resolver under a byte-identical shared-path test; the condition pool is the second. The gate calls resolveContentQuery rather than mirroring it, which is the failure this contract exists to prevent: a gate that re-states the runtime rule agrees only while someone keeps checking (THR-1487, slice 3 of THR-1481).',
+    ulTerms: ['Content Query', 'Content Object', 'Content Tag'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'resolveContentQuery',
+        'drawFromContentQuery',
+        'contentQueryHasCandidates',
+        'graphContentCatalogs',
+        'nodeContentCatalogs',
+        'traceContentQuery',
+        'CONTENT_QUERY_MAX_CANDIDATES',
+      ],
+      module: 'src/engine/contentQuery.ts',
+    },
+    writeSites: [
+      'src/engine/contentQuery.ts',
+      'src/engine/contentCatalogView.ts',
+    ],
+    readSites: [
+      'src/engine/rewardPool.ts',
+      'src/engine/nudgeGrantLiveness.ts',
+      'src/data/undertaking-objects.ts',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        "THR-1487 slice 3. The shared-path test (src/engine/__tests__/contentQuerySharedPath.test.ts) runs the resolver and a frozen copy of the pre-change predicate over every shipped RewardPoolRecipe and asserts identical candidate sets - 14 arms green, and falsified by swapping the ALL-of tag rule for ANY-of, which reddens the corpus sweep with named divergences (encounter.forbidden_tome possession: legacy 5 vs resolver 32). The frozen predicate is a deliberate duplicate: getCandidateNodes now calls the resolver, so importing it would compare the resolver to itself. The condition pool is compared the same way at both tier caps and both tags. Coverage finding, recorded because it is the reason the gate needed generalising at all: the old sweep walked only the reward_draw effect, which is 1 recipe in the corpus, while the step route carries 481 - and widening to both surfaced 16 step-route recipes that promise a prize and draw nothing, grandfathered in CONTENT_QUERY_RETROFIT_PENDING with a ratchet that fails in both directions (THR-1496 repairs them). Traces content.query_resolved / content.query_empty fire at reward_draw, step_reward_pool and condition_pool; window.__DEBUG.queryContent and the CLI query command answer the plan's worked example against a live world."
     },
   },
   {

@@ -103,6 +103,9 @@ import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-att
 import { getCompanions } from '../src/engine/companions';
 import { COMPANION_MAX } from '../src/data/companion-templates';
 import { WORLD_OBJECT_KINDS, barePlaceTypeId } from '../src/data/world-objects';
+import { resolveContentQuery, CONTENT_QUERY_MAX_CANDIDATES } from '../src/engine/contentQuery';
+import { sessionContentCatalogs } from '../src/engine/contentCatalogView';
+import type { ContentQuery } from '../src/types/contentQuery';
 import { CONTENT_OBJECT_KINDS } from '../src/data/content-objects';
 import { CONTENT_CATALOGS, catalogKey, entriesOfKind } from '../src/data/contentCatalogs';
 import { nodeSchemaWarningsSoFar } from '../src/types/nodeSchema';
@@ -1319,6 +1322,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}undertakings${RESET} [agent|@first]  Active undertakings, with the review pin's verdict when one is set`);
   console.log(`  ${BOLD}objects${RESET} [kind]          World-object kinds with their live counts in this world, and the write-time guard's warnings (THR-1394)`);
   console.log(`  ${BOLD}content${RESET} [kind]          Content-object kinds with their authored catalog sizes — what an author may write (THR-1485)`);
+  console.log(`  ${BOLD}query${RESET} <json>           Run a content query against the running world — e.g. query {"kind":"item_template","tags":["#weapon"]} (THR-1487)`);
   console.log(`  ${BOLD}follow${RESET} <agent|@first>       Follow a mortal (their moments interrupt)`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
   console.log(`  ${BOLD}spawn companion${RESET} <agent|@hero> <companionTemplateId|profession> Mint a companion onto an agent (THR-1413)`);
@@ -1812,6 +1816,51 @@ ${BOLD}Write-time guard${RESET}: ${warned.length === 0 ? GREEN + 'no unregistere
 }
 
 /**
+ * `query <json>` — run a content query against the running world (THR-1487).
+ *
+ * The CLI twin of `window.__DEBUG.queryContent`, and the fastest way to answer the
+ * question a `content.query_empty` trace raises: *what does this filter actually match?*
+ * Reads the world rather than the catalogs, so it counts what a draw could reach now.
+ *
+ *   query {"kind":"item_template","tags":["#weapon","#entropy"]}
+ *   query {"kind":"power_template","classes":["bestowed"]}
+ */
+function handleQuery(raw: string): void {
+  const text = raw.trim();
+  if (!text) {
+    console.log(`${DIM}Usage: query <json>   e.g. query {"kind":"item_template","tags":["#weapon"]}${RESET}`);
+    return;
+  }
+  let parsed: ContentQuery;
+  try {
+    parsed = JSON.parse(text) as ContentQuery;
+  } catch (err) {
+    console.log(`${RED}Not JSON: ${(err as Error).message}${RESET}`);
+    console.log(`${DIM}Tags carry their '#'. Example: query {"kind":"item_template","tags":["#weapon"]}${RESET}`);
+    return;
+  }
+  if (!parsed || typeof parsed !== 'object' || !parsed.kind) {
+    console.log(`${RED}A query needs a "kind". Known kinds: ${CONTENT_OBJECT_KINDS.map(k => k.id).join(', ')}${RESET}`);
+    return;
+  }
+
+  const hits = resolveContentQuery(parsed, sessionContentCatalogs(state.graph));
+  const truncated = hits.length > CONTENT_QUERY_MAX_CANDIDATES;
+  const badge = hits.length > 0 ? `${GREEN}${hits.length}${RESET}` : `${RED}0${RESET}`;
+  console.log(`
+${BOLD}Content query${RESET} — ${badge} candidate${hits.length === 1 ? '' : 's'}${truncated ? ` ${YELLOW}(a draw would see the first ${CONTENT_QUERY_MAX_CANDIDATES})${RESET}` : ''}`);
+  if (hits.length === 0) {
+    console.log(`  ${DIM}Nothing matches. Every tag in "tags" must be present, and tags carry their '#'.${RESET}`);
+    return;
+  }
+  for (const hit of hits.slice(0, 40)) {
+    const name = state.graph.getNode(hit.id)?.name ?? '';
+    console.log(`  ${hit.kind.padEnd(20)} ${hit.id.padEnd(40)} ${DIM}tier ${hit.tier ?? '-'}${RESET} ${name}`);
+  }
+  if (hits.length > 40) console.log(`  ${DIM}… and ${hits.length - 40} more${RESET}`);
+}
+
+/**
  * `content [kind]` — every content-object kind with its authored catalog size (THR-1485).
  *
  * The sibling of `objects`: that command counts what the *running world* holds, this one
@@ -2174,6 +2223,11 @@ function handleCommand(line: string): boolean {
       break;
     case 'content':
       handleContent(arg);
+      break;
+    case 'query':
+      // `arg`, which re-joins the split tokens — a query is JSON and JSON has spaces in
+      // it. Runs of whitespace collapse to one, which JSON does not care about.
+      handleQuery(arg);
       break;
     case 'follow':
       handleFollow(arg);

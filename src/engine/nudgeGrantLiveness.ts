@@ -48,7 +48,9 @@ import { COMPANION_TEMPLATES, filterCompanionTemplates } from '../data/companion
 // THR-1146 — the `reward_draw` gate runs the *runtime's own* category/tag
 // predicate against the seed catalogs, so gate and engine cannot drift.
 import type { AttachmentCategory, RewardPoolRecipe } from '../types/attachments';
-import { rewardCategoryNodeQuery, rewardCandidateMatchesTags } from './rewardPool';
+import { toContentQuery } from './rewardPool';
+import { contentQueryHasCandidates, nodeContentCatalogs, type NodeLike } from './contentQuery';
+import { isContentQueryRetrofitPending } from '../data/content-eval/contentQueryRetrofitPending';
 
 /** Content kinds a card grant can name. */
 export type NudgeGrantRefKind = 'ambition' | 'artifact' | 'condition' | 'attachment';
@@ -251,7 +253,18 @@ export interface EmptyRewardDrawPool {
 export interface RewardDrawPoolReport {
   /** Recipes checked — a zero means the sweep matched nothing (see below). */
   readonly checkedRecipes: number;
+  /** Empty recipes the caller should treat as fatal. */
   readonly empty: readonly EmptyRewardDrawPool[];
+  /**
+   * Empty recipes named in `CONTENT_QUERY_RETROFIT_PENDING` (THR-1487). Reported rather
+   * than hidden: a grandfather list a caller cannot see is a way to lose work.
+   */
+  readonly grandfathered: readonly EmptyRewardDrawPool[];
+}
+
+/** `templateId @ site` — the ratchet's key, spelled in one place so both sides agree. */
+export function recipeKey(templateId: string, site: string): string {
+  return `${templateId} @ ${site}`;
 }
 
 /**
@@ -283,12 +296,19 @@ function liveAttachmentNodes(): readonly { type: string; properties: Record<stri
  * tags name content that exists?*
  */
 export function rewardRecipeHasCandidates(recipe: RewardPoolRecipe): boolean {
-  const nodes = liveAttachmentNodes();
+  // THR-1487: the node-shaped half of this question is now literally the runtime's own
+  // resolver, over the nodes the world seeds. Before, the gate re-stated the carve and
+  // the tag rule, which is the drift the header above warns about — the two agreed only
+  // because someone kept checking.
+  const catalogs = nodeContentCatalogs(liveAttachmentNodes() as unknown as readonly NodeLike[]);
 
   for (const [category, weight] of Object.entries(recipe.categoryWeights)) {
     if (!weight || weight <= 0) continue;
 
     // Registry-backed categories answer through the same filters the runtime uses.
+    // They stay off the resolver on both sides: their real filter is per-bearer (a
+    // companion at the cap, a unique already in the world), which is a fact about the
+    // recipient and not about the content.
     if (category === 'companion') {
       if (filterCompanionTemplates(recipe.tagFilters).length > 0) return true;
       continue;
@@ -297,22 +317,14 @@ export function rewardRecipeHasCandidates(recipe: RewardPoolRecipe): boolean {
       if (filterAgreementTemplates(recipe.tagFilters).length > 0) return true;
       continue;
     }
-    // THR-1297: `holding` is undrawable by design — see `rewardCategoryNodeQuery`.
-    // This arm mirrors the runtime's, deliberately: this gate exists to ask the
-    // question the runtime asks, and a one-sided arm recreates exactly the
-    // gate-drifts-from-runtime failure the header above warns about. A recipe
-    // weighting `holding` therefore reports "no candidates" here rather than
-    // reaching the runtime and silently drawing nothing.
-    if (category === 'holding') continue;
-
-    const query = rewardCategoryNodeQuery(category as AttachmentCategory);
+    // THR-1297: `holding` is undrawable by design — `toContentQuery` answers null for
+    // it, exactly as `rewardCategoryNodeQuery` always has, so a recipe weighting
+    // `holding` reports "no candidates" here rather than reaching the runtime and
+    // silently drawing nothing.
+    const query = toContentQuery(recipe, category as AttachmentCategory);
     if (!query) continue;
 
-    const hit = nodes.some((n) =>
-      n.type === query.nodeType
-      && (query.subcategory === undefined || n.properties.subcategory === query.subcategory)
-      && rewardCandidateMatchesTags(n.properties.tags, recipe.tagFilters));
-    if (hit) return true;
+    if (contentQueryHasCandidates(query, catalogs)) return true;
   }
 
   return false;
@@ -386,34 +398,94 @@ function allTemplateEffects(
 }
 
 /**
- * Sweep a template pool for `reward_draw` recipes that would draw nothing.
+ * Sweep a template pool for content queries that would resolve to nothing.
  *
  * Fail-soft in shape (returns a report, never throws); the caller decides
  * whether an empty pool is fatal. `check:encounter` and the corpus test both
  * treat it as fatal, which is the point — an empty pool at runtime means the
  * prose promised a prize and the player got nothing.
+ *
+ * **THR-1487 widened this in two directions at once.** It now runs the *runtime's own*
+ * resolver (`rewardRecipeHasCandidates` → `contentQueryHasCandidates`) rather than a
+ * mirrored predicate, and it now walks **both** routes a recipe can be authored on —
+ * the `reward_draw` effect and `ActionStepOutcomeMetadata.rewardPool`, the older step
+ * route that shared the draw path since THR-1146 but never shared a gate. The name
+ * generalised with the coverage: what is checked is a content query, and the reward
+ * recipe is the first thing that projects onto one.
  */
-export function validateRewardDrawPools(
+export function validateContentQueries(
   templates: readonly UnifiedActionTemplate[],
 ): RewardDrawPoolReport {
   const empty: EmptyRewardDrawPool[] = [];
+  const grandfathered: EmptyRewardDrawPool[] = [];
   let checkedRecipes = 0;
 
   for (const template of templates) {
-    for (const { effect, site } of allTemplateEffects(template)) {
-      if (effect.kind !== 'reward_draw') continue;
+    for (const { recipe, site } of allTemplateRewardRecipes(template)) {
       checkedRecipes++;
-      if (rewardRecipeHasCandidates(effect.pool)) continue;
-      empty.push({
+      if (rewardRecipeHasCandidates(recipe)) continue;
+      const row: EmptyRewardDrawPool = {
         templateId: template.id,
         site,
-        categoryWeights: Object.keys(effect.pool.categoryWeights),
-        tagFilters: effect.pool.tagFilters ?? [],
-      });
+        categoryWeights: Object.keys(recipe.categoryWeights),
+        tagFilters: recipe.tagFilters ?? [],
+      };
+      if (isContentQueryRetrofitPending(recipeKey(template.id, site))) {
+        grandfathered.push(row);
+      } else {
+        empty.push(row);
+      }
     }
   }
 
-  return { checkedRecipes, empty };
+  return { checkedRecipes, empty, grandfathered };
+}
+
+/**
+ * The pre-THR-1487 name. Kept as an alias for one release (NFP #6) so the existing
+ * callers and their tests keep reading — the behaviour is a superset, because the sweep
+ * now sees the step route too.
+ *
+ * @deprecated Use {@link validateContentQueries}.
+ */
+export const validateRewardDrawPools = validateContentQueries;
+
+/**
+ * Every `RewardPoolRecipe` a template authors, wherever it puts it (THR-1487).
+ *
+ * **The step route is the half that was missing.** `reward_draw` effects have been swept
+ * since THR-1146; `ActionStepOutcomeMetadata.rewardPool` — the older route, and still the
+ * one most steps use — was not, so a step that promised a prize by a filter matching
+ * nothing shipped green. That is the same asymmetry the interface map records on
+ * `reward-draw-shares-one-seeded-draw-with-the-step-route`: the two routes shared a draw
+ * and did not share a gate.
+ *
+ * Exported so the shared-path test sweeps exactly the sites the gate does — a test
+ * walking its own corpus could prove identity on recipes the gate never checks.
+ */
+export function allTemplateRewardRecipes(
+  template: UnifiedActionTemplate,
+): readonly { recipe: RewardPoolRecipe; site: string }[] {
+  const out: { recipe: RewardPoolRecipe; site: string }[] = [];
+
+  // Route 1 — the aftermath `reward_draw` effect, wherever `allTemplateEffects` finds it
+  // (reaction, band override, branch arm, card grant, step metadata effects).
+  for (const { effect, site } of allTemplateEffects(template)) {
+    if (effect.kind !== 'reward_draw') continue;
+    out.push({ recipe: effect.pool, site });
+  }
+
+  // Route 2 — the step route (THR-1487).
+  for (const { step, label } of runnableStepSites(template.steps)) {
+    if (step.successMetadata?.rewardPool) {
+      out.push({ recipe: step.successMetadata.rewardPool, site: `${label}.successMetadata.rewardPool` });
+    }
+    if (step.failureMetadata?.rewardPool) {
+      out.push({ recipe: step.failureMetadata.rewardPool, site: `${label}.failureMetadata.rewardPool` });
+    }
+  }
+
+  return out;
 }
 
 /** One line per empty pool, for a test failure message or a CLI report. */

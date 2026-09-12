@@ -23,6 +23,14 @@ import type {
 import type { OutcomeType } from '../types/resolution';
 import type { UnifiedActionOutcome } from '../types/unifiedAction';
 import type { AttachmentEffect, ContentGrantEffect } from '../types/effects';
+import type { ContentQuery, ContentQuerySite } from '../types/contentQuery';
+import type { ContentObjectKindId } from '../data/content-objects';
+import {
+  resolveContentQuery,
+  graphContentCatalogs,
+  traceContentQuery,
+  type ContentCatalogs,
+} from './contentQuery';
 import { mulberry32 } from '../lib/prng';
 import { applyResourceDelta } from './effects/resourceDelta';
 import { emitTrace } from './traceBuffer';
@@ -85,6 +93,13 @@ export function rewardCategoryNodeQuery(
  * **Every** tag must be present, and tags carry their `#` in the library
  * (`'#weapon'`, not `'weapon'`) — the single most likely way for an author to
  * write a filter that matches nothing.
+ *
+ * THR-1487: the *runtime* no longer calls this — {@link getCandidateNodes} asks
+ * `resolveContentQuery`, which applies the same ALL-of rule over a candidate's
+ * effective tags. It stays exported and live because the shared-path test pins the two
+ * against each other on every shipped recipe, which is the only thing standing between
+ * "we moved the reward pool onto the resolver" and "we changed what the reward pool
+ * draws". Deleting it would delete the proof.
  */
 export function rewardCandidateMatchesTags(
   nodeTags: unknown,
@@ -97,28 +112,73 @@ export function rewardCandidateMatchesTags(
 }
 
 /**
- * Map category to graph node search.
+ * The {@link ContentQuery} a reward category and recipe name together (THR-1487) — the
+ * projection that lets the reward pool ask the shared resolver instead of the graph.
+ *
+ * Null for exactly the categories {@link rewardCategoryNodeQuery} answers null for, and
+ * for the same three reasons: `holding` is undrawable by design (THR-1297), and
+ * `agreement` / `companion` are registry-backed and filtered *per bearer* — a companion
+ * at the cap or a unique already in the world is not offered, which is a fact about the
+ * recipient rather than about the content, and therefore not something a content query
+ * can or should express. Those two keep their existing catalog filters in
+ * {@link assembleRewardPool}.
+ *
+ * `classes` carries the discrimination `rewardCategoryNodeQuery`'s `subcategory` half
+ * carried: a Condition is the `condition` class of the Condition kind, not its `scar`
+ * sibling, and a bestowed power is the `bestowed` class of Power and not a learned
+ * spell.
+ *
+ * `sphereTint` is deliberately **not** projected into `anyTags`. The plan sketched it
+ * that way, but no live code reads `sphereTint` at draw time today — adding it here
+ * would narrow pools that currently ignore it, changing what shipped encounters hand
+ * out under the banner of a refactor. It becomes an `anyTags` term when a slice takes
+ * the decision to make it mean something.
+ */
+export function toContentQuery(
+  recipe: RewardPoolRecipe,
+  category: AttachmentCategory,
+): ContentQuery | null {
+  switch (category) {
+    case 'possession':
+    case 'spell':
+      // Both have always read the whole `artifact` node type — `spell` included, which
+      // is a legacy quirk (a learned spell is a `trait`), preserved because the Kill
+      // criterion is identity and correcting it here would be a silent content change.
+      return { kind: 'item_template', tags: recipe.tagFilters };
+    case 'condition':
+    case 'blessing':
+    case 'curse':
+      return { kind: 'condition_template', classes: ['condition'], tags: recipe.tagFilters };
+    case 'bestowed_power':
+      return { kind: 'power_template', classes: ['bestowed'], tags: recipe.tagFilters };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Map category to candidates, through the shared resolver (THR-1487).
+ *
+ * Was a hand-rolled `getNodesByType` + subcategory + tag filter; is now one
+ * `resolveContentQuery`. The order changed with it — the resolver is totally ordered by
+ * id, where this used to inherit graph insertion order — and that is an improvement
+ * rather than a side effect: insertion order depends on which subsystems seeded first,
+ * so the *same* world could pool the same candidates in a different order after an
+ * unrelated seeding change, and `drawFromPool` walks the pool cumulatively.
  */
 function getCandidateNodes(
   graph: WorldGraph,
   category: AttachmentCategory,
   tagFilters?: string[],
+  catalogs?: ContentCatalogs,
 ): Array<{ id: string; tier: number }> {
-  const query = rewardCategoryNodeQuery(category);
+  const query = toContentQuery({ categoryWeights: {}, tagFilters }, category);
   if (!query) return [];
 
-  let nodes = graph.getNodesByType(query.nodeType);
-
-  if (query.subcategory) {
-    nodes = nodes.filter(n => n.properties.subcategory === query.subcategory);
-  }
-
-  nodes = nodes.filter(n => rewardCandidateMatchesTags(n.properties.tags, tagFilters));
-
-  return nodes.map(n => ({
-    id: n.id,
-    tier: (n.properties.tier as number) ?? 1,
-  }));
+  return resolveContentQuery(query, catalogs ?? graphContentCatalogs(graph))
+    // Tier defaults to 1 exactly where it used to: a node with no declared tier is a
+    // tier-1 candidate, so it still draws under every curve.
+    .map(hit => ({ id: hit.id, tier: hit.tier ?? 1 }));
 }
 
 /**
@@ -136,6 +196,11 @@ export function assembleRewardPool(
   bearerId?: string,
 ): PoolEntry[] {
   const pool: PoolEntry[] = [];
+  // One view per assembly, so a multi-category recipe scans each kind once rather than
+  // once per category. Nothing is scanned until a category asks for it, which is why
+  // building this per draw costs no more than the per-category `getNodesByType` it
+  // replaced (THR-1487).
+  const catalogs = graphContentCatalogs(graph);
 
   for (const [category, categoryWeight] of Object.entries(recipe.categoryWeights)) {
     if (!categoryWeight || categoryWeight <= 0) continue;
@@ -174,6 +239,7 @@ export function assembleRewardPool(
       graph,
       category as AttachmentCategory,
       recipe.tagFilters,
+      catalogs,
     );
 
     for (const candidate of candidates) {
@@ -370,6 +436,12 @@ export interface SeededRewardDrawParams {
    * Optional — omitted, the tier curve is the authored one.
    */
   readonly overrideCtx?: RuleOverrideContext;
+  /**
+   * Which route asked (THR-1487) — `reward_draw` for the aftermath effect,
+   * `step_reward_pool` for the step route. Defaults to `reward_draw`, so a caller that
+   * does not say is recorded as the older, better-known route rather than as unknown.
+   */
+  readonly site?: ContentQuerySite;
 }
 
 export interface SeededRewardDraw {
@@ -402,6 +474,46 @@ export interface SeededRewardDraw {
  * error — it comes back as `poolSize: 0` with nulls, and each caller records it
  * the way its surface wants (NFP #4).
  */
+/**
+ * One `content.query_*` per draw (THR-1487), not one per weighted category.
+ *
+ * A reward recipe unions up to three categories and the player receives one prize, so
+ * three traces per draw would triple the ring's cost to say a thing the reader does not
+ * ask — *"did this recipe find anything, and what did it hand over?"* is one question.
+ * The recipe's categories are folded into the query's `kind` list, which is exactly what
+ * `toContentQuery` projects them onto.
+ *
+ * The `aftermath_reward_draw` traces keep their own names and their own payloads: those
+ * carry the instance and the roll, which a query resolution does not know.
+ */
+function traceRewardQuery(
+  params: SeededRewardDrawParams,
+  recipe: RewardPoolRecipe,
+  candidateCount: number,
+  pickedId: string | undefined,
+): void {
+  const kinds: ContentObjectKindId[] = [];
+  for (const [category, weight] of Object.entries(recipe.categoryWeights)) {
+    if (!weight || weight <= 0) continue;
+    const query = toContentQuery(recipe, category as AttachmentCategory);
+    if (!query) continue;
+    const kind = query.kind as ContentObjectKindId;
+    if (!kinds.includes(kind)) kinds.push(kind);
+  }
+  traceContentQuery({
+    site: params.site ?? 'reward_draw',
+    query: { kind: kinds, tags: recipe.tagFilters },
+    // The weighted pool's size, not the resolved set's: the tier curve drops candidates
+    // the band cannot reach, and what the reader wants to know is how much the draw had
+    // left to choose from.
+    candidateCount,
+    tick: params.tick,
+    pickedId,
+    actorId: params.actorId,
+    templateId: params.templateId,
+  });
+}
+
 export function drawSeededReward(
   graph: WorldGraph,
   params: SeededRewardDrawParams,
@@ -437,6 +549,7 @@ export function drawSeededReward(
   // category ignores it.
   const pool = assembleRewardPool(graph, effectiveRecipe, recipientId);
   if (pool.length === 0) {
+    traceRewardQuery(params, effectiveRecipe, pool.length, undefined);
     return {
       isBadOutcome, poolSize: 0, drawRoll: null,
       drawnTemplateId: null, instantiation: null, tier: null, templateName: null,
@@ -445,6 +558,7 @@ export function drawSeededReward(
 
   const drawRoll = rng();
   const drawnTemplateId = drawFromPool(pool, drawRoll);
+  traceRewardQuery(params, effectiveRecipe, pool.length, drawnTemplateId ?? undefined);
   if (!drawnTemplateId) {
     return {
       isBadOutcome, poolSize: pool.length, drawRoll,

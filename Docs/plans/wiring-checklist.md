@@ -2470,3 +2470,28 @@ the row now names `IncidentUIState`, the type that actually crosses the boundary
 **Wiki pages:** none matched (measured, not assumed). No manifest page's `sources` cover any
 file here, and a manual page for a diagnostic tool would be the wrong surface —
 `Wiki-freshness-exempt: no wiki page owns diagnostics` if the gate ever asks.
+
+---
+
+## Content query — one resolver under the reward pool, the step-route gate, and the condition pool (THR-1487)
+
+Slice 3 of THR-1481. **Additive in vocabulary, migrating in behaviour:** the query is new, but the two sites that now use it were already doing this work by hand, so this table records a *travelled* path, not a reachable one.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `types/contentQuery.ts` | N/A — type module | N/A | none | none | — |
+| `engine/contentQuery.ts` | called inside the phases that already draw content: aftermath reaction application, step resolution, `create × Condition` completion | N/A | none | `content.query_resolved`, `content.query_empty` | `__DEBUG.queryContent(query)`, CLI `query <json>` |
+| `engine/contentCatalogView.ts` | N/A — called by the levers, not from a tick phase | N/A | none | none (its callers trace) | reached by both levers above |
+| `data/contentEntryTags.ts` | N/A — pure readers, moved out of `contentCatalogs.ts` | N/A | none | none | — |
+| `data/content-eval/contentQueryRetrofitPending.ts` | N/A — gate data | N/A | none | none | `npm run check:encounter` |
+| `engine/rewardPool.ts` (extended) | unchanged | unchanged | unchanged | `aftermath_reward_draw*` unchanged, **plus one** `content.query_*` per draw | unchanged |
+| `engine/nudgeGrantLiveness.ts` (extended) | N/A — gate | N/A | none | none | `npm run check:encounter -- --all` |
+| `data/undertaking-objects.ts` (`conditionPool`) | the `create × Condition` completion path | N/A | none | `content.query_*` at `condition_pool` | CLI `traces` |
+
+**One trace per draw, not one per weighted category.** A reward recipe unions up to three categories and the player receives one prize; three traces would triple the ring's cost to answer a question nobody asks in parts. The recipe's categories fold into the traced query's `kind` list. Trace volume is budgeted at ~1/tick and this respects it — 15 `content.query_*` across a 120-tick seeded run.
+
+**No `GameState` field and no `SimulationRuntime` cache**, and the second is a deviation from the plan worth recording here rather than only in the commit. The plan asked for a session-owned `ContentCatalogs`. Two things refused it: `SimulationRuntime` is reachable from `src/data/undertaking-objects.ts`, so importing the catalog-backed view there re-closes the initialisation cycle that cost impediment #1030; and keyed on `structuralCacheVersion` — which bumps nearly every tick — the cache would rebuild almost every read and buy nothing. The rule the plan protects (*engine caches are owned per session, never at module scope*) is better served by a view that owns nothing at all: it is lazy per kind, so constructing one per call costs exactly the `getNodesByType` scan it replaced.
+
+**The gate reads a third view, deliberately.** `validateContentQueries` asks `nodeContentCatalogs(liveAttachmentNodes())` rather than the library view, because the registry's item catalogs include `TREASURE_MAPS`, which `seedAttachments` does not put in the world — a recipe resolving only against those would read live at authoring time and draw nothing at runtime.
+
+**Still owed by later slices of THR-1481:** `encounter_seed.query` and the `encounterFamily` alias table, `StrategicActionTemplate.catalystQuery` and its reader, the `UnifiedActionTemplate.tags` passthrough through both converters (slice 4); the brief die face, the composition quota key, the live-proof claims and the batch-report census (slice 5). The two interface-map rows for slice 4's contracts are deliberately **not** registered here — their producers do not exist, and a row naming absent symbols asserts a contract for unwritten code.

@@ -45,7 +45,7 @@ names like `TB-073`) a premise might use.
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits` | `6.626` |
 | **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo, holding, freehold, wealth, tithe, toll | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity`, `holding`, `yield` | `6.62`, `6.628`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
 | **Ambitions & Undertakings** | 🟢 ACTIVE | ambition, undertaking, initiative, goal, mentorship, apprentice | `ambition`, `undertaking`, `mentorship` | — |
-| **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement, content object, content tag, content query, tag vocabulary | `attachment`, `seed`, `holdings`, `companions`, `reward` | `2a.85` |
+| **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement, content object, content tag, content query, tag vocabulary | `attachment`, `seed`, `holdings`, `companions`, `reward`, `content` | `2a.85` |
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
 | **Attention, Chronicle & Narrative** | 🟢 ACTIVE | attention, chronicle, digest, narrative, story, feed | `attention`, `chronicle`, `narrative` | `2a.65`, `6.66`, `5` |
@@ -254,7 +254,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `companions` (1) | `companions.ts` | `THR-1096` |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | `THR-1143`, `THR-761` |
-| `content` (2) | `contentEntryResolver.ts`, `contentPageGenerator.ts` | `THR-1482`, `THR-1485`, `THR-1486`, `THR-1491` |
+| `content` (4) | `contentCatalogView.ts`, `contentEntryResolver.ts`, `contentPageGenerator.ts`, `contentQuery.ts` | `THR-1481`, `THR-1482`, `THR-1485`, `THR-1486`, `THR-1487`, `THR-1491` |
 | `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-472`, `THR-490`, `THR-501`, `THR-523`, `THR-573`, `THR-609`, `THR-659` |
 | `contentcensus` (5) | `contentCensus/adapters.ts`, `contentCensus/constants.ts`, `contentCensus/index.ts`, `contentCensus/matrix.ts`, `contentCensus/types.ts` | — |
 | `contestation` (1) | `contestation.ts` | `Phase 3`, `THR-731` |
@@ -415,4 +415,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 189 engine domains · 555 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 189 engine domains · 557 modules._

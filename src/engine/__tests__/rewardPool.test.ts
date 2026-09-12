@@ -293,13 +293,21 @@ describe('rewardPool', () => {
       const pool = assembleRewardPool(graph, recipe);
       expect(pool.length).toBe(2);
 
-      // Draw with roll 0.2 should hit first item
-      const result1 = drawFromPool(pool, 0.2);
-      expect(result1).toBe('sword.iron');
+      // THR-1487: the pool is now ordered by id ascending, because the candidates come
+      // from `resolveContentQuery`, which is totally ordered. It used to inherit graph
+      // insertion order — deterministic for a given seeding sequence, but *dependent on*
+      // that sequence, so an unrelated change to which subsystem seeds first could
+      // reorder the pool and change what the same roll drew. `shield.oak` before
+      // `sword.iron` is the alphabet, and it does not move.
+      expect(pool.map(e => e.nodeId)).toEqual(['shield.oak', 'sword.iron']);
 
-      // Draw with roll 0.6 should hit second item
+      // Draw with roll 0.2 should hit the first entry
+      const result1 = drawFromPool(pool, 0.2);
+      expect(result1).toBe('shield.oak');
+
+      // Draw with roll 0.6 should hit the second
       const result2 = drawFromPool(pool, 0.6);
-      expect(result2).toBe('shield.oak');
+      expect(result2).toBe('sword.iron');
     });
 
     it('weighted pool favors common entries', () => {

@@ -145,7 +145,17 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     // edges were demonstrably growing 7→82 — the false-DORMANT error this generator's
     // header calls the dangerous one, because it hides live substrate from designers.
     activityKeywords: ['artifact', 'slot'],
-    domains: ['attachment', 'seed', 'holdings', 'companions', 'reward'],
+    // `content` (THR-1487): `contentQuery.ts`, `contentCatalogView.ts` and
+    // `contentEntryResolver.ts` all bucket under this domain token. The row already
+    // carried `content object` / `content tag` / `content query` as *aliases* when slice
+    // 1 seated the registry, so this is the module join catching up with a home the
+    // registry had already named — not a new claim. The content model is genuinely
+    // cross-cutting (it serves encounters and conditions too), but it is modelled on
+    // this subsystem's reward pool and lives or dies with it, which is why it houses
+    // here rather than joining `CROSS_CUTTING_DOMAINS`: that set means "attributing one
+    // subsystem would wrongly attribute a dozen siblings", and here there is a right
+    // answer.
+    domains: ['attachment', 'seed', 'holdings', 'companions', 'reward', 'content'],
     phaseMatch: /\b(attachment|possession|slot cap)\b/i,
     note: 'Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.',
   },

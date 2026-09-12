@@ -1775,6 +1775,47 @@ if (import.meta.env.DEV) {
       }));
     },
 
+    /**
+     * Run a {@link ContentQuery} against the **live session's** catalogs (THR-1487) —
+     * the one-line answer to "would this filter match anything?".
+     *
+     * Reads the world, not the library, so a prize minted three ticks ago is a candidate
+     * and a template the world never seeded is not. That is deliberately the opposite of
+     * `getContentObjects`, which counts what an author may write: this counts what a
+     * draw could actually reach right now, which is the question you have when a
+     * `content.query_empty` trace just fired.
+     *
+     * Returns `null` when there is no game state. Always `await` it.
+     */
+    queryContent: async (query: {
+      kind: string | readonly string[];
+      classes?: readonly string[];
+      tags?: readonly string[];
+      anyTags?: readonly string[];
+      tier?: number | { min?: number; max?: number };
+      exclude?: readonly string[];
+    }) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const [m, view] = await Promise.all([
+        import('./engine/contentQuery'),
+        import('./engine/contentCatalogView'),
+      ]);
+      // Loose in, checked at resolve: a console user types raw JSON, and a `kind` that
+      // names nothing simply resolves empty — which is the honest answer and the one
+      // this lever exists to give, rather than a type error the console cannot show.
+      const typed = query as unknown as import('./types/contentQuery').ContentQuery;
+      // The *session* view, not the graph-only one: at a console you want to ask about
+      // an encounter template as readily as about a prize.
+      const hits = m.resolveContentQuery(typed, view.sessionContentCatalogs(state.graph));
+      return {
+        query,
+        candidateCount: hits.length,
+        truncated: hits.length > m.CONTENT_QUERY_MAX_CANDIDATES,
+        hits: hits.map((h) => ({ kind: h.kind, id: h.id, tier: h.tier })),
+      };
+    },
+
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),

@@ -65,6 +65,26 @@ Seated by THR-1486 (slice 2). Registry: [`src/data/content-tags.ts`](../../src/d
 
 **How the 153 spellings in the corpus became 96 seated tags** (the migration's rule, recorded so it is not re-derived): a spelling survived with **at least one runtime reader** — a `tagFilters` query site or a hardcoded read — **or** at least `CONTENT_TAG_MIN_BEARERS` (3) bearers across the catalogs. 16 bare spellings were rewritten with their `#`; 63 were removed from their entries; the rest moved onto the derived axes. Seven tags ship DEAD: six authored ones a query site asks for and nothing wears, one sphere the corpus has not reached. The ratchet ([`contentTagRetrofitPending.ts`](../../src/data/content-eval/contentTagRetrofitPending.ts)) is **empty**, which is what let the catalog-entry `tags` types tighten to `readonly ContentTag[]`.
 
+## The content query
+
+Landed by THR-1487 (slice 3). Types: [`src/types/contentQuery.ts`](../../src/types/contentQuery.ts) · resolver: [`src/engine/contentQuery.ts`](../../src/engine/contentQuery.ts) · catalog-backed views: [`src/engine/contentCatalogView.ts`](../../src/engine/contentCatalogView.ts).
+
+**The rule: name content by kind and tags, never by literal id.** `{ kind: 'item_template', tags: ['#weapon', '#entropy'] }` is the shape. A literal id stays legal where an author genuinely means *that one thing*, and is gated; a query is what you write when any fitting thing will do — which is most of the time, and is what keeps content meaning something as the catalog grows.
+
+**One resolver, and the gate calls it.** `resolveContentQuery` is the only matcher. `validateContentQueries` does not mirror it, it *calls* it — because a gate that re-states the runtime rule agrees only while someone keeps checking, which is the failure `rewardCategoryNodeQuery`'s own header has warned about since THR-1146.
+
+**Matching, exactly.** `classes` narrows within a kind (a Power is `bestowed` or `spell`; a Condition is `condition` or `scar`). `tags` is ALL-of and `anyTags` is any-of, over `effectiveTags` — so the projection rule above applies to queries too. `tier` is an inclusive window, and **an entry with no declared tier passes every window** (the condition pool's rule since it was written; the alternative silently drops untiered content). Results are totally ordered: registry kind order, then id ascending.
+
+**A resolve is uncapped; a draw is capped** at `CONTENT_QUERY_MAX_CANDIDATES` (64). A caller that weights the resolved set itself must see all of it.
+
+**What a query deliberately cannot express: anything about the recipient.** Companions and agreements keep their own catalog filters, because "not at the companion cap" and "this unique is not already in the world" are facts about a bearer, not about content.
+
+**Two views, and which one asks what.** The world view (`graphContentCatalogs`) answers from graph nodes, because that is where a running world holds items, conditions, powers and legendaries — including ones minted after seeding. The library view (`staticContentCatalogs`) answers from catalog literals. The *gate* uses neither: it asks over **the nodes the world seeds**, because the registry's item catalogs include `TREASURE_MAPS`, which nothing seeds — a recipe resolving only against those would read live and draw nothing.
+
+**Where it runs today:** `reward_draw`, `step_reward_pool`, `condition_pool`, `debug`. `encounter_seed` and `undertaking_catalyst` arrive with slice 4.
+
+**Ask before you author:** `await window.__DEBUG.queryContent({ kind, tags })`, or CLI `query {"kind":"item_template","tags":["#weapon"]}`. When a prize fails to arrive at runtime, read `content.query_empty` — it names the site and carries the whole query.
+
 ## Adding a kind
 
 1. A row in [`src/data/content-objects.ts`](../../src/data/content-objects.ts): `gameWord` (the word the game uses, not a code identifier), `ulTerm`, `idPrefixes` covering every id in its catalogs, `catalogs`, `instantiatesAs` (or `null`, deliberately), `gate` (or `null`), `owningSystem` **verbatim** from `scripts/subsystems-registry.ts`, `status`, and a `note` that records the decision.
@@ -79,6 +99,7 @@ If the new kind's ids collide with an existing kind's prefixes, either narrow th
 - ❌ **Free-string tags.** The five existing dialects with no const, no union and no lint are exactly why content cannot be named by tag today. Slice 2's vocabulary is closed.
 - ❌ **Id-prefix families as the reference mechanism.** `encounterFamily` prefix-matching is the literal-id rot this model replaces; it survives one release as an alias table, then goes.
 - ❌ **Per-kind gates.** Twelve bespoke validators would drift against each other. Gates call the shared resolver (slice 3), so gate and engine cannot disagree.
+- ❌ **Gating one authoring route and assuming the other.** The reward gate walked `reward_draw` only — 1 recipe of the corpus's 482 — while the step route carried 481 and shipped unchecked for as long as both existed. A gate that sees one of several authoring surfaces reports green about the ones it cannot see; when a capability has two routes, sweep both or the gate is theatre (THR-1487; the sixteen recipes it found are THR-1496).
 - ❌ **Narrowing node-property `tags` to the vocabulary.** Saved worlds carry arbitrary strings; the closed vocabulary binds *catalog literals*, never the property bag.
 
 ## Reading it from the game
@@ -86,6 +107,7 @@ If the new kind's ids collide with an existing kind's prefixes, either narrow th
 - CLI: `content` (every kind with its catalog size), `content <kind>` (prefixes, per-catalog splits, the note).
 - Browser: `await window.__DEBUG.getContentObjects()`.
 - Both read the catalogs and not the world, so the numbers are identical on every seed and at every tick. A stable number is the design, not a stale read.
+- **The query levers read the opposite way** — CLI `query <json>` and `await window.__DEBUG.queryContent(query)` read the *live world*, so a prize minted three ticks ago is a candidate and a template the world never seeded is not. That is the question you have when a `content.query_empty` trace has just fired.
 
 ## Stale sources to avoid
 
