@@ -1,17 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-09-12 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-12 20:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is shipped, merged and live, and as of this hour **nothing at all is being built** — no work in flight, no publish lag, no refresh needed.
+You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is shipped, merged and live — including the three tickets that re-authored the screens you would be reading (chip nouns, the chip-caption rule, the promise rule), all of which landed before noon.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. One thing on those screens is already decided and is not an ask — two factor lines that are not sentences ([THR-1494](https://linear.app/threadbare/issue/THR-1494), queued).
+The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Two blemishes you may still meet are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)) and a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)); both are faults in what writes the prose, both queued.
 
 The wider design map (fights, items, powers) waits behind eight questions only you can answer. Deliberately not chased while the sitting is live — say **"work the map"** in a chat when you are ready to work them one at a time.
 
@@ -34,16 +34,16 @@ Nothing is broken while these sit; the cards open, they are just shallower. Not 
 
 ## Resolved this period
 
-- **2026-09-12 — content opens the codex, and it is now built** ([THR-1491](https://linear.app/threadbare/issue/THR-1491)). Merged 17:54, live. The veto stays open in principle but now costs a small rework rather than one line — it was offered at queue time and shipped within the hour.
+- **2026-09-12 — content opens the codex, and it is now built** ([THR-1491](https://linear.app/threadbare/issue/THR-1491)). Merged 17:54, live. The veto stays open in principle but now costs a small rework: every content kind's deeper page set to nothing, and the **open in codex ↗** link at a card's foot removed.
 - **2026-09-12 — the closed tag vocabulary is merged** ([THR-1486](https://linear.app/threadbare/issue/THR-1486)). Merged 17:01. Unblocked the content query; nothing visible to you yet.
-- **2026-09-12 — every kind of thing opens the same card** ([THR-1490](https://linear.app/threadbare/issue/THR-1490)). Merged 17:54 window, live. A name anywhere in the game opens the same sheet.
+- **2026-09-12 — every kind of thing opens the same card** ([THR-1490](https://linear.app/threadbare/issue/THR-1490)). Merged 15:54, live. A name anywhere in the game opens the same sheet.
 - **2026-09-12 — the content-object registry is merged** ([THR-1485](https://linear.app/threadbare/issue/THR-1485)). Merged 16:30. Infrastructure for "any content can hand out any other content, by tag."
 - **2026-09-12 — the nudge stage is one block, and it is live** ([THR-1478](https://linear.app/threadbare/issue/THR-1478)). Merged 15:44. Your batch-4 redesign: two panels became one, the forecast a die, the difficulty a tilting balance.
 - **2026-09-12 — clicking a mortal's name works, and the ending survives it** ([THR-1477](https://linear.app/threadbare/issue/THR-1477)). Merged 14:31. Your batch-3 finding.
 - **2026-09-12 — the promise rule is shipped and live** ([THR-1476](https://linear.app/threadbare/issue/THR-1476)). Merged 13:35. Prose may no longer bind a mortal to a place and a time the engine does not enforce.
 - **2026-09-12 — your fourth feedback batch is shipped and live** ([THR-1475](https://linear.app/threadbare/issue/THR-1475)). Merged 12:49. A condition's hover and sheet line now say what it actually does.
 - **2026-09-12 — your third feedback batch is shipped and live** ([THR-1473](https://linear.app/threadbare/issue/THR-1473)). Merged 11:33. A chip sentence is a caption, not a second ending.
-- **2026-09-12 — the chip-noun sweep is shipped and live** ([THR-1480](https://linear.app/threadbare/issue/THR-1480)). Merged 10:34. The 57 chip nouns outside the slice are character-sheet words now.
+- **2026-09-12 — scar and boon nouns are character-sheet words** ([THR-1472](https://linear.app/threadbare/issue/THR-1472)). Merged 07:46. The last of the three tickets that were holding the sitting ask back.
 
 ---
 
