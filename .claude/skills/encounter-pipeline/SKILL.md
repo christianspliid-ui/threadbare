@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-09-11
+last_validated_against: 2026-09-12
 validated_doctrine: prose@2
 ---
 
@@ -541,6 +541,7 @@ The editorial agent:
 30. **A shape invented on the fly** — the encounter does not name its shape from the catalog, or its step structure contradicts the shape it names
 31. **Invented game state in base prose** — a relationship, debt, prior visit, or standing between the agent and the world asserted in scene prose with no backing state read (prose rule 7: consume state through a gate or placeholder, produce it through grants/aftermath, never declare it in narration)
 32. **A chip noun that is not a character-sheet word** — a `stateNoun` the player cannot read without remembering this encounter. Apply the cover-the-title test (spec § Consequence Draw rule 2): cover the title and the overview, and if the tag alone no longer says what the mortal now has, it fails. `SCAR · EXHAUSTED` passes; `SCAR · THE NERVE THEY CAME DOWN WITH` does not. The noun names the state the engine wrote — a condition's `name`, a reach, an item, `AGREEMENT`, `reputation with {target}` — never a phrase minted for the scene. If no state word exists, the fix is a one-word condition the band grants, not a better phrase (THR-1472)
+33. **A chip sentence that runs long or retells the ending** — `causeClause` + `detail` together over 15 words, or sharing a four-word run with the band `overview` it sits under. The chip is a caption beside its tag, not a second paragraph: state the *change*, give the cause one short clause at most, and never repeat a fact the overview already carried (spec § Consequence Draw rule 1b; `check:encounter` reports both arms) (THR-1473)
 
 ### Pass 3: Systems Audit + Final Merge
 
