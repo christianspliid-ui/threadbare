@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { WorldGraph } from '../../../../engine/graph';
 import { GATE_DUTY_NUDGE_IDS } from '../../../../data/civic-guard-encounter-content';
 import { CIVIC_GUARD_ENCOUNTER_TEMPLATES } from '../../../../data/civic-guard-encounter-content';
 import type { ClearanceGateRuntimeState } from '../../../../types/contentShells';
@@ -894,5 +895,175 @@ describe('THR-1417 — every history row carries a real step identity', () => {
       expect(row.stepLabel).not.toBe('');
     }
     expect(new Set(history.map(row => row.stepId)).size).toBe(history.length);
+  });
+});
+
+/**
+ * THR-1459 — the gate duty ending must not hand the player a raw `{cast:*}` token.
+ *
+ * **Why this test lives at the adapter and not at the enricher.** Every existing
+ * cast test passes, and passed while the bug was on screen:
+ * `engine/__tests__/gateDutyCastProse.test.ts` already sweeps this template's
+ * authored aftermath fields — including the two strings the player saw broken —
+ * and asserts no raw token survives `enrichProse`. It was right. The text simply
+ * never reached `enrichProse`: gate duty is the one template with a bespoke stage
+ * adapter, and that adapter assigned `change.detail` and `reaction.intent`
+ * straight onto the model. A defect a surface introduces can only be caught by a
+ * test that builds that surface.
+ *
+ * So this suite runs the adapter with the shape the live path has — a real
+ * `WorldGraph`, an `activeAction` carrying `supportBindings` — and reads the two
+ * strings the THR-1133 screenshot caught.
+ */
+describe('THR-1459 — the gate duty ending resolves its cast tokens', () => {
+  const COURIER_NODE = 'npc.nessa';
+  const COURIER_NAME = 'Nessa Vale';
+
+  /** The verbatim authored strings, quoted from `civic-guard-encounter-content.ts`. */
+  const AUTHORED_HOOK_DETAIL =
+    'Forged papers suggest deliberate purpose. ' +
+    'Someone sent {cast:suspect_courier} and needs to know the result.';
+  const AUTHORED_REACTION_INTENT =
+    "What was hidden behind {cast:suspect_courier}'s papers is in the watch's custody. " +
+    'Someone will come looking for it — and that someone is a thread worth following.';
+
+  function buildAftermathModel() {
+    const template = getGateDutyTemplate();
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'agent.guard', name: 'Sergeant Tal', type: 'actor',
+      properties: { actorType: 'individual', npcRole: 'guard' },
+    });
+    graph.addNode({
+      id: COURIER_NODE, name: COURIER_NAME, type: 'actor',
+      properties: { actorType: 'individual', npcRole: 'courier' },
+    });
+    graph.addNode({
+      id: 'loc.gatehouse', name: 'South Quarantine Gate', type: 'location',
+      properties: {},
+    });
+
+    const encounter: ActiveEncounterDisplay = {
+      encounterId: template.id,
+      actorId: 'agent.guard',
+      currentStepIndex: 2,
+      history: [],
+      status: 'completed',
+      startedTick: 10,
+      sourceSystem: 'unified_action',
+      actionId: 'ua_gate_duty',
+      aftermathSummary: {
+        encounterId: template.id,
+        outcome: 'success',
+        overview: 'The gate is finished with its evening.',
+        changes: [
+          {
+            id: 'gate_duty_courier_mystery',
+            kind: 'future_hook',
+            title: "Courier's Commission",
+            detail: AUTHORED_HOOK_DETAIL,
+            polarity: 'info',
+          },
+        ],
+        // `gate_duty_note_cargo` is an authored reaction id the adapter does not
+        // rewrite, so it takes the fall-through branch — the branch that leaked.
+        reactions: [
+          {
+            id: 'gate_duty_note_cargo',
+            label: 'The cargo tells a story.',
+            intent: AUTHORED_REACTION_INTENT,
+            closeAfterSelection: true,
+            effects: [],
+          },
+        ],
+      },
+    };
+    const notification: EncounterNotification = {
+      id: 'notif-gate-duty-cast',
+      kind: 'aftermath',
+      agentId: 'agent.guard',
+      agentName: 'Sergeant Tal',
+      courtPosition: 'the_first',
+      encounterId: template.id,
+      encounterName: template.name,
+      prose: 'The scene is over.',
+      choices: [],
+      createdTick: 17,
+      autoResolveTick: null,
+      viewed: false,
+      resolved: false,
+    };
+    const activeAction: UnifiedAction = {
+      actionId: 'ua_gate_duty',
+      actorId: 'agent.guard',
+      templateId: template.id,
+      targetId: 'loc.gatehouse',
+      scale: 'personal',
+      source: 'agent',
+      startTick: 10,
+      currentStep: 2,
+      stepProgress: 0,
+      stepDuration: 2,
+      resolved: true,
+      outcome: 'success',
+      stepOutcomes: ['success', 'success', 'success'],
+      supportBindings: [
+        {
+          key: 'suspect_courier',
+          nodeId: COURIER_NODE,
+          kind: 'actor',
+          delivery: 'lazy-materialize-on-trigger',
+          persistence: 'must-persist',
+          reused: true,
+        },
+      ],
+    } as UnifiedAction;
+
+    return buildGateDutyEncounterStageModel({
+      template,
+      encounter,
+      notification,
+      agentName: 'Sergeant Tal',
+      threadTier: 'strong',
+      graph,
+      activeAction,
+      essence: 0.34,
+    });
+  }
+
+  /**
+   * The falsification arm. Both assertions below are "no token survives", which a
+   * fixture carrying no token would satisfy for free. Pin that the input really
+   * is the broken shape before asserting the output is the fixed one.
+   */
+  it('the fixture reproduces the authored input — both strings carry the token', () => {
+    expect(AUTHORED_HOOK_DETAIL).toContain('{cast:suspect_courier}');
+    expect(AUTHORED_REACTION_INTENT).toContain('{cast:suspect_courier}');
+  });
+
+  it('names the bound courier in the future-hook consequence box', () => {
+    const model = buildAftermathModel();
+    const hook = model.aftermath?.highlights?.find(h => h.id === 'gate_duty_courier_mystery');
+
+    expect(hook).toBeDefined();
+    expect(hook!.detail).toContain(COURIER_NAME);
+    expect(hook!.detail).not.toContain('{cast:');
+  });
+
+  it('names the bound courier in the reaction card the adapter does not rewrite', () => {
+    const model = buildAftermathModel();
+    const card = model.aftermath?.reactions?.find(r => r.id === 'gate_duty_note_cargo');
+
+    expect(card).toBeDefined();
+    expect(card!.intent).toContain(COURIER_NAME);
+    expect(card!.intent).not.toContain('{cast:');
+  });
+
+  /**
+   * Absence across the whole composed model, not only the two boxes the
+   * screenshot caught — the defect was structural, so the guard is structural.
+   */
+  it('leaves no cast token anywhere on the composed ending', () => {
+    expect(JSON.stringify(buildAftermathModel())).not.toContain('{cast:');
   });
 });
