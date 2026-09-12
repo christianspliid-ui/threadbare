@@ -1,18 +1,16 @@
 # Briefing
-**Generated:** 2026-09-12 23:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-13 00:55 local (22:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Two encounters left in the sitting, and the queue has gone quiet behind you.** [THR-1220](https://linear.app/threadbare/issue/THR-1220) — the integrated slice checkpoint. Nothing is being built right now for the first time today; everything your four morning batches produced is shipped and serving, and the live site is on the newest commit.
+**Still the sitting: two encounters left.** [THR-1220](https://linear.app/threadbare/issue/THR-1220) — the integrated slice checkpoint, unchanged from last hour and waiting whenever you next sit down.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 **The question: is the integrated encounter experience at an acceptable state?** A pass charters the hub map — factions, war, economy and divine actions all hang off this interface.
 
-Two merges landed in the last hour and **neither touched these two screens** — no authored line on either encounter has changed under you. One of them is worth knowing about anyway: an encounter ending was printing a raw `{cast:suspect_courier}` where a courier's name belonged, found by a screenshot sweep and fixed at 23:36 ([THR-1459](https://linear.app/threadbare/issue/THR-1459)). That was **Gate Duty**, a quest scene, not one of the five. If you see a raw `{…}` token on the bridge or the caravan, that is a new fault and worth telling me.
-
-Still already-decided and still not asks: a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen encounters that promise a reward and draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496) — all sixteen are army, tavern, quest and anomaly scenes, none reachable from these two). Read past them.
+One merge landed since the last brief and **it did not touch either screen** — no authored line on the bridge or the caravan has changed under you. Three blemishes are already decided and are still not asks: a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen encounters that promise a reward and draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496) — army, tavern, quest and anomaly scenes, none reachable from these two). Read past them. A raw `{cast:…}` token anywhere on these two screens would be new, and worth telling me.
 
 ## Also waiting (2)
 
@@ -26,14 +24,14 @@ Still already-decided and still not asks: a factor line that is not a sentence (
 
 ## Queue
 
-**Backed up — 17 ready, nothing in dev, nothing parked, nothing stale.**
+**Backed up — 16 ready, nothing in dev, nothing parked, nothing stale.**
 
-- **Both things that were being built have landed, and nothing has replaced them.** [THR-1488](https://linear.app/threadbare/issue/THR-1488) merged at 23:08 — content can now find other content by family instead of by exact name, which revived **48 sequels that were silently dead**. [THR-1459](https://linear.app/threadbare/issue/THR-1459) merged at 23:36 — the raw-token ending above. The board is idle: the next pickup lane runs at the top of the hour and [THR-1489](https://linear.app/threadbare/issue/THR-1489), the last piece of the content-model rebuild, is top of the queue and unclaimed. Healthy, not a stall.
-- **Two follow-ons were filed rather than fixed in place, both by agent decision, both open to your veto.** [THR-1497](https://linear.app/threadbare/issue/THR-1497) — a repaired piece of plumbing that lets a finished undertaking stir up a follow-up encounter turns out to be unreachable, because it was wired onto the retired half of the undertaking system; which kind of work should stir which kind of trouble is a content-authoring judgment, so it goes to a design sitting. [THR-1498](https://linear.app/threadbare/issue/THR-1498) — in the same Gate Duty ending, entity names render as plain text where they should be clickable. Neither needs you. *(— from tb-orchestrator)*
-- **All three design maps are still finished waiting.** Every piece of homework an agent could do on **fights**, **items** and **powers & spellcraft** is done — twenty-one research tickets, all closed. Twelve questions remain and each is one only you can answer; nothing further can be designed or built on any of them until you do. Deliberately not chased while the sitting is live — say **"work the map"** in a chat when it is done and they get worked one at a time. *(— from tb-orchestrator)*
-- **Nothing else is stuck.** No PR is open anywhere, six of the 17 ready items are low-priority deferrals, and nothing has sat longer than a week.
+- **The five-part content-model rebuild is finished.** [THR-1489](https://linear.app/threadbare/issue/THR-1489) merged at 00:45 — the last piece, and the one that keeps the rest honest: the authoring machinery now *counts* how often content reaches other content by family rather than by exact name, so the capability that revived 48 dead sequels last hour cannot quietly rot again. All five slices landed between roughly 4pm and 12:45am. Nothing in this chain needs you.
+- **The board is idle again, and that is the normal overnight shape.** Nothing is in dev; the pickup lane runs at the top of each hour and there are sixteen unclaimed items for it. Six are low-priority deferrals, nothing is Urgent or High, and nothing has sat longer than a week.
+- **Two follow-ons remain filed rather than fixed, both by agent decision, both open to your veto.** [THR-1497](https://linear.app/threadbare/issue/THR-1497) — the repaired plumbing that lets a finished undertaking stir up a follow-up encounter is unreachable, because it was wired onto the retired half of the undertaking system; which kind of work should stir which kind of trouble is a content-authoring judgment, so it goes to a design sitting. [THR-1498](https://linear.app/threadbare/issue/THR-1498) — in Gate Duty's ending, entity names render as plain text where they should be clickable. Neither needs you. *(— from tb-orchestrator)*
+- **All three design maps are still finished waiting.** Every piece of homework an agent could do on **fights**, **items** and **powers & spellcraft** is done — twenty-one research tickets, all closed. Twelve questions remain and each is one only you can answer. Deliberately not chased while the sitting is live — say **"work the map"** in a chat when it is done and they get worked one at a time. *(— from tb-orchestrator)*
 
 ## Health
 
-- **All green.** Site serving the newest commit on main (`987feb3d`). CI and all three post-merge jobs green, no PR waiting to merge, all nine lanes on schedule, reaper ran at 23:40. Engine speed is 59 ms/tick — **30% faster** than the seven-day median across 94 measurements.
-- **The lane-silence probe still reports the same three old gaps, and still is not being carried to you.** The newest ended this morning — the weekend shape you ruled normal on 11 September. The two older ones are four and five days past, self-resolved, and the machine has shipped a dozen times since; an answer now would change nothing. The probe's window is long enough that resolved gaps never age out of it, which is why this line repeats — a calibration matter for the lane, logged for the weekly review rather than raised with you.
+- **All green.** Site serving the newest commit on main (`e855b8b4`). CI and all three post-merge jobs green, no PR open or waiting to merge, all nine lanes on schedule, reaper ran at 00:40. Engine speed is 59 ms/tick — **28% faster** than the seven-day median across 95 measurements.
+- **The lane-silence probe still reports the same three old gaps, and still is not being carried to you.** The newest ended Saturday morning — the weekend shape you ruled normal on 11 September. The two older ones are four and five days past, self-resolved, and the machine has shipped a dozen times since; an answer now would change nothing. The probe's window is long enough that resolved gaps never age out of it, which is why this line repeats — a calibration matter for the lane, logged for the weekly review rather than raised with you.
