@@ -30,14 +30,14 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 27 · condition 9 · power 4 · agreement 1 | 148 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 9 · condition 3 · agreement 2 · power 1 | 101 |  |
-| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 9 · power 4 · agreement 1 | 111 |  |
-| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · condition 9 · power 4 · agreement 2 | 101 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · power 5 · agreement 1 | 124 |  |
-| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · power 4 · agreement 1 | 147 |  |
-| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 13 · condition 5 · power 2 | 73 |  |
-| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 20 · condition 8 · power 4 · agreement 1 | 105 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · omen 4 · power 4 · agreement 1 | 158 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 3 · agreement 2 · omen 2 · power 1 | 106 |  |
+| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 9 · power 4 · omen 2 · agreement 1 | 113 |  |
+| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · power 4 · agreement 2 · legendary 1 | 113 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · power 5 · omen 4 · agreement 1 · legendary 1 | 129 |  |
+| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · power 4 · agreement 1 | 153 |  |
+| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · condition 5 · power 2 · legendary 1 | 86 |  |
+| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · power 4 · agreement 1 | 114 |  |
 
 ## sphere
 
