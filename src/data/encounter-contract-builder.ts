@@ -19,7 +19,7 @@ import {
 } from '../types/encounter-contract';
 
 export const ENCOUNTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
-export const DEFAULT_FORECAST_FACTORS = ['threads shifting'] as const;
+export const DEFAULT_FORECAST_FACTORS = ['The threads are shifting.'] as const;
 export const DEFAULT_STATE_DESCRIPTOR = 'no descriptor';
 export const DEFAULT_TILTS_TOWARD = 'uncertain';
 export const DEFAULT_FALL_FORWARD = 'the threads tighten';

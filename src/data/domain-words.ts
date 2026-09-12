@@ -65,6 +65,67 @@ export function getDomainWord(domain: ReachDomain, value: number): string {
 }
 
 /**
+ * Word class of every tier word above — THR-1494.
+ *
+ * The scales mix adjectives ("formidable", "shrewd") with nouns ("oracle",
+ * "magnate", "masterwork"), and English puts an article in front of one and
+ * never in front of the other. A single copula template therefore cannot be
+ * right for both: `{actor} is {word} in {Reach}` shipped "Vara is oracle in
+ * eye." to the top of the scene screen, where THR-1478 had just moved the
+ * factor lines above the prose.
+ *
+ * `'adjective'` means the word takes no article. Any other value **is** the
+ * article the word takes, so the consumer never re-derives a/an from spelling —
+ * a vowel rule is wrong for "a unicorn" and "an hour", and a table that stores
+ * the answer cannot be wrong at all.
+ *
+ * ═══════════════════════════════════════════════════════════════════
+ * CONTENT MANAGER: change a word in DOMAIN_WORD_SCALES and you must
+ * classify it here. `domain-words.test.ts` asserts this map covers the
+ * live vocabulary exactly — key-for-key, both directions — so a renamed
+ * word fails the suite rather than reaching a player ungrammatical.
+ * ═══════════════════════════════════════════════════════════════════
+ */
+export type DomainTierWordForm = 'adjective' | 'a' | 'an';
+
+/** Keyed by the lowercased tier word, so lookup matches how the word renders. */
+export const DOMAIN_TIER_WORD_FORMS: Record<string, DomainTierWordForm> = {
+  // iron
+  meek: 'adjective', trained: 'adjective', formidable: 'adjective',
+  fearsome: 'adjective', legendary: 'adjective',
+  // gold
+  naive: 'adjective', bartering: 'adjective', shrewd: 'adjective',
+  masterful: 'adjective', magnate: 'a',
+  // shadow
+  exposed: 'adjective', cautious: 'adjective', subtle: 'adjective',
+  unseen: 'adjective', phantom: 'a',
+  // veil
+  blind: 'adjective', sensitive: 'adjective', attuned: 'adjective',
+  channeler: 'a', transcendent: 'adjective',
+  // heart
+  shunned: 'adjective', tolerated: 'adjective', liked: 'adjective',
+  beloved: 'adjective', revered: 'adjective',
+  // eye
+  oblivious: 'adjective', observant: 'adjective', perceptive: 'adjective',
+  seer: 'a', oracle: 'an',
+  // stone
+  clumsy: 'adjective', handy: 'adjective', skilled: 'adjective',
+  masterwork: 'a', monumental: 'adjective',
+  // star
+  lost: 'adjective', guided: 'adjective', fated: 'adjective',
+  destined: 'adjective', cosmic: 'adjective',
+};
+
+/**
+ * The word class of a tier word. Fail-soft (NFP #4): a word this table has not
+ * classified is treated as an adjective, which is the article-less reading and
+ * so can only ever render a *plainer* sentence, never a broken one.
+ */
+export function getDomainTierWordForm(word: string): DomainTierWordForm {
+  return DOMAIN_TIER_WORD_FORMS[word.trim().toLowerCase()] ?? 'adjective';
+}
+
+/**
  * Axiological value pairs with virtue/flaw labels.
  * Positive values (+1.0) favor virtue (left). Negative (-1.0) favor flaw (right).
  */
