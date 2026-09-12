@@ -117,6 +117,50 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/data/undertaking-cells.ts",
     "scripts/generate-world-objects.ts",
   ],
+  // generate-content-objects (THR-1485): code in, doc out. The registry, the loader and
+  // every catalog they name are listed because the generator censuses those catalogs —
+  // an id authored into any of them changes the counts and can raise an UNCLAIMED
+  // verdict with no other file moving. Cheap (~1s, no worldgen), so unlike its
+  // world-object sibling it costs nothing to keep blocking.
+  "Docs/canon/content-objects.generated.md": [
+    "src/data/content-objects.ts",
+    "src/data/contentCatalogs.ts",
+    "src/data/world-objects.ts",
+    "src/data/unified-action-templates.ts",
+    "src/data/strategic-packs/",
+    "src/data/undertaking-cells.ts",
+    "src/data/reward-attachment-catalog.ts",
+    "src/data/anomaly-reward-catalog.ts",
+    "src/data/starter-attachments.ts",
+    "src/data/artifact-templates.ts",
+    "src/data/companion-templates.ts",
+    "src/data/agreement-reward-catalog.ts",
+    "src/data/ambition-templates.ts",
+    "src/data/omenTemplates.ts",
+    "src/data/nudge-card-library.ts",
+    "src/data/spell-templates.ts",
+    "scripts/generate-content-objects.ts",
+  ],
+  "public/content-objects-reference.html": [
+    "src/data/content-objects.ts",
+    "src/data/contentCatalogs.ts",
+    "src/data/world-objects.ts",
+    "src/data/unified-action-templates.ts",
+    "src/data/strategic-packs/",
+    "src/data/undertaking-cells.ts",
+    "src/data/reward-attachment-catalog.ts",
+    "src/data/anomaly-reward-catalog.ts",
+    "src/data/starter-attachments.ts",
+    "src/data/artifact-templates.ts",
+    "src/data/companion-templates.ts",
+    "src/data/agreement-reward-catalog.ts",
+    "src/data/ambition-templates.ts",
+    "src/data/omenTemplates.ts",
+    "src/data/nudge-card-library.ts",
+    "src/data/spell-templates.ts",
+    "scripts/generate-content-objects.ts",
+    "public/wiki-manifest.json",
+  ],
   // generate-undertaking-grid (THR-1392 slice 4): code in, doc out. The registry, the
   // catalogue, the verb tables and the curated dispositions are its inputs; an edit to
   // any of them changes the grid with no other file moving.

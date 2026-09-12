@@ -27,6 +27,7 @@ import type { WorldRefKind } from '../types/worldRef';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
 import type { SublocationTag } from '../engine/settlementGenome/types';
 import { POSSESSION_SUBCATEGORIES } from '../types/attachments';
+import type { ContentObjectKindId } from './content-objects';
 
 // ─── Shapes ─────────────────────────────────────────────────────────
 
@@ -110,6 +111,13 @@ export interface WorldObjectKind {
   /** Module basenames (under `src/`) that mint one; the generator verifies each exists. */
   readonly writers: readonly string[];
   readonly status: WorldObjectStatus;
+  /**
+   * For a `content`-status kind: the content-object kind that authors it
+   * (`src/data/content-objects.ts`, THR-1485). The two registries are siblings — this
+   * is the join from "a template node in the graph" to "the catalog an author writes".
+   * Required on every `content` row; absent everywhere else.
+   */
+  readonly contentKind?: ContentObjectKindId;
   /** The decision recorded when the kind was ratified — the sentence a designer needs. */
   readonly note: string;
 }
@@ -383,13 +391,13 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   K({
     id: 'action_template', gameWord: '(action template)', ulTerm: 'Encounters.md#template', worldRef: null,
     shape: { kind: 'node', nodeType: 'action_template' },
-    owningSystem: 'Encounters & Dilemmas', writers: ['gameInit'], status: 'content',
+    owningSystem: 'Encounters & Dilemmas', writers: ['gameInit'], status: 'content', contentKind: 'action_template',
     note: 'Authored content imported as nodes; not a thing a player points at.',
   }),
   K({
     id: 'encounter_template', gameWord: '(encounter template)', ulTerm: 'Encounters.md#template', worldRef: 'encounter',
     shape: { kind: 'node', nodeType: 'encounter_template' },
-    owningSystem: 'Encounters & Dilemmas', writers: [], status: 'content',
+    owningSystem: 'Encounters & Dilemmas', writers: [], status: 'content', contentKind: 'encounter_template',
     note: 'A template graph node (design plan §3.8); no writer on the census seeds.',
   }),
 

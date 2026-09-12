@@ -296,6 +296,62 @@ Nudges are content, not configuration: options are authored per encounter, and o
 
 ---
 
+### Content Object
+
+**Aliases:** ContentObjectKind, content kind
+**Also see:** `[[Content Tag]]`, `[[Content Query]]`, `[[UnifiedActionTemplate]]`, `[[Encounter]]`, `[[World Object]]`
+**Status:** canonical
+
+A kind of thing a person (or an authoring agent) **writes into a catalog** — an Encounter, an Action, an Undertaking, an Item, a Condition, a Power, a Card. Twelve kinds, one row each in `src/data/content-objects.ts`, catalogued at `Docs/canon/content-objects.md`.
+
+**Distinguish from `[[World Object]]`**, which is a kind of thing the *engine mints into the world*. The two registries answer different questions — *what may I author?* versus *what is out there?* — and the join is one-way: a content object's `instantiatesAs` names the world object a granted entry becomes, or `null` for content that is never instantiated (an Omen is pressure the doom clock reads; a Card is played and spent).
+
+Adding a kind is a registry row **and** a UL term **and** a row on the canon page, in one PR (THR-1485).
+
+---
+
+### Content Tag
+
+**Aliases:** tag (in a content-authoring context)
+**Also see:** `[[Content Object]]`, `[[Content Query]]`, `[[Reach]]`, `[[Sphere]]`
+**Status:** proposed — vocabulary lands in THR-1486 (THR-1481 slice 2)
+
+A word from a **closed vocabulary** that says what a piece of authored content *is*, so other content can ask for it without naming its id. Every tag carries its `#`: the library has always written `'#weapon'`, and `'weapon'` matches nothing (THR-1146).
+
+Tags sit on five axes: `form` (what the thing is — `#weapon`, `#mount`, `#tome`), `family` (what class of story-object — `#relic`, `#blessing`, `#curse`), `reach`, `sphere` and `polarity`. The reach and sphere axes are **derived** from `REACH_DOMAINS` and `SPHERE_NAMES` rather than restated, so a new Reach or Sphere appears in the vocabulary the day it is added.
+
+**Where a typed field already exists, the tag is projected from it and never authored** — an encounter's `reach: 'iron'` yields `#iron`. A tag that contradicts its projection fails the contract test.
+
+Distinguish from `DealContextTag` (`might`, `finesse`, …), which is a **card-context** vocabulary and deliberately not a spelling of the eight Reaches.
+
+---
+
+### Content Query
+
+**Aliases:** ContentQuery
+**Also see:** `[[Content Object]]`, `[[Content Tag]]`, `[[Aftermath]]`
+**Status:** proposed — resolver lands in THR-1487 (THR-1481 slice 3)
+
+A request for content **by kind and tags rather than by id** — *"an item tagged `#weapon` and `#entropy`"* instead of *"`reward_arms_bronze_spear`"*. The shape the reward pool's tag-filtered draw already has (`reward_draw`, THR-1146), generalised so encounter seeds, undertaking catalysts and condition pools can share one resolver.
+
+Why it matters: literal ids rot. 67 of 115 reveal families matched zero templates before THR-844 aliased them; undertaking `catalystEncounterIds` spell `encounter_` where the corpus spells `encounter.`, so none resolve. A query is gated at authoring time against the runtime's own predicate, so a filter that matches nothing fails the build rather than the tick.
+
+Resolution is pure and deterministically ordered; exactly one seeded draw sits on top of it, and gates call the resolver and never the draw.
+
+---
+
+### Omen
+
+**Aliases:** OmenTrack, omen track
+**Also see:** `[[Doom Clock]]`, `[[Content Object]]`, `[[Sphere]]`
+**Status:** canonical
+
+A track of signs the world shows before something breaks — five categories: breach, convergence, reckoning, sphere surge, cultural. An omen biases which encounters score while it is active, may apply per-tick sphere pressure, and runs for a PRNG-chosen duration inside its authored range.
+
+**An omen is pressure, never a thing a mortal holds.** It instantiates as no `[[World Object]]`, which is why its content row's `instantiatesAs` is `null` by decision rather than by omission (THR-1485). Authored in `src/data/omenTemplates.ts` as `OmenTrackTemplate`.
+
+---
+
 ### Rider
 
 **Aliases:** NudgeRider, band rider

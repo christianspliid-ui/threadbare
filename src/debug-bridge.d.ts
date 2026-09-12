@@ -717,6 +717,29 @@ export interface DebugBridge {
   getMotiveReceipt: (agentQuery: string) => Promise<import('./types/foreshadowing').MotiveReceipt | null>;
   /** Returns the current encounter novelty record (surface-keyed since THR-475). Keys are surfaceKeys; values are last-selected tick. Null if no game state. */
   getEncounterNoveltyRecord: () => Record<string, number> | null;
+  /**
+   * Every content-object kind with its authored catalog size (THR-1485) — the browser
+   * twin of the CLI's `content` command, and the answer to "what may an author write,
+   * and how much of it is there?".
+   *
+   * **Reads the catalogs, never the world**, so the counts are identical on every seed
+   * and at every tick — do not treat a stable number as a stale read. `entries` is what
+   * this kind's own id prefixes claim across its own catalogs, de-duplicated; a kind
+   * reading 0 is a registry row pointing at nothing, which the contract test and
+   * `npm run generate-content-objects` both fail on. `gate` is null for the ten kinds
+   * with no machine gate yet. Always `await` it.
+   */
+  getContentObjects: () => Promise<ReadonlyArray<{
+    id: string;
+    gameWord: string;
+    entries: number;
+    catalogs: string[];
+    idPrefixes: string[];
+    instantiatesAs: string | null;
+    gate: string | null;
+    owningSystem: string;
+    status: 'live' | 'dormant' | 'legacy';
+  }>>;
   /** Snapshot of the trace ring buffer. Empty unless tracing was enabled first. */
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   /**

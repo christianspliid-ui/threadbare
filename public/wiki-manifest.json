@@ -155,6 +155,18 @@
       ]
     },
     {
+      "id": "content-objects",
+      "file": "content-objects-reference.html",
+      "title": "Content Objects",
+      "blurb": "Every kind of authored content the game hands out, in game words — Encounter, Action, Undertaking; Item, Legendary artifact, Condition, Power, Agreement, Companion; Ambition, Omen, Card — each with the catalogs that hold it, the world object it becomes when granted, and its machine gate. The sibling of World Objects: that page says what is in the world, this one says what an author may write. Generated from the content-object registry; the drift section names any catalog id no kind claims.",
+      "section": "Deep Reference",
+      "sources": [
+        "src/data/content-objects.ts",
+        "src/data/contentCatalogs.ts",
+        "scripts/generate-content-objects.ts"
+      ]
+    },
+    {
       "id": "undertaking-grid",
       "file": "undertaking-grid-reference.html",
       "title": "Undertaking Grid",
