@@ -1,15 +1,15 @@
 # Briefing
-**Generated:** 2026-09-12 10:54 local (08:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-12 11:56 local (09:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Nothing needs you right now — your second ticket shipped while you were away, and the rest are next in line.**
+**Nothing needs you right now — your third ticket of the morning shipped twenty minutes ago, and the queue is draining on its own.**
 
-[THR-1480](https://linear.app/threadbare/issue/THR-1480) merged at 10:34 and is live. That was the sweep behind this morning's first fix: 57 chip nouns elsewhere in the corpus — the camp and guild encounters — were still scene phrases rather than character-sheet words. They are sheet words now, and the gate that catches the next author who writes one tightened behind them.
+[THR-1473](https://linear.app/threadbare/issue/THR-1473) merged at 11:33 and is live on the site. That was your rule that a chip sentence is a caption, not a second ending — a chip may no longer retell the overview, and it is capped so it cannot sprawl into one. Three of your morning's findings are now shipped: [THR-1472](https://linear.app/threadbare/issue/THR-1472) at 09:46 (scar and boon nouns are character-sheet words), [THR-1480](https://linear.app/threadbare/issue/THR-1480) at 10:34 (the same sweep across the camp and guild encounters), and this one. **Roughly one every fifty minutes, with no ask on you between them.**
 
-**Nothing is claimed at this moment, and that is the shape of the gap between two pickups, not a stall.** The executor lane fires on the hour; it took [THR-1472](https://linear.app/threadbare/issue/THR-1472) at 09:02 and shipped at 09:46, took THR-1480 at 10:01 and shipped at 10:34. The next fire is minutes away, and the five tickets from your morning are the top of the queue with nothing ahead of them: [THR-1473](https://linear.app/threadbare/issue/THR-1473) (chips capped at 15 words, no retelling the overview), [THR-1475](https://linear.app/threadbare/issue/THR-1475) (a condition's hover says what it does), [THR-1476](https://linear.app/threadbare/issue/THR-1476) (prose may not promise what no effect enacts), [THR-1477](https://linear.app/threadbare/issue/THR-1477) (the agent's name opens the sheet over the encounter), [THR-1478](https://linear.app/threadbare/issue/THR-1478) (the nudge stage's two panels merge into one).
+**Four are left, all High and all at the top of the queue:** [THR-1475](https://linear.app/threadbare/issue/THR-1475) (a condition's hover says what it actually does), [THR-1476](https://linear.app/threadbare/issue/THR-1476) (prose may not promise a place and a time the engine does not enforce), [THR-1477](https://linear.app/threadbare/issue/THR-1477) (clicking a mortal's name opens their sheet over the encounter), [THR-1478](https://linear.app/threadbare/issue/THR-1478) (the nudge stage's two panels merge into one). Nothing is claimed this minute — the executor lane fires on the hour and the next fire is minutes away.
 
-**The sitting stays on hold** ([THR-1220](https://linear.app/threadbare/issue/THR-1220)) until those land — four of the five rewrite the exact surfaces the two unopened encounters would show you. You get the invitation back with fresh links when the last one merges. Two shipped in under two hours apiece; on that rate it is this afternoon's ask, not this week's.
+**The sitting stays on hold** ([THR-1220](https://linear.app/threadbare/issue/THR-1220)) until [THR-1476](https://linear.app/threadbare/issue/THR-1476) lands — it is the last of the three that rewrite the surfaces the two unopened encounters would show you. You get the invitation back, with fresh links, the moment it merges. On this morning's rate that is a matter of hours.
 
 ## Also waiting (0)
 
@@ -17,14 +17,14 @@ Nothing else.
 
 ## Queue
 
-**Backed up — 19 ready, 0 in dev, 2 on the design desk.** Down two from last hour, both of them shipped rather than shuffled.
+**Backed up — 18 ready, 0 in dev, 2 on the design desk.** One fewer than last hour, and it left by shipping.
 
-- Five of the 19 are High and all five are yours from this morning. Nothing is claimed ahead of them, and no mutex holds any of them — the one that did discharged when THR-1472 merged.
-- **Nothing is parked, nothing is claimed, nothing is stale.** Every item on the board was touched in the last two days.
-- The design desk carries two unclaimed items — the held town ([THR-1448](https://linear.app/threadbare/issue/THR-1448)) and the appointment primitive ([THR-1479](https://linear.app/threadbare/issue/THR-1479), filed off your direction this morning). **Neither is an ask on you**; their open questions are the designer's.
-- The wider map — fights, items, powers — is still waiting behind eight questions only you can answer, and is deliberately not being chased while the sitting is live. Say **"work the map"** in a chat when the sitting is done. *(— from tb-orchestrator)*
+- Four of the 18 are High and all four are yours from this morning. Nothing sits ahead of them and no mutex holds them — the block that did discharged when [THR-1472](https://linear.app/threadbare/issue/THR-1472) merged.
+- **Nothing is parked, nothing is claimed, nothing is stale.** Every item on the board was touched within the last two days. Four of the 18 are low-priority deferrals.
+- The design desk carries two unclaimed items — the held town ([THR-1448](https://linear.app/threadbare/issue/THR-1448)) and the appointment primitive ([THR-1479](https://linear.app/threadbare/issue/THR-1479), filed off your direction this morning). **Neither is an ask on you**; the questions they leave open are the designer's.
+- The wider map — fights, items, powers — still waits behind eight questions only you can answer, and is deliberately not being chased while the sitting is live. Say **"work the map"** in a chat when the sitting is done. *(— from tb-orchestrator)*
 
 ## Health
 
-- **All green.** Site serving the latest commit on main (`b115a0b1`), CI and all three post-merge jobs green, no PRs waiting to merge, all nine lanes on schedule, reaper ran at 10:40. Simulation at 60 ms/tick — 32% *below* the 7-day median of 89 across 81 measurements.
-- **The lane-silence probe still flags the same three old gaps, and they are still not being carried to you.** Worst is 18.6 h on 7–8 September; the most recent (Friday evening into this morning) is the overnight shape you ruled normal on 8 August. The two older weekday ones are four and five days past, nothing recorded a pause for them, and the machine has shipped twice this morning. Asking now would change nothing. On the record here, not on your list.
+- **All green.** Site serving the latest commit on main (`74fddcf4`), CI and all three post-merge jobs green, no PRs waiting to merge, all nine lanes on schedule, reaper ran at 11:40. Simulation at 64 ms/tick — 27% *below* the 7-day median of 88 across 82 measurements.
+- **The lane-silence probe still flags the same three old gaps, and they are still not being carried to you.** Worst is 18.6 h on 7–8 September; the most recent (Friday evening into this morning) is the overnight-into-weekend shape you ruled normal on 8 August and again on 11 September. The two older weekday ones are four and five days past, nothing recorded a pause for them, and the machine has shipped three times this morning. An answer now would change nothing. On the record here, not on your list.
