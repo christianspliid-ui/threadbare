@@ -65,6 +65,7 @@ Per-item modifier 0.15; global aggregate cap 0.30 (`EFFECT_MODIFIER_CAP` in [`sr
 
 - **Composable attachments (4-pass pipeline):** [`.claude/skills/attachment-pipeline/SKILL.md`](../../.claude/skills/attachment-pipeline/SKILL.md). Pipeline: draft → editorial → systems audit → implementation. Mandates pre-reading `Docs/authoring-brief.md` (or fallback to systemic wiring guide + game-design-direction) before drafting.
 - **In-encounter conditions:** UnifiedActionTemplate aftermath uses `condition_attachment` — see encounter authoring skills.
+- **Tags come from one closed vocabulary** — [`content-objects.md`](content-objects.md) § *The content query* and the generated catalog at [`.claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md`](../../.claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md). A spelling that is not seated there is not a tag: `contentTags.test.ts` and `check:attachment` both fail it by name. A `tagFilters` entry in a reward pool is read by the *same* resolver a sequel's `encounter_seed.query` and an undertaking's `catalystQuery` are read by (THR-1487/THR-1488), so the vocabulary an attachment wears and the vocabulary content searches by are one list, not two.
 - **Quality tags as encounter loot signal:** `#trinket` (background tier 1–2), `#relic` (shaping / tier 2–3), `#artifact` (story-beat / tier 3–4). Quality tags compose with any slot tag.
 
 ### Key sources

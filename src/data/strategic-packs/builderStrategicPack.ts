@@ -65,7 +65,12 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The building stands. The settlement has something it lacked before.',
     ],
-    catalystEncounterIds: ['encounter_labor_dispute', 'encounter_building_collapse'],
+    // THR-1488 — the catalyst names its follow-up by family instead of by a literal
+    // id. Every id this pack used to spell was `encounter_<name>` where the corpus
+    // spells encounters `encounter.<name>`, so not one of them ever resolved and
+    // every catalyst seed this pack planted withered on arrival. The family chosen
+    // for this pack: the Builders' Fellowship sets the work these undertakings disturb — walls, foundations, quarried stone.
+    catalystQuery: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 60, reachFloor: { stone: 0.4, gold: 0.2 } },
     motivations: ['preservation_transformation', 'asceticism_extravagance'],
@@ -88,7 +93,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The defenses hold a new confidence. Attackers will find less welcome.',
     ],
-    catalystEncounterIds: ['encounter_siege_preparation'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'castle', 'fort'] },
     resourceHint: { wealthCost: 50, reachFloor: { stone: 0.3, iron: 0.2 } },
     motivations: ['preservation_transformation', 'mercy_ruthlessness'],
@@ -216,7 +221,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'Roofs. Smoke going up in a place where none went up before. It has a name now and the name will outlast everyone using it.',
     ],
-    catalystEncounterIds: ['encounter_civilian_unrest'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'farmland'] },
     resourceHint: { wealthCost: 60, reachFloor: { stone: 0.35, gold: 0.25 } },
     checkpointDifficulty: 0.55,
@@ -252,7 +257,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The place has an inside and an outside now. That is most of what a town is.',
     ],
-    catalystEncounterIds: ['encounter_civilian_unrest'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['hamlet', 'town', 'camp'] },
     resourceHint: { wealthCost: 35, reachFloor: { stone: 0.3 } },
     checkpointDifficulty: 0.5,

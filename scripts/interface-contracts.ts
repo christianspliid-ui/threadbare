@@ -3250,6 +3250,79 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'encounter-seed-resolves-by-query',
+    producerSystem: 'Encounters & Dilemmas',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent:
+      'An encounter plants its sequel by naming a family in game words — { kind: "encounter_template", tags: ["#circle_errand"] } — and the one content-query resolver finds it when the seed comes due, so a renamed template keeps its family and a newly authored one joins by carrying the tag. This replaces two rotting operands: a literal templateId, and encounterFamily, which was an id *prefix* and rotted the same way one level up. Measured before the change: of the 51 families the corpus authors, 41 matched no template at all, and seven seeds named templateIds that do not exist — so 48 kinds of promised follow-up had been withering on arrival, indistinguishable from a system that was never wired. The query travels on the seed rather than being drawn at plant time, so one site resolves and the family may have grown in the twenty ticks before the sequel is owed (THR-1488, slice 4 of THR-1481).',
+    ulTerms: ['Content Query', 'Content Tag', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'seedContentQuery',
+        'ENCOUNTER_FAMILY_TAGS',
+        'validateEncounterSeedRefs',
+        'describeContentQuery',
+      ],
+      module: 'src/engine/encounterSeeding.ts',
+    },
+    // The producing half is the resolution rule itself — the alias table and the
+    // query-builder that says what a seed resolves by. The two planting sites
+    // (`encounterAftermath`, `strategicActionLifecycle`) copy an authored query onto the
+    // seed and name none of these symbols, so they sit on the reading side of the grep
+    // even though they write the seed: what crosses this boundary is the *rule*, and one
+    // module owns it.
+    writeSites: [
+      'src/engine/encounterSeeding.ts',
+    ],
+    readSites: [
+      'src/engine/nudgeGrantLiveness.ts',
+      'src/engine/encounterAftermath.ts',
+      'src/engine/strategicActionLifecycle.ts',
+      'scripts/check-encounter.ts',
+      'src/engine/__tests__/encounterSeedLiveness.test.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        "THR-1488 slice 4. Seventeen family tags seated and applied to 78 templates by prefix, so every aliased family names exactly the set its prefix named (asserted as a superset-both-ways guard in encounterSeedLiveness.test.ts — the tag may be wider, as #delve became when encounter.delve_into_depths joined a family its id spelling could never reach, but never narrower). ENCOUNTER_FAMILY_TAGS rewrites the prefix form for one release; a prefix with no row falls through to the pre-change scan, so the 41 dead families behave exactly as before while being counted. The gate validateEncounterSeedRefs is fatal on a dead templateId and an empty query and advisory on a dead prefix; wired into check:encounter (which sweeps encounter.* only) and into a corpus-wide vitest over all 744 templates, because every one of the seven fatal findings lived OUTSIDE the encounter. prefix and the runner alone reported the corpus clean. Both fatal arms falsified on encounter.slice.bargain_at_crossroads and each failed by name in both the runner and the vitest, then reverted. The seven dead references were repaired onto family queries in the same pass: the Court's tip to the watch, its two district inquiries, and the courtier's off-books commission can now arrive for the first time.",
+    },
+  },
+  {
+    id: 'undertaking-catalyst-resolves-by-query',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent:
+      'A completed undertaking seeds its catalyst follow-up by family query rather than by literal id, through the same PendingEncounterSeed path an aftermath seed takes, so the two planters cannot disagree about what a dead reference does. This activates a field that had never once fired: every id the seven packs spelled was encounter_<name> while the corpus spells encounters encounter.<name>, so all 33 references resolved to nothing and every catalyst seed planted since the feature shipped withered on arrival — recorded as DORMANT in THR-1481\'s substrate inventory for exactly that reason. check:undertaking is now fatal on both operands, which is what keeps the field from going dormant a second time (THR-1488, slice 4 of THR-1481).',
+    ulTerms: ['Content Query', 'Undertaking', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['catalystQuery', 'maybeSeedCatalyst', 'undertakingWriteSet'],
+      module: 'src/engine/strategicActionLifecycle.ts',
+    },
+    writeSites: [
+      'src/types/strategicAction.ts',
+      'src/data/strategic-packs/builderStrategicPack.ts',
+      'src/data/strategic-packs/courtStrategicPack.ts',
+      'src/data/strategic-packs/merchantStrategicPack.ts',
+      'src/data/strategic-packs/scholarStrategicPack.ts',
+      'src/data/strategic-packs/wandererStrategicPack.ts',
+      'src/data/strategic-packs/warlordStrategicPack.ts',
+      'src/data/strategic-packs/zealotStrategicPack.ts',
+    ],
+    readSites: [
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/encounterSeeding.ts',
+      'src/data/content-eval/undertakingContract.ts',
+      'scripts/check-undertaking.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        "THR-1488 slice 4. All 35 catalyst sites across the seven packs migrated from literal lists to catalystQuery, each pack taking the family whose errands the work disturbs (builder → #fellowship_errand, court → #court_errand, merchant → #consortium_errand, scholar → #covenant_errand, wanderer → #delve, warlord → #company_errand, zealot → #temple_errand); zero catalystEncounterIds literals remain in the packs. undertakingWriteSet records the query as a catalyst entry, which was load-bearing rather than cosmetic: for several pack templates the catalyst list is the only write they declare, so migrating without recording would have flipped them to 'a work whose only product is prose' and reported a regression the migration did not cause. The new catalysts block is fatal on both operands. Falsified twice: restoring encounter_ruin_trap on strategic_chart_the_wilds produces the violation but the template is ratcheted, so the exit code stays 0 — which is the ratchet working and only half a proof; breaking the query on strategic_mount_expedition, which passes, turns check:undertaking -- --all from exit 0 to exit 1 with `catalysts: catalystQuery matches no content`. Both reverted; --all is green at 116 checked, 0 unlisted failures.",
+    },
+  },
+  {
     id: 'undertaking-object-types',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Strategic Projects & Control',

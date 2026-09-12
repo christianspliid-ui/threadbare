@@ -3702,9 +3702,43 @@ names a *shape* rather than a row, so it keeps meaning something when the catalo
 | `tier` | a tier, or `{ min, max }` inclusive. **An untiered entry passes every window** |
 | `exclude` | ids never returned — the running encounter's own template, a prize already granted |
 
-**The four sites it works at today.** `reward_draw` (the aftermath effect), `step_reward_pool`
+**The six sites it works at today.** `reward_draw` (the aftermath effect), `step_reward_pool`
 (`ActionStepOutcomeMetadata.rewardPool`), `condition_pool` (what `inflict_condition` reaches
-for), and `debug`. `encounter_seed` and `undertaking_catalyst` are the next slice's.
+for), `debug`, and — since THR-1488 — `encounter_seed` and `undertaking_catalyst`.
+
+**Naming a sequel or a catalyst (THR-1488).** Both take the same shape as a prize:
+
+```ts
+// a parent plants "one of the Circle's errands" rather than one named scene
+{ kind: 'encounter_seed', query: { kind: 'encounter_template', tags: ['#circle_errand'] },
+  delayTicks: 20, seedLabel: 'The Circle has not finished with them.' }
+
+// an undertaking's completion may stir the family whose work it disturbed
+catalystQuery: { kind: 'encounter_template', tags: ['#consortium_errand'] }
+```
+
+An **encounter** carries `tags` now too — the `family` word another piece of content finds it
+by. Seventeen families are seated (the twelve faction quest lines, plus `#tavern_night`,
+`#delve`, `#threshold_errand`, `#broker_errand`, `#craft_commission`), and a family tag is a
+**game word, never an id spelling**: `#circle_errand`, not `#ac_quest`. The word reaches the
+player through the withered-seed narrative event, so it has to read as English.
+
+What this replaced, and why it counts as a capability rather than a rename: `encounterFamily`
+named an id **prefix**, and on 2026-09-12 **41 of the 51 families the corpus authored matched no
+template at all**, alongside seven seeds naming `templateId`s that do not exist. Forty-eight
+kinds of promised follow-up had been withering on arrival — the author saw no error, the player
+saw a narrative event saying something was "stirring", and nothing ever came. `encounterFamily`
+is deprecated (`ENCOUNTER_FAMILY_TAGS` rewrites the shipped prefixes for one release); both
+live operands are fatal in `check:encounter`, and `catalystQuery` in `check:undertaking`.
+
+**A seed's query resolves at *fire* time, not plant time.** The query travels on the
+`PendingEncounterSeed`, so a sequel owed twenty ticks from now finds the family as it stands
+when it comes due — and may draw a member that did not exist when the promise was made.
+
+**One asymmetry to know.** A `templateId` sequel skips the eligibility filter; a `query` sequel
+keeps the family draw's (individual-performable, and the target's current location subtype must
+be one the template accepts). So a query sequel can wither for being in the wrong place. If the
+follow-up must arrive wherever the mortal wandered, name it by `templateId`.
 
 **Projection beats authoring** (the slice-2 rule, applied here): a candidate's tags are
 `authored ∪ projected`, so an encounter typed `reach: 'iron'` is found by `#iron` without

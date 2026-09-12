@@ -54,6 +54,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.market_survey',
+    tags: ['#consortium_errand'],
     name: 'Market Survey',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -191,6 +192,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.negotiate_contract',
+    tags: ['#consortium_errand'],
     name: 'Negotiate a Contract',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -318,6 +320,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.caravan_escort',
+    tags: ['#consortium_errand'],
     name: 'Manage the Caravan',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -445,6 +448,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.settle_dispute',
+    tags: ['#consortium_errand'],
     name: 'Settle a Trade Dispute',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -571,6 +575,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.appraise_goods',
+    tags: ['#consortium_errand'],
     name: 'Appraise Rare Goods',
     rarityTier: 1,
     intrinsicTier: 'shaping',

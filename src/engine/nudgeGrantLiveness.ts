@@ -49,7 +49,15 @@ import { COMPANION_TEMPLATES, filterCompanionTemplates } from '../data/companion
 // predicate against the seed catalogs, so gate and engine cannot drift.
 import type { AttachmentCategory, RewardPoolRecipe } from '../types/attachments';
 import { toContentQuery } from './rewardPool';
-import { contentQueryHasCandidates, nodeContentCatalogs, type NodeLike } from './contentQuery';
+import {
+  contentQueryHasCandidates,
+  describeContentQuery,
+  nodeContentCatalogs,
+  type NodeLike,
+} from './contentQuery';
+import { staticContentCatalogs } from './contentCatalogView';
+import { ENCOUNTER_FAMILY_TAGS } from './encounterSeeding';
+import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../data/unified-action-templates';
 import { isContentQueryRetrofitPending } from '../data/content-eval/contentQueryRetrofitPending';
 
 /** Content kinds a card grant can name. */
@@ -449,6 +457,120 @@ export function validateContentQueries(
  * @deprecated Use {@link validateContentQueries}.
  */
 export const validateRewardDrawPools = validateContentQueries;
+
+// ─── Encounter-seed liveness (THR-1488) ──────────────────────────────
+
+/** Why a seed cannot arrive. */
+export type DeadSeedKind =
+  /** `templateId` names no registered template — the sequel can never spawn. */
+  | 'dead_template'
+  /** `query` resolves to nothing in the library — the family is empty as authored. */
+  | 'empty_query'
+  /**
+   * `encounterFamily` names neither an alias row nor any template by prefix. Reported
+   * but **not fatal**: this is the shipped backlog, 41 families deep, and it is
+   * THR-1488's evidence rather than its regression.
+   */
+  | 'dead_family';
+
+export interface DeadEncounterSeed {
+  readonly templateId: string;
+  readonly site: string;
+  readonly kind: DeadSeedKind;
+  /** What the seed named, in the form the author wrote or the describer prints. */
+  readonly ref: string;
+  readonly seedLabel: string;
+}
+
+export interface EncounterSeedLivenessReport {
+  readonly checkedSeeds: number;
+  /** Fatal: a named template or query that cannot produce a sequel. */
+  readonly dead: readonly DeadEncounterSeed[];
+  /** Advisory: a legacy family prefix matching nothing. Printed, never gating. */
+  readonly deadFamilies: readonly DeadEncounterSeed[];
+}
+
+/**
+ * Sweep a template pool for `encounter_seed` effects that promise a sequel nothing can
+ * deliver (THR-1488).
+ *
+ * **The shape of rot this catches, and why the gate is new.** Three liveness gates
+ * already live in this file — a dead grant id, an empty reward query, an undeclared
+ * favour debtor — and none of them looked at seeds, which is the one effect whose whole
+ * job is to promise something *later*. A seed is therefore the cheapest possible place
+ * to ship a promise that never arrives: the aftermath prose says the stranger will find
+ * them at the full moon, the effect plants a reference, nothing resolves it, and the
+ * only symptom is a narrative event six ticks later that says a thread is "stirring".
+ *
+ * Measured when this gate was written: of the 51 distinct `encounterFamily` values the
+ * corpus authors, **41 match no template at all** — the reveal-family rot of THR-844,
+ * one system over, undetected for as long because nothing asked.
+ *
+ * **Two tiers on purpose.** `dead` is fatal: a literal id that names nothing, or a query
+ * that resolves to nothing, is a defect in content written *after* the query exists, and
+ * there is no reason to ship one. `deadFamilies` is advisory: the 41 predate the
+ * mechanism, `ENCOUNTER_FAMILY_TAGS` deliberately leaves them on the pre-change prefix
+ * path for a release, and failing them here would redden the corpus for work the plan
+ * assigns elsewhere. Printing them is what makes the backlog countable — the whole
+ * argument of this slice is that an unreported nothing is indistinguishable from a check
+ * nobody wrote.
+ *
+ * Queries are answered by {@link staticContentCatalogs} — the library, not a world.
+ * An encounter template is catalog-only content, so the library *is* the universe the
+ * question is about, and a static view gives the same verdict on every seed and every
+ * machine, which is what a gate needs.
+ */
+export function validateEncounterSeedRefs(
+  templates: readonly UnifiedActionTemplate[],
+): EncounterSeedLivenessReport {
+  const catalogs = staticContentCatalogs();
+  const dead: DeadEncounterSeed[] = [];
+  const deadFamilies: DeadEncounterSeed[] = [];
+  let checkedSeeds = 0;
+
+  for (const template of templates) {
+    for (const { effect, site } of allTemplateEffects(template)) {
+      if (effect.kind !== 'encounter_seed') continue;
+      checkedSeeds++;
+      const row = (kind: DeadSeedKind, ref: string): DeadEncounterSeed =>
+        ({ templateId: template.id, site, kind, ref, seedLabel: effect.seedLabel });
+
+      // The resolution order the runtime uses, so the gate answers the question the
+      // engine will actually ask rather than a flattened version of it.
+      if (effect.templateId) {
+        if (!getUnifiedTemplateById(effect.templateId)) {
+          dead.push(row('dead_template', effect.templateId));
+        }
+        continue;
+      }
+      if (effect.query) {
+        if (!contentQueryHasCandidates(effect.query, catalogs)) {
+          dead.push(row('empty_query', describeContentQuery(effect.query)));
+        }
+        continue;
+      }
+      if (effect.encounterFamily) {
+        const aliased = ENCOUNTER_FAMILY_TAGS[effect.encounterFamily];
+        if (aliased) {
+          // An aliased family resolves through the same resolver the runtime uses, so a
+          // broken alias row is a real defect and fails.
+          if (!contentQueryHasCandidates({ kind: 'encounter_template', tags: [aliased] }, catalogs)) {
+            dead.push(row('empty_query', `${effect.encounterFamily} → ${aliased}`));
+          }
+          continue;
+        }
+        const prefix = `${effect.encounterFamily}.`;
+        if (!UNIFIED_ACTION_TEMPLATES.some(t => t.id.startsWith(prefix))) {
+          deadFamilies.push(row('dead_family', effect.encounterFamily));
+        }
+      }
+      // A seed naming nothing at all is already a composition violation (`seeds` is a
+      // connection key), so it is not restated here.
+    }
+  }
+
+  return { checkedSeeds, dead, deadFamilies };
+}
 
 /**
  * Every `RewardPoolRecipe` a template authors, wherever it puts it (THR-1487).

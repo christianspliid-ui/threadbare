@@ -24,6 +24,16 @@ type FactionEntry = {
   reachPrimary: string;
   reachSecondary?: string;
   encounterType: string;
+  /**
+   * THR-1488 — content tags, passed through to `UnifiedActionTemplate.tags` by the
+   * converter below. This is where each faction's quest family gets the game word a
+   * seed can name it by (`#circle_errand` rather than the `ac.quest` id prefix).
+   *
+   * Both halves are required: this declaration and the passthrough in
+   * `toUnifiedTemplate`. The converter is an allowlist, so the field exists only
+   * where it is named twice.
+   */
+  tags?: readonly import('../data/content-tags').ContentTag[];
   threatRating?: string;
   intrinsicTier?: string;
   motivations?: readonly import('../types/agent').ValuePair[];
@@ -143,6 +153,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.ruin_delve',
+    tags: ['#guild_errand'],
     name: 'Delve into Ruins',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -191,6 +202,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.monster_hunt',
+    tags: ['#guild_errand'],
     name: 'Hunt the Beast',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -239,6 +251,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.wilderness_survey',
+    tags: ['#guild_errand'],
     name: 'Survey the Wilds',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -287,6 +300,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.escort_caravan',
+    tags: ['#guild_errand'],
     name: 'Guard the Caravan',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -335,6 +349,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.recover_artifact',
+    tags: ['#guild_errand'],
     name: 'Recover Lost Artifact',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -1290,6 +1305,9 @@ function toUnifiedTemplate(template: FactionEntry): UnifiedActionTemplate {
       ...(template.sublocationTypes ?? []),
     ],
     sphereAffinity: template.sphereAffinity,
+    // THR-1488: the other half of the tag passthrough. See the `tags` field on
+    // `FactionEntry` — the converter drops what it does not name.
+    tags: template.tags,
     motivations: template.motivations,
     narrativeTemplates: {
       initiation: template.steps[0]?.narrative ?? `${template.name} begins.`,

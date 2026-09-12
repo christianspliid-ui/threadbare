@@ -229,7 +229,10 @@ const HONEST_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          templateId: 'noble.commission',
+          // THR-1488: `noble.commission` names no template in any catalog, so the
+          // courtier's matter never arrived. `#court_errand` is that kind of asking —
+          // a favour from someone who does not ask officially.
+          query: { kind: 'encounter_template' as const, tags: ['#court_errand' as const] },
           delayTicks: 20,
           priority: 1.1,
           seedLabel: 'The courtier\'s matter — what she needed and why she could not ask officially',

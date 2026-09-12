@@ -109,6 +109,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.wall_patrol',
+    tags: ['#watch_errand'],
     name: 'Wall Patrol',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -239,6 +240,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.gate_duty',
+    tags: ['#watch_errand'],
     name: 'Gate Duty',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -591,6 +593,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.break_up_brawl',
+    tags: ['#watch_errand'],
     name: 'Break Up a Brawl',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -713,6 +716,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.escort_prisoner',
+    tags: ['#watch_errand'],
     name: 'Escort Prisoner',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -859,6 +863,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.investigate_disturbance',
+    tags: ['#watch_errand'],
     name: 'Investigate Disturbance',
     rarityTier: 2,
     intrinsicTier: 'shaping',

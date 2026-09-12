@@ -150,6 +150,18 @@ type EncounterEntry = {
   reachPrimary: string;
   reachSecondary?: string;
   encounterType: string;
+  /**
+   * THR-1488 — the content tags another piece of content finds this one by, passed
+   * straight through to `UnifiedActionTemplate.tags`.
+   *
+   * Declared here *and* in the converter below, because this file's
+   * `toUnifiedTemplate` is a field allowlist rather than a spread: a field named in
+   * only one of the two places is silently dropped and the template reads exactly as
+   * it did before. That is the four-edit trap the slice's contract test exists to
+   * hold — see the `supportBundle` block above for the same lesson learned the
+   * expensive way.
+   */
+  tags?: readonly import('../data/content-tags').ContentTag[];
   threatRating?: string;
   intrinsicTier?: string;
   motivations?: readonly string[];
@@ -345,6 +357,10 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     ],
     settings: e.settings,
     openings: e.openings,
+    // THR-1488: the tag passthrough — half of the four-edit trap. Without this line
+    // an entry's authored `tags` never reach the template, so no query can find it
+    // and the gate that swears queries resolve would report the family empty.
+    tags: e.tags,
     sphereAffinity: e.sphereAffinity as UnifiedActionTemplate['sphereAffinity'],
     motivations,
     narrativeTemplates: {
@@ -6075,6 +6091,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.delve_into_depths',
     name: 'Delve into the Depths',
+    // THR-1488 — the first raw entry in this file to carry a content tag, and the
+    // mechanism's own argument: this *is* a delve, but `encounterFamily: 'encounter.delve'`
+    // could never find it, because the family was an id prefix (`encounter.delve.`) and
+    // this id spells the word with an underscore. Carrying `#delve` joins it to the
+    // family by what it is rather than by how its id happens to be punctuated — which
+    // widens the family from three members to four, on purpose.
+    tags: ['#delve'],
     locationTypes: ['ruins', 'ruined_city', 'ruined_tower', 'ruined_village'],
     reachPrimary: 'eye',
     reachSecondary: 'iron',

@@ -11,6 +11,8 @@ You are an encounter author for The Fantasy World Simulator. Your job is to prod
 ## Required Reading (do all of these before writing)
 
 1. Read `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` — the authoring contract (§ Prose doctrine v2 governs every prose field)
+1b. Read `.claude/skills/encounter-pipeline/reference/anchor-catalog.generated.md` — every legal anchor a consequence chip may point at. A chip's referent is chosen while the prose is being written; an author who has not seen this list writes toward fiction and gets the chip folded three stages later.
+1c. Read `.claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md` — the **closed** content-tag vocabulary. You need it for two things: a `tags` array on your template (the `family` word another encounter can find yours by), and any tag filter in a reward pool or a seed's `query`. A spelling that is not on that page is not a tag, and the nearest-sounding word is usually one of the sixty-three the migration retired. **Never author a reach or sphere tag** — those are projected from `reach` / `sphereAffinity`, and authoring one that contradicts the field fails a gate.
 2. Read `Docs/encounter-support-network.md` — the support-bundle, registration, and support-matrix rules your packet must satisfy
 3. Read the Obsidian vault foundation pages (via `TheFantasyWorldSimulator/`):
    - `Systems/Thematic Pillars.md`

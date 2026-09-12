@@ -2494,4 +2494,22 @@ Slice 3 of THR-1481. **Additive in vocabulary, migrating in behaviour:** the que
 
 **The gate reads a third view, deliberately.** `validateContentQueries` asks `nodeContentCatalogs(liveAttachmentNodes())` rather than the library view, because the registry's item catalogs include `TREASURE_MAPS`, which `seedAttachments` does not put in the world — a recipe resolving only against those would read live at authoring time and draw nothing at runtime.
 
+### Slice 4 — the sequel and the catalyst on the query (THR-1488)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `engine/encounterSeeding.ts` (extended) | `2a.8` — seed evaluation | N/A | `pendingEncounterSeeds[].query` (the query travels on the seed) | `content.query_resolved` / `content.query_empty` at `site: 'encounter_seed'`, plus the existing `encounter_seed_*` family | `__DEBUG.getSeeds()`, CLI `traces` |
+| `engine/encounterAftermath.ts` (extended) | `2b` — aftermath application | N/A | writes `query` onto the planted seed | existing `encounter_seed_planted` | CLI `traces` |
+| `engine/strategicActionLifecycle.ts` (extended) | the undertaking completion terminals | N/A | writes `query` onto the catalyst seed | existing `strategic_*`; the query traces at the *seeding* site, not here | CLI `traces` |
+| `engine/nudgeGrantLiveness.ts` (extended) | N/A — gate | N/A | none | none | `npm run check:encounter -- --all`; corpus sweep in `encounterSeedLiveness.test.ts` |
+| `data/content-eval/undertakingContract.ts` (extended) | N/A — gate | N/A | none | none | `npm run check:undertaking -- --all` (`catalysts` block) |
+
+**Resolution happens once, at the seeding site, for both planters.** Neither planter draws: they copy the authored query onto the `PendingEncounterSeed` and `evaluateEncounterSeeds` resolves it when the seed comes due. That is deliberate on two counts — a sequel owed twenty ticks out should find the family as it then stands, and one resolution site is what stops the aftermath path and the catalyst path drifting about what a dead reference does (they had already drifted: the aftermath path fell soft to a withered narrative event, the catalyst path planted a seed whose id could not resolve at all).
+
+**Membership is not eligibility, and the split is visible in the trace.** `resolveSeedByQuery` asks the shared resolver *what the query names*, then applies the seeding site's own filter — individual-performable, and the target's current location subtype accepted by the template — exactly as `matchFamilyTemplate` did. The traced `candidateCount` is the count *after* that filter, so a family that resolved ten templates and could spawn none traces `content.query_empty`, which is the honest answer to "why did my sequel not arrive".
+
+**No new trace category.** Both new sites reuse `content.query_*` from slice 3 with a new `site` value, so the four registration sites did not move and the ~1/tick budget is unchanged.
+
+**A declared-but-unreachable half, recorded rather than implied.** `catalystQuery` is read by `maybeSeedCatalyst`, gated by `check:undertaking`, and carried by 35 pack templates — all of which sit on the legacy arm under `UNDERTAKING_MODEL: 'cells'`, where a profile's `templateIds` are not walked (THR-1403). Zero of the 60 cells declare one, so the wiring is complete and the path is not yet travelled. [THR-1497](https://linear.app/threadbare/issue/THR-1497) holds the decision.
+
 **Still owed by later slices of THR-1481:** `encounter_seed.query` and the `encounterFamily` alias table, `StrategicActionTemplate.catalystQuery` and its reader, the `UnifiedActionTemplate.tags` passthrough through both converters (slice 4); the brief die face, the composition quota key, the live-proof claims and the batch-report census (slice 5). The two interface-map rows for slice 4's contracts are deliberately **not** registered here — their producers do not exist, and a row naming absent symbols asserts a contract for unwritten code.

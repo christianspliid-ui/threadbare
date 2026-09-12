@@ -152,6 +152,35 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 - **Rule 3 — Divine influence is soft-power, expressed through the scene's prose; card faces are library-generic.** *(Amended 2026-07-30/2026-08-25: the original rule — "each encounter writes its own god-verbs" — predates the communication pivot. What survives: never full control, and the scene prose grounds each card in this encounter's named elements. What changed: the card text itself is the shared 21-type library vocabulary, spell-style, never scene-bespoke.)*
 - **Rule 4 — Every primitive is clickable.** Every node type — cast tile, item, clue, place, faction, Ascendant — has a detail page.
 
+## Content references content by kind and tags, not by id (THR-1487/THR-1488)
+
+An encounter carries `tags` — the `family` word another piece of content finds it by —
+and names its own sequel the same way: `encounter_seed.query` is
+`{ kind: 'encounter_template', tags: ['#circle_errand'] }`, resolved when the seed comes
+due by the one `resolveContentQuery`. An undertaking's `catalystQuery` is the same
+shape. Full rules and the closed vocabulary: [`content-objects.md`](content-objects.md)
+§ *The content query*; the tag catalog the authoring agents read is
+`.claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md`.
+
+**Author the `form` and `family` axes only.** `reach` and `sphereAffinity` are typed
+fields, so their tags are projected at index time; authoring one that contradicts the
+field fails `contentTags.test.ts` by name.
+
+**Why this replaced the id-prefix family.** `encounterFamily` named an id prefix, and a
+prefix rots the way a literal id does — measured 2026-09-12, **41 of the 51 families the
+corpus authored matched no template at all**, alongside seven seeds naming `templateId`s
+that do not exist. Forty-eight kinds of promised follow-up had been withering on arrival,
+indistinguishable from a system nobody wired. A family tag cannot rot that way: a renamed
+template keeps its family, and a new one joins by carrying the word. `encounterFamily` is
+deprecated — `ENCOUNTER_FAMILY_TAGS` rewrites the shipped prefixes for one release — and
+both live operands are fatal in `check:encounter`, with a corpus-wide vitest behind it
+because `--all` sweeps `encounter.*` only and every one of the seven fatal findings lived
+outside that prefix.
+
+**A family tag is a game word, never an id spelling.** `#circle_errand`, not `#ac_quest`.
+The word reaches the player through the withered-seed narrative event, so it has to read
+as English.
+
 ## The scene-sentinel vocabulary (THR-1446)
 
 Aftermath effects name people and places with **sentinels**, not node ids — the ids are minted per run, so an author cannot know them. The authoritative table is [`src/engine/sceneSentinels.ts`](../../src/engine/sceneSentinels.ts); read it rather than any prose list, including this one (impediment #725 is what a stale copy costs).
@@ -210,5 +239,7 @@ Each encounter's primary reach maps to an archetype-axis in the Cosmological Pat
 - **Phase 2a wiring (THR-306):** When THR-306 lands, the `encounter-pipeline` skill will load this Canon page as its explicit Step 0. Until then, authoring agents must load this page manually before running the pipeline.
 
 ## Last-reviewed
+
+2026-09-12 by Claude Opus (THR-1488 — the content-query section added: encounter `tags`, `encounter_seed.query`, the deprecation of `encounterFamily` with the 41-of-51 measurement, and the game-word rule for family tags).
 
 2026-08-25 (second pass, THR-1251 sweep) by Claude Fable — format-lock paragraph amended to Doctrine v2 (narrator mode, 12-question checklist, spell-style faces, flavor quote retired); Rule 3 amended (soft-power survives, per-scene god-verb card text superseded by the library-generic law); exemplar row repointed to the Swollen Ford; the WS5-complete claim re-verified true (`authoredChoices: [` authored in zero shipped files — earlier contrary finding was a grep false positive on type references). Previous: 2026-08-25 by Claude Fable (THR-1245/THR-1246 — factory tooling recorded: the batch packet roll and the package compiler; hand-written modules/registrations/draws retired for new content). Previous: 2026-08-24 by Claude Fable (game-design-first authoring order recorded as a rejected approach's inverse — director ruling; epic-fantasy variety note; hook roll made non-bypassable in prose). Previous edits: 2026-08-16 by Claude Fable (UI Law 56 — chip-must-be-state-backed recorded as a rejected approach; PATH reserved for engine-actionable openings). Previous edits: 2026-08-02 by Claude Code (THR-969 — outcome-keyed aftermath recorded as the new authoring axis on `AftermathVariant`). Previous edits: 2026-08-01 by Claude Code (THR-899 — the vagueness lexicon recorded as scoped by field class, the two-list era closed). Previous edits: 2026-07-30 (merged edits) by Claude Code + Claude Fable: THR-892 recorded the variance rule — static `factorLines` retired for new content, the derived-line set and its one read path (`computeResolutionModifiers`), the omen/doom/season N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor surface. THR-883 recorded the format lock — the communication pivot, setting envelopes, cost channels/grants, and the Swollen Ford golden exemplar replacing the Darkhollow Vault. Previous edits: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native); 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec). Review trigger: monthly, or when any listed plan moves to `superseded`.

@@ -61,6 +61,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.temple_vigil',
+    tags: ['#dawn_errand'],
     name: 'Temple Vigil',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -284,6 +285,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.purify_shrine',
+    tags: ['#dawn_errand'],
     name: 'Purify a Shrine',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -518,6 +520,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.escort_pilgrims',
+    tags: ['#dawn_errand'],
     name: 'Escort Pilgrims',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -769,6 +772,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.slay_abomination',
+    tags: ['#dawn_errand'],
     name: 'Slay the Abomination',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1011,6 +1015,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.deliver_judgment',
+    tags: ['#dawn_errand'],
     name: 'Deliver Judgment',
     rarityTier: 1,
     intrinsicTier: 'shaping',

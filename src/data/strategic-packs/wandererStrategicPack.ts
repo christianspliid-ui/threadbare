@@ -117,7 +117,12 @@ export const WANDERER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'The chart is finished. Somewhere on it is a mark only its maker can read.',
     ],
-    catalystEncounterIds: ['encounter_ruin_trap', 'encounter_ancient_guardian'],
+    // THR-1488 — the catalyst names its follow-up by family instead of by a literal
+    // id. Every id this pack used to spell was `encounter_<name>` where the corpus
+    // spells encounters `encounter.<name>`, so not one of them ever resolved and
+    // every catalyst seed this pack planted withered on arrival. The family chosen
+    // for this pack: a trap and a guardian are what a descent into somewhere closed produces.
+    catalystQuery: { kind: 'encounter_template', tags: ['#delve'] },
     targetRule: { type: 'location_subtype', subtypes: WILDERNESS_TARGET_SUBTYPES },
     resourceHint: { wealthCost: 25, reachFloor: { eye: 0.25 } },
     checkpointDifficulty: 0.45,
@@ -157,7 +162,7 @@ export const WANDERER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'The mark resolves into a place. Whatever is in it does not know it has been found.',
     ],
-    catalystEncounterIds: ['encounter_ruin_trap'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#delve'] },
     targetRule: { type: 'location_subtype', subtypes: WILDERNESS_TARGET_SUBTYPES },
     resourceHint: { wealthCost: 15, reachFloor: { eye: 0.3, stone: 0.2 } },
     checkpointDifficulty: 0.5,

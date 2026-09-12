@@ -253,6 +253,57 @@ const familyTags: readonly ContentTagDef[] = [
   T('#blackmail_evidence', 'family', 'Proof of something someone would pay to bury.'),
 ];
 
+/**
+ * The families an encounter belongs to (THR-1488, slice 4 of THR-1481).
+ *
+ * **What these replace.** A sequel used to be planted by *id prefix* —
+ * `encounterFamily: 'ac.quest'` — and the prefix rots the way a literal id does, one
+ * level up. Measured over the shipped corpus on 2026-09-12: of the fifty-one families
+ * the aftermath authors name, **forty-one match no template at all**, so forty-one
+ * kinds of promised follow-up have been withering silently since they were written.
+ * Naming the family as a word the codex would use means a renamed member keeps its
+ * family and a newly authored one joins by carrying the tag.
+ *
+ * **Why they are game words and not id spellings.** `#ac_quest` would be the same
+ * rot wearing a `#`: it names a file's naming convention rather than a thing in the
+ * world. A mortal running an errand for the Arcane Circle is running a *circle
+ * errand*; that is the phrase, and it survives the id being spelled differently
+ * tomorrow. `ENCOUNTER_FAMILY_TAGS` in `src/engine/encounterSeeding.ts` maps the old
+ * prefix onto the tag for one release so shipped seeds keep resolving.
+ *
+ * **Why the thin families are seated anyway.** Three of these carry fewer than
+ * {@link CONTENT_TAG_MIN_BEARERS} bearers (`#threshold_errand` two, `#broker_errand`
+ * and `#craft_commission` one each). The seating rule's first clause admits them: a
+ * spelling survives on *at least one runtime reader* independent of bearer count, and
+ * these each have one — an authored seed in the shipped corpus that names the family
+ * and, before this slice, resolved to a template by prefix. Retiring them would break
+ * the only sequels on this list that work today.
+ *
+ * All are scoped to `encounter_template`: an item has no errand to run.
+ */
+const encounterFamilyTags: readonly ContentTagDef[] = [
+  // The twelve faction quest families — the body that sets the errand, in its word.
+  T('#guild_errand', 'family', 'Work set by the Adventurers\' Guild — a posting taken off the board.', ['encounter_template']),
+  T('#circle_errand', 'family', 'Work set by the Arcane Circle — study, survey, and the reagents study needs.', ['encounter_template']),
+  T('#fellowship_errand', 'family', 'Work set by the Builders\' Fellowship — stone cut, walls held, bridges thrown.', ['encounter_template']),
+  T('#watch_errand', 'family', 'Work set by the Civic Guard — the patrol, the gate, the crime nobody has solved.', ['encounter_template']),
+  T('#dawn_errand', 'family', 'Work set by the Holy Order of the Dawn — rites kept and the unclean turned back.', ['encounter_template']),
+  T('#covenant_errand', 'family', 'Work set by the Lorekeepers\' Covenant — what is written down, and keeping it.', ['encounter_template']),
+  T('#company_errand', 'family', 'Work set by a Mercenary Company — the contract, the escort, the bounty.', ['encounter_template']),
+  T('#consortium_errand', 'family', 'Work set by the Merchant Consortium — cargo, routes, and the terms they travel under.', ['encounter_template']),
+  T('#ranger_errand', 'family', 'Work set by the Rangers\' Brotherhood — the border, the trail, the thing that crossed it.', ['encounter_template']),
+  T('#temple_errand', 'family', 'Work set by the Temple of Spheres — observance, offering, and the spheres\' own asking.', ['encounter_template']),
+  T('#thieves_errand', 'family', 'Work set by the Thieves\' Guild — quiet, deniable, and paid in kind.', ['encounter_template']),
+  T('#court_errand', 'family', 'Work set by the Underking\'s Court — a favour asked by someone who does not ask.', ['encounter_template']),
+
+  // Families that are not a faction's posting.
+  T('#tavern_night', 'family', 'An evening in a common room, and whatever the evening turns into.', ['encounter_template']),
+  T('#delve', 'family', 'A descent into somewhere closed — a ruin, a vault, a hole that goes down.', ['encounter_template']),
+  T('#threshold_errand', 'family', 'Work at a crossing place, where the road or the world changes hands.', ['encounter_template']),
+  T('#broker_errand', 'family', 'Work arranged by someone who trades in arrangements rather than goods.', ['encounter_template']),
+  T('#craft_commission', 'family', 'A piece of work ordered from a maker, and answerable to whoever ordered it.', ['encounter_template']),
+];
+
 // ─── The vocabulary ─────────────────────────────────────────────────
 
 export const CONTENT_TAGS: readonly ContentTagDef[] = [
@@ -261,6 +312,7 @@ export const CONTENT_TAGS: readonly ContentTagDef[] = [
   ...polarityTags,
   ...formTags,
   ...familyTags,
+  ...encounterFamilyTags,
 ];
 
 const BY_TAG: ReadonlyMap<string, ContentTagDef> = new Map(CONTENT_TAGS.map(d => [d.tag, d]));
