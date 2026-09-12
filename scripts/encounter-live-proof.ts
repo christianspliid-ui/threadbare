@@ -170,6 +170,7 @@ type ClaimName =
   | 'reward_node'
   | 'seed_planted'
   | 'condition_applied'
+  | 'content_query_resolved'
   | 'concepts_declared';
 
 interface ProofClaim {
@@ -853,6 +854,64 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
           ? `${evidence.length} condition write(s) landed: ${evidence.join(', ')}`
           : 'declared a condition effect on this run\'s path but none applied — '
             + 'no trait change and no additive condition effect trace',
+      );
+    }
+  }
+
+  // ── content_query_resolved (THR-1489) ──
+  //
+  // Gated on `content_query` through the same `scopeOf` the claims above use, so
+  // a template authoring no query is never failed for resolving none, and one
+  // that authors a query on this run's path cannot pass by resolving nothing.
+  //
+  // Read off the trace buffer rather than off the planted seed, because the two
+  // answer different questions: a seed that carried both a `templateId` and a
+  // `query` plants either way (the literal wins at fire time, per the effect's
+  // own resolution order), so `pendingEncounterSeeds` cannot tell a resolved
+  // query from a bypassed one. `content.query_resolved` fires only where a query
+  // actually ran, which is the arrival this claim is about.
+  //
+  // **Buffer scope.** `clearTraces()` at the top of `runOne` opens a per-template
+  // window, so these traces are this template's. The 2000-entry ring can still
+  // evict across a long multi-step run: an eviction turns a `pass` into a `fail`,
+  // never the reverse, so the failure mode is a false red that re-runs at a
+  // narrower `--play` rather than a false green (memory note on trace harvest).
+  const queryScope = scopeOf('content_query');
+  if (queryScope === 'absent') {
+    claim('content_query_resolved', 'not_declared', 'template authors no content query');
+  } else if (queryScope !== 'reachable') {
+    claim(
+      'content_query_resolved',
+      'not_declared',
+      `content query ${scopeReason('content_query', queryScope)}`,
+    );
+  } else {
+    const resolvedQueries = getTraces().filter(
+      entry => (entry as unknown as { category?: string }).category === 'content.query_resolved',
+    ) as unknown as readonly { site?: string; candidateCount?: number; pickedId?: string }[];
+    const emptyQueries = getTraces().filter(
+      entry => (entry as unknown as { category?: string }).category === 'content.query_empty',
+    ) as unknown as readonly { site?: string }[];
+
+    if (resolvedQueries.length > 0) {
+      const sites = [...new Set(resolvedQueries.map(t => t.site ?? 'unknown'))].sort();
+      claim(
+        'content_query_resolved',
+        'pass',
+        `${resolvedQueries.length} query site(s) resolved at [${sites.join(', ')}]; `
+          + `${resolvedQueries[0].candidateCount ?? 0} candidate(s) at the first`
+          + `${resolvedQueries[0].pickedId ? ` → ${resolvedQueries[0].pickedId}` : ''}`,
+      );
+    } else {
+      const emptySites = [...new Set(emptyQueries.map(t => t.site ?? 'unknown'))].sort();
+      claim(
+        'content_query_resolved',
+        'fail',
+        emptyQueries.length > 0
+          ? `authored a content query on this run's path; every site resolved empty `
+            + `[${emptySites.join(', ')}] — the family the query names carries no member`
+          : 'authored a content query on this run\'s path but no content.query_* trace '
+            + 'fired — the query site was never reached',
       );
     }
   }

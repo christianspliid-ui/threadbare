@@ -34,7 +34,8 @@ player, the batch is not ready to run.
 | Axis | Target across the batch |
 |---|---|
 | Reach spread | <e.g. no reach more than twice across 6> |
-| Decision shapes | <from the roster: single test / consequence chain / fork / opt-in / sequel> |
+| Decision shapes | <from the roster: single test / consequence chain / fork / opt-in / sequel / query prize> |
+| Query prize | ≥1 ending hands out its prize **by query, not by id** (packet die B floor) |
 | Tone | <e.g. at most two that resolve grim> |
 | Step counts | <e.g. two 1-step, three 2-step, one 3-step> |
 | Setting class | no class more than twice (packet die C; gap-weighted toward thin classes) |
@@ -76,6 +77,30 @@ slot 1:
 Rolls propose, design disposes — a slot may override a roll, stated with a reason.
 The variance caps above bind the batch either way. `draw:packet` prints each override
 it made itself, naming the face the unconstrained table rolled and the cap that bit.
+
+### The `query_prize` face (die B, floor ≥1 per batch) — THR-1489
+
+Die B's eighth face is the one that constrains the **ending** rather than the step
+structure. A slot that rolls `query_prize` still picks a step shape; what it owes on top
+is an ending that hands out its prize **by query, not by id**:
+
+```ts
+// Not this — one item, pinned forever, dead the day it is renamed:
+{ kind: 'reward_draw', templateId: 'item.silver_compass' }
+
+// This — the family the scene wants, and the world supplies a fitting member:
+{ kind: 'reward_draw', query: { kind: 'item_template', tags: ['#navigation', '#veil'] } }
+```
+
+Unlike every other bound on this die, it is a **floor**, not a cap: a capped axis rots by
+converging, an unreached primitive rots by never being authored at all. The floor is one
+in six — every batch reaches the content query once, not that a third of the corpus is
+queried. `draw:packet` forces it onto the last slot that can still meet it, so a batch
+never needs a re-roll to comply.
+
+The batch report prints the census (`queries authored`), and two consecutive batches
+authoring zero is the retro's "dead primitive" finding — the floor is what keeps that
+verdict reachable by judgement rather than by neglect.
 
 ## Systems quota targets
 

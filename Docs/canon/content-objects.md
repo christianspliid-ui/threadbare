@@ -2,7 +2,26 @@
 
 > **Step 0 for any work that adds, names, targets or retires a kind of authored content** — a new template type, a catalog, a content-to-content reference, a gate over authored entries. The generated companion, [`content-objects.generated.md`](content-objects.generated.md), is the current census; this page is what the kinds *mean* and how to change them. Sibling of [`world-objects.md`](world-objects.md). Plan doc: [`Docs/plans/2026-09-12-thr-1481-content-model.md`](../plans/2026-09-12-thr-1481-content-model.md); seated by THR-1485 (slice 1 of THR-1481).
 
-**Status:** live · **Owner:** Content · **Registry:** [`src/data/content-objects.ts`](../../src/data/content-objects.ts) · **Loader:** [`src/data/contentCatalogs.ts`](../../src/data/contentCatalogs.ts) · **UL:** [Encounters.md](../ubiquitous-language/Encounters.md)
+**Status:** live · **Owner:** Content · **Registry:** [`src/data/content-objects.ts`](../../src/data/content-objects.ts) · **Loader:** [`src/data/contentCatalogs.ts`](../../src/data/contentCatalogs.ts) · **UL:** [Encounters.md](../ubiquitous-language/Encounters.md) · **Last-reviewed:** 2026-09-13 (THR-1489, slice 5)
+
+## Census — 2026-09-13
+
+`npm run check:content-model-census -- --ticks 200 --seed 42 --map medium`, the weekly hygiene routine's measurement. **The numbers are a baseline to move against, not a target.**
+
+| Measure | 2026-09-13 |
+|---|---|
+| Live tags / DEAD tags | 106 / 7 |
+| DEAD | `#blackmail_evidence` `#community` `#contraband` `#light` `#military` `#stewardship` `#supply` |
+| Query sites live over 200 ticks | `step_reward_pool` (8 resolutions) |
+| Query sites silent | `reward_draw` · `encounter_seed` · `undertaking_catalyst` · `condition_pool` |
+
+**Read the silence carefully — the four sites are silent for three different reasons.**
+
+- `undertaking_catalyst` is **unreachable**, not unauthored: 35 templates carry `catalystQuery` and every one is a legacy-arm pack, which `UNDERTAKING_MODEL: 'cells'` does not walk ([THR-1497](https://linear.app/threadbare/issue/THR-1497)). Nothing a content author writes will light it up.
+- `encounter_seed` and `reward_draw` are **authored but unreached on this seed** — a seed resolves when it comes due, and 200 ticks of one seeded world is a small sample of the corpus.
+- The trace buffer is a **2000-entry ring**, so a site that fired only in the opening ticks reads as silent at tick 200. The bias is toward over-reporting death; lower `--ticks` to separate *alive-but-early* from *actually silent*.
+
+A DEAD tag is a query nothing can answer: the author gets an empty pool and no error. The retro either finds it a bearer or deletes it ([`CONTENT_TAG_DEAD_BEARERS`](../../src/data/content-eval/packetDice.ts)).
 
 ## The rule
 

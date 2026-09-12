@@ -245,6 +245,50 @@ lines.push(`- **Leading reach:** ${count(ids.map(id => { const t = getStrategicT
 lines.push(`- **Motivations:** ${count(ids.flatMap(id => [...(getStrategicTemplate(id)?.motivations ?? [])]))}`);
 lines.push('');
 
+// ── Content-query census (THR-1489) ──
+//
+// The undertaking half of THR-1481's kill criterion. Counted off `catalystQuery`
+// on the template itself — the field the contract gates and the live proof's
+// `catalyst_seeded` claim reads — so the three agree by construction.
+{
+  const carriers = ids.filter(id => getStrategicTemplate(id)?.catalystQuery !== undefined);
+  const literalOnly = ids.filter(id => {
+    const template = getStrategicTemplate(id);
+    return template?.catalystQuery === undefined
+      && (template?.catalystEncounterIds?.length ?? 0) > 0;
+  });
+  const proved = ids.filter(id =>
+    (runsById.get(id) ?? []).some(run =>
+      run.claims.some(c => c.name === 'catalyst_seeded' && c.status === 'pass'),
+    ),
+  );
+
+  lines.push('## Content-query census');
+  lines.push('');
+  lines.push(
+    `**${carriers.length} of ${ids.length}** undertaking(s) name their catalysts by query; `
+      + `**${literalOnly.length}** name them by literal id only; **${proved.length}** resolved `
+      + 'a query live.',
+  );
+  lines.push('');
+  if (carriers.length === 0) {
+    lines.push(
+      '> ⚠️ **Zero catalyst queries authored.** Two consecutive batches at zero is the '
+        + 'retro\'s "dead primitive" finding for the content query.',
+    );
+  } else if (proved.length === 0) {
+    // The THR-1497 shape, stated rather than left to be inferred from a wall of
+    // `not_declared` rows.
+    lines.push(
+      `> ${carriers.length} authored quer(ies) and none resolved live. Under `
+        + '`UNDERTAKING_MODEL: \'cells\'` the `undertaking_catalyst` site is unreachable '
+        + 'from the live board (THR-1497) — check whether the carriers are pack templates '
+        + 'before reading this as a content defect.',
+    );
+  }
+  lines.push('');
+}
+
 // ── Per-template detail ──
 lines.push('## Per undertaking');
 lines.push('');

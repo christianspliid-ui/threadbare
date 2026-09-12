@@ -325,6 +325,57 @@ lines.push(
 );
 lines.push('');
 
+// ── Content-query census (THR-1489) ──
+//
+// The measurement half of THR-1481's kill criterion: *"if two encounter batches
+// after slice 5 author zero queries, the retro names it a dead primitive."* That
+// verdict needs a number per batch to be reachable at all, and the number has to
+// be printed where the batch is read rather than derivable by someone who thinks
+// to go looking.
+//
+// Counted off `composition.systems`, which is `systemConnections()`'s own answer
+// — the same predicate the quota counts and the live proof gates on. A second
+// walk of the templates here would be a third opinion about what "authors a
+// query" means, and the one most likely to drift, since nothing would fail when
+// it did.
+{
+  const withQuery = ids.filter(id =>
+    gateById.get(id)?.composition.systems.includes('content_query'),
+  );
+  const proved = ids.filter(id =>
+    liveById.get(id)?.claims.some(
+      claim => claim.name === 'content_query_resolved' && claim.status === 'pass',
+    ),
+  );
+
+  lines.push('## Content-query census');
+  lines.push('');
+  lines.push(
+    `**${withQuery.length} of ${ids.length}** encounter(s) author a content query; `
+      + `**${proved.length}** resolved one live.`,
+  );
+  lines.push('');
+  if (withQuery.length === 0) {
+    lines.push(
+      '> ⚠️ **Zero queries authored.** The batch brief\'s die-B floor (`query_prize`, '
+        + '≥1 per batch of six) exists to stop this. Two consecutive batches at zero is '
+        + 'the retro\'s "dead primitive" finding for the content query — record it if this '
+        + 'is the second.',
+    );
+  } else {
+    lines.push(`Authored by: ${withQuery.map(id => `\`${id}\``).join(', ')}.`);
+    if (proved.length < withQuery.length) {
+      lines.push('');
+      lines.push(
+        `> ${withQuery.length - proved.length} authored quer(ies) did not resolve on their `
+          + 'live run — either the band carrying them was not rolled, or the family they '
+          + 'name is empty. The `content_query_resolved` claim rows say which.',
+      );
+    }
+  }
+  lines.push('');
+}
+
 // ── Package verdicts (THR-1154) ──
 //
 // The director's frame: prose and chips are one package, judged together or not at
