@@ -34,7 +34,7 @@
 | `legendary_artifact` | Legendary artifact | node · `artifact_legendary` | — | Attachments, Items & Possessions | `worldSeed` | live | 2 | 🟢 LIVE |
 | `holding` | Holding | edge · `owns` · identity node `artifact:holding` | — | Attachments, Items & Possessions | `holdings` | live | 2 | 🟢 LIVE |
 | `power` | Power | node · `trait` · `subcategory` ∈ {bestowed, spell} | **spell** (1) · **bestowal** (1) · **innate** (0) | Attachments, Items & Possessions | `spellActivation`, `seedAttachments`, `undertaking-objects` | live | 70 | 🟢 LIVE |
-| `condition` | Condition | node · `trait` · `subcategory` ∈ {condition, scar} | **condition** (1) · **scar** (1) | Effects & Conditions | `gameInit`, `spellActivation`, `rewardPool` | live | 152 | 🟢 LIVE |
+| `condition` | Condition | node · `trait` · `subcategory` ∈ {condition, scar} | **condition** (1) · **scar** (1) | Effects & Conditions | `gameInit`, `spellActivation`, `rewardPool` | live | 154 | 🟢 LIVE |
 | `trait` | Trait | node · `trait` · `subcategory` ∈ {innate, mastery, reputation, personality, core, destiny, cultural, experience} | — | Personality & Emergent Traits | `gameInit`, `culturalTraits`, `capabilityGrowth`, `encounterChains`, `reputation` | live | 164 | 🟢 LIVE |
 | `agreement` | Agreement | edge · `owes_favor`, `knows_secret_of` | **favor** (1) · **mark** (1) | Secrets & Favors | `secretGeneration`, `strategicGraphOps` | live | 7 | 🟢 LIVE |
 | `standing` | Standing | edge · `reputation_with`, `relates_to`, `hostile_to` | **reputation** (1) · **relationship** (1) · **quarrel** (1) | Reputation & Influence | `reputation`, `factionSeeding`, `grievance/grudgeEdge` | live | 184 | 🟢 LIVE |
