@@ -54,6 +54,7 @@ import type { GraphNode } from '../types/graph';
 import type { AttachmentTier } from '../types/attachments';
 import { attachmentDetailFromNode } from './attachmentTemplateDetail';
 import { resolveAttachmentTooltip } from './attachmentTooltip';
+import { conditionEffectLine, type ConditionEffectReading } from './aftermathWords';
 import type { TooltipContent } from '../types/tooltip';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
 import {
@@ -75,6 +76,28 @@ export const ATTACHMENT_TOOLTIP_PREFIX = 'attachment.';
  * long authored description is trimmed here rather than failing the gate.
  */
 export const ATTACHMENT_TOOLTIP_MAX_DESC = 160;
+
+/**
+ * The Law 18 ceiling itself, as a named number (THR-1475).
+ *
+ * `tooltipValidation.test.ts` sweeps every resolved `attachment.*` entry against
+ * 200 characters. Until this ticket the body was the whole description, so the
+ * 160 above was the only budget that mattered. A condition now appends an effect
+ * line, and the two together are what the gate measures — so the body's budget
+ * is computed *after* reserving room for the effect, and the effect is the half
+ * that survives. That ordering is deliberate: the flavour prose is what the
+ * player can already read on the sheet, and the effect line is the information
+ * this ticket exists to deliver. Trimming the new thing to preserve the old one
+ * would reintroduce the defect quietly, the way THR-1122 lost it the first time.
+ */
+export const ATTACHMENT_TOOLTIP_MAX_TOTAL_DESC = 200;
+
+/**
+ * Shortest body worth drawing. Below this the trim has eaten the sentence, so the
+ * body is dropped entirely and the effect line stands alone — a clause severed at
+ * twenty characters explains less than nothing (Law 14).
+ */
+export const ATTACHMENT_TOOLTIP_MIN_BODY = 40;
 
 /**
  * Every shipped attachment-template family, in one list.
@@ -101,6 +124,29 @@ const TEMPLATE_INDEX: ReadonlyMap<string, GraphNode> = new Map(
 /** Look up a shipped attachment template by its node id. */
 export function getAttachmentTemplateNode(templateId: string): GraphNode | undefined {
   return TEMPLATE_INDEX.get(templateId);
+}
+
+/**
+ * THR-1475 — the condition effect reading for a template **id**, or `null`.
+ *
+ * The id-keyed door onto `conditionEffectLine`, which takes a node. It exists so
+ * the hover and the sheet read the one derivation from the one place (Law 27):
+ * `resolveAttachmentTemplateTooltip` below calls it with no grant, and
+ * `AttachmentDetailView` calls it with the bearer's `totalTicks`. Those two call
+ * sites are the whole reason the lookup is not inlined into either of them.
+ *
+ * Fail-open (NFP #4): an unindexed id, or a template with no effect substrate,
+ * returns `null` and the surface simply draws one row fewer. Deliberately
+ * silent — `resolveAttachmentTemplateTooltip` already warns once per unknown id,
+ * and a second channel for the same fact would double every console line.
+ */
+export function resolveConditionEffectLine(
+  templateId: string | undefined,
+  grant?: { readonly totalTicks?: number | null },
+): ConditionEffectReading | null {
+  if (!templateId) return null;
+  const node = getAttachmentTemplateNode(templateId);
+  return node ? conditionEffectLine(node, grant) : null;
 }
 
 /** Ids already warned about, so a re-render does not re-warn (Law 14). */
@@ -145,25 +191,73 @@ function warnOnce(templateId: string, reason: string): null {
  * enough to trigger the trim, so asserting it through the corpus would be a
  * vacuous probe that passes because nothing exercised it.
  */
-export function plainRegisterBody(node: GraphNode): string {
+export function plainRegisterBody(
+  node: GraphNode,
+  rawBudget: number = ATTACHMENT_TOOLTIP_MAX_DESC,
+): string {
+  // Clamped because `slice(0, negative)` counts from the *end* — a caller passing a
+  // budget below zero would silently get the text minus its last few characters
+  // rather than the empty string it asked for.
+  const budget = Math.max(0, Math.floor(Number.isFinite(rawBudget) ? rawBudget : 0));
   const props = node.properties as Record<string, unknown>;
   const raw =
     (typeof props.description === 'string' ? props.description : undefined)
     ?? (typeof props.flavorText === 'string' ? props.flavorText : undefined)
     ?? node.name;
   const text = raw.trim();
-  if (text.length <= ATTACHMENT_TOOLTIP_MAX_DESC) return text;
+  if (text.length <= budget) return text;
 
   // Break at a sentence boundary when there is one worth using, so a trimmed
   // line still reads as a sentence rather than a severed clause.
-  const clipped = text.slice(0, ATTACHMENT_TOOLTIP_MAX_DESC);
+  const clipped = text.slice(0, budget);
   const lastEnd = Math.max(
     clipped.lastIndexOf('.'),
     clipped.lastIndexOf('?'),
     clipped.lastIndexOf('!'),
   );
-  if (lastEnd > ATTACHMENT_TOOLTIP_MAX_DESC / 2) return clipped.slice(0, lastEnd + 1);
-  return `${clipped.trim()}…`;
+  if (lastEnd > budget / 2) return clipped.slice(0, lastEnd + 1);
+
+  // THR-1475: the ellipsis costs a character, so the clip has to leave room for
+  // it. It did not, and this branch returned `budget + 1` — which is why the
+  // shipped corpus measured a 161-character body against a 160-character ceiling.
+  // It went unnoticed because the only existing trim test exercises the sentence-
+  // boundary branch above, and because one character over did not yet collide
+  // with the Law 18 gate at 200. Composing an effect line into the same budget is
+  // what made an exact ceiling load-bearing.
+  if (budget <= 1) return '';
+  return `${clipped.slice(0, budget - 1).trim()}…`;
+}
+
+/**
+ * THR-1475 — the tooltip's body: the plain-register line, then the effect line.
+ *
+ * Pure, and exported, because it owns the one piece of arithmetic in this module
+ * that shipped data cannot exercise. The body's budget is what is left of the Law
+ * 18 ceiling once the effect line has its room (`ATTACHMENT_TOOLTIP_MAX_TOTAL_DESC`),
+ * and the effect is the half that survives a squeeze — see that constant for why
+ * that ordering is deliberate. With the current ladder no condition's reading comes
+ * near long enough to squeeze anything, so testing the squeeze through the corpus
+ * would be a probe that passes because nothing exercised it. Called directly with a
+ * long synthetic reading, it is a real gate on the branch a future author will hit.
+ *
+ * A budget under `ATTACHMENT_TOOLTIP_MIN_BODY` drops the body rather than drawing a
+ * clause severed mid-word; `plainRegisterBody`'s own trim would otherwise be handed
+ * a number small enough to make nonsense of a sentence.
+ */
+export function composeTemplateTooltipBody(
+  node: GraphNode,
+  effect: ConditionEffectReading | null,
+): string {
+  if (!effect) return plainRegisterBody(node);
+
+  // `- 1` for the newline the formatter joins these with.
+  const budget = Math.min(
+    ATTACHMENT_TOOLTIP_MAX_DESC,
+    ATTACHMENT_TOOLTIP_MAX_TOTAL_DESC - effect.line.length - 1,
+  );
+  if (budget < ATTACHMENT_TOOLTIP_MIN_BODY) return effect.line;
+
+  return `${plainRegisterBody(node, budget)}\n${effect.line}`;
 }
 
 /**
@@ -194,7 +288,14 @@ export function resolveAttachmentTemplateTooltip(templateId: string): TooltipCon
     name: detail.name,
     subcategory: detail.subcategory,
     tier: detail.tier as AttachmentTier,
-    mechanicalSummary: plainRegisterBody(node),
+    // `resolveAttachmentTooltip` puts this first and joins its lines with a
+    // newline, so composing here is how the effect becomes the tooltip's second
+    // line rather than a second field the formatter would have to learn about.
+    //
+    // No grant is available at this call site by construction: `resolveTooltip(id)`
+    // is called with no context (see the header), so the term is the template
+    // default. The bearer's own term appears on the sheet, which holds the edge.
+    mechanicalSummary: composeTemplateTooltipBody(node, conditionEffectLine(node)),
   });
 
   return { label, desc };

@@ -15,6 +15,7 @@
  * | CONDITION_CURSED_DURATION      | 36      | Ticks (3 game days)                 |
  * | CONDITION_EXHAUSTED_DURATION   | 12      | Ticks (1 game day)                  |
  * | CONDITION_GRIEVING_DURATION    | 72      | Ticks (6 game days)                 |
+ * | CONDITION_SHAKEN_DURATION      | 18      | Ticks (1.5 game days)               |
  *
  * ─── Location conditions (THR-1143) ─────────────────────────────
  * The same family, carried by a **place** instead of a person: a pass closed for
@@ -92,6 +93,27 @@ export const CONDITION_EXHAUSTED_DURATION = 12;
  * number is the default weight of an ordinary loss, not a ceiling.
  */
 export const CONDITION_GRIEVING_DURATION = 72;
+
+/**
+ * Duration for shaken condition (1.5 game days) — THR-1475.
+ *
+ * THR-1472 added the `shaken` template and its writers but no duration row, and
+ * the gap was invisible because **the fallback is permanence, not a default**:
+ * `CONDITION_DEFAULT_DURATION_TICKS` is `0`, and `0` means indefinite (the edge
+ * simply omits `ticksRemaining`, which is the only field `decayConditions` counts
+ * down). So `slice.snow_on_the_pass` — which grants it with no `durationOverride`
+ * — was giving a mortal a permanent loss of nerve. Found while deriving the term
+ * for this ticket's effect line: the reading came out "Lasts until it lifts" for a
+ * condition that never lifts, which is the sort of thing only a words-producer
+ * reading the data ever notices.
+ *
+ * 18 ticks mirrors `CONDITION_INSPIRED_DURATION` deliberately: inspired is buoyed
+ * nerve and shaken is lost nerve, the same register read from either end, and a
+ * condition pair that recovers at different rates needs a reason to. Shorter than
+ * `grieving` (72) because that is a thing that happened to a life and this is a
+ * thing that happened to an evening.
+ */
+export const CONDITION_SHAKEN_DURATION = 18;
 
 // ─── Location Condition Durations (ticks) — THR-1143 ────────────────────────
 // A place's conditions run on the world's clock, not a person's, so these are an
@@ -479,6 +501,7 @@ export const CONDITION_DURATIONS: Record<string, number> = {
   'trait.condition.cursed': CONDITION_CURSED_DURATION,
   'trait.condition.exhausted': CONDITION_EXHAUSTED_DURATION,
   'trait.condition.grieving': CONDITION_GRIEVING_DURATION,
+  'trait.condition.shaken': CONDITION_SHAKEN_DURATION,
   // Location conditions (THR-1143)
   'trait.condition.location.pass_closed': CONDITION_PASS_CLOSED_DURATION,
   'trait.condition.location.festival': CONDITION_FESTIVAL_DURATION,
@@ -502,6 +525,43 @@ export const LOCATION_CONDITION_ID_PREFIX = 'trait.condition.location.';
 export const LOCATION_CONDITION_IDS: readonly string[] = CONDITION_TRAIT_DEFINITIONS
   .map(node => node.id)
   .filter(id => id.startsWith(LOCATION_CONDITION_ID_PREFIX));
+
+/**
+ * THR-1475 — the conditions that currently have **no live mechanical effect**, and
+ * therefore get no effect line on a player surface.
+ *
+ * `conditionEffectLine` reads two substrates: an agent condition's
+ * `domainContributions` (walked by `computeRawScore`) and a place condition's
+ * entry in `LOCATION_CONDITION_MOVEMENT_TAX` (read by `movementCost.ts`). Twelve
+ * of the fifteen shipped conditions have one of those. These three have neither,
+ * and the search that proved it was for *any* engine reader of the trait id — all
+ * three appear only as something content **writes** and as a chip `stateNoun`
+ * that names them.
+ *
+ * They are listed rather than given a line because the alternative was inventing
+ * one. "Quiet work here is likelier to be seen" is the obvious sentence for
+ * `under_watch` and it is **false**: nothing reads the trait, so nothing is
+ * likelier. A chip may not promise what the engine cannot enact (director ruling,
+ * 2026-09-12), and that rule does not loosen when the unenactable promise would
+ * have made a gate pass.
+ *
+ * `standing_welcome` is a third case again: THR-1206 retired it to read-tolerance
+ * with zero writers, so it needs no effect — it needs to finish lapsing in saved
+ * worlds and go.
+ *
+ * The gate that uses this set (`conditionEffectLine.test.ts`) asserts **both
+ * directions**: every condition outside the set yields a line, and every id
+ * inside it genuinely has neither substrate. So the exemption cannot be used to
+ * hide a condition whose effect *is* derivable — adding a tax or a contribution
+ * to one of these fails the test until it is removed from here.
+ *
+ * Giving the first two a real effect (or retiring them) is THR-1483.
+ */
+export const CONDITION_IDS_WITHOUT_EFFECT: readonly string[] = [
+  'trait.condition.location.under_watch',
+  'trait.condition.location.standing_welcome',
+  'trait.condition.location.tended_shrine',
+];
 
 /**
  * Movement multiplier per location condition — the tunable half of reader #2.

@@ -4083,3 +4083,8 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-12 | `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` | THR-1473 — chip row in § Word budgets; Consequence Draw rule **1b** | Rule 1 alone ("cause → change") invited the chip to re-tell the cause the overview had already told |
 | 2026-09-12 | `.claude/skills/encounter-pipeline/SKILL.md` | THR-1473 — REVISE trigger 33 | The critic needs the rule in the list it actually reads |
 | 2026-09-12 | `Docs/status/2026-09-12-thr-1473.md` | THR-1473 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-12 | `src/engine/aftermathWords.ts` | THR-1475 — `conditionEffectLine` + `CONDITION_MAGNITUDE_BANDS` / `CONDITION_TRAVEL_TAX_BANDS` | The effect was in `domainContributions` all along with no words-producer reading it |
+| 2026-09-12 | `src/engine/attachmentTemplateIndex.ts` | THR-1475 — `composeTemplateTooltipBody`, `resolveConditionEffectLine`, body budget; ellipsis off-by-one fixed | The hover and the sheet must read one derivation (Law 27), and the effect is the half that survives a squeeze |
+| 2026-09-12 | `src/components/Game/AttachmentDetailView.tsx` | THR-1475 — Effect row now leads with the derived effect line | Clicking the noun answered what the hover promised: nothing |
+| 2026-09-12 | `src/data/condition-trait-content.ts` | THR-1475 — `CONDITION_SHAKEN_DURATION = 18`; `CONDITION_IDS_WITHOUT_EFFECT` | `shaken` had no duration row, and the fallback is permanence, not a default |
+| 2026-09-12 | `Docs/status/2026-09-12-thr-1475.md` | THR-1475 — new status fragment | One file per entry since THR-1016 |

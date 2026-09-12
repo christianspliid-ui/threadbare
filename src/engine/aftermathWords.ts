@@ -32,7 +32,15 @@
  */
 
 import type { ReachDomain } from '../types/traits';
+import type { GraphNode } from '../types/graph';
 import { TICKS_PER_DAY } from '../data/attention-constants';
+// THR-1475: a condition's effect substrate. Both are plain records in a module
+// that imports only types, so there is no cycle and no graph dependency — the
+// derivation stays context-free, which is what lets the tooltip registry reach it.
+import {
+  CONDITION_DURATIONS,
+  LOCATION_CONDITION_MOVEMENT_TAX,
+} from '../data/condition-trait-content';
 import type {
   EncounterAftermathConceptRef,
   EncounterAftermathDirection,
@@ -318,6 +326,169 @@ export function elapsedLabel(ticks: number): string {
   const t = Number.isFinite(ticks) ? Math.max(0, Math.floor(ticks)) : 0;
   if (t < TICKS_PER_DAY) return 'less than a day';
   return durationLabel(t);
+}
+
+// ─── Condition effect readings ───────────────────────────────────────
+
+/**
+ * THR-1475 — what a condition *does*, in game words.
+ *
+ * ## The defect this closes
+ *
+ * Christian, on the THR-1220 slice: *"there is still no information on the tool
+ * tips or click throughs on the scars describing their in game effect."* He was
+ * right, and the cause is narrow. `SCAR · EXHAUSTED` hovers into
+ * `resolveAttachmentTemplateTooltip`, which draws `plainRegisterBody` — the
+ * template's `description`, *"Pushed beyond their limits. Everything takes more
+ * effort."* That is a mood. The effect was sitting one field away the whole time
+ * (`domainContributions: { iron: -0.04, eye: -0.04, stone: -0.04 }`) with **no
+ * words-producer reading it**: THR-1122 correctly kept every numeral off the
+ * tooltip, and the effect went out with the numbers rather than being restated
+ * as words.
+ *
+ * ## Why a condition-scaled ladder and not `GROWTH_MAGNITUDE_BANDS`
+ *
+ * The growth ladder answers *"how fast is this rising?"* and bands 0.05 as
+ * `steadily`, which is a rate word — wrong twice over for a condition, which is
+ * a *standing* the bearer is under, not a motion. So this is its own ladder.
+ *
+ * Its rungs are calibrated against what the number actually does, because the
+ * calibration note on the ticket asks for exactly that and forbids inflating.
+ * `domainContributions` are **raw-score** terms walked by
+ * `computeRawScore`, then put through `sigmoid(midpoint 10, k 0.4)`, whose
+ * steepest slope is `k / 4 = 0.1` capability per raw point. So:
+ *
+ * | raw term | capability moved, at best |
+ * |----------|---------------------------|
+ * | 0.04     | under half a point in a hundred |
+ * | 0.10     | about one point in a hundred     |
+ * | 0.40     | about four                        |
+ * | 1.00     | about ten                         |
+ *
+ * Every shipped condition sits in 0.04…0.10, so every one of them reads
+ * **`slightly`** — and that is the honest word, not a ladder bottoming out. What
+ * the upper rungs protect is the *next* author: a condition written at −0.5 is a
+ * genuinely different animal, and must not still be described as slight. The
+ * ladder is the tunable that keeps those two cases apart (NFP #1).
+ *
+ * A magnitude word is also not this reading's answer to *"how much?"* — the Law
+ * 13 amendment of 2026-08-12 rules an adverb out for that. The term is, and it
+ * is stated in days (`durationLabel`), a unit the player already reasons in.
+ *
+ * ## A place's condition reads from the tax, not from contributions
+ *
+ * `trait.condition.location.*` carries `domainContributions: {}` **on purpose** —
+ * a place has no capability to move (THR-1143). Its live effect is the movement
+ * tax in `LOCATION_CONDITION_MOVEMENT_TAX`, which `movementCost.ts` reads, so
+ * that is the substrate this derivation reads for them.
+ *
+ * Three location conditions have neither substrate and therefore get **no line
+ * at all** rather than an invented one — see `CONDITION_IDS_WITHOUT_EFFECT` in
+ * `data/condition-trait-content.ts` for which, why, and the ticket that owns
+ * them. A chip must not promise what the engine cannot enact.
+ */
+export const CONDITION_MAGNITUDE_BANDS: readonly MagnitudeBand[] = [
+  { min: 1.00, word: 'far' },
+  { min: 0.40, word: 'markedly' },
+  { min: 0.15, word: 'somewhat' },
+  { min: 0,    word: 'slightly' },
+];
+
+/**
+ * The same reading for a place, banded on the **movement multiplier** rather than
+ * a raw-score term: ×8 is a closed pass, ×1.2 is a crowded street.
+ */
+export const CONDITION_TRAVEL_TAX_BANDS: readonly MagnitudeBand[] = [
+  { min: 4,   word: 'far more' },
+  { min: 1.5, word: 'more' },
+  { min: 0,   word: 'a little more' },
+];
+
+/**
+ * The term for a condition whose duration nothing declares — neither the grant
+ * nor `CONDITION_DURATIONS`. Honest about the gap rather than guessing a number
+ * (NFP #4): it is still true that the state ends.
+ */
+export const CONDITION_TERM_UNKNOWN = 'until it lifts';
+
+/** `Iron` · `Iron and Stone` · `Iron, Eye and Stone` — no serial comma. */
+function andList(words: readonly string[]): string {
+  if (words.length <= 1) return words[0] ?? '';
+  return `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
+}
+
+/** The whole reading a condition surface needs, with no numeral in it. */
+export interface ConditionEffectReading {
+  /** What it does: `Iron, Eye and Stone slightly lower.` */
+  readonly effect: string;
+  /** How long it holds: `Lasts about one day.` */
+  readonly term: string;
+  /** Both, as one line — what a tooltip appends and the sheet's Effect row draws. */
+  readonly line: string;
+}
+
+/**
+ * One direction's clause. The magnitude word comes from the **strongest** reach
+ * in the group: a condition that takes 0.08 off one reach and 0.04 off another
+ * is described by the bigger of the two rather than averaged into a reading
+ * neither reach has.
+ */
+function reachClause(entries: readonly (readonly [string, number])[], rising: boolean): string | null {
+  if (entries.length === 0) return null;
+  const names = entries.map(([key]) => reachDisplayName(key));
+  const strongest = Math.max(...entries.map(([, value]) => Math.abs(value)));
+  const word = magnitudeWord(strongest, CONDITION_MAGNITUDE_BANDS);
+  return `${andList(names)} ${word} ${rising ? 'higher' : 'lower'}`;
+}
+
+/**
+ * The player-facing effect of a condition **template**, or `null` when the
+ * template declares no effect for this derivation to read.
+ *
+ * @param node  a shipped `trait.condition.*` definition node
+ * @param grant the bearer's edge state, when there is one. `totalTicks` is the
+ *              granted *term* (`readEdgeDuration`), which wins over the
+ *              template default — an encounter may pass a `durationOverride`,
+ *              and the sheet must then say the term the bearer actually has.
+ *              The *remaining* count is a different question and stays in the
+ *              sheet's own Duration section.
+ */
+export function conditionEffectLine(
+  node: GraphNode,
+  grant?: { readonly totalTicks?: number | null },
+): ConditionEffectReading | null {
+  const props = node.properties as Record<string, unknown>;
+  const contributions = (props.domainContributions ?? {}) as Record<string, unknown>;
+  const signed = Object.entries(contributions).filter(
+    (entry): entry is [string, number] =>
+      typeof entry[1] === 'number' && Number.isFinite(entry[1]) && entry[1] !== 0,
+  );
+
+  // Risers before fallers: a mixed condition (Terrified lifts Shadow and drops
+  // Iron) reads better as what it gives before what it costs.
+  const clauses = [
+    reachClause(signed.filter(([, value]) => value > 0), true),
+    reachClause(signed.filter(([, value]) => value < 0), false),
+  ].filter((clause): clause is string => clause !== null);
+
+  let effect: string | null = clauses.length > 0 ? `${clauses.join(', and ')}.` : null;
+
+  if (effect === null) {
+    const tax = LOCATION_CONDITION_MOVEMENT_TAX[node.id];
+    if (typeof tax === 'number' && Number.isFinite(tax) && tax > 1) {
+      effect = `Travel through here costs ${magnitudeWord(tax, CONDITION_TRAVEL_TAX_BANDS)}.`;
+    }
+  }
+
+  if (effect === null) return null;
+
+  const ticks = grant?.totalTicks ?? CONDITION_DURATIONS[node.id];
+  const term =
+    typeof ticks === 'number' && Number.isFinite(ticks) && ticks > 0
+      ? `Lasts about ${durationLabel(ticks)}.`
+      : `Lasts ${CONDITION_TERM_UNKNOWN}.`;
+
+  return { effect, term, line: `${effect} ${term}` };
 }
 
 // ─── Key humanising ──────────────────────────────────────────────────

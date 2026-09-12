@@ -151,7 +151,7 @@ remediation ticket or the build fails.
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
 | `encounter-scored-binder-optin` | An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive. | function: `useScoredBinder`, `EncounterBinderContext`, `prepareEncounterSupportBundle`, `resolveBinding` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `encounter-timeline-to-incident-bundle` | The mortals the player watches are the ones they will ask about, so each one arrives with the tail of what actually happened to them. | function: `getTimeline`, `getTrackedAgentIds` | Diagnostics & Incident Capture | 🟢 LIVE | — |
-| `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
@@ -390,10 +390,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 44 total — 4 write, 2 read, 38 unclassified
+- **Production hits:** 45 total — 4 write, 2 read, 39 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +33 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +34 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -670,10 +670,10 @@ exit
 - **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/companions.ts`
-- **Production hits:** 42 total — 2 write, 2 read, 38 unclassified
+- **Production hits:** 43 total — 2 write, 2 read, 39 unclassified
 - **Write sites:** `src/data/companion-templates.ts`, `src/engine/companions.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +33 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +34 more
 - **Verdict:** Verified 2026-08-14: THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer's stone raw score by exactly the template's +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
@@ -997,10 +997,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 133 total — 3 write, 7 read, 123 unclassified
+- **Production hits:** 134 total — 3 write, 7 read, 124 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +118 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +119 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1042,10 +1042,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
+- **Production hits:** 15 total — 1 write, 4 read, 10 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
-- **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/movementCost.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx`, `src/components/Game/useDebugOpenModal.ts` +3 more
+- **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/targetContextBuilders.ts`
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -1648,10 +1648,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 232 total — 2 write, 6 read, 224 unclassified
+- **Production hits:** 233 total — 2 write, 6 read, 225 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +219 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +220 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `yield-is-a-verb` — 🟢 LIVE

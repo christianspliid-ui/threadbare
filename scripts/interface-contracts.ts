@@ -1995,6 +1995,11 @@ export const CONTRACTS: readonly Contract[] = [
         'buildLocationTargetContext',
         // THR-1175 — the third reader, and the only one a *player* meets.
         'LocationProfileModal',
+        // THR-1475 — the fourth reader, and the second a player meets: the words
+        // layer. `conditionEffectLine` turns the tax into a sentence on the hover
+        // and the sheet ("Travel through here costs far more."), which is what
+        // makes the state legible rather than merely consumed.
+        'conditionEffectLine',
       ],
       module: 'src/data/condition-trait-content.ts',
     },
@@ -2002,6 +2007,24 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/engine/movementCost.ts',
       'src/engine/targetContextBuilders.ts',
+      // THR-1475 — the words layer. Reads `LOCATION_CONDITION_MOVEMENT_TAX` to say
+      // what a place's condition does, for the two surfaces that name it (the
+      // registry tooltip and `AttachmentDetailView`), both through
+      // `resolveConditionEffectLine` so neither can drift from the other.
+      //
+      // **It also measured this row's gating half and found it empty.** The
+      // `buildLocationTargetContext` reader above is live as plumbing — a location
+      // target's condition edges do reach `requiredTargetTraits` — but *no shipped
+      // template gates on a location condition*: every `requiredTargetTraits` in
+      // the corpus names a `trait.reputation.*` trait. So three of the seven
+      // location conditions (`under_watch`, `standing_welcome`, `tended_shrine`)
+      // have no live reader at all, and are listed in
+      // `CONDITION_IDS_WITHOUT_EFFECT` rather than given an invented effect line.
+      // That is precisely the hollowness this row exists to prevent, caught by the
+      // row's own logic one layer further out; THR-1483 owns closing it. The
+      // gating symbol stays listed because the plumbing is real and is what
+      // THR-1483 will author against.
+      'src/engine/aftermathWords.ts',
       // THR-1175 — named late, and named because a ticket leaned on it. This row
       // has always had three readers; it listed the two engine ones because those
       // were the two THR-1143 *built*. The profile modal reads a place's condition
