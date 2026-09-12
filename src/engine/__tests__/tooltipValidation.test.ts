@@ -11,6 +11,7 @@ import { UI_TOOLTIPS } from '../../data/ui-content';
 import { TOOLTIP_LINK_PATTERN } from '../../types/tooltip';
 import { ATTACHMENT_TEMPLATE_SOURCES } from '../attachmentTemplateIndex';
 import { attachmentDetailFromNode } from '../attachmentTemplateDetail';
+import { CONTENT_TAGS, contentTagTooltipId } from '../../data/content-tags';
 
 describe('tooltip content validation', () => {
   /**
@@ -174,6 +175,36 @@ describe('tooltip content validation', () => {
   });
 
   /**
+   * Test 3d: the same Law 18 gate for the `tag.*` prefix (THR-1486).
+   *
+   * The tag vocabulary is the first place a player meets a content tag as a word
+   * rather than as a key, so its copy is held to the same ceiling as every other
+   * prefix. Walks the shipped vocabulary, not a sample, so a tag seated later is
+   * measured the day it is authored — and guards the population, because an empty
+   * vocabulary would green this while proving nothing.
+   */
+  it('no content tag description exceeds 200 characters', () => {
+    expect(CONTENT_TAGS.length).toBeGreaterThan(50);
+
+    const problems: string[] = [];
+    for (const def of CONTENT_TAGS) {
+      const id = contentTagTooltipId(def.tag);
+      const resolved = resolveTooltip(id);
+      if (!resolved) {
+        problems.push(`${id}: does not resolve`);
+        continue;
+      }
+      if (!resolved.label?.trim()) problems.push(`${id}: empty label`);
+      if (!resolved.desc?.trim()) problems.push(`${id}: empty description`);
+      if (resolved.desc && resolved.desc.length > 200) {
+        problems.push(`${id}: ${resolved.desc.length} chars`);
+      }
+    }
+
+    expect(problems.length, problems.join('\n')).toBe(0);
+  });
+
+  /**
    * Test 4: All UI tooltips must have both label and at least one of label/desc.
    * Ensures no empty or undefined tooltips slip through.
    */
@@ -211,6 +242,7 @@ describe('tooltip content validation', () => {
       'quintessence', // THR-1118 — ascendant-bar band tooltips
       'attachment', // THR-1122 — condition/blessing/curse/bestowed/possession templates
       'mandate', // Explicitly allowed even though not yet resolved
+      'tag', // THR-1486 — the closed content-tag vocabulary
     ]);
 
     for (const [key, entry] of Object.entries(UI_TOOLTIPS)) {

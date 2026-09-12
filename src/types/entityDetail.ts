@@ -51,6 +51,19 @@ export type StructuredBlock =
   | { type: 'trait_grid'; traits: TraitEntry[] }
   | { type: 'territory_summary'; locations: LocationEntry[] }
   | { type: 'keyword_cloud'; keywords: string[]; accent: string }
+  /**
+   * Content tags as chips (THR-1486). Replaces `keyword_cloud` wherever the words come
+   * from the closed tag vocabulary: a raw `#iron` on a sheet is a key, not a word
+   * (Law 14), and a word the player cannot ask about is not a concept (Law 17). The
+   * caller resolves `label` and `tooltipId` from the vocabulary so this block stays
+   * presentational; `tooltipId: null` is the honest rendering of a spelling the
+   * vocabulary no longer knows, which a saved world may still carry.
+   */
+  | {
+      type: 'content_tag_chips';
+      chips: ReadonlyArray<{ tag: string; label: string; tooltipId: string | null; glyph: string }>;
+      accent: string;
+    }
   | { type: 'bond_list'; bonds: { name: string; sentiment: string; strength: string }[] }
   | { type: 'domain_grid'; domains: { domain: string; word: string }[] }
   | { type: 'timeline'; events: TimelineEntry[] }

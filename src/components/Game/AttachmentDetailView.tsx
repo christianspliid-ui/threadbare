@@ -11,6 +11,19 @@ import { pickFallbackFlavor } from '../../data/reveal-content';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 import { durationLabel } from '../../engine/aftermathWords';
 import { resolveConditionEffectLine } from '../../engine/attachmentTemplateIndex';
+import { contentTagTooltipId, getContentTag, type ContentTagAxis } from '../../data/content-tags';
+
+/**
+ * One glyph per axis, so a chip's *kind* reads before its word does — the same
+ * vocabulary the codex filter row paints (THR-1486).
+ */
+const TAG_AXIS_GLYPH: Readonly<Record<ContentTagAxis, string>> = {
+  form: '◇',     // ◇ — what the thing is
+  family: '○',   // ○ — what class it belongs to
+  reach: '◈',    // ◈ — the cosmology's doing axis
+  sphere: '✦',   // ✦ — the cosmology's fuelling axis
+  polarity: '●', // ● — good or ill to carry
+};
 
 export interface AttachmentDetailData {
   id: string;
@@ -155,7 +168,13 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
     });
   }
 
-  // Tags (always if present)
+  // Tags (always if present) — chips, not a raw keyword cloud (THR-1486).
+  //
+  // The sheet printed `#iron` verbatim until slice 2: a raw key on a player surface
+  // (Law 14) and a word with nothing behind it (Law 17). The chips read as the game's
+  // own words and each one explains itself through the tag vocabulary; a spelling the
+  // vocabulary no longer knows still renders, without a hover, because an entry whose
+  // only description is a retired word should not become wordless.
   if (attachment.tags.length > 0) {
     sections.push({
       id: 'tags',
@@ -164,8 +183,17 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
       proseVoice: 'chronicle',
       prose: '',
       structuredData: {
-        type: 'keyword_cloud',
-        keywords: attachment.tags,
+        type: 'content_tag_chips',
+        chips: attachment.tags.map(tag => {
+          const def = getContentTag(tag);
+          const bare = (tag.startsWith('#') ? tag.slice(1) : tag).replace(/_/g, ' ');
+          return {
+            tag,
+            label: bare,
+            tooltipId: def ? contentTagTooltipId(def.tag) : null,
+            glyph: def ? TAG_AXIS_GLYPH[def.axis] : '◈',
+          };
+        }),
         accent: tierColor,
       },
     });

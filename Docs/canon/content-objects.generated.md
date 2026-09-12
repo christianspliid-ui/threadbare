@@ -53,12 +53,12 @@ Required axes and projections land with the vocabulary in slice 2 (`src/data/con
 | `encounter_template` | _(slice 2)_ | reach ← `reach`, sphere ← `sphereAffinity` |
 | `action_template` | _(slice 2)_ | reach ← `reach`, sphere ← `sphereAffinity` |
 | `undertaking_template` | _(slice 2)_ | — |
-| `item_template` | _(slice 2)_ | — |
-| `legendary_template` | _(slice 2)_ | — |
-| `condition_template` | _(slice 2)_ | — |
-| `power_template` | _(slice 2)_ | sphere ← `sphereAffinity` |
-| `agreement_template` | _(slice 2)_ | — |
-| `companion_template` | _(slice 2)_ | — |
+| `item_template` | `family` | — |
+| `legendary_template` | `family` | — |
+| `condition_template` | `family`, `polarity` | — |
+| `power_template` | `family` | sphere ← `sphereAffinity` |
+| `agreement_template` | `reach`, `family` | — |
+| `companion_template` | `family` | — |
 | `ambition_template` | _(slice 2)_ | — |
 | `omen_template` | _(slice 2)_ | — |
 | `nudge_card` | _(slice 2)_ | — |

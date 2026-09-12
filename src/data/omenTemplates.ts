@@ -42,6 +42,7 @@ export const UNDERTAKING_PORTENT_HOOKS: Readonly<Record<UndertakingHarmClass, st
 const BREACH_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.breach.thin_places',
+    tags: ['#veil'],
     name: 'Thin Places',
     category: 'doom_echo',
     tagline: 'The horizon shimmers where it shouldn\'t.',
@@ -72,10 +73,11 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'veil', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.breach.borrowed_voices',
+    tags: ['#shadow'],
     name: 'Borrowed Voices',
     category: 'doom_echo',
     tagline: 'Whispers without source. Trust crumbles.',
@@ -105,10 +107,11 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'shadow', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.breach.fissure_winds',
+    tags: ['#veil'],
     name: 'Fissure Winds',
     category: 'doom_echo',
     tagline: 'What was sealed is opening. Exposure is everything.',
@@ -138,10 +141,11 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.7,
-    censusTag: { reach: 'veil', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.breach.the_hemorrhage',
+    tags: ['#veil'],
     name: 'The Hemorrhage',
     category: 'doom_echo',
     tagline: 'It pours through. The boundary is gone.',
@@ -171,7 +175,7 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.8,
-    censusTag: { reach: 'veil', scale: 'cosmic' },
+    censusTag: { scale: 'cosmic' },
   },
 ];
 
@@ -182,6 +186,7 @@ const BREACH_OMENS: OmenTrackTemplate[] = [
 const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.convergence.geometric_dreams',
+    tags: ['#eye'],
     name: 'Geometric Dreams',
     category: 'doom_echo',
     tagline: 'Perfect patterns. Déjà vu. The design reveals itself.',
@@ -211,10 +216,11 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
-    censusTag: { reach: 'eye', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.convergence.the_humming',
+    tags: ['#star'],
     name: 'The Humming',
     category: 'doom_echo',
     tagline: 'A resonance that pulls everything toward itself.',
@@ -244,10 +250,11 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'star', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.convergence.gravity_wells',
+    tags: ['#stone'],
     name: 'Gravity Wells',
     category: 'doom_echo',
     tagline: 'Compression. Everything pressed together. No more space.',
@@ -277,10 +284,11 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.7,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.convergence.the_singularity_approaches',
+    tags: ['#veil'],
     name: 'The Singularity Approaches',
     category: 'doom_echo',
     tagline: 'The individual is becoming a memory.',
@@ -310,7 +318,7 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.85,
-    censusTag: { reach: 'veil', scale: 'cosmic' },
+    censusTag: { scale: 'cosmic' },
   },
 ];
 
@@ -321,6 +329,7 @@ const CONVERGENCE_OMENS: OmenTrackTemplate[] = [
 const RECKONING_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.reckoning.old_debts',
+    tags: ['#gold'],
     name: 'Old Debts',
     category: 'doom_echo',
     tagline: 'Half-remembered faces. The past has not forgotten.',
@@ -350,10 +359,11 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
-    censusTag: { reach: 'gold', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.reckoning.the_witnesses',
+    tags: ['#eye'],
     name: 'The Witnesses',
     category: 'doom_echo',
     tagline: 'Being watched. Every act observed. Judgment accumulates.',
@@ -383,10 +393,11 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'eye', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.reckoning.echo_walk',
+    tags: ['#star'],
     name: 'Echo Walk',
     category: 'doom_echo',
     tagline: 'Past and present overlap. Time is confused.',
@@ -416,10 +427,11 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.7,
-    censusTag: { reach: 'star', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.reckoning.the_accounting',
+    tags: ['#eye'],
     name: 'The Accounting',
     category: 'doom_echo',
     tagline: 'Debts called in. Final chances. No more extensions.',
@@ -449,7 +461,7 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.85,
-    censusTag: { reach: 'eye', scale: 'cosmic' },
+    censusTag: { scale: 'cosmic' },
   },
 ];
 
@@ -460,6 +472,7 @@ const RECKONING_OMENS: OmenTrackTemplate[] = [
 const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.sphere.verdant_surge',
+    tags: ['#stone'],
     name: 'Verdant Surge',
     category: 'sphere_surge',
     tagline: 'Growth without boundary. Life presses through every crack.',
@@ -489,10 +502,11 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sphere.entropic_tide',
+    tags: ['#stone'],
     name: 'Entropic Tide',
     category: 'sphere_surge',
     tagline: 'Decay finds what time forgot. Beautiful ruin.',
@@ -522,10 +536,11 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sphere.iron_season',
+    tags: ['#iron'],
     name: 'Iron Season',
     category: 'sphere_surge',
     tagline: 'Martial energy saturates the air. Everyone is ready.',
@@ -555,10 +570,11 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
-    censusTag: { reach: 'iron', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sphere.crystal_clarity',
+    tags: ['#eye'],
     name: 'Crystal Clarity',
     category: 'sphere_surge',
     tagline: 'Insight without mercy. Uncomfortable truth, perfectly legible.',
@@ -588,10 +604,11 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'eye', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sphere.the_veil_thins',
+    tags: ['#veil'],
     name: 'The Veil Thins',
     category: 'sphere_surge',
     tagline: 'Ancestor presence. The boundary between living and dead softens.',
@@ -621,10 +638,11 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'veil', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sphere.temporal_drift',
+    tags: ['#star'],
     name: 'Temporal Drift',
     category: 'sphere_surge',
     tagline: 'Echoes, repetition, fragments of prophecy.',
@@ -654,7 +672,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'star', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
 ];
 
@@ -665,6 +683,7 @@ const SPHERE_SURGE_OMENS: OmenTrackTemplate[] = [
 const CULTURAL_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.cultural.war_drums',
+    tags: ['#iron'],
     name: 'War Drums',
     category: 'cultural',
     tagline: 'Smiths work through the night. Everyone is choosing sides.',
@@ -693,10 +712,11 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'iron', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.cultural.lean_harvest',
+    tags: ['#stone'],
     name: 'Lean Harvest',
     category: 'cultural',
     tagline: 'Scarcity. Hard choices. The desperate are dangerous.',
@@ -725,10 +745,11 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.cultural.festival_season',
+    tags: ['#gold'],
     name: 'Festival Season',
     category: 'cultural',
     tagline: 'Abundance. Celebration. Dangerous complacency.',
@@ -757,10 +778,11 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
-    censusTag: { reach: 'gold', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.cultural.the_unquiet',
+    tags: ['#heart'],
     name: 'The Unquiet',
     category: 'cultural',
     tagline: 'Restlessness. Anger. Mob energy crackles at the edges.',
@@ -789,10 +811,11 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'heart', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.cultural.season_of_grief',
+    tags: ['#heart'],
     name: 'Season of Grief',
     category: 'cultural',
     tagline: 'Mourning has weight. The community feels its losses.',
@@ -821,10 +844,11 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'heart', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.cultural.age_of_discovery',
+    tags: ['#star'],
     name: 'Age of Discovery',
     category: 'cultural',
     tagline: 'Wonder and ambition. Recklessness follows close behind.',
@@ -853,7 +877,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'star', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
 ];
 
@@ -864,6 +888,7 @@ const CULTURAL_OMENS: OmenTrackTemplate[] = [
 const SEASONAL_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.seasonal.the_quiet_before',
+    tags: ['#eye'],
     name: 'The Quiet Before',
     category: 'seasonal',
     tagline: 'Potential. Watchfulness. Fragile calm.',
@@ -891,10 +916,11 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
-    censusTag: { reach: 'eye', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.seasonal.the_turning',
+    tags: ['#star'],
     name: 'The Turning',
     category: 'seasonal',
     tagline: 'Change accelerates. Choices harden.',
@@ -922,10 +948,11 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
-    censusTag: { reach: 'star', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.seasonal.the_long_dark',
+    tags: ['#stone'],
     name: 'The Long Dark',
     category: 'seasonal',
     tagline: 'Endurance. Attrition. Grim resolve.',
@@ -953,10 +980,11 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.5,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.seasonal.the_reckoning_hour',
+    tags: ['#iron'],
     name: 'The Reckoning Hour',
     category: 'seasonal',
     tagline: 'Urgency. Last chances. No more delays.',
@@ -984,7 +1012,7 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.6,
-    censusTag: { reach: 'iron', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
 ];
 
@@ -995,6 +1023,7 @@ const SEASONAL_OMENS: OmenTrackTemplate[] = [
 const CHANGING_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.changing.restless_forms',
+    tags: ['#veil'],
     name: 'Restless Forms',
     category: 'doom_echo',
     tagline: 'Nothing holds its shape quite right anymore.',
@@ -1025,10 +1054,11 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'veil', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.changing.the_slipping',
+    tags: ['#shadow'],
     name: 'The Slipping',
     category: 'doom_echo',
     tagline: 'Identities blur. The edges that define a self are softening.',
@@ -1058,10 +1088,11 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'shadow', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.changing.cascade_of_forms',
+    tags: ['#veil'],
     name: 'Cascade of Forms',
     category: 'doom_echo',
     tagline: 'Everything is becoming something else. No shape holds.',
@@ -1091,10 +1122,11 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
-    censusTag: { reach: 'veil', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.changing.the_great_unmaking',
+    tags: ['#veil'],
     name: 'The Great Unmaking',
     category: 'doom_echo',
     tagline: 'All categories collapse. What was fixed is fluid. What was certain is gone.',
@@ -1124,7 +1156,7 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
-    censusTag: { reach: 'veil', scale: 'cosmic' },
+    censusTag: { scale: 'cosmic' },
   },
 ];
 
@@ -1135,6 +1167,7 @@ const CHANGING_OMENS: OmenTrackTemplate[] = [
 const SUNDERING_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.sundering.hairline_fractures',
+    tags: ['#stone'],
     name: 'Hairline Fractures',
     category: 'doom_echo',
     tagline: 'The first cracks. So thin you must lean close to see them.',
@@ -1165,10 +1198,11 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sundering.the_severance',
+    tags: ['#heart'],
     name: 'The Severance',
     category: 'doom_echo',
     tagline: 'Bonds break. What was joined refuses to hold.',
@@ -1198,10 +1232,11 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'heart', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sundering.violent_partition',
+    tags: ['#iron'],
     name: 'Violent Partition',
     category: 'doom_echo',
     tagline: 'Force does what fracture merely hinted at.',
@@ -1231,10 +1266,11 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
-    censusTag: { reach: 'iron', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.sundering.the_final_division',
+    tags: ['#stone'],
     name: 'The Final Division',
     category: 'doom_echo',
     tagline: 'The world splits. No bridge will span what remains.',
@@ -1264,7 +1300,7 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
-    censusTag: { reach: 'stone', scale: 'cosmic' },
+    censusTag: { scale: 'cosmic' },
   },
 ];
 
@@ -1275,6 +1311,7 @@ const SUNDERING_OMENS: OmenTrackTemplate[] = [
 const FAILING_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.failing.rust_and_forgetting',
+    tags: ['#stone'],
     name: 'Rust and Forgetting',
     category: 'doom_echo',
     tagline: 'Things deteriorate faster than they should. Memories are the first to go.',
@@ -1305,10 +1342,11 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.failing.the_forgetting',
+    tags: ['#eye'],
     name: 'The Forgetting',
     category: 'doom_echo',
     tagline: 'Skills learned over years vanish in days. Memory is not reliable.',
@@ -1338,10 +1376,11 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'eye', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.failing.things_fall_apart',
+    tags: ['#stone'],
     name: 'Things Fall Apart',
     category: 'doom_echo',
     tagline: 'Systems stop. Structures fail. The maintenance is losing.',
@@ -1371,10 +1410,11 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
-    censusTag: { reach: 'stone', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.failing.exhaustion_of_the_age',
+    tags: ['#veil'],
     name: 'Exhaustion of the Age',
     category: 'doom_echo',
     tagline: 'The world is tired. It has held on long enough.',
@@ -1404,7 +1444,7 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
-    censusTag: { reach: 'veil', scale: 'cosmic' },
+    censusTag: { scale: 'cosmic' },
   },
 ];
 
@@ -1415,6 +1455,7 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
 const ASCENSION_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.ascension.luminous_hunger',
+    tags: ['#heart'],
     name: 'Shining Hunger',
     category: 'doom_echo',
     tagline: 'A longing without object. Something in everyone reaching upward.',
@@ -1445,10 +1486,11 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.55,
-    censusTag: { reach: 'heart', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.ascension.the_rising',
+    tags: ['#veil'],
     name: 'The Rising',
     category: 'doom_echo',
     tagline: 'Gravity loosens. Things and people rise beyond their station.',
@@ -1478,10 +1520,11 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.65,
-    censusTag: { reach: 'veil', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.ascension.departure',
+    tags: ['#star'],
     name: 'Departure',
     category: 'doom_echo',
     tagline: 'People leave. Things become unreachable. The worthy are no longer here.',
@@ -1511,10 +1554,11 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.75,
-    censusTag: { reach: 'star', scale: 'regional' },
+    censusTag: { scale: 'regional' },
   },
   {
     id: 'omen.ascension.the_hollow_world',
+    tags: ['#veil'],
     name: 'The Hollow World',
     category: 'doom_echo',
     tagline: 'Everything worth having has ascended. Only the shell remains.',
@@ -1544,7 +1588,7 @@ const ASCENSION_OMENS: OmenTrackTemplate[] = [
       },
     ],
     chronicleSignificance: 0.9,
-    censusTag: { reach: 'veil', scale: 'cosmic' },
+    censusTag: { scale: 'cosmic' },
   },
 ];
 

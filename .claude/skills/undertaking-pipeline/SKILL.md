@@ -2,7 +2,7 @@
 name: undertaking-pipeline
 description: The undertaking factory line (THR-1300) — brief keyed on the kind × CRUD grid → draft → bounded critic loop → machine gate (`check:undertaking`) → live proof → compiler → batch report, for contract-complete undertaking templates, one or a batch of six. Triggers on "undertaking pipeline", "draft undertaking", "author undertaking", "undertaking batch", "run the undertaking line", or "/undertaking-pipeline".
 model: opus
-last_validated_against: 2026-09-03
+last_validated_against: 2026-09-12
 ---
 
 > **Step 0, always:** `Docs/canon/undertakings.md` — the current spec, the kind registry, the gate, the levers, the words. Then `Docs/canon/rulebook-quick-reference.md`. Load `Docs/canon/prose.md` before drafting a single line of prose: undertaking prose is held to the encounter standard (Prose Doctrine v2, narrator mode).
@@ -55,6 +55,7 @@ Every stage of the line has shipped; the pilot (slice 5) is the first batch thro
 
 - `reference/batch-brief-format.md` — Stage 0's skeleton and rules.
 - `reference/kind-row-catalog.generated.md` — the grid as data (`npm run generate-kind-row-catalog`; under `check:generated-freshness`).
+- `../encounter-pipeline/reference/content-tag-catalog.generated.md` — the closed content-tag vocabulary (THR-1486). One file, three lines read it; a tag not on that page is not a tag.
 - `reference/undertaking-package-format.md` — the package the compiler consumes: the real template plus `kind` / `profiles` / `docComment`, and the row-less-kind rule.
 - `agents/*.md` — the five prompts of the line: draft, systems, editorial, package, implementation.
 - `Docs/canon/undertakings.md` — Step 0.

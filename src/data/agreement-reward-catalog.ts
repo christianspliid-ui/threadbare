@@ -9,6 +9,8 @@
 
 import type { AttachmentEffect } from '../types/effects';
 import type { AgreementType } from '../types/attachments';
+import type { RarityTier } from '../types/rarity';
+import type { ContentTag } from './content-tags';
 
 export interface AgreementRewardTemplate {
   /** Unique template ID */
@@ -17,10 +19,16 @@ export interface AgreementRewardTemplate {
   readonly name: string;
   /** Agreement subtype */
   readonly agreementType: AgreementType;
-  /** Rarity tier 1–4 */
-  readonly tier: number;
+  /** Rarity tier. Retyped from a bare `number` by THR-1486 — every sibling catalog already carries a `RarityTier`, and the content query's tier window is specified over the union rather than over the field. */
+  readonly tier: RarityTier;
   /** Tags for filtering (quality tags, reach tags, context tags) */
-  readonly tags: string[];
+  /**
+   * Content tags. Tightened from `string[]` by THR-1486 once the ratchet
+   * (`contentTagRetrofitPending.ts`) reached zero — the template-literal type catches the
+   * missing `#`, which is the one mistake that makes a tag match nothing (THR-1146);
+   * *membership* in the vocabulary is the contract test's job, not the type system's.
+   */
+  readonly tags: readonly ContentTag[];
   /** Human-readable terms */
   readonly terms: string;
   /** Mechanical effects carried on the agreement edge */
@@ -149,6 +157,6 @@ export function filterAgreementTemplates(
   if (!tagFilters || tagFilters.length === 0) return [...AGREEMENT_REWARD_TEMPLATES];
 
   return AGREEMENT_REWARD_TEMPLATES.filter(t =>
-    tagFilters.every(tag => t.tags.includes(tag)),
+    tagFilters.every(tag => (t.tags as readonly string[]).includes(tag)),
   );
 }

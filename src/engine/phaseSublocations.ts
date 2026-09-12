@@ -107,7 +107,7 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.market-district',
     name: 'Market District',
-    censusTag: { reach: 'gold', scale: 'local' },
+    censusTag: { scale: 'local' },
     motivations: [
       { left: 'greed', right: 'generosity', weight: 0.7 },
       { left: 'cunning', right: 'honesty', weight: 0.5 },
@@ -119,7 +119,7 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.mine',
     name: 'Mine',
-    censusTag: { reach: 'gold', scale: 'local' },
+    censusTag: { scale: 'local' },
     motivations: [
       { left: 'duty', right: 'freedom', weight: 0.6 },
       { left: 'tradition', right: 'innovation', weight: 0.4 },
@@ -131,7 +131,7 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.harbor',
     name: 'Harbor',
-    censusTag: { reach: 'gold', scale: 'local' },
+    censusTag: { scale: 'local' },
     motivations: [
       { left: 'ambition', right: 'contentment', weight: 0.6 },
       { left: 'greed', right: 'generosity', weight: 0.5 },
@@ -143,7 +143,7 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.warehouse',
     name: 'Warehouse',
-    censusTag: { reach: 'gold', scale: 'local' },
+    censusTag: { scale: 'local' },
     motivations: [
       { left: 'greed', right: 'generosity', weight: 0.6 },
       { left: 'cunning', right: 'honesty', weight: 0.4 },
@@ -155,7 +155,7 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.counting-house',
     name: 'Counting House',
-    censusTag: { reach: 'gold', scale: 'local' },
+    censusTag: { scale: 'local' },
     motivations: [
       { left: 'greed', right: 'generosity', weight: 0.8 },
       { left: 'cunning', right: 'honesty', weight: 0.6 },
@@ -167,7 +167,7 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.smugglers-den',
     name: "Smuggler's Den",
-    censusTag: { reach: 'gold', scale: 'local' },
+    censusTag: { scale: 'local' },
     motivations: [
       { left: 'cunning', right: 'honesty', weight: 0.9 },
       { left: 'greed', right: 'generosity', weight: 0.7 },
@@ -180,7 +180,7 @@ export const GOLD_SUBLOCATION_SPECS: ConditionalSublocationSpec[] = [
   {
     sublocationTypeId: 'sublocation-type.caravan-rest',
     name: 'Caravan Rest',
-    censusTag: { reach: 'gold', scale: 'local' },
+    censusTag: { scale: 'local' },
     motivations: [
       { left: 'ambition', right: 'contentment', weight: 0.5 },
       { left: 'greed', right: 'generosity', weight: 0.4 },

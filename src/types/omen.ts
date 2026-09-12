@@ -9,6 +9,7 @@
 
 import type { SphereName } from './index';
 import type { ContentCensusTag } from './contentCensus';
+import type { ContentTag } from '../data/content-tags';
 import type { DoomClockArchetype } from './doomClock';
 import type { EncounterType } from './encounter';
 import type { UndertakingHarmClass } from './strategicAction';
@@ -95,6 +96,16 @@ export interface OmenTrackTemplate {
 
   /** Significance for omen_started / omen_expired TickEvents (0–1) */
   chronicleSignificance: number;
+
+  /**
+   * Content tags (THR-1486). Seated spellings only — `contentTags.test.ts` fails an
+   * unseated one. An omen's reach lives here since the reach half of `censusTag`
+   * retired; its *sphere* deliberately does not, because that sits at
+   * `sphereTrigger.sphere` on six of forty-four tracks and a flat tag would read as a
+   * claim about the other thirty-eight (slice 1's measurement, recorded on the
+   * registry's `omen_template` row).
+   */
+  tags?: readonly ContentTag[];
 
   /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
   censusTag?: ContentCensusTag;

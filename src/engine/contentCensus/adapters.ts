@@ -15,10 +15,10 @@
  * ---------|---------------------- |-------------------
  * encounters| entry-level (UnifiedActionTemplate.reach) | entry-level (UnifiedActionTemplate.scale)
  * actions  | entry-level (ActionTemplateData.reach)     | untagged (inferred, not authored)
- * attachments| dominant from effects[].reach            | untagged (schema backfill needed)
- * spells   | dominant from effects[].reach              | untagged (schema backfill needed)
- * artifacts| dominant from effects[].reach              | untagged (schema backfill needed)
- * conditions| none (no axis)                            | none (no axis)
+ * attachments| entry tag axis (#iron … #star)           | authored censusTag.scale
+ * spells   | entry tag axis (#iron … #star)             | authored censusTag.scale
+ * artifacts| entry tag axis (#iron … #star)             | authored censusTag.scale
+ * conditions| tag axis, else |domainContributions|      | authored censusTag.scale
  * omens    | none (no axis)                             | none (no axis)
  * sublocations| gold (only Gold phase sublocations exist)| local (SCALE_APPLICABILITY)
  */
@@ -53,26 +53,25 @@ function makeEntry(
 }
 
 /**
- * Extract dominant reach from an array of effects by counting effect.reach occurrences.
- * Tie-break: first-encountered reach wins (stable). Returns null when no reach found.
- * Fail-soft: any effect that cannot be read is skipped.
+ * The reach an entry's `#iron` … `#star` tag names, or null when it carries none.
+ *
+ * **This replaced `dominantReachFromEffects` (THR-1486).** That derivation counted
+ * `effects[].reach` and took the mode — a reach the author never wrote, which disagreed
+ * with the author's own reach tag on 9 of 106 attachments, 3 of 5 spells and 6 of 33
+ * conditions that carried both. THR-477 left derive-vs-persist open; THR-1481 closes it
+ * as *authored on the tag axis*, so the derivation is gone rather than persisted and the
+ * eighteen entries that had a reach only by derivation were authored one at the
+ * migration.
+ *
+ * First tag wins, in authored order: an entry naming two reaches has said which it leads
+ * with, and picking by count would re-introduce exactly the derivation this replaced.
  */
-function dominantReachFromEffects(effects: readonly unknown[]): ReachDomain | null {
-  const counts = new Map<ReachDomain, number>();
-  for (const effect of effects) {
-    try {
-      const r = (effect as Record<string, unknown>).reach as ReachDomain | undefined;
-      if (r) counts.set(r, (counts.get(r) ?? 0) + 1);
-    } catch {
-      // skip unreadable effects
-    }
+function reachFromTags(tags: readonly string[] | undefined): ReachDomain | null {
+  for (const tag of tags ?? []) {
+    const name = tag.startsWith('#') ? tag.slice(1) : tag;
+    if ((REACH_DOMAINS as readonly string[]).includes(name)) return name as ReachDomain;
   }
-  let best: ReachDomain | null = null;
-  let bestCount = 0;
-  for (const [r, count] of counts) {
-    if (count > bestCount) { best = r; bestCount = count; }
-  }
-  return best;
+  return null;
 }
 
 /**
@@ -140,7 +139,7 @@ export function resolveActions(): CensusEntry[] {
 
 // ─── Attachment adapter ───────────────────────────────────────────────────────
 // Sources: REWARD_POSSESSIONS (reward-attachment-catalog) + STARTER_POSSESSIONS (starter-attachments)
-// reach: dominant from effects[].reach; scale: untagged (schema backfill needed).
+// reach: the entry tag axis (THR-1486); scale: authored `censusTag.scale`.
 
 export function resolveAttachments(): CensusEntry[] {
   const all: GraphNode[] = [...REWARD_POSSESSIONS, ...STARTER_POSSESSIONS];
@@ -148,9 +147,8 @@ export function resolveAttachments(): CensusEntry[] {
   for (const node of all) {
     try {
       const props = node.properties as PossessionNodeProperties | undefined;
-      const effects: readonly unknown[] = props?.effects ?? [];
-      // Authored censusTag.reach wins; else derive dominant reach from effects[].
-      const reach = props?.censusTag?.reach ?? dominantReachFromEffects(effects);
+      // Reach is authored on the tag axis (THR-1486); no derivation behind it.
+      const reach = reachFromTags(props?.tags);
       // Scale has no derivation path — authored only (THR-477).
       const scale = props?.censusTag?.scale ?? null;
       results.push(makeEntry(
@@ -158,7 +156,7 @@ export function resolveAttachments(): CensusEntry[] {
         'attachments',
         reach,
         scale,
-        reach ? (scale ? undefined : 'scale not authored') : 'no reach found in effects[]',
+        reach ? (scale ? undefined : 'scale not authored') : 'no reach tag authored',
       ));
     } catch {
       results.push(makeEntry(node.id, 'attachments', null, null, 'failed to read node properties'));
@@ -169,20 +167,20 @@ export function resolveAttachments(): CensusEntry[] {
 
 // ─── Spell adapter ────────────────────────────────────────────────────────────
 // Source: SPELL_TEMPLATES (spell-templates.ts)
-// reach: dominant from effects[].reach; scale: untagged.
+// reach: the entry tag axis (THR-1486); scale: authored `censusTag.scale`.
 
 export function resolveSpells(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const t of SPELL_TEMPLATES) {
     try {
-      const reach = t.censusTag?.reach ?? dominantReachFromEffects(t.effects);
+      const reach = reachFromTags(t.tags);
       const scale = t.censusTag?.scale ?? null;
       results.push(makeEntry(
         t.id,
         'spells',
         reach,
         scale,
-        reach ? (scale ? undefined : 'scale not authored') : 'no reach found in effects[]',
+        reach ? (scale ? undefined : 'scale not authored') : 'no reach tag authored',
       ));
     } catch {
       results.push(makeEntry(t.id, 'spells', null, null, 'failed to read spell template'));
@@ -193,20 +191,20 @@ export function resolveSpells(): CensusEntry[] {
 
 // ─── Artifact adapter ─────────────────────────────────────────────────────────
 // Source: ARTIFACT_TEMPLATES (artifact-templates.ts)
-// reach: dominant from effects[].reach; scale: untagged.
+// reach: the entry tag axis (THR-1486); scale: authored `censusTag.scale`.
 
 export function resolveArtifacts(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const t of ARTIFACT_TEMPLATES) {
     try {
-      const reach = t.censusTag?.reach ?? dominantReachFromEffects(t.effects);
+      const reach = reachFromTags(t.tags);
       const scale = t.censusTag?.scale ?? null;
       results.push(makeEntry(
         t.id,
         'artifacts',
         reach,
         scale,
-        reach ? (scale ? undefined : 'scale not authored') : 'no reach found in effects[]',
+        reach ? (scale ? undefined : 'scale not authored') : 'no reach tag authored',
       ));
     } catch {
       results.push(makeEntry(t.id, 'artifacts', null, null, 'failed to read artifact template'));
@@ -217,7 +215,7 @@ export function resolveArtifacts(): CensusEntry[] {
 
 // ─── Condition adapter ────────────────────────────────────────────────────────
 // Source: CONDITION_TRAIT_DEFINITIONS (condition-trait-content.ts)
-// No reach/scale axis exists in the condition schema → fully untagged.
+// reach: the entry tag axis, falling back to |domainContributions| where none is authored.
 
 export function resolveConditions(): CensusEntry[] {
   const results: CensusEntry[] = [];
@@ -225,7 +223,7 @@ export function resolveConditions(): CensusEntry[] {
     try {
       const props = node.properties as unknown as TraitDefinitionProperties | undefined;
       // Reach derives from domainContributions (largest |magnitude|); authored tag wins.
-      const reach = props?.censusTag?.reach ?? dominantReachFromContributions(props?.domainContributions);
+      const reach = reachFromTags(props?.tags) ?? dominantReachFromContributions(props?.domainContributions);
       // Scale has no derivation path — authored only (THR-477).
       const scale = props?.censusTag?.scale ?? null;
       results.push(makeEntry(
@@ -244,14 +242,14 @@ export function resolveConditions(): CensusEntry[] {
 
 // ─── Omen adapter ─────────────────────────────────────────────────────────────
 // Source: OMEN_TEMPLATES (omenTemplates.ts)
-// No reach/scale axis exists in the omen schema → fully untagged.
+// reach: the entry tag axis (THR-1486); scale: authored `censusTag.scale`.
 
 export function resolveOmens(): CensusEntry[] {
   const results: CensusEntry[] = [];
   for (const t of OMEN_TEMPLATES) {
     try {
-      // Omens carry no derivable reach/scale — both axes are authored (THR-477).
-      const reach = t.censusTag?.reach ?? null;
+      // Reach moved onto the tag axis with THR-1486; scale stays authored.
+      const reach = reachFromTags(t.tags);
       const scale = t.censusTag?.scale ?? null;
       results.push(makeEntry(
         t.id,
@@ -281,7 +279,7 @@ export function resolveSublocations(): CensusEntry[] {
         results.push(makeEntry(
           spec.sublocationTypeId,
           'sublocations',
-          spec.censusTag?.reach ?? reach,
+          reach,
           spec.censusTag?.scale ?? 'local',
         ));
       } catch {

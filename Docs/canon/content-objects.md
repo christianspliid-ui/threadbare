@@ -19,12 +19,12 @@ The registry exists because content references content **by literal id**, and li
 | **Encounter** | The curated chapter a mortal walks into — authored branching encounters and systemic linear templates, one `UnifiedActionTemplate` format. | `encounter_template` | `check:encounter` (scoped to the `encounter.` prefix only) |
 | **Action** | The verbs the player and the world *play* rather than walk into — divine interventions, hex workings, location and artifact verbs, thread cards. Same shape as an Encounter; the difference is who acts. | `action_template` | — |
 | **Undertaking** | A multi-tick work a mortal commits to: the seven authored packs, the factory's compiled output, and the synthesised cells (verb × object type) that superseded the packs under the `cells` model. | `undertaking` | `check:undertaking` |
-| **Item** | Arms, mounts, tomes, relics, tools, provisions — the possession catalog `reward_draw` already draws from by tag. | `item` | — |
-| **Legendary artifact** | An item with its own trait graph, bonded rather than possessed. Three entries. | `legendary_artifact` | — |
-| **Condition** | Wounds, diseases, strains; blessings and curses as signed conditions. Shared `trait` definition nodes, per-bearer state on the edge. | `condition` | — |
-| **Power** | A god's gift (`bestowed`) and a spell a mortal learned (`spell`) — two classes of one kind (THR-1429), in two catalog shapes. | `power` | — |
-| **Agreement** | A favour owed or a mark held — the template names a *relationship*, so the thing it becomes is an edge. | `agreement` | — |
-| **Companion** | A face that walks with one mortal and grants small always-on bonuses; never an agent. Already tag-bearing. | `companion` | — |
+| **Item** | Arms, mounts, tomes, relics, tools, provisions — the possession catalog `reward_draw` already draws from by tag. | `item` | `check:attachment` |
+| **Legendary artifact** | An item with its own trait graph, bonded rather than possessed. Three entries. | `legendary_artifact` | `check:attachment` |
+| **Condition** | Wounds, diseases, strains; blessings and curses as signed conditions. Shared `trait` definition nodes, per-bearer state on the edge. | `condition` | `check:attachment` |
+| **Power** | A god's gift (`bestowed`) and a spell a mortal learned (`spell`) — two classes of one kind (THR-1429), in two catalog shapes. | `power` | `check:attachment` |
+| **Agreement** | A favour owed or a mark held — the template names a *relationship*, so the thing it becomes is an edge. | `agreement` | `check:attachment` |
+| **Companion** | A face that walks with one mortal and grants small always-on bonuses; never an agent. Already tag-bearing. | `companion` | `check:attachment` |
 | **Ambition** | What a mortal wants, and the shape of the work it offers. Three catalogs by provenance — seeded, grown from a grievance, minted by an event — which is not a kind distinction. | `ambition` | — |
 | **Omen** | A track of signs the world shows before something breaks. Becomes nothing: an omen is pressure the doom clock reads, never an object a mortal holds. | _(nothing)_ | — |
 | **Card** | The god's repertoire — what a player may commit to a step to lean a roll. Becomes nothing: a card is played and spent. | _(nothing)_ | — |
@@ -44,11 +44,26 @@ The world-object trio, one shape lighter (there is no write-time guard, because 
 Recorded rather than fixed, so the next author does not rediscover them.
 
 - **Prefixes are claimed for totality, not owned.** The plan asked that every id prefix be claimed by exactly one row. True of nine kinds, false of three: `anomaly_spore_*` names an item, a power *and* a condition, and `anomaly_crystal_*` names two. The ids were never built to discriminate. So: the **catalog** decides where the prefix cannot, the **prefix** decides where the catalog is pooled (the Encounter/Action split of `UNIFIED_ACTION_TEMPLATES`), and one of the two must always decide. The three genuinely shared prefixes — `reward_`, `starter_`, `anomaly_` — are declared in `SHARED_ID_PREFIXES` with their reasons; an *undeclared* collision fails.
-- **`DealContextTag` is a card-context vocabulary, not a reach spelling.** Its twelve values (`might`, `finesse`, …) do not map onto the eight Reaches, and unifying it is chartered by defect evidence, not pre-planned. Slice 2 leaves it alone.
-- **Items declare `sphereAffinity` and no catalog entry carries it** (0 of 134, measured THR-1485). The plan expected to project the item sphere tag from that field and retype it in slice 2; there is nothing to retype. Items' sphere tags stay authored until the field has bearers — the verdict THR-477 reached for their reach.
-- **An omen's sphere is nested and conditional** (`sphereTrigger.sphere`, on 6 of 44 tracks), so it is not the flat field a projection reads. A projection firing for a seventh of the kind would read as "no tags authored".
+- **`DealContextTag` is a card-context vocabulary, not a reach spelling.** Its twelve values (`might`, `finesse`, …) do not map onto the eight Reaches, and unifying it is chartered by defect evidence, not pre-planned. Slice 2 left it alone, as planned.
+- **Items declare `sphereAffinity` and no catalog entry carries it** (0 of 134, measured THR-1485). Slice 2 retyped it `string` → `SphereName` as type hygiene and built **no** projection on it; items' sphere tags stay authored until the field has bearers — the verdict THR-477 reached for their reach.
+- **An omen's sphere is nested and conditional** (`sphereTrigger.sphere`, on 6 of 44 tracks), so it is not the flat field a projection reads. A projection firing for a seventh of the kind would read as "no tags authored". Its **reach** is a different matter: it was authored on `censusTag.reach` and slice 2 moved all 44 onto the tag axis.
+- **`censusTag` kept its `scale` half.** The plan called the whole field "metadata nothing reads"; measured, that is true of `reach` and false of `scale` — 132 of 193 literals carried scale and nothing else, `contentCensus/matrix.ts` reads it, and no other field in the corpus carries an entry-level scale. Retiring it would have taken the census from 193 entries to zero. The reach half is gone and `dominantReachFromEffects` with it.
 - **`FACTORY_STRATEGIC_TEMPLATES` is legitimately empty** — the factory compiles packages on demand and ships none by default. Named in the contract test, so a *second* empty catalog fails.
 - **`check:encounter` scopes to the `encounter.` prefix**, so most of the Encounter kind — every faction quest family, every social and tavern template — is ungated today despite the row showing a gate.
+
+## The tag vocabulary
+
+Seated by THR-1486 (slice 2). Registry: [`src/data/content-tags.ts`](../../src/data/content-tags.ts) · generated catalog: [`content-tag-catalog.generated.md`](../../.claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md) (`npm run generate-content-tag-catalog`).
+
+**Five axes, two of them derived.** `reach` is generated from `REACH_DOMAINS` and `sphere` from `SPHERE_NAMES` — the vocabulary imports the unions rather than restating them, and each derived tag owes a description at compile time. `polarity` is `#positive` | `#negative`. `form` (what the thing *is*) and `family` (what class of story-object it belongs to, and what walk of life it comes from) are authored.
+
+**`family` is the wide axis and knowingly so.** It holds both "what kind of object" (`#relic`, `#trinket`) and "what walk of life" (`#combat`, `#knowledge`, `#trade`). Those read as two ideas; the corpus treats them as one, because an entry carries `#weapon` *and* `#combat` rather than one instead of the other. Splitting them is a sixth axis, which is a design decision and was not slice 2's to take. **The axis is presentation and completeness, never query semantics** — the resolver matches tags, not axes — so a tag on the wrong axis is a legibility defect, cheap to correct.
+
+**Projection beats authoring.** Where a kind's registry row names a `projections` field, the tag is derived from it at index time and never written by hand; `contentTags.test.ts` fails an authored tag that contradicts its projection. `effectiveTags(entry) = authored ∪ projected`.
+
+**Adding a tag is a design-session decision**, recorded here. Seating one with no bearer ships a **DEAD** row in the generated catalog; writing one on an entry without seating it fails `contentTags.test.ts` and `check:attachment` by name.
+
+**How the 153 spellings in the corpus became 96 seated tags** (the migration's rule, recorded so it is not re-derived): a spelling survived with **at least one runtime reader** — a `tagFilters` query site or a hardcoded read — **or** at least `CONTENT_TAG_MIN_BEARERS` (3) bearers across the catalogs. 16 bare spellings were rewritten with their `#`; 63 were removed from their entries; the rest moved onto the derived axes. Seven tags ship DEAD: six authored ones a query site asks for and nothing wears, one sphere the corpus has not reached. The ratchet ([`contentTagRetrofitPending.ts`](../../src/data/content-eval/contentTagRetrofitPending.ts)) is **empty**, which is what let the catalog-entry `tags` types tighten to `readonly ContentTag[]`.
 
 ## Adding a kind
 
@@ -76,4 +91,5 @@ If the new kind's ids collide with an existing kind's prefixes, either narrow th
 
 - Any plan-doc statement that the registry's `catalog` field is a single `{ module, exports }` — it is a `catalogs` **array** of `{ module, export }`, because items come from four modules and conditions from three.
 - Any statement that the registry's `surface` column is filled — it is `{ card: null, sheet: null }` for every kind until THR-1482 slice 2.
-- `requiredAxes` and `projections` are near-empty by design in slice 1; the vocabulary that gives them meaning is slice 2.
+- Any statement that `requiredAxes` is empty — slice 2 populated it for the six attachment kinds from *measured* coverage (an axis is required only where every entry of the kind already carries it, so the column can only grow and never ships red).
+- Any plan-doc statement that `censusTag` is retired outright, or that the item sphere tag is projected from `sphereAffinity`. Both are corrected above.

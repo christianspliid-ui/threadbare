@@ -314,13 +314,21 @@ Adding a kind is a registry row **and** a UL term **and** a row on the canon pag
 
 **Aliases:** tag (in a content-authoring context)
 **Also see:** `[[Content Object]]`, `[[Content Query]]`, `[[Reach]]`, `[[Sphere]]`
-**Status:** proposed — vocabulary lands in THR-1486 (THR-1481 slice 2)
+**Status:** canonical — seated in `src/data/content-tags.ts` by THR-1486 (THR-1481 slice 2)
 
 A word from a **closed vocabulary** that says what a piece of authored content *is*, so other content can ask for it without naming its id. Every tag carries its `#`: the library has always written `'#weapon'`, and `'weapon'` matches nothing (THR-1146).
 
 Tags sit on five axes: `form` (what the thing is — `#weapon`, `#mount`, `#tome`), `family` (what class of story-object — `#relic`, `#blessing`, `#curse`), `reach`, `sphere` and `polarity`. The reach and sphere axes are **derived** from `REACH_DOMAINS` and `SPHERE_NAMES` rather than restated, so a new Reach or Sphere appears in the vocabulary the day it is added.
 
 **Where a typed field already exists, the tag is projected from it and never authored** — an encounter's `reach: 'iron'` yields `#iron`. A tag that contradicts its projection fails the contract test.
+
+**`family` is the wide axis, knowingly.** It holds both "what kind of object" (`#relic`, `#trinket`) and "what walk of life" (`#combat`, `#knowledge`, `#trade`), because the corpus treats those as one idea — an entry carries `#weapon` *and* `#combat`, never one instead of the other. Splitting them would be a sixth axis and a design decision.
+
+**The axis is presentation and completeness, never query semantics.** The resolver matches tags, not axes; an axis decides how a chip is grouped on a player surface and which axes a kind must carry (`requiredAxes`).
+
+**A tag is a game word.** The codex tag-filter row and the attachment sheet render tags as chips carrying the tag's own word and a `tag.*` tooltip — never the raw `#key` (Laws 14 and 17).
+
+**Adding one is a design-session decision**, recorded on `Docs/canon/content-objects.md`. The generated catalog badges a tag nothing wears as **DEAD**.
 
 Distinguish from `DealContextTag` (`might`, `finesse`, …), which is a **card-context** vocabulary and deliberately not a spelling of the eight Reaches.
 

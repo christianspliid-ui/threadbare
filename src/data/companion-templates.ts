@@ -21,6 +21,7 @@
 import type { DomainContributions } from '../types/traits';
 import type { LossCondition } from '../types/attachments';
 import type { RarityTier } from '../types/rarity';
+import type { ContentTag } from './content-tags';
 
 // ─── Tunables ───────────────────────────────────────────────────
 
@@ -50,7 +51,13 @@ export interface CompanionTemplate {
   readonly tier: RarityTier;
   readonly lossCondition: LossCondition;
   /** Setting class — the reward pool's tag filter reads these. */
-  readonly tags: readonly string[];
+  /**
+   * Content tags. Tightened from `string[]` by THR-1486 once the ratchet
+   * (`contentTagRetrofitPending.ts`) reached zero — the template-literal type catches the
+   * missing `#`, which is the one mistake that makes a tag match nothing (THR-1146);
+   * *membership* in the vocabulary is the contract test's job, not the type system's.
+   */
+  readonly tags: readonly ContentTag[];
   /**
    * Cause → change sentence pair (THR-1082 rule). `{name}` is substituted with
    * the instance's generated name. Join says why they came; depart says what
@@ -76,7 +83,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { stone: 2, eye: 1 },
     tier: 1,
     lossCondition: 'permanent',
-    tags: ['road', 'wilds'],
+    tags: ['#road', '#wilds'],
     joinSentence: '{name} had been walking the same road the other way, and turned around.',
     departSentence: '{name} takes the fork north, and the passes go back to being guesswork.',
   },
@@ -87,7 +94,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { gold: 2 },
     tier: 1,
     lossCondition: 'permanent',
-    tags: ['settlement', 'court'],
+    tags: ['#settlement', '#court'],
     joinSentence: '{name} was owed a favour by the wrong people, and settled for travelling company.',
     departSentence: '{name} is recalled to the guild hall; the next contract goes unread.',
   },
@@ -98,7 +105,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { eye: 2 },
     tier: 1,
     lossCondition: 'permanent',
-    tags: ['road', 'wilds'],
+    tags: ['#road', '#wilds'],
     joinSentence: '{name} lit the way once without being asked, and simply kept doing it.',
     departSentence: '{name} sets the lantern down and stays behind; the dark closes up its distance.',
   },
@@ -109,7 +116,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { iron: 3 },
     tier: 1,
     lossCondition: 'permanent',
-    tags: ['road', 'settlement', 'hired'],
+    tags: ['#road', '#settlement'],
     durationTicks: MERCENARY_COMPANION_DURATION_TICKS,
     joinSentence: "{name}'s company takes the coin and falls in behind.",
     departSentence: "{name}'s contract runs out at dusk, and the company is gone by morning.",
@@ -121,7 +128,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { heart: 2, veil: 1 },
     tier: 2,
     lossCondition: 'permanent',
-    tags: ['wilds', 'settlement'],
+    tags: ['#wilds', '#settlement'],
     joinSentence: '{name} stitched a wound that should have festered, and stayed to see it heal.',
     departSentence: '{name} is needed by a village that can pay in something other than distance.',
   },
@@ -132,7 +139,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { shadow: 2, gold: 1 },
     tier: 2,
     lossCondition: 'stealable',
-    tags: ['settlement', 'court'],
+    tags: ['#settlement', '#court'],
     joinSentence: '{name} decided the debt ran the other way, and attached themselves to collect it.',
     departSentence: '{name} takes a better offer, and takes the names along with them.',
   },
@@ -143,7 +150,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { star: 2 },
     tier: 2,
     lossCondition: 'permanent',
-    tags: ['settlement', 'court'],
+    tags: ['#settlement', '#court'],
     joinSentence: '{name} left the choir mid-verse and has not explained why.',
     departSentence: '{name} is called back to the temple, and the old words go half-remembered.',
   },
@@ -154,7 +161,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { stone: 1, gold: 1 },
     tier: 1,
     lossCondition: 'permanent',
-    tags: ['road', 'wilds'],
+    tags: ['#road', '#wilds'],
     joinSentence: '{name} was driving the herd the same way and saw no reason to walk it alone.',
     departSentence: '{name} turns off toward the market road; the load gets heavier by evening.',
   },
@@ -165,7 +172,7 @@ export const COMPANION_TEMPLATES: readonly CompanionTemplate[] = [
     domainContributions: { veil: 3, eye: 2 },
     tier: 3,
     lossCondition: 'permanent',
-    tags: ['wilds', 'unique'],
+    tags: ['#wilds'],
     unique: true,
     fixedName: 'Aunel of the Nine Charts',
     joinSentence: 'Aunel of the Nine Charts has been waiting at this crossing for someone going the right way.',
@@ -194,6 +201,6 @@ export function filterCompanionTemplates(
   return COMPANION_TEMPLATES.filter(t => {
     if (t.unique) return false;
     if (!tagFilters || tagFilters.length === 0) return true;
-    return tagFilters.every(tag => t.tags.includes(tag));
+    return tagFilters.every(tag => (t.tags as readonly string[]).includes(tag));
   });
 }
