@@ -3122,6 +3122,38 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'content-tag-vocabulary',
+    producerSystem: 'Encounters & Dilemmas',
+    consumerSystem: 'Attachments, Items & Possessions',
+    intent:
+      'Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486).',
+    ulTerms: ['Content Tag', 'Content Object'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['CONTENT_TAGS', 'isContentTag', 'axisOfContentTag', 'contentTagsOnAxis', 'contentTagTooltipId', 'effectiveTags', 'authoredTags', 'projectedTags'],
+      module: 'src/data/content-tags.ts',
+    },
+    writeSites: [
+      'src/data/content-tags.ts',
+      'src/data/content-eval/contentTagRetrofitPending.ts',
+    ],
+    readSites: [
+      'src/data/content-eval/attachmentContract.ts',
+      'src/engine/tooltipResolver.ts',
+      'src/engine/contentCensus/adapters.ts',
+      'src/components/Codex/CodexTagFilter.tsx',
+      'src/components/Game/AttachmentDetailView.tsx',
+      'scripts/generate-content-tag-catalog.ts',
+      'scripts/check-attachment.ts',
+      'src/data/__tests__/contentTags.test.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-12',
+      evidence:
+        "THR-1486 slice 2. 96 tags seated (8 reach + 12 sphere derived, 2 polarity, 74 authored) against 153 spellings measured in the registry's own catalogs: 16 bare spellings rewritten with their #, 63 removed from their entries under the seating rule (>=1 runtime reader OR >= CONTENT_TAG_MIN_BEARERS bearers), the rest moved onto the derived axes. contentTags.test.ts pins every claim against the real catalogs and each arm was falsified: an unseated tag on starter_iron_blade fails by name in both the test and check:attachment; a ratchet entry that passes is reported STALE by both; dropping a family tag from companion.wayfarer fails required_axes. check:attachment -- --all is green over 224 entries across the six attachment kinds. The ratchet is empty, which is what let ArtifactTemplate/CompanionTemplate/AgreementRewardTemplate/SpellTemplate tags tighten to readonly ContentTag[]. The census adapters moved off dominantReachFromEffects onto the tag axis — the derivation disagreed with the author's own tag on 9 of 106 attachments, 3 of 5 spells and 6 of 33 conditions, which is what closes THR-477 in favour of authoring; the 18 entries that had a reach only by derivation were authored at the migration. censusTag kept its scale half (132 of 193 literals carried scale and nothing else, and contentCensus/matrix.ts reads it) against the plan's call to retire the field outright.",
+    },
+  },
+  {
     id: 'undertaking-object-types',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Strategic Projects & Control',

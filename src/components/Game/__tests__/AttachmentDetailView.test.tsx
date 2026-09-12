@@ -12,7 +12,7 @@ const basePossession: AttachmentDetailData = {
   tier: 2,
   mechanicalSummary: '+Iron in open terrain',
   flavorText: 'Won in a border raid. Still bites strangers.',
-  tags: ['weapon', 'iron', 'mount'],
+  tags: ['#weapon', '#iron', '#mount'],
   lossCondition: 'breakable',
   source: 'Battle of the Ash Ford',
 };
@@ -23,7 +23,7 @@ const transientCondition: AttachmentDetailData = {
   subcategory: 'wound',
   tier: 1,
   mechanicalSummary: '-Iron (minor)',
-  tags: ['wound'],
+  tags: ['#wound'],
   ticksRemaining: 8,
   totalTicks: 20,
 };
@@ -34,7 +34,7 @@ const triggeredItem: AttachmentDetailData = {
   subcategory: 'arms',
   tier: 3,
   mechanicalSummary: '+Iron, +Shadow',
-  tags: ['weapon', 'cursed'],
+  tags: ['#weapon', '#cursed'],
   actionTriggers: [{
     type: 'action_trigger',
     on: 'encounter_critical_failure',
@@ -70,10 +70,39 @@ describe('AttachmentDetailView', () => {
     expect(screen.getByText(/Loss: breakable/)).toBeTruthy();
   });
 
-  it('renders tags as keyword cloud', () => {
+  /**
+   * THR-1486 — the sheet printed the raw key (`#iron`) until slice 2. Chips carry the
+   * game's word and each explains itself through the tag registry; this is the Law 13/14
+   * reading, asserted on the composed surface rather than on the data.
+   */
+  it('renders tags as chips carrying the game word, never the raw key', () => {
     render(<AttachmentDetailView attachment={basePossession} onBack={vi.fn()} />);
+    const chips = document.querySelectorAll('[data-content-tag]');
+    expect(chips.length).toBe(3);
     expect(screen.getByText('weapon')).toBeTruthy();
     expect(screen.getByText('iron')).toBeTruthy();
+    expect(screen.queryByText('#iron')).toBeNull();
+    expect(document.querySelector('[data-content-tag="#iron"]')).toBeTruthy();
+  });
+
+  it('Law 17 — a seated tag resolves its tag.* tooltip; a retired spelling still renders, unhoverable', () => {
+    expect(resolveTooltip('tag.weapon')?.desc).toBeTruthy();
+    render(
+      <AttachmentDetailView
+        attachment={{ ...basePossession, tags: ['#weapon', '#a_retired_spelling'] }}
+        onBack={vi.fn()}
+      />,
+    );
+    // Both render — an entry described only by a retired word must not go wordless.
+    expect(document.querySelectorAll('[data-content-tag]').length).toBe(2);
+    expect(screen.getByText('a retired spelling')).toBeTruthy();
+    expect(resolveTooltip('tag.a_retired_spelling')).toBeNull();
+  });
+
+  it('renders no tag section at all when the entry carries none', () => {
+    render(<AttachmentDetailView attachment={{ ...basePossession, tags: [] }} onBack={vi.fn()} />);
+    expect(document.querySelectorAll('[data-content-tag]').length).toBe(0);
+    expect(screen.queryByText('Tags')).toBeNull();
   });
 
   it('renders source section', () => {

@@ -89,9 +89,9 @@ describe('companion template lookup', () => {
   });
 
   it('narrows pool candidates by tag', () => {
-    const road = filterCompanionTemplates(['road']);
+    const road = filterCompanionTemplates(['#road']);
     expect(road.length).toBeGreaterThan(0);
-    expect(road.every(t => t.tags.includes('road'))).toBe(true);
+    expect(road.every(t => t.tags.includes('#road'))).toBe(true);
     expect(road.length).toBeLessThan(COMPANION_TEMPLATES.length);
   });
 

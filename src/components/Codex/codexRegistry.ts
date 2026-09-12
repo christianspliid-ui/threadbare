@@ -58,7 +58,14 @@ export interface CodexEntry {
    * agreements, which carry no incarnation state.
    */
   isAscendantAction?: boolean;
-  tags: string[];
+  /**
+   * The entry's tags, as the codex shows them. Deliberately `readonly string[]` and not
+   * `ContentTag[]`: a codex entry is built from live graph nodes as well as from catalog
+   * literals, and a saved world may carry a spelling the vocabulary has since retired.
+   * The filter row groups what it recognises and shows the rest ungrouped rather than
+   * dropping it (THR-1486).
+   */
+  tags: readonly string[];
   /** Extra key-value details shown in the detail panel; `tooltipId` gives the value a hover (Law 17). */
   details: { label: string; value: string; tooltipId?: string }[];
   /** Optional path to an art asset (relative to public/) */

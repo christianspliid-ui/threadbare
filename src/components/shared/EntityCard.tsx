@@ -2,6 +2,7 @@ import React from 'react';
 import type { EntityHeader, EntitySection, StructuredBlock } from '../../types/entityDetail';
 import { elapsedLabel } from '../../engine/aftermathWords';
 import { OddsPips } from './OddsPips';
+import { Tooltip } from './Tooltip';
 
 interface EntityCardProps {
   header: EntityHeader;
@@ -76,6 +77,36 @@ export const EntityCard = React.memo(function EntityCard({
                 {keyword}
               </span>
             ))}
+          </div>
+        );
+
+      case 'content_tag_chips':
+        return (
+          <div className="flex flex-wrap gap-1.5" data-testid="content-tag-chips">
+            {block.chips.map((chip) => {
+              const body = (
+                <span
+                  data-content-tag={chip.tag}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full font-medium"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    backgroundColor: `${block.accent}20`,
+                    color: block.accent,
+                    border: `1px solid ${block.accent}40`,
+                  }}
+                >
+                  <span aria-hidden="true">{chip.glyph}</span>
+                  {chip.label}
+                </span>
+              );
+              return chip.tooltipId ? (
+                <Tooltip key={chip.tag} id={chip.tooltipId}>
+                  {body}
+                </Tooltip>
+              ) : (
+                <span key={chip.tag}>{body}</span>
+              );
+            })}
           </div>
         );
 

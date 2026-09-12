@@ -83,18 +83,20 @@ describe('Attachment Types', () => {
       const possession: PossessionNodeProperties = {
         subcategory: 'arms',
         tier: 3,
-        tags: ['iron', 'blessed'],
+        tags: ['#iron', '#weapon'],
         mechanicalSummary: '+Iron, grants cavalry_charge, +movement',
         lossCondition: 'breakable',
         flavorText: 'A legendary blade forged in ancient times.',
         image: 'sword.png',
         source: 'Vendor of Memories',
-        sphereAffinity: 'War',
+        // 'War' until THR-1486 retyped the field — it was never a sphere, and the bare
+        // tags were never the spelling the matcher reads (THR-1146).
+        sphereAffinity: 'force',
       };
 
       expect(possession.subcategory).toBe('arms');
       expect(possession.tier).toBe(3);
-      expect(possession.tags).toContain('iron');
+      expect(possession.tags).toContain('#iron');
       expect(possession.lossCondition).toBe('breakable');
     });
 

@@ -27,12 +27,19 @@
 import type { AttachmentEffect, ActivatedAbility } from '../types/effects';
 import type { AttachmentTier, LossCondition } from '../types/attachments';
 import type { ContentCensusTag } from '../types/contentCensus';
+import type { ContentTag } from './content-tags';
 
 export interface ArtifactTemplate {
   readonly id: string;
   readonly name: string;
   readonly tier: AttachmentTier;
-  readonly tags: string[];
+  /**
+   * Content tags. Tightened from `string[]` by THR-1486 once the ratchet
+   * (`contentTagRetrofitPending.ts`) reached zero — the template-literal type catches the
+   * missing `#`, which is the one mistake that makes a tag match nothing (THR-1146);
+   * *membership* in the vocabulary is the contract test's job, not the type system's.
+   */
+  readonly tags: readonly ContentTag[];
   readonly lossCondition: LossCondition;
   /** Passive effects (always active while held) */
   readonly effects: AttachmentEffect[];
@@ -49,7 +56,7 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     name: 'The Worldforge Anvil',
     tier: 4,
     censusTag: { scale: 'cosmic' },
-    tags: ['legendary', 'creation', 'cursed'],
+    tags: ['#stone', '#legendary', '#creation', '#cursed'],
     lossCondition: 'cursed',
     effects: [
       { type: 'trait_grant', grantedTrait: 'master_smith' },
@@ -99,7 +106,7 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     name: 'Heartseed of the First Garden',
     tier: 4,
     censusTag: { scale: 'cosmic' },
-    tags: ['legendary', 'creation', 'blessed', 'nature'],
+    tags: ['#heart', '#legendary', '#creation', '#nature'],
     lossCondition: 'permanent',
     effects: [
       { type: 'aura', radius: 1, target: 'all', reach: 'heart', value: 0.03 },
@@ -160,7 +167,7 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     name: 'The Voidgate Shard',
     tier: 4,
     censusTag: { scale: 'cosmic' },
-    tags: ['legendary', 'destruction', 'cursed', 'void'],
+    tags: ['#veil', '#legendary', '#cursed'],
     lossCondition: 'cursed',
     effects: [
       { type: 'decay', reach: 'heart', startValue: 0, changePerTick: -0.005,

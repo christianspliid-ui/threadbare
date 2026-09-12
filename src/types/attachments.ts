@@ -12,6 +12,7 @@
 import type { AttachmentEffect, ActivatedAbility } from './effects';
 import type { ContentCensusTag } from './contentCensus';
 import type { RarityTier } from './rarity';
+import type { SphereName } from './index';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from './rarity';
 
 // ─── Possession Subcategories ───────────────────────────────────
@@ -90,7 +91,16 @@ export interface PossessionNodeProperties {
   flavorText?: string;
   image?: string;
   source?: string;
-  sphereAffinity?: string;
+  /**
+   * The sphere this item answers to. Retyped from a bare `string` by THR-1486 so a
+   * non-member fails the typecheck rather than shipping a tag nothing matches.
+   *
+   * **No catalog entry carries it** — 0 of 134, measured in slice 1 — so the registry
+   * deliberately declares no sphere projection for items and their sphere tags stay
+   * authored, the same verdict THR-477 reached for their reach. The retype is type
+   * hygiene for the day someone authors the field, not a projection source.
+   */
+  sphereAffinity?: SphereName;
   /** Trait tag granted while agent possesses this item (e.g. 'ruin_seeker' for treasure maps). */
   grantsTraitWhileHeld?: string;
   /** Effective trait level granted by this possession (default: 1). */

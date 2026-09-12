@@ -13,7 +13,9 @@
  * rot — 67 of 115 reveal families matched zero templates before THR-844 aliased them.
  * The fix is to name content by *kind and tags* rather than by id (THR-1481), and that
  * needs one place that says what the kinds are and which catalog holds each. This file
- * is that place. Slice 1 adds no behaviour: nothing in the engine reads it yet.
+ * is that place. Slice 1 added no behaviour; slice 2 (THR-1486) seated the tag vocabulary
+ * against it, filled `requiredAxes` from measured coverage, and gave the six attachment
+ * kinds their first machine gate. The content query that reads it arrives in slice 3.
  *
  * **The one-PR rule.** Adding a content kind is a row here *and* a UL term *and* a row
  * on the hand canon page (`Docs/canon/content-objects.md`), in one PR — the world-object
@@ -39,8 +41,8 @@ import type { WorldObjectKindId } from './world-objects';
 
 /**
  * The five axes a content tag may sit on (THR-1481). Seated here in slice 1 so the
- * registry's `requiredAxes` column has a vocabulary to name; the tags themselves and
- * their catalog arrive in slice 2 (`src/data/content-tags.ts`).
+ * registry's `requiredAxes` column has a vocabulary to name. The tags themselves and
+ * their catalog landed in slice 2 (`src/data/content-tags.ts`, THR-1486).
  */
 export type ContentTagAxis = 'form' | 'reach' | 'sphere' | 'family' | 'polarity';
 
@@ -88,7 +90,12 @@ export interface ContentObjectKind {
   readonly idPrefixes: readonly string[];
   /** The catalogs that hold this kind's entries. Shareable with a kind whose prefixes are disjoint. */
   readonly catalogs: readonly ContentCatalogRef[];
-  /** Tag axes an entry of this kind must carry once the vocabulary lands (slice 2). Empty until then. */
+  /**
+   * Tag axes an entry of this kind must carry. Seated by the vocabulary in slice 2
+   * (THR-1486) from *measured* coverage — an axis is required only where every entry of
+   * the kind already carries it, so the column can only ever grow and never ships red.
+   * Empty means the kind is not yet gated on tags, not that it needs none.
+   */
   readonly requiredAxes: readonly ContentTagAxis[];
   /**
    * Typed fields that project onto a tag axis at index time, so the tag is never
@@ -222,7 +229,11 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       { module: 'data/starter-attachments', export: 'STARTER_POSSESSIONS' },
       { module: 'data/anomaly-reward-catalog', export: 'ANOMALY_SIGNATURE_ARTIFACTS' },
     ],
-    requiredAxes: [],
+    // Measured at the vocabulary's landing (THR-1486): every one of the 134 entries carries
+    // a family tag, so this axis is required and the gate is not vacuous. `form` (108/134) and
+    // `reach` (112/134) are the next two and are deliberately not required yet — requiredAxes
+    // only ever grows, and a required axis the corpus does not satisfy is a red gate, not a plan.
+    requiredAxes: ['family'],
     // No sphere projection: `PossessionNodeProperties.sphereAffinity` is declared but
     // **no catalog entry carries it** (0 of 134, measured THR-1485). The plan expected
     // to project the item sphere tag from that field and retype it in slice 2; the
@@ -230,7 +241,7 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     // authors the field — the same verdict THR-477 reached for their reach.
     projections: {},
     instantiatesAs: 'item',
-    gate: null,
+    gate: 'check:attachment',
     surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
@@ -242,10 +253,11 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     ulTerm: 'Traits.md#attachment',
     idPrefixes: ['worldforge_', 'heartseed_', 'voidgate_'],
     catalogs: [{ module: 'data/artifact-templates', export: 'ARTIFACT_TEMPLATES' }],
-    requiredAxes: [],
+    // All three entries carry one.
+    requiredAxes: ['family'],
     projections: {},
     instantiatesAs: 'legendary_artifact',
-    gate: null,
+    gate: 'check:attachment',
     surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
@@ -261,10 +273,13 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       { module: 'data/starter-attachments', export: 'STARTER_CONDITIONS' },
       { module: 'data/anomaly-reward-catalog', export: 'ANOMALY_CONDITIONS' },
     ],
-    requiredAxes: [],
+    // All 46 entries carry both. Polarity is required here and nowhere else: a condition
+    // that does not say whether it helps or harms is the one shape the proxy-event
+    // classifier cannot read.
+    requiredAxes: ['family', 'polarity'],
     projections: {},
     instantiatesAs: 'condition',
-    gate: null,
+    gate: 'check:attachment',
     surface: { card: null, sheet: null },
     owningSystem: 'Effects & Conditions',
     status: 'live',
@@ -280,10 +295,11 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       { module: 'data/anomaly-reward-catalog', export: 'ANOMALY_BESTOWED_POWERS' },
       { module: 'data/spell-templates', export: 'SPELL_TEMPLATES' },
     ],
-    requiredAxes: [],
+    // All 25 entries carry one.
+    requiredAxes: ['family'],
     projections: { sphere: 'sphereAffinity' },
     instantiatesAs: 'power',
-    gate: null,
+    gate: 'check:attachment',
     surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
@@ -295,10 +311,11 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     ulTerm: 'Traits.md#attachment',
     idPrefixes: ['agreement.'],
     catalogs: [{ module: 'data/agreement-reward-catalog', export: 'AGREEMENT_REWARD_TEMPLATES' }],
-    requiredAxes: [],
+    // All seven entries carry both.
+    requiredAxes: ['reach', 'family'],
     projections: {},
     instantiatesAs: 'agreement',
-    gate: null,
+    gate: 'check:attachment',
     surface: { card: null, sheet: null },
     owningSystem: 'Secrets & Favors',
     status: 'live',
@@ -310,10 +327,11 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     ulTerm: 'Agents.md#companion',
     idPrefixes: ['companion.'],
     catalogs: [{ module: 'data/companion-templates', export: 'COMPANION_TEMPLATES' }],
-    requiredAxes: [],
+    // All nine entries carry one — the setting class the reward pool filters on.
+    requiredAxes: ['family'],
     projections: {},
     instantiatesAs: 'companion',
-    gate: null,
+    gate: 'check:attachment',
     surface: { card: null, sheet: null },
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',

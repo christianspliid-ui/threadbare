@@ -141,6 +141,28 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/data/spell-templates.ts",
     "scripts/generate-content-objects.ts",
   ],
+  // generate-content-tag-catalog (THR-1486): code in, doc out. The vocabulary plus every
+  // catalog it censuses — a tag authored into any of them changes a bearer count or clears
+  // a DEAD badge with no other file moving. ~1s, no worldgen.
+  ".claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md": [
+    "src/data/content-tags.ts",
+    "src/data/content-objects.ts",
+    "src/data/contentCatalogs.ts",
+    "src/data/unified-action-templates.ts",
+    "src/data/strategic-packs/",
+    "src/data/undertaking-cells.ts",
+    "src/data/reward-attachment-catalog.ts",
+    "src/data/anomaly-reward-catalog.ts",
+    "src/data/starter-attachments.ts",
+    "src/data/artifact-templates.ts",
+    "src/data/companion-templates.ts",
+    "src/data/agreement-reward-catalog.ts",
+    "src/data/ambition-templates.ts",
+    "src/data/omenTemplates.ts",
+    "src/data/nudge-card-library.ts",
+    "src/data/spell-templates.ts",
+    "scripts/generate-content-tag-catalog.ts",
+  ],
   "public/content-objects-reference.html": [
     "src/data/content-objects.ts",
     "src/data/contentCatalogs.ts",

@@ -37,6 +37,7 @@ export const CodexCard = memo(function CodexCard({
       onClick={onClick}
       className="w-full text-left transition-all"
       data-run-state={runState ?? undefined}
+      data-codex-entry-id={entry.id}
       style={{
         backgroundColor: isSelected ? 'var(--bg-hover)' : 'var(--bg-surface)',
         borderTop: isSelected ? `1px solid ${entry.tierColor}80` : '1px solid var(--border-subtle)',

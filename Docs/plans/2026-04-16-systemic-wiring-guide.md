@@ -3618,3 +3618,57 @@ After compile, the gates in order: `check:typecheck` → `check:undertaking -- <
 `check:undertaking-live -- <id> --seed 42 --seed 99` → the emitted test →
 `generate-kind-row-catalog`. The compiled file is the canonical, hand-editable artifact from
 then on.
+
+## Capability: The closed tag vocabulary, and the attachment line's first gate (THR-1486)
+
+An author no longer picks a tag by typing one. `src/data/content-tags.ts` holds the whole
+vocabulary — 96 tags across five axes — and everything that reads a tag reads it from there.
+The authoring reference is generated:
+`.claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md`
+(`npm run generate-content-tag-catalog`, blocking under `check:generated-freshness`), one
+table per axis, each tag with its meaning and a bearer count per content kind.
+
+Why this is a capability and not housekeeping: a tag is how one piece of content asks for
+another without naming its id, and a vocabulary anyone may extend by typing cannot be queried.
+The corpus held **153 distinct spellings**, 62 of them worn by one or two entries and read by
+nothing — a query written against that matches whatever the last author happened to type.
+
+What an author needs to know:
+
+- **Every tag carries its `#`.** `'#weapon'` is the spelling; `'weapon'` matches nothing
+  (THR-1146). The migration rewrote sixteen bare spellings and the catalog-entry types are now
+  `readonly ContentTag[]`, so the missing `#` is a typecheck failure rather than a silent miss.
+- **Five axes.** `form` (what the thing is), `family` (what class of story-object, and what
+  walk of life), plus `reach`, `sphere` and `polarity`. Reach and sphere are **derived** from
+  `REACH_DOMAINS` / `SPHERE_NAMES` — a ninth reach appears in the vocabulary the day it is
+  added, and owes a description at compile time.
+- **Projection beats authoring.** Where a kind's registry row names a `projections` field, the
+  tag comes from the field and is never written by hand; an authored tag that contradicts its
+  projection fails `contentTags.test.ts`. `effectiveTags(entry) = authored ∪ projected`
+  (`src/data/contentCatalogs.ts`).
+- **DEAD badges are the point of generating the page.** A tag nothing wears is a query nothing
+  can answer, and an author who writes it gets an empty pool with no error. Seven ship DEAD
+  today — six a `tagFilters` site asks for and no entry provides, which is a real hole in the
+  corpus and this page is the only surface that shows it.
+- **Adding a tag is a design-session decision**, recorded on `Docs/canon/content-objects.md`.
+  An entry that needs a word the vocabulary lacks is a finding to surface, not a line to write.
+
+The attachment line gains its first machine gate, the sibling of `check:encounter` and
+`check:undertaking`:
+
+```bash
+npm run check:attachment -- --all          # 224 entries across the six attachment kinds
+npm run check:attachment -- <entryId> …    # one entry, while drafting
+```
+
+Five structural blocks — `tag_vocabulary`, `required_axes`, `sphere_affinity`, `tier_range`,
+`census_tag` — over `src/data/content-eval/attachmentContract.ts`, with the shared ratchet
+`contentTagRetrofitPending.ts` (empty: the migration left nothing grandfathered, which is what
+let the types tighten). The registry's `requiredAxes` column was filled from **measured**
+coverage, so a required axis never ships red: every attachment kind requires `family`, a
+Condition also requires `polarity`, an Agreement also requires `reach`.
+
+For the player, the vocabulary is now a surface rather than a key: the codex gains a tag-filter
+row on possessions, conditions, agreements and undertakings (chips grouped by axis, ALL-of
+narrowing — the reward pool's own rule), and the attachment sheet renders its tags as chips
+carrying the tag's word and its `tag.*` tooltip instead of printing `#iron`.

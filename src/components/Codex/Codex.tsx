@@ -12,6 +12,7 @@ import type { CodexEntry } from './codexRegistry';
 import { CodexSidebar } from './CodexSidebar';
 import { CodexCard } from './CodexCard';
 import { CodexDetailPanel } from './CodexDetailPanel';
+import { CodexTagFilter } from './CodexTagFilter';
 import {
   codexEntryRunState,
   CODEX_RUN_STATE_FILTERS,
@@ -19,6 +20,14 @@ import {
   type CodexRunState,
   type CodexRunStateFilter,
 } from './codexRunState';
+
+/**
+ * The categories that carry a tag filter row (THR-1486). The four the attachment and
+ * undertaking lines author — the kinds whose entries the vocabulary actually describes.
+ * Divine and mortal actions gain theirs when encounters get tags in slice 4; offering an
+ * empty row there would be a control that promises a filter and has none.
+ */
+const TAG_FILTER_CATEGORIES: readonly string[] = ['possessions', 'conditions', 'agreements', 'undertakings'];
 
 interface CodexProps {
   /**
@@ -71,6 +80,8 @@ export default function Codex({
   const [searchQuery, setSearchQuery] = useState('');
   const [starterOnly, setStarterOnly] = useState(false);
   const [stateFilter, setStateFilter] = useState<CodexRunStateFilter>(initialStateFilter);
+  /** Tag filter, ALL-of — the reward pool's rule, so the chips teach what the engine does. */
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   // Per-entry incarnation state, keyed by id. Empty when there is no live ascendant.
   const runStateById = useMemo(() => {
@@ -85,7 +96,10 @@ export default function Codex({
     [allEntries],
   );
 
-  const filteredEntries = useMemo(() => {
+  const tagFilterAvailable = TAG_FILTER_CATEGORIES.includes(selectedCategory);
+
+  /** Everything except the tag filter — the population the chips are offered over. */
+  const preTagEntries = useMemo(() => {
     let entries = allEntries.filter(e => e.category === selectedCategory);
     if (starterOnly) {
       entries = entries.filter(e => e.isStarter === true);
@@ -108,6 +122,19 @@ export default function Codex({
     return entries;
   }, [allEntries, selectedCategory, selectedSubcategory, searchQuery, starterOnly, runContext, stateFilter, runStateById]);
 
+  const filteredEntries = useMemo(() => {
+    if (!tagFilterAvailable || selectedTags.length === 0) return preTagEntries;
+    // ALL-of, not any-of: the reward pool's `tagFilters` rule, unchanged.
+    return preTagEntries.filter(e => selectedTags.every(tag => e.tags.includes(tag)));
+  }, [preTagEntries, selectedTags, tagFilterAvailable]);
+
+  const handleToggleTag = useCallback((tag: string) => {
+    setSelectedTags(prev => (prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]));
+    setSelectedEntryId(null);
+  }, []);
+
+  const handleClearTags = useCallback(() => setSelectedTags([]), []);
+
   const selectedEntry = useMemo(() => {
     if (!selectedEntryId) return null;
     return allEntries.find(e => e.id === selectedEntryId) ?? null;
@@ -117,12 +144,16 @@ export default function Codex({
     setSelectedCategory(catId);
     setSelectedSubcategory(null);
     setSelectedEntryId(null);
+    // A tag chosen in one category means nothing in the next, and a filter the player
+    // cannot see is a list that has silently lost entries.
+    setSelectedTags([]);
   }, []);
 
   const handleSelectSubcategory = useCallback((catId: string, subId: string | null) => {
     setSelectedCategory(catId);
     setSelectedSubcategory(subId);
     setSelectedEntryId(null);
+    setSelectedTags([]);
   }, []);
 
   return (
@@ -254,6 +285,16 @@ export default function Codex({
             );
           })}
         </div>
+      )}
+
+      {/* Tag filter (THR-1486) — the first surface where the vocabulary is a word. */}
+      {tagFilterAvailable && (
+        <CodexTagFilter
+          entries={preTagEntries}
+          selected={selectedTags}
+          onToggle={handleToggleTag}
+          onClear={handleClearTags}
+        />
       )}
 
       {/* Main content */}

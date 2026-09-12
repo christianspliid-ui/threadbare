@@ -147,6 +147,15 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // keeps either honest.
   { path: "Docs/canon/content-objects.generated.md", command: "npm run generate-content-objects" },
   { path: "public/content-objects-reference.html", command: "npm run generate-content-objects" },
+  // ~1s, no worldgen. The tag catalog (THR-1486) — the authoring reference all three
+  // content pipelines read for what a tag means and what wears it. A stale copy is worse
+  // than none: its DEAD badges are the only surface that shows a query site asking for
+  // content nobody wrote, and a stale page either hides a new one or reports one that
+  // has since been filled.
+  {
+    path: ".claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md",
+    command: "npm run generate-content-tag-catalog",
+  },
   // ~2s. The undertaking grid (THR-1392 slice 4): every world-object kind × every verb,
   // live cells from the registry, the rest curated. Christian asked for this map to be
   // kept current as undertakings are developed; a stale committed copy would be the

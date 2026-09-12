@@ -20,6 +20,7 @@
  * - agent.* → live agent, gated by familiarity; needs a context (THR-1159)
  * - knowledge.* → the five familiarity tiers
  * - mandate.* → mandate-content.ts templates
+ * - tag.* → content-tags.ts, the closed content-tag vocabulary (THR-1486)
  *
  * This table and Law 17's copy of it are the same list; amend both when adding a
  * prefix (THR-1094 — the law's copy sat four prefixes stale long enough for a
@@ -41,6 +42,7 @@ import { BAND_TOOLTIP } from '../data/ascendant-bar-content';
 import type { QuintessenceBand } from '../types/quintessence';
 import { resolveAttachmentTemplateTooltip } from './attachmentTemplateIndex';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
+import { contentTagFromTooltipSuffix } from '../data/content-tags';
 import type { FactionDefinition } from '../types/faction';
 
 /**
@@ -346,6 +348,18 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
   // ─── Knowledge Level Tooltips ────────────────────────────────────
   if (prefix === 'knowledge') {
     return getKnowledgeLevelTooltip(suffix);
+  }
+
+  // ─── Content tag tooltips (THR-1486) ───────────────────────────
+  // The tag's `#` is the vocabulary's marker, not part of its name, so the id is
+  // `tag.weapon` rather than `tag.#weapon` — a `#` here would survive the routing
+  // split but read as punctuation in every surface that prints the id.
+  if (prefix === 'tag') {
+    const def = contentTagFromTooltipSuffix(suffix);
+    if (def) {
+      return { label: def.tag, desc: def.description };
+    }
+    return null;
   }
 
   // ─── Mandate tooltips ──────────────────────────────────────────

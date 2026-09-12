@@ -22,6 +22,8 @@
 import type { ReachDomain } from './traits';
 import type { AttachmentTier } from './attachments';
 import type { ContentCensusTag } from './contentCensus';
+import type { SphereName } from './index';
+import type { ContentTag } from '../data/content-tags';
 
 // ═══════════════════════════════════════════════════════════════════
 // Condition Predicates — finite, enumerable set for conditional effects
@@ -877,8 +879,15 @@ export interface SpellTemplate {
   readonly id: string;
   readonly name: string;
   readonly tier: AttachmentTier;
-  readonly tags: string[];
-  readonly sphereAffinity: string;
+  /**
+   * Content tags. Tightened from `string[]` by THR-1486 once the ratchet
+   * (`contentTagRetrofitPending.ts`) reached zero — the template-literal type catches the
+   * missing `#`, which is the one mistake that makes a tag match nothing (THR-1146);
+   * *membership* in the vocabulary is the contract test's job, not the type system's.
+   */
+  readonly tags: readonly ContentTag[];
+  /** The sphere the working draws on. Retyped from `string` by THR-1486; it is the field the registry projects a power's sphere tag from. */
+  readonly sphereAffinity: SphereName;
   readonly flavorText: string;
   readonly mechanicalSummary: string;
 

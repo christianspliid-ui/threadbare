@@ -2,8 +2,15 @@
  * Anomaly Reward Catalog — Signature artifacts, bestowed traits, and conditions
  * granted as rewards from anomaly discovery encounters.
  *
- * Each anomaly type has exactly 1 unique signature artifact. Bestowed powers and
- * conditions are shared across anomaly types via tag matching.
+ * Each anomaly type has exactly 1 unique signature artifact.
+ *
+ * **The "shared across anomaly types via tag matching" claim was removed (THR-1486).**
+ * It described an intent, not a mechanism: the bestowed powers and conditions below are
+ * tagged, and nothing reads those tags to share them — no query site names this catalog,
+ * so every grant here is by literal id. The tags are now seated in the closed vocabulary
+ * (`src/data/content-tags.ts`) and the content query that would make the sentence true
+ * arrives in slice 3 of THR-1481; until it has a consumer here, the header says what the
+ * file does rather than what it was hoped to do.
  *
  * Reward flow:
  *   - Success: rare resource seeded on location (handled in worldSeed)
@@ -51,7 +58,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
-      tags: ['#gem', '#wealth', '#anomaly'],
+      tags: ['#gem', '#anomaly'],
       mechanicalSummary: '+0.10 Gold roll · Gold capability +0.6 while borne, +0.05 Gold while trading, 1.3x desire for Gold encounters',
       lossCondition: 'stealable',
       flavorText: 'A stone the size of a fist, still warm from the earth. Its facets catch light that isn\'t there.',
@@ -225,7 +232,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
-      tags: ['#ancient', '#bone', '#anomaly'],
+      tags: ['#ancient', '#anomaly'],
       mechanicalSummary: '+0.05 Eye roll · Eye capability +0.45 / Veil +0.25 while borne, +0.03 Veil, +1 awareness range',
       lossCondition: 'permanent',
       flavorText: 'An ancient creature\'s eye, perfectly preserved in amber. It watches back. It always watches back.',
@@ -270,7 +277,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 2,
-      tags: ['#pearl', '#devotion', '#anomaly'],
+      tags: ['#pearl', '#anomaly'],
       mechanicalSummary: '+0.08 Heart roll · Heart capability +0.5 while borne, +0.05 Heart in social contexts, cooperates more readily with allies',
       lossCondition: 'permanent',
       flavorText: 'A string of flawless pearls, moon-white and warm to the touch. Folk say they calm the sea and soothe the restless dead.',
@@ -329,7 +336,7 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 2,
-      tags: ['#gem', '#wealth', '#anomaly'],
+      tags: ['#gem', '#anomaly'],
       description: 'Trained by the gleaming vein — sees mineral deposits others walk past.',
       maxLevel: 1,
       visibility: 'public',
@@ -430,7 +437,7 @@ export const ANOMALY_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 2,
-      tags: ['#pearl', '#navigation', '#anomaly'],
+      tags: ['#pearl', '#anomaly'],
       description: 'Reads water patterns with uncanny accuracy — navigates by current and tide.',
       maxLevel: 1,
       visibility: 'public',
@@ -497,7 +504,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#crystal', '#pain', '#anomaly', '#negative'],
+      tags: ['#crystal', '#anomaly', '#negative'],
       description: 'The resonance was overwhelming — lingering disorientation.',
       maxLevel: 1,
       visibility: 'public',
@@ -555,7 +562,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#underwater', '#wound', '#anomaly', '#negative'],
+      tags: ['#wound', '#anomaly', '#negative'],
       description: 'Swallowed too much salt water — temporarily weakened.',
       maxLevel: 1,
       visibility: 'public',
