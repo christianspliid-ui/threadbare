@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 96 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 113 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -96,7 +96,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**51 tags.**
+**68 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -151,6 +151,23 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#checkpoint` | Of the place where someone asks you what you are carrying. | condition 1 · item 1 · power 1 | 3 |  |
 | `#contraband` | Forbidden to hold, whoever you are holding it for. | — | 0 | **DEAD** |
 | `#blackmail_evidence` | Proof of something someone would pay to bury. | — | 0 | **DEAD** |
+| `#guild_errand` | Work set by the Adventurers' Guild — a posting taken off the board. | encounter 5 | 5 |  |
+| `#circle_errand` | Work set by the Arcane Circle — study, survey, and the reagents study needs. | encounter 5 | 5 |  |
+| `#fellowship_errand` | Work set by the Builders' Fellowship — stone cut, walls held, bridges thrown. | encounter 5 | 5 |  |
+| `#watch_errand` | Work set by the Civic Guard — the patrol, the gate, the crime nobody has solved. | encounter 5 | 5 |  |
+| `#dawn_errand` | Work set by the Holy Order of the Dawn — rites kept and the unclean turned back. | encounter 5 | 5 |  |
+| `#covenant_errand` | Work set by the Lorekeepers' Covenant — what is written down, and keeping it. | encounter 5 | 5 |  |
+| `#company_errand` | Work set by a Mercenary Company — the contract, the escort, the bounty. | encounter 5 | 5 |  |
+| `#consortium_errand` | Work set by the Merchant Consortium — cargo, routes, and the terms they travel under. | encounter 5 | 5 |  |
+| `#ranger_errand` | Work set by the Rangers' Brotherhood — the border, the trail, the thing that crossed it. | encounter 5 | 5 |  |
+| `#temple_errand` | Work set by the Temple of Spheres — observance, offering, and the spheres' own asking. | encounter 5 | 5 |  |
+| `#thieves_errand` | Work set by the Thieves' Guild — quiet, deniable, and paid in kind. | encounter 5 | 5 |  |
+| `#court_errand` | Work set by the Underking's Court — a favour asked by someone who does not ask. | encounter 5 | 5 |  |
+| `#tavern_night` | An evening in a common room, and whatever the evening turns into. | encounter 10 | 10 |  |
+| `#delve` | A descent into somewhere closed — a ruin, a vault, a hole that goes down. | encounter 4 | 4 |  |
+| `#threshold_errand` | Work at a crossing place, where the road or the world changes hands. | encounter 2 | 2 |  |
+| `#broker_errand` | Work arranged by someone who trades in arrangements rather than goods. | encounter 1 | 1 |  |
+| `#craft_commission` | A piece of work ordered from a maker, and answerable to whoever ordered it. | encounter 1 | 1 |  |
 
 ## polarity
 

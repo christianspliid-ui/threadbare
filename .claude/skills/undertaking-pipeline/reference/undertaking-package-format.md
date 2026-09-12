@@ -48,7 +48,32 @@ compile even though it compiled.
 | `creationEffects` | `{ onAdvance?, onAtCost?, onCritFailure? }` — at least one band for a `create` verb without a `mutationHint`. |
 | `mutationHint` | The completion mutation by type: `create_trade_route`, `create_sublocation`, `create_location`, `create_group`, `record_intelligence`, `mint_masterwork`, … |
 | `motiveGate[]`, `harmClass` | Required on every `destroy`. |
-| `catalystEncounterIds[]` | Encounters the work may seed. |
+| `catalystQuery` | The encounter family the work may seed, by kind and tags: `{ kind: 'encounter_template', tags: ['#consortium_errand'] }`. **This is the field to author** (THR-1488). |
+| `catalystEncounterIds[]` | *Deprecated.* Literal encounter ids. Kept one release for un-migrated packs; `check:undertaking` fails an id that names no registered template. |
+
+### Catalysts — author the query, never the list (THR-1488)
+
+Copy the encounter line: name the follow-up by **family**, from the closed tag vocabulary
+in `.claude/skills/encounter-pipeline/reference/content-tag-catalog.generated.md`.
+
+The reason is not symmetry, it is a measured failure. Every id the seven shipped packs
+spelled was `encounter_<name>` while the corpus spells encounters `encounter.<name>` — so
+**all thirty-three catalyst references resolved to nothing**, and every catalyst seed
+planted since the feature shipped withered on arrival. The field sat in the substrate
+inventory as DORMANT for that whole time, because nothing checked and a withered seed
+looks exactly like a feature nobody wired.
+
+**Auto-REVISE triggers** on the critic pass:
+
+- `catalystEncounterIds` authored at all in a new package — the literal form is
+  deprecated; rewrite it as a `catalystQuery`.
+- A `catalystQuery` whose tag is not seated in the vocabulary, or which resolves to no
+  encounter template. `check:undertaking` fails both under the `catalysts` block, so a
+  package reaching the gate with either is a wasted stage.
+- A catalyst whose family has nothing to do with the work. The family should be the one
+  whose errands the undertaking *disturbs* — the Consortium's routes for a trade work,
+  the Fellowship's stonework for a building one — not whichever family happened to
+  resolve.
 
 The **write set** — `mutationHint` + populated `creationEffects` bands + `harmClass` + the kind row +
 `must-persist` cast + catalysts — is what `check:undertaking-live` proves. A package whose write set

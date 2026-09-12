@@ -460,6 +460,7 @@ const step1CarryItBackUp: ActionStep = {
 
 export const THE_BROKEN_SEAL_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.delve.the_broken_seal',
+  tags: ['#delve'],
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Broken Seal',

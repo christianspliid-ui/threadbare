@@ -64,7 +64,12 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'The route is open. Goods flow where none flowed before.',
     ],
-    catalystEncounterIds: ['encounter_route_ambush', 'encounter_toll_dispute'],
+    // THR-1488 — the catalyst names its follow-up by family instead of by a literal
+    // id. Every id this pack used to spell was `encounter_<name>` where the corpus
+    // spells encounters `encounter.<name>`, so not one of them ever resolved and
+    // every catalyst seed this pack planted withered on arrival. The family chosen
+    // for this pack: the Consortium sets the cargo, route and contract work an ambush or a toll dispute interrupts.
+    catalystQuery: { kind: 'encounter_template', tags: ['#consortium_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 40, reachFloor: { gold: 0.4 } },
     // ── T2 seams (THR-1308) ──
@@ -97,7 +102,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'What was a track is a road. The cargo doubles and the season stops mattering so much.',
     ],
-    catalystEncounterIds: ['encounter_toll_dispute'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#consortium_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 30, reachFloor: { gold: 0.35 } },
     checkpointDifficulty: 0.45,
@@ -123,7 +128,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'The warehouse stands. Goods have a home, and the merchant has a foothold.',
     ],
-    catalystEncounterIds: ['encounter_warehouse_sabotage', 'encounter_labor_dispute'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#consortium_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 80, reachFloor: { gold: 0.4, stone: 0.2 } },
     motivations: ['asceticism_extravagance', 'preservation_transformation'],
@@ -146,7 +151,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'The guild chapter opens its doors. Merchants now have a seat at the table.',
     ],
-    catalystEncounterIds: ['encounter_guild_rivalry', 'encounter_charter_challenge'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#consortium_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city'] },
     resourceHint: { wealthCost: 120, reachFloor: { gold: 0.5, heart: 0.3 } },
     motivations: ['asceticism_extravagance', 'loyalty_ambition'],

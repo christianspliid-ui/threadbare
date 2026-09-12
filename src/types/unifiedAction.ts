@@ -17,6 +17,8 @@ import type { EncounterForeshadowingDefinition } from './foreshadowing';
 import type { AmbitionPriority } from './ambition';
 import type { RelocationDestination } from './movement';
 import type { NudgeCardTypeId } from '../data/nudge-card-library';
+import type { ContentTag } from '../data/content-tags';
+import type { ContentQuery } from './contentQuery';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -441,6 +443,24 @@ export type EncounterAftermathReactionEffect =
     readonly kind: 'encounter_seed';
     readonly encounterFamily?: string;
     readonly templateId?: string;
+    /**
+     * The sequel named by kind and tags instead of by literal id (THR-1488).
+     *
+     * The third and preferred operand. `templateId` names one template and breaks
+     * when it is renamed; `encounterFamily` names an *id prefix*, which is the same
+     * rot one level up — measured 2026-09-12, **41 of the 51 families the corpus
+     * authors match zero templates**, and every one of those seeds has been quietly
+     * withering since it was written. A query names the family the way the codex
+     * says it (`tags: ['#circle_errand']`), so a renamed or newly authored member
+     * joins the family by carrying the tag.
+     *
+     * Resolution order at fire time is `templateId` → `query` → `encounterFamily`,
+     * so a seed may carry a literal *and* a query and the literal wins — which is
+     * what lets a migration land the query beside the id and remove the id after a
+     * release. An empty resolution is the family path's existing withered-narrative
+     * fail-soft, never a throw; `check:encounter` is what makes it not happen.
+     */
+    readonly query?: ContentQuery;
     readonly targetAgentId?: string;
     readonly delayTicks: number;
     readonly priority?: number;
@@ -1317,6 +1337,17 @@ export interface PendingEncounterSeed {
   readonly sourceReactionId: string;
   readonly encounterFamily?: string;
   readonly templateId?: string;
+  /**
+   * The planted query, resolved at *fire* time rather than at plant time (THR-1488).
+   *
+   * Carrying the query rather than a drawn id is the whole point: a sequel planted
+   * twenty ticks ago should find the family as it stands when it comes due, and a
+   * seed whose family has grown since planting should be able to draw a member that
+   * did not exist yet. It also keeps one resolution site — `evaluateEncounterSeeds`
+   * — instead of one per planter, which is how the catalyst path and the aftermath
+   * path came to disagree about what a dead id does.
+   */
+  readonly query?: ContentQuery;
   readonly targetAgentId: string;
   readonly eligibleAfterTick: number;
   readonly priority: number;
@@ -2169,6 +2200,29 @@ export interface UnifiedActionTemplate {
   readonly name: string;
   readonly reach: ReachDomain;
   readonly crudType: 'create' | 'read' | 'update' | 'delete';
+  /**
+   * Words another piece of content may find this one by (THR-1488, slice 4 of
+   * THR-1481) — the encounter half of the content-tag vocabulary.
+   *
+   * **Author the `form` and `family` axes only.** `reach` and `sphereAffinity` are
+   * typed fields already, so their tags are *projected* at index time by
+   * `effectiveTags` and authoring them again is a contradiction the contract test
+   * fails by name. What belongs here is the axis no field carries: which family of
+   * errand or night this template is one of, so a sequel can be planted by family
+   * (`{ kind: 'encounter_template', tags: ['#circle_errand'] }`) rather than by a
+   * literal id that rots the moment the template is renamed.
+   *
+   * The type is only `#`-prefixed, not the closed union: membership in
+   * `CONTENT_TAGS` is enforced on the *authored literal* by `contentTags.test.ts`
+   * and the gates, never by narrowing the reader — the rule the vocabulary states
+   * for node-property tags, for the same reason (a saved world and a fixture may
+   * carry spellings the vocabulary does not seat, and a matcher that dropped them
+   * would widen silently).
+   *
+   * Optional and absent on the whole corpus at introduction, so every template
+   * that does not author it reads exactly as it did before (NFP #6).
+   */
+  readonly tags?: readonly ContentTag[];
 
   // Scale & Priority
   readonly scale: ActionScale;

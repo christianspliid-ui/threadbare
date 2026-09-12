@@ -34,8 +34,21 @@ Authority: `nudge-authoring-spec.md` § the shape catalog. Single Test · Test &
 Consequence · Puzzle–Investigation–Resolution · Danger–Confrontation–Aftermath ·
 Personality Fork (THR-894; N-route form pending THR-898) · Opt-in Complication ·
 **Seeded Sequel** (a parent's outcome plants a designed follow-up via
-`encounter_seed` — templateId + delayTicks + inheritContext — with the sequel
-authored alongside the parent; the sanctioned home for earned history).
+`encounter_seed` — `templateId` **or** `query` + delayTicks + inheritContext — with
+the sequel authored alongside the parent; the sanctioned home for earned history).
+
+**The query form (THR-1488).** `templateId` names one specific authored scene;
+`query` names a *family* in game words — `{ kind: 'encounter_template', tags:
+['#circle_errand'] }` — and the resolver draws a member when the seed comes due. Reach
+for the query whenever the sequel is "one of these" rather than "this one": a renamed
+template keeps its family, and a newly authored one joins by carrying the word. The
+operand it replaces, `encounterFamily`, named an id **prefix** and is deprecated —
+measured 2026-09-12, **41 of the 51 families the corpus authored matched no template at
+all**, so those sequels had been withering on arrival since they were written. Both live
+operands are fatal in `check:encounter`. One asymmetry to know: a query sequel keeps the
+family draw's eligibility filter (individual-performable, and the target's current
+location subtype must be one the template accepts) where a `templateId` sequel skips it,
+so a query sequel can wither for being in the wrong place.
 
 ## 2. Setting — where it fires (one or more classes)
 
@@ -83,7 +96,7 @@ prose rule 7 structural — a reward cannot be narrated without the mechanism ex
 | `intel` | learn who / where / what | intelligence system, Whisper (UI pending) |
 | `relationship` | a favor owed, an agent minted | favor edges, agent spawn (aftermath only) |
 | `standing` | reputation with a group | faction reputation *(deferred tier — see § 7)* |
-| `seed` | a future encounter planted | `encounter_seed`, `emit_omen` |
+| `seed` | a future encounter planted | `encounter_seed` (by `templateId` or `query` — § 1), `emit_omen` |
 
 ## 7. System — what the encounter exercises (pick one primary; maturity-gated)
 
@@ -151,6 +164,10 @@ and the rolled axes remain *capped*, never binding.
   column on the tag line (retro-tagging the 1,200). Queued behind the slice.
 
 ## Last-reviewed
+
+2026-09-12 by Claude Opus (THR-1488 — catalog 1's Seeded Sequel gains the query
+form and catalog 6's `seed` row names both operands; `encounterFamily` recorded as
+deprecated. No catalog entry, tier or rule changed).
 
 2026-08-25 by Claude Opus (THR-1245 — catalogs 1, 2 and 7 are now rolled at brief time
 by `draw:packet`; the setting die is gap-weighted against the THR-884 coverage counts.

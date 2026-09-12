@@ -766,3 +766,111 @@ describe('THR-143 contract: causation edge wiring', () => {
     }
   });
 });
+
+// ─── The seed query site, end to end (THR-1488) ───────────────────────
+
+/**
+ * The live-proof half of slice 4's Done-when, constructed rather than waited for.
+ *
+ * These run the real `evaluateEncounterSeeds` against the real trace buffer and the real
+ * template registry, and assert the `content.query_resolved` trace the seeding site emits.
+ * Deliberately *not* a citation from an organic run: a query seed's resolution depends on
+ * where its target happens to be standing, so whether a given seed fires on seed 42 at
+ * tick N is luck, and a Done-when satisfied by luck is not satisfied.
+ *
+ * The organic behaviour was measured anyway and is recorded on the ticket: on seed 42 /
+ * medium, aliased-family seeds (`mct.quest` → `#consortium_errand`) reach the query site
+ * and trace `content.query_empty`, because their targets are not standing anywhere the
+ * family's templates accept. That is the same nothing the prefix scan produced — now
+ * visible, which is what made the seven dead `templateId`s findable in the first place.
+ */
+describe('the encounter_seed query site resolves and traces (THR-1488)', () => {
+  beforeEach(() => { resetUnifiedActionCounter(); clearTraces(); enableTracing(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  /** `broker.quest.rival_shrine_betrayal` — the one member of `#broker_errand`. */
+  const BROKER_MEMBER = 'broker.quest.rival_shrine_betrayal';
+
+  function querySeed(overrides: Partial<PendingEncounterSeed>): PendingEncounterSeed {
+    return makeSeed({
+      seedId: 'seed_query_proof',
+      templateId: undefined,
+      encounterFamily: undefined,
+      eligibleAfterTick: 20,
+      seedLabel: 'a proof of the query site',
+      ...overrides,
+    });
+  }
+
+  it('an authored query spawns a member of the family and traces the resolution', () => {
+    const state = createMinimalGameState({
+      pendingEncounterSeeds: [querySeed({ query: { kind: 'encounter_template', tags: ['#broker_errand'] } })],
+    });
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    const spawned = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawned, 'the query resolved nothing — no action spawned').toBeDefined();
+    expect(spawned.templateId).toBe(BROKER_MEMBER);
+
+    const trace = getTraces().find(t => t.category === 'content.query_resolved') as
+      undefined | { site: string; candidateCount: number; pickedId?: string };
+    expect(trace, 'no content.query_resolved trace at the seed site').toBeDefined();
+    expect(trace!.site).toBe('encounter_seed');
+    expect(trace!.candidateCount).toBeGreaterThan(0);
+    expect(trace!.pickedId).toBe(spawned.templateId);
+  });
+
+  it('a legacy family with an alias row takes the same path and traces the same site', () => {
+    // The migration's live half: a *shipped* seed shape — `encounterFamily`, no query —
+    // reaches the resolver through ENCOUNTER_FAMILY_TAGS and is indistinguishable at the
+    // trace from an authored query. This is what makes the alias table a real rewrite
+    // rather than a hopeful one.
+    const state = createMinimalGameState({
+      pendingEncounterSeeds: [querySeed({ encounterFamily: 'broker.quest' })],
+    });
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    expect(result.unifiedActions[result.unifiedActions.length - 1]?.templateId).toBe(BROKER_MEMBER);
+    const trace = getTraces().find(t => t.category === 'content.query_resolved') as
+      undefined | { site: string };
+    expect(trace, 'an aliased family did not reach the resolver').toBeDefined();
+    expect(trace!.site).toBe('encounter_seed');
+  });
+
+  it('an empty query traces content.query_empty and withers rather than throwing', () => {
+    const state = createMinimalGameState({
+      pendingEncounterSeeds: [querySeed({ query: { kind: 'encounter_template', tags: ['#no_such_family'] } })],
+    });
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    expect(result.unifiedActions).toHaveLength(0);
+    const empty = getTraces().find(t => t.category === 'content.query_empty') as
+      undefined | { site: string };
+    expect(
+      empty,
+      'a hungry query site left no trace — the exact indistinguishability this slice removes',
+    ).toBeDefined();
+    expect(empty!.site).toBe('encounter_seed');
+
+    // Fail-soft (NFP #4): the withered narrative event fires, and it names the family in
+    // the tag's own word rather than leaking `undefined` into player-facing prose.
+    const withered = result.tickEvents.find(e => e.id === 'seed_query_proof_family_ready');
+    expect(withered?.message).toContain('no such family');
+    expect(withered?.message).not.toContain('undefined');
+  });
+
+  it('a literal templateId still wins over a query on the same seed', () => {
+    const state = createMinimalGameState({
+      pendingEncounterSeeds: [querySeed({
+        templateId: BROKER_MEMBER,
+        query: { kind: 'encounter_template', tags: ['#delve'] },
+      })],
+    });
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    expect(result.unifiedActions[0].templateId).toBe(BROKER_MEMBER);
+    // And the resolver was never asked. That is what "the literal wins" has to mean if a
+    // migration is to land a query beside an id and delete the id a release later.
+    expect(getTraces().some(t => t.category.startsWith('content.query'))).toBe(false);
+  });
+});

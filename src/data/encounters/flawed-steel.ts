@@ -784,6 +784,7 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'crafting.quest.flawed_steel',
+  tags: ['#craft_commission'],
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Flawed Steel',

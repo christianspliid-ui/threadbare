@@ -57,6 +57,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.pocket_run',
+    tags: ['#thieves_errand'],
     name: 'Pocket Run',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -179,6 +180,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.fence_goods',
+    tags: ['#thieves_errand'],
     name: 'Fence Stolen Goods',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -307,6 +309,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.case_the_mark',
+    tags: ['#thieves_errand'],
     name: 'Case the Mark',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -437,6 +440,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.warehouse_raid',
+    tags: ['#thieves_errand'],
     name: 'Warehouse Raid',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -568,6 +572,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.blackmail_ledger',
+    tags: ['#thieves_errand'],
     name: 'Blackmail Ledger',
     rarityTier: 2,
     intrinsicTier: 'shaping',

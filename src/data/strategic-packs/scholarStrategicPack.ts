@@ -69,7 +69,12 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The treatise is complete. Knowledge that was scattered is now gathered.',
     ],
-    catalystEncounterIds: ['encounter_academic_rivalry', 'encounter_forbidden_knowledge'],
+    // THR-1488 — the catalyst names its follow-up by family instead of by a literal
+    // id. Every id this pack used to spell was `encounter_<name>` where the corpus
+    // spells encounters `encounter.<name>`, so not one of them ever resolved and
+    // every catalyst seed this pack planted withered on arrival. The family chosen
+    // for this pack: the Lorekeepers' Covenant sets the catalogue, translation and recovery work rivalry grows out of.
+    catalystQuery: { kind: 'encounter_template', tags: ['#covenant_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'temple'] },
     resourceHint: { wealthCost: 30, reachFloor: { eye: 0.4 } },
     checkpointDifficulty: 0.5,
@@ -94,7 +99,7 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The circle convenes for the first time. Scholarship has an address.',
     ],
-    catalystEncounterIds: ['encounter_academic_rivalry', 'encounter_heretical_discovery'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#covenant_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
     resourceHint: { wealthCost: 80, reachFloor: { eye: 0.4, heart: 0.2 } },
     motivations: ['revelation_discretion', 'loyalty_ambition'],
@@ -117,7 +122,7 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The expedition returns, loaded with notes and artifacts. The knowledge is hard-won.',
     ],
-    catalystEncounterIds: ['encounter_ruin_trap', 'encounter_ancient_guardian'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#covenant_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['ruins', 'shrine', 'temple', 'oasis'] },
     resourceHint: { wealthCost: 50, reachFloor: { eye: 0.3 } },
     checkpointDifficulty: 0.5,
@@ -179,7 +184,7 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'What was held closely is now simply known. Nobody owns it, which was exactly the intent.',
     ],
-    catalystEncounterIds: ['encounter_academic_rivalry'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#covenant_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'temple', 'ruins'] },
     resourceHint: { reachFloor: { eye: 0.25 } },
     checkpointDifficulty: 0.45,

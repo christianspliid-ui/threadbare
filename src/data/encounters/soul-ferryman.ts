@@ -416,6 +416,7 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'liminal.quest.soul_ferryman',
+  tags: ['#threshold_errand'],
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Soul Ferryman',

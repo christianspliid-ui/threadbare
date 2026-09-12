@@ -65,6 +65,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.pickpocket_run',
+    tags: ['#court_errand'],
     name: 'Pickpocket Run',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -153,6 +154,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.fence_goods',
+    tags: ['#court_errand'],
     name: 'Fence Stolen Goods',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -241,6 +243,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.protection_racket',
+    tags: ['#court_errand'],
     name: 'Run the Racket',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -330,6 +333,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.smuggle_cargo',
+    tags: ['#court_errand'],
     name: 'Smuggle Cargo',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -428,6 +432,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.blackmail_mark',
+    tags: ['#court_errand'],
     name: 'Blackmail a Mark',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -608,8 +613,10 @@ export const UNDERKING_COURT_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
               { kind: 'reputation_tally' as const, key: 'shadow.positive', delta: 1 },
               {
                 kind: 'encounter_seed' as const,
-                encounterFamily: 'civic_guard',
-                templateId: 'cg.patrol.wall_walk',
+                // THR-1488: was `encounterFamily: 'civic_guard'` (matches no template) plus
+                // `templateId: 'cg.patrol.wall_walk'` (no such id) — two dead references, so the
+                // watch never once came. The family it meant is the Civic Guard's own errands.
+                query: { kind: 'encounter_template' as const, tags: ['#watch_errand' as const] },
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
                 priority: 0.9,
                 seedLabel: 'The guard gets a tip. The tip points away from the Court. Somewhere, a rival crew is about to have a hard month.',
@@ -911,8 +918,9 @@ export const UNDERKING_COURT_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
               },
               {
                 kind: 'encounter_seed' as const,
-                encounterFamily: 'civic_guard',
-                templateId: 'cg.senior.inquisition',
+                // THR-1488: `cg.senior.inquisition` is not a registered id and `civic_guard` is
+                // not a live family, so the quiet inquiry never opened. Named by family instead.
+                query: { kind: 'encounter_template' as const, tags: ['#watch_errand' as const] },
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 2,
                 priority: 1.1,
                 seedLabel: 'The civic guard, asked pointed questions by its captains, begins a quiet inquiry into the {location} district.',
@@ -1019,8 +1027,9 @@ export const UNDERKING_COURT_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
               },
               {
                 kind: 'encounter_seed' as const,
-                encounterFamily: 'civic_guard',
-                templateId: 'cg.senior.inquisition',
+                // THR-1488: `cg.senior.inquisition` is not a registered id and `civic_guard` is
+                // not a live family, so the quiet inquiry never opened. Named by family instead.
+                query: { kind: 'encounter_template' as const, tags: ['#watch_errand' as const] },
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 3,
                 priority: 0.9,
                 seedLabel: 'Somewhere in the civic guard, a captain senses the wrongness of the city\'s weather. They open a file.',

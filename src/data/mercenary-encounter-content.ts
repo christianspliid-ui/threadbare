@@ -50,6 +50,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.patrol',
+    tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Road Patrol',
     locationSubtypes: ['town', 'city', 'capital'],
@@ -140,6 +141,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.guard_caravan',
+    tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Guard the Caravan',
     locationSubtypes: ['town', 'city', 'capital', 'border_crossing'],
@@ -238,6 +240,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.collect_bounty',
+    tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Collect a Bounty',
     locationSubtypes: ['town', 'city', 'capital', 'crossroads'],
@@ -370,6 +373,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.siege_work',
+    tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Siege Work',
     locationSubtypes: ['town', 'city', 'capital', 'fortress'],
@@ -460,6 +464,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.escort_prisoner',
+    tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Escort a Prisoner',
     locationSubtypes: ['town', 'city', 'capital'],

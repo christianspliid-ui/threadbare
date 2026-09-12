@@ -58,7 +58,12 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The warband musters. Enough swords to make a claim worth defending.',
     ],
-    catalystEncounterIds: ['encounter_desertion', 'encounter_warband_rivalry'],
+    // THR-1488 — the catalyst names its follow-up by family instead of by a literal
+    // id. Every id this pack used to spell was `encounter_<name>` where the corpus
+    // spells encounters `encounter.<name>`, so not one of them ever resolved and
+    // every catalyst seed this pack planted withered on arrival. The family chosen
+    // for this pack: a Mercenary Company sets the patrol, escort and siege work desertion and rivalry break out of.
+    catalystQuery: { kind: 'encounter_template', tags: ['#company_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort'] },
     resourceHint: { wealthCost: 50, reachFloor: { iron: 0.3, heart: 0.2 } },
     checkpointDifficulty: 0.55,
@@ -113,7 +118,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The position is fortified. Ground that can be held.',
     ],
-    catalystEncounterIds: ['encounter_siege_preparation', 'encounter_supply_raid'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#company_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'camp', 'fort', 'castle'] },
     resourceHint: { wealthCost: 60, reachFloor: { iron: 0.3, stone: 0.3 } },
     motivations: ['preservation_transformation', 'mercy_ruthlessness'],
@@ -136,7 +141,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'The garrison is established. The banner flies over the gate.',
     ],
-    catalystEncounterIds: ['encounter_garrison_mutiny', 'encounter_civilian_unrest'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#company_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'castle', 'fort'] },
     resourceHint: { wealthCost: 80, reachFloor: { iron: 0.4, heart: 0.2 } },
     motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
@@ -189,7 +194,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'They have sworn to you. Whether the oath holds is a different question, asked later.',
     ],
-    catalystEncounterIds: ['encounter_companion_test'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#company_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'camp'] },
     resourceHint: { wealthCost: 3, reachFloor: { heart: 0.2 } },
     motivations: ['loyalty_ambition', 'courage_prudence'],
@@ -226,7 +231,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'Nothing moves. The ledger at the far end starts saying things the owner does not want to read.',
     ],
-    catalystEncounterIds: ['encounter_route_ambush', 'encounter_toll_dispute'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#company_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 20, reachFloor: { iron: 0.3, eye: 0.2 } },
     checkpointDifficulty: 0.5,
@@ -260,7 +265,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'Char and posts. In ten years it will be called ruins and nobody will remember whose it was.',
     ],
-    catalystEncounterIds: ['encounter_civilian_unrest', 'encounter_garrison_mutiny'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#company_errand'] },
     targetRule: { type: 'location_subtype', subtypes: ['hamlet', 'camp', 'town'] },
     resourceHint: { wealthCost: 25, reachFloor: { iron: 0.35 } },
     checkpointDifficulty: 0.55,
@@ -293,7 +298,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     completionProse: [
       'More spears answer than left. The band is heavier now, and slower, and harder to break.',
     ],
-    catalystEncounterIds: ['encounter_desertion', 'encounter_warband_rivalry'],
+    catalystQuery: { kind: 'encounter_template', tags: ['#company_errand'] },
     // The band the commander *has* — not a location, and not a stranger's band. This
     // is the half that keeps selection and resolution agreeing (THR-1309 trap 1).
     targetRule: { type: 'group_node', groupKind: 'company', ownership: 'commanded_by_actor' },

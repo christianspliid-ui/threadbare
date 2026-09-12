@@ -46,6 +46,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.brawl',
+    tags: ['#tavern_night'],
     name: 'Tavern Brawl',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -222,6 +223,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.overheard_rumor',
+    tags: ['#tavern_night'],
     name: 'Overheard Rumor',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -343,6 +345,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.drinking_contest',
+    tags: ['#tavern_night'],
     name: 'Drinking Contest',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -459,6 +462,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.bardic_performance',
+    tags: ['#tavern_night'],
     name: 'Bardic Performance',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -568,6 +572,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.shady_deal',
+    tags: ['#tavern_night'],
     name: 'Shady Deal',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -757,6 +762,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.recruiting_drive',
+    tags: ['#tavern_night'],
     name: 'Recruiting Drive',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -879,6 +885,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.the_challenge',
+    tags: ['#tavern_night'],
     name: 'The Challenge',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1062,6 +1069,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.confession_over_drinks',
+    tags: ['#tavern_night'],
     name: 'Confession Over Drinks',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1205,6 +1213,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.merchants_pitch',
+    tags: ['#tavern_night'],
     name: "Merchant's Pitch",
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1305,6 +1314,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.the_warning',
+    tags: ['#tavern_night'],
     name: 'The Warning',
     rarityTier: 1,
     intrinsicTier: 'shaping',

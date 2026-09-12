@@ -2,10 +2,10 @@
 
 > **Generated:** 2026-09-12 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 47e666d449fb42981053d950fedd4ebd470bc713)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: e3aa84015623c72d12189d412a70eaf3005e81ff)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: a13522874a7882243c34c7230d240d7d43d02c16)
->   - Docs/canon/undertakings.md (sha1: 8f5de7885faa47c3a7b7c68b3af71312db702870)
+>   - Docs/canon/undertakings.md (sha1: 75dbc3324dd979f32d58f16922794d7be6df0112)
 >   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
@@ -283,6 +283,7 @@ An undertaking is authored inside its mechanics; the prose comes last and is hel
 - **Board authoring** — `motivations`: at least `UNDERTAKING_MOTIVATION_MIN_ARITY` (2) distinct `VALUE_PAIRS` members; `payoffValue` present. One currency ranks encounters and undertakings together (`UNIFIED_DECISION_BOARD_MODE = 'live'`, THR-1349); a template with no desire signal scores nothing, silently.
 - **Reachability** — the id appears in at least one ambition's `strategicProfile.templateIds` (`src/data/ambition-templates.ts`). The third registration, and the silent one.
 - **Register** — `activityProse` and `completionProse` at the encounter standard (Prose Doctrine v2, `Docs/canon/prose.md`): present tense, third person, the agent named, no evasive vagueness, no second person, no numerals, no exclamation marks. Abstraction and intensifiers rank; they do not gate.
+- **Catalysts** — `catalystQuery`, the encounter family a completed work may seed, named by kind and tags: `{ kind: 'encounter_template', tags: ['#consortium_errand'] }`. Read by `maybeSeedCatalyst`, which stores the query on the planted `PendingEncounterSeed` so the *one* seeding site resolves it when it comes due — the same path an aftermath `encounter_seed` takes, which is why the two planters cannot drift about what a dead reference does. The deprecated `catalystEncounterIds` is kept one release for un-migrated packs. **This field had never once fired** (THR-1488): every id the seven packs spelled was `encounter_<name>` while the corpus spells encounters `encounter.<name>`, so all thirty-three resolved to nothing and every catalyst seed withered on arrival — DORMANT in THR-1481's substrate inventory for exactly that reason. The `catalysts` block is now fatal on both operands, which is what keeps it from going dormant again, and the write set records the query so a template whose only declared write was its catalyst does not read as vacuous after migrating. **Honest limit, measured rather than assumed:** all 35 carriers are pack templates, and under `UNDERTAKING_MODEL: 'cells'` a profile's `templateIds` are not walked — so the field now resolves correctly and is still unreachable from the live board (0 of 60 cells declare one). [THR-1497](https://linear.app/threadbare/issue/THR-1497) holds the decision about whether a catalyst belongs on a cell; until it lands, the `undertaking_catalyst` query site has no live claim, deliberately.
 - **Tokens** — a template's `activityProse[0]` renders verbatim; a **cell's** lines carry four slots — `{object}` `{owner}` `{actor}` `{place}` (sentence-initial capitals allowed) — filled from the world by `resolveUndertakingProse` (`src/engine/undertakingProse.ts`), which also returns the concepts it named for chips. `STRATEGIC_PROSE_TOKENS` names exactly those tokens; the contract's `tokens` block refuses any other.
 
 > Source: Docs/canon/undertakings.md § The template and its authored seams (extracted at generation time)

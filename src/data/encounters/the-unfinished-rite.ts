@@ -103,6 +103,7 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.delve.the_unfinished_rite',
+  tags: ['#delve'],
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Unfinished Rite',

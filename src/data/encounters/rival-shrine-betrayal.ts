@@ -647,6 +647,7 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const RIVAL_SHRINE_BETRAYAL_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'broker.quest.rival_shrine_betrayal',
+  tags: ['#broker_errand'],
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: "The Broker's Ledger",

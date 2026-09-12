@@ -86,7 +86,12 @@ import {
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
 import { doctrineV2Warnings } from '../src/data/content-eval/doctrineV2Checks';
-import { validateNudgeGrantRefs, validateContentQueries, validateFavorDebtors } from '../src/engine/nudgeGrantLiveness';
+import {
+  validateNudgeGrantRefs,
+  validateContentQueries,
+  validateFavorDebtors,
+  validateEncounterSeedRefs,
+} from '../src/engine/nudgeGrantLiveness';
 import { invalidTallyKeyProblems } from '../src/data/content-eval/tallyKeys';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 
@@ -279,6 +284,16 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     // (`tallyKeyCorpus.test.ts`): `--all` here sweeps `encounter.*` only, which is 8
     // of the 78 leaked keys. This arm is the fast feedback for the template in hand.
     ...invalidTallyKeyProblems(template, template.id),
+    // THR-1488 — the fifth liveness shape, and the one whose whole job is to promise
+    // something *later*: a seed naming a template that does not exist, or a query that
+    // resolves to nothing. Fatal, because both are defects in content written after the
+    // query exists. A legacy `encounterFamily` prefix matching nothing is the shipped
+    // backlog rather than new rot, so it reports in `warnings` below instead.
+    ...validateEncounterSeedRefs([template]).dead.map(
+      d => `${d.site} encounter_seed → ${d.kind === 'dead_template'
+        ? `unknown template '${d.ref}'`
+        : `query matches nothing: ${d.ref}`} ("${d.seedLabel}")`,
+    ),
   ];
   const tokens = tokenProblems(template);
   const forecast = forecastProblems(template);
@@ -290,6 +305,15 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
   const warnings = [
     ...audit.warnings,
     ...doctrineV2Warnings(template),
+    // THR-1488 — a legacy `encounterFamily` prefix that matches no template. Warn, not
+    // fail: 41 of the corpus's 51 families are in this state, they predate the query,
+    // and `ENCOUNTER_FAMILY_TAGS` deliberately leaves them on the pre-change prefix path
+    // for a release. Counting them here is the point — an unreported nothing reads
+    // exactly like a check nobody wrote.
+    ...validateEncounterSeedRefs([template]).deadFamilies.map(
+      d => `${d.site} encounter_seed → family '${d.ref}' matches no template `
+        + `(name a family tag and add an ENCOUNTER_FAMILY_TAGS row, or author \`query\`)`,
+    ),
   ];
 
   // Deliberately does NOT read `warnings`. The doctrine's budgets and register
