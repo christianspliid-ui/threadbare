@@ -10,6 +10,7 @@ import { FlavorQuote } from '../shared/FlavorQuote';
 import { pickFallbackFlavor } from '../../data/reveal-content';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 import { durationLabel } from '../../engine/aftermathWords';
+import { resolveConditionEffectLine } from '../../engine/attachmentTemplateIndex';
 
 export interface AttachmentDetailData {
   id: string;
@@ -110,8 +111,21 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   // when the attachment carries no prose of its own.
   const flavorLine = attachment.flavorText || pickFallbackFlavor('attachment', attachment.id);
 
+  // THR-1475 — what a condition actually does, above the line that describes how
+  // it feels. The same `conditionEffectLine` the hover draws, reached through the
+  // same id-keyed resolver (Law 27: one rule, one place), so the tooltip and this
+  // row cannot drift into two readings of one state.
+  //
+  // `totalTicks` is passed and `ticksRemaining` is not: this row states the term
+  // the bearer was given, and the Duration section below states what is left of
+  // it. Two questions, each answered once.
+  const conditionEffect = resolveConditionEffectLine(attachment.id, {
+    totalTicks: attachment.totalTicks,
+  });
+
   // Effect (always)
   const effectProse = [
+    conditionEffect?.line ?? null,
     attachment.mechanicalSummary,
     attachment.lossCondition ? `Loss: ${attachment.lossCondition}` : null,
     attachment.grantedBy ? `Granted by ${attachment.grantedBy}` : null,
