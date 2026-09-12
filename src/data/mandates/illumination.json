@@ -4,7 +4,9 @@
   "name": "Illumination",
   "description": "Energy saturates the realm. Blaze with divine power.",
   "targetSphere": "energy",
-  "sphereAffinities": ["energy"],
+  "sphereAffinities": [
+    "energy"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -51,11 +53,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "One region is saturated in energy. Light blazes where shadow held dominion. Power radiates outward in waves of transformation.",
-    "escalation_to_culmination": "Two territories burn bright with divine power. Energy courses through their bones. The realm begins to remember what radiance means.",
-    "completed": "Four regions blaze with the force of pure energy. The world is illuminated end to end. Your light has become the only truth. Darkness yields.",
-    "failed": "The radiance dims and fails. Shadows reclaim their territory. Your light was not steady enough to rewrite the sky."
-  }
+  ]
 }

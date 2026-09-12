@@ -67,18 +67,24 @@ function buildMandateProseEvent(
   significance: number,
   notification: TickEvent['notification'],
 ): TickEvent {
-  const resolved = resolveMilestoneProse(definition.id, transition, fallback);
+  const resolved = resolveMilestoneProse(
+    definition.id,
+    transition,
+    fallback,
+    definition.primarySphere,
+  );
 
   emitTrace({
     category: 'mandate_milestone_prose',
     tick: state.tick,
     agentId: state.ascendantId,
     summary: resolved.authored
-      ? `Mandate "${definition.name}" narrates its ${transition} beat from authored prose.`
+      ? `Mandate "${definition.name}" narrates its ${transition} beat from authored prose (${resolved.key}).`
       : `Mandate "${definition.name}" has no authored ${transition} prose; the generated line stands in.`,
     mandateId: definition.id,
     transition,
     authored: resolved.authored,
+    proseKey: resolved.key,
   });
 
   return {

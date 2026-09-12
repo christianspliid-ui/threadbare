@@ -88,22 +88,11 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Ticks of twilight phase before game end. Events intensify during twilight.',
         'src/data/game-config.ts', [1, 50],
         'cycleEnd → twilight detection'),
-      n('MANDATE_PRIMARY_WEIGHT', gameConfig.MANDATE_PRIMARY_WEIGHT,
-        'Score weight for primary mandate conditions. Higher = primary mandates dominate scoring.',
-        'src/data/game-config.ts', [0.5, 5.0],
-        'mandateScoring → final score'),
-      n('MANDATE_SECONDARY_WEIGHT', gameConfig.MANDATE_SECONDARY_WEIGHT,
-        'Score weight for secondary mandate conditions.',
-        'src/data/game-config.ts', [0.1, 3.0],
-        'mandateScoring → final score'),
-      n('MANDATE_BASE_WEIGHT', gameConfig.MANDATE_BASE_WEIGHT,
-        'Base score weight applied to all mandate conditions equally.',
-        'src/data/game-config.ts', [0.0, 2.0],
-        'mandateScoring → final score'),
-      n('MANDATE_ACHIEVABLE_MULTIPLIER', gameConfig.MANDATE_ACHIEVABLE_MULTIPLIER,
-        'Multiplier for achievable mandate conditions. Rewards attainable goals.',
-        'src/data/game-config.ts', [1.0, 5.0],
-        'mandateScoring → achievable bonus'),
+      // MANDATE_PRIMARY_WEIGHT / _SECONDARY_WEIGHT / _BASE_WEIGHT /
+      // _ACHIEVABLE_MULTIPLIER were listed here until THR-1198. They weighted
+      // `generateMandate`'s template selection; with that retired they tuned
+      // nothing, and a tunable that moves no number is a dead control that reads
+      // as live (Law 21).
       n('DEFAULT_COLS', init.DEFAULT_COLS,
         'Grid width in hexes. Larger = more territory to explore.',
         'src/engine/gameInit.ts', [10, 50],

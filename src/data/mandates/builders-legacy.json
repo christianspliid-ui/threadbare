@@ -3,7 +3,10 @@
   "type": "graph_state",
   "name": "The Builder's Legacy",
   "description": "Create lasting structures. Leave monuments to your divine engineering.",
-  "sphereAffinities": ["matter", "energy"],
+  "sphereAffinities": [
+    "matter",
+    "energy"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -47,11 +50,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "Your first monuments rise. Two structures stand—temples of intention and will. Time will judge whether they last.",
-    "escalation_to_culmination": "Five edifices now span the realm, each one a claim carved into the world. Your signature is written in architecture. Future ages will name these works.",
-    "completed": "Eight monuments endure—a legacy that will outlast kingdoms. Your creations have become landscape. Mortals will build upon your foundations for generations.",
-    "failed": "Your structures crumble into dust. The materials reject your vision. Creation was not yours to command after all."
-  }
+  ]
 }

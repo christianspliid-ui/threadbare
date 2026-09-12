@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadMandateTemplates, loadMandateMilestoneProse, validateMandateJson } from '../mandate-loader';
+import { loadMandateTemplates, validateMandateJson } from '../mandate-loader';
 import type { SphereName } from '../../types/index';
 import { assertNoDuplicateIds } from '../../testing/contentInvariants';
 
@@ -7,7 +7,9 @@ const VALID_CONDITION_TYPES = ['node_count', 'edge_count', 'sphere_weight', 'act
 const VALID_STAGES = ['setup', 'escalation', 'culmination'];
 const VALID_TYPES = ['graph_state', 'narrative', 'sphere_dominance', 'simulation_achievable'];
 const VALID_SPHERES: SphereName[] = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
-const VALID_PROSE_KEYS = ['setup_to_escalation', 'escalation_to_culmination', 'completed', 'failed'];
+// THR-1198 retired the co-located `prose` block and its loader; milestone prose
+// is keyed to the remembrance ids a live game mints and is covered by
+// `mandateRemembranceProse.test.ts`.
 
 // contentInvariants sweep v2 (THR-245): kept 1 structural (fixed-enum), replaced 1 growth-tracking
 
@@ -79,28 +81,6 @@ describe('mandate-loader', () => {
     });
   });
 
-  describe('loadMandateMilestoneProse', () => {
-    const prose = loadMandateMilestoneProse();
-
-    it('every prose entry is a non-empty string', () => {
-      for (const [key, text] of Object.entries(prose)) {
-        expect(typeof text).toBe('string');
-        expect(text.length, `${key} prose too short`).toBeGreaterThan(10);
-      }
-    });
-
-    it('keys follow mandateId.transition pattern', () => {
-      const templates = loadMandateTemplates();
-      const mandateIds = new Set(templates.map((t) => t.id.replace('mandate.', '')));
-      for (const key of Object.keys(prose)) {
-        const parts = key.split('.');
-        expect(parts.length).toBe(2);
-        expect(mandateIds.has(parts[0])).toBe(true);
-        expect(VALID_PROSE_KEYS).toContain(parts[1]);
-      }
-    });
-  });
-
   describe('validateMandateJson', () => {
     it('rejects JSON missing id', () => {
       expect(() => validateMandateJson({ type: 'graph_state', name: 'X', description: 'X', sphereAffinities: ['life'], stages: [], prose: {} }, 'test.json')).toThrow();
@@ -139,19 +119,6 @@ describe('mandate-loader', () => {
         ],
         prose: { setup_to_escalation: 'x', escalation_to_culmination: 'x', completed: 'x', failed: 'x' },
       }, 'test.json')).toThrow(/sphere/i);
-    });
-
-    it('rejects JSON with missing prose keys', () => {
-      expect(() => validateMandateJson({
-        id: 'mandate.test', type: 'graph_state', name: 'X', description: 'X',
-        sphereAffinities: ['life'],
-        stages: [
-          { stage: 'setup', description: 'x', conditions: [] },
-          { stage: 'escalation', description: 'x', conditions: [] },
-          { stage: 'culmination', description: 'x', conditions: [] },
-        ],
-        prose: { setup_to_escalation: 'x', completed: 'x', failed: 'x' },
-      }, 'test.json')).toThrow(/prose/i);
     });
 
     it('rejects JSON with invalid mandate type', () => {

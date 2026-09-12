@@ -3,7 +3,10 @@
   "type": "simulation_achievable",
   "name": "Web of Mortal Bonds",
   "description": "Relationships form between mortals. Weave a living web of obligation and kinship.",
-  "sphereAffinities": ["mind", "spirit"],
+  "sphereAffinities": [
+    "mind",
+    "spirit"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -47,11 +50,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "Four mortal hearts find each other. Relationships weave themselves into being. A web of living bonds begins to hum.",
-    "escalation_to_culmination": "Eight bonds now link the mortals together. The web grows dense and resilient. Kinship becomes something you can almost touch.",
-    "completed": "Twelve threads bind mortals in an intricate web of relation. Oaths, loyalties, and affections hold. The pattern is complete.",
-    "failed": "The bonds fray. Hearts turn away from one another. No web can hold if mortals refuse each other."
-  }
+  ]
 }

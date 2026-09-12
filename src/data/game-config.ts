@@ -123,28 +123,11 @@ export const DOOM_ARCHETYPES: DoomClockArchetype[] = [
  */
 export const TWILIGHT_TICKS = 7;
 
-// ─── Mandate Weights (selection probability) ────────────────────
-
-/**
- * Weight multiplier when a mandate template matches the ascendant's
- * primary sphere. Higher = more likely to be selected.
- */
-export const MANDATE_PRIMARY_WEIGHT = 3;
-
-/**
- * Weight multiplier for secondary sphere match.
- */
-export const MANDATE_SECONDARY_WEIGHT = 2;
-
-/**
- * Base weight when no sphere match (every mandate is always eligible).
- */
-export const MANDATE_BASE_WEIGHT = 1;
-
-/**
- * Extra multiplier for simulation_achievable mandate type.
- */
-export const MANDATE_ACHIEVABLE_MULTIPLIER = 2;
+// Retired by THR-1198 with their only consumer, `generateMandate`:
+// MANDATE_PRIMARY_WEIGHT, MANDATE_SECONDARY_WEIGHT, MANDATE_BASE_WEIGHT,
+// MANDATE_ACHIEVABLE_MULTIPLIER. They weighted a sphere-weighted selection over
+// the 12 mandate templates; the run's spine is remembrance-derived, so nothing
+// selects a template and these tuned nothing.
 
 // ─── Encounter World-Shaping Constants (THR-115) ────────────────────────────
 

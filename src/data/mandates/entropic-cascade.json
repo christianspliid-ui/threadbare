@@ -4,7 +4,9 @@
   "name": "The Entropic Cascade",
   "description": "Entropy dominates. Dissolve the old and remake the world.",
   "targetSphere": "entropy",
-  "sphereAffinities": ["entropy"],
+  "sphereAffinities": [
+    "entropy"
+  ],
   "stages": [
     {
       "stage": "setup",
@@ -51,11 +53,5 @@
         }
       ]
     }
-  ],
-  "prose": {
-    "setup_to_escalation": "Two regions begin to fracture. Order unravels at its seams. The old structures feel the weight of dissolution. Change is coming.",
-    "escalation_to_culmination": "Four territories crumble and transform. The cascade of entropy spreads—old kingdoms dissolve into possibility. Renewal rises from the ashes of decay.",
-    "completed": "Five realms have been unmade and remade in your image. The Cascade is complete. What was is no longer. Entropy has baptized the world.",
-    "failed": "The decay halts. Remnants of the old order reassert themselves. Your dissolution was incomplete. Order reassumes its throne."
-  }
+  ]
 }
