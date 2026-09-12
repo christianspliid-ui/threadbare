@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-12 20:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-12 21:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is shipped, merged and live — including the three tickets that re-authored the screens you would be reading (chip nouns, the chip-caption rule, the promise rule), all of which landed before noon.
+You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is shipped, merged and live. Since then the scene prose improved again: a scene now names **the place it is about** separately from wherever the mortal is standing ([THR-1493](https://linear.app/threadbare/issue/THR-1493), merged 21:27).
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
@@ -34,16 +34,16 @@ Nothing is broken while these sit; the cards open, they are just shallower. Not 
 
 ## Resolved this period
 
+- **2026-09-12 — a scene says which place it is about** ([THR-1493](https://linear.app/threadbare/issue/THR-1493)). Merged 21:27, live. Scene prose no longer conflates the place the scene concerns with wherever the mortal is standing.
+- **2026-09-12 — any content can hand out any other content** ([THR-1487](https://linear.app/threadbare/issue/THR-1487)). Merged 21:00. The one rule behind it; nothing visible to you yet.
 - **2026-09-12 — content opens the codex, and it is now built** ([THR-1491](https://linear.app/threadbare/issue/THR-1491)). Merged 17:54, live. The veto stays open in principle but now costs a small rework: every content kind's deeper page set to nothing, and the **open in codex ↗** link at a card's foot removed.
-- **2026-09-12 — the closed tag vocabulary is merged** ([THR-1486](https://linear.app/threadbare/issue/THR-1486)). Merged 17:01. Unblocked the content query; nothing visible to you yet.
+- **2026-09-12 — the closed tag vocabulary is merged** ([THR-1486](https://linear.app/threadbare/issue/THR-1486)). Merged 17:01. Unblocked the content query.
 - **2026-09-12 — every kind of thing opens the same card** ([THR-1490](https://linear.app/threadbare/issue/THR-1490)). Merged 15:54, live. A name anywhere in the game opens the same sheet.
-- **2026-09-12 — the content-object registry is merged** ([THR-1485](https://linear.app/threadbare/issue/THR-1485)). Merged 16:30. Infrastructure for "any content can hand out any other content, by tag."
+- **2026-09-12 — the content-object registry is merged** ([THR-1485](https://linear.app/threadbare/issue/THR-1485)). Merged 16:30.
 - **2026-09-12 — the nudge stage is one block, and it is live** ([THR-1478](https://linear.app/threadbare/issue/THR-1478)). Merged 15:44. Your batch-4 redesign: two panels became one, the forecast a die, the difficulty a tilting balance.
 - **2026-09-12 — clicking a mortal's name works, and the ending survives it** ([THR-1477](https://linear.app/threadbare/issue/THR-1477)). Merged 14:31. Your batch-3 finding.
 - **2026-09-12 — the promise rule is shipped and live** ([THR-1476](https://linear.app/threadbare/issue/THR-1476)). Merged 13:35. Prose may no longer bind a mortal to a place and a time the engine does not enforce.
-- **2026-09-12 — your fourth feedback batch is shipped and live** ([THR-1475](https://linear.app/threadbare/issue/THR-1475)). Merged 12:49. A condition's hover and sheet line now say what it actually does.
-- **2026-09-12 — your third feedback batch is shipped and live** ([THR-1473](https://linear.app/threadbare/issue/THR-1473)). Merged 11:33. A chip sentence is a caption, not a second ending.
-- **2026-09-12 — scar and boon nouns are character-sheet words** ([THR-1472](https://linear.app/threadbare/issue/THR-1472)). Merged 07:46. The last of the three tickets that were holding the sitting ask back.
+- **2026-09-12 — a condition's hover and sheet say what it does** ([THR-1475](https://linear.app/threadbare/issue/THR-1475)). Merged 12:49. Your fourth feedback batch.
 
 ---
 
