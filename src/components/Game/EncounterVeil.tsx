@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from 'react';
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
 import { FollowToggle, type FollowDescriptor } from './FollowToggle';
@@ -32,6 +32,8 @@ import {
 } from './encounter-stage/designerView';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
+import { NudgeBalance, NudgeReadingMarks } from './encounter-stage/shells/NudgeStageHeader';
+import { useNudgeHand } from './encounter-stage/useNudgeHand';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
@@ -394,6 +396,25 @@ export function EncounterVeil({
    * carried by motion alone), it simply appears as one `--anim-fast` fade.
    */
   const reducedMotion = usePrefersReducedMotion();
+
+  /**
+   * THR-1478 — the nudge hand is owned *here*, not inside `NudgePhaseShell`.
+   *
+   * The merged header above the prose shows the live forecast, and the cards
+   * that move it render below the prose inside the shell; two subtrees reading
+   * one selection means one state, and this is the only component that contains
+   * both. The hook is fail-soft on `undefined`, so the non-nudge path costs a
+   * no-op rather than a branch.
+   */
+  const nudgeHand = useNudgeHand(model.nudgePhase);
+
+  /** The designer view's numerals ride the same marks the player sees words on. */
+  const nudgeDesignerView = useSyncExternalStore(
+    subscribeNudgeDesignerView,
+    isNudgeDesignerViewEnabled,
+    isNudgeDesignerViewEnabled,
+  );
+
   const ceremonialDelay = (delay: number) => (reducedMotion ? 0 : delay);
   const ceremonialDuration = (duration: number) =>
     reducedMotion ? REDUCED_MOTION_FADE_S : duration;
@@ -2130,7 +2151,14 @@ export function EncounterVeil({
           />
         </div>
 
-        {/* Context strip — character (portrait + name), location + Show on map, reach chip */}
+        {/* ── The one header block (THR-1478) ─────────────────────
+            Character (portrait + name), follow, location + Show on map — and,
+            on a nudge step, the stage's reading marks folded into the same row
+            with the balance beneath them. Director find, 2026-09-12: *"we have
+            redundancy in the interface. please merge these two into one. i think
+            the right placing is above the prose."* The test panel that used to
+            sit below the prose drew a second portrait and a second reach icon;
+            merging here is what makes each of them appear once. */}
         <div style={entranceStyle(ENTRANCE_DELAYS.agentLine, 0.8)}>
           <ContextStrip
             header={model.header}
@@ -2140,6 +2168,18 @@ export function EncounterVeil({
             onDisregard={onDisregard}
             followState={followState}
             onToggleFollow={onToggleFollow}
+            inlineMarks={model.nudgePhase ? (
+              <NudgeReadingMarks
+                testPanel={model.nudgePhase.testPanel}
+                forecast={nudgeHand.forecast}
+                baseForecast={nudgeHand.baseForecast}
+                forecastMoved={nudgeHand.forecastMoved}
+                designerView={nudgeDesignerView}
+              />
+            ) : undefined}
+            belowBlock={model.nudgePhase ? (
+              <NudgeBalance testPanel={model.nudgePhase.testPanel} />
+            ) : undefined}
           />
         </div>
 
@@ -2313,6 +2353,12 @@ export function EncounterVeil({
               // THR-972 — the motive intro renders above the prose block, which
               // is a different subtree; the shell must not draw it a second time.
               renderMotiveIntro={false}
+              // THR-1478 — same reasoning, one directive later: the reading is
+              // in the context strip above the prose, so the shell is the hand
+              // and the commit alone. The hand state is owned up here because
+              // both subtrees read it.
+              renderTestHeader={false}
+              hand={nudgeHand}
             />
           ) : (
             <>
@@ -3014,6 +3060,8 @@ function ContextStrip({
   onDisregard,
   followState,
   onToggleFollow,
+  inlineMarks,
+  belowBlock,
 }: {
   header: EncounterStageHeaderModel;
   threadTier: ThreadTier;
@@ -3022,6 +3070,14 @@ function ContextStrip({
   onDisregard: () => void;
   followState?: FollowDescriptor;
   onToggleFollow?: (agentId: string) => void;
+  /**
+   * THR-1478 — marks the *stage* contributes to this row, rendered after the
+   * location. Present only on a nudge step; the aftermath and the legacy choice
+   * path pass nothing and draw exactly what they drew before.
+   */
+  inlineMarks?: ReactNode;
+  /** Anything the marks need beneath them — today, the balance and its legend. */
+  belowBlock?: ReactNode;
 }) {
   const name = header.agentName ?? header.familyLabel;
   const canSelectAgent = Boolean(header.focalActorId && onSelectAgent);
@@ -3033,13 +3089,13 @@ function ContextStrip({
   const hasLocation = Boolean(header.locationLabel) && header.locationLabel !== 'Unknown Location';
 
   return (
+    <div data-testid="encounter-context-block" style={{ marginBottom: 16 }}>
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: 12,
         flexWrap: 'wrap',
-        marginBottom: 16,
       }}
     >
       {/* Character — portrait + name (clickable to agent detail) */}
@@ -3096,8 +3152,11 @@ function ContextStrip({
         />
       )}
 
-      {/* Reach chip — current step's reach */}
-      {header.reachLabel && (
+      {/* Reach chip — current step's reach.
+          THR-1478: stands down where `inlineMarks` renders. The marks draw the
+          reach as the icon-set `ReachIcon` (THR-972's directive), and the whole
+          point of the merge was that the reach appears exactly once. */}
+      {header.reachLabel && !inlineMarks && (
         <span
           style={{
             fontFamily: FONT_PROSE,
@@ -3156,6 +3215,12 @@ function ContextStrip({
           )}
         </span>
       )}
+
+      {/* THR-1478 — the stage's reading marks, in this row rather than in a
+          second panel below the prose. */}
+      {inlineMarks}
+    </div>
+    {belowBlock}
     </div>
   );
 }

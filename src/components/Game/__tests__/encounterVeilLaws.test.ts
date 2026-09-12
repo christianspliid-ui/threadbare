@@ -66,6 +66,14 @@ function sourceFilesUnderSrc(dir = '', acc: string[] = []): string[] {
 const VEIL = 'components/Game/EncounterVeil.tsx';
 const SHELL = 'components/Game/encounter-stage/shells/NudgePhaseShell.tsx';
 /**
+ * THR-1478 — the stage's *reading* (reach, difficulty, forecast, factor lines)
+ * left the shell when the test panel merged into the veil's context strip, and
+ * it took the ceremonial tokens and the factor polarity colours with it. Every
+ * sweep below that named the shell names this too: a guard whose file list stops
+ * where the code went is a guard with a hole in exactly the wrong place.
+ */
+const STAGE_HEADER = 'components/Game/encounter-stage/shells/NudgeStageHeader.tsx';
+/**
  * The shared card face (THR-1002). The blocked-card reason moved here when the
  * nudge card's zone stack was extracted, and it now colours that reason for *both*
  * cards — so Law 45's floor matters more here than it did in the shell, not less.
@@ -181,7 +189,7 @@ describe('Law 30 — the ceremonial palette is tokens, and there is one gold', (
   });
 
   it('leaves no hardcoded ceremonial hex in the veil or the nudge shell', () => {
-    for (const file of [VEIL, SHELL]) {
+    for (const file of [VEIL, SHELL, STAGE_HEADER]) {
       const src = readCode(file);
       // The pre-THR-1010 gold, and the three raw tone literals it travelled with.
       expect(src, `${file} still declares the drifted gold`).not.toMatch(/#d4af37/i);
@@ -221,7 +229,7 @@ describe('Law 30 — polarity is one token set, not two declarations', () => {
     // The two hues each file used to declare for itself, plus the deep red both
     // of them spelled out independently. Written as channel triples rather than
     // whole `rgba(...)` strings so a re-introduction at any alpha still fails.
-    for (const file of [VEIL, SHELL]) {
+    for (const file of [VEIL, SHELL, STAGE_HEADER]) {
       const src = readCode(file);
       expect(src, `${file} still has a raw gain green`).not.toMatch(/134,\s*239,\s*172/);
       expect(src, `${file} still has a raw loss red`).not.toMatch(/248,\s*113,\s*113/);
@@ -246,7 +254,7 @@ describe('Law 27 — the ceremonial prose serif lives in the token layer', () =>
   });
 
   it('leaves no inline Georgia stack in the interrupt family', () => {
-    for (const file of [VEIL, SHELL, PREMONITION]) {
+    for (const file of [VEIL, SHELL, STAGE_HEADER, PREMONITION]) {
       expect(readCode(file), `${file} still spells the serif stack inline`)
         .not.toMatch(/Georgia\s*,/);
     }
@@ -316,7 +324,7 @@ describe('Law 17 — the emergence cards explain in place, not on hover', () => 
 
 describe('Law 41 — transitions are property-scoped', () => {
   it('has no `transition: all` in the veil or the nudge shell', () => {
-    for (const file of [VEIL, SHELL]) {
+    for (const file of [VEIL, SHELL, STAGE_HEADER]) {
       const offenders = read(file)
         .split('\n')
         .map((line, i) => [i + 1, line] as const)
@@ -409,12 +417,12 @@ describe('Law 45 — veil text tones meet WCAG AA against --veil-void', () => {
     // `polarityColor` is deliberately absent and keeps its lighter alpha.
     const T = String.raw`rgb\(var\(--veil-loss-rgb\) / var\(--veil-loss-text-alpha\)\)`;
     const veil = readCode(VEIL);
-    const shell = readCode(SHELL);
+    const stageHeader = readCode(STAGE_HEADER);
     expect(veil, 'replay outcome word').toMatch(new RegExp(`failure:\\s*'${T}'`));
     expect(veil, 'consequence chip label').toMatch(
       new RegExp(`tone === 'loss'\\) return '${T}'`),
     );
-    expect(shell, 'factor sentence').toMatch(new RegExp(`against:\\s*'${T}'`));
+    expect(stageHeader, 'factor sentence').toMatch(new RegExp(`against:\\s*'${T}'`));
     expect(readCode(CARD_FACE), 'blocked-card reason').toMatch(
       /-reason-\$\{id\}[\s\S]{0,240}--veil-loss-text-alpha/,
     );
