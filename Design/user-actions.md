@@ -1,17 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-09-12 14:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-12 15:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is now shipped and live — the last, the name-click ([THR-1477](https://linear.app/threadbare/issue/THR-1477)), merged 14:31.
+You stopped after four feedback batches this morning with *"more batches expected."* Everything those batches produced is now shipped and live, including the largest — the nudge-stage merge ([THR-1478](https://linear.app/threadbare/issue/THR-1478), merged 15:44). The scene screen now carries one header block above the prose, a die for the forecast and a tilting balance for the difficulty, both wordless; the objective line and the "The Balance" hover are gone.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. One thing you already ruled on is still on screen and is not an ask — the two-panel nudge stage ([THR-1478](https://linear.app/threadbare/issue/THR-1478), High, queued).
+The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Two things on that screen are already decided and are not asks — the die replacing the tier word where a written law says otherwise (recorded, overrule on sight), and two factor lines that are not sentences, now sitting above the prose ([THR-1494](https://linear.app/threadbare/issue/THR-1494), queued).
 
 The wider design map (fights, items, powers) waits behind eight questions only you can answer. It is deliberately not being chased while the sitting is live — say **"work the map"** in a chat when you are ready to work them one at a time.
 
@@ -23,16 +23,16 @@ Found while building the name-click fix; the session would not decide it alone. 
 
 ## Resolved this period
 
-- **2026-09-12 — clicking a mortal's name works, and the ending survives it** ([THR-1477](https://linear.app/threadbare/issue/THR-1477)). Merged 14:31, deployed. Your batch-3 finding; the last known defect on the slice surfaces.
+- **2026-09-12 — the nudge stage is one block, and it is live** ([THR-1478](https://linear.app/threadbare/issue/THR-1478)). Merged 15:44, deployed. Your batch-4 redesign: two panels became one, the forecast became a die, the difficulty a tilting balance, the objective line gone.
+- **2026-09-12 — clicking a mortal's name works, and the ending survives it** ([THR-1477](https://linear.app/threadbare/issue/THR-1477)). Merged 14:31, deployed. Your batch-3 finding.
 - **2026-09-12 — the promise rule is shipped and live** ([THR-1476](https://linear.app/threadbare/issue/THR-1476)). Merged 13:35. Prose may no longer bind a mortal to a place and a time the engine does not enforce.
 - **2026-09-12 — your fourth feedback batch is shipped and live** ([THR-1475](https://linear.app/threadbare/issue/THR-1475)). Merged 12:49. A condition's hover and sheet line now say what it actually does.
 - **2026-09-12 — your third feedback batch is shipped and live** ([THR-1473](https://linear.app/threadbare/issue/THR-1473)). Merged 11:33. A chip sentence is a caption, not a second ending.
 - **2026-09-12 — the chip-noun sweep is shipped and live** ([THR-1480](https://linear.app/threadbare/issue/THR-1480)). Merged 10:34. The 57 chip nouns outside the slice are character-sheet words now.
 - **2026-09-12 — your first feedback batch is already shipped and live** ([THR-1472](https://linear.app/threadbare/issue/THR-1472)). Claimed 09:02, merged 09:46. 74 minutes from your words to the site.
-- **2026-09-12 — the sitting began, and it is producing work.** Four batches in seventeen minutes became seven tickets, five of them High.
+- **2026-09-12 — the sitting began, and it is producing work.** Four batches in seventeen minutes became seven tickets, five of them High. All seven are now shipped or queued.
 - **2026-09-12 — the held-town design is no longer an ask on you** ([THR-1448](https://linear.app/threadbare/issue/THR-1448)). You gave the direction on 10 September; the open questions are the designer's.
 - **2026-09-11 — the slice passed verification and the invitation was released** ([THR-1469](https://linear.app/threadbare/issue/THR-1469)). All five encounters re-walked on the live build; verdict **level**.
-- **2026-09-11 — the aftermath rules question is settled** ([THR-1053](https://linear.app/threadbare/issue/THR-1053)): an aftermath change has to name something you can click.
 
 ---
 
