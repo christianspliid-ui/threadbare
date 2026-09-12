@@ -3,6 +3,11 @@ import type { GameState } from '../../../../types/gameState';
 import { getEffectiveUnifiedActionChoiceMemory } from '../../../../engine/encounterChoiceMemory';
 import { resolveAttachmentTooltip } from '../../../../engine/attachmentTooltip';
 import { getNarrativeLabel } from '../../../../engine/domainCapability';
+import {
+  enrichProse,
+  gatherNarrativeContext,
+  type NarrativeContext,
+} from '../../../../engine/proseEnrichment';
 import { getPortraitUrl } from '../../../../data/portrait-assets';
 import { REWARD_CONDITIONS } from '../../../../data/reward-attachment-catalog';
 import type { ClearanceGateRuntimeState } from '../../../../types/contentShells';
@@ -918,9 +923,60 @@ function buildGateDutyAftermathNarrative(args: {
   };
 }
 
+/**
+ * THR-1459 — every authored string this adapter puts on the ending goes through here.
+ *
+ * The same structural gap THR-923 closed in the nudge adapter, on a third text path.
+ * Gate duty is the one template with a *bespoke* stage adapter, so it never inherited
+ * the enrichment `buildUnifiedEncounterStageModel` applies to `change.detail` and
+ * `reaction.intent`. Its authored aftermath references its own cast — the fallback
+ * variant names `{cast:suspect_courier}` in a `future_hook` detail and in the
+ * `gate_duty_note_cargo` reaction intent — so the raw token reached the player.
+ *
+ * Note this is *not* the "missing binding" failure mode. `proseEnrichment` guarantees a
+ * declared key always resolves and an absent cast block strips, so either path would
+ * have produced a name or nothing. A literal token on screen can only mean the text
+ * never entered the enricher at all, which is what made this invisible to the cast
+ * tests: they exercise `enrichProse`, and this string never reached it.
+ *
+ * Fail-soft when the action is gone (NFP #4): with no `activeAction` there is no actor
+ * to gather a context around, so tokens are stripped rather than passed through. A
+ * scene token that cannot resolve must vanish, never render.
+ */
+function buildGateDutyEnricher(args: {
+  template: UnifiedActionTemplate;
+  graph: WorldGraph;
+  activeAction?: UnifiedAction;
+  gameState?: GameState;
+}): (text: string) => string {
+  const { template, graph, activeAction, gameState } = args;
+  const ctx: NarrativeContext | undefined = activeAction
+    ? gatherNarrativeContext(
+        graph,
+        activeAction.actorId,
+        undefined,
+        undefined,
+        undefined,
+        gameState,
+        undefined,
+        {
+          targetId: activeAction.targetId,
+          supportBundle: template.supportBundle,
+          supportBindings: activeAction.supportBindings,
+          contextFragments: template.contextFragments,
+          contextFragmentTemplateId: template.id,
+        },
+      )
+    : undefined;
+  return (text: string): string =>
+    ctx ? enrichProse(text, ctx) : text.replace(/\{cast:[^}]*\}/g, '');
+}
+
 function buildGateDutyAftermathPresentation(args: {
   encounter: ActiveEncounterDisplay;
   graph: WorldGraph;
+  /** THR-1459 — authored `detail` strings are enriched before they are read or shown. */
+  enrich: (text: string) => string;
 }) {
   const actorMoments = new Map<string, {
     id: string;
@@ -950,10 +1006,15 @@ function buildGateDutyAftermathPresentation(args: {
 
   for (const change of args.encounter.aftermathSummary?.changes ?? []) {
     const actorMoment = ensureActorMoment(change.actorId, change.actorName);
+    // THR-1459 — enrich once, at the top, so every branch below reads and renders the
+    // same resolved sentence. The parsing branches matter too: `extractQuotedText` and
+    // `extractTrailingRewardName` scan this string, and a raw `{cast:*}` inside the
+    // scanned span would make them miss or mis-slice what they are looking for.
+    const detail = args.enrich(change.detail);
 
     if (change.kind === 'growth') {
       const domain = parseGrowthDomain(change.title);
-      const tierShift = parseTierShift(change.detail);
+      const tierShift = parseTierShift(detail);
       if (domain && tierShift && tierShift.to > tierShift.from) {
         actorMoment.summaryLines.push(
           `${actorMoment.actorName} is now ${getNarrativeLabel(domain, tierShift.to)} in ${titleCaseWords(domain)}.`,
@@ -963,7 +1024,7 @@ function buildGateDutyAftermathPresentation(args: {
     }
 
     if (change.kind === 'trait') {
-      const traitName = extractQuotedText(change.detail);
+      const traitName = extractQuotedText(detail);
       if (traitName) {
         actorMoment.summaryLines.push(`${actorMoment.actorName} now carries ${traitName}.`);
       }
@@ -971,7 +1032,7 @@ function buildGateDutyAftermathPresentation(args: {
     }
 
     if (change.kind === 'item') {
-      const rewardName = extractTrailingRewardName(change.detail);
+      const rewardName = extractTrailingRewardName(detail);
       if (rewardName) {
         const rewardCondition = REWARD_CONDITION_BY_NAME.get(rewardName.toLowerCase());
         if (rewardCondition) {
@@ -1007,7 +1068,7 @@ function buildGateDutyAftermathPresentation(args: {
       highlights.push({
         id: change.id,
         title: 'The checkpoint settled into a new story',
-        detail: change.detail,
+        detail,
         tone: 'info',
       });
       continue;
@@ -1017,7 +1078,7 @@ function buildGateDutyAftermathPresentation(args: {
       highlights.push({
         id: change.id,
         title: 'The night will keep travelling',
-        detail: change.detail,
+        detail,
         tone: 'info',
       });
       continue;
@@ -1054,6 +1115,13 @@ function rewriteGateDutyAftermathReactions(
     captainName: string;
     witnessName: string;
     locationLabel: string;
+    /**
+     * THR-1459 — applied to the *fall-through* branch below. The three rewritten
+     * reactions interpolate resolved names already; every other reaction is authored
+     * content passed straight to the card, which is how `gate_duty_note_cargo` put
+     * `{cast:suspect_courier}` on screen.
+     */
+    enrich: (text: string) => string;
   },
   reactions: readonly NonNullable<NonNullable<ActiveEncounterDisplay['aftermathSummary']>['reactions']>[number][] | undefined,
 ) {
@@ -1084,8 +1152,8 @@ function rewriteGateDutyAftermathReactions(
     }
     return {
       id: reaction.id,
-      label: reaction.label,
-      intent: reaction.intent,
+      label: args.enrich(reaction.label),
+      intent: reaction.intent != null ? args.enrich(reaction.intent) : undefined,
       disabled: false,
     };
   });
@@ -1107,6 +1175,8 @@ export function buildGateDutyEncounterStageModel({
   const courierBinding = getSupportBinding(activeAction, 'suspect_courier');
   const witnessBinding = getSupportBinding(activeAction, 'checkpoint_witness');
   const cast = buildCast(template, graph, activeAction, clearanceGateState);
+  // THR-1459 — built once for the whole model, like the unified adapter's `ctx`.
+  const enrich = buildGateDutyEnricher({ template, graph, activeAction, gameState });
 
   const currentStepIndex = getCurrentStepIndex(encounter, activeAction);
   const firstChoice = getChoiceMemoryForStep(encounter, activeAction, 0, template.steps[0]?.id ?? 'step-1');
@@ -1204,6 +1274,7 @@ export function buildGateDutyEncounterStageModel({
     const aftermathPresentation = buildGateDutyAftermathPresentation({
       encounter,
       graph,
+      enrich,
     });
     const aftermathNarrative = buildGateDutyAftermathNarrative({
       locationLabel,
@@ -1256,6 +1327,7 @@ export function buildGateDutyEncounterStageModel({
           captainName,
           witnessName,
           locationLabel,
+          enrich,
         }, encounter.aftermathSummary.reactions),
       },
     };

@@ -4176,3 +4176,7 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-12 | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | THR-1493 — `{target:place}` added to the enrichment placeholder table | A capability the guide does not name is one content agents will not use |
 | 2026-09-12 | `public/attention-story-reference.html` | THR-1493 — place tokens split by which place they mean | `src/engine/prose*.ts` is one of this page's sources |
 | 2026-09-12 | `Docs/status/2026-09-12-thr-1493.md` | THR-1493 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-12 | `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` | THR-1459 — the bespoke gate-duty adapter enriches authored aftermath prose | It assigned `change.detail` and `reaction.intent` raw, so `{cast:suspect_courier}` reached the player |
+| 2026-09-12 | `src/components/Game/__tests__/encounterVeilGateDutyCastTokens.test.tsx` | THR-1459 — jsdom render evidence over the real veil, bound and unbound arms | The UI-pillar browser-verify substitution for an unattended lane |
+| 2026-09-12 | `src/data/__tests__/aftermathCastTokenCorpus.test.ts` | THR-1459 — corpus sweep: every authored aftermath cast key is declared by its own template | A file list rots; the membership predicate does not |
+| 2026-09-12 | `Docs/status/2026-09-12-thr-1459.md` | THR-1459 — new status fragment | One file per entry since THR-1016 |
