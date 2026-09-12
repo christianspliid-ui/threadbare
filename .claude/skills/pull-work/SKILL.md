@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-09-06
+last_validated_against: 2026-09-12
 ---
 
 # Pull Work
@@ -36,7 +36,9 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
     git fetch origin main
     git log origin/main --grep="Fixes ${id}" --grep="Closes ${id}" --grep="Resolves ${id}" --regexp-ignore-case --extended-regexp --oneline
 
-If the result is non-empty, the work has already landed but Linear's auto-close either lagged or failed. Do NOT proceed to read the plan doc or write code. Apply the disposition in § *The verified-shipped park* above — comment the SHA, `save_issue(id, assignee: null)` with the state **staying** `In Dev`, verify-after-write, exit cleanly. Do not release to `Ready for Dev`.
+**Confirm every hit line-anchored before trusting it (impediment #1015).** `--grep` matches the keyword *anywhere* in a commit body, but the closer's real predicate (THR-738, `linear-autoclose.yml`) is the keyword ALONE on its own line — and slice-shipped tickets write prose that names the keyword precisely to *disclaim* it (`` `Fixes THR-1155` rides slice 3, not this commit ``). For each candidate SHA run `git log --format=%B -1 <sha> | grep -iE "^(Fixes|Closes|Resolves) ${id}[[:space:]]*$"`; only a line-anchored match is proof of shipping. A prose-only mention means the work is still in flight — proceed with pickup.
+
+If a line-anchored match exists, the work has already landed but Linear's auto-close either lagged or failed. Do NOT proceed to read the plan doc or write code. Apply the disposition in § *The verified-shipped park* above — comment the SHA, `save_issue(id, assignee: null)` with the state **staying** `In Dev`, verify-after-write, exit cleanly. Do not release to `Ready for Dev`.
 
 **Fail-soft:** if `git fetch origin main` errors (network down, auth issue, sandbox limitation), log the error and continue to step 4 anyway. The upstream-shipped check is best-effort — a fetch failure must not block pickup of genuinely open work. Surface a one-line warning in the session log.
 
@@ -381,7 +383,7 @@ git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-is
 
 **If the result is empty:** the work is genuinely still in flight. Continue to Step 1.8 (checkpoint-resume), then Step 5 (Reopened safety check) — skip Steps 2–4 (concurrent-session parallel, coordination block, claim) because the claim already exists.
 
-**If the result is non-empty:** the commit landed but the auto-close did not fire. Apply the disposition in § *The verified-shipped park* above — it is the same one Step 4.4 applies, stated once there. Unassigning frees the WIP=1 slot, so the lane does not park it waiting on a review that never comes (THR-608: Christian doesn't read Linear, so the retired "human reviewer" never closes it).
+**If the result is non-empty** (confirmed line-anchored per Step 3.5's confirm step — impediment #1015: prose that *disclaims* the keyword also matches `--grep`)**:** the commit landed but the auto-close did not fire. Apply the disposition in § *The verified-shipped park* above — it is the same one Step 4.4 applies, stated once there. Unassigning frees the WIP=1 slot, so the lane does not park it waiting on a review that never comes (THR-608: Christian doesn't read Linear, so the retired "human reviewer" never closes it).
 
 **Trace lines** (NFP #2):
 
@@ -521,6 +523,8 @@ On a `Todo`/`Backlog` partner, check whether the partner's *own* blocker has shi
 - **Blocker shipped** → the partner is promotable and only nobody's attention was missing. `save_issue(partnerId, state:"Ready for Dev")`, verify-after-write, and record the evidence (blocker id + merge SHA) in a comment on the partner. Then continue with the candidate rather than bouncing it — bouncing a candidate for a partner nobody was going to promote is the deadlock, not a defence against it.
 - **Blocker genuinely unshipped** → bounce the candidate as usual, but name the blocker the *pair* is waiting on in the bounce comment. A wait someone can read is recoverable; an unattributed one is what produced the three occurrences.
 
+**The same liveness check applies to a bare `blockedBy` relation with no mutex line (impediment #991).** THR-1303 reached the top of `Ready for Dev` while its `blockedBy` partner THR-1301 sat parked in `Todo` — the THR-908 deadlock shape arriving through the *relation* rather than through a `Mutex with` line, so the check written for mutex lines never fired and the pair would have re-offered an unpickable top candidate every hour. At claim, resolve every `blockedBy` partner with the same three dispositions: partner `Done`/merged → the block is spent, record that and continue; partner `In Dev`/`Ready for Dev` → genuinely live, bounce the candidate to `Todo` with the relation intact; partner `Todo`/`Backlog` → the **partner** is the workable half — if it is itself unblocked, promote it to `Ready for Dev` (or claim it in place of the candidate) with a comment naming the evidence, and park the candidate to `Todo` per THR-846.
+
 Per THR-688 Rule B this whole branch is a **technical verdict** — a merge either happened or it did not — so it is the executor's to make, not a coordination decision to escalate. Note the promotion writes `Ready for Dev` on the *partner*, never on the candidate you are claiming, and never `Done` (Rule 3 forbids CC closing).
 
 **UI-pillar tickets carry the UI Laws implicitly (THR-1007, ratified 2026-08-06).** If the ticket touches the UI pillar, load the `frontend-ui` skill before writing code — it binds `Docs/design-system/laws.md`, and the Laws are part of the Done-when whether or not the ticket restates them. Browser-verify is a judgment against the Laws on the composed surface, with law numbers cited in the evidence, not only a screenshot.
@@ -549,7 +553,7 @@ git fetch origin main
 git log origin/main --grep="Fixes <issue-id>" --grep="Closes <issue-id>" --grep="Resolves <issue-id>" --regexp-ignore-case --extended-regexp --oneline
 ```
 
-If the result is non-empty, the work has already landed. Do not proceed. Apply the disposition in § *The verified-shipped park* above — it is the same one Step 1.7 applies, stated once there. In particular the claim is **not** released back to `Ready for Dev`: the state stays `In Dev` with the assignee cleared, because a completed ticket returned to the queue is re-claimed and re-investigated every hour forever (THR-958).
+If the result is non-empty — confirmed line-anchored per Step 3.5's confirm step (impediment #1015) — the work has already landed. Do not proceed. Apply the disposition in § *The verified-shipped park* above — it is the same one Step 1.7 applies, stated once there. In particular the claim is **not** released back to `Ready for Dev`: the state stays `In Dev` with the assignee cleared, because a completed ticket returned to the queue is re-claimed and re-investigated every hour forever (THR-958).
 
 **Also grep the parent's id when the ticket is a split-out child (impediment #310).** This grep only ever asks about *this* issue's id, so a child ticket whose scope is then executed under the **parent's** id is invisible to it by construction — the check reads clean and is correct to. THR-680 was split out of THR-674 at 07:12Z on 2026-07-21; a later session finished exactly its scope at 13:12Z the same day and closed it with `Fixes THR-674`, and THR-680 sat in `Todo` for 9 days before being promoted and picked up as live work. If the issue body contains a "Split from THR-XXX" (or "Split out of", "Parent:") reference, run the same grep for that id, and read the parent's state — a parent already in `Done` is itself the signal:
 

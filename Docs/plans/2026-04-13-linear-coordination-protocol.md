@@ -417,7 +417,13 @@ A ticket is read hours-to-days after it is written, by an executor with no memor
 
 > *Motivating examples:* THR-616's engine slices sat hostage for 3 runs behind a WebGL browser gate that had nothing to do with the change. Worse, THR-644's "40-tick browser pass" was unreachable *by construction* — automated tabs report `document.hidden`, which throttles the rAF tick loop to one tick per click (memory `reference_browser_mcp_from_cc_debug`). A Done-when that cannot be satisfied by any executor is a permanently parked ticket.
 
-**Standing constraint on Rule C:** until the headless tick bridge (THR-689) ships, *no* Done-when may require running N ticks in an automated browser tab. Use a headless CLI sweep for any "advance the sim and observe X" acceptance criterion.
+**Standing constraint on Rule C:** THR-689 shipped 2026-07-21, so a Done-when may require running N ticks in an automated browser tab **only via `window.__DEBUG.tick(n)`** — Play-button ticking remains unreachable by construction (`document.hidden` throttles the interval loop to ~1 tick/click). *(Updated 2026-09-12 retro: this paragraph previously said "until THR-689 ships", which had been stale for seven weeks.)*
+
+**Rule C corollary — Done-whens are reachable by construction, on the surface they name (2026-09-12 retro; impediments #1005, #1019 ×2, #978).** Three shapes recurred in one week:
+
+1. *An organic live-run observation is acceptance evidence only if the stock world supplies the precondition.* THR-1450's "non-zero lump on a 150-tick seed-42/99 run" returned an honest zero on both seeds because nothing organic ever reached the cell — the correct fix looked exactly like a failed one. Name a constructed arm (CLI `spawn`, `?spawn=`, fixture) alongside or instead of the organic ask.
+2. *The levers a Done-when names must exist on the surface it names.* `window.__DEBUG` is tree-shaken out of the production bundle, so "on threadbearer.co, drive with `__DEBUG.tick(n)`" is jointly impossible (THR-1463) — a `__DEBUG` lever implies a local dev build, and the Done-when must say which.
+3. *A supplied grep is a courtesy snapshot, never the membership.* THR-1423's "find them with" grep under-matched 3 of 8 members for three independent reasons (case, spacing, path scope) on a ticket that followed Rule A perfectly — the executor re-derives the set from the predicate; the ticket should say so.
 
 ### Claude Code Pickup Protocol
 When CC picks up a Ready for Dev issue, the order is **claim → verify → read → decide**:
