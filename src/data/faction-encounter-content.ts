@@ -71,7 +71,7 @@ import { UNDERKING_COURT_ENCOUNTER_META } from './underking-court-encounter-cont
 import { HOLY_ORDER_DAWN_ENCOUNTER_META } from './holy-order-dawn-encounter-content';
 import { BUILDERS_FELLOWSHIP_ENCOUNTER_META } from './builders-fellowship-encounter-content';
 import { LOREKEEPERS_COVENANT_ENCOUNTER_META } from './lorekeepers-covenant-encounter-content';
-import { REALM_FACTION_CLASS, isRealmDefinitionId } from './realm-content';
+import { REALM_FACTION_CLASS, REALM_ENCOUNTER_REPUTATION_REWARD, isRealmDefinitionId } from './realm-content';
 import { CLASS_SCOPED_META_DEF_ID } from './faction-constants';
 
 // ─── Constants ───────────────────────────────────────────────────────────
@@ -128,8 +128,7 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
   // per world. These two ids are not speculative: `buildRealmDefinition` already names
   // them as every Realm's `joinEncounterTemplateId` / `promotionEncounterTemplateId`, so
   // the rows complete a promise the shipped definition already makes. The templates
-  // themselves are THR-1454's content; until they exist the rows are inert, because
-  // every consumer looks the meta up *by template id*.
+  // themselves are THR-1454's content, which has now landed three rows below.
   ['realm.join', {
     factionDefId: CLASS_SCOPED_META_DEF_ID,
     factionClass: REALM_FACTION_CLASS,
@@ -142,6 +141,42 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
     factionClass: REALM_FACTION_CLASS,
     minRank: 'subject',
     reputationReward: 0.0,
+    questType: 'standard',
+  }],
+  // THR-1454 — the first authored realm content. These three live in
+  // `src/data/encounters/` as branching templates rather than here, because their
+  // player-facing surface is a nudge hand; what they need from this table is the
+  // *scoping*, which the plan doc (`2026-09-10-thr-1155-realms-and-areas.md`
+  // § Content pillar) ruled is all realm-scoped spawn ever needs: "realm content is
+  // faction content, and faction content already scopes through
+  // `FACTION_ENCOUNTER_META`". A class-scoped row resolves against every per-world
+  // Realm through `metaBelongsToDefinitionId`, so one row is the court work of all
+  // of them.
+  //
+  // `questType: 'standard'` on all three is deliberate, not a default: the
+  // tier-restricted rank gate (`RANK_GATED_QUEST_TYPES`) fires only on the senior
+  // and elite types, and gating the family's *entry* rung behind the ladder it
+  // exists to start a mortal up is a closed door. `minRank` still records who the
+  // content is written for.
+  ['encounter.realm.court_summons', {
+    factionDefId: CLASS_SCOPED_META_DEF_ID,
+    factionClass: REALM_FACTION_CLASS,
+    minRank: 'subject',
+    reputationReward: REALM_ENCOUNTER_REPUTATION_REWARD,
+    questType: 'standard',
+  }],
+  ['encounter.realm.border_levy', {
+    factionDefId: CLASS_SCOPED_META_DEF_ID,
+    factionClass: REALM_FACTION_CLASS,
+    minRank: 'stranger',
+    reputationReward: REALM_ENCOUNTER_REPUTATION_REWARD,
+    questType: 'standard',
+  }],
+  ['encounter.realm.tithe_demanded', {
+    factionDefId: CLASS_SCOPED_META_DEF_ID,
+    factionClass: REALM_FACTION_CLASS,
+    minRank: 'stranger',
+    reputationReward: REALM_ENCOUNTER_REPUTATION_REWARD,
     questType: 'standard',
   }],
 ]);

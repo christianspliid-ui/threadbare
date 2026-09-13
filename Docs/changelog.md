@@ -4209,3 +4209,14 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-13 | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | THR-1489 — Capability 30: the query is *measured* | A capability not in the guide is not used |
 | 2026-09-13 | `Docs/canon/content-objects.md`, `scripts/interface-contracts.ts` | THR-1489 — census table + Last-reviewed; catalyst contract re-verified with the reachability finding | 🟢 LIVE meant "wired", not "a player meets it" |
 | 2026-09-13 | `Docs/status/2026-09-13-thr-1489.md` | THR-1489 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-13 | `src/data/encounters/court-summons.ts`, `border-levy.ts`, `tithe-demanded.ts` (+ packages, structural tests) | THR-1454 — the realm-court family: three nudge-native encounters binding `$realm` | A Realm the player could see and never meet |
+| 2026-09-13 | `src/data/faction-encounter-content.ts` | THR-1454 — three class-scoped `realm` meta rows; the stale "rows are inert" note refreshed | Registration *is* realm spawn scoping (plan doc § Content pillar) |
+| 2026-09-13 | `src/data/realm-content.ts` | THR-1454 — `REALM_ENCOUNTER_REPUTATION_REWARD`; `questTemplateIds` populated; `REALM_RANK_ACCESS` prefixes repointed to `encounter.realm.` | A declaration nothing reads is free to keep right |
+| 2026-09-13 | `src/data/content-tags.ts`, `Docs/canon/content-objects.md` | THR-1454 — `#crown_errand` seated, the thirteenth faction errand family | A Realm is minted per world, so it has no id prefix to be found by |
+| 2026-09-13 | `src/data/content-eval/encounterPackage.ts` | THR-1454 — the generated test's `describe` title is `JSON.stringify`d | An apostrophe in an encounter name emitted source that did not parse (#1034) |
+| 2026-09-13 | `src/data/content-eval/plotHooks.ts` | THR-1454 — `usedBy` stamped on the three hooks taken | An unstamped hook stays likelier than it deserves |
+| 2026-09-13 | `src/data/encounters/__tests__/realm-court-family.test.ts` | THR-1454 — the chain proof, template → `$realm` → binder → ladder → the sheet's `rankLabel` | `rankLabel` falls back to `role`, so an engine-only assertion passes over a dead ladder |
+| 2026-09-13 | `src/data/encounters/__tests__/encounter-contract-migration.test.ts` | THR-1454 — the three added to `OUTSIDE_CONTRACT_MIGRATION` with their reason | Nudge-native content is excluded by name, never by bumping the count |
+| 2026-09-13 | `Docs/plans/encounters/realm-court-brief.md` | THR-1454 — the batch brief, with the two catalog substitutions recorded | Game design first (director ruling 2026-08-24) |
+| 2026-09-13 | `Docs/impediments.md` | THR-1454 — rows #1034–#1036 | Unlogged friction is invisible |
+| 2026-09-13 | `Docs/status/2026-09-13-thr-1454.md` | THR-1454 — new status fragment | One file per entry since THR-1016 |

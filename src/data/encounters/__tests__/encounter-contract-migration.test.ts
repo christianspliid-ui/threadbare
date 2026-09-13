@@ -59,6 +59,14 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   // on the crossing step, not off an authored `authoredChoices` list. Nudge-native
   // like the two above and excluded for the same reason: no choices to encode.
   'encounter.hunt.the_beast_in_the_granary',
+  // THR-1454, the realm-court family — the first content to spend `$realm`. All three
+  // are nudge-native (authored specials plus a `deal` fill on every nudge-bearing step)
+  // and author no `authoredChoices`, so like the five above they have no choices whose
+  // poles could be encoded. Their player-facing fork is the hand, and their value axes
+  // are declared on `motivations` rather than per-choice.
+  'encounter.realm.court_summons',
+  'encounter.realm.border_levy',
+  'encounter.realm.tithe_demanded',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {

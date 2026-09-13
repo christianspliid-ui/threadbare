@@ -282,7 +282,7 @@ const familyTags: readonly ContentTagDef[] = [
  * All are scoped to `encounter_template`: an item has no errand to run.
  */
 const encounterFamilyTags: readonly ContentTagDef[] = [
-  // The twelve faction quest families — the body that sets the errand, in its word.
+  // The thirteen faction quest families — the body that sets the errand, in its word.
   T('#guild_errand', 'family', 'Work set by the Adventurers\' Guild — a posting taken off the board.', ['encounter_template']),
   T('#circle_errand', 'family', 'Work set by the Arcane Circle — study, survey, and the reagents study needs.', ['encounter_template']),
   T('#fellowship_errand', 'family', 'Work set by the Builders\' Fellowship — stone cut, walls held, bridges thrown.', ['encounter_template']),
@@ -295,6 +295,13 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   T('#temple_errand', 'family', 'Work set by the Temple of Spheres — observance, offering, and the spheres\' own asking.', ['encounter_template']),
   T('#thieves_errand', 'family', 'Work set by the Thieves\' Guild — quiet, deniable, and paid in kind.', ['encounter_template']),
   T('#court_errand', 'family', 'Work set by the Underking\'s Court — a favour asked by someone who does not ask.', ['encounter_template']),
+  // THR-1454 — the thirteenth body that sets work, and the only one whose faction is
+  // minted per world (`realm.<cultureId>`, THR-1155). That is precisely why its content
+  // needs a stable *word*: a Realm's definition id differs in every playthrough, so an
+  // id-prefix family here would rot by construction rather than merely by renaming.
+  // `#court_errand` above is the Underking's and cannot be reused; a crown's work is a
+  // crown errand.
+  T('#crown_errand', 'family', 'Work set by a Realm\'s crown — the summons, the levy, the due.', ['encounter_template']),
 
   // Families that are not a faction's posting.
   T('#tavern_night', 'family', 'An evening in a common room, and whatever the evening turns into.', ['encounter_template']),
