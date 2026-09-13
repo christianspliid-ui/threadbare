@@ -10,17 +10,17 @@ The closed vocabulary an author may hang on a piece of content — 114 tags acro
 
 ## Dead tags
 
-**7 tag(s) match nothing.** A query naming one of these resolves an empty set and the author sees no error — which is why they are badged rather than quietly seated. The weekly retro either authors a bearer or deletes the tag (the sunset rule). Two different holes sit in this table and the last column tells them apart: an *authored* tag with no bearer is a query site asking for content nobody wrote, which is a hole in the corpus; a *derived* tag with no bearer is a cosmology word the corpus has simply not reached yet, which is not a defect and is never deleted.
+**7 tag(s) match nothing.** A query naming one of these resolves an empty set and the author sees no error — which is why they are badged rather than quietly seated. The weekly retro either authors a bearer or deletes the tag (the sunset rule), and the last column says **which**, because the three holes want three different answers. A *derived* tag with no bearer is a cosmology word the corpus has simply not reached yet: not a defect, never deleted. An *asked-for* tag with no bearer is a query site wanting content nobody wrote — a hole in the corpus, and the case for authoring a bearer. An *orphaned* tag is asked for by nothing and worn by nothing: it is vocabulary with no reader and no bearer, which is the sunset rule's own deletion predicate.
 
 | Tag | Axis | Why it is dead |
 |---|---|---|
 | `#light` | sphere | derived from the cosmology — no entry has reached it yet; not deletable |
-| `#stewardship` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#community` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#military` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#supply` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#contraband` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#blackmail_evidence` | family | a `tagFilters` query site asks for it and no entry wears it |
+| `#stewardship` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#community` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#military` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#supply` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#contraband` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#blackmail_evidence` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
 
 ## reach
 

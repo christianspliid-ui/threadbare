@@ -257,10 +257,10 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     // `'weapon'` matches nothing, `'#weapon'` does.
     //
     // THR-1487 widened this to the **step route** (`successMetadata.rewardPool`), which
-    // carries 481 of the corpus's 482 recipes and had never been swept. Entries named in
-    // `CONTENT_QUERY_RETROFIT_PENDING` come back under `grandfathered` and are
-    // deliberately not fatal here; the ratchet's own test is what keeps that list
-    // shrinking.
+    // carries 481 of the corpus's 482 recipes and had never been swept. That surfaced
+    // sixteen legacy rows, held for repair in a `CONTENT_QUERY_RETROFIT_PENDING` ratchet;
+    // THR-1496 repaired all sixteen and deleted the ratchet, so every empty recipe is
+    // fatal here with nothing set aside.
     ...validateContentQueries([template]).empty.map(
       e => `${e.site} reward pool → no candidate matches [${e.categoryWeights.join('/')}]`
         + `${e.tagFilters.length ? ` tags ${e.tagFilters.join(' ')}` : ' (no tag filter)'}`,
