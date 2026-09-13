@@ -106,6 +106,7 @@ These are not aspirations — they are hard requirements. If your packet fails a
 - **Threads must be discoverable in scene prose.** The scene text names the people, objects, and tensions that become choices. The player discovers them by reading — not by scrolling past the scene to a separate menu.
 - **Aftermath reaction choices are required for medium+ scale.** The player decides which consequence thread to carry forward. Each choice represents a different philosophical stance about consequence — not a mechanical variant. "Follow the Rumor While It Is Still Warm" / "Keep the Captain in Your Sights" / "Let the District Decide What It Remembers."
 - **Aftermath outcomes must be actor-centered.** Named agents with faces and specific attachments ("Ashara gained Ill Luck"), not anonymous stat deltas ("Heart grew 0.05").
+- **Write the aftermath as a page, not as fields (THR-1474).** The player does not meet the overview, the chips and the reactions as three separate things — they meet one page, top to bottom: the overview paragraph, then each chip's caption in `scar · bond · boon · path` order, then the reactions. Draft each band that way and read it back as one text before you move on. Every block earns its place by adding something the blocks above it did not carry: if the overview has already said the fire had to be made twice, the chip does not say it again, it names the state — `SCAR · EXHAUSTED — A night bought with everything dry they carried`. Three failures to check for by reading, because no gate can catch them: a fact told twice in different words, a sentence adding nothing, and a chip or reaction that disagrees with the overview about what happened.
 - **Concept art must be evocative, not illustrative.** The art should evoke the encounter's emotional themes, not depict the scene the prose already describes. Use the two-question method:
   1. *What emotions does this story convey?* (e.g., exhaustion, broken promises, the weight of discarded people)
   2. *What image evokes those emotions while staying within the encounter's world?* (e.g., a faded tabard on a waymarker stone, not a fight scene)
@@ -132,6 +133,7 @@ Before submitting your packet, answer every question below YES or NO. **If ANY a
 **Aftermath & Consequence**
 10. Does the aftermath have its own prose — a reflective landing that wraps the experience before showing mechanics?
 11. Are consequence outcomes actor-centered with names and faces, not anonymous stat deltas?
+11b. Read each band's aftermath as one assembled page — overview, then chip captions in `scar · bond · boon · path` order, then the reactions. Does every block add something the blocks above it did not carry, with nothing told twice and nothing contradicting anything else?
 12. For medium+ scale: does the aftermath offer reaction choices where the player decides which consequence thread to carry forward?
 13. Do aftermath reaction choices represent different philosophical stances about consequence, not just mechanical variants?
 

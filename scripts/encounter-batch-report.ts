@@ -52,6 +52,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { plotHookById } from '../src/data/content-eval/plotHooks';
+import {
+  aftermathPageWordCount,
+  assembleAftermathPages,
+  renderAftermathPage,
+} from '../src/data/content-eval/aftermathPage';
+import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 
 // ─── Constants (NFP #1) ──────────────────────────────────────────────
 
@@ -546,6 +552,60 @@ for (const id of ids) {
       }
     }
   }
+  lines.push('');
+
+  renderAftermathPages(id);
+}
+
+/**
+ * The aftermath as a page, per ending (THR-1474).
+ *
+ * Every other block in this report is a *verdict* — a badge, a violation list, a
+ * claim status. This one is the encounter's own prose, assembled in render order:
+ * overview, then each chip's caption in category order, then the reactions. It
+ * exists because no stage of the pipeline had ever put those blocks next to each
+ * other, and a reviewer handed a field list goes on reading field by field —
+ * which is the habit that let the Snow on the Pass overview and its `EXHAUSTED`
+ * chip ship telling the same fact twice.
+ *
+ * Read as **prose**, not as config: does any block repeat what the blocks above
+ * it carried, does any sentence add nothing, does any chip disagree with the
+ * overview about what happened? The machine arm in `check:encounter` reports only
+ * the literal four-word overlaps; a paraphrase and a contradiction both read
+ * clean there and are the whole reason this rendering exists.
+ *
+ * Fail-soft (NFP #4): a template the registry does not carry, or one with no
+ * `aftermathConfig`, prints a note and the report goes on. A batch report that
+ * threw would delete the artifact explaining why it threw.
+ */
+function renderAftermathPages(id: string): void {
+  const template = UNIFIED_ACTION_TEMPLATES.find(entry => entry.id === id);
+  if (!template) {
+    lines.push('**The aftermath as a page:** template not found in the registry.');
+    lines.push('');
+    return;
+  }
+
+  const pages = assembleAftermathPages(template);
+  if (pages.length === 0) {
+    lines.push('**The aftermath as a page:** no `aftermathConfig` — nothing to assemble.');
+    lines.push('');
+    return;
+  }
+
+  lines.push('<details>');
+  lines.push(
+    `<summary><strong>The aftermath as a page</strong> — ${pages.length} ending(s), `
+      + 'read each for repetition, verbosity, conflict</summary>',
+  );
+  lines.push('');
+  for (const page of pages) {
+    lines.push(`**\`${page.where}\`** · ${aftermathPageWordCount(page)} words`);
+    lines.push('');
+    lines.push(renderAftermathPage(page));
+    lines.push('');
+  }
+  lines.push('</details>');
   lines.push('');
 }
 

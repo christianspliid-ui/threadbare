@@ -1,6 +1,7 @@
 /**
  * Prose Doctrine v2 structural checks — card-name shape, the opening skeleton,
- * and the chip sentence. THR-1224, extended by THR-1473.
+ * the chip sentence, and the assembled aftermath page. THR-1224, extended by
+ * THR-1473 and THR-1474.
  *
  * Contract: `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`
  * § *Prose doctrine v2 — narrator mode (hard rules)*. Where this file and that
@@ -25,6 +26,13 @@
  * never imported this module. The chip-sentence check reuses its `aftermathFaces`
  * walk rather than re-deriving the (variant × band) resolution — a second walk
  * over the same config is a second answer waiting to drift from the first.
+ *
+ * THR-1474 followed the same edge one module further out: `aftermathPage.ts`
+ * assembles that walk's faces into the page the player reads and reports the
+ * overlaps *between* blocks, and this module imports its findings into the warn
+ * channel. The two arms partition the pairs rather than both covering them —
+ * `chipSentenceProblems` owns overview ↔ chip, `pageOverlapFindings` owns every
+ * other pair — so no author is told to fix one sentence twice.
  *
  * ─── Warn-level, and what that means here ────────────────────────────
  * Nothing in this file fails a build. Both checks are *register* judgments —
@@ -51,6 +59,8 @@ import {
   NUDGE_WORD_BUDGETS,
 } from './nudgeAuthoringConstants';
 import { aftermathFaces } from './compositionContract';
+import { pageOverlapFindings } from './aftermathPage';
+import { normaliseWord, wordRuns, wordsOf } from './proseWords';
 
 // ─── Card-name shape (doctrine: imperative verb + noun) ──────────────
 
@@ -134,14 +144,8 @@ export const FRAGMENT_NAME_OPENERS: readonly string[] = [
 
 const FRAGMENT_OPENERS: ReadonlySet<string> = new Set(FRAGMENT_NAME_OPENERS);
 
-/** Strip punctuation and case so `"Steady,"` and `Steady` compare equal. */
-function normaliseWord(word: string): string {
-  return word.replace(/[^\p{L}\p{N}'-]/gu, '').toLowerCase();
-}
-
-function wordsOf(text: string): string[] {
-  return text.trim().split(/\s+/u).filter(Boolean);
-}
+// `normaliseWord` / `wordsOf` moved to `proseWords.ts` with THR-1474 — see the
+// import above. They left together with `wordRuns`, which is built on both.
 
 /**
  * How one card name reads against the doctrine, or `undefined` when it reads as
@@ -326,23 +330,9 @@ export function chipSentenceWordCount(
     .reduce((a, b) => a + b, 0);
 }
 
-/**
- * Normalised word runs of length `n`, for the overlap test.
- *
- * Punctuation and case are stripped through {@link normaliseWord} so *"twice.
- * They walk"* and *"twice — they walk"* are the same run, and enrichment tokens
- * are left intact as words: a `{cast:keeper}` shared between a chip and its
- * overview is a genuine repetition of the same named person, which is precisely
- * the retelling this looks for.
- */
-function wordRuns(text: string, n: number): ReadonlySet<string> {
-  const words = wordsOf(text).map(normaliseWord).filter(Boolean);
-  const runs = new Set<string>();
-  for (let i = 0; i + n <= words.length; i += 1) {
-    runs.add(words.slice(i, i + n).join(' '));
-  }
-  return runs;
-}
+// `wordRuns` moved to `proseWords.ts` with THR-1474, when the whole-page check
+// needed the same splitter. An n-gram overlap is worth exactly as much as the
+// agreement between the two sides doing the splitting, so there is one splitter.
 
 /**
  * THR-1473 — a chip's sentence is a **caption on a sheet entry**, not a second
@@ -432,5 +422,6 @@ export function doctrineV2Warnings(template: UnifiedActionTemplate): readonly st
     ...templateOpeningProblems(template).map(line => `[opening] ${line}`),
     ...cardNameShapeProblems(template).map(line => `[card name] ${line}`),
     ...chipSentenceProblems(template).map(line => `[chip sentence] ${line}`),
+    ...pageOverlapFindings(template).map(line => `[page] ${line}`),
   ];
 }

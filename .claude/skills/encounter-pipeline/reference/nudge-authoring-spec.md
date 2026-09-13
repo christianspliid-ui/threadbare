@@ -1323,6 +1323,28 @@ words, and the overview above it had already told the reader about the fire and 
 kindling. It now reads *"A night bought with everything dry they carried — They walk down
 worn through."*
 
+**1c. The band is a page, and it is read as one (THR-1474).** Rules 1 and 1b price the
+chip against its own overview. They do not see the rest of the page — and the page is
+what the player meets:
+
+```
+overview paragraph
+- chip captions, in scar · bond · boon · path order
+> reaction label + intent
+```
+
+Every block earns its place by adding something the blocks above it did not carry. Two
+chips telling one beat, a reaction offering back what a chip already stated, two reaction
+stances phrased as one, a chip that contradicts the overview — none of these is visible
+from any single field, and none was caught anywhere in the pipeline until this rule.
+Draft the band as a page and read it back as one text.
+
+`check:encounter` reports literal four-word overlaps between any two blocks as `[page]`
+warnings, and `npm run encounter:batch-report` renders the assembled page per band. Both
+are floors. **A paraphrase reads clean to the machine and a contradiction shares no words
+at all** — those two are found by reading or not at all, which is why the editorial critic
+carries a Page read step (§ 6b of its prompt; REVISE trigger 35).
+
 **2. Name the state noun, and declare it.** Every chip declares `stateNoun`,
 `direction`, and `category` as structured fields — not as English for the surface to
 parse back out (Law 2). The noun is what appears on the tag: `SCAR · EXHAUSTED`.
