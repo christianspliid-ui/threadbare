@@ -1,6 +1,6 @@
 ---
 domain: prose
-last_reviewed: 2026-08-25
+last_reviewed: 2026-09-13
 reviewer: claude-code
 ul_shards: [Prose, Encounters]
 status: live
@@ -145,6 +145,14 @@ Every prose line must answer yes to all five:
 5. **Does this serve the three-beat loop?** Portfolio scan (Beat 1) / curated moments (Beat 2) / aftermath (Beat 3). Which beat does this content serve, and is it pulling its weight?
 
 **The scene-first workflow is retired** (2026-08-25, with Doctrine v2 — and the authoring order was already game-design-first per the 2026-08-24 ruling): design the mechanics, roll the dice, then write the three-paragraph opening directly in narrator mode. Writing a scene and extracting fields from it is how in-situ prose got in.
+
+### An appositive `{cast:*}` needs a name to apposit (THR-1466, 2026-09-13)
+
+`{cast:<key>}` renders `boundName ?? spec.spawnName` ([`resolveSceneCastContext`](../../src/engine/proseEnrichment.ts)), so when the key is unbound the player reads the authored `spawnName` **verbatim**. Two authoring habits collided on that: prose introducing a cast member appositively — *"The keeper, {cast:bridge_keeper}, takes two coppers"* — while the spec's name was a definite noun phrase restating the role. On screen: *"The keeper, The Keeper at the Crossing, takes two coppers."*
+
+**The rule.** A cast `spawnName` is a **personal name** (`Hesta Ryle`, `Bram Oskell`) — that is the house convention, and it makes the appositive form safe. A cast member who is *deliberately* anonymous may keep a title-form name, and then **that member's prose must not use the appositive** — put the token in the subject slot instead (*"{cast:stranger} waits under the dead tree"*), which reads correctly whether the key binds or not.
+
+Both halves are enforced by [`src/data/__tests__/appositiveCastNameCorpus.test.ts`](../../src/data/__tests__/appositiveCastNameCorpus.test.ts), which sweeps every registered template for the appositive shape and fails on a title-form name. Do not fix a collision by hand in one file — pick the side that fits the scene, because the gate sees the whole corpus.
 
 ## Player-as-god framing (hard rule)
 
