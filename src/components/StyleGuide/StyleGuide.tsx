@@ -38,7 +38,6 @@ import { NUDGE_CARD_TYPES } from '../../data/nudge-card-library';
 import { RivalIcon } from '../shared/RivalIcon';
 import { SectionHeading } from '../shared/SectionHeading';
 import { AnimateMount } from '../shared/AnimateMount';
-import { EntityCard } from '../shared/EntityCard';
 import { EntityVisual } from '../shared/EntityVisual';
 import type { EntityVisualDescriptor } from '../shared/entityVisualResolver';
 import { ENTITY_GRADIENT_COUNT } from '../../data/entity-visual-fallbacks';
@@ -130,7 +129,6 @@ const SECTIONS = [
   { id: 'rivalicon', label: 'RivalIcon' },
   { id: 'sectionheading', label: 'SectionHeading' },
   { id: 'animatemount', label: 'AnimateMount' },
-  { id: 'entitycard', label: 'EntityCard' },
   { id: 'entity-link', label: 'EntityLink (THR-1298)' },
   { id: 'held-by-line', label: 'HeldByLine (THR-1155)' },
   { id: 'entity-visual', label: 'EntityVisual (THR-637)' },
@@ -272,45 +270,6 @@ function SampleHoverCardLauncher() {
 // ─── Sample data ──────────────────────────────────────────────────────────────
 
 const RARITY_TIERS: RarityTier[] = [1, 2, 3, 4];
-
-const SAMPLE_ENTITY_HEADER = {
-  name: 'Kael Thornweaver',
-  subtitle: 'The Wandering Blade',
-  accentColor: '#c87533',
-  badges: [
-    { label: 'Storied', color: '#c87533' },
-    { label: 'Bonded', color: '#d4a82f' },
-  ],
-};
-
-const SAMPLE_ENTITY_SECTIONS = [
-  {
-    id: 'overview',
-    title: 'Overview',
-    insightTier: 'known' as const,
-    proseVoice: 'chronicle' as const,
-    prose: 'A wandering mercenary who carries a blade older than the current age. His loyalties shift like the desert wind, but his skills are undeniable.',
-    structuredData: {
-      type: 'keyword_cloud' as const,
-      keywords: ['mercenary', 'blade-sworn', 'wanderer', 'fortune-seeker'],
-      accent: '#c87533',
-    },
-  },
-  {
-    id: 'associates',
-    title: 'Associates',
-    insightTier: 'recognised' as const,
-    proseVoice: 'oral' as const,
-    prose: 'Travels with a small band of sell-swords.',
-    structuredData: {
-      type: 'member_list' as const,
-      members: [
-        { id: 'm1', name: 'Sera Veth', role: 'Scout', tier: 2 },
-        { id: 'm2', name: 'Bram Coldstone', role: 'Heavy', tier: 1 },
-      ],
-    },
-  },
-];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1237,22 +1196,6 @@ export default function StyleGuide() {
                     </div>
                   </AnimateMount>
                 </div>
-              </GameErrorBoundary>
-            </div>
-          </section>
-
-          {/* ── EntityCard ─────────────────────────────────────── */}
-          <section id="section-entitycard" style={{ marginBottom: SECTION_GAP }}>
-            <SectionHeading ornamental>EntityCard</SectionHeading>
-            <div style={{ marginTop: '1.25rem', maxWidth: '380px' }}>
-              <GameErrorBoundary>
-                <Label>Structured entity display. Renders header + sections with StructuredBlock support.</Label>
-                <EntityCard
-                  header={SAMPLE_ENTITY_HEADER}
-                  sections={SAMPLE_ENTITY_SECTIONS}
-                  onBack={() => {}}
-                  onViewCodex={() => {}}
-                />
               </GameErrorBoundary>
             </div>
           </section>

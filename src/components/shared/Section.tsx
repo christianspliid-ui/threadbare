@@ -8,7 +8,9 @@ import type {
   PortraitSection,
   ProseSection,
   Section as DetailSection,
+  TriggersSection,
 } from '../../types/detailPage';
+import { OddsPips } from './OddsPips';
 import {
   useDetailPageOpener,
   type OpenByRef,
@@ -84,6 +86,7 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
   };
   const pill = (
     <span
+      {...(chip.dataKey ? { [`data-${chip.dataKey.attribute}`]: chip.dataKey.value } : {})}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
       onClick={clickable ? handleClick : undefined}
@@ -113,6 +116,7 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
         userSelect: 'none',
       }}
     >
+      {chip.glyph && <span aria-hidden="true" style={{ marginRight: '4px' }}>{chip.glyph}</span>}
       {chip.label}
       {chip.flavour && <em style={{ marginLeft: '4px', opacity: 0.7 }}>{chip.flavour}</em>}
     </span>
@@ -273,6 +277,44 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
   );
 }
 
+/**
+ * Triggers — what an item does on its own, and how likely it is to do it (THR-1492).
+ *
+ * Moved here verbatim from `EntityCard`'s `trigger` block when that model retired. The
+ * odds stay pips: Law 15 gives a probability a language, and the pips row annotates the
+ * condition it belongs to rather than replacing it.
+ */
+function TriggersSectionRenderer({ section }: { section: TriggersSection }) {
+  return (
+    <div style={{ marginBottom: '20px' }}>
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }} data-testid="trigger-block">
+        {section.triggers.map((trigger, index) => (
+          <div key={`${trigger.condition}-${index}`} style={{ fontSize: '0.8rem' }}>
+            <div
+              style={{
+                color: 'var(--text-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>{'⚡'} {trigger.condition}</span>
+              <OddsPips value={trigger.probability} data-testid="trigger-odds-pips" />
+            </div>
+            {trigger.narrativeTemplate && (
+              <div style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                {trigger.narrativeTemplate}
+              </div>
+            )}
+            <div style={{ color: 'var(--text-secondary)' }}>→ {trigger.effectSummary}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Section({ section }: { section: DetailSection }) {
   switch (section.kind) {
     case 'prose':
@@ -285,8 +327,18 @@ export function Section({ section }: { section: DetailSection }) {
       return <PanelSectionRenderer section={section} />;
     case 'portrait':
       return <PortraitSectionRenderer section={section} />;
+    case 'triggers':
+      return <TriggersSectionRenderer section={section} />;
   }
 }
+
+/**
+ * The section label treatment, exported since THR-1492 so a sheet that needs a labelled
+ * container of its own JSX (rather than a data-driven `Section`) draws the same label
+ * rather than forking one — Law 27, one rule in one place. `FactionSheet` is the first
+ * caller; its local fork was the measured drift.
+ */
+export { SectionLabel };
 
 // Re-export for convenience.
 export type { NodeRef };

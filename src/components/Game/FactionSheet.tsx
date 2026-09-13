@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Modal } from '../shared/Modal';
+import { SectionLabel } from '../shared/Section';
 import { getFactionDefinition } from '../../data/faction-definition-lookup';
 import { getFactionSigilUrlFromProperties } from '../../data/faction-sigil-assets';
 import type { FactionDefinition, FactionRankTier } from '../../types/faction';
@@ -730,12 +731,20 @@ function StatCard({
   );
 }
 
+/**
+ * A labelled block of this sheet's own JSX.
+ *
+ * THR-1492: the label used to be a local `<h4>` with its own font, tracking and spacing —
+ * a fork of the design system's section label that drifted from it. It now draws
+ * `SectionLabel` from `shared/Section`, so the treatment is one rule in one place
+ * (Law 27). The *container* stays local on purpose: the shared `Section` renders a
+ * `DetailSection` descriptor, and this sheet's blocks are a network graph, member rows
+ * and buttons — children, not data. Same label, different job.
+ */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>
-        {title}
-      </h4>
+      <SectionLabel label={title} gold={false} />
       {children}
     </div>
   );
