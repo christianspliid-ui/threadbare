@@ -16,6 +16,20 @@ export interface FactionNetworkLocation {
   isGovernanceSeat: boolean;
 }
 
+/**
+ * How a faction holds one Location. A hall is a seat the faction keeps
+ * (`located_at` with `role: 'guild_hall'`, or a sublocation it owns);
+ * a control is a `controls` edge onto the Location itself.
+ *
+ * `hall` wins when a Location is both — the stronger claim names the tie.
+ */
+export type FactionNetworkLocationRole = 'hall' | 'control';
+
+/** One Location a faction holds, carrying the relationship that put it there. */
+export interface FactionNetworkLocationNode extends FactionNetworkLocation {
+  role: FactionNetworkLocationRole;
+}
+
 export interface FactionNetworkRelation {
   factionId: string;
   name: string;
@@ -69,6 +83,16 @@ export interface FactionNetworkSummary {
   armies: FactionNetworkMember[];
   halls: FactionNetworkLocation[];
   controlledLocations: FactionNetworkLocation[];
+  /**
+   * Halls and controlled Locations as ONE list, deduped by id, halls first.
+   *
+   * `halls` and `controlledLocations` stay raw and may overlap: a Location that
+   * is both a hall and a `controls` target genuinely is both, and `hallCount` /
+   * `controlledCount` each report their own relationship. Any surface that draws
+   * ONE row per Location must read this list instead of concatenating those two,
+   * or the shared Location arrives twice (THR-1460).
+   */
+  networkLocations: FactionNetworkLocationNode[];
   governingSeats: FactionNetworkLocation[];
   relations: FactionNetworkRelation[];
   activeAmbition: FactionNetworkAmbition | null;
@@ -221,6 +245,7 @@ export function getFactionNetworkSummary(
 
   const halls = collectFactionLocations(graph, factionId, true);
   const controlledLocations = collectFactionLocations(graph, factionId, false);
+  const networkLocations = mergeFactionLocations(halls, controlledLocations);
   const governingSeats = uniqueLocations([...halls, ...controlledLocations])
     .filter(location => location.isGovernanceSeat);
 
@@ -280,6 +305,7 @@ export function getFactionNetworkSummary(
     armies: decoratedMembers.filter(member => member.isArmy),
     halls,
     controlledLocations,
+    networkLocations,
     governingSeats,
     relations,
     activeAmbition,
@@ -366,6 +392,28 @@ function collectFactionLocations(
   }
 
   return uniqueLocations(locationEntries);
+}
+
+/**
+ * Fold halls and controlled Locations into one list with no id repeated.
+ *
+ * Halls lead, and a Location present in both arrives once as a `hall` — the
+ * stronger claim names the tie, so the picture reads "their seat" rather than
+ * "one more town". Neither input list is modified: the counts beside the sheet
+ * still report each relationship on its own (THR-1460).
+ */
+function mergeFactionLocations(
+  halls: FactionNetworkLocation[],
+  controlled: FactionNetworkLocation[],
+): FactionNetworkLocationNode[] {
+  const byId = new Map<string, FactionNetworkLocationNode>();
+  for (const location of halls) {
+    if (!byId.has(location.id)) byId.set(location.id, { ...location, role: 'hall' });
+  }
+  for (const location of controlled) {
+    if (!byId.has(location.id)) byId.set(location.id, { ...location, role: 'control' });
+  }
+  return [...byId.values()];
 }
 
 function uniqueLocations(entries: FactionNetworkLocation[]): FactionNetworkLocation[] {

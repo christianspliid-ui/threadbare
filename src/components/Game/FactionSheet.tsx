@@ -510,6 +510,16 @@ export const FactionSheet = React.memo(function FactionSheet({
 
 FactionSheet.displayName = 'FactionSheet';
 
+/**
+ * How many nodes of each kind the network diagram draws. The 520×260 viewBox
+ * seats four on the left rail, four on the right, and two along the bottom;
+ * raising a limit past that overruns the frame rather than scrolling.
+ */
+const NETWORK_MEMBER_NODE_LIMIT = 4;
+const NETWORK_HALL_NODE_LIMIT = 2;
+const NETWORK_CONTROL_NODE_LIMIT = 2;
+const NETWORK_ARMY_NODE_LIMIT = 2;
+
 function FactionNetworkGraph({
   summary,
   color,
@@ -517,13 +527,18 @@ function FactionNetworkGraph({
   summary: FactionNetworkSummary;
   color: string;
 }) {
-  const memberNodes = summary.members.slice(0, 4);
-  const hallNodes = summary.halls.slice(0, 2);
-  const controlNodes = summary.controlledLocations.slice(0, 2);
-  const armyNodes = summary.armies.slice(0, 2);
+  const memberNodes = summary.members.slice(0, NETWORK_MEMBER_NODE_LIMIT);
+  const armyNodes = summary.armies.slice(0, NETWORK_ARMY_NODE_LIMIT);
 
   const leftNodes = [...memberNodes];
-  const rightNodes = [...hallNodes, ...controlNodes];
+  // One node per Location: `networkLocations` is already deduped across halls
+  // and controls, so a hall the faction also controls is drawn once, as a hall
+  // (THR-1460). Concatenating `halls` with `controlledLocations` here repeated
+  // the shared Location and collided its React key.
+  const rightNodes = [
+    ...summary.networkLocations.filter(l => l.role === 'hall').slice(0, NETWORK_HALL_NODE_LIMIT),
+    ...summary.networkLocations.filter(l => l.role === 'control').slice(0, NETWORK_CONTROL_NODE_LIMIT),
+  ];
   const bottomNodes = [...armyNodes];
 
   return (
@@ -556,11 +571,11 @@ function FactionNetworkGraph({
 
       {rightNodes.map((location, index) => {
         const y = 72 + index * 44;
-        const sublabel = index < hallNodes.length ? 'Hall' : 'Control';
+        const isHall = location.role === 'hall';
         return (
           <g key={location.id}>
             <line x1={260} y1={128} x2={390} y2={y} stroke="url(#faction-link)" strokeWidth={1.5} />
-            <NetworkNode x={410} y={y} label={location.name} sublabel={sublabel} color={index < hallNodes.length ? '#22c55e' : '#60a5fa'} radius={15} align="end" />
+            <NetworkNode x={410} y={y} label={location.name} sublabel={isHall ? 'Hall' : 'Control'} color={isHall ? '#22c55e' : '#60a5fa'} radius={15} align="end" />
           </g>
         );
       })}
