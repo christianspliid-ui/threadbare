@@ -71,10 +71,14 @@ const NOOP_GATE_TICK_BUDGET = 20;
 /**
  * Every anchor form this gate has a disposition for.
  *
- * Closed on purpose. `classifyAnchorDeclaration` can return six forms; the corpus
- * currently authors five, and `artifact` (THR-1275) is authored by nothing yet. A test
+ * Closed on purpose. `classifyAnchorDeclaration` can return seven forms; the corpus
+ * currently authors six, and `artifact` (THR-1275) is authored by nothing yet. A test
  * that quietly skipped an unrecognised form would report green over exactly the new
  * class it was written to cover, so an unlisted form fails by name below.
+ *
+ * `here` (THR-1462) is the seventh, and the first whose referent is a **place** rather
+ * than a person or a template — which is why the disposition below had to name it
+ * rather than inherit the agent-shaped default.
  */
 const EXPECTED_FORMS = [
   'actor',
@@ -83,8 +87,22 @@ const EXPECTED_FORMS = [
   'faction',
   'attachment_template',
   'artifact',
+  'here',
 ] as const;
 type AnchorForm = (typeof EXPECTED_FORMS)[number];
+
+/**
+ * What kind of thing each form's resolved id should name — THR-1462.
+ *
+ * Only entries that differ from the agent-shaped default are listed. `here` resolves to
+ * a Location node, so stating it here keeps the check honest if `namesSomethingReal`
+ * ever stops treating every non-faction kind alike; before this form existed the
+ * ternary it replaces could not be wrong, because every anchor named a person.
+ */
+const ANCHOR_FORM_KIND: Partial<Record<AnchorForm, string>> = {
+  faction: 'faction',
+  here: 'location',
+};
 
 /**
  * Forms whose referent is created by the encounter rather than found in the world.
@@ -331,7 +349,7 @@ describe('WorldRef no-op gate — declared chip anchors resolve in a seeded worl
           unresolved.push(`${anchor.key} (${anchor.form}) on ${anchor.where} — resolved to nothing`);
           continue;
         }
-        if (!namesSomethingReal(graph, anchor.form === 'faction' ? 'faction' : 'agent', resolved)) {
+        if (!namesSomethingReal(graph, ANCHOR_FORM_KIND[anchor.form] ?? 'agent', resolved)) {
           unresolved.push(
             `${anchor.key} (${anchor.form}) on ${anchor.where} — resolved to '${resolved}', `
               + 'which is neither a node in this world nor a shipped template',

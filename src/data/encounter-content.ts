@@ -11445,7 +11445,23 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
                   entityId: 'trait.condition.location.tended_shrine',
                   visualKind: 'attachment',
                 },
-                concepts: [{ text: 'being kept' }],
+                // THR-1462 — the stones themselves, now that `$here` is a chip anchor.
+                //
+                // The ticket asked for this on `stateNoun`, and that is no longer the
+                // lawful channel: THR-1472 (director ruling 2026-09-12, gated by THR-1480)
+                // holds that a `stateNoun` names the **state object** the band wrote — the
+                // condition — and never the thing carrying it. A place carrying a location
+                // condition is the carrier exactly as a mortal is, so moving the noun to
+                // `$here` would trade one asymmetry for a rule that landed after this
+                // ticket was filed.
+                //
+                // The concept channel is where "the object the sentence is about" belongs,
+                // and it is a first-class anchor (`declaredChipAnchors` walks it). So the
+                // tag still reads `BOON · TENDED` and routes to the condition's page, and
+                // the stones are what the player clicks — which is what the ticket was
+                // actually after. Same shape The Beast in the Granary already ships: the
+                // noun on the condition, the ground on a concept.
+                concepts: [{ text: 'The stones here', entityId: '$here', visualKind: 'location' }],
               },
               {
                 id: 'shrine_offering.a_heading',
