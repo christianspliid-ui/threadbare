@@ -29,6 +29,10 @@
 import { ALL_FACTION_DEFINITIONS } from '../faction-definition-lookup';
 import { getAttachmentTemplateNode } from '../../engine/attachmentTemplateIndex';
 import type { WorldGraph } from '../../engine/graph';
+// THR-1462 — the same walk $here already performs on the effect side. Imported rather
+// than re-derived: a chip that resolved one hop differently from the effect it reports
+// would point at the wrong node while passing every gate.
+import { resolveSceneHere } from '../../engine/sceneHere';
 
 /** The acting agent — the one the encounter resolved for. */
 export const ANCHOR_SENTINEL_ACTOR = '$actor';
@@ -78,6 +82,29 @@ export const ANCHOR_SENTINEL_FACTION_PREFIX = '$faction:';
  */
 export const ANCHOR_SENTINEL_ARTIFACT = '$artifact';
 
+/**
+ * The place this encounter is happening at — THR-1462.
+ *
+ * The effect side gained this sentinel with THR-1446 and the chip side did not, and the
+ * asymmetry silenced a whole family of sentences. `apply_condition` with
+ * `targetLocationId: '$here'` lands a condition **on the shrine**; the chip reporting
+ * that write could not point at the shrine. `$target` is the actor on a self-targeted
+ * encounter — which is most of them, and the reason `$here` was added at all — and a
+ * literal location node id is minted per world and correctly refused.
+ *
+ * So `encounter.shrine_offering` shipped its BOON chip anchored to the *attachment
+ * template* it granted: gate-legal, and naming **what was granted** rather than **where
+ * it landed**. The sentence is "these stones are being kept", and the stones are the
+ * object the player would click.
+ *
+ * **Resolves at the Location tier, deliberately.** The field that motivated the sentinel
+ * is `targetLocationId`, whose kind is `location`, so resolving anywhere else would
+ * anchor the chip to a different node than the effect it reports wrote to — reopening the
+ * same disagreement one tier down. A Place-tier chip would need its own sentinel and its
+ * own effect field to report; neither exists yet.
+ */
+export const ANCHOR_SENTINEL_HERE = '$here';
+
 /** Whether a declared `entityId` is a sentinel rather than a literal id. */
 export function isAnchorSentinel(entityId: string): boolean {
   return entityId.startsWith('$');
@@ -87,7 +114,14 @@ export function isAnchorSentinel(entityId: string): boolean {
 export type AnchorDeclarationVerdict =
   | {
       readonly ok: true;
-      readonly form: 'actor' | 'target' | 'cast' | 'faction' | 'artifact' | 'attachment_template';
+      readonly form:
+        | 'actor'
+        | 'target'
+        | 'cast'
+        | 'faction'
+        | 'artifact'
+        | 'here'
+        | 'attachment_template';
     }
   | { readonly ok: false; readonly reason: string };
 
@@ -132,6 +166,10 @@ export function classifyAnchorDeclaration(
 ): AnchorDeclarationVerdict {
   if (entityId === ANCHOR_SENTINEL_ACTOR) return { ok: true, form: 'actor' };
   if (entityId === ANCHOR_SENTINEL_TARGET) return { ok: true, form: 'target' };
+  // Unconditional, unlike `$artifact`: every encounter happens somewhere, so there is no
+  // authoring mistake for the static half to catch here. A scene whose actor turns out to
+  // stand nowhere is a world outcome, and the runtime half fails it soft (NFP #4).
+  if (entityId === ANCHOR_SENTINEL_HERE) return { ok: true, form: 'here' };
 
   if (entityId === ANCHOR_SENTINEL_ARTIFACT) {
     if (options.mintsArtifact === false) {
@@ -174,6 +212,7 @@ export function classifyAnchorDeclaration(
         `'${entityId}' is not a sentinel this build resolves — the forms are `
         + `'${ANCHOR_SENTINEL_ACTOR}', '${ANCHOR_SENTINEL_TARGET}', `
         + `'${ANCHOR_SENTINEL_ARTIFACT}', `
+        + `'${ANCHOR_SENTINEL_HERE}', `
         + `'${ANCHOR_SENTINEL_CAST_PREFIX}<key>', `
         + `'${ANCHOR_SENTINEL_FACTION_PREFIX}<defId>'`,
     };
@@ -238,6 +277,13 @@ export function resolveAnchorDeclaration(
 
   if (entityId === ANCHOR_SENTINEL_ARTIFACT) {
     return findSpawnedArtifactNodeId(context);
+  }
+
+  // THR-1462 — one reader of the walk the aftermath binder performs, never a second copy.
+  // `null` (no actor, no position, a Place with no parent) becomes `undefined` so the chip
+  // renders as the plain text it was before it declared anything (NFP #4, Law 21).
+  if (entityId === ANCHOR_SENTINEL_HERE) {
+    return resolveSceneHere(context.graph, context.actorId, 'location') ?? undefined;
   }
 
   if (entityId.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) {

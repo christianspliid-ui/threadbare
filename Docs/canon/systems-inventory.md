@@ -368,7 +368,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | `THR-1394` |
 | `ruins` (9) | `ruins/clueLifecycle.ts`, `ruins/constants.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-148`, `THR-149`, `THR-150`, `THR-151`, `THR-152`, `THR-153`, `THR-156` |
-| `scene` (1) | `sceneSentinels.ts` | `THR-1025`, `THR-1110`, `THR-1143`, `THR-1144`, `THR-1175`, `THR-1446` |
+| `scene` (2) | `sceneHere.ts`, `sceneSentinels.ts` | `THR-1025`, `THR-1110`, `THR-1143`, `THR-1144`, `THR-1175`, `THR-1446`, `THR-1462` |
 | `schism` (1) | `schismPlant.ts` | `THR-430` |
 | `scry` (1) | `scry.ts` | — |
 | `secret` (1) | `secretGeneration.ts` | `THR-30` |
@@ -415,4 +415,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 189 engine domains · 556 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 189 engine domains · 557 modules._

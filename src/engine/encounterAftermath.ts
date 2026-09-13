@@ -135,7 +135,10 @@ import {
 import { computeAxisLeans, chooseAlignedReaction } from './encounters/reactionChooser';
 import { getAxisByReach, reachToAxisId } from '../types/axisRegistry';
 import type { AxiologicalProfile } from '../types/agent';
-import { isPlaceNode, isLocationNode, resolveToParentLocation } from './sublocationShape';
+import { isPlaceNode, isLocationNode } from './sublocationShape';
+// THR-1462 — $here's location walk, shared with the chip-anchor half so the chip a
+// consequence draws points at the node the effect wrote to. One rule, two readers.
+import { resolveSceneHere } from './sceneHere';
 import {
   SCENE_SENTINEL_FIELDS,
   SENTINEL_ACTOR,
@@ -794,47 +797,6 @@ function nodeMatchesSceneField(
       // same node to two fields with different tax and gating semantics.
       return isLocationNode(node);
   }
-}
-
-/**
- * THR-1446 — resolve `$here` for a sentinel field: the place the acting agent stands in,
- * walked to the tier the field wants.
- *
- * Three-tier position model (CLAUDE.md § Load-Bearing Architectural Decisions): an agent
- * holds exactly one `located_at` edge, pointing at the most specific node it occupies.
- * So a `sublocation` field takes that node when it is a Place, and a `location` field
- * walks up through `resolveToParentLocation`.
- *
- * The ascendant hop is the reason this is a function rather than one line at the call
- * site: an ascendant node carries no `located_at` of its own — its *avatar* does — and
- * the divine self-targeted encounter is precisely the shape that could not wire `place`
- * before. Fail-soft throughout: any unresolvable link returns `null` and leaves the
- * sentinel in place (NFP #4).
- */
-function resolveSceneHere(
-  graph: WorldGraph,
-  actorId: string | undefined,
-  kind: SceneSentinelKind,
-): string | null {
-  if (!actorId) return null;
-  if (kind !== 'location' && kind !== 'sublocation') return null;
-
-  let locatedId = graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
-  if (!locatedId) {
-    const avatarId = graph.getNode(actorId)?.properties?.avatarId;
-    if (typeof avatarId === 'string' && avatarId.length > 0) {
-      locatedId = graph.getOutgoingEdges(avatarId, 'located_at')[0]?.target;
-    }
-  }
-  if (!locatedId) return null;
-
-  const located = graph.getNode(locatedId);
-  if (!located) return null;
-
-  if (kind === 'sublocation') return isPlaceNode(located) ? located.id : null;
-
-  const parent = resolveToParentLocation(graph, located);
-  return parent && isLocationNode(parent) ? parent.id : null;
 }
 
 /**

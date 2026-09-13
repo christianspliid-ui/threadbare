@@ -1031,6 +1031,86 @@ describe('declared anchors are resolved against the live world (THR-1164)', () =
     expect(chips[0].nounLabel).toBe('THE DAWN');
   });
 
+  /**
+   * THR-1462 — `$here` on the **concept** channel, which is the shipped shape.
+   *
+   * `encounter.shrine_offering` lands its condition on the place via
+   * `targetLocationId: '$here'`, and until the chip side gained the sentinel the only
+   * thing its BOON chip could point at was the attachment template it granted — naming
+   * *what was granted* rather than *where it landed*.
+   *
+   * The noun stays on the condition, because THR-1472 holds that a `stateNoun` names
+   * the state object and never the thing carrying it — a place carrying a location
+   * condition is the carrier exactly as a mortal is. So the ground is named on a
+   * concept, which is the channel for "the object the sentence is about", and this is
+   * the arm proving that channel resolves the sentinel rather than shipping it.
+   */
+  const shrineChip = (entityId: string) =>
+    change({
+      id: 'shrine_offering.tended_stones',
+      kind: 'trait',
+      polarity: 'gain',
+      category: 'boon',
+      detail: 'The stones here are being kept, and the next traveller up the road will see it.',
+      stateNoun: {
+        text: 'tended',
+        entityId: 'trait.condition.location.tended_shrine',
+        visualKind: 'attachment',
+      },
+      concepts: [{ text: 'The stones here', entityId, visualKind: 'location' }],
+    });
+
+  it('resolves a `$here` concept to the place the scene stood at', () => {
+    const chips = buildAftermathConsequences({
+      changes: [shrineChip('$here')],
+      ...passthrough,
+      resolveAnchor: (id) => (id === '$here' ? 'loc_ashfall_7' : undefined),
+    });
+    const stones = chips[0].sentence.segments.find(seg => seg.text === 'The stones here');
+    expect(stones).toBeDefined();
+    // The load-bearing pair: the resolved node id reaches the surface, and the raw
+    // sentinel never does. A '$'-prefixed id would render as a live link opening
+    // nothing — Law 21's dead link wearing a working link's clothes.
+    expect(stones!.entityId).toBe('loc_ashfall_7');
+    expect(stones!.entityId).not.toMatch(/^\$/);
+    // And it routes to the place sheet rather than the agent path an absent kind means.
+    expect(stones!.entityKind).toBe('location');
+  });
+
+  it('drops a `$here` that resolves to nothing, leaving the stones as text', () => {
+    // NFP #4. The falsification arm for the case above: an actor standing nowhere must
+    // cost the link, not mint one to a node this world does not contain.
+    const chips = buildAftermathConsequences({
+      changes: [shrineChip('$here')],
+      ...passthrough,
+      resolveAnchor: () => undefined,
+    });
+    const segments = chips[0].sentence.segments;
+    expect(segments.some(seg => seg.entityId !== undefined)).toBe(false);
+    // The sentence still says it — only the navigation is gone.
+    expect(segments.map(seg => seg.text).join('')).toContain('The stones here');
+  });
+
+  it('leaves the tile to the state noun, which is the condition and draws none', () => {
+    // Pinning a real divergence from THR-1462's third Done-when, which expected a place
+    // *tile*. `stateNoun` takes precedence for the tile over `concepts`, and an
+    // `attachment` kind is the documented no-tile path (it has a page, not an entity
+    // visual). So the stones become a live link and the chip carries no tile — the
+    // consequence of keeping the noun on the state object, recorded here rather than
+    // left for a later reader to rediscover as a defect.
+    const icons: string[] = [];
+    buildAftermathConsequences({
+      changes: [shrineChip('$here')],
+      ...passthrough,
+      resolveAnchor: () => 'loc_ashfall_7',
+      resolveIcon: (concept) => {
+        icons.push(concept.visualKind ?? 'none');
+        return undefined;
+      },
+    });
+    expect(icons).toEqual(['attachment']);
+  });
+
   it('never leaks the sentinel itself when no resolver is wired', () => {
     // Omitting the callback means "no resolution attempted", so refs pass through
     // as authored — that is what keeps every pre-THR-1164 caller unchanged. The
