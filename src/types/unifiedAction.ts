@@ -293,6 +293,21 @@ export type EncounterAftermathDirection = 'gain' | 'loss' | 'opens';
 export interface EncounterAftermathMagnitude {
   readonly ladder: 'growth' | 'reputation' | 'tally';
   readonly band: number;
+  /**
+   * THR-1467 — the raw quantity `band` was computed from. **Designer data: it
+   * is never rendered**, and the words-never-numerals gate (THR-1004) still
+   * reads `detail`, which is built from the band's *word*.
+   *
+   * It exists because a band cannot be re-derived once it is banded, and two
+   * changes to the same quantity in one encounter have to combine on the raw
+   * amount before they band. Snow on the Pass is the motivating case: both its
+   * steps are Stone, so both grew the same reach, and re-banding `0.4 + 0.4` is
+   * arithmetic the band index cannot do (`▲▲` + `▲▲` is not `▲▲▲▲`).
+   *
+   * Optional, so every producer that never combines keeps shipping the pair it
+   * always did (NFP #6).
+   */
+  readonly raw?: number;
 }
 
 /**
