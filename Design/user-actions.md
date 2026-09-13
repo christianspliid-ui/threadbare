@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 13:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 14:00 local (12:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,7 +13,9 @@ You stopped after four feedback batches on Saturday with *"more batches expected
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map; the wider maps — fights, items, powers — wait behind twelve questions only you can answer. Say **"work the map"** in a chat when the sitting is done.
 
-Both these two write all four endings, so any `&outcome=…` pin lands on authored prose. Since your last look: names click through to sheets everywhere ([THR-1500](https://linear.app/threadbare/issue/THR-1500)), a duplicate sheet and two dead buttons are gone ([THR-1492](https://linear.app/threadbare/issue/THR-1492)), the capability line reads as a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494)), conditions show how long they last ([THR-1484](https://linear.app/threadbare/issue/THR-1484)), and the detail sheet now takes and returns keyboard focus like a real window ([THR-1024](https://linear.app/threadbare/issue/THR-1024)). **No known defect stands on these two screens.**
+Both write all four endings, so any `&outcome=…` pin lands on authored prose. Since your last look, your Saturday notes closed: chips are capped at 15 words and may not retell their ending ([THR-1473](https://linear.app/threadbare/issue/THR-1473)), the pipeline now reads each ending as a whole page ([THR-1474](https://linear.app/threadbare/issue/THR-1474)), names click through to sheets everywhere ([THR-1500](https://linear.app/threadbare/issue/THR-1500)), and the detail sheet takes and returns keyboard focus like a real window ([THR-1024](https://linear.app/threadbare/issue/THR-1024)).
+
+**One known blemish:** in Riders' *failure* ending, a choice reads the opening lines back almost verbatim — queued as [THR-1505](https://linear.app/threadbare/issue/THR-1505). The other three endings are clean.
 
 ### Six words with nothing left to say ([THR-1501](https://linear.app/threadbare/issue/THR-1501/six-family-tags-are-now-orphaned-no-bearer-no-reader-sunset-or-author))
 
@@ -35,6 +37,8 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 
 ## Resolved this period
 
+- **2026-09-13 — every ending is now read as a whole page** ([THR-1474](https://linear.app/threadbare/issue/THR-1474)). Merged 13:29, live. Your Saturday note. It immediately found 24 endings that tell one fact twice — [THR-1505](https://linear.app/threadbare/issue/THR-1505), queued.
+- **2026-09-13 — a consequence chip may no longer retell its own ending** ([THR-1473](https://linear.app/threadbare/issue/THR-1473)). Capped at 15 words. Your Saturday note.
 - **2026-09-13 — the detail sheet behaves like a real window** ([THR-1024](https://linear.app/threadbare/issue/THR-1024)). Merged 12:28, live. It takes the keyboard, holds it, and hands it back on close.
 - **2026-09-13 — a condition's sheet says how long it lasts** ([THR-1484](https://linear.app/threadbare/issue/THR-1484)). Merged 11:36, live. Two parts of the engine spelled one word differently, so the countdown bar had no denominator.
 - **2026-09-13 — the capability line reads as a sentence again** ([THR-1494](https://linear.app/threadbare/issue/THR-1494)). Merged 09:24, live. Fixes all eight reaches.
@@ -43,8 +47,6 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 - **2026-09-13 — sixteen recipes promised a prize and drew nothing** ([THR-1496](https://linear.app/threadbare/issue/THR-1496)). Merged 06:32, live. It left six words orphaned — the standing ask above.
 - **2026-09-13 — one reach moved twice, so the ending says it once** ([THR-1467](https://linear.app/threadbare/issue/THR-1467)). Merged 05:28, live.
 - **2026-09-13 — a keeper stops being introduced to himself** ([THR-1466](https://linear.app/threadbare/issue/THR-1466)). Merged 04:25, live. An appositive needs a name to apposit.
-- **2026-09-13 — Kael's whisper opens Kael's sheet** ([THR-1461](https://linear.app/threadbare/issue/THR-1461)). Merged 03:27.
-- **2026-09-13 — the Realm gets a court a mortal can be called to** ([THR-1454](https://linear.app/threadbare/issue/THR-1454)). Merged 02:55. Three scenes — a court summons, a border levy, a tithe demanded.
 
 ---
 

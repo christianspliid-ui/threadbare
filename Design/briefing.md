@@ -1,16 +1,18 @@
 # Briefing
-**Generated:** 2026-09-13 13:00 local (11:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-13 14:00 local (12:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Finish the sitting — two encounters left** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). You stopped after four feedback batches on Saturday saying *"more batches expected."* Everything those batches asked for is shipped, merged and live.
+**Finish the sitting — two encounters left** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). You stopped after four feedback batches on Saturday saying *"more batches expected."* Everything those batches asked for is now shipped, merged and live — the last two landed this hour.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 One question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map, which is what the wider design work — fights, items, powers — is queued behind.
 
-These two are the fully-finished pair. Both write all four endings, so any ending you pin with `&outcome=…` is one somebody wrote — the two encounters that fall back to a generic ending are the two you have already played ([THR-1468](https://linear.app/threadbare/issue/THR-1468/two-of-the-five-slice-parents-author-no-failure-band-a-pinned-failure)). New since the last brief: the sheet that opens when you click a name now behaves like a proper window — it takes the keyboard, holds it, and gives it back when you close ([THR-1024](https://linear.app/threadbare/issue/THR-1024), merged 12:28, live). Go in expecting no known blemish; a raw `{cast:…}` token would be news.
+Two of your Saturday notes closed since the last brief: consequence chips are capped at 15 words and may no longer retell the ending they sit under ([THR-1473](https://linear.app/threadbare/issue/THR-1473)), and the pipeline now reads each ending **as a whole page** — overview, chips and choices together — rather than checking each part alone ([THR-1474](https://linear.app/threadbare/issue/THR-1474), merged 13:29).
+
+**One honest blemish, found by that new check 20 minutes ago.** In the *failure* ending of Riders, one of the choices on offer reads the opening lines back at you almost word for word — *"the riders come down off the ridge at their leisure."* It is queued as [THR-1505](https://linear.app/threadbare/issue/THR-1505/the-new-whole-page-check-reports-24-endings-that-tell-one-fact-twice), along with 23 others like it across the wider catalogue. Nothing else known stands on these two screens, and the other three endings of Riders are clean. If you pin endings with `&outcome=…`, both encounters write all four.
 
 ## Also waiting (3)
 
@@ -20,11 +22,11 @@ These two are the fully-finished pair. Both write all four endings, so any endin
 
 ## Queue
 
-**Healthy — 13 ready, 1 in progress.** Nothing blocked, nothing stale, no parked claims. Three items joined the queue this hour, all small and all with instructions: a keyboard gap in the trail of links across the top of the detail sheet ([THR-1504](https://linear.app/threadbare/issue/THR-1504/detailbreadcrumb-crumbs-are-click-only-spans-law-23-and-the-one)), and two pieces of the content-model work whose blockers cleared overnight ([THR-1495](https://linear.app/threadbare/issue/THR-1495/six-content-kinds-have-no-codex-category-so-their-content-cards-can), [THR-1497](https://linear.app/threadbare/issue/THR-1497/catalystquery-is-repaired-and-gated-but-unreachable-from-the-live)). None needs you.
+**Healthy — 13 ready, 1 in progress.** Nothing blocked, nothing stale. One item joined this hour: the 24 endings that tell one fact twice ([THR-1505](https://linear.app/threadbare/issue/THR-1505/the-new-whole-page-check-reports-24-endings-that-tell-one-fact-twice)), which exists because the check you asked for on Saturday now finds them automatically. None of the 13 needs you.
 
-The one job in progress is redrawing five pieces of scene art that had text or faces baked into them ([THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)). **It spends image credits — five images plus retries.** Its ticket asks for your say-so, but your 11 September ruling already covers it: spend inside a ticket's stated batch is the builder's call so long as the count is named. Naming the count, not asking.
+**One job is parked rather than progressing, and should not be.** The five pieces of scene art with text and faces baked into them ([THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)) were set down two hours ago by a lane that wanted your say-so on spending image credits. **You already gave it** — 11 September, *"you are approved to unblock everything here,"* recorded on the ticket itself. So this is not an ask and the count is the only thing owed you: five images plus retries. The next lane to reach it should simply run the batch; two passing lanes have now stepped over it instead.
 
 ## Health
 
-- **All green.** CI and all three post-merge jobs green on the newest main; all three scheduled background jobs healthy; all nine lanes on schedule; reaper ran 12:40; no PRs waiting to merge. The site serves the newest commit ([cdadde8b](https://github.com/christianspliid-ui/threadbare/commit/cdadde8b)). Engine speed 67 ms/tick — **13% faster** than the seven-day median across 107 measurements.
-- **The lane-silence probe still reports the same three old gaps, and still is not being carried to you.** All three self-resolved days ago; every lane is on schedule right now, so the probe is reading quiet commit hours rather than stopped work. The oldest — Monday night — rolls out of its seven-day window tomorrow evening. A lane calibration matter for the weekly review, not an ask.
+- **All green.** CI and all three post-merge jobs green on the newest main; all three scheduled background jobs healthy; all nine lanes on schedule; reaper ran 13:40; no PRs waiting to merge. The site serves the newest commit ([6e844d59](https://github.com/christianspliid-ui/threadbare/commit/6e844d59)). Engine speed 65 ms/tick — **12% faster** than the seven-day median across 106 measurements.
+- **The lane-silence probe still reports the same three old gaps, and still is not being carried to you.** All three self-resolved days ago and every lane is on schedule right now, so the probe is reading quiet commit hours rather than stopped work. The oldest — Monday night — rolls out of its seven-day window tomorrow evening. A lane calibration matter for the weekly review, not an ask.
