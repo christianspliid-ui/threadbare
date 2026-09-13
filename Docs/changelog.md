@@ -4279,3 +4279,8 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-13 | `src/engine/__tests__/rewardInstantiation.test.ts` | THR-1484 — repointed from `totalTicks` to `durationTicks` | Green on a dead contract while the row it stood for was blank in the game |
 | 2026-09-13 | `scripts/interface-contracts.ts` | THR-1484 — corrects a note calling `durationTicks` "inert" | It has been the live display denominator since THR-784 |
 | 2026-09-13 | `Docs/status/2026-09-13-thr-1484.md` | THR-1484 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-13 | `src/components/shared/useDialogFocus.ts` | THR-1024 — new: Law 50 extracted from `Modal` as one shared implementation | `DetailModal`'s stacked fixed-size layout cannot compose `Modal`, but must not copy its focus trap — THR-1079's "N traps is itself the Law 26/27 defect" |
+| 2026-09-13 | `src/components/shared/Modal.tsx` | THR-1024 — calls `useDialogFocus` instead of holding the trap inline | Behaviour-preserving: its own 19 tests, Law 50 suite included, pass unedited |
+| 2026-09-13 | `src/components/shared/DetailModal.tsx` | THR-1024 — `role="dialog"`, per-panel `aria-modal`, `aria-label`, and the shared focus contract | The overlay set none of them; Escape worked, so what was missing was entering, not dismissal |
+| 2026-09-13 | `src/components/shared/__tests__/DetailModal.test.tsx` | THR-1024 — 12 tests for dialog semantics and Law 50 across a stack | Includes the absence halves (`aria-modal="false"` beneath the topmost, no dialog on an empty stack) so a revert fails them |
+| 2026-09-13 | `Docs/status/2026-09-13-thr-1024.md` | THR-1024 — new status fragment | One file per entry since THR-1016 |
