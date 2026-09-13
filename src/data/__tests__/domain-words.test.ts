@@ -11,6 +11,8 @@ import {
   DURATION_WORDS,
   DURATION_BAND_MAX_TICKS,
   getDurationWord,
+  UNDERTAKING_PROGRESS_WORDS,
+  getUndertakingProgressWord,
 } from '../domain-words';
 import { RETINUE_VIGNETTE_TIMEOUT } from '../../types/encounterVisibility';
 import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
@@ -445,5 +447,51 @@ describe('getDurationWord', () => {
       Array.from({ length: RETINUE_VIGNETTE_TIMEOUT }, (_, i) => getDurationWord(i + 1)),
     );
     expect(reached.size).toBe(DURATION_WORDS.length);
+  });
+});
+
+/**
+ * Undertaking progress words (THR-1492).
+ *
+ * Repointed from `Game/__tests__/UndertakingSurfaces.test.tsx`, which asserted these
+ * bands through `AgentDetailPanel` — a renderer with no production mount, deleted under
+ * the sunset rule. The panel was the only place the bands were covered, yet the function
+ * is live in `momentCardModel.ts` and `JourneyTab.tsx`, so deleting that file wholesale
+ * would have dropped real coverage of a live function along with the dead renderer.
+ * The portable half of what it asserted — every band is a word, reachable, and never a
+ * numeral (Law 13) — moves here, onto the function itself.
+ */
+describe('getUndertakingProgressWord', () => {
+  it('returns a word, never a numeral, across the whole completion range', () => {
+    for (let pct = 0; pct <= 100; pct++) {
+      const word = getUndertakingProgressWord(pct);
+      expect(word).toBeTruthy();
+      expect(word).not.toMatch(/\d/);
+    }
+  });
+
+  it('reaches every band from some completion in the live range', () => {
+    const reached = new Set(
+      Array.from({ length: 101 }, (_, pct) => getUndertakingProgressWord(pct)),
+    );
+    expect(reached.size).toBe(UNDERTAKING_PROGRESS_WORDS.length);
+  });
+
+  it('maps each band index to its own word', () => {
+    for (const [i, word] of UNDERTAKING_PROGRESS_WORDS.entries()) {
+      // Mid-band completion: 10, 30, 50, 70, 90.
+      expect(getUndertakingProgressWord(i * 20 + 10)).toBe(word);
+    }
+  });
+
+  /**
+   * Fail-soft (NFP #4): a projection that hands over a percentage outside 0–100 gets a
+   * word rather than `undefined` rendering as a blank strip.
+   */
+  it('clamps out-of-range completion instead of returning undefined', () => {
+    expect(getUndertakingProgressWord(-40)).toBe(UNDERTAKING_PROGRESS_WORDS[0]);
+    expect(getUndertakingProgressWord(140)).toBe(
+      UNDERTAKING_PROGRESS_WORDS[UNDERTAKING_PROGRESS_WORDS.length - 1],
+    );
   });
 });

@@ -3,8 +3,8 @@ import type { AttachmentTier } from '../../types/attachments';
 import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
 import type { ActionTriggerEffect } from '../../types/effects';
 import { ACTION_TRIGGER_DEFAULT_PROBABILITY } from '../../data/effect-constants';
-import type { EntityHeader, EntitySection, TriggerEntry } from '../../types/entityDetail';
-import { EntityCard } from '../shared/EntityCard';
+import type { ChipDescriptor, Section as DetailSection, TriggerRow } from '../../types/detailPage';
+import { Section } from '../shared/Section';
 import { Medallion } from '../shared/Medallion';
 import { FlavorQuote } from '../shared/FlavorQuote';
 import { pickFallbackFlavor } from '../../data/reveal-content';
@@ -24,6 +24,9 @@ const TAG_AXIS_GLYPH: Readonly<Record<ContentTagAxis, string>> = {
   sphere: '✦',   // ✦ — the cosmology's fuelling axis
   polarity: '●', // ● — good or ill to carry
 };
+
+/** Axis glyph for a tag the vocabulary no longer knows — a chip without one reads as broken. */
+const TAG_GLYPH_FALLBACK = '◈';
 
 export interface AttachmentDetailData {
   id: string;
@@ -85,6 +88,37 @@ function formatEffectSummary(trigger: ActionTriggerEffect): string {
   return parts.join(' ');
 }
 
+/**
+ * The sheet's prose lines are plain authored text, not prose-engine markup — but a
+ * `ProseSection` is rendered as markup (it carries `<span class="term">` wiring for the
+ * pages that have it). So the lines are escaped on the way in. The retiring `EntityCard`
+ * rendered them as a text node, and escaping is what keeps that reading exactly: an
+ * attachment whose summary contains a `<` is a word, not a tag.
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/** A plain-text prose section, one line per entry, blank entries dropped. */
+function proseSection(
+  typeId: string,
+  label: string,
+  lines: ReadonlyArray<string | null | undefined>,
+): DetailSection {
+  return {
+    kind: 'prose',
+    label,
+    gold: false,
+    tier: 'routine',
+    typeId,
+    source: 'attachment-detail-view',
+    prose: lines.filter(Boolean).map(line => escapeHtml(line as string)).join('<br />'),
+  };
+}
+
 export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   attachment,
   onBack,
@@ -94,34 +128,17 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   const tierName = ATTACHMENT_TIER_NAMES[attachment.tier];
   const glyph = getAttachmentGlyph(attachment.subcategory);
 
-  const kindLine = `${tierName} \u00B7 ${attachment.subcategory.replace(/_/g, ' ')}`;
+  const kindLine = `${tierName} · ${attachment.subcategory.replace(/_/g, ' ')}`;
 
-  // The tier/kind line moved into the ceremonial banner below (THR-799), so the
-  // EntityCard header no longer repeats it as a subtitle \u2014 the name lives in the
-  // header, the kind in the banner, each said once.
-  const header: EntityHeader = {
-    name: attachment.name,
-    accentColor: tierColor,
-  };
+  // The tier/kind line lives in the ceremonial banner below (THR-799), so the header
+  // does not repeat it as a subtitle — the name lives in the header, the kind in the
+  // banner, each said once.
+  const sections: DetailSection[] = [];
 
-  const sections: EntitySection[] = [];
-
-  // Art slot / glyph fallback
-  if (attachment.image) {
-    sections.push({
-      id: 'art',
-      title: '',
-      insightTier: 'stranger',
-      proseVoice: 'chronicle',
-      prose: '',
-      structuredData: undefined,
-    });
-  }
-
-  // Flavor text is no longer an EntityCard section — THR-799 promotes it into the
-  // ceremonial header's FlavorQuote well, above the mechanical effect line
-  // (narrative before mechanics). Falls back to the generic per-kind line only
-  // when the attachment carries no prose of its own.
+  // Flavor text is not a section — THR-799 promotes it into the ceremonial header's
+  // FlavorQuote well, above the mechanical effect line (narrative before mechanics).
+  // Falls back to the generic per-kind line only when the attachment carries no prose
+  // of its own.
   const flavorLine = attachment.flavorText || pickFallbackFlavor('attachment', attachment.id);
 
   // THR-1475 — what a condition actually does, above the line that describes how
@@ -137,35 +154,23 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   });
 
   // Effect (always)
-  const effectProse = [
+  sections.push(proseSection('effect', 'Effect', [
     conditionEffect?.line ?? null,
     attachment.mechanicalSummary,
     attachment.lossCondition ? `Loss: ${attachment.lossCondition}` : null,
     attachment.grantedBy ? `Granted by ${attachment.grantedBy}` : null,
     attachment.agreementType ? `Type: ${attachment.agreementType}` : null,
-  ].filter(Boolean).join('\n');
-
-  sections.push({
-    id: 'effect',
-    title: 'Effect',
-    insightTier: 'stranger',
-    proseVoice: 'chronicle',
-    prose: effectProse,
-  });
+  ]));
 
   // Duration (transient only)
   if (attachment.ticksRemaining != null && attachment.totalTicks) {
-    sections.push({
-      id: 'duration',
-      title: 'Duration',
-      insightTier: 'stranger',
-      proseVoice: 'chronicle',
-      // THR-1423: was `${ticksRemaining} / ${totalTicks} ticks` — two raw magnitudes
-      // (Law 13) in an engine unit named nowhere player-facing (Law 14). The `x / y`
-      // pair is the same quantity the row's ProgressBar already draws, so the reading
-      // keeps only the remaining term, which is what the section title asks for.
-      prose: `${durationLabel(attachment.ticksRemaining)} remaining`,
-    });
+    // THR-1423: was `${ticksRemaining} / ${totalTicks} ticks` — two raw magnitudes
+    // (Law 13) in an engine unit named nowhere player-facing (Law 14). The `x / y`
+    // pair is the same quantity the row's ProgressBar already draws, so the reading
+    // keeps only the remaining term, which is what the section title asks for.
+    sections.push(proseSection('duration', 'Duration', [
+      `${durationLabel(attachment.ticksRemaining)} remaining`,
+    ]));
   }
 
   // Tags (always if present) — chips, not a raw keyword cloud (THR-1486).
@@ -176,32 +181,30 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   // vocabulary no longer knows still renders, without a hover, because an entry whose
   // only description is a retired word should not become wordless.
   if (attachment.tags.length > 0) {
+    const chips: ChipDescriptor[] = attachment.tags.map(tag => {
+      const def = getContentTag(tag);
+      const bare = (tag.startsWith('#') ? tag.slice(1) : tag).replace(/_/g, ' ');
+      return {
+        label: bare,
+        tooltipId: def ? contentTagTooltipId(def.tag) : undefined,
+        glyph: def ? TAG_AXIS_GLYPH[def.axis] : TAG_GLYPH_FALLBACK,
+        dataKey: { attribute: 'content-tag', value: tag },
+      };
+    });
     sections.push({
-      id: 'tags',
-      title: 'Tags',
-      insightTier: 'stranger',
-      proseVoice: 'chronicle',
-      prose: '',
-      structuredData: {
-        type: 'content_tag_chips',
-        chips: attachment.tags.map(tag => {
-          const def = getContentTag(tag);
-          const bare = (tag.startsWith('#') ? tag.slice(1) : tag).replace(/_/g, ' ');
-          return {
-            tag,
-            label: bare,
-            tooltipId: def ? contentTagTooltipId(def.tag) : null,
-            glyph: def ? TAG_AXIS_GLYPH[def.axis] : '◈',
-          };
-        }),
-        accent: tierColor,
-      },
+      kind: 'chips',
+      label: 'Tags',
+      gold: false,
+      tier: 'routine',
+      typeId: 'tags',
+      source: 'attachment-detail-view',
+      chips,
     });
   }
 
   // Triggers (conditional)
   if (attachment.actionTriggers && attachment.actionTriggers.length > 0) {
-    const triggerEntries: TriggerEntry[] = attachment.actionTriggers.map(t => ({
+    const triggers: TriggerRow[] = attachment.actionTriggers.map(t => ({
       condition: formatTriggerEvent(t.on),
       probability: typeof t.probability === 'number' && Number.isFinite(t.probability)
         ? t.probability
@@ -211,37 +214,78 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
     }));
 
     sections.push({
-      id: 'triggers',
-      title: 'Triggers',
-      insightTier: 'stranger',
-      proseVoice: 'chronicle',
-      prose: '',
-      structuredData: {
-        type: 'trigger',
-        triggers: triggerEntries,
-      },
+      kind: 'triggers',
+      label: 'Triggers',
+      gold: false,
+      tier: 'routine',
+      typeId: 'triggers',
+      source: 'attachment-detail-view',
+      triggers,
     });
   }
 
   // Source (conditional)
   if (attachment.source) {
-    sections.push({
-      id: 'source',
-      title: 'Source',
-      insightTier: 'stranger',
-      proseVoice: 'chronicle',
-      prose: attachment.source,
-    });
+    sections.push(proseSection('source', 'Source', [attachment.source]));
   }
 
   return (
-    <div data-testid="attachment-detail-view">
-      {/* Ceremonial header (THR-799): art or glyph medallion → name/tier banner →
+    <div
+      data-testid="attachment-detail-view"
+      className="flex flex-col h-full"
+      style={{ backgroundColor: 'var(--bg-surface)' }}
+    >
+      {/* Header: the name, and the way out. The codex affordance renders only when a
+          host wires one — THR-1492: both production mounts passed `undefined` and the
+          retiring card turned that into a no-op handler, so the sheet carried two
+          controls that did nothing when clicked. */}
+      <div
+        className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+        style={{
+          backgroundColor: 'var(--bg-deep)',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h2
+              className="font-semibold tracking-wide truncate"
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-display)',
+              }}
+            >
+              {attachment.name}
+            </h2>
+            {onViewCodex && (
+              <button
+                onClick={onViewCodex}
+                className="flex-shrink-0 transition-opacity hover:opacity-70"
+                style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-gold)' }}
+                aria-label={`Open full codex for ${attachment.name}`}
+              >
+                Codex →
+              </button>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={onBack}
+          aria-label="close"
+          className="transition-colors text-lg px-2 ml-2 flex-shrink-0"
+          style={{ color: 'var(--accent-gold)' }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Ceremonial banner (THR-799): art or glyph medallion → name/tier banner →
           flavor well. Layout only — every value shown is one the view already read.
           When real art exists it keeps its full art slot rather than being clipped
           down to a 64px disc; the medallion is the glyph fallback's treatment. */}
       <div
-        className="flex flex-col items-center gap-3 px-4 py-4"
+        className="flex flex-col items-center gap-3 px-4 py-4 flex-shrink-0"
         style={{ backgroundColor: 'var(--bg-deep)', borderBottom: '1px solid var(--border-subtle)' }}
       >
         {attachment.image ? (
@@ -279,12 +323,39 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
 
         <FlavorQuote style={{ width: '100%' }}>{flavorLine}</FlavorQuote>
       </div>
-      <EntityCard
-        header={header}
-        sections={sections}
-        onBack={onBack}
-        onViewCodex={onViewCodex ?? (() => {})}
-      />
+
+      {/* The section stack — the one section model every detail page renders (THR-1492). */}
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        {sections.map(section => (
+          <Section key={section.typeId} section={section} />
+        ))}
+      </div>
+
+      {onViewCodex && (
+        <div
+          className="flex gap-2 px-4 py-4 flex-shrink-0"
+          style={{
+            backgroundColor: 'var(--bg-deep)',
+            borderTop: '1px solid var(--border-subtle)',
+          }}
+        >
+          <button
+            onClick={onViewCodex}
+            className="flex-1 px-4 py-3 font-semibold rounded-lg transition-all"
+            style={{
+              fontSize: 'var(--text-sm)',
+              fontFamily: 'var(--font-display)',
+              backgroundColor: tierColor,
+              color: 'var(--bg-abyss, #0a0a0e)',
+              letterSpacing: '0.5px',
+            }}
+          >
+            View Full Codex
+          </button>
+        </div>
+      )}
     </div>
   );
 });
+
+AttachmentDetailView.displayName = 'AttachmentDetailView';

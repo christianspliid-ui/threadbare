@@ -27,7 +27,9 @@
  * (a dated human verification carrying its evidence); the best a mechanically
  * passing row can show is UNVERIFIED-OK. `badgeOverride` pins a row LEAKED when
  * a production read site exists but does not count — display-only readers
- * (tooltips) and documented-dead components (`AgentDetailPanel.tsx`).
+ * (tooltips) and documented-dead components. (The standing example used to be
+ * `AgentDetailPanel.tsx`; THR-1492 deleted it, which is the disposition a
+ * documented-dead component is supposed to reach.)
  *
  * ## The ratchet
  *

@@ -113,8 +113,17 @@ export type DetailPageKind = 'actor' | 'item' | 'faction' | 'place' | 'event' | 
  */
 export type GraphPageKind = Exclude<DetailPageKind, 'content'>;
 
-/** Section type discriminator. UI dispatches on `kind`. */
-export type SectionKind = 'prose' | 'chips' | 'event-card' | 'panel' | 'portrait';
+/**
+ * Section type discriminator. UI dispatches on `kind`.
+ *
+ * `'triggers'` joined in THR-1492, when `EntityCard` — the older section model, whose one
+ * consumer was the attachment sheet — retired into this one. A trigger is the one thing
+ * that model could say and this one could not: a condition, a *firing chance*, and what
+ * fires. Law 15 gives a probability pips, so rendering it as a `panel` row would have
+ * dropped the pips and the authored line with them. The canonical model has to be able to
+ * say everything the model it replaces could say, or the replacement is a regression.
+ */
+export type SectionKind = 'prose' | 'chips' | 'event-card' | 'panel' | 'portrait' | 'triggers';
 
 /** Prose tier per Narrative Engine canon. */
 export type ProseTier = 'routine' | 'notable' | 'chronicle';
@@ -155,6 +164,32 @@ export interface ChipDescriptor {
    * carry both this and a `clickRef`; nothing today does.
    */
   tooltipId?: string;
+  /**
+   * Optional leading glyph, so a chip's *kind* reads before its word does (THR-1486).
+   *
+   * Carried over from `EntityCard`'s `content_tag_chips` block in THR-1492: the axis
+   * glyph is how the attachment sheet and the codex filter row paint one vocabulary, and
+   * a chip that lost it on the way into this model would read as a different chip.
+   */
+  glyph?: string;
+  /**
+   * Optional stable key for the thing this chip names, emitted as `data-<attr>` for tests
+   * and for surfaces that need to find a specific chip in the DOM. Never rendered as text
+   * — the label is the word the player reads (Law 14).
+   */
+  dataKey?: { attribute: string; value: string };
+}
+
+/** One row of a `triggers` section: what fires, how likely, and what it does. */
+export interface TriggerRow {
+  /** Player-facing event name, e.g. "Critical failure" — never the raw event key (Law 14). */
+  condition: string;
+  /** Firing chance, 0–1. Rendered as pips (Law 15), never as a numeral. */
+  probability: number;
+  /** Optional authored line the trigger narrates when it fires. */
+  narrativeTemplate?: string;
+  /** What the trigger does, in words. */
+  effectSummary: string;
 }
 
 // ─── Section base + variants ──────────────────────────────────────────────────
@@ -210,13 +245,19 @@ export interface PortraitSection extends SectionBase {
   bodyProse?: string;
 }
 
+export interface TriggersSection extends SectionBase {
+  kind: 'triggers';
+  triggers: TriggerRow[];
+}
+
 /** The discriminated union the UI renders. */
 export type Section =
   | ProseSection
   | ChipsSection
   | EventCardSection
   | PanelSection
-  | PortraitSection;
+  | PortraitSection
+  | TriggersSection;
 
 // ─── Full detail page payload ─────────────────────────────────────────────────
 
