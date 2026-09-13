@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 15:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 16:56 local (14:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -37,6 +37,7 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 
 ## Resolved this period
 
+- **2026-09-13 — a region on the map describes itself in words** ([THR-1455](https://linear.app/threadbare/issue/THR-1455)). Merged 16:21, live. Clicking a stretch of map answered with the internal terrain key and a bare tile count; it now says what the place is and how wide it runs.
 - **2026-09-13 — a consequence can name the place it landed on** ([THR-1462](https://linear.app/threadbare/issue/THR-1462)). Merged 15:32, live. A condition dropped on a shrine can now be clicked through to the shrine, not just the traveller. Its twin for realms is queued as [THR-1499](https://linear.app/threadbare/issue/THR-1499).
 - **2026-09-13 — the guild notice board says which silence it is** ([THR-1026](https://linear.app/threadbare/issue/THR-1026)). Merged 14:29, live. A hall whose guild does not commission delves now says so instead of reading as broken. The fix found that ruins almost never gather rumours at all — queued as [THR-1506](https://linear.app/threadbare/issue/THR-1506).
 - **2026-09-13 — every ending is now read as a whole page** ([THR-1474](https://linear.app/threadbare/issue/THR-1474)). Merged 13:29, live. Your Saturday note. It immediately found 24 endings that tell one fact twice — [THR-1505](https://linear.app/threadbare/issue/THR-1505), queued.
@@ -46,7 +47,6 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 - **2026-09-13 — the capability line reads as a sentence again** ([THR-1494](https://linear.app/threadbare/issue/THR-1494)). Merged 09:24, live. Fixes all eight reaches.
 - **2026-09-13 — a name opens that person's sheet everywhere, not just in the whisper** ([THR-1500](https://linear.app/threadbare/issue/THR-1500)). Merged 08:25, live.
 - **2026-09-13 — one detail sheet instead of two, and two dead buttons gone** ([THR-1492](https://linear.app/threadbare/issue/THR-1492)). Merged 07:35, live.
-- **2026-09-13 — sixteen recipes promised a prize and drew nothing** ([THR-1496](https://linear.app/threadbare/issue/THR-1496)). Merged 06:32, live. It left six words orphaned — the standing ask above.
 
 ---
 
