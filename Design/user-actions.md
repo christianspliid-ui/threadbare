@@ -1,17 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 02:57 local (00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live — re-verified from the board this run, not carried forward. Nothing has changed on either screen since the last brief.
+You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live. Neither screen changed this hour — the one merge was new Realm content, and its diff touches nothing in either encounter.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Three blemishes are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494), fix in flight but not landed), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen reward recipes that draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496), none of them reachable from these two). A raw `{cast:…}` token on either screen would be new.
+The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Three blemishes are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494), fix open but failing and not landed), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen reward recipes that draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496), none of them reachable from these two). A raw `{cast:…}` token on either screen would be new.
 
 The wider design maps — fights, items, powers — have finished all the homework an agent can do, and wait behind twelve questions only you can answer. Deliberately not chased while the sitting is live: say **"work the map"** in a chat when you are ready to work them one at a time.
 
@@ -34,6 +34,7 @@ Nothing is broken while these sit; the cards open, they are just shallower. Not 
 
 ## Resolved this period
 
+- **2026-09-13 — the Realm gets a court a mortal can be called to** ([THR-1454](https://linear.app/threadbare/issue/THR-1454)). Merged 02:55. Three scenes — a court summons, a border levy, a tithe demanded — the first content that makes the Realm something a mortal feels rather than something the world merely knows.
 - **2026-09-13 — the content query is now counted, so it cannot quietly rot** ([THR-1489](https://linear.app/threadbare/issue/THR-1489)). Merged 00:45. The last of the five content-model slices; the authoring machinery now measures how often content reaches content by family.
 - **2026-09-12 — an ending names the courier instead of quoting her key** ([THR-1459](https://linear.app/threadbare/issue/THR-1459)). Merged 23:36, live. Gate Duty's ending was printing a raw `{cast:suspect_courier}` in two places.
 - **2026-09-12 — content finds content by family, and 48 dead sequels stop withering** ([THR-1488](https://linear.app/threadbare/issue/THR-1488)). Merged 23:08. An encounter setting up a sequel no longer has to spell out exactly which thing it means.
@@ -43,7 +44,6 @@ Nothing is broken while these sit; the cards open, they are just shallower. Not 
 - **2026-09-12 — the closed tag vocabulary is merged** ([THR-1486](https://linear.app/threadbare/issue/THR-1486)). Merged 17:01. Unblocked the content query.
 - **2026-09-12 — every kind of thing opens the same card** ([THR-1490](https://linear.app/threadbare/issue/THR-1490)). Merged 15:54, live. A name anywhere in the game opens the same sheet.
 - **2026-09-12 — the content-object registry is merged** ([THR-1485](https://linear.app/threadbare/issue/THR-1485)). Merged 16:30.
-- **2026-09-12 — the nudge stage is one block, and it is live** ([THR-1478](https://linear.app/threadbare/issue/THR-1478)). Merged 15:44. Your batch-4 redesign: two panels became one, the forecast a die, the difficulty a tilting balance.
 
 ---
 
