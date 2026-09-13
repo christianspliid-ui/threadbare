@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,9 +13,16 @@ You stopped after four feedback batches on Saturday with *"more batches expected
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map; the wider maps — fights, items, powers — wait behind twelve questions only you can answer. Say **"work the map"** in a chat when the sitting is done.
 
-Both write all four endings, so any `&outcome=…` pin lands on authored prose. Your Saturday notes also closed: chips capped at 15 words and barred from retelling their ending ([THR-1473](https://linear.app/threadbare/issue/THR-1473)), each ending now read as a whole page ([THR-1474](https://linear.app/threadbare/issue/THR-1474)), names clicking through to sheets everywhere ([THR-1500](https://linear.app/threadbare/issue/THR-1500)), and the detail sheet taking and returning keyboard focus like a real window ([THR-1024](https://linear.app/threadbare/issue/THR-1024)).
+Both write all four endings, so any `&outcome=…` pin lands on authored prose. **One known blemish:** in Riders' *failure* ending, a choice reads the opening lines back almost verbatim — queued as [THR-1505](https://linear.app/threadbare/issue/THR-1505). The other three endings are clean.
 
-**One known blemish:** in Riders' *failure* ending, a choice reads the opening lines back almost verbatim — queued as [THR-1505](https://linear.app/threadbare/issue/THR-1505). The other three endings are clean.
+### Start the two staged designs ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)) — *from tb-orchestrator*
+
+Two designs are staged and waiting for a session. **Neither needs a decision from you** — the direction on both is already yours, on the record. They need someone to sit down and write the plan, and no lane may start itself.
+
+- **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) — a held town is a faction position.** When a faction holds a town, that opens that faction's encounters there and steers what its people work on. The second half of your own sentence from 10 September; the first half shipped three days ago. **Waiting 59 hours.**
+- **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) — a mortal keeps or misses a meeting.** The appointment primitive, your direction from 12 September. Waiting since yesterday evening.
+
+**The ask: open a chat and say "design THR-1448".** It is the older of the two and the one whose direction is most fully settled; the second can follow. If you would rather they waited, saying so is also an answer. Why it is on your list now rather than being quietly re-counted: the build queue is down to **one** piece of programme work, and these two are what would refill it.
 
 ### Six words with nothing left to say ([THR-1501](https://linear.app/threadbare/issue/THR-1501/six-family-tags-are-now-orphaned-no-bearer-no-reader-sunset-or-author))
 
@@ -32,7 +39,7 @@ Found while building the name-click fix ([THR-1461](https://linear.app/threadbar
 ## Resolved this period
 
 - **2026-09-13 — a faction no longer lists the same town twice** ([THR-1460](https://linear.app/threadbare/issue/THR-1460)). Merged 18:32, live. The Merchant Consortium held one settlement through two different routes, so its sheet drew it once for each. Found in Friday's attended screenshot sweep.
-- **2026-09-13 — what a player may leaf through is settled** ([THR-1495](https://linear.app/threadbare/issue/THR-1495)). Merged 17:39, live. The lane took the call rather than queueing it. Four kinds gained a reference page — legendary artifacts, companions, ambitions, and the 37-card deck you play from. Two were withheld with quotable reasons: all 513 encounters would be the answer key, and omens read through their beats. A chronicle of encounters *already lived* is explicitly still on the table.
+- **2026-09-13 — what a player may leaf through is settled** ([THR-1495](https://linear.app/threadbare/issue/THR-1495)). Merged 17:39, live. The lane took the call rather than queueing it. Four kinds gained a reference page — legendary artifacts, companions, ambitions, and the 37-card deck you play from. Two were withheld with quotable reasons: all 513 encounters would be the answer key, and omens read through their beats.
 - **2026-09-13 — a region on the map describes itself in words** ([THR-1455](https://linear.app/threadbare/issue/THR-1455)). Merged 16:21, live. Clicking a stretch of map answered with the internal terrain key and a bare tile count; it now says what the place is and how wide it runs.
 - **2026-09-13 — a consequence can name the place it landed on** ([THR-1462](https://linear.app/threadbare/issue/THR-1462)). Merged 15:32, live. A condition dropped on a shrine can now be clicked through to the shrine, not just the traveller. Its twin for realms is queued as [THR-1499](https://linear.app/threadbare/issue/THR-1499).
 - **2026-09-13 — the guild notice board says which silence it is** ([THR-1026](https://linear.app/threadbare/issue/THR-1026)). Merged 14:29, live. A hall whose guild does not commission delves now says so instead of reading as broken. The fix found that ruins almost never gather rumours at all — queued as [THR-1506](https://linear.app/threadbare/issue/THR-1506).
