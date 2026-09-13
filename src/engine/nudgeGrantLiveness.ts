@@ -58,7 +58,6 @@ import {
 import { staticContentCatalogs } from './contentCatalogView';
 import { ENCOUNTER_FAMILY_TAGS } from './encounterSeeding';
 import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../data/unified-action-templates';
-import { isContentQueryRetrofitPending } from '../data/content-eval/contentQueryRetrofitPending';
 
 /** Content kinds a card grant can name. */
 export type NudgeGrantRefKind = 'ambition' | 'artifact' | 'condition' | 'attachment';
@@ -261,13 +260,17 @@ export interface EmptyRewardDrawPool {
 export interface RewardDrawPoolReport {
   /** Recipes checked — a zero means the sweep matched nothing (see below). */
   readonly checkedRecipes: number;
-  /** Empty recipes the caller should treat as fatal. */
-  readonly empty: readonly EmptyRewardDrawPool[];
   /**
-   * Empty recipes named in `CONTENT_QUERY_RETROFIT_PENDING` (THR-1487). Reported rather
-   * than hidden: a grandfather list a caller cannot see is a way to lose work.
+   * Empty recipes, all of them fatal.
+   *
+   * THR-1487 shipped a third field here — `grandfathered`, the sixteen legacy rows named
+   * in `CONTENT_QUERY_RETROFIT_PENDING` — because widening the sweep to the step route
+   * surfaced sixteen recipes that promised a prize and drew nothing, and repairing them
+   * was content work rather than slice 3's. THR-1496 repaired all sixteen, so the list
+   * reached zero and both it and this field are gone: the gate is simply fatal, which is
+   * what the ratchet's header said would happen when it emptied.
    */
-  readonly grandfathered: readonly EmptyRewardDrawPool[];
+  readonly empty: readonly EmptyRewardDrawPool[];
 }
 
 /** `templateId @ site` — the ratchet's key, spelled in one place so both sides agree. */
@@ -425,28 +428,22 @@ export function validateContentQueries(
   templates: readonly UnifiedActionTemplate[],
 ): RewardDrawPoolReport {
   const empty: EmptyRewardDrawPool[] = [];
-  const grandfathered: EmptyRewardDrawPool[] = [];
   let checkedRecipes = 0;
 
   for (const template of templates) {
     for (const { recipe, site } of allTemplateRewardRecipes(template)) {
       checkedRecipes++;
       if (rewardRecipeHasCandidates(recipe)) continue;
-      const row: EmptyRewardDrawPool = {
+      empty.push({
         templateId: template.id,
         site,
         categoryWeights: Object.keys(recipe.categoryWeights),
         tagFilters: recipe.tagFilters ?? [],
-      };
-      if (isContentQueryRetrofitPending(recipeKey(template.id, site))) {
-        grandfathered.push(row);
-      } else {
-        empty.push(row);
-      }
+      });
     }
   }
 
-  return { checkedRecipes, empty, grandfathered };
+  return { checkedRecipes, empty };
 }
 
 /**

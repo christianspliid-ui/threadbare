@@ -1192,7 +1192,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: {
           rewardPool: {
             categoryWeights: { possession: 0.4, bestowed_power: 0.3, condition: 0.3 },
-            tagFilters: ['#pearl', '#spirit'],
+            tagFilters: ['#pearl'],
           },
           tierPromotionEligible: true,
           reputationDelta: 0.10,
@@ -1322,7 +1322,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: {
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.3, possession: 0.3 },
-            tagFilters: ['#fungus', '#mind'],
+            tagFilters: ['#fungus', '#vision'],
           },
           tierPromotionEligible: true,
           reputationDelta: 0.12,

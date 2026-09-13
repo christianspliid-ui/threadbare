@@ -97,7 +97,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           reputationDelta: 0.06,
           tierPromotionEligible: true,
           rewardPool: {
-            categoryWeights: { possession: 0.30, condition: 0.40, mastery: 0.30 },
+            categoryWeights: { possession: 0.30, condition: 0.40 },
             tagFilters: ['#iron', '#flesh'],
           },
         },
@@ -386,8 +386,8 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           reputationDelta: 0.06,
           tierPromotionEligible: true,
           rewardPool: {
-            categoryWeights: { possession: 0.60, condition: 0.20, mastery: 0.20 },
-            tagFilters: ['#flesh', '#heart'],
+            categoryWeights: { possession: 0.60, condition: 0.20 },
+            tagFilters: ['#heart'],
           },
         },
         failureMetadata: {
@@ -933,14 +933,14 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               reputationDelta: 0.09,
               tierPromotionEligible: true,
               rewardPool: {
-                categoryWeights: { mastery: 0.50, possession: 0.30, condition: 0.20 },
+                categoryWeights: { possession: 0.30, condition: 0.20 },
                 tagFilters: ['#iron'],
               },
             },
             failureMetadata: {
               reputationDelta: -0.05,
               rewardPool: {
-                categoryWeights: { condition: 0.60, mastery: 0.40 },
+                categoryWeights: { condition: 0.60 },
                 tagFilters: ['#iron'],
               },
               effects: [
@@ -969,14 +969,14 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             reputationDelta: 0.07,
             tierPromotionEligible: true,
             rewardPool: {
-              categoryWeights: { mastery: 0.50, possession: 0.30, condition: 0.20 },
+              categoryWeights: { possession: 0.30, condition: 0.20 },
               tagFilters: ['#iron'],
             },
           },
           failureMetadata: {
             reputationDelta: -0.06,
             rewardPool: {
-              categoryWeights: { condition: 0.60, mastery: 0.40 },
+              categoryWeights: { condition: 0.60 },
               tagFilters: ['#iron'],
             },
             effects: [
@@ -1113,7 +1113,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.50, condition: 0.30, possession: 0.20 },
-            tagFilters: ['#heart', '#eye', '#shadow'],
+            tagFilters: ['#heart', '#shadow'],
           },
         },
         failureMetadata: { reputationDelta: -0.02 },

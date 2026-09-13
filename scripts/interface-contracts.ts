@@ -2313,6 +2313,15 @@ export const CONTRACTS: readonly Contract[] = [
     // both routes through `allTemplateRewardRecipes`, and it surfaced sixteen step-route
     // recipes that promise a prize and draw nothing — grandfathered in
     // `CONTENT_QUERY_RETROFIT_PENDING`, tracked for repair by THR-1496.
+    //
+    // THR-1496 repaired all sixteen, so the ratchet reached zero and was deleted along
+    // with the `grandfathered` arm of `RewardDrawPoolReport`: the gate is now simply
+    // fatal on both routes, with nothing set aside. It also closed a second hole the
+    // empty-pool question cannot see — a `categoryWeights` key that is not an
+    // `AttachmentCategory` (`mastery`, `tomes_scrolls`) contributes no candidates and no
+    // weight, so the recipe pays out less than it declares while the pool stays non-empty
+    // via its other categories. Nine sites shipped that way and only four were visible
+    // here; `contentQueryGate.test.ts` now asserts the key set directly.
   },
   {
     id: 'nudge-card-cost-channels-detection-and-doom',
@@ -3184,9 +3193,9 @@ export const CONTRACTS: readonly Contract[] = [
       'scripts/cli.ts',
     ],
     verifiedLive: {
-      date: '2026-09-12',
+      date: '2026-09-13',
       evidence:
-        "THR-1487 slice 3. The shared-path test (src/engine/__tests__/contentQuerySharedPath.test.ts) runs the resolver and a frozen copy of the pre-change predicate over every shipped RewardPoolRecipe and asserts identical candidate sets - 14 arms green, and falsified by swapping the ALL-of tag rule for ANY-of, which reddens the corpus sweep with named divergences (encounter.forbidden_tome possession: legacy 5 vs resolver 32). The frozen predicate is a deliberate duplicate: getCandidateNodes now calls the resolver, so importing it would compare the resolver to itself. The condition pool is compared the same way at both tier caps and both tags. Coverage finding, recorded because it is the reason the gate needed generalising at all: the old sweep walked only the reward_draw effect, which is 1 recipe in the corpus, while the step route carries 481 - and widening to both surfaced 16 step-route recipes that promise a prize and draw nothing, grandfathered in CONTENT_QUERY_RETROFIT_PENDING with a ratchet that fails in both directions (THR-1496 repairs them). Traces content.query_resolved / content.query_empty fire at reward_draw, step_reward_pool and condition_pool; window.__DEBUG.queryContent and the CLI query command answer the plan's worked example against a live world."
+        "THR-1487 slice 3. The shared-path test (src/engine/__tests__/contentQuerySharedPath.test.ts) runs the resolver and a frozen copy of the pre-change predicate over every shipped RewardPoolRecipe and asserts identical candidate sets - 14 arms green, and falsified by swapping the ALL-of tag rule for ANY-of, which reddens the corpus sweep with named divergences (encounter.forbidden_tome possession: legacy 5 vs resolver 32). The frozen predicate is a deliberate duplicate: getCandidateNodes now calls the resolver, so importing it would compare the resolver to itself. The condition pool is compared the same way at both tier caps and both tags. Coverage finding, recorded because it is the reason the gate needed generalising at all: the old sweep walked only the reward_draw effect, which is 1 recipe in the corpus, while the step route carries 481 - and widening to both surfaced 16 step-route recipes that promise a prize and draw nothing, grandfathered in CONTENT_QUERY_RETROFIT_PENDING with a ratchet that fails in both directions. THR-1496 repaired all 16, emptied the ratchet and deleted it together with the grandfathered report arm, so the gate is now simply fatal on both routes; it also added a direct assertion that every categoryWeights key is a real AttachmentCategory, a defect shape the empty-pool question cannot see (9 shipped sites, only 4 of them visible to the pool gate). Traces content.query_resolved / content.query_empty fire at reward_draw, step_reward_pool and condition_pool; window.__DEBUG.queryContent and the CLI query command answer the plan's worked example against a live world."
     },
   },
   {
