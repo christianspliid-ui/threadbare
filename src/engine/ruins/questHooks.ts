@@ -25,6 +25,7 @@ import {
   CLUE_QUEST_THRESHOLD,
   GUILD_QUEST_RADIUS,
   QUEST_HOOK_COOLDOWN_TICKS,
+  RUIN_QUEST_POSTING_FACTION_DEF_ID,
 } from './constants';
 
 // ─── Evidence Strength ────────────────────────────────────────────────────────
@@ -113,15 +114,34 @@ interface GuildLocationEntry {
 }
 
 /**
- * Collect all location nodes that contain an Adventurer's Guild hall sublocation.
+ * Does this location commission ruin delves?
  *
- * NOTE(THR-1026): this literal is deliberately *not* the same predicate as
- * `GuildQuestPanel` / `factionQuestGeneration`, which resolve a hall through
- * FACTION_DEFINITIONS (THR-818). Hooks are posted for the adventuring guild alone
- * because the three quest templates are that guild's by voice and id
- * (`ag.quest.*`); widening this without re-authoring them would put the wrong
- * guild's words on the notice board. Do not "align" the two predicates without
- * the design call recorded in THR-1026.
+ * True when the location contains something belonging to
+ * RUIN_QUEST_POSTING_FACTION_DEF_ID — the adventurers' guild alone, per the
+ * THR-1026 ruling recorded on that constant.
+ *
+ * This is deliberately *not* the same predicate as `GuildQuestPanel` /
+ * `factionQuestGeneration` use to decide what counts as a hall: those resolve
+ * through FACTION_DEFINITIONS (THR-818) and are wide by design. Do not "align"
+ * the two — they answer different questions. Who has a board is wide; who posts
+ * to it is one.
+ *
+ * Exported so the panel that renders the board asks the same question the phase
+ * that fills it answers, rather than carrying a second copy of this literal:
+ * the empty state's claim "this board posts no ruin contracts" is then true
+ * exactly when this returns false.
+ */
+export function locationPostsRuinQuestHooks(graph: WorldGraph, locationId: string): boolean {
+  return graph.getOutgoingEdges(locationId, 'contains')
+    .map(e => graph.getNode(e.target))
+    .some(n => n &&
+      n.properties?.factionDefId === RUIN_QUEST_POSTING_FACTION_DEF_ID
+    );
+}
+
+/**
+ * Collect all location nodes that commission ruin delves — see
+ * `locationPostsRuinQuestHooks` for why that is one faction and not twelve.
  */
 function findGuildLocations(graph: WorldGraph): GuildLocationEntry[] {
   const results: GuildLocationEntry[] = [];
@@ -130,13 +150,7 @@ function findGuildLocations(graph: WorldGraph): GuildLocationEntry[] {
     const row = locNode.properties.hexRow as number | undefined;
     if (col == null || row == null) continue;
 
-    const hasGuildHall = graph.getOutgoingEdges(locNode.id, 'contains')
-      .map(e => graph.getNode(e.target))
-      .some(n => n &&
-        n.properties?.factionDefId === 'adventuring_guild'
-      );
-
-    if (hasGuildHall) {
+    if (locationPostsRuinQuestHooks(graph, locNode.id)) {
       results.push({ id: locNode.id, name: locNode.name, hex: { col, row } });
     }
   }

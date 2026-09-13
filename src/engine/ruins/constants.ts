@@ -171,6 +171,22 @@ export const RUIN_QUEST_GENERATION_INTERVAL_TICKS = 30;
 
 /** Minimum evidenceStrength (sum of clue magnitudes) to trigger a quest hook */
 export const CLUE_QUEST_THRESHOLD = 0.5;
+/**
+ * The one faction definition whose halls commission ruin delves (THR-1026).
+ *
+ * Ruled 2026-09-11: an expedition into a ruin is what an adventurers' guild
+ * exists to commission, and the three quest templates are that guild's by voice
+ * and id (`ag.quest.ruin_delve`, `ag.senior.deep_expedition`, `ag.elite.lost_city`).
+ * Widening the posting phase without re-authoring them would put the wrong
+ * guild's words on the notice board.
+ *
+ * This is deliberately narrower than the *hall* predicate — THR-818 opened the
+ * Guild Postings surface to all twelve definitions' halls, and that stands. What
+ * this constant governs is who *posts*, not who has a board. Other factions'
+ * halls show a board that says so, until a faction-specific quest kind gives
+ * them something of their own to post.
+ */
+export const RUIN_QUEST_POSTING_FACTION_DEF_ID = 'adventuring_guild';
 /** Max hex distance from ruin to nearest Adventurer's Guild hall for a hook to fire */
 export const GUILD_QUEST_RADIUS = 5;
 /** Ticks between quest hook re-issuances for the same ruin (duplicate prevention) */

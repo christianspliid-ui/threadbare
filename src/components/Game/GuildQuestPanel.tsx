@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { WorldGraph } from '../../engine/graph';
 import { hexDistance } from '../../lib/hexMath';
-import { hexDirection } from '../../engine/ruins/questHooks';
+import { hexDirection, locationPostsRuinQuestHooks } from '../../engine/ruins/questHooks';
 import { SectionHeading } from '../shared/SectionHeading';
+import { Tooltip } from '../shared/Tooltip';
+import { RUIN_QUEST_POSTING_FACTION_DEF_ID } from '../../engine/ruins/constants';
 import { RARITY_TIER_COLORS } from '../../types/rarity';
 import { FACTION_ENCOUNTER_TEMPLATES } from '../../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
@@ -47,6 +49,14 @@ const FACTION_HALL_LOCATION_SUBTYPE = 'guild-hall';
  * A guild hall is any faction hall whose owning faction resolves through
  * FACTION_DEFINITIONS — not the adventuring guild alone (THR-818). Quest data is
  * faction-agnostic, so all twelve definitions surface postings at their halls.
+ *
+ * NOTE(THR-1026): a board here does not mean a posting here. `phaseRuinQuestHooks`
+ * stamps ruins on behalf of the adventurers' guild alone — ruled 2026-09-11, on
+ * `RUIN_QUEST_POSTING_FACTION_DEF_ID` — so the other eleven factions' halls will
+ * usually show the empty state, and that is intended, not a wiring defect. The
+ * empty state says which of the two silences it is (see `postsRuinContracts`
+ * below), asking the engine's own predicate so the two cannot drift apart.
+ * Do not "fix" this hall predicate down to one faction to make them agree.
  */
 function isFactionHall(node: GraphNode | undefined): boolean {
   const props = node?.properties as Record<string, unknown> | undefined;
@@ -59,6 +69,14 @@ function isFactionHall(node: GraphNode | undefined): boolean {
 
   return typeof props.factionDefId === 'string' && FACTION_DEFINITIONS.has(props.factionDefId);
 }
+
+/**
+ * The posting guild's display name, read from its definition rather than typed
+ * here — a faction's name has one source (Law 14: no raw keys, and no second
+ * copy of a name the data already carries).
+ */
+const ADVENTURING_GUILD_LABEL =
+  FACTION_DEFINITIONS.get(RUIN_QUEST_POSTING_FACTION_DEF_ID)?.nameTemplate ?? 'the adventurers’ guild';
 
 function getTierLabel(magnitude: number): TierLabel {
   if (magnitude <= RUIN_MAGNITUDE_MINOR_MAX) return 'Minor';
@@ -107,6 +125,16 @@ export function GuildQuestPanel({
       .map(e => graph.getNode(e.target))
       .some(isFactionHall);
   }, [graph, location.id]);
+
+  /**
+   * Whether the engine will ever stamp a ruin on this settlement's behalf
+   * (THR-1026). Asked through the phase's own predicate, so the empty state
+   * below cannot promise a sweep that is never coming.
+   */
+  const postsRuinContracts = useMemo(
+    () => locationPostsRuinQuestHooks(graph, location.id),
+    [graph, location.id],
+  );
 
   const rows = useMemo((): QuestRow[] => {
     if (settlementCol == null || settlementRow == null || !hasGuildHall) return [];
@@ -181,7 +209,20 @@ export function GuildQuestPanel({
               className="italic"
               style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}
             >
-              The notice board is quiet. No contracts have been posted since the guild&apos;s last sweep.
+              {postsRuinContracts ? (
+                <>The notice board is quiet. No contracts have been posted since the guild&apos;s last sweep.</>
+              ) : (
+                <>
+                  This board posts no ruin contracts — delves are{' '}
+                  <Tooltip
+                    id={`faction.${RUIN_QUEST_POSTING_FACTION_DEF_ID}`}
+                    label={ADVENTURING_GUILD_LABEL}
+                  >
+                    {ADVENTURING_GUILD_LABEL}
+                  </Tooltip>
+                  &apos;s trade.
+                </>
+              )}
             </p>
           ) : (
             rows.map(row => (
