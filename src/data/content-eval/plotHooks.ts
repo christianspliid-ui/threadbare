@@ -437,7 +437,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['justice', 'betrayal'],
     reaches: ['heart', 'veil'],
     source: 'vault: Archetypes/Event — Reconciliation',
-    usedBy: [],
+    usedBy: ['encounter.realm.tithe_demanded'],
   },
   {
     id: 'hook.trade_war',
@@ -583,7 +583,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['bargain', 'conflict'],
     reaches: ['heart', 'gold'],
     source: 'vault: Archetypes/Ordeal — Negotiation Under Pressure',
-    usedBy: [],
+    usedBy: ['encounter.realm.court_summons'],
   },
   {
     id: 'hook.rebuilding_trust',
@@ -721,7 +721,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['bargain', 'justice'],
     reaches: ['shadow', 'eye'],
     source: 'unshipped draft: Docs/plans/encounters/pick-pocket-skill-test.md',
-    usedBy: [],
+    usedBy: ['encounter.realm.border_levy'],
   },
 ];
 

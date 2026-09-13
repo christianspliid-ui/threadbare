@@ -228,6 +228,18 @@ export function generateRealmName(
  */
 export const REALM_RANK_LADDER = ['stranger', 'subject', 'yeoman', 'sworn', 'thane', 'counsel'] as const;
 
+/**
+ * The meta-row reputation reward every authored realm encounter carries (THR-1454).
+ *
+ * Deliberately modest, and deliberately *not* the encounter's real payout: the three
+ * realm templates move standing themselves, through `faction_reputation_gain` on
+ * `$realm` keyed to the outcome side, so a failed summons costs standing rather than
+ * paying a flat completion bonus. This row is the participation floor the faction
+ * pipeline reads for having engaged with the crown's business at all. Tuning it up
+ * makes the ladder climbable by volume; tuning it to zero makes only outcomes count.
+ */
+export const REALM_ENCOUNTER_REPUTATION_REWARD = 0.02;
+
 /** Display names for {@link REALM_RANK_LADDER}, same order. */
 const REALM_RANK_NAMES: Record<typeof REALM_RANK_LADDER[number], string> = {
   stranger: 'Stranger',
@@ -258,14 +270,30 @@ const REALM_RANK_SLOTS: Record<typeof REALM_RANK_LADDER[number], number | null> 
   counsel: 1,
 };
 
-/** Encounter-template prefixes each rank unlocks, cumulative up the ladder. */
+/**
+ * Encounter-template prefixes each rank unlocks, cumulative up the ladder.
+ *
+ * **Declared, and read by nobody** — which is the state of `encounterAccess` on all
+ * thirteen faction definitions, by design. The rank gate
+ * (`encounterFilterPipeline.ts`) keys on the per-template `minRank` in
+ * `FACTION_ENCOUNTER_META` and says in its own comment why: a prefix gate is only as
+ * correct as its spelling, and `merchant_consortium` declared `mc_trade.*` against
+ * `mct.*` templates for months, matching nothing at any tier.
+ *
+ * The prefixes are nonetheless kept honest here (THR-1454). The first draft named
+ * `realm.quest.` / `realm.senior.` / …, and the realm content that then landed is
+ * `encounter.realm.*` — so the list named a prefix no template would ever carry, which
+ * is the same rot one level up that THR-1488 measured across the seed corpus (41 of 51
+ * authored families matching nothing). A declaration nothing reads is cheap to leave
+ * wrong and free to keep right; it is kept right.
+ */
 const REALM_RANK_ACCESS: Record<typeof REALM_RANK_LADDER[number], string[]> = {
   stranger: [],
-  subject: ['realm.quest.'],
-  yeoman: ['realm.quest.'],
-  sworn: ['realm.quest.', 'realm.senior.'],
-  thane: ['realm.quest.', 'realm.senior.', 'realm.elite.'],
-  counsel: ['realm.quest.', 'realm.senior.', 'realm.elite.', 'realm.leadership.'],
+  subject: ['encounter.realm.'],
+  yeoman: ['encounter.realm.'],
+  sworn: ['encounter.realm.', 'realm.senior.'],
+  thane: ['encounter.realm.', 'realm.senior.', 'realm.elite.'],
+  counsel: ['encounter.realm.', 'realm.senior.', 'realm.elite.', 'realm.leadership.'],
 };
 
 /** Reward multiplier granted at each rank that grants one at all. */
@@ -389,9 +417,16 @@ export function buildRealmDefinition(input: RealmDefinitionInput): FactionDefini
     reputationDecayPerTick: FACTION_REPUTATION_DECAY_PER_TICK * REALM_REPUTATION_DECAY_MULTIPLIER,
     joinEncounterTemplateId: 'realm.join',
     promotionEncounterTemplateId: 'realm.promotion',
-    // No authored realm encounters yet — the content is THR-1454's, and the gates above
-    // read the prefixes the moment templates carrying them exist.
-    questTemplateIds: [],
+    // THR-1454 — the first authored realm content. These three live as branching
+    // templates in `src/data/encounters/` (their player-facing surface is a nudge
+    // hand) and are scoped to every Realm by class-scoped rows in
+    // `FACTION_ENCOUNTER_META`; naming them here is what puts them in the pool a
+    // Realm draws its own work from.
+    questTemplateIds: [
+      'encounter.realm.court_summons',
+      'encounter.realm.border_levy',
+      'encounter.realm.tithe_demanded',
+    ],
     socialTemplateIds: [],
     expulsionConsequences: [{ type: 'remove_encounters', params: {} }],
     ambitionWeights: { ...REALM_AMBITION_WEIGHTS },
