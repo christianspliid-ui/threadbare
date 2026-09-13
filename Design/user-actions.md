@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 09:55 local (07:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@ You stopped after four feedback batches on Saturday with *"more batches expected
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map.
 
-Since your last look: clicking a name opens that person's sheet on every surface ([THR-1500](https://linear.app/threadbare/issue/THR-1500)), a duplicate detail sheet and two dead buttons are gone ([THR-1492](https://linear.app/threadbare/issue/THR-1492)), and the capability line now reads as a sentence for all eight reaches ([THR-1494](https://linear.app/threadbare/issue/THR-1494), merged 09:24). **The blemish earlier briefs told you to expect is fixed** — no known defect stands on these two screens. A raw `{cast:…}` token would be new.
+Since your last look: clicking a name opens that person's sheet on every surface ([THR-1500](https://linear.app/threadbare/issue/THR-1500)), a duplicate detail sheet and two dead buttons are gone ([THR-1492](https://linear.app/threadbare/issue/THR-1492)), and the capability line now reads as a sentence for all eight reaches ([THR-1494](https://linear.app/threadbare/issue/THR-1494)). **No known defect stands on these two screens.** A raw `{cast:…}` token would be new.
 
 The wider design maps — fights, items, powers — wait behind twelve questions only you can answer. Say **"work the map"** in a chat when the sitting is done.
 
