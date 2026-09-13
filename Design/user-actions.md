@@ -1,17 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 03:58 local (01:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 04:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live. Neither screen changed this hour — the one merge fixed the whisper's name-click, and its diff touches only the premonition pop-up.
+You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live. Nothing merged at all this hour — site, main line and your machine are all on the same commit as an hour ago — so neither screen can have moved.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Three blemishes are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494), fix open, failing and now conflicted), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen reward recipes that draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496), none of them reachable from these two). A raw `{cast:…}` token on either screen would be new.
+The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Three blemishes are already decided and are not asks — a factor line that is not a sentence ([THR-1494](https://linear.app/threadbare/issue/THR-1494), fix open, failing and conflicted), a cast name colliding with a title-form NPC ([THR-1466](https://linear.app/threadbare/issue/THR-1466)), and sixteen reward recipes that draw nothing ([THR-1496](https://linear.app/threadbare/issue/THR-1496), none of them reachable from these two). A raw `{cast:…}` token on either screen would be new.
 
 The wider design maps — fights, items, powers — have finished all the homework an agent can do, and wait behind twelve questions only you can answer. Deliberately not chased while the sitting is live: say **"work the map"** in a chat when you are ready to work them one at a time.
 
@@ -30,7 +30,7 @@ Building the content cards found six kinds of thing with no reference page. Two 
 - Is an **ambition** a definition page, or only read off the person carrying it?
 - Same for **companions**.
 
-Nothing is broken while these sit; the cards open, they are just shallower. Not urgent, not promoted to the build queue. It is also one of four things now queued behind a single design afternoon — the others are ambitions nothing can act on ([THR-1348](https://linear.app/threadbare/issue/THR-1348)), beasts that cannot be cast in a scene ([THR-1274](https://linear.app/threadbare/issue/THR-1274)), and which kind of work should stir which kind of trouble ([THR-1497](https://linear.app/threadbare/issue/THR-1497)).
+Nothing is broken while these sit; the cards open, they are just shallower. It is one of **five** things now queued behind a single design afternoon — the others are ambitions nothing can act on ([THR-1348](https://linear.app/threadbare/issue/THR-1348)), beasts that cannot be cast in a scene ([THR-1274](https://linear.app/threadbare/issue/THR-1274)), which kind of work should stir which kind of trouble ([THR-1497](https://linear.app/threadbare/issue/THR-1497)), and — newly free, and chartered by you in August — how often encounters should fire ([THR-1218](https://linear.app/threadbare/issue/THR-1218)).
 
 ## Resolved this period
 
