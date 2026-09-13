@@ -123,6 +123,37 @@ export function classifyDiff(files: readonly string[]): "docs-only" | "code" {
   return survivingPaths(files).length === 0 ? "docs-only" : "code";
 }
 
+/**
+ * The UI-pillar path prefixes, mirroring CLAUDE.md § Definition of Done's
+ * Browser-verify clause and `Docs/canon/verification-gates.md` § Browser-verify.
+ *
+ * A changed file under any of these owes the four-part browser-verify evidence. Kept
+ * as a named constant rather than inlined at the one call site so the list is tunable
+ * in one place (NFP #1) and so {@link isUiPillarPath} and its test share a definition
+ * — the mistake this whole ticket is about is a rule living in two places and being
+ * read in neither.
+ *
+ * `src/index.css` is a file, not a directory; the match below is a plain prefix test,
+ * which covers both shapes without needing to tell them apart.
+ */
+export const UI_PILLAR_PREFIXES = [
+  "src/components/",
+  "src/hooks/",
+  "src/contexts/",
+  "src/index.css",
+] as const;
+
+/** True when a changed path puts the diff on the UI pillar. */
+export function isUiPillarPath(file: string): boolean {
+  const normalized = file.replaceAll("\\", "/");
+  return UI_PILLAR_PREFIXES.some((prefix) => normalized.startsWith(prefix));
+}
+
+/** The changed paths that make a diff a UI-pillar diff. */
+export function uiPillarPaths(files: readonly string[]): string[] {
+  return files.filter((file) => file.trim() !== "" && isUiPillarPath(file));
+}
+
 /** Where a prose copy of the predicate lives, and what it is for. */
 export type PredicateCopy = {
   readonly path: string;
