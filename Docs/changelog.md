@@ -4224,3 +4224,8 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-13 | `Docs/plans/encounters/realm-court-brief.md` | THR-1454 — the batch brief, with the two catalog substitutions recorded | Game design first (director ruling 2026-08-24) |
 | 2026-09-13 | `Docs/impediments.md` | THR-1454 — rows #1034–#1036 | Unlogged friction is invisible |
 | 2026-09-13 | `Docs/status/2026-09-13-thr-1454.md` | THR-1454 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-13 | `src/data/encounters/vertical-slice.ts` | THR-1466 — `bridge_keeper` → `Halda Brenn`, `caravan_master` → `Ferrin Oake`; the crossroads stranger's prose drops the appositive instead of its name | An appositive `{cast:*}` needs a personal name; a deliberately anonymous member keeps the title form and gives up the appositive |
+| 2026-09-13 | `src/data/__tests__/appositiveCastNameCorpus.test.ts` | THR-1466 — new corpus gate: no appositive `{cast:*}` may resolve to a title-form name | Fixing four strings by hand leaves the trap armed for the next author |
+| 2026-09-13 | `Docs/canon/prose.md` | THR-1466 — the appositive `{cast:*}` rule, both halves, with the gate pointer; `last_reviewed` bumped | The chosen rule has to live where the next author meets it |
+| 2026-09-13 | `src/components/Game/__tests__/EncounterVeil.test.tsx` | THR-1466 — JSDoc corrected to record the bridge keeper's rename | THR-1465's census cited the retired title-form name |
+| 2026-09-13 | `Docs/status/2026-09-13-thr-1466.md` | THR-1466 — new status fragment | One file per entry since THR-1016 |

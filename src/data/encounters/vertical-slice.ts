@@ -445,7 +445,10 @@ const BRIDGE_KEEPER_SPEC: EncounterSupportActorSpec = {
   persistence: 'must-persist',
   supportRole: 'bridge_toll_keeper',
   spawnNpcRole: 'hermit',
-  spawnName: 'The Keeper at the Crossing',
+  // THR-1466: a personal name, because the prose introduces her appositively —
+  // "The keeper, {cast:bridge_keeper}, takes two coppers". The old title-form
+  // name restated the role the sentence had just given.
+  spawnName: 'Halda Brenn',
 };
 
 /** Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. */
@@ -1445,7 +1448,10 @@ const CARAVAN_MASTER_SPEC: EncounterSupportActorSpec = {
   persistence: 'must-persist',
   supportRole: 'caravan_master',
   spawnNpcRole: 'merchant',
-  spawnName: 'The Caravan Master',
+  // THR-1466: a personal name, for the same reason as {@link BRIDGE_KEEPER_SPEC} —
+  // the prose says "The caravan master, {cast:caravan_master}, says one of his
+  // thirty walkers is being hunted", and an appositive needs a name to apposit.
+  spawnName: 'Ferrin Oake',
 };
 
 /** Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. */
@@ -1827,7 +1833,10 @@ const CROSSROADS_MEASURE_STEP: ActionStep = {
   // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
   // at instantiation. The stranger is introduced here by cast token.
   narrativeTemplate:
-    'A stranger, {cast:stranger}, waits under the dead tree — no horse, no pack, no mud on his boots. He ' +
+    // THR-1466: not appositive. This spec keeps its title-form name on purpose —
+    // the scene never tells you what he is — so the sentence uses the token as its
+    // subject instead of apposing a name it does not have.
+    '{cast:stranger} waits under the dead tree — no horse, no pack, no mud on his boots. He ' +
     'greets the traveler by name, offers a gift shaped to their own quiet wanting, and asks in payment only ' +
     'a promise. He will bring it at the full moon and find them himself.\n\n' +
     'Take the measure of a man who knows too much, then give the word or keep walking.',

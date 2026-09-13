@@ -2505,7 +2505,8 @@ describe('EncounterVeil — slice cast, composed surface (THR-1465)', () => {
   /**
    * The live condition THR-1465 measured: the encounter's **authored** cast is
    * bound (it materializes or reuses on trigger, which is why the census showed
-   * The Keeper at the Crossing openable), and the wayside **defaults** bind
+   * the bridge keeper openable — THR-1466 later renamed her from the title-form
+   * "The Keeper at the Crossing" to "Halda Brenn"), and the wayside **defaults** bind
    * nobody, because a wayside hex carries no hermit, wanderer or ranger to reuse.
    */
   function liveBindings(id: string): EncounterSupportBinding[] {
