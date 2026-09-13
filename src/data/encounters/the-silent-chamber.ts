@@ -321,7 +321,7 @@ const DESTROY_AFTERMATH = {
 
 
 const ENCOUNTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
-const DEFAULT_FORECAST_FACTORS = ['threads shifting'] as const;
+const DEFAULT_FORECAST_FACTORS = ['The threads are shifting.'] as const;
 const DEFAULT_STATE_DESCRIPTOR = 'no descriptor';
 const DEFAULT_TILTS_TOWARD = 'uncertain';
 const DEFAULT_FALL_FORWARD = 'the threads tighten';

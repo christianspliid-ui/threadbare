@@ -39,11 +39,12 @@
 import type { NamedModifierContribution } from '../resolutionModifiers';
 import type { ReachDomain } from '../../types/traits';
 import type { StepOutcome } from '../../types/unifiedAction';
-import { DOMAIN_WORD_SCALES, getDomainTier } from '../../data/domain-words';
+import { DOMAIN_WORD_SCALES, getDomainTier, getDomainTierWordForm } from '../../data/domain-words';
 import {
   DERIVED_FACTOR_ACTOR_FALLBACK,
   DERIVED_FACTOR_SENTENCES,
   DERIVED_SKILL_SENTENCE,
+  DERIVED_SKILL_SENTENCE_ARTICLED,
   WHISPER_NEXT_STEP_SENTENCE,
   WHISPER_NO_NEXT_STEP_SENTENCE,
   WHISPER_UNSETTLED_NEXT_STEP_SENTENCE,
@@ -117,6 +118,17 @@ function substitute(
 }
 
 /**
+ * The reach as the player sees it named elsewhere on this stage — title-case
+ * (THR-1494). The bare key made "in eye" read as somewhere the actor stood
+ * rather than as the domain she is skilled in; title-case is how the sibling
+ * adapters already label a reach (`buildNudgePhaseModel`'s `reachLabel`), so the
+ * sentence and the reach chip beside it now name the domain the same way.
+ */
+function reachDisplayLabel(reach: ReachDomain): string {
+  return reach.charAt(0).toUpperCase() + reach.slice(1);
+}
+
+/**
  * The agent's capability in the step's reach, as the panel's first line.
  *
  * Always emitted, and always `for`: capability is what the actor brings, and a
@@ -137,15 +149,23 @@ export function deriveSkillLine(args: {
   const tier = getDomainTier(safeCapability * CAPABILITY_TO_DOMAIN_SCALE);
   const scale = DOMAIN_WORD_SCALES[reach];
   const word = scale?.[tier] ?? scale?.[0] ?? '';
+  // A noun tier word ("oracle", "magnate") needs the article the adjective
+  // shape must not have — THR-1494. The table answers both questions at once:
+  // 'adjective' selects the bare template, anything else IS the article.
+  const form = getDomainTierWordForm(word);
 
   return {
     id: `skill:${reach}`,
     kind: 'skill',
-    text: substitute(DERIVED_SKILL_SENTENCE, {
-      actor: actorName || DERIVED_FACTOR_ACTOR_FALLBACK,
-      word: word.toLowerCase(),
-      reach,
-    }),
+    text: substitute(
+      form === 'adjective' ? DERIVED_SKILL_SENTENCE : DERIVED_SKILL_SENTENCE_ARTICLED,
+      {
+        actor: actorName || DERIVED_FACTOR_ACTOR_FALLBACK,
+        article: form,
+        word: word.toLowerCase(),
+        reach: reachDisplayLabel(reach),
+      },
+    ),
     polarity: 'for',
     source: `skill:${reach}`,
     // No `delta` — deliberately, and this is the whole of THR-977.

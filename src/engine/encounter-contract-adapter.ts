@@ -220,7 +220,7 @@ function fallbackContractFromTemplate(template: UnifiedActionTemplate): Encounte
 
     return {
       title: `Beat ${stepIndex + 1}`,
-      forecast_factors: ['threads shifting'],
+      forecast_factors: ['The threads are shifting.'],
       prose: step.narrativeTemplate ?? template.narrativeTemplates.initiation,
       prose_tooltips: {},
       encounter_choices: [{
@@ -263,7 +263,7 @@ function fallbackContractFromTemplate(template: UnifiedActionTemplate): Encounte
       },
       beats: mappedSteps.length > 0 ? mappedSteps : [{
         title: template.name,
-        forecast_factors: ['threads shifting'],
+        forecast_factors: ['The threads are shifting.'],
         prose: template.narrativeTemplates.initiation,
         prose_tooltips: {},
         encounter_choices: [{

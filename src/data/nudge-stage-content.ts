@@ -282,11 +282,20 @@ export const DERIVED_FACTOR_SENTENCES: Readonly<
 /**
  * The agent's own capability in the step's reach — the "first line" of the panel.
  *
- * `{word}` is the reach's tier word (`DOMAIN_WORD_SCALES`), `{reach}` the reach
- * itself. Rendered lowercase so the sentence reads as prose rather than as a
- * stat readout.
+ * `{word}` is the reach's tier word (`DOMAIN_WORD_SCALES`), lowercased so the
+ * sentence reads as prose rather than as a stat readout. `{reach}` is the reach's
+ * display label — title-case, matching the reach chip the same stage renders, so
+ * the domain reads as a domain and not as a place the actor is standing in.
+ *
+ * Two shapes, because the tier vocabulary mixes word classes (THR-1494). An
+ * adjective takes no article; a noun must have one, or the line reads "Vara is
+ * oracle in eye." `DOMAIN_TIER_WORD_FORMS` says which a word is and, for a noun,
+ * which article — the producer never guesses from spelling.
  */
 export const DERIVED_SKILL_SENTENCE = '{actor} is {word} in {reach}.';
+
+/** The noun-form counterpart — `{article}` comes from `DOMAIN_TIER_WORD_FORMS`. */
+export const DERIVED_SKILL_SENTENCE_ARTICLED = '{actor} is {article} {word} in {reach}.';
 
 /** Stand-in when the acting node has no resolvable name (NFP #4, never throws). */
 export const DERIVED_FACTOR_ACTOR_FALLBACK = 'The acting hand';
