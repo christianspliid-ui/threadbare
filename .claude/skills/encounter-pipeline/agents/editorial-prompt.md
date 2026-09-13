@@ -38,6 +38,24 @@ You write TWO files:
 
 6. **Aftermath Payoff** — Does it land? Actor-centered?
 
+6b. **Page read (THR-1474)** — For **each authored band**, assemble the aftermath as the player meets it and read it *once, as one text*:
+
+   ```
+   overview paragraph
+   - chip captions, in scar · bond · boon · path order
+   > reaction label + intent, one line each
+   ```
+
+   Do not read the fields in turn — that is what every other stage already does, and it is how the Snow on the Pass overview and its `EXHAUSTED` chip shipped telling the same fact twice with every gate green. Assemble, then read. `npm run encounter:batch-report` renders exactly this page per band if you want it built for you.
+
+   Judge three things, and quote the offending pair for each:
+
+   - **Repetition** — a fact the page tells twice. Any wording counts: `check:encounter` reports only literal four-word overlaps as `[page]` warnings, so a chip that *paraphrases* the overview reads clean to the machine and is still a repetition.
+   - **Verbosity** — a sentence that adds nothing the page had not already carried by the time the reader reaches it. A block earns its place by adding something.
+   - **Conflict** — a chip, overview, or reaction disagreeing with another about what actually happened. This one is invisible to every machine check by construction: a contradiction shares no words with what it contradicts.
+
+   Repetition or conflict on any band is a **REVISE** (trigger 35). Verbosity is a `[EDITORIAL REWRITE]`, not a stop.
+
 7. **Dilemma Energy** — Genuine tension? Multiple options defensible? Reveals divine posture?
 
 8. **Experience Differentiator Gate** — Answer all 14 YES/NO questions with evidence. Any NO = automatic REVISE.
@@ -60,6 +78,7 @@ You write TWO files:
    **Aftermath & Consequence**
    10. Aftermath has reflective prose landing?
    11. Consequence outcomes actor-centered with names and faces — **and is every chip's `stateNoun` a character-sheet word?** Cover the encounter title and the overview: does the tag alone still say what the mortal now has? `SCAR · EXHAUSTED` passes; `SCAR · THE NERVE THEY CAME DOWN WITH` fails, because reading it needs this encounter held in memory. The noun names the state the engine wrote (a condition's `name`, a reach, an item, the generic `AGREEMENT`, `reputation with {target}`) — never a phrase minted for the scene, and `entityId: '$actor'` on a categorised chip is the usual tell. If no state word exists, REVISE for a one-word condition the band grants, not for better wording (THR-1472)
+   11b. Does **every band's assembled page** read clean as one text — no fact told twice, no sentence adding nothing, no block contradicting another? Run § 6b and answer from what you read there, not from the fields. A `[page]` warning in `check:encounter` is a floor, never the answer: the paraphrase and the contradiction are invisible to it (THR-1474)
    12. Medium+ scale: aftermath offers reaction choices?
    13. Reaction choices represent philosophical stances?
 
