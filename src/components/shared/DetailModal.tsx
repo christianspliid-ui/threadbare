@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import type { CSSProperties } from 'react';
+import { useRef, type CSSProperties } from 'react';
 import type { DetailPage, DetailPageKind } from '../../types/detailPage';
 import {
   DETAIL_DEFAULT_H,
@@ -17,6 +17,7 @@ import {
 import { useDetailStack } from '../../contexts/DetailModalStackContext';
 import { DetailBreadcrumb } from './DetailBreadcrumb';
 import { Section } from './Section';
+import { useDialogFocus } from './useDialogFocus';
 import { ProseTtsButton } from '../Game/Encounter/ProseTtsButton';
 
 interface HeaderProps {
@@ -242,6 +243,21 @@ function DetailModalPanel({
   onPop,
   onPopTo,
 }: PanelProps) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * Law 50, from the same implementation `Modal` uses (THR-1024).
+   *
+   * `active` is the panel's whole lifetime rather than `isTopmost`, because this is a
+   * *stack*: each panel captures the element focused when it opened, which for a pushed
+   * panel is a control inside the panel beneath it. Deactivating a panel when another
+   * opens over it would restore focus one level too far and hand the new panel the wrong
+   * invoker — popping back would then land the player outside the surface they are still
+   * looking at. Trapping needs no `isTopmost` gate either: focus is in the topmost panel,
+   * and the ones beneath take `pointerEvents: none`, so no other panel sees the keystroke.
+   */
+  const { onKeyDown } = useDialogFocus(panelRef, true);
+
   const { width, height } = getPanelSize(page);
   const zIndex = 70 + depth * 2;
   const backdropBg =
@@ -276,10 +292,21 @@ function DetailModalPanel({
   };
 
   return (
-    <div style={backdropStyle} data-detail-depth={depth}>
+    <div
+      style={backdropStyle}
+      data-detail-depth={depth}
+      role="dialog"
+      // Only the panel the player is actually in claims the page; the ones beneath it
+      // are visible context, not competing dialogs.
+      aria-modal={isTopmost}
+      aria-label={page.displayName}
+    >
       <div
+        ref={panelRef}
         style={panelStyle}
         data-testid={`detail-panel-${depth}`}
+        tabIndex={-1}
+        onKeyDown={onKeyDown}
         onClick={event => event.stopPropagation()}
       >
         <DetailHeader
@@ -305,6 +332,25 @@ function DetailModalPanel({
  *
  * Place inside a `DetailModalStackProvider`. Renders all open detail pages.
  * Keyboard behavior (ESC + ←) is handled globally by DetailModalStackProvider.
+ *
+ * ## Why this does not render through `Modal` (THR-1024)
+ *
+ * THR-1079 decided the overlay-fork fix shape as "compose `Modal`", and for a single
+ * content-sized dialog that is right. It does not reach this surface, because what
+ * `Modal` owns beyond the contract is a *layout* this one contradicts in four places:
+ * panels here are an exact per-kind `width`×`height` (`Modal` is `width: 90%` under a
+ * `maxWidth`, with no height at all, so the fixed-height scroll region would be lost);
+ * they cap at 85vh rather than 75vh; they stack, each backdrop dimming by depth and
+ * going `pointerEvents: none` beneath the topmost; and they sit in their own `70 + 2·depth`
+ * band rather than the modal band. Composing would mean giving the primitive panel-style,
+ * backdrop-style and pointer-events escape hatches — which is how a primitive stops being
+ * one, and would put the fork inside `Modal` instead of next to it.
+ *
+ * What THR-1079 was actually protecting is that Law 50 has **one** implementation rather
+ * than a copy per consumer. That holds: the contract lives in `useDialogFocus`, `Modal`
+ * calls it, and so does this. The dialog semantics below mirror `Modal`'s own placement
+ * exactly — `role`/`aria-modal`/`aria-label` on the backdrop, `tabIndex={-1}` and the trap
+ * on the panel — so "follows `Modal`'s contract" (Law 23) is true element for element.
  */
 export function DetailModal() {
   const { stack, pop, popTo } = useDetailStack();

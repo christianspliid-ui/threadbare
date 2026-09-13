@@ -274,6 +274,192 @@ describe('DetailModal — depth 5 (breadcrumb collapses to `…`)', () => {
   });
 });
 
+// ─── Dialog semantics + Law 50 focus contract (THR-1024) ─────────────────────
+
+/**
+ * Renders a stack with a real invoking element, so "focus returns to the invoker"
+ * is asserted against something that actually held focus rather than `document.body`.
+ *
+ * `fireEvent.click` does not move focus in jsdom, so the invoker is focused explicitly
+ * — the same shape `Modal.test.tsx` uses for its own Law 50 suite.
+ */
+function renderWithInvoker() {
+  const pages = [makePage({ displayName: 'Page 1' }), makePage({ displayName: 'Page 2' })];
+
+  function Controller() {
+    const { push, pop } = useDetailStack();
+    return (
+      <>
+        <button data-testid="invoker" onClick={() => push(pages[0])}>open</button>
+        <button data-testid="push-second" onClick={() => push(pages[1])}>deeper</button>
+        <button data-testid="pop-one" onClick={pop}>back</button>
+      </>
+    );
+  }
+
+  render(
+    <Wrapper>
+      <Controller />
+    </Wrapper>,
+  );
+  return {
+    invoker: screen.getByTestId('invoker') as HTMLButtonElement,
+    pushSecond: screen.getByTestId('push-second') as HTMLButtonElement,
+    popOne: screen.getByTestId('pop-one') as HTMLButtonElement,
+  };
+}
+
+function panelAt(depth: number): HTMLElement {
+  const panel = screen.getByTestId(`detail-panel-${depth}`);
+  expect(panel).not.toBeNull();
+  return panel;
+}
+
+/**
+ * A panel carrying two focusable controls, so a Tab wrap has a distinct first and last
+ * to move between.
+ *
+ * A plain page at depth 0 carries exactly one (the close button): the back button needs
+ * depth > 0, the narration button needs prose, and the footer CTA needs a full sheet. So
+ * the wrap is asserted on a full-sheet page — close in the header, "open her sheet" in
+ * the footer — which is the ordinary actor card a player opens, not a contrived fixture.
+ */
+function renderTwoControlPanel(): HTMLElement[] {
+  const page = makePage({ displayName: 'Captain Veiren', hasFullSheet: true });
+
+  function PushPage() {
+    const { push } = useDetailStack();
+    return <button data-testid="push" onClick={() => push(page)}>push</button>;
+  }
+
+  render(
+    <Wrapper>
+      <PushPage />
+    </Wrapper>,
+  );
+  fireEvent.click(screen.getByTestId('push'));
+
+  const focusable = Array.from(panelAt(0).querySelectorAll<HTMLElement>('button'));
+  expect(focusable.length).toBeGreaterThan(1);
+  return focusable;
+}
+
+describe('DetailModal — dialog semantics', () => {
+  it('exposes the panel as a dialog', () => {
+    renderAtDepth(1);
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  });
+
+  it('marks the open dialog aria-modal', () => {
+    renderAtDepth(1);
+    expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
+  });
+
+  it('names the dialog after the page it is showing', () => {
+    renderAtDepth(1);
+    expect(screen.getByRole('dialog', { name: 'Page 1' })).toBeInTheDocument();
+  });
+
+  it('exposes no dialog at all when the stack is empty', () => {
+    render(<Wrapper />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('marks only the topmost of a stack aria-modal', () => {
+    renderAtDepth(2);
+    const dialogs = screen.getAllByRole('dialog');
+    expect(dialogs).toHaveLength(2);
+    expect(dialogs[0]).toHaveAttribute('aria-modal', 'false');
+    expect(dialogs[1]).toHaveAttribute('aria-modal', 'true');
+  });
+});
+
+describe('DetailModal — Law 50 focus contract', () => {
+  it('moves focus into the panel on open', () => {
+    const { invoker } = renderWithInvoker();
+    invoker.focus();
+    fireEvent.click(invoker);
+
+    expect(panelAt(0).contains(document.activeElement)).toBe(true);
+  });
+
+  it('returns focus to the invoking element on close', () => {
+    const { invoker } = renderWithInvoker();
+    invoker.focus();
+    fireEvent.click(invoker);
+    expect(document.activeElement).not.toBe(invoker);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(panelCount()).toBe(0);
+    expect(document.activeElement).toBe(invoker);
+  });
+
+  it('hands focus back into the panel beneath when a pushed panel closes', () => {
+    const { invoker, pushSecond } = renderWithInvoker();
+    invoker.focus();
+    fireEvent.click(invoker);
+
+    // A control inside panel 0 is what opens panel 1, so that control is panel 1's invoker.
+    const fromWithin = panelAt(0).querySelector<HTMLElement>('button');
+    expect(fromWithin).not.toBeNull();
+    fromWithin!.focus();
+    fireEvent.click(pushSecond);
+    expect(panelAt(1).contains(document.activeElement)).toBe(true);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(panelCount()).toBe(1);
+    expect(document.activeElement).toBe(fromWithin);
+  });
+
+  it('wraps Tab forward from the last control back to the first', () => {
+    const focusable = renderTwoControlPanel();
+
+    const last = focusable[focusable.length - 1];
+    last.focus();
+    fireEvent.keyDown(last, { key: 'Tab' });
+
+    expect(document.activeElement).toBe(focusable[0]);
+  });
+
+  it('wraps Shift+Tab backward from the first control to the last', () => {
+    const focusable = renderTwoControlPanel();
+
+    const first = focusable[0];
+    first.focus();
+    fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
+
+    expect(document.activeElement).toBe(focusable[focusable.length - 1]);
+  });
+
+  it('holds focus on the panel when Tab has nowhere to go', () => {
+    // A depth-0 page with no full sheet and no prose carries exactly one control — the
+    // close button — so there is no second stop to wrap to. Tab must still not escape
+    // to the page behind the overlay.
+    renderAtDepth(1);
+    const panel = panelAt(0);
+    const only = panel.querySelectorAll<HTMLElement>('button');
+    expect(only).toHaveLength(1);
+
+    only[0].focus();
+    fireEvent.keyDown(only[0], { key: 'Tab' });
+
+    expect(panel.contains(document.activeElement)).toBe(true);
+  });
+
+  it('traps Tab in the topmost panel only — the one beneath never steals it', () => {
+    renderAtDepth(2);
+    const top = panelAt(1);
+    const focusable = Array.from(top.querySelectorAll<HTMLElement>('button'));
+    const last = focusable[focusable.length - 1];
+    last.focus();
+    fireEvent.keyDown(last, { key: 'Tab' });
+
+    expect(top.contains(document.activeElement)).toBe(true);
+  });
+});
+
 // ─── Section rendering ────────────────────────────────────────────────────────
 
 describe('DetailModal — section rendering', () => {

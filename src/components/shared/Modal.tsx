@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
-import { FOCUSABLE_SELECTOR } from './focusableSelector';
+import { useDialogFocus } from './useDialogFocus';
 
 /**
  * The modal band (Law 35 — z-index comes from the stacking table, never invented).
@@ -66,62 +66,15 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
   }, [open, handleEscape]);
 
   /**
-   * Law 50 — focus follows the surface: opening moves focus into the panel,
-   * closing hands it back to whatever opened it.
+   * Law 50 — focus follows the surface. The contract lives in `useDialogFocus` so
+   * `DetailModal`, whose stacked fixed-size layout cannot compose this component,
+   * shares the implementation instead of copying it (THR-1024).
    *
    * Gated on `shouldRender` as well as `open` because the panel does not exist
    * on the render where `open` first flips true — the mount effect below sets
    * `shouldRender` a render later, and focusing before that is a no-op.
    */
-  useEffect(() => {
-    if (!open || !shouldRender) return;
-
-    const invoker = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-    const panel = panelRef.current;
-    if (panel) {
-      // The panel itself is the fallback target, so a modal with no controls
-      // still takes focus off the page behind it.
-      (panel.querySelector<HTMLElement>(FOCUSABLE_SELECTOR) ?? panel).focus();
-    }
-
-    return () => {
-      // Fail-soft (NFP #4): the invoker may have unmounted while we were open —
-      // a row that opened a sheet and was then filtered out of its list.
-      if (invoker?.isConnected) invoker.focus();
-    };
-  }, [open, shouldRender]);
-
-  /**
-   * Law 50 — Tab cycles within the overlay while modal. Scoped to the panel
-   * rather than the document so nested modals each trap their own subtree:
-   * both portal to `document.body`, so an outer panel is not an ancestor of an
-   * inner one and never sees its keystrokes.
-   */
-  const handlePanelKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key !== 'Tab') return;
-    const panel = panelRef.current;
-    if (!panel) return;
-
-    const focusable = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-    if (focusable.length === 0) {
-      // Nothing to cycle to; hold focus here rather than let it escape behind.
-      e.preventDefault();
-      return;
-    }
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-
-    if (e.shiftKey && (active === first || active === panel)) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && active === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  }, []);
+  const { onKeyDown: handlePanelKeyDown } = useDialogFocus(panelRef, open && shouldRender);
 
   // Mount/unmount with animation — inline to avoid AnimateMount wrapper div
   useEffect(() => {

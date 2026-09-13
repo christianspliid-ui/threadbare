@@ -2,12 +2,16 @@
 
 exports[`DetailPage — actor > snapshot: actor 1`] = `
 <div
+  aria-label="Captain Veiren"
+  aria-modal="true"
   data-detail-depth="0"
+  role="dialog"
   style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
 >
   <div
     data-testid="detail-panel-0"
     style="width: 720px; height: 620px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+    tabindex="-1"
   >
     <div
       style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
@@ -259,12 +263,16 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
 
 exports[`DetailPage — event > snapshot: event 1`] = `
 <div
+  aria-label="A meeting in the market"
+  aria-modal="true"
   data-detail-depth="0"
+  role="dialog"
   style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
 >
   <div
     data-testid="detail-panel-0"
     style="width: 800px; height: 720px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+    tabindex="-1"
   >
     <div
       style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
@@ -427,12 +435,16 @@ exports[`DetailPage — event > snapshot: event 1`] = `
 
 exports[`DetailPage — faction > snapshot: faction 1`] = `
 <div
+  aria-label="The Iron Guard"
+  aria-modal="true"
   data-detail-depth="0"
+  role="dialog"
   style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
 >
   <div
     data-testid="detail-panel-0"
     style="width: 720px; height: 620px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+    tabindex="-1"
   >
     <div
       style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
@@ -595,12 +607,16 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
 
 exports[`DetailPage — item > snapshot: item 1`] = `
 <div
+  aria-label="Veirens Token"
+  aria-modal="true"
   data-detail-depth="0"
+  role="dialog"
   style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
 >
   <div
     data-testid="detail-panel-0"
     style="width: 720px; height: 620px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+    tabindex="-1"
   >
     <div
       style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
@@ -763,12 +779,16 @@ exports[`DetailPage — item > snapshot: item 1`] = `
 
 exports[`DetailPage — place > snapshot: place 1`] = `
 <div
+  aria-label="The Iron Market"
+  aria-modal="true"
   data-detail-depth="0"
+  role="dialog"
   style="position: fixed; inset: 0px; z-index: 70; display: flex; align-items: flex-start; justify-content: center; padding-top: 5vh; background-color: rgba(0, 0, 0, 0.55); pointer-events: auto;"
 >
   <div
     data-testid="detail-panel-0"
     style="width: 800px; height: 720px; max-height: 85vh; background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)); border: 1px solid var(--border-gold); border-radius: 10px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto;"
+    tabindex="-1"
   >
     <div
       style="padding: 12px 16px 10px; border-bottom: 1px solid var(--border-gold); flex-shrink: 0;"
