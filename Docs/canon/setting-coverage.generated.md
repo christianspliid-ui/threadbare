@@ -13,10 +13,10 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 697 |
-| drawable at ≥1 location subtype | 464 |
+| templates in the pool | 700 |
+| drawable at ≥1 location subtype | 467 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 31 |
+| declaring a setting envelope | 34 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -31,13 +31,13 @@ be dealt?", not "how many templates exist".
 
 | setting | iron | gold | shadow | veil | heart | eye | stone | star | **total** |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `rural` | 27 | 19 | 11 | 5 | 18 | 13 | 13 | 7 | **113** |
-| `urban` | 48 | 49 | 43 | 16 | 40 | 46 | 24 | 23 | **289** |
-| `stronghold` | 26 | 7 | 9 | 5 | 13 | 17 | 8 | 5 | **90** |
+| `rural` | 28 | 20 | 11 | 5 | 18 | 13 | 13 | 7 | **115** |
+| `urban` | 48 | 51 | 43 | 16 | 40 | 46 | 24 | 23 | **291** |
+| `stronghold` | 26 | 8 | 9 | 5 | 13 | 17 | 8 | 5 | **91** |
 | `sacred` | 7 | 9 | 4 | 17 | 11 | 8 | 6 | 24 | **86** |
 | `arcane` | 5 | 5 | 7 | 20 | 6 | 26 | 5 | 11 | **85** |
 | `ruin` | 16 | 10 | 10 | 11 | 12 | 26 | 14 | 8 | **107** |
-| `wayside` | 27 | 17 | 11 | 7 | 16 | 30 | 13 | 13 | **134** |
+| `wayside` | 28 | 17 | 11 | 7 | 16 | 30 | 13 | 13 | **135** |
 | `battlefield` | 10 | 5 | 5 | 3 | 7 | 5 | 9 | 5 | **49** |
 
 ## Thin cells
@@ -62,6 +62,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `encounter.delve` | 3 | 34 | push 8, rider 4, sphere 20, trait 2, free 0 |
 | `encounter.company` | 4 | 20 | push 4, rider 0, sphere 16, trait 0, free 0 |
 | `cg.quest` | 1 | 9 | push 6, rider 0, sphere 0, trait 0, free 3 |
+| `encounter.realm` | 3 | 8 | push 0, rider 0, sphere 8, trait 0, free 0 |
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
 | `encounter.hunt` | 1 | 2 | push 0, rider 0, sphere 2, trait 0, free 0 |
 
@@ -71,3 +72,4 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 - `encounter.slice` — 75% `sphere` across 56 cards
 - `encounter.border` — 66% `sphere` across 53 cards
 - `encounter.company` — 80% `sphere` across 20 cards
+- `encounter.realm` — 100% `sphere` across 8 cards

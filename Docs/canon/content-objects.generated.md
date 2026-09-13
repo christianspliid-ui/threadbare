@@ -8,7 +8,7 @@ generator: npm run generate-content-objects
 
 > **GENERATED — do not hand-edit.** Rendered by `npm run generate-content-objects` from the registry (`src/data/content-objects.ts`) and a static census of the catalogs it names. The hand page — what the kinds mean and how to add one — is [`content-objects.md`](content-objects.md).
 
-12 kinds · 1138 claimed entries across 32 catalogs.
+12 kinds · 1141 claimed entries across 32 catalogs.
 
 ## Drift
 
@@ -25,8 +25,8 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 
 | Kind | Game word | Entries | Catalogs (claimed/total) | Instantiates as | Opens | Gate | Owning system | Badge |
 |---|---|---|---|---|---|---|---|
-| `encounter_template` | Encounter | 510 | `UNIFIED_ACTION_TEMPLATES` (510/697)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (47/47) | `encounter_template` | card only | `npm run check:encounter` | Encounters & Dilemmas | 🟢 LIVE |
-| `action_template` | Action | 187 | `UNIFIED_ACTION_TEMPLATES` (187/697)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (0/47)<br>`THREAD_CREATION_TEMPLATES` (6/6)<br>`THREAD_MANAGEMENT_TEMPLATES` (2/2)<br>`AGENT_INTERVENTION_TEMPLATES` (44/44) | `action_template` | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
+| `encounter_template` | Encounter | 513 | `UNIFIED_ACTION_TEMPLATES` (513/700)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (50/50) | `encounter_template` | card only | `npm run check:encounter` | Encounters & Dilemmas | 🟢 LIVE |
+| `action_template` | Action | 187 | `UNIFIED_ACTION_TEMPLATES` (187/700)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (0/50)<br>`THREAD_CREATION_TEMPLATES` (6/6)<br>`THREAD_MANAGEMENT_TEMPLATES` (2/2)<br>`AGENT_INTERVENTION_TEMPLATES` (44/44) | `action_template` | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
 | `undertaking_template` | Undertaking | 116 | `MERCHANT_STRATEGIC_TEMPLATES` (6/6)<br>`BUILDER_STRATEGIC_TEMPLATES` (9/9)<br>`SCHOLAR_STRATEGIC_TEMPLATES` (7/7)<br>`ZEALOT_STRATEGIC_TEMPLATES` (6/6)<br>`COURT_STRATEGIC_TEMPLATES` (15/15)<br>`WARLORD_STRATEGIC_TEMPLATES` (9/9)<br>`WANDERER_STRATEGIC_TEMPLATES` (4/4)<br>`FACTORY_STRATEGIC_TEMPLATES` (0/0)<br>`UNDERTAKING_CELL_TEMPLATES` (60/60) | `undertaking` | card → codex | `npm run check:undertaking` | Ambitions & Undertakings | 🟢 LIVE |
 | `item_template` | Item | 134 | `REWARD_POSSESSIONS` (111/111)<br>`TREASURE_MAPS` (5/5)<br>`STARTER_POSSESSIONS` (8/8)<br>`ANOMALY_SIGNATURE_ARTIFACTS` (10/10) | `item` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `legendary_template` | Legendary artifact | 3 | `ARTIFACT_TEMPLATES` (3/3) | `legendary_artifact` | card only | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
