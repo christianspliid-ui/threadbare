@@ -224,7 +224,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | Domain | Files | Tags |
 |---|---|---|
 | `action` (3) | `actionCandidates.ts`, `actionLifecycle.ts`, `actionUnlock.ts` | `THR-501` |
-| `activity` (1) | `activitySummary.ts` | — |
+| `activity` (1) | `activitySummary.ts` | `THR-1492`, `THR-1502` |
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
 | `agent` (9) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-719`, `THR-822` |
@@ -263,7 +263,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `core` (2) | `core/coreConstants.ts`, `core/coreMechanics.ts` | `THR-542`, `THR-544` |
 | `cosmology` (1) | `cosmology.ts` | — |
 | `cultural` (4) | `culturalGravity.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | — |
-| `culture` (5) | `cultureDetail.ts`, `cultureFlag.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15` |
+| `culture` (4) | `cultureFlag.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15` |
 | `curator` (1) | `curator.ts` | — |
 | `cycle` (1) | `cycleEnd.ts` | — |
 | `debug` (7) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-689`, `THR-878` |
@@ -415,4 +415,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 189 engine domains · 557 modules._
+_Counts: 28 registered subsystems (3 dormant) · 100 tick phases · 189 engine domains · 556 modules._
