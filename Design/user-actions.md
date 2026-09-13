@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 16:56 local (14:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 17:59 local (15:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -29,14 +29,9 @@ Found while building the name-click fix ([THR-1461](https://linear.app/threadbar
 
 **Should an encounter's own consequences be exempt from that gate — because you were there — or does the fog stay honest?** Either answer is defensible; the game means something different each way. Silence leaves it as-is, which is a real answer. You may meet this during the sitting.
 
-### What is a player allowed to leaf through? ([THR-1495](https://linear.app/threadbare/issue/THR-1495/six-content-kinds-have-no-codex-category-so-their-content-cards-can))
-
-Building the content cards found six kinds of thing with no reference page. Two are plain gaps the lane will close without asking you. Four are questions about what the codex is *for*: all **557 encounters** browsable, or only the ones already lived — a chronicle rather than a catalogue? Do **omens** lose something if you can look them up? Is an **ambition** a definition page, or only read off the person carrying it? Same for **companions**.
-
-Nothing is broken while these sit; the cards open, they are just shallower. It is one of **seven** things queued behind a single design afternoon — the others are ambitions nothing can act on ([THR-1348](https://linear.app/threadbare/issue/THR-1348)), beasts that cannot be cast in a scene ([THR-1274](https://linear.app/threadbare/issue/THR-1274)), which kind of work should stir which kind of trouble ([THR-1497](https://linear.app/threadbare/issue/THR-1497)), how often encounters should fire ([THR-1218](https://linear.app/threadbare/issue/THR-1218)), the six orphaned words above, and traits wave 2 ([THR-790](https://linear.app/threadbare/issue/THR-790)).
-
 ## Resolved this period
 
+- **2026-09-13 — what a player may leaf through is settled** ([THR-1495](https://linear.app/threadbare/issue/THR-1495)). Merged 17:39, live. The lane took the call rather than queueing it. Four kinds gained a reference page — legendary artifacts, companions, ambitions, and the 37-card deck you play from. Two were withheld with quotable reasons: all 513 encounters would be the answer key, and omens read through their beats. A chronicle of encounters *already lived* is explicitly still on the table.
 - **2026-09-13 — a region on the map describes itself in words** ([THR-1455](https://linear.app/threadbare/issue/THR-1455)). Merged 16:21, live. Clicking a stretch of map answered with the internal terrain key and a bare tile count; it now says what the place is and how wide it runs.
 - **2026-09-13 — a consequence can name the place it landed on** ([THR-1462](https://linear.app/threadbare/issue/THR-1462)). Merged 15:32, live. A condition dropped on a shrine can now be clicked through to the shrine, not just the traveller. Its twin for realms is queued as [THR-1499](https://linear.app/threadbare/issue/THR-1499).
 - **2026-09-13 — the guild notice board says which silence it is** ([THR-1026](https://linear.app/threadbare/issue/THR-1026)). Merged 14:29, live. A hall whose guild does not commission delves now says so instead of reading as broken. The fix found that ruins almost never gather rumours at all — queued as [THR-1506](https://linear.app/threadbare/issue/THR-1506).
@@ -46,7 +41,6 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 - **2026-09-13 — a condition's sheet says how long it lasts** ([THR-1484](https://linear.app/threadbare/issue/THR-1484)). Merged 11:36, live. Two parts of the engine spelled one word differently, so the countdown bar had no denominator.
 - **2026-09-13 — the capability line reads as a sentence again** ([THR-1494](https://linear.app/threadbare/issue/THR-1494)). Merged 09:24, live. Fixes all eight reaches.
 - **2026-09-13 — a name opens that person's sheet everywhere, not just in the whisper** ([THR-1500](https://linear.app/threadbare/issue/THR-1500)). Merged 08:25, live.
-- **2026-09-13 — one detail sheet instead of two, and two dead buttons gone** ([THR-1492](https://linear.app/threadbare/issue/THR-1492)). Merged 07:35, live.
 
 ---
 
