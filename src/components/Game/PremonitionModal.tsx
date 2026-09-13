@@ -33,8 +33,17 @@ interface PremonitionModalProps {
   tooltipContext?: TooltipResolverContext | null;
   onWhisperChoice: (nudge: WhisperNudge) => void;
   onCompulsionChoice: (candidate: CompulsionCandidate) => void;
-  /** Opens the subject's character sheet *over* this modal — never dismisses it. */
-  onViewAgent?: () => void;
+  /**
+   * Opens the subject's character sheet *over* this modal — never dismisses it.
+   *
+   * Takes the subject's id rather than closing over it at the call site (THR-1461).
+   * The zero-argument version let `GameView` decide *which* mortal the premonition
+   * was about, and it decided wrongly: it reached for the opener that sets only the
+   * profile id, so the sheet rendered the previously selected mortal. A premonition
+   * knows exactly one subject; naming it here is what makes the control's promise
+   * (Law 33) checkable by a test rather than by a browser pass.
+   */
+  onViewAgent?: (agentId: string) => void;
   onDismiss: () => void;
 }
 
@@ -240,7 +249,7 @@ export function PremonitionModal({
             shape="rounded"
             entity={{ id: premonition.agentId, kind: 'agent', name: premonition.agentName }}
             graph={graph ?? null}
-            onClick={onViewAgent}
+            onClick={onViewAgent ? () => onViewAgent(premonition.agentId) : undefined}
             aria-label={
               onViewAgent
                 ? `Open the character sheet for ${premonition.agentName}`
@@ -269,7 +278,7 @@ export function PremonitionModal({
             {onViewAgent ? (
               <button
                 type="button"
-                onClick={onViewAgent}
+                onClick={() => onViewAgent(premonition.agentId)}
                 data-testid="premonition-subject-name"
                 className="text-xs mt-1 bg-transparent border-none cursor-pointer hover:brightness-125 transition-[filter]"
                 style={{

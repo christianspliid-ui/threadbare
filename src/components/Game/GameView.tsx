@@ -5505,7 +5505,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // Opens the mortal's sheet *over* the premonition (THR-1139). The
           // premonition stays mounted and choosable underneath — this is a
           // context lookup, not a dismissal.
-          onViewAgent={() => openAgentProfileForId(activePremonition.agentId)}
+          //
+          // THR-1461: `openAgentSheetForId`, the primitive THR-1477 built for the
+          // veil, not `openAgentProfileForId`. The latter sets only the modal id
+          // while the card it renders is memoised on `selectedAgentId`, so it
+          // opened the *previously selected* mortal's sheet under the subject's id
+          // — Kael's whisper opening Thorne's profile (Laws 1 and 33). The modal now
+          // names its own subject, so the opener is passed by reference and there is
+          // no closure here left to name the wrong one.
+          //
+          // Deliberately not `refRouter.open({ kind: 'actor' }, 'sheet')`: the
+          // router's agent arm is `handleAgentSelect`, which opens the ActionDrawer
+          // at z 40 — invisible beneath this modal at z 60, a Law 21 dead click.
+          // A caller behind a full-screen interrupt wants the sheet on top, which
+          // is the distinction `openAgentSheetForId` exists to draw.
+          onViewAgent={openAgentSheetForId}
           onDismiss={handlePremonitionDismiss}
         />
       )}
