@@ -123,7 +123,13 @@ describe('instantiateReward', () => {
       expect(edge!.properties.level).toBe(1);
       expect(edge!.properties.acquiredTick).toBe(3);
       expect(edge!.properties.ticksRemaining).toBe(REWARD_CONDITION_DEFAULT_TICKS);
-      expect(edge!.properties.totalTicks).toBe(REWARD_CONDITION_DEFAULT_TICKS);
+      // THR-1484: repointed from `totalTicks`. That spelling was this writer's own
+      // invention and no reader of a `has_trait` edge ever consumed it, so this
+      // assertion was green on a dead contract — the Duration row it stands for was
+      // blank in the game the whole time. `durationTicks` is the live name; the
+      // cross-writer contract is pinned in `conditionDurationContract.test.ts`.
+      expect(edge!.properties.durationTicks).toBe(REWARD_CONDITION_DEFAULT_TICKS);
+      expect(edge!.properties.totalTicks).toBeUndefined();
       expect(edge!.properties.source).toBe(REWARD_EDGE_SOURCE);
       expect(edge!.properties.modifiers).toEqual({ iron: -0.05 });
     });

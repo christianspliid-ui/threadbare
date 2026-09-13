@@ -769,7 +769,14 @@ function instantiateRewardInternal(
   } else if (template.type === 'trait') {
     // Condition (wound/blessing/curse/disease) → has_trait edge with expiry
     const domainContributions = template.properties.domainContributions as Record<string, number> | undefined;
-    const totalTicks = (template.properties.ticksRemaining as number | undefined) ?? REWARD_CONDITION_DEFAULT_TICKS;
+    // THR-1484: the authored total is spelled `durationTicks` on a `has_trait`
+    // edge — that is what `readEdgeDuration` (agentAttachments.ts) reads and what
+    // edgeSchema.ts documents. This writer produced 13 of the 14 duration-bearing
+    // condition edges in a seed-42 medium world at tick 60, all of them under the
+    // unread name `totalTicks`, so the Duration row and progress bar were blank
+    // for nearly every condition a player could open. `totalTicks` is the name the
+    // *view prop* carries; the edge property is never spelled that way.
+    const durationTicks = (template.properties.ticksRemaining as number | undefined) ?? REWARD_CONDITION_DEFAULT_TICKS;
     graph.addEdge({
       id: edgeId,
       source: recipientAgentId,
@@ -778,8 +785,8 @@ function instantiateRewardInternal(
       properties: {
         level: 1,
         acquiredTick: tick,
-        ticksRemaining: totalTicks,
-        totalTicks,
+        ticksRemaining: durationTicks,
+        durationTicks,
         source: REWARD_EDGE_SOURCE,
         visibility: template.properties.visibility ?? 'public',
         modifiers: domainContributions ?? {},

@@ -4271,3 +4271,11 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-13 | `scripts/__tests__/classify-diff-ui-pillar.test.ts` | THR-1471 — 23 assertions on the rendered output, both directions, plus the prefixes a sloppier test would swallow | Asserting the source contains the line is the evidence that already failed twice |
 | 2026-09-13 | `Docs/canon/verification-gates.md` | THR-1471 — § Browser-verify points at the new mechanism | The rule and the thing that surfaces it should reference each other |
 | 2026-09-13 | `Docs/status/2026-09-13-thr-1471.md` | THR-1471 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-13 | `src/engine/rewardPool.ts` | THR-1484 — condition edges write `durationTicks`, not `totalTicks` | The live writer of 13 of 14 duration-bearing edges; every one rendered a blank Duration row |
+| 2026-09-13 | `src/engine/phaseEncounterTraits.ts` | THR-1484 — `assignCondition` writes `durationTicks` | The ticket's named writer; dormant, but correct now if its dead loop is revived (THR-1503) |
+| 2026-09-13 | `src/engine/agentAttachments.ts` | THR-1484 — `readEdgeDuration` docstring names the full writer set and refuses a legacy fallback | The view prop and the wrong edge property share the name `totalTicks`; the graph is never serialized, so a fallback would be dead code |
+| 2026-09-13 | `src/engine/__tests__/conditionDurationContract.test.ts` | THR-1484 — every writer through its real grant path, read through the real reader | A test pinning only the writers someone thought of is how the third one got there |
+| 2026-09-13 | `src/components/Game/__tests__/AttachmentDetailViewDuration.test.tsx` | THR-1484 — Duration renders from a really-granted condition | The sibling suite hands the component a literal `totalTicks: 20`, which passes whatever the engine writes |
+| 2026-09-13 | `src/engine/__tests__/rewardInstantiation.test.ts` | THR-1484 — repointed from `totalTicks` to `durationTicks` | Green on a dead contract while the row it stood for was blank in the game |
+| 2026-09-13 | `scripts/interface-contracts.ts` | THR-1484 — corrects a note calling `durationTicks` "inert" | It has been the live display denominator since THR-784 |
+| 2026-09-13 | `Docs/status/2026-09-13-thr-1484.md` | THR-1484 — new status fragment | One file per entry since THR-1016 |

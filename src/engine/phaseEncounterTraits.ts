@@ -275,8 +275,16 @@ function assignCondition(
     const edge = graph.getOutgoingEdges(actorId, 'has_trait')
       .find(e => e.target === conditionId);
     if (edge) {
+      // THR-1484: `durationTicks` is the authored total, and the ONLY spelling
+      // `readEdgeDuration` (agentAttachments.ts) consumes — it is the denominator
+      // the Duration row and progress bars divide by. This path wrote `totalTicks`,
+      // which no reader of a `has_trait` edge has ever read, so every condition it
+      // granted rendered with no Duration section and a dead progress bar. The
+      // condition still decayed correctly, because decay counts `ticksRemaining`,
+      // which is why the gap survived. `totalTicks` is the name the *view prop*
+      // carries — never the edge property; see the edge schema in edgeSchema.ts.
       graph.updateEdge(edge.id, {
-        properties: { ...edge.properties, ticksRemaining: duration, totalTicks: duration },
+        properties: { ...edge.properties, ticksRemaining: duration, durationTicks: duration },
       });
     }
   }

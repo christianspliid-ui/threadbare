@@ -111,6 +111,26 @@ export interface KnownSpellEntry {
  * `node.properties`, where nothing writes `totalTicks` at all and `gameInit`
  * seeded `ticksRemaining: null` — so every ticking condition rendered as
  * 'until dispelled' with a dead progress bar.
+ *
+ * THR-1484 — the writer set this reader answers to. Three production paths mint a
+ * duration-bearing `has_trait` edge, and all three must spell the total
+ * `durationTicks`; two of them did not, and everything they granted rendered with
+ * no Duration row:
+ *
+ * - `encounterAftermath.ts` (`apply_condition`, `condition_attachment`)
+ * - `rewardPool.ts` (`REWARD_EDGE_SOURCE`) — the highest-volume writer by far
+ * - `phaseEncounterTraits.ts` (`assignCondition`)
+ *
+ * The collision is easy to reintroduce because this function *exposes* the value
+ * to the UI under the name `totalTicks`: the view prop and the wrong edge property
+ * share a name while meaning different things. A fourth writer must add an arm to
+ * `conditionDurationContract.test.ts`, which drives every writer above through the
+ * real grant path and requires a numeric `totalTicks` back out of here.
+ *
+ * Deliberately does NOT accept a legacy `totalTicks` edge property. The world graph
+ * is never serialized (no save/load path exists), so every session builds its edges
+ * fresh from the writers above — a fallback would be dead code that reopens the
+ * two-spelling door this ticket closed.
  */
 function readEdgeDuration(edgeProperties: Record<string, unknown>): {
   ticksRemaining: number | null;
