@@ -107,28 +107,34 @@ export const SURFACE_BY_WORLD_REF: Readonly<Record<WorldRefKind, SurfaceRow>> = 
  *
  * **`sheet` is `'codex'` exactly where the codex has the entry, and `null` where it has
  * not, and that split was measured rather than assumed.** Probing every catalog id in this
- * registry against `getAllCodexEntries()` on 2026-09-12 found six kinds with codex
- * coverage and six with none:
+ * registry against `getAllCodexEntries()` — re-measured **2026-09-13** after THR-1495
+ * chartered four of the six kinds that had no category:
  *
  * | kind | ids | in codex | category |
  * |---|---|---|---|
- * | `action_template` | 239 | 239 | divine · hex · location · artifact · company · threads · actions |
+ * | `encounter_template` | 513 | **0** | — *(withheld, see the row)* |
+ * | `action_template` | 187 | 187 | divine · hex · location · artifact · company · threads · actions |
  * | `item_template` | 134 | 119 | possessions |
  * | `undertaking_template` | 116 | 60 | undertakings |
  * | `condition_template` | 46 | 40 | conditions |
+ * | `omen_template` | 44 | **0** | — *(withheld, see the row)* |
+ * | `nudge_card` | 37 | 37 | cards |
  * | `power_template` | 25 | 12 | conditions |
+ * | `ambition_template` | 20 | 20 | ambitions |
+ * | `companion_template` | 9 | 9 | companions |
  * | `agreement_template` | 7 | 7 | agreements |
- * | `encounter_template` | 557 | **0** | — |
- * | `omen_template` | 44 | **0** | — |
- * | `nudge_card` | 37 | **0** | — |
- * | `ambition_template` | 20 | **0** | — |
- * | `companion_template` | 9 | **0** | — |
- * | `legendary_template` | 3 | **0** | — |
+ * | `legendary_template` | 3 | 3 | possessions |
  *
- * The plan named four kinds as lacking a category (encounters, companions, ambitions,
- * omens); the measurement found **six** — `legendary_template` and `nudge_card` are also
- * absent, and the first is the surprising one, because a `possessions` category exists and
- * simply does not read `ARTIFACT_TEMPLATES`. All six are the deferral this slice files.
+ * **Every count in the 2026-09-12 table had moved by the time THR-1495 re-ran it**
+ * (encounters 557 → 513, actions 239 → 187) while the *predicate* — "a kind whose catalog
+ * ids resolve to zero `getAllCodexEntries()` entries" — picked out the same six kinds. That
+ * is THR-688 rule A in one measurement: a count rots, a predicate does not, so the counts
+ * above are a dated reading and `contentKindCodexCoverage()` is the live one.
+ *
+ * **Two kinds stay at `null` by ruling, not by absence** (THR-1495) — which is the whole
+ * point of the `note` field. Before that ticket all six read as one undifferentiated
+ * silence; now a withheld kind says *why*, and the two reasons are different from each
+ * other.
  *
  * **A `'codex'` row is a claim about the kind, not about every entry of it** — four of the
  * six covered kinds are covered *partially* (an undertaking template has a codex card only
@@ -141,38 +147,38 @@ export const SURFACE_BY_CONTENT_KIND: Readonly<Record<ContentObjectKindId, Surfa
   encounter_template: {
     card: 'content',
     sheet: null,
-    note: 'No codex category catalogues encounters — 0 of 557 ids resolve to a codex entry (measured 2026-09-12). Chartering one is THR-1495.',
+    note: 'Withheld by ruling (THR-1495): a catalog of all 513 encounters is the answer key. An encounter is the chapter a mortal *meets*, and reading the set in advance spends the surprise the whole system exists to produce — the one kind here whose value is destroyed by being browsable. Note what is NOT being refused: a chronicle of the encounters a world has already met is a good feature and a different one (per-world history, not a catalog), and nothing in this ruling stands against it.',
   },
   action_template: { card: 'content', sheet: 'codex' },
   undertaking_template: { card: 'content', sheet: 'codex' },
   item_template: { card: 'content', sheet: 'codex' },
   legendary_template: {
     card: 'content',
-    sheet: null,
-    note: 'The `possessions` category reads the reward and starter catalogs, never `ARTIFACT_TEMPLATES` — 0 of 3 legendary ids resolve to a codex entry (measured 2026-09-12). THR-1495.',
+    sheet: 'codex',
+    note: 'Chartered by THR-1495 into `possessions` under a `legendary` rail group — a plain gap, not a design question: the category existed and simply never read `ARTIFACT_TEMPLATES`. Three entries are a group, not a tab of their own.',
   },
   condition_template: { card: 'content', sheet: 'codex' },
   power_template: { card: 'content', sheet: 'codex' },
   agreement_template: { card: 'content', sheet: 'codex' },
   companion_template: {
     card: 'content',
-    sheet: null,
-    note: 'No codex category catalogues companions — 0 of 9 ids resolve (measured 2026-09-12). THR-1495. The world-object side is withheld for its own reason; see the `companion` row above.',
+    sheet: 'codex',
+    note: 'Chartered by THR-1495 into its own `companions` category — deliberately not a shelf under Possessions, because a companion is a person who walks with a mortal and filing one among things-you-own would be the game saying something it does not mean. The *world-object* side stays withheld for its own unrelated reason; see the `companion` row above.',
   },
   ambition_template: {
     card: 'content',
-    sheet: null,
-    note: 'No codex category catalogues ambitions — 0 of 20 ids resolve (measured 2026-09-12). THR-1495.',
+    sheet: 'codex',
+    note: 'Chartered by THR-1495 into its own `ambitions` category. The deciding argument: Undertakings — the *work* — have been catalogued since THR-1434, and an ambition is the *want* that work serves, so withholding it left the vocabulary of mortal motive readable in one half and dark in the other.',
   },
   omen_template: {
     card: 'content',
     sheet: null,
-    note: 'No codex category catalogues omens — 0 of 44 ids resolve (measured 2026-09-12). THR-1495.',
+    note: 'Withheld by ruling (THR-1495): an omen track is the run of signs the world shows before something breaks, and it is read through its beats by design. A browsable catalog of all 44 tracks converts dread into a lookup table — the player stops reading the sign and starts checking the index.',
   },
   nudge_card: {
     card: 'content',
-    sheet: null,
-    note: 'No codex category catalogues nudge cards — 0 of 37 ids resolve (measured 2026-09-12). THR-1495.',
+    sheet: 'codex',
+    note: 'Chartered by THR-1495 into its own `cards` category ("The Repertoire") — the deck the player actually plays from, and the most plainly useful of the six. All 37 members are dealable today (measured), so the tab holds no card a god can never hold.',
   },
 };
 

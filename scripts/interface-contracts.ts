@@ -731,9 +731,9 @@ export const CONTRACTS: readonly Contract[] = [
       'src/debug-bridge.ts',
     ],
     verifiedLive: {
-      date: '2026-09-12',
+      date: '2026-09-13',
       evidence:
-        'GameView wires openCodexEntry and codexHasEntry into the router; the sheet arm reaches the codex overlay for the six catalogued kinds and falls back to the card otherwise. contentPage.test.ts resolves every kind against the shipped catalogs and pins the two-condition CTA; surfaceRegistry.test.ts pins that no content kind routes to a world sheet and no world kind to the codex.',
+        'GameView wires openCodexEntry and codexHasEntry into the router; the sheet arm reaches the codex overlay for the ten catalogued kinds and falls back to the card otherwise. THR-1495 chartered four of the six that had none (legendary artifacts into Possessions; companions, ambitions and the nudge deck as their own categories) and recorded the ruling that withholds the other two, so encounters and omens are now the only null rows. contentPage.test.ts resolves every kind against the shipped catalogs and pins the two-condition CTA; surfaceRegistry.test.ts pins that no content kind routes to a world sheet and no world kind to the codex, and — new with THR-1495 — that each row claims a codex sheet exactly where the built codex actually holds the kind, measured rather than asserted.',
     },
   },
   // ─── `anchor-status-derived-from-surface-registry` is deliberately NOT a row here ───

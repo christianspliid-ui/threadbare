@@ -21,6 +21,15 @@ import { ACTION_ART } from '../Game/actionArt';
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { effectSourceFor, type EffectSource } from '../../data/actionEffectSource';
 import { buildUndertakingCodexEntries } from './undertakingCodex';
+import {
+  buildCharteredKindCodexEntries,
+  AMBITION_CATEGORY_ID,
+  AMBITION_CATEGORY_WORDS,
+  CARD_CATEGORY_ID,
+  CARD_GROUP_WORDS,
+  COMPANION_CATEGORY_ID,
+  LEGENDARY_SUBCATEGORY_ID,
+} from './charteredKindsCodex';
 import { UNDERTAKING_VERB_WORDS } from '../../data/undertaking-verb-prose';
 import { formatEssenceLabel } from '../shared/formatEssence';
 import { magnitudeWord, durationLabel, type MagnitudeBand } from '../../engine/aftermathWords';
@@ -241,11 +250,18 @@ const SUBCATEGORY_DISPLAY: Record<string, string> = {
   ...RESOURCE_CATEGORY_DISPLAY,
   // The undertaking verbs (THR-1434) — the Undertakings section's rail groups cells by verb.
   ...UNDERTAKING_VERB_WORDS,
+  // The ambition categories and the Repertoire's rail groups (THR-1495). Spread from
+  // their own modules rather than retyped, so a new ambition category cannot reach the
+  // rail as a raw key.
+  ...AMBITION_CATEGORY_WORDS,
+  ...CARD_GROUP_WORDS,
   divine: 'Divine',
   condition: 'Afflictions',
   intelligence: 'Intelligence',
   talisman: 'Talismans',
   charm: 'Charms',
+  // Legendary artifacts sit in Possessions under their own rail group (THR-1495).
+  [LEGENDARY_SUBCATEGORY_ID]: 'Legendary',
 };
 
 /** Vocabulary misses already warned about, so the warning fires once per key, not once per entry. */
@@ -787,6 +803,11 @@ export function getAllCodexEntries(): CodexEntry[] {
   // never on a person's sheet (THR-1404).
   entries.push(...buildUndertakingCodexEntries());
 
+  // The four kinds THR-1495 chartered — legendary artifacts (into Possessions),
+  // companions, ambitions and the nudge deck. Encounters and omens stay withheld by
+  // ruling; `SURFACE_BY_CONTENT_KIND` carries both reasons, quotable.
+  entries.push(...buildCharteredKindCodexEntries());
+
   // Attach art asset paths where available
   for (const entry of entries) {
     // Does not clobber a plate already resolved by `mapPossession` — for a
@@ -816,6 +837,15 @@ export function getCodexCategories(): CodexCategory[] {
     { id: 'possessions', label: 'Possessions', glyph: '\u25C6' },
     { id: 'conditions', label: 'Conditions', glyph: '\u2715' },
     { id: 'agreements', label: 'Agreements', glyph: '\u260D' },
+    // The three categories THR-1495 chartered. Legendary artifacts took no tab of
+    // their own \u2014 three entries are a rail group under Possessions, not a section.
+    // A companion is a person, so they get a category rather than a shelf in
+    // Possessions; an ambition is the want an Undertaking serves, and was the only
+    // half of a mortal's motives the catalog did not carry; the cards are the deck
+    // the player plays from.
+    { id: COMPANION_CATEGORY_ID, label: 'Companions', glyph: '\u265F' },
+    { id: AMBITION_CATEGORY_ID, label: 'Ambitions', glyph: '\u2767' },
+    { id: CARD_CATEGORY_ID, label: 'The Repertoire', glyph: '\u2756' },
     // Resource classes have been mapped to entries since the P3 economy work
     // (92383535) but never had a tab, so the whole category was catalogued and
     // unreachable - the same "no catalog arm" defect as company.* (THR-999),
