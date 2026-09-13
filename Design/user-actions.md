@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 14:00 local (12:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 14:54 local (12:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -37,6 +37,7 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 
 ## Resolved this period
 
+- **2026-09-13 — the guild notice board says which silence it is** ([THR-1026](https://linear.app/threadbare/issue/THR-1026)). Merged 14:29, live. A hall whose guild does not commission delves now says so instead of reading as broken. The fix found that ruins almost never gather rumours at all — queued as [THR-1506](https://linear.app/threadbare/issue/THR-1506).
 - **2026-09-13 — every ending is now read as a whole page** ([THR-1474](https://linear.app/threadbare/issue/THR-1474)). Merged 13:29, live. Your Saturday note. It immediately found 24 endings that tell one fact twice — [THR-1505](https://linear.app/threadbare/issue/THR-1505), queued.
 - **2026-09-13 — a consequence chip may no longer retell its own ending** ([THR-1473](https://linear.app/threadbare/issue/THR-1473)). Capped at 15 words. Your Saturday note.
 - **2026-09-13 — the detail sheet behaves like a real window** ([THR-1024](https://linear.app/threadbare/issue/THR-1024)). Merged 12:28, live. It takes the keyboard, holds it, and hands it back on close.
@@ -46,7 +47,6 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 - **2026-09-13 — one detail sheet instead of two, and two dead buttons gone** ([THR-1492](https://linear.app/threadbare/issue/THR-1492)). Merged 07:35, live.
 - **2026-09-13 — sixteen recipes promised a prize and drew nothing** ([THR-1496](https://linear.app/threadbare/issue/THR-1496)). Merged 06:32, live. It left six words orphaned — the standing ask above.
 - **2026-09-13 — one reach moved twice, so the ending says it once** ([THR-1467](https://linear.app/threadbare/issue/THR-1467)). Merged 05:28, live.
-- **2026-09-13 — a keeper stops being introduced to himself** ([THR-1466](https://linear.app/threadbare/issue/THR-1466)). Merged 04:25, live. An appositive needs a name to apposit.
 
 ---
 

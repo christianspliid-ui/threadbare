@@ -1,18 +1,16 @@
 # Briefing
-**Generated:** 2026-09-13 14:00 local (12:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-13 14:54 local (12:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Finish the sitting — two encounters left** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). You stopped after four feedback batches on Saturday saying *"more batches expected."* Everything those batches asked for is now shipped, merged and live — the last two landed this hour.
+**Finish the sitting — two encounters left** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). Unchanged since the last brief, and still the thing everything else waits behind.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 One question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map, which is what the wider design work — fights, items, powers — is queued behind.
 
-Two of your Saturday notes closed since the last brief: consequence chips are capped at 15 words and may no longer retell the ending they sit under ([THR-1473](https://linear.app/threadbare/issue/THR-1473)), and the pipeline now reads each ending **as a whole page** — overview, chips and choices together — rather than checking each part alone ([THR-1474](https://linear.app/threadbare/issue/THR-1474), merged 13:29).
-
-**One honest blemish, found by that new check 20 minutes ago.** In the *failure* ending of Riders, one of the choices on offer reads the opening lines back at you almost word for word — *"the riders come down off the ridge at their leisure."* It is queued as [THR-1505](https://linear.app/threadbare/issue/THR-1505/the-new-whole-page-check-reports-24-endings-that-tell-one-fact-twice), along with 23 others like it across the wider catalogue. Nothing else known stands on these two screens, and the other three endings of Riders are clean. If you pin endings with `&outcome=…`, both encounters write all four.
+Both write all four endings, so any `&outcome=…` pin lands on authored prose. One known blemish stands: in Riders' *failure* ending, a choice reads the opening lines back at you almost word for word — queued as [THR-1505](https://linear.app/threadbare/issue/THR-1505/the-new-whole-page-check-reports-24-endings-that-tell-one-fact-twice). The other three endings are clean.
 
 ## Also waiting (3)
 
@@ -22,11 +20,13 @@ Two of your Saturday notes closed since the last brief: consequence chips are ca
 
 ## Queue
 
-**Healthy — 13 ready, 1 in progress.** Nothing blocked, nothing stale. One item joined this hour: the 24 endings that tell one fact twice ([THR-1505](https://linear.app/threadbare/issue/THR-1505/the-new-whole-page-check-reports-24-endings-that-tell-one-fact-twice)), which exists because the check you asked for on Saturday now finds them automatically. None of the 13 needs you.
+**Healthy — 13 ready, 1 in progress.** Nothing blocked, nothing stale, and none of the 13 needs you.
 
-**One job is parked rather than progressing, and should not be.** The five pieces of scene art with text and faces baked into them ([THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)) were set down two hours ago by a lane that wanted your say-so on spending image credits. **You already gave it** — 11 September, *"you are approved to unblock everything here,"* recorded on the ticket itself. So this is not an ask and the count is the only thing owed you: five images plus retries. The next lane to reach it should simply run the batch; two passing lanes have now stepped over it instead.
+**What shipped this hour, and the hole it opened.** The guild notice board now names the silence it is showing you ([THR-1026](https://linear.app/threadbare/issue/THR-1026/questhooksfindguildlocations-still-hardcodes-adventuring-guild-so), merged 14:29) — a hall that posts no contracts because that guild does not commission delves now says so, instead of reading as broken. Fixing it turned up something larger: **across a full 175-tick world, exactly one ruin in 103 ever gathered a single rumour**, and it sat too far from any hall to be posted. So the notice board a player walks up to has, so far, never had anything on it. That is queued as [THR-1506](https://linear.app/threadbare/issue/THR-1506/ruin-quest-hooks-never-fire-in-a-normal-run-1-of-103-ruins-has-any). It does not touch the two encounters above — the sitting opens them directly — but if you wander into a guild hall, an empty board is why.
+
+**One job is still parked rather than progressing.** The five pieces of scene art with text and faces baked into them ([THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)) were set down at 12:03 by a lane wanting your say-so on image credits. **You already gave it** — 11 September, *"you are approved to unblock everything here."* Not an ask; the count is the only thing owed you, five images plus retries. Now 4h51m parked, and three passing lanes have stepped over it.
 
 ## Health
 
-- **All green.** CI and all three post-merge jobs green on the newest main; all three scheduled background jobs healthy; all nine lanes on schedule; reaper ran 13:40; no PRs waiting to merge. The site serves the newest commit ([6e844d59](https://github.com/christianspliid-ui/threadbare/commit/6e844d59)). Engine speed 65 ms/tick — **12% faster** than the seven-day median across 106 measurements.
+- **All green.** CI and all three post-merge jobs green on the newest main; all three scheduled background jobs healthy; all nine lanes on schedule; reaper ran 14:40; no PRs waiting to merge. The site serves the newest commit ([570d6810](https://github.com/christianspliid-ui/threadbare/commit/570d6810)). Engine speed 66 ms/tick — **9% faster** than the seven-day median across 106 measurements.
 - **The lane-silence probe still reports the same three old gaps, and still is not being carried to you.** All three self-resolved days ago and every lane is on schedule right now, so the probe is reading quiet commit hours rather than stopped work. The oldest — Monday night — rolls out of its seven-day window tomorrow evening. A lane calibration matter for the weekly review, not an ask.
