@@ -194,6 +194,46 @@ describe('surface registry — content kinds', () => {
     }
   });
 
+  it('claims a codex sheet exactly where the codex actually holds the kind (THR-1495)', async () => {
+    // The claim this registry's doc table makes, held against the built codex rather than
+    // against a comment. THR-688 rule A is the motivation and this is the enforcement: the
+    // 2026-09-12 table's counts had ALL moved a day later (encounters 557 → 513, actions
+    // 239 → 187) while the predicate picked out the same kinds, so a count in a comment
+    // rots and only a probe does not.
+    //
+    // Deliberately `inCodex > 0`, not `inCodex === ids`: four covered kinds are covered
+    // *partially* (60 of 116 undertaking templates), and the row is a claim about the kind
+    // while `codexHasEntry` is the per-entry check the CTA makes.
+    //
+    // Falsify: flip `omen_template` to `sheet: 'codex'` (claims coverage it has none of), or
+    // flip `nudge_card` back to `null` (withholds a kind the codex now holds).
+    const { contentKindCodexCoverage } = await import('../../components/Codex/charteredKindsCodex');
+    const coverage = await contentKindCodexCoverage();
+    for (const id of CONTENT_OBJECT_KIND_IDS) {
+      const measured = coverage[id];
+      expect(measured, `"${id}" was not measured`).toBeDefined();
+      const claimsCodex = SURFACE_BY_CONTENT_KIND[id].sheet === 'codex';
+      expect(
+        claimsCodex,
+        claimsCodex
+          ? `"${id}" claims a codex sheet but 0 of its ${measured.ids} ids resolve to a codex entry`
+          : `"${id}" is withheld from the codex but ${measured.inCodex} of its ${measured.ids} ids are catalogued under ${measured.categories.join(' · ')}`,
+      ).toBe(measured.inCodex > 0);
+    }
+  });
+
+  it('withholds exactly the two kinds THR-1495 ruled on, and no others by accident', () => {
+    // The ruling, pinned by name. A kind silently *losing* its category (a catalog rename,
+    // a mapper dropped) would otherwise satisfy the claim-matches-measurement test above by
+    // flipping BOTH sides together — the two tests are only independent because this one
+    // names the answer instead of deriving it.
+    // Falsify: charter omens, or withhold companions.
+    const withheld = CONTENT_OBJECT_KIND_IDS
+      .filter(id => SURFACE_BY_CONTENT_KIND[id].sheet === null)
+      .sort();
+    expect(withheld).toEqual(['encounter_template', 'omen_template']);
+  });
+
   it('fills the content-object registry surface column from this one source', () => {
     // Not "the two agree" — they are the same object, because `K()` stamps it. This
     // asserts the derivation is actually wired rather than re-spelled on the rows.

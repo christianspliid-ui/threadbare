@@ -376,9 +376,10 @@ remediation ticket or the build fails.
 
 - **Intent:** Player-activated item powers (ActivatedAbility).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
-- **Production hits:** 2 total — 2 write, 0 read, 0 unclassified
+- **Production hits:** 3 total — 2 write, 0 read, 1 unclassified
 - **Write sites:** `src/data/artifact-templates.ts`, `src/types/attachments.ts`
 - **Read sites:** —
+- **Other hits:** `src/components/Codex/charteredKindsCodex.ts`
 - **Verdict:** Tier 2: the registry declares no read sites and none were found — producer writes into nothing. — or the row under-declares its sites: confirm `activatedEffects` is the symbol actually used at the real site, then register that site before treating this as a leak.
 
 ### `attachment-character-sheet-display` — 🟢 LIVE
@@ -397,10 +398,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 44 total — 4 write, 2 read, 38 unclassified
+- **Production hits:** 45 total — 4 write, 2 read, 39 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/action-technical-effects.ts` +33 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +34 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -677,10 +678,10 @@ exit
 - **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/companions.ts`
-- **Production hits:** 42 total — 2 write, 2 read, 38 unclassified
+- **Production hits:** 43 total — 2 write, 2 read, 39 unclassified
 - **Write sites:** `src/data/companion-templates.ts`, `src/engine/companions.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/anomaly-reward-catalog.ts` +33 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +34 more
 - **Verdict:** Verified 2026-08-14: THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer's stone raw score by exactly the template's +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
@@ -769,10 +770,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **UL terms:** *Content Object*, *Content Tag*, *Content Query*
 - **Module:** `src/data/content-objects.ts`
-- **Production hits:** 8 total — 2 write, 1 read, 5 unclassified
+- **Production hits:** 9 total — 2 write, 1 read, 6 unclassified
 - **Write sites:** `src/data/content-objects.ts`, `src/data/contentCatalogs.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/data/content-eval/attachmentContract.ts`, `src/data/contentEntryTags.ts`, `src/engine/contentCatalogView.ts`, `src/engine/contentEntryResolver.ts`, `src/engine/contentQuery.ts`
+- **Other hits:** `src/components/Codex/charteredKindsCodex.ts`, `src/data/content-eval/attachmentContract.ts`, `src/data/contentEntryTags.ts`, `src/engine/contentCatalogView.ts`, `src/engine/contentEntryResolver.ts` +1 more
 - **Verdict:** Verified 2026-09-12: THR-1485 slice 1. Twelve kinds claim 1138 entries across 32 catalogs; src/data/__tests__/contentObjects.test.ts pins nine claims against the real catalogs (never a fixture) and each was falsified once: every catalog id is claimed by a kind (break a prefix -> 206 unclaimed); a shared catalog's kinds have disjoint prefixes (give the condition kind the item's anomaly catalog -> named); a shared prefix is declared with a reason; every catalog module+export exists and is wired into the loader both ways; every ulTerm resolves to a real UL heading; owningSystem is a verbatim subsystem name; instantiatesAs is a registered world-object kind; every content-status world-object row points back; every projection names a field entries carry. That last guard caught two registry errors on its first run - items declare sphereAffinity but 0 of 134 entries carry it, and an omen's sphere is nested under sphereTrigger on 6 of 44 tracks - both recorded as seams rather than papered over. npm run generate-content-objects:check is green at zero drift and exits 1 when a prefix is broken. No engine path reads the registry yet: this contract is the vocabulary, and slice 3's resolver is its first runtime consumer.
 
 ### `content-query-one-resolver-engine-and-gate` — 🟢 LIVE
@@ -793,11 +794,11 @@ exit
 - **Producer → Consumer:** Attention, Chronicle & Narrative → Attention, Chronicle & Narrative
 - **UL terms:** *Content object*
 - **Module:** `src/data/surface-registry.ts`
-- **Production hits:** 7 total — 3 write, 2 read, 2 unclassified
+- **Production hits:** 9 total — 3 write, 2 read, 4 unclassified
 - **Write sites:** `src/data/surface-registry.ts`, `src/engine/contentEntryResolver.ts`, `src/engine/contentPageGenerator.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/hooks/useRefRouter.ts`
-- **Other hits:** `src/data/content-objects.ts`, `src/types/detailPage.ts`
-- **Verdict:** Verified 2026-09-12: GameView wires openCodexEntry and codexHasEntry into the router; the sheet arm reaches the codex overlay for the six catalogued kinds and falls back to the card otherwise. contentPage.test.ts resolves every kind against the shipped catalogs and pins the two-condition CTA; surfaceRegistry.test.ts pins that no content kind routes to a world sheet and no world kind to the codex.
+- **Other hits:** `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/data/content-objects.ts`, `src/types/detailPage.ts`
+- **Verdict:** Verified 2026-09-13: GameView wires openCodexEntry and codexHasEntry into the router; the sheet arm reaches the codex overlay for the ten catalogued kinds and falls back to the card otherwise. THR-1495 chartered four of the six that had none (legendary artifacts into Possessions; companions, ambitions and the nudge deck as their own categories) and recorded the ruling that withholds the other two, so encounters and omens are now the only null rows. contentPage.test.ts resolves every kind against the shipped catalogs and pins the two-condition CTA; surfaceRegistry.test.ts pins that no content kind routes to a world sheet and no world kind to the codex, and — new with THR-1495 — that each row claims a codex sheet exactly where the built codex actually holds the kind, measured rather than asserted.
 
 ### `content-tag-vocabulary` — 🟢 LIVE
 
@@ -1316,10 +1317,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 282 total — 1 write, 1 read, 280 unclassified
+- **Production hits:** 283 total — 1 write, 1 read, 281 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +275 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +276 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
