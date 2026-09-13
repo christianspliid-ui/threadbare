@@ -4294,3 +4294,9 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-13 | `.claude/skills/encounter-pipeline/agents/draft-prompt.md` | THR-1474 — write-the-page rule and gate question 11b | So authors draft the page, not the fields |
 | 2026-09-13 | `src/data/content-eval/__tests__/aftermathPage.test.ts` | THR-1474 — 20 tests, every pair kind falsified before its green twin | A page check that reported nothing would pass any assertion that the slice is clean |
 | 2026-09-13 | `Docs/status/2026-09-13-thr-1474.md` | THR-1474 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-13 | `src/engine/ruins/constants.ts` | THR-1026 — `RUIN_QUEST_POSTING_FACTION_DEF_ID`, carrying the one-faction ruling in its doc comment | The literal had two copies and the reasoning lived beside neither |
+| 2026-09-13 | `src/engine/ruins/questHooks.ts` | THR-1026 — exported `locationPostsRuinQuestHooks`; `findGuildLocations` now calls it | So the panel asks the phase that fills the board instead of carrying a second copy of the predicate |
+| 2026-09-13 | `src/components/Game/GuildQuestPanel.tsx` | THR-1026 — empty state branches on the engine predicate; non-posting halls say delves are the adventurers' guild's trade | 23 of 26 halls promised a sweep that is never coming |
+| 2026-09-13 | `src/components/Game/__tests__/GuildQuestPanel.test.tsx` | THR-1026 — 6 cases: both faces, mutual absence, multi-hall, engine agreement per faction, tooltip + keyboard stop, non-vacuous population guard | Falsified: disabling the branch reds 23 of them |
+| 2026-09-13 | `Docs/status/2026-09-13-thr-1026.md` | THR-1026 — new status fragment | One file per entry since THR-1016 |
+| 2026-09-13 | `Docs/impediments.md` | THR-1026 — rows 1043–1045 (Linear 502-that-succeeded, `#N` autolink corruption, CLI tick stopping at a phase boundary) | Unlogged friction is invisible |

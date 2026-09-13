@@ -9,7 +9,10 @@ import {
   QUEST_HOOK_COOLDOWN_TICKS,
   RUIN_MAGNITUDE_MINOR_MAX,
   RUIN_MAGNITUDE_MAJOR_MAX,
+  RUIN_QUEST_POSTING_FACTION_DEF_ID,
 } from '../../../engine/ruins/constants';
+import { locationPostsRuinQuestHooks } from '../../../engine/ruins/questHooks';
+import { resolveTooltip } from '../../../engine/tooltipResolver';
 import { FACTION_DEFINITIONS } from '../../../data/faction-definitions';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -279,5 +282,100 @@ describe('GuildQuestPanel', () => {
 
     const { container } = renderPanel(graph, settlement, 100);
     expect(container.firstChild).toBeNull();
+  });
+
+  // ─── Which silence is this? (THR-1026) ──────────────────────────────────────
+  //
+  // THR-818 gave all twelve factions' halls a board; the engine still posts for
+  // one. These pin the empty state to *which* of the two silences the player is
+  // looking at, and pin that reading to the engine's own predicate so the panel
+  // cannot promise a sweep that is never coming.
+
+  // 14b. The two it.each populations below are non-empty and disjoint — an empty
+  //      parameter list registers zero cases and passes, proving nothing.
+  it('has a posting faction and at least one non-posting faction to sweep', () => {
+    const all = [...FACTION_DEFINITIONS.keys()];
+    expect(all).toContain(RUIN_QUEST_POSTING_FACTION_DEF_ID);
+    expect(all.filter(id => id !== RUIN_QUEST_POSTING_FACTION_DEF_ID).length).toBeGreaterThan(0);
+  });
+
+  // 15. At an adventurers' hall the board is temporarily quiet — a sweep may fill it.
+  it('reads the empty board as temporarily quiet at a hall that does post ruin contracts', () => {
+    const graph = makeGraph();
+    const settlement = addSettlement(graph, 'loc-s', 10, 10);
+    addGuildHall(graph, settlement.id, 'subloc-ag', RUIN_QUEST_POSTING_FACTION_DEF_ID);
+
+    renderPanel(graph, settlement, 100);
+    expect(screen.getByText(/notice board is quiet/i)).toBeTruthy();
+    expect(screen.queryByText(/posts no ruin contracts/i)).toBeNull();
+  });
+
+  // 16. At every other faction's hall the board is permanently not-for-delves, and says so.
+  it.each([...FACTION_DEFINITIONS.keys()].filter(id => id !== RUIN_QUEST_POSTING_FACTION_DEF_ID))(
+    'reads the empty board as not-a-delve-board at a %s hall',
+    (factionDefId) => {
+      const graph = makeGraph();
+      const settlement = addSettlement(graph, 'loc-s', 10, 10);
+      addGuildHall(graph, settlement.id, `subloc-${factionDefId}`, factionDefId);
+
+      renderPanel(graph, settlement, 100);
+      expect(screen.getByText(/posts no ruin contracts/i)).toBeTruthy();
+      expect(screen.queryByText(/notice board is quiet/i)).toBeNull();
+    },
+  );
+
+  // 17. A settlement holding both halls posts, so it gets the temporary reading.
+  it('reads the empty board as temporarily quiet when one of several halls posts', () => {
+    const graph = makeGraph();
+    const settlement = addSettlement(graph, 'loc-s', 10, 10);
+    addGuildHall(graph, settlement.id, 'subloc-merchants', 'merchant_consortium');
+    addGuildHall(graph, settlement.id, 'subloc-ag', RUIN_QUEST_POSTING_FACTION_DEF_ID);
+
+    renderPanel(graph, settlement, 100);
+    expect(screen.getByText(/notice board is quiet/i)).toBeTruthy();
+  });
+
+  // 18. The claim tracks the engine, not a second copy of the literal: the
+  //     "posts none" reading appears exactly when locationPostsRuinQuestHooks is false.
+  it.each([...FACTION_DEFINITIONS.keys()])(
+    'agrees with locationPostsRuinQuestHooks at a %s hall',
+    (factionDefId) => {
+      const graph = makeGraph();
+      const settlement = addSettlement(graph, 'loc-s', 10, 10);
+      addGuildHall(graph, settlement.id, `subloc-${factionDefId}`, factionDefId);
+
+      const enginePosts = locationPostsRuinQuestHooks(graph, settlement.id);
+      renderPanel(graph, settlement, 100);
+
+      expect(screen.queryByText(/posts no ruin contracts/i) === null).toBe(enginePosts);
+      expect(screen.queryByText(/notice board is quiet/i) !== null).toBe(enginePosts);
+    },
+  );
+
+  // 19. The named guild is read from its definition, not typed into the copy.
+  it('names the posting guild from FACTION_DEFINITIONS', () => {
+    const graph = makeGraph();
+    const settlement = addSettlement(graph, 'loc-s', 10, 10);
+    addGuildHall(graph, settlement.id, 'subloc-thieves', 'thieves_guild');
+
+    renderPanel(graph, settlement, 100);
+    const expected = FACTION_DEFINITIONS.get(RUIN_QUEST_POSTING_FACTION_DEF_ID)!.nameTemplate;
+    expect(screen.getByText(expected)).toBeTruthy();
+  });
+
+  // 20. Law 1 / Law 17 — the guild named in the copy is a concept, so it carries
+  //     its tooltip and is keyboard-reachable, not inert text.
+  it('gives the named guild its tooltip and a keyboard stop', () => {
+    expect(resolveTooltip(`faction.${RUIN_QUEST_POSTING_FACTION_DEF_ID}`)).not.toBeNull();
+
+    const graph = makeGraph();
+    const settlement = addSettlement(graph, 'loc-s', 10, 10);
+    addGuildHall(graph, settlement.id, 'subloc-civic', 'civic_guard');
+
+    renderPanel(graph, settlement, 100);
+    const label = FACTION_DEFINITIONS.get(RUIN_QUEST_POSTING_FACTION_DEF_ID)!.nameTemplate;
+    const trigger = screen.getByText(label).closest('[tabindex]') as HTMLElement | null;
+    expect(trigger).not.toBeNull();
+    expect(trigger!.getAttribute('tabindex')).toBe('0');
   });
 });
