@@ -1,31 +1,31 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 06:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 07:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
 
-You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live, and this hour the second of the two named blemishes went with it — [THR-1496](https://linear.app/threadbare/issue/THR-1496), sixteen reward recipes that promised a prize and drew nothing, merged 06:32.
+You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map.
 
-One blemish remains and is decided, not an ask: [THR-1494](https://linear.app/threadbare/issue/THR-1494), the factor line that is not a sentence (*"Vara is oracle in eye."*). Its template is broken for all eight reaches, not only the screen it was found on — so if either remaining screen shows a capability line above the prose, expect it to read that way. Its fix is open, failing and conflicted. A raw `{cast:…}` token would be new.
+Two things to expect. [THR-1492](https://linear.app/threadbare/issue/THR-1492) (merged 07:35) retired a duplicate detail sheet — the sheet you open from a chip now comes from one place, and two buttons on it that did nothing are gone; it was checked by test, not by eye. [THR-1494](https://linear.app/threadbare/issue/THR-1494), the factor line that is not a sentence (*"Vara is oracle in eye."*), is broken for all eight reaches, so any capability line above the prose may read that way — decided, not an ask. A raw `{cast:…}` token would be new.
 
-The wider design maps — fights, items, powers — have finished all the homework an agent can do, and wait behind twelve questions only you can answer. Say **"work the map"** in a chat when the sitting is done.
+The wider design maps — fights, items, powers — wait behind twelve questions only you can answer. Say **"work the map"** in a chat when the sitting is done.
 
 ### Six words with nothing left to say ([THR-1501](https://linear.app/threadbare/issue/THR-1501))
 
-The reward repair above left six descriptive words orphaned — `#military`, `#supply`, `#community`, `#stewardship`, `#contraband`, `#blackmail_evidence`. Nothing asks for them and nothing wears them.
+Yesterday's reward repair left six descriptive words orphaned — `#military`, `#supply`, `#community`, `#stewardship`, `#contraband`, `#blackmail_evidence`. Nothing asks for them and nothing wears them.
 
 **Retire the six**, so the vocabulary shrinks to what the game actually uses — or **write the content they were always for?** The four army scenes behind them had real fictions (a resupply convoy, foraging under fair terms, a lifted siege, sheltering refugees) and all four now hand out generic gold and iron instead. Purpose-built army-logistics rewards would be better scenes than the generic draw they got. Nothing is broken either way.
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
-Found while building the name-click fix; the session would not decide it alone. A stranger's sheet reads *"carries no known possessions, conditions, powers, or agreements"* even right after an encounter wounded and exhausted them. The wound is real; the familiarity gate withholds it.
+Found while building the name-click fix ([THR-1461](https://linear.app/threadbare/issue/THR-1461)); the session would not decide it alone, and it has no ticket of its own. A stranger's sheet reads *"carries no known possessions, conditions, powers, or agreements"* even right after an encounter wounded and exhausted them. The wound is real; the familiarity gate withholds it.
 
 **Should an encounter's own consequences be exempt from that gate — because you were there — or does the fog stay honest?** Either answer is defensible; the game means something different each way. Silence leaves it as-is, which is a real answer. You may meet this during the sitting.
 
@@ -38,20 +38,20 @@ Building the content cards found six kinds of thing with no reference page. Two 
 - Is an **ambition** a definition page, or only read off the person carrying it?
 - Same for **companions**.
 
-Nothing is broken while these sit; the cards open, they are just shallower. It is one of **seven** things queued behind a single design afternoon — the others are ambitions nothing can act on ([THR-1348](https://linear.app/threadbare/issue/THR-1348)), beasts that cannot be cast in a scene ([THR-1274](https://linear.app/threadbare/issue/THR-1274)), which kind of work should stir which kind of trouble ([THR-1497](https://linear.app/threadbare/issue/THR-1497)), how often encounters should fire ([THR-1218](https://linear.app/threadbare/issue/THR-1218), chartered by you in August), the six orphaned words above, and traits wave 2 ([THR-790](https://linear.app/threadbare/issue/THR-790)) — which turned out never to have been blocked at all.
+Nothing is broken while these sit; the cards open, they are just shallower. It is one of **seven** things queued behind a single design afternoon — the others are ambitions nothing can act on ([THR-1348](https://linear.app/threadbare/issue/THR-1348)), beasts that cannot be cast in a scene ([THR-1274](https://linear.app/threadbare/issue/THR-1274)), which kind of work should stir which kind of trouble ([THR-1497](https://linear.app/threadbare/issue/THR-1497)), how often encounters should fire ([THR-1218](https://linear.app/threadbare/issue/THR-1218), chartered by you in August), the six orphaned words above, and traits wave 2 ([THR-790](https://linear.app/threadbare/issue/THR-790)).
 
 ## Resolved this period
 
-- **2026-09-13 — sixteen recipes promised a prize and drew nothing** ([THR-1496](https://linear.app/threadbare/issue/THR-1496)). Merged 06:32, live. None was reachable from your two remaining screens. It left six words orphaned, which is now the standing ask above.
-- **2026-09-13 — one reach moved twice, so the ending says it once** ([THR-1467](https://linear.app/threadbare/issue/THR-1467)). Merged 05:28, live. Snow on the Pass drew two identical `BOON · STONE` chips because both steps grew the same reach; the ending now states the net movement in one sentence. Applies to any ending. The underlined-but-unclickable boon noun was closed as not-a-defect.
-- **2026-09-13 — a keeper stops being introduced to himself** ([THR-1466](https://linear.app/threadbare/issue/THR-1466)). Merged 04:25, live. *"The keeper, The Keeper at the Crossing, takes two coppers"* — an appositive needs a name to apposit.
-- **2026-09-13 — Kael's whisper opens Kael's sheet** ([THR-1461](https://linear.app/threadbare/issue/THR-1461)). Merged 03:27. Clicking a name inside the warning about someone used to open whoever you last had selected. Four more surfaces with the same defect are queued as [THR-1500](https://linear.app/threadbare/issue/THR-1500).
-- **2026-09-13 — the Realm gets a court a mortal can be called to** ([THR-1454](https://linear.app/threadbare/issue/THR-1454)). Merged 02:55. Three scenes — a court summons, a border levy, a tithe demanded — the first content that makes the Realm something a mortal feels.
+- **2026-09-13 — one detail sheet instead of two, and two dead buttons gone** ([THR-1492](https://linear.app/threadbare/issue/THR-1492)). Merged 07:35, live. Checked by test, not by eye.
+- **2026-09-13 — sixteen recipes promised a prize and drew nothing** ([THR-1496](https://linear.app/threadbare/issue/THR-1496)). Merged 06:32, live. None reachable from your two remaining screens; it left six words orphaned, the standing ask above.
+- **2026-09-13 — one reach moved twice, so the ending says it once** ([THR-1467](https://linear.app/threadbare/issue/THR-1467)). Merged 05:28, live. Applies to any ending; the underlined-but-unclickable boon noun was closed as not-a-defect.
+- **2026-09-13 — a keeper stops being introduced to himself** ([THR-1466](https://linear.app/threadbare/issue/THR-1466)). Merged 04:25, live. An appositive needs a name to apposit.
+- **2026-09-13 — Kael's whisper opens Kael's sheet** ([THR-1461](https://linear.app/threadbare/issue/THR-1461)). Merged 03:27. Four more surfaces with the same defect are queued as [THR-1500](https://linear.app/threadbare/issue/THR-1500).
+- **2026-09-13 — the Realm gets a court a mortal can be called to** ([THR-1454](https://linear.app/threadbare/issue/THR-1454)). Merged 02:55. Three scenes — a court summons, a border levy, a tithe demanded.
 - **2026-09-13 — the content query is now counted, so it cannot quietly rot** ([THR-1489](https://linear.app/threadbare/issue/THR-1489)). Merged 00:45. The last of the five content-model slices.
-- **2026-09-12 — an ending names the courier instead of quoting her key** ([THR-1459](https://linear.app/threadbare/issue/THR-1459)). Merged 23:36, live. Gate Duty's ending was printing a raw `{cast:suspect_courier}` in two places.
+- **2026-09-12 — an ending names the courier instead of quoting her key** ([THR-1459](https://linear.app/threadbare/issue/THR-1459)). Merged 23:36, live.
 - **2026-09-12 — content finds content by family, and 48 dead sequels stop withering** ([THR-1488](https://linear.app/threadbare/issue/THR-1488)). Merged 23:08.
 - **2026-09-12 — a scene says which place it is about** ([THR-1493](https://linear.app/threadbare/issue/THR-1493)). Merged 21:27, live.
-- **2026-09-12 — content opens the codex, and it is now built** ([THR-1491](https://linear.app/threadbare/issue/THR-1491)). Merged 17:54, live. The veto stays open in principle but now costs a small rework.
 
 ---
 
