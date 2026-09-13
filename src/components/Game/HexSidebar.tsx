@@ -14,6 +14,7 @@ import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, SphereInfluence, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
 import type { HexRegionData } from '../../engine/hexRegion';
 import { getSphereColor } from '../../data/sphereIcons';
+import { areaFeatureWord, areaSizeWord } from '../../data/geo-word-bands';
 import { getHexTileUrl } from '../../data/hex-tile-assets';
 import { hexPolygonPoints } from '../../lib/hexMath';
 import { IconButton } from '../shared/IconButton';
@@ -216,8 +217,8 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                   lineHeight: '1.3',
                 }}
               >
-                {props.regionData.hexCount ? <div>{props.regionData.hexCount} hexes</div> : null}
-                {props.regionData.featureType ? <div>{props.regionData.featureType}</div> : null}
+                {props.regionData.hexCount ? <div>{areaSizeWord(props.regionData.hexCount)}</div> : null}
+                {props.regionData.featureType ? <div>{areaFeatureWord(props.regionData.featureType)}</div> : null}
               </div>
             </div>
           ) : (
