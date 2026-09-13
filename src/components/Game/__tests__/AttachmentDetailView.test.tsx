@@ -262,9 +262,12 @@ describe('THR-1475 — a condition says what it does, on both faces', () => {
     expect(screen.getByText(/Lasts about four weeks\./)).toBeTruthy();
   });
 
-  it('renders NO effect line for a condition with no live effect', () => {
-    // The absence arm. `under_watch` is in `CONDITION_IDS_WITHOUT_EFFECT` — nothing
-    // reads the trait, so the sheet must stay silent rather than invent a claim.
+  it('renders the effect line for a place condition read through its step modifier', () => {
+    // Was the absence arm. `under_watch` sat in `CONDITION_IDS_WITHOUT_EFFECT`
+    // because nothing read the trait, so the sheet had to stay silent rather than
+    // invent a claim. THR-1483 gave it a real reader — a Shadow term on every step
+    // resolved at the place — so the silence is no longer the honest answer and
+    // this arm now asserts the sentence that reader earns.
     const { container } = render(
       <AttachmentDetailView
         attachment={granted('trait.condition.location.under_watch', 'Under Watch', {
@@ -275,11 +278,32 @@ describe('THR-1475 — a condition says what it does, on both faces', () => {
     );
 
     const text = container.textContent ?? '';
+    expect(text).toMatch(/Shadow slightly lower\./);
+    expect(text).toMatch(/Lasts about seven days\./);
+    // And the sheet is still a sheet: the mood line it always had is intact.
+    expect(screen.getByText(/keeping eyes on this place/)).toBeTruthy();
+  });
+
+  it('still renders NO effect line when a condition genuinely has no substrate', () => {
+    // The absence arm, kept alive after THR-1483 emptied the exemption list. The
+    // branch it guards is still live code (`conditionEffectLine` returns null when
+    // no substrate reads), and it is the branch that keeps a future condition from
+    // being given an invented sentence — so it is driven by an id the index does
+    // not ship rather than deleted along with its last shipped example.
+    const { container } = render(
+      <AttachmentDetailView
+        attachment={granted('trait.condition.location.__not_shipped', 'Something Unread', {
+          mechanicalSummary: 'A state nothing reads.',
+        })}
+        onBack={vi.fn()}
+      />,
+    );
+
+    const text = container.textContent ?? '';
     expect(text).not.toMatch(/slightly (lower|higher)/);
     expect(text).not.toMatch(/Travel through here costs/);
     expect(text).not.toMatch(/Lasts /);
-    // And the sheet is still a sheet: the mood line it always had is intact.
-    expect(screen.getByText(/keeping eyes on this place/)).toBeTruthy();
+    expect(screen.getByText(/A state nothing reads/)).toBeTruthy();
   });
 
   it('leaves a possession sheet exactly as it was', () => {
@@ -326,8 +350,17 @@ describe('THR-1475 — a condition says what it does, on both faces', () => {
     expect(resolved!.desc!.length).toBeLessThanOrEqual(200);
   });
 
-  it('adds nothing to the hover face of an effectless condition', () => {
+  it('carries a place condition onto the hover face too, through the live registry', () => {
+    // The hover half of the same inversion (THR-1483). Both faces are asserted
+    // because they compose the reading by different routes — the sheet through
+    // `resolveConditionEffectLine`, the hover through the tooltip registry — and
+    // the whole point of THR-1475 was that they must agree.
     const resolved = resolveTooltip('attachment.trait.condition.location.under_watch');
-    expect(resolved!.desc).not.toMatch(/slightly|Travel through here|Lasts /);
+
+    expect(resolved!.desc).toContain('Shadow slightly lower. Lasts about seven days.');
+    // The mood line survives above it — the effect is added, not substituted.
+    expect(resolved!.desc).toContain('keeping eyes on this place');
+    expect(resolved!.desc).not.toMatch(/\d/);
+    expect(resolved!.desc!.length).toBeLessThanOrEqual(200);
   });
 });

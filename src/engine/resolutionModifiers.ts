@@ -58,6 +58,11 @@ import {
   selectAuraEmitters,
 } from './effectAura';
 import { AURA_STACKING_CAP, EFFECT_MODIFIER_CAP } from '../data/effect-constants';
+import {
+  LOCATION_CONDITION_STEP_MODIFIER,
+  LOCATION_CONDITION_STEP_MODIFIER_CAP,
+} from '../data/condition-trait-content';
+import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -107,7 +112,14 @@ export type ModifierSourceKind =
   | 'rule'
   | 'effect'
   /** A nearby agent's aura (THR-1243) — the one modifier sourced from someone else. */
-  | 'aura';
+  | 'aura'
+  /**
+   * A condition on the **place** the step is resolved at (THR-1483) — distinct
+   * from `'terrain'`, which is what the ground permanently is, and from
+   * `'trait'`, which is what the actor carries. This is what has *happened* to
+   * the place lately, and it lifts when the condition decays.
+   */
+  | 'condition';
 
 export interface NamedModifierContribution {
   readonly kind: ModifierSourceKind;
@@ -585,6 +597,80 @@ export function collectAuraContributions(
   return clampContributions(raw, EFFECT_MODIFIER_CAP);
 }
 
+/**
+ * The step-resolution half of a location condition — THR-1483.
+ *
+ * Sibling of the movement tax in `movementCost.ts`, asking the other half of the
+ * question: that one prices **reaching** a place the world has done something to,
+ * this one prices **working in** it. Both walk the location's own `has_trait`
+ * edges — the same edges `decayConditions` counts down — so the modifier lifts by
+ * itself when the condition expires and there is no second lifecycle to keep in
+ * step.
+ *
+ * Conditions **add** here rather than compounding the way movement taxes multiply,
+ * then clamp at `LOCATION_CONDITION_STEP_MODIFIER_CAP`. A step is one roll against
+ * one threshold; a place may lean on it hard but must not be able to decide it by
+ * accumulating bad seasons.
+ *
+ * Reach-filtered at the source: a watched place costs Shadow and says nothing
+ * about carrying a beam, so a step testing Iron collects no contribution and
+ * draws no factor line. That is the honest report, not a dropped one.
+ *
+ * ## Both position tiers, because both can carry the condition
+ *
+ * `locationId` is whatever the actor's `located_at` edge points at, and under the
+ * three-tier position model that is the **most specific** node they occupy — so it
+ * is a Place (sublocation) as often as a Location. Conditions land on either tier:
+ * `under_watch` is written onto a settlement, `tended_shrine` onto the stones.
+ *
+ * Reading only the exact node would therefore give a reader that fires sometimes
+ * and silently misses otherwise, which is a quieter version of the defect this
+ * function exists to close. So a Place also collects its enclosing Location's
+ * conditions, which is the honest reading in game words too: standing in the
+ * tavern of a watched town, you are in a watched town.
+ *
+ * Deliberately **not** resolved all the way to the hex. A hex is terrain, and
+ * terrain is `collectTerrainContributions`' business; conditions are things that
+ * happened to a *place*, and a neighbouring settlement's watch is not your problem.
+ *
+ * Fail-soft (NFP #4): an unresolvable location, an orphaned Place whose parent is
+ * missing, or a place carrying conditions with no row in the table all contribute
+ * nothing and no error.
+ */
+export function collectLocationConditionContributions(
+  graph: WorldGraph,
+  locationId: string,
+  stepReach: ReachDomain,
+): NamedModifierContribution[] {
+  const node = graph.getNode(locationId);
+  const parent = isPlaceNode(node) ? resolveToParentLocation(graph, node) : undefined;
+
+  // Own tier first, then the enclosing Location. `parent` is undefined for a
+  // Location, for an orphan, and for an unresolvable id, so the second pass is
+  // skipped in exactly the cases where there is no second tier to read.
+  const tierIds = parent && parent.id !== locationId ? [locationId, parent.id] : [locationId];
+
+  const parts: NamedModifierContribution[] = [];
+
+  for (const tierId of tierIds) {
+    for (const edge of graph.getOutgoingEdges(tierId, 'has_trait')) {
+      const value = LOCATION_CONDITION_STEP_MODIFIER[edge.target]?.[stepReach];
+      if (typeof value !== 'number' || !Number.isFinite(value) || value === 0) continue;
+
+      parts.push({
+        kind: 'condition',
+        sourceId: edge.target,
+        // The condition's display name (`Under Watch`), never the id — the factor
+        // line renders this straight into a sentence a player reads (UI Law 14).
+        sourceName: graph.getNode(edge.target)?.name ?? edge.target,
+        value,
+      });
+    }
+  }
+
+  return clampContributions(parts, LOCATION_CONDITION_STEP_MODIFIER_CAP);
+}
+
 // ─── Main Pipeline ───────────────────────────────────────────────
 
 /**
@@ -645,6 +731,11 @@ export function computeResolutionModifiers(
   const auraContributions = collectAuraContributions(graph, agentId, stepReach);
   const auraModifier = sumContributions(auraContributions);
 
+  // Location conditions: what has happened to this place lately (THR-1483).
+  const locationConditionContributions =
+    collectLocationConditionContributions(graph, locationId, stepReach);
+  const locationConditionModifier = sumContributions(locationConditionContributions);
+
   const totalModifier =
     sphereAlignmentBonus +
     equipmentModifier +
@@ -653,7 +744,8 @@ export function computeResolutionModifiers(
     divineInterventionModifier +
     effectModifier +
     ruleModifier +
-    auraModifier;
+    auraModifier +
+    locationConditionModifier;
 
   // THR-892 — the named causes, in the same order the totals are summed above.
   // `effectResult.contributions` is already named and already reach-filtered, so
@@ -670,6 +762,7 @@ export function computeResolutionModifiers(
       : []),
     ...equipmentContributions,
     ...terrainContributions,
+    ...locationConditionContributions,
     ...traitContributions,
     ...auraContributions,
     ...(effectResult?.contributions ?? [])

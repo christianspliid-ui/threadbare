@@ -61,7 +61,7 @@
  */
 
 import type { GraphNode } from '../types/graph';
-import type { TraitDefinitionProperties } from '../types/traits';
+import type { TraitDefinitionProperties, ReachDomain } from '../types/traits';
 
 // ─── Duration Constants (ticks) ─────────────────────────────────────────────
 
@@ -135,16 +135,21 @@ export const CONDITION_UNDER_WATCH_DURATION = 84;
 export const CONDITION_HARVEST_BLIGHT_DURATION = 480;
 
 /**
- * A door that stays open for someone who earned it (10 game days) — THR-1175.
+ * Stones somebody is keeping (12 game days) — THR-1483.
  *
- * Long enough that a traveller who keeps moving can plausibly come back through
- * and still find the welcome standing; short enough that gratitude is a season
- * rather than a deed. The Grateful Kin's return-visit seed ripens well inside
- * this window on purpose — a seed that comes due after the welcome has lapsed is
- * a scene that can never fire, which is the same write-with-no-reachable-consumer
- * defect this ticket exists to close, one layer along.
+ * `tended_shrine` shipped with THR-1130 batch 3 and **no duration row at all**,
+ * which is not a default but permanence: `CONDITION_DEFAULT_DURATION_TICKS` is
+ * `0`, and `0` omits `ticksRemaining`, the only field `decayConditions` counts
+ * down. So every gift left at a shrine was keeping it tended forever.
+ *
+ * Twelve days sits between `under_watch` (7) and `plague_scare` (14) on purpose.
+ * The noun is *lately* — "gifts have been left at these stones lately" — so the
+ * term has to be short enough that neglect shows inside a season, and long enough
+ * that a traveller coming back over the same rise still finds it kept. A shrine
+ * that stayed tended on one offering forever would make the second offering
+ * meaningless, which is the failure mode a permanent condition always has.
  */
-export const CONDITION_STANDING_WELCOME_DURATION = 120;
+export const CONDITION_TENDED_SHRINE_DURATION = 144;
 
 /**
  * Movement multiplier for a place that is closed rather than merely costly.
@@ -161,6 +166,72 @@ export const LOCATION_AVOIDED_MULTIPLIER = 1.6;
 
 /** A place drawing a crowd: slower going, but people are coming anyway. */
 export const LOCATION_CROWDED_MULTIPLIER = 1.2;
+
+// ─── Location Condition Step Modifiers — THR-1483 ───────────────────────────
+//
+// Reader #3, and the one that closes THR-1483. The movement tax above answers
+// "what does this place cost to *reach*"; this table answers "what does this
+// place cost to *work in*" — an additive, per-reach term on any step resolved at
+// the location, collected by `collectLocationConditionContributions`
+// (`engine/resolutionModifiers.ts`) beside the terrain and faction terms that
+// already read the same `locationId`.
+//
+// It exists because two conditions had a state nothing read. `under_watch`'s own
+// definition comment claimed *"the readers are the movement tax and the gate"*
+// and both were false — it carries no tax by design (being observed does not
+// lengthen the road) and no shipped `requiredTargetTraits` gate ever named it. A
+// chip may not promise what the engine cannot enact (director ruling 2026-09-12),
+// so the choice was a reader or retirement, and both of these are written by live
+// content.
+//
+// Deliberately **not** `domainContributions`: that bag is a node's own capability,
+// walked by `computeRawScore` for the actor. A place has no capability to move
+// (THR-1143) — what a place has is an effect on work done there, which is a
+// different question with a different reader. Keeping them separate is what lets
+// `conditionEffectLine` assert the two are disjoint rather than hope so.
+
+/**
+ * Eyes on a place cost the quiet reaches (THR-1483).
+ *
+ * Shadow because that is what the condition has always said it does — *"Quiet
+ * work here is harder and more likely to be seen"* — and what its own `#shadow`
+ * tag declares. One reach, not a spread: being watched does not make you weaker
+ * at carrying a beam or worse at arithmetic, it makes exactly the hidden work
+ * harder, and a condition that dusted a penalty over everything would be a mood
+ * rather than a mechanism.
+ *
+ * Sized against its neighbours (NFP #1): a shade heavier than
+ * `HOSTILE_TERRITORY_PENALTY` (−0.05), because a watcher posted on *this* place
+ * is more pointed than a banner you happen to be standing under, and well inside
+ * `LOCATION_CONDITION_STEP_MODIFIER_CAP` so a bad corner of the map still
+ * compounds to something survivable.
+ */
+export const LOCATION_WATCHED_SHADOW_PENALTY = -0.06;
+
+/**
+ * Kept stones answer (THR-1483).
+ *
+ * Veil is the ritual reach — magic, divination, the rite taking — and a shrine
+ * that is being kept is the one place-state in the set that says a rite here has
+ * been answered lately. The positive mirror of `under_watch`: same magnitude
+ * band, one reach, on the axis the condition's `#sacred` tag already names.
+ *
+ * Smaller than the watch penalty on purpose. A place helping you is a gift and a
+ * place working against you is a threat, and the asymmetry is the usual one —
+ * losses should read louder than the equivalent gain.
+ */
+export const LOCATION_TENDED_SHRINE_VEIL_BONUS = 0.05;
+
+/**
+ * Clamp on the summed location-condition term, mirroring `TERRAIN_MODIFIER_CAP`.
+ *
+ * Conditions **add** here rather than compounding the way movement taxes
+ * multiply, because a step is one roll against one threshold and a place cannot
+ * be allowed to decide it by sheer accumulation of bad seasons. At 0.10 the
+ * worst-stacked location is worth about one tier of skill, which is a strong
+ * thumb on the scale and not a verdict.
+ */
+export const LOCATION_CONDITION_STEP_MODIFIER_CAP = 0.10;
 
 // ─── Trait Definition Nodes ─────────────────────────────────────────────────
 
@@ -390,7 +461,11 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.7,
       maxLevel: 1,
       visibility: 'discoverable',
-      // A place has no capability to move; the readers are the movement tax and the gate.
+      // A place has no capability to move, so this bag stays empty (THR-1143). Its
+      // reader is the Shadow term in `LOCATION_CONDITION_STEP_MODIFIER` — THR-1483
+      // gave it the one its comment used to claim. It carries no movement tax on
+      // purpose: being observed changes what you can do in a place, not how long
+      // it takes to walk in.
       domainContributions: {},
       tags: ['#condition', '#location', '#shadow', '#negative'],
       flavorText: 'The same face at the same corner, three mornings running.',
@@ -414,49 +489,26 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
-  {
-    // THR-1175 — the first *positive* location condition, and the shape a
-    // gratitude beat should have been writing all along. The Grateful Kin used
-    // to express "there is a roof in this town that opens for them now" as an
-    // `owes_favor` edge with the town as debtor: schema-illegal, and inert even
-    // if it had been legal, because every favour consumer is person-shaped.
-    // A standing welcome is a property of the *place*, which is what the fiction
-    // actually said, and a place can carry a condition.
-    //
-    // Its reader is the gate (`requiredTargetTraits`) — `slice.kin.the_roof_opens`
-    // is eligible only where this condition is live, so the welcome is what makes
-    // the return visit possible. No movement tax: being welcome somewhere does not
-    // change how long the road takes, the same reasoning `under_watch` carries.
-    //
-    // DEPRECATED (THR-1206) — **zero writers**. The director's ruling retired the
-    // custom noun on player surfaces: *"if we do have reputation as our concept for
-    // 'the social score that modifies interactions between a and b', then lets use
-    // that everywhere."* A standing welcome at a town IS the traveler's reputation
-    // with that town, so the Grateful Kin bands now write a `reputation_with` edge
-    // and the return-visit gate asks `requiredReputationWith` instead of naming this
-    // trait. Plan: `Docs/plans/2026-08-23-thr-1206-reputation-unification.md`.
-    //
-    // The definition stays **registered on purpose** — the THR-1177/1183 read-
-    // tolerance pattern. Worlds saved before this ticket carry live `has_trait` edges
-    // pointing here, and deleting the definition would render them as a raw id (UI
-    // Law 14) or drop them silently. It costs one unwritten row to let those worlds
-    // finish their season honestly. Do not author new writers against it.
-    id: 'trait.condition.location.standing_welcome',
-    type: 'trait',
-    name: 'A Standing Welcome',
-    properties: {
-      subcategory: 'condition',
-      description: 'Someone here owes a kindness and means to repay it. A traveller who has earned this finds a door open and a hearing waiting.',
-      importance: 0.6,
-      maxLevel: 1,
-      visibility: 'public',
-      // A place has no capability to move; the reader is the gate.
-      domainContributions: {},
-      tags: ['#condition', '#location', '#heart', '#positive'],
-      flavorText: 'The bowl was set down unasked, and the coin went back twice.',
-      censusTag: { scale: 'local' },
-    } satisfies TraitDefinitionProperties,
-  },
+  // ── `trait.condition.location.standing_welcome` was here — deleted THR-1483 ──
+  //
+  // THR-1175 minted it as the first *positive* location condition; THR-1206
+  // retired it on the director's ruling that reputation is the one concept for
+  // "the social score between any two parties", so the Grateful Kin bands write a
+  // `reputation_with` edge and the return-visit gate asks `requiredReputationWith`.
+  // Plan: `Docs/plans/2026-08-23-thr-1206-reputation-unification.md`.
+  //
+  // THR-1206 left the definition registered under the THR-1177/1183 read-tolerance
+  // pattern, so worlds saved before it could finish rendering their live edges in
+  // words rather than as a raw id (UI Law 14). That window has closed: three weeks
+  // with **zero writers**, and `CONDITION_STANDING_WELCOME_DURATION` (120 ticks,
+  // 10 game days) is a twelfth of it — every edge minted under the old noun lapsed
+  // long before this deletion, so read-tolerance now protects nothing and costs
+  // two sweeps a special case.
+  //
+  // Verified rather than assumed, because the naive grep says otherwise: 14 hits
+  // for the bare word survive in `encounters/vertical-slice.ts` and every one is a
+  // comment or a **change id** (`slice.kin.a_standing_welcome`, `…_well`,
+  // `…_dearly`) that merely shares the noun. The trait id itself has no writer.
   {
     // THR-1130 (retrofit batch 3) — the state a shrine is left in when a gift
     // goes down properly and something answers. Written because the `place`
@@ -471,9 +523,12 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
     // did it take.
     //
     // Positive and public, like `festival`: a traveller coming over the rise
-    // can see a shrine that is being kept. No `domainContributions` — a place
-    // has no capabilities; the readers are the census and the aftermath chip
-    // that names it.
+    // can see a shrine that is being kept.
+    //
+    // THR-1483 gave it the mechanical half it shipped without. Its reader is the
+    // Veil term in `LOCATION_CONDITION_STEP_MODIFIER` — kept stones answer, and
+    // Veil is the ritual reach — plus a `CONDITION_DURATIONS` row it was also
+    // missing, without which every offering tended the shrine permanently.
     id: 'trait.condition.location.tended_shrine',
     type: 'trait',
     name: 'A Tended Shrine',
@@ -483,7 +538,8 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.5,
       maxLevel: 1,
       visibility: 'public',
-      // A place has no capability to move; the readers are the census and the gate.
+      // A place has no capability to move, so this bag stays empty (THR-1143); the
+      // reach term lives in `LOCATION_CONDITION_STEP_MODIFIER` instead.
       domainContributions: {},
       tags: ['#condition', '#location', '#sacred', '#positive'],
       flavorText: 'The hollow has not been empty in a season, and the moss has given up on it.',
@@ -508,7 +564,7 @@ export const CONDITION_DURATIONS: Record<string, number> = {
   'trait.condition.location.plague_scare': CONDITION_PLAGUE_SCARE_DURATION,
   'trait.condition.location.under_watch': CONDITION_UNDER_WATCH_DURATION,
   'trait.condition.location.harvest_blight': CONDITION_HARVEST_BLIGHT_DURATION,
-  'trait.condition.location.standing_welcome': CONDITION_STANDING_WELCOME_DURATION,
+  'trait.condition.location.tended_shrine': CONDITION_TENDED_SHRINE_DURATION,
 };
 
 /**
@@ -527,41 +583,35 @@ export const LOCATION_CONDITION_IDS: readonly string[] = CONDITION_TRAIT_DEFINIT
   .filter(id => id.startsWith(LOCATION_CONDITION_ID_PREFIX));
 
 /**
- * THR-1475 — the conditions that currently have **no live mechanical effect**, and
- * therefore get no effect line on a player surface.
+ * The conditions that have **no live mechanical effect**, and therefore get no
+ * effect line on a player surface. **Empty since THR-1483** — every shipped
+ * condition now has a reader.
  *
- * `conditionEffectLine` reads two substrates: an agent condition's
- * `domainContributions` (walked by `computeRawScore`) and a place condition's
- * entry in `LOCATION_CONDITION_MOVEMENT_TAX` (read by `movementCost.ts`). Twelve
- * of the fifteen shipped conditions have one of those. These three have neither,
- * and the search that proved it was for *any* engine reader of the trait id — all
- * three appear only as something content **writes** and as a chip `stateNoun`
- * that names them.
+ * THR-1475 opened it with three members, because `conditionEffectLine` then read
+ * only two substrates — an agent condition's `domainContributions` (walked by
+ * `computeRawScore`) and a place condition's entry in
+ * `LOCATION_CONDITION_MOVEMENT_TAX` (read by `movementCost.ts`) — and three
+ * location conditions had neither. They were listed rather than given a line
+ * because the alternative was inventing one: *"quiet work here is likelier to be
+ * seen"* is the obvious sentence for `under_watch` and it was **false**, since
+ * nothing read the trait. A chip may not promise what the engine cannot enact
+ * (director ruling, 2026-09-12).
  *
- * They are listed rather than given a line because the alternative was inventing
- * one. "Quiet work here is likelier to be seen" is the obvious sentence for
- * `under_watch` and it is **false**: nothing reads the trait, so nothing is
- * likelier. A chip may not promise what the engine cannot enact (director ruling,
- * 2026-09-12), and that rule does not loosen when the unenactable promise would
- * have made a gate pass.
+ * THR-1483 closed all three the only two honest ways. `under_watch` and
+ * `tended_shrine` got the third substrate — `LOCATION_CONDITION_STEP_MODIFIER`,
+ * read by `collectLocationConditionContributions` — so their sentences are now
+ * derived from a term that really moves the roll. `standing_welcome` was deleted:
+ * zero writers, and its read-tolerance window had long since lapsed.
  *
- * `standing_welcome` is a third case again: THR-1206 retired it to read-tolerance
- * with zero writers, so it needs no effect — it needs to finish lapsing in saved
- * worlds and go.
- *
- * The gate that uses this set (`conditionEffectLine.test.ts`) asserts **both
- * directions**: every condition outside the set yields a line, and every id
- * inside it genuinely has neither substrate. So the exemption cannot be used to
- * hide a condition whose effect *is* derivable — adding a tax or a contribution
- * to one of these fails the test until it is removed from here.
- *
- * Giving the first two a real effect (or retiring them) is THR-1483.
+ * **The export stays.** It is not dead: `conditionEffectLine.test.ts` asserts in
+ * both directions against it, and an empty list is what makes the *first*
+ * direction cover every condition with no exceptions. A future condition that
+ * genuinely ships ahead of its reader is added here for as long as that is true,
+ * which re-arms the falsification arm automatically — and that arm checks all
+ * three substrates, so an exemption can never be used to hide an effect that is
+ * in fact derivable.
  */
-export const CONDITION_IDS_WITHOUT_EFFECT: readonly string[] = [
-  'trait.condition.location.under_watch',
-  'trait.condition.location.standing_welcome',
-  'trait.condition.location.tended_shrine',
-];
+export const CONDITION_IDS_WITHOUT_EFFECT: readonly string[] = [];
 
 /**
  * Movement multiplier per location condition — the tunable half of reader #2.
@@ -575,8 +625,32 @@ export const LOCATION_CONDITION_MOVEMENT_TAX: Record<string, number> = {
   'trait.condition.location.plague_scare': LOCATION_AVOIDED_MULTIPLIER,
   'trait.condition.location.harvest_blight': LOCATION_AVOIDED_MULTIPLIER,
   'trait.condition.location.festival': LOCATION_CROWDED_MULTIPLIER,
-  // `under_watch` deliberately carries no tax: being observed changes what you can
-  // do in a place, not how long it takes to walk in. Its reader is the gate.
-  // `standing_welcome` (THR-1175) carries none for the same reason, from the other
-  // side: being welcome somewhere does not shorten the road to it.
+  // `under_watch` and `tended_shrine` deliberately carry no tax: what a watcher or
+  // a kept shrine changes is the work you do in a place, not how long it takes to
+  // walk in. Their reader is `LOCATION_CONDITION_STEP_MODIFIER` below (THR-1483).
+};
+
+/**
+ * Additive per-reach modifier on any step resolved **at** a location carrying the
+ * condition — reader #3, and the substrate THR-1483 added.
+ *
+ * Read by `collectLocationConditionContributions` (`engine/resolutionModifiers.ts`),
+ * which walks the location's own `has_trait` edges exactly the way the movement
+ * tax does, so the term lifts by itself when the condition decays and there is no
+ * second lifecycle to keep in step.
+ *
+ * A condition absent from this map tilts no step; that is the designed default,
+ * not an omission, because most of what can happen to a place is not about the
+ * work you came there to do. Tuning is editing this table (NFP #1).
+ *
+ * **Disjoint from `domainContributions` by construction**, and pinned that way by
+ * `conditionEffectLine.test.ts`: no condition may carry both, so the two
+ * reach-shaped substrates can be read together without any risk of double-count.
+ */
+export const LOCATION_CONDITION_STEP_MODIFIER: Record<
+  string,
+  Readonly<Partial<Record<ReachDomain, number>>>
+> = {
+  'trait.condition.location.under_watch': { shadow: LOCATION_WATCHED_SHADOW_PENALTY },
+  'trait.condition.location.tended_shrine': { veil: LOCATION_TENDED_SHRINE_VEIL_BONUS },
 };

@@ -277,6 +277,20 @@ export const DERIVED_FACTOR_SENTENCES: Readonly<
     for: 'Having {source} near steadies {actor}.',
     against: 'Having {source} near unsettles {actor}.',
   },
+  // THR-1483. `{source}` is the *condition's* name — `Under Watch`, `A Tended
+  // Shrine` — so the line names what has happened to the place rather than the
+  // place itself, which is the part that varies run to run. Distinct from
+  // `terrain` on purpose: the moor is always the moor, but a watcher posted here
+  // last week is exactly the kind of fact a player can act on or wait out.
+  //
+  // Required, not decorative: `deriveContributionLines` drops any contribution
+  // whose kind has no sentence pair, so without this the modifier would move the
+  // roll while no line explained it — an unnamed number changing the odds, which
+  // is what the factor panel exists to prevent.
+  condition: {
+    for: '{source} favours the attempt here.',
+    against: '{source} tells against it here.',
+  },
 };
 
 /**
