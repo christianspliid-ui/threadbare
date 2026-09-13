@@ -2042,6 +2042,37 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
               },
             ],
           },
+          // THR-1468 — `overview` + `changes` only, like its siblings on this
+          // path: the base reaction carries the `attachment_grant` and the Full
+          // Moon seed, and `applyAftermathOutcomeBand` substitutes `reactions`
+          // wholesale, so a band that authored its own would drop the promise
+          // this whole path exists to make.
+          failure: {
+            overview:
+              'The word came out hedged — a qualifier, a half-step back, a condition nobody ' +
+              'had asked for — and he accepted the hedge with a smile that said it did not ' +
+              'matter. It did not. The claim is the same size it would have been said plainly. ' +
+              'The full moon does not read footnotes.',
+            changes: [
+              {
+                id: 'slice.crossroads.the_hedge',
+                kind: 'trait',
+                title: 'The Hedge That Bought Nothing',
+                causeClause: 'They gave the word with conditions on it',
+                detail: 'The claim falls due unhedged.',
+                // `info`, not `loss`, on the rule stated on
+                // 'slice.crossroads.the_word_given': `loss` is for the bands that
+                // genuinely cost something. Hedging cost nothing — it simply
+                // bought nothing, and the chip names the same full-size agreement
+                // the surviving base reaction writes.
+                polarity: 'info',
+                category: 'bond',
+                direction: 'loss',
+                stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
+                concepts: [{ text: 'the hedge', tooltipId: 'ui.agreement' }],
+              },
+            ],
+          },
           critical_failure: {
             overview:
               'He nodded as if a line had been entered somewhere, stepped back under the ' +
@@ -2092,6 +2123,18 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
               'crossroads dropped behind at the treeline like any other stretch of road, ' +
               'and that was the whole of it. They walk east knowing exactly what they can ' +
               'turn down.',
+            changes: [],
+          },
+          // THR-1468 — `changes: []` for the reason THR-1130 folded chips on this
+          // path: the offer fading is not a write, so it stays in the overview.
+          // `reactions` omitted, so the base repute gain survives — they did keep
+          // their word, clumsily or not.
+          failure: {
+            overview:
+              'The no was said and kept, and it came out clumsier than they meant it to. The ' +
+              'offer walked beside them a mile or two past the treeline before it faded, and ' +
+              'then the road was only a road again. He did not follow. Nothing was promised, ' +
+              'and nothing was taken.',
             changes: [],
           },
           critical_failure: {
@@ -2477,6 +2520,33 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
                   inheritContext: true,
                 },
               ],
+            },
+          ],
+        },
+        // THR-1468 — `overview` + `changes` only. The gift is a `spawn_artifact`
+        // on the base reaction, and a band that authored its own reactions would
+        // replace it: a failure at the exchange is a badly *stood* exchange, not
+        // a withheld parcel. Law 31 — the prize stays legible on its own chip
+        // even on the band that fumbled it.
+        failure: {
+          overview:
+            'The exchange was stood badly — a beat too slow reaching out, a grip that had to ' +
+            'be corrected, a thank-you that arrived after the parcel did — and he waited ' +
+            'through all of it, patient as furniture. The parcel came across cold and heavier ' +
+            'than it looked. He was satisfied, which is the part that costs the sleep.',
+          changes: [
+            {
+              id: 'slice.fullmoon.the_gift_cold',
+              kind: 'item',
+              title: 'The Crossroads Gift',
+              causeClause: 'He handed it over anyway',
+              detail: 'The parcel is theirs, cold.',
+              polarity: 'gain',
+              category: 'boon',
+              direction: 'gain',
+              // G1: carrier-anchored — see the note on 'slice.fullmoon.the_gift'.
+              stateNoun: { text: 'The Crossroads Gift', entityId: '$artifact', visualKind: 'artifact' },
+              concepts: [{ text: 'heavier than it looked' }],
             },
           ],
         },
@@ -2873,6 +2943,23 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
               // already the overview's second sentence.
             ],
           },
+          // THR-1468 — `reactions` omitted deliberately, which is what separates
+          // this band from the `critical_failure` below it. That band drops the
+          // Grateful Kin seed because a day of failed guiding thins the family's
+          // faith in strangers and does not mint word of a kindness. Here the
+          // turn is merely still hidden at dusk: the family has the truth about
+          // their paper and a stranger still working the problem, so the kindness
+          // is real and the word can still travel. `changes: []` on the THR-1130
+          // rule — one more night's camp is not a write, so it stays in the prose.
+          failure: {
+            overview:
+              'The country kept the turn hidden until the light went with it. The family makes ' +
+              'camp one more night on hope and thin bread, a half day nearer the salt than ' +
+              'they were this morning. They have the truth about their paper, and they have a ' +
+              'stranger who has not stopped looking. Tomorrow the reading starts again in ' +
+              'better light.',
+            changes: [],
+          },
           critical_failure: {
             // The only band in the slice that deliberately drops a seed. The
             // Grateful Kin fires on word of a kindness travelling; a day of
@@ -2961,6 +3048,21 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           },
         ],
         byOutcome: {
+          // THR-1468 — overview-only, the lightest band shape in the file and the
+          // right one here. `applyAftermathOutcomeBand` falls through field by
+          // field (`band.changes ?? variant.changes`), so 'East Is Theirs' and the
+          // base reaction's fen-road seed + intel all survive untouched — which is
+          // correct, because declining writes the same things however well the
+          // walk to town went. What a failure changes is how the evening sat, and
+          // an evening is prose. The `critical_failure` below it is the band that
+          // costs something the player can look up: `shaken`, plus the nerve
+          // erosion.
+          failure: {
+            overview:
+              'The town came by dark, exactly as planned, and the bed was where it was meant ' +
+              'to be. The supper went down badly. Four days east a handcart is still going the ' +
+              'wrong way, and on this whole road the traveler is the only one who knows it.',
+          },
           critical_failure: {
             overview:
               'The town came by dark and the bed was where it was meant to be. It did not ' +
@@ -3897,6 +3999,56 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND },
               stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'a standing welcome' }],
+            },
+          ],
+        },
+        // THR-1468 — the one band on the four THR-1468 added that *must* author
+        // its own `reactions`. The base reaction writes `SLICE_KIN_WELCOME_DELTA`
+        // (the plain-success door), and inheriting it would have a fumbled thanks
+        // open the door exactly as wide as a well-stood one. So this band writes
+        // the fumbled delta — the same floor `critical_failure` writes, because
+        // the constant ladder has three rungs for four bands and "kin are
+        // stubborn" is the stated floor, not a per-band curve. Restating
+        // `SLICE_TABLE_SEED` is mandatory for the wholesale-replacement reason in
+        // this file's aftermath header: the door opened, so the road bends back.
+        failure: {
+          overview:
+            'She stood up to say it and the traveler waved it off — too fast, too light, the ' +
+            'way a man declines a second helping. The whole room saw the shrug. She sat back ' +
+            'down with the sentence unfinished, and the door stays open anyway, because kin ' +
+            'are stubborn that way. It opens the width of an unfinished sentence.',
+          changes: [
+            {
+              // State-first, place-anchored — see the note on
+              // 'slice.kin.a_standing_welcome'. Same score, the narrowest rung:
+              // a weaker-than-hoped grant is a smaller green cluster, never a red
+              // one (THR-1205).
+              id: 'slice.kin.a_shrugged_welcome',
+              kind: 'reputation',
+              title: 'A Welcome, Shrugged Off',
+              causeClause: 'They waved the thanks away, publicly',
+              detail: '{target} keeps the door open, barely.',
+              polarity: 'gain',
+              category: 'bond',
+              direction: 'gain',
+              magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND_FUMBLED },
+              stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' },
+              concepts: [{ text: 'an unfinished sentence' }],
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.kin.wave_the_thanks_off',
+              label: 'Let it drop',
+              intent: 'She meant every word she got out. The room heard the ones she did not.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$target',
+                  delta: SLICE_KIN_WELCOME_DELTA_FUMBLED,
+                },
+                SLICE_TABLE_SEED,
+              ],
             },
           ],
         },

@@ -26,6 +26,7 @@ import type {
   UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../types/unifiedAction';
+import { authoredOutcomeBands } from '../../../engine/debugOutcomePin';
 import {
   SLICE_FULL_MOON_DELAY_TICKS,
   SLICE_KIN_WELCOME_DELTA,
@@ -686,15 +687,55 @@ describe('vertical slice — The Table That Holds (THR-1182)', () => {
     expect(meetsReputationWithRequirement(graph, HERO, STRANGE_TOWN, 'Accepted')).toBe(true);
   });
 
-  it('is planted from all three Grateful Kin bands, at one delay', () => {
+  it('is planted from every Grateful Kin site that authors its own reactions, at one delay', () => {
     const kin = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.gratefulKin)!;
     const seeds = allAftermathEffects(kin).filter(
       (e): e is Extract<EncounterAftermathReactionEffect, { kind: 'encounter_seed' }> =>
         e.kind === 'encounter_seed' && e.templateId === SLICE_TEMPLATE_IDS.tableThatHolds,
     );
-    // Base reaction (the plain welcome) plus the two crit bands, which replace
-    // `reactions` wholesale and so must restate the seed.
-    expect(seeds.length).toBe(3);
+
+    // THR-1468 — stated as a predicate over the planting *sites*, not as a
+    // count of them. This assertion read `toBe(3)` ("base reaction plus the two
+    // crit bands"), which was a snapshot of how many bands existed when
+    // THR-1182 shipped: adding the `failure` band made it read 4 and fail while
+    // the invariant it guards was perfectly intact. A count also could not
+    // distinguish the case it exists to catch — one *particular* site forgetting
+    // the seed — from a site being added or removed. The real rule is that
+    // `applyAftermathOutcomeBand` substitutes `reactions` wholesale, so every
+    // site that authors its own must restate the seed, and the base reaction
+    // covers every band that does not (THR-688 rule A).
+    const fallback = kin.aftermathConfig!.fallback;
+    const plantingSites: { where: string; reactions: AftermathVariant['reactions'] }[] = [
+      { where: 'base reaction', reactions: fallback.reactions },
+      ...Object.entries(fallback.byOutcome ?? {}).map(([band, cfg]) => ({
+        where: `band ${band}`,
+        reactions: cfg?.reactions,
+      })),
+    ].filter((site) => (site.reactions ?? []).length > 0);
+
+    // Anti-vacuity: the base reaction plus at least the bands that substitute
+    // wholesale. Zero or one site here means the walker went blind.
+    expect(plantingSites.length).toBeGreaterThanOrEqual(3);
+
+    const sitesMissingSeed = plantingSites
+      .filter(
+        (site) =>
+          !(site.reactions ?? [])
+            .flatMap((r) => r.effects)
+            .some(
+              (e) =>
+                e.kind === 'encounter_seed'
+                && e.templateId === SLICE_TEMPLATE_IDS.tableThatHolds,
+            ),
+      )
+      .map((site) => site.where);
+    expect(
+      sitesMissingSeed,
+      `these Grateful Kin sites author their own reactions and so drop the table `
+        + `seed by omission:\n${sitesMissingSeed.join('\n')}`,
+    ).toEqual([]);
+
+    expect(seeds.length).toBe(plantingSites.length);
     for (const seed of seeds) {
       expect(seed.delayTicks).toBe(SLICE_TABLE_DELAY_TICKS);
       // Without this the sequel would fire at a town-shaped place rather than
@@ -936,5 +977,126 @@ describe('vertical slice — the crossroads chain promises only what the seed pe
       (e) => e.kind === 'attachment_grant' && e.templateId === 'agreement.bargain.promise_given',
     );
     expect(grant, 'the promise is no longer a claim the bearer holds').toBeDefined();
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// THR-1468 — every slice encounter authors the `failure` band
+// ═════════════════════════════════════════════════════════════════════
+//
+// **The rule, stated for the next author.** A step whose `failBehavior` is
+// `fail_action` can end its action on `failure`. If no aftermath variant
+// authors that band, the player still reaches an ending — the *base* one —
+// so the omission is silent by construction: nothing throws, nothing warns
+// in play, and only a reviewer holding an `?outcome=failure` pin ever sees
+// it. That is why it needs a gate rather than a convention.
+//
+// **What the sweep that filed this got wrong, recorded so it is not redone.**
+// THR-1463 measured the five parents by hand and named two. The real
+// membership was four (`bargain_at_crossroads`, `full_moon_collection`,
+// `swindled_family`, `grateful_kin`), because the two sequels were never
+// walked. The cheap correct measurement is not a browser pin per encounter —
+// it is `authoredOutcomeBands()`, the same function the `[?outcome]` console
+// line reports from. Sharing that function is deliberate: a gate that
+// computed authorship its own way could pass while the diagnostic a reviewer
+// reads says the opposite.
+//
+// **And the argument against authoring them, answered.** The ticket floated
+// that a Personality Fork's refusal and an Opt-in Complication's decline are
+// *branches*, not failures, so those shapes might deliberately have no
+// `failure`. The structure says otherwise: the fork picks the branch, and
+// then the branch's own step resolves on the full ladder. Every one of those
+// steps already authored a distinct `failureAfterimage` — "The word came out
+// hedged, and the stranger accepted the hedge with a smile that said it did
+// not matter" — and same-shape siblings in this very file (The Swindler
+// Found, The Table That Holds) author the band. Giving the word badly is not
+// the same event as declining to give it.
+describe('vertical slice — every encounter authors the failure band (THR-1468)', () => {
+  it('authors `failure` on all nine templates', () => {
+    // Population guard: the predicate is worthless over an empty or shrunken
+    // roster, and a renamed export would make this gate pass by inspecting
+    // nothing (the vacuous-probe shape).
+    expect(VERTICAL_SLICE_TEMPLATES.length).toBe(9);
+
+    const missing = VERTICAL_SLICE_TEMPLATES.filter(
+      (t) => !authoredOutcomeBands(t).includes('failure'),
+    ).map((t) => t.id);
+
+    expect(
+      missing,
+      `these encounters end on \`failure\` and author no band for it, so the ` +
+        `player gets the base ending:\n${missing.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('the predicate actually detects an absence', () => {
+    // Falsification arm. Without this, the assertion above passes identically
+    // whether `authoredOutcomeBands` reads the band keys or returns a constant,
+    // and a gate that cannot fail is not a gate. Perturb one template by
+    // removing the band this suite exists to require, and confirm the
+    // predicate rejects it.
+    const kin = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.gratefulKin)!;
+    expect(authoredOutcomeBands(kin)).toContain('failure');
+
+    const { failure: _removed, ...withoutFailure } = kin.aftermathConfig!.fallback.byOutcome!;
+    const perturbed: UnifiedActionTemplate = {
+      ...kin,
+      aftermathConfig: {
+        ...kin.aftermathConfig!,
+        fallback: { ...kin.aftermathConfig!.fallback, byOutcome: withoutFailure },
+      },
+    };
+
+    // The arm is only meaningful if the perturbation actually changed something.
+    expect(Object.keys(withoutFailure)).not.toContain('failure');
+    expect(authoredOutcomeBands(perturbed)).not.toContain('failure');
+  });
+
+  it('the new failure bands do not drop the writes their paths exist to make', () => {
+    // `applyAftermathOutcomeBand` substitutes `reactions` **wholesale**, so a
+    // band that authors its own silently drops everything the variant's base
+    // reaction wrote. Three of the four new bands therefore author
+    // `overview`/`changes` only, and this pins that — the failure mode is
+    // invisible in play and would read as "the sequel just never fired".
+    const crossroads = VERTICAL_SLICE_TEMPLATES.find(
+      (t) => t.id === SLICE_TEMPLATE_IDS.crossroads,
+    )!;
+    const acceptFailure = crossroads.aftermathConfig!.variants.negative!.byOutcome!.failure;
+    expect(acceptFailure, 'the accept path lost its failure band').toBeDefined();
+    expect(
+      acceptFailure!.reactions,
+      'the accept-path failure band authors reactions, which replaces the base ' +
+        'reaction wholesale and drops the promise grant + the Full Moon seed',
+    ).toBeUndefined();
+
+    const fullMoon = VERTICAL_SLICE_TEMPLATES.find(
+      (t) => t.id === SLICE_TEMPLATE_IDS.fullMoon,
+    )!;
+    const collectionFailure = fullMoon.aftermathConfig!.fallback.byOutcome!.failure;
+    expect(collectionFailure, 'the collection lost its failure band').toBeDefined();
+    expect(
+      collectionFailure!.reactions,
+      'the collection failure band authors reactions, which drops the gift the ' +
+        'base reaction spawns — a badly stood exchange still hands over the parcel',
+    ).toBeUndefined();
+
+    // The Grateful Kin is the exception and must author its own: the base
+    // reaction writes the plain-success door, so inheriting it would have a
+    // fumbled thanks open the door exactly as wide as a well-stood one.
+    const kin = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.gratefulKin)!;
+    const kinFailure = kin.aftermathConfig!.fallback.byOutcome!.failure;
+    expect(kinFailure?.reactions, 'the kin failure band must write its own door').toBeDefined();
+    const kinEffects = (kinFailure!.reactions ?? []).flatMap((r) => r.effects);
+    const door = kinEffects.find((e) => e.kind === 'reputation_with');
+    expect(door && door.kind === 'reputation_with' ? door.delta : undefined).toBe(
+      SLICE_KIN_WELCOME_DELTA_FUMBLED,
+    );
+    // Restated, not inherited — for the same wholesale-replacement reason.
+    expect(
+      kinEffects.some(
+        (e) => e.kind === 'encounter_seed' && e.templateId === SLICE_TEMPLATE_IDS.tableThatHolds,
+      ),
+      'the kin failure band dropped the table seed by omission',
+    ).toBe(true);
   });
 });
