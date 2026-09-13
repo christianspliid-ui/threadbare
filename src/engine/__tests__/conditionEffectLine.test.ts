@@ -44,6 +44,7 @@ import {
   CONDITION_IDS_WITHOUT_EFFECT,
   CONDITION_TRAIT_DEFINITIONS,
   LOCATION_CONDITION_MOVEMENT_TAX,
+  LOCATION_CONDITION_STEP_MODIFIER,
 } from '../../data/condition-trait-content';
 
 /** The shipped corpus this ticket's Done-when names: every `trait.condition.*`. */
@@ -80,8 +81,71 @@ describe('conditionEffectLine — the shipped corpus', () => {
   it('the corpus is the one this gate claims to sweep', () => {
     // Guards against the sweep going vacuous if the definitions move modules:
     // an empty or near-empty `CONDITIONS` would pass every arm below.
-    expect(CONDITIONS.length).toBeGreaterThanOrEqual(15);
-    expect(EFFECTFUL.length).toBeGreaterThanOrEqual(12);
+    //
+    // 15 → 14 at THR-1483, which deleted `standing_welcome` (zero writers since
+    // THR-1206, read-tolerance window lapsed). The floor moved down by exactly the
+    // one definition that went, so it still catches a corpus that vanishes.
+    expect(CONDITIONS.length).toBeGreaterThanOrEqual(14);
+    expect(EFFECTFUL.length).toBeGreaterThanOrEqual(14);
+  });
+
+  it('every shipped condition has a reader — the exemption list is empty', () => {
+    // THR-1483's headline assertion, and the reason the arm below is allowed to
+    // iterate an empty list without being vacuous: `EFFECTFUL === CONDITIONS` is
+    // what makes the first direction cover the whole corpus with no exceptions.
+    //
+    // This is a ratchet, not a snapshot. A future condition that genuinely ships
+    // ahead of its reader belongs on the list — and when one does, THIS arm is the
+    // one that fails, which is the prompt to ask whether the reader or the
+    // exemption is the right answer. That is a deliberate speed bump, not a
+    // prohibition.
+    expect(CONDITION_IDS_WITHOUT_EFFECT).toEqual([]);
+    expect(EFFECTFUL.length).toBe(CONDITIONS.length);
+  });
+
+  it('the two reach-shaped substrates are disjoint, so no reach is counted twice', () => {
+    // THR-1483 taught `conditionEffectLine` to read `domainContributions` and
+    // `LOCATION_CONDITION_STEP_MODIFIER` **together**. Merging is only safe while
+    // no condition carries both — otherwise one reach would appear twice in the
+    // entry list and band off a doubled magnitude.
+    //
+    // Pinned rather than assumed. It holds today by construction (a location
+    // condition's `domainContributions` is `{}`, and the step table is keyed only
+    // by location-condition ids), but "by construction" is exactly the kind of
+    // invariant that a later author breaks without noticing.
+    const doubled: string[] = [];
+
+    for (const node of CONDITIONS) {
+      const contributions = ((node.properties as Record<string, unknown>).domainContributions
+        ?? {}) as Record<string, unknown>;
+      const stepModifier = (LOCATION_CONDITION_STEP_MODIFIER[node.id] ?? {}) as Record<string, unknown>;
+
+      const live = (bag: Record<string, unknown>) => Object.entries(bag)
+        .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v !== 0)
+        .map(([k]) => k);
+
+      const overlap = live(contributions).filter(k => live(stepModifier).includes(k));
+      if (overlap.length > 0) doubled.push(`${node.id}: ${overlap.join(', ')} in both substrates`);
+    }
+
+    expect(doubled).toEqual([]);
+  });
+
+  it('reads a place condition from its step modifier, naming the reach it moves', () => {
+    // The presence arm for substrate #3 — and the one that would have caught
+    // THR-1483's defect before it shipped. `under_watch` used to yield null here
+    // because nothing read it; now the reading comes from the same Shadow term
+    // that moves the roll, so the sentence cannot drift from the mechanism.
+    const watched = CONDITIONS.find(n => n.id === 'trait.condition.location.under_watch')!;
+    const reading = conditionEffectLine(watched)!;
+
+    expect(reading.effect).toBe('Shadow slightly lower.');
+    expect(reading.term).toBe('Lasts about seven days.');
+
+    const shrine = CONDITIONS.find(n => n.id === 'trait.condition.location.tended_shrine')!;
+    // The positive mirror, and the anti-vacuity half: the substrate reports
+    // direction, not merely presence.
+    expect(conditionEffectLine(shrine)!.effect).toBe('Veil slightly higher.');
   });
 
   it('every condition outside the exemption list yields a non-empty, digit-free line', () => {
@@ -120,10 +184,21 @@ describe('conditionEffectLine — the shipped corpus', () => {
       ).some(v => typeof v === 'number' && Number.isFinite(v) && v !== 0);
       const hasTax = typeof LOCATION_CONDITION_MOVEMENT_TAX[id] === 'number'
         && LOCATION_CONDITION_MOVEMENT_TAX[id] > 1;
+      // Substrate #3 (THR-1483). Checking only the first two would make this arm a
+      // filter rather than a guard: a condition given a step modifier could sit on
+      // the exemption list with a perfectly derivable effect and this test would
+      // still pass it. Every substrate `conditionEffectLine` reads must be checked
+      // here, or the exemption list stops being a record of a real gap.
+      const hasStepModifier = Object.values(
+        (LOCATION_CONDITION_STEP_MODIFIER[id] ?? {}) as Record<string, unknown>,
+      ).some(v => typeof v === 'number' && Number.isFinite(v) && v !== 0);
 
-      if (hasContribution || hasTax) {
+      if (hasContribution || hasTax || hasStepModifier) {
+        const substrate = hasContribution ? 'domainContributions'
+          : hasTax ? 'a movement tax'
+          : 'a step modifier';
         wronglyExempt.push(
-          `${id}: has ${hasContribution ? 'domainContributions' : 'a movement tax'} — `
+          `${id}: has ${substrate} — `
           + 'its effect is derivable, so remove it from CONDITION_IDS_WITHOUT_EFFECT',
         );
       }

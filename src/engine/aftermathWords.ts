@@ -40,6 +40,7 @@ import { TICKS_PER_DAY } from '../data/attention-constants';
 import {
   CONDITION_DURATIONS,
   LOCATION_CONDITION_MOVEMENT_TAX,
+  LOCATION_CONDITION_STEP_MODIFIER,
 } from '../data/condition-trait-content';
 import type {
   EncounterAftermathConceptRef,
@@ -378,14 +379,17 @@ export function elapsedLabel(ticks: number): string {
  * ## A place's condition reads from the tax, not from contributions
  *
  * `trait.condition.location.*` carries `domainContributions: {}` **on purpose** —
- * a place has no capability to move (THR-1143). Its live effect is the movement
- * tax in `LOCATION_CONDITION_MOVEMENT_TAX`, which `movementCost.ts` reads, so
- * that is the substrate this derivation reads for them.
+ * a place has no capability to move (THR-1143). A place's effect lives in one of
+ * two other tables instead: `LOCATION_CONDITION_MOVEMENT_TAX` (what it costs to
+ * reach, read by `movementCost.ts`) and `LOCATION_CONDITION_STEP_MODIFIER` (what
+ * it costs to work in, read by `collectLocationConditionContributions`). This
+ * derivation reads all three.
  *
- * Three location conditions have neither substrate and therefore get **no line
- * at all** rather than an invented one — see `CONDITION_IDS_WITHOUT_EFFECT` in
- * `data/condition-trait-content.ts` for which, why, and the ticket that owns
- * them. A chip must not promise what the engine cannot enact.
+ * A condition with no substrate at all gets **no line** rather than an invented
+ * one — a chip must not promise what the engine cannot enact. THR-1483 emptied
+ * `CONDITION_IDS_WITHOUT_EFFECT` by giving the last two holdouts real readers, so
+ * nothing currently takes that branch; it stays because the honest answer to a
+ * condition shipped ahead of its reader is silence, not a guess.
  */
 export const CONDITION_MAGNITUDE_BANDS: readonly MagnitudeBand[] = [
   { min: 1.00, word: 'far' },
@@ -459,7 +463,19 @@ export function conditionEffectLine(
 ): ConditionEffectReading | null {
   const props = node.properties as Record<string, unknown>;
   const contributions = (props.domainContributions ?? {}) as Record<string, unknown>;
-  const signed = Object.entries(contributions).filter(
+  // THR-1483 — the two reach-shaped substrates, read together. A person's effect
+  // lives in `domainContributions` (walked by `computeRawScore`); a place's lives
+  // in `LOCATION_CONDITION_STEP_MODIFIER` (walked by
+  // `collectLocationConditionContributions`), because a place has no capability of
+  // its own to raise — what it has is an effect on work done there.
+  //
+  // Merging is safe because the two are disjoint by construction: every location
+  // condition carries `domainContributions: {}`, and the step table is keyed only
+  // by location-condition ids. `conditionEffectLine.test.ts` pins that disjointness
+  // rather than trusting it, so a future condition carrying both fails there
+  // instead of silently double-counting one reach here.
+  const stepModifier = (LOCATION_CONDITION_STEP_MODIFIER[node.id] ?? {}) as Record<string, unknown>;
+  const signed = [...Object.entries(contributions), ...Object.entries(stepModifier)].filter(
     (entry): entry is [string, number] =>
       typeof entry[1] === 'number' && Number.isFinite(entry[1]) && entry[1] !== 0,
   );
@@ -471,16 +487,24 @@ export function conditionEffectLine(
     reachClause(signed.filter(([, value]) => value < 0), false),
   ].filter((clause): clause is string => clause !== null);
 
-  let effect: string | null = clauses.length > 0 ? `${clauses.join(', and ')}.` : null;
+  const reachSentence = clauses.length > 0 ? `${clauses.join(', and ')}.` : null;
 
-  if (effect === null) {
-    const tax = LOCATION_CONDITION_MOVEMENT_TAX[node.id];
-    if (typeof tax === 'number' && Number.isFinite(tax) && tax > 1) {
-      effect = `Travel through here costs ${magnitudeWord(tax, CONDITION_TRAVEL_TAX_BANDS)}.`;
-    }
-  }
+  // The third substrate reads as its own sentence rather than folding into the
+  // reach clause, because it answers a different question — what this place costs
+  // to *reach*, not what it does to the work. Appended rather than used as a
+  // fallback (THR-1483): no shipped condition carries both today, but a condition
+  // that grew one would otherwise have its travel cost silently dropped, and a
+  // surface that omits half an effect is the defect this whole derivation exists
+  // to prevent.
+  const tax = LOCATION_CONDITION_MOVEMENT_TAX[node.id];
+  const travelSentence =
+    typeof tax === 'number' && Number.isFinite(tax) && tax > 1
+      ? `Travel through here costs ${magnitudeWord(tax, CONDITION_TRAVEL_TAX_BANDS)}.`
+      : null;
 
-  if (effect === null) return null;
+  const effect = [reachSentence, travelSentence].filter(s => s !== null).join(' ');
+
+  if (effect.length === 0) return null;
 
   const ticks = grant?.totalTicks ?? CONDITION_DURATIONS[node.id];
   const term =

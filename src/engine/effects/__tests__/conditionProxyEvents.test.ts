@@ -178,7 +178,11 @@ describe('THR-1244 — condition → damaged/healed proxy', () => {
       // 61 → 62 with THR-1472: `trait.condition.shaken` — the word the two nerve
       // scars claimed and the vocabulary did not have (`#negative`, so it is
       // inside this sweep's harm predicate, not merely counted by it).
-      expect(checked).toBe(62);
+      // 62 → 61 with THR-1483: `trait.condition.location.standing_welcome` was
+      // deleted (zero writers since THR-1206, read-tolerance window lapsed). The
+      // pin moving DOWN is the same deliberate bump in the other direction — a
+      // retirement should have to be stated here too, not absorbed silently.
+      expect(checked).toBe(61);
     });
 
     it('classifies wounds and curses as harm, boons as not', () => {

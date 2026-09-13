@@ -29,7 +29,14 @@ import {
   LOCATION_CONDITION_IDS,
   LOCATION_IMPASSABLE_MULTIPLIER,
   CONDITION_TRAIT_DEFINITIONS,
+  LOCATION_CONDITION_STEP_MODIFIER,
+  LOCATION_CONDITION_STEP_MODIFIER_CAP,
+  LOCATION_WATCHED_SHADOW_PENALTY,
+  LOCATION_TENDED_SHRINE_VEIL_BONUS,
 } from '../../data/condition-trait-content';
+import { collectLocationConditionContributions } from '../resolutionModifiers';
+import { deriveContributionLines } from '../encounters/stepFactorLines';
+import { REACH_DOMAINS } from '../../types/traits';
 import type { GameState } from '../../types/gameState';
 import type {
   EncounterAftermathReaction,
@@ -40,6 +47,7 @@ import type {
 const PASS_CLOSED = 'trait.condition.location.pass_closed';
 const FESTIVAL = 'trait.condition.location.festival';
 const UNDER_WATCH = 'trait.condition.location.under_watch';
+const TENDED_SHRINE = 'trait.condition.location.tended_shrine';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -404,6 +412,215 @@ describe('THR-1143 — location conditions', () => {
       const expected = LOCATION_CONDITION_MOVEMENT_TAX[PASS_CLOSED] * LOCATION_CONDITION_MOVEMENT_TAX[FESTIVAL];
       expect(computeEdgeCost(next.graph, 'actor-hero', 'hex-3-4', 'loc-pass').conditionMultiplier)
         .toBeCloseTo(expected, 5);
+    });
+  });
+
+  // ─── Reader #3: what a place costs to work in (THR-1483) ───────────────────
+  //
+  // The movement tax above prices *reaching* a place; this prices *working in*
+  // one. It exists because `under_watch` and `tended_shrine` shipped with a chip
+  // that named them and no engine reader at all — a state the player could see
+  // and nothing could act on.
+  //
+  // Written to the same discipline as the movement pair: every assertion measures
+  // the same step with and against a control, because a lone absolute number can
+  // be produced by something other than the feature under test.
+  describe('read — a condition changes the work done at a place', () => {
+    function placeCarrying(...conditionIds: string[]): WorldGraph {
+      const graph = new WorldGraph();
+      seedEncounterTraitDefinitions(graph);
+      graph.addNode({
+        id: 'loc-watched', type: 'location', name: 'The Low Market',
+        properties: { locationSubtype: 'hamlet' },
+      } as never);
+      for (const id of conditionIds) {
+        graph.addEdge({
+          id: `has_trait_loc-watched_${id}`,
+          source: 'loc-watched', target: id, type: 'has_trait',
+          properties: { appliedAt: 0, ticksRemaining: 50 },
+        } as never);
+      }
+      return graph;
+    }
+
+    it('a watched place tells against the quiet reach, and only that reach', () => {
+      const watched = placeCarrying(UNDER_WATCH);
+
+      const shadow = collectLocationConditionContributions(watched, 'loc-watched', 'shadow');
+      expect(shadow).toHaveLength(1);
+      expect(shadow[0]!.value).toBe(LOCATION_WATCHED_SHADOW_PENALTY);
+      expect(shadow[0]!.value).toBeLessThan(0);
+
+      // The falsification arm, and the one that separates a mechanism from a mood.
+      // A watcher does not make you worse at lifting a beam — if this returned a
+      // contribution, the condition would be a blanket penalty wearing a reach's
+      // name, and the factor panel would say so on steps it has no business
+      // touching.
+      expect(collectLocationConditionContributions(watched, 'loc-watched', 'iron')).toEqual([]);
+      expect(collectLocationConditionContributions(watched, 'loc-watched', 'heart')).toEqual([]);
+    });
+
+    it('the same place without the condition tilts nothing', () => {
+      // The control half of the pair. Without it the assertion above could be
+      // reporting some unrelated location term that happens to be non-zero.
+      const plain = placeCarrying();
+      expect(collectLocationConditionContributions(plain, 'loc-watched', 'shadow')).toEqual([]);
+    });
+
+    it('a kept shrine reads the other way — direction, not merely presence', () => {
+      const shrine = placeCarrying(TENDED_SHRINE);
+      const veil = collectLocationConditionContributions(shrine, 'loc-watched', 'veil');
+
+      expect(veil).toHaveLength(1);
+      expect(veil[0]!.value).toBe(LOCATION_TENDED_SHRINE_VEIL_BONUS);
+      expect(veil[0]!.value).toBeGreaterThan(0);
+    });
+
+    it('names the condition in words, never the raw id (UI Law 14)', () => {
+      // The contribution's `sourceName` is substituted straight into a player-facing
+      // factor sentence, so an id leaking here leaks onto the test panel.
+      const [contribution] = collectLocationConditionContributions(
+        placeCarrying(UNDER_WATCH), 'loc-watched', 'shadow',
+      );
+      expect(contribution!.sourceName).toBe('Under Watch');
+      expect(contribution!.sourceName).not.toContain('trait.condition');
+      expect(contribution!.kind).toBe('condition');
+    });
+
+    it('renders a factor line rather than moving the odds unexplained', () => {
+      // `deriveContributionLines` silently DROPS any contribution whose kind has no
+      // sentence pair in `DERIVED_FACTOR_SENTENCES`. So a new `ModifierSourceKind`
+      // without its pair produces exactly the defect the factor panel exists to
+      // prevent: a number that changes the roll while no line says why. This arm is
+      // the reason the pair was authored in the same change.
+      const contributions = collectLocationConditionContributions(
+        placeCarrying(UNDER_WATCH), 'loc-watched', 'shadow',
+      );
+      const lines = deriveContributionLines(contributions, 'Kael Thornweaver');
+
+      expect(lines).toHaveLength(1);
+      expect(lines[0]!.kind).toBe('condition');
+      expect(lines[0]!.polarity).toBe('against');
+      expect(lines[0]!.text).toContain('Under Watch');
+      expect(lines[0]!.text).not.toContain('{source}');
+    });
+
+    it('lifts by itself when the condition decays — no second lifecycle', () => {
+      // The whole reason this reads the location's own `has_trait` edges: the same
+      // edges `decayConditions` counts down. A modifier with its own expiry record
+      // would outlive the state it reports.
+      const graph = placeCarrying(UNDER_WATCH);
+      expect(collectLocationConditionContributions(graph, 'loc-watched', 'shadow')).toHaveLength(1);
+
+      const edge = graph.getOutgoingEdges('loc-watched', 'has_trait')[0]!;
+      graph.updateEdge(edge.id, { properties: { ...edge.properties, ticksRemaining: 1 } } as never);
+      decayConditions(graph, 1);
+
+      expect(collectLocationConditionContributions(graph, 'loc-watched', 'shadow')).toEqual([]);
+    });
+
+    it('clamps the summed term so a bad corner of the map cannot decide a step', () => {
+      // Conditions ADD here (movement taxes multiply), so the cap is what stops
+      // accumulation from becoming a verdict. Falsified against the uncapped sum:
+      // six watchers would be -0.36 without the clamp.
+      const graph = placeCarrying();
+      for (let i = 0; i < 6; i++) {
+        graph.addEdge({
+          id: `has_trait_loc-watched_stack_${i}`,
+          source: 'loc-watched', target: UNDER_WATCH, type: 'has_trait',
+          properties: { appliedAt: 0, ticksRemaining: 50 },
+        } as never);
+      }
+
+      const total = collectLocationConditionContributions(graph, 'loc-watched', 'shadow')
+        .reduce((sum, c) => sum + c.value, 0);
+
+      const uncapped = 6 * LOCATION_WATCHED_SHADOW_PENALTY;
+      expect(Math.abs(uncapped)).toBeGreaterThan(LOCATION_CONDITION_STEP_MODIFIER_CAP);
+      expect(Math.abs(total)).toBeLessThanOrEqual(LOCATION_CONDITION_STEP_MODIFIER_CAP + 1e-9);
+    });
+
+    it('a step taken in a Place feels the enclosing Location\'s condition', () => {
+      // The wiring arm, and the one that matters most in a live world. Both callers
+      // of `computeResolutionModifiers` pass the actor's `located_at` target, which
+      // under the three-tier position model is the MOST SPECIFIC node they occupy —
+      // so it is a Place as often as a Location. `under_watch` is written onto a
+      // settlement; an agent standing in that settlement's tavern would have felt
+      // nothing at all if this read only the exact node, which is the same
+      // write-with-no-reachable-reader defect the ticket closed, one tier along.
+      const graph = placeCarrying(UNDER_WATCH);
+      graph.addNode({
+        id: 'sub-tavern-watched', type: 'location', name: 'The Broken Wheel',
+        properties: { parentLocationId: 'loc-watched', sublocationCategory: 'tavern' },
+      } as never);
+
+      const inTavern = collectLocationConditionContributions(graph, 'sub-tavern-watched', 'shadow');
+      expect(inTavern).toHaveLength(1);
+      expect(inTavern[0]!.value).toBe(LOCATION_WATCHED_SHADOW_PENALTY);
+    });
+
+    it('does not reach sideways — a sibling Place\'s own condition stays its own', () => {
+      // The falsification half of the tier walk: it resolves UP one step, not across
+      // the whole settlement. Without this, "read the parent too" could have been
+      // implemented as "read everything nearby", and a shrine tended in one corner
+      // of a town would quietly help ritual work in every other corner of it.
+      const graph = placeCarrying();
+      for (const [id, name] of [['sub-a', 'The Shrine Yard'], ['sub-b', 'The Tannery']] as const) {
+        graph.addNode({
+          id, type: 'location', name,
+          properties: { parentLocationId: 'loc-watched', sublocationCategory: 'tavern' },
+        } as never);
+      }
+      graph.addEdge({
+        id: 'has_trait_sub-a_shrine', source: 'sub-a', target: TENDED_SHRINE,
+        type: 'has_trait', properties: { appliedAt: 0, ticksRemaining: 50 },
+      } as never);
+
+      // The Place that carries it feels it…
+      expect(collectLocationConditionContributions(graph, 'sub-a', 'veil')).toHaveLength(1);
+      // …its sibling does not, and neither does the parent that merely contains it.
+      expect(collectLocationConditionContributions(graph, 'sub-b', 'veil')).toEqual([]);
+      expect(collectLocationConditionContributions(graph, 'loc-watched', 'veil')).toEqual([]);
+    });
+
+    it('NFP #4: a location that does not resolve contributes nothing and throws nothing', () => {
+      expect(
+        collectLocationConditionContributions(new WorldGraph(), 'no-such-place', 'shadow'),
+      ).toEqual([]);
+    });
+
+    it('NFP #4: an orphaned Place whose parent is gone still resolves to its own tier', () => {
+      const graph = placeCarrying();
+      graph.addNode({
+        id: 'sub-orphan', type: 'location', name: 'A Room Somewhere',
+        properties: { parentLocationId: 'loc-that-was-deleted' },
+      } as never);
+      graph.addEdge({
+        id: 'has_trait_sub-orphan_watch', source: 'sub-orphan', target: UNDER_WATCH,
+        type: 'has_trait', properties: { appliedAt: 0, ticksRemaining: 50 },
+      } as never);
+
+      // Its own condition still reads; the missing parent is skipped, not thrown on.
+      expect(collectLocationConditionContributions(graph, 'sub-orphan', 'shadow')).toHaveLength(1);
+    });
+
+    it('every step-modifier key names a shipped condition and a real reach', () => {
+      // Mirror of the movement-tax guard above: a table keyed on a phantom id is a
+      // tuning knob wired to nothing, which is the defect class this ticket closed.
+      const shipped = new Set(CONDITION_TRAIT_DEFINITIONS.map(n => n.id));
+      const reaches = new Set<string>(REACH_DOMAINS);
+
+      const entries = Object.entries(LOCATION_CONDITION_STEP_MODIFIER);
+      expect(entries.length).toBeGreaterThan(0);
+
+      for (const [id, bag] of entries) {
+        expect(shipped.has(id), `${id} carries a step modifier but is not shipped`).toBe(true);
+        for (const [reach, value] of Object.entries(bag)) {
+          expect(reaches.has(reach), `${id} names "${reach}", which is not a reach`).toBe(true);
+          expect(Number.isFinite(value) && value !== 0, `${id}.${reach} is inert`).toBe(true);
+          expect(Math.abs(value as number)).toBeLessThanOrEqual(LOCATION_CONDITION_STEP_MODIFIER_CAP);
+        }
+      }
     });
   });
 });

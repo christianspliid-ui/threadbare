@@ -111,7 +111,10 @@ describe('THR-1175 — favor_creation must declare who owes', () => {
     const report = validateFavorDebtors([
       templateWithEffect('fixture.place', {
         kind: 'apply_condition',
-        conditionTraitId: 'trait.condition.location.standing_welcome',
+        // Any live location condition serves — the point is the *shape* (a place
+        // changing rather than a person owing), not this particular noun. Was
+        // `standing_welcome` until THR-1483 deleted that definition.
+        conditionTraitId: 'trait.condition.location.tended_shrine',
         targetLocationId: '$target',
         durationTicks: 120,
       }),

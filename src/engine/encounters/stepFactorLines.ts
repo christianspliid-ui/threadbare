@@ -73,6 +73,8 @@ export type DerivedFactorKind =
   | 'rule'
   /** A nearby agent's aura (THR-1243) — the only factor sourced from someone else. */
   | 'aura'
+  /** A condition on the place the step is resolved at (THR-1483). */
+  | 'condition'
   | 'carryover';
 
 export interface DerivedFactorLine {

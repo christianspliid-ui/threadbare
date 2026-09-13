@@ -657,9 +657,12 @@ describe('vertical slice — The Table That Holds (THR-1182)', () => {
     (t) => t.id === SLICE_TEMPLATE_IDS.tableThatHolds,
   )!;
 
-  it('gates on a reputation band, not on the retired standing-welcome condition', () => {
-    // THR-1206 left `trait.condition.location.standing_welcome` with zero
-    // writers, so a `requiredTargetTraits` gate naming it would be a dead gate.
+  it('gates on a reputation band, not on the deleted standing-welcome condition', () => {
+    // THR-1206 left `trait.condition.location.standing_welcome` with zero writers,
+    // so a `requiredTargetTraits` gate naming it would have been a dead gate.
+    // THR-1483 then deleted the definition outright, which upgrades this from "a
+    // gate that would never pass" to "a gate naming a trait that does not exist" —
+    // so the assertion below guards something stricter than it used to.
     expect(table.requiredReputationWith?.atLeast).toBe(SLICE_TABLE_GATE_BAND);
     expect(table.requiredTargetTraits ?? []).not.toContain(
       'trait.condition.location.standing_welcome',
