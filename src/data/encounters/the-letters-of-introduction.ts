@@ -127,7 +127,7 @@ const step1WorkTheFormalChannel: ActionStep = {
   failBehavior: 'fail_action',
   successMetadata: {
     rewardPool: {
-      categoryWeights: { tomes_scrolls: 1.0 },
+      categoryWeights: { possession: 1.0 },
       tagFilters: ['#patronage'],
     },
   },
@@ -165,7 +165,7 @@ const step1WorkTheSocialBridge: ActionStep = {
   failBehavior: 'fail_action',
   successMetadata: {
     rewardPool: {
-      categoryWeights: { tomes_scrolls: 1.0 },
+      categoryWeights: { possession: 1.0 },
       tagFilters: ['#patronage'],
     },
   },

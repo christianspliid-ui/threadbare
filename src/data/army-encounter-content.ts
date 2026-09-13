@@ -318,7 +318,7 @@ export const ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE: UnifiedActionTemplate = {
       successMetadata: {
         rewardPool: {
           categoryWeights: { possession: 0.3, condition: 0.4, bestowed_power: 0.3 },
-          tagFilters: ['#military', '#supply'],
+          tagFilters: ['#gold'],
         },
         tierPromotionEligible: false,
         reputationDelta: 0.06,
@@ -925,7 +925,7 @@ export const REFUGEE_AFTERMATH_TEMPLATE: UnifiedActionTemplate = {
       successMetadata: {
         rewardPool: {
           categoryWeights: { possession: 0.2, condition: 0.4, bestowed_power: 0.4 },
-          tagFilters: ['#community', '#stewardship'],
+          tagFilters: ['#heart', '#healing'],
         },
         tierPromotionEligible: false,
         reputationDelta: 0.10,
@@ -1097,7 +1097,7 @@ export const ARMY_SUPPLY_FORAGE_TEMPLATE: UnifiedActionTemplate = {
       successMetadata: {
         rewardPool: {
           categoryWeights: { condition: 0.5, possession: 0.3, bestowed_power: 0.2 },
-          tagFilters: ['#military', '#supply'],
+          tagFilters: ['#heart'],
         },
         tierPromotionEligible: false,
         reputationDelta: 0.08,
@@ -1244,7 +1244,7 @@ export const ARMY_SUPPLY_SIEGE_LIFTED_TEMPLATE: UnifiedActionTemplate = {
       successMetadata: {
         rewardPool: {
           categoryWeights: { condition: 0.4, possession: 0.2, bestowed_power: 0.4 },
-          tagFilters: ['#military', '#supply'],
+          tagFilters: ['#iron', '#combat'],
         },
         tierPromotionEligible: true,
         reputationDelta: 0.05,

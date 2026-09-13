@@ -5060,7 +5060,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   momentBadges={momentBadges}
                   onOpenMomentBadge={handleOpenMomentBadge}
                   sustainedControls={sustainedControls}
-                  onChampionChipClick={openAgentProfileForId}
+                  // THR-1500 — `openAgentSheetForId`, not `openAgentProfileForId`.
+                  // The chip names a champion who need not be the selected mortal
+                  // (any threaded row can carry one), and the bare opener sets only
+                  // the modal id while the card is memoised on `selectedAgentId`:
+                  // the chip then showed nothing, or the previously selected
+                  // mortal's sheet under the champion's id (Laws 1, 21, 33).
+                  onChampionChipClick={openAgentSheetForId}
                 />
                 {/* THR-603: open the Chapter Ledger — every encounter, always readable */}
                 <button
@@ -5162,7 +5168,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             knowledge={profileModalAgentId ? gameState.agentKnowledge.get(profileModalAgentId) : undefined}
             gameState={gameState}
             runtime={runtime}
-            onOpenEntity={openAgentProfileForId}
+            // THR-1500 judgement call 1 — the sheet's own cast links navigate
+            // *between* sheets while this modal is open, so the swap is not a
+            // pure one: `openAgentSheetForId` also moves `selectedAgentId` (and
+            // closes the drawer) behind the modal. That is the decision taken,
+            // not a side effect tolerated. There is no variant that moves the
+            // card without moving the selection — `agentInfoCard` is memoised on
+            // `selectedAgentId` (`useAgentInteraction.ts:194`), so a card for the
+            // companion cannot exist until the selection is theirs; the only
+            // alternative was re-keying that memo on `profileModalAgentId`, a
+            // wide change to the drawer's card for one link's sake. Moving the
+            // selection is also the truthful state: the player is now reading
+            // this mortal, so closing the sheet should leave the world on them
+            // rather than on whoever they arrived from.
+            onOpenEntity={openAgentSheetForId}
             // The Faction section opens the faction's own sheet (THR-1149) —
             // the same stub-modal route the hex and thread surfaces use, not
             // `onOpenEntity`, which resolves every id to an agent profile.
@@ -5185,7 +5204,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           gameState={gameState}
           runtime={runtime}
           onClose={() => setChapterLedgerOpen(false)}
-          onOpenEntity={openAgentProfileForId}
+          // THR-1500 — the ledger is an archive of *other* people's chapters, so
+          // the entity link almost never names the selected mortal. With the bare
+          // opener it showed whoever happened to be selected, under the named
+          // mortal's id.
+          onOpenEntity={openAgentSheetForId}
         />
       )}
 
@@ -5418,7 +5441,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           model={momentCardModel}
           graph={gameState.graph}
           onAcknowledge={handleAcknowledgeMoment}
-          onSelectAgent={openAgentProfileForId}
+          // THR-1500 — a moment arrives for a *followed* mortal, which is exactly
+          // the case where the selection is someone else. Same root cause as the
+          // premonition's name control (THR-1461), same primitive.
+          onSelectAgent={openAgentSheetForId}
           onDivineAct={handleMomentDivineAct}
         />
       )}
@@ -5505,7 +5531,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // Opens the mortal's sheet *over* the premonition (THR-1139). The
           // premonition stays mounted and choosable underneath — this is a
           // context lookup, not a dismissal.
-          onViewAgent={() => openAgentProfileForId(activePremonition.agentId)}
+          //
+          // THR-1461: `openAgentSheetForId`, the primitive THR-1477 built for the
+          // veil, not `openAgentProfileForId`. The latter sets only the modal id
+          // while the card it renders is memoised on `selectedAgentId`, so it
+          // opened the *previously selected* mortal's sheet under the subject's id
+          // — Kael's whisper opening Thorne's profile (Laws 1 and 33). The modal now
+          // names its own subject, so the opener is passed by reference and there is
+          // no closure here left to name the wrong one.
+          //
+          // Deliberately not `refRouter.open({ kind: 'actor' }, 'sheet')`: the
+          // router's agent arm is `handleAgentSelect`, which opens the ActionDrawer
+          // at z 40 — invisible beneath this modal at z 60, a Law 21 dead click.
+          // A caller behind a full-screen interrupt wants the sheet on top, which
+          // is the distinction `openAgentSheetForId` exists to draw.
+          onViewAgent={openAgentSheetForId}
           onDismiss={handlePremonitionDismiss}
         />
       )}

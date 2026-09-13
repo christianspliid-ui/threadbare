@@ -636,11 +636,24 @@ function snapshotEncounterResolutionContext(
 function appendAftermathChanges(
   action: UnifiedAction,
   newChanges: readonly EncounterAftermathChange[],
+  /**
+   * THR-1467 — ids in the already-accumulated list that `newChanges` *supersedes*
+   * rather than joins. Empty for every caller that only ever adds.
+   *
+   * The one producer that supersedes is capability growth: it folds a repeat
+   * growth in the same reach into a single change carrying the summed amount
+   * (see the growth block below), and the earlier per-step change has to leave
+   * with it — otherwise the fold would add a third row instead of replacing two.
+   */
+  supersededIds: readonly string[] = [],
 ): UnifiedAction {
-  if (newChanges.length === 0) return action;
+  if (newChanges.length === 0 && supersededIds.length === 0) return action;
+  const kept = supersededIds.length === 0
+    ? (action.aftermathChanges ?? [])
+    : (action.aftermathChanges ?? []).filter(c => !supersededIds.includes(c.id));
   return {
     ...action,
-    aftermathChanges: [...(action.aftermathChanges ?? []), ...newChanges],
+    aftermathChanges: [...kept, ...newChanges],
   };
 }
 
@@ -2012,15 +2025,54 @@ export function executeStepResult(
     magnitude: sentence.magnitude,
     storyWeight: sentence.storyWeight,
   });
+  /**
+   * THR-1467 — ids of earlier per-step growth changes this step's growth absorbs.
+   *
+   * A multi-step encounter whose steps share a reach grows that reach once per
+   * step, and each growth minted its own change — so Snow on the Pass, whose two
+   * steps are both Stone, ended on two `BOON · STONE` chips that were identical
+   * down to the cluster. Both grants were real; what the ending could not say is
+   * which was which, because there is nothing to tell: one reach moved, twice.
+   *
+   * So the ending states the reach's *net* movement, which is the state the sheet
+   * will show and what Law 56 makes the chip answerable for. Folding here rather
+   * than at the chip surface keeps one reading of the encounter: the receipt and
+   * the trace consumers read the same list the player does, and the surface stays
+   * a renderer. Distinct reaches never fold — a Stone step and an Eye step are two
+   * different things that grew, and those already read as two chips.
+   */
+  let supersededGrowthIds: readonly string[] = [];
   if (growthApplied > 0 && growthDomain) {
+    const priorGrowth = (action.aftermathChanges ?? []).filter(
+      c => c.kind === 'growth' && c.id.endsWith(`:growth:${growthDomain}`),
+    );
+    // Re-band the total, never the bands: `magnitudeBandIndex` is not additive,
+    // so two `▲▲` steps are re-banded from their summed amount inside
+    // `growthSentence` rather than by adding triangles.
+    const totalApplied = priorGrowth.reduce(
+      (sum, c) => sum + (c.magnitude?.raw ?? 0),
+      growthApplied,
+    );
+    // A tier that turned over on *either* step is still a beat on the folded
+    // change — the mastery crossing is the story, and it must not be swallowed
+    // by a later incidental step in the same reach.
+    const tierCrossedNow =
+      growthTierFrom != null && growthTierTo != null && growthTierTo > growthTierFrom;
+    const tierCrossed = tierCrossedNow || priorGrowth.some(c => c.storyWeight === 'beat');
     const sentence = growthSentence({
       actorName,
       domain: growthDomain,
-      applied: growthApplied,
-      tierCrossed: growthTierFrom != null && growthTierTo != null && growthTierTo > growthTierFrom,
+      applied: totalApplied,
+      tierCrossed,
     });
+    supersededGrowthIds = priorGrowth.map(c => c.id);
     aftermathChanges.push({
-      id: `${action.actionId}:step:${action.currentStep}:growth:${growthDomain}`,
+      // Step-free once folded: the change speaks for the reach across the whole
+      // encounter, so pinning it to the step that happened to land last would be
+      // the same half-truth the two chips told.
+      id: priorGrowth.length > 0
+        ? `${action.actionId}:growth:${growthDomain}`
+        : `${action.actionId}:step:${action.currentStep}:growth:${growthDomain}`,
       kind: 'growth',
       title: `${reachDisplayName(growthDomain)} grew`,
       detail: sentence.detail,
@@ -2433,7 +2485,7 @@ export function executeStepResult(
     }
   }
 
-  finalAction = appendAftermathChanges(finalAction, aftermathChanges);
+  finalAction = appendAftermathChanges(finalAction, aftermathChanges, supersededGrowthIds);
   if (finalAction.resolved && finalAction.outcome) {
     const changes = finalAction.aftermathChanges ?? [];
 

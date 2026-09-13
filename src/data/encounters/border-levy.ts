@@ -1,0 +1,456 @@
+/**
+ * The Border Levy — slot 2 of the realm-court batch (THR-1454).
+ * 
+ * Brief: `Docs/plans/encounters/realm-court-brief.md`.
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      Yes, per class: `{actor}` comes down the road past
+ *                      `{location}` (wayside), or out of it on the cart road
+ *                      (rural), and finds the way barred.
+ *   2 P2 events?       The crown takes a levy at the rope; the sergeant sets the
+ *                      figure by eye; the figure he says is not the crown's. Every
+ *                      sentence is an event with a cost already paid.
+ *   3 P3 one stake?    Choice, as the brief declared: pay the figure asked, or
+ *                      argue it in front of four men who collect for a living.
+ *   4 ≤80 words?       Opening + spine inside budget at both classes.
+ *   5 Read aloud?      Report throughout. Nothing is felt from inside the scene.
+ *   6 Stated, never encoded? 'The figure he says is not the figure the crown set'
+ *                      is the fact, written as the fact.
+ *   7 Every sentence works? Challenge, test, or outcome; nothing else.
+ *   8 Nothing unintroduced? The rope, the levy, the ledger figure and the queue
+ *                      behind all appear before a card or a chip names them.
+ *   9 One named person? `{cast:sergeant}` — the levy sergeant, on stage at both
+ *                      beats and never gendered in prose (reuse binds whoever is
+ *                      standing there).
+ *  10 Stake in a sentence? 'Do they pay a crooked figure, or make the crown's own
+ *                      men collect by the crown's book?'
+ *  11 Cards verb+noun, spell-style? Yes; three specials, each mechanism-stating.
+ *  12 Opening per class? `wayside` and `rural`, both written.
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            The crown's levy men are taking more than the crown set, and
+ *                   the agent is next at the rope.
+ *   Whose problem?  The agent's — their road, their goods, their turn.
+ *   Reach = theme?  Step 0 tests Gold and is *about* arguing a figure. Step 1 tests
+ *                   Iron and is *about* standing there while armed men decide
+ *                   whether to take it anyway.
+ *   Shape           danger → confrontation → aftermath (packet roll, kept).
+ *   Value axes      `courage_prudence` (argue or pay and go) and `honesty_cunning`
+ *                   (make them do it by the book, or get around it). Named here
+ *                   because the mortal's choice at step 1 is a real fork in their
+ *                   values even though the structure is linear.
+ *   Why success is crown-aligned. Refusing a *crooked* levy upholds the crown's
+ *                   own figure, so the standing moves up on success and down on
+ *                   failure — the same direction as the other two in the family,
+ *                   which is what makes them one family rather than three moods.
+ *   Consequence hand (binding, THR-1145): `thread` + `drive`.
+ *                   `thread` — `thread_strengthen` on the success side, where the
+ *                   god's hand was plain on a road held; `thread_weaken` on the
+ *                   failure side, where it was plain and did not help.
+ *                   `drive` — `assign_ambition` (`ambition_seek_revenge`) on the
+ *                   failure side. A mortal robbed at a toll post by men wearing the
+ *                   crown's colours wants it back, and the world acts on that.
+ *   Cool failure?   No death, no gaol. They are lightened, the rope lifts, and the
+ *                   road goes on — carrying a grudge the simulation will pursue.
+ *   Systems quota   cast + rewards (the thread and ambition writes persist) +
+ *                   reputation + factions — four, one over the floor.
+ * 
+ *   `$realm` binds `factionId` only; see the court-summons doc block for the chip
+ *   anchor gap and the deferral filed against it.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.realm.border_levy',
+  tags: ['#crown_errand'],
+  rarityTier: 2,
+  intrinsicTier: 'background',
+  name: 'The Border Levy',
+  reach: 'iron',
+  crudType: 'read',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence', 'honesty_cunning'],
+  settings: ['wayside', 'rural'],
+  openings: {
+    wayside: '{actor} comes down the road past {location} and finds it barred. A rope hangs across the way and '
+      + 'four men of the crown stand at it.',
+    rural: '{actor} is on the cart road out of {location} when the way ahead closes. A rope hangs across it '
+      + 'and four men of the crown stand at it.',
+  },
+  steps: [
+    {
+      reach: 'gold',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.35,
+      purposeLine: 'Argue the figure',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The crown claims this ground to the rope and takes a levy from everyone crossing out. The '
+        + 'sergeant at the rope, {cast:sergeant}, names a figure that is not the one the crown set. '
+        + 'Everyone ahead has paid it.',
+      successAfterimage: 'They got the sergeant back to the crown\'s own figure and said it out loud.',
+      failureAfterimage: 'The sergeant heard them out and named the same figure again.',
+      successAtCostAfterimage: 'They argued the figure down and made an enemy of the man holding the rope.',
+      criticalSuccessAfterimage: 'They had the crown\'s figure and the date it was set, and the sergeant had neither.',
+      criticalFailureAfterimage: 'They argued badly, and the figure went up while they were doing it.',
+      deal: {
+        count: 4,
+        tags: ['social', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'levy.recall_the_tally',
+          name: 'Remember The Figure',
+          sphere: 'time',
+          essenceCost: 2,
+          forecastDelta: 0.11,
+          imageTag: 'generic.memory',
+          effectLine: 'Put last season\'s rate back in the sergeant\'s head, plain and next to this one. A real help.',
+          bandProse: {
+            success: 'The sergeant remembered last season\'s rate and could not unremember it.',
+            failure: 'The sergeant remembered the old rate and said this year was not last year.',
+          },
+        },
+        {
+          id: 'levy.raise_the_murmur',
+          name: 'Stir The Queue',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.crowd',
+          effectLine: 'Give the people waiting behind them the urge to say out loud what they are all thinking. A real '
+            + 'help.',
+          bandProse: {
+            critical_success: 'Four carters behind them said the same figure at once, and the rope came down.',
+            failure: 'The people behind them spoke up, and the sergeant took the names of two.',
+            near_miss: 'The queue found its voice a moment after the sergeant had finished speaking.',
+          },
+        },
+      ],
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'faction_reputation_gain',
+            factionId: '$realm',
+            amount: -0.03,
+          },
+          {
+            kind: 'apply_condition',
+            conditionTraitId: 'trait.condition.shaken',
+            targetAgentId: '$actor',
+          },
+        ],
+      },
+    },
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.4,
+      purposeLine: 'Hold the rope',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: '{cast:sergeant} names the figure a second time and does not step off the rope. The men at the '
+        + 'rope have done this before and are not in a hurry about it. The people behind {actor} on the '
+        + 'road have stopped talking.',
+      successAfterimage: 'The rope came down and the crown\'s own figure is what went into the tin.',
+      failureAfterimage: 'They paid what was asked, and the rope came up behind them.',
+      successAtCostAfterimage: 'The rope came down at the crown\'s figure, and they went through with a split lip.',
+      criticalSuccessAfterimage: 'The sergeant wrote the crown\'s figure in his own book with the queue watching.',
+      criticalFailureAfterimage: 'They were taken off the road, gone through, and put back on it lighter.',
+      successMetadata: {
+        effects: [
+          {
+            kind: 'faction_reputation_gain',
+            factionId: '$realm',
+            amount: 0.07,
+          },
+          {
+            kind: 'thread_strengthen',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'Held the crown\'s own figure at the rope',
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'faction_reputation_gain',
+            factionId: '$realm',
+            amount: -0.05,
+          },
+          {
+            kind: 'thread_weaken',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'The god\'s hand was on the rope and the rope held',
+          },
+          {
+            kind: 'plant_compulsion',
+            targetAgentId: '$actor',
+            encounterBias: {
+              duel: 0.3,
+              steal: 0.25,
+              trade: -0.3,
+            },
+            narrativeHook: 'Taken at a crown toll post, and looking for the chance to even it.',
+          },
+          {
+            kind: 'apply_condition',
+            conditionTraitId: 'trait.condition.shaken',
+            targetAgentId: '$actor',
+          },
+        ],
+      },
+      deal: {
+        count: 5,
+        tags: ['might', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'levy.loosen_the_post',
+          name: 'Shift The Stake',
+          sphere: 'force',
+          essenceCost: 2,
+          forecastDelta: 0.16,
+          imageTag: 'generic.energy',
+          costs: {
+            detectionDelta: 0.15,
+          },
+          effectLine: 'The wood holding the rope moves in the ground at the worst moment for the men leaning on it. '
+            + 'Rival gods can hardly miss the hand that did it.',
+          bandProse: {
+            critical_success: 'The rope went slack, the sergeant went down, and nobody at the post wanted the argument after '
+              + 'that.',
+            failure: 'The ground gave up the wood, and the sergeant put the rope back himself without a word.',
+            critical_failure: 'The wood came out so plainly that the sergeant stopped looking at the rope and started looking '
+              + 'at the sky.',
+          },
+        },
+      ],
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'sergeant',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['guard', 'ranger', 'hunter'],
+      supportRole: 'levy_sergeant',
+      spawnNpcRole: 'guard',
+      spawnName: 'Bram Oskell',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'The crown\'s border runs across the road here, and the crown\'s men are taking more at it than '
+      + 'the crown asked for. The road does not go around.',
+    success: 'The rope came down at the figure the crown actually set, and the queue behind saw it come down.',
+    failure: 'The rope came down when the sergeant\'s figure was met, and the road on the far side cost more '
+      + 'than it should have.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The rope is down and the road runs on. What it cost to get through is settled.',
+      changes: [
+        {
+          id: 'levy.the_rope_read',
+          kind: 'growth',
+          title: 'A toll post, argued',
+          detail: 'Standing at a rope with armed men teaches the iron reach.',
+          polarity: 'gain',
+          concepts: [
+            {
+              text: 'iron reach',
+              tooltipId: 'reach.iron',
+            },
+          ],
+        },
+      ],
+      reactions: [
+        {
+          id: 'levy.walk_it_off',
+          label: 'Let them get their nerve back down the road',
+          effects: [
+            {
+              kind: 'remove_condition',
+              conditionTraitId: 'trait.condition.shaken',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        success: {
+          overview: 'The crown\'s own figure went into the tin and the rope came down on it. The queue behind paid '
+            + 'the same.',
+          changes: [
+            {
+              id: 'levy.held_the_figure',
+              kind: 'faction_reputation',
+              category: 'boon',
+              direction: 'gain',
+              stateNoun: {
+                text: 'court standing',
+                tooltipId: 'ui.standing',
+              },
+              title: 'Held to the crown\'s figure',
+              causeClause: 'Held them to the rate they were sent with',
+              detail: 'Their standing with the crown rose.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'standing',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'levy.thread_held',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt at the rope',
+              causeClause: 'The god\'s hand was on the road',
+              detail: 'The thread to {actor} runs stronger.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The rope came down at the crown\'s figure. The sergeant will know the face next time the road '
+            + 'comes this way.',
+          changes: [
+            {
+              id: 'levy.held_the_figure_at_cost',
+              kind: 'faction_reputation',
+              category: 'boon',
+              direction: 'gain',
+              stateNoun: {
+                text: 'court standing',
+                tooltipId: 'ui.standing',
+              },
+              title: 'Held, and marked for it',
+              causeClause: 'Won it and made an enemy',
+              detail: 'Their standing with the crown rose.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'standing',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview: 'They paid the sergeant\'s figure and the rope came up behind them. {actor} goes on down the road '
+            + 'lighter, and looking for the chance to even it.',
+          changes: [
+            {
+              id: 'levy.paid_the_crooked_figure',
+              kind: 'faction_reputation',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'court standing',
+                tooltipId: 'ui.standing',
+              },
+              title: 'Paid what was asked',
+              causeClause: 'Met a figure the crown never set',
+              detail: 'Their standing with the crown slipped.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'standing',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'They were taken off the road and gone through where the queue could watch, and put back on it '
+            + 'lighter. {cast:sergeant} did not write anything in the book at all.',
+          changes: [
+            {
+              id: 'levy.gone_through',
+              kind: 'faction_reputation',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'court standing',
+                tooltipId: 'ui.standing',
+              },
+              title: 'Gone through at the rope',
+              causeClause: 'Argued the levy and was searched',
+              detail: 'Their standing with the crown fell hard.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'standing',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'levy.thread_frayed',
+              kind: 'growth',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Watched, and not spared',
+              causeClause: 'The god\'s hand was plain and the rope held',
+              detail: 'The thread to {actor} runs thinner.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A two-step border levy: argue a crooked figure, then stand at the rope while armed men decide '
+    + 'whether to take it anyway. Binds $realm for the standing it moves.',
+  locationSubtypes: expandSettings(['wayside', 'rural']),
+  consequenceDraw: ['thread', 'drive'],
+};
+
+export const BORDER_LEVY_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

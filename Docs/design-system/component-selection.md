@@ -35,8 +35,8 @@ selected by hand — `AgentProfileModal`, `LocationProfileModal`, `FactionSheet`
 (inline summary), `HexDetailView` (a hex's contents in the right panel) and `IdentityChip`
 (inline reference) are not detail surfaces and are unaffected.
 
-`AgentDetailPanel` and `NpcDetailView` have no production mount and are deleted in slice 3
-(THR-1492); do not build on either.
+`AgentDetailPanel` and `NpcDetailView` were deleted in THR-1492 — they had no production
+mount, and a doc row for a component nothing renders reads as an instruction to use it.
 
 ### Show a list of things
 
@@ -46,7 +46,7 @@ selected by hand — `AgentProfileModal`, `LocationProfileModal`, `FactionSheet`
 | Narrative threads grouped by category | `ThreadsPanel` | Left sidebar or modal. Groups by agent/location/faction/army/artifact. |
 | Agents in player's retinue | `RetinuePanel` | Left sidebar. Grouped by tier. |
 | Active encounters/events log | `EncounterLog` / `EventLog` | Right panel section. Scrollable history. |
-| Recent agent actions | `RecentActivityLog` | Embedded in AgentDetailPanel. |
+| Recent agent actions | `RecentActivityLog` | Embedded in the agent sheet. |
 | Agent attachments | `AttachmentRow` → `AttachmentDetailView` | Row is list item, detail opens on click. |
 
 ### Show a card or panel
@@ -54,9 +54,8 @@ selected by hand — `AgentProfileModal`, `LocationProfileModal`, `FactionSheet`
 | Need | Component | Notes |
 |------|-----------|-------|
 | Generic content wrapper with header/body/footer | `Card` (shared primitive) | Compound: Card.Header, Card.Body, Card.Footer. Variants: surface, raised, glass. |
-| Entity card for sidebar (agents, factions, etc.) | `EntityCard` (shared primitive) | Renders structured blocks: member_list, keyword_cloud, trait_grid, bond_list, domain_grid, timeline. |
 | Domain reach tier display | `DomainCard` | Shows reach art thumbnail + tier prose. |
-| Rarity-accented wrapper | `RarityBorderBox` | Left-border accent by rarity tier. Wraps any content — use around EntityCard or ListRow for rarity emphasis. |
+| Rarity-accented wrapper | `RarityBorderBox` | Left-border accent by rarity tier. Wraps any content — use around a sheet or ListRow for rarity emphasis. |
 | Agent compact card | `AgentInfoCard` | Name, tier, activity status. For hover popups or list embeds. |
 
 ### Show a modal or overlay
@@ -182,7 +181,6 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `ListRow` | Interactive list item | Any selectable row. Compound: Title, Subtitle, Leading. |
 | `ProgressBar` | Horizontal progress | Any 0-1 progress display. |
 | `StepDots` | Step indicator | Multi-step flows (encounters, wizards). |
-| `EntityCard` | Structured entity display | Sidebar entity details with flexible block sections. |
 | `EntityLink` | A named entity inside a sentence | Prose that names an agent, faction or artifact and should click through to it. Renders plain text when the surface passes no `onOpenEntity`, so a caller that forgets the handler loses the click and never the name. |
 | `HeldByLine` | A place's allegiance | The one row that says who holds a town — a Realm, a guild with a hall there, or nobody. Use it wherever a place is described; never hand-roll a "controlled by" line, or the sheet and the map's border will drift apart. |
 | `DomainCard` | Reach tier card | Domain/reach display with art. |
@@ -217,7 +215,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 
 ## Component Composition Patterns
 
-**Entity display chain:** `RarityBorderBox` → `EntityCard` → (contains `DomainCard`, `RarityBadge`, `SphereIcon`)
+**Entity display chain:** `RarityBorderBox` → a sheet → `Section` stack → (contains `DomainCard`, `RarityBadge`, `SphereIcon`)
 
 **Modal content:** `Modal` → `Modal.Header` + `Modal.Body` (your content) + `Modal.Footer` (actions)
 
@@ -225,13 +223,13 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 
 **Progressive disclosure:** `Tooltip` (Tier 1 hover) → `AgentInfoCard` (Tier 2 click) → `AgentProfileModal` (Tier 3 deep dive)
 
-**HexMap interaction:** Click hex → `HexDetailView` (right panel) → click entity → `AgentDetailPanel` / `LocationProfileModal`
+**HexMap interaction:** Click hex → `HexDetailView` (right panel) → click entity → `useRefRouterContext()?.open(ref)`
 
 ---
 
 ## Anti-Patterns
 
-- **Don't use `EntityCard` for simple text display** — it's a structured block renderer. Use `Card` for generic content.
+- **Don't build a second section model** — `shared/Section` renders every detail page's sections (prose, chips, panel, portrait, event-card, triggers). `EntityCard`, the older rival model, retired in THR-1492. Use `Card` for generic content that is not a detail page.
 - **Don't create a new modal component** when `Modal` (shared) with custom body content would work. Custom modals are only for fundamentally different interaction patterns (encounter branching, full-screen vignettes).
 - **Don't put content directly in the hex map zone** — everything on the map goes through HexMapV2's render pipeline (Three.js). HTML overlays above the canvas use `HexTooltip`, `LocationLabelOverlay`, etc.
 - **Don't nest `Card` inside `Card`** — use `SectionHeading` to divide content within a single Card instead.
@@ -246,7 +244,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | Top bar | Top edge | Full width | `TopBar` / `SimulationControls` |
 | Left sidebar | Left edge | 60-220px (collapsed/expanded) | `HexSidebar` / `ThreadsPanel` / `RetinuePanel` |
 | Hex map canvas | Center | Fills remaining space | `HexMapV2` (Three.js) |
-| Right panel | Right edge | ~380px | `HexDetailView` / `AgentDetailPanel` / `ThreadDetailView` |
+| Right panel | Right edge | ~380px | `HexDetailView` / `ThreadDetailView` |
 | Bottom drawer | Bottom edge | Full width, slides up | `ActionDrawer` |
 | Modal layer | Centered overlay | max-width varies, max-height ≤85vh (Law 33 cap; the shared `Modal` ships 75vh) | `Modal` and custom modals |
 | Toast/alert layer | Top center | Auto-width | `AlertBar` / `EventPopup` |

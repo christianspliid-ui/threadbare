@@ -173,9 +173,14 @@ describe('content tag vocabulary — the seating rule held', () => {
     for (const { entry } of CORPUS) {
       for (const t of authoredTags(entry)) bearers.set(t, (bearers.get(t) ?? 0) + 1);
     }
-    // Reader-only tags — seated on a `tagFilters` query site with no bearer yet. The
-    // generated catalog badges these DEAD; the weekly retro deletes them. Named here so
-    // the list cannot quietly grow without someone editing this test.
+    // Tags seated with no bearer. They were *reader-only* when this list was written —
+    // each sat on a `tagFilters` query site that wanted content nobody had authored.
+    // THR-1496 repointed all six query sites at live content, so they are now **orphaned**:
+    // no bearer and no reader either, which is the sunset rule's own deletion predicate.
+    // The generated catalog badges them `orphaned` and says so. They stay seated here
+    // only because deleting vocabulary is the weekly retro's call, not an executor's —
+    // tracked by THR-1501. Named explicitly so the list cannot quietly grow without
+    // someone editing this test.
     const READER_ONLY = new Set([
       '#blackmail_evidence',
       '#community',

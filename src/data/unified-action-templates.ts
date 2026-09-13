@@ -220,6 +220,9 @@ import { THE_JURY_OF_THE_RUINED_TEMPLATE } from './encounters/the-jury-of-the-ru
 import { THE_BLINDED_ORACLE_TEMPLATE } from './encounters/the-blinded-oracle';
 import { THE_UNFINISHED_RITE_TEMPLATE } from './encounters/the-unfinished-rite';
 import { THE_BEAST_IN_THE_GRANARY_TEMPLATE } from './encounters/the-beast-in-the-granary';
+import { COURT_SUMMONS_TEMPLATE } from './encounters/court-summons';
+import { BORDER_LEVY_TEMPLATE } from './encounters/border-levy';
+import { TITHE_DEMANDED_TEMPLATE } from './encounters/tithe-demanded';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5663,6 +5666,9 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...EFFECT_SHELL_PROOF_TEMPLATES,
   THE_UNFINISHED_RITE_TEMPLATE,
   THE_BEAST_IN_THE_GRANARY_TEMPLATE,
+  COURT_SUMMONS_TEMPLATE,
+  BORDER_LEVY_TEMPLATE,
+  TITHE_DEMANDED_TEMPLATE,
 ];
 
 /**
@@ -5752,6 +5758,9 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   THE_BLINDED_ORACLE_TEMPLATE,
   THE_UNFINISHED_RITE_TEMPLATE,
   THE_BEAST_IN_THE_GRANARY_TEMPLATE,
+  COURT_SUMMONS_TEMPLATE,
+  BORDER_LEVY_TEMPLATE,
+  TITHE_DEMANDED_TEMPLATE,
 ];
 
 /**

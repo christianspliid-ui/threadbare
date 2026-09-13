@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 113 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 114 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -10,17 +10,17 @@ The closed vocabulary an author may hang on a piece of content — 113 tags acro
 
 ## Dead tags
 
-**7 tag(s) match nothing.** A query naming one of these resolves an empty set and the author sees no error — which is why they are badged rather than quietly seated. The weekly retro either authors a bearer or deletes the tag (the sunset rule). Two different holes sit in this table and the last column tells them apart: an *authored* tag with no bearer is a query site asking for content nobody wrote, which is a hole in the corpus; a *derived* tag with no bearer is a cosmology word the corpus has simply not reached yet, which is not a defect and is never deleted.
+**7 tag(s) match nothing.** A query naming one of these resolves an empty set and the author sees no error — which is why they are badged rather than quietly seated. The weekly retro either authors a bearer or deletes the tag (the sunset rule), and the last column says **which**, because the three holes want three different answers. A *derived* tag with no bearer is a cosmology word the corpus has simply not reached yet: not a defect, never deleted. An *asked-for* tag with no bearer is a query site wanting content nobody wrote — a hole in the corpus, and the case for authoring a bearer. An *orphaned* tag is asked for by nothing and worn by nothing: it is vocabulary with no reader and no bearer, which is the sunset rule's own deletion predicate.
 
 | Tag | Axis | Why it is dead |
 |---|---|---|
 | `#light` | sphere | derived from the cosmology — no entry has reached it yet; not deletable |
-| `#stewardship` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#community` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#military` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#supply` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#contraband` | family | a `tagFilters` query site asks for it and no entry wears it |
-| `#blackmail_evidence` | family | a `tagFilters` query site asks for it and no entry wears it |
+| `#stewardship` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#community` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#military` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#supply` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#contraband` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
+| `#blackmail_evidence` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
 
 ## reach
 
@@ -30,8 +30,8 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · omen 4 · power 4 · agreement 1 | 158 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 3 · agreement 2 · omen 2 · power 1 | 106 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · omen 4 · power 4 · agreement 1 | 159 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 3 · agreement 2 · omen 2 · power 1 | 108 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 9 · power 4 · omen 2 · agreement 1 | 113 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · power 4 · agreement 2 · legendary 1 | 113 |  |
 | `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · power 5 · omen 4 · agreement 1 · legendary 1 | 129 |  |
@@ -96,7 +96,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**68 tags.**
+**69 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -163,6 +163,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#temple_errand` | Work set by the Temple of Spheres — observance, offering, and the spheres' own asking. | encounter 5 | 5 |  |
 | `#thieves_errand` | Work set by the Thieves' Guild — quiet, deniable, and paid in kind. | encounter 5 | 5 |  |
 | `#court_errand` | Work set by the Underking's Court — a favour asked by someone who does not ask. | encounter 5 | 5 |  |
+| `#crown_errand` | Work set by a Realm's crown — the summons, the levy, the due. | encounter 3 | 3 |  |
 | `#tavern_night` | An evening in a common room, and whatever the evening turns into. | encounter 10 | 10 |  |
 | `#delve` | A descent into somewhere closed — a ruin, a vault, a hole that goes down. | encounter 4 | 4 |  |
 | `#threshold_errand` | Work at a crossing place, where the road or the world changes hands. | encounter 2 | 2 |  |

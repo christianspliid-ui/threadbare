@@ -606,7 +606,13 @@ export function growthSentence(args: {
     concepts: [noun],
     stateNoun: noun,
     direction: 'gain',
-    magnitude: { ladder: 'growth', band: magnitudeBandIndex(args.applied, GROWTH_MAGNITUDE_BANDS) },
+    // `raw` rides along so a second growth in the same reach can re-band the
+    // *total* rather than draw a second identical cluster (THR-1467).
+    magnitude: {
+      ladder: 'growth',
+      band: magnitudeBandIndex(args.applied, GROWTH_MAGNITUDE_BANDS),
+      raw: args.applied,
+    },
     // A tier turning over is the one time this change is a story beat rather
     // than the drift that happens every single encounter — Christian's ruling
     // (2026-08-10) is that the drift itself takes the story's place on screen.

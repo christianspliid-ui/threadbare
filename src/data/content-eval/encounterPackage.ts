@@ -534,6 +534,13 @@ export function emitEncounterTest(pkg: EncounterContentPackage): string {
 
   // Imports are conditional so a settings-less encounter's generated test does
   // not carry an unused import — TS6133 would land it on the ratchet.
+  //
+  // THR-1454: the `describe` title below is `JSON.stringify`d rather than dropped into
+  // a single-quoted literal. An encounter name containing an apostrophe — "The Crown's
+  // Summons" — emitted a test file that did not parse, and the failure surfaced as an
+  // esbuild transform error naming a column, three stages after the compile that wrote
+  // it. Every other interpolation here is an id, a number or a slug and cannot carry
+  // one; the display name is the only free-text field in this template.
   const settingImport =
     settings.length > 0 ? "\nimport { expandSettings } from '../../settingClasses';" : '';
 
@@ -547,7 +554,7 @@ import { describe, expect, it } from 'vitest';
 import { ${constName} } from '../${pkg.slug}';${settingImport}
 import { drawConsequenceHand } from '../../content-eval/consequenceDraw';
 
-describe('${assembled.name} — template structure', () => {
+describe(${JSON.stringify(`${assembled.name} — template structure`)}, () => {
   it('carries its identity', () => {
     expect(${constName}.id).toBe('${assembled.id}');
     expect(${constName}.reach).toBe('${assembled.reach}');

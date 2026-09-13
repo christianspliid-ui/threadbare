@@ -1,7 +1,7 @@
 /**
- * The content-query gate, and the ratchet that lets it be fatal (THR-1487).
+ * The content-query gate, now simply fatal (THR-1487, emptied by THR-1496).
  *
- * Two things are pinned here:
+ * Three things are pinned here:
  *
  * 1. **Coverage.** The sweep walks both routes a `RewardPoolRecipe` can be authored on.
  *    Measured when this file was written: 1 recipe on the `reward_draw` effect route,
@@ -9,10 +9,20 @@
  *    reported the corpus clean. The assertion below is on the *shape* (both routes
  *    present, the step route dominant), not on the counts, which rot.
  *
- * 2. **The ratchet fails both ways** — the `undertakingContract.test.ts` rule. A listed
- *    entry that now resolves is stale and must be deleted; an unlisted entry that
- *    resolves empty is new rot and must be fixed or deliberately listed. A grandfather
- *    list checked in only one direction is a way to *add* rot quietly.
+ * 2. **No recipe resolves empty, with no forgiveness left.** THR-1487 shipped a
+ *    `CONTENT_QUERY_RETROFIT_PENDING` ratchet because widening the sweep surfaced
+ *    sixteen legacy rows that promised a prize and drew nothing. THR-1496 repaired all
+ *    sixteen, so the list reached zero and — as its own header promised — it and the
+ *    `grandfathered` report arm were deleted rather than left as an empty allowance.
+ *
+ * 3. **Every `categoryWeights` key is a real `AttachmentCategory`** — the second defect
+ *    shape THR-1496 found, and the reason this arm exists. A key that is not a category
+ *    (`mastery`, `tomes_scrolls` — the latter a possession *subcategory*) contributes no
+ *    candidates and no weight, so the recipe quietly hands out less than it declares.
+ *    The empty-pool gate cannot see it whenever the recipe's *other* categories resolve,
+ *    which is how five of the nine shipped sites stayed invisible; `tsc` did flag all
+ *    nine as TS2353, but inside a ~2870-error red baseline (THR-489) that is not a
+ *    signal anyone reads. So it is asserted here, where it fails alone and by name.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -26,7 +36,7 @@ import {
   rewardRecipeHasCandidates,
   recipeKey,
 } from '../nudgeGrantLiveness';
-import { CONTENT_QUERY_RETROFIT_PENDING } from '../../data/content-eval/contentQueryRetrofitPending';
+import { ATTACHMENT_CATEGORIES } from '../../types/attachments';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 const ALL: readonly UnifiedActionTemplate[] = [
@@ -55,14 +65,14 @@ describe('content-query gate — coverage (THR-1487)', () => {
   });
 });
 
-describe('content-query gate — the corpus is clean outside the ratchet', () => {
+describe('content-query gate — the corpus is clean', () => {
   const report = validateContentQueries(ALL);
 
   it('checks a non-trivial number of recipes (the sweep is not vacuous)', () => {
     expect(report.checkedRecipes).toBeGreaterThan(100);
   });
 
-  it('no recipe resolves empty except the ones deliberately grandfathered', () => {
+  it('no recipe resolves empty', () => {
     const lines = report.empty.map(
       e => `${recipeKey(e.templateId, e.site)} [${e.categoryWeights.join('/')}] tags=${e.tagFilters.join(' ')}`,
     );
@@ -70,23 +80,9 @@ describe('content-query gate — the corpus is clean outside the ratchet', () =>
   });
 });
 
-describe('the ratchet fails in both directions', () => {
-  const report = validateContentQueries(ALL);
-
-  it('every listed entry still resolves empty — a stale line must be deleted', () => {
-    const stillEmpty = new Set(report.grandfathered.map(e => recipeKey(e.templateId, e.site)));
-    const stale = CONTENT_QUERY_RETROFIT_PENDING.filter(key => !stillEmpty.has(key));
-    expect(stale).toEqual([]);
-  });
-
-  it('the list is exactly the empty set, with nothing left over', () => {
-    const listed = [...CONTENT_QUERY_RETROFIT_PENDING].sort();
-    const actual = [...new Set(report.grandfathered.map(e => recipeKey(e.templateId, e.site)))].sort();
-    expect(actual).toEqual(listed);
-  });
-
-  it('an unlisted empty recipe is reported as fatal, not forgiven', () => {
-    // Falsification: a template the list does not name, whose recipe cannot resolve.
+describe('the gate is fatal for every empty recipe (THR-1496)', () => {
+  it('an empty recipe is reported as fatal, and nothing forgives it', () => {
+    // Falsification: a template whose recipe cannot resolve.
     const rotted = {
       id: 'encounter.thr1487.fabricated_rot',
       steps: [{
@@ -99,7 +95,7 @@ describe('the ratchet fails in both directions', () => {
 
     const fabricated = validateContentQueries([rotted]);
     expect(fabricated.empty).toHaveLength(1);
-    expect(fabricated.grandfathered).toHaveLength(0);
+    expect(Object.keys(fabricated)).not.toContain('grandfathered');
     // And the underlying predicate agrees, so the fatal verdict is not a bookkeeping bug.
     expect(rewardRecipeHasCandidates({
       categoryWeights: { possession: 1 },
@@ -123,6 +119,54 @@ describe('the ratchet fails in both directions', () => {
     const fabricated = validateContentQueries([healthy]);
     expect(fabricated.checkedRecipes).toBe(1);
     expect(fabricated.empty).toEqual([]);
-    expect(fabricated.grandfathered).toEqual([]);
+
+  });
+});
+
+describe('every categoryWeights key is a real AttachmentCategory (THR-1496)', () => {
+  const VALID: ReadonlySet<string> = new Set<string>(ATTACHMENT_CATEGORIES);
+
+  /** `templateId @ site :: badKey,badKey` for every shipped recipe naming a non-category. */
+  function invalidKeySites(templates: readonly UnifiedActionTemplate[]): string[] {
+    const out = new Set<string>();
+    for (const template of templates) {
+      for (const { recipe, site } of allTemplateRewardRecipes(template)) {
+        const bad = Object.keys(recipe.categoryWeights).filter(k => !VALID.has(k));
+        if (bad.length > 0) out.add(`${recipeKey(template.id, site)} :: ${bad.join(',')}`);
+      }
+    }
+    return [...out].sort();
+  }
+
+  it('the shipped corpus names no key that is not a category', () => {
+    // Measured at THR-1496: nine sites across two spellings — `mastery` (tavern.brawl,
+    // tavern.drinking_contest, tavern.the_challenge ×4) and `tomes_scrolls`
+    // (enc.letters_of_introduction ×3). Four were visible to the empty-pool gate; the
+    // other five were not, because their remaining categories resolved.
+    expect(invalidKeySites(ALL)).toEqual([]);
+  });
+
+  it('falsification — a fabricated bad key IS reported', () => {
+    // The controlled arm. Without it, the assertion above passes just as happily when
+    // the sweep walks nothing at all (the vacuous-probe failure this repo keeps hitting).
+    const bad = {
+      id: 'encounter.thr1496.fabricated_bad_key',
+      steps: [{
+        id: 'step1',
+        successMetadata: {
+          rewardPool: { categoryWeights: { possession: 1, tomes_scrolls: 1 } },
+        },
+      }],
+    } as unknown as UnifiedActionTemplate;
+
+    expect(invalidKeySites([bad])).toEqual([
+      'encounter.thr1496.fabricated_bad_key @ step 0.successMetadata.rewardPool :: tomes_scrolls',
+    ]);
+  });
+
+  it('the sweep that produced the green verdict is not vacuous', () => {
+    let recipes = 0;
+    for (const template of ALL) recipes += allTemplateRewardRecipes(template).length;
+    expect(recipes).toBeGreaterThan(100);
   });
 });

@@ -342,8 +342,16 @@ describe('every derived builder returns the structure it spent on the sentence',
     // biggest changes as the smallest clusters.
     const faint = growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.005, tierCrossed: false });
     const leap = growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.9, tierCrossed: false });
-    expect(faint.magnitude).toEqual({ ladder: 'growth', band: 0 });
-    expect(leap.magnitude).toEqual({ ladder: 'growth', band: GROWTH_MAGNITUDE_BANDS.length - 1 });
+    // `raw` rides alongside the banding (THR-1467) so a second growth in the
+    // same reach can re-band the total; it is asserted here rather than matched
+    // away, because a band that stopped carrying the amount it was computed from
+    // would silently turn that fold back into two identical chips.
+    expect(faint.magnitude).toEqual({ ladder: 'growth', band: 0, raw: 0.005 });
+    expect(leap.magnitude).toEqual({
+      ladder: 'growth',
+      band: GROWTH_MAGNITUDE_BANDS.length - 1,
+      raw: 0.9,
+    });
     expect(leap.magnitude!.band).toBeGreaterThan(faint.magnitude!.band);
   });
 

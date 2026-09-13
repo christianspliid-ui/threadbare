@@ -479,7 +479,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: {
           rewardPool: {
             categoryWeights: { possession: 0.60, condition: 0.20, bestowed_power: 0.20 },
-            tagFilters: ['#shadow', '#contraband'],
+            tagFilters: ['#shadow'],
           },
           tierPromotionEligible: true,
           reputationDelta: 0.05,
@@ -611,7 +611,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: {
           rewardPool: {
             categoryWeights: { possession: 0.40, condition: 0.30, bestowed_power: 0.30 },
-            tagFilters: ['#shadow', '#blackmail_evidence'],
+            tagFilters: ['#shadow'],
           },
           tierPromotionEligible: true,
           reputationDelta: 0.05,
