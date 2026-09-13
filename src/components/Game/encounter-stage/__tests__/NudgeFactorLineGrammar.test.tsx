@@ -20,6 +20,9 @@ import { describe, expect, it } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
+import {
+  isActionStepBranch,
+} from '../../../../types/unifiedAction';
 import type {
   ActionStep,
   UnifiedAction,
@@ -113,7 +116,13 @@ function buildAction(template: UnifiedActionTemplate): UnifiedAction {
 
 function renderFor(reach: ReachDomain, authored = true) {
   const template = buildTemplate(reach, authored);
-  const step = template.steps[0];
+  const [entry] = template.steps;
+  // `steps` is ActionStepOrBranch[]; buildStep returns a plain step, so assert it
+  // rather than cast — a fixture that silently became a branch should fail loudly.
+  if (isActionStepBranch(entry)) {
+    throw new Error('fixture built a branch; buildNudgePhaseModel takes a plain ActionStep');
+  }
+  const step = entry;
   const phase = buildNudgePhaseModel({
     template,
     activeAction: buildAction(template),
@@ -122,7 +131,7 @@ function renderFor(reach: ReachDomain, authored = true) {
     gameState: {
       essencePool: { force: 3 } as unknown as GameState['essencePool'],
       unlockedActionIds: [],
-    } as GameState,
+    } as unknown as GameState,
   })!;
   render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
   return phase;
