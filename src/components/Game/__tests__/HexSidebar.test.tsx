@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HexSidebar } from '../HexSidebar';
 
@@ -187,5 +187,88 @@ describe('HexSidebar', () => {
     expect(screen.getByText('The Forge')).toBeTruthy();
     expect(screen.getByText('The Tower')).toBeTruthy();
     expect(screen.getByText('The Market')).toBeTruthy();
+  });
+
+  /**
+   * THR-1455 — the Area block read `{hexCount} hexes` over a bare `featureType`:
+   * a raw magnitude (Law 13) above a raw snake_case enum (Law 14), on the one
+   * surface that shows an Area's detail.
+   *
+   * Each test asserts the resolved face AND the absence of the raw one — a
+   * passing "renders Plains" alone would still pass if the key were printed
+   * beside it.
+   */
+  describe('Area block — Laws 13 and 14', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const withRegion = (featureType: string, hexCount: number) => ({
+      ...defaultProps,
+      regionData: { ...defaultProps.regionData, featureType, hexCount },
+    });
+
+    it('renders the feature word, never the snake_case key (Law 14)', () => {
+      const { container } = render(<HexSidebar {...withRegion('mountain_range', 42)} />);
+
+      expect(screen.getByText('Mountains')).toBeTruthy();
+      expect(container.textContent).not.toMatch(/mountain_range/);
+    });
+
+    it('renders a banded size, never the count or the unit (Law 13)', () => {
+      const { container } = render(<HexSidebar {...withRegion('plains', 137)} />);
+
+      expect(screen.getByText('Boundless lands')).toBeTruthy();
+      expect(container.textContent).not.toMatch(/137/);
+      expect(container.textContent).not.toMatch(/hexes/);
+    });
+
+    it('bands the measured hexCount range across every rung', () => {
+      // Region hexCount over seed 42 runs 6–192 across map sizes; one case per rung.
+      const expected: ReadonlyArray<readonly [number, string]> = [
+        [6, 'Small lands'],
+        [36, 'Modest lands'],
+        [60, 'Wide lands'],
+        [100, 'Vast lands'],
+        [192, 'Boundless lands'],
+      ];
+
+      for (const [hexCount, word] of expected) {
+        const { container, unmount } = render(<HexSidebar {...withRegion('plains', hexCount)} />);
+        expect(container.textContent).toContain(word);
+        unmount();
+      }
+    });
+
+    it('falls back to plain English and warns once for an unresolvable key (Law 14)', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const { container, unmount } = render(<HexSidebar {...withRegion('salt_flat', 42)} />);
+      expect(screen.getByText('Salt Flat')).toBeTruthy();
+      expect(container.textContent).not.toMatch(/salt_flat/);
+      expect(warn).toHaveBeenCalledTimes(1);
+      unmount();
+
+      // Same key again: the vocabulary miss is already known, so it stays quiet.
+      render(<HexSidebar {...withRegion('salt_flat', 42)} />);
+      expect(screen.getByText('Salt Flat')).toBeTruthy();
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('omits both lines when the Area carries neither reading', () => {
+      const { container } = render(
+        <HexSidebar
+          {...defaultProps}
+          regionData={{
+            regionId: 'r0',
+            regionName: 'The Nameless Waste',
+            historicalCulture: null,
+          }}
+        />,
+      );
+
+      expect(screen.getByText('The Nameless Waste')).toBeTruthy();
+      expect(container.textContent).not.toMatch(/lands/i);
+    });
   });
 });
