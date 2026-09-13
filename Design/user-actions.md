@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 17:59 local (15:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building the name-click fix ([THR-1461](https://linear.app/threadbar
 
 ## Resolved this period
 
+- **2026-09-13 — a faction no longer lists the same town twice** ([THR-1460](https://linear.app/threadbare/issue/THR-1460)). Merged 18:32, live. The Merchant Consortium held one settlement through two different routes, so its sheet drew it once for each. Found in Friday's attended screenshot sweep.
 - **2026-09-13 — what a player may leaf through is settled** ([THR-1495](https://linear.app/threadbare/issue/THR-1495)). Merged 17:39, live. The lane took the call rather than queueing it. Four kinds gained a reference page — legendary artifacts, companions, ambitions, and the 37-card deck you play from. Two were withheld with quotable reasons: all 513 encounters would be the answer key, and omens read through their beats. A chronicle of encounters *already lived* is explicitly still on the table.
 - **2026-09-13 — a region on the map describes itself in words** ([THR-1455](https://linear.app/threadbare/issue/THR-1455)). Merged 16:21, live. Clicking a stretch of map answered with the internal terrain key and a bare tile count; it now says what the place is and how wide it runs.
 - **2026-09-13 — a consequence can name the place it landed on** ([THR-1462](https://linear.app/threadbare/issue/THR-1462)). Merged 15:32, live. A condition dropped on a shrine can now be clicked through to the shrine, not just the traveller. Its twin for realms is queued as [THR-1499](https://linear.app/threadbare/issue/THR-1499).
@@ -40,7 +41,6 @@ Found while building the name-click fix ([THR-1461](https://linear.app/threadbar
 - **2026-09-13 — the detail sheet behaves like a real window** ([THR-1024](https://linear.app/threadbare/issue/THR-1024)). Merged 12:28, live. It takes the keyboard, holds it, and hands it back on close.
 - **2026-09-13 — a condition's sheet says how long it lasts** ([THR-1484](https://linear.app/threadbare/issue/THR-1484)). Merged 11:36, live. Two parts of the engine spelled one word differently, so the countdown bar had no denominator.
 - **2026-09-13 — the capability line reads as a sentence again** ([THR-1494](https://linear.app/threadbare/issue/THR-1494)). Merged 09:24, live. Fixes all eight reaches.
-- **2026-09-13 — a name opens that person's sheet everywhere, not just in the whisper** ([THR-1500](https://linear.app/threadbare/issue/THR-1500)). Merged 08:25, live.
 
 ---
 
