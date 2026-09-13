@@ -1,10 +1,10 @@
 # User Action Required
 
-**Last updated:** 2026-09-13 08:55 local (06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-13 09:55 local (07:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220))
+### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
 You stopped after four feedback batches on Saturday with *"more batches expected."* Everything those batches produced is shipped, merged and live.
 
@@ -13,11 +13,11 @@ You stopped after four feedback batches on Saturday with *"more batches expected
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map.
 
-New since your last look: clicking a name opens that person's sheet on every surface now, not only the whisper line ([THR-1500](https://linear.app/threadbare/issue/THR-1500), merged 08:25). [THR-1492](https://linear.app/threadbare/issue/THR-1492) retired a duplicate detail sheet — the sheet you open from a chip comes from one place, and two dead buttons are gone; checked by test, not by eye. Expect one blemish: the capability line above the prose may read *"Vara is oracle in eye."* — [THR-1494](https://linear.app/threadbare/issue/THR-1494) fixes it for all eight reaches and is written but stuck on a stalled merge. Decided, not an ask. A raw `{cast:…}` token would be new.
+Since your last look: clicking a name opens that person's sheet on every surface ([THR-1500](https://linear.app/threadbare/issue/THR-1500)), a duplicate detail sheet and two dead buttons are gone ([THR-1492](https://linear.app/threadbare/issue/THR-1492)), and the capability line now reads as a sentence for all eight reaches ([THR-1494](https://linear.app/threadbare/issue/THR-1494), merged 09:24). **The blemish earlier briefs told you to expect is fixed** — no known defect stands on these two screens. A raw `{cast:…}` token would be new.
 
 The wider design maps — fights, items, powers — wait behind twelve questions only you can answer. Say **"work the map"** in a chat when the sitting is done.
 
-### Six words with nothing left to say ([THR-1501](https://linear.app/threadbare/issue/THR-1501))
+### Six words with nothing left to say ([THR-1501](https://linear.app/threadbare/issue/THR-1501/six-family-tags-are-now-orphaned-no-bearer-no-reader-sunset-or-author))
 
 Wednesday's reward repair left six descriptive words orphaned — `#military`, `#supply`, `#community`, `#stewardship`, `#contraband`, `#blackmail_evidence`. Nothing asks for them and nothing wears them.
 
@@ -29,7 +29,7 @@ Found while building the name-click fix ([THR-1461](https://linear.app/threadbar
 
 **Should an encounter's own consequences be exempt from that gate — because you were there — or does the fog stay honest?** Either answer is defensible; the game means something different each way. Silence leaves it as-is, which is a real answer. You may meet this during the sitting.
 
-### What is a player allowed to leaf through? ([THR-1495](https://linear.app/threadbare/issue/THR-1495))
+### What is a player allowed to leaf through? ([THR-1495](https://linear.app/threadbare/issue/THR-1495/six-content-kinds-have-no-codex-category-so-their-content-cards-can))
 
 Building the content cards found six kinds of thing with no reference page. Two are plain gaps the lane will close without asking you. Four are questions about what the codex is *for*:
 
@@ -42,6 +42,7 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 
 ## Resolved this period
 
+- **2026-09-13 — the capability line reads as a sentence again** ([THR-1494](https://linear.app/threadbare/issue/THR-1494)). Merged 09:24, live. Fixes all eight reaches; the blemish three briefs warned you about is gone.
 - **2026-09-13 — a name opens that person's sheet everywhere, not just in the whisper** ([THR-1500](https://linear.app/threadbare/issue/THR-1500)). Merged 08:25, live. The last four surfaces carrying the defect THR-1461 fixed.
 - **2026-09-13 — one detail sheet instead of two, and two dead buttons gone** ([THR-1492](https://linear.app/threadbare/issue/THR-1492)). Merged 07:35, live. Checked by test, not by eye.
 - **2026-09-13 — sixteen recipes promised a prize and drew nothing** ([THR-1496](https://linear.app/threadbare/issue/THR-1496)). Merged 06:32, live. None reachable from your two remaining screens; it left six words orphaned, the standing ask above.
@@ -51,7 +52,6 @@ Nothing is broken while these sit; the cards open, they are just shallower. It i
 - **2026-09-13 — the Realm gets a court a mortal can be called to** ([THR-1454](https://linear.app/threadbare/issue/THR-1454)). Merged 02:55. Three scenes — a court summons, a border levy, a tithe demanded.
 - **2026-09-13 — the content query is now counted, so it cannot quietly rot** ([THR-1489](https://linear.app/threadbare/issue/THR-1489)). Merged 00:45. The last of the five content-model slices.
 - **2026-09-12 — an ending names the courier instead of quoting her key** ([THR-1459](https://linear.app/threadbare/issue/THR-1459)). Merged 23:36, live.
-- **2026-09-12 — content finds content by family, and 48 dead sequels stop withering** ([THR-1488](https://linear.app/threadbare/issue/THR-1488)). Merged 23:08.
 
 ---
 
