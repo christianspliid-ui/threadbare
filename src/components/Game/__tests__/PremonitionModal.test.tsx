@@ -220,3 +220,61 @@ describe('PremonitionModal — the surface as composed (THR-1139)', () => {
     expect(onViewAgent).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('PremonitionModal names its own subject (THR-1461)', () => {
+  /**
+   * The reported bug was not in this component — the name control already
+   * routed to `onViewAgent`, which is what the THR-1139 tests above pin. It was
+   * that `onViewAgent` took no argument, so the *call site* chose which mortal
+   * the sheet opened for, and chose the previously selected one: Kael's whisper
+   * opened Thorne's profile.
+   *
+   * A zero-argument callback cannot be wrong about its subject in a way a test
+   * can see — every assertion above still passes while the wrong sheet opens.
+   * Passing the id is what makes the promise checkable, so these are the
+   * assertions the old signature made impossible.
+   */
+  const OTHER_AGENT = 'agent-thorne';
+
+  it.each([
+    ['whisper', WHISPER],
+    ['compulsion', COMPULSION],
+  ] as const)('the %s name control passes the premonition subject, not the caller', (_l, premonition) => {
+    const { onViewAgent } = renderModal(premonition);
+    fireEvent.click(screen.getByTestId('premonition-subject-name'));
+    expect(onViewAgent).toHaveBeenCalledWith(premonition.agentId);
+    // Stated as an inequality too: `AGENT_ID` is the subject and `OTHER_AGENT`
+    // stands for whatever the host had selected before the interrupt arrived.
+    expect(onViewAgent).not.toHaveBeenCalledWith(OTHER_AGENT);
+  });
+
+  it('the portrait passes the same subject as the name', () => {
+    const { onViewAgent } = renderModal(WHISPER);
+    fireEvent.click(screen.getByTestId('premonition-subject-portrait'));
+    expect(onViewAgent).toHaveBeenCalledWith(WHISPER.agentId);
+  });
+
+  it('passes the subject of the premonition it was handed, not a constant', () => {
+    // Falsification: an implementation that hardcoded one id, or read the id from
+    // anywhere but `premonition`, passes the two cases above and fails this one.
+    const relabelled: PremonitionEvent = { ...WHISPER, agentId: OTHER_AGENT, agentName: 'Thorne' };
+    const onViewAgent = vi.fn();
+    const graph = new WorldGraph();
+    graph.addNode({ id: OTHER_AGENT, type: 'actor', name: 'Thorne', properties: { actorType: 'individual' } });
+    render(
+      <PremonitionModal
+        open
+        premonition={relabelled}
+        essencePool={ESSENCE}
+        graph={graph}
+        onWhisperChoice={vi.fn()}
+        onCompulsionChoice={vi.fn()}
+        onViewAgent={onViewAgent}
+        onDismiss={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('premonition-subject-name'));
+    expect(onViewAgent).toHaveBeenCalledWith(OTHER_AGENT);
+    expect(onViewAgent).not.toHaveBeenCalledWith(AGENT_ID);
+  });
+});
