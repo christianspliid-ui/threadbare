@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-16 22:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-16 23:57 local (21:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,13 +18,14 @@ One question: **is the integrated encounter experience at an acceptable state?**
 
 ## Queue
 
-**Healthy: five ready, all Low priority.** Nothing is blocked or stale; the oldest item is from 12 September.
+**Healthy: four ready, all Low priority.** Nothing is blocked or stale; the oldest item is from 12 September.
 
-- **Shipped since the last brief: [THR-1506](https://linear.app/threadbare/issue/THR-1506)** ([PR #1952](https://github.com/christianspliid-ui/threadbare/pull/1952), merged 22:36) — rumours now lead to ruins, and one rumour is enough to post a contract.
+- **In progress: [THR-1507](https://linear.app/threadbare/issue/THR-1507/codex-detail-rows-carry-no-concept-tooltips-law-17-on-every-section)** (hover explanations on every codex detail row) — its [PR #1953](https://github.com/christianspliid-ui/threadbare/pull/1953) is open.
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** (redrawing the Meet The First scene art) is still in In Dev with no owner, about 3 days now. The spend is already approved; the stalled-ticket sweep has not put it back in the queue yet.
 
 ## Health
 
-- **The engine got slower — an executor should look, nothing for you.** tick cost 86 ms/tick steady, 25% above the 7-day median (68, 87 rows since 781ddb06); top phase agent_decision, 502 agents. Name the merges between 781ddb06 and 9a43365b: git log --oneline --merges 781ddb06..9a43365b
+- **[PR #1953](https://github.com/christianspliid-ui/threadbare/pull/1953) (THR-1507) has a failing required check** and will not merge until a session pushes a fix — the executor's job, nothing for you. It is 36 minutes old and its session was active 40 minutes ago.
+- **The engine got slower — an executor should look, nothing for you.** tick cost 86 ms/tick steady, 26% above the 7-day median (68, 87 rows since 6d77c36c); top phase agent_decision, 502 agents. Name the merges between 6d77c36c and 9a43365b: git log --oneline --merges 6d77c36c..9a43365b
 - **The weekly workflow retro missed today's 11:13 slot** (inside the three-day stop); the next one is 23 September unless someone runs it by hand.
-- **Everything else is green.** The live site is serving the newest commit (9a43365b). CI, GitHub's scheduled jobs and the cleanup script (ran 22:40) are healthy. No PRs are waiting.
+- **Everything else is green.** The live site is serving the newest commit (9a43365b). CI, GitHub's scheduled jobs and the cleanup script (ran 23:40) are healthy.
