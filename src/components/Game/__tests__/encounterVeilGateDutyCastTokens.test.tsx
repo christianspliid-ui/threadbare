@@ -14,7 +14,8 @@
  * `buildGateDutyEncounterStageModel`** from the **real authored content**, and
  * reads the two surfaces the THR-1133 screenshot caught:
  *
- * - the *What Changed* consequence box ("The night will keep travelling")
+ * - the *What Changed* consequence chip (a SEED chip since THR-1498 retired the
+ *   bespoke "The night will keep travelling" box; see the second describe)
  * - the reaction card ("The cargo tells a story.")
  *
  * The adapter-level test in
@@ -24,7 +25,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach } from 'vitest';
 import { EncounterVeil } from '../EncounterVeil';
 import { WorldGraph } from '../../../engine/graph';
@@ -83,7 +84,7 @@ function authoredFallback() {
   return { hook, reaction };
 }
 
-function renderGateDutyEnding(opts: { bindCourier: boolean }) {
+function renderGateDutyEnding(opts: { bindCourier: boolean; onSelectAgent?: (agentId: string) => void }) {
   const template = gateDutyTemplate();
   const { hook, reaction } = authoredFallback();
 
@@ -185,6 +186,7 @@ function renderGateDutyEnding(opts: { bindCourier: boolean }) {
       onDisregard={vi.fn()}
       onAcknowledgeAftermath={vi.fn()}
       onAftermathReaction={vi.fn()}
+      onSelectAgent={opts.onSelectAgent}
     />,
   );
   return { hook, reaction };
@@ -207,8 +209,9 @@ describe('THR-1459 — the rendered Gate Duty ending carries no cast token', () 
     renderGateDutyEnding({ bindCourier: true });
     const text = document.body.textContent ?? '';
 
-    // Face 1 — the *What Changed* consequence box.
-    expect(text).toContain('The night will keep travelling');
+    // Face 1 — the *What Changed* consequence chip (THR-1498 retired the bespoke
+    // "The night will keep travelling" box; the hook is a SEED chip now).
+    expect(screen.getByTestId('aftermath-consequences')).toBeTruthy();
     expect(text).toContain(`Someone sent ${BOUND_COURIER_NAME} and needs to know the result.`);
 
     // Face 2 — the reaction card.
@@ -235,5 +238,57 @@ describe('THR-1459 — the rendered Gate Duty ending carries no cast token', () 
     expect(text).not.toContain('{cast:');
     // A stripped token would leave "Someone sent  and needs" — a hole, not a name.
     expect(text).not.toMatch(/Someone sent\s+and needs/);
+  });
+});
+
+/**
+ * THR-1498 — `Browser-verify substitution: jsdom-render — unattended run, no startable dev server`.
+ *
+ * The guard the ticket asks for, written so it **fails on the pre-THR-1498
+ * shape**: there, the ending had no `aftermath-consequences` container at all
+ * (the adapter emitted `highlights`, and the veil drew `h.detail` as a bare
+ * string), so `getByTestId` throws before any assertion about the name runs.
+ * Nothing here is a snapshot of the new output — every assertion is a property
+ * the law demands (the name is a control; the control routes to the agent
+ * surface with the node id; an unresolvable name is plain text, never a dead
+ * link).
+ */
+describe('THR-1498 — the rendered Gate Duty ending links its cast in the consequence chips', () => {
+  it('renders the bound courier as a link that routes by kind to the agent surface', () => {
+    const onSelectAgent = vi.fn();
+    renderGateDutyEnding({ bindCourier: true, onSelectAgent });
+
+    const chips = screen.getByTestId('aftermath-consequences');
+    // Law 21 — a named entity is a control, not text. `NarrativeSegments` draws
+    // the click tier as a real `<button>` outside any outer click target.
+    const link = within(chips).getByRole('button', { name: BOUND_COURIER_NAME });
+    expect(link).toBeTruthy();
+
+    // …and the click routes through the veil's `openEntity` to the agent
+    // surface with the *node id*, not the name — the one router, by kind.
+    fireEvent.click(link);
+    expect(onSelectAgent).toHaveBeenCalledTimes(1);
+    expect(onSelectAgent).toHaveBeenCalledWith(COURIER_NODE);
+
+    // Absence — the retired bespoke box must not also render the same fact
+    // (Law 10 in reverse: one presentation per change), and no inert copy of
+    // the name may sit beside the linked one inside the chip container.
+    expect(document.body.textContent).not.toContain('The night will keep travelling');
+    expect(within(chips).getAllByText(BOUND_COURIER_NAME, { exact: false })).toHaveLength(1);
+  });
+
+  /**
+   * The fail-open face. An unbound courier resolves to the authored spec name,
+   * which names no node — so it must stay plain text. A `<button>` here would
+   * be a link to nowhere, which Law 21 rates worse than no affordance.
+   */
+  it('leaves an unresolvable name as plain text rather than a dead link', () => {
+    const onSelectAgent = vi.fn();
+    renderGateDutyEnding({ bindCourier: false, onSelectAgent });
+
+    const chips = screen.getByTestId('aftermath-consequences');
+    expect(within(chips).getByText(UNBOUND_COURIER_NAME, { exact: false })).toBeTruthy();
+    expect(within(chips).queryByRole('button', { name: UNBOUND_COURIER_NAME })).toBeNull();
+    expect(onSelectAgent).not.toHaveBeenCalled();
   });
 });

@@ -27,15 +27,22 @@ import { getAttachmentGlyph } from '../../attachmentGlyphs';
 import type {
   EncounterCastRole,
   EncounterStageAftermathActorModel,
-  EncounterStageAftermathHighlightModel,
   EncounterStageAftermathMarkModel,
+  EncounterStageConsequenceChipModel,
   EncounterStageHistoryModel,
   EncounterStageModel,
   EncounterStageNarrativeParagraph,
   EncounterStageNarrativeReference,
   EncounterStageSignalModel,
 } from '../types';
-import { buildLinkedParagraph, buildLocationTooltipId } from '../narrativeLinker';
+import {
+  autoLinkNarrative,
+  buildLinkedParagraph,
+  buildLocationTooltipId,
+  type EntityLinkEntry,
+} from '../narrativeLinker';
+import { buildAftermathConsequences } from './buildAftermathConsequences';
+import { buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { GATE_DUTY_NUDGE_IDS } from '../../../../data/civic-guard-encounter-content';
 
@@ -972,11 +979,77 @@ function buildGateDutyEnricher(args: {
     ctx ? enrichProse(text, ctx) : text.replace(/\{cast:[^}]*\}/g, '');
 }
 
+/**
+ * THR-1498 — the names the gate-duty ending may link, built from the ids the
+ * adapter already resolved for its cast strip and its narrative paragraphs.
+ *
+ * The unified adapter gets its link set from `collectSupportBundleEntities`,
+ * which walks the support bundle's *bindings*. Gate duty cannot lean on that
+ * alone: a clearance-gate runtime state names the captain, courier, witness
+ * and gatehouse whether or not the action carries a binding for them, and the
+ * adapter has always read both sources (`getSupportBinding(...)?.nodeId ??
+ * clearanceGateState?.subjectNodeId`). So the link set is derived from the
+ * same resolved ids the scene is drawn from — one resolution, spent twice —
+ * rather than from a second walk that could disagree with the first.
+ *
+ * Only a *resolved* name links. `getNodeName` falls back to a literal ("the
+ * courier", "Gatehouse") when the node is missing, and a literal that names
+ * nothing must stay text rather than become a dead link (Law 21). The first
+ * name is also matched, as the shared scan does, so "Nessa" links when the
+ * sentence uses it alone.
+ */
+function buildGateDutyLinkEntries(args: {
+  graph: WorldGraph;
+  people: ReadonlyArray<{ referenceId: string; nodeId: string | undefined }>;
+  location: { referenceId: string; nodeId: string | undefined; tooltipId?: string };
+}): EntityLinkEntry[] {
+  const entries: EntityLinkEntry[] = [];
+  const seenNames = new Set<string>();
+  const push = (entry: EntityLinkEntry) => {
+    if (seenNames.has(entry.name)) return;
+    seenNames.add(entry.name);
+    entries.push(entry);
+  };
+
+  for (const person of args.people) {
+    if (!person.nodeId) continue;
+    const name = args.graph.getNode(person.nodeId)?.name;
+    if (!name) continue;
+    // Absent `entityKind` means "a person" — the segment field's own rule.
+    push({ name, referenceId: person.referenceId, emphasis: 'strong', entityId: person.nodeId });
+    const firstName = name.split(' ')[0];
+    if (firstName && firstName !== name && firstName.length >= 3) {
+      push({ name: firstName, referenceId: person.referenceId, emphasis: 'strong', entityId: person.nodeId });
+    }
+  }
+
+  if (args.location.nodeId) {
+    const name = args.graph.getNode(args.location.nodeId)?.name;
+    if (name) {
+      // THR-1173 — a place needs its kind stated, or it routes to the agent
+      // drawer: a wrong sheet, which is worse than no sheet.
+      push({
+        name,
+        referenceId: args.location.referenceId,
+        emphasis: 'accent',
+        entityId: args.location.nodeId,
+        entityKind: 'location',
+        tooltipId: args.location.tooltipId,
+      });
+    }
+  }
+
+  return entries;
+}
+
 function buildGateDutyAftermathPresentation(args: {
   encounter: ActiveEncounterDisplay;
   graph: WorldGraph;
+  activeAction?: UnifiedAction;
   /** THR-1459 — authored `detail` strings are enriched before they are read or shown. */
   enrich: (text: string) => string;
+  /** THR-1498 — the names a consequence sentence may link, see `buildGateDutyLinkEntries`. */
+  linkEntries: EntityLinkEntry[];
 }) {
   const actorMoments = new Map<string, {
     id: string;
@@ -985,7 +1058,6 @@ function buildGateDutyAftermathPresentation(args: {
     summaryLines: string[];
     marks: EncounterStageAftermathMarkModel[];
   }>();
-  const highlights: EncounterStageAftermathHighlightModel[] = [];
 
   const ensureActorMoment = (actorId: string | undefined, fallbackName: string | undefined) => {
     const id = actorId ?? `actor:${fallbackName ?? 'unknown'}`;
@@ -1053,36 +1125,16 @@ function buildGateDutyAftermathPresentation(args: {
           });
           continue;
         }
-
-        highlights.push({
-          id: change.id,
-          title: 'Something tangible changed hands',
-          detail: `${actorMoment.actorName} came away with ${rewardName}.`,
-          tone: change.polarity,
-        });
-        continue;
       }
     }
-
-    if (change.kind === 'shell_state') {
-      highlights.push({
-        id: change.id,
-        title: 'The checkpoint settled into a new story',
-        detail,
-        tone: 'info',
-      });
-      continue;
-    }
-
-    if (change.kind === 'future_hook') {
-      highlights.push({
-        id: change.id,
-        title: 'The night will keep travelling',
-        detail,
-        tone: 'info',
-      });
-      continue;
-    }
+    // Every other change — a reward that is not a condition, a shell-state
+    // settlement, a future hook — is a consequence chip below. THR-1498 retired
+    // the bespoke `highlights` boxes that used to take them: a highlight carried
+    // its `detail` as a bare string, so the courier's name rendered with no
+    // tooltip and no link (Laws 1/17/21) on the one surface THR-1033's chip fix
+    // did not reach. The chips are built from the same change set through the
+    // same builder the unified path uses, so the fix cannot land beside this
+    // adapter again.
   }
 
   const curatedActorMoments: EncounterStageAftermathActorModel[] = Array.from(actorMoments.values())
@@ -1093,20 +1145,32 @@ function buildGateDutyAftermathPresentation(args: {
       marks: moment.marks ? Array.from(new Map(moment.marks.map(mark => [mark.id, mark])).values()) : undefined,
     }));
 
-  const curatedHighlights = highlights.slice(0, 3);
+  // THR-1498 — the ending's chips, through the shared builder. `link` scans the
+  // enriched sentence for the cast and the gatehouse, so "Nessa Vale" in the
+  // courier hook carries the courier's node id and routes by kind through the
+  // veil's `openEntity` (Law 21); `resolveIcon` and `resolveAnchor` are the
+  // same closures the unified adapter passes (`chipCollaborators.ts`).
+  const consequences: EncounterStageConsequenceChipModel[] = buildAftermathConsequences({
+    changes: args.encounter.aftermathSummary?.changes ?? [],
+    reactions: args.encounter.aftermathSummary?.reactions,
+    enrich: args.enrich,
+    link: (id, text) => autoLinkNarrative(id, text, args.linkEntries),
+    resolveIcon: buildChipIconResolver(args.graph),
+    resolveAnchor: buildChipAnchorResolver(args.graph, args.activeAction),
+  });
 
   let overview = 'Only a few consequences are heavy enough to keep their hands on tomorrow. These are the ones worth naming.';
   if (curatedActorMoments.length > 0) {
     const firstActor = curatedActorMoments[0];
     overview = `${firstActor.actorName} did not leave the gate unchanged. The rest of the evening will disperse into rumor and memory, but these consequences are the ones still pressing on the world.`;
-  } else if (curatedHighlights.length > 0) {
+  } else if (consequences.length > 0) {
     overview = 'The gate is finished with its evening, but the district is not finished with what it learned there.';
   }
 
   return {
     overview,
     actorMoments: curatedActorMoments,
-    highlights: curatedHighlights,
+    consequences,
   };
 }
 
@@ -1274,7 +1338,19 @@ export function buildGateDutyEncounterStageModel({
     const aftermathPresentation = buildGateDutyAftermathPresentation({
       encounter,
       graph,
+      activeAction,
       enrich,
+      // THR-1498 — the same four ids the narrative paragraphs above link, so a
+      // name is a link in the chips exactly when it is a link in the prose.
+      linkEntries: buildGateDutyLinkEntries({
+        graph,
+        people: [
+          { referenceId: 'after:captain', nodeId: captainBinding?.nodeId ?? clearanceGateState?.authorityNodeId },
+          { referenceId: 'after:courier', nodeId: courierBinding?.nodeId ?? clearanceGateState?.subjectNodeId },
+          { referenceId: 'after:witness', nodeId: witnessBinding?.nodeId ?? clearanceGateState?.witnessNodeIds[0] },
+        ],
+        location: { referenceId: 'after:location', nodeId: linkableLocationId, tooltipId: locationTooltipId },
+      }),
     });
     const aftermathNarrative = buildGateDutyAftermathNarrative({
       locationLabel,
@@ -1321,7 +1397,11 @@ export function buildGateDutyEncounterStageModel({
         title: 'What Changed',
         overview: aftermathPresentation.overview,
         actorMoments: aftermathPresentation.actorMoments,
-        highlights: aftermathPresentation.highlights,
+        // THR-1498 — chips, never `highlights`: the veil prefers `consequences`
+        // and the bespoke box is retired (see `buildGateDutyAftermathPresentation`).
+        consequences: aftermathPresentation.consequences.length > 0
+          ? aftermathPresentation.consequences
+          : undefined,
         reactionPrompt: 'Choose what you keep hold of now that the checkpoint itself is over.',
         reactions: rewriteGateDutyAftermathReactions({
           captainName,

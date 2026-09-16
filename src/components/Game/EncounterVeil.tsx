@@ -1198,55 +1198,17 @@ export function EncounterVeil({
             </div>
           )}
 
-          {/* Highlights — legacy presentation, suppressed once chips exist */}
-          {!aftermath.consequences?.length && aftermath.highlights && aftermath.highlights.length > 0 && (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 10,
-                marginBottom: 20,
-                maxWidth: 540,
-                ...aftermathEntrance(1.3, 0.9),
-              }}
-            >
-              {aftermath.highlights.map((h) => (
-                <div
-                  key={h.id}
-                  style={{
-                    padding: '10px 14px',
-                    border: `1px solid ${polarityColor(h.tone ?? 'info')}`,
-                    borderRadius: 2,
-                    borderLeft: `3px solid ${polarityColor(h.tone ?? 'info')}`,
-                    background: 'rgba(255,255,255,0.02)',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: FONT_DISPLAY,
-                      fontSize: 'var(--text-xs)',
-                      letterSpacing: '0.05em',
-                      color: TEXT_WARM,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {h.title}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: FONT_PROSE,
-                      fontStyle: 'italic',
-                      fontSize: 'var(--text-xs)',
-                      color: TEXT_WHISPER,
-                      lineHeight: 1.65,
-                    }}
-                  >
-                    {h.detail}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* THR-1498 — the legacy `highlights` boxes are no longer drawn.
+              Every shipped adapter now emits `consequences` from the same
+              change set (the unified path since THR-971, gate duty since
+              THR-1498), so the branch that rendered `h.detail` as a bare
+              string was reachable only by an adapter that forgot the chips —
+              and what it rendered then was a named entity with no tooltip and
+              no link (Laws 1/17/21), the defect THR-1498 fixed. A model that
+              carries highlights and no chips now draws nothing for them, which
+              is a visible gap that gets fixed the right way rather than a
+              quiet regression to inert text. `aftermath.highlights` stays on
+              the model for consumers that read it as data. */}
 
           {/* Changes — legacy presentation, suppressed once chips exist */}
           {!aftermath.consequences?.length && aftermath.changes && aftermath.changes.length > 0 && (
