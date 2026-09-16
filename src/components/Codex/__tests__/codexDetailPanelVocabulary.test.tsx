@@ -233,11 +233,13 @@ describe('THR-1113 — the rendered panel speaks no agreement, resource or magni
     const { container } = render(<CodexDetailPanel entry={e} onClose={() => {}} />);
 
     expect(screen.getByText('Domain Effects')).toBeTruthy();
-    expect(screen.getByText('a slight edge in Gold, a faint edge in Heart')).toBeTruthy();
 
+    // Matched on `textContent`, not `getByText`: since THR-1507 the two reach words are their
+    // own hovering spans inside the value, so the sentence is no longer one text node — and
+    // that is the point of the change, not a regression in it.
     // Scoped to the row rather than the whole panel: authored prose elsewhere may legitimately
     // contain a digit, and sweeping the container would fail on English rather than on a leak.
-    const row = Array.from(container.querySelectorAll('*'))
+    const row = Array.from(container.querySelectorAll('[data-testid="codex-detail-value"]'))
       .find(el => el.textContent === 'a slight edge in Gold, a faint edge in Heart');
     expect(row, 'the banded row did not render').toBeTruthy();
     expect(/\d/.test(row!.textContent ?? '')).toBe(false);
