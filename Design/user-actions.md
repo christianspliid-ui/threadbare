@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-17 00:57 local (22:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-17 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,14 +34,14 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-17 — every slice encounter path has its bad endings written, and the `?outcome=` review link judges the path on screen** ([THR-1509](https://linear.app/threadbare/issue/THR-1509)). Merged 01:32.
+- **2026-09-17 — network-diagram links** ([THR-1508](https://linear.app/threadbare/issue/THR-1508)). Merged 00:29.
 - **2026-09-17 — every codex detail row explains itself on hover** ([THR-1507](https://linear.app/threadbare/issue/THR-1507)). Merged 00:12.
 - **2026-09-16 — rumours lead to ruins, and one rumour is enough to post a contract** ([THR-1506](https://linear.app/threadbare/issue/THR-1506)). Merged 22:36, live.
 - **2026-09-16 — no encounter ending tells one fact twice** ([THR-1505](https://linear.app/threadbare/issue/THR-1505)). Merged 21:21, live.
 - **2026-09-16 — a realm standing chip links the realm it moved** ([THR-1499](https://linear.app/threadbare/issue/THR-1499)). Merged 20:33, live.
 - **2026-09-16 — a detail panel's breadcrumb works from the keyboard** ([THR-1504](https://linear.app/threadbare/issue/THR-1504)). Merged 19:19, live.
 - **2026-09-16 — an encounter seed no longer drops out before it can fire** ([THR-1510](https://linear.app/threadbare/issue/THR-1510)). Merged 18:14.
-- **2026-09-16 — Gate Duty's ending links the people in it** ([THR-1498](https://linear.app/threadbare/issue/THR-1498)). Merged 17:24, live.
-- **2026-09-16 — the undertaking catalyst reaches the live board** ([THR-1497](https://linear.app/threadbare/issue/THR-1497)). Merged 16:41, live.
 - **2026-09-16 — Sunday's engine slowdown was noise** — tick cost back to 59 ms/tick, below the weekly median. Nothing owed.
 - **2026-09-13 — the six orphaned tag words came off your list** ([THR-1501](https://linear.app/threadbare/issue/THR-1501)) — standing sunset rule applies. **Veto open.**
 
