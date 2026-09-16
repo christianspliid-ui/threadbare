@@ -18,6 +18,9 @@ import { getReputationWord } from '../../data/domain-words';
 import { getWealthTier } from '../../engine/wealth';
 import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../data/realm-content';
 import { durationLabel } from '../../engine/aftermathWords';
+import { Tooltip } from '../shared/Tooltip';
+import { useRefRouterContext } from '../../contexts/RefRouterContext';
+import type { WorldRef } from '../../types/worldRef';
 
 interface FactionSheetProps {
   factionId: string;
@@ -520,6 +523,36 @@ const NETWORK_HALL_NODE_LIMIT = 2;
 const NETWORK_CONTROL_NODE_LIMIT = 2;
 const NETWORK_ARMY_NODE_LIMIT = 2;
 
+/**
+ * The registry tooltip for each kind of node the diagram draws (Law 17, THR-1508).
+ *
+ * Keyed by the concept the sublabel prints — how the faction *holds* the thing —
+ * never by the thing's own kind: a hall is explained as a seat the faction keeps,
+ * whatever sort of place it is. A member hovers the concept, not the rank word; the
+ * rank is the faction's own ladder and is already the sublabel.
+ */
+const NETWORK_NODE_TOOLTIP_ID = {
+  core: 'ui.faction_core',
+  leader: 'ui.faction_leader',
+  member: 'ui.faction_member',
+  hall: 'ui.faction_hall',
+  control: 'ui.faction_control',
+  army: 'ui.faction_army',
+} as const;
+
+/**
+ * The diagram is SVG-native on purpose (THR-1508's "settle it in the plan" call).
+ *
+ * The two shared affordances both already reach into SVG: `Tooltip` takes `as="g"`
+ * (the hex-map overlays use it), and the ref router opens a card from any element —
+ * it needs no DOM anchor for a *click*, only for a hover card. So a node is a `<g>`
+ * that hovers its concept and clicks its entity, and nothing is re-housed in an HTML
+ * overlay whose positions would have to track a `viewBox` that scales with the sheet.
+ *
+ * What is deliberately not wired: the router's *hover card*. The tooltip is this
+ * surface's Tier-1 hover (Law 20), and arming a dwell card beside it would float two
+ * answers to one hover. Click reaches the card; the card reaches the sheet.
+ */
 function FactionNetworkGraph({
   summary,
   color,
@@ -550,12 +583,24 @@ function FactionNetworkGraph({
         </linearGradient>
       </defs>
 
-      <NetworkNode x={260} y={128} label={summary.name} sublabel="Faction core" color={color} radius={26} />
+      {/* The core is the one node without a link: this sheet *is* the faction's
+          surface, and a card for it opened over its own sheet would be a second answer
+          to the question the player already has open (Law 25). It still hovers. */}
+      <NetworkNode x={260} y={128} label={summary.name} sublabel="Faction core" color={color} radius={26} tooltipId={NETWORK_NODE_TOOLTIP_ID.core} />
 
       {summary.leader && (
         <>
           <line x1={260} y1={102} x2={260} y2={60} stroke="url(#faction-link)" strokeWidth={2} />
-          <NetworkNode x={260} y={40} label={summary.leader.name} sublabel="Leader" color="#f59e0b" radius={18} />
+          <NetworkNode
+            x={260}
+            y={40}
+            label={summary.leader.name}
+            sublabel="Leader"
+            color="#f59e0b"
+            radius={18}
+            entityRef={{ kind: 'agent', id: summary.leader.id }}
+            tooltipId={NETWORK_NODE_TOOLTIP_ID.leader}
+          />
         </>
       )}
 
@@ -564,7 +609,17 @@ function FactionNetworkGraph({
         return (
           <g key={member.id}>
             <line x1={260} y1={128} x2={130} y2={y} stroke="url(#faction-link)" strokeWidth={1.5} />
-            <NetworkNode x={110} y={y} label={member.name} sublabel={member.rankLabel} color={member.isOfficer ? '#f59e0b' : '#94a3b8'} radius={15} align="start" />
+            <NetworkNode
+              x={110}
+              y={y}
+              label={member.name}
+              sublabel={member.rankLabel}
+              color={member.isOfficer ? '#f59e0b' : '#94a3b8'}
+              radius={15}
+              align="start"
+              entityRef={{ kind: 'agent', id: member.id }}
+              tooltipId={NETWORK_NODE_TOOLTIP_ID.member}
+            />
           </g>
         );
       })}
@@ -575,7 +630,20 @@ function FactionNetworkGraph({
         return (
           <g key={location.id}>
             <line x1={260} y1={128} x2={390} y2={y} stroke="url(#faction-link)" strokeWidth={1.5} />
-            <NetworkNode x={410} y={y} label={location.name} sublabel={isHall ? 'Hall' : 'Control'} color={isHall ? '#22c55e' : '#60a5fa'} radius={15} align="end" />
+            {/* `location` for both tiers: a hall may be a Place the faction owns inside a
+                settlement, and the `sublocation` row routes to the same card and the same
+                sheet as `location` (surface-registry), so the coarser kind loses nothing. */}
+            <NetworkNode
+              x={410}
+              y={y}
+              label={location.name}
+              sublabel={isHall ? 'Hall' : 'Control'}
+              color={isHall ? '#22c55e' : '#60a5fa'}
+              radius={15}
+              align="end"
+              entityRef={{ kind: 'location', id: location.id }}
+              tooltipId={isHall ? NETWORK_NODE_TOOLTIP_ID.hall : NETWORK_NODE_TOOLTIP_ID.control}
+            />
           </g>
         );
       })}
@@ -585,7 +653,16 @@ function FactionNetworkGraph({
         return (
           <g key={army.id}>
             <line x1={260} y1={154} x2={x} y2={210} stroke="url(#faction-link)" strokeWidth={1.5} />
-            <NetworkNode x={x} y={224} label={army.name} sublabel="Army" color="#ef4444" radius={15} />
+            <NetworkNode
+              x={x}
+              y={224}
+              label={army.name}
+              sublabel="Army"
+              color="#ef4444"
+              radius={15}
+              entityRef={{ kind: 'army', id: army.id }}
+              tooltipId={NETWORK_NODE_TOOLTIP_ID.army}
+            />
           </g>
         );
       })}
@@ -593,6 +670,33 @@ function FactionNetworkGraph({
   );
 }
 
+/** How a routed node's name signals the click — the underline `EntityLink` draws, in the
+ *  dim gold so eight of them in one diagram do not read as eight "active" states. */
+const NETWORK_LINK_LABEL_STYLE: React.CSSProperties = {
+  textDecoration: 'underline',
+  textDecorationColor: 'var(--accent-gold-dim)',
+  textUnderlineOffset: '2px',
+};
+
+/**
+ * One node of the network diagram (THR-1508).
+ *
+ * `entityRef` is what the node *names*; the kind decides what a click opens, through the
+ * one router (Law 21) — never a per-node `onOpen` prop, which is how three routers grew
+ * before THR-1490. `tooltipId` is the registry id for the concept the sublabel prints
+ * (Law 17). Both are optional, and each absence is a designed state rather than a broken
+ * one (Law 1.4):
+ *
+ * - no `tooltipId` → the node does not hover;
+ * - no `entityRef`, or no router in scope (style guide, isolated render) → **the fail-open
+ *   branch**: the name paints exactly as it did before this ticket, with no role, no tab
+ *   stop, no cursor and no underline. A control that would do nothing does not render as
+ *   one (Law 25).
+ *
+ * Keyboard: a routed node is a tab stop with Enter and Space (Law 23); the focus ring is
+ * the shared class, since `:focus-visible` cannot be expressed inline. Focus also bubbles
+ * to the `Tooltip` wrapper, so the hover tier is reachable without a pointer.
+ */
 function NetworkNode({
   x,
   y,
@@ -601,6 +705,8 @@ function NetworkNode({
   color,
   radius,
   align = 'middle',
+  entityRef,
+  tooltipId,
 }: {
   x: number;
   y: number;
@@ -609,19 +715,67 @@ function NetworkNode({
   color: string;
   radius: number;
   align?: 'start' | 'middle' | 'end';
+  entityRef?: WorldRef;
+  tooltipId?: string;
 }) {
+  const router = useRefRouterContext();
   const textX = align === 'start' ? x + radius + 10 : align === 'end' ? x - radius - 10 : x;
-  return (
-    <g>
+  const routes = Boolean(entityRef && router);
+
+  const open = () => {
+    if (!entityRef || !router) return;
+    router.closeHover();
+    router.open(entityRef, 'card', { via: 'entity-link' });
+  };
+  const handleKeyDown = (event: React.KeyboardEvent<SVGGElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    // Space is page-scroll by default; Enter is not, but the guard costs nothing.
+    event.preventDefault();
+    open();
+  };
+
+  // Spread from one object so a node is never half a control (the THR-1504 pattern).
+  const linkProps = routes && entityRef
+    ? {
+        role: 'link',
+        tabIndex: 0,
+        className: 'focus-ring',
+        style: { cursor: 'pointer' as const },
+        onClick: open,
+        onKeyDown: handleKeyDown,
+        'aria-label': `${label} — open`,
+        'data-ref-kind': entityRef.kind,
+        'data-ref-id': entityRef.id,
+      }
+    : {};
+
+  const node = (
+    <g {...linkProps}>
       <circle cx={x} cy={y} r={radius} fill={`${color}22`} stroke={color} strokeWidth={2} />
       <circle cx={x} cy={y} r={radius - 5} fill="rgba(12, 10, 9, 0.85)" />
-      <text x={textX} y={y - 4} fill="var(--text-primary)" textAnchor={align} fontSize="12" fontFamily="var(--font-body)">
+      <text
+        x={textX}
+        y={y - 4}
+        fill="var(--text-primary)"
+        textAnchor={align}
+        fontSize="12"
+        fontFamily="var(--font-body)"
+        style={routes ? NETWORK_LINK_LABEL_STYLE : undefined}
+      >
         {truncate(label, 19)}
       </text>
       <text x={textX} y={y + 12} fill="var(--text-tertiary)" textAnchor={align} fontSize="10" fontFamily="var(--font-body)">
         {truncate(sublabel, 19)}
       </text>
     </g>
+  );
+
+  return tooltipId ? (
+    <Tooltip as="g" id={tooltipId}>
+      {node}
+    </Tooltip>
+  ) : (
+    node
   );
 }
 
