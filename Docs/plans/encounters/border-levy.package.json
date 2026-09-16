@@ -310,6 +310,8 @@
                 "direction": "gain",
                 "stateNoun": {
                   "text": "court standing",
+                  "entityId": "$realm",
+                  "visualKind": "faction",
                   "tooltipId": "ui.standing"
                 },
                 "title": "Held to the crown's figure",
@@ -355,6 +357,8 @@
                 "direction": "gain",
                 "stateNoun": {
                   "text": "court standing",
+                  "entityId": "$realm",
+                  "visualKind": "faction",
                   "tooltipId": "ui.standing"
                 },
                 "title": "Held, and marked for it",
@@ -380,6 +384,8 @@
                 "direction": "loss",
                 "stateNoun": {
                   "text": "court standing",
+                  "entityId": "$realm",
+                  "visualKind": "faction",
                   "tooltipId": "ui.standing"
                 },
                 "title": "Paid what was asked",
@@ -405,6 +411,8 @@
                 "direction": "loss",
                 "stateNoun": {
                   "text": "court standing",
+                  "entityId": "$realm",
+                  "visualKind": "faction",
                   "tooltipId": "ui.standing"
                 },
                 "title": "Gone through at the rope",

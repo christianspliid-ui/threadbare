@@ -274,6 +274,8 @@
                 "direction": "gain",
                 "stateNoun": {
                   "text": "court standing",
+                  "entityId": "$realm",
+                  "visualKind": "faction",
                   "tooltipId": "ui.standing"
                 },
                 "title": "Corrected the book",
@@ -299,6 +301,8 @@
                 "direction": "gain",
                 "stateNoun": {
                   "text": "court standing",
+                  "entityId": "$realm",
+                  "visualKind": "faction",
                   "tooltipId": "ui.standing"
                 },
                 "title": "Right, and charged for it",
@@ -346,6 +350,8 @@
                 "direction": "loss",
                 "stateNoun": {
                   "text": "court standing",
+                  "entityId": "$realm",
+                  "visualKind": "faction",
                   "tooltipId": "ui.standing"
                 },
                 "title": "Down in the book",

@@ -1428,6 +1428,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         // unlock list to decide what is playable; the summed `essence` above
         // cannot answer that.
         gameState,
+        // THR-1499 — the political map a `$realm` standing chip links through.
+        realmProjection: () => realmProjection,
       });
     }
 
@@ -1445,12 +1447,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         gameState,
         tick: gameState.tick,
         runtime,
+        // THR-1499 — the political map a `$realm` standing chip links through. The
+        // same projection the border mesh draws, from `useSimulation`, so the chip
+        // and the map cannot name different nations.
+        realmProjection: () => realmProjection,
       });
     }
 
     return null;
   }, [
     gameState,
+    realmProjection,
     gameState.graph,
     gameState.essencePool,
     gameState.tick,

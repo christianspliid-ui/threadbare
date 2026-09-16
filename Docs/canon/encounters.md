@@ -192,11 +192,15 @@ Aftermath effects name people and places with **sentinels**, not node ids — th
 | `$cast:<key>` | a member of the scene's own cast | the innkeeper, the survivor, the swindler |
 | `$ascendant` | **the player's god** | the divine end of a `thread_*` effect |
 | `$here` | **the place the scene happens at** | any consequence landing on a location or place |
+| `$realm` | **the Realm whose political map claims the scene's hex** | standing with the crown — `faction_reputation_gain` on `factionId`; binds nothing on unclaimed ground, by design |
+| `$area` | nothing — **refuses on every effect field** | naming the Area on a chip anchor (`visualKind: 'area'`); no aftermath effect takes an Area |
 
 Two of these are new as of 2026-09-10, and both existed to close a gap that made whole consequence families unauthorable:
 
 - **`$ascendant` made the `thread` family real.** The Consequence Draw weights `thread` ≥ 1 in all eight reaches — the floor *is* the design — but `thread_*` effects take a literal `ascendantId`, and the node id is minted as `asc.<archetypeId>`. There was no literal an author could write, so every thread effect skipped. Pair it with `$actor` on `mortalId`.
 - **`$here` made `place` reachable on self-targeted encounters.** `$target` binds a location only when the *card* targets one; most encounters resolve self-targeted, so a `place` consequence wired as `targetLocationId: '$target'` no-opped in silence. **When the consequence lands on a place, write `$here`.**
+
+**The chip side reads the same vocabulary, one form at a time.** A consequence chip's `entityId` may declare `$actor`, `$target`, `$artifact`, `$cast:<key>`, `$faction:<defId>`, `$here` (THR-1462) and `$realm` (THR-1499); `classifyAnchorDeclaration` in `src/data/content-eval/chipAnchorDeclarations.ts` is the authoritative list. `$here` and `$realm` resolve through the **same** lookup the effect binder uses (`sceneHere.ts`, `sceneRealm.ts`), so the chip and the effect it reports cannot name different nodes. `$realm` is gated like `$artifact` — refused on a template whose effects never bind it — and on ground no Realm claims it resolves to nothing, so the chip stays `named` rather than becoming a dead link. **A `faction_reputation` chip on a realm-court ending anchors its `stateNoun` to `$realm` with `visualKind: 'faction'`**, the same shape a guild chip uses with `$faction:<defId>`.
 
 `check:encounter` now fails a sentinel pointed at a field it can never satisfy. It says nothing about `$target`, deliberately: what an encounter resolves against is a runtime fact no template declares, and a gate that guessed produced a false positive on the first try.
 

@@ -18,6 +18,7 @@ import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outc
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
+import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
 import { supportRoleWord } from '../../../../engine/supportRoleWords';
@@ -86,6 +87,13 @@ export interface BuildUnifiedEncounterStageModelArgs {
   /** SimulationRuntime for outcome-band phrase dedup history (THR-460).
    * When omitted, {outcome_phrase} / {q_flavor} use pool[0] deterministically. */
   runtime?: SimulationRuntime;
+  /**
+   * THR-1499 — the political map `$realm` reads, as the thunk the effect binder
+   * takes. A standing chip on a realm-court ending links the Realm the border
+   * mesh draws; without this it stays `named` (NFP #4). Lazy so an ending with
+   * no realm chip never pays for the map.
+   */
+  realmProjection?: RealmProjectionThunk;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -593,7 +601,7 @@ function buildAftermath(
   args: BuildUnifiedEncounterStageModelArgs,
   ctx: NarrativeContext,
 ): EncounterStageModel['aftermath'] {
-  const { activeAction, template, graph } = args;
+  const { activeAction, template, graph, realmProjection } = args;
   const summary = activeAction.aftermathSummary;
   if (!summary) return undefined;
 
@@ -754,7 +762,7 @@ function buildAftermath(
     // both graph-holding, both shared with the gate-duty adapter since THR-1498
     // (`chipCollaborators.ts` carries the reasoning that used to sit inline here).
     resolveIcon: buildChipIconResolver(graph),
-    resolveAnchor: buildChipAnchorResolver(graph, activeAction),
+    resolveAnchor: buildChipAnchorResolver(graph, activeAction, realmProjection),
   });
 
   return {
