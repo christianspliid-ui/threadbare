@@ -31,6 +31,14 @@ import {
   LEGENDARY_SUBCATEGORY_ID,
 } from './charteredKindsCodex';
 import { UNDERTAKING_VERB_WORDS } from '../../data/undertaking-verb-prose';
+import {
+  conceptRow,
+  contributionConcepts,
+  reachConcept,
+  scaleConcept,
+  sphereConcept,
+  type CodexDetail,
+} from './codexConcepts';
 import { formatEssenceLabel } from '../shared/formatEssence';
 import { magnitudeWord, durationLabel, type MagnitudeBand } from '../../engine/aftermathWords';
 
@@ -75,8 +83,12 @@ export interface CodexEntry {
    * dropping it (THR-1486).
    */
   tags: readonly string[];
-  /** Extra key-value details shown in the detail panel; `tooltipId` gives the value a hover (Law 17). */
-  details: { label: string; value: string; tooltipId?: string }[];
+  /**
+   * Extra key-value details shown in the detail panel. `tooltipId` gives a single-concept
+   * value its hover; `concepts` marks the spans of a value that names more than one
+   * (THR-1507, Law 2 / Law 17) — see `codexConcepts.ts` for the shape and its rules.
+   */
+  details: CodexDetail[];
   /** Optional path to an art asset (relative to public/) */
   imageAssetPath?: string;
   /** Starter-floor membership (THR-419). */
@@ -326,6 +338,38 @@ function essenceCostLabel(cost: number | undefined): string {
   return value === 0 ? 'Free' : formatEssenceLabel(value);
 }
 
+// ─── The rows every action mapper shares (THR-1507) ─────────────
+//
+// Each row resolves its key through the display vocabulary *and* declares the concept the
+// resolved word names, in one place, so the seven action mappers cannot disagree about which
+// word hovers. A key the registry has no entry for (`reach.time`, a `void` sphere) declares
+// nothing and paints plain — never a dotted underline that opens nothing (Law 21).
+
+function reachRow(reach: string): CodexDetail {
+  const word = resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY');
+  return conceptRow('Reach', word, [reachConcept(reach, word)]);
+}
+
+function sphereRow(sphere: string | undefined, fallback = ''): CodexDetail {
+  const word = resolveDisplay(SPHERE_DISPLAY, sphere, 'SPHERE_DISPLAY') || fallback;
+  return conceptRow('Sphere', word, [sphereConcept(sphere, word)]);
+}
+
+function scaleRow(scale: string | undefined): CodexDetail {
+  const word = resolveDisplay(SCALE_DISPLAY, scale, 'SCALE_DISPLAY');
+  return conceptRow('Scale', word, [scaleConcept(scale, word)]);
+}
+
+/** Essence is the one price the game shows as a numeral; the row hovers as the concept it prices in. */
+function costRow(cost: number | undefined): CodexDetail {
+  return { label: 'Cost', value: essenceCostLabel(cost), tooltipId: 'ui.essence_cost' };
+}
+
+/** The reach word a contribution phrase used — the same resolver, so the span matches the text. */
+function reachWord(rawKey: string): string {
+  return resolveDisplay(REACH_DISPLAY, rawKey, 'REACH_DISPLAY');
+}
+
 // ─── Data Mappers ────────────────────────────────────────────────
 
 /**
@@ -379,7 +423,9 @@ function mapPossession(node: GraphNode): CodexEntry {
       { label: 'Slot', value: displaySlot },
       { label: 'Tier', value: RARITY_TIER_NAMES[tier] },
       ...(p.lossCondition ? [{ label: 'Loss Condition', value: p.lossCondition as string }] : []),
-      ...(nonEmptyRecord(p.reachBonus) ? [{ label: 'Reach Bonus', value: formatReachBonus(nonEmptyRecord(p.reachBonus)!) }] : []),
+      ...(nonEmptyRecord(p.reachBonus)
+        ? [conceptRow('Reach Bonus', formatReachBonus(nonEmptyRecord(p.reachBonus)!), contributionConcepts(nonEmptyRecord(p.reachBonus)!, reachWord))]
+        : []),
     ],
   };
 }
@@ -422,7 +468,9 @@ function mapCondition(node: GraphNode): CodexEntry {
     details: [
       { label: 'Type', value: displaySlot },
       { label: 'Tier', value: RARITY_TIER_NAMES[tier] },
-      ...(nonEmptyRecord(p.domainContributions) ? [{ label: 'Domain Effects', value: formatDomainContributions(nonEmptyRecord(p.domainContributions)!) }] : []),
+      ...(nonEmptyRecord(p.domainContributions)
+        ? [conceptRow('Domain Effects', formatDomainContributions(nonEmptyRecord(p.domainContributions)!), contributionConcepts(nonEmptyRecord(p.domainContributions)!, reachWord))]
+        : []),
       // THR-1103 filed this row against `mapPossession`; it lives here in `mapCondition` —
       // `mapPossession` has no Visibility row at all. Fixed where it actually renders.
       ...(p.visibility ? [{ label: 'Visibility', value: resolveDisplay(VISIBILITY_DISPLAY, p.visibility as string, 'VISIBILITY_DISPLAY') }] : []),
@@ -470,10 +518,10 @@ function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     ].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
-      { label: 'Reach', value: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY') },
-      { label: 'Sphere', value: resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY') || 'None' },
-      { label: 'Cost', value: essenceCostLabel(template.essenceCost) },
-      { label: 'Scale', value: resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY') },
+      reachRow(reach),
+      sphereRow(template.sphereAffinity, 'None'),
+      costRow(template.essenceCost),
+      scaleRow(template.scale),
     ],
   };
 }
@@ -503,10 +551,10 @@ function mapMortalAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     ].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
-      { label: 'Reach', value: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY') },
-      { label: 'Scale', value: resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY') },
-      { label: 'Cost', value: essenceCostLabel(template.essenceCost) },
-      ...(template.sphereAffinity ? [{ label: 'Sphere', value: resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY') }] : []),
+      reachRow(reach),
+      scaleRow(template.scale),
+      costRow(template.essenceCost),
+      ...(template.sphereAffinity ? [sphereRow(template.sphereAffinity)] : []),
     ],
   };
 }
@@ -542,10 +590,10 @@ function mapTargetAction(
     ].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
-      { label: 'Reach', value: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY') },
-      { label: 'Scale', value: resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY') },
-      { label: 'Cost', value: essenceCostLabel(template.essenceCost) },
-      ...(template.sphereAffinity ? [{ label: 'Sphere', value: resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY') }] : []),
+      reachRow(reach),
+      scaleRow(template.scale),
+      costRow(template.essenceCost),
+      ...(template.sphereAffinity ? [sphereRow(template.sphereAffinity)] : []),
     ],
   };
 }
@@ -723,7 +771,11 @@ function mapResourceClass(resourceId: string): CodexEntry {
     ],
     details: [
       { label: 'Class', value: resolveDisplay(RESOURCE_CATEGORY_DISPLAY, cls.category, 'RESOURCE_CATEGORY_DISPLAY') },
-      { label: 'Sphere affinity', value: resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY') },
+      conceptRow(
+        'Sphere affinity',
+        resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY'),
+        [sphereConcept(cls.primarySphere, resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY'))],
+      ),
       { label: 'Trade value', value: cls.baseValue >= 1.2 ? 'high' : cls.baseValue >= 0.9 ? 'solid' : 'modest' },
       { label: 'Scarcity bite', value: cls.scarcitySensitivity >= 1.0 ? 'sharp' : 'gentle' },
     ],

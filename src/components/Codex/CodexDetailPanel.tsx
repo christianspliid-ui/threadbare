@@ -1,5 +1,35 @@
-import { memo } from 'react';
+/**
+ * The Codex detail panel — one entry's art, prose, effect and detail rows.
+ *
+ * ## Concept words in detail rows — the ruling (THR-1507)
+ *
+ * A detail row's value names concepts — a reach, a Sphere, a scale, a price — and Law 17
+ * wants each to hover from the one registry. The whole-value `tooltipId` the Undertakings
+ * section shipped with cannot cover a value that names two (*a slight edge in Gold, a
+ * faint edge in Heart*), so the question was whether to (a) mark concept **spans** inside a
+ * value, or (b) restructure rows so every row names exactly one concept.
+ *
+ * **Ruled (a): spans.** It is Law 2's own shape — *the producer declares the concepts, the
+ * surface never parses English* — and the aftermath chip already implements it
+ * (`EncounterAftermathChange.concepts`, THR-1004), so the Codex gets a second instance of
+ * one pattern rather than a pattern of its own. (b) was rejected because it would have made
+ * the sections read worse for the sake of the renderer: a companion's *good for* is one
+ * sentence, not two rows. The whole-value `tooltipId` survives as the single-concept
+ * shorthand, and `detailConcepts` folds it into the same list, so this panel has exactly
+ * one render path and one vocabulary — the half-measure the ticket warned against (tag the
+ * single-concept rows, leave the rest) is unreachable by construction.
+ *
+ * How a value is drawn: `splitDetailValue` cuts it into runs at the declared spans —
+ * first occurrence, declaration order, never re-splitting a claimed run — and each span
+ * renders as a dotted-underlined `Tooltip` trigger, the plain runs as text. A concept the
+ * value does not contain is skipped, so a mapper slip degrades to plain text (NFP #4).
+ * The shape, its rules and the mapper helpers live in `codexConcepts.ts`; the guard that
+ * a new mapper cannot ship a concept row plain is `__tests__/codexDetailConcepts.test.tsx`.
+ */
+
+import { Fragment, memo } from 'react';
 import type { CodexEntry } from './codexRegistry';
+import { detailConcepts, splitDetailValue } from './codexConcepts';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
 import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
@@ -75,7 +105,9 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
             border: 'none',
           }}
         >
-          \u2715
+          {/* A JSX text node does not decode escapes \u2014 as `\u2715` this painted the six
+              literal characters on the close control (seen in THR-1507's capture). */}
+          {'\u2715'}
         </button>
       </div>
 
@@ -192,17 +224,26 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
                   <span style={{ color: 'var(--text-tertiary)' }}>
                     {detail.label}
                   </span>
-                  {detail.tooltipId ? (
-                    <Tooltip id={detail.tooltipId}>
-                      <span className="underline decoration-dotted cursor-help" style={{ color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%' }}>
-                        {detail.value}
-                      </span>
-                    </Tooltip>
-                  ) : (
-                    <span style={{ color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%' }}>
-                      {detail.value}
-                    </span>
-                  )}
+                  <span
+                    data-testid="codex-detail-value"
+                    style={{ color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%' }}
+                  >
+                    {splitDetailValue(detail.value, detailConcepts(detail)).map((segment, segIdx) =>
+                      segment.tooltipId ? (
+                        <Tooltip key={segIdx} id={segment.tooltipId}>
+                          <span
+                            className="underline decoration-dotted cursor-help"
+                            data-testid="codex-detail-concept"
+                            data-tooltip-id={segment.tooltipId}
+                          >
+                            {segment.text}
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        <Fragment key={segIdx}>{segment.text}</Fragment>
+                      ),
+                    )}
+                  </span>
                 </div>
               ))}
             </div>
