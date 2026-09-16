@@ -489,7 +489,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             {
               id: 'rite.let_them_finish',
               label: 'Let them finish it',
-              intent: 'The rite goes on unread, and the country will hear about it either way.',
+              intent: 'Whatever the working does now, the country will hear of it.',
               effects: [
                 {
                   kind: 'emit_omen',
@@ -552,8 +552,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           reactions: [
             {
               id: 'rite.carry_them_out',
-              label: 'Let them be carried out',
-              intent: 'The reader is dragged clear, and the story goes out ahead of them.',
+              label: 'Let them be pulled clear',
+              intent: 'The story goes out ahead of them, and nobody slows it.',
               effects: [
                 {
                   kind: 'emit_omen',

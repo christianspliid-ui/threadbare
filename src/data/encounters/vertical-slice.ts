@@ -1630,7 +1630,7 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
             {
               id: 'slice.caravan.walk_in_empty',
               label: 'Part ways at the gates',
-              intent: 'The column scatters into the town, and the riders come down off the ridge at their leisure.',
+              intent: 'The column scatters into the town. The traveler goes in with it, and sleeps badly.',
               effects: [
                 { kind: 'condition_attachment', templateId: 'trait.condition.shaken' },
                 {
@@ -4084,7 +4084,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
             {
               id: 'slice.kin.accept_the_debt_awkwardly',
               label: 'Take the thanks anyway',
-              intent: 'She meant every word of it, and said so again at the door.',
+              intent: 'Let her finish. Kin forgive a bad thank-you faster than a refused one.',
               effects: [
                 {
                   // THR-1206 — see 'slice.kin.a_standing_welcome'. Fumbled delta,
@@ -4717,7 +4717,7 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
           tableStandingReaction(
             'slice.table.move_taken',
             'Move them tonight',
-            'People first, stock after, the grain left standing.',
+            'Carts are for people tonight. The riders can have what is still in the fields.',
             SLICE_TABLE_WELCOME_RENEWED,
           ),
         ],

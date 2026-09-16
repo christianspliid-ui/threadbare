@@ -485,7 +485,7 @@ const ASCEND_AFTERMATH = {
         {
           id: 'apotheosis.unmade.let_them_be',
           label: 'Let them be',
-          intent: 'They are at their own table by morning. Leave them there.',
+          intent: 'No second pouring. Whatever came back eats and answers, and that is enough to leave alone.',
           effects: [
             {
               kind: 'condition_attachment' as const,
@@ -526,7 +526,7 @@ const ASCEND_AFTERMATH = {
         {
           id: 'apotheosis.ruined.let_them_be',
           label: 'Let them be',
-          intent: 'The village still uses the old name.',
+          intent: 'Nothing is asked of what sits there. The god does not try to put back what it tore.',
           effects: [
             {
               kind: 'condition_attachment' as const,
@@ -636,7 +636,7 @@ const WITHHOLD_AFTERMATH = {
         {
           id: 'apotheosis.withdrawal.listen',
           label: 'Let them listen',
-          intent: 'They prayed at the usual hour, and listened afterward.',
+          intent: 'Do not answer the listening. A doubt earned honestly is worth more than one talked away.',
           effects: [
             {
               kind: 'bond_change' as const,

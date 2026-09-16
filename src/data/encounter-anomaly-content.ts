@@ -542,8 +542,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             id: 'wild_apothecary_catalogue',
             label: 'Record the plant combinations. This knowledge has value.',
             intent:
-              'An impossible botanical assembly has specific properties because of the specific network it forms. ' +
-              '{name} carries a working understanding of what grows here, how, and what it can do.',
+              "The assembly's properties come from the network it forms. " +
+              '{name} keeps a working map of the roots, the pairings, and what each can do.',
             effects: [
               {
                 kind: 'intelligence',

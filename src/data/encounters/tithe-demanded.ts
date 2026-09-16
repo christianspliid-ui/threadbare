@@ -252,7 +252,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       reactions: [
         {
           id: 'tithe.sit_down_after',
-          label: 'Let them sit down once the cart is gone',
+          label: 'Let them sit down once it is over',
           effects: [
             {
               kind: 'remove_condition',
