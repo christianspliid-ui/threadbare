@@ -30,6 +30,7 @@ import type {
 } from '../types/strategicAction';
 import type { ReachDomain } from '../types/traits';
 import type { ValuePair } from '../types/agent';
+import type { ContentQuery } from '../types/contentQuery';
 import { UNDERTAKING_OBJECT_TYPES, HARM_ON_DESTROY, type UndertakingObjectType } from './undertaking-objects';
 import { UNDERTAKING_VERB_PROSE, UNDERTAKING_VERB_WORDS, UNDERTAKING_CELL_PHRASES } from './undertaking-verb-prose';
 import {
@@ -143,6 +144,61 @@ export const CREATE_SITE_RULE: Readonly<Record<UndertakingObjectTypeId, Strategi
 /** @deprecated THR-1392 slice 4 — the verb is `create`; kept one release for callers cut before the rename. */
 export const FOUND_SITE_RULE = CREATE_SITE_RULE;
 
+/**
+ * What a cell's completion stirs (THR-1497): the encounter family a finished work may
+ * seed as its catalyst, by cell id. A bounded authored table — the THR-1438
+ * `UNDERTAKING_CELL_PHRASES` pattern — read once at synthesis into `catalystQuery`,
+ * and overridable per package (`UndertakingCellOverride.catalystQuery`).
+ *
+ * **Why a table on the cell and not the legacy pack arm.** THR-1488 activated
+ * `catalystQuery` and migrated all 35 pack carriers, then measured that under
+ * `UNDERTAKING_MODEL: 'cells'` a profile's `templateIds` are never walked — so the
+ * field resolved correctly and no mortal on a default seed could reach it. Starting
+ * the pack arm to reach a field would be running the dead model for one property.
+ * The cell is what the live board walks, so the cell is where the catalyst lives.
+ *
+ * **Why a table and not the registry's verb semantic.** `UndertakingObjectType.verbs`
+ * entries are graph-op functions — what the verb *does* to the object. A family is
+ * content, not an op; putting it beside the op would make the registry name
+ * encounter tags, which is a different registry's business.
+ *
+ * **The family is chosen for what the work disturbs**, never for who does it:
+ * building in a settlement stirs the Builders' Fellowship whether a zealot or a
+ * merchant laid the stone; a blockade is the merchants' problem whoever raised it.
+ * Every family named here is a live tag from the seventeen THR-1488 seated (each one a
+ * game word the withered-seed narrative can print), and each resolves to at least one
+ * individual-performable settlement-accepting template, because the seeding site's
+ * eligibility filter runs after the query and a family with no such member seeds
+ * nothing. `check:undertaking`'s `catalysts` block is fatal on an empty query; the
+ * eligibility half is asserted in `undertakingCellCatalysts.test.ts`.
+ *
+ * A cell with no row seeds nothing on completion, which is right for most of them —
+ * a scouted army or a called-in favour is not a work whose wake a guild answers.
+ * Frequency is `STRATEGIC_CATALYST_SEED_CHANCE`; pacing is
+ * `STRATEGIC_CATALYST_SEED_DELAY_TICKS`.
+ */
+export const UNDERTAKING_CELL_CATALYSTS: Readonly<Record<string, ContentQuery>> = {
+  // Stone laid in a settlement — a Place built, a settlement founded or raised — is
+  // the Builders' Fellowship's business, and their errands are what the wake offers.
+  'cell.create.place': { kind: 'encounter_template', tags: ['#fellowship_errand'] },
+  'cell.create.location': { kind: 'encounter_template', tags: ['#fellowship_errand'] },
+  'cell.change_raise.location': { kind: 'encounter_template', tags: ['#fellowship_errand'] },
+  // A lane opened, widened or choked is the Consortium's — a blockade most of all,
+  // since the merchants are who it disturbs whoever raised it.
+  'cell.create.route': { kind: 'encounter_template', tags: ['#consortium_errand'] },
+  'cell.change_raise.route': { kind: 'encounter_template', tags: ['#consortium_errand'] },
+  'cell.change_lower.route': { kind: 'encounter_template', tags: ['#consortium_errand'] },
+  // An army raised or reinforced draws the Company's recruiters and contracts.
+  'cell.create.army': { kind: 'encounter_template', tags: ['#company_errand'] },
+  'cell.change_raise.army': { kind: 'encounter_template', tags: ['#company_errand'] },
+  // A masterwork made brings the next commission to the maker's door.
+  'cell.create.item': { kind: 'encounter_template', tags: ['#craft_commission'] },
+  // A ring founded is the Thieves' Guild's competition, and they come calling.
+  'cell.create.network': { kind: 'encounter_template', tags: ['#thieves_errand'] },
+  // A settlement razed is the Watch's — the wake of a ruin is a patrol and an inquiry.
+  'cell.destroy.location': { kind: 'encounter_template', tags: ['#watch_errand'] },
+};
+
 /** "an attachment", "a room" — the display name is a player word (UI Law 14). */
 function withArticle(noun: string): string {
   return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
@@ -192,6 +248,8 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
       : { type: 'object', objectTypeId: type.id, ownership: type.ownershipOverride?.[variant] ?? OWNERSHIP_BY_VERB[variant] },
     motiveGate: gated ? [...MOTIVE_GATE_KINDS] : undefined,
     harmClass: variant === 'destroy' ? HARM_ON_DESTROY[type.id] : variant === 'control:seize' ? HARM_ON_SEIZE : variant === 'change:lower' ? HARM_ON_LOWER : undefined,
+    // THR-1497: the family this cell's completion stirs, when the table names one.
+    catalystQuery: UNDERTAKING_CELL_CATALYSTS[cellTemplateId(variant, type.id)],
     // A cell's mutation is the resolver's, never a hint; declared so the legacy
     // instant path, if ever reached with the flag off, does nothing rather than guess.
     mutationHint: { type: 'no_mutation' },
@@ -231,7 +289,10 @@ export interface UndertakingCellOverride {
   /** Pin the execution mode (an instant `use`, a project `survey`). */
   readonly executionMode?: StrategicExecutionMode;
   readonly projectDuration?: number;
+  /** @deprecated THR-1488 — name the family with {@link catalystQuery}; a literal id list never resolved. */
   readonly catalystEncounterIds?: readonly string[];
+  /** The family this override's completion stirs, replacing the cell's own row (THR-1497). */
+  readonly catalystQuery?: ContentQuery;
   readonly reachProfile?: Partial<Record<ReachDomain, number>>;
 }
 
@@ -263,6 +324,7 @@ export function applyCellOverride(cellId: string, slug: string, override: Undert
     executionMode,
     projectDuration: override.projectDuration ?? (executionMode === 'multi_tick_project' ? base.projectDuration : undefined),
     catalystEncounterIds: override.catalystEncounterIds ?? base.catalystEncounterIds,
+    catalystQuery: override.catalystQuery ?? base.catalystQuery,
     reachProfile: override.reachProfile ?? base.reachProfile,
   };
 }

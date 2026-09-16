@@ -19,6 +19,7 @@
 import { getAllStrategicTemplates } from '../../../engine/strategicActionCandidates';
 import { getUndertakingObjectType } from '../../../data/undertaking-objects';
 import { UNDERTAKING_CELL_TEMPLATES, cellsOfType, getCellTemplate } from '../../../data/undertaking-cells';
+import { describeContentQuery } from '../../../engine/contentQuery';
 import { difficultyWord } from '../../../engine/encounters/nudges';
 import {
   getAllUndertakingKindRows,
@@ -304,7 +305,9 @@ export function buildUndertakingPackage(template: StrategicActionTemplate): Unde
     mutation: mutationBlock(template),
     harm: template.harmClass ? { harmClass: template.harmClass, magnitude: harmWord(template.harmClass) } : undefined,
     motiveGate: [...(template.motiveGate ?? [])],
-    catalysts: [...(template.catalystEncounterIds ?? [])],
+    // The query form beside the deprecated literals (THR-1497): a cell's catalyst is a
+    // family, and the Package View has to show it or the row reads as declaring none.
+    catalysts: [...(template.catalystEncounterIds ?? []), ...(template.catalystQuery ? [describeContentQuery(template.catalystQuery)] : [])],
     prose: { activity: [...(template.activityProse ?? [])], completion: [...(template.completionProse ?? [])] },
     writeSet: undertakingWriteSet(template, kind?.row),
     verdict: verdictOf(template),

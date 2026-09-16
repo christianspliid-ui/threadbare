@@ -3820,13 +3820,21 @@ two questions no gate can: which tags are **DEAD** (zero bearers — an author w
 an empty pool with no error), and which query sites got **no hits** over a seeded 200-tick run.
 The batch reports print queries authored per batch.
 
-**Read a silent site carefully — it has three possible causes and they want opposite fixes.**
-Measured 2026-09-13: `undertaking_catalyst` reports zero hits not because nobody authored a query
-there but because the site is **unreachable** — all 35 `catalystQuery` carriers are legacy-arm
-pack templates and `UNDERTAKING_MODEL: 'cells'` does not walk a profile's `templateIds`
-(THR-1497). A second cause is *authored but unreached on this seed*. A third is the trace buffer's
-2000-entry ring evicting an early firing, which biases the census toward over-reporting death —
-lower `--ticks` to tell *alive-but-early* from *actually silent* before filing anything.
+**Read a silent site carefully — it has four possible causes and they want opposite fixes.**
+Measured 2026-09-13: `undertaking_catalyst` reported zero hits not because nobody authored a query
+there but because the site was **unreachable** — all 35 `catalystQuery` carriers were legacy-arm
+pack templates and `UNDERTAKING_MODEL: 'cells'` does not walk a profile's `templateIds`. THR-1497
+(2026-09-16) closed that by putting the catalyst on the cell (`UNDERTAKING_CELL_CATALYSTS`) — and
+found a fourth cause on the way: the site was **never emitted**. The seeding site traced every seed
+as `encounter_seed`, so a catalyst that did resolve was counted under the wrong row. A site listed
+in `CONTENT_QUERY_SITES` proves nothing until a `traceContentQuery` call names it. A second cause is
+*authored but unreached on this seed*. A third is the trace buffer's 2000-entry ring evicting an
+early firing, which biases the census toward over-reporting death — lower `--ticks` to tell
+*alive-but-early* from *actually silent* before filing anything; for a seed-spawned encounter the
+durable record is the action's `spawnedFromSeedId`, stamped on every seed spawn since THR-1497.
+And a target standing inside a **Place** is judged by the Location that contains it
+(`seedTargetSubtype`) — a Place node carries no subtype of its own, and reading it raw withered
+every gated family for a mortal in a market district or an inn.
 
 **The lesson worth carrying to the next primitive.** That catalyst contract is wired, gated,
 contract-green and 🟢 LIVE on the interface map, and no player will ever meet it. Every

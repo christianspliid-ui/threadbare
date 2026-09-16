@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { evaluateEncounterSeeds } from '../encounterSeeding';
+import { evaluateEncounterSeeds, seedQuerySite, seedTargetSubtype } from '../encounterSeeding';
+import { STRATEGIC_CATALYST_REACTION_ID } from '../../data/strategic-action-constants';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
@@ -691,7 +692,7 @@ describe('THR-143 contract: causation edge wiring', () => {
     expect(spawnedAction.spawnedFromSeedLabel).toBe('Test encounter seed');
   });
 
-  it('spawned action has no causation fields when seed lacks sourceEventNodeId', () => {
+  it('spawned action has no causation marker when seed lacks sourceEventNodeId, but still names its seed', () => {
     const seed = makeSeed({
       templateId: 'broker.quest.rival_shrine_betrayal',
       eligibleAfterTick: 20,
@@ -704,7 +705,10 @@ describe('THR-143 contract: causation edge wiring', () => {
     expect(result.unifiedActions.length).toBeGreaterThan(0);
     const spawnedAction = result.unifiedActions[result.unifiedActions.length - 1];
     expect(spawnedAction.pendingCausationSourceEventId).toBeUndefined();
-    expect(spawnedAction.spawnedFromSeedId).toBeUndefined();
+    // THR-1497: provenance is a fact about the action whether or not an event node
+    // planted it; only the caused_by edge needs the source event.
+    expect(spawnedAction.spawnedFromSeedId).toBe('seed_test_1');
+    expect(spawnedAction.spawnedFromSeedLabel).toBe('Test encounter seed');
   });
 
   it('aftermath plants seed with sourceEventNodeId from action.eventNodeId', () => {
@@ -811,6 +815,10 @@ describe('the encounter_seed query site resolves and traces (THR-1488)', () => {
     const spawned = result.unifiedActions[result.unifiedActions.length - 1];
     expect(spawned, 'the query resolved nothing — no action spawned').toBeDefined();
     expect(spawned.templateId).toBe(BROKER_MEMBER);
+    // THR-1497: provenance rides every spawned action, causation source or not — the
+    // durable record of the resolution once the trace ring has evicted the trace.
+    expect(spawned.spawnedFromSeedId).toBe('seed_query_proof');
+    expect(spawned.pendingCausationSourceEventId, 'no sourceEventNodeId, so no causation marker').toBeUndefined();
 
     const trace = getTraces().find(t => t.category === 'content.query_resolved') as
       undefined | { site: string; candidateCount: number; pickedId?: string };
@@ -872,5 +880,111 @@ describe('the encounter_seed query site resolves and traces (THR-1488)', () => {
     // And the resolver was never asked. That is what "the literal wins" has to mean if a
     // migration is to land a query beside an id and delete the id a release later.
     expect(getTraces().some(t => t.category.startsWith('content.query'))).toBe(false);
+  });
+});
+
+/**
+ * The query site is the seed's provenance, not the resolver's address (THR-1497).
+ *
+ * One resolution site serves two planters. Before this, every seed traced as
+ * `encounter_seed`, so `undertaking_catalyst` was a registered site nothing emitted —
+ * the census could not see a catalyst resolve and the `catalyst_seeded` live claim
+ * filtered on a site that never fired. The site now follows `sourceReactionId`.
+ */
+describe('a catalyst seed traces its own query site (THR-1497)', () => {
+  beforeEach(() => { resetUnifiedActionCounter(); clearTraces(); enableTracing(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  it('seedQuerySite reads the provenance: a catalyst is undertaking_catalyst, anything else is encounter_seed', () => {
+    expect(seedQuerySite(makeSeed({ sourceReactionId: STRATEGIC_CATALYST_REACTION_ID }))).toBe('undertaking_catalyst');
+    expect(seedQuerySite(makeSeed())).toBe('encounter_seed');
+    expect(seedQuerySite(makeSeed({ sourceReactionId: 'strategic_catalys' }))).toBe('encounter_seed');
+  });
+
+  it('a seed a completed undertaking planted resolves at undertaking_catalyst, and an aftermath seed still at encounter_seed', () => {
+    const catalyst: PendingEncounterSeed = makeSeed({
+      seedId: 'catalyst_cell.create.place_actor-1_10',
+      sourceEncounterId: 'cand-1',
+      sourceReactionId: STRATEGIC_CATALYST_REACTION_ID,
+      encounterFamily: undefined,
+      query: { kind: 'encounter_template', tags: ['#broker_errand'] },
+      eligibleAfterTick: 13,
+      seedLabel: 'the wake of Build a place',
+    });
+    const aftermath: PendingEncounterSeed = makeSeed({
+      seedId: 'seed_aftermath',
+      encounterFamily: undefined,
+      query: { kind: 'encounter_template', tags: ['#broker_errand'] },
+      eligibleAfterTick: 13,
+    });
+    // Two actors, so both seeds spawn rather than the second being crowded out.
+    const state = createMinimalGameState({ pendingEncounterSeeds: [catalyst, aftermath] });
+    state.graph.addNode({ id: 'actor-2', type: 'actor', name: 'Bren', properties: { actorType: 'individual' } });
+    state.pendingEncounterSeeds = [catalyst, { ...aftermath, targetAgentId: 'actor-2' }];
+
+    evaluateEncounterSeeds(state, 25, testRng());
+
+    const sites = getTraces()
+      .filter(t => t.category === 'content.query_resolved')
+      .map(t => (t as { site: string; templateId?: string }))
+      .map(t => `${t.templateId}:${t.site}`)
+      .sort();
+    expect(sites).toEqual(['broker.quest.rival_shrine_betrayal:encounter_seed', 'cand-1:undertaking_catalyst']);
+  });
+
+  it('a target standing inside a Place is judged by the Location that contains it', () => {
+    // `bf.quest.*` accepts town/city/capital. The actor stands in a market district —
+    // a Place, `type: 'location'` with `parentLocationId`, carrying no subtype of its
+    // own — inside a town. Before THR-1497 the raw `located_at` read returned no
+    // subtype here and the family withered for a target exactly where it wanted them.
+    const state = createMinimalGameState({
+      pendingEncounterSeeds: [makeSeed({
+        sourceReactionId: STRATEGIC_CATALYST_REACTION_ID,
+        encounterFamily: undefined,
+        query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
+        eligibleAfterTick: 13,
+      })],
+    });
+    state.graph.addNode({ id: 'town-1', type: 'location', name: 'Wraithwood', properties: { locationSubtype: 'town' } });
+    state.graph.addNode({ id: 'town-1_sub_market', type: 'location', name: 'Market district', properties: { parentLocationId: 'town-1' } });
+    state.graph.addEdge({ id: 'e-loc', type: 'located_at', source: 'actor-1', target: 'town-1_sub_market', properties: {} });
+    expect(seedTargetSubtype(state.graph, 'actor-1')).toBe('town');
+
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    const spawned = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawned?.templateId, 'the family withered for a target inside a Place of a town').toMatch(/^bf\.quest\./);
+    const trace = getTraces().find(t => t.category === 'content.query_resolved') as undefined | { site: string };
+    expect(trace?.site).toBe('undertaking_catalyst');
+  });
+
+  it('a Place whose parent is dangling resolves to nowhere, and the gated family withers rather than throwing', () => {
+    const state = createMinimalGameState({
+      pendingEncounterSeeds: [makeSeed({
+        sourceReactionId: STRATEGIC_CATALYST_REACTION_ID,
+        encounterFamily: undefined,
+        query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
+        eligibleAfterTick: 13,
+      })],
+    });
+    state.graph.addNode({ id: 'orphan_sub', type: 'location', name: 'A room', properties: { parentLocationId: 'no-such-town' } });
+    state.graph.addEdge({ id: 'e-loc', type: 'located_at', source: 'actor-1', target: 'orphan_sub', properties: {} });
+    expect(seedTargetSubtype(state.graph, 'actor-1')).toBeUndefined();
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    expect(result.unifiedActions).toHaveLength(0);
+  });
+
+  it('a hungry catalyst query is empty at undertaking_catalyst, so the census can tell a dead family from a dead site', () => {
+    const state = createMinimalGameState({
+      pendingEncounterSeeds: [makeSeed({
+        sourceReactionId: STRATEGIC_CATALYST_REACTION_ID,
+        encounterFamily: undefined,
+        query: { kind: 'encounter_template', tags: ['#no_such_family'] },
+        eligibleAfterTick: 13,
+      })],
+    });
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    expect(result.unifiedActions).toHaveLength(0);
+    const empty = getTraces().find(t => t.category === 'content.query_empty') as undefined | { site: string };
+    expect(empty?.site).toBe('undertaking_catalyst');
   });
 });

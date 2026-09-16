@@ -35,8 +35,10 @@ import { createUnifiedAction } from './unifiedActionLifecycle';
 import { appendRecentEvent } from './encounterAftermath';
 import { emitTrace } from './traceBuffer';
 import { getAgentLocation } from './graphQueries';
+import { resolveToParentLocation } from './sublocationShape';
 import { getGroupMembers, isAgentGone, isBandNode } from './groups/groupQueries';
 import { FAMILY_SEED_MAX_CANDIDATES } from '../data/effect-constants';
+import { STRATEGIC_CATALYST_REACTION_ID } from '../data/strategic-action-constants';
 import {
   CONTENT_QUERY_MAX_CANDIDATES,
   describeContentQuery,
@@ -44,7 +46,7 @@ import {
   traceContentQuery,
 } from './contentQuery';
 import { sessionContentCatalogs } from './contentCatalogView';
-import type { ContentQuery } from '../types/contentQuery';
+import type { ContentQuery, ContentQuerySite } from '../types/contentQuery';
 import type { ContentTag } from '../data/content-tags';
 
 interface FamilyMatchResult {
@@ -112,6 +114,45 @@ export function seedContentQuery(seed: PendingEncounterSeed): ContentQuery | und
 }
 
 /**
+ * The query site a seed's resolution is traced at (THR-1497).
+ *
+ * One resolution site serves two planters — an aftermath's `encounter_seed` and an
+ * undertaking's catalyst — and the trace must say which, because the census reads
+ * reachability per site and the `catalyst_seeded` live claim filters on
+ * `undertaking_catalyst`. Before this the site was registered and never emitted: every
+ * seed traced as `encounter_seed`, so a catalyst that did resolve was invisible as one.
+ * Provenance is the seed's `sourceReactionId`, the one field a catalyst seed already
+ * carries that nothing else stamps.
+ */
+export function seedQuerySite(seed: PendingEncounterSeed): ContentQuerySite {
+  return seed.sourceReactionId === STRATEGIC_CATALYST_REACTION_ID ? 'undertaking_catalyst' : 'encounter_seed';
+}
+
+/**
+ * The location subtype a seed's target is standing at, for the eligibility filter
+ * (THR-1497).
+ *
+ * Resolved to the **Location** tier: a mortal inside a Place — a market district, a
+ * palace keep — is standing in the town or capital that contains it, and that is the
+ * subtype a `locationSubtypes` gate asks about. A Place node carries no
+ * `locationSubtype` of its own, so the raw `located_at` read returned `undefined`
+ * there and every subtype-gated family withered for a target who was, by the game's
+ * own position model, exactly where the family wanted them. Measured on seed 42 /
+ * medium over 200 ticks: three of ten catalyst seeds fired with their actor inside
+ * a Place of a settlement the family accepted, and all three resolved empty.
+ *
+ * A dangling `parentLocationId` resolves to `undefined`, which the filter treats as
+ * "nowhere the family accepts" — fail-soft, and the same nothing as before.
+ */
+export function seedTargetSubtype(graph: WorldGraph, targetAgentId: string): string | undefined {
+  const located = getAgentLocation(graph, targetAgentId);
+  const locationNode = resolveToParentLocation(graph, located);
+  return locationNode
+    ? ((locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined)
+    : undefined;
+}
+
+/**
  * The `'query:<kind>'` token the plan's fail-soft table specifies for a withered
  * query-only seed, delegated to the one describer in `contentQuery.ts` so a trace here
  * and a gate line there name the same query the same way.
@@ -170,10 +211,7 @@ function resolveSeedByQuery(
   rng: () => number,
   tick: number,
 ): FamilyMatchResult | undefined {
-  const locationNode = getAgentLocation(graph, seed.targetAgentId);
-  const subtype = locationNode
-    ? ((locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined)
-    : undefined;
+  const subtype = seedTargetSubtype(graph, seed.targetAgentId);
 
   const eligible: UnifiedActionTemplate[] = [];
   for (const hit of resolveContentQuery(query, sessionContentCatalogs(graph))) {
@@ -193,7 +231,7 @@ function resolveSeedByQuery(
     ? eligible[Math.floor(rng() * eligible.length)]
     : undefined;
   traceContentQuery({
-    site: 'encounter_seed',
+    site: seedQuerySite(seed),
     query,
     candidateCount: eligible.length,
     tick,
@@ -227,10 +265,7 @@ function matchFamilyTemplate(
   if (!family) return undefined;
   const prefix = `${family}.`;
 
-  const locationNode = getAgentLocation(graph, seed.targetAgentId);
-  const subtype = locationNode
-    ? ((locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined)
-    : undefined;
+  const subtype = seedTargetSubtype(graph, seed.targetAgentId);
 
   const eligible: UnifiedActionTemplate[] = [];
   for (const template of UNIFIED_ACTION_TEMPLATES) {
@@ -497,14 +532,18 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         // THR-1100: target-derived step duration for tier-scaled templates.
         targetProperties: state.graph.getNode(inherit.targetId)?.properties,
       });
-      const withCausation = seed.sourceEventNodeId
-        ? {
-            ...spawnedAction,
-            pendingCausationSourceEventId: seed.sourceEventNodeId,
-            spawnedFromSeedId: seed.seedId,
-            spawnedFromSeedLabel: seed.seedLabel,
-          }
-        : spawnedAction;
+      // THR-1497: the seed's provenance rides every spawned action, not only one with
+      // a causation source. The `caused_by` edge still needs `sourceEventNodeId`
+      // (`pendingCausationSourceEventId` gates that whole block), but "which seed
+      // spawned this" is a fact about the action whether or not an event node
+      // planted it — and it is the one durable record of a resolution once the trace
+      // ring has evicted the `content.query_resolved` that made it.
+      const withCausation = {
+        ...spawnedAction,
+        spawnedFromSeedId: seed.seedId,
+        spawnedFromSeedLabel: seed.seedLabel,
+        ...(seed.sourceEventNodeId ? { pendingCausationSourceEventId: seed.sourceEventNodeId } : {}),
+      };
       // THR-731 (PR 3): carry the seed's named opponent onto the action, which is
       // what `findOpposingBand` reads to pair the contest deliberately instead of
       // rediscovering an opponent by colocation.

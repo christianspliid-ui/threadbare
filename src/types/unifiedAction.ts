@@ -2897,7 +2897,11 @@ export interface UnifiedAction {
   readonly eventNodeId?: string;
   /** Source event node ID to emit a caused_by edge on first step resolution (THR-143). Cleared after use. */
   readonly pendingCausationSourceEventId?: string;
-  /** Seed ID that spawned this action, for causation edge properties (THR-143). */
+  /**
+   * Seed ID that spawned this action (THR-143). Stamped on every seed-spawned action
+   * since THR-1497, not only one carrying a causation source — the durable record of
+   * a seed's resolution after the trace ring has evicted its `content.query_resolved`.
+   */
   readonly spawnedFromSeedId?: string;
   /** Seed label that spawned this action, for causation edge properties (THR-143). */
   readonly spawnedFromSeedLabel?: string;

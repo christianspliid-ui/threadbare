@@ -17,7 +17,7 @@
 
 **Read the silence carefully — the four sites are silent for three different reasons.**
 
-- `undertaking_catalyst` is **unreachable**, not unauthored: 35 templates carry `catalystQuery` and every one is a legacy-arm pack, which `UNDERTAKING_MODEL: 'cells'` does not walk ([THR-1497](https://linear.app/threadbare/issue/THR-1497)). Nothing a content author writes will light it up.
+- `undertaking_catalyst` was **unreachable**, not unauthored: 35 templates carried `catalystQuery` and every one was a legacy-arm pack, which `UNDERTAKING_MODEL: 'cells'` does not walk. [THR-1497](https://linear.app/threadbare/issue/THR-1497) (2026-09-16) put the catalyst on the cell (`UNDERTAKING_CELL_CATALYSTS`, eleven cells) and made the seeding site trace a catalyst seed at its own site — it had traced every seed as `encounter_seed`, so the site was registered and never emitted. Measured after: seed 42 / 200 ticks, 6 catalyst seeds spawned an errand. The census's 2000-entry ring still evicts mid-run firings, so read the site's row with `--ticks` lowered before calling it silent.
 - `encounter_seed` and `reward_draw` are **authored but unreached on this seed** — a seed resolves when it comes due, and 200 ticks of one seeded world is a small sample of the corpus.
 - The trace buffer is a **2000-entry ring**, so a site that fired only in the opening ticks reads as silent at tick 200. The bias is toward over-reporting death; lower `--ticks` to separate *alive-but-early* from *actually silent*.
 

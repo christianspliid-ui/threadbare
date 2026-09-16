@@ -278,12 +278,14 @@ lines.push('');
     );
   } else if (proved.length === 0) {
     // The THR-1497 shape, stated rather than left to be inferred from a wall of
-    // `not_declared` rows.
+    // `not_declared` rows. Since THR-1497 a cell may carry the query; a pack
+    // template still cannot be reached from the live board.
     lines.push(
       `> ${carriers.length} authored quer(ies) and none resolved live. Under `
-        + '`UNDERTAKING_MODEL: \'cells\'` the `undertaking_catalyst` site is unreachable '
-        + 'from the live board (THR-1497) — check whether the carriers are pack templates '
-        + 'before reading this as a content defect.',
+        + '`UNDERTAKING_MODEL: \'cells\'` a *pack* template\'s `undertaking_catalyst` site is '
+        + 'unreachable from the live board (THR-1497; a cell\'s is not) — check whether the '
+        + 'carriers are pack templates, and whether the catalyst roll missed, before reading '
+        + 'this as a content defect.',
     );
   }
   lines.push('');
