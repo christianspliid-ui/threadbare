@@ -348,6 +348,37 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // Every game concept an aftermath chip names has to be explainable where it
   // is named. These are the concepts the *derived* chips reach for; entities
   // (people, factions, items) carry their own tooltips instead.
+  // ─── Faction network diagram (THR-1508) ────────────────────────
+  // The six words a faction's network diagram prints under its nodes. Each was inline
+  // SVG copy in `FactionSheet.tsx`'s `NetworkNode` — a concept word with no hover
+  // (Law 17). They explain how a faction *holds* a thing, not what the thing is: a
+  // hall is a Location the faction keeps, whatever kind of place it happens to be, so
+  // the place's own kind (`location.*`) is a different concept and stays where it is.
+  'ui.faction_core': {
+    label: 'Faction Core',
+    desc: 'The faction itself. Its members swear to it, its halls are kept in its name and the ground it holds answers to it — every thread in the diagram reaches back here.',
+  },
+  'ui.faction_leader': {
+    label: 'Leader',
+    desc: 'The one who speaks for the faction. Anointed by succession where the faction has settled one; otherwise the member with the strongest claim to it.',
+  },
+  'ui.faction_member': {
+    label: 'Member',
+    desc: 'A sworn member of the faction. Their {{ui.standing}} within it sets their rank, and rank sets what the faction asks of them and what it will offer.',
+  },
+  'ui.faction_hall': {
+    label: 'Hall',
+    desc: 'A seat the faction keeps — a guild hall, or a place of its own inside a settlement. Where its business is done and its members gather.',
+  },
+  'ui.faction_control': {
+    label: 'Control',
+    desc: 'A Location the faction holds sway over without keeping a seat there. Its writ runs in the streets; its rivals take note of the reach.',
+  },
+  'ui.faction_army': {
+    label: 'Army',
+    desc: 'A force the faction fields. It marches, lays siege and fights under the faction\'s banner, and it draws on the faction\'s supply to stay whole.',
+  },
+
   'ui.standing': {
     label: 'Standing',
     desc: 'How the world reads a mortal — the sum of what they have been seen to do. Standing opens doors and closes them: it gates who will bargain, who will follow, and who remembers a grudge.',
