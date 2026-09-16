@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-16 19:54 local (17:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-16 20:53 local (18:53 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,12 +18,12 @@ One question: **is the integrated encounter experience at an acceptable state?**
 
 ## Queue
 
-**Healthy: eight ready, all Low priority.** Nothing is blocked or stale; the oldest item is from 12 September.
+**Healthy: seven ready, all Low priority.** Nothing is blocked or stale; the oldest item is from 12 September.
 
-- **Shipped since the last brief: [THR-1504](https://linear.app/threadbare/issue/THR-1504)** ([PR #1949](https://github.com/christianspliid-ui/threadbare/pull/1949), merged 19:19). The breadcrumb at the top of a detail panel can now be reached and used with the keyboard.
+- **Shipped since the last brief: [THR-1499](https://linear.app/threadbare/issue/THR-1499)** ([PR #1950](https://github.com/christianspliid-ui/threadbare/pull/1950), merged 20:33). A chip saying a realm's standing moved can now link to that realm.
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** (redrawing the Meet The First scene art) is still in In Dev with no owner, about 3 days now. The spend is already approved; the stalled-ticket sweep has not put it back in the queue yet.
 
 ## Health
 
 - **The weekly workflow retro missed today's 11:13 slot.** It fell inside the three-day stop, and the scheduler has skipped ahead to 23 September — no workflow retro this week unless someone runs it by hand.
-- **Everything else is green.** The live site is serving the newest commit. CI, GitHub's scheduled jobs and the cleanup script (ran 19:40) are healthy. No PRs are waiting. The engine runs at 68 ms per tick, level with its weekly median.
+- **Everything else is green.** The live site is serving the newest commit. CI, GitHub's scheduled jobs and the cleanup script (ran 20:40) are healthy. No PRs are waiting. The engine runs at 68 ms per tick, level with its weekly median.
