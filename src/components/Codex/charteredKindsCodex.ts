@@ -43,6 +43,7 @@
  */
 
 import type { CodexEntry } from './codexRegistry';
+import { conceptRow, contributionConcepts, sphereConcept, type CodexDetail } from './codexConcepts';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS, clampRarityTier } from '../../types/rarity';
 import type { RarityTier } from '../../types/rarity';
 import { ARTIFACT_TEMPLATES } from '../../data/artifact-templates';
@@ -331,7 +332,13 @@ export function buildCompanionCodexEntries(): CodexEntry[] {
       flavorText: genericJoinSentence(template.profession, template.joinSentence),
       tags: template.tags,
       details: [
-        { label: 'What they are good for', value: contributions || 'Company, and little else' },
+        // The reach words hover (THR-1507) — declared from the same record the phrase was
+        // banded from, through the same `reachDisplayName`, so span and text cannot drift.
+        conceptRow(
+          'What they are good for',
+          contributions || 'Company, and little else',
+          contributionConcepts(template.domainContributions as Record<string, number>, reachDisplayName),
+        ),
         { label: 'Tier', value: RARITY_TIER_NAMES[tier] },
         {
           label: 'How long they stay',
@@ -439,15 +446,23 @@ function hungerWord(id: string): string {
   return HUNGER_CATALOG.find(h => h.id === id)?.name ?? id;
 }
 
-/** How this card is come by, as a sentence. */
-function howHeld(member: NudgeCardMember): string {
-  if (member.hunger) return `The ${hungerWord(member.hunger)} hunger's own`;
-  if (member.sphere) return `Signed by ${sphereWord(member.sphere)} — held by gods of that Sphere`;
-  if (!member.unlock || member.unlock.kind === 'starting') return 'In every god’s first hand';
-  if (member.unlock.kind === 'sphere_attunement') {
-    return `Earned by practice in ${sphereWord(member.unlock.sphere)}`;
+/**
+ * How this card is come by, as a row — the Sphere it names hovers (THR-1507). A hunger has
+ * no registry entry, so that sentence declares nothing and paints plain rather than dead.
+ */
+function howHeldRow(member: NudgeCardMember): CodexDetail {
+  const label = 'How you hold it';
+  if (member.hunger) return { label, value: `The ${hungerWord(member.hunger)} hunger's own` };
+  if (member.sphere) {
+    const word = sphereWord(member.sphere);
+    return conceptRow(label, `Signed by ${word} — held by gods of that Sphere`, [sphereConcept(member.sphere, word)]);
   }
-  return 'Earned in play';
+  if (!member.unlock || member.unlock.kind === 'starting') return { label, value: 'In every god’s first hand' };
+  if (member.unlock.kind === 'sphere_attunement') {
+    const word = sphereWord(member.unlock.sphere);
+    return conceptRow(label, `Earned by practice in ${word}`, [sphereConcept(member.unlock.sphere, word)]);
+  }
+  return { label, value: 'Earned in play' };
 }
 
 /**
@@ -484,7 +499,7 @@ export function buildCardCodexEntries(): CodexEntry[] {
         { label: 'Keyword', value: type?.keyword ?? member.typeId },
         { label: 'What it does', value: type?.effectShape ?? 'Unwritten' },
         { label: 'The decision', value: type?.decision ?? 'Unwritten' },
-        { label: 'How you hold it', value: howHeld(member) },
+        howHeldRow(member),
       ],
     };
   });
