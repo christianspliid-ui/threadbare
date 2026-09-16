@@ -125,6 +125,21 @@ export const SLICE_CARAVAN_MASTER_TRUST = 0.1;
 //      renders its own chip from the effect, so no band re-authors it as a
 //      `future_hook` change. A `future_hook` change with no seed behind it is a
 //      chip promising a sequel that never arrives.
+//   3. Bands are reached per PATH, not per template (THR-1509). A player stands
+//      on exactly one `variants[choiceId]` — a fork's `fallback` is unreachable
+//      in play, because the arm is decided before the deciding step's outcome
+//      lands — and a band authored on the other arm does nothing for them.
+//      **Every path owes the losing bands it can reach:** `critical_failure`
+//      always (a critical step ends the action there whatever its
+//      `failBehavior`), and `failure` when a step on that path is
+//      `fail_action`. The reason is register: every base ending below is
+//      written as a success, so on a loss it would lie. Winning bands are
+//      optional per path — the base ending already reads as one, and a path
+//      that only needs different words for a win may leave the base to carry
+//      it. The gate is `vertical-slice.test.ts` § THR-1509, and it reads
+//      through `authoredOutcomeBandsOnVariant` / `reachableLosingBandsOnPath`
+//      — the same functions the `[?outcome]` console line judges by, so the
+//      gate and the diagnostic cannot disagree.
 
 /**
  * Standing tally the slice writes to: the traveler's name on this stretch of road.
@@ -3404,6 +3419,13 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
     // The deciding step, not the fork's own index — see THR-979 on the
     // crossroads config. SWINDLER_FORK declares `branchOnStep: 0`.
     branchOnStep: 0,
+    // THR-1509 — the two arms author DIFFERENT band sets, and the difference is
+    // deliberate on the winning side only. Both arms are `fail_action`, so both
+    // owe `failure` and `critical_failure` (header rule 3) and both carry them.
+    // The wins differ because the events differ: the law path's win belongs to
+    // the town (`critical_success` — coin back in public), the alley path's win
+    // costs the body (`success_at_cost` — the bruises outlast the money). A
+    // plain `success` on either arm is the base ending, which is written as one.
     variants: {
       positive: {
         // THR-1130 — `slice.swindler.the_ledger_way` folded (Law 13 parity).
@@ -3471,6 +3493,56 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
               },
             ],
           },
+          // THR-1509 — the law path's worst ending. Before this band a critical
+          // failure on this arm rendered the base ending above ("The town's
+          // justice has the man"), the opposite of what the step's own
+          // afterimage says happened ("The wardens arrived to an empty pitch
+          // and one annoyed witness").
+          critical_failure: {
+            overview:
+              'The wardens arrived at the corn scales to an empty pitch, one annoyed witness, ' +
+              'and a family already walking off with a deed folded into a coat. The case was ' +
+              'said plainly to a badge with nothing left to look at. The market has them as the ' +
+              'stranger who cried thief at a man nobody can now find, and somewhere on a road out ' +
+              'of town the man has a face to remember.',
+            changes: [
+              {
+                id: 'slice.swindler.cried_thief',
+                kind: 'trait',
+                title: 'Cried Thief at an Empty Pitch',
+                causeClause: 'The wardens came to nothing',
+                detail: 'He knows who called the law on him.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'loss',
+                stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
+                concepts: [{ text: 'the face that called the wardens' }],
+              },
+            ],
+            // Authors its own reactions on purpose: the base reaction pays the
+            // road-repute GAIN for using the town's law, and a square that
+            // watched the law arrive to nothing does not pay that.
+            reactions: [
+              {
+                id: 'slice.swindler.leave_it_to_law_late',
+                label: 'Leave him to the town',
+                intent: 'The bell rang for an empty pitch. Let the town keep its own ledger.',
+                effects: [
+                  {
+                    kind: 'hidden_mark',
+                    category: 'reputation_note',
+                    severity: SLICE_CONCEALED_ACTION_SEVERITY,
+                    label: 'A paper-seller two markets from the fen road knows who called the wardens on him',
+                  },
+                  {
+                    kind: 'reputation_tally',
+                    key: SLICE_ROAD_REPUTE_KEY_ILL,
+                    delta: SLICE_REPUTE_LOSS,
+                  },
+                ],
+              },
+            ],
+          },
         },
       },
       negative: {
@@ -3494,6 +3566,50 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
           },
         ],
         byOutcome: {
+          // THR-1509 — the alley path's plain loss. Before this band a failed
+          // cornering rendered the base ending above ("The debt was collected
+          // in person"), when the step's own afterimage says the man "knew his
+          // own exits better than his marks did, and used one".
+          failure: {
+            overview:
+              'The alley behind the corn scales was empty when the traveler reached it, and so ' +
+              'was the pitch. He knew his own exits better than his marks ever did, and he took ' +
+              'one with the satchel and the paper. The market noise never stopped. Somewhere on ' +
+              'a road out of town a man is describing a face to himself so he will know it next ' +
+              'time.',
+            changes: [
+              {
+                id: 'slice.swindler.knew_his_exits',
+                kind: 'trait',
+                title: 'Knew His Own Exits',
+                causeClause: 'He was gone before the alley closed',
+                detail: 'He has had a look at their face.',
+                polarity: 'loss',
+                category: 'scar',
+                direction: 'loss',
+                stateNoun: { text: 'hidden mark', tooltipId: 'ui.hidden_mark' },
+                concepts: [{ text: 'the face that waited in the alley' }],
+              },
+            ],
+            // Authors its own reactions on purpose: the base reaction pays the
+            // ill-repute of a knife in the market's story, and nothing happened
+            // in this alley for the market to tell.
+            reactions: [
+              {
+                id: 'slice.swindler.walk_away_empty',
+                label: 'Walk away',
+                intent: 'The alley was empty. The road waits.',
+                effects: [
+                  {
+                    kind: 'hidden_mark',
+                    category: 'reputation_note',
+                    severity: SLICE_CONCEALED_ACTION_SEVERITY,
+                    label: 'A paper-seller two markets from the fen road knows who waited for him in the alley',
+                  },
+                ],
+              },
+            ],
+          },
           success_at_cost: {
             overview:
               'He paid in the alley, all of it, and the traveler carried the argument out of ' +

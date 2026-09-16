@@ -1712,7 +1712,12 @@ export interface DebugBridge {
       readonly requestedBand: 'critical_success' | 'success' | 'success_at_cost' | 'near_miss' | 'failure' | 'critical_failure';
       readonly actualOutcome: string;
       readonly status: 'band_rendered' | 'unauthored_band' | 'outcome_diverged' | 'no_aftermath_config';
+      /** The aftermath path the action resolved on — a `variants` key, or `'fallback'` (THR-1509). */
+      readonly variantKey: string;
+      /** Bands authored on `variantKey` — the path on screen. The verdict is judged against THIS list (THR-1509). */
       readonly authoredBands: readonly string[];
+      /** Bands authored anywhere on the template. A band here but not in `authoredBands` is on another arm of the fork. */
+      readonly templateBands: readonly string[];
       readonly message: string;
     }
   >;

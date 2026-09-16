@@ -26,12 +26,17 @@ import type {
   UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../types/unifiedAction';
-import { authoredOutcomeBands } from '../../../engine/debugOutcomePin';
+import {
+  authoredOutcomeBands,
+  authoredOutcomeBandsOnVariant,
+  reachableLosingBandsOnPath,
+} from '../../../engine/debugOutcomePin';
 import {
   SLICE_FULL_MOON_DELAY_TICKS,
   SLICE_KIN_WELCOME_DELTA,
   SLICE_KIN_WELCOME_DELTA_FUMBLED,
   SLICE_KIN_WELCOME_DELTA_WARM,
+  SLICE_ROAD_REPUTE_KEY,
   SLICE_TABLE_DELAY_TICKS,
   SLICE_TABLE_GATE_BAND,
   SLICE_TEMPLATE_IDS,
@@ -1014,6 +1019,133 @@ describe('vertical slice — the crossroads chain promises only what the seed pe
 // not matter" — and same-shape siblings in this very file (The Swindler
 // Found, The Table That Holds) author the band. Giving the word badly is not
 // the same event as declining to give it.
+// ═════════════════════════════════════════════════════════════════════
+// THR-1509 — every PATH authors the losing bands it can reach
+// ═════════════════════════════════════════════════════════════════════
+//
+// **What THR-1468's gate could not see.** It asks `authoredOutcomeBands()`,
+// the per-template UNION, whether `failure` is authored anywhere. But a band
+// is reached on one path: `resolveAftermathVariant` picks `variants[choiceId]`
+// and layers `byOutcome` from that variant alone. The Swindler Found authored
+// `failure` on its law arm and `critical_failure` on its alley arm — the
+// union read as full coverage while a player on either arm was one band
+// short, and the `[?outcome]` line said "Showing the authored ending" over
+// the base one. THR-1509 made the verdict per-path; this gate is the
+// authoring half, stated as the rule in the slice file's header (rule 3).
+//
+// **The rule.** A path owes `critical_failure` always — a critical step ends
+// the action there whatever its `failBehavior` (`advanceStep`) — and owes
+// `failure` when a step on that path is `fail_action`. Winning bands are
+// optional per path: every base ending in the file is written as a win.
+//
+// **Which paths.** Every `variants` key, plus `fallback` only on a
+// choice-less config. A fork's `fallback` is unreachable in play: the arm is
+// decided by `applyAgentDecidedBranches` before `advanceStep` lands the
+// deciding step's outcome, so even a step-0 critical failure resolves onto a
+// decided arm. Gating an unreachable path would demand dead content.
+//
+// **Shared predicate, on purpose.** `authoredOutcomeBandsOnVariant` and
+// `reachableLosingBandsOnPath` are the functions the `[?outcome]` verdict is
+// built from, so this gate and the console line cannot disagree — the same
+// reason THR-1468 shared `authoredOutcomeBands`.
+describe('vertical slice — every path authors the losing bands it can reach (THR-1509)', () => {
+  /** The paths a player can land on — see "Which paths" above. */
+  function reachablePathKeys(template: UnifiedActionTemplate): string[] {
+    const config = template.aftermathConfig;
+    if (!config) return [];
+    const keys = Object.keys(config.variants ?? {});
+    return keys.length > 0 ? keys : ['fallback'];
+  }
+
+  function missingLosingBands(templates: readonly UnifiedActionTemplate[]): string[] {
+    const missing: string[] = [];
+    for (const template of templates) {
+      for (const key of reachablePathKeys(template)) {
+        const owed = reachableLosingBandsOnPath(template, key);
+        const has = authoredOutcomeBandsOnVariant(template, key);
+        for (const band of owed) {
+          if (!has.includes(band)) missing.push(`${template.id}::${key} owes ${band}`);
+        }
+      }
+    }
+    return missing;
+  }
+
+  it('authors critical_failure on every path, and failure on every path with a fail_action step', () => {
+    // Population guards: the predicate is worthless over a shrunken roster or
+    // a roster with no forks (the case this gate exists for).
+    expect(VERTICAL_SLICE_TEMPLATES.length).toBe(9);
+    const forked = VERTICAL_SLICE_TEMPLATES.filter((t) => reachablePathKeys(t).length > 1);
+    expect(forked.length, 'no forked template — the per-path gate proves nothing').toBeGreaterThan(0);
+    // And the rule must actually ask for `failure` somewhere, or it collapses
+    // to the critical_failure-only check.
+    expect(
+      VERTICAL_SLICE_TEMPLATES.some((t) =>
+        reachablePathKeys(t).some((k) => reachableLosingBandsOnPath(t, k).includes('failure')),
+      ),
+    ).toBe(true);
+
+    const missing = missingLosingBands(VERTICAL_SLICE_TEMPLATES);
+    expect(
+      missing,
+      `these paths can end on a losing band and author no ending for it, so the ` +
+        `player gets that path's base ending — written as a win:\n${missing.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('the predicate actually detects an absence on ONE arm that the union would hide', () => {
+    // Falsification arm, aimed at the exact defect: remove `failure` from the
+    // swindler's alley arm only. The law arm still authors it, so the
+    // per-template union (THR-1468's predicate) stays satisfied — and this
+    // gate must reject the template anyway.
+    const swindler = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.swindlerFound)!;
+    expect(missingLosingBands([swindler])).toEqual([]);
+
+    const negative = swindler.aftermathConfig!.variants.negative!;
+    const { failure: _removed, ...withoutFailure } = negative.byOutcome!;
+    expect(Object.keys(withoutFailure)).not.toContain('failure');
+    const perturbed: UnifiedActionTemplate = {
+      ...swindler,
+      aftermathConfig: {
+        ...swindler.aftermathConfig!,
+        variants: {
+          ...swindler.aftermathConfig!.variants,
+          negative: { ...negative, byOutcome: withoutFailure },
+        },
+      },
+    };
+
+    // The union still says `failure` is authored — that is the laundering.
+    expect(authoredOutcomeBands(perturbed)).toContain('failure');
+    // The per-path gate does not.
+    expect(missingLosingBands([perturbed])).toEqual([
+      `${SLICE_TEMPLATE_IDS.swindlerFound}::negative owes failure`,
+    ]);
+  });
+
+  it('the two new swindler bands do not inherit the base reactions their events contradict', () => {
+    // `applyAftermathOutcomeBand` substitutes `reactions` WHOLESALE — a band
+    // without its own inherits the base set. Both new bands must author their
+    // own, because each base reaction pays a repute the band's event did not
+    // earn: the law arm's base GAIN for using the town's law (the law arrived to
+    // nothing), the alley arm's base ill-repute for a knife in the story (no
+    // fight happened). Pinned so a later "tidy" that drops the reactions to
+    // match the sibling bands does not silently re-pay them.
+    const swindler = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.swindlerFound)!;
+    const lawCritFail = swindler.aftermathConfig!.variants.positive!.byOutcome!.critical_failure;
+    expect(lawCritFail?.reactions, 'the law arm critical_failure band must author its own reactions').toBeDefined();
+    const lawEffects = (lawCritFail!.reactions ?? []).flatMap((r) => r.effects);
+    expect(lawEffects.some((e) => e.kind === 'reputation_tally' && e.key === SLICE_ROAD_REPUTE_KEY)).toBe(false);
+    expect(lawEffects.some((e) => e.kind === 'hidden_mark')).toBe(true);
+
+    const alleyFail = swindler.aftermathConfig!.variants.negative!.byOutcome!.failure;
+    expect(alleyFail?.reactions, 'the alley arm failure band must author its own reactions').toBeDefined();
+    const alleyEffects = (alleyFail!.reactions ?? []).flatMap((r) => r.effects);
+    expect(alleyEffects.some((e) => e.kind === 'reputation_tally')).toBe(false);
+    expect(alleyEffects.some((e) => e.kind === 'hidden_mark')).toBe(true);
+  });
+});
+
 describe('vertical slice — every encounter authors the failure band (THR-1468)', () => {
   it('authors `failure` on all nine templates', () => {
     // Population guard: the predicate is worthless over an empty or shrunken

@@ -2501,7 +2501,11 @@ export function executeStepResult(
     // that no variant authors would otherwise render the *base* ending while the URL
     // claimed a band, which is precisely the defect THR-989 and THR-973 exist to
     // find. No-ops entirely when no pin is armed for this template.
-    recordOutcomePinVerdict(template, finalAction.outcome);
+    //
+    // THR-1509 — judged against the SAME choice history `aftermathVariant` above
+    // was resolved from, so the verdict is about the path on screen, not about
+    // whether some other arm of the fork authored the band.
+    recordOutcomePinVerdict(template, finalAction.outcome, finalAction.choiceHistory);
 
     const reactions = aftermathVariant?.reactions
       ?? buildEncounterAftermathReactions(template);
