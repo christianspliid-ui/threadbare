@@ -512,7 +512,7 @@ export const COMPANY_GATE_HELD: UnifiedActionTemplate = {
             {
               id: 'company.gate.go_back_for_them',
               label: 'Go back for them',
-              intent: 'The arch is shut. That is not the same as certain.',
+              intent: 'Shut is not the same as certain. Somebody goes back to the passage to find out.',
               effects: [
                 { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
                 {
@@ -826,14 +826,14 @@ export const COMPANY_TWO_ROADS_NAMED: UnifiedActionTemplate = {
         {
           id: 'company.dispute.settle_the_say',
           label: 'Settle the say',
-          intent: 'The company decides who names the road, out loud, before it walks.',
+          intent: 'Have it out now, in the open. The company walks with one voice or it does not walk.',
           effects: [
             { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_GAIN },
           ],
         },
         {
           id: 'company.dispute.carry_it_to_the_next_fork',
-          label: 'Carry it to the next fork',
+          label: 'Leave it for the next fork',
           intent: 'Nobody wants the second argument tonight. It keeps.',
           effects: [
             // A question carried is a question that arrives again, and the seed

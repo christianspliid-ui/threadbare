@@ -602,7 +602,7 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
         {
           id: 'toll.let_them_rest',
           label: 'Let them rest before the road',
-          intent: 'The god spends the moment on the body in front of them. The person matters more than the story.',
+          intent: 'Sit them down. The road will still be there when the shaking stops.',
           /**
            * `remove_condition` alone made this an **empty mercy on most
            * histories**. `exhausted` has exactly one minter — step 1's own
@@ -643,7 +643,7 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
         {
           id: 'toll.let_the_story_travel',
           label: 'Let the column carry the story',
-          intent: 'The god spends the moment on what the column says at the next halt. The story matters more than the afternoon.',
+          intent: "The company's telling of it outlives the afternoon. Let it go north with them.",
           effects: [{ kind: 'reputation_with', targetFactionId: 'mercenary_company', delta: 0.08 }],
         },
       ],

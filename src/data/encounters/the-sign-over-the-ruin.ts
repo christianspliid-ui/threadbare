@@ -618,7 +618,7 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
           // happen on the band it most often appears on.
           id: 'sign.take_the_fear_off_them',
           label: 'Take the fear off them',
-          intent: 'They stood in front of it longer than a person should. Let them put it down.',
+          intent: 'A fear taken off the stone can be handed back to it. Let them put it down.',
           effects: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.terrified', removeAll: true }],
         },
         {

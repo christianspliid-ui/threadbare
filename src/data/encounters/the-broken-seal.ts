@@ -591,7 +591,7 @@ export const THE_BROKEN_SEAL_TEMPLATE: UnifiedActionTemplate = compileOpeningEnv
             {
               id: 'seal.let_them_open_it',
               label: 'Let them open it here',
-              intent: 'The lid comes off at the top of the stair, in front of everyone who wanted it shut.',
+              intent: 'In front of everyone who wanted it kept shut. Let them see what the seal was for.',
               effects: [
                 {
                   kind: 'attachment_grant',

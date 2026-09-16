@@ -1011,7 +1011,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
             {
               id: 'archive.tell_it_plainly',
               label: 'Tell the keeper plainly',
-              intent: 'Nothing is softened. The records are gone, and the keeper hears it straight.',
+              intent: 'Nothing is softened. The keeper hears it whole, from the one who was there.',
               effects: [
                 {
                   kind: 'intelligence',
