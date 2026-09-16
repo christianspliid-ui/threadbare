@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-16 17:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-16 18:55 local (16:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,13 +18,12 @@ One question: **is the integrated encounter experience at an acceptable state?**
 
 ## Queue
 
-**Healthy: ten ready, one of them Medium priority, the rest Low.** Nothing is blocked or stale; the oldest item is from 12 September.
+**Healthy: nine ready, all Low priority.** Nothing is blocked or stale; the oldest item is from 12 September.
 
-- **New at the top: [THR-1510](https://linear.app/threadbare/issue/THR-1510/a-catalyst-seed-leaves-pendingencounterseeds-before-its-eligibility)** (Medium). A seed for an encounter is removed from the queue before it can fire, so the encounter it was meant to start never happens. The orchestrator moved it to the ready queue at 17:27, once [THR-1497](https://linear.app/threadbare/issue/THR-1497) had landed.
-- **Shipped since the last brief: [THR-1498](https://linear.app/threadbare/issue/THR-1498)** ([PR #1947](https://github.com/christianspliid-ui/threadbare/pull/1947), merged 17:24). The ending of Gate Duty now links to the people in it.
-- **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** (redrawing the Meet The First scene art) has sat in In Dev with no owner since 13 September, about 3 days. The spend is already approved. The automatic sweep for stalled tickets puts it back in the queue around 18:46 today.
+- **Shipped since the last brief: [THR-1510](https://linear.app/threadbare/issue/THR-1510/a-catalyst-seed-leaves-pendingencounterseeds-before-its-eligibility)** ([PR #1948](https://github.com/christianspliid-ui/threadbare/pull/1948), merged 18:14). A seed for an encounter no longer drops out of the queue before it can fire.
+- **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** (redrawing the Meet The First scene art) has sat in In Dev with no owner since 13 September, about 3 days. The spend is already approved; the stalled-ticket sweep has not put it back in the queue yet.
 
 ## Health
 
-- **The weekly workflow retro missed today's 11:13 slot.** That slot fell inside the three-day stop. The scheduler has skipped ahead to next Wednesday, 23 September, so this week has no workflow retro unless someone runs it by hand.
-- **Everything else is green.** The site serves the newest commit ([cb0906a1](https://github.com/christianspliid-ui/threadbare/commit/cb0906a1)). CI and the post-merge jobs are green. GitHub's scheduled jobs are healthy (Heavy simulation tests failed 1 of its last 4 scheduled runs; its latest run on main is green). No PRs are waiting. The cleanup script for old branches and worktrees ran at 17:40. The engine runs at 58 ms per tick, 16% faster than its weekly median.
+- **The weekly workflow retro missed today's 11:13 slot.** It fell inside the three-day stop, and the scheduler has skipped ahead to 23 September — no workflow retro this week unless someone runs it by hand.
+- **Everything else is green.** The live site is current (the newest commits touched only docs). CI, GitHub's scheduled jobs and the cleanup script (ran 18:40) are healthy. No PRs are waiting. The engine runs at 75 ms per tick, 9% above its weekly median — inside normal range.

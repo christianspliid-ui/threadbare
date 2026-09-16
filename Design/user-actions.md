@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-16 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-16 18:55 local (16:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-16 — an encounter seed no longer drops out before it can fire** ([THR-1510](https://linear.app/threadbare/issue/THR-1510)). Merged 18:14.
 - **2026-09-16 — Gate Duty's ending links the people in it** ([THR-1498](https://linear.app/threadbare/issue/THR-1498)). Merged 17:24, live.
 - **2026-09-16 — the undertaking catalyst reaches the live board** ([THR-1497](https://linear.app/threadbare/issue/THR-1497)). Merged 16:41, live.
 - **2026-09-16 — Sunday's engine slowdown was noise** — tick cost back to 59 ms/tick, below the weekly median. Nothing owed.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 - **2026-09-13 — what a player may leaf through is settled** ([THR-1495](https://linear.app/threadbare/issue/THR-1495)). Merged 17:39, live.
 - **2026-09-13 — a region on the map describes itself in words** ([THR-1455](https://linear.app/threadbare/issue/THR-1455)). Merged 16:21, live.
 - **2026-09-13 — a consequence can name the place it landed on** ([THR-1462](https://linear.app/threadbare/issue/THR-1462)). Merged 15:32, live.
-- **2026-09-13 — the guild notice board says which silence it is** ([THR-1026](https://linear.app/threadbare/issue/THR-1026)). Merged 14:29, live.
 
 ---
 
