@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-16 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-16 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-16 — Gate Duty's ending links the people in it** ([THR-1498](https://linear.app/threadbare/issue/THR-1498)). Merged 17:24, live.
 - **2026-09-16 — the undertaking catalyst reaches the live board** ([THR-1497](https://linear.app/threadbare/issue/THR-1497)). Merged 16:41, live.
 - **2026-09-16 — Sunday's engine slowdown was noise** — tick cost back to 59 ms/tick, below the weekly median. Nothing owed.
 - **2026-09-13 — the six orphaned tag words came off your list** ([THR-1501](https://linear.app/threadbare/issue/THR-1501)) — standing sunset rule applies. **Veto open.**
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 - **2026-09-13 — a region on the map describes itself in words** ([THR-1455](https://linear.app/threadbare/issue/THR-1455)). Merged 16:21, live.
 - **2026-09-13 — a consequence can name the place it landed on** ([THR-1462](https://linear.app/threadbare/issue/THR-1462)). Merged 15:32, live.
 - **2026-09-13 — the guild notice board says which silence it is** ([THR-1026](https://linear.app/threadbare/issue/THR-1026)). Merged 14:29, live.
-- **2026-09-13 — every ending is now read as a whole page** ([THR-1474](https://linear.app/threadbare/issue/THR-1474)). Merged 13:29, live.
 
 ---
 
