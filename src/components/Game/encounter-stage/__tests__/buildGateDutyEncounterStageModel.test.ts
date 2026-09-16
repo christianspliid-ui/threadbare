@@ -648,10 +648,15 @@ describe('buildGateDutyEncounterStageModel', () => {
     expect(model.choices).toEqual([]);
     expect(model.aftermath?.overview).toMatch(/district|unchanged|consequences/i);
     // THR-1212 slice 6 — this alternated with `follow-on thread` until the
-    // followOnTags convention was retired. The surviving title is the authored
-    // aftermath highlight; the retired arm was kept loose enough that a stale
-    // value would still have matched, so it is pinned to the one real answer.
-    expect(model.aftermath?.highlights?.[0]?.title).toMatch(/night will keep travelling/i);
+    // followOnTags convention was retired; THR-1498 then retired the bespoke
+    // highlight box itself. The future hook is now a SEED chip through the
+    // shared builder, and no `highlights` ride the model at all — a highlight
+    // is the inert-text shape the ticket removed, so its presence is the defect.
+    expect(model.aftermath?.highlights).toBeUndefined();
+    expect(model.aftermath?.consequences?.map(c => c.kind)).toEqual(['seed']);
+    expect(model.aftermath?.consequences?.[0]?.sentenceText).toBe(
+      'The witness leaves the gate carrying the sharper story.',
+    );
     // Absence where the element should no longer render: no surface may carry the
     // retired chip's title, on any face of this model.
     expect(JSON.stringify(model)).not.toContain('A follow-on thread was seeded');
@@ -1041,13 +1046,33 @@ describe('THR-1459 — the gate duty ending resolves its cast tokens', () => {
     expect(AUTHORED_REACTION_INTENT).toContain('{cast:suspect_courier}');
   });
 
-  it('names the bound courier in the future-hook consequence box', () => {
+  it('names the bound courier in the future-hook consequence chip', () => {
     const model = buildAftermathModel();
-    const hook = model.aftermath?.highlights?.find(h => h.id === 'gate_duty_courier_mystery');
+    // THR-1498 — the box became a chip; the id is the builder's `consequence-<change id>`.
+    const hook = model.aftermath?.consequences?.find(c => c.id === 'consequence-gate_duty_courier_mystery');
 
     expect(hook).toBeDefined();
-    expect(hook!.detail).toContain(COURIER_NAME);
-    expect(hook!.detail).not.toContain('{cast:');
+    expect(hook!.sentenceText).toContain(COURIER_NAME);
+    expect(hook!.sentenceText).not.toContain('{cast:');
+  });
+
+  /**
+   * THR-1498 — the name is a *segment carrying the courier's node id*, not a
+   * substring of a bare string. This is the model-level half of the guard: the
+   * adapter's link set is built from the ids it resolves for the cast, so the
+   * bound courier's name must come out of the linker as an entity segment. On
+   * the pre-THR-1498 shape there was no `consequences` array at all, so this
+   * fails there by construction rather than by snapshot.
+   */
+  it('links the bound courier by node id inside the chip sentence', () => {
+    const model = buildAftermathModel();
+    const hook = model.aftermath?.consequences?.find(c => c.id === 'consequence-gate_duty_courier_mystery');
+    const linked = hook?.sentence.segments.find(seg => seg.entityId === COURIER_NODE);
+
+    expect(linked).toBeDefined();
+    expect(linked!.text).toBe(COURIER_NAME);
+    // A person: absent kind routes to the agent surface (the segment field's own rule).
+    expect(linked!.entityKind).toBeUndefined();
   });
 
   it('names the bound courier in the reaction card the adapter does not rewrite', () => {

@@ -17,7 +17,7 @@ import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
-import { resolveAnchorDeclaration } from '../../../../data/content-eval/chipAnchorDeclarations';
+import { buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
 import { supportRoleWord } from '../../../../engine/supportRoleWords';
@@ -750,52 +750,11 @@ function buildAftermath(
     reactions: displayReactions,
     enrich: (text) => enrichProse(text, ctx),
     link: (id, text) => autoLinkNarrative(id, text, aftermathLinkEntries),
-    // THR-1004 — the UI Law's image half. Resolved here because this is the
-    // layer that holds the graph; the veil renders what comes out and stays
-    // graph-free. A concept whose entity has no art resolves to the designed
-    // fallback tile rather than nothing (NFP #4).
-    resolveIcon: (concept) => {
-      const kind = concept.visualKind;
-      if (!kind) return undefined;
-      // THR-1120 — an attachment has a page but no entity-visual family: its art
-      // lives on its own template node and `AttachmentDetailView` draws it. It
-      // takes the link tier and no tile, which is the documented fail-open path
-      // rather than a wrong glyph. `EntityVisualKind` excludes it, so removing
-      // this guard is a type error, not a silent regression.
-      if (kind === 'attachment') return undefined;
-      // THR-1155 — an Area is the second kind with a route and no tile. It is a
-      // stretch of ground: the map draws its dotted border and its label, and there is
-      // no portrait of a mountain range that a chip could carry. Same guard, same
-      // reason, same compile-time enforcement — `EntityVisualKind` excludes it.
-      if (kind === 'area') return undefined;
-      const entityId = concept.entityId ?? concept.visualName ?? concept.text;
-      const name = concept.visualName ?? concept.text;
-      const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);
-      return { entityId, kind, name, src: descriptor.src };
-    },
-    // THR-1164 — Law 56 clause 2's runtime half. An anchor that cannot be a
-    // literal id (a faction node minted per world, a cast actor, the acting
-    // agent) is authored as a sentinel and only the graph can say what it means
-    // here. Same module the gate classifies with, so a declaration that passed
-    // `check:chip-anchors` is the one resolved on screen.
-    resolveAnchor: (entityId) =>
-      resolveAnchorDeclaration(entityId, {
-        graph,
-        actorId: activeAction.actorId,
-        // THR-1130 — the other end of the edge. Effects that write onto the
-        // agent the encounter was aimed at (`favor_creation` mints `owes_favor`
-        // debtor-side) produce chips whose sentence is about the target, and
-        // until this was passed the only anchor available was `$actor`.
-        targetId: activeAction.targetId,
-        castNodeIdByKey: new Map(
-          (activeAction.supportBindings ?? []).map(b => [b.key, b.nodeId]),
-        ),
-        // THR-1275 — what `$artifact` searches by. `spawn_artifact` stamps
-        // `sourceEncounterId` from `action.templateId`, so passing the same value
-        // here is what lets a `possession` chip anchor the possession instead of
-        // the holder. Without it the sentinel fails soft to text.
-        encounterTemplateId: activeAction.templateId,
-      }),
+    // THR-1004 / THR-1164 — the image half and the anchor half of the UI Law,
+    // both graph-holding, both shared with the gate-duty adapter since THR-1498
+    // (`chipCollaborators.ts` carries the reasoning that used to sit inline here).
+    resolveIcon: buildChipIconResolver(graph),
+    resolveAnchor: buildChipAnchorResolver(graph, activeAction),
   });
 
   return {
