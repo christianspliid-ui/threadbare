@@ -600,7 +600,7 @@ function main(): void {
   console.log(
     `anchor-catalog: wrote ${OUTPUT_REL} — ` +
       `${counts.linked} linked, ${counts.named} named, ${counts.reserved} reserved, ` +
-      `${counts['not-an-anchor']} not-an-anchor. Nation linked through `$realm` ` +
+      `${counts['not-an-anchor']} not-an-anchor. Nation linked through '$realm' ` +
       `(THR-1499) over the political map ${BORDERS_GAP_TICKET} shipped.`,
   );
   console.log(
