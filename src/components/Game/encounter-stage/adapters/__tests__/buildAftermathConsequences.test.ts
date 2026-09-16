@@ -1032,6 +1032,50 @@ describe('declared anchors are resolved against the live world (THR-1164)', () =
   });
 
   /**
+   * THR-1499 — `$realm` on the **state noun**, which is the shipped shape for a
+   * `faction_reputation` chip: the standing *is* the state, and its page is the faction
+   * sheet (the anchor catalog's own Standing row), so this is the one faction-class case
+   * where THR-1472's carrier rule and the anchor land on the same node. Same declaration
+   * a guild chip makes with `$faction:<defId>`; the difference is that the id arrives
+   * from the political map at render rather than from a shipped definition.
+   */
+  const courtStanding = (entityId: string) =>
+    change({
+      id: 'summons.counted_useful',
+      kind: 'faction_reputation',
+      polarity: 'gain',
+      category: 'boon',
+      detail: 'Their standing with the crown rose.',
+      stateNoun: { text: 'court standing', entityId, visualKind: 'faction', tooltipId: 'ui.standing' },
+    });
+
+  it('resolves a `$realm` state noun to the Realm the map handed the resolver', () => {
+    const chips = buildAftermathConsequences({
+      changes: [courtStanding('$realm')],
+      ...passthrough,
+      resolveAnchor: (id) => (id === '$realm' ? 'actor.faction.realm.ashfall' : undefined),
+    });
+    // The resolved node id reaches the surface and the raw sentinel never does — a
+    // '$'-prefixed id would render as a live link opening nothing (Law 21).
+    expect(chips[0].nounEntityId).toBe('actor.faction.realm.ashfall');
+    expect(chips[0].nounEntityId).not.toMatch(/^\$/);
+    // And it routes to the faction sheet, where the court rank is read.
+    expect(chips[0].nounEntityKind).toBe('faction');
+  });
+
+  it('keeps a `$realm` on unclaimed ground as the named tag it was', () => {
+    // NFP #4 — the falsification arm: no Realm holds this hex, so the resolver returns
+    // nothing and the tag must stay text rather than become a link to nowhere.
+    const chips = buildAftermathConsequences({
+      changes: [courtStanding('$realm')],
+      ...passthrough,
+      resolveAnchor: () => undefined,
+    });
+    expect(chips[0].nounEntityId).toBeUndefined();
+    expect(chips[0].nounLabel).toBe('COURT STANDING');
+  });
+
+  /**
    * THR-1462 — `$here` on the **concept** channel, which is the shipped shape.
    *
    * `encounter.shrine_offering` lands its condition on the place via

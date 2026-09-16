@@ -43,6 +43,7 @@ import {
 } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
+import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { GATE_DUTY_NUDGE_IDS } from '../../../../data/civic-guard-encounter-content';
 
@@ -68,6 +69,13 @@ interface BuildGateDutyEncounterStageModelArgs {
    * reads to the player as "you cannot afford this" no matter how rich they are.
    */
   gameState?: GameState;
+  /**
+   * THR-1499 — the political map `$realm` reads, as the thunk the effect binder
+   * takes. A standing chip on a realm-court ending links the Realm the border
+   * mesh draws; without this it stays `named` (NFP #4). Lazy so an ending with
+   * no realm chip never pays for the map.
+   */
+  realmProjection?: RealmProjectionThunk;
 }
 
 function titleCaseWords(raw: string): string {
@@ -1050,6 +1058,8 @@ function buildGateDutyAftermathPresentation(args: {
   enrich: (text: string) => string;
   /** THR-1498 — the names a consequence sentence may link, see `buildGateDutyLinkEntries`. */
   linkEntries: EntityLinkEntry[];
+  /** THR-1499 — what a `$realm` chip anchor reads; see the top-level args. */
+  realmProjection?: RealmProjectionThunk;
 }) {
   const actorMoments = new Map<string, {
     id: string;
@@ -1156,7 +1166,7 @@ function buildGateDutyAftermathPresentation(args: {
     enrich: args.enrich,
     link: (id, text) => autoLinkNarrative(id, text, args.linkEntries),
     resolveIcon: buildChipIconResolver(args.graph),
-    resolveAnchor: buildChipAnchorResolver(args.graph, args.activeAction),
+    resolveAnchor: buildChipAnchorResolver(args.graph, args.activeAction, args.realmProjection),
   });
 
   let overview = 'Only a few consequences are heavy enough to keep their hands on tomorrow. These are the ones worth naming.';
@@ -1233,6 +1243,7 @@ export function buildGateDutyEncounterStageModel({
   clearanceGateState,
   essence,
   gameState,
+  realmProjection,
 }: BuildGateDutyEncounterStageModelArgs): EncounterStageModel {
   const gatehouseBinding = getSupportBinding(activeAction, 'gatehouse');
   const captainBinding = getSupportBinding(activeAction, 'gate_captain');
@@ -1340,6 +1351,7 @@ export function buildGateDutyEncounterStageModel({
       graph,
       activeAction,
       enrich,
+      realmProjection,
       // THR-1498 — the same four ids the narrative paragraphs above link, so a
       // name is a link in the chips exactly when it is a link in the prose.
       linkEntries: buildGateDutyLinkEntries({

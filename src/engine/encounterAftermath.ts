@@ -139,6 +139,11 @@ import { isPlaceNode, isLocationNode } from './sublocationShape';
 // THR-1462 — $here's location walk, shared with the chip-anchor half so the chip a
 // consequence draws points at the node the effect wrote to. One rule, two readers.
 import { resolveSceneHere } from './sceneHere';
+// THR-1499 — $realm's political-map lookup, shared with the chip-anchor half for the same
+// reason: a chip that resolved the Realm from a different map than the effect it reports
+// would name a nation the border mesh does not draw. One rule, two readers.
+import { resolveSceneRealm } from './sceneRealm';
+import type { RealmProjectionThunk } from './sceneRealm';
 import {
   SCENE_SENTINEL_FIELDS,
   SENTINEL_ACTOR,
@@ -150,8 +155,6 @@ import {
   SENTINEL_AREA,
 } from './sceneSentinels';
 import type { SceneSentinelField, SceneSentinelKind } from './sceneSentinels';
-import type { RealmProjection } from './realmProjection';
-import { hexKeyFromCoord } from '../lib/hexKey';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -742,7 +745,7 @@ export interface AftermathSceneRefs {
    * aftermath effects, which carry no `$realm` at all. Returning `null` — or throwing,
    * which is caught — leaves the sentinel unbound (NFP #4).
    */
-  readonly realmProjection?: () => RealmProjection | null;
+  readonly realmProjection?: RealmProjectionThunk;
 }
 
 /**
@@ -799,56 +802,6 @@ function nodeMatchesSceneField(
   }
 }
 
-/**
- * THR-1155 — resolve `$realm`: the Realm whose political map claims the hex the acting
- * agent is standing on.
- *
- * Three hops, each one already the sanctioned way to ask its question:
- * `resolveSceneHere` for the Location (so `$realm` inherits the avatar hop and the
- * three-tier walk rather than re-deriving them), the Location's `hexCol`/`hexRow` for
- * the ground, and `realmProjection.hexRealmId` for the nation — the same map the
- * border mesh draws.
- *
- * **Reading the hex rather than the Location's holder is deliberate.** A Location's
- * holder can be a guild, an order or a monster faction; the projection contains Realms
- * only. Asking the map therefore *cannot* return a non-Realm, where asking the town
- * would need a `factionClass` filter bolted on to be safe — and a filter that is
- * merely remembered is a filter that is one day forgotten.
- *
- * Fail-soft throughout (NFP #4): no actor, no position, a Location with no stamped hex,
- * an unclaimed hex, a projection that throws, or a claimed hex whose Realm node has
- * since gone away all return `null`, and the sentinel stays in place.
- */
-function resolveSceneRealm(
-  graph: WorldGraph,
-  actorId: string | undefined,
-  kind: SceneSentinelKind,
-  projection: (() => RealmProjection | null) | undefined,
-): string | null {
-  if (kind !== 'faction' || !projection) return null;
-
-  const locationId = resolveSceneHere(graph, actorId, 'location');
-  if (!locationId) return null;
-
-  const col = graph.getNode(locationId)?.properties?.hexCol;
-  const row = graph.getNode(locationId)?.properties?.hexRow;
-  if (typeof col !== 'number' || typeof row !== 'number') return null;
-
-  let realmId: string | undefined;
-  try {
-    realmId = projection()?.hexRealmId.get(hexKeyFromCoord({ col, row }));
-  } catch {
-    // The projection is a cache behind a belt; a build that throws is already traced
-    // by `ensureRealmProjection`. Never let a sentinel lookup be what breaks a tick.
-    return null;
-  }
-  if (!realmId) return null;
-
-  // The projection is rebuilt on structural change, so a stale entry is not the
-  // expected case — but binding an id to a node that is gone would mint an edge into
-  // nothing, which is worse than an unbound sentinel.
-  return graph.getNode(realmId) ? realmId : null;
-}
 
 export interface SceneSentinelTraceContext {
   readonly tick: number;

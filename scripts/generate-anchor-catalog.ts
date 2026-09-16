@@ -436,8 +436,9 @@ function render(input: {
       'plus the bearer\'s `entityId` | The bearer\'s reach signature |',
   );
   lines.push(
-    '| Standing / reputation | `tooltipId: \'ui.standing\'`, plus the faction\'s `entityId` | ' +
-      'The faction sheet, and the actor\'s standing readout |',
+    '| Standing / reputation | `tooltipId: \'ui.standing\'`, plus the faction\'s `entityId` — ' +
+      '`$faction:<defId>` for a shipped order, `$realm` for the Realm holding the scene\'s hex ' +
+      '(THR-1499) | The faction sheet, and the actor\'s standing readout |',
   );
   lines.push(
     '| Quintessence | `tooltipId` for the sphere, plus the bearer\'s `entityId` | The bearer\'s ' +
@@ -459,10 +460,13 @@ function render(input: {
   lines.push('| Named anchor | What exists today | Verdict |');
   lines.push('|---|---|---|');
   lines.push(
-    '| **Nation** | Nothing. There is no `nation` node type, no nation property, and no ' +
-      'border model. Territory is expressed as faction control edges over locations. | ' +
-      `🕳️ **gap** — do not anchor to a nation. Anchor the **faction** that holds the ground, ` +
-      `which is real and linked. |`,
+    '| **Nation** | A Realm is a faction node (`factionClass: \'realm\'`) minted per world, and ' +
+      'the political map (`realmProjection`, THR-1155) says which Realm claims each hex — the ' +
+      'border mesh draws it. | ' +
+      '🔗 **linked** (THR-1499) — declare `entityId: \'$realm\'`, `visualKind: \'faction\'`. It ' +
+      'resolves to the Realm holding the scene\'s hex from the same map the border is drawn ' +
+      'from, and stays named on ground no Realm claims. `$faction:<defId>` cannot reach a ' +
+      'Realm, whose definition id is minted per world. |',
   );
   lines.push(
     '| **Named area** | `region` nodes are real: flood-filled at worldgen, then named from ' +
@@ -596,8 +600,8 @@ function main(): void {
   console.log(
     `anchor-catalog: wrote ${OUTPUT_REL} — ` +
       `${counts.linked} linked, ${counts.named} named, ${counts.reserved} reserved, ` +
-      `${counts['not-an-anchor']} not-an-anchor. Nation recorded as a gap ` +
-      `(no union member exists), tracked by ${BORDERS_GAP_TICKET}.`,
+      `${counts['not-an-anchor']} not-an-anchor. Nation linked through `$realm` ` +
+      `(THR-1499) over the political map ${BORDERS_GAP_TICKET} shipped.`,
   );
   console.log(
     `anchor-catalog: spine — ${worldRefKinds.length} \`WorldRefKind\`s across ` +

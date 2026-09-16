@@ -33,6 +33,11 @@ import type { WorldGraph } from '../../engine/graph';
 // than re-derived: a chip that resolved one hop differently from the effect it reports
 // would point at the wrong node while passing every gate.
 import { resolveSceneHere } from '../../engine/sceneHere';
+// THR-1499 — the same political-map lookup $realm already performs on the effect side.
+// Imported for the same reason: a chip that resolved the Realm from a different map than
+// the effect it reports would name a nation the border mesh does not draw.
+import { resolveSceneRealm } from '../../engine/sceneRealm';
+import type { RealmProjectionThunk } from '../../engine/sceneRealm';
 
 /** The acting agent — the one the encounter resolved for. */
 export const ANCHOR_SENTINEL_ACTOR = '$actor';
@@ -105,6 +110,30 @@ export const ANCHOR_SENTINEL_ARTIFACT = '$artifact';
  */
 export const ANCHOR_SENTINEL_HERE = '$here';
 
+/**
+ * The Realm that holds the ground this encounter is happening on — THR-1499.
+ *
+ * `$here` names the *place*; this names the *nation that holds it*. The effect side has
+ * had it since THR-1155 (`faction_reputation_gain` with `factionId: '$realm'` is the
+ * realm-court family's whole spine), and the chip side did not: `$faction:<defId>` takes a
+ * **shipped** definition id checked against `ALL_FACTION_DEFINITIONS`, and a Realm's
+ * definition is minted per world as `realm.<cultureId>` over a generated culture, so no
+ * literal an author can write will ever be in that set. Every standing chip in the three
+ * realm-court encounters therefore reported that the mortal's standing with the crown
+ * moved and none could link the crown — the one faction class whose name is drawn on the
+ * map was the one no chip could reach.
+ *
+ * **Resolves from the political map, never from the town's holder** — the same
+ * `realmProjection` the border mesh draws, through {@link resolveSceneRealm}. On ground no
+ * Realm claims it resolves to nothing and the chip stays `named` (NFP #4, Law 21): *the
+ * realm that holds this town* must never quietly become *whoever holds this town*.
+ *
+ * The static half rejects it on a template that authors no realm-scoped effect, the
+ * `$artifact` shape: a standing chip claiming the crown moved on a template that never
+ * writes to the crown is the sentinel equivalent of a typo'd cast key.
+ */
+export const ANCHOR_SENTINEL_REALM = '$realm';
+
 /** Whether a declared `entityId` is a sentinel rather than a literal id. */
 export function isAnchorSentinel(entityId: string): boolean {
   return entityId.startsWith('$');
@@ -121,6 +150,7 @@ export type AnchorDeclarationVerdict =
         | 'faction'
         | 'artifact'
         | 'here'
+        | 'realm'
         | 'attachment_template';
     }
   | { readonly ok: false; readonly reason: string };
@@ -150,6 +180,19 @@ export interface ClassifyAnchorOptions {
    * `chipAnchorViolations` always computes and passes it.
    */
   readonly mintsArtifact?: boolean;
+  /**
+   * Whether this template authors an aftermath effect that binds `$realm` anywhere —
+   * THR-1499.
+   *
+   * Same contract as `mintsArtifact`, for the same reason: `$realm` on a chip is a claim
+   * that this encounter moved something *with the crown*, and a template whose effects
+   * never name the crown has nothing for the chip to report. Catchable here, where the
+   * author is told; at render it would fail soft to text and look like a styling choice.
+   *
+   * **Optional, and absent means "the caller cannot say" rather than "no".** The
+   * shipping gate (`chipAnchorViolations`) always computes and passes it.
+   */
+  readonly bindsRealm?: boolean;
 }
 
 /**
@@ -170,6 +213,22 @@ export function classifyAnchorDeclaration(
   // authoring mistake for the static half to catch here. A scene whose actor turns out to
   // stand nowhere is a world outcome, and the runtime half fails it soft (NFP #4).
   if (entityId === ANCHOR_SENTINEL_HERE) return { ok: true, form: 'here' };
+
+  // THR-1499 — conditional like `$artifact`, not unconditional like `$here`: whether
+  // *this* scene's hex is claimed is a world outcome the runtime half fails soft, but a
+  // template that never writes to the crown has no crown for the chip to report.
+  if (entityId === ANCHOR_SENTINEL_REALM) {
+    if (options.bindsRealm === false) {
+      return {
+        ok: false,
+        reason:
+          `'${entityId}' names the Realm this encounter's ending moved, but the template `
+          + 'authors no effect binding `$realm` anywhere — so there is nothing for it to '
+          + 'point at',
+      };
+    }
+    return { ok: true, form: 'realm' };
+  }
 
   if (entityId === ANCHOR_SENTINEL_ARTIFACT) {
     if (options.mintsArtifact === false) {
@@ -213,6 +272,7 @@ export function classifyAnchorDeclaration(
         + `'${ANCHOR_SENTINEL_ACTOR}', '${ANCHOR_SENTINEL_TARGET}', `
         + `'${ANCHOR_SENTINEL_ARTIFACT}', `
         + `'${ANCHOR_SENTINEL_HERE}', `
+        + `'${ANCHOR_SENTINEL_REALM}', `
         + `'${ANCHOR_SENTINEL_CAST_PREFIX}<key>', `
         + `'${ANCHOR_SENTINEL_FACTION_PREFIX}<defId>'`,
     };
@@ -257,6 +317,14 @@ export interface ResolveAnchorContext {
    * the chip renders as text (NFP #4).
    */
   readonly encounterTemplateId?: string | undefined;
+  /**
+   * The political map, lazily — what `$realm` reads (THR-1499). The same thunk shape
+   * `AftermathSceneRefs.realmProjection` takes on the effect side, so both halves are
+   * handed the one map the border mesh draws rather than each building its own.
+   * Optional: a caller with no map resolves `$realm` to `undefined` and the chip renders
+   * as text (NFP #4).
+   */
+  readonly realmProjection?: RealmProjectionThunk | undefined;
 }
 
 /**
@@ -284,6 +352,14 @@ export function resolveAnchorDeclaration(
   // renders as the plain text it was before it declared anything (NFP #4, Law 21).
   if (entityId === ANCHOR_SENTINEL_HERE) {
     return resolveSceneHere(context.graph, context.actorId, 'location') ?? undefined;
+  }
+
+  // THR-1499 — one reader of the political-map lookup the aftermath binder performs.
+  // `null` (no actor, no position, an unclaimed hex, no map in hand) becomes `undefined`
+  // so the chip stays the `named` anchor it was — never a dead link (NFP #4, Law 21).
+  if (entityId === ANCHOR_SENTINEL_REALM) {
+    return resolveSceneRealm(context.graph, context.actorId, 'faction', context.realmProjection)
+      ?? undefined;
   }
 
   if (entityId.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) {

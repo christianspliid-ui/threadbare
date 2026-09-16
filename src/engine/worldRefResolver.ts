@@ -20,6 +20,7 @@ import type { WorldGraph } from './graph';
 import type { WorldRef, WorldRefKind } from '../types/worldRef';
 import { parseHexRefId } from '../types/worldRef';
 import { resolveAnchorDeclaration } from '../data/content-eval/chipAnchorDeclarations';
+import type { RealmProjectionThunk } from './sceneRealm';
 
 export interface WorldRefResolutionContext {
   readonly graph: WorldGraph;
@@ -31,6 +32,8 @@ export interface WorldRefResolutionContext {
   readonly castNodeIdByKey?: ReadonlyMap<string, string>;
   /** The template id of the encounter being resolved — what `$artifact` searches by. */
   readonly encounterTemplateId?: string;
+  /** The political map, lazily — what `$realm` reads (THR-1499). Absent ⇒ `$realm` drops. */
+  readonly realmProjection?: RealmProjectionThunk;
   /**
    * Where this resolution was attempted, for the drop log. Free-form and
    * developer-facing (`'aftermath-chip'`, `'narrative-segment'`); it never reaches a
@@ -130,6 +133,7 @@ function resolveWorldRefInner(
       targetId: context.targetId,
       castNodeIdByKey: context.castNodeIdByKey ?? new Map<string, string>(),
       encounterTemplateId: context.encounterTemplateId,
+      realmProjection: context.realmProjection,
     });
   } catch {
     // The tick loop must never crash on a reference (NFP #4). A resolver that threw

@@ -339,7 +339,7 @@ The director's *"a particular stat on any of these"*. A stat anchor names the be
 | Stat family | How the chip declares it | Where the player sees it |
 |---|---|---|
 | Reach (iron, gold, shadow, veil, heart, eye, stone, star) | `tooltipId: 'reach.<domain>'` on the concept, plus the bearer's `entityId` | The bearer's reach signature |
-| Standing / reputation | `tooltipId: 'ui.standing'`, plus the faction's `entityId` | The faction sheet, and the actor's standing readout |
+| Standing / reputation | `tooltipId: 'ui.standing'`, plus the faction's `entityId` — `$faction:<defId>` for a shipped order, `$realm` for the Realm holding the scene's hex (THR-1499) | The faction sheet, and the actor's standing readout |
 | Quintessence | `tooltipId` for the sphere, plus the bearer's `entityId` | The bearer's quintessence readout |
 | Attachment stat | `tooltipId: 'attachment.<templateId>'` — derived automatically from `entityId` when `visualKind` is `attachment` | `AttachmentDetailView` |
 
@@ -349,7 +349,7 @@ Recorded rather than invented, per the ticket's instruction and CLAUDE.md's rule
 
 | Named anchor | What exists today | Verdict |
 |---|---|---|
-| **Nation** | Nothing. There is no `nation` node type, no nation property, and no border model. Territory is expressed as faction control edges over locations. | 🕳️ **gap** — do not anchor to a nation. Anchor the **faction** that holds the ground, which is real and linked. |
+| **Nation** | A Realm is a faction node (`factionClass: 'realm'`) minted per world, and the political map (`realmProjection`, THR-1155) says which Realm claims each hex — the border mesh draws it. | 🔗 **linked** (THR-1499) — declare `entityId: '$realm'`, `visualKind: 'faction'`. It resolves to the Realm holding the scene's hex from the same map the border is drawn from, and stays named on ground no Realm claims. `$faction:<defId>` cannot reach a Realm, whose definition id is minted per world. |
 | **Named area** | `region` nodes are real: flood-filled at worldgen, then named from historical culture ownership, and surfaced in the hex chronicle. | 📍 **partial** — anchorable and nameable today; no page and no click route. |
 
 **Why this matters to an author right now.** The Unsafe Bridge is the motivating defect: its `PATH · THE RIVER CROSSING` chip named "the river crossing" and "the ford upstream" — landscape fiction, not graph objects — and no pointer could have repaired it. A river is hex state (`hasRiver`), not a node, and the encounter can spawn on hexes that have none. When the referent is not in this catalog, the fix is to fold the chip into band prose or bind the encounter's spawn to hexes that carry the feature — never to dress the fiction in a pointer.

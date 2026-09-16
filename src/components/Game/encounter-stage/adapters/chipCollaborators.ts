@@ -19,6 +19,7 @@
 import type { WorldGraph } from '../../../../engine/graph';
 import type { UnifiedAction } from '../../../../types/unifiedAction';
 import { resolveAnchorDeclaration } from '../../../../data/content-eval/chipAnchorDeclarations';
+import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import type { ChipIconResolver } from './buildAftermathConsequences';
 
@@ -61,10 +62,16 @@ export function buildChipIconResolver(graph: WorldGraph): ChipIconResolver {
  * about which of them `$target` or `$artifact` reads from. Fail-soft on a
  * missing action: every sentinel resolves to `undefined` and the chip renders
  * as the plain text it was before it declared anything (NFP #4, Law 21).
+ *
+ * `realmProjection` (THR-1499) is what `$realm` reads — the political map the
+ * border mesh draws, handed in as a thunk so an ending with no realm chip never
+ * pays for it. Optional for the same fail-soft reason: an adapter with no map
+ * resolves `$realm` to `undefined` and the standing chip stays `named`.
  */
 export function buildChipAnchorResolver(
   graph: WorldGraph,
   activeAction: UnifiedAction | undefined,
+  realmProjection?: RealmProjectionThunk,
 ): (entityId: string) => string | undefined {
   const castNodeIdByKey = new Map(
     (activeAction?.supportBindings ?? []).map(b => [b.key, b.nodeId]),
@@ -84,5 +91,8 @@ export function buildChipAnchorResolver(
       // here is what lets a `possession` chip anchor the possession instead of
       // the holder. Without it the sentinel fails soft to text.
       encounterTemplateId: activeAction?.templateId,
+      // THR-1499 — the nation holding the ground. Same thunk shape the effect
+      // binder takes, so a standing chip links the Realm the map draws.
+      realmProjection,
     });
 }

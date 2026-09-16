@@ -311,6 +311,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'gain',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'Held to the crown\'s figure',
@@ -357,6 +361,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'gain',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'Held, and marked for it',
@@ -383,6 +391,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'loss',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'Paid what was asked',
@@ -409,6 +421,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'loss',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'Gone through at the rope',

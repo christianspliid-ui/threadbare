@@ -56,6 +56,9 @@ import {
 // THR-1172 — the same predicate the renderer styles on, so the gate and the
 // pixels cannot disagree about which nouns answer.
 import { tooltipResolves } from '../../engine/tooltipResolver';
+// THR-1499 — the binder's own field table and sentinel, so "this template binds $realm"
+// is decided by the same rule that binds it at runtime.
+import { SCENE_SENTINEL_FIELD_NAMES, SENTINEL_REALM } from '../../engine/sceneSentinels';
 import {
   CHIP_STATE_NOUN_MAX_WORDS,
   CHIP_STATE_NOUN_REPUTATION_FORM,
@@ -696,6 +699,15 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
   const mintsArtifact = allAftermathEffects(template).some(
     effect => effect.kind === 'spawn_artifact',
   );
+  // THR-1499 — `$realm` is the second sentinel whose referent the *template* has to earn:
+  // a standing chip claiming the crown moved is only honest on a template whose effects
+  // bind `$realm` somewhere. Read off the sentinel-bearing fields the binder reads, so
+  // the gate and the runtime agree about what "binds $realm" means.
+  const bindsRealm = allAftermathEffects(template).some(effect =>
+    SCENE_SENTINEL_FIELD_NAMES.some(
+      field => (effect as unknown as Record<string, unknown>)[field] === SENTINEL_REALM,
+    ),
+  );
   // Faces overlap — a band that authors no `changes` inherits the variant's, so
   // the same chip is reachable on several endings. Reporting it once keeps the
   // fix list the shape an author acts on.
@@ -711,7 +723,7 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
       );
       for (const ref of declared) {
         if (ref.entityId) {
-          const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys, mintsArtifact });
+          const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys, mintsArtifact, bindsRealm });
           if (!verdict.ok) {
             reported.add(change.id);
             out.push(

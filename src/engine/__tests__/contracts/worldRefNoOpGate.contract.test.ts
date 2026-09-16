@@ -44,6 +44,8 @@ import { createSimulationRuntime } from '../../simulationRuntime';
 import { prepareEncounterSupportBundle } from '../../encounterSupportBundle';
 import { getAttachmentTemplateNode } from '../../attachmentTemplateIndex';
 import { resolveWorldRef, clearWorldRefDrops, getWorldRefDrops } from '../../worldRefResolver';
+import { buildRealmProjection, emptyRealmProjection } from '../../realmProjection';
+import type { RealmProjection } from '../../realmProjection';
 import type { WorldGraph } from '../../graph';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { declaredChipAnchors } from '../../../data/content-eval/compositionContract';
@@ -79,6 +81,11 @@ const NOOP_GATE_TICK_BUDGET = 20;
  * `here` (THR-1462) is the seventh, and the first whose referent is a **place** rather
  * than a person or a template — which is why the disposition below had to name it
  * rather than inherit the agent-shaped default.
+ *
+ * `realm` (THR-1499) is the eighth: a faction, but one the **political map** answers
+ * rather than a definition id, so it resolves only for an actor standing on claimed
+ * ground. The gate therefore picks its actor from the map (see `realmActorId`) instead of
+ * taking `agentIds[0]` on faith, and pins the unclaimed-ground drop as its own arm.
  */
 const EXPECTED_FORMS = [
   'actor',
@@ -88,6 +95,7 @@ const EXPECTED_FORMS = [
   'attachment_template',
   'artifact',
   'here',
+  'realm',
 ] as const;
 type AnchorForm = (typeof EXPECTED_FORMS)[number];
 
@@ -102,6 +110,7 @@ type AnchorForm = (typeof EXPECTED_FORMS)[number];
 const ANCHOR_FORM_KIND: Partial<Record<AnchorForm, string>> = {
   faction: 'faction',
   here: 'location',
+  realm: 'faction',
 };
 
 /**
@@ -226,6 +235,29 @@ describe('WorldRef no-op gate — declared chip anchors resolve in a seeded worl
     template => declaredChipAnchors(template).length > 0,
   );
 
+  // THR-1499 — the political map `$realm` reads, built once from the run's tiles exactly
+  // as `ensureRealmProjection` would build it. A generated world, not a fixture: whether
+  // any agent stands on Realm-claimed ground is a worldgen fact this gate must find, not
+  // assume.
+  const realmProjection: RealmProjection = buildRealmProjection(graph, state.tiles);
+  const realmThunk = () => realmProjection;
+
+  /**
+   * The first individual, in sorted order, standing on a hex the map says a Realm holds.
+   * `$realm` legitimately drops for an actor on unclaimed ground (that is the design,
+   * THR-1155 § D), so resolving every realm anchor against `agentIds[0]` would turn a
+   * worldgen coincidence into a gate verdict. Picking the actor from the map keeps the
+   * gate about whether the *form resolves*, and the drop arm below keeps the fail-soft
+   * half honest.
+   */
+  const realmActorId = agentIds.find(
+    agentId =>
+      resolveWorldRef(
+        { kind: 'faction', id: '$realm' },
+        { graph, actorId: agentId, realmProjection: realmThunk, surface: 'noop-gate:realm-pick' },
+      ) !== undefined,
+  );
+
   // Stage every anchor once, through the real binder. `prepareEncounterSupportBundle`
   // rather than a hand-built map is the whole point of the exercise: an invented map
   // would verify the fiction on both sides and could never have caught THR-1165.
@@ -285,10 +317,13 @@ describe('WorldRef no-op gate — declared chip anchors resolve in a seeded worl
     if (!ref) return undefined;
     return resolveWorldRef(ref, {
       graph,
-      actorId: agentIds[0],
+      // THR-1499 — a realm anchor is resolved for an actor the map places on claimed
+      // ground; every other form keeps the deterministic first pick.
+      actorId: anchor.form === 'realm' ? realmActorId ?? agentIds[0] : agentIds[0],
       targetId: agentIds[1],
       castNodeIdByKey: castNodeIdByTemplate.get(anchor.templateId),
       encounterTemplateId: anchor.templateId,
+      realmProjection: realmThunk,
       surface: 'noop-gate',
       tick: state.tick,
     });
@@ -392,6 +427,49 @@ describe('WorldRef no-op gate — declared chip anchors resolve in a seeded worl
       expect(absent).toEqual([...FACTION_DEFS_ABSENT_FROM_SEEDED_WORLD].sort());
       // Non-vacuity: an empty absence list is only meaningful if some anchor resolved.
       expect(factionAnchors.length).toBeGreaterThan(0);
+    });
+
+    it('realm anchors resolve to a Realm the map draws, and drop on unclaimed ground (THR-1499)', () => {
+      const realmAnchors = staged.filter(anchor => anchor.form === 'realm');
+      // Non-vacuity: the three realm-court encounters author these; zero means the corpus
+      // lost them, not that the arm passed.
+      expect(realmAnchors.length).toBeGreaterThan(0);
+      // The map claimed ground and somebody stands on it — a worldgen fact, asserted so a
+      // seed that claimed nothing fails by name rather than resolving nothing and passing.
+      expect(realmProjection.hexRealmId.size).toBeGreaterThan(0);
+      expect(realmActorId).toBeDefined();
+
+      const wrong: string[] = [];
+      for (const anchor of realmAnchors) {
+        const resolved = resolveStaged(anchor);
+        const node = resolved ? graph.getNode(resolved) : undefined;
+        if (!node || node.properties.actorType !== 'faction' || node.properties.factionClass !== 'realm') {
+          wrong.push(`${anchor.key} — resolved to '${resolved}', which is not a Realm faction node`);
+          continue;
+        }
+        // The map, not the town's holder: the id must be one the projection names.
+        if (![...realmProjection.hexRealmId.values()].includes(resolved!)) {
+          wrong.push(`${anchor.key} — resolved to '${resolved}', which the political map does not draw`);
+        }
+      }
+      expect(wrong).toEqual([]);
+
+      // Falsification arm: the same anchors against a map that claims nothing drop to
+      // `undefined` and are logged — never the actor's own id, never the town's holder.
+      clearWorldRefDrops();
+      const template = templatesWithAnchors.find(t => t.id === realmAnchors[0].templateId)!;
+      const declaration = declaredChipAnchors(template).find(
+        candidate => candidate.changeId === realmAnchors[0].changeId,
+      )!;
+      const unclaimed = resolveWorldRef(fromConceptRef(declaration.ref)!, {
+        graph,
+        actorId: realmActorId,
+        realmProjection: () => emptyRealmProjection(),
+        surface: 'noop-gate:unclaimed',
+        tick: state.tick,
+      });
+      expect(unclaimed).toBeUndefined();
+      expect(getWorldRefDrops().some(drop => drop.surface === 'noop-gate:unclaimed')).toBe(true);
     });
 
     it('every cast anchor names a key the real binder actually produced (THR-1165)', () => {

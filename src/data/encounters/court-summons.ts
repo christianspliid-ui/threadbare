@@ -56,13 +56,17 @@
  * 
  * ─── `$realm` and the chip anchor (recorded for the next author) ─────
  *   `$realm` binds `factionId` and only `factionId` (`sceneSentinels.ts`), which
- *   is what the reputation effects below use. It is **not** a chip anchor: the
- *   anchor sentinels are `$actor` / `$target` / `$artifact` / `$cast:<key>` /
- *   `$faction:<defId>`, and a Realm's definition id is minted per world
- *   (`realm.<cultureId>`), so no literal passes `classifyAnchorDeclaration`. The
- *   standing chips therefore anchor the state itself (`stateNoun` with the
- *   standing tooltip, a lawful `named` anchor) and name the crown in words. Filed
- *   as a deferral — sibling of THR-1462, which is the same gap for `$here`.
+ *   is what the reputation effects below use. Since THR-1499 it is **also** a
+ *   chip anchor: `classifyAnchorDeclaration` accepts `$realm` on any template
+ *   whose effects bind it, and the standing chips below anchor their `stateNoun`
+ *   to it with `visualKind: 'faction'`, so the tag links the crown's own sheet.
+ *   It resolves at render from the same political map the border mesh draws
+ *   (`resolveSceneRealm`), never from the town's holder; on ground no Realm
+ *   claims it resolves to nothing and the chip stays the `named` anchor it was
+ *   before (NFP #4, Law 21). Before THR-1499 no literal could pass the gate —
+ *   a Realm's definition id is minted per world as `realm.<cultureId>` — which
+ *   is why the first cut named the crown in words only. Sibling of THR-1462,
+ *   the same gap closed for `$here`.
  */
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -305,6 +309,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'gain',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'Counted useful',
@@ -331,6 +339,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'gain',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'Taken on, publicly',
@@ -356,6 +368,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'loss',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'Passed over',
@@ -383,6 +399,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               direction: 'loss',
               stateNoun: {
                 text: 'court standing',
+                // THR-1499 — the crown itself, resolved from the political map at
+                // render. Stays a `named` anchor on ground no Realm claims.
+                entityId: '$realm',
+                visualKind: 'faction',
                 tooltipId: 'ui.standing',
               },
               title: 'A wasted hearing',
