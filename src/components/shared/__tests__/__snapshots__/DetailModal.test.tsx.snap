@@ -37,7 +37,10 @@ exports[`DetailModal — depth 1 > snapshot: depth 1 > detail-modal-depth-1 1`] 
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -143,7 +146,10 @@ exports[`DetailModal — depth 1 > snapshot: depth 1 at 2560x1440 sample viewpor
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -245,7 +251,10 @@ exports[`DetailModal — depth 2 > snapshot: depth 2 > detail-modal-depth-2 1`] 
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -335,7 +344,10 @@ exports[`DetailModal — depth 2 > snapshot: depth 2 > detail-modal-depth-2 1`] 
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -349,7 +361,10 @@ exports[`DetailModal — depth 2 > snapshot: depth 2 > detail-modal-depth-2 1`] 
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 1
                 </span>
@@ -457,7 +472,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -547,7 +565,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -561,7 +582,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 1
                 </span>
@@ -657,7 +681,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -671,7 +698,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 1
                 </span>
@@ -685,7 +715,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 2
                 </span>
@@ -795,7 +828,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 2
                 </span>
@@ -809,7 +845,10 @@ exports[`DetailModal — depth 4 > snapshot: depth 4 > detail-modal-depth-4 1`] 
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 3
                 </span>
@@ -917,7 +956,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -1007,7 +1049,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -1021,7 +1066,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 1
                 </span>
@@ -1117,7 +1165,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                 style="display: flex; align-items: center;"
               >
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   ENCOUNTER
                 </span>
@@ -1131,7 +1182,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 1
                 </span>
@@ -1145,7 +1199,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 2
                 </span>
@@ -1255,7 +1312,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 2
                 </span>
@@ -1269,7 +1329,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 3
                 </span>
@@ -1379,7 +1442,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 3
                 </span>
@@ -1393,7 +1459,10 @@ exports[`DetailModal — depth 5 (breadcrumb collapses to \`…\`) > snapshot: d
                   ›
                 </span>
                 <span
+                  class="focus-ring"
+                  role="button"
                   style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                  tabindex="0"
                 >
                   PAGE 4
                 </span>

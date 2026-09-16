@@ -29,7 +29,10 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
               style="display: flex; align-items: center;"
             >
               <span
+                class="focus-ring"
+                role="button"
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                tabindex="0"
               >
                 ENCOUNTER
               </span>
@@ -290,7 +293,10 @@ exports[`DetailPage — event > snapshot: event 1`] = `
               style="display: flex; align-items: center;"
             >
               <span
+                class="focus-ring"
+                role="button"
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                tabindex="0"
               >
                 ENCOUNTER
               </span>
@@ -462,7 +468,10 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
               style="display: flex; align-items: center;"
             >
               <span
+                class="focus-ring"
+                role="button"
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                tabindex="0"
               >
                 ENCOUNTER
               </span>
@@ -634,7 +643,10 @@ exports[`DetailPage — item > snapshot: item 1`] = `
               style="display: flex; align-items: center;"
             >
               <span
+                class="focus-ring"
+                role="button"
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                tabindex="0"
               >
                 ENCOUNTER
               </span>
@@ -806,7 +818,10 @@ exports[`DetailPage — place > snapshot: place 1`] = `
               style="display: flex; align-items: center;"
             >
               <span
+                class="focus-ring"
+                role="button"
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                tabindex="0"
               >
                 ENCOUNTER
               </span>

@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DetailModal } from '../DetailModal';
+import { FOCUSABLE_SELECTOR } from '../focusableSelector';
 import { DetailModalStackProvider, useDetailStack } from '../../../contexts/DetailModalStackContext';
 import type { DetailPage } from '../../../types/detailPage';
 import {
@@ -319,10 +320,14 @@ function panelAt(depth: number): HTMLElement {
  * A panel carrying two focusable controls, so a Tab wrap has a distinct first and last
  * to move between.
  *
- * A plain page at depth 0 carries exactly one (the close button): the back button needs
- * depth > 0, the narration button needs prose, and the footer CTA needs a full sheet. So
- * the wrap is asserted on a full-sheet page — close in the header, "open her sheet" in
+ * A plain page at depth 0 carries exactly one button (the close button): the back button
+ * needs depth > 0, the narration button needs prose, and the footer CTA needs a full sheet.
+ * So the wrap is asserted on a full-sheet page — close in the header, "open her sheet" in
  * the footer — which is the ordinary actor card a player opens, not a contrived fixture.
+ *
+ * Collected through `FOCUSABLE_SELECTOR` rather than `button`, because since THR-1504 the
+ * breadcrumb's navigable crumbs are tab stops too (Law 23) and they come first in document
+ * order — the trap's "first" is the `ENCOUNTER` crumb, not the close button.
  */
 function renderTwoControlPanel(): HTMLElement[] {
   const page = makePage({ displayName: 'Captain Veiren', hasFullSheet: true });
@@ -339,7 +344,7 @@ function renderTwoControlPanel(): HTMLElement[] {
   );
   fireEvent.click(screen.getByTestId('push'));
 
-  const focusable = Array.from(panelAt(0).querySelectorAll<HTMLElement>('button'));
+  const focusable = Array.from(panelAt(0).querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
   expect(focusable.length).toBeGreaterThan(1);
   return focusable;
 }
@@ -434,9 +439,10 @@ describe('DetailModal — Law 50 focus contract', () => {
   });
 
   it('holds focus on the panel when Tab has nowhere to go', () => {
-    // A depth-0 page with no full sheet and no prose carries exactly one control — the
-    // close button — so there is no second stop to wrap to. Tab must still not escape
-    // to the page behind the overlay.
+    // A depth-0 page with no full sheet and no prose carries exactly one button — the
+    // close button. Since THR-1504 the `ENCOUNTER` crumb is a second stop, so Tab from
+    // the close button wraps to it; either way focus must not escape to the page behind
+    // the overlay.
     renderAtDepth(1);
     const panel = panelAt(0);
     const only = panel.querySelectorAll<HTMLElement>('button');
@@ -451,12 +457,66 @@ describe('DetailModal — Law 50 focus contract', () => {
   it('traps Tab in the topmost panel only — the one beneath never steals it', () => {
     renderAtDepth(2);
     const top = panelAt(1);
-    const focusable = Array.from(top.querySelectorAll<HTMLElement>('button'));
+    const focusable = Array.from(top.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
     const last = focusable[focusable.length - 1];
     last.focus();
     fireEvent.keyDown(last, { key: 'Tab' });
 
     expect(top.contains(document.activeElement)).toBe(true);
+  });
+});
+
+// ─── Law 23 on the breadcrumb — the crumb is inside the panel's Tab cycle (THR-1504) ──
+
+describe('DetailModal — breadcrumb crumbs sit inside the Law 50 Tab cycle', () => {
+  it('a navigable crumb is in the topmost panel’s focusable set', () => {
+    renderAtDepth(2);
+    const top = panelAt(1);
+    const focusable = Array.from(top.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    const crumbs = focusable.filter(el => el.getAttribute('role') === 'button');
+    // Trail at depth 1 is ['ENCOUNTER', 'Page 1', 'Page 2']: two navigable crumbs, the
+    // last one inert.
+    expect(crumbs.map(el => el.textContent)).toEqual(['ENCOUNTER', 'PAGE 1']);
+    // And the crumbs come first in document order, ahead of the header buttons, so
+    // Tab from the panel's first stop lands on the trail.
+    expect(focusable[0]).toBe(crumbs[0]);
+  });
+
+  it('Shift+Tab from the first crumb wraps to the last control, and Tab from the last wraps back to the crumb', () => {
+    renderAtDepth(2);
+    const top = panelAt(1);
+    const focusable = Array.from(top.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    expect(first).toHaveAttribute('role', 'button');
+    expect(first.textContent).toBe('ENCOUNTER');
+    expect(last.tagName).toBe('BUTTON');
+
+    first.focus();
+    fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(last);
+
+    fireEvent.keyDown(last, { key: 'Tab' });
+    expect(document.activeElement).toBe(first);
+  });
+
+  it('Enter on a crumb pops the stack to that level', () => {
+    renderAtDepth(3);
+    const top = panelAt(2);
+    const crumbs = Array.from(top.querySelectorAll<HTMLElement>('[role="button"]'));
+    // Trail at depth 2: ['ENCOUNTER', 'Page 1', 'Page 2', 'Page 3']; 'PAGE 1' is stackIndex 0.
+    const pageOne = crumbs.find(el => el.textContent === 'PAGE 1');
+    expect(pageOne).toBeDefined();
+    fireEvent.keyDown(pageOne!, { key: 'Enter' });
+    expect(panelCount()).toBe(1);
+    expect(document.querySelector('[data-detail-depth="0"]')).not.toBeNull();
+  });
+
+  it('the last crumb of the topmost panel is not a tab stop', () => {
+    renderAtDepth(2);
+    const top = panelAt(1);
+    const focusable = Array.from(top.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    expect(focusable.map(el => el.textContent)).not.toContain('PAGE 2');
   });
 });
 
