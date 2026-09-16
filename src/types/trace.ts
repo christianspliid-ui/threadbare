@@ -218,6 +218,7 @@ export type TraceCategory =
   | 'ruins.clue_discovered'
   | 'ruins.clue_consumed'
   | 'ruins.clue_decayed'
+  | 'ruins.clue_rumor_sweep' // THR-1506: one aggregate per rumour sweep
   | 'ruins.delve_admitted'
   | 'ruins.delve_blocked'
   | 'ruins.delve_beat'
@@ -654,6 +655,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.clue_discovered',
   'ruins.clue_consumed',
   'ruins.clue_decayed',
+  'ruins.clue_rumor_sweep',
   'ruins.delve_admitted',
   'ruins.delve_blocked',
   'ruins.delve_beat',
@@ -3915,6 +3917,7 @@ export type TraceEntry =
   | SelfActionTrace
   | SurveyProseComposedTrace
   | KpiSnapshotTrace
+  | ClueRumorSweepTrace
   | ChoiceResolvedTrace
   | ForecastComputedTrace
   | HandFilteredTrace
@@ -5059,6 +5062,32 @@ export interface SurveyProseComposedTrace extends TraceBase {
 export interface KpiSnapshotTrace extends TraceBase {
   category: 'kpi';
   report: import('../engine/kpi/gameplayKpi').GameplayKpiReport;
+}
+
+/**
+ * Trace: one clue rumour sweep (THR-1506) — `phaseClueRumors`, every
+ * `CLUE_RUMOR_INTERVAL_TICKS`. ONE aggregate entry per sweep, never one per
+ * settlement; the per-clue detail is the `ruins.clue_discovered` trace that
+ * `produceClueConsequence` emits for each spawned edge.
+ */
+export interface ClueRumorSweepTrace extends TraceBase {
+  category: 'ruins.clue_rumor_sweep';
+  /** Settlements that owned a rumour-bearing place and rolled. */
+  rolled: number;
+  /** Settlements whose roll passed. */
+  passed: number;
+  /** Clue edges written this sweep. */
+  spawned: number;
+  /** Passed, but no ruin within `CLUE_RUMOR_RUIN_RADIUS`. */
+  suppressedNoRuin: number;
+  /** Passed, but nobody in the settlement to hear it. */
+  suppressedNoPool: number;
+  /** Passed, but Narrative Gravity found no eligible recipient. */
+  suppressedNoRecipient: number;
+  /** Passed, but over `CLUE_RUMOR_MAX_PER_SWEEP`. */
+  capped: number;
+  /** Spawned clues by `ClueSource`. */
+  bySource: Partial<Record<import('./knowledge').ClueSource, number>>;
 }
 
 /** Emitted by branchingCurator.ts when a branching template's score is boosted (THR-452). */

@@ -38,7 +38,14 @@ import {
   WEIGHTED_SELECTION_TOP_N,
   SAGA_MAGNITUDE_THRESHOLD,
   SAGA_CLUE_MIN_TIER,
+  CLUE_LEAD_STRENGTH_BY_PRECISION,
 } from './constants';
+import { hexDistance } from '../../lib/hexMath';
+
+/** The `magnitude` a `knows_clue_of` edge carries for a given precision (THR-1506). */
+export function clueLeadStrength(precision: CluePrecision): number {
+  return CLUE_LEAD_STRENGTH_BY_PRECISION[precision] ?? CLUE_LEAD_STRENGTH_BY_PRECISION.vague;
+}
 
 // Minimum faction reputation score on a member_of edge to qualify as "faction leader".
 const FACTION_LEADER_MIN_REPUTATION = 0.75;
@@ -354,7 +361,10 @@ export function produceClueConsequence(params: ProduceClueConsequenceParams): st
 
   const edgeId = `clue_${selection.selectedAgentId}_${targetRuinId}_${tick}`;
   const edgeProps: KnowsClueOfEdgeProperties = {
-    magnitude: ruinMagnitude,
+    // Lead strength by precision, not the ruin's size (THR-1506) — see
+    // `CLUE_LEAD_STRENGTH_BY_PRECISION` for why the old unit could never post
+    // a minor ruin's contract. `ruinMagnitude` still drives the tier floor above.
+    magnitude: clueLeadStrength(precision),
     precision,
     source,
     discoveredTick: tick,
@@ -378,7 +388,8 @@ export function produceClueConsequence(params: ProduceClueConsequenceParams): st
     targetRuinId,
     source,
     precision,
-    magnitude: ruinMagnitude,
+    magnitude: edgeProps.magnitude,
+    ruinMagnitude,
     composedByGodId,
     summary: `Clue discovered: ${selection.selectedAgentId} → ${targetRuinId} via ${source} (${precision})`,
   });
@@ -562,4 +573,39 @@ export function findAnyRuinId(graph: WorldGraph, rng?: () => number): string | n
   // Weighted-random pick (uniform among ruins — magnitude weighting is handled by selectClueRecipient)
   const idx = Math.floor(rng() * ruinNodes.length);
   return ruinNodes[Math.min(idx, ruinNodes.length - 1)].id;
+}
+
+/**
+ * The ruin nearest to a hex (THR-1506). Ties are broken by `rng` among the
+ * equidistant ruins, sorted by id first so the pick is seed-stable (NFP #3).
+ * With `maxRadius`, returns null when no ruin lies within it — a rumour is
+ * local, and a clue about a ruin no hall in reach can post on is one the
+ * quest-hook phase will only ever suppress.
+ *
+ * This is what `$nearest_ruin` now means in a `spawn_clue` effect; before, the
+ * placeholder resolved through `findAnyRuinId` to a uniformly random ruin
+ * anywhere on the map, which is how the one organic clue in a 175-tick run
+ * landed on a ruin outside every posting hall's radius.
+ */
+export function findNearestRuinId(
+  graph: WorldGraph,
+  from: { col: number; row: number },
+  rng?: () => number,
+  maxRadius?: number,
+): string | null {
+  let best: Array<{ id: string; dist: number }> = [];
+  for (const n of graph.getNodesByType('location')) {
+    if (typeof n.properties.ruinMagnitude !== 'number') continue;
+    const col = n.properties.hexCol;
+    const row = n.properties.hexRow;
+    if (typeof col !== 'number' || typeof row !== 'number') continue;
+    const dist = hexDistance(from, { col, row });
+    if (maxRadius != null && dist > maxRadius) continue;
+    if (best.length === 0 || dist < best[0].dist) best = [{ id: n.id, dist }];
+    else if (dist === best[0].dist) best.push({ id: n.id, dist });
+  }
+  if (best.length === 0) return null;
+  best.sort((a, b) => a.id.localeCompare(b.id));
+  const idx = rng ? Math.floor(rng() * best.length) : 0;
+  return best[Math.min(idx, best.length - 1)].id;
 }

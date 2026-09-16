@@ -26,6 +26,7 @@ import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure, ensureRealmProjection } from './simulationRuntime';
 import {
   rebindLocatedAt,
+  resolveAgentHex,
   resolveRelocationDestination,
   setRelocationIntent,
 } from './relocationIntent';
@@ -93,7 +94,7 @@ import {
 } from './rewardPool';
 import { getAgreementTemplate } from '../data/agreement-reward-catalog';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
-import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
+import { spawnClueFromEvent, findAnyRuinId, findNearestRuinId } from './ruins/clueLifecycle';
 import { applyFactionReputationGain } from './factionReputation';
 import { spherePowerMultiplier, scaledEffect, scaledCost } from './sphereScaling';
 import type { ControlEffect } from '../types/controlEffect';
@@ -4516,9 +4517,12 @@ export function applyEncounterAftermathReaction(
         try {
           const scSeed = (state.seed ^ tick * 79) >>> 0;
           const scRng = mulberry32(scSeed);
-          // Resolve '$nearest_ruin' placeholder to an actual ruin node ID
+          // Resolve '$nearest_ruin' placeholder to an actual ruin node ID — the
+          // ruin nearest the actor's hex (THR-1506); any ruin only when the actor
+          // is unplaced, so an off-map actor's clue still lands somewhere.
+          const actorHex = resolveAgentHex(state.graph, actorAgentId);
           const resolvedRuinId = effect.targetRuinId === '$nearest_ruin'
-            ? findAnyRuinId(state.graph, scRng)
+            ? ((actorHex && findNearestRuinId(state.graph, actorHex, scRng)) ?? findAnyRuinId(state.graph, scRng))
             : effect.targetRuinId;
           if (!resolvedRuinId) break; // no ruins in world yet — fail-soft
           const recipientId = spawnClueFromEvent({
