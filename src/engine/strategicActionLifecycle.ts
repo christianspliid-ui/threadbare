@@ -28,6 +28,7 @@ import {
   STRATEGIC_CATALYST_SEED_CHANCE,
   STRATEGIC_CATALYST_SEED_DELAY_TICKS,
   STRATEGIC_CATALYST_SEED_PRIORITY,
+  STRATEGIC_CATALYST_REACTION_ID,
   STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS,
   STRATEGIC_CONTROL_DEGRADATION_RATE,
   CONTROL_RENEWING_VARIANTS,
@@ -2036,7 +2037,9 @@ function maybeSeedCatalyst(
     // The candidate id is what `sourceActionId` was carrying — kept, in the
     // field the shared shape actually defines for provenance.
     sourceEncounterId: candidate.candidateId,
-    sourceReactionId: 'strategic_catalyst',
+    // The provenance the seeding site reads to trace the query at `undertaking_catalyst`
+    // (THR-1497) — a literal here and a literal there is how the site went unemitted.
+    sourceReactionId: STRATEGIC_CATALYST_REACTION_ID,
     templateId: catalystId,
     query: catalystQuery,
     targetAgentId: candidate.actorId,

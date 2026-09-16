@@ -148,7 +148,7 @@ export function undertakingPackageViolations(pkg: UndertakingContentPackage): re
     if (!getCellTemplate(cellId)) v.push(`cell '${cellId}' does not exist — the object type declares no '${pkg.cell.variant}' semantic`);
     if (pkg.template) v.push('a cell package carries no template — the cell supplies it');
     if (pkg.kind) v.push('a cell package carries no kind — the object type supplies it');
-    const legalOverride = ['displayName', 'activityProse', 'completionProse', 'cast', 'creationEffects', 'executionMode', 'projectDuration', 'catalystEncounterIds', 'reachProfile'];
+    const legalOverride = ['displayName', 'activityProse', 'completionProse', 'cast', 'creationEffects', 'executionMode', 'projectDuration', 'catalystEncounterIds', 'catalystQuery', 'reachProfile'];
     for (const k of Object.keys(pkg.override ?? {})) if (!legalOverride.includes(k)) v.push(`override names '${k}', which is not an override a cell accepts (${legalOverride.join(', ')})`);
     if (getCellTemplate(cellId) && compiledOverrideCount(cellId) >= CELL_OVERRIDE_MAX_PER_CELL) {
       v.push(`cell '${cellId}' already carries ${CELL_OVERRIDE_MAX_PER_CELL} compiled overrides (CELL_OVERRIDE_MAX_PER_CELL) — one more is a pack again`);

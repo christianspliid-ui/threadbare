@@ -65,8 +65,10 @@ import {
 } from '../src/engine/undertakingReviewLevers';
 import { enqueueUndertakingMoments } from '../src/engine/undertakingMoments';
 import { getGroupKind } from '../src/engine/groupShape';
-import { isPlaceNode } from '../src/engine/sublocationShape';
+import { isPlaceNode, resolveToParentLocation } from '../src/engine/sublocationShape';
+import { getAgentLocation } from '../src/engine/graphQueries';
 import { undertakingWriteSet } from '../src/data/content-eval/undertakingContract';
+import { STRATEGIC_CATALYST_REACTION_ID, STRATEGIC_CATALYST_SEED_CHANCE, STRATEGIC_CATALYST_SEED_DELAY_TICKS } from '../src/data/strategic-action-constants';
 import type { GameState } from '../src/types/gameState';
 import type { StrategicActionTemplate, StrategicProjectRuntime } from '../src/types/strategicAction';
 import type { StepOutcome } from '../src/types/unifiedAction';
@@ -85,6 +87,14 @@ export const MAX_ACTOR_ATTEMPTS = 80;
 export const DEFAULT_MAP: MapSizePreset = 'medium';
 /** The band a run pins unless `--band` says otherwise (`--band none` leaves the dice alone). */
 export const DEFAULT_PINNED_BAND: StepOutcome = 'success';
+/**
+ * Ticks driven past terminal status when the completion rolled a catalyst (THR-1497):
+ * the seed comes due `STRATEGIC_CATALYST_SEED_DELAY_TICKS` after planting, and the
+ * proof used to stop the instant the project left `active`, so the `catalyst_seeded`
+ * claim could never see its own site fire. The delay plus a margin for the seed
+ * phase's own ordering within a tick.
+ */
+export const CATALYST_SETTLE_TICKS = STRATEGIC_CATALYST_SEED_DELAY_TICKS + 3;
 
 const BASELINE_CLAIMS: readonly string[] = ['started', 'no_tick_crash', 'terminal', 'moment_started'];
 const BANDS: readonly StepOutcome[] = ['critical_success', 'success', 'success_at_cost', 'near_miss', 'failure', 'critical_failure'];
@@ -224,6 +234,33 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     harvest();
   }
   clearUndertakingBandPin(templateId);
+
+  // Settle the catalyst (THR-1497). A completion that rolled one planted a seed due
+  // `STRATEGIC_CATALYST_SEED_DELAY_TICKS` later; without these ticks the claim below
+  // reads "the site was never reached" about a site the run never gave a chance to
+  // be reached. Bounded, and only when a seed of this run's provenance is pending.
+  const catalystSeeds = (): readonly string[] => (state.pendingEncounterSeeds ?? [])
+    .filter(s => s.sourceReactionId === STRATEGIC_CATALYST_REACTION_ID && s.targetAgentId === actorId && s.plantedTick >= startTick)
+    .map(s => s.seedId);
+  // The seed ids this run planted, captured before they are consumed: the spawned
+  // action carries `spawnedFromSeedId`, which survives the trace ring's eviction
+  // (a medium world emits more traces per tick than the ring holds, so a mid-tick
+  // `content.query_resolved` can be gone before the tick's harvest).
+  const plantedCatalystIds = new Set(catalystSeeds());
+  const pendingCatalyst = (): boolean => catalystSeeds().length > 0;
+  let settled = 0;
+  while (!crashed && template.catalystQuery && pendingCatalyst() && settled < CATALYST_SETTLE_TICKS) {
+    try {
+      state = runTick(state, [], runtime);
+    } catch (err) {
+      crashed = (err as Error).message;
+      break;
+    }
+    settled++;
+    ticksRun++;
+    harvest();
+  }
+
   const final = project();
   claims.push({ name: 'no_tick_crash', status: crashed ? 'fail' : 'pass', detail: crashed ?? `${ticksRun} ticks without a throw` });
   claims.push({
@@ -319,26 +356,25 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     claims.push({ name: 'harm_recorded', status: 'not_declared', detail: writes.harmClass ? `run ended ${final?.status}` : 'no harmClass' });
   }
 
-  // ── catalyst_seeded (THR-1489) ──
+  // ── catalyst_seeded (THR-1489; reachable since THR-1497) ──
   //
   // Gated on the write set like every delivery claim above: a template declaring
   // no `catalystQuery` is `not_declared`, one that declares it must show the
   // query resolving at its own site.
   //
-  // **Why this claim is expected to be `not_declared` on today's corpus, and why
-  // that is the honest answer rather than a hidden failure.** THR-1497 measured
-  // it: all 35 `catalystQuery` carriers are legacy-arm *pack* templates, and
-  // under the live `UNDERTAKING_MODEL: 'cells'` a profile's `templateIds` are not
-  // walked — so zero of the 60 cell templates carry the field and the
-  // `undertaking_catalyst` site is unreachable from the live board. Asserting a
-  // pass here against a pack template reached by a review lever would be a green
-  // check on an uncovered condition, which is the exact pathology this slice's
-  // census exists to catch.
+  // THR-1489 shipped this claim honestly `not_declared` on the whole corpus: every
+  // carrier was a legacy-arm pack template the cells model never walks. THR-1497
+  // put the catalyst on the cell (`UNDERTAKING_CELL_CATALYSTS`), made the seeding
+  // site trace a catalyst seed at `undertaking_catalyst` instead of `encounter_seed`
+  // (it had been a registered site nothing emitted), and gave this proof the settle
+  // ticks the seed needs to come due. `catalystCorpusGap()` still prints the
+  // reachable-carrier count on every run, so a regression to zero is loud.
   //
-  // So the claim is real and falsifiable where it can be, and the gap is
-  // reported *loudly* by `catalystCorpusGap()` on every run rather than left to
-  // be inferred from a quiet `not_declared`. THR-1497 is the ticket that makes
-  // this claim reachable; when it lands, nothing here changes.
+  // The roll is the dice's (`STRATEGIC_CATALYST_SEED_CHANCE`), read off the history
+  // entry's `catalystSeeded` rather than inferred: a completion that did not roll
+  // one is reported as such and not as a site that failed to fire, and is
+  // `not_declared` for the verdict — the proof asks whether the wake *can* land,
+  // and a missed roll answers nothing about that. Widen the seed to see it land.
   const catalystQuery = template.catalystQuery;
   if (!catalystQuery) {
     claims.push({
@@ -349,27 +385,50 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
         : 'no catalystQuery',
     });
   } else {
-    const resolvedAtSite = traces.filter(
-      t => (t as { category?: string; site?: string }).category === 'content.query_resolved'
-        && (t as { site?: string }).site === 'undertaking_catalyst',
+    const completion = (state.strategicState?.history ?? [])
+      .find(h => h.actorId === actorId && h.templateId === templateId && h.tick >= startTick);
+    const atSite = (category: string) => traces.filter(
+      t => (t as { category?: string }).category === category
+        && (t as { site?: string }).site === 'undertaking_catalyst'
+        && (t as { actorId?: string }).actorId === actorId,
     );
-    const emptyAtSite = traces.filter(
-      t => (t as { category?: string; site?: string }).category === 'content.query_empty'
-        && (t as { site?: string }).site === 'undertaking_catalyst',
-    );
-    claims.push({
-      name: 'catalyst_seeded',
-      status: resolvedAtSite.length > 0 ? 'pass' : 'fail',
-      detail: resolvedAtSite.length > 0
-        ? `${resolvedAtSite.length} undertaking_catalyst resolution(s) for `
-          + `${describeContentQuery(catalystQuery)}`
-        : emptyAtSite.length > 0
+    const resolvedAtSite = atSite('content.query_resolved');
+    const emptyAtSite = atSite('content.query_empty');
+    // Durable evidence: the action the seed spawned names its seed, and outlives the
+    // trace ring (`RESOLVED_ACTION_RETENTION_TICKS`).
+    const spawnedFromCatalyst = state.unifiedActions.find(a => a.spawnedFromSeedId !== undefined && plantedCatalystIds.has(a.spawnedFromSeedId));
+    const stillPending = pendingCatalyst();
+    if (final?.status !== 'completed') {
+      claims.push({ name: 'catalyst_seeded', status: 'not_declared', detail: `run ended ${final?.status}; a catalyst is planted on completion only` });
+    } else if (completion && !completion.catalystSeeded) {
+      claims.push({
+        name: 'catalyst_seeded',
+        status: 'not_declared',
+        detail: `the catalyst roll missed (STRATEGIC_CATALYST_SEED_CHANCE ${STRATEGIC_CATALYST_SEED_CHANCE}) — another --seed rolls it`,
+      });
+    } else if (resolvedAtSite.length > 0 || spawnedFromCatalyst) {
+      const picked = (resolvedAtSite[0] as { pickedId?: string } | undefined)?.pickedId ?? spawnedFromCatalyst?.templateId;
+      claims.push({
+        name: 'catalyst_seeded',
+        status: 'pass',
+        detail: `${describeContentQuery(catalystQuery)} resolved at undertaking_catalyst → ${picked}`
+          + (resolvedAtSite.length > 0 ? ` (${resolvedAtSite.length} trace(s))` : ' (read off the spawned action; the trace was evicted)')
+          + ` after ${settled} settle tick(s)`,
+      });
+    } else {
+      claims.push({
+        name: 'catalyst_seeded',
+        status: 'fail',
+        detail: emptyAtSite.length > 0
           ? `${describeContentQuery(catalystQuery)} resolved empty at undertaking_catalyst `
-            + `${emptyAtSite.length}×`
-          : `declares ${describeContentQuery(catalystQuery)} but no content.query_* trace fired `
-            + 'at undertaking_catalyst — the site was never reached (THR-1497: the catalyst '
-            + "site is unreachable under UNDERTAKING_MODEL 'cells')",
-    });
+            + `${emptyAtSite.length}× — the family has no member the actor's location accepts`
+          : stillPending
+            ? `declares ${describeContentQuery(catalystQuery)} and rolled a seed, still pending after ${settled} settle tick(s) — `
+              + 'the actor was busy or the seed has not come due'
+            : `declares ${describeContentQuery(catalystQuery)} and rolled a seed; the seed was consumed within ${settled} settle tick(s) `
+              + `but no action names it and no query trace survived — it withered where the actor stood: ${whereActorStands(state, actorId)}`,
+      });
+    }
   }
 
   const verdict = computeVerdict(claims);
@@ -405,10 +464,25 @@ export function catalystCorpusGap(): {
     note: reachableCarriers.length === 0 && carriers.length > 0
       ? `${carriers.length} template(s) declare catalystQuery and none is reachable under `
         + "UNDERTAKING_MODEL 'cells' — the undertaking_catalyst query site is dead on the "
-        + 'live board (THR-1497)'
+        + 'live board (the THR-1497 shape, regressed: UNDERTAKING_CELL_CATALYSTS is empty)'
       : `${reachableCarriers.length} of ${carriers.length} catalystQuery carrier(s) reachable `
-        + 'under the live undertaking model',
+        + 'under the live undertaking model (cells, THR-1497)',
   };
+}
+
+/**
+ * Where an actor stands, resolved to the Location tier the seeding filter reads
+ * (THR-1497) — so a withered catalyst names the subtype the family did not accept.
+ */
+function whereActorStands(state: GameState, actorId: string): string {
+  const located = getAgentLocation(state.graph, actorId);
+  if (!located) return 'nowhere';
+  const location = resolveToParentLocation(state.graph, located);
+  const subtypeOf = (n: { properties: Record<string, unknown> } | undefined) =>
+    (n?.properties.locationSubtype ?? n?.properties.locationType ?? 'no subtype') as string;
+  return location && location.id !== located.id
+    ? `${located.id} (a Place in ${location.id}, ${subtypeOf(location)})`
+    : `${located.id} (${subtypeOf(location ?? located)})`;
 }
 
 /** Did the completion's mutation leave the kind's object in the graph? Read by hint type. */

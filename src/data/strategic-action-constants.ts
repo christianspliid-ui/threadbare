@@ -154,6 +154,17 @@ export const STRATEGIC_CATALYST_SEED_DELAY_TICKS = 3;
 /** Priority carried by catalyst seeds (1.0 = neutral) — a follow-up, not an interrupt */
 export const STRATEGIC_CATALYST_SEED_PRIORITY = 0.6;
 
+/**
+ * The `sourceReactionId` a catalyst seed carries (THR-1497). One string, two readers:
+ * `maybeSeedCatalyst` stamps it on the planted `PendingEncounterSeed`, and the seeding
+ * site reads it back to attribute the query to `undertaking_catalyst` rather than
+ * `encounter_seed`. Before this constant the site was registered in
+ * `CONTENT_QUERY_SITES` and emitted by nothing — a catalyst seed's resolution was
+ * traced as an aftermath seed's, so the `catalyst_seeded` live claim could never pass
+ * and the census could never see the site light up.
+ */
+export const STRATEGIC_CATALYST_REACTION_ID = 'strategic_catalyst';
+
 /** Ticks before unattended control states begin degrading */
 export const STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS = 10;
 
