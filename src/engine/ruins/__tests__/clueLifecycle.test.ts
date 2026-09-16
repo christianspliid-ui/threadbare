@@ -20,6 +20,7 @@ import {
   phaseClueDecay,
   findAnyRuinId,
 } from '../clueLifecycle';
+import { CLUE_MAX_AGE_TICKS_VAGUE, CLUE_DECAY_CHECK_INTERVAL } from '../constants';
 
 // ─── Graph builders ──────────────────────────────────────────────────────────
 
@@ -286,7 +287,7 @@ describe('phaseClueDecay', () => {
     } as unknown as GameState;
   }
 
-  it('removes expired vague clue after CLUE_MAX_AGE_TICKS_VAGUE (20) ticks', () => {
+  it('removes expired vague clue after CLUE_MAX_AGE_TICKS_VAGUE ticks', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'knower', type: 'actor', name: 'Knower', properties: { actorType: 'individual' } });
     graph.addNode({ id: 'ruin', type: 'location', name: 'Ruin', properties: { ruinMagnitude: 0.1 } });
@@ -308,14 +309,17 @@ describe('phaseClueDecay', () => {
       properties: clueProps,
     });
 
-    // tick 20 = age exactly 20, max is 20 — not expired yet (age > maxAge, not >=)
-    const state20 = buildMinimalState(graph, 20);
-    phaseClueDecay(state20);
+    // age exactly maxAge — not expired yet (age > maxAge, not >=). The TTL is a
+    // whole number of decay intervals (30 = 3 × 10 since THR-1506), so this tick
+    // is a sweep tick.
+    expect(CLUE_MAX_AGE_TICKS_VAGUE % CLUE_DECAY_CHECK_INTERVAL).toBe(0);
+    const stateAtMax = buildMinimalState(graph, CLUE_MAX_AGE_TICKS_VAGUE);
+    phaseClueDecay(stateAtMax);
     expect(graph.getEdge('clue-edge-1')).toBeDefined();
 
-    // tick 30 (age = 30, runs on CLUE_DECAY_CHECK_INTERVAL = 10) — expired
-    const state30 = buildMinimalState(graph, 30);
-    phaseClueDecay(state30);
+    // one decay interval later — expired
+    const statePastMax = buildMinimalState(graph, CLUE_MAX_AGE_TICKS_VAGUE + CLUE_DECAY_CHECK_INTERVAL);
+    phaseClueDecay(statePastMax);
     expect(graph.getEdge('clue-edge-1')).toBeUndefined();
   });
 

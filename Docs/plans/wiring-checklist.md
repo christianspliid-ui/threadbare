@@ -1280,6 +1280,7 @@ Phases below ship as descriptors and are picked up automatically by `runRegister
 | `post-economy` | `faction_ambitions` (after `ambition_progress`) | `src/engine/phases/factionAmbitions.ts` | `src/engine/factionAmbitions.ts` |
 | `post-economy` | `faction_actions` (after `faction_ambitions`) | `src/engine/phases/factionActions.ts` | `src/engine/phaseFactionActions.ts` |
 | `post-economy` | `secrets_favors` (after `faction_actions`) | `src/engine/phases/secretsFavors.ts` | `src/engine/phaseSecretsFavors.ts` |
+| `post-economy` | `clue_rumors` (after `secrets_favors`, before `clue_decay`; THR-1506) | `src/engine/phases/clueRumors.ts` | `src/engine/ruins/clueRumors.ts` |
 | `post-economy` | `clue_decay` (after `secrets_favors`) | `src/engine/phases/clueDecay.ts` | `src/engine/ruins/clueLifecycle.ts` |
 | `post-economy` | `ruin_quest_hooks` (after `clue_decay`) | `src/engine/phases/ruinQuestHooks.ts` | `src/engine/ruins/questHooks.ts` |
 | `post-economy` | `delve_admission` (after `ruin_quest_hooks`) | `src/engine/phases/delveAdmission.ts` | `src/engine/ruins/delveVariant.ts` |

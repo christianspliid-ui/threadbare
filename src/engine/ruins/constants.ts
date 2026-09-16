@@ -4,11 +4,21 @@
  */
 
 import type { AttentionTier } from '../../types/attention';
+import type { CluePrecision, ClueSource } from '../../types/knowledge';
 
 // ── Clue decay ───────────────────────────────────────────────────────────────
 
-/** TTL in ticks for vague-precision clues */
-export const CLUE_MAX_AGE_TICKS_VAGUE = 20;
+/**
+ * TTL in ticks for vague-precision clues.
+ *
+ * 30, not 20 (THR-1506): the quest-hook sweep runs every
+ * `RUIN_QUEST_GENERATION_INTERVAL_TICKS` (30) and `clue_decay` runs *before*
+ * `ruin_quest_hooks` in the same tick, so at TTL 20 a rumour heard in the first
+ * ten ticks after a sweep expired before the next one could read it — a third
+ * of all vague clues died unseen by construction. One posting interval means
+ * every rumour lives to be read at least once.
+ */
+export const CLUE_MAX_AGE_TICKS_VAGUE = 30;
 /** TTL in ticks for narrowed-precision clues */
 export const CLUE_MAX_AGE_TICKS_NARROWED = 40;
 /** TTL in ticks for located-precision clues */
@@ -42,15 +52,82 @@ export const RECEIVER_RECENT_CLUE_WINDOW_TICKS = 5;
 export const WEIGHTED_SELECTION_TOP_N = 5;
 
 // ── Clue spawn ────────────────────────────────────────────────────────────────
+//
+// Read by the rumour sweep (`clueRumors.ts`, THR-1506). The ruins design meant
+// these to drive four clue-bearing encounters (`ruins.glossed_tome`,
+// `ruins.drunk_cartographer`, …) that were never authored, so until THR-1506
+// nothing read them and no organic clue ever reached a ruin.
 
 /** Base probability of spawning a clue from a library encounter */
 export const CLUE_SPAWN_LIBRARY_BASE = 0.6;
 /** Base probability of spawning a clue from a tavern encounter */
 export const CLUE_SPAWN_TAVERN_BASE = 0.35;
-/** Base probability of spawning a clue from a treasure-map encounter */
+/** Base probability of spawning a clue from a treasure-map encounter (no organic producer yet) */
 export const CLUE_SPAWN_TREASURE_MAP_BASE = 0.9;
 /** Base probability of spawning a clue from a spy-debrief encounter */
 export const CLUE_SPAWN_SPY_DEBRIEF_BASE = 0.5;
+
+// ── Clue lead strength (THR-1506) ────────────────────────────────────────────
+//
+// What a `knows_clue_of` edge's `magnitude` measures: the *strength of the lead*,
+// by precision — not the size of the ruin. Before THR-1506 the aftermath path
+// wrote `ruinMagnitude` here while the strategic path (`spawnClue`) wrote a lead
+// strength, and `getEvidenceStrength` summed the two as one unit. Under the old
+// semantics a minor ruin's single lead (≤ 0.33) could never clear
+// `CLUE_QUEST_THRESHOLD`, so the entry-tier contract `ag.quest.ruin_delve` was
+// unreachable by construction and only lost-city contracts could ever post.
+//
+// A vague lead is exactly the threshold: a guild posts on one rumour. That is
+// the cheap step by design — the delve itself still needs a `located` clue
+// (`delveVariant.ts` admission scan), so observe → clue → delve stays a climb.
+
+/** Lead strength written for a `vague` clue — one rumour meets `CLUE_QUEST_THRESHOLD`. */
+export const CLUE_LEAD_STRENGTH_VAGUE = 0.5;
+/** Lead strength written for a `narrowed` clue. */
+export const CLUE_LEAD_STRENGTH_NARROWED = 0.75;
+/** Lead strength written for a `located` clue. */
+export const CLUE_LEAD_STRENGTH_LOCATED = 1.0;
+
+export const CLUE_LEAD_STRENGTH_BY_PRECISION: Readonly<Record<CluePrecision, number>> = {
+  vague: CLUE_LEAD_STRENGTH_VAGUE,
+  narrowed: CLUE_LEAD_STRENGTH_NARROWED,
+  located: CLUE_LEAD_STRENGTH_LOCATED,
+};
+
+// ── Clue rumour sweep (THR-1506) ─────────────────────────────────────────────
+//
+// The organic feed: every `CLUE_RUMOR_INTERVAL_TICKS`, each settlement owning a
+// rumour-bearing place rolls `base × CLUE_RUMOR_SWEEP_SCALE` for a `vague` clue
+// about its nearest ruin within `CLUE_RUMOR_RUIN_RADIUS` hexes. Calibrated on
+// seed 42 / medium: 38 settlements own an inn, 8 a tavern, 3 a library — at
+// scale 0.1 that is ~1.4 expected rumours per sweep before the cap, ~20 per
+// 175-tick run, against 0 organic quest hooks before this phase existed.
+
+/** Ticks between rumour sweeps. Matches `CLUE_DECAY_CHECK_INTERVAL` so a rumour's age is whole sweeps. */
+export const CLUE_RUMOR_INTERVAL_TICKS = 10;
+/** Multiplier on a place's per-encounter base probability to get its per-sweep probability. */
+export const CLUE_RUMOR_SWEEP_SCALE = 0.1;
+/** Max hex distance from a settlement to the ruin its rumour points at — rumours are local. */
+export const CLUE_RUMOR_RUIN_RADIUS = 6;
+/** Global cap on rumours per sweep, so a large map is not a flood of leads. */
+export const CLUE_RUMOR_MAX_PER_SWEEP = 3;
+
+/**
+ * Which places carry rumours, and which base probability each reads. A
+ * settlement rolls once, on the strongest place it owns (`findRumorSourceAt`).
+ */
+export const CLUE_RUMOR_PLACE_SOURCES: ReadonlyArray<{
+  placeTypeId: string;
+  source: ClueSource;
+  base: number;
+}> = [
+  { placeTypeId: 'sublocation-type.library',             source: 'library_research', base: CLUE_SPAWN_LIBRARY_BASE },
+  { placeTypeId: 'sublocation-type.archive',             source: 'library_research', base: CLUE_SPAWN_LIBRARY_BASE },
+  { placeTypeId: 'sublocation-type.spy-network',         source: 'spy_debrief',      base: CLUE_SPAWN_SPY_DEBRIEF_BASE },
+  { placeTypeId: 'sublocation-type.intelligence-bureau', source: 'spy_debrief',      base: CLUE_SPAWN_SPY_DEBRIEF_BASE },
+  { placeTypeId: 'sublocation-type.tavern',              source: 'tavern_rumor',     base: CLUE_SPAWN_TAVERN_BASE },
+  { placeTypeId: 'sublocation-type.inn',                 source: 'tavern_rumor',     base: CLUE_SPAWN_TAVERN_BASE },
+];
 
 // ── Delve admission and concurrency ──────────────────────────────────────────
 

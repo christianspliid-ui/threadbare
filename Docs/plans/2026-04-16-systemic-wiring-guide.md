@@ -3536,7 +3536,7 @@ them individually:
 
 | Hint | What it writes | Who already reads it |
 |---|---|---|
-| `spawn_clue` | `knows_clue_of` toward a location | The ruins layer, which converges a clue into `knows_of` familiarity |
+| `spawn_clue` | `knows_clue_of` toward a location. The edge's `magnitude` is the *lead strength by precision* (`CLUE_LEAD_STRENGTH_BY_PRECISION`, THR-1506 — vague 0.5, narrowed 0.75, located 1.0), never the ruin's size; an encounter effect's `targetRuinId: '$nearest_ruin'` resolves to the ruin nearest the actor's hex | The ruins layer: `phaseRuinQuestHooks` sums lead strength against `CLUE_QUEST_THRESHOLD` (one vague rumour posts a contract), and convergence turns a clue into `knows_of` familiarity. The organic feed is `phaseClueRumors` (THR-1506): settlements owning a tavern/inn, library/archive, or spy net hand out vague clues on the `CLUE_SPAWN_*_BASE` odds — authored content adds to that feed, it does not have to create it |
 | `seed_knows_of` | `knows_of` directly | Every familiarity reader |
 | `mint_treasure_map` | An artifact possession pointing at a site | `treasureMapConsumption`, which spends it when the site is found |
 | `mint_leverage_mark` | `knows_secret_of` toward an actor | Secrets & Favors |

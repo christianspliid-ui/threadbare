@@ -35,6 +35,7 @@ import { factionAmbitionsPhase } from './factionAmbitions';
 import { factionActionsPhase } from './factionActions';
 import { schismResolutionPhase } from './schismResolution';
 import { secretsFavorsPhase } from './secretsFavors';
+import { clueRumorsPhase } from './clueRumors';
 import { clueDecayPhase } from './clueDecay';
 import { ruinQuestHooksPhase } from './ruinQuestHooks';
 import { delveAdmissionPhase } from './delveAdmission';
@@ -76,6 +77,7 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
   factionActionsPhase,
   schismResolutionPhase,
   secretsFavorsPhase,
+  clueRumorsPhase, // THR-1506: the organic clue feed — settlements with a tavern/library/spy net hand out rumours
   clueDecayPhase,
   ruinQuestHooksPhase,
   delveAdmissionPhase,
