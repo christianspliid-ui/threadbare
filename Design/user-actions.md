@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-17 20:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-17 21:58 local (19:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -20,13 +20,13 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** The build queue is empty — nothing waiting, nothing in progress.
+**The ask: say "design THR-1448" in a chat.** The build queue is empty — nothing waiting, nothing in progress, and the builder has now idled through three hourly slots.
 
 ### Were the stops deliberate? (lane silence, 13–16 September and 17 September daytime)
 
-Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15:55 (~67h), and again Thursday 17 September 07:40 → 17:55 (~10h). Neither stop had a pause marker.
+Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15:55 (~67h), and again Thursday 17 September 07:55 → 17:55 (~10h). Neither stop had a pause marker.
 
-**The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries (hourly through 07:40 today, then nothing until 17:56). GitHub's own scheduled jobs stayed green throughout, because they don't run here.
+**The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries. GitHub's own scheduled jobs stayed green throughout, because they don't run here.
 
 **If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
 
