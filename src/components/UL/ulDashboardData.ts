@@ -32,6 +32,9 @@ export type ULTermStatus =
   | 'proposed'
   | 'deprecated'
   | 'rejected'
+  // A term that was canonical and has been withdrawn, recorded with its
+  // successor (THR-1470 — the Encounters shard had used it since THR-1339).
+  | 'retired'
   | 'unknown';
 
 export interface ULShard {
@@ -55,6 +58,8 @@ export interface ULTerm {
   name: string;
   aliases: string[];
   status: ULTermStatus;
+  /** The annotation after the status word (when/why it was seated), or null (THR-1470). */
+  statusNote: string | null;
   oneLiner: string;
   body: string;
   seeAlso: ULSeeAlsoLink[];

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ULTerm, ULTermStatus } from './ulDashboardData';
 import { getDriftSignals } from './ulDashboardData';
 import { ULMarkdown } from './ulMarkdown';
@@ -19,8 +20,29 @@ const STATUS_COLOR: Record<ULTermStatus, string> = {
   // Violet, not a second red — `rejected` must be separable from `deprecated`
   // at a glance, since the two carry opposite histories (THR-991).
   rejected: '#9a6fb0',
+  // Slate blue — `retired` shares `deprecated`'s history but is tallied as its
+  // own row in the README, so it gets its own hue rather than a second red.
+  retired: '#6f86a8',
   unknown: '#888',
 };
+
+/**
+ * Status notes are provenance (`seated by THR-1380 …`) and may carry inline
+ * code. Rendered as text with backtick spans as <code>; not the full
+ * `ULMarkdown` block renderer, which would break the badge row's flow.
+ */
+function renderStatusNote(note: string): ReactNode {
+  const parts = note.split('`');
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <code key={i} style={{ fontSize: 'inherit' }}>
+        {part}
+      </code>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  );
+}
 
 const GITHUB_BASE = 'https://github.com/christianspliid-ui/threadbare/blob/main/';
 
@@ -95,6 +117,18 @@ function DetailContent({
         >
           {term.status}
         </span>
+        {term.statusNote && (
+          <span
+            data-testid="ul-status-note"
+            style={{
+              color: 'var(--text-tertiary)',
+              fontSize: 'var(--text-xs)',
+            }}
+            title="When and why this status was seated"
+          >
+            ({renderStatusNote(term.statusNote)})
+          </span>
+        )}
         {term.contentAdjacent && (
           <span
             style={{

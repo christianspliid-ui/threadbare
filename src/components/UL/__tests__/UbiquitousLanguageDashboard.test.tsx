@@ -81,6 +81,36 @@ describe('UbiquitousLanguageDashboard', () => {
     expect(within(detail).getByText('rejected').style.color).toBeTruthy();
   });
 
+  // THR-1470 — jsdom-render substitution for the browser-verify clause. Reads a
+  // REAL annotated term from the generated snapshot (not a fixture) so the test
+  // fails if the regenerated artifact ever loses the note again: the pre-fix
+  // failure rendered the term status-less, and only a live-artifact read tells
+  // the parser fix and the artifact refresh apart.
+  it('renders an annotated status as its leading word plus a provenance note', () => {
+    render(<UbiquitousLanguageDashboard />);
+
+    const annotated = TERMS.find((t) => t.statusNote !== null);
+    expect(annotated).toBeDefined();
+    expect(annotated!.status).not.toBe('unknown');
+
+    const row = screen.getByTestId(`ul-term-row-${annotated!.shardId}#${annotated!.slug}`);
+    expect(within(row).getByText(annotated!.status)).toBeTruthy();
+
+    fireEvent.click(row);
+    const detail = screen.getByTestId('ul-detail-pane');
+    expect(within(detail).getByText(annotated!.status).style.color).toBeTruthy();
+    const note = within(detail).getByTestId('ul-status-note');
+    expect(note.textContent).toContain(annotated!.statusNote!.replace(/`/g, ''));
+
+    // Absence face: a bare status renders no note element at all.
+    const bare = TERMS.find((t) => t.statusNote === null && t.status !== 'unknown');
+    expect(bare).toBeDefined();
+    fireEvent.click(screen.getByTestId(`ul-term-row-${bare!.shardId}#${bare!.slug}`));
+    const bareDetail = screen.getByTestId('ul-detail-pane');
+    expect(bareDetail.textContent).toMatch(new RegExp(bare!.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    expect(within(bareDetail).queryByTestId('ul-status-note')).toBeNull();
+  });
+
   it('switches shard tabs and updates the visible term count', () => {
     render(<UbiquitousLanguageDashboard />);
     const cosmologyTab = screen.getByTestId('ul-shard-cosmology');

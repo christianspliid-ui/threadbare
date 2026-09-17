@@ -8,6 +8,7 @@ const term = (overrides: Partial<ULTerm>): ULTerm => ({
   name: 'Reach',
   aliases: [],
   status: 'canonical',
+  statusNote: null,
   oneLiner: 'one of eight action domains',
   body: 'One of eight axes along which actors develop capability.',
   seeAlso: [],
