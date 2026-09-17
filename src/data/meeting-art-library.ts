@@ -21,18 +21,17 @@ export interface MeetingSceneAsset {
  * `public/assets/meeting/scenes/`, not a stylistic preference. Pinned by
  * `src/data/__tests__/meetingSceneDoctrine.test.ts` so a later author cannot
  * re-register one by reaching for a plausible-sounding filename.
+ *
+ * **Currently empty (THR-876, 2026-09-17).** The five files the audit quarantined —
+ * `prison-cell` (two UI buttons painted in), `plague-ward` (an individuated child's
+ * face), `healing-tent` and `burning-palace` (baked-in caption / title text) and
+ * `great-hall-feast` (a dozen front-lit faces) — were regenerated under the same
+ * filenames as unpeopled scenes, passed the contact-sheet and top/bottom-strip text
+ * audit (`Docs/evidence/thr-876/`), and are registered below. The mechanism stays: the
+ * next audit finding goes here as `'<basename>': '<the defect, stated>'`, and the file
+ * must remain on disk for as long as its entry does.
  */
-export const QUARANTINED_SCENE_ASSETS: Readonly<Record<string, string>> = {
-  'prison-cell':
-    'Renders two fake UI buttons ("GRANT MERCY" / "IMPOSE JUDGMENT") — a picture of the ' +
-    'authored-choice mechanic this ticket removes, burned into the art.',
-  'plague-ward':
-    'Foreground subject is a fully individuated emaciated child, front-lit and facing ' +
-    'the viewer — a second human likeness competing with the candidate portrait.',
-  'healing-tent': 'Carries a baked-in caption ("A Threadbare Mercy") in the lower left.',
-  'burning-palace': 'Carries baked-in title text ("The Fall of Aethelgaard").',
-  'great-hall-feast': 'A dozen individuated faces at the table, all front-lit.',
-};
+export const QUARANTINED_SCENE_ASSETS: Readonly<Record<string, string>> = {};
 
 /**
  * 16:9 scene backdrops for formative-test beats.
@@ -72,6 +71,16 @@ export const DILEMMA_SCENE_ART: readonly MeetingSceneAsset[] = [
   { id: 'scene.mountain-pass', path: '/assets/meeting/scenes/mountain-pass.jpg', placeholderGradient: 'linear-gradient(135deg, #1a1a2a, #2a2a2a, #0a0a1a)', emotionalTags: ['journey', 'endurance', 'isolation'], dilemmaCategories: ['general', 'reach_specific'] },
   { id: 'scene.warded-city-walls', path: '/assets/meeting/scenes/warded-city-walls.jpg', placeholderGradient: 'linear-gradient(135deg, #0a0a1a, #1a1a1a, #0a0a0a)', emotionalTags: ['protection', 'shelter', 'endurance'], dilemmaCategories: ['general', 'reach_specific'] },
   { id: 'scene.desert-sermon', path: '/assets/meeting/scenes/desert-sermon.jpg', placeholderGradient: 'linear-gradient(135deg, #2a1a0a, #3a2a0a, #1a1a0a)', emotionalTags: ['devotion', 'belonging', 'crowd'], dilemmaCategories: ['domain_specific', 'axiological'] },
+  // The five formerly-quarantined slots, regenerated as unpeopled scenes (THR-876). Same
+  // filenames, new pictures: an empty cell, empty cots, an empty healer's tent, a palace
+  // burning over a deserted forecourt, a feast laid with every chair empty. Appended, so
+  // the empty-tag path (seed picks off the head of the array) is unchanged. The
+  // substitutes that stood in for them (`justice-hall`, `lantern-vigil`) stay registered.
+  { id: 'scene.prison-cell', path: '/assets/meeting/scenes/prison-cell.jpg', placeholderGradient: 'linear-gradient(135deg, #0a0a0f, #1a1a2a, #0a0a0a)', emotionalTags: ['confinement', 'duty', 'loyalty', 'endurance'], dilemmaCategories: ['axiological'] },
+  { id: 'scene.plague-ward', path: '/assets/meeting/scenes/plague-ward.jpg', placeholderGradient: 'linear-gradient(135deg, #0a1a0a, #1a1a0a, #0a0a0a)', emotionalTags: ['suffering', 'compassion', 'nurturing', 'desperation'], dilemmaCategories: ['axiological', 'reach_specific'] },
+  { id: 'scene.healing-tent', path: '/assets/meeting/scenes/healing-tent.jpg', placeholderGradient: 'linear-gradient(135deg, #2a1a0a, #1a1a0a, #0a0a1a)', emotionalTags: ['nurturing', 'compassion', 'shelter', 'protection'], dilemmaCategories: ['general', 'reach_specific'] },
+  { id: 'scene.burning-palace', path: '/assets/meeting/scenes/burning-palace.jpg', placeholderGradient: 'linear-gradient(135deg, #3a1a0a, #1a0a0a, #0a0a0a)', emotionalTags: ['destruction', 'loss', 'desperation', 'sacrifice'], dilemmaCategories: ['axiological', 'domain_specific'] },
+  { id: 'scene.great-hall-feast', path: '/assets/meeting/scenes/great-hall-feast.jpg', placeholderGradient: 'linear-gradient(135deg, #2a1a0a, #3a2a0a, #0a0a0a)', emotionalTags: ['community', 'belonging', 'loyalty', 'devotion'], dilemmaCategories: ['general', 'domain_specific'] },
 ];
 
 /**
