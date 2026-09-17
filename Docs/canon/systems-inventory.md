@@ -225,7 +225,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | Domain | Files | Tags |
 |---|---|---|
 | `action` (3) | `actionCandidates.ts`, `actionLifecycle.ts`, `actionUnlock.ts` | `THR-501` |
-| `activity` (1) | `activitySummary.ts` | `THR-1492`, `THR-1502` |
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
 | `agent` (9) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-719`, `THR-822` |
@@ -416,4 +415,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 189 engine domains · 560 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 188 engine domains · 559 modules._
