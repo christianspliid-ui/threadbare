@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-17 18:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-17 19:54 local (17:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,4 +25,4 @@ One question: **is the integrated encounter experience at an acceptable state?**
 ## Health
 
 - **The weekly workflow retro missed Wednesday's 11:13 slot** (during the three-day stop). The next one is 23 September unless someone runs it by hand.
-- **Everything else is green.** All lanes are back on schedule, including the orchestrator (16:27). Engine speed is 59 ms/tick, 14% faster than the 7-day median of 68. The live site is serving the newest commit (049dac50). CI and GitHub's scheduled jobs are healthy, no PRs are waiting to merge, and the cleanup script ran at 18:41.
+- **Everything else is green.** All 9 lanes are on schedule, including the orchestrator (19:27). Engine speed is 74 ms/tick, within normal range of the 7-day median of 68. The live site is serving the newest commit (049dac50). CI and GitHub's scheduled jobs are healthy, no PRs are waiting to merge, and the cleanup script ran at 19:40.
