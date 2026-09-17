@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-17 05:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-17 06:55 local (04:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,4 +26,4 @@ One question: **is the integrated encounter experience at an acceptable state?**
 ## Health
 
 - **The weekly workflow retro missed Wednesday's 11:13 slot** (during the three-day stop). The next one is 23 September unless someone runs it by hand.
-- **Everything else is green.** Engine speed is back under the drift line (78 ms/tick, +7% vs the 7-day median — last hour's reading was contention). The live site is serving the newest commit (da01eb15). CI, GitHub's scheduled jobs and the cleanup script (ran 05:40) are healthy; no PRs are waiting to merge.
+- **Everything else is green.** Engine speed is inside the drift line (87 ms/tick, +20% vs the 7-day median of 73). The live site is serving the newest commit (da01eb15). CI, GitHub’s scheduled jobs and the cleanup script (ran 06:40) are healthy; no PRs are waiting to merge.
