@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-17 19:54 local (17:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-17 20:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,12 +13,6 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Say **"work the map"** in a chat when done. The known blemish (Riders' *failure* ending repeating its opening) is fixed and live — [THR-1505](https://linear.app/threadbare/issue/THR-1505).
 
-### Were the stops deliberate? (lane silence, 13–16 September and 17 September daytime)
-
-Every local scheduled lane stopped from Sunday 13 September 21:00 to Wednesday 16 September 15:53 (~67h), and again on Thursday 17 September from about 08:00 to 17:50 (~10h). Neither stop had a pause marker. GitHub's scheduled jobs stayed green, and on the 17th the cleanup script (Windows Task Scheduler, outside Claude) stopped too. So the machine was most likely off or asleep; no lane broke.
-
-**If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
-
 ### Start the staged designs ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)) — *from tb-orchestrator*
 
 No decision owed — the direction on both is already yours. They need a session to write the plan, and no lane may start itself.
@@ -26,7 +20,15 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** The build queue is empty — the last item merged at 18:22 on 17 September.
+**The ask: say "design THR-1448" in a chat.** The build queue is empty — nothing waiting, nothing in progress.
+
+### Were the stops deliberate? (lane silence, 13–16 September and 17 September daytime)
+
+Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15:55 (~67h), and again Thursday 17 September 07:40 → 17:55 (~10h). Neither stop had a pause marker.
+
+**The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries (hourly through 07:40 today, then nothing until 17:56). GitHub's own scheduled jobs stayed green throughout, because they don't run here.
+
+**If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
