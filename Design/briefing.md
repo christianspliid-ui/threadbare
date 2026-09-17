@@ -24,6 +24,6 @@ One question: **is the integrated encounter experience at an acceptable state?**
 
 ## Health
 
-- **The engine got slower today: 86 ms/tick, 26% above the 7-day median of 68.** That crosses the line where it stops being normal wobble. An executor session owns this — not you. Probe verdict, verbatim: *"tick cost 86 ms/tick steady, 26% above the 7-day median (68, 77 rows since ffe4ba91); top phase agent_decision, 502 agents. Name the merges between ffe4ba91 and 049dac50: git log --oneline --merges ffe4ba91..049dac50"*
+- **The engine-speed probe tripped: 86 ms/tick, 26% above the 7-day median of 68.** Likely the measurement, not the engine — the same commit measured 74.0, then 71.2, then 85.8 in the last three hours with no code change between them. An executor session owns this either way; not you. Probe verdict, verbatim: *"tick cost 86 ms/tick steady, 26% above the 7-day median (68, 77 rows since ffe4ba91); top phase agent_decision, 502 agents. Name the merges between ffe4ba91 and 049dac50: git log --oneline --merges ffe4ba91..049dac50"*
 - **The weekly workflow retro missed Wednesday's slot** — the machine was off at the time. Next run is 23 September unless someone runs it by hand.
 - **Everything else is green.** All 9 lanes are on schedule. The live site is serving the newest commit ([049dac50](https://github.com/christianspliid-ui/threadbare/commit/049dac50)). CI, GitHub's scheduled jobs and the auto-close workflow are all green, no PRs are waiting to merge, and the cleanup script ran 16 minutes ago.
