@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-17 06:55 local (04:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-17 07:55 local (05:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,7 +18,7 @@ One question: **is the integrated encounter experience at an acceptable state?**
 
 ## Queue
 
-**Starved: nothing ready, nothing being built.** The last ready item ([THR-1470](https://linear.app/threadbare/issue/THR-1470/ul-dashboard-generator-status-parser-drops-annotated-status-values-10), a glossary-page repair) merged at 04:08. The builder idles until a design session produces work.
+**Starved: nothing ready, nothing being built.** Nothing has merged since [THR-1470](https://linear.app/threadbare/issue/THR-1470/ul-dashboard-generator-status-parser-drops-annotated-status-values-10) at 04:08. The builder idles until a design session produces work.
 
 - **[THR-1511](https://linear.app/threadbare/issue/THR-1511/undertaking-catalysts-wither-where-the-actor-stands-every-cell)** (follow-ups fizzle when an undertaking finishes outside a town) waits for a design session. Not your call — an agent picks between the two listed fixes. — from tb-orchestrator
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** (redrawing the Meet The First scene art) sits in In Dev with no owner. The spend is already approved; the stalled-ticket sweep hasn't returned it to the queue yet.
@@ -26,4 +26,4 @@ One question: **is the integrated encounter experience at an acceptable state?**
 ## Health
 
 - **The weekly workflow retro missed Wednesday's 11:13 slot** (during the three-day stop). The next one is 23 September unless someone runs it by hand.
-- **Everything else is green.** Engine speed is inside the drift line (87 ms/tick, +20% vs the 7-day median of 73). The live site is serving the newest commit (da01eb15). CI, GitHub’s scheduled jobs and the cleanup script (ran 06:40) are healthy; no PRs are waiting to merge.
+- **Everything else is green.** Engine speed is inside the drift line (88 ms/tick, +21% vs the 7-day median of 73). The live site is serving the newest commit (da01eb15). CI, GitHub’s scheduled jobs and the cleanup script (ran 07:40) are healthy; no PRs are waiting to merge.
