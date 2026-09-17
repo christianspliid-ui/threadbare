@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-17 04:55 local (02:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-17 05:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,13 +18,12 @@ One question: **is the integrated encounter experience at an acceptable state?**
 
 ## Queue
 
-**Starved: nothing ready, nothing being built.** The last ready item ([THR-1470](https://linear.app/threadbare/issue/THR-1470/ul-dashboard-generator-status-parser-drops-annotated-status-values-10), a glossary-page repair) merged at 04:08. The builder now idles until a design session produces work.
+**Starved: nothing ready, nothing being built.** The last ready item ([THR-1470](https://linear.app/threadbare/issue/THR-1470/ul-dashboard-generator-status-parser-drops-annotated-status-values-10), a glossary-page repair) merged at 04:08. The builder idles until a design session produces work.
 
 - **[THR-1511](https://linear.app/threadbare/issue/THR-1511/undertaking-catalysts-wither-where-the-actor-stands-every-cell)** (follow-ups fizzle when an undertaking finishes outside a town) waits for a design session. Not your call — an agent picks between the two listed fixes. — from tb-orchestrator
-- **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** (redrawing the Meet The First scene art) has sat in In Dev with no owner for about 3 days. The spend is already approved; the stalled-ticket sweep hasn't returned it to the queue yet.
+- **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** (redrawing the Meet The First scene art) sits in In Dev with no owner. The spend is already approved; the stalled-ticket sweep hasn't returned it to the queue yet.
 
 ## Health
 
-- **Engine speed crossed the drift line (executor's job, not yours):** tick cost 88 ms/tick steady, 26% above the 7-day median (70, 87 rows since bb6a7288); top phase agent_decision, 502 agents. Name the merges between bb6a7288 and da01eb15: git log --oneline --merges bb6a7288..da01eb15. *(This hour's measurement overlapped the other health checks on the same machine, so part of the rise may be contention; last hour read 81.)*
 - **The weekly workflow retro missed Wednesday's 11:13 slot** (during the three-day stop). The next one is 23 September unless someone runs it by hand.
-- **Everything else is green.** The live site is serving the newest commit (da01eb15). CI, GitHub's scheduled jobs and the cleanup script (ran 04:40) are healthy; no PRs are waiting to merge.
+- **Everything else is green.** Engine speed is back under the drift line (78 ms/tick, +7% vs the 7-day median — last hour's reading was contention). The live site is serving the newest commit (da01eb15). CI, GitHub's scheduled jobs and the cleanup script (ran 05:40) are healthy; no PRs are waiting to merge.
