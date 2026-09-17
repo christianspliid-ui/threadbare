@@ -136,7 +136,7 @@ export function useAgentInteraction({
 
   const agentDetail = useMemo(() => {
     if (!selectedAgentId) return null;
-    return getAgentDetail(gameState.graph, selectedAgentId, gameState.ascendantId, gameState.strategicState);
+    return getAgentDetail(gameState.graph, selectedAgentId, gameState.ascendantId);
   }, [selectedAgentId, gameState.graph, gameState.ascendantId, worldVersion]);
 
   const wheelSlots = useMemo(() => {

@@ -327,16 +327,6 @@ export interface AgentDetail {
   traits?: TraitSummary[];
   /** Social leverage data: secrets and favors (THR-30). Undefined if none. */
   leverage?: LeverageSummary;
-  /**
-   * Undertakings this agent is currently running (THR-1292 §3).
-   *
-   * Replaces `activeInitiative`. Two shape changes matter to a reader: it is a
-   * **list**, because an agent may hold more than one undertaking, and it is a
-   * projection rather than the runtime record — the surfaces get what a player may
-   * inspect (what it is, how far along, whether it is in trouble) and none of the
-   * scheduling internals.
-   */
-  activeUndertakings?: readonly ActiveUndertakingSummary[];
   /** Mentor/apprentice relationships involving this agent, in both directions (THR-75). */
   mentorship?: MentorshipSummary[];
 }
@@ -661,12 +651,6 @@ export function getAgentDetail(
   graph: WorldGraph,
   agentId: string,
   ascendantId: string,
-  /**
-   * Undertakings live in the strategic runtime, not on the node, so the read-model
-   * needs them passed in. Optional and additive (NFP #6): a caller that omits it
-   * simply reports no undertakings, which is what every non-game caller wants.
-   */
-  strategicState?: import('../types/strategicAction').StrategicRuntimeState,
 ): AgentDetail | null {
   const agentNode = graph.getNode(agentId);
   if (!agentNode) return null;
@@ -901,7 +885,6 @@ export function getAgentDetail(
     knownPlaces: collectKnownPlaces(graph, agentId),
     traits: traitSummaries.length > 0 ? traitSummaries : undefined,
     leverage,
-    activeUndertakings: summarizeActiveUndertakings(strategicState, agentId),
     mentorship,
   };
 }
