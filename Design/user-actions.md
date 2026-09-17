@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-17 07:55 local (05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-17 17:55 local (15:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,11 +13,11 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Say **"work the map"** in a chat when done. The known blemish (Riders' *failure* ending repeating its opening) is fixed and live — [THR-1505](https://linear.app/threadbare/issue/THR-1505).
 
-### Was the three-day stop deliberate? (lane silence, 13–16 September)
+### Were the stops deliberate? (lane silence, 13–16 September and 17 September daytime)
 
-Every local scheduled lane stopped firing from Sunday 13 September 21:00 to Wednesday 16 September 15:53 (~67h) — Monday and Tuesday included, no pause marker set. GitHub's scheduled jobs stayed green, so it was the local scheduler (app closed, machine off, or usage cap), not a broken lane. It is firing again now.
+Every local scheduled lane stopped from Sunday 13 September 21:00 to Wednesday 16 September 15:53 (~67h), and again on Thursday 17 September from about 08:00 to 17:50 (~10h). Neither stop had a pause marker. GitHub's scheduled jobs stayed green, and on the 17th the cleanup script (Windows Task Scheduler, outside Claude) stopped too. So the machine was most likely off or asleep; no lane broke.
 
-**If it was you:** nothing to do now — next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks at why the desktop scheduler went quiet. Silence reads as "deliberate."
+**If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
 
 ### Start the staged designs ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)) — *from tb-orchestrator*
 
