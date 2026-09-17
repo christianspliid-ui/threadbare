@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-17 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-17 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,7 +26,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** The build queue holds four Low-priority repairs and nothing above them.
+**The ask: say "design THR-1448" in a chat.** The build queue is down to one Low-priority repair.
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-17 — an unused activity-summary function and its dead data field are gone** ([THR-1502](https://linear.app/threadbare/issue/THR-1502)). Merged 02:19, live.
 - **2026-09-17 — every slice encounter path has its bad endings written, and the `?outcome=` review link judges the path on screen** ([THR-1509](https://linear.app/threadbare/issue/THR-1509)). Merged 01:32.
 - **2026-09-17 — network-diagram links** ([THR-1508](https://linear.app/threadbare/issue/THR-1508)). Merged 00:29.
 - **2026-09-17 — every codex detail row explains itself on hover** ([THR-1507](https://linear.app/threadbare/issue/THR-1507)). Merged 00:12.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 - **2026-09-16 — a detail panel's breadcrumb works from the keyboard** ([THR-1504](https://linear.app/threadbare/issue/THR-1504)). Merged 19:19, live.
 - **2026-09-16 — an encounter seed no longer drops out before it can fire** ([THR-1510](https://linear.app/threadbare/issue/THR-1510)). Merged 18:14.
 - **2026-09-16 — Sunday's engine slowdown was noise** — tick cost back to 59 ms/tick, below the weekly median. Nothing owed.
-- **2026-09-13 — the six orphaned tag words came off your list** ([THR-1501](https://linear.app/threadbare/issue/THR-1501)) — standing sunset rule applies. **Veto open.**
 
 ---
 
