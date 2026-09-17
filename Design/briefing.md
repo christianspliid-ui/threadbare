@@ -1,35 +1,31 @@
 # Briefing
-**Generated:** 2026-09-18 00:55 local (2026-09-17 22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-18 01:56 local (2026-09-17 23:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say "design THR-1448" in a chat.** The build queue is still completely empty — nothing waiting, nothing in progress — and has been for seven hourly slots now. Two designs are staged, both on directions you already gave, and no lane may start a design session by itself.
+**Say "design THR-1448" in a chat.** The build queue is empty in both halves — nothing waiting to be picked up, nothing being worked on. That is not a jam: the plan you blessed on 12 September ran to completion, and there is not one open bug left on the board. The machine has finished everything it is permitted to start on its own.
 
-- **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
-- **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
+Two designs are staged and need a session to write the plan. The direction on both is already yours — no decision owed, just the go-ahead:
 
-Nothing here is a decision. Both need a session to write the plan; start with THR-1448.
-
-*Unchanged this hour — nothing merged, nothing moved, no new work appeared.* Last hour's finding still stands: the orchestrator tested the 63-item "someday" pile by opening the four items that looked most like ordinary jobs, and none of them was buildable — every one stops at a question about how the game should work. There is no route back to building that does not start with this conversation. ([full note](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-17e.md))
+- **[THR-1448 — a held town is a faction position](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — your sentence from 10 September. Start here.
+- **[THR-1479 — the appointment primitive](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
 ## Also waiting (3)
 
-- **[Finish the sitting](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)** — two encounters left: [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) and [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan). One question: is the integrated encounter experience acceptable?
-- **Were the stops deliberate?** — the lanes went quiet 13–16 September (~67h) and again Thursday daytime (~10h), with no pause marker. Evidence says the machine was off, not that a lane broke. Silence reads as "deliberate."
-- **[Fog or witness](https://linear.app/threadbare/issue/THR-1461)** — should an encounter's own consequences be exempt from a stranger's fogged sheet, because you were there? Silence leaves it as-is.
+- **Finish the sitting — two encounters left** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)): [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) and [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) — one question, is the integrated encounter experience acceptable.
+- **Were the stops deliberate?** Lanes stopped 13–16 September (~67h) and again 17 September daytime (~10h), with no pause marker either time. If it was you, nothing to do.
+- **Fog or witness** — should a stranger's sheet show consequences you personally watched happen, or does the familiarity gate stay honest? Silence leaves it as-is.
 
-Detail for all three: [`Design/user-actions.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+Detail and links for all three: [`Design/user-actions.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Queue
 
-**Starved — 0 ready, 0 in progress.** Implementation Planning 0 · In Design 2 · Todo 29.
+**Starved — 0 ready, 0 in progress.** Eighth consecutive idle hourly slot. No parked or stale items to flag, because there are no items at all in either lane state. The 63-item "someday" pile is intact but, per the orchestrator's complete sweep, holds nothing startable without a decision from you.
 
-- Both staged designs ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and), [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)) have sat unassigned ~6 days — they are waiting on the ask above, not stalled.
-- Todo has not moved in ~31 hours; its newest item is still [THR-1511](https://linear.app/threadbare/issue/THR-1511/undertaking-catalysts-wither-where-the-actor-stands-every-cell) from 16 September.
-- No parked claims — nothing is held by an absent session.
+- *From tb-orchestrator (01:31):* both categories of self-startable work checked exhaustively rather than sampled — blessed-plan work is complete, open bugs are zero.
+- *From daily-backlog-grooming (17:52):* nothing needs Christian; THR-876's image spend was pre-approved 2026-09-11.
 
 ## Health
 
-- **Lane silence:** the scheduled lanes went silent for 66.9h (2026-09-13T18:59:56.000Z → 2026-09-16T13:55:55.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time.
-- **Engine speed — for a session, not for you:** tick cost 87 ms/tick steady, 28% above the 7-day median (68, 78 rows since 135a1de0); top phase agent_decision, 502 agents. Name the merges between 135a1de0 and 049dac50: `git log --oneline --merges 135a1de0..049dac50`
-- Everything else green: the live site serves the latest commit ([049dac50](https://github.com/christianspliid-ui/threadbare/commit/049dac509c892cb87fdefd55b1eaa9ca5eb882d6)), CI and all scheduled jobs healthy, no PRs waiting to merge, all 9 scheduled tasks on schedule, cleanup script fresh (00:40 local).
+- **Tick cost drifting:** tick cost 87 ms/tick steady, 27% above the 7-day median (68, 77 rows since e7eac1ee); top phase agent_decision, 502 agents. Name the merges between e7eac1ee and 049dac50: `git log --oneline --merges e7eac1ee..049dac50` — executor's job, not yours.
+- Everything else green: deploy live on `049dac50`, CI and all scheduled workflows healthy, no PRs waiting to merge, all 9 scheduled tasks on schedule, home tree clean and current.

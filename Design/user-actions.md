@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-18 00:55 local (2026-09-17 22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-18 01:56 local (2026-09-17 23:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** The build queue is empty — nothing waiting, nothing in progress, seven idle hourly slots. The orchestrator has tested the fallback: of the four most executable-looking items in the 63-item "someday" pile, none is buildable — every one stops at an unanswered question about how the game should work. There is no route back to building that does not start here.
+**The ask: say "design THR-1448" in a chat.** Both queue halves are empty — 0 waiting, 0 in progress, eight idle hourly slots. The orchestrator checked both categories of self-startable work exhaustively: the plan you blessed on 12 September is finished end to end, and there is not one open bug on the board. There is no route back to building that does not start here.
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
