@@ -46,7 +46,72 @@ export type ULTermStatus =
   | 'proposed'
   | 'deprecated'
   | 'rejected'
+  | 'retired'
   | 'unknown';
+
+/**
+ * The status words a `**Status:**` line may begin with. `retired` joined the set
+ * at THR-1470: the Encounters shard had carried `**Status:** retired (THR-108; …)`
+ * since THR-1339 and the README tally counted it as its own row, while this
+ * parser degraded it to `unknown` — a real status the dashboard could not show.
+ */
+const STATUS_WORDS: ReadonlySet<string> = new Set([
+  'canonical',
+  'proposed',
+  'deprecated',
+  'rejected',
+  'retired',
+]);
+
+/**
+ * Parse a `**Status:**` value into its leading status word and the note that
+ * follows it (THR-1470).
+ *
+ * The **annotated form is the recommended one** — `**Status:** canonical (seated
+ * 2026-09-03, THR-1390)` records when and why a term was seated, which a bare
+ * `canonical` cannot. Until THR-1470 the parser exact-matched bare words only,
+ * so the better authoring lost: ten seated terms rendered status-less on
+ * `?view=ul` and each emitted two warnings (impediment rows 958, 966).
+ *
+ * Membership predicate: any value that *begins with* a status word, followed by
+ * end-of-line, whitespace, an opening parenthesis or a dash/colon separator,
+ * parses to that status. The remainder — with one leading separator and one
+ * whole-value parenthetical pair stripped — is the note; `null` when empty.
+ * `canonical-ish` and `weird-status` do not begin with a status word in this
+ * sense and stay `unknown`.
+ */
+export function parseStatusValue(
+  rawValue: string,
+): { status: ULTermStatus; note: string | null } {
+  const trimmed = rawValue.trim();
+  const match = trimmed.match(/^([A-Za-z]+)(?=$|[\s(—–:,])(.*)$/s);
+  if (!match) return { status: 'unknown', note: null };
+  const word = match[1].toLowerCase();
+  if (!STATUS_WORDS.has(word)) return { status: 'unknown', note: null };
+
+  let rest = match[2].trim();
+  // One leading separator: `canonical — seated in …`, `canonical: …`.
+  rest = rest.replace(/^[—–\-:,]\s*/, '').trim();
+  // One whole-value parenthetical pair: `(seated by THR-1380 …)` → `seated by …`.
+  if (rest.startsWith('(') && rest.endsWith(')') && isSingleParenGroup(rest)) {
+    rest = rest.slice(1, -1).trim();
+  }
+  return { status: word as ULTermStatus, note: rest.length > 0 ? rest : null };
+}
+
+/** True when the outer `(`…`)` of `value` are one matched pair, not `(a) (b)`. */
+function isSingleParenGroup(value: string): boolean {
+  let depth = 0;
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i];
+    if (ch === '(') depth++;
+    else if (ch === ')') {
+      depth--;
+      if (depth === 0 && i < value.length - 1) return false;
+    }
+  }
+  return depth === 0;
+}
 
 export interface ULShard {
   id: ULShardId;
@@ -69,6 +134,12 @@ export interface ULTerm {
   name: string;
   aliases: string[];
   status: ULTermStatus;
+  /**
+   * The annotation after the status word — `seated by THR-1380 with the THR-1299
+   * implementation` — or `null` for a bare status (THR-1470). Additive field;
+   * `SCHEMA_VERSION` stays at 1 because no consumer breaks on its presence.
+   */
+  statusNote: string | null;
   oneLiner: string;
   body: string;
   seeAlso: ULSeeAlsoLink[];
@@ -211,6 +282,7 @@ function splitShardIntoTermBlocks(content: string): {
 interface ParsedTermBody {
   aliases: string[];
   status: ULTermStatus;
+  statusNote: string | null;
   seeAlsoRaw: string[];
   body: string;
   warnings: { kind: ULGenerationWarningKind; detail: string }[];
@@ -220,6 +292,8 @@ function parseTermBody(rawLines: string[]): ParsedTermBody {
   const warnings: { kind: ULGenerationWarningKind; detail: string }[] = [];
   let aliases: string[] = [];
   let status: ULTermStatus = 'unknown';
+  let statusNote: string | null = null;
+  let sawStatusLine = false;
   let seeAlsoRaw: string[] = [];
   const bodyLines: string[] = [];
   let metadataDone = false;
@@ -258,16 +332,11 @@ function parseTermBody(rawLines: string[]): ParsedTermBody {
         continue;
       }
       if (statusMatch) {
-        const raw = statusMatch[1].trim().toLowerCase();
-        if (
-          raw === 'canonical' ||
-          raw === 'proposed' ||
-          raw === 'deprecated' ||
-          raw === 'rejected'
-        ) {
-          status = raw;
-        } else {
-          status = 'unknown';
+        sawStatusLine = true;
+        const parsed = parseStatusValue(statusMatch[1]);
+        status = parsed.status;
+        statusNote = parsed.note;
+        if (status === 'unknown') {
           warnings.push({
             kind: 'missing_status',
             detail: `Unrecognized status value "${statusMatch[1].trim()}".`,
@@ -289,7 +358,10 @@ function parseTermBody(rawLines: string[]): ParsedTermBody {
     bodyLines.push(line);
   }
 
-  if (status === 'unknown') {
+  // Only when the line is genuinely absent. Before THR-1470 this keyed on the
+  // degraded `unknown` status, so an unrecognized value fired *both* warnings
+  // and the spurious second one buried the genuine missing-line cases.
+  if (!sawStatusLine) {
     warnings.push({ kind: 'missing_status', detail: 'No `**Status:**` line found.' });
   }
 
@@ -297,7 +369,14 @@ function parseTermBody(rawLines: string[]): ParsedTermBody {
   while (bodyLines.length && bodyLines[0].trim() === '') bodyLines.shift();
   while (bodyLines.length && bodyLines[bodyLines.length - 1].trim() === '') bodyLines.pop();
 
-  return { aliases, status, seeAlsoRaw, body: bodyLines.join('\n'), warnings };
+  return {
+    aliases,
+    status,
+    statusNote,
+    seeAlsoRaw,
+    body: bodyLines.join('\n'),
+    warnings,
+  };
 }
 
 function parseSeeAlsoLink(
@@ -415,6 +494,7 @@ export function buildDashboardData(opts: { sourceRoot: string }): ULDashboardDat
         name: raw.name,
         aliases: parsed.aliases,
         status: parsed.status,
+        statusNote: parsed.statusNote,
         oneLiner,
         body: parsed.body,
         seeAlso: seeAlsoLinks,

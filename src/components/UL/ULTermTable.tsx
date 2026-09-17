@@ -20,6 +20,8 @@ const STATUS_COLOR: Record<ULTermStatus, string> = {
   // Violet, not a second red — `rejected` must be separable from `deprecated`
   // at a glance, since the two carry opposite histories (THR-991).
   rejected: '#9a6fb0',
+  // Slate blue — mirrors ULDetailPane; `retired` is its own README tally row.
+  retired: '#6f86a8',
   unknown: '#888',
 };
 
