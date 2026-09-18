@@ -1364,6 +1364,21 @@ export interface PendingEncounterSeed {
    */
   readonly query?: ContentQuery;
   readonly targetAgentId: string;
+  /**
+   * The Location a query-resolved seed's `locationSubtypes` gate is judged against
+   * *first*, in place of the target's feet (THR-1511).
+   *
+   * An undertaking completes wherever its actor happens to stand — a route is laid
+   * from a fort, an army raised in the field — while every catalyst family it stirs
+   * is gated to settlements. Judged at the actor's feet, 8 of 14 catalyst seeds on
+   * seed 42 / medium / 200 ticks withered on a query that had eligible members. The
+   * planter sets this to the completed work's own settlement (a route's far end, an
+   * army's garrison, a founded place's parent), so the wake reads "the Consortium
+   * comes to the town your road now reaches". `resolveSeedByQuery` tries this
+   * location first and the target's current one second; a dangling id, or one that
+   * yields nothing, falls back to the feet. Absent on every aftermath-planted seed.
+   */
+  readonly resolutionLocationId?: string;
   readonly eligibleAfterTick: number;
   readonly priority: number;
   readonly seedLabel: string;

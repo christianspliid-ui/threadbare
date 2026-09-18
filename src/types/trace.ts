@@ -3067,6 +3067,14 @@ export interface ContentQueryResolvedTrace extends TraceBase {
   actorId?: string;
   /** The encounter or undertaking that carried the query. */
   templateId?: string;
+  /**
+   * Where a location-gated site judged the query (THR-1511): the Location whose
+   * subtype the `locationSubtypes` filter read, and whether it was the seed's
+   * `resolutionLocationId` anchor or the target's own feet. Absent on sites with
+   * no location gate.
+   */
+  judgedAtLocationId?: string;
+  judgedAt?: 'resolution_anchor' | 'target_location';
 }
 
 /**
@@ -3083,6 +3091,9 @@ export interface ContentQueryEmptyTrace extends TraceBase {
   query: TracedContentQuery;
   actorId?: string;
   templateId?: string;
+  /** As on {@link ContentQueryResolvedTrace} (THR-1511): the last place the gate was judged at. */
+  judgedAtLocationId?: string;
+  judgedAt?: 'resolution_anchor' | 'target_location';
 }
 
 /**

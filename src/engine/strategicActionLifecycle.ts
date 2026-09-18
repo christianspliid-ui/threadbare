@@ -70,6 +70,7 @@ import {
 } from './strategicGraphOps';
 import { resolveDurableActorLocation, mintRouteIdentity } from './tradeRouteOps';
 import { resolveUndertakingCompletion } from './undertakingResolver';
+import { catalystAnchorLocationId } from './undertakingCatalystAnchor';
 import { cellCompletionProse } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
@@ -529,8 +530,8 @@ export function executeStrategicAction(
         );
       }
 
-      // Check for catalyst seeding
-      catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
+      // Check for catalyst seeding — anchored on what this mutation created (THR-1511).
+      catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng, ops);
 
       // ── The capability rider is NOT paid here (THR-1440) ──
       //
@@ -1015,7 +1016,9 @@ export function advanceStrategicProjects(
         );
       }
 
-      const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
+      // Anchored on what this completion created (THR-1511): the wake of a road is
+      // offered in the town the road reaches, not at the fort it was laid from.
+      const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng, ops);
 
       // Christening (THR-1291 §2): the work earns its proper name here, between the
       // mutation and the history write, because this is the one point where every
@@ -1994,6 +1997,13 @@ function maybeSeedCatalyst(
   candidate: StrategicActionCandidate,
   tick: number,
   rng: () => number,
+  /**
+   * The completion's own ops (THR-1511), read for what the work *created* so the
+   * wake can be anchored where the object stands. The `seed_encounter` arm has no
+   * mutation and passes nothing; the anchor then falls back to the object handle
+   * and the target, and past those to the actor's feet at fire time.
+   */
+  ops: readonly GraphOpResult[] = [],
 ): boolean {
   const template = getStrategicTemplate(candidate.templateId);
   const catalystQuery = template?.catalystQuery;
@@ -2001,6 +2011,16 @@ function maybeSeedCatalyst(
   if (!catalystQuery && catalystIds.length === 0) return false;
 
   if (rng() > STRATEGIC_CATALYST_SEED_CHANCE) return false;
+
+  // THR-1511: the wake is offered where the work stands, not where the actor does.
+  // Every catalyst family is gated to settlements and an undertaking completes
+  // wherever its actor happens to be — a route laid from a fort, an army raised in
+  // the field — so a seed judged at the feet withered 8 times in 14 on seed 42.
+  // Resolved here, at the one point the created object is in scope, and honoured
+  // by `resolveSeedByQuery` ahead of the target's current location. `undefined`
+  // when the work made nothing that stands anywhere (a masterwork), and the seed
+  // then takes exactly the pre-THR-1511 path.
+  const resolutionLocationId = catalystAnchorLocationId(state.graph, candidate, ops);
 
   // THR-1488 — a query names the catalyst by kind and tags, and is resolved at *fire*
   // time by `evaluateEncounterSeeds` rather than here, so the catalyst path and the
@@ -2043,6 +2063,7 @@ function maybeSeedCatalyst(
     templateId: catalystId,
     query: catalystQuery,
     targetAgentId: candidate.actorId,
+    ...(resolutionLocationId ? { resolutionLocationId } : {}),
     eligibleAfterTick: tick + STRATEGIC_CATALYST_SEED_DELAY_TICKS,
     priority: STRATEGIC_CATALYST_SEED_PRIORITY,
     seedLabel: `the wake of ${candidate.displayName}`,

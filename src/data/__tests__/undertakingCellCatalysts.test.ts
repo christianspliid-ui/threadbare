@@ -75,6 +75,27 @@ describe('the cell catalyst table (THR-1497)', () => {
     }
   });
 
+  it('every family has a member for each of town, city and capital — a wake anchored on any of them can land (THR-1511)', () => {
+    // THR-1511 anchors a catalyst on the settlement the work stands at, so a family
+    // with a hole in its gate withers exactly there. `#craft_commission` had one:
+    // its only member listed `settlement` (a subtype no location carries) and
+    // omitted `capital`, and 3 of the 7 residual withers on seed 42 / medium / 200
+    // ticks were masterworks made in a capital.
+    const catalogs = staticContentCatalogs();
+    for (const [cellId, query] of Object.entries(UNDERTAKING_CELL_CATALYSTS)) {
+      const members = resolveContentQuery(query, catalogs)
+        .map(hit => getUnifiedTemplateById(hit.id))
+        .filter(t => t !== undefined && t.actorAffinities?.includes('individual'));
+      for (const subtype of SETTLEMENT_SUBTYPES) {
+        const accepting = members.filter(t => !t!.locationSubtypes?.length || t!.locationSubtypes.includes(subtype));
+        expect(
+          accepting.length,
+          `${cellId}: ${describeContentQuery(query)} has no individual-performable member accepting a ${subtype}`,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('the closing predicate is false: under the live model, a cell a shipped profile walks declares a catalyst', () => {
     // "A pack template's catalystQuery is unreachable while UNDERTAKING_MODEL === 'cells'
     // and no cell declares one." Both operands, off the live flag and the profiles the
