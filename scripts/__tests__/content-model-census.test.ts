@@ -64,6 +64,67 @@ describe("the query-site census", () => {
     expect(report).toContain("2000-entry ring");
   });
 
+  it("decides the two seeding sites off seed consumptions when a ledger is given, and keeps the ring's view beside them (THR-1514)", () => {
+    // The ring saw one resolution at `encounter_seed` and nothing at
+    // `undertaking_catalyst`; the state saw far more. The state wins, the ring's
+    // undercount stays visible, and the non-seeding sites are untouched.
+    const rows = censusSites(
+      [
+        { category: "content.query_resolved", site: "encounter_seed" },
+        { category: "content.query_resolved", site: "step_reward_pool" },
+      ],
+      [
+        { site: "encounter_seed", ranQuery: true, consumption: "spawned" },
+        { site: "encounter_seed", ranQuery: true, consumption: "spawned" },
+        { site: "encounter_seed", ranQuery: true, consumption: "family_ready" },
+        // A direct-template spawn ran no query and must not count as a resolution.
+        { site: "encounter_seed", ranQuery: false, consumption: "spawned" },
+        { site: "undertaking_catalyst", ranQuery: true, consumption: "family_ready" },
+        { site: "undertaking_catalyst", ranQuery: true, consumption: undefined },
+      ],
+    );
+    const bySite = new Map(rows.map(row => [row.site, row]));
+
+    expect(bySite.get("encounter_seed")).toMatchObject({
+      resolved: 2, empty: 1, silent: false, source: "state", ring: { resolved: 1, empty: 0 },
+    });
+    expect(bySite.get("undertaking_catalyst")).toMatchObject({
+      resolved: 0, empty: 1, silent: false, source: "state", ring: { resolved: 0, empty: 0 },
+    });
+    expect(bySite.get("step_reward_pool")).toMatchObject({ resolved: 1, empty: 0, source: "ring" });
+    expect(bySite.get("step_reward_pool")!.ring).toBeUndefined();
+  });
+
+  it("a seeding site is silent only when neither state nor ring saw it", () => {
+    const rows = censusSites([], [{ site: "undertaking_catalyst", ranQuery: true, consumption: undefined }]);
+    const bySite = new Map(rows.map(row => [row.site, row]));
+    expect(bySite.get("undertaking_catalyst")).toMatchObject({ resolved: 0, empty: 0, silent: true, source: "state" });
+
+    const rowsWithRing = censusSites(
+      [{ category: "content.query_empty", site: "undertaking_catalyst" }],
+      [{ site: "undertaking_catalyst", ranQuery: true, consumption: undefined }],
+    );
+    expect(rowsWithRing.find(r => r.site === "undertaking_catalyst")).toMatchObject({ silent: false, resolved: 0, empty: 0 });
+  });
+
+  it("renders the source per row and reports an unexplained departure as unknown, not as a drop", () => {
+    const report = renderCensus({
+      ticks: 200,
+      seed: 42,
+      deadTags: [],
+      liveTags: 107,
+      sites: censusSites([], [{ site: "undertaking_catalyst", ranQuery: true, consumption: "spawned" }]),
+      seeds: { observed: 3, spawned: 1, familyReady: 0, expired: 0, orphaned: 0, pending: 1, leftUnexplained: 1, unregisteredConsumptions: 0 },
+      ring: { harvested: 4000, evictedUnseen: 120 },
+    });
+
+    expect(report).toContain("| `undertaking_catalyst` | 1 | 0 | state (ring saw 0 / 0) | live |");
+    expect(report).toContain("| `step_reward_pool` | 0 | 0 | ring | ⚠️ no hits |");
+    expect(report).toContain("120 more were emitted and evicted");
+    expect(report).toContain("**unknown**, not a drop");
+    expect(report).not.toMatch(/dropped/i);
+  });
+
   it("says so plainly when nothing is dead", () => {
     const report = renderCensus({
       ticks: 10,

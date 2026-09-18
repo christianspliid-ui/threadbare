@@ -21,6 +21,19 @@
 - `encounter_seed` and `reward_draw` are **authored but unreached on this seed** — a seed resolves when it comes due, and 200 ticks of one seeded world is a small sample of the corpus.
 - The trace buffer is a **2000-entry ring**, so a site that fired only in the opening ticks reads as silent at tick 200. The bias is toward over-reporting death; lower `--ticks` to separate *alive-but-early* from *actually silent*.
 
+### Census — 2026-09-18 (THR-1514: seeding sites counted off state)
+
+The 2026-09-13 numbers above were read off the ring once at tick 200, and a seeded medium run emits ~51,000 traces over 200 ticks — so that one read saw the last 2,000 and undercounted the seeding sites to silence. [THR-1514](https://linear.app/threadbare/issue/THR-1514) counts `encounter_seed` and `undertaking_catalyst` off `state.tickEvents` (one row per seed that spawned or withered, via `scripts/seed-consumption-ledger.ts`) and labels every other row `ring` — a floor, harvested after every tick on the monotonic emit counter. Same command, same seed:
+
+| Site | Resolved / Empty | Source | 2026-09-13 read |
+|---|---|---|---|
+| `encounter_seed` | 21 / 18 | state | silent |
+| `undertaking_catalyst` | 3 / 6 | state | silent |
+| `step_reward_pool` | live | ring (floor) | 8 |
+| `reward_draw` · `condition_pool` | 0 / 0 | ring (floor) | silent |
+
+112 seeds observed, 59 spawned, 44 withered, 2 orphaned, 7 pending at tick 200, **0 left the pool unexplained**. A `state` silence is exact; a `ring` silence still wants the `--ticks` check. The independent recount that certifies these rows is in [`Docs/status/2026-09-18-thr-1514.md`](../status/2026-09-18-thr-1514.md).
+
 A DEAD tag is a query nothing can answer: the author gets an empty pool and no error. The retro either finds it a bearer or deletes it ([`CONTENT_TAG_DEAD_BEARERS`](../../src/data/content-eval/packetDice.ts)).
 
 ## The rule

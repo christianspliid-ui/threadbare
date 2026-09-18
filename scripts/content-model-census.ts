@@ -26,13 +26,29 @@
  * failure is silent. A script is re-runnable, diffable, and fails loudly when the thing it
  * counts stops existing. The prompt points here.
  *
- * ## The eviction caveat, stated because it changes how the output is read
+ * ## Two sources, and which rows come from which (THR-1514)
  *
- * The trace buffer is a 2000-entry ring. Over a long run the early ticks' traces are
- * evicted, so a site that fired only at tick 3 can read as zero-hit at tick 200. That
- * biases the report toward **over**-reporting dead sites, never under-reporting them:
- * a site listed here may be alive-but-early, and a site absent from the list is certainly
- * alive. `--ticks` is what you lower to check a suspected false positive.
+ * The trace buffer is a 2000-entry ring. A seeded medium world emits ~255 traces a tick
+ * (51,069 over 200 ticks, measured 2026-09-18), so one read at the end sees the last
+ * 2,000 of them and nothing else. The first draft of this census read the ring once at
+ * tick 200 and reported `undertaking_catalyst` at 0 / 0 on a run where the state showed
+ * catalyst seeds spawn an errand; that undercount is the shape that minted a false engine
+ * bug (THR-1510, impediment row 1049). A burst inside one tick *can* exceed the ring —
+ * the report prints how many entries were emitted and evicted before any read.
+ *
+ * The two seeding sites — `encounter_seed` and `undertaking_catalyst` — are therefore
+ * counted **off state**: every seed that leaves `pendingEncounterSeeds` writes a
+ * suffixed `TickEvent` naming how (`seed-consumption-ledger.ts`), and a ledger that
+ * observes the state after every tick sees each one exactly once. Those rows count
+ * *seeds* (one per seed, resolved or empty), never query executions — a seed whose
+ * target is busy re-asks its query each tick and would inflate a trace count.
+ *
+ * The remaining sites have no durable state record and are counted off the ring,
+ * harvested **after every tick** on the monotonic emit count (`ring-harvest.ts` — the
+ * ring renumbers ids after eviction, so an id-keyed harvest stops at the first one).
+ * That is a lower bound: a burst inside one tick can still evict its own early traces.
+ * The report says which source each row came from, so a reader never mistakes a ring
+ * floor for a state count.
  *
  * Usage:
  *   npm run check:content-model-census
@@ -52,9 +68,16 @@ import { runTick } from '../src/engine/orchestrator';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
-import { clearTraces, enableTracing, getTraces } from '../src/engine/traceBuffer';
+import { clearTraces, enableTracing } from '../src/engine/traceBuffer';
 import { CONTENT_QUERY_SITES, type ContentQuerySite } from '../src/types/contentQuery';
 import { buildViews } from './generate-content-tag-catalog.js';
+import { createRingHarvester } from './ring-harvest.js';
+import {
+  SeedConsumptionLedger,
+  queryOutcomeOf,
+  type SeedConsumptionRecord,
+  type SeedLedgerSummary,
+} from './seed-consumption-ledger.js';
 
 // ─── Tunable constants (NFP #1) ─────────────────────────────────────
 
@@ -63,14 +86,30 @@ export const CENSUS_DEFAULT_TICKS = 200;
 export const CENSUS_DEFAULT_SEED = 42;
 export const CENSUS_DEFAULT_MAP: MapSizePreset = 'medium';
 
+/**
+ * The sites whose rows are decided off state (THR-1514): the two a seed's resolution
+ * is traced at (`seedQuerySite`). Every other site has no durable record and is
+ * counted off the per-tick ring harvest.
+ */
+export const STATE_SOURCED_SITES: readonly ContentQuerySite[] = ['encounter_seed', 'undertaking_catalyst'];
+
 // ─── Shapes ─────────────────────────────────────────────────────────
+
+export type SiteCensusSource = 'state' | 'ring';
 
 export interface SiteCensusRow {
   readonly site: ContentQuerySite;
   readonly resolved: number;
   readonly empty: number;
-  /** No trace of either kind reached the buffer for this site. */
+  /** Nothing — on state or on the ring — reached this site. */
   readonly silent: boolean;
+  /** Where `resolved` / `empty` were read: seed consumption on state, or the trace ring. */
+  readonly source: SiteCensusSource;
+  /**
+   * What the ring alone saw, kept beside a state-sourced row so the eviction gap is
+   * visible in the report rather than silently corrected away.
+   */
+  readonly ring?: { readonly resolved: number; readonly empty: number };
 }
 
 export interface ContentModelCensus {
@@ -79,25 +118,54 @@ export interface ContentModelCensus {
   readonly deadTags: readonly string[];
   readonly liveTags: number;
   readonly sites: readonly SiteCensusRow[];
+  /** The seed ledger's tallies — the state-derived recount behind the two seeding rows. */
+  readonly seeds?: SeedLedgerSummary;
+  /** What the per-tick ring harvest saw, and how many entries it provably missed. */
+  readonly ring?: { readonly harvested: number; readonly evictedUnseen: number };
 }
 
 /**
- * Fold a run's `content.query_*` traces into one row per site.
+ * Fold a run into one row per site.
+ *
+ * `traces` are the `content.query_*` traces the run harvested; `seedRecords`, when
+ * given, are the ledger's per-seed consumptions and decide the two seeding sites'
+ * rows off state (THR-1514). Without them every row is ring-sourced, which is what a
+ * caller with no world in hand gets.
  *
  * Pure and separately exported so a test can reach it: the run itself boots a world,
  * which no test wants, and the judgement worth pinning is the fold rather than the world.
  */
 export function censusSites(
   traces: readonly { category?: string; site?: string }[],
+  seedRecords?: readonly SeedConsumptionRecord[],
 ): readonly SiteCensusRow[] {
   return CONTENT_QUERY_SITES.map((site): SiteCensusRow => {
-    const resolved = traces.filter(
+    const ringResolved = traces.filter(
       t => t.category === 'content.query_resolved' && t.site === site,
     ).length;
-    const empty = traces.filter(
+    const ringEmpty = traces.filter(
       t => t.category === 'content.query_empty' && t.site === site,
     ).length;
-    return { site, resolved, empty, silent: resolved === 0 && empty === 0 };
+    if (seedRecords && STATE_SOURCED_SITES.includes(site)) {
+      const outcomes = seedRecords.filter(r => r.site === site).map(queryOutcomeOf);
+      const resolved = outcomes.filter(o => o === 'resolved').length;
+      const empty = outcomes.filter(o => o === 'empty').length;
+      return {
+        site,
+        resolved,
+        empty,
+        silent: resolved === 0 && empty === 0 && ringResolved === 0 && ringEmpty === 0,
+        source: 'state',
+        ring: { resolved: ringResolved, empty: ringEmpty },
+      };
+    }
+    return {
+      site,
+      resolved: ringResolved,
+      empty: ringEmpty,
+      silent: ringResolved === 0 && ringEmpty === 0,
+      source: 'ring',
+    };
   });
 }
 
@@ -126,6 +194,13 @@ export function runCensus(
   enableTracing();
   clearTraces();
 
+  // The ring is harvested after every tick (keyed on the monotonic emit count, never
+  // on the renumbered ids), and the seed ledger observes every state — see the header
+  // for why one read at the end is not a census (THR-1514).
+  const harvester = createRingHarvester();
+  const ledger = new SeedConsumptionLedger();
+  ledger.observe(initial);
+
   let state = initial;
   for (let tick = 0; tick < ticks; tick++) {
     // Fail-soft (NFP #4): a throw mid-run is a result, not a crash of the census —
@@ -140,16 +215,21 @@ export function runCensus(
       );
       break;
     }
+    harvester.harvest();
+    ledger.observe(state);
   }
-
-  const traces = getTraces() as unknown as readonly { category?: string; site?: string }[];
 
   return {
     ticks,
     seed,
     deadTags,
     liveTags: views.length - deadTags.length,
-    sites: censusSites(traces),
+    sites: censusSites(
+      harvester.traces as unknown as readonly { category?: string; site?: string }[],
+      ledger.records(),
+    ),
+    seeds: ledger.summary(),
+    ring: { harvested: harvester.traces.length, evictedUnseen: harvester.evictedUnseen },
   };
 }
 
@@ -181,17 +261,58 @@ export function renderCensus(census: ContentModelCensus): string {
 
   lines.push('### Query sites');
   lines.push('');
-  lines.push('| Site | Resolved | Empty | Verdict |');
-  lines.push('|---|---|---|---|');
+  lines.push('| Site | Resolved | Empty | Source | Verdict |');
+  lines.push('|---|---|---|---|---|');
   for (const row of census.sites) {
     const verdict = row.silent
       ? '⚠️ no hits'
       : row.resolved === 0
         ? '⚠️ only empty resolutions'
         : 'live';
-    lines.push(`| \`${row.site}\` | ${row.resolved} | ${row.empty} | ${verdict} |`);
+    const source = row.source === 'state'
+      ? `state${row.ring ? ` (ring saw ${row.ring.resolved} / ${row.ring.empty})` : ''}`
+      : 'ring';
+    lines.push(`| \`${row.site}\` | ${row.resolved} | ${row.empty} | ${source} | ${verdict} |`);
   }
   lines.push('');
+  lines.push(
+    '`state` rows count **seeds** off `state.tickEvents` — one per seed that spawned '
+      + '(resolved) or withered (empty) — and are exact. `ring` rows count traces harvested '
+      + 'from the 2000-entry ring after every tick and are a **floor**: a burst inside one '
+      + 'tick can evict its own early traces, so a `ring` zero is "not seen", never "did not '
+      + 'fire". Where a `state` row shows what the ring saw beside it, the gap is the eviction.'
+      + (census.ring
+        ? ` This run harvested ${census.ring.harvested} trace(s) and ${census.ring.evictedUnseen} `
+          + 'more were emitted and evicted before any tick-end read.'
+        : ''),
+  );
+  lines.push('');
+
+  if (census.seeds) {
+    const s = census.seeds;
+    lines.push('### Seed consumption (state)');
+    lines.push('');
+    lines.push(
+      `${s.observed} seed(s) observed pending: ${s.spawned} spawned, ${s.familyReady} withered `
+        + `(family/query resolved empty), ${s.expired} expired, ${s.orphaned} orphaned, `
+        + `${s.pending} still pending at the end.`,
+    );
+    if (s.leftUnexplained > 0) {
+      lines.push(
+        `> ⚠️ ${s.leftUnexplained} seed(s) left \`pendingEncounterSeeds\` with no consumption `
+          + 'event on `state.tickEvents`. That is **unknown**, not a drop: name the seed ids '
+          + 'and read the seeding phase before inferring anything.',
+      );
+    }
+    if (s.unregisteredConsumptions > 0) {
+      lines.push(
+        `> ${s.unregisteredConsumptions} consumption event(s) named a seed the ledger never `
+          + 'saw pending (planted and consumed within one tick, or pending before tick 0) — '
+          + 'not counted in the rows above.',
+      );
+    }
+    lines.push('');
+  }
 
   const silent = census.sites.filter(row => row.silent && row.site !== 'debug');
   if (silent.length > 0) {
@@ -200,8 +321,9 @@ export function renderCensus(census: ContentModelCensus): string {
         + `${silent.map(row => `\`${row.site}\``).join(', ')}. A site is silent because it is `
         + 'unreachable from the live board or because nothing authors a query there — those '
         + 'want opposite fixes, so check reachability before reading it as a content gap. '
-        + 'Note the buffer is a 2000-entry ring: a site that fired only in the opening ticks '
-        + 'can read as silent at 200. Re-run with a lower `--ticks` to tell them apart.',
+        + 'A `state`-sourced silence is exact; a `ring`-sourced one is bounded by the '
+        + '2000-entry ring and can hide a site that fired inside a busy tick — re-run with a '
+        + 'lower `--ticks` to tell them apart.',
     );
     lines.push('');
   }

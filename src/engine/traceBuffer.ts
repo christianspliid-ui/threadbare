@@ -51,6 +51,16 @@ export type EncounterTraceEntry =
 let buffer: TraceEntry[] = [];
 let nextId = 0;
 let enabled = false;
+/**
+ * Every entry ever emitted since the last `clearTraces()`, evicted or not (THR-1514).
+ *
+ * Ring ids are renumbered contiguous after each eviction, so `id` cannot tell a reader
+ * how many entries arrived since it last looked once the ring has filled — a harvester
+ * keyed on `id > lastSeen` silently stops collecting at the first eviction. This
+ * counter is monotonic: `getTraceEmitCount() - seen` is exactly how many are new, and
+ * any excess over the ring's length is how many were evicted before anyone read them.
+ */
+let emittedTotal = 0;
 
 function asNonEmptyString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value : null;
@@ -89,6 +99,7 @@ export function emitTrace(
 ): void {
   if (!enabled) return;
   const normalizedEntry = normalizeTraceEntry(entry);
+  emittedTotal++;
 
   buffer.push({
     ...normalizedEntry,
@@ -116,6 +127,20 @@ export function getTraces(): ReadonlyArray<TraceEntry> {
 }
 
 /**
+ * How many entries have been emitted since the last `clearTraces()`, including those
+ * the ring has since evicted. Monotonic; the only honest "how many are new" for a
+ * reader that polls the ring (see `emittedTotal`).
+ */
+export function getTraceEmitCount(): number {
+  return emittedTotal;
+}
+
+/** The ring's capacity — the most entries a single read of `getTraces()` can return. */
+export function getTraceBufferSize(): number {
+  return BUFFER_SIZE;
+}
+
+/**
  * Get all trace entries for a specific agent.
  * Filters by agentId field.
  */
@@ -130,6 +155,7 @@ export function getTracesForAgent(agentId: string): ReadonlyArray<TraceEntry> {
 export function clearTraces(): void {
   buffer = [];
   nextId = 0;
+  emittedTotal = 0;
 }
 
 /**
