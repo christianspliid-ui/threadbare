@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-18 18:55 local (2026-09-18 16:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-18 19:55 local (2026-09-18 17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** Grooming refilled the shelf with two small items at 18:48 on 18 September ([THR-1511](https://linear.app/threadbare/issue/THR-1511), [THR-1501](https://linear.app/threadbare/issue/THR-1501)) — a few hours of work. After them, the plan you blessed on 12 September is finished and there is no open bug; the next stretch of building starts here.
+**The ask: say "design THR-1448" in a chat.** The shelf holds five small items on 18 September — follow-ups and tooling fixes, a few hours of work. After them, the plan you blessed on 12 September is finished and there is no open bug; the next stretch of building starts here.
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -30,12 +30,11 @@ Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15
 
 **If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
 
-### Two calls you can veto — *from daily-backlog-grooming (18 September)*
+### One call you can veto — *from daily-backlog-grooming (18 September)*
 
 - **[THR-1501](https://linear.app/threadbare/issue/THR-1501/six-family-tags-are-now-orphaned-no-bearer-no-reader-sunset-or-author):** the six unused tags (military, supply, community, stewardship, contraband, blackmail evidence) will be **deleted**. Writing army-supply items for them would be new content work, and any tag can be restored with one line.
-- **[THR-1511](https://linear.app/threadbare/issue/THR-1511/undertaking-catalysts-wither-where-the-actor-stands-every-cell):** when a mortal's work completes, its follow-up encounter will be **offered at the town the work touched**, not wherever the mortal stands. Today 8 of 14 of these follow-ups vanish.
 
-Silence lets both stand.
+Silence lets it stand.
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
@@ -43,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-18 — a finished work's follow-up encounter is offered at the town the work touched** ([THR-1511](https://linear.app/threadbare/issue/THR-1511)). Your veto window closed with the merge at 19:33; live.
 - **2026-09-17 — the five quarantined Meet The First scenes are redrawn and back in the game** ([THR-876](https://linear.app/threadbare/issue/THR-876)). Merged 18:23, live.
 - **2026-09-17 — the glossary dashboard keeps a term's status when it carries a note** ([THR-1470](https://linear.app/threadbare/issue/THR-1470)). Merged 04:08, live.
 - **2026-09-17 — an unused activity-summary function and its dead data field are gone** ([THR-1502](https://linear.app/threadbare/issue/THR-1502)). Merged 02:19, live.
@@ -52,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 - **2026-09-16 — rumours lead to ruins, and one rumour is enough to post a contract** ([THR-1506](https://linear.app/threadbare/issue/THR-1506)). Merged 22:36, live.
 - **2026-09-16 — no encounter ending tells one fact twice** ([THR-1505](https://linear.app/threadbare/issue/THR-1505)). Merged 21:21, live.
 - **2026-09-16 — a realm standing chip links the realm it moved** ([THR-1499](https://linear.app/threadbare/issue/THR-1499)). Merged 20:33, live.
-- **2026-09-16 — a detail panel's breadcrumb works from the keyboard** ([THR-1504](https://linear.app/threadbare/issue/THR-1504)). Merged 19:19, live.
 
 ---
 
