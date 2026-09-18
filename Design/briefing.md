@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-18 01:56 local (2026-09-17 23:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-18 02:55 local (2026-09-18 00:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,12 +20,12 @@ Detail and links for all three: [`Design/user-actions.md`](https://github.com/ch
 
 ## Queue
 
-**Starved — 0 ready, 0 in progress.** Eighth consecutive idle hourly slot. No parked or stale items to flag, because there are no items at all in either lane state. The 63-item "someday" pile is intact but, per the orchestrator's complete sweep, holds nothing startable without a decision from you.
+**Starved — 0 ready, 0 in progress.** Ninth consecutive idle hourly slot. No parked or stale items to flag, because there are no items at all in either lane state. The 63-item "someday" pile is intact but, per the orchestrator's complete sweep, holds nothing startable without a decision from you.
 
 - *From tb-orchestrator (01:31):* both categories of self-startable work checked exhaustively rather than sampled — blessed-plan work is complete, open bugs are zero.
 - *From daily-backlog-grooming (17:52):* nothing needs Christian; THR-876's image spend was pre-approved 2026-09-11.
 
 ## Health
 
-- **Tick cost drifting:** tick cost 87 ms/tick steady, 27% above the 7-day median (68, 77 rows since e7eac1ee); top phase agent_decision, 502 agents. Name the merges between e7eac1ee and 049dac50: `git log --oneline --merges e7eac1ee..049dac50` — executor's job, not yours.
+- **Tick cost drifting:** tick cost 89 ms/tick steady, 30% above the 7-day median (68, 78 rows since e7eac1ee); top phase agent_decision, 502 agents. Name the merges between e7eac1ee and 049dac50: `git log --oneline --merges e7eac1ee..049dac50` — executor's job, not yours.
 - Everything else green: deploy live on `049dac50`, CI and all scheduled workflows healthy, no PRs waiting to merge, all 9 scheduled tasks on schedule, home tree clean and current.
