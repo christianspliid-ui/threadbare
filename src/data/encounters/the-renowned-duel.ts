@@ -480,7 +480,8 @@ export const THE_RENOWNED_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterCo
   essenceCost: 1,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'town', 'city', 'fortress'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+  locationSubtypes: ['town', 'city', 'fortress'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
 
   targetCategories: ['actor'],

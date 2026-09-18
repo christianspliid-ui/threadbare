@@ -534,7 +534,9 @@ export const THE_BLINDED_ORACLE_TEMPLATE: UnifiedActionTemplate = withEncounterC
   essenceCost: 2,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['wilderness', 'ruin', 'settlement'],
+  // THR-1515: `settlement` was a subtype no location carries; read as the author's "any
+  // settlement" and spelled as town / city / capital, which is what the world writes.
+  locationSubtypes: ['wilderness', 'ruin', 'town', 'city', 'capital'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
 
   targetCategories: ['actor'],

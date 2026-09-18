@@ -506,7 +506,8 @@ export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = withEncount
   essenceCost: 1,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'town', 'city', 'road'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+  locationSubtypes: ['town', 'city', 'road'],
   motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
 
   targetCategories: ['actor'],

@@ -525,7 +525,8 @@ export const THE_EXECUTIONERS_COMMISSION_TEMPLATE: UnifiedActionTemplate = withE
   essenceCost: 1,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'town', 'city'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+  locationSubtypes: ['town', 'city'],
   motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
 
   targetCategories: ['actor'],

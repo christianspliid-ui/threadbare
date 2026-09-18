@@ -513,7 +513,9 @@ export const THE_SILENT_CHAMBER_TEMPLATE: UnifiedActionTemplate = withEncounterC
   essenceCost: 2,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['ruin', 'wilderness', 'settlement'],
+  // THR-1515: `settlement` was a subtype no location carries; read as the author's "any
+  // settlement" and spelled as town / city / capital, which is what the world writes.
+  locationSubtypes: ['ruin', 'wilderness', 'town', 'city', 'capital'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
 
   targetCategories: ['actor'],

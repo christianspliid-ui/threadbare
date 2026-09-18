@@ -801,7 +801,10 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
   // THR-1511: `capital` added — a masterwork made in a capital brought no commission,
   // 3 of the 7 catalyst withers on seed 42 / medium / 200 ticks. (`settlement` is not a
   // subtype any location carries; kept so no drawn set narrows, but it gates nothing.)
-  locationSubtypes: ['settlement', 'town', 'city', 'capital'],
+  // THR-1515: `hamlet` added — a village forge sells flawed steel as readily as a city
+  // one, and a masterwork made at a hamlet had no commission to follow it. `settlement`
+  // dropped: no location carries it, so it gated nothing and read as real to an author.
+  locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
   motivations: ['loyalty_ambition', 'honesty_cunning'],
 
   narrativeTemplates: {

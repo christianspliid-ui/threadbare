@@ -61,7 +61,9 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
     reach: 'gold',
     crudType: 'read',
     scale: 'local',
-    locationSubtypes: ['town', 'city', 'capital'],
+    // THR-1515: `hamlet` — a market day is read the same at a hamlet's stalls; the
+    // Consortium's one errand a lane ending at a hamlet can land.
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,

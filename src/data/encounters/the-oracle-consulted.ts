@@ -497,7 +497,9 @@ export const THE_ORACLE_CONSULTED_TEMPLATE: UnifiedActionTemplate = withEncounte
   essenceCost: 1,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'hamlet', 'ruins', 'wilderness'],
+  // THR-1515: `settlement` was a subtype no location carries; read as the author's "any
+  // settlement" and spelled as town / city / capital, which is what the world writes.
+  locationSubtypes: ['hamlet', 'ruins', 'wilderness', 'town', 'city', 'capital'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
 
   targetCategories: ['actor'],

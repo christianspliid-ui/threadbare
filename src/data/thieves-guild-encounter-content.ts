@@ -187,7 +187,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     reach: 'gold',
     crudType: 'read',
     scale: 'local',
-    locationSubtypes: ['town', 'city', 'capital'],
+    // THR-1515: `hamlet` — a back-room fence needs no city; the ring founded in a
+    // hamlet (`cell.create.network`) has a thieves' errand to land.
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
