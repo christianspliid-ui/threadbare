@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-18 21:55 local (2026-09-18 19:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-18 22:55 local (2026-09-18 20:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** The shelf holds three small items on 18 September — one content follow-up and two tooling fixes, a few hours of work. After them, the plan you blessed on 12 September is finished and there is no open bug; the next stretch of building starts here.
+**The ask: say "design THR-1448" in a chat.** The shelf holds three small items on 18 September — one content follow-up (in progress) and two tooling fixes, a few hours of work. After them, the plan you blessed on 12 September is finished and there is no open bug; the next stretch of building starts here.
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
