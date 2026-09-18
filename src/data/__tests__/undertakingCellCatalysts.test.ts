@@ -16,15 +16,19 @@ import {
   getCellTemplate,
 } from '../undertaking-cells';
 import { AMBITION_TEMPLATES, GRIEVANCE_AMBITION_TEMPLATES } from '../ambition-templates';
-import { UNDERTAKING_MODEL } from '../strategic-action-constants';
+import { UNDERTAKING_DEFAULT_LOCATION_SUBTYPE, UNDERTAKING_MODEL } from '../strategic-action-constants';
 import { profileWorkIds } from '../../engine/strategicActionCandidates';
 import { contentQueryHasCandidates, describeContentQuery, resolveContentQuery } from '../../engine/contentQuery';
 import { staticContentCatalogs } from '../../engine/contentCatalogView';
 import { getUnifiedTemplateById } from '../unified-action-templates';
 import { ENCOUNTER_FAMILY_TAGS } from '../../engine/encounterSeeding';
 
-/** The subtypes a mortal finishing a settlement work is standing at; the seeding filter reads the same field. */
-const SETTLEMENT_SUBTYPES = ['town', 'city', 'capital'];
+/**
+ * The subtypes a mortal finishing a settlement work is standing at; the seeding filter
+ * reads the same field. `hamlet` is a member since THR-1515: it is what
+ * `cell.create.location` founds, and the tier every engine settlement set starts at.
+ */
+const SETTLEMENT_SUBTYPES = ['hamlet', 'town', 'city', 'capital'];
 
 describe('the cell catalyst table (THR-1497)', () => {
   it('every row names a cell that exists, and the cell carries the row as its catalystQuery', () => {
@@ -75,12 +79,14 @@ describe('the cell catalyst table (THR-1497)', () => {
     }
   });
 
-  it('every family has a member for each of town, city and capital — a wake anchored on any of them can land (THR-1511)', () => {
+  it('every family has a member for each of hamlet, town, city and capital — a wake anchored on any of them can land (THR-1511, THR-1515)', () => {
     // THR-1511 anchors a catalyst on the settlement the work stands at, so a family
     // with a hole in its gate withers exactly there. `#craft_commission` had one:
     // its only member listed `settlement` (a subtype no location carries) and
     // omitted `capital`, and 3 of the 7 residual withers on seed 42 / medium / 200
-    // ticks were masterworks made in a capital.
+    // ticks were masterworks made in a capital. THR-1515 closed the hole every family
+    // shared: none accepted `hamlet`, and every residual wither after THR-1511 had
+    // both the anchor and the feet at a hamlet or in the wild.
     const catalogs = staticContentCatalogs();
     for (const [cellId, query] of Object.entries(UNDERTAKING_CELL_CATALYSTS)) {
       const members = resolveContentQuery(query, catalogs)
@@ -94,6 +100,23 @@ describe('the cell catalyst table (THR-1497)', () => {
         ).toBeGreaterThan(0);
       }
     }
+  });
+
+  it('the settlement the founding cell makes is one its own family accepts (THR-1515)', () => {
+    // `cell.create.location` founds a `UNDERTAKING_DEFAULT_LOCATION_SUBTYPE` (a hamlet)
+    // and anchors its catalyst on it, so the thing the work made was rejected by
+    // construction: the Fellowship never came to the settlement the founder raised.
+    // Asserted off the constant, so a change to what is founded moves this test too.
+    const query = UNDERTAKING_CELL_CATALYSTS['cell.create.location'];
+    expect(query).toBeDefined();
+    const accepting = resolveContentQuery(query, staticContentCatalogs())
+      .map(hit => getUnifiedTemplateById(hit.id))
+      .filter(t => t !== undefined && t.actorAffinities?.includes('individual'))
+      .filter(t => !t!.locationSubtypes?.length || t!.locationSubtypes.includes(UNDERTAKING_DEFAULT_LOCATION_SUBTYPE));
+    expect(
+      accepting.map(t => t!.id),
+      `${describeContentQuery(query)} has no individual-performable member accepting a ${UNDERTAKING_DEFAULT_LOCATION_SUBTYPE}, the subtype cell.create.location founds`,
+    ).not.toEqual([]);
   });
 
   it('the closing predicate is false: under the live model, a cell a shipped profile walks declares a catalyst', () => {

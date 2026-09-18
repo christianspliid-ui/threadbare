@@ -200,7 +200,9 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
     reach: 'stone',
     crudType: 'create',
     scale: 'local',
-    locationSubtypes: ['town', 'city', 'capital'],
+    // THR-1515: `hamlet` — the first foundation laid in a settlement the work itself
+    // founded (`cell.create.location` founds a hamlet), so the Fellowship's wake lands there.
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,

@@ -53,7 +53,9 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Road Patrol',
-    locationSubtypes: ['town', 'city', 'capital'],
+    // THR-1515: `hamlet` — a section of road is walked from wherever the company
+    // stands; a host raised at a hamlet (`cell.create.army`) has a recruiter's errand.
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     rarityTier: 1,
     difficulty: MC_DIFFICULTY_BASE / 100,
     steps: [

@@ -378,7 +378,9 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   actorAffinities: ['individual'],
   motivations: ['tradition_novelty', 'revelation_discretion'],
 
-  locationSubtypes: ['settlement', 'town', 'city', 'capital'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+
+  locationSubtypes: ['town', 'city', 'capital'],
 
   narrativeTemplates: {
     initiation:

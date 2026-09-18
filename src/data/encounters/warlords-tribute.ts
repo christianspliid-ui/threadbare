@@ -607,7 +607,8 @@ export const WARLORDS_TRIBUTE_TEMPLATE: UnifiedActionTemplate = withEncounterCon
   essenceCost: 2,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'town', 'city', 'fortress'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+  locationSubtypes: ['town', 'city', 'fortress'],
   motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
 
   targetCategories: ['actor'],

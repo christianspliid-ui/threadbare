@@ -659,7 +659,8 @@ export const VEILED_CONSULTATION_TEMPLATE: UnifiedActionTemplate = withEncounter
   essenceCost: 3,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'town', 'city', 'tower', 'academy'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+  locationSubtypes: ['town', 'city', 'tower', 'academy'],
   motivations: ['tradition_novelty', 'revelation_discretion'],
 
   targetCategories: ['actor'],

@@ -480,7 +480,8 @@ export const THE_MERCHANTS_FAVOR_TEMPLATE: UnifiedActionTemplate = withEncounter
   essenceCost: 1,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'town', 'city'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+  locationSubtypes: ['town', 'city'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
 
   targetCategories: ['actor'],
