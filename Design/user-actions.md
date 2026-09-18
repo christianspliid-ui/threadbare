@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-18 19:55 local (2026-09-18 17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-18 20:55 local (2026-09-18 18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** The shelf holds five small items on 18 September — follow-ups and tooling fixes, a few hours of work. After them, the plan you blessed on 12 September is finished and there is no open bug; the next stretch of building starts here.
+**The ask: say "design THR-1448" in a chat.** The shelf holds four small items on 18 September — tidy-ups and tooling fixes, a few hours of work. After them, the plan you blessed on 12 September is finished and there is no open bug; the next stretch of building starts here.
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-18 — the undertaking proof script decides seed consumption off state, not off evicted traces** ([THR-1514](https://linear.app/threadbare/issue/THR-1514)). Merged 20:31, live.
 - **2026-09-18 — a finished work's follow-up encounter is offered at the town the work touched** ([THR-1511](https://linear.app/threadbare/issue/THR-1511)). Your veto window closed with the merge at 19:33; live.
 - **2026-09-17 — the five quarantined Meet The First scenes are redrawn and back in the game** ([THR-876](https://linear.app/threadbare/issue/THR-876)). Merged 18:23, live.
 - **2026-09-17 — the glossary dashboard keeps a term's status when it carries a note** ([THR-1470](https://linear.app/threadbare/issue/THR-1470)). Merged 04:08, live.
@@ -51,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 - **2026-09-16 — every codex detail row explains itself on hover** ([THR-1507](https://linear.app/threadbare/issue/THR-1507)). Merged 00:12.
 - **2026-09-16 — rumours lead to ruins, and one rumour is enough to post a contract** ([THR-1506](https://linear.app/threadbare/issue/THR-1506)). Merged 22:36, live.
 - **2026-09-16 — no encounter ending tells one fact twice** ([THR-1505](https://linear.app/threadbare/issue/THR-1505)). Merged 21:21, live.
-- **2026-09-16 — a realm standing chip links the realm it moved** ([THR-1499](https://linear.app/threadbare/issue/THR-1499)). Merged 20:33, live.
 
 ---
 
