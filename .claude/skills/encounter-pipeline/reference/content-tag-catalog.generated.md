@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 114 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 108 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -10,17 +10,11 @@ The closed vocabulary an author may hang on a piece of content — 114 tags acro
 
 ## Dead tags
 
-**7 tag(s) match nothing.** A query naming one of these resolves an empty set and the author sees no error — which is why they are badged rather than quietly seated. The weekly retro either authors a bearer or deletes the tag (the sunset rule), and the last column says **which**, because the three holes want three different answers. A *derived* tag with no bearer is a cosmology word the corpus has simply not reached yet: not a defect, never deleted. An *asked-for* tag with no bearer is a query site wanting content nobody wrote — a hole in the corpus, and the case for authoring a bearer. An *orphaned* tag is asked for by nothing and worn by nothing: it is vocabulary with no reader and no bearer, which is the sunset rule's own deletion predicate.
+**1 tag(s) match nothing.** A query naming one of these resolves an empty set and the author sees no error — which is why they are badged rather than quietly seated. The weekly retro either authors a bearer or deletes the tag (the sunset rule), and the last column says **which**, because the three holes want three different answers. A *derived* tag with no bearer is a cosmology word the corpus has simply not reached yet: not a defect, never deleted. An *asked-for* tag with no bearer is a query site wanting content nobody wrote — a hole in the corpus, and the case for authoring a bearer. An *orphaned* tag is asked for by nothing and worn by nothing: it is vocabulary with no reader and no bearer, which is the sunset rule's own deletion predicate.
 
 | Tag | Axis | Why it is dead |
 |---|---|---|
 | `#light` | sphere | derived from the cosmology — no entry has reached it yet; not deletable |
-| `#stewardship` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
-| `#community` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
-| `#military` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
-| `#supply` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
-| `#contraband` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
-| `#blackmail_evidence` | family | orphaned — no query site asks for it and no entry wears it; deletable under the sunset rule |
 
 ## reach
 
@@ -96,7 +90,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**69 tags.**
+**63 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -136,10 +130,6 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#travel` | Of the road, and of getting somewhere else. | item 9 | 9 |  |
 | `#discovery` | Of finding what nobody had found. | item 5 | 5 |  |
 | `#patronage` | Of being owed a favour by someone who matters. | item 1 · power 1 | 2 |  |
-| `#stewardship` | Of holding something in trust for other people. | — | 0 | **DEAD** |
-| `#community` | Of the many rather than the one. | — | 0 | **DEAD** |
-| `#military` | Of armies — muster, march, and command. | — | 0 | **DEAD** |
-| `#supply` | Of what an army or a town must be fed and armed with. | — | 0 | **DEAD** |
 | `#territorial` | Of ground held, claimed, or argued over. | item 2 · condition 1 | 3 |  |
 | `#wilderness` | Of the unsettled country. | item 14 · power 5 · condition 3 | 22 |  |
 | `#wilds` | Of the deep wild, past where the roads go. | companion 5 | 5 |  |
@@ -149,8 +139,6 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#road` | Of the ways between places. | companion 4 | 4 |  |
 | `#court` | Of halls, titles, and who is standing where. | companion 3 | 3 |  |
 | `#checkpoint` | Of the place where someone asks you what you are carrying. | condition 1 · item 1 · power 1 | 3 |  |
-| `#contraband` | Forbidden to hold, whoever you are holding it for. | — | 0 | **DEAD** |
-| `#blackmail_evidence` | Proof of something someone would pay to bury. | — | 0 | **DEAD** |
 | `#guild_errand` | Work set by the Adventurers' Guild — a posting taken off the board. | encounter 5 | 5 |  |
 | `#circle_errand` | Work set by the Arcane Circle — study, survey, and the reagents study needs. | encounter 5 | 5 |  |
 | `#fellowship_errand` | Work set by the Builders' Fellowship — stone cut, walls held, bridges thrown. | encounter 5 | 5 |  |

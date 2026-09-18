@@ -166,35 +166,25 @@ describe('content tag vocabulary — the corpus is inside it', () => {
 });
 
 describe('content tag vocabulary — the seating rule held', () => {
-  it('every seated authored tag has a bearer or is named as reader-only', () => {
+  it('every seated authored tag has a bearer', () => {
     // Derived and polarity axes are seated by the cosmology, not by bearer count.
     const authoredAxisTags = CONTENT_TAGS.filter(d => d.axis === 'form' || d.axis === 'family');
     const bearers = new Map<string, number>();
     for (const { entry } of CORPUS) {
       for (const t of authoredTags(entry)) bearers.set(t, (bearers.get(t) ?? 0) + 1);
     }
-    // Tags seated with no bearer. They were *reader-only* when this list was written —
-    // each sat on a `tagFilters` query site that wanted content nobody had authored.
-    // THR-1496 repointed all six query sites at live content, so they are now **orphaned**:
-    // no bearer and no reader either, which is the sunset rule's own deletion predicate.
-    // The generated catalog badges them `orphaned` and says so. They stay seated here
-    // only because deleting vocabulary is the weekly retro's call, not an executor's —
-    // tracked by THR-1501. Named explicitly so the list cannot quietly grow without
-    // someone editing this test.
-    const READER_ONLY = new Set([
-      '#blackmail_evidence',
-      '#community',
-      '#contraband',
-      '#military',
-      '#stewardship',
-      '#supply',
-    ]);
+    // No allowlist. There used to be a reader-only set here — six `family` tags seated
+    // for `tagFilters` query sites that wanted content nobody had authored. THR-1496
+    // repointed every one of those sites at live content, which left the six orphaned
+    // (no bearer, no reader), and the sunset rule then deleted them. A seated authored
+    // tag with no bearer is a query nothing can answer, and the only honest answers are
+    // to author a bearer or to unseat the tag — never to name it here and move on.
     const orphans = authoredAxisTags
-      .filter(d => (bearers.get(d.tag) ?? 0) === 0 && !READER_ONLY.has(d.tag))
+      .filter(d => (bearers.get(d.tag) ?? 0) === 0)
       .map(d => d.tag);
     expect(
       orphans,
-      `seated tags with no bearer and no declared reader — DEAD on arrival:\n${orphans.join(', ')}`,
+      `seated tags with no bearer — DEAD on arrival; author a bearer or unseat the tag:\n${orphans.join(', ')}`,
     ).toEqual([]);
   });
 
