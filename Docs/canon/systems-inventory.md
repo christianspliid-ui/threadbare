@@ -402,7 +402,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `traits` (1) | `traits.ts` | `THR-786` |
 | `treasure` (1) | `treasureMapConsumption.ts` | — |
 | `trust` (1) | `trustMechanics.ts` | — |
-| `undertaking` (8) | `undertakingCapabilityGrowth.ts`, `undertakingCheckpoints.ts`, `undertakingDeed.ts`, `undertakingMoments.ts`, `undertakingMotive.ts`, `undertakingProse.ts`, `undertakingResolver.ts`, `undertakingReviewLevers.ts` | `THR-1281`, `THR-1292`, `THR-1297`, `THR-1299`, `THR-1300`, `THR-1392`, `THR-1397`, `THR-1434`, `THR-1440` |
+| `undertaking` (9) | `undertakingCapabilityGrowth.ts`, `undertakingCatalystAnchor.ts`, `undertakingCheckpoints.ts`, `undertakingDeed.ts`, `undertakingMoments.ts`, `undertakingMotive.ts`, `undertakingProse.ts`, `undertakingResolver.ts`, `undertakingReviewLevers.ts` | `THR-1281`, `THR-1292`, `THR-1297`, `THR-1299`, `THR-1300`, `THR-1392`, `THR-1397`, `THR-1434`, `THR-1440`, `THR-1511` |
 | `unified` (4) | `unifiedActionLifecycle.ts`, `unifiedActionPhases.ts`, `unifiedActionResolution.ts`, `unifiedCandidates.ts` | `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 6`, `Phase 7` |
 | `view` (1) | `viewLevel.ts` | — |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
@@ -415,4 +415,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 188 engine domains · 559 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 188 engine domains · 560 modules._
