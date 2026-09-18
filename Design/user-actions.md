@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-18 18:50 local (2026-09-18 16:50 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-18 18:55 local (2026-09-18 16:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting. Your direction from 12 September.
 
-**The ask: say "design THR-1448" in a chat.** Both queue halves are empty — 0 waiting, 0 in progress, and the machine has been idle since the early hours of 18 September. The orchestrator checked both categories of self-startable work exhaustively: the plan you blessed on 12 September is finished end to end, and there is not one open bug on the board. There is no route back to building that does not start here.
+**The ask: say "design THR-1448" in a chat.** Grooming refilled the shelf with two small items at 18:48 on 18 September ([THR-1511](https://linear.app/threadbare/issue/THR-1511), [THR-1501](https://linear.app/threadbare/issue/THR-1501)) — a few hours of work. After them, the plan you blessed on 12 September is finished and there is no open bug; the next stretch of building starts here.
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -29,6 +29,13 @@ Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15
 **The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries, and today every lane fired in one catch-up burst at 18:44. GitHub's own scheduled jobs stayed green throughout, because they don't run here.
 
 **If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
+
+### Two calls you can veto — *from daily-backlog-grooming (18 September)*
+
+- **[THR-1501](https://linear.app/threadbare/issue/THR-1501/six-family-tags-are-now-orphaned-no-bearer-no-reader-sunset-or-author):** the six unused tags (military, supply, community, stewardship, contraband, blackmail evidence) will be **deleted**. Writing army-supply items for them would be new content work, and any tag can be restored with one line.
+- **[THR-1511](https://linear.app/threadbare/issue/THR-1511/undertaking-catalysts-wither-where-the-actor-stands-every-cell):** when a mortal's work completes, its follow-up encounter will be **offered at the town the work touched**, not wherever the mortal stands. Today 8 of 14 of these follow-ups vanish.
+
+Silence lets both stand.
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
