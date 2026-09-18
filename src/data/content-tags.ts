@@ -232,10 +232,6 @@ const familyTags: readonly ContentTagDef[] = [
   T('#travel', 'family', 'Of the road, and of getting somewhere else.'),
   T('#discovery', 'family', 'Of finding what nobody had found.'),
   T('#patronage', 'family', 'Of being owed a favour by someone who matters.'),
-  T('#stewardship', 'family', 'Of holding something in trust for other people.'),
-  T('#community', 'family', 'Of the many rather than the one.'),
-  T('#military', 'family', 'Of armies — muster, march, and command.'),
-  T('#supply', 'family', 'Of what an army or a town must be fed and armed with.'),
   T('#territorial', 'family', 'Of ground held, claimed, or argued over.'),
 
   // Places a thing belongs to
@@ -247,10 +243,6 @@ const familyTags: readonly ContentTagDef[] = [
   T('#road', 'family', 'Of the ways between places.'),
   T('#court', 'family', 'Of halls, titles, and who is standing where.'),
   T('#checkpoint', 'family', 'Of the place where someone asks you what you are carrying.'),
-
-  // Things best not carried openly
-  T('#contraband', 'family', 'Forbidden to hold, whoever you are holding it for.'),
-  T('#blackmail_evidence', 'family', 'Proof of something someone would pay to bury.'),
 ];
 
 /**
