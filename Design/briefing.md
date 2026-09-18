@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-09-18 22:55 local (20:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-18 23:56 local (21:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say "design THR-1448" in a chat.** The build queue is down to three small items (below): one content follow-up, already being built, and two tooling fixes. After them the machine has no game work it may start on its own. The next real stretch of building needs a plan, and a design session only opens when you say so. You already set the direction for both staged designs, so there's no decision to make.
+**Say "design THR-1448" in a chat.** The build queue is down to three small items: one content follow-up and two tooling fixes, all nearly done. After them the machine has no game work it may start on its own. The next real stretch of building needs a plan, and a design session only opens when you say so. You already set the direction for both staged designs, so there's no decision to make.
 
 - **[THR-1448: a held town is a faction position](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)**, your sentence from 10 September. Start here.
 - **[THR-1479: the appointment primitive](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)**, where a mortal keeps or misses a meeting. Your direction from 12 September.
@@ -18,12 +18,13 @@ Details and links for all three: [`Design/user-actions.md`](https://github.com/c
 
 ## Queue
 
-**Thin: 2 ready, 1 in progress.** No parked or stale items. THR-1448 and THR-1479 are still in In Design.
+**Starved: 1 ready, 2 in progress.** No parked or stale items. THR-1448 and THR-1479 are still in In Design.
 
 - [THR-1515](https://linear.app/threadbare/issue/THR-1515/catalyst-families-have-no-member-for-a-hamlet-or-the-wild-a-settlement) (Low, In Dev): gives works finished outside a town somewhere for their encounter to land. Its PR is red (see Health).
-- [THR-1512](https://linear.app/threadbare/issue/THR-1512/retro-draft-derives-its-period-from-the-newest-committed-retro-report) and [THR-1513](https://linear.app/threadbare/issue/THR-1513/classifydiffs-browser-verify-reminder-falls-back-to-the-working-tree) (Low): two tooling fixes filed by today's retro.
+- [THR-1512](https://linear.app/threadbare/issue/THR-1512/retro-draft-derives-its-period-from-the-newest-committed-retro-report) (Low, In Dev since 21:09 UTC): a tooling fix. Its PR is red too. Two issues in progress at once breaks the one-at-a-time rule; the pickup lane should finish THR-1515 before anything else.
+- [THR-1513](https://linear.app/threadbare/issue/THR-1513/classifydiffs-browser-verify-reminder-falls-back-to-the-working-tree) (Low, ready): the last tooling fix on the shelf.
 
 ## Health
 
-- [PR #1963](https://github.com/christianspliid-ui/threadbare/pull/1963) (THR-1515) is failing its required `Test · Typecheck · Build` check and hasn't changed since 20:32 UTC. Auto-merge is armed but can't fire. The next pickup session needs to read the failure and push a fix. This is executor work, not yours.
-- Everything else is green. The live site is on `38edc797`. CI and scheduled workflows are healthy, and all 9 scheduled tasks are on time. Tick cost is 72 ms/tick, +7% against the 7-day median. The home tree has a harmless local edit to `.claude/settings.local.json`, and main is current.
+- [PR #1963](https://github.com/christianspliid-ui/threadbare/pull/1963) (THR-1515) and [PR #1964](https://github.com/christianspliid-ui/threadbare/pull/1964) (THR-1512) are both failing the required `Test · Typecheck · Build` check. Auto-merge is armed on both but can't fire. The next pickup session needs to read the failures and push fixes. This is executor work, not yours.
+- Everything else is green. The live site is on `38edc797`. CI and scheduled workflows are healthy, and all 9 scheduled tasks are on time. Tick cost is 56 ms/tick, 16% below the 7-day median. The home tree has a harmless local edit to `.claude/settings.local.json`, and main is current.
