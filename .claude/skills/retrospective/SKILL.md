@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-08-28
+last_validated_against: 2026-09-18
 ---
 
 # Retrospective
@@ -43,7 +43,7 @@ Record which scan issue IDs were consumed; include them in the retro report.
 
 ### Step 1: Generate Deterministic Draft, Then Validate
 
-Run `npm run retro-draft` first. This writes `Design/retros/retro-YYYY-MM-DD-draft.md` from `Docs/impediments.md` using deterministic parsing and stable ordering.
+Run `npm run retro-draft` first. This writes `Design/retros/retro-YYYY-MM-DD-draft.md` from `Docs/impediments.md` using deterministic parsing and stable ordering. Its period starts (exclusive) at the date of the newest committed `Design/retros/retro-YYYY-MM-DD.md` — read off the filename, so drafts and `workflow-retro-*` files never set it (THR-1512) — and the console line names the source (`period start 2026-09-18 from retro-report`). If it reports `from impediment-log-footer`, the tree has no committed report and the window is stale by construction; do not re-bin by hand, check the retro directory.
 
 Open the generated draft and cross-check it against `Docs/impediments.md` before writing narrative conclusions. Treat the impediment log as the source of truth if anything disagrees.
 
