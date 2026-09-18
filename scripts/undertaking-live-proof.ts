@@ -6,8 +6,11 @@
  * it *runs*: in a real seeded world, started through the review lever
  * (`startUndertakingForReview` — the same path `?undertaking=` and the CLI use, so a
  * proof and a browser repro agree), driven with the real `runTick` until the project
- * reaches a terminal status, with every claim read off the trace buffer and the
- * graph — never off the template.
+ * reaches a terminal status, with every claim read off durable state (the graph, the
+ * history, `state.tickEvents`) and, where nothing durable exists, the trace buffer —
+ * never off the template. A trace's *absence* decides no claim (THR-1514): the ring is
+ * bounded and its harvest can miss, and the one fail branch that inferred from absence
+ * minted a false engine bug (THR-1510).
  *
  * ## Claims
  *
@@ -53,7 +56,7 @@ import { runTick } from '../src/engine/orchestrator';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
-import { clearTraces, enableTracing, getTraces } from '../src/engine/traceBuffer';
+import { clearTraces, enableTracing } from '../src/engine/traceBuffer';
 import { getStrategicTemplate, getAllStrategicTemplates } from '../src/engine/strategicActionCandidates';
 import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
 import { describeContentQuery } from '../src/engine/contentQuery';
@@ -73,6 +76,9 @@ import type { GameState } from '../src/types/gameState';
 import type { StrategicActionTemplate, StrategicProjectRuntime } from '../src/types/strategicAction';
 import type { StepOutcome } from '../src/types/unifiedAction';
 import type { TraceEntry } from '../src/types/trace';
+import type { PendingEncounterSeed } from '../src/types/unifiedAction';
+import { SeedConsumptionLedger } from './seed-consumption-ledger.js';
+import { createRingHarvester } from './ring-harvest.js';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -153,6 +159,14 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
 
   enableTracing();
   clearTraces();
+  // The trace buffer is a bounded ring, so every tick's traces are harvested into
+  // `traces` before the next tick can evict them. Keyed on the monotonic emit count
+  // (THR-1514): the ring renumbers ids after each eviction, so the old `id > lastSeen`
+  // harvest stopped collecting once the ring filled. Created here, before the lever
+  // fires, so the `strategic_action_started` trace is the first thing it sees.
+  const harvester = createRingHarvester();
+  const traces = harvester.traces;
+  const harvest = () => { harvester.harvest(); };
   // The proof asks whether the declared write set *can* land, so the default run pins the
   // `success` band — the same lever `?outcome=` uses. Whether the dice land there often
   // enough is the census's question (`census:undertakings`), not this one's. `--band none`
@@ -191,15 +205,6 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     return { templateId, seed, ticksRun: 0, claims, verdict: 'failed' };
   }
   const startTick = state.tick;
-  // The trace buffer is a bounded ring; a medium world emits more per tick than it holds,
-  // so every tick's traces are harvested into `traces` before the next tick can evict them.
-  const traces: TraceEntry[] = [];
-  let lastTraceId = -1;
-  const harvest = () => {
-    for (const t of getTraces()) {
-      if (t.id > lastTraceId) { traces.push(t); lastTraceId = t.id; }
-    }
-  };
   harvest();
   const startedTrace = traces.find(t =>
     t.category === 'strategic_action_started'
@@ -217,6 +222,13 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     return t.category === 'strategic_world_change' && keyed.actorId === actorId && (keyed.tick ?? -1) >= startTick;
   };
 
+  // The seed ledger (THR-1514): what became of every seed is read off
+  // `state.tickEvents` after every tick — the one durable record of a consumption —
+  // so the `catalyst_seeded` claim below never has to infer anything from a trace
+  // the ring evicted.
+  const ledger = new SeedConsumptionLedger();
+  ledger.observe(state);
+
   // Drive to terminal.
   let ticksRun = 0;
   let crashed: string | undefined;
@@ -232,6 +244,7 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     }
     ticksRun++;
     harvest();
+    ledger.observe(state);
   }
   clearUndertakingBandPin(templateId);
 
@@ -239,15 +252,9 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
   // `STRATEGIC_CATALYST_SEED_DELAY_TICKS` later; without these ticks the claim below
   // reads "the site was never reached" about a site the run never gave a chance to
   // be reached. Bounded, and only when a seed of this run's provenance is pending.
-  const catalystSeeds = (): readonly string[] => (state.pendingEncounterSeeds ?? [])
-    .filter(s => s.sourceReactionId === STRATEGIC_CATALYST_REACTION_ID && s.targetAgentId === actorId && s.plantedTick >= startTick)
-    .map(s => s.seedId);
-  // The seed ids this run planted, captured before they are consumed: the spawned
-  // action carries `spawnedFromSeedId`, which survives the trace ring's eviction
-  // (a medium world emits more traces per tick than the ring holds, so a mid-tick
-  // `content.query_resolved` can be gone before the tick's harvest).
-  const plantedCatalystIds = new Set(catalystSeeds());
-  const pendingCatalyst = (): boolean => catalystSeeds().length > 0;
+  const isThisRunsCatalyst = (s: PendingEncounterSeed): boolean =>
+    s.sourceReactionId === STRATEGIC_CATALYST_REACTION_ID && s.targetAgentId === actorId && s.plantedTick >= startTick;
+  const pendingCatalyst = (): boolean => (state.pendingEncounterSeeds ?? []).some(isThisRunsCatalyst);
   let settled = 0;
   while (!crashed && template.catalystQuery && pendingCatalyst() && settled < CATALYST_SETTLE_TICKS) {
     try {
@@ -259,6 +266,7 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     settled++;
     ticksRun++;
     harvest();
+    ledger.observe(state);
   }
 
   const final = project();
@@ -394,10 +402,25 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     );
     const resolvedAtSite = atSite('content.query_resolved');
     const emptyAtSite = atSite('content.query_empty');
-    // Durable evidence: the action the seed spawned names its seed, and outlives the
-    // trace ring (`RESOLVED_ACTION_RETENTION_TICKS`).
+    // Evidence, in order of authority (THR-1514):
+    //   1. the seed's consumption event on `state.tickEvents` — `<seedId>_spawned`,
+    //      `_family_ready` (withered: the query resolved empty), `_expired`, `_orphaned`
+    //      — read by the ledger after every tick, so it is never evicted;
+    //   2. the action the seed spawned (`spawnedFromSeedId`), which outlives the ring for
+    //      `RESOLVED_ACTION_RETENTION_TICKS`;
+    //   3. whatever `content.query_*` trace happened to survive the ring — a bonus
+    //      detail, never a verdict. **The absence of a trace decides nothing**: the fail
+    //      branch that once read "no query trace survived" as "withered" minted a false
+    //      engine bug (THR-1510, impediment row 1049).
+    const planted = ledger.all().filter(e => isThisRunsCatalyst(e.seed));
+    const plantedCatalystIds = new Set(planted.map(e => e.seedId));
     const spawnedFromCatalyst = state.unifiedActions.find(a => a.spawnedFromSeedId !== undefined && plantedCatalystIds.has(a.spawnedFromSeedId));
+    const spawnedEntry = planted.find(e => e.consumption === 'spawned');
+    const witheredEntry = planted.find(e => e.consumption === 'family_ready');
+    const discardedEntry = planted.find(e => e.consumption === 'expired' || e.consumption === 'orphaned');
+    const leftUnexplained = planted.filter(e => e.left && !e.consumption);
     const stillPending = pendingCatalyst();
+    const survivingTraces = (n: number, kind: string) => (n > 0 ? `; ${n} ${kind} trace(s) survived the ring` : '');
     if (final?.status !== 'completed') {
       claims.push({ name: 'catalyst_seeded', status: 'not_declared', detail: `run ended ${final?.status}; a catalyst is planted on completion only` });
     } else if (completion && !completion.catalystSeeded) {
@@ -406,27 +429,58 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
         status: 'not_declared',
         detail: `the catalyst roll missed (STRATEGIC_CATALYST_SEED_CHANCE ${STRATEGIC_CATALYST_SEED_CHANCE}) — another --seed rolls it`,
       });
-    } else if (resolvedAtSite.length > 0 || spawnedFromCatalyst) {
-      const picked = (resolvedAtSite[0] as { pickedId?: string } | undefined)?.pickedId ?? spawnedFromCatalyst?.templateId;
+    } else if (spawnedEntry || spawnedFromCatalyst || resolvedAtSite.length > 0) {
+      const picked = (resolvedAtSite[0] as { pickedId?: string } | undefined)?.pickedId
+        ?? spawnedFromCatalyst?.templateId
+        ?? '(the spawned action has already left unifiedActions; template id not retained)';
+      const evidence = spawnedEntry
+        ? `state.tickEvents ${spawnedEntry.seedId}_spawned at tick ${spawnedEntry.consumedTick}`
+        : spawnedFromCatalyst
+          ? `the spawned action names the seed (${spawnedFromCatalyst.spawnedFromSeedId})`
+          : 'a surviving content.query_resolved trace';
       claims.push({
         name: 'catalyst_seeded',
         status: 'pass',
-        detail: `${describeContentQuery(catalystQuery)} resolved at undertaking_catalyst → ${picked}`
-          + (resolvedAtSite.length > 0 ? ` (${resolvedAtSite.length} trace(s))` : ' (read off the spawned action; the trace was evicted)')
-          + ` after ${settled} settle tick(s)`,
+        detail: `${describeContentQuery(catalystQuery)} resolved at undertaking_catalyst → ${picked} `
+          + `(${evidence}${survivingTraces(resolvedAtSite.length, 'query_resolved')}) after ${settled} settle tick(s)`,
       });
-    } else {
+    } else if (witheredEntry) {
       claims.push({
         name: 'catalyst_seeded',
         status: 'fail',
-        detail: emptyAtSite.length > 0
-          ? `${describeContentQuery(catalystQuery)} resolved empty at undertaking_catalyst `
-            + `${emptyAtSite.length}× — the family has no member the actor's location accepts`
-          : stillPending
-            ? `declares ${describeContentQuery(catalystQuery)} and rolled a seed, still pending after ${settled} settle tick(s) — `
-              + 'the actor was busy or the seed has not come due'
-            : `declares ${describeContentQuery(catalystQuery)} and rolled a seed; the seed was consumed within ${settled} settle tick(s) `
-              + `but no action names it and no query trace survived — it withered where the actor stood: ${whereActorStands(state, actorId)}`,
+        detail: `${describeContentQuery(catalystQuery)} resolved empty at undertaking_catalyst — judged at `
+          + `${whereSeedWasJudged(state, witheredEntry.seed)}; the family has no member either place accepts `
+          + `(state.tickEvents ${witheredEntry.seedId}_family_ready at tick ${witheredEntry.consumedTick}`
+          + `${survivingTraces(emptyAtSite.length, 'query_empty')})`,
+      });
+    } else if (discardedEntry) {
+      claims.push({
+        name: 'catalyst_seeded',
+        status: 'fail',
+        detail: `the seed was discarded before its query ran — ${discardedEntry.consumption === 'orphaned'
+          ? 'its target is no longer a live node'
+          : 'it carried neither template, family nor query'} `
+          + `(state.tickEvents ${discardedEntry.seedId}_${discardedEntry.consumption} at tick ${discardedEntry.consumedTick})`,
+      });
+    } else if (stillPending) {
+      claims.push({
+        name: 'catalyst_seeded',
+        status: 'fail',
+        detail: `declares ${describeContentQuery(catalystQuery)} and rolled a seed, still pending after ${settled} settle tick(s) — `
+          + 'the actor was busy or the seed has not come due',
+      });
+    } else {
+      // A seed that left `pendingEncounterSeeds` with no consumption event, or a
+      // completion whose `catalystSeeded` never showed a seed pending at all. Neither is
+      // evidence of a drop; both are reported as what they are — unknown.
+      const unknown = leftUnexplained.length > 0
+        ? `${leftUnexplained.map(e => e.seedId).join(', ')} left pendingEncounterSeeds within ${settled} settle tick(s) with no consumption event on state.tickEvents`
+        : `the history entry records catalystSeeded but no seed of this run's provenance was ever observed pending`;
+      claims.push({
+        name: 'catalyst_seeded',
+        status: 'fail',
+        detail: `declares ${describeContentQuery(catalystQuery)}; ${unknown} — consumption UNKNOWN, not a drop: `
+          + `read evaluateEncounterSeeds before inferring one (the actor now stands at ${whereActorStands(state, actorId)})`,
       });
     }
   }
@@ -483,6 +537,23 @@ function whereActorStands(state: GameState, actorId: string): string {
   return location && location.id !== located.id
     ? `${located.id} (a Place in ${location.id}, ${subtypeOf(location)})`
     : `${located.id} (${subtypeOf(location ?? located)})`;
+}
+
+/**
+ * The places the seeding site judged a withered seed at (THR-1511's order: the work's
+ * own anchor first, the target's feet second), each with the subtype the family did
+ * not accept. Read off the seed's `resolutionLocationId` and the target's `located_at`
+ * — the same inputs `seedJudgedLocations` reads — so the sentence needs no trace.
+ * The feet are read now rather than on the consumption tick; a target moves at most a
+ * few ticks between the two.
+ */
+function whereSeedWasJudged(state: GameState, seed: PendingEncounterSeed): string {
+  const feet = `feet ${whereActorStands(state, seed.targetAgentId)}`;
+  if (!seed.resolutionLocationId) return feet;
+  const anchorNode = resolveToParentLocation(state.graph, state.graph.getNode(seed.resolutionLocationId));
+  if (!anchorNode) return `anchor ${seed.resolutionLocationId} (dangling), then ${feet}`;
+  const subtype = (anchorNode.properties.locationSubtype ?? anchorNode.properties.locationType ?? 'no subtype') as string;
+  return `anchor ${anchorNode.id} (${subtype}), then ${feet}`;
 }
 
 /** Did the completion's mutation leave the kind's object in the graph? Read by hint type. */

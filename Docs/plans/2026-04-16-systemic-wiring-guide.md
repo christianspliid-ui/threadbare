@@ -3817,12 +3817,25 @@ and counting it would hand the key to the whole legacy corpus on day one.
 **3. The live proof proves it.** `check:encounter-live` claims `content_query_resolved` — read
 off the `content.query_resolved` trace, not off the planted seed, because a seed carrying both a
 `templateId` and a `query` plants either way and `pendingEncounterSeeds` cannot tell a resolved
-query from a bypassed one. `check:undertaking-live` claims `catalyst_seeded` the same way.
+query from a bypassed one. `check:undertaking-live` claims `catalyst_seeded` off **state** (THR-1514):
+the seed's consumption event on `state.tickEvents` — `<seedId>_spawned` / `_family_ready` /
+`_expired` / `_orphaned`, one per consumption path, read by `scripts/seed-consumption-ledger.ts`
+after every tick — then the spawned action's `spawnedFromSeedId`, and only then whatever
+`content.query_*` trace survived the ring. **The absence of a trace decides nothing.** The fail
+branch that once read "no query trace survived" as *withered* authored a false Medium engine bug
+(THR-1510, impediment row 1049); it now says `resolved empty at undertaking_catalyst — judged at
+anchor <loc> (<subtype>), then feet <loc> (<subtype>)` off the seed's own anchor and the target's
+`located_at`, and a seed that left the pool with no event is reported as *unknown*, never as dropped.
 
 **4. The census reports it.** `npm run check:content-model-census` (weekly hygiene § 11) answers the
 two questions no gate can: which tags are **DEAD** (zero bearers — an author writes one and gets
 an empty pool with no error), and which query sites got **no hits** over a seeded 200-tick run.
-The batch reports print queries authored per batch.
+The batch reports print queries authored per batch. The two seeding sites (`encounter_seed`,
+`undertaking_catalyst`) are counted **off state** through the same ledger — one per seed that
+spawned or withered, exact — and every other site off the ring, harvested after every tick and
+labelled a floor; the report prints the source per row and how many traces were emitted and
+evicted before any read (THR-1514). Measured 2026-09-18, seed 42 / medium / 200 ticks: the ring
+alone read `undertaking_catalyst` at 0 / 0 where the state shows 3 resolved / 6 withered.
 
 **Read a silent site carefully — it has four possible causes and they want opposite fixes.**
 Measured 2026-09-13: `undertaking_catalyst` reported zero hits not because nobody authored a query
@@ -3832,10 +3845,15 @@ pack templates and `UNDERTAKING_MODEL: 'cells'` does not walk a profile's `templ
 found a fourth cause on the way: the site was **never emitted**. The seeding site traced every seed
 as `encounter_seed`, so a catalyst that did resolve was counted under the wrong row. A site listed
 in `CONTENT_QUERY_SITES` proves nothing until a `traceContentQuery` call names it. A second cause is
-*authored but unreached on this seed*. A third is the trace buffer's 2000-entry ring evicting an
-early firing, which biases the census toward over-reporting death — lower `--ticks` to tell
-*alive-but-early* from *actually silent* before filing anything; for a seed-spawned encounter the
-durable record is the action's `spawnedFromSeedId`, stamped on every seed spawn since THR-1497.
+*authored but unreached on this seed*. A third is the trace buffer's 2000-entry ring evicting a
+firing — a seeded medium run emits ~51,000 traces over 200 ticks (~255 a tick, measured
+2026-09-18), so a single read at the end sees the last 2,000 and a `ring`-sourced zero means
+*not seen*, never *did not fire*; the census harvests after every tick and prints how many
+entries were emitted and evicted before any read (0 on that run). The two
+seeding sites are therefore `state`-sourced since THR-1514 and their silence is exact; for the
+rest, lower `--ticks` to tell *alive-but-early* from *actually silent* before filing anything.
+For a seed-spawned encounter the durable records are the seed's consumption event on
+`state.tickEvents` and the action's `spawnedFromSeedId`, stamped on every seed spawn since THR-1497.
 And a target standing inside a **Place** is judged by the Location that contains it
 (`seedTargetSubtype`) — a Place node carries no subtype of its own, and reading it raw withered
 every gated family for a mortal in a market district or an inn.
