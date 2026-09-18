@@ -153,7 +153,40 @@ function parseEntries(markdown: string): Entry[] {
   return entries.sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
 }
 
-function findLastRetroDate(markdown: string): string | null {
+/**
+ * A committed weekly retro report: `retro-YYYY-MM-DD.md`, and nothing else.
+ *
+ * `retro-YYYY-MM-DD-draft.md` is this script's own (gitignored) output and
+ * `workflow-retro-YYYY-MM-DD.md` is a different cadence, so neither may set the
+ * period boundary — the anchored regex rejects both by construction.
+ */
+export const RETRO_REPORT_FILENAME = /^retro-(\d{4}-\d{2}-\d{2})\.md$/;
+
+/**
+ * The newest committed retro report's date, read off the filename (THR-1512).
+ *
+ * The report is the artifact a retro actually produces, so its date is the
+ * period boundary the next draft must start from. Pure over a file listing so
+ * it is testable without a directory.
+ */
+export function findLatestRetroReportDate(fileNames: readonly string[]): string | null {
+  const dates: string[] = [];
+  for (const name of fileNames) {
+    const match = RETRO_REPORT_FILENAME.exec(name);
+    const date = match?.[1];
+    if (date) dates.push(date);
+  }
+  if (dates.length === 0) return null;
+  return dates.sort().at(-1) ?? null;
+}
+
+/**
+ * Legacy boundary: the `**Retrospective conducted: YYYY-MM-DD**` footer in the
+ * impediment log. THR-825 retired the footer in July 2026, so on a current tree
+ * this returns a date seven-plus retros stale; it survives only as the fallback
+ * for a tree with no committed report at all.
+ */
+export function findLastRetroDate(markdown: string): string | null {
   const regex = /Retrospective conducted:\s*(\d{4}-\d{2}-\d{2})/g;
   const dates: string[] = [];
   for (const match of markdown.matchAll(regex)) {
@@ -162,6 +195,35 @@ function findLastRetroDate(markdown: string): string | null {
   }
   if (dates.length === 0) return null;
   return dates.sort().at(-1) ?? null;
+}
+
+/**
+ * Resolve the period start: the newest committed report wins outright; the
+ * retired footer is consulted only when no report exists; null means the
+ * whole log is the period.
+ *
+ * The report is preferred even when the footer carries a newer date, because
+ * the footer has no writer any more (THR-825) — a newer footer on a current
+ * tree can only be hand-authored drift, never a retro that happened.
+ */
+export function resolvePeriodStart(input: {
+  retroDirFileNames: readonly string[];
+  impedimentLogMarkdown: string;
+}): { date: string | null; source: "retro-report" | "impediment-log-footer" | "none" } {
+  const reportDate = findLatestRetroReportDate(input.retroDirFileNames);
+  if (reportDate) return { date: reportDate, source: "retro-report" };
+  const footerDate = findLastRetroDate(input.impedimentLogMarkdown);
+  if (footerDate) return { date: footerDate, source: "impediment-log-footer" };
+  return { date: null, source: "none" };
+}
+
+function listRetroDirFileNames(): string[] {
+  try {
+    return fs.readdirSync(RETRO_DIR);
+  } catch {
+    // No retro directory yet — fail-soft to the footer / whole-log fallbacks.
+    return [];
+  }
 }
 
 function aggregateByCategory(entries: Entry[]): Map<string, AggregateBucket> {
@@ -339,7 +401,11 @@ function main(): void {
 
   const markdown = fs.readFileSync(IMPEDIMENT_LOG_PATH, "utf8");
   const allEntries = parseEntries(markdown);
-  const lastRetroDate = findLastRetroDate(markdown);
+  const period = resolvePeriodStart({
+    retroDirFileNames: listRetroDirFileNames(),
+    impedimentLogMarkdown: markdown,
+  });
+  const lastRetroDate = period.date;
   const outputDate = process.env.RETRO_DRAFT_DATE?.trim() || toIsoDateLocal(new Date());
   const filteredEntries = lastRetroDate
     ? allEntries.filter((entry) => entry.date > lastRetroDate)
@@ -364,7 +430,14 @@ function main(): void {
   fs.mkdirSync(RETRO_DIR, { recursive: true });
   const outputPath = path.join(RETRO_DIR, `retro-${outputDate}-draft.md`);
   fs.writeFileSync(outputPath, output, "utf8");
-  console.log(`retro-draft wrote ${path.relative(REPO_ROOT, outputPath)} (${filteredEntries.length} entries)`);
+  console.log(
+    `retro-draft wrote ${path.relative(REPO_ROOT, outputPath)} (${filteredEntries.length} entries; period start ${lastRetroDate ?? "none"} from ${period.source})`,
+  );
 }
 
-main();
+// Basename gate rather than `import.meta.url === argv[1]`: `npm run retro-draft`
+// runs this file through an esbuild bundle (`.cache/retro-draft.mjs`), which
+// rewrites import.meta.url, while a vitest import must not write a draft.
+if (path.basename(process.argv[1] ?? "").startsWith("retro-draft")) {
+  main();
+}
