@@ -1049,13 +1049,30 @@ describe('a catalyst is judged where the work stands, then where the actor does 
     expect(queryTrace('content.query_resolved')?.judgedAtLocationId).toBe('town-1');
   });
 
-  it('an anchor the family rejects falls back to the feet, so a settlement-standing actor still gets the wake', () => {
-    // The anchor is a hamlet (nothing in the family accepts one); the actor stands in
-    // a city. The old behaviour is the floor: the feet are still tried.
-    const state = worldWithActorAt('city', s => {
+  it('a hamlet anchor is accepted, so the settlement a founding cell makes gets its own wake (THR-1515)', () => {
+    // cell.create.location founds a hamlet and anchors its catalyst on it. Until
+    // THR-1515 no #fellowship_errand member accepted one, so the anchor fell through
+    // to the feet and, with the founder in the wild, withered. The actor stands at a
+    // fort here so the pass cannot come from the feet.
+    const state = worldWithActorAt('fort', s => {
       s.graph.addNode({ id: 'hamlet-1', type: 'location', name: 'Dun', properties: { locationSubtype: 'hamlet' } });
     });
     state.pendingEncounterSeeds = [catalystSeed({ resolutionLocationId: 'hamlet-1' })];
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    expect(result.unifiedActions[result.unifiedActions.length - 1]?.templateId).toBe('bf.quest.lay_foundation');
+    const trace = queryTrace('content.query_resolved');
+    expect(trace?.judgedAt).toBe('resolution_anchor');
+    expect(trace?.judgedAtLocationId).toBe('hamlet-1');
+  });
+
+  it('an anchor the family rejects falls back to the feet, so a settlement-standing actor still gets the wake', () => {
+    // The anchor is a fort (nothing in the family accepts one — the seed-99 shape from
+    // THR-1511); the actor stands in a city. The old behaviour is the floor: the feet
+    // are still tried. The rejected anchor was a hamlet until THR-1515 admitted one.
+    const state = worldWithActorAt('city', s => {
+      s.graph.addNode({ id: 'fort-1', type: 'location', name: 'Dun', properties: { locationSubtype: 'fort' } });
+    });
+    state.pendingEncounterSeeds = [catalystSeed({ resolutionLocationId: 'fort-1' })];
     const result = evaluateEncounterSeeds(state, 25, testRng());
     expect(result.unifiedActions[result.unifiedActions.length - 1]?.templateId).toMatch(/^bf\.quest\./);
     const trace = queryTrace('content.query_resolved');

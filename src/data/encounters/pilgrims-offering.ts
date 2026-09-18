@@ -524,7 +524,9 @@ export const PILGRIMS_OFFERING_TEMPLATE: UnifiedActionTemplate = withEncounterCo
   essenceCost: 1,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'hamlet', 'road', 'wilderness'],
+  // THR-1515: `settlement` was a subtype no location carries; read as the author's "any
+  // settlement" and spelled as town / city / capital, which is what the world writes.
+  locationSubtypes: ['hamlet', 'road', 'wilderness', 'town', 'city', 'capital'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
 
   targetCategories: ['actor'],

@@ -388,7 +388,9 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
   actorAffinities: ['individual'],
   motivations: ['mercy_ruthlessness', 'tradition_novelty'],
 
-  locationSubtypes: ['settlement', 'town', 'city', 'fortress'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+
+  locationSubtypes: ['town', 'city', 'fortress'],
 
   narrativeTemplates: {
     initiation:

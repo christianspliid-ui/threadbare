@@ -491,7 +491,9 @@ export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterCon
   essenceCost: 2,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'hamlet', 'road', 'wilderness'],
+  // THR-1515: `settlement` was a subtype no location carries; read as the author's "any
+  // settlement" and spelled as town / city / capital, which is what the world writes.
+  locationSubtypes: ['hamlet', 'road', 'wilderness', 'town', 'city', 'capital'],
   motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
 
   targetCategories: ['actor'],

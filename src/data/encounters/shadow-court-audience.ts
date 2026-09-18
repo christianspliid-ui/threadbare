@@ -535,7 +535,8 @@ export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncount
   essenceCost: 2,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['settlement', 'town', 'city', 'palace'],
+  // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
+  locationSubtypes: ['town', 'city', 'palace'],
   motivations: ['honesty_cunning', 'loyalty_ambition'],
 
   targetCategories: ['actor'],

@@ -600,7 +600,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     reach: 'iron',
     crudType: 'delete',
     scale: 'local',
-    locationSubtypes: ['town', 'city', 'capital'],
+    // THR-1515: `hamlet` — a tavern brawl spills onto a hamlet's one street as readily
+    // as a ward's; every catalyst family carries one member a hamlet accepts.
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,

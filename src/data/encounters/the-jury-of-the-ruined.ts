@@ -510,7 +510,9 @@ export const THE_JURY_OF_THE_RUINED_TEMPLATE: UnifiedActionTemplate = withEncoun
   essenceCost: 1,
 
   actorAffinities: ['individual'],
-  locationSubtypes: ['ruin', 'settlement', 'hamlet', 'wilderness'],
+  // THR-1515: `settlement` was a subtype no location carries; read as the author's "any
+  // settlement" and spelled as town / city / capital, which is what the world writes.
+  locationSubtypes: ['ruin', 'hamlet', 'wilderness', 'town', 'city', 'capital'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
 
   targetCategories: ['actor'],
