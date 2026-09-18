@@ -20,7 +20,14 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { UI_PILLAR_REMINDER, renderClassification } from '../classify-diff.ts';
+import {
+  DONE_WHEN_ROUTE_NOTE,
+  UI_PILLAR_REMINDER,
+  mergeFileSets,
+  parseUntrackedPaths,
+  renderClassification,
+  selectFileSet,
+} from '../classify-diff.ts';
 import { UI_PILLAR_PREFIXES, isUiPillarPath, uiPillarPaths } from '../docs-only-predicate.ts';
 
 const BASE = 'origin/main...HEAD';
@@ -122,5 +129,100 @@ describe('classify:diff — browser-verify route reminder', () => {
     expect(UI_PILLAR_REMINDER).toContain('four-part');
     expect(UI_PILLAR_REMINDER).toContain('verification-gates.md');
     expect(UI_PILLAR_REMINDER).toContain('Browser-verify substitution');
+  });
+
+  it('points at the claim-time route rule, since a Done-when obligation is not path-classifiable (THR-1513)', () => {
+    expect(UI_PILLAR_REMINDER).toContain('Done-when');
+    expect(UI_PILLAR_REMINDER).toContain('route decision rule');
+  });
+
+  it('prints the Done-when route note on a code diff with no UI path, so silence never reads as "nothing owed"', () => {
+    const output = renderClassification(['src/engine/graph.ts'], BASE);
+
+    expect(output).toContain(DONE_WHEN_ROUTE_NOTE);
+    expect(DONE_WHEN_ROUTE_NOTE).toContain('Done-when-triggered');
+    expect(DONE_WHEN_ROUTE_NOTE).toContain('verification-gates.md');
+  });
+
+  it('does not print the Done-when note alongside the reminder, nor on a docs-only diff', () => {
+    expect(renderClassification(['src/components/A.tsx'], BASE)).not.toContain(DONE_WHEN_ROUTE_NOTE);
+    expect(renderClassification(['Docs/canon/process.md'], BASE)).not.toContain(DONE_WHEN_ROUTE_NOTE);
+  });
+});
+
+/**
+ * THR-1513 — the working-tree fallback. Impediment row 1042 (×3, 2026-09-13): the
+ * classifier diffed `origin/main...HEAD`, which is empty before the first commit, so
+ * at exactly the moment the route decision was owed the reminder could not render.
+ * These pin the precedence (committed wins), the porcelain parse (untracked rows
+ * only), and the rendered header naming the source — the Done-when is "with an
+ * uncommitted edit under src/components/ and nothing committed, the reminder prints".
+ */
+describe('classify:diff — working-tree fallback (THR-1513)', () => {
+  it('prefers the committed range whenever it is non-empty — that is what CI classifies', () => {
+    const selected = selectFileSet(['src/engine/graph.ts'], ['src/components/A.tsx']);
+
+    expect(selected).toEqual({ files: ['src/engine/graph.ts'], source: 'committed' });
+  });
+
+  it('falls back to the working tree only when the committed range is empty', () => {
+    const selected = selectFileSet([], ['src/components/A.tsx']);
+
+    expect(selected).toEqual({ files: ['src/components/A.tsx'], source: 'working-tree' });
+  });
+
+  it('reports working-tree source on a doubly-empty read rather than inventing a committed one', () => {
+    expect(selectFileSet([], [])).toEqual({ files: [], source: 'working-tree' });
+  });
+
+  it('parses only the untracked rows out of porcelain output', () => {
+    const porcelain = [
+      ' M src/engine/graph.ts',
+      'A  Docs/changelog.md',
+      '?? src/components/NewPanel.tsx',
+      '?? scratch/',
+      '',
+    ].join('\n');
+
+    expect(parseUntrackedPaths(porcelain)).toEqual(['src/components/NewPanel.tsx', 'scratch/']);
+  });
+
+  it('merges tracked and untracked sets without duplicates, preserving first-seen order', () => {
+    expect(
+      mergeFileSets(['src/engine/graph.ts', '', 'src/hooks/useX.ts'], ['src/hooks/useX.ts', 'src/components/A.tsx']),
+    ).toEqual(['src/engine/graph.ts', 'src/hooks/useX.ts', 'src/components/A.tsx']);
+  });
+
+  it('prints the reminder off a working-tree set — the Done-when shape', () => {
+    const output = renderClassification(['src/components/NewPanel.tsx'], BASE, 'working-tree');
+
+    expect(output).toContain(UI_PILLAR_REMINDER);
+    expect(output).toContain('src/components/NewPanel.tsx');
+    expect(output).toContain('classify:diff — code');
+  });
+
+  it('names the working tree as the source and says the committed range is what CI classifies', () => {
+    const output = renderClassification(['src/engine/graph.ts'], BASE, 'working-tree');
+
+    expect(output).toContain('WORKING TREE');
+    expect(output).toContain('1 uncommitted');
+    expect(output).toContain('what CI classifies');
+    expect(output).toContain('Re-run after committing');
+  });
+
+  it('does not print the preview caveat when the verdict came from the committed range', () => {
+    const output = renderClassification(['src/engine/graph.ts'], BASE);
+
+    expect(output).not.toContain('WORKING TREE');
+    expect(output).not.toContain('Re-run after committing');
+  });
+
+  it('names a doubly-empty read as vacuous, mentioning both sources', () => {
+    const output = renderClassification([], BASE, 'working-tree');
+
+    expect(output).toContain('vacuous');
+    expect(output).toContain('no uncommitted edits');
+    expect(output).not.toContain(UI_PILLAR_REMINDER);
+    expect(output).not.toContain(DONE_WHEN_ROUTE_NOTE);
   });
 });
