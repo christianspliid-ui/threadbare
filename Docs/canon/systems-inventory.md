@@ -396,7 +396,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `tick` (1) | `tickHealthMonitor.ts` | — |
 | `tier` (1) | `tierPromotion.ts` | — |
 | `tooltip` (1) | `tooltipResolver.ts` | `THR-1094`, `THR-1159`, `THR-1172`, `THR-1486` |
-| `trace` (1) | `traceBuffer.ts` | — |
+| `trace` (1) | `traceBuffer.ts` | `THR-1514` |
 | `trade` (3) | `tradeRoute.ts`, `tradeRouteMarkers.ts`, `tradeRouteOps.ts` | `Phase 1`, `THR-1188`, `THR-611`, `THR-616`, `THR-670`, `THR-830` |
 | `trait` (4) | `traitDefinitionSeeding.ts`, `traitRefIndex.ts`, `traitRefValidation.ts`, `traitShape.ts` | `THR-1394`, `THR-1395`, `THR-786`, `THR-809` |
 | `traits` (1) | `traits.ts` | `THR-786` |
