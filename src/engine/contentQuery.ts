@@ -366,8 +366,16 @@ export function traceContentQuery(params: {
   readonly pickedId?: string;
   readonly actorId?: string;
   readonly templateId?: string;
+  /**
+   * Where a location-gated site judged the query (THR-1511): the Location whose
+   * subtype the `locationSubtypes` filter read, and whether that was the seed's
+   * `resolutionLocationId` anchor or the target's own feet. Absent on sites that
+   * carry no location gate.
+   */
+  readonly judgedAtLocationId?: string;
+  readonly judgedAt?: 'resolution_anchor' | 'target_location';
 }): void {
-  const { site, query, candidateCount, tick, pickedId, actorId, templateId } = params;
+  const { site, query, candidateCount, tick, pickedId, actorId, templateId, judgedAtLocationId, judgedAt } = params;
   if (candidateCount === 0) {
     emitTrace({
       category: 'content.query_empty',
@@ -376,6 +384,8 @@ export function traceContentQuery(params: {
       query,
       actorId,
       templateId,
+      judgedAtLocationId,
+      judgedAt,
       summary: `${site}: query matched nothing`,
     });
     return;
@@ -390,6 +400,8 @@ export function traceContentQuery(params: {
     pickedId,
     actorId,
     templateId,
+    judgedAtLocationId,
+    judgedAt,
     summary: `${site}: ${candidateCount} candidate${candidateCount === 1 ? '' : 's'}${pickedId ? ` → ${pickedId}` : ''}`,
   });
 }

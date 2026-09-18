@@ -28,6 +28,7 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import type { PendingEncounterSeed, UnifiedActionTemplate } from '../types/unifiedAction';
 import type { EncounterSupportBinding } from '../types/encounter';
+import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import type { SimulationRuntime } from './simulationRuntime';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
@@ -146,10 +147,55 @@ export function seedQuerySite(seed: PendingEncounterSeed): ContentQuerySite {
  */
 export function seedTargetSubtype(graph: WorldGraph, targetAgentId: string): string | undefined {
   const located = getAgentLocation(graph, targetAgentId);
-  const locationNode = resolveToParentLocation(graph, located);
+  return locationTierSubtype(graph, located);
+}
+
+/**
+ * The location subtype of a seed's `resolutionLocationId` anchor, resolved to the
+ * Location tier exactly as {@link seedTargetSubtype} resolves the target's feet
+ * (THR-1511). `undefined` when the seed carries no anchor or the anchor is gone —
+ * both mean "judge at the feet", which is the pre-THR-1511 behaviour verbatim.
+ */
+export function seedAnchorSubtype(graph: WorldGraph, seed: PendingEncounterSeed): string | undefined {
+  if (!seed.resolutionLocationId) return undefined;
+  return locationTierSubtype(graph, graph.getNode(seed.resolutionLocationId));
+}
+
+function locationTierSubtype(graph: WorldGraph, node: GraphNode | undefined): string | undefined {
+  const locationNode = resolveToParentLocation(graph, node);
   return locationNode
     ? ((locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined)
     : undefined;
+}
+
+/**
+ * The location the seeding site judges a query-resolved seed at, and which of the
+ * two candidates it was (THR-1511). The anchor is tried first; the feet second. The
+ * order is the whole fix — see {@link resolveSeedByQuery}.
+ */
+interface JudgedLocation {
+  readonly subtype: string | undefined;
+  readonly locationId: string | undefined;
+  readonly judgedAt: 'resolution_anchor' | 'target_location';
+}
+
+function seedJudgedLocations(graph: WorldGraph, seed: PendingEncounterSeed): readonly JudgedLocation[] {
+  const feet: JudgedLocation = {
+    subtype: seedTargetSubtype(graph, seed.targetAgentId),
+    locationId: resolveToParentLocation(graph, getAgentLocation(graph, seed.targetAgentId))?.id,
+    judgedAt: 'target_location',
+  };
+  if (!seed.resolutionLocationId) return [feet];
+  const anchorNode = resolveToParentLocation(graph, graph.getNode(seed.resolutionLocationId));
+  // A dangling anchor is not a place; judge at the feet, exactly as before.
+  if (!anchorNode) return [feet];
+  const anchor: JudgedLocation = {
+    subtype: seedAnchorSubtype(graph, seed),
+    locationId: anchorNode.id,
+    judgedAt: 'resolution_anchor',
+  };
+  // The same place twice is one judgement, not two.
+  return anchor.locationId === feet.locationId ? [anchor] : [anchor, feet];
 }
 
 /**
@@ -211,18 +257,20 @@ function resolveSeedByQuery(
   rng: () => number,
   tick: number,
 ): FamilyMatchResult | undefined {
-  const subtype = seedTargetSubtype(graph, seed.targetAgentId);
-
-  const eligible: UnifiedActionTemplate[] = [];
-  for (const hit of resolveContentQuery(query, sessionContentCatalogs(graph))) {
-    const template = getUnifiedTemplateById(hit.id);
-    if (!template) continue;
-    if (!template.actorAffinities?.includes('individual')) continue;
-    if (template.locationSubtypes && template.locationSubtypes.length > 0) {
-      if (!subtype || !template.locationSubtypes.includes(subtype)) continue;
-    }
-    eligible.push(template);
-    if (eligible.length >= CONTENT_QUERY_MAX_CANDIDATES) break;
+  // THR-1511: a catalyst seed carries the Location the work stands at, and the gate
+  // is judged there first — the wake of a road laid from a fort is offered in the
+  // town the road reaches, not at the fort. The target's own feet are tried second,
+  // so an anchor the family rejects (a hamlet, a camp) costs nothing over the old
+  // behaviour, and a seed with no anchor takes exactly the old path. The resolver's
+  // hit list is the same either way (it knows nothing of locations); only the
+  // eligibility filter moves. One `rng()` draw regardless (NFP #3).
+  const catalogs = sessionContentCatalogs(graph);
+  let eligible: UnifiedActionTemplate[] = [];
+  let judged: JudgedLocation | undefined;
+  for (const where of seedJudgedLocations(graph, seed)) {
+    judged = where;
+    eligible = eligibleAt(query, catalogs, where.subtype);
+    if (eligible.length > 0) break;
   }
 
   // Traced on both outcomes, so a family that went hungry is distinguishable from a
@@ -238,10 +286,36 @@ function resolveSeedByQuery(
     pickedId: pick?.id,
     actorId: seed.targetAgentId,
     templateId: seed.sourceEncounterId,
+    judgedAtLocationId: judged?.locationId,
+    judgedAt: judged?.judgedAt,
   });
 
   if (!pick) return undefined;
   return { templateId: pick.id, template: pick, candidateCount: eligible.length };
+}
+
+/**
+ * The query's hits this seeding site can spawn at a location of the given subtype:
+ * individual-performable, and either ungated or gated to that subtype. Capped at
+ * {@link CONTENT_QUERY_MAX_CANDIDATES}.
+ */
+function eligibleAt(
+  query: ContentQuery,
+  catalogs: ReturnType<typeof sessionContentCatalogs>,
+  subtype: string | undefined,
+): UnifiedActionTemplate[] {
+  const eligible: UnifiedActionTemplate[] = [];
+  for (const hit of resolveContentQuery(query, catalogs)) {
+    const template = getUnifiedTemplateById(hit.id);
+    if (!template) continue;
+    if (!template.actorAffinities?.includes('individual')) continue;
+    if (template.locationSubtypes && template.locationSubtypes.length > 0) {
+      if (!subtype || !template.locationSubtypes.includes(subtype)) continue;
+    }
+    eligible.push(template);
+    if (eligible.length >= CONTENT_QUERY_MAX_CANDIDATES) break;
+  }
+  return eligible;
 }
 
 /**

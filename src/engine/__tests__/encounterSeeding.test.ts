@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { evaluateEncounterSeeds, seedQuerySite, seedTargetSubtype } from '../encounterSeeding';
+import { evaluateEncounterSeeds, seedAnchorSubtype, seedQuerySite, seedTargetSubtype } from '../encounterSeeding';
 import { STRATEGIC_CATALYST_REACTION_ID } from '../../data/strategic-action-constants';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
@@ -986,5 +986,122 @@ describe('a catalyst seed traces its own query site (THR-1497)', () => {
     expect(result.unifiedActions).toHaveLength(0);
     const empty = getTraces().find(t => t.category === 'content.query_empty') as undefined | { site: string };
     expect(empty?.site).toBe('undertaking_catalyst');
+  });
+});
+
+describe('a catalyst is judged where the work stands, then where the actor does (THR-1511)', () => {
+  beforeEach(() => { resetUnifiedActionCounter(); clearTraces(); enableTracing(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  type QueryTrace = { site: string; judgedAt?: string; judgedAtLocationId?: string };
+  const queryTrace = (category: 'content.query_resolved' | 'content.query_empty') =>
+    getTraces().find(t => t.category === category) as undefined | QueryTrace;
+
+  /** `bf.quest.*` accepts town/city/capital only — the seed-99 route repro's family shape. */
+  function catalystSeed(overrides?: Partial<PendingEncounterSeed>): PendingEncounterSeed {
+    return makeSeed({
+      seedId: 'catalyst_cell.create.route_actor-1_10',
+      sourceEncounterId: 'cand-1',
+      sourceReactionId: STRATEGIC_CATALYST_REACTION_ID,
+      encounterFamily: undefined,
+      query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
+      eligibleAfterTick: 13,
+      seedLabel: 'the wake of Create a route',
+      ...overrides,
+    });
+  }
+
+  function worldWithActorAt(subtype: string, extra?: (state: GameState) => void): GameState {
+    const state = createMinimalGameState();
+    state.graph.addNode({ id: 'stand-1', type: 'location', name: 'Where they stand', properties: { locationSubtype: subtype } });
+    state.graph.addEdge({ id: 'e-loc', type: 'located_at', source: 'actor-1', target: 'stand-1', properties: {} });
+    extra?.(state);
+    return state;
+  }
+
+  it('the wake of a road laid from a fort is offered in the town the road reaches', () => {
+    // Before THR-1511 this withered: the actor stands at a fort, and no member of the
+    // family accepts a fort. The seed now names the town, and the town is judged first.
+    const state = worldWithActorAt('fort', s => {
+      s.graph.addNode({ id: 'town-1', type: 'location', name: 'Wraithwood', properties: { locationSubtype: 'town' } });
+    });
+    state.pendingEncounterSeeds = [catalystSeed({ resolutionLocationId: 'town-1' })];
+    expect(seedAnchorSubtype(state.graph, state.pendingEncounterSeeds[0])).toBe('town');
+
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    const spawned = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawned?.templateId, 'the family withered at the fort although the road reaches a town').toMatch(/^bf\.quest\./);
+    expect(spawned?.spawnedFromSeedId).toBe('catalyst_cell.create.route_actor-1_10');
+    const trace = queryTrace('content.query_resolved');
+    expect(trace?.site).toBe('undertaking_catalyst');
+    expect(trace?.judgedAt).toBe('resolution_anchor');
+    expect(trace?.judgedAtLocationId).toBe('town-1');
+  });
+
+  it('an anchor inside a Place is judged by the Location that contains it, as the feet are', () => {
+    const state = worldWithActorAt('fort', s => {
+      s.graph.addNode({ id: 'town-1', type: 'location', name: 'Wraithwood', properties: { locationSubtype: 'town' } });
+      s.graph.addNode({ id: 'town-1_sub_yard', type: 'location', name: 'Mason\'s yard', properties: { parentLocationId: 'town-1' } });
+    });
+    state.pendingEncounterSeeds = [catalystSeed({ resolutionLocationId: 'town-1_sub_yard' })];
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    expect(result.unifiedActions[result.unifiedActions.length - 1]?.templateId).toMatch(/^bf\.quest\./);
+    expect(queryTrace('content.query_resolved')?.judgedAtLocationId).toBe('town-1');
+  });
+
+  it('an anchor the family rejects falls back to the feet, so a settlement-standing actor still gets the wake', () => {
+    // The anchor is a hamlet (nothing in the family accepts one); the actor stands in
+    // a city. The old behaviour is the floor: the feet are still tried.
+    const state = worldWithActorAt('city', s => {
+      s.graph.addNode({ id: 'hamlet-1', type: 'location', name: 'Dun', properties: { locationSubtype: 'hamlet' } });
+    });
+    state.pendingEncounterSeeds = [catalystSeed({ resolutionLocationId: 'hamlet-1' })];
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    expect(result.unifiedActions[result.unifiedActions.length - 1]?.templateId).toMatch(/^bf\.quest\./);
+    const trace = queryTrace('content.query_resolved');
+    expect(trace?.judgedAt).toBe('target_location');
+    expect(trace?.judgedAtLocationId).toBe('stand-1');
+  });
+
+  it('a dangling anchor is judged at the feet exactly as a seed with no anchor is', () => {
+    const state = worldWithActorAt('town');
+    state.pendingEncounterSeeds = [catalystSeed({ resolutionLocationId: 'razed-long-ago' })];
+    expect(seedAnchorSubtype(state.graph, state.pendingEncounterSeeds[0])).toBeUndefined();
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    expect(result.unifiedActions[result.unifiedActions.length - 1]?.templateId).toMatch(/^bf\.quest\./);
+    expect(queryTrace('content.query_resolved')?.judgedAt).toBe('target_location');
+  });
+
+  it('a seed without an anchor traces that it was judged at the feet', () => {
+    const state = worldWithActorAt('town');
+    state.pendingEncounterSeeds = [catalystSeed()];
+    evaluateEncounterSeeds(state, 25, testRng());
+    const trace = queryTrace('content.query_resolved');
+    expect(trace?.judgedAt).toBe('target_location');
+    expect(trace?.judgedAtLocationId).toBe('stand-1');
+  });
+
+  it('a wake that no place accepts still withers, traced empty at the last place tried', () => {
+    const state = worldWithActorAt('fort', s => {
+      s.graph.addNode({ id: 'fort-2', type: 'location', name: 'Hollow Watch', properties: { locationSubtype: 'fort' } });
+    });
+    state.pendingEncounterSeeds = [catalystSeed({ resolutionLocationId: 'fort-2' })];
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+    expect(result.unifiedActions).toHaveLength(0);
+    const empty = queryTrace('content.query_empty');
+    expect(empty?.site).toBe('undertaking_catalyst');
+    expect(empty?.judgedAt).toBe('target_location');
+    expect(empty?.judgedAtLocationId).toBe('stand-1');
+  });
+
+  it('the draw is one rng call whichever place was judged — same seed, same pick', () => {
+    const build = (anchor: string | undefined) => {
+      const state = worldWithActorAt('town', s => {
+        s.graph.addNode({ id: 'town-2', type: 'location', name: 'Elsewhere', properties: { locationSubtype: 'town' } });
+      });
+      state.pendingEncounterSeeds = [catalystSeed(anchor ? { resolutionLocationId: anchor } : {})];
+      return evaluateEncounterSeeds(state, 25, testRng()).unifiedActions[0]?.templateId;
+    };
+    expect(build('town-2')).toBe(build(undefined));
   });
 });
