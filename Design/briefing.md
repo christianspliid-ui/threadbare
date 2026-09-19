@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-19 03:55 local (01:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-19 04:56 local (02:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -22,4 +22,4 @@ Details and links for all three: [`Design/user-actions.md`](https://github.com/c
 
 ## Health
 
-All green. The live site is on `3d39f728`, the latest main. No PRs are waiting to merge. Scheduled workflows are healthy, and all 9 scheduled tasks are on time. Tick cost is 58 ms/tick, 13% below the 7-day median. The cleanup script ran at 03:40 and flagged 3 old worktrees for disposition.
+All green. The live site is on `3d39f728`, the latest main. No PRs are waiting to merge. Scheduled workflows are healthy, and all 9 scheduled tasks are on time. Tick cost is 58 ms/tick, 13% below the 7-day median. The cleanup script last reported 3 old worktrees for disposition.
