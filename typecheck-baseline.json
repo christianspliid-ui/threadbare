@@ -1,5 +1,5 @@
 {
-  "total": 2848,
+  "total": 2840,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -577,7 +577,6 @@
     "src/engine/phaseEconomicChronicle.ts": 3,
     "src/engine/phaseEconomicTraits.ts": 2,
     "src/engine/phaseEffectShells.ts": 4,
-    "src/engine/phaseEncounterTraits.ts": 8,
     "src/engine/phaseFactionActions.ts": 4,
     "src/engine/phaseFactionSuccession.ts": 1,
     "src/engine/phaseHexState.ts": 1,
