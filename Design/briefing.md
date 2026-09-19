@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-09-19 09:54 local (07:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-19 10:55 local (08:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say "design THR-1448" in a chat.** No new game work is queued. The plan you approved on 12 September is finished, and the one item that became ready this morning is a cleanup (see Queue). There is nothing to decide: you already set the direction for both staged designs. They only need someone to open a design session.
+**Say "design THR-1448" in a chat.** No new game work is queued. The one ready item was picked up at 10:01 and is a cleanup (see Queue). There is nothing to decide: you already set the direction for both staged designs. They only need someone to open a design session.
 
 - **[THR-1448: a held town is a faction position](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)**, from your sentence on 10 September. Start here.
 - **[THR-1479: the appointment primitive](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)**: a mortal keeps or misses a meeting. From your direction on 12 September.
@@ -18,12 +18,13 @@ Details and links for all three: [`Design/user-actions.md`](https://github.com/c
 
 ## Queue
 
-**1 ready, 0 in progress (thin).** Nothing is parked or stale.
+**0 ready, 1 in progress (starved).** Nothing is parked or stale.
 
-- [THR-1503](https://linear.app/threadbare/issue/THR-1503/processencounterconditions-gates-on-a-template-category-no-shipped) (Low). This morning's grooming ruled that the old automatic "lose a hard fight → Wounded/Terrified" rule, which has never fired, gets **deleted** rather than revived. Wounds come from each encounter's written ending instead. The pickup lane should take it at 10:01. *(An agent's call with a veto window: say so and it goes back for design.)*
+- [THR-1503](https://linear.app/threadbare/issue/THR-1503/processencounterconditions-gates-on-a-template-category-no-shipped) (Low), in progress. The unused automatic "lose a hard fight → Wounded/Terrified" rule is being deleted; wounds come from each encounter's written ending. Its PR is open but failing a check (see Health). *(An agent's call with a veto window: say so and it goes back for design.)*
 - [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) and [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) are still In Design, waiting for the chat above.
 
 ## Health
 
-- tick cost 92 ms/tick steady, 41% above the 7-day median (65, 78 rows since b115a0b1); top phase agent_decision, 498 agents. Name the merges between b115a0b1 and 3d39f728: git log --oneline --merges b115a0b1..3d39f728 *(This is the second high reading in a row, but it is the same commit, `3d39f728`, that measured 57 ms two hours ago. The code has not changed, so this points to machine load. An executor should look only if a quiet-machine run is also high.)*
-- Everything else is green. The live site is on `3d39f728`, the latest main. No PRs are waiting to merge. Scheduled workflows are healthy, and all 9 scheduled tasks are on time. The cleanup script ran at 09:40 and flagged 3 worktrees for disposition.
+- **PR [#1966](https://github.com/christianspliid-ui/threadbare/pull/1966) (THR-1503) has a failing required check.** It will not merge until a session reads the failure and pushes a fix. That is the pickup session's job, not yours. The PR is 39 minutes old.
+- tick cost 90 ms/tick steady, 37% above the 7-day median (66, 78 rows since 74fddcf4); top phase agent_decision, 498 agents. Name the merges between 74fddcf4 and 3d39f728: git log --oneline --merges 74fddcf4..3d39f728 *(This is the third high reading on the same commit, `3d39f728`, which measured 57 ms three hours ago. The code has not changed, so this still points to machine load.)*
+- Everything else is green. The live site is on `3d39f728`, the latest main. Scheduled workflows are healthy, and all 9 scheduled tasks are on time. The cleanup script flagged 3 worktrees for disposition.
