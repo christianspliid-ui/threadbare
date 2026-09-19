@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-19 05:55 local (2026-09-19 03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-19 06:55 local (2026-09-19 04:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -22,11 +22,11 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map. Say **"work the map"** in a chat when done. The known blemish (Riders' *failure* ending repeating its opening) is fixed and live — [THR-1505](https://linear.app/threadbare/issue/THR-1505).
 
-### Were the stops deliberate? (lane silence, 13–16 September, 17 September, and today)
+### Were the stops deliberate? (lane silence, 13–16, 17 and 18 September)
 
-Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15:55 (~67h), again Thursday 17 September 07:55 → 17:55 (~10h), and again today, Friday 18 September 02:55 → 18:44 (~16h). None of the stops had a pause marker.
+Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15:55 (~67h), again Thursday 17 September 07:55 → 17:55 (~10h), and again Friday 18 September 02:55 → 18:44 (~16h). None of the stops had a pause marker.
 
-**The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries, and today every lane fired in one catch-up burst at 18:44. GitHub's own scheduled jobs stayed green throughout, because they don't run here.
+**The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries, and on the 18th every lane fired in one catch-up burst at 18:44. GitHub's own scheduled jobs stayed green throughout, because they don't run here.
 
 **If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
 
