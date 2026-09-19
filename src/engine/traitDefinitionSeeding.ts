@@ -4,11 +4,14 @@
  *
  * ─── Why this exists (THR-809) ──────────────────────────────────
  * `MASTERY_TRAIT_DEFINITIONS` + `CONDITION_TRAIT_DEFINITIONS` used to reach the
- * graph only through `phaseEncounterTraits.ensureTraitNodes`, which is called
- * from `processEncounterMastery` / `processEncounterConditions`. Those run inside
+ * graph only through `phaseEncounterTraits.ensureTraitNodes`, which was called
+ * from `processEncounterMastery` / `processEncounterConditions`. Those ran inside
  * the orchestrator's loop over the legacy `state.encounterProgress` collection —
  * which the unified-action pipeline no longer populates. The loop body never
  * executed, so the 13 definition nodes were never inserted in a live run.
+ * (THR-1503 later deleted that module outright — the two functions were dead for
+ * the same reason, and their `category` gate matched no shipped template — so this
+ * seeding is now the *only* insertion path for both families.)
  *
  * The visible consequence: every `condition_attachment` / `apply_condition`
  * aftermath effect naming one of these conditions took the `template_missing`

@@ -16,7 +16,6 @@ import { resetNarrativeEventCounter } from '../../narrative';
 import { resetColocationEventCounter } from '../../phaseColocationDetection';
 import { resetMeetingCounter } from '../../meetingEncounter';
 import { resetTugCounter } from '../../phaseAttention';
-import { resetEncounterTraitInit } from '../../phaseEncounterTraits';
 import { resetControlEffectsCounter } from '../../phaseControlEffects';
 import { resetDoomCounter } from '../../phaseDoom';
 import { resetMandateCounter } from '../../phaseMandate';
@@ -65,7 +64,6 @@ function resetAllModuleCounters(): void {
   resetColocationEventCounter();
   resetMeetingCounter();
   resetTugCounter();
-  resetEncounterTraitInit();
   resetControlEffectsCounter();
   resetDoomCounter();
   resetMandateCounter();

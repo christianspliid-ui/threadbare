@@ -22,39 +22,32 @@
  * through the **real** reader, so a fourth writer that invents a fourth name fails
  * here rather than shipping a blank Duration row.
  *
+ * ─── Two writers, not three (THR-1503) ───────────────────────────
+ * The ticket's named writer, `phaseEncounterTraits.processEncounterConditions`,
+ * is gone. It gated on a template `category` no shipped template carries, and was
+ * called only from the orchestrator's loop over the legacy `state.encounterProgress`
+ * collection, which no production path populates (THR-1069). The arm that covered it
+ * had to mock `getAnyEncounterById` to reach the path at all — the one mocked arm in
+ * a contract test whose whole point is real grant paths. That arm and its mock went
+ * with the function. Conditions are consequences authored on the aftermath path and
+ * drawn from the reward pool; those are the writers below.
+ *
  * Each arm asserts two things, and needs both: that the grant happened at all
  * (otherwise the duration assertion is vacuously true over an empty list), and that
  * the total survives the round trip as a number.
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { getAgentAttachments, type AttachmentFullEntry } from '../agentAttachments';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { instantiateReward, REWARD_CONDITION_DEFAULT_TICKS } from '../rewardPool';
-import { processEncounterConditions } from '../phaseEncounterTraits';
 import { clearTraces, enableTracing, disableTracing } from '../traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
-import { CONDITION_WOUNDED_DURATION, CONDITION_TERRIFIED_DURATION } from '../../data/condition-trait-content';
 import type { GameState } from '../../types/gameState';
 import type { EncounterAftermathReaction, UnifiedAction } from '../../types/unifiedAction';
 
-// The phase writer gates on a template `category`, which it reads through
-// `getAnyEncounterById`. Only that one lookup is replaced — the rest of the content
-// module stays real, so nothing else in the import graph changes shape.
-vi.mock('../../data/encounter-content', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../data/encounter-content')>();
-  return {
-    ...actual,
-    getAnyEncounterById: (id: string) =>
-      id === PHASE_COMBAT_ENCOUNTER_ID
-        ? { id, category: 'combat', threatRating: 'hard' }
-        : actual.getAnyEncounterById(id),
-  };
-});
-
 const HERO = 'actor-hero';
 const START_TICK = 10;
-const PHASE_COMBAT_ENCOUNTER_ID = 'enc.test.combat';
 
 /** A graph carrying just the hero — condition definition nodes are seeded per arm. */
 function buildGraph(): WorldGraph {
@@ -101,6 +94,18 @@ function addConditionDefinition(graph: WorldGraph, id: string): void {
   });
 }
 
+/** The aftermath writer: one `apply_condition` effect with an authored total. */
+function applyInspired(graph: WorldGraph, runtime: SimulationRuntime, durationTicks: number): WorldGraph {
+  const reaction: EncounterAftermathReaction = {
+    id: 'react-apply', label: 'Apply',
+    effects: [{ kind: 'apply_condition', conditionTraitId: 'trait.condition.inspired', durationTicks }],
+  } as unknown as EncounterAftermathReaction;
+  const { state: next } = applyEncounterAftermathReaction(
+    buildState(graph), makeAction(), reaction, START_TICK, runtime,
+  );
+  return next.graph;
+}
+
 /**
  * The reader half of every arm: what the sheet and the progress bar actually see.
  * Returns the single condition entry, failing loudly if the grant never happened —
@@ -112,16 +117,6 @@ function readSoleCondition(graph: WorldGraph): AttachmentFullEntry {
   return conditions[0];
 }
 
-/** Same, for an arm that grants more than one condition — named, never positional. */
-function readCondition(
-  graph: WorldGraph,
-  traitId: string,
-): AttachmentFullEntry {
-  const entry = getAgentAttachments(graph, HERO).conditions.find(c => c.id === traitId);
-  expect(entry, `expected a granted condition ${traitId}`).toBeDefined();
-  return entry!;
-}
-
 describe('THR-1484 — has_trait duration contract across every writer', () => {
   let runtime: SimulationRuntime;
   beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
@@ -130,16 +125,8 @@ describe('THR-1484 — has_trait duration contract across every writer', () => {
   it('aftermath apply_condition — the writer that was already correct', () => {
     const graph = buildGraph();
     addConditionDefinition(graph, 'trait.condition.inspired');
-    const reaction: EncounterAftermathReaction = {
-      id: 'react-apply', label: 'Apply',
-      effects: [{ kind: 'apply_condition', conditionTraitId: 'trait.condition.inspired', durationTicks: 8 }],
-    } as unknown as EncounterAftermathReaction;
 
-    const { state: next } = applyEncounterAftermathReaction(
-      buildState(graph), makeAction(), reaction, START_TICK, runtime,
-    );
-
-    const condition = readSoleCondition(next.graph);
+    const condition = readSoleCondition(applyInspired(graph, runtime, 8));
     expect(condition.totalTicks).toBe(8);
     expect(condition.ticksRemaining).toBe(8);
   });
@@ -176,26 +163,6 @@ describe('THR-1484 — has_trait duration contract across every writer', () => {
     expect(readSoleCondition(graph).totalTicks).toBe(REWARD_CONDITION_DEFAULT_TICKS);
   });
 
-  it('phaseEncounterTraits.processEncounterConditions — the ticket\'s named writer', () => {
-    const graph = buildGraph();
-    // This path seeds its own definition nodes via `ensureTraitNodes`, so the
-    // graph starts bare on purpose — that seeding is part of the path under test.
-    processEncounterConditions(
-      graph, HERO, PHASE_COMBAT_ENCOUNTER_ID,
-      /* stepSuccess */ false, /* isCompleted */ true, START_TICK,
-    );
-
-    // A failed hard combat encounter grants both conditions this path can mint on
-    // failure — wounded and terrified. Both go through the same `assignCondition`
-    // write, so both are in scope here.
-    const wounded = readCondition(graph, 'trait.condition.wounded');
-    expect(wounded.totalTicks).toBe(CONDITION_WOUNDED_DURATION);
-    expect(wounded.ticksRemaining).toBe(CONDITION_WOUNDED_DURATION);
-
-    const terrified = readCondition(graph, 'trait.condition.terrified');
-    expect(terrified.totalTicks).toBe(CONDITION_TERRIFIED_DURATION);
-  });
-
   it('no writer leaves the total under the unread `totalTicks` spelling', () => {
     // The falsification arm, stated over the edge rather than the view: `totalTicks`
     // on a has_trait edge is read by nothing, so any writer still using it is
@@ -206,14 +173,13 @@ describe('THR-1484 — has_trait duration contract across every writer', () => {
       id: 'tpl.condition.reward', type: 'trait', name: 'Reward Condition',
       properties: { subcategory: 'condition', ticksRemaining: 20, tier: 1, tags: ['#condition'] },
     });
+    addConditionDefinition(graph, 'trait.condition.inspired');
     instantiateReward(graph, 'tpl.condition.reward', HERO, START_TICK);
-    processEncounterConditions(
-      graph, HERO, PHASE_COMBAT_ENCOUNTER_ID, false, true, START_TICK,
-    );
+    const written = applyInspired(graph, runtime, 8);
 
-    const durationBearing = graph.getOutgoingEdges(HERO, 'has_trait')
+    const durationBearing = written.getOutgoingEdges(HERO, 'has_trait')
       .filter(e => e.properties.ticksRemaining != null);
-    expect(durationBearing.length).toBeGreaterThanOrEqual(2); // both writers fired
+    expect(durationBearing.length).toBeGreaterThanOrEqual(2); // both live writers fired
 
     for (const edge of durationBearing) {
       expect(edge.properties.durationTicks, `edge ${edge.id} must carry durationTicks`).toBeTypeOf('number');

@@ -3,7 +3,10 @@
  * success in non-economic encounter domains.
  *
  * Each trait is a graph node (type: 'trait') with TraitDefinitionProperties.
- * Acquisition is handled by phaseEncounterTraits; these are just definitions.
+ * Acquisition is handled by mentorshipOutcomes (apprentice graduation); these are
+ * just definitions. The encounter-outcome success counter that once minted them
+ * (phaseEncounterTraits) was dead — called only from the empty legacy
+ * encounterProgress loop — and was deleted by THR-1503.
  *
  * Mastery traits decay without reinforcement (decayPeriod in ticks).
  *

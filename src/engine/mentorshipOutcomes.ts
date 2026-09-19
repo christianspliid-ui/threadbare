@@ -302,7 +302,7 @@ function grantMasteryTrait(
   const traitId = MASTERY_TRAIT_BY_REACH[domain];
   if (!traitId) return; // gold has no Mastery trait in v1 — fail-soft skip
   const traitNode = graph.getNode(traitId);
-  if (!traitNode) return; // ensureTraitNodes hasn't run; fail-soft skip
+  if (!traitNode) return; // definition not seeded (seedEncounterTraitDefinitions, THR-809); fail-soft skip
 
   // If apprentice already has this trait, raise the level instead of duplicating.
   const existing = graph.getOutgoingEdges(apprenticeId, 'has_trait')

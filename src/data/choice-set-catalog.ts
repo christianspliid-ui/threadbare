@@ -103,7 +103,9 @@ export const CHOICE_SET_DIALOGUE_BRANCH: ChoiceSetEffect = {
       label: 'Counter with your own terms',
       description: 'You\'ve seen this game before. Your counteroffer is elegant, and they know it.',
       // THR-800: was `negotiator`, which no definition carries. Silver Tongue is the
-      // shipped Heart-reach social mastery, minted by `phaseEncounterTraits`.
+      // shipped Heart-reach social mastery, minted on mentorship graduation
+      // (`mentorshipOutcomes.grantMasteryTrait`; the encounter-outcome minter was
+      // dead and deleted by THR-1503).
       predicate: 'has_trait:trait.mastery.silver-tongue',
       consequences: [
         { type: 'resource_delta', resource: 'essence', amount: 6 },

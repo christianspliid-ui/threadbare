@@ -148,7 +148,6 @@ import { expireCompanions } from './companions';
 import { getCompanionTemplate } from '../data/companion-templates';
 import { processTraitDecay } from './traits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
-import { processEncounterMastery, processEncounterConditions } from './phaseEncounterTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
@@ -621,27 +620,13 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       state.tick,
     );
 
-    // ── Encounter mastery + condition trait processing ──
-    try {
-      processEncounterMastery(
-        state.graph,
-        progress.actorId,
-        progress.encounterId,
-        result.success,
-        progress.status === 'completed',
-        state.tick,
-      );
-      processEncounterConditions(
-        state.graph,
-        progress.actorId,
-        progress.encounterId,
-        result.success,
-        progress.status === 'completed',
-        state.tick,
-      );
-    } catch {
-      // fail-soft: encounter trait processing failure is non-fatal
-    }
+    // THR-1503: the encounter mastery + condition trait calls that sat here
+    // (`phaseEncounterTraits.processEncounterMastery` / `processEncounterConditions`)
+    // were deleted. They gated on a template `category` no shipped template carries,
+    // and this loop walks `state.encounterProgress`, which no production path
+    // populates (THR-1069). Conditions are consequences authored on the aftermath
+    // path (`apply_condition`) and the reward pool; mastery is granted on mentorship
+    // graduation (`mentorshipOutcomes.ts`).
 
     // ── Faction join/promotion outcome processing (TB-061, TB-063 events) ──
     if (progress.status === 'completed') {

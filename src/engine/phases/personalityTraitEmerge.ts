@@ -58,7 +58,7 @@ import {
 /**
  * Ensure the personality trait definition nodes exist in this graph. Graph-aware
  * (no module singleton) so trait nodes don't leak across test sessions — mirrors
- * `phaseEncounterTraits.ensureTraitNodes`.
+ * `phaseEconomicTraits.ensureTraitNodes`.
  */
 function ensurePersonalityTraitNodes(graph: WorldGraph): void {
   // Per-node check, not a first-node short-circuit (THR-809) — the old
