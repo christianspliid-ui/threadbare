@@ -112,14 +112,16 @@ export interface KnownSpellEntry {
  * seeded `ticksRemaining: null` — so every ticking condition rendered as
  * 'until dispelled' with a dead progress bar.
  *
- * THR-1484 — the writer set this reader answers to. Three production paths mint a
- * duration-bearing `has_trait` edge, and all three must spell the total
- * `durationTicks`; two of them did not, and everything they granted rendered with
- * no Duration row:
+ * THR-1484 — the writer set this reader answers to. Every production path that
+ * mints a duration-bearing `has_trait` edge must spell the total `durationTicks`;
+ * two of the three then-existing writers did not, and everything they granted
+ * rendered with no Duration row:
  *
  * - `encounterAftermath.ts` (`apply_condition`, `condition_attachment`)
  * - `rewardPool.ts` (`REWARD_EDGE_SOURCE`) — the highest-volume writer by far
- * - `phaseEncounterTraits.ts` (`assignCondition`)
+ * - `phaseEncounterTraits.ts` (`assignCondition`) — deleted by THR-1503: its
+ *   `category` gate matched no shipped template and its only caller was the
+ *   empty legacy `encounterProgress` loop, so it never granted anything live
  *
  * The collision is easy to reintroduce because this function *exposes* the value
  * to the UI under the name `totalTicks`: the view prop and the wrong edge property

@@ -13,6 +13,13 @@
  * **real** grant path into a real graph, reads it back through the **real**
  * `getAgentAttachments`, and hands the result to the real component. Break a writer's
  * field name and the Duration row disappears here exactly as it does in the game.
+ *
+ * THR-1503: the second arm used to drive `phaseEncounterTraits.processEncounterConditions`
+ * through a mocked `getAnyEncounterById` — the only way to reach a path whose
+ * `category` gate matched no shipped template and whose sole caller was the empty
+ * legacy `encounterProgress` loop. That writer is deleted; the arm now drives the
+ * aftermath `apply_condition` effect, which is where an authored consequence
+ * actually lands, with no mock in the way.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -21,22 +28,13 @@ import type { AttachmentDetailData } from '../AttachmentDetailView';
 import { WorldGraph } from '../../../engine/graph';
 import { getAgentAttachments } from '../../../engine/agentAttachments';
 import { instantiateReward } from '../../../engine/rewardPool';
-import { processEncounterConditions } from '../../../engine/phaseEncounterTraits';
+import { applyEncounterAftermathReaction } from '../../../engine/encounterAftermath';
+import { createSimulationRuntime } from '../../../engine/simulationRuntime';
+import type { GameState } from '../../../types/gameState';
+import type { EncounterAftermathReaction, UnifiedAction } from '../../../types/unifiedAction';
 
 const HERO = 'actor-hero';
 const TICK = 10;
-const PHASE_COMBAT_ENCOUNTER_ID = 'enc.test.combat';
-
-vi.mock('../../../data/encounter-content', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../data/encounter-content')>();
-  return {
-    ...actual,
-    getAnyEncounterById: (id: string) =>
-      id === PHASE_COMBAT_ENCOUNTER_ID
-        ? { id, category: 'combat', threatRating: 'hard' }
-        : actual.getAnyEncounterById(id),
-  };
-});
 
 function buildGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -45,6 +43,34 @@ function buildGraph(): WorldGraph {
     properties: { actorType: 'individual' },
   });
   return graph;
+}
+
+/** The minimum state the aftermath applier reads; mirrors `conditionDurationContract.test.ts`. */
+function buildState(graph: WorldGraph): GameState {
+  return {
+    tick: TICK, seed: 42, cycle: 1, phase: 'playing', graph,
+    cosmology: {} as never, tiles: [], clock: {} as never,
+    ascendantId: 'asc-1', essencePool: {} as never,
+    mandateDefinition: null, mandateState: null,
+    rivalDefinitions: [], rivalStates: [],
+    doomDefinition: {} as never, doomClock: {} as never,
+    tickEvents: [], recentEvents: [], chronicleEntries: [],
+    stealthExposure: 0, visibilityMap: {} as never, familiarityMap: {} as never,
+    culturalInsightMap: new Map(), agentKnowledge: new Map(),
+    encounterProgress: [], actionsInProgress: [], unifiedActions: [],
+    worldSoul: {} as never, echoDefinitions: [], echoStates: [],
+    chronicle: {} as never, encounterNotifications: [],
+    clearanceGateStates: new Map(),
+  } as unknown as GameState;
+}
+
+function makeAction(): UnifiedAction {
+  return {
+    actionId: 'ua_test', actorId: HERO, templateId: 'enc.test', targetId: HERO,
+    scale: 'personal', source: 'agent',
+    startTick: 1, currentStep: 0, stepProgress: 1, stepDuration: 1,
+    resolved: true, outcome: 'success', stepOutcomes: [],
+  } as unknown as UnifiedAction;
 }
 
 /** The real reader's output, shaped as the sheet receives it. Never hand-authored. */
@@ -73,14 +99,22 @@ describe('THR-1484 — Duration renders for really-granted conditions', () => {
     expect(screen.getByText(/remaining/)).toBeTruthy();
   });
 
-  it('renders Duration for a phase-path condition', () => {
+  it('renders Duration for an aftermath apply_condition condition (the authored writer)', () => {
     const graph = buildGraph();
-    processEncounterConditions(
-      graph, HERO, PHASE_COMBAT_ENCOUNTER_ID,
-      /* stepSuccess */ false, /* isCompleted */ true, TICK,
+    graph.addNode({
+      id: 'trait.condition.wounded', type: 'trait', name: 'Wounded',
+      properties: { subcategory: 'condition', tags: ['#condition', '#negative'] },
+    });
+    const reaction: EncounterAftermathReaction = {
+      id: 'react-wound', label: 'Take the wound',
+      effects: [{ kind: 'apply_condition', conditionTraitId: 'trait.condition.wounded', durationTicks: 12 }],
+    } as unknown as EncounterAftermathReaction;
+
+    const { state: next } = applyEncounterAftermathReaction(
+      buildState(graph), makeAction(), reaction, TICK, createSimulationRuntime(),
     );
 
-    const granted = conditionFromGraph(graph, 'trait.condition.wounded');
+    const granted = conditionFromGraph(next.graph, 'trait.condition.wounded');
     render(<AttachmentDetailView attachment={granted} onBack={vi.fn()} />);
 
     expect(screen.getByText('Duration')).toBeTruthy();

@@ -11,7 +11,8 @@
  * repointing alone, and the other route — minting definitions for the missing
  * concepts — does not work the way the ticket assumed: **every trait producer mints
  * from a closed, hardcoded set** (`phaseEconomicTraits` by constant,
- * `phaseEncounterTraits` by reach map, `phaseReputationTraits` by reach,
+ * `mentorshipOutcomes` by reach map (was `phaseEncounterTraits`, deleted by
+ * THR-1503), `phaseReputationTraits` by reach,
  * `corePersonality` by continuum, `personalityTraitEmerge` by axis). Adding a
  * definition to a content file gives a ref something to resolve *to* while leaving it
  * satisfied by no bearer — the gate stays false and the sweep goes quiet, which is
