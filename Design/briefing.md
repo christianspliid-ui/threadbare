@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-09-19 07:55 local (05:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-19 08:57 local (06:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say "design THR-1448" in a chat.** Nothing is ready to build and nothing is in progress. The plan you approved on 12 September is finished and there are no open bugs, so the machine has no game work it is allowed to start on its own. You already set the direction for both staged designs, so there is no decision to make. Someone just needs to open a design session.
+**Say "design THR-1448" in a chat.** Nothing is ready to build and nothing is in progress. The plan you approved on 12 September is finished and there are no open bugs, so the machine has no game work it may start by itself. You have already set the direction for both staged designs, so you don't need to decide anything. Someone just needs to open a design session.
 
 - **[THR-1448: a held town is a faction position](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)**, from your sentence on 10 September. Start here.
 - **[THR-1479: the appointment primitive](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)**, where a mortal keeps or misses a meeting. From your direction on 12 September.
@@ -22,4 +22,5 @@ Details and links for all three: [`Design/user-actions.md`](https://github.com/c
 
 ## Health
 
-All green. The live site is on `3d39f728`, the latest main. No PRs are waiting to merge. Scheduled workflows are healthy, and all 9 scheduled tasks are on time. Tick cost is 57 ms/tick, 13% below the 7-day median. The cleanup script reported 3 old worktrees for disposition.
+- tick cost 90 ms/tick steady, 39% above the 7-day median (65, 79 rows since ccc866da); top phase agent_decision, 498 agents. Name the merges between ccc866da and 3d39f728: git log --oneline --merges ccc866da..3d39f728 *(Probably machine load, not code. The commit is the same `3d39f728` that measured 57 ms an hour ago, and this run shared the machine with other probes. If the next run is still high, an executor should look.)*
+- Everything else is green. The live site is on `3d39f728`, the latest main. No PRs are waiting to merge. Scheduled workflows are healthy, and all 9 scheduled tasks are on time. The cleanup script reported 3 old worktrees for disposition.
