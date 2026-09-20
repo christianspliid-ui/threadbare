@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-20 19:55 local (2026-09-20 17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-20 20:56 local (2026-09-20 18:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,11 +11,11 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting at a place by a time. Your direction from 12 September. **Start here:** higher priority, and its blocker (THR-1487) finished on the 12th, so only the plan doc remains.
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 
-**The ask: say "design THR-1479" in a chat.** The build queue is now empty — 0 building, 0 waiting. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue.
+**The ask: say "design THR-1479" in a chat.** The build queue is empty — 0 building, 0 waiting, nothing filed since 17:27 UTC. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue.
 
 ### Finish the sitting — two encounters left, screen now clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
-You stopped after four feedback batches on Saturday 12 September with *"more batches expected."* Everything those batches produced is shipped and live — **including the last blemish.** The raw `{sphere_flavor}` placeholder that was printing in conversation scenes is fixed and live as of 17:27 UTC today ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). Nothing on these two needs reading past any more.
+You stopped after four feedback batches on Saturday 12 September with *"more batches expected."* Everything those batches produced is shipped and live — **including the last blemish.** The raw `{sphere_flavor}` placeholder that was printing in conversation scenes is fixed and live as of 17:27 UTC on 20 September ([THR-1516](https://linear.app/threadbare/issue/THR-1516)). Nothing on these two needs reading past any more.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
@@ -30,7 +30,7 @@ Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15
 
 **If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
 
-*(This weekend's stop — Saturday 11:33 → Sunday 12:37 — is not part of the ask. Weekend quiet is normal by your own ruling, and every lane resumed together.)*
+*(This weekend's stop — Saturday 11:33 → Sunday 12:37 local — is not part of the ask. Weekend quiet is normal by your own ruling, and every lane resumed together.)*
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 

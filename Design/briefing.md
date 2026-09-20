@@ -1,32 +1,32 @@
 # Briefing
-**Generated:** 2026-09-20 19:55 local (17:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-20 20:56 local (18:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Say "design THR-1479" in a chat.** — [Appointment primitive: a mortal keeps or misses a meeting at a place by a time](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)
 
-**The build queue is now empty — nothing is being built, and nothing is waiting to be built.** The last two jobs landed this afternoon at 17:18 and 17:27 UTC. That is the first time today all three are true at once.
+**Nothing has been built or filed for an hour and a half.** The last two jobs landed at 17:18 and 17:27 UTC; since then the board has not moved at all — 0 being built, 0 waiting, nothing new filed.
 
-No decision is owed on this one. The direction is already yours, from 12 September; its blocker finished the same day; the ticket carries its own connectivity table so it cannot ship dead. What is missing is a session to write the plan doc, and no lane may start itself.
+This is not a decision. The direction is already yours, from 12 September; the blocker finished the same day; the ticket carries its own connectivity table so it cannot ship dead. All that is missing is a session to write the plan doc, and no lane is allowed to start one itself.
 
-The 26 Todo items cannot fill the gap. The orchestrator has now read **all eleven** non-wayfinder candidates rather than a sample, and every one declines for the same reason: it needs a design conversation before anyone can build it ([its report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-20f.md)).
+The 26 Todo items cannot fill the gap — all eleven non-wayfinder candidates have been read and every one declines for the same reason: it needs a design conversation first ([this hour's report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-20g.md)).
 
 ## Also waiting (3)
 
-- **[THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — the screen is clean now.** The raw `{sphere_flavor}` placeholder you were being asked to read past is fixed and live on the deployed build as of 17:27 UTC. Two encounters left in the sitting you started 12 September, and nothing blemished is left on them. A "yes" charters the hub map — the supply the queue is short of. Links in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- **[THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — two encounters left, and the screen is clean.** The raw `{sphere_flavor}` placeholder you were reading past is fixed and live. A "yes" charters the hub map, which is the supply this queue is short of. Links in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 - **Were the stops deliberate?** — every local lane stopped Sun 13 → Wed 16 September (~67h) and twice more that week, with no pause marker. The evidence says the machine was off, not that a lane broke. Silence reads as "deliberate."
 - **Fog or witness** — should a stranger's sheet show the wound you just watched an encounter give them, or does the familiarity fog stay honest? Silence leaves it as-is.
 
 ## Queue
 
-**Starved — 0 ready, 0 in dev.** Both columns are empty. [THR-1517](https://linear.app/threadbare/issue/THR-1517/the-multi-tick-arms-in-orchestratortestts-have-no-explicit-timeout-and) (the test stopwatch) merged at 17:18 UTC, and [THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver) (the `{sphere_flavor}` leak) merged right behind it at 17:27 — the fix had been held up for about two hours by that one timing test, exactly as predicted.
+**Starved — 0 ready, 0 in dev.** Both columns are empty and have been since 17:27 UTC. Nothing is stale, nothing is parked, nothing is blocked; there is simply nothing on the shelf.
 
-Nothing is stale, nothing is parked, nothing is blocked. There is simply nothing on the shelf. 26 items sit in Todo; 15 are wayfinder tickets that never enter this queue, and the other 11 all want design first.
+Two items sit in design — [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) and [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) — both waiting on the same sentence from you. Of the 26 in Todo, 15 are wayfinder tickets that never enter this queue and the other 11 all want design first.
 
 ## Health
 
 **All green.**
 
-- Deploy, scheduled jobs, post-merge CI, armed PRs, task heartbeats and the stale-git reaper are all healthy. The live site is serving the newest commit on `main`.
-- Tick cost is 88 ms/tick steady, 15% above the 7-day median (76, 54 rows) — inside tolerance, no action.
-- **Lane silence** — a 25h weekend gap (Sat 09:33 → Sun 10:37 UTC) is noted and declined per your "overnight and weekend quiet is normal" ruling. The older weekday gaps remain the open ask above.
+- Deploy, scheduled jobs, post-merge CI, armed PRs, task heartbeats and the stale-git reaper are all healthy. The live site is serving the newest commit on `main` (`df1cf66c`).
+- Tick cost is 87 ms/tick steady, 13% above the 7-day median (76, 54 rows) — inside tolerance, no action.
+- **Lane silence** — the 25h weekend gap (Sat 09:33 → Sun 10:37 UTC) is noted and declined per your "overnight and weekend quiet is normal" ruling; it also explains why this morning's backlog-grooming slot never fired. The older weekday gaps remain the open ask above.
