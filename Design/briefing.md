@@ -1,30 +1,34 @@
 # Briefing
-**Generated:** 2026-09-19 10:55 local (08:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-20 12:57 local (10:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say "design THR-1448" in a chat.** No new game work is queued. The one ready item was picked up at 10:01 and is a cleanup (see Queue). There is nothing to decide: you already set the direction for both staged designs. They only need someone to open a design session.
+**Say "design THR-1479" in a chat.** The build queue is now completely empty — nothing ready, nothing in progress — and the last piece of work finished 25 hours ago. There is no decision here: you set the direction on both staged designs yourself. They need someone to open a session and write the plan, and no lane may start itself.
 
-- **[THR-1448: a held town is a faction position](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)**, from your sentence on 10 September. Start here.
-- **[THR-1479: the appointment primitive](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)**: a mortal keeps or misses a meeting. From your direction on 12 September.
+- **[THR-1479: the appointment primitive](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps, or misses, a meeting at a place by a time. Your direction from 12 September. Start here: it is the higher priority of the two, and the thing that was blocking it finished on the 12th.
+- **[THR-1448: a held town is a faction position](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — your sentence from 10 September. Comes after.
+
+The 26 items sitting in Todo cannot substitute. Nine of them are design tickets whose own bodies forbid an executor from picking them up. A design session is the only thing that converts any of it.
 
 ## Also waiting (3)
 
-- **Finish the sitting: two encounters left** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). Play [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) and [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan). One question: is the integrated encounter experience acceptable?
-- **Were the stops deliberate?** The scheduled lanes went silent for 66.9h (2026-09-13T18:59:56.000Z → 2026-09-16T13:55:55.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time. *(The evidence points to the machine being switched off. Details are in user-actions.)*
+- **Finish the sitting: two encounters left** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). Play [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) and [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan). One question: is the integrated encounter experience acceptable? A yes charters the hub map — which is the supply this empty queue is short of.
+- **Were the stops deliberate?** The 13–16 September silence still has no pause marker. Unchanged from yesterday; the evidence still points at the machine being off. Details in user-actions.
 - **Fog or witness:** should a stranger's sheet show consequences you watched happen, or should the familiarity gate keep hiding them? If you say nothing, it stays as it is.
 
 Details and links for all three: [`Design/user-actions.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Queue
 
-**0 ready, 1 in progress (starved).** Nothing is parked or stale.
+**0 ready, 0 in progress, 0 in implementation planning (starved).** Nothing is parked, nothing is stale — there is nothing there at all. Last completion was [THR-1503](https://linear.app/threadbare/issue/THR-1503) at 09:13 yesterday, 25 hours ago.
 
-- [THR-1503](https://linear.app/threadbare/issue/THR-1503/processencounterconditions-gates-on-a-template-category-no-shipped) (Low), in progress. The unused automatic "lose a hard fight → Wounded/Terrified" rule is being deleted; wounds come from each encounter's written ending. Its PR is open but failing a check (see Health). *(An agent's call with a veto window: say so and it goes back for design.)*
-- [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) and [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) are still In Design, waiting for the chat above.
+- [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) (High) and [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) (Medium) are the only live design work, both unassigned, 8 and 9 days on the desk, both waiting on the chat above.
+- 26 in Todo, unchanged. 15 are wayfinder tickets that never enter this queue; the rest decline for reasons written into their own bodies.
 
 ## Health
 
-- **PR [#1966](https://github.com/christianspliid-ui/threadbare/pull/1966) (THR-1503) has a failing required check.** It will not merge until a session reads the failure and pushes a fix. That is the pickup session's job, not yours. The PR is 39 minutes old.
-- tick cost 90 ms/tick steady, 37% above the 7-day median (66, 78 rows since 74fddcf4); top phase agent_decision, 498 agents. Name the merges between 74fddcf4 and 3d39f728: git log --oneline --merges 74fddcf4..3d39f728 *(This is the third high reading on the same commit, `3d39f728`, which measured 57 ms three hours ago. The code has not changed, so this still points to machine load.)*
-- Everything else is green. The live site is on `3d39f728`, the latest main. Scheduled workflows are healthy, and all 9 scheduled tasks are on time. The cleanup script flagged 3 worktrees for disposition.
+- **The weekend quiet was the machine, not a broken lane.** Every scheduled lane stopped together Saturday 11:13 and restarted together Sunday 12:26, and all of them are firing normally again now. Nothing needs doing.
+- **One probe cried wolf about that, and it is worth fixing.** The task-heartbeat check reported the build lane "stalled, not idle — 25+ slots behind, while keep-work-flowing-cc kept firing." The second half is false: this brief's own lane was dark for the same 25 hours and only came back with the machine. The witness test mistakes the run that notices the gap for a run that spanned it, so any whole-machine stop will read as a single-lane failure. Logged here for the weekly retro; no ticket filed, per the process-work throttle.
+- Everything else is green. The live site is on `83fc7e88`, the latest main. Scheduled workflows, automated checks and the auto-close job are all healthy; no PRs are waiting to merge; the home checkout is clean and current.
+- Tick cost 66 ms/tick steady, 11% **below** the 7-day median (74 ms, 53 rows). Yesterday's three high readings did point at machine load, as suspected — they have not recurred.
+- The cleanup script ran 13 minutes ago and flagged 3 worktrees for disposition. Its own business, not yours.
