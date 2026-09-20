@@ -224,7 +224,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
         leverageModifiesDifficulty: true,
         leverageOnSuccess: 0.20,
         leverageOnFailure: -0.10,
-        narrative: '{actor} delivers the appeal with {sphere_flavor}, invoking shared interests and mutual benefit.',
+        narrative: '{actor} delivers the appeal, invoking shared interests and mutual benefit. {sphere_flavor}.',
         onSuccess: {
           narrative: 'The appeal lands with weight. Murmurs of agreement ripple through the court.',
           reputationDelta: 0.05,
@@ -671,7 +671,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
         leverageModifiesDifficulty: true,
         leverageOnSuccess: 0.20,
         leverageOnFailure: -0.10,
-        narrative: '{actor} speaks to what lies beneath the doubts — the hunger for {sphere_flavor} that no doctrine has satisfied.',
+        narrative: '{actor} speaks to what lies beneath the doubts — the hunger no doctrine has satisfied. {sphere_flavor}.',
         onSuccess: {
           narrative: 'Something shifts in the listener\'s eyes. This is what they\'d been waiting to hear.',
           reputationDelta: 0.05,
