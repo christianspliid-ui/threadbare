@@ -1917,6 +1917,8 @@ export function executeStepResult(
           // prose binds to the scene's place/counterpart axes at render time.
           contextFragments: template.contextFragments,
           contextFragmentTemplateId: template.id,
+          // THR-1516 — the template id keys `{sphere_flavor}`'s approach lookup.
+          templateId: template.id,
         },
       );
       narrativeProse = enrichProse(step.narrativeTemplate ?? '', proseCtx, { runtime, rng }) || narrativeProse;

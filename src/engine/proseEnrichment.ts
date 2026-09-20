@@ -62,6 +62,14 @@ import {
 import { pickWithRepetitionGuard } from './proseSelection';
 import { emitTrace } from './traceBuffer';
 import { resolveEconomicMood } from './economicContext';
+import type { SphereName } from '../types/index';
+import type { SphereAlignment } from '../types/influence';
+import { getDominantSphere, getNodeSphereAffinity } from './sphereAffinity';
+import {
+  getSocialApproachForTemplate,
+  getSphereFlavorPhrase,
+  type SocialApproach,
+} from '../data/social-scene-sphere-coloring';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -79,6 +87,43 @@ export const CALLBACK_PROSE_PROBABILITY = 0.7;
 
 /** Maximum cast entries injected into NarrativeContext (THR-696 — enrichment perf) */
 export const CAST_CONTEXT_MAX_MEMBERS = 6;
+
+// ─── `{sphere_flavor}` (THR-1516) ─────────────────────────────────
+
+/** Presence test for the social-scene sphere token (non-global — safe for `.test`). */
+const SPHERE_FLAVOR_TOKEN = /\{sphere_flavor\}/;
+/** Substitution form. */
+const SPHERE_FLAVOR_TOKEN_G = /\{sphere_flavor\}/g;
+/**
+ * Fail-soft strip form. The corpus writes the token as its own sentence —
+ * `… larger. {sphere_flavor}.` — so a bare token strip would leave `. .` behind.
+ * Eats the leading whitespace and the sentence-ending period with the token.
+ */
+const SPHERE_FLAVOR_STRIP_G = /\s*\{sphere_flavor\}\.?/g;
+
+/**
+ * Warn once per template (never per render) when `{sphere_flavor}` had to strip —
+ * the `{frag:*}` bookkeeping shape. Keyed by template id when one is known, else by
+ * agent, so a non-social template that authored the token still gets one line.
+ */
+const warnedSphereFlavor = new Set<string>();
+
+/** Test seam: clears the `{sphere_flavor}` warn-once memo. */
+export function resetSphereFlavorWarnings(): void {
+  warnedSphereFlavor.clear();
+}
+
+function warnSphereFlavorOnce(ctx: NarrativeContext): void {
+  const key = ctx.contextFragmentTemplateId ?? ctx.agentId;
+  if (warnedSphereFlavor.has(key)) return;
+  warnedSphereFlavor.add(key);
+  if (import.meta.env?.DEV) {
+    const why = !ctx.socialApproach
+      ? `template ${ctx.contextFragmentTemplateId ?? '(unknown)'} is not in SOCIAL_SCENE_APPROACHES`
+      : `actor ${ctx.agentId} has no sphere`;
+    console.warn(`[proseEnrichment] {sphere_flavor} stripped — ${why}`);
+  }
+}
 
 // ─── Narrative Context ─────────────────────────────────────────────
 
@@ -233,6 +278,39 @@ export interface NarrativeContext {
   econAdj?: string;
   econNoun?: string;
   econAtmosphere?: string;
+
+  /** The actor's own sphere (THR-1516) — `sphereAlignment.primary` on an ascendant,
+   * else the dominant score of a mortal's `sphereAffinity`. Enables `{sphere_flavor}`
+   * together with `socialApproach`. Derived at context build via
+   * {@link resolveActorSphere}; absent when the node carries neither → the token strips. */
+  actorSphere?: SphereName;
+
+  /** The social approach the rendering template speaks in (THR-1516) — looked up from
+   * `SOCIAL_SCENE_APPROACHES` by the template id the caller threads (`opts.templateId`,
+   * falling back to `contextFragmentTemplateId`). Absent for every non-social template,
+   * so `{sphere_flavor}` strips there exactly as `{intel:*}` does without a view. */
+  socialApproach?: SocialApproach;
+}
+
+/**
+ * Resolve the actor's own sphere for prose coloring (THR-1516).
+ *
+ * Two shapes carry a sphere on an actor node and neither is written by the other's
+ * path: the ascendant's `sphereAlignment` (`{primary, secondary}`, `gameInit`) and a
+ * mortal's `sphereAffinity` (`{scores, progress}`, seeded on every generated agent by
+ * `gameInit` — 540 of 542 actors in a seed-42 medium world at tick 0). The alignment
+ * wins when both exist because it is the *chosen* sphere; the affinity's dominant
+ * score is what the world has pressed onto the mortal. Fail-soft: a node with neither,
+ * or an all-zero affinity, resolves to undefined and the placeholder strips.
+ */
+export function resolveActorSphere(graph: WorldGraph, agentId: string): SphereName | undefined {
+  const node = graph.getNode(agentId);
+  if (!node) return undefined;
+  const alignment = node.properties?.sphereAlignment as Partial<SphereAlignment> | undefined;
+  if (alignment?.primary) return alignment.primary;
+  const affinity = getNodeSphereAffinity(node);
+  if (affinity?.scores) return getDominantSphere(affinity) ?? undefined;
+  return undefined;
 }
 
 /**
@@ -339,6 +417,10 @@ export function gatherNarrativeContext(
     /** THR-573 — the rendering template's fragment tables and id, for `{frag:*}`. */
     contextFragments?: readonly ContextFragmentSet[];
     contextFragmentTemplateId?: string;
+    /** THR-1516 — the rendering template's id, for `{sphere_flavor}`'s approach lookup.
+     * Falls back to `contextFragmentTemplateId`, which every encounter-path caller
+     * already threads, so no existing caller needs to change to get the token. */
+    templateId?: string;
   },
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
@@ -456,6 +538,11 @@ export function gatherNarrativeContext(
     cast: resolveSceneCastContext(graph, opts?.supportBundle, opts?.supportBindings),
     contextFragments: opts?.contextFragments,
     contextFragmentTemplateId: opts?.contextFragmentTemplateId,
+    // Sphere coloring (THR-1516) — both halves of the `{sphere_flavor}` lookup. The
+    // sphere is read off the actor node this builder already fetched; the approach is
+    // a content-side map keyed by the template id every encounter-path caller threads.
+    actorSphere: resolveActorSphere(graph, agentId),
+    socialApproach: getSocialApproachForTemplate(opts?.templateId ?? opts?.contextFragmentTemplateId),
     // Identity axes (THR-573). Both are read from state the context builder already
     // resolved, so no caller threads a new required parameter; absent → the '*' path.
     sublocationTypeId: (location?.properties?.sublocationTypeId as string | undefined) ?? undefined,
@@ -592,6 +679,25 @@ export function enrichProse(
   // the orchestrator: the actor's name. `{Actor}` is the sentence-initial form.
   result = result.replace(/{actor}/g, ctx.agentName);
   result = result.replace(/{Actor}/g, capitalize(ctx.agentName));
+  // THR-1516 — `{sphere_flavor}`: the social-scene corpus's approach × sphere line.
+  // Same class as `{actor}` and the word pools: `SPHERE_COLORING` was authored with a
+  // resolver and zero callers, so the token reached the player raw. Resolved here,
+  // on the one path that renders step prose, from the two context halves gathered
+  // above. Missing either half (a non-social template, an actor with no sphere) is
+  // the module's documented fail-soft: strip the token — and the sentence-ending
+  // period the corpus writes after it, so ". ." never appears — and warn once per
+  // template, never per render (the `{frag:*}` shape).
+  if (SPHERE_FLAVOR_TOKEN.test(result)) {
+    const phrase = ctx.socialApproach
+      ? getSphereFlavorPhrase(ctx.socialApproach, ctx.actorSphere)
+      : undefined;
+    if (phrase !== undefined) {
+      result = result.replace(SPHERE_FLAVOR_TOKEN_G, phrase);
+    } else {
+      warnSphereFlavorOnce(ctx);
+      result = result.replace(SPHERE_FLAVOR_STRIP_G, '');
+    }
+  }
   result = result.replace(/{location}/g, ctx.currentLocationName);
   result = result.replace(/{culture}/g, ctx.cultureName);
   result = result.replace(/{they}/g, ctx.pronouns.they);

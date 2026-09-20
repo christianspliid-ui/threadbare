@@ -169,6 +169,7 @@ const SIMPLE_TOKENS: ReadonlySet<string> = new Set([
   'econ_adj', 'econ_noun', 'econ_atmosphere',
   'doom_verb', 'doom_adj', 'doom_atmosphere',
   'outcome_phrase', 'q_flavor',
+  'sphere_flavor', // THR-1516 — social-scene approach × actor-sphere line
 ]);
 
 /** Namespaces the enricher resolves with a `:` argument. */
