@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-20 12:57 local (2026-09-20 10:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-20 14:00 local (2026-09-20 12:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting at a place by a time. Your direction from 12 September. **Start here:** it is the higher priority, and its blocker (THR-1487) finished on the 12th, so only the plan doc remains.
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 
-**The ask: say "design THR-1479" in a chat.** As of 20 September 12:57 the board holds nothing ready and nothing in progress — the queue is completely empty, and the last work finished 25 hours ago. The 26 Todo items cannot fill it: nine are design tickets whose bodies forbid promotion, fifteen are wayfinder tickets that never enter the queue. A design session is the only thing that converts any of it.
+**The ask: say "design THR-1479" in a chat.** As of 20 September 14:00 the board holds nothing ready and nothing in progress — the queue is completely empty, and the last work finished 27 hours ago. The 26 Todo items cannot fill it: nine are design tickets whose bodies forbid promotion, fifteen are wayfinder tickets that never enter the queue. A design session is the only thing that converts any of it.
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -28,9 +28,11 @@ Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15
 
 **The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries, and on the 18th every lane fired in one catch-up burst at 18:44. GitHub's own scheduled jobs stayed green throughout, because they don't run here.
 
+**New this run — the stops have now cost two weekly sweeps.** The workflow retro (due Wednesday 16 September) and the project-hygiene sweep (due this morning) both had their slots fall inside a silence window. Neither caught up; both rolled on to next week, so those two weeks of coverage are simply gone. That does not change the question, but it is why answering it is worth a minute.
+
 **If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
 
-*(This weekend's stop — Saturday 11:13 → Sunday 12:26 — is not part of the ask. Weekend quiet is normal by your own ruling, and every lane resumed together.)*
+*(This weekend's stop — Saturday 11:33 → Sunday 12:37 — is not part of the ask. Weekend quiet is normal by your own ruling, and every lane resumed together.)*
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
