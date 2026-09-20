@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-20 15:56 local (2026-09-20 13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-20 16:56 local (2026-09-20 14:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting at a place by a time. Your direction from 12 September. **Start here:** it is the higher priority, and its blocker (THR-1487) finished on the 12th, so only the plan doc remains.
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 
-**The ask: say "design THR-1479" in a chat.** As of 20 September 15:56 the board holds one small fix and nothing in progress. The 26 Todo items cannot fill it: nine are design tickets whose bodies forbid promotion, fifteen are wayfinder tickets that never enter the queue.
+**The ask: say "design THR-1479" in a chat.** As of 20 September 16:56 the shelf is empty — the one small fix that was on it is claimed and in review. The 26 Todo items cannot fill it: nine are design tickets whose bodies forbid promotion, fifteen are wayfinder tickets that never enter the queue.
 
 ### Finish the sitting — two encounters left ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -20,7 +20,7 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map — encounters reaching into factions, war, economy and divine actions — which is exactly the supply the queue is short of. Say **"work the map"** in a chat when done. The known blemish (Riders' *failure* ending repeating its opening) is fixed and live — [THR-1505](https://linear.app/threadbare/issue/THR-1505). One blemish is **not** fixed yet: in conversation scenes the raw placeholder `{sphere_flavor}` prints on screen ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver), filed 20 September, on the shelf) — read past it.
+The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map — encounters reaching into factions, war, economy and divine actions — which is exactly the supply the queue is short of. Say **"work the map"** in a chat when done. The earlier blemish (Riders' *failure* ending repeating its opening) is fixed and live — [THR-1505](https://linear.app/threadbare/issue/THR-1505). One blemish is **still on screen**: in conversation scenes the raw placeholder `{sphere_flavor}` prints ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). A fix is written and in review, but has not passed its checks — read past it.
 
 ### Were the stops deliberate? (lane silence, 13–16, 17 and 18 September)
 
