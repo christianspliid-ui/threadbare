@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-09-18 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-09-20 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: f3d0d1347cfe05a9773c88a76792b67c2f013e17)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: c8f288ab1aee45f88daa072ace97a0b1d93545f8)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: d5df8d2693f5e6c37bc5b87a344fb8bc01d7ecd7)
 >   - Docs/canon/undertakings.md (sha1: ba7be77a3c15c0096259fd788b23b917f0d783cf)
@@ -84,6 +84,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{econ_adj}` | Economic mood adjective (THR-725) — boom/bust coloration of the settlement the scene plays out in. Strips silently in the neutral prosperity band | "grain-heavy" (boom) / "shuttered" (bust) |
 | `{econ_noun}` | Economic mood noun phrase | "wagons queued past the gate" / "shuttered stalls" |
 | `{econ_atmosphere}` | Economic mood atmospheric phrase | "nobody is counting carefully" / "people watch each other's hands" |
+| `{sphere_flavor}` | Social-scene approach × actor-sphere line (THR-1516) — `SPHERE_COLORING[approach][sphere]` from `src/data/social-scene-sphere-coloring.ts`. The approach comes from `SOCIAL_SCENE_APPROACHES` keyed by the rendering template's id (thread `opts.templateId`; `contextFragmentTemplateId` is the fallback), the sphere from the actor node (`sphereAlignment.primary`, else dominant `sphereAffinity` score). **Author it as its own sentence** — `… larger. {sphere_flavor}.` — because the phrase is a complete line and the fail-soft strip removes the token *and* that period. A template the map does not name strips and warns once; add it to the map in the same PR | "Steady pay, steady purpose" (recruit × matter) / "By my reason and my word" (swear × mind) |
 
 **Why this changes what you write:** When you know prose can branch on whether the agent has allies or artifacts, you write scenes that *use* those relationships. A betrayal scene where the agent has no allies reads differently from one where their strongest ally might hear about it. A discovery scene where the agent carries a storied artifact reads differently from one where they have nothing. These aren't cosmetic — they change the emotional texture of the moment. **Write scenes where the conditionals matter, not scenes where they're decoration.**
 
