@@ -24,6 +24,28 @@ import type { GameState } from '../../types/gameState';
 import type { CosmologyProfile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
 
+/**
+ * Explicit ceiling for every arm in this file that drives `runTick` in a loop
+ * (THR-1517). **The rule:** if a test body calls `runTick` more than once — a
+ * `for`/`while` over the real tick pipeline — it passes `{ timeout:
+ * MULTI_TICK_TIMEOUT_MS }` as its options. Single-tick arms and arms that call
+ * one phase function directly keep vitest's 5000ms default on purpose, so a
+ * borderline arm elsewhere in the suite still surfaces instead of hiding
+ * behind a raised global `testTimeout`.
+ *
+ * Why a ceiling this size. Measured 2026-09-20, isolated file run, `node`
+ * project, local machine: the 30-tick arm 725ms, the 25-tick arm 570ms, the
+ * complete-cycle arm 548ms, the 10-tick movement arm 3ms. The same 25-tick
+ * arm measured 5247ms, 5386ms and 5430ms on the CI runner across three
+ * consecutive days (impediment row 1054) — roughly 9.5× the local figure,
+ * against a 5000ms default. Six armed PRs went red in four days on a tree
+ * that was green everywhere else. The ceiling is ~5.5× the worst CI figure
+ * and ~40× the worst local one: enough that runner speed no longer decides
+ * whether a green tree merges, small enough that a genuine hang in the tick
+ * pipeline still fails the file inside a CI job's budget.
+ */
+const MULTI_TICK_TIMEOUT_MS = 30_000;
+
 function balancedCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
   for (const s of SPHERE_NAMES) c[s] = 0.125;
@@ -279,7 +301,7 @@ describe('Orchestrator', () => {
     expect(nextA.doomClock.currentTick).toBe(nextB.doomClock.currentTick);
   });
 
-  it('runTick accumulates recent events', () => {
+  it('runTick accumulates recent events', { timeout: MULTI_TICK_TIMEOUT_MS }, () => {
     let state = createTestGameState();
     for (let i = 0; i < 30; i++) {
       resetEventCounter();
@@ -289,7 +311,7 @@ describe('Orchestrator', () => {
     expect(state.recentEvents.length).toBeLessThanOrEqual(100);
   });
 
-  it('multi-tick simulation reaches doom expiry', () => {
+  it('multi-tick simulation reaches doom expiry', { timeout: MULTI_TICK_TIMEOUT_MS }, () => {
     let state = createTestGameState();
     state.doomClock = { ...state.doomClock, totalTicks: 20 };
     for (let i = 0; i < 25; i++) {
@@ -456,7 +478,7 @@ describe('Movement integration via orchestrator', () => {
     expect(queueShrank || ticksGrew).toBe(true);
   });
 
-  it('agent arrives at destination after enough ticks', () => {
+  it('agent arrives at destination after enough ticks', { timeout: MULTI_TICK_TIMEOUT_MS }, () => {
     const state = createTestGameState();
 
     const agents = state.graph.getNodesByType('actor')
@@ -503,7 +525,7 @@ describe('Movement integration via orchestrator', () => {
 });
 
 describe('Full game loop integration', () => {
-  it('runs a complete cycle: play → doom expires → twilight → harvest → transition → new cycle', () => {
+  it('runs a complete cycle: play → doom expires → twilight → harvest → transition → new cycle', { timeout: MULTI_TICK_TIMEOUT_MS }, () => {
     resetEventCounter();
 
     // Start with a short doom clock
