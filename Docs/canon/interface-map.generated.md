@@ -297,10 +297,10 @@ remediation ticket or the build fails.
 - **Intent:** Agents acquire ambitions at worldgen, birth, the binder mint, the mint lane, re-evaluation and the Kindled Ambition card — every route through one graph-writing helper.
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **UL terms:** *Ambition*, *Spotlight tier*
-- **Production hits:** 11 total — 2 write, 6 read, 3 unclassified
+- **Production hits:** 12 total — 2 write, 6 read, 4 unclassified
 - **Write sites:** `src/engine/ambitionAssignment.ts`, `src/engine/spotlightPull.ts`
 - **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/encounterAftermath.ts`, `src/engine/gameInit.ts` +1 more
-- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/decisionTier.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-09-22: pursues edges grow 32→225 over 120 ticks, 182 active. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified). Re-verified 2026-09-22 under THR-1348: the two inline `pursues` writers in ambitionTick (mint-to-holder, re-evaluation) and the worldSeed / gameInit / agentLifecycle writers all route through `assignAmbitionToActor`; `ambitionAssignment-routing.test.ts` pins the edge and node property bags byte-identical (JSON.stringify) to the inline shapes and proves a re-evaluated notable is pulled — which only the routed helper can do. Seed 42/99 medium 150 ticks: 187 / 194 undertaking starts, census PASS on both seeds.
 
 ### `ambition-biases-encounter-choice` — 🟢 LIVE
@@ -1264,10 +1264,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 15 total — 1 write, 2 read, 12 unclassified
+- **Production hits:** 16 total — 1 write, 2 read, 13 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/encounters/dealHand.ts` +7 more
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/decisionTier.ts` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -1526,10 +1526,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **UL terms:** *Spotlight tier*, *Ambition*
 - **Module:** `src/engine/spotlightPull.ts`
-- **Production hits:** 37 total — 3 write, 4 read, 30 unclassified
+- **Production hits:** 38 total — 3 write, 4 read, 31 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/hexMapAgentVisibility.ts`, `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +25 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +26 more
 - **Verdict:** Verified 2026-09-22: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`.
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -1664,10 +1664,10 @@ exit
 - **Intent:** An undertaking is a verb — create · change (raise | lower) · use · control (claim | seize) · destroy · observe — acted on a kind of thing the world-object catalogue names (Area, Location, Place, Route, Mortal, Faction, Company, Army, Network, Companion, Item, Power, Condition, Agreement, Standing). Each kind registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a kind does not declare is refused and traced unreachable, never faked; the generated grid (every kind × every verb) names each undeclared cell as an open decision or not an object, and fails the build when a cell has no place on it (THR-1392).
 - **Producer → Consumer:** Ambitions & Undertakings → Strategic Projects & Control
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 10 total — 2 write, 4 read, 4 unclassified
+- **Production hits:** 11 total — 2 write, 4 read, 5 unclassified
 - **Write sites:** `src/data/undertaking-cells.ts`, `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/Codex/undertakingCodex.ts`, `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Other hits:** `src/components/Codex/undertakingCodex.ts`, `src/engine/decisionTier.ts`, `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-08: THR-1403 flipped `UNDERTAKING_MODEL` to `cells`: the board walks each mortal’s division-rule spread (`deriveDivisionCells`, category × leading Reaches) with the profile’s hand-listed cells on top, rotated by tick and actor, the per-ambition cap not binding a cell; the authored templates are absorbed (a profile’s `templateIds` are not walked) and stay as the legacy arm the review levers start by name. Falsified in `divisionRule.test.ts` (derived cells the hand list never named are walked; none under `templates`; six cell candidates from one ambition where the cap allows five; mentorship rides beside the spread for its categories) and on two 150-tick seeds by `npm run census:cells`: 163 · 74 starts, 136 · 49 completions, 14 · 23 distinct cells, multi-tick finish rate 29.6% · 53.7% (19.0% · 24.4% under the old durations). `census:undertakings` fails its variety floor (14 · 23 distinct against 25) on object supply — no routes, companies, networks, agreements or quarrels at seeding — which is THR-1437’s Done-when.
 
 ### `undertaking-outcomes-cast-omens` — 🟢 LIVE
