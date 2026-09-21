@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 00:57 local (2026-09-21 22:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 01:56 local (2026-09-21 23:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Turn off Linear's auto-complete for sub-issues — it is closing unbuilt work
 
-When a parent issue closes, Linear marks its unfinished children finished too. Tonight that closed [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff) — the tooling and the counter that make the appointment feature *get used* — 0.3 seconds after part one closed. Neither was ever started. The orchestrator caught it in twenty minutes and restored both; **nothing was lost, and the builder did nothing wrong.**
+When a parent issue closes, Linear marks its unfinished children finished too. Last night that closed [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff) — the tooling and the counter that make the appointment feature *get used* — 0.3 seconds after part one closed. Neither was ever started. The orchestrator caught it in twenty minutes and restored both; **nothing was lost, and the builder did nothing wrong.** THR-1518 is now genuinely being built.
 
 **The fix:** [Linear → Team settings → General](https://linear.app/threadbare/settings/teams/THR/general) → turn off auto-completing sub-issues on parent completion.
 
-**It is loaded again.** [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) sits in the queue with three unfinished children ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the), [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits), [THR-1522](https://linear.app/threadbare/issue/THR-1522/traits-wave-2-slice-4-the-deferred-location-trait-consumers-merchant)) — verified on the board this run. A hand-written warning guards it; a toggle guards it permanently. *— from tb-orchestrator*
+**It is still loaded.** [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) sits in the queue with three unfinished children ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the), [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits), [THR-1522](https://linear.app/threadbare/issue/THR-1522/traits-wave-2-slice-4-the-deferred-location-trait-consumers-merchant)) — re-verified on the board this run. A hand-written warning guards it; a toggle guards it permanently. *— from tb-orchestrator*
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -48,6 +48,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-22 — the slow-test job that was red on `main` went green on its own.** Post-merge **Heavy simulation tests** passed on the newest commit; the follow-up owed by an executor session is no longer owed.
 - **2026-09-21 — two silently-closed halves of the appointment feature are back in the queue.** [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff) restored 20 minutes after Linear closed them unbuilt. The cause is the toggle above.
 - **2026-09-21 — the design queue refilled itself and the builder is working again.** [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) shipped with four items queued behind it. The "start the staged designs" ask led the briefing for eleven runs.
 - **2026-09-20 — the raw `{sphere_flavor}` placeholder no longer prints in conversation scenes** ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). Merged 17:27, live. This was the last blemish on your review sitting.
@@ -57,7 +58,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 - **2026-09-19 — a finished work outside a town now has somewhere for its encounter to land** ([THR-1515](https://linear.app/threadbare/issue/THR-1515/catalyst-families-have-no-member-for-a-hamlet-or-the-wild-a-settlement)). Merged 00:10, live.
 - **2026-09-19 — the retro draft picks its period from the newest retro report** ([THR-1512](https://linear.app/threadbare/issue/THR-1512/retro-draft-derives-its-period-from-the-newest-committed-retro-report)). Merged 00:08.
 - **2026-09-18 — the six unused family tags are deleted** ([THR-1501](https://linear.app/threadbare/issue/THR-1501/six-family-tags-are-now-orphaned-no-bearer-no-reader-sunset-or-author)). Veto window closed with the merge at 21:18 in silence; any tag restores with one line.
-- **2026-09-18 — the undertaking proof script decides seed consumption off state, not off evicted traces** ([THR-1514](https://linear.app/threadbare/issue/THR-1514/undertaking-live-proof-and-content-model-census-decide-seed)). Merged 20:31, live.
 
 ---
 
