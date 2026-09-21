@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-21 21:00 local (2026-09-21 19:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-21 22:00 local (2026-09-21 20:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting at a place by a time. Your direction from 12 September. **Start here:** higher priority, and its blocker [THR-1487](https://linear.app/threadbare/issue/THR-1487/content-model-slice-3-the-content-query-and-its-one-resolver-under-the) finished on the 12th (re-verified live this run), so only the plan doc remains.
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 
-**The ask: say "design THR-1479" in a chat.** Ready for Dev and In Dev are both 0 for a third day; nothing has merged in 25.5 hours. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue. The orchestrator has now reported this ten runs running.
+**The ask: say "design THR-1479" in a chat.** Ready for Dev, In Dev and Implementation Planning are all 0 for a third day; nothing has merged in 26.5 hours. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue. The orchestrator has now reported this eleven runs running.
 
 ### Finish the sitting — two encounters left, screen now clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -24,7 +24,7 @@ The one question: **is the integrated encounter experience at an acceptable stat
 
 ### Were the stops deliberate? (lane silence — four episodes, all now ended)
 
-Every lane has fired on schedule since Monday 17:41 local, so nothing is stopped right now. The question the episodes raised is still unanswered.
+Every lane has fired on schedule since Monday 17:41 local (re-verified this run), so nothing is stopped right now. The question the episodes raised is still unanswered.
 
 In local time the last stop ran **Sunday 20:57 → Monday 17:41** — overnight, then most of Monday's working day. Earlier episodes: 17 September (~10h), 18 September (~16h), and the Saturday→Sunday gap (~25h). None had a pause marker. Weekend and overnight gaps are declined under your 8 August and 11 September rulings and are not part of this ask; the probe's current worst gap is one of those.
 
