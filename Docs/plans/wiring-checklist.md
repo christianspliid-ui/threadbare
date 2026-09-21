@@ -6,6 +6,26 @@
 
 ---
 
+## Appointments — a mortal keeps or misses a meeting at a place by a time (THR-1479 slice 1)
+
+> Plan doc: `Docs/plans/2026-09-21-thr-1479-appointment-primitive.md` § Wiring.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/appointments.ts` (new — `readPlantedAppointment`, `computeAppointmentSlack`, `leaveMargin`, `appointmentRegime`, `resolveAppointmentContext`, `computeAppointmentPull`, favour + Event helpers, `describeAppointments`) | `2a` decision (called from `phaseAgentDecision`) | — | reads `pendingEncounterSeeds[]` + graph | — | `__DEBUG.getAppointments`, CLI `appointments` |
+| `engine/encounterAftermath.ts` — `encounter_seed` plant site binds `$here` / `$cast:*`, writes the `owes_favor` promise, refuses over `APPOINTMENT_MAX_PER_MORTAL` | aftermath | PATH chip | `pendingEncounterSeeds[].appointment`, graph `owes_favor` | `appointment_planted` | `EncounterSeedsTab` appt row |
+| `engine/encounterSeeding.ts` — kept / missed / wait / place-lost arm before the ladder; `resolutionLocationId = place` on kept | `2a.8` | — | `pendingEncounterSeeds[]` (`appointment`, `missedAppointment`), Event nodes | `appointment_kept`, `appointment_missed` | `__DEBUG.getSeeds()`, `EncounterSeedsTab` |
+| `engine/encounterScoring.ts` — `appointmentBonus`, the second additive term on the relocation channel | `2a` | — | — | inside `encounter_scoring` (`appointmentBonus` on `ScoredCandidate`) | trace viewer |
+| `engine/phaseAgentDecision.ts` — context per holder, overrun discount, departing drop, strategic work filter, journey via `initMovementState`, moving-guard reroute | `2a` | — | `movementState` (existing writer), `appointmentRegimeMemo` | `appointment_regime` (on change + journey) | trace viewer |
+| `engine/phaseSecretsFavors.ts` — the expiry sweep skips appointment favours | `2a.x` secrets/favours | — | — | — | — |
+| `components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` (+ `buildUnifiedEncounterStageModel.ts` `placeNameFor`) | — | EncounterVeil PATH chip | reads the effect | — | Playwright |
+| `components/Game/appointmentBadgeModel.ts` (new), `ThreadsPanel.tsx`, `GameView.tsx` | — | thread-row clock line (`data-testid="thread-appointment-line"`) | reads `pendingEncounterSeeds[]` | — | Playwright |
+| `engine/agentDetail.ts` `FavorSummary.appointment`, `tabs/BondsTab.tsx` | — | sheet Bonds row ("They owe … a meeting at …" / "— broken") | reads `owes_favor` | — | Playwright |
+| `types/trace.ts` (+ `TRACE_CATEGORIES`, the `TraceEntry` union) | — | — | — | four categories | DebugPanel trace inspector |
+| `data/world-objects.ts` `EVENT_TYPES` | — | — | Event nodes | — | `world-objects.generated.md` |
+
+Player controls: none — the god nudges through the encounter's cards; the whisper and the compulsion are the existing levers. Prose: the chip sentence and the two chronicle lines go through `durationLabel` and plain strings; no `enrichProse()` slot.
+
 ## Hunger resonance reaches the meeting deal (THR-1213 slice 2)
 
 > Plan doc: `Docs/plans/2026-08-27-hunger-vocabulary-unification.md` § Wiring.

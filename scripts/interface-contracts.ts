@@ -3281,6 +3281,56 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'appointment-pulls-agent-movement',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Movement & Colocation',
+    intent:
+      'An encounter ending can bind a mortal to a place by a time (THR-1479). The seed carries an `appointment` block — place, due tick, window, counterparty, missed branch — and the decision phase reads it every tick: slack (due − now − travel) is priced by the movement graph, the mortal *leans* toward the place through a second additive term on the relocation channel while the slack is inside the horizon, and *departs* through a journey candidate scored by `scoreMovementCandidate` and queued through the ordinary `initMovementState` writer once the slack falls under their leave margin (a formula over `courage_prudence` and `loyalty_ambition` that can go negative, so a Renegade chooses to miss). No second movement path; if the board outvotes the promise, `appointment_regime` traces it and nothing is forced. Registered LEAKED-with-ticket at filing: slice 1 lands the primitive and its first user; slice 2 (THR-1518) lands the census that proves a seeded run actually pulls a mortal — the reachability row, proven by a census hit rather than by a gate that reads the code (the THR-1497 lesson).',
+    ulTerms: ['Appointment', 'Encounter Seed'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveAppointmentContext', 'computeAppointmentPull', 'appointmentRegime', 'computeAppointmentSlack'],
+      module: 'src/engine/appointments.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: [
+      'src/engine/encounterScoring.ts',
+      'src/engine/phaseAgentDecision.ts',
+      'src/engine/__tests__/appointments.test.ts',
+    ],
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'Shipped with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain), but the census that proves a mortal on a seeded run is pulled and departs is slice 2 — flips 🟢 on a census hit, never on a gate that reads the code.',
+      deferralTicket: 'THR-1518',
+    },
+  },
+  {
+    id: 'missed-appointment-breaks-agreement',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Secrets & Favors',
+    intent:
+      'A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind\'s `favor` class, no new type. When the window closes without the mortal on the place\'s hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet\'s Bonds row reads the broken favour (\"They owe … a meeting at … — broken\") until the reckoning\'s aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed\'s. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world.',
+    ulTerms: ['Appointment', 'Agreement'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['breakAppointmentFavour', 'redeemAppointmentFavour', 'isAppointmentFavour', 'writeAppointmentEvent'],
+      module: 'src/engine/appointments.ts',
+    },
+    writeSites: ['src/engine/encounterSeeding.ts', 'src/engine/encounterAftermath.ts'],
+    readSites: [
+      'src/engine/agentDetail.ts',
+      'src/engine/phaseSecretsFavors.ts',
+      'src/engine/__tests__/encounterSeeding-appointment.test.ts',
+    ],
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'Shipped with the evaluator test proving kept redeems and missed breaks on a fixture world, and the sheet reads the broken favour; the seeded-run census that proves a real mortal misses a real meeting is slice 2.',
+      deferralTicket: 'THR-1518',
+    },
+  },
+  {
     id: 'encounter-seed-resolves-by-query',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: 'Encounters & Dilemmas',

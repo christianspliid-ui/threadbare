@@ -274,6 +274,10 @@ const familyTags: readonly ContentTagDef[] = [
  * All are scoped to `encounter_template`: an item has no errand to run.
  */
 const encounterFamilyTags: readonly ContentTagDef[] = [
+  // THR-1479 — the reckonings a missed crossroads appointment draws from. Seated with
+  // one bearer because it has a runtime reader (the Crossroads bargain's missed branch
+  // names it by query), which is the seating rule's other clause.
+  T('#crossroads_debt', 'family', 'What comes to collect on a promise made at a crossroads and not kept.', ['encounter_template']),
   // The thirteen faction quest families — the body that sets the errand, in its word.
   T('#guild_errand', 'family', 'Work set by the Adventurers\' Guild — a posting taken off the board.', ['encounter_template']),
   T('#circle_errand', 'family', 'Work set by the Arcane Circle — study, survey, and the reagents study needs.', ['encounter_template']),

@@ -487,6 +487,16 @@ export type EncounterAftermathReactionEffect =
      * false: the follow-up self-targets (today's behavior).
      */
     readonly inheritContext?: boolean;
+    /**
+     * THR-1479 — the seed is an **appointment**: it fires at a named place inside a
+     * window after its due tick, and converts to the `missed` branch when the mortal
+     * is not there. `locationId` takes `$here` (the place the scene happens at) or
+     * `$cast:<key>`; `counterpartyId` takes `$cast:<key>`. `dueTick` is authored as
+     * ticks-from-plant (the seed's own `delayTicks` is the due delay); the planter
+     * stores the absolute tick. The only lawful way to write a place-and-time
+     * promise in prose (prose rule 7b's one exception).
+     */
+    readonly appointment?: AppointmentBlock;
     readonly when?: EffectPredicate;
   }
   | {
@@ -1400,6 +1410,61 @@ export interface PendingEncounterSeed {
    * detector pairs on. Absent on every ordinary (uncontested) seed.
    */
   readonly opposingGroupId?: string;
+  /**
+   * THR-1479 — the appointment this seed is. Present only on a placed, timed seed:
+   * `eligibleAfterTick` is the due tick, `locationId` is a Location or Place node
+   * (bound from `$here` / `$cast:*` at plant), and `missed` is the branch the seed
+   * rewrites itself to when the window closes with the mortal absent. The seed is
+   * the appointment's one record of truth — nothing is copied onto the mortal.
+   */
+  readonly appointment?: PlantedAppointment;
+  /**
+   * THR-1479 — set when an appointment was missed and the seed became its missed
+   * branch; kept so the chip and the trace can still name the place and the time
+   * the mortal did not keep. Absent on every other seed.
+   */
+  readonly missedAppointment?: { readonly locationId: string; readonly dueTick: number; readonly reason: AppointmentMissReason };
+}
+
+/** Why an appointment was missed (THR-1479). */
+export type AppointmentMissReason = 'absent' | 'unreachable' | 'chose_to_miss' | 'place_lost';
+
+/**
+ * The authored appointment block on an `encounter_seed` effect (THR-1479).
+ *
+ * The kept branch is the seed's own `templateId` / `query`; this block names only
+ * what is *additional* to a placeless seed: where, how long the meeting can be
+ * kept once due, who the other party is, and what fires if it is missed. Both
+ * branches pass `validateEncounterSeedRefs` — a gated literal or a query, never an
+ * ungated id — and a seed with no `missed` branch is a liveness error, because a
+ * meeting that cannot be missed is not a promise.
+ */
+export interface AppointmentBlock {
+  /** `$here`, `$cast:<key>`, or a literal Location / Place node id. Never a bare hex. */
+  readonly locationId: string;
+  /** How long the meeting can be kept once due. Default `APPOINTMENT_WINDOW_TICKS`. */
+  readonly windowTicks?: number;
+  /** The other party — `$cast:<key>` or a literal agent id. Needs no agency; the seed brings them. */
+  readonly counterpartyId?: string;
+  /** What fires when the mortal is not there in the window. */
+  readonly missed: {
+    readonly templateId?: string;
+    readonly query?: ContentQuery;
+    readonly seedLabel: string;
+    /** Ticks after the window closes before the missed sequel is eligible. Default `APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS`. */
+    readonly delayTicks?: number;
+  };
+}
+
+/** The appointment as planted: sentinels bound, the due tick absolute (THR-1479). */
+export interface PlantedAppointment {
+  readonly locationId: string;
+  readonly dueTick: number;
+  readonly windowTicks: number;
+  readonly counterpartyId?: string;
+  readonly missed: AppointmentBlock['missed'];
+  /** The `owes_favor` edge that is the promise; removed on kept, marked `broken` on missed. */
+  readonly favourEdgeId?: string;
 }
 
 export interface EncounterAftermathReaction {

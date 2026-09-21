@@ -21,12 +21,14 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { EncounterProgress } from '../types/encounter';
 import type { UnifiedAction } from '../types/unifiedAction';
+import type { GraphNode } from '../types/graph';
+import type { WorldGraph } from './graph';
 import {
   ENCOUNTER_ABANDON_COOLDOWN,
   ENCOUNTER_COMPLETION_COOLDOWN,
 } from '../types/encounter';
 import { runFilterPipeline } from './encounterFilterPipeline';
-import { scoreAndSelect, NOVELTY_CATEGORY_WINDOW_TICKS, type FamiliarityRecord, type ScoredCandidate, type EncounterNoveltyRecord } from './encounterScoring';
+import { scoreAndSelect, resolveAxiologicalProfile, NOVELTY_CATEGORY_WINDOW_TICKS, type FamiliarityRecord, type ScoredCandidate, type EncounterNoveltyRecord } from './encounterScoring';
 import { findActionableIntelligence } from './intelligence';
 import { buildMotiveReceipt, resolveMintedAmbitionOrigin } from './foreshadowing/motiveReceipt';
 import { resolveIdleBehavior } from './idleBehavior';
@@ -42,7 +44,12 @@ import { computeEdgeCost } from './movementCost';
 import { emitTrace, emitPhaseTiming, isProfilingEnabled } from './traceBuffer';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
 import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
-import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
+import {
+  REROUTE_SCORE_MULTIPLIER,
+  DECISION_REEVALUATION_TICKS,
+  APPOINTMENT_JOURNEY_PULL,
+  APPOINTMENT_OVERRUN_DISCOUNT,
+} from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
 import { getAgentLocationId, getAvatarsOf } from './graphQueries';
@@ -55,6 +62,17 @@ import { touchWorld, applyEncounterCacheUpdate } from './simulationRuntime';
 import { buildEncounterBinderContext } from './binding/encounterBinderContext';
 import { resolveRelocationIntentForAgent } from './relocationIntent';
 import { observeResidence } from './agentResidence';
+import {
+  agentAppointmentSeeds,
+  appointmentPlaceLocationId,
+  readRegimeMemo,
+  resolveAppointmentContext,
+  APPOINTMENT_REGIME_MEMO_PROP,
+  type AppointmentContext,
+} from './appointments';
+import { scoreMovementCandidate } from './movementCandidates';
+import { getStrategicTemplate as strategicTemplateFor } from './strategicActionCandidates';
+import { STRATEGIC_DEFAULT_PROJECT_WORK_TICKS as DEFAULT_UNDERTAKING_WORK_TICKS } from '../data/strategic-action-constants';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
@@ -230,6 +248,91 @@ function buildEncounterPoolSnapshot(
   });
 }
 
+// ─── Appointments (THR-1479) ────────────────────────────────────────────────
+
+function appointmentPlaceName(graph: WorldGraph, ctx: AppointmentContext): string {
+  return graph.getNode(ctx.appointment.locationId)?.name ?? ctx.appointment.locationId;
+}
+
+/**
+ * Queue the journey to the appointment's place — through `initMovementState`, the
+ * same writer every departure in this phase uses (no second movement path, the
+ * THR-1142 rule). Road-aware graph path first, hex A* fallback, exactly as the
+ * forced-travel block below does. `false` when there is no way there or they are
+ * standing on it already.
+ */
+function queueAppointmentJourney(
+  graph: WorldGraph,
+  agentId: string,
+  actor: GraphNode,
+  fromLocationId: string,
+  ctx: AppointmentContext,
+  tiles: Parameters<typeof buildHexMovementPath>[3],
+  tick: number,
+): boolean {
+  const destId = appointmentPlaceLocationId(graph, ctx.appointment.locationId);
+  if (!destId || destId === fromLocationId) return false;
+  let movState: MovementState | null = null;
+  const graphPath = findShortestPath(graph, agentId, fromLocationId, destId);
+  if (graphPath && graphPath.path.length > 0) {
+    const firstSeg = graphPath.roadSegments?.find(
+      seg => (seg.fromId === fromLocationId && seg.toId === graphPath.path[0])
+        || (seg.toId === fromLocationId && seg.fromId === graphPath.path[0]),
+    );
+    const firstEdgeCost = firstSeg
+      ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length - 1)
+      : computeEdgeCost(graph, agentId, fromLocationId, graphPath.path[0]).totalCost;
+    movState = initMovementState(destId, graphPath.path, firstEdgeCost, tick, graphPath.roadSegments ?? undefined, fromLocationId);
+  } else {
+    const hexPath = buildHexMovementPath(graph, fromLocationId, destId, tiles);
+    if (hexPath) {
+      movState = initMovementState(hexPath.destinationId, hexPath.locationIds, hexPath.firstEdgeCost, tick);
+    }
+  }
+  if (!movState) return false;
+  movState.motivationPull = APPOINTMENT_JOURNEY_PULL;
+  graph.updateNode(agentId, {
+    properties: { ...actor.properties, movementState: movState, consecutiveIdleTicks: 0 },
+  });
+  return true;
+}
+
+/**
+ * `appointment_regime` fires on change only — a handful per appointment, never per
+ * tick — plus once more on the tick the journey is queued, so a reader can see the
+ * departure. The memo lives on the agent node as a trace memo, not as a second copy
+ * of the appointment (the seed stays the one record).
+ */
+function traceAppointmentRegime(
+  graph: WorldGraph,
+  agentId: string,
+  actor: GraphNode,
+  ctx: AppointmentContext,
+  tick: number,
+  journeyQueued: boolean,
+): void {
+  const memo = readRegimeMemo(actor);
+  const changed = !memo || memo.seedId !== ctx.seed.seedId || memo.regime !== ctx.regime;
+  if (!changed && !journeyQueued) return;
+  if (changed) {
+    graph.updateNode(agentId, {
+      properties: { [APPOINTMENT_REGIME_MEMO_PROP]: { seedId: ctx.seed.seedId, regime: ctx.regime } },
+    });
+  }
+  emitTrace({
+    category: 'appointment_regime',
+    tick,
+    agentId,
+    seedId: ctx.seed.seedId,
+    regime: ctx.regime,
+    slack: ctx.slack.slack,
+    travelTicks: ctx.slack.travelTicks,
+    leaveMargin: ctx.leaveMargin,
+    journeyQueued,
+    summary: `${actor.name ?? agentId} is ${ctx.regime} on the meeting at ${appointmentPlaceName(graph, ctx)} — slack ${Number.isFinite(ctx.slack.slack) ? ctx.slack.slack.toFixed(1) : 'none'}, margin ${ctx.leaveMargin.toFixed(1)}${journeyQueued ? ', journey queued' : ''}`,
+  });
+}
+
 export function phaseAgentDecision(
   state: GameState,
   encounterCache: EncounterCacheManager,
@@ -375,8 +478,41 @@ export function phaseAgentDecision(
       // Gated re-evaluation for moving agents (replaces blanket skip).
       // Moving agents do NOT enter the full decision pipeline. They only check:
       // "is my current destination still the best heading?"
+      // ── Appointment context (THR-1479) ─────────────────────────────────
+      // Resolved once per mortal per tick, and only for a mortal holding a placed
+      // seed (a filter over the seed queue, then one priced path). Handed to the
+      // scorer as the relocation channel's second term and read below for the
+      // regime. The seed is the record; nothing here copies it onto the mortal.
+      const appointmentCtx: AppointmentContext | null = agentAppointmentSeeds(state, agentId).length > 0
+        ? resolveAppointmentContext(
+            state, agentId, state.tick,
+            resolveAxiologicalProfile(graph, agentId, state.tick, state.worldSoul?.fundament),
+          )
+        : null;
+
       const movementState = actor.properties?.movementState as MovementState | undefined;
       if (movementState?.movementQueue && movementState.movementQueue.length > 0) {
+        // THR-1479 — departing, but heading somewhere else: the promise re-routes
+        // the journey now, through the same writer every departure uses, rather
+        // than waiting on the reroute guard's cache scan (which knows nothing
+        // about promises). Heading for the place already → leave them be.
+        if (appointmentCtx?.regime === 'departing') {
+          const destHex = resolveLocationToHex(graph, movementState.destinationId);
+          const headingThere = destHex ? hexDistance(destHex, appointmentCtx.slack.placeHex) === 0 : false;
+          const fromId = getAgentLocationId(graph, agentId);
+          if (!headingThere && fromId
+            && queueAppointmentJourney(graph, agentId, actor, fromId, appointmentCtx, state.tiles, state.tick)) {
+            traceAppointmentRegime(graph, agentId, actor, appointmentCtx, state.tick, true);
+            newEvents.push({
+              id: `appointment_reroute_${agentId}_${state.tick}`,
+              tick: state.tick,
+              type: 'agent_movement',
+              message: `${actor.name} turns back toward ${appointmentPlaceName(graph, appointmentCtx)}`,
+              significance: 0.3,
+            });
+            continue;
+          }
+        }
         // GUARD 1: Tick gating — only re-evaluate every DECISION_REEVALUATION_TICKS
         if (state.tick - (movementState.lastDecisionTick ?? 0) < DECISION_REEVALUATION_TICKS) {
           continue;
@@ -673,10 +809,65 @@ export function phaseAgentDecision(
         agentIntelligence,
         runtime,
         noveltyRecord,
+        appointmentCtx,
       );
 
       // Emit scoring trace
       emitTrace(decision.trace as TraceEntry);
+
+      // ── THR-1479: the regime — discount, drop, and the journey ─────────
+      // Runs *before* the board, never inside `scoreUnifiedBoard` (THR-1448 is
+      // adding a desire term there; two editors on one function is the mutex this
+      // avoids). Leaning: a candidate that would outlast the slack is discounted.
+      // Departing: it is dropped, and a journey to the place competes with what is
+      // left — if the board still outvotes the promise, that is traced, never
+      // forced. A running undertaking is never abandoned here: its checkpoints
+      // already defer on absence, and that deferral is the price of the walk.
+      let appointmentJourneyQueued = false;
+      let appointmentWorkBudget: number | null = null;
+      if (appointmentCtx && (appointmentCtx.regime === 'leaning' || appointmentCtx.regime === 'departing')) {
+        const { slack, appointment, regime } = appointmentCtx;
+        // Hex distances stand in for travel ticks here, the same proxy the scorer's
+        // own travel cost uses; the priced path is reserved for the slack itself.
+        const budget = appointment.dueTick - state.tick;
+        const overruns = (c: ScoredCandidate): boolean => {
+          const entryHex = resolveLocationToHex(graph, c.entry.locationId);
+          const onward = entryHex ? hexDistance(entryHex, slack.placeHex) : Infinity;
+          const there = Number.isFinite(c.hexDistanceToEntry) ? c.hexDistanceToEntry : Infinity;
+          return c.entry.totalTickCost + there + onward > budget;
+        };
+        const rerank = (list: ScoredCandidate[]): ScoredCandidate[] => regime === 'leaning'
+          ? list
+              .map(c => (overruns(c) ? { ...c, finalScore: c.finalScore * APPOINTMENT_OVERRUN_DISCOUNT } : c))
+              .sort((a, b) => b.finalScore - a.finalScore)
+          : list.filter(c => !overruns(c));
+        const hadSelection = decision.selected !== null;
+        decision.rankedCandidates = rerank(decision.rankedCandidates);
+        decision.topCandidates = rerank(decision.topCandidates);
+        decision.selected = hadSelection ? (decision.rankedCandidates[0] ?? null) : null;
+        if (regime === 'departing') {
+          appointmentWorkBudget = budget;
+          const journeyScore = scoreMovementCandidate(APPOINTMENT_JOURNEY_PULL, slack.travelTicks);
+          const bestRemaining = decision.rankedCandidates[0]?.finalScore ?? -Infinity;
+          if (journeyScore > bestRemaining
+            && queueAppointmentJourney(graph, agentId, actor, locationId, appointmentCtx, state.tiles, state.tick)) {
+            appointmentJourneyQueued = true;
+          }
+        }
+      }
+      if (appointmentCtx) {
+        traceAppointmentRegime(graph, agentId, actor, appointmentCtx, state.tick, appointmentJourneyQueued);
+      }
+      if (appointmentJourneyQueued && appointmentCtx) {
+        newEvents.push({
+          id: `appointment_journey_${agentId}_${state.tick}`,
+          tick: state.tick,
+          type: 'agent_movement',
+          message: `${actor.name} sets out to keep a promise at ${appointmentPlaceName(graph, appointmentCtx)}`,
+          significance: 0.35,
+        });
+        continue;
+      }
 
       // ── Strategic Candidate Integration ─────────────────────────────
       // When enabled, generate strategic candidates from active ambitions
@@ -726,7 +917,15 @@ export function phaseAgentDecision(
             const scored = scoreStrategicCandidates(
               stratResult.candidates, accumulatedStrategicState, state.tick, rng,
             );
-            scoredStrategic = scored;
+            // THR-1479 — departing: no new work longer than the slack. Priced by the
+            // template's own work ticks, the same figure the board turns into
+            // checkpoints; a running undertaking is untouched by this filter.
+            scoredStrategic = appointmentWorkBudget === null
+              ? scored
+              : scored.filter(c =>
+                  (strategicTemplateFor(c.templateId)?.projectDuration ?? DEFAULT_UNDERTAKING_WORK_TICKS)
+                    <= appointmentWorkBudget!,
+                );
 
             // The strategic-vs-encounter contest (THR-1292 §4's contest B) stood
             // here until THR-1349 slice 3: `bestStrategicScore > bestEncounterScore`,

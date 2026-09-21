@@ -293,7 +293,9 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     ...validateEncounterSeedRefs([template]).dead.map(
       d => `${d.site} encounter_seed → ${d.kind === 'dead_template'
         ? `unknown template '${d.ref}'`
-        : `query matches nothing: ${d.ref}`} ("${d.seedLabel}")`,
+        : d.kind === 'appointment_missing_branch'
+          ? 'appointment has no missed branch — a meeting that cannot be missed is not a promise (THR-1479)'
+          : `query matches nothing: ${d.ref}`} ("${d.seedLabel}")`,
     ),
   ];
   const tokens = tokenProblems(template);

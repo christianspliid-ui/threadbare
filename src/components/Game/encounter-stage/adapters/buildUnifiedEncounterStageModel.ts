@@ -763,6 +763,11 @@ function buildAftermath(
     // (`chipCollaborators.ts` carries the reasoning that used to sit inline here).
     resolveIcon: buildChipIconResolver(graph),
     resolveAnchor: buildChipAnchorResolver(graph, activeAction, realmProjection),
+    // THR-1479 — the appointment chip's place, through the same anchor lookup.
+    placeNameFor: (ref) => {
+      const id = buildChipAnchorResolver(graph, activeAction, realmProjection)(ref);
+      return id ? graph.getNode(id)?.name ?? undefined : undefined;
+    },
   });
 
   return {

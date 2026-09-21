@@ -26,7 +26,22 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
-import type { PendingEncounterSeed, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { AppointmentMissReason, PendingEncounterSeed, PlantedAppointment, UnifiedActionTemplate } from '../types/unifiedAction';
+import {
+  breakAppointmentFavour,
+  computeAppointmentSlack,
+  leaveMargin,
+  readPlantedAppointment,
+  redeemAppointmentFavour,
+  writeAppointmentEvent,
+} from './appointments';
+import { resolveAxiologicalProfile } from './encounterScoring';
+import { touchWorld } from './simulationRuntime';
+import {
+  APPOINTMENT_EVENT_SIGNIFICANCE,
+  APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS,
+} from '../data/movement-content';
+import { describeContentQuery as describeMissedQuery } from './contentQuery';
 import type { EncounterSupportBinding } from '../types/encounter';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
@@ -480,7 +495,10 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
   let nextTickEvents = [...state.tickEvents];
   let nextRecentEvents = [...state.recentEvents];
 
-  for (const seed of eligible) {
+  for (const pendingSeed of eligible) {
+    // Reassigned by the appointment arm below (a kept meeting is judged at its place;
+    // a lost place fires the kept branch placeless). Every other seed passes through.
+    let seed: PendingEncounterSeed = pendingSeed;
     const ticksSincePlant = tick - (seed.plantedTick ?? tick);
 
     // THR-1025: a seed whose target does not resolve to a live node can only produce a
@@ -512,6 +530,93 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         summary: `Seed discarded: target "${seed.targetAgentId}" is not a live node — "${seed.seedLabel}"`,
       });
       continue;
+    }
+
+    // ── THR-1479: the appointment arm — kept, missed, wait, or the place is gone ──
+    //
+    // Runs before the resolution ladder because the ladder is what fires the *kept*
+    // branch; a missed seed is rewritten into its missed branch and returned to the
+    // queue, to fire wherever the mortal is through the unchanged placeless path.
+    // Kept requires the hex, not the node: standing at any Place inside the
+    // Location's hex is keeping it (the awareness rule), so a town meeting cannot be
+    // missed by standing in the wrong inn.
+    let keptAppointment: PlantedAppointment | null = null;
+    {
+      const appointment = readPlantedAppointment(seed);
+      if (appointment) {
+        const slack = computeAppointmentSlack(state.graph, seed.targetAgentId, appointment, tick);
+        const windowOpen = tick <= appointment.dueTick + appointment.windowTicks;
+        if (!slack) {
+          // The world lost the place — a dissolved settlement, a dangling id. The
+          // kept branch fires wherever they are: the world broke the promise, not
+          // the mortal, so the favour is released rather than broken.
+          redeemAppointmentFavour(state.graph, appointment.favourEdgeId);
+          if (runtime) touchWorld(runtime);
+          emitTrace({
+            tick, category: 'appointment_missed', agentId: seed.targetAgentId,
+            seedId: seed.seedId, locationId: appointment.locationId, dueTick: appointment.dueTick,
+            reason: 'place_lost',
+            summary: `Appointment place lost: ${seed.targetAgentId} — "${seed.seedLabel}" fires placeless`,
+          });
+          seed = { ...seed, appointment: undefined };
+        } else if (windowOpen && slack.atPlace) {
+          keptAppointment = appointment;
+          // THR-1511's field: a subtype-gated query is judged at the place, not the feet.
+          seed = { ...seed, resolutionLocationId: appointment.locationId };
+        } else if (windowOpen) {
+          // Due, in the window, not there yet — the seed waits. Arriving early is fine.
+          remaining.push(seed);
+          continue;
+        } else {
+          // The window closed. Rewrite the seed into its missed branch and return it
+          // to the queue; the favour is broken and stays on the sheet until the
+          // reckoning's aftermath retires it.
+          const profile = resolveAxiologicalProfile(state.graph, seed.targetAgentId, tick);
+          const reason: AppointmentMissReason = !Number.isFinite(slack.travelTicks)
+            ? 'unreachable'
+            : leaveMargin(profile) < 0 ? 'chose_to_miss' : 'absent';
+          const missed = appointment.missed;
+          const converted: PendingEncounterSeed = {
+            ...seed,
+            templateId: missed.templateId,
+            query: missed.query,
+            encounterFamily: undefined,
+            resolutionLocationId: undefined,
+            eligibleAfterTick: tick + (missed.delayTicks ?? APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS),
+            seedLabel: missed.seedLabel,
+            appointment: undefined,
+            missedAppointment: { locationId: appointment.locationId, dueTick: appointment.dueTick, reason },
+          };
+          breakAppointmentFavour(state.graph, appointment.favourEdgeId, tick);
+          writeAppointmentEvent(state.graph, {
+            kind: 'appointment_missed', agentId: seed.targetAgentId, locationId: appointment.locationId,
+            tick, seedId: seed.seedId, reason,
+          });
+          if (runtime) touchWorld(runtime);
+          const agentName = state.graph.getNode(seed.targetAgentId)?.name ?? seed.targetAgentId;
+          const placeName = state.graph.getNode(appointment.locationId)?.name ?? appointment.locationId;
+          const missedEvent: TickEvent = {
+            id: `${seed.seedId}_missed`,
+            tick,
+            type: 'narrative',
+            message: `${agentName} was not at ${placeName} when the time came round.`,
+            significance: APPOINTMENT_EVENT_SIGNIFICANCE,
+            actorId: seed.targetAgentId,
+          };
+          nextTickEvents = [...nextTickEvents, missedEvent];
+          nextRecentEvents = appendRecentEvent(nextRecentEvents, missedEvent);
+          emitTrace({
+            tick, category: 'appointment_missed', agentId: seed.targetAgentId,
+            seedId: seed.seedId, locationId: appointment.locationId, dueTick: appointment.dueTick,
+            reason,
+            missedTemplateId: missed.templateId,
+            missedQuery: missed.query ? describeMissedQuery(missed.query) : undefined,
+            summary: `Appointment missed (${reason}): ${agentName} was not at ${placeName} by tick ${appointment.dueTick + appointment.windowTicks} — "${missed.seedLabel}" now due tick ${converted.eligibleAfterTick}`,
+          });
+          remaining.push(converted);
+          continue;
+        }
+      }
     }
 
     // Resolve the template to spawn, in three descending degrees of specificity:
@@ -649,6 +754,35 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         outcome: 'fired',
         summary: `Seed fired: "${seed.seedLabel}" → ${resolvedTemplateId} for ${seed.targetAgentId}`,
       });
+
+      // THR-1479 — the meeting was kept: the promise is redeemed, the Event kind
+      // records it, and the chronicle gets its line.
+      if (keptAppointment) {
+        redeemAppointmentFavour(state.graph, keptAppointment.favourEdgeId);
+        writeAppointmentEvent(state.graph, {
+          kind: 'appointment_kept', agentId: seed.targetAgentId, locationId: keptAppointment.locationId,
+          tick, seedId: seed.seedId,
+        });
+        if (runtime) touchWorld(runtime);
+        const agentName = state.graph.getNode(seed.targetAgentId)?.name ?? seed.targetAgentId;
+        const placeName = state.graph.getNode(keptAppointment.locationId)?.name ?? keptAppointment.locationId;
+        const keptEvent: TickEvent = {
+          id: `${seed.seedId}_kept`,
+          tick,
+          type: 'narrative',
+          message: `${agentName} keeps their word at ${placeName}.`,
+          significance: APPOINTMENT_EVENT_SIGNIFICANCE,
+          actorId: seed.targetAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, keptEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, keptEvent);
+        emitTrace({
+          tick, category: 'appointment_kept', agentId: seed.targetAgentId,
+          seedId: seed.seedId, locationId: keptAppointment.locationId, dueTick: keptAppointment.dueTick,
+          arrivedTick: tick, resolvedTemplateId,
+          summary: `Appointment kept: ${agentName} at ${placeName} (due ${keptAppointment.dueTick}, tick ${tick}) → ${resolvedTemplateId}`,
+        });
+      }
       continue;
     }
 

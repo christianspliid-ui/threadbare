@@ -70,6 +70,8 @@ import { buildReachSignatureMarkers } from '../../engine/reachSignatureMarkers';
 import { buildRivalInfluenceMarkers } from '../../engine/rivalInfluenceMarkers';
 import { buildTradeRouteLines, buildRouteTooltipsByHex } from '../../engine/tradeRouteMarkers';
 import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
+import { buildAppointmentBadges, type AppointmentBadgeModel } from './appointmentBadgeModel';
+import { resolveAxiologicalProfile } from '../../engine/encounterScoring';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { ThreadedNode, ThreadedFaction, ThreadCategory, SustainedControlNode } from '../../engine/retinue';
 import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
@@ -1034,6 +1036,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     return result;
   }, [gameState.strategicState, gameState.graph, gameState.tick, threadedNodes]);
+
+  // ── Appointment clock lines (THR-1479) ──
+  // Read off the seed queue — the appointment's one record — for the threaded
+  // mortals only. Recomputed when the queue or the tick moves.
+  const appointmentBadges = useMemo<Map<string, AppointmentBadgeModel>>(() => {
+    const agentIds = threadedNodes.filter(n => n.category === 'agent').map(n => n.id);
+    if (agentIds.length === 0) return new Map();
+    return buildAppointmentBadges(
+      gameState,
+      agentIds,
+      (agentId) => resolveAxiologicalProfile(gameState.graph, agentId, gameState.tick, gameState.worldSoul?.fundament),
+    );
+  }, [gameState, threadedNodes]);
 
   // ── Sustained-control rows (THR-418) ──
   // Recomputed whenever the control-effect list or essence reserves change.
@@ -5058,6 +5073,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   agentEncounterDecisions={latestThreadEncounterDecisions}
                   onToggleAttentionMode={handleToggleAttentionMode}
                   agentStrategicSummaries={agentStrategicSummaries}
+                  appointmentBadges={appointmentBadges}
                   encounterBadges={encounterBadges}
                   onOpenEncounterBadge={handleOpenEncounterBadge}
                   tugBadges={tugBadges}

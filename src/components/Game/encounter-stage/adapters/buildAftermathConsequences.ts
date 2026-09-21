@@ -92,7 +92,7 @@ import type {
 // The bound lives with the component that draws the marks, so the adapter's
 // clamp and the renderer's clamp cannot drift to different numbers.
 import { DELTA_CLUSTER_MAX } from '../../../shared/DeltaCluster';
-import { GROWTH_DELTA_CLUSTER_COLLAPSE } from '../../../../engine/aftermathWords';
+import { GROWTH_DELTA_CLUSTER_COLLAPSE, durationLabel } from '../../../../engine/aftermathWords';
 import type {
   EncounterStageConsequenceCategory,
   EncounterStageConsequenceChipModel,
@@ -495,6 +495,13 @@ export interface BuildAftermathConsequencesArgs {
    * existing test) rendering unchanged (NFP #6).
    */
   resolveAnchor?: (entityId: string) => string | undefined;
+  /**
+   * THR-1479 — the name of the place an appointment seed binds (`$here`,
+   * `$cast:<key>` or a literal id), for the PATH chip's sentence. Resolved by
+   * the host through the same anchor lookup the effect binder uses; absent, the
+   * chip says "the promised place".
+   */
+  placeNameFor?: (locationRef: string) => string | undefined;
 }
 
 /**
@@ -638,7 +645,7 @@ function compareChips(
 export function buildAftermathConsequences(
   args: BuildAftermathConsequencesArgs,
 ): EncounterStageConsequenceChipModel[] {
-  const { changes, reactions, enrich, link, resolveIcon, resolveAnchor } = args;
+  const { changes, reactions, enrich, link, resolveIcon, resolveAnchor, placeNameFor } = args;
   const chips: EncounterStageConsequenceChipModel[] = [];
 
   for (const change of changes) {
@@ -729,7 +736,20 @@ export function buildAftermathConsequences(
       if (!label || seenSeedLabels.has(label)) continue;
       seenSeedLabels.add(label);
       const id = `consequence-seed-${reaction.id}-${seenSeedLabels.size}`;
-      const sentence = link(id, enrich(label));
+      // THR-1479 — an appointment names its place and its time in words, ≤15
+      // words, sheet words: "A meeting at the Crossroads, in eleven days." The
+      // place is resolved through the same anchor the effect binder uses
+      // (`$here`, `$cast:*`), so the chip cannot name a different place than
+      // the seed will fire at; unresolvable, it says "the promised place" rather
+      // than a sentinel (Law 56 — the seed and the favour are real writes).
+      const appointment = effect.appointment;
+      const placeName = appointment
+        ? (placeNameFor?.(appointment.locationId) ?? 'the promised place')
+        : undefined;
+      const text = appointment
+        ? `A meeting at ${placeName}, in ${durationLabel(effect.delayTicks)}.`
+        : label;
+      const sentence = link(id, enrich(text));
       chips.push({
         id,
         kind: 'seed',
@@ -743,7 +763,13 @@ export function buildAftermathConsequences(
         // A planted sequel is authored prose — it is the one thing on the
         // surface that is purely story, so it always keeps its sentence.
         compact: false,
-        delta: { direction: 'opens', count: 1, label: 'A way opens' },
+        delta: appointment
+          ? { direction: 'opens', count: 1, label: 'A meeting to keep' }
+          : { direction: 'opens', count: 1, label: 'A way opens' },
+        // The click tier (Law 56's second clause): the place the meeting is at.
+        ...(appointment && placeNameFor && resolveAnchor?.(appointment.locationId)
+          ? { nounLabel: placeName, nounEntityId: resolveAnchor(appointment.locationId), nounEntityKind: 'location' as const }
+          : {}),
         tone: 'seed',
       });
     }

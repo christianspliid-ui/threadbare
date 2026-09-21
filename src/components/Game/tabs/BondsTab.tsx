@@ -118,12 +118,19 @@ function buildAgreementRows(card: AgentInfoCardData): AgreementRow[] {
     });
   }
   for (const favor of leverage.favorsOwed) {
+    // THR-1479 — an appointment favour reads as the promise it is: the place,
+    // and "broken" once the meeting was missed (until the reckoning retires it).
+    const appointmentTail = favor.appointment
+      ? favor.appointment.broken
+        ? ` a meeting at ${favor.appointment.placeName} — broken.`
+        : ` a meeting at ${favor.appointment.placeName}.`
+      : undefined;
     rows.push({
-      key: `owes-${favor.counterpartyId}`,
+      key: `owes-${favor.counterpartyId}${favor.appointment ? `-${favor.appointment.placeId}` : ''}`,
       lead: 'They owe ',
       partyId: favor.counterpartyId,
       partyName: favor.counterpartyName,
-      tail: favor.context === 'called_in' ? ' a favour that was asked for.' : ' a favour.',
+      tail: appointmentTail ?? (favor.context === 'called_in' ? ' a favour that was asked for.' : ' a favour.'),
     });
   }
   return rows;

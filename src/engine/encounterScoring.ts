@@ -42,6 +42,7 @@ import type { GraphNode } from '../types/graph';
 import { resolveLocationToHex } from './encounterAwareness';
 import { computeBrokenDriftBonus } from './brokenState';
 import { computeRelocationIntentBonus } from './relocationIntent';
+import { computeAppointmentPull, type AppointmentContext } from './appointments';
 import { hexDistance } from '../lib/hexMath';
 import { DRAW_TOGETHER_PULL_WEIGHT } from '../data/group-constants';
 import type { ScoringTrace } from '../types/trace';
@@ -566,6 +567,8 @@ export interface ScoredCandidate {
   attractionBonus: number;
   /** Draw Together convergence pull toward the anchor hex (THR-74); 0 when no window. */
   convergenceBonus: number;
+  /** Appointment pull toward the promised place (THR-1479); 0 outside the leaning/departing regimes. */
+  appointmentBonus?: number;
   hunchBonus: number;
   rarityMultiplier: number;
   roleAffinityMultiplier: number;
@@ -1029,6 +1032,12 @@ export function scoreAndSelect(
   runtime?: ScoringRuntime,
   /** Global novelty record from GameState — penalizes recently over-selected templates (THR-453). */
   noveltyRecord?: EncounterNoveltyRecord,
+  /**
+   * THR-1479 — the mortal's governing appointment this tick, resolved once by the
+   * decision phase. Adds the second additive term on the relocation channel while
+   * they lean or depart; absent or out of regime, every score is unchanged.
+   */
+  appointment?: AppointmentContext | null,
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -1244,6 +1253,13 @@ export function scoreAndSelect(
     // agent carries no live intent, so every pre-THR-1142 score is unchanged.
     const relocationBonus = computeRelocationIntentBonus(agentNode, entryHex?.col, entryHex?.row, tick);
 
+    // 17a-ter. Appointment pull (THR-1479) — a promise to be at a place by a time,
+    // leaning the board toward candidates near the place as the slack shrinks. The
+    // relocation channel's second term, at twice its weight: a promise *is* the
+    // trade THR-1142 declined for a mere lean. 0 outside the leaning/departing
+    // regimes, so every pre-THR-1479 score is unchanged.
+    const appointmentBonus = computeAppointmentPull(appointment, entryHex?.col, entryHex?.row);
+
     // 18. Divine hunch bonus (divine action: hex.whisper_intuition)
     const hunchBonus = computeDivineHunchBonus(graph, agentId, entry.reachPrimary, tick);
 
@@ -1316,7 +1332,7 @@ export function scoreAndSelect(
 
     const rawFinalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
       + ruinsBonus + anomalyBonus + attractionBonus + convergenceBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus
-      + brokenDriftBonus + relocationBonus;
+      + brokenDriftBonus + relocationBonus + appointmentBonus;
 
     // 17b. Branching curator bias (THR-452) — boost under-selected branching templates
     const curatorMultiplier = computeBranchingCuratorMultiplier(entry, agentId, tick, runtime ?? null);
@@ -1368,6 +1384,7 @@ export function scoreAndSelect(
       ruinsBonus,
       attractionBonus,
       convergenceBonus,
+      appointmentBonus,
       hunchBonus,
       rarityMultiplier,
       roleAffinityMultiplier,

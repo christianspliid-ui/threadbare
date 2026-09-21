@@ -28,6 +28,7 @@ import {
   getSelectedEncounterPoolCandidate,
 } from './encounterActivityPresentation';
 import type { AgentStrategicSummary } from '../../engine/strategicPresentation';
+import type { AppointmentBadgeModel } from './appointmentBadgeModel';
 import { STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
 
 // ─── Section config ───────────────────────────────────────────────
@@ -122,6 +123,12 @@ interface ThreadsPanelProps {
   /** Opens the badge's newest record in the moment card. Clears nothing. */
   onOpenMomentBadge?: (badge: MomentBadgeModel) => void;
   /**
+   * THR-1479: the clock line for a mortal holding an appointment, keyed by agent
+   * id — *keeps a promise at the Crossroads · four days*. Read off the seed
+   * queue, so the row cannot disagree with the sheet about the same meeting.
+   */
+  appointmentBadges?: Map<string, AppointmentBadgeModel>;
+  /**
    * Sustained-control rows from `getSustainedControlNodes`. THR-418 — renders Hexes
    * and Sources sections in the right-bar plus a folded "claim status" line on
    * location rows when an effect targets a thread'd location.
@@ -148,6 +155,8 @@ interface CompactThreadRowProps {
   onToggleAttentionMode?: (threadEdgeId: string) => void;
   /** Strategic summary for this agent, if they have active strategic activity. */
   strategicSummary?: AgentStrategicSummary;
+  /** THR-1479: the appointment clock line for this mortal, if they hold one. */
+  appointmentBadge?: AppointmentBadgeModel;
   /** THR-664: pending encounter notifications anchored to this row, if any. */
   encounterBadge?: EncounterBadgeModel;
   /** Opens the encounter modal for the badge's primary notification. */
@@ -292,6 +301,7 @@ function CompactThreadRow({
   agentEncounterDecision,
   onToggleAttentionMode,
   strategicSummary,
+  appointmentBadge,
   encounterBadge,
   onOpenEncounterBadge,
   tugBadge,
@@ -663,6 +673,35 @@ function CompactThreadRow({
             </Tooltip>
           )}
 
+          {/* THR-1479: the appointment clock line — a promise to be somewhere by
+              a time, in words; the regime on hover. Same one-line shape as the
+              doing-line above (Law 49), so the row grows by one coalesced line. */}
+          {node.category === 'agent' && appointmentBadge && (
+            <Tooltip label="A promise to keep" desc={appointmentBadge.desc}>
+              <div
+                className="truncate"
+                data-testid="thread-appointment-line"
+                data-appointment-regime={appointmentBadge.readout.regime}
+                style={{
+                  padding: '1px 4px',
+                  borderRadius: 4,
+                  minHeight: 24,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-xs)',
+                  lineHeight: 1.2,
+                  color: appointmentBadge.readout.broken ? 'var(--text-danger, var(--text-muted))' : 'var(--text-secondary)',
+                  backgroundColor: 'color-mix(in srgb, var(--text-secondary) 8%, transparent)',
+                }}
+              >
+                <span aria-hidden="true">⌛</span>
+                <span className="truncate">{appointmentBadge.text}</span>
+              </div>
+            </Tooltip>
+          )}
+
           {/* Row 3: auto toggle (agents only).
               THR-664 removed the encounter-pool button and the action chip — both
               duplicate the agent detail panel, and the encounter affordance is now
@@ -896,6 +935,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   agentEncounterDecisions,
   onToggleAttentionMode,
   agentStrategicSummaries,
+  appointmentBadges,
   encounterBadges,
   onOpenEncounterBadge,
   tugBadges,
@@ -1072,6 +1112,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             agentEncounterDecision={node.category === 'agent' ? agentEncounterDecisions?.get(node.id) : undefined}
                             onToggleAttentionMode={onToggleAttentionMode}
                             strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
+                            appointmentBadge={node.category === 'agent' ? appointmentBadges?.get(node.id) : undefined}
                             encounterBadge={node.category === 'agent' ? encounterBadges?.get(node.id) : undefined}
                             onOpenEncounterBadge={onOpenEncounterBadge}
                             tugBadge={node.category === 'agent' ? tugBadges?.get(node.id) : undefined}

@@ -26,7 +26,10 @@ function buildGraph(): WorldGraph {
     name: 'Kael Thornweaver',
     properties: { actorType: 'individual' },
   });
-  graph.addNode({ id: 'loc.crossroads', type: 'location', name: 'The Wayside Crossroads', properties: {} });
+  graph.addNode({ id: 'loc.crossroads', type: 'location', name: 'The Wayside Crossroads', properties: { hexCol: 3, hexRow: 3 } });
+  // THR-1479 — the traveler stands at the crossroads, so `$here` (the place the
+  // appointment binds) resolves to it and the PATH chip can name it.
+  graph.addEdge({ id: 'traveler_at', source: 'agent.traveler', target: 'loc.crossroads', type: 'located_at', properties: {} });
   return graph;
 }
 
@@ -131,14 +134,23 @@ describe('THR-971 — the crossroads ending admits what it planted', () => {
     expect(VARIANT_CHOICE_IDS).toEqual(expect.arrayContaining(['negative', 'positive']));
   });
 
-  it('the accept ending shows a seed chip naming the Full Moon Collection', () => {
+  it('the accept ending shows a seed chip naming the meeting, its place and its time', () => {
+    // THR-1479 — the Full Moon seed is an appointment, so its chip is the
+    // appointment sentence (≤15 words, sheet words): the place `$here` binds
+    // and the due delay in days, never a tick count.
     const aftermath = aftermathFor('negative');
     const seeds = aftermath?.consequences?.filter((c) => c.kind === 'seed') ?? [];
 
     expect(seeds).toHaveLength(1);
     expect(seeds[0].kindLabel).toBe('SEED');
     expect(seeds[0].tone).toBe('seed');
-    expect(seeds[0].sentence.segments.map((s) => s.text).join('')).toContain('falls due at the full moon');
+    const text = seeds[0].sentence.segments.map((s) => s.text).join('');
+    expect(text).toContain('A meeting at The Wayside Crossroads');
+    // 132 ticks = 11 days; the shared ladder (`durationLabel`) reads that as weeks.
+    expect(text).toContain('in two weeks');
+    expect(text.split(/\s+/).length).toBeLessThanOrEqual(15);
+    expect(seeds[0].delta?.label).toBe('A meeting to keep');
+    expect(seeds[0].nounEntityId).toBe('loc.crossroads');
   });
 
   it('FALSIFICATION: the refuse ending plants nothing and shows no seed chip', () => {
@@ -156,18 +168,18 @@ describe('THR-971 — the crossroads ending admits what it planted', () => {
   });
 });
 
-describe('THR-1476 — the ending the player reads promises nothing the seed cannot perform', () => {
+describe('THR-1476 / THR-1479 — the ending the player reads promises only what an effect performs', () => {
   /**
    * The surface-level half of prose rule 7b, asserted through the *real* stage
    * adapter rather than against the template literals: what reaches
-   * `model.aftermath` is what the encounter stage paints, so a truthful template
-   * that the adapter re-decorates into a promise would still fail here.
+   * `model.aftermath` is what the encounter stage paints, so a template the
+   * adapter re-decorates into a promise it cannot keep would still fail here.
    *
-   * The untruth this pins out: `encounter_seed` has no spatial field —
-   * `encounterSeeding` fires it on the agent wherever they stand — and no
-   * appointment, rendezvous or return-to drive exists, so nothing brings the
-   * mortal back to that crossroads. The accept ending used to congratulate them
-   * for an appointment they were never made to keep.
+   * THR-1476 pinned the accept ending to name *no* place, because nothing then
+   * brought the mortal back to the crossroads. THR-1479 gave the seed an
+   * `appointment` block, so the ending may name the meeting — and the place it
+   * names must be the place the block binds (`$here` → the crossroads the scene
+   * happens at), not a landscape the adapter invented.
    */
   const renderedAcceptText = (): string => {
     const aftermath = aftermathFor('negative');
@@ -177,21 +189,23 @@ describe('THR-1476 — the ending the player reads promises nothing the seed can
     return [aftermath?.overview ?? '', ...chips].join('\n');
   };
 
-  it('the accept ending names no appointment and no place the mortal must reach', () => {
+  it('the accept ending names the meeting at the place the appointment binds, and no other', () => {
     const text = renderedAcceptText();
     // Population guard: an empty render would pass every assertion below.
     expect(text.length, 'the adapter produced no aftermath text').toBeGreaterThan(80);
 
-    expect(text).not.toMatch(/\bappointments?\b/i);
-    expect(text).not.toMatch(/\bcollect it here\b/i);
+    expect(text).toMatch(/A meeting at The Wayside Crossroads/);
+    // The old untruths stay out: nothing on the surface tells the mortal to walk
+    // back, and the only place named is the one `$here` resolved to.
     expect(text).not.toMatch(/\bcomes? back (here|to the crossroads)\b/i);
+    expect(text).not.toMatch(/the promised place/);
   });
 
   it('and still says the true thing: a claim that falls due at the full moon', () => {
     // The counterweight to the test above. Removal-only rewrites can pass a
     // "says nothing false" gate by saying nothing at all, so this pins that the
     // ending still carries the two facts the effects actually wrote — the claim
-    // (`attachment_grant` with a term) and its due date (the seed's delay).
+    // (the promise favour the appointment plants) and its due date (the seed's delay).
     const text = renderedAcceptText();
     expect(text).toMatch(/full moon/i);
     expect(text.toLowerCase()).toContain('claim');
