@@ -18,7 +18,7 @@ import type { ReachDomain } from '../../types/traits';
 import type { AttachmentEffect } from '../../types/effects';
 import { collectGrantedTraits, hasGrantedTrait } from '../effects/effectQueries';
 import { buildAmbitionAgentSnapshot } from '../ambitionTick';
-import { passesEligibility } from '../ambitionSelection';
+import { passesEligibility, scoreDesirability } from '../ambitionSelection';
 import { AMBITION_TEMPLATES } from '../../data/ambition-templates';
 import { ARTIFACT_TEMPLATES } from '../../data/artifact-templates';
 
@@ -101,27 +101,40 @@ describe('ambition eligibility consumes granted traits', () => {
   const forgeLegend = AMBITION_TEMPLATES.find(t => t.id === 'ambition_forge_legend')!;
   const anvil = ARTIFACT_TEMPLATES.find(t => t.id === 'worldforge_anvil')!;
 
-  it('the live intersection still exists (guards against a vacuous test)', () => {
-    expect(forgeLegend.requiredTraits).toContain('master_smith');
+  // THR-1348 repointed this pairing from the gate to the boost. `requiredTraits:
+  // ['master_smith']` was the pool's only non-empty gate and its sole producer is a
+  // tier-4 cursed artifact `seedPossessions` can never deal, so the ambition had zero
+  // holders on every seed. The trait still boosts, so the `trait_grant` contract keeps
+  // a live consumer here — the contract evidence in `interface-contracts.ts` cites this.
+  it('the live intersection still exists on the boosting side (guards against a vacuous test)', () => {
+    expect(forgeLegend.requiredTraits).not.toContain('master_smith');
+    expect(forgeLegend.boostingTraits).toContain('master_smith');
     expect(anvil.effects).toContainEqual({ type: 'trait_grant', grantedTrait: 'master_smith' });
   });
 
-  it('an agent holding the anvil becomes eligible for the master_smith ambition', () => {
-    const graph = graphWithItem(anvil.effects as AttachmentEffect[], {
-      capabilities: { iron: 0.9, veil: 0.9 },
-    });
-    const snapshot = buildAmbitionAgentSnapshot(graph, 'agent-1');
+  it('an agent holding the anvil carries master_smith into the snapshot and scores the ambition higher', () => {
+    const withAnvil = buildAmbitionAgentSnapshot(
+      graphWithItem(anvil.effects as AttachmentEffect[], { capabilities: { iron: 0.9, veil: 0.9 } }),
+      'agent-1',
+    );
+    const without = buildAmbitionAgentSnapshot(
+      graphWithItem([], { capabilities: { iron: 0.9, veil: 0.9 } }),
+      'agent-1',
+    );
 
-    expect(snapshot.traits).toContain('master_smith');
-    expect(passesEligibility(forgeLegend, snapshot)).toBe(true);
+    expect(withAnvil.traits).toContain('master_smith');
+    expect(without.traits).not.toContain('master_smith');
+    expect(passesEligibility(forgeLegend, withAnvil)).toBe(true);
+    // Same fixed stream on both arms so the only difference is the boost.
+    const fixed = () => 0.5;
+    expect(scoreDesirability(forgeLegend, withAnvil, fixed)).toBeGreaterThan(scoreDesirability(forgeLegend, without, fixed));
   });
 
-  it('the same agent without the anvil stays ineligible', () => {
+  it('the same agent without the anvil is eligible on reach alone — the gate is gone', () => {
     const graph = graphWithItem([], { capabilities: { iron: 0.9, veil: 0.9 } });
     const snapshot = buildAmbitionAgentSnapshot(graph, 'agent-1');
 
-    expect(snapshot.traits).not.toContain('master_smith');
-    expect(passesEligibility(forgeLegend, snapshot)).toBe(false);
+    expect(passesEligibility(forgeLegend, snapshot)).toBe(true);
   });
 });
 

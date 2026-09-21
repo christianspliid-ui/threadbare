@@ -159,6 +159,14 @@ interface Composition {
    * depth distribution — reported even when it is all zeros.
    */
   grievance: { minted: number; displaced: number; activeShare: number; chainDepths: Record<string, number> };
+  /**
+   * Attention follows ambition (THR-1348), read from the per-tick `spotlight_pull`
+   * traces: pulls into the spotlight, how many of them swapped a mortal out
+   * (`spotlightDemotions`), and refusals by reason. Reported beside
+   * `meanAutonomousMortals` because a net-additive pull moves that denominator, and
+   * the swap is what keeps the per-mortal throughput gate honest.
+   */
+  spotlight: { pulls: number; demotions: number; refused: Record<string, number> };
 }
 
 interface SeedCensus {
@@ -252,6 +260,9 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
   let starts = 0;
   let autonomousSum = 0;
   let activeSum = 0;
+  let spotlightPulls = 0;
+  let spotlightDemotions = 0;
+  const pullsRefused: Record<string, number> = {};
 
   try {
     const runtime = createSimulationRuntime();
@@ -285,6 +296,15 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
             starts += 1;
             if (starts <= CENSUS_VARIETY_SAMPLE_STARTS) sampleTemplates.add(id);
           }
+          continue;
+        }
+
+        if (a.category === 'spotlight_pull') {
+          const pulled = (a.pulled as ReadonlyArray<{ demotedId: string | null }> | undefined) ?? [];
+          const refused = (a.refused as ReadonlyArray<{ reason: string }> | undefined) ?? [];
+          spotlightPulls += pulled.length;
+          spotlightDemotions += pulled.filter(p => p.demotedId !== null).length;
+          for (const r of refused) pullsRefused[r.reason] = (pullsRefused[r.reason] ?? 0) + 1;
           continue;
         }
 
@@ -342,6 +362,7 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
           chainDepths,
         };
       })(),
+      spotlight: { pulls: spotlightPulls, demotions: spotlightDemotions, refused: pullsRefused },
     };
 
     const summary = buildBalanceRunSummary(runtime, state.tick);
@@ -520,6 +541,8 @@ function report(all: SeedCensus[]): boolean {
       ? comp.topTemplates.map(([id, n]) => `${id} ${n}`).join(', ')
       : '—'}`);
     console.log(`  per mortal: ${comp.startsPerMortalPer100Ticks.toFixed(1)} starts per 100 ticks over ${comp.meanAutonomousMortals.toFixed(1)} autonomous mortals`);
+    const refusedEntries = Object.entries(comp.spotlight.refused);
+    console.log(`  spotlight pulls (THR-1348): ${comp.spotlight.pulls} pulled, ${comp.spotlight.demotions} swapped out, ${comp.spotlight.pulls - comp.spotlight.demotions} net-additive; refused: ${refusedEntries.length > 0 ? refusedEntries.map(([r, n]) => `${r} ×${n}`).join(', ') : 'none'}`);
     console.log(`  concurrency (cap ${CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING}, THR-1387): max ${comp.concurrency.maxAtEnd} active at run end, busiest [${comp.concurrency.topAtEnd.join(', ')}], mean ${comp.concurrency.meanActive.toFixed(1)} active per tick`);
 
     console.log('\nGates');

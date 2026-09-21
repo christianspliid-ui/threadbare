@@ -124,8 +124,15 @@ const KNOWN_DEAD = {
    *
    * Harmless meanwhile: it is the `forge_materials` milestone on
    * `ambition_forge_legend`, which is `requires: 2, of: 3` with two live milestones.
+   *
+   * ── THR-1348: discharged — the milestone was repointed, not the ref ────────────
+   *
+   * `forge_materials` now reads `agent_reach_above stone 0.3` (Stone is the finding
+   * reach: *the right metal, found at last*). No resource model was built; the
+   * ambition simply stopped naming one. The class stays so the next resource-shaped
+   * ref has a home.
    */
-  noResourceModel: ['rare_ore_secured'],
+  noResourceModel: [],
   /**
    * A narrative progress flag an ambition would have to mint about its own bearer.
    * No producer exists and none is implied by the trait layer as it stands.

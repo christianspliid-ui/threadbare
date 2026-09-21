@@ -332,6 +332,32 @@ export function hydrateToTier(
   graph.updateNode(actorId, { properties: updates });
 }
 
+// ─── demoteToTier ─────────────────────────────────────────────────────────────
+
+/**
+ * Step a mortal back to a lower tier — the sibling `hydrateToTier` never had (THR-1348).
+ *
+ * Writes `spotlightTier` **only**. Everything hydration minted on the way up — profile,
+ * capabilities, wealth, reputation, cooperation strategy — stays on the node (NFP #6):
+ * a demoted mortal's capabilities are theirs, and a later re-promotion is a no-op on
+ * those fields. Fail-soft: a missing node, a non-individual, or a mortal already at or
+ * below the target is a no-op and returns false.
+ */
+export function demoteToTier(
+  graph: WorldGraph,
+  actorId: string,
+  targetTier: 'ambient' | 'notable',
+): boolean {
+  const node = graph.getNode(actorId);
+  if (!node || node.properties.actorType !== 'individual') return false;
+
+  const currentTier = (node.properties.spotlightTier as SpotlightTier | undefined) ?? 'spotlight';
+  if (TIER_ORDER[currentTier] <= TIER_ORDER[targetTier]) return false;
+
+  graph.updateNode(actorId, { properties: { spotlightTier: targetTier } });
+  return true;
+}
+
 // ─── phaseNpcGraduation ───────────────────────────────────────────────────────
 
 /**

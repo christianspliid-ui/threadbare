@@ -124,6 +124,8 @@ export type TraceCategory =
   | 'undertaking_outcome_event'
   | 'grievance_transition'
   | 'ambition_displaced'
+  // Attention follows ambition (THR-1348)
+  | 'spotlight_pull'
   | 'covet_rivalry_seeded'
   // Verb × object undertakings (THR-1392)
   | 'undertaking_cell_unreachable'
@@ -569,6 +571,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking_outcome_event',
   'grievance_transition',
   'ambition_displaced',
+  'spotlight_pull',
   'covet_rivalry_seeded',
   'undertaking_cell_unreachable',
   'undertaking_tier_defaulted',
@@ -2281,6 +2284,33 @@ export interface AmbitionDisplacedTrace extends TraceBase {
   harmMagnitude: number;
 }
 
+/** One reason a spotlight pull was refused (THR-1348). Every refusal is a reason, never a throw. */
+export type SpotlightPullRefusal = 'budget' | 'no_capability_path' | 'already_pulled' | 'disabled';
+
+/**
+ * Trace: attention follows ambition (THR-1348) — one aggregate per tick in which at
+ * least one pull ran or was refused. A strategic-profiled ambition assigned to a
+ * mortal below the spotlight pulls the holder up through `hydrateToTier` and, to hold
+ * the deciding population flat, demotes the least-recently-witnessed spotlight mortal
+ * with no strategic ambition. Emitted from `spotlightPull`'s per-tick accumulator,
+ * flushed at the end of the ambition phase (NFP #2: the ledger on the node says *that*
+ * a mortal was pulled; this says *who else* was considered that tick and why a pull
+ * was refused).
+ */
+export interface SpotlightPullTrace extends TraceBase {
+  category: 'spotlight_pull';
+  pulled: ReadonlyArray<{
+    agentId: string;
+    templateId: string;
+    fromTier: 'ambient' | 'notable';
+    /** The spotlight mortal that stepped back, or null for a net-additive overflow pull. */
+    demotedId: string | null;
+  }>;
+  refused: ReadonlyArray<{ agentId: string; templateId: string; reason: SpotlightPullRefusal }>;
+  /** The deciding population (`isAutonomousDecisionActor`) after this tick's pulls. */
+  autonomousAfter: number;
+}
+
 /**
  * Trace: a covet rivalry was seeded (THR-1388) — the mortal was refused a destroy
  * against the same owner `COVET_RIVALRY_THRESHOLD` boards running and now holds a
@@ -3764,6 +3794,7 @@ export type TraceEntry =
   | UndertakingOutcomeEventTrace
   | GrievanceTransitionTrace
   | AmbitionDisplacedTrace
+  | SpotlightPullTrace
   | CovetRivalrySeededTrace
   | UndertakingCellUnreachableTrace
   | UndertakingTierDefaultedTrace

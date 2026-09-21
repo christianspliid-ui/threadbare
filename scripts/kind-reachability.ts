@@ -41,6 +41,8 @@ import {
   measureStrategicReachability,
   type StrategicReachabilityReport,
 } from '../src/engine/strategicKindReachability';
+import { getAvatarsOf } from '../src/engine/graphQueries';
+import { readSpotlightLedger, type SpotlightLedger } from '../src/engine/spotlightPull';
 
 const DEFAULT_SEEDS: readonly number[] = [42, 99];
 /** Past initial assignment and the first minted ambitions; cheap enough to sweep. */
@@ -60,7 +62,12 @@ const asJson = process.argv.includes('--json');
 
 // ─── Run ──────────────────────────────────────────────────────────
 
-interface SeedResult { readonly seed: number; readonly report: StrategicReachabilityReport }
+interface SeedResult {
+  readonly seed: number;
+  readonly report: StrategicReachabilityReport;
+  /** Attention follows ambition (THR-1348): who was pulled, whom they displaced, who was refused. */
+  readonly spotlight: SpotlightLedger;
+}
 
 function runSeed(seed: number): SeedResult {
   const runtime = createSimulationRuntime();
@@ -70,7 +77,16 @@ function runSeed(seed: number): SeedResult {
     archetype, 'Reachability', createBalancedCosmology(), seed, preset.cols, preset.rows,
   );
   for (let i = 0; i < ticks; i++) state = runTick(state, [], runtime);
-  return { seed, report: measureStrategicReachability(state.graph) };
+  // The player drives the avatar, so the decision loop skips it; the census must
+  // skip it too or it counts a decider that never decides (THR-1348).
+  const excludedActorIds = new Set(
+    state.ascendantId ? getAvatarsOf(state.graph, state.ascendantId).map(a => a.id) : [],
+  );
+  return {
+    seed,
+    report: measureStrategicReachability(state.graph, { excludedActorIds }),
+    spotlight: readSpotlightLedger(state.graph),
+  };
 }
 
 const results = seeds.map(runSeed);
@@ -103,15 +119,36 @@ if (asJson) {
       console.log(`\n  ${report.unreachableTemplateIds.length} strategic templates unreachable this seed:`);
       for (const t of report.unreachableTemplateIds) console.log(`    ${t}`);
     }
+
+    // Attention follows ambition (THR-1348): the pull is what moves a silenced holder
+    // into the deciding tier, so the census names every pull, whom it displaced, and
+    // every refusal — a reader can check the swap kept the population flat.
+    const { spotlight } = results.find(r => r.seed === seed)!;
+    const swaps = spotlight.pulled.filter(p => p.demotedId !== null).length;
+    console.log(
+      `\n  spotlight pulls: ${spotlight.pulled.length} (${swaps} swapped, ` +
+      `${spotlight.pulled.length - swaps} net-additive; ${spotlight.overflow} of ${spotlight.overflowAllowance} overflow outstanding), ` +
+      `${spotlight.refused.length} refused`,
+    );
+    for (const p of spotlight.pulled) {
+      console.log(`    tick ${String(p.tick).padStart(4)}  ${p.id}  ← ${p.templateId}` +
+        (p.demotedId ? `  (displaced ${p.demotedId})` : '  (net-additive)'));
+    }
+    for (const r of spotlight.refused) console.log(`    tick ${String(r.tick).padStart(4)}  ${r.id}  refused: ${r.reason}`);
   }
 
   console.log(`\n═══ reachability summary ═══`);
-  for (const { seed, report } of results) {
+  for (const { seed, report, spotlight } of results) {
+    // Rows are ambitions; families are fewer (two ambitions share `builder-civic`,
+    // two share `scholar-seeker`). Count each on its own denominator.
+    const families = new Set(report.rows.map(r => r.behaviorFamily));
     console.log(
       `  seed ${String(seed).padStart(5)}  ` +
-      `${report.rows.length - report.unreachableFamilies.length}/${report.rows.length} families reachable, ` +
+      `${families.size - report.unreachableFamilies.length}/${families.size} families reachable, ` +
+      `${report.rows.filter(r => r.reachable).length}/${report.rows.length} ambitions reachable, ` +
       `${report.unreachableTemplateIds.length} templates unreachable` +
-      (report.silencedFamilies.length > 0 ? `, ${report.silencedFamilies.length} silenced` : ''),
+      (report.silencedFamilies.length > 0 ? `, ${report.silencedFamilies.length} silenced` : '') +
+      `, ${spotlight.pulled.length} pulled`,
     );
   }
 }
