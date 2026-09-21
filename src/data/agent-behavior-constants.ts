@@ -585,6 +585,47 @@ export const AGENT_COUNT_BY_MAP_SIZE: Record<string, { min: number; max: number 
 export const AGENT_COUNT_FALLBACK = { min: 8, max: 12 };
 
 // ═══════════════════════════════════════════════════════════════════
+// SPOTLIGHT PULL — attention follows ambition (spotlightPull.ts, THR-1348)
+// ═══════════════════════════════════════════════════════════════════
+
+/** The lever. When false no ambition assignment pulls its holder into the spotlight and
+ * every assignment traces `refused: disabled` — today's behaviour byte for byte, but
+ * visible to the census. Ruling (Christian, 2026-09-10): the aperture is not widened;
+ * a strategic ambition pulls its holder up instead.
+ * @range boolean */
+export const SPOTLIGHT_AMBITION_PULL_ENABLED = true;
+
+/** Ceiling on outstanding net-additive pulls allowed when no demotion candidate exists —
+ * a pulled mortal whose `spotlightPullDemotedId` is null and who is still in the
+ * spotlight. Past the allowance the pull is refused with reason `budget` and the holder
+ * stays silenced. The swap is the default; this is the overflow, and the tick-cost kill
+ * criterion (+25 % at medium, `measure:tick-cost`) steps it to 0 before anything else.
+ * The world's actual allowance is `min(this, floor(SPOTLIGHT_AMBITION_PULL_OVERFLOW_SHARE ×
+ * deciding population))` — see the share below.
+ * @range 0–4 */
+export const SPOTLIGHT_AMBITION_PULL_MAX = 2;
+
+/** Share of the deciding population (spotlight individuals, less the outstanding
+ * overflow) the net-additive overflow may add, floored, capped by
+ * `SPOTLIGHT_AMBITION_PULL_MAX`. Scales the overflow to the attention budget instead of
+ * spending a flat two on every map: a small world (~13 deciders) gets 1, medium (~20–24)
+ * gets 2. Measured on the small map (seed 42, 150 ticks): two extra deciders crowded the
+ * checkpointed work and halved the growth-paying completions (19 → 10); one did not (19).
+ * @range 0.05–0.2 */
+export const SPOTLIGHT_AMBITION_PULL_OVERFLOW_SHARE = 0.1;
+
+/** Ticks beyond which a spotlight mortal counts as *not recently witnessed* when the
+ * demotion candidates are ordered (three days at 12 ticks/day). Candidates outside
+ * the window tie on witness and fall to `importance`, then id.
+ * @range 12–72 */
+export const SPOTLIGHT_WITNESS_WINDOW_TICKS = 36;
+
+/** Significance of the one chronicle line a pull writes — the mortal steps into the
+ * story the player can watch. A demotion writes none (Law 13 parity: no player surface).
+ * @range 0.2–0.5 */
+export const SPOTLIGHT_PULL_EVENT_SIGNIFICANCE = 0.3;
+
+// ═══════════════════════════════════════════════════════════════════
 // BORN-LATER SPAWN — Prefer content-rich locations (agentLifecycle.ts)
 // ═══════════════════════════════════════════════════════════════════
 

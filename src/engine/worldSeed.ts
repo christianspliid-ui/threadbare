@@ -68,13 +68,13 @@ import type { GameState } from '../types/gameState';
 import { ensureSublocations } from './sublocation';
 import { runSettlementGenome } from './settlementGenome';
 import { materializeGenome } from './settlementGenome/materialize';
-import { assignInitialAmbitions } from './ambitionAssignment';
+import { assignInitialAmbitions, assignAmbitionToActor } from './ambitionAssignment';
 import { getTerrainSphereScores } from '../types/sphereAffinity';
 import type { SphereName as SphereNameType } from '../types/index';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits } from './effects/effectQueries';
-import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
+import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 import { seedLivingWorld, formatLivingWorldSummary } from './seedLivingWorld';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
@@ -1754,36 +1754,15 @@ export function seedWorld(
     const agentIndex = parseInt(indId.replace('ind_', ''), 10) || 0;
     const assignments = assignInitialAmbitions(AMBITION_TEMPLATES, snapshot, seed + 29173 + agentIndex * 97);
 
+    // THR-1348: the worldgen writer routes through the one funnel — same node, same
+    // edge, byte for byte. Protagonists are stamped `spotlight` above, so the pull is
+    // a no-op here; routing is so no assignment path sits outside the hook. The
+    // worldgen stream is not handed over (see the births site in `agentLifecycle`):
+    // a pull draws from its own derived stream, never from a phase's.
     for (const assignment of assignments) {
-      const ambitionNodeId = `ambition.${assignment.templateId}`;
-      if (!graph.getNode(ambitionNodeId)) {
-        const tmpl = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
-        graph.addNode({
-          id: ambitionNodeId,
-          type: 'ambition',
-          name: tmpl?.displayName ?? assignment.templateId,
-          properties: {
-            [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
-            templateId: assignment.templateId,
-            displayName: tmpl?.displayName ?? assignment.templateId,
-            category: tmpl?.category ?? 'survival',
-            reachAffinity: tmpl?.reachAffinity ?? {},
-            totalMilestones: tmpl?.milestones.length ?? 0,
-          },
-        });
-      }
-
-      graph.addEdge({
-        id: `pursues_${indId}_${ambitionNodeId}`,
-        source: indId,
-        target: ambitionNodeId,
-        type: 'pursues',
-        properties: {
-          priority: assignment.priority,
-          status: 'active',
-          assignedTick: 0,
-          completedMilestones: [],
-        },
+      assignAmbitionToActor(graph, indId, assignment.templateId, 0, {
+        priority: assignment.priority,
+        seed,
       });
     }
   }
@@ -1910,6 +1889,11 @@ export function seedWorld(
       name: `${companyName} Commander`,
       properties: {
         actorType: 'individual',
+        // THR-1348: a decider on purpose. Commanders ran the decision loop by the
+        // unset-means-spotlight default and THR-1437 counted on their undertakings;
+        // the explicit stamp records what was measured. Do not stamp `'ambient'` to
+        // "clean up" — that removes two deciders the census baseline includes.
+        spotlightTier: 'spotlight' as const,
         domainCapabilities: {
           iron: MC_COMMANDER_IRON_CAP,
           gold: MC_COMMANDER_GOLD_CAP,

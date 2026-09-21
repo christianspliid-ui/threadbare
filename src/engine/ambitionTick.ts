@@ -12,7 +12,8 @@ import type { SphereName } from '../types/index';
 import type { AxiologicalProfile } from '../types/agent';
 import type { WorldGraph } from './graph';
 import { evaluateAmbitionProgress } from './ambitionLifecycle';
-import { assignInitialAmbitions, MAX_ACTIVE_AMBITIONS } from './ambitionAssignment';
+import { assignInitialAmbitions, assignAmbitionToActor, MAX_ACTIVE_AMBITIONS } from './ambitionAssignment';
+import { collectBusyActorIds, flushSpotlightPullTrace } from './spotlightPull';
 import {
   AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
@@ -51,7 +52,6 @@ import { collectBearerTraitRefs } from './traitRefIndex';
 import { observeResidence, type ResidenceObservation } from './agentResidence';
 import type { AgentResidenceTrace } from '../types/trace';
 import {
-  AMBITION_KIND_KEY,
   AMBITION_KIND_TEMPLATE,
   getAmbitionKind,
   getAmbitionTemplateId,
@@ -585,6 +585,11 @@ export function mintAmbitionsFromEvents(
 // ─── Main Phase Function ─────────────────────────────────────────
 
 export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
+  // A spotlight pull from an earlier tick's off-phase assignment (aftermath card,
+  // binder mint) still has its aggregate pending — flush it before this tick's work
+  // so the trace lands on the tick it belongs to (THR-1348).
+  flushSpotlightPullTrace();
+
   // Only run on milestone check intervals
   if (state.tick % MILESTONE_CHECK_INTERVAL !== 0) {
     return {};
@@ -592,6 +597,9 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
 
   const { graph, tick } = state;
   const newEvents: TickEvent[] = [];
+  // Mortals mid-act — never demoted by a spotlight pull this pass (THR-1348). Built
+  // once per phase, not per assignment: O(actions + projects), not O(actors × …).
+  const busyActorIds = collectBusyActorIds(state);
 
   // World-minted ambition accumulators — ONE aggregate trace per tick (THR-726).
   let mintedCount = 0;
@@ -824,23 +832,9 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         // honest if that filter is ever loosened.
         if (minted && !slotsFree && !minted.grievance) continue;
         if (minted) {
-          const tmpl = findAmbitionTemplateById(minted.templateId);
-          const ambitionNodeId = `ambition.${minted.templateId}`;
-          if (!graph.getNode(ambitionNodeId)) {
-            graph.addNode({
-              id: ambitionNodeId,
-              type: 'ambition',
-              name: tmpl?.displayName ?? minted.templateId,
-              properties: {
-                [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
-                templateId: minted.templateId,
-                displayName: tmpl?.displayName ?? minted.templateId,
-                category: tmpl?.category ?? 'survival',
-                reachAffinity: tmpl?.reachAffinity ?? {},
-                totalMilestones: tmpl?.milestones.length ?? 0,
-              },
-            });
-          }
+          // The shared ambition node is created by `assignAmbitionToActor` below
+          // (THR-1348) — the same find-or-create this block carried inline until the
+          // mint-to-holder write was routed through the one funnel.
           // ── Grievance routing (THR-1298 slice 5) ──
           //
           // A harm does not become a drive unconditionally. The lifecycle decides —
@@ -948,16 +942,15 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             : graph.getOutgoingEdges(holderId, 'pursues')
                 .filter(e => (e.properties.status as string) === 'active').length;
           const priority: AmbitionPriority = holderActiveCount === 0 ? 'primary' : 'secondary';
-          graph.addEdge({
-            id: `pursues_${holderId}_${ambitionNodeId}`,
-            source: holderId,
-            target: ambitionNodeId,
-            type: 'pursues',
-            properties: {
-              priority,
-              status: 'active',
-              assignedTick: tick,
-              completedMilestones: [],
+          // THR-1348: the mint-to-holder write goes through the one funnel so a
+          // world-minted drive reaches the spotlight pull. The edge it writes is
+          // byte-identical to the inline write this replaced (`extraProperties` is
+          // spread last, in the inline order) — pinned by
+          // `ambitionAssignment-routing.test.ts`. A refusal here is fail-soft where
+          // the inline `addEdge` would have thrown on a duplicate id.
+          const mintAssignment = assignAmbitionToActor(graph, holderId, minted.templateId, tick, {
+            priority,
+            extraProperties: {
               mintedByEventId: minted.mintedByEventId,
               mintedByLabel: minted.mintedByLabel,
               // Grievance state is edge-side, never node-side: ambition nodes are
@@ -966,7 +959,11 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               // `mintedByEventId` lives here (THR-726).
               ...(grievanceProperties ?? {}),
             },
+            seed: state.seed,
+            busyActorIds,
           });
+          if (!mintAssignment.assigned) continue;
+          if (mintAssignment.pull?.pulled) newEvents.push(mintAssignment.pull.event);
 
           // Minting is silent (desire is interior) — no tickEvent; aggregate trace only.
           mintedCount++;
@@ -995,39 +992,17 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           const assignments = assignInitialAmbitions(availableTemplates, agentSnapshot, seed);
 
           for (const assignment of assignments.slice(0, slotsNeeded)) {
-            // Find or create shared ambition template node
-            const ambitionNodeId = `ambition.${assignment.templateId}`;
-            if (!graph.getNode(ambitionNodeId)) {
-              const tmpl = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
-              graph.addNode({
-                id: ambitionNodeId,
-                type: 'ambition',
-                name: tmpl?.displayName ?? assignment.templateId,
-                properties: {
-                  [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
-                  templateId: assignment.templateId,
-                  displayName: tmpl?.displayName ?? assignment.templateId,
-                  category: tmpl?.category ?? 'survival',
-                  reachAffinity: tmpl?.reachAffinity ?? {},
-                  totalMilestones: tmpl?.milestones.length ?? 0,
-                },
-              });
-            }
-
-            // Create pursues edge
-            const edgeId = `pursues_${actor.id}_${ambitionNodeId}`;
-            graph.addEdge({
-              id: edgeId,
-              source: actor.id,
-              target: ambitionNodeId,
-              type: 'pursues',
-              properties: {
-                priority: assignment.priority,
-                status: 'active',
-                assignedTick: tick,
-                completedMilestones: [],
-              },
+            // THR-1348: the re-evaluation write goes through the one funnel — node
+            // find-or-create and `pursues` edge, byte-identical to the inline write
+            // this replaced (the explicit `priority` keeps the selection's own
+            // primary/secondary, exactly as before). The spotlight pull runs inside.
+            const reevalAssignment = assignAmbitionToActor(graph, actor.id, assignment.templateId, tick, {
+              priority: assignment.priority,
+              seed: state.seed,
+              busyActorIds,
             });
+            if (!reevalAssignment.assigned) continue;
+            if (reevalAssignment.pull?.pulled) newEvents.push(reevalAssignment.pull.event);
 
             const template = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
             const prose = template?.selectionProse[0]
@@ -1101,6 +1076,9 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
     };
     emitTrace(mintTrace);
   }
+
+  // ── Aggregate spotlight-pull trace — ONE per tick (THR-1348) ──
+  flushSpotlightPullTrace();
 
   if (newEvents.length === 0) return {};
 

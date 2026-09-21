@@ -16,7 +16,8 @@ import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture
 import { pickCulturalName } from '../data/culture-name-pools';
 import { assignCooperationStrategy } from './disposition';
 import { generateAxiologicalProfile } from './agentGeneration';
-import { assignInitialAmbitions } from './ambitionAssignment';
+import { assignInitialAmbitions, assignAmbitionToActor } from './ambitionAssignment';
+import { collectBusyActorIds } from './spotlightPull';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { validateAgentIntegrity } from './agentValidation';
 import { emitTrace } from './traceBuffer';
@@ -32,7 +33,6 @@ import { touchWorld, type SimulationRuntime } from './simulationRuntime';
 import { drainMintQueue } from './binding/mintInhabitant';
 import { generateRoleCapabilities } from './npcGraduation';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
-import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -566,40 +566,25 @@ export function phaseAgentLifecycle(
           state.seed + state.tick * 113 + newId.charCodeAt(0),
         );
 
+        // THR-1348: the births writer routes through the one funnel. A newborn is
+        // `ambient`, so a strategic-profiled want assigned here pulls them into the
+        // spotlight at birth — the world's next builder is watched from their first
+        // tick — and `busyActorIds` keeps the swap off anyone mid-act. The edge id
+        // follows the helper's scheme (`pursues_<actor>_ambition.<template>`); nothing
+        // reads the old `edge_pursues_` prefix. The births stream is deliberately
+        // *not* handed to the pull: its hydration draws come from a stream derived
+        // from `(seed, tick, actorId)`, so a pull never shifts the draw count of the
+        // births that follow it and the world is byte-identical to the pre-pull world
+        // except for what the pull itself did (NFP #3 — and what makes a before/after
+        // census attributable to the pull rather than to a moved stream).
+        const bornBusy = collectBusyActorIds(state);
         for (const assignment of ambitionAssignments) {
-          // Find or create the ambition template node in the graph
-          const ambitionNodeId = `ambition.${assignment.templateId}`;
-          if (!graph.getNode(ambitionNodeId)) {
-            const template = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
-            if (template) {
-              graph.addNode({
-                id: ambitionNodeId,
-                type: 'ambition',
-                name: template.displayName,
-                properties: {
-                  [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
-                  templateId: template.id,
-                  displayName: template.displayName,
-                  category: template.category,
-                  reachAffinity: template.reachAffinity,
-                  totalMilestones: template.milestones.length,
-                },
-              });
-            }
-          }
-
-          graph.addEdge({
-            id: `edge_pursues_${newId}_${assignment.templateId}`,
-            source: newId,
-            target: ambitionNodeId,
-            type: 'pursues',
-            properties: {
-              priority: assignment.priority,
-              status: 'active',
-              assignedTick: state.tick,
-              completedMilestones: [],
-            },
+          const born = assignAmbitionToActor(graph, newId, assignment.templateId, state.tick, {
+            priority: assignment.priority,
+            seed: state.seed,
+            busyActorIds: bornBusy,
           });
+          if (born.pull?.pulled) events.push(born.pull.event);
         }
 
         // Validate newborn agent integrity.

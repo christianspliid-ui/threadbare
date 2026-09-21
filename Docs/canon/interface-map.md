@@ -335,7 +335,22 @@ the live board; `check:content-model-census` prints *Reachability: HIT*) and the
 arms (`appointment_kept` with the mortal present at the due tick and the Full Moon Collection
 spawning at the place; `appointment_missed` with the mortal stood on another hex, the promise
 marked `broken`, the reckoning following). Never on a gate that reads the code. Earlier:
-2026-09-21 by Claude Code (THR-1479 — the appointment primitive, slice 1). Two contracts
+2026-09-22 by Claude Code (THR-1348 — attention follows ambition). One contract added
+**🟢 LIVE on landing**, `strategic-ambition-pulls-holder-into-spotlight` (Ambitions &
+Undertakings → Agent Lifecycle: a strategic-profiled ambition assigned below the spotlight
+pulls its holder into the deciding tier through `pullHolderIntoSpotlight` and swaps out the
+least-recently-witnessed spotlight mortal with no strategic ambition; consumers are the
+decision loop's tier predicate, `hexMapAgentVisibility`, `LocationView` and both census
+scripts), verified by the landing census — `merchant-expansion` reachable on 2 of 3 seeds
+against a baseline of 1 — and by `spotlightPull.test.ts`. `ambition-acquisition` **extended**:
+its symbols gain `assignAmbitionToActor` and `pullHolderIntoSpotlight`, its read sites the
+aftermath card and the binder, and its evidence is re-verified now that every individual
+`pursues` writer (worldSeed, gameInit, births, the two `ambitionTick` writers, the binder,
+the card) routes through the one helper, byte-identical by `JSON.stringify`. The
+`attachment-trait-grant-effects` evidence is **repointed** from the `requiredTraits` gate on
+`ambition_forge_legend` to its `boostingTraits` pairing — the gate could never be satisfied
+on any seed, so the test asserting it was green on a dead contract; `grantedTraitConsumers.test.ts`
+now asserts the boosting side. Earlier: 2026-09-21 by Claude Code (THR-1479 — the appointment primitive, slice 1). Two contracts
 registered **🔴 LEAKED-with-ticket at filing**, deliberately: `appointment-pulls-agent-movement`
 (Encounters & Dilemmas → Movement & Colocation: the seed's `appointment` block leans and
 departs a mortal through the decision phase) and `missed-appointment-breaks-agreement`

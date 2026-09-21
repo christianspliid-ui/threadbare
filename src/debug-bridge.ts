@@ -2254,6 +2254,14 @@ if (import.meta.env.DEV) {
       if (!state?.strategicState) return [];
       return state.strategicState.projects;
     },
+    // THR-1348 — attention follows ambition. The ledger the pull writes on actor
+    // nodes: who was pulled into the spotlight, whom they displaced, who was refused.
+    getSpotlightLedger: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { pulled: [], overflow: 0, overflowAllowance: 0, refused: [] };
+      const { readSpotlightLedger } = await import('./engine/spotlightPull');
+      return readSpotlightLedger(state.graph);
+    },
     getStrategicHistory: async (agentId?: string) => {
       const state = _gameStateProvider?.();
       if (!state?.strategicState) return [];

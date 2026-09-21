@@ -42,6 +42,7 @@ import {
 import type { PlantedAppointment } from '../types/unifiedAction';
 import { agentAppointmentSeeds, APPOINTMENT_FAVOUR_PROP } from './appointments';
 import { assignAmbitionToActor } from './ambitionAssignment';
+import { collectBusyActorIds } from './spotlightPull';
 import type { TraceEntry } from '../types/trace';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
 import { isImmuneToAnyTag } from './effects/effectQueries';
@@ -2449,13 +2450,25 @@ export function applyEncounterAftermathReaction(
 
         const assignment = assignAmbitionToActor(
           state.graph, resolvedId, effect.templateId, tick,
-          { priority: effect.priority, mintedByLabel: effect.narrativeHook },
+          {
+            priority: effect.priority,
+            mintedByLabel: effect.narrativeHook,
+            // THR-1348: a card-planted strategic ambition pulls its holder into the
+            // spotlight through the same hook the world's own mints use.
+            seed: state.seed,
+            busyActorIds: collectBusyActorIds(state),
+          },
         );
 
         if (assignment.assigned) {
           mutationSummary.touchedStructure = true;
           mutationSummary.touchedWorld = true;
           touchWorld(runtime);
+
+          if (assignment.pull?.pulled) {
+            nextTickEvents = [...nextTickEvents, assignment.pull.event];
+            nextRecentEvents = appendRecentEvent(nextRecentEvents, assignment.pull.event);
+          }
 
           // Desire is interior — the chronicle entry is opt-in, authored per card.
           if (effect.narrativeHook) {

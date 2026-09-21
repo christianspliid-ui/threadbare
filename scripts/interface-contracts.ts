@@ -858,7 +858,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-07-26',
       evidence:
-        'THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: [\'master_smith\']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.',
+        'THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` consumes it on `ambition_forge_legend` — as a `boostingTraits` entry since THR-1348 (2026-09-22; it was the `requiredTraits` gate, which no seed could ever satisfy because the Anvil is a tier-4 cursed artifact `seedPossessions` never deals, so the ambition had zero holders on every seed). `grantedTraitConsumers.test.ts` asserts the boosting side: the granted key reaches the snapshot and `scoreDesirability` ranks the ambition higher with the Anvil than without, on one fixed stream. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.',
     },
   },
   {
@@ -972,12 +972,50 @@ export const CONTRACTS: readonly Contract[] = [
     id: 'ambition-acquisition',
     producerSystem: 'Agent Lifecycle',
     consumerSystem: AMBITIONS,
-    intent: 'Agents acquire ambitions at worldgen, birth, and re-evaluation.',
-    ulTerms: ['Ambition'],
-    mechanism: { kind: 'function', symbols: ['assignInitialAmbitions'] },
-    writeSites: ['src/engine/ambitionAssignment.ts'],
-    readSites: ['src/engine/worldSeed.ts', 'src/engine/agentLifecycle.ts', 'src/engine/ambitionTick.ts', 'src/engine/gameInit.ts'],
-    verifiedLive: { date: '2026-07-23', evidence: `pursues edges grow 32→225 over 120 ticks, 182 active. ${AUDIT_EVIDENCE}` },
+    intent: 'Agents acquire ambitions at worldgen, birth, the binder mint, the mint lane, re-evaluation and the Kindled Ambition card — every route through one graph-writing helper.',
+    ulTerms: ['Ambition', 'Spotlight tier'],
+    mechanism: { kind: 'function', symbols: ['assignInitialAmbitions', 'assignAmbitionToActor', 'pullHolderIntoSpotlight'] },
+    writeSites: ['src/engine/ambitionAssignment.ts', 'src/engine/spotlightPull.ts'],
+    readSites: [
+      'src/engine/worldSeed.ts',
+      'src/engine/agentLifecycle.ts',
+      'src/engine/ambitionTick.ts',
+      'src/engine/gameInit.ts',
+      'src/engine/encounterAftermath.ts',
+      'src/engine/binding/mintInhabitant.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        `pursues edges grow 32→225 over 120 ticks, 182 active. ${AUDIT_EVIDENCE}. Re-verified 2026-09-22 under THR-1348: the two inline \`pursues\` writers in ambitionTick (mint-to-holder, re-evaluation) and the worldSeed / gameInit / agentLifecycle writers all route through \`assignAmbitionToActor\`; \`ambitionAssignment-routing.test.ts\` pins the edge and node property bags byte-identical (JSON.stringify) to the inline shapes and proves a re-evaluated notable is pulled — which only the routed helper can do. Seed 42/99 medium 150 ticks: 187 / 194 undertaking starts, census PASS on both seeds.`,
+    },
+  },
+  {
+    id: 'strategic-ambition-pulls-holder-into-spotlight',
+    producerSystem: AMBITIONS,
+    consumerSystem: 'Agent Lifecycle',
+    intent:
+      'Attention follows ambition (THR-1348): a strategic-profiled ambition assigned below the spotlight pulls its holder into the deciding tier and swaps out the least-recently-witnessed spotlight mortal with no strategic ambition, so the world\'s builders are the mortals the player can watch and the attention budget stays flat.',
+    ulTerms: ['Spotlight tier', 'Ambition'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['spotlightTier', 'spotlightPulledTick', 'spotlightPullDemotedId', 'lastWitnessedTick', 'pullHolderIntoSpotlight', 'demoteToTier', 'isAutonomousDecisionActor'],
+      module: 'src/engine/spotlightPull.ts',
+    },
+    writeSites: ['src/engine/spotlightPull.ts', 'src/engine/npcGraduation.ts', 'src/engine/unifiedActionResolution.ts'],
+    readSites: [
+      'src/engine/strategicKindReachability.ts',
+      'src/engine/phaseAgentDecision.ts',
+      'src/components/Game/hexMapAgentVisibility.ts',
+      'src/components/Game/LocationView.tsx',
+      'scripts/kind-reachability.ts',
+      'scripts/undertaking-census.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`.',
+    },
   },
   {
     id: 'ambition-progress-milestones',

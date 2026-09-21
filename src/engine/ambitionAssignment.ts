@@ -8,8 +8,9 @@ import type { AmbitionTemplate, AmbitionPriority } from '../types/ambition';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import type { WorldGraph } from './graph';
 import { selectAmbitions } from './ambitionSelection';
-import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import { findAmbitionTemplateById } from '../data/ambition-templates';
 import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
+import { pullHolderIntoSpotlight, type SpotlightPullOptions, type SpotlightPullResult } from './spotlightPull';
 
 export interface AmbitionAssignment {
   templateId: string;
@@ -51,11 +52,40 @@ export interface AmbitionAssignmentResult {
   readonly priority?: AmbitionPriority;
   /** Shared ambition node the `pursues` edge points at — present only when `assigned`. */
   readonly ambitionNodeId?: string;
+  /**
+   * What the spotlight pull did after the edge was written (THR-1348) — present only
+   * when `assigned`. A pulled result carries the one chronicle event the caller
+   * appends to the tick; the helper itself writes no events.
+   */
+  readonly pull?: SpotlightPullResult;
+}
+
+export interface AssignAmbitionOptions extends SpotlightPullOptions {
+  readonly priority?: AmbitionPriority;
+  readonly mintedByLabel?: string;
+  /**
+   * Further `pursues` edge properties, spread last — the mint lane's provenance
+   * (`mintedByEventId`, `mintedByLabel`) and the grievance state that lives edge-side
+   * because ambition nodes are shared per template (THR-726, THR-1298). Added so the
+   * two writers `ambitionTick` carried inline could route through here without
+   * changing a byte of what they write (THR-1348).
+   */
+  readonly extraProperties?: Readonly<Record<string, unknown>>;
+  /**
+   * Write the edge but do not run the spotlight pull. The one production caller is
+   * the undertaking binder's support mint (`mintInhabitant`), whose contract is that a
+   * clerk or fence minted for someone else's work is an *ambient* face and the same
+   * person whatever tick the queue drains — a pull would change both. Whether a minted
+   * extra should ever be a builder is the same question THR-1523 asks about newborns;
+   * until it is answered the binder opts out here, explicitly, rather than by sitting
+   * outside the helper.
+   */
+  readonly skipSpotlightPull?: boolean;
 }
 
 /**
  * Assign one ambition to one actor: find-or-create the shared ambition node, then
- * write the `pursues` edge.
+ * write the `pursues` edge — then let the spotlight pull run (THR-1348).
  *
  * **Extracted, not invented (THR-885).** This exact node+edge write was copied
  * three times inside `ambitionTick` and `agentLifecycle`, which is precisely why
@@ -65,6 +95,13 @@ export interface AmbitionAssignmentResult {
  * effect, i.e. The Kindled Ambition card) route through here so a card-planted
  * ambition and a world-minted one are byte-identical on the graph.
  *
+ * **The one hook (THR-1348).** `ambitionTick`'s two inline writers — the
+ * mint-to-holder write and the re-evaluation write — now route through here too, so
+ * a card-planted, world-minted, birth-assigned and re-evaluated ambition all pass
+ * `pullHolderIntoSpotlight` once, at assignment. Templates are resolved across all
+ * three pools (`findAmbitionTemplateById`) because the mint lane assigns from the
+ * event-minted and grievance pools, which `AMBITION_TEMPLATES` alone does not hold.
+ *
  * Fail-soft: every rejection is a returned reason, never a throw — the tick loop
  * must not crash on a card naming a template that was retired (NFP #4).
  */
@@ -73,11 +110,11 @@ export function assignAmbitionToActor(
   actorId: string,
   templateId: string,
   tick: number,
-  options: { readonly priority?: AmbitionPriority; readonly mintedByLabel?: string } = {},
+  options: AssignAmbitionOptions = {},
 ): AmbitionAssignmentResult {
   if (!graph.getNode(actorId)) return { assigned: false, reason: 'actor_missing' };
 
-  const template = AMBITION_TEMPLATES.find((t) => t.id === templateId);
+  const template = findAmbitionTemplateById(templateId);
   if (!template) return { assigned: false, reason: 'template_unknown' };
 
   const pursues = graph.getOutgoingEdges(actorId, 'pursues');
@@ -119,8 +156,19 @@ export function assignAmbitionToActor(
       assignedTick: tick,
       completedMilestones: [],
       ...(options.mintedByLabel ? { mintedByLabel: options.mintedByLabel } : {}),
+      ...(options.extraProperties ?? {}),
     },
   });
 
-  return { assigned: true, priority, ambitionNodeId };
+  // Attention follows ambition (THR-1348): after the edge, never before — the pull
+  // reads the holder's own ambitions when it decides who may step back.
+  const pull: SpotlightPullResult = options.skipSpotlightPull
+    ? { pulled: false, reason: 'not_applicable' }
+    : pullHolderIntoSpotlight(graph, actorId, templateId, tick, {
+        rng: options.rng,
+        seed: options.seed,
+        busyActorIds: options.busyActorIds,
+      });
+
+  return { assigned: true, priority, ambitionNodeId, pull };
 }
