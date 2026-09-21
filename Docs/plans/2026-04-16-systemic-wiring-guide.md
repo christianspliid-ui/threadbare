@@ -3963,10 +3963,14 @@ at tick 149 (window closed 148) and the reckoning follows.
 seeded run, kept, missed by reason, and a verdict — **HIT** (an appointment was planted on the live
 board), **UNREACHED** (authored, never planted on this seed — re-run at another before reading it as
 dead), or **DEAD** (nothing authors one; two batches at zero is the retro's *dead primitive* finding,
-and the die floor and the systems-prompt entry are the first suspects). The two interface contracts
-`appointment-pulls-agent-movement` and `missed-appointment-breaks-agreement` flipped 🟢 on that
-row and the live-proof arms — **not** on any gate that reads the code, which is the whole of the
-Capability 30 lesson applied one primitive later.
+and the die floor and the systems-prompt entry are the first suspects). **Measured 2026-09-22, the
+row read UNREACHED** on seeds 42 / 99 / 7 at 200 ticks and 42 / 99 at 1000: the Crossroads fired
+once in 1000 ticks on the live board and the mortal refused. So the two interface contracts
+`appointment-pulls-agent-movement` and `missed-appointment-breaks-agreement` **stay 🔴 LEAKED**,
+repointed to THR-1524 — they flip on a census HIT and on nothing else, which is the whole of the
+Capability 30 lesson applied one primitive later, this time caught before the flip rather than
+after. The floor is the remedy: the next batch must author a second appointment-bearing encounter,
+and it should carry broad `settings` and a planting path not gated behind one pole of a value axis.
 
 **What is deliberately not here.** No halt-tolerance constant (a running undertaking is never
 abandoned and the checkpoint deferral already prices an absence); no `appointment` Agreement class
