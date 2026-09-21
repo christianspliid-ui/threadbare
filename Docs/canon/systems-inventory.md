@@ -381,6 +381,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | — |
 | `spell` (1) | `spellActivation.ts` | — |
 | `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
+| `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
 | `stealth` (1) | `stealth.ts` | — |
 | `step` (1) | `stepResolutionCore.ts` | `THR-1292` |
 | `strands` (1) | `strands.ts` | — |
@@ -416,4 +417,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 189 engine domains · 560 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 190 engine domains · 561 modules._

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 104 |
+| 🟢 LIVE | 105 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 9 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **135** |
+| **Total** | **136** |
 
 ## Contracts by producing subsystem
 
@@ -29,7 +29,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `ambition-acquisition` | Agents acquire ambitions at worldgen, birth, and re-evaluation. | function: `assignInitialAmbitions` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `ambition-acquisition` | Agents acquire ambitions at worldgen, birth, the binder mint, the mint lane, re-evaluation and the Kindled Ambition card — every route through one graph-writing helper. | function: `assignInitialAmbitions`, `assignAmbitionToActor`, `pullHolderIntoSpotlight` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `attachment-worldgen-starters` | Worldgen seeds starting possessions so agents begin already carrying history. | function: `seedAttachments` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `mortal-dies-through-one-funnel` | Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`). Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430). | property: `deceased`, `markMortalDead` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `world-object-registry` | Every kind of thing the world keeps has one name, in game words, and one registered shape — a node type (or edge type, or GameState slice) plus the subtype the game names — so a system that mints one and a system that targets one agree on what it is without reading each other. The registry derives the node schema that dev-mode addNode checks (an unregistered value is named the tick it is first written, warn-once, never a crash), the contract test pins it against every union and every WorldRefKind, and the generator badges each kind from a two-seed census and fails by name on drift. Adding a kind, class or subtype is one PR: registry row, UL term, canon row (THR-1394). | function: `WORLD_OBJECT_KINDS`, `validateNodeAgainstRegistry`, `getNodeSchema`, `locationClassOf`, `placeClassOf` | Strategic Projects & Control | 🟢 LIVE | — |
@@ -57,6 +57,7 @@ remediation ticket or the build fails.
 | `one-namer-shared-primitives` | There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own. | module-export: `possessive`, `hashSeed`, `pickFrom`, `generateWorkName` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ring-is-a-group-that-stays` | A network is a group node that the group phase sees but never moves. `found_ring` mints it through the one group mint (`createGroup`, stamped `groupKind: 'network'`), so it is a company's sibling rather than a new shape, and every membership query already reads it. The phase enumerates `GROUP_PHASE_KINDS` (companies and networks) for upkeep, cohesion and dissolution and gates only the movement sub-step on `GROUP_KINDS_THAT_TRAVEL` — the two lists are separate because each half alone is a defect: widening the enumeration without gating movement makes rings travel, and gating movement without widening the enumeration leaves them invisible to upkeep and dissolution. `getAllGroups` still defaults to companies alone, so its ~40 existing callers are unchanged. A ring has no position of its own; its reach is measured from every living member (`RING_REACH_HEXES`), which is what lets it act somewhere its leader has never been (THR-1430). | function: `foundRing`, `ringMemberInReachOf`, `GROUP_PHASE_KINDS`, `GROUP_KINDS_THAT_TRAVEL` | Companies & Group Travel | 🔵 UNVERIFIED-OK | — |
 | `ruined-settlement-joins-delve-layer` | A settlement a mortal razed becomes somewhere to explore: it carries a depth banded from what it used to be, and the delve layer admits it once the dust has settled — so a warlord's destruction feeds a wanderer's delve rather than ending the story of that place. | node-prop: `ruinMagnitude`, `ruinedTick`, `locationSubtype` | Ruins, Clues & Delves | 🟢 LIVE | — |
+| `strategic-ambition-pulls-holder-into-spotlight` | Attention follows ambition (THR-1348): a strategic-profiled ambition assigned below the spotlight pulls its holder into the deciding tier and swaps out the least-recently-witnessed spotlight mortal with no strategic ambition, so the world's builders are the mortals the player can watch and the attention budget stays flat. | node-prop: `spotlightTier`, `spotlightPulledTick`, `spotlightPullDemotedId`, `lastWitnessedTick`, `pullHolderIntoSpotlight`, `demoteToTier`, `isAutonomousDecisionActor` | Agent Lifecycle | 🟢 LIVE | — |
 | `t1-undertaking-objects-feed-existing-economies` | A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads. | edge-prop: `knows_clue_of`, `knows_secret_of`, `owes_favor`, `consumeOnEvent`, `possesses` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `undertaking-catalyst-resolves-by-query` | A completed undertaking seeds its catalyst follow-up by family query rather than by literal id, through the same PendingEncounterSeed path an aftermath seed takes, so the two planters cannot disagree about what a dead reference does. This activates a field that had never once fired: every id the seven packs spelled was encounter_<name> while the corpus spells encounters encounter.<name>, so all 33 references resolved to nothing and every catalyst seed planted since the feature shipped withered on arrival — recorded as DORMANT in THR-1481's substrate inventory for exactly that reason. check:undertaking is now fatal on both operands, which is what keeps the field from going dormant a second time (THR-1488, slice 4 of THR-1481). | function: `catalystQuery`, `maybeSeedCatalyst`, `undertakingWriteSet` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `undertaking-creation-effects` | A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift. | function: `materializeWalkOnActor`, `applyCreationEffects`, `selectCreationBand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-1297 |
@@ -293,14 +294,14 @@ remediation ticket or the build fails.
 
 ### `ambition-acquisition` — 🟢 LIVE
 
-- **Intent:** Agents acquire ambitions at worldgen, birth, and re-evaluation.
+- **Intent:** Agents acquire ambitions at worldgen, birth, the binder mint, the mint lane, re-evaluation and the Kindled Ambition card — every route through one graph-writing helper.
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
-- **UL terms:** *Ambition*
-- **Production hits:** 6 total — 1 write, 4 read, 1 unclassified
-- **Write sites:** `src/engine/ambitionAssignment.ts`
-- **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/gameInit.ts`, `src/engine/worldSeed.ts`
-- **Other hits:** `src/engine/binding/mintInhabitant.ts`
-- **Verdict:** Verified 2026-07-23: pursues edges grow 32→225 over 120 ticks, 182 active. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+- **UL terms:** *Ambition*, *Spotlight tier*
+- **Production hits:** 11 total — 2 write, 6 read, 3 unclassified
+- **Write sites:** `src/engine/ambitionAssignment.ts`, `src/engine/spotlightPull.ts`
+- **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/encounterAftermath.ts`, `src/engine/gameInit.ts` +1 more
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Verified 2026-09-22: pursues edges grow 32→225 over 120 ticks, 182 active. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified). Re-verified 2026-09-22 under THR-1348: the two inline `pursues` writers in ambitionTick (mint-to-holder, re-evaluation) and the worldSeed / gameInit / agentLifecycle writers all route through `assignAmbitionToActor`; `ambitionAssignment-routing.test.ts` pins the edge and node property bags byte-identical (JSON.stringify) to the inline shapes and proves a re-evaluated notable is pulled — which only the routed helper can do. Seed 42/99 medium 150 ticks: 187 / 194 undertaking starts, census PASS on both seeds.
 
 ### `ambition-biases-encounter-choice` — 🟢 LIVE
 
@@ -345,10 +346,10 @@ remediation ticket or the build fails.
 
 - **Intent:** Ambitions progress and complete, firing milestone events the player sees.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
 - **Write sites:** `src/engine/phases/ambitionProgress.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`
-- **Other hits:** `src/data/ambition-templates.ts`, `src/engine/agentResidence.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/ambition-templates.ts`, `src/engine/agentResidence.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/spotlightPull.ts` +1 more
 - **Verdict:** Verified 2026-07-23: 15-tick cadence; milestone events observed firing. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `appointment-pulls-agent-movement` — 🔴 LEAKED
@@ -524,7 +525,7 @@ exit
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/gameInit.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/spellActivation.ts`, `src/engine/worldSeed.ts`
 - **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/ambition-templates.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts` +9 more
-- **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: ['master_smith']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.
+- **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` consumes it on `ambition_forge_legend` — as a `boostingTraits` entry since THR-1348 (2026-09-22; it was the `requiredTraits` gate, which no seed could ever satisfy because the Anvil is a tier-4 cursed artifact `seedPossessions` never deals, so the ambition had zero holders on every seed). `grantedTraitConsumers.test.ts` asserts the boosting side: the granted key reaches the snapshot and `scoreDesirability` ranks the ambition higher with the Anvil than without, on one fixed stream. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.
 
 ### `attachment-worldgen-starters` — 🟢 LIVE
 
@@ -1031,10 +1032,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 86 total — 2 write, 3 read, 81 unclassified
+- **Production hits:** 88 total — 2 write, 3 read, 83 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +76 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +78 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-command-changes-through-one-writer` — 🟢 LIVE
@@ -1043,10 +1044,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Ambitions & Undertakings
 - **UL terms:** *Company*, *Army*, *Undertaking*
 - **Module:** `src/engine/groups/groupCommand.ts`
-- **Production hits:** 27 total — 3 write, 2 read, 22 unclassified
+- **Production hits:** 28 total — 3 write, 2 read, 23 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/groups/groupCommand.ts`, `src/engine/groups/groupDissolution.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +17 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +18 more
 - **Verdict:** Verified 2026-09-08: THR-1438. `promoteNewLeader` now calls `setCommander(..., 'promotion')` and the old `promoted: true` property is gone — measured before the change as one writer and **zero readers**, so the rename repointed nobody. The four cells that change a command (`claim × Company`, `claim × Army`, `seize × Company`, `seize × Army`) call the same writer with their own `via`. Pinned in `src/engine/__tests__/peopleThingsOps.test.ts`: the edge is replaced not appended (exactly one `commanded_by` after), roles flip to `member` on everyone but the new commander, a claimant who was never a member is admitted as `leader`, and a missing group or actor writes nothing and returns the reason. On a generated small world (seed 42, tick 30) a commander marked dead through `markMortalDead` makes `cell.control_claim.company` and `cell.control_claim.army` appear on a living member's board where neither was offered before (`peopleThingsCells.test.ts`).
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1192,10 +1193,10 @@ exit
 
 - **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
 - **Producer → Consumer:** Ambitions & Undertakings → Omens & Atmospheric Pressure
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
-- **Other hits:** `src/components/Game/momentCardModel.ts`, `src/debug-bridge.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/ambition.ts`, `src/types/trace.ts`
+- **Other hits:** `src/components/Game/momentCardModel.ts`, `src/debug-bridge.ts`, `src/engine/ambitionAssignment.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/ambition.ts` +1 more
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
 
 ### `missed-appointment-breaks-agreement` — 🔴 LEAKED
@@ -1263,10 +1264,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
+- **Production hits:** 15 total — 1 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts` +2 more
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/encounters/dealHand.ts` +7 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -1519,6 +1520,18 @@ exit
 - **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`, `src/engine/undertakingReviewLevers.ts`
 - **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
 
+### `strategic-ambition-pulls-holder-into-spotlight` — 🟢 LIVE
+
+- **Intent:** Attention follows ambition (THR-1348): a strategic-profiled ambition assigned below the spotlight pulls its holder into the deciding tier and swaps out the least-recently-witnessed spotlight mortal with no strategic ambition, so the world's builders are the mortals the player can watch and the attention budget stays flat.
+- **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
+- **UL terms:** *Spotlight tier*, *Ambition*
+- **Module:** `src/engine/spotlightPull.ts`
+- **Production hits:** 37 total — 3 write, 4 read, 30 unclassified
+- **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/components/Game/hexMapAgentVisibility.ts`, `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +25 more
+- **Verdict:** Verified 2026-09-22: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`.
+
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
 
 - **Intent:** A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it.
@@ -1629,10 +1642,10 @@ exit
 - **Intent:** Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **Module:** `src/engine/undertakingCapabilityGrowth.ts`
-- **Production hits:** 56 total — 2 write, 2 read, 52 unclassified
+- **Production hits:** 57 total — 2 write, 2 read, 53 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCapabilityGrowth.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +47 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +48 more
 - **Verdict:** Verified 2026-09-08: THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
@@ -1685,10 +1698,10 @@ exit
 - **Intent:** A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.
 - **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
 - **Module:** `src/engine/binding/remoteAnchor.ts`
-- **Production hits:** 28 total — 1 write, 2 read, 25 unclassified
+- **Production hits:** 29 total — 1 write, 2 read, 26 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`
 - **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +20 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +21 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertakings-reach-the-player` — 🟢 LIVE
@@ -1766,10 +1779,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 247 total — 2 write, 6 read, 239 unclassified
+- **Production hits:** 248 total — 2 write, 6 read, 240 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +234 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +235 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `yield-is-a-verb` — 🟢 LIVE
