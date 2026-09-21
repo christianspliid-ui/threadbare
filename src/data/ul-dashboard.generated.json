@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 44,
+      "termCount": 45,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -2769,6 +2769,38 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#encounter-seed",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "appointment",
+      "name": "Appointment",
+      "aliases": [
+        "Placed Seed",
+        "Timed Seed"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "An `[[Encounter Seed]]` bound to a **place** and a **due tick**, kept by the mortal being on the place's hex within a window after it falls due, and missed otherwise (THR-1479).",
+      "body": "An `[[Encounter Seed]]` bound to a **place** and a **due tick**, kept by the mortal being on the place's hex within a window after it falls due, and missed otherwise (THR-1479). The seed carries an `appointment` block naming the place, the window, the counterparty and the **missed** branch; its own template or query is the **kept** branch. The promise is a favour owed — an `owes_favor` edge carrying `properties.appointment`, a member of the world-object **Agreement** kind — redeemed when kept, marked `broken` when missed. The seed is the appointment's one record; nothing is copied onto the mortal. Only encounters mint appointments (director ruling 2026-09-12); a mortal must be able to miss one, and whether they do is personality-driven through their leave margin. The one lawful way for prose to bind a mortal to a place and a time (prose rule 7b's exception).",
+      "seeAlso": [
+        {
+          "raw": "Encounter Seed",
+          "termName": "Encounter Seed",
+          "resolvedSlug": "encounters#encounter-seed"
+        },
+        {
+          "raw": "Agreement",
+          "termName": "Agreement",
+          "resolvedSlug": "agents#agreement"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#appointment",
       "contentAdjacent": true
     },
     {

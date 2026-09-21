@@ -299,6 +299,8 @@ export const SLICE_TEMPLATE_IDS = {
   caravan: 'encounter.slice.riders_behind_caravan',
   crossroads: 'encounter.slice.bargain_at_crossroads',
   fullMoon: 'encounter.slice.full_moon_collection',
+  /** THR-1479 — the missed branch of the crossroads appointment. */
+  fullMoonReckoning: 'encounter.slice.full_moon_reckoning',
   family: 'encounter.slice.swindled_family',
   swindlerFound: 'encounter.slice.swindler_found',
   gratefulKin: 'encounter.slice.grateful_kin',
@@ -1853,7 +1855,11 @@ const CROSSROADS_MEASURE_STEP: ActionStep = {
     // subject instead of apposing a name it does not have.
     '{cast:stranger} waits under the dead tree — no horse, no pack, no mud on his boots. He ' +
     'greets the traveler by name, offers a gift shaped to their own quiet wanting, and asks in payment only ' +
-    'a promise. He will bring it at the full moon and find them himself.\n\n' +
+    // THR-1479: "here" and "the next full moon" are a sentence the engine performs
+    // now — the accept path's seed carries an `appointment` block (place `$here`,
+    // due at the seed's own delay), so the place-and-time promise is prose rule
+    // 7b's one lawful exception rather than its example.
+    'a promise: collect it here at the next full moon.\n\n' +
     'Take the measure of a man who knows too much, then give the word or keep walking.',
   successAfterimage: 'The traveler took the stranger’s measure and kept their own counsel about it.',
   failureAfterimage: 'The stranger was easy to look at and impossible to read, and gave back only manners.',
@@ -1987,31 +1993,40 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
           {
             id: 'slice.crossroads.carry_the_promise',
             label: 'Carry the promise',
-            intent: 'The road goes on. At the next full moon, he finds them on it.',
+            intent: 'The road goes on, with an appointment at the end of it.',
             effects: [
               {
-                // THR-1110 — the promise is a real claim the bearer holds, not only
-                // a scheduled encounter. Before the `attachment_grant` member existed
-                // the seed below was the sole durable write, so nothing read the bond,
-                // nothing gated on it, and it could not be inspected on the bearer.
-                // Both writes ride the base reaction deliberately: the bands on this
-                // path author `overview` + `changes` only, because
-                // `applyAftermathOutcomeBand` replaces reactions wholesale and a band
-                // that authored its own would drop everything here.
-                kind: 'attachment_grant',
-                templateId: 'agreement.bargain.promise_given',
-                targetAgentId: '$actor',
-                counterpartyId: '$cast:stranger',
-                // The bond falls due exactly when the collection does.
-                durationOverride: SLICE_FULL_MOON_DELAY_TICKS,
-              },
-              {
+                // THR-1479 — the promise is an *appointment*. The seed carries the
+                // place (`$here`, the crossroads the scene happens at), the due tick
+                // (its own delay), the other party (the cast's stranger) and the
+                // branch that fires if the mortal is not there when the moon comes
+                // round — so "collect it here at the next full moon" is a sentence
+                // the engine performs, prose rule 7b's one lawful exception.
+                //
+                // The `owes_favor` edge the planter writes *is* the promise on the
+                // sheet — one claim, not two — which is why THR-1110's
+                // `promise_given` grant no longer rides beside the seed (the catalog
+                // entry stays for other authors). The seed rides the base reaction
+                // deliberately: the bands on this path author `overview` + `changes`
+                // only, because `applyAftermathOutcomeBand` replaces reactions
+                // wholesale and a band that authored its own would drop everything.
                 kind: 'encounter_seed',
                 templateId: SLICE_TEMPLATE_IDS.fullMoon,
                 targetAgentId: '$actor',
                 delayTicks: SLICE_FULL_MOON_DELAY_TICKS,
                 seedLabel: 'A promise made at the crossroads falls due at the full moon.',
                 inheritContext: true,
+                appointment: {
+                  locationId: '$here',
+                  counterpartyId: '$cast:stranger',
+                  // The kept branch is the seed's own template — one authored scene,
+                  // a gated literal. The missed branch is a *family*, so a second
+                  // reckoning authored later joins by carrying the tag.
+                  missed: {
+                    query: { kind: 'encounter_template', tags: ['#crossroads_debt'] },
+                    seedLabel: 'A promise broken at the crossroads has a way of finding the road.',
+                  },
+                },
               },
             ],
           },
@@ -2041,7 +2056,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             overview:
               'The word is given and the stranger is gone. The first payment came due that ' +
               'same night, in sleep. Every evening between here and the full moon has the ' +
-              'promise sitting in it.',
+              'appointment in it.',
             changes: [
               {
                 id: 'slice.crossroads.a_nights_sleep',
@@ -2288,7 +2303,7 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     imageTag: 'generic.focus',
     effectLine: 'Their breathing stays even while the moonlight fills, and the meeting starts with a level head.',
     bandProse: {
-      success: 'The exchange was met with a level head, and it showed.',
+      success: 'The appointment was kept with a level head, and it showed.',
       failure: 'The nerve held through the greeting. The parcel’s weight undid it.',
     },
   },
@@ -2355,7 +2370,7 @@ const FULL_MOON_STEP: ActionStep = {
   reach: 'star',
   duration: { min: 1, max: 1 },
   difficulty: 0.3,
-  purposeLine: 'Stand the exchange',
+  purposeLine: 'Keep the appointment',
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
@@ -2363,12 +2378,14 @@ const FULL_MOON_STEP: ActionStep = {
   // at instantiation. No cast token — this template declares no bundle; the
   // stranger arrives through the parent seed's inherited context.
   //
-  // THR-1476: he finds them, they do not come to him. The parent's seed fires
-  // on the agent wherever the road has taken them, so the prose says so.
+  // THR-1479: they came to him. This template fires only from the crossroads
+  // appointment's *kept* arm — the mortal is standing on the crossroads hex in
+  // the window when it does — so the prose may say so (THR-1476 made it say he
+  // found them, because then nothing placed them; now something does).
   narrativeTemplate:
-    'The stranger from the crossroads finds the road they are on before the light finishes arriving — ' +
+    'The stranger from the crossroads is there before the light finishes arriving — ' +
     'same coat, same clean boots — holding a wrapped parcel the size of the gift he described. He is ' +
-    'pleased the promise held.\n\n' +
+    'pleased the promise held, and pleased they are standing where they said they would be.\n\n' +
     'All that remains is to take the gift from his hands, and to stand the exchange well.',
   successAfterimage: 'The gift changed hands under the full moon, and the stranger bowed like a merchant after a fair sale.',
   failureAfterimage: 'The parcel passed to the traveler’s hands cold and heavier than it looked.',
@@ -2393,7 +2410,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
   settings: ['wayside'],
   // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (FULL_MOON_STEP).
   openings: {
-    wayside: '{name} is on the open road near {location} when the moon rises full.',
+    wayside: '{name} comes back to the crossroads at {location} as the moon rises full.',
   },
   locationSubtypes: expandSettings(['wayside']),
   aftermathConfig: {
@@ -2411,7 +2428,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
           id: 'slice.fullmoon.the_gift',
           kind: 'item',
           title: 'The Crossroads Gift',
-          causeClause: 'The moon came full and he found them',
+          causeClause: 'They kept the night they promised',
           detail: 'The parcel is theirs, entire.',
           polarity: 'gain',
           category: 'boon',
@@ -5012,6 +5029,297 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
     'fate settles what the night does with it.',
 };
 
+// ═════════════════════════════════════════════════════════════════════
+// 4c. THE STRANGER FINDS THEM — the missed branch of the crossroads appointment
+// ═════════════════════════════════════════════════════════════════════
+//
+// THR-1479. Crux: the moon came full and they were not at the crossroads.
+// Shape: Seeded Sequel (Single Test) · Setting: anywhere — the missed branch
+// fires wherever the road has taken them, which is its whole point · Pressure:
+// oath · Form: answer · Objective: withstand · Stakes: standing (the broken word
+// is already on their sheet — the engine wrote `broken` on the promise before
+// this fires — and what it costs beyond that is the reputation write below) ·
+// System: appointments (the missed arm), seeds (closing), reputation.
+// Prose rule 7: this scene MAY name the crossroads, the promise and the miss —
+// the parent minted the promise and `evaluateEncounterSeeds` recorded the miss.
+// Prose rule 7b: it fires *wherever the mortal stands*, so it names no place
+// they must reach. Tagged `#crossroads_debt`: the family the parent's missed
+// branch draws by query, so a second reckoning joins by carrying the tag.
+
+const RECKONING_HAND: readonly StepNudge[] = [
+  {
+    // Type: Boost — shared focus family, the common option.
+    id: 'slice.reckoning.steady_nerve',
+    name: 'Steady Nerve',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    imageTag: 'generic.focus',
+    effectLine: 'Their breathing stays even while he waits, and the answer starts with a level head.',
+    bandProse: {
+      success: 'The answer was given with a level head, and he heard the level in it.',
+      failure: 'The nerve held through the greeting. The silence after it did not.',
+    },
+  },
+  {
+    // Type: Boost — mind, holding the bargain's exact words against what was done.
+    id: 'slice.reckoning.own_the_words',
+    name: 'Hold the Words',
+    sphere: 'mind',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    imageTag: 'generic.memory',
+    effectLine: 'The promise stays exact in their mind — what was said, and what was not done — so the answer names it plainly.',
+    bandProse: {
+      near_miss: 'Every word of the promise was named plainly. The one that mattered was the one about the place.',
+      critical_failure: 'The words came back exactly, and exactness was the whole of the charge.',
+    },
+  },
+  {
+    // Type: Boost — light, an honest hearing.
+    id: 'slice.reckoning.plain_light',
+    name: 'Light the Road',
+    sphere: 'light',
+    essenceCost: 2,
+    forecastDelta: 0.06,
+    imageTag: 'generic.light',
+    effectLine: 'The day falls flat and even across the road, and nothing about the answer hides in a shadow.',
+    bandProse: {
+      critical_success: 'In that plain light the answer was exactly what it claimed to be, and he took it as such.',
+      success: 'The whole answer was given in plain light, and plain light kept it honest.',
+      failure: 'The light was even. What was wrong with the answer was not standing in a shadow.',
+    },
+  },
+  {
+    // Type: Boost — order, the forms of a debt acknowledged.
+    id: 'slice.reckoning.the_old_forms',
+    name: 'Keep the Forms',
+    sphere: 'order',
+    essenceCost: 2,
+    forecastDelta: 0.05,
+    imageTag: 'generic.oath',
+    effectLine: 'Greeting, admission, terms — the ritual of a debt owned carries the answer even if nerve does not.',
+    bandProse: {
+      success_at_cost: 'The forms carried the answer to its end. The terms he set came after the forms were done.',
+      failure: 'The greeting and the admission went by the forms. The terms did not.',
+    },
+  },
+  {
+    // Type: Ward — spirit, closing the read he took at the crossroads.
+    id: 'slice.reckoning.ward_against_wanting',
+    name: 'Ward Against Wanting',
+    sphere: 'spirit',
+    essenceCost: 1,
+    forecastDelta: 0.04,
+    imageTag: 'generic.ward',
+    effectLine: 'The hunger the stranger once read in them goes quiet, and nothing today is priced off it.',
+    bandProse: {
+      near_miss: 'The wanting stayed quiet. He set his price off the broken word instead.',
+      critical_failure: 'The wanting stayed quiet all through it, and he noticed that too.',
+    },
+  },
+];
+
+const RECKONING_STEP: ActionStep = {
+  reach: 'heart',
+  duration: { min: 1, max: 1 },
+  difficulty: 0.35,
+  purposeLine: 'Answer for the word',
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'fail_action',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation. No cast token — this template declares no bundle; the
+  // stranger arrives through the parent seed's inherited context.
+  narrativeTemplate:
+    'The stranger from the crossroads finds the road they are on, a day and a night after the ' +
+    'moon came full — same coat, same clean boots, and no parcel in his hands. He does not ask ' +
+    'where they were. He knows, the way he knew their name.\n\n' +
+    '“The moon kept its side,” he says. “Let us see what yours is worth.” All that remains is to ' +
+    'stand in front of a promise they did not keep, and to answer for it well.',
+  successAfterimage: 'The broken word was owned out loud, and the stranger nodded as if a line had been settled.',
+  failureAfterimage: 'The answer came out sideways, and the stranger wrote the sideways down.',
+  successAtCostAfterimage: 'The word was owned, and the owning came with terms the traveler had not chosen.',
+  criticalSuccessAfterimage: 'The debt was named so plainly that he had nothing to add to it, and said so.',
+  criticalFailureAfterimage: 'They tried to explain the miss, and the explanation cost more than the miss had.',
+  nudges: RECKONING_HAND,
+};
+
+export const SLICE_FULL_MOON_RECKONING: UnifiedActionTemplate = {
+  id: SLICE_TEMPLATE_IDS.fullMoonReckoning,
+  rarityTier: 3,
+  intrinsicTier: 'background',
+  name: 'The Stranger Finds Them',
+  reach: 'heart',
+  crudType: 'read',
+  scale: 'local',
+  steps: [RECKONING_STEP],
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['loyalty_ambition'],
+  // Every class: the missed branch fires wherever the mortal stands, and a
+  // family query judged at their feet must find a member there.
+  settings: ['rural', 'urban', 'stronghold', 'sacred', 'arcane', 'ruin', 'wayside', 'battlefield'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (RECKONING_STEP).
+  openings: {
+    rural: '{name} is in the fields at {location} when a man in clean boots comes up the lane.',
+    urban: '{name} is in the press of {location} when the crowd parts for a man in clean boots.',
+    stronghold: '{name} is inside the walls of {location} when the gate lets a man in clean boots through.',
+    sacred: '{name} is on the holy ground of {location} when a man in clean boots stops at its edge.',
+    arcane: '{name} is among the workings at {location} when a man in clean boots comes through untouched.',
+    ruin: '{name} is picking through {location} when a man in clean boots steps over the fallen stone.',
+    wayside: '{name} is on the road near {location} when a man in clean boots is simply there ahead.',
+    battlefield: '{name} is on the trampled ground of {location} when a man in clean boots walks across it clean.',
+  },
+  locationSubtypes: expandSettings(['rural', 'urban', 'stronghold', 'sacred', 'arcane', 'ruin', 'wayside', 'battlefield']),
+  tags: ['#crossroads_debt'],
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      // The bands override `overview` + `changes` only. The reputation write is
+      // on this reaction, and a band that authored its own reactions would
+      // replace it: the debt is named on every band, only its weight differs.
+      overview:
+        'The word was owned, out loud, on a road that was not the crossroads. He heard it through ' +
+        'and gave one nod, the nod of a man closing a ledger for the day and not for good.',
+      changes: [
+        {
+          id: 'slice.reckoning.the_word_broken',
+          kind: 'shell_state',
+          title: 'The Word Broken',
+          causeClause: 'They missed the crossroads',
+          detail: 'The promise is broken.',
+          // BOND, not SCAR: the noun is the promise on their sheet, marked broken
+          // by the engine before this scene fired. An agreement has no art, so
+          // the noun takes the tooltip (the type's rule).
+          polarity: 'loss',
+          category: 'bond',
+          direction: 'loss',
+          stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
+          concepts: [{ text: 'the promise', tooltipId: 'ui.agreement' }],
+        },
+      ],
+      reactions: [
+        {
+          id: 'slice.reckoning.answer_for_it',
+          label: 'Answer for it',
+          intent: 'The debt is named out loud, and the road goes on with it.',
+          effects: [
+            {
+              // The SCAR-tone reading: what a broken word makes a mortal known
+              // for. A tally, not a place-standing — there is no place; he found
+              // them on the road.
+              kind: 'reputation_tally',
+              key: 'heart.negative',
+              delta: 1,
+              targetAgentId: '$actor',
+            },
+            {
+              // The look of a man updating a ledger leaves a mark that outlasts
+              // the road: the same `shaken` the pass and the swindler leave, so
+              // the sheet reads one condition and not a bespoke one.
+              kind: 'condition_attachment',
+              templateId: 'trait.condition.shaken',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'They named the miss before he could, and named it whole — the place, the night, the ' +
+            'road they had been on instead. He listened with the patience of furniture, and when it ' +
+            'was done he said the debt stood exactly as it had, and not a hair more.',
+          changes: [
+            {
+              id: 'slice.reckoning.owned_whole',
+              kind: 'shell_state',
+              title: 'Owned Whole',
+              causeClause: 'They spoke first',
+              detail: 'The debt stands as it was.',
+              polarity: 'loss',
+              category: 'bond',
+              direction: 'loss',
+              stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
+              concepts: [{ text: 'the debt', tooltipId: 'ui.agreement' }],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'The word was owned, and he accepted the owning — and then added a term to it, lightly, ' +
+            'the way a man mentions interest. The road went on with the debt on it and a clause on ' +
+            'the debt.',
+          changes: [
+            {
+              id: 'slice.reckoning.a_clause_added',
+              kind: 'shell_state',
+              title: 'A Clause Added',
+              causeClause: 'He priced the miss',
+              detail: 'The broken promise carries a clause.',
+              polarity: 'loss',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
+              concepts: [{ text: 'a term' }],
+            },
+          ],
+        },
+        failure: {
+          overview:
+            'The answer came out sideways — a reason, then a better reason, then the weather — and ' +
+            'he waited through all of it and wrote none of it down. What he wrote down was the ' +
+            'sideways. The road went on feeling watched.',
+          changes: [
+            {
+              id: 'slice.reckoning.written_sideways',
+              kind: 'trait',
+              title: 'Written Sideways',
+              causeClause: 'They reached for reasons instead of the word',
+              detail: 'He has them down as a reason-giver.',
+              polarity: 'loss',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
+              concepts: [{ text: 'the sideways' }],
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'They tried to explain the miss, and the explanation went on past the point where he had ' +
+            'stopped listening. When it ended he said, mildly, that the explanation had cost more ' +
+            'than the miss, and stepped back off the road as if it had never had him on it.',
+          changes: [
+            {
+              id: 'slice.reckoning.cost_more_than_the_miss',
+              kind: 'trait',
+              title: 'Cost More Than the Miss',
+              causeClause: 'The explaining ran long',
+              detail: 'The broken word is their smaller debt now.',
+              polarity: 'loss',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: { text: 'agreement', tooltipId: 'ui.agreement' },
+              concepts: [{ text: 'the explanation' }],
+            },
+          ],
+        },
+      },
+    },
+  },
+  narrativeTemplates: {
+    initiation: 'The stranger from the crossroads finds the traveler on a road that is not the crossroads, and the moon is already past full.',
+    success: 'The broken word was owned to the man it was owed to, and the road went on.',
+    failure: 'The broken word was explained instead of owned, and the explaining cost more.',
+  },
+  description:
+    'The missed branch of the crossroads appointment: the stranger finds the traveler wherever ' +
+    'the road has taken them, a day past the full moon, with no parcel and no question about ' +
+    'where they were. A single test of the heart — own the broken word or explain it — with the ' +
+    'promise already marked broken on their sheet before he arrives.',
+};
+
 // ─── The slice, assembled ────────────────────────────────────────────
 
 /**
@@ -5028,6 +5336,7 @@ export const VERTICAL_SLICE_TEMPLATES: readonly UnifiedActionTemplate[] = [
   SLICE_RIDERS_BEHIND_CARAVAN,
   SLICE_BARGAIN_AT_CROSSROADS,
   SLICE_FULL_MOON_COLLECTION,
+  SLICE_FULL_MOON_RECKONING,
   SLICE_SWINDLED_FAMILY,
   SLICE_SWINDLER_FOUND,
   SLICE_GRATEFUL_KIN,

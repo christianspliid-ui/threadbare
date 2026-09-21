@@ -464,6 +464,12 @@ export type DeadSeedKind =
   /** `query` resolves to nothing in the library — the family is empty as authored. */
   | 'empty_query'
   /**
+   * THR-1479 — an `appointment` block with no `missed` branch. A meeting that cannot
+   * be missed is not a promise; both sequels are authored with the parent or the
+   * seed is a cutscene with a walk. Fatal.
+   */
+  | 'appointment_missing_branch'
+  /**
    * `encounterFamily` names neither an alias row nor any template by prefix. Reported
    * but **not fatal**: this is the shipped backlog, 41 families deep, and it is
    * THR-1488's evidence rather than its regression.
@@ -531,6 +537,22 @@ export function validateEncounterSeedRefs(
       checkedSeeds++;
       const row = (kind: DeadSeedKind, ref: string): DeadEncounterSeed =>
         ({ templateId: template.id, site, kind, ref, seedLabel: effect.seedLabel });
+
+      // THR-1479 — the missed branch is judged by the same rule as the kept one:
+      // a gated literal or a query that has members, never an ungated id — and it
+      // must exist at all. The kept branch falls through to the checks below.
+      if (effect.appointment) {
+        const missed = effect.appointment.missed;
+        if (!missed || (!missed.templateId && !missed.query)) {
+          dead.push(row('appointment_missing_branch', effect.seedLabel));
+        } else if (missed.templateId) {
+          if (!getUnifiedTemplateById(missed.templateId)) {
+            dead.push(row('dead_template', `${missed.templateId} (missed branch)`));
+          }
+        } else if (missed.query && !contentQueryHasCandidates(missed.query, catalogs)) {
+          dead.push(row('empty_query', `${describeContentQuery(missed.query)} (missed branch)`));
+        }
+      }
 
       // The resolution order the runtime uses, so the gate answers the question the
       // engine will actually ask rather than a flattened version of it.

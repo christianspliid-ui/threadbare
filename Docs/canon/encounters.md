@@ -181,6 +181,14 @@ outside that prefix.
 The word reaches the player through the withered-seed narrative event, so it has to read
 as English.
 
+## An encounter may bind a mortal to a place by a time — the appointment (THR-1479)
+
+An `encounter_seed` effect may carry an **`appointment` block**: the place (`$here`, `$cast:<key>`, or a literal Location/Place id — never a bare hex), a window (default `APPOINTMENT_WINDOW_TICKS`), the counterparty (`$cast:<key>`), and the **missed** branch (a gated literal `templateId` or a `query`, never an ungated id). The seed's own `delayTicks` is the due delay; its own `templateId`/`query` is the **kept** branch. The planter writes an `owes_favor` edge carrying `properties.appointment` — that edge *is* the promise on the mortal's sheet (the world-object **Agreement** kind's `favor` class; no new node, edge or class). **The seed is the appointment's one record**: the pull, the chips, the sheet row and the debug readout all read `pendingEncounterSeeds`; nothing is copied onto the mortal.
+
+The mortal leans toward the place as the slack (`due − now − travel`) shrinks, departs when it falls under their leave margin (a formula over `courage_prudence` and `loyalty_ambition` — a Watcher leaves a day early, a Renegade may *choose* to miss), and keeps the meeting by standing anywhere on the place's **hex** in the window (the awareness rule). Missed, the seed rewrites itself into its missed branch and fires wherever they are, with the favour marked `broken`. Every constant is in `src/data/movement-content.ts`; the arithmetic is `src/engine/appointments.ts`; the arm is in `evaluateEncounterSeeds`.
+
+**This is prose rule 7b's one lawful exception.** "Collect it here at the next full moon" may be written only on a seed that carries the block; `check:encounter` fails an appointment with no missed branch (`appointment_missing_branch`) or a dead one. A Bargain at the Crossroads is the worked example — read its accept reaction before authoring one. Plan doc: [2026-09-21-thr-1479-appointment-primitive.md](../plans/2026-09-21-thr-1479-appointment-primitive.md).
+
 ## The scene-sentinel vocabulary (THR-1446)
 
 Aftermath effects name people and places with **sentinels**, not node ids — the ids are minted per run, so an author cannot know them. The authoritative table is [`src/engine/sceneSentinels.ts`](../../src/engine/sceneSentinels.ts); read it rather than any prose list, including this one (impediment #725 is what a stale copy costs).

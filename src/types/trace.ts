@@ -461,6 +461,11 @@ export type TraceCategory =
   | 'graph_op_execution'
   | 'relocation_arrived'
   | 'relocation_expired'
+  // Appointments (THR-1479)
+  | 'appointment_planted'
+  | 'appointment_regime'
+  | 'appointment_kept'
+  | 'appointment_missed'
   | 'reputation_walk'
   | 'seed_context_inherited'
   | 'social_encounter_generation'
@@ -877,6 +882,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_reputation_trait',
   'relocation_arrived',
   'relocation_expired',
+  // Appointments (THR-1479)
+  'appointment_planted',
+  'appointment_regime',
+  'appointment_kept',
+  'appointment_missed',
   'reputation_walk',
   'seed_context_inherited',
   'social_encounter_generation',
@@ -3113,6 +3123,57 @@ export interface RelocationResolvedTrace extends TraceBase {
   templateId?: string;
 }
 
+// ─── Appointments (THR-1479) ───────────────────────────────────────────────
+
+/** Trace: an encounter ending planted a placed, timed seed — or refused to. */
+export interface AppointmentPlantedTrace extends TraceBase {
+  category: 'appointment_planted';
+  seedId: string;
+  locationId: string;
+  dueTick: number;
+  windowTicks: number;
+  counterpartyId?: string;
+  templateId?: string;
+  /** Present when the plant fell back to a placeless seed. */
+  refused?: 'over_max' | 'place_unresolved';
+}
+
+/** Regime of a mortal's nearest-due appointment (THR-1479). */
+export type AppointmentRegime = 'far' | 'leaning' | 'departing' | 'waiting' | 'lost';
+
+/** Trace: the mortal's appointment regime changed. Fires on change only, never per tick. */
+export interface AppointmentRegimeTrace extends TraceBase {
+  category: 'appointment_regime';
+  seedId: string;
+  regime: AppointmentRegime;
+  slack: number;
+  travelTicks: number;
+  leaveMargin: number;
+  /** True when this tick queued the journey to the place. */
+  journeyQueued?: boolean;
+}
+
+/** Trace: present in the window; the kept sequel fired at the place. */
+export interface AppointmentKeptTrace extends TraceBase {
+  category: 'appointment_kept';
+  seedId: string;
+  locationId: string;
+  dueTick: number;
+  arrivedTick: number;
+  resolvedTemplateId: string;
+}
+
+/** Trace: the window closed; the seed converted to its missed branch. */
+export interface AppointmentMissedTrace extends TraceBase {
+  category: 'appointment_missed';
+  seedId: string;
+  locationId: string;
+  dueTick: number;
+  reason: 'absent' | 'unreachable' | 'chose_to_miss' | 'place_lost';
+  missedTemplateId?: string;
+  missedQuery?: string;
+}
+
 /** Trace: a family-only encounter seed resolved to a concrete template (THR-697, Slice D). */
 export interface SeedFamilyMatchedTrace extends TraceBase {
   category: 'encounter_seed_family_matched';
@@ -3765,6 +3826,10 @@ export type TraceEntry =
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace
   | AgentRelocationTrace
+  | AppointmentPlantedTrace
+  | AppointmentRegimeTrace
+  | AppointmentKeptTrace
+  | AppointmentMissedTrace
   | MembershipChangeTrace
   | RewardDrawTrace
   | RewardDrawEmptyTrace

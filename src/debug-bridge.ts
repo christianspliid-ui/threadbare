@@ -2638,6 +2638,32 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // THR-1479: appointment readout — the placed, timed seeds a mortal holds, with
+    // the slack and regime the decision phase is acting on this tick.
+    getAppointments: async (agentIdOrName?: string) => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph || !state) return [];
+      let agentId: string | undefined;
+      if (agentIdOrName) {
+        const match = await resolveAgentNode(agentIdOrName);
+        if (!match) return [];
+        agentId = match.id;
+      }
+      const { describeAppointments } = await import('./engine/appointments');
+      const { resolveAxiologicalProfile } = await import('./engine/encounterScoring');
+      return describeAppointments(
+        { pendingEncounterSeeds: state.pendingEncounterSeeds, graph, tick: state.tick },
+        (id) => resolveAxiologicalProfile(graph, id, state.tick, state.worldSoul?.fundament),
+        agentId,
+      ).map(r => ({
+        ...r,
+        // `-Infinity` does not survive JSON; the console wants a word.
+        slack: r.slack !== null && !Number.isFinite(r.slack) ? null : r.slack,
+        travelTicks: r.travelTicks !== null && !Number.isFinite(r.travelTicks) ? null : r.travelTicks,
+      }));
+    },
+
     // THR-1142: travel-intent readout — where an encounter ending sent this agent.
     getRelocationIntent: async (agentIdOrName: string) => {
       const graph = _graphProvider?.();

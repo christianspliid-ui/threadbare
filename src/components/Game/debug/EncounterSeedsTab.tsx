@@ -86,6 +86,27 @@ function SeedRow({ seed, currentTick, retinueAgents }: { seed: PendingEncounterS
         <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>planted tick {seed.plantedTick} ({ticksAgo}t ago)</span>
       </div>
 
+      {/* THR-1479 — the appointment block: a placed, timed seed. */}
+      {seed.appointment && (
+        <div style={{ display: 'flex', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }} data-testid="seed-appointment">
+          <span style={{ ...MONO, color: templateColor }}>appt</span>
+          <span style={MONO} title={seed.appointment.locationId}>at {truncateId(seed.appointment.locationId)}</span>
+          <span style={MONO}>due {seed.appointment.dueTick} +{seed.appointment.windowTicks}w</span>
+          {seed.appointment.counterpartyId && (
+            <span style={MONO} title={seed.appointment.counterpartyId}>with {truncateId(seed.appointment.counterpartyId)}</span>
+          )}
+          <span style={MONO}>
+            missed → {seed.appointment.missed.templateId ?? (seed.appointment.missed.query?.tags ?? []).join(' ')}
+          </span>
+        </div>
+      )}
+      {seed.missedAppointment && (
+        <div style={{ display: 'flex', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }} data-testid="seed-missed-appointment">
+          <span style={{ ...MONO, color: 'var(--text-danger, var(--text-muted))' }}>missed</span>
+          <span style={MONO} title={seed.missedAppointment.locationId}>{truncateId(seed.missedAppointment.locationId)} due {seed.missedAppointment.dueTick} ({seed.missedAppointment.reason})</span>
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
         <span style={MONO} title={seed.sourceEncounterId}>enc: {truncateId(seed.sourceEncounterId)}</span>
         <span style={MONO} title={seed.sourceReactionId}>rx: {truncateId(seed.sourceReactionId)}</span>

@@ -402,6 +402,14 @@ before the first sentence of prose**:
    drive. If no such effect exists, the prose says what the engine will actually do,
    or says nothing about later.
 
+   **The one lawful exception — the appointment (THR-1479).** A place-and-time promise
+   ("collect it here at the next full moon") may be written *only* when the seed that
+   plants the sequel carries an `appointment` block: `locationId` (`$here` / `$cast:<key>`),
+   optional `windowTicks` and `counterpartyId`, and a `missed` branch (a gated literal or
+   a query — never an ungated id). The seed's own template/query is the kept branch; both
+   sequels are authored with the parent, and `check:encounter` fails an appointment with
+   no missed branch. A Bargain at the Crossroads is the worked example.
+
    **The trap this rule was written from.** `encounter_seed` carries `delayTicks`,
    `targetAgentId` and `inheritContext` — **and nothing spatial**. `encounterSeeding`
    ripens a seed by tick and fires it on the agent **wherever they stand**; its only
@@ -484,7 +492,7 @@ the rest generalize the prototypes and are open for iteration on this list.
 | **Danger – Confrontation – Aftermath** | 2–3 | A threat announces itself, then arrives. The watch, then the rush; the reading, then the meeting. |
 | **Personality Fork** | 1 + branch | The mortal makes a choice: a test, then an agent-decided branch on a value axis (THR-894), pole-specific continuations. |
 | **Opt-in Complication** | gate + shape | The agent can decline: waiting/walking away is a cheap, legible exit (a delay, a toll), and engaging opens one of the shapes above. The engage/decline gate is itself agent-decided (personality). |
-| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` **or** `query` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. **"Later, elsewhere" is load-bearing (THR-1476):** the seed promises a tick and a cast, never a place, and never makes the mortal travel — so the parent's prose may not tell the mortal where to be (prose rule 7b). |
+| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` **or** `query` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. **"Later, elsewhere" is load-bearing (THR-1476):** a placeless seed promises a tick and a cast, never a place, and never makes the mortal travel — so the parent's prose may not tell the mortal where to be (prose rule 7b). **The placed/timed variant (THR-1479):** give the seed an `appointment` block and it *is* a promise to be at a place by a time — the mortal leans toward it, goes, and keeps it by standing there in the window, or misses it and the `missed` branch finds them; then the parent's prose may name the place and the time, and must author both sequels. |
 
 #### Seeded Sequel — the two operands, and which to reach for (THR-1488)
 

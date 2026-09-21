@@ -140,6 +140,16 @@ A `PendingEncounterSeed` that catalyzes an encounter at a future tick. Seeds are
 
 ---
 
+### Appointment
+
+**Aliases:** Placed Seed, Timed Seed
+**Also see:** `[[Encounter Seed]]`, `[[Agreement]]`, `[[Encounter]]`
+**Status:** canonical
+
+An `[[Encounter Seed]]` bound to a **place** and a **due tick**, kept by the mortal being on the place's hex within a window after it falls due, and missed otherwise (THR-1479). The seed carries an `appointment` block naming the place, the window, the counterparty and the **missed** branch; its own template or query is the **kept** branch. The promise is a favour owed — an `owes_favor` edge carrying `properties.appointment`, a member of the world-object **Agreement** kind — redeemed when kept, marked `broken` when missed. The seed is the appointment's one record; nothing is copied onto the mortal. Only encounters mint appointments (director ruling 2026-09-12); a mortal must be able to miss one, and whether they do is personality-driven through their leave margin. The one lawful way for prose to bind a mortal to a place and a time (prose rule 7b's exception).
+
+---
+
 ### Hidden Mark
 
 **Aliases:** Concealed Seed, Mark
