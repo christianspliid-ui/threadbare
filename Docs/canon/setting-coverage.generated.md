@@ -13,10 +13,10 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 700 |
-| drawable at ≥1 location subtype | 467 |
+| templates in the pool | 701 |
+| drawable at ≥1 location subtype | 468 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 34 |
+| declaring a setting envelope | 35 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -31,14 +31,14 @@ be dealt?", not "how many templates exist".
 
 | setting | iron | gold | shadow | veil | heart | eye | stone | star | **total** |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `rural` | 29 | 22 | 11 | 5 | 19 | 13 | 14 | 7 | **120** |
-| `urban` | 48 | 51 | 43 | 17 | 41 | 48 | 25 | 24 | **297** |
-| `stronghold` | 26 | 8 | 9 | 5 | 13 | 17 | 8 | 5 | **91** |
-| `sacred` | 7 | 9 | 4 | 17 | 11 | 8 | 6 | 24 | **86** |
-| `arcane` | 5 | 5 | 7 | 20 | 6 | 26 | 5 | 11 | **85** |
-| `ruin` | 16 | 10 | 10 | 11 | 12 | 26 | 14 | 8 | **107** |
-| `wayside` | 28 | 17 | 11 | 7 | 16 | 30 | 13 | 13 | **135** |
-| `battlefield` | 10 | 5 | 5 | 3 | 7 | 5 | 9 | 5 | **49** |
+| `rural` | 29 | 22 | 11 | 5 | 20 | 13 | 14 | 7 | **121** |
+| `urban` | 48 | 51 | 43 | 17 | 42 | 48 | 25 | 24 | **298** |
+| `stronghold` | 26 | 8 | 9 | 5 | 14 | 17 | 8 | 5 | **92** |
+| `sacred` | 7 | 9 | 4 | 17 | 12 | 8 | 6 | 24 | **87** |
+| `arcane` | 5 | 5 | 7 | 20 | 7 | 26 | 5 | 11 | **86** |
+| `ruin` | 16 | 10 | 10 | 11 | 13 | 26 | 14 | 8 | **108** |
+| `wayside` | 28 | 17 | 11 | 7 | 17 | 30 | 13 | 13 | **136** |
+| `battlefield` | 10 | 5 | 5 | 3 | 8 | 5 | 9 | 5 | **50** |
 
 ## Thin cells
 
@@ -57,7 +57,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | family | carded templates | cards | composition |
 |---|---:|---:|---|
 | `encounter` | 7 | 85 | push 15, rider 0, sphere 60, trait 10, free 0 |
-| `encounter.slice` | 9 | 56 | push 11, rider 3, sphere 42, trait 0, free 0 |
+| `encounter.slice` | 10 | 61 | push 12, rider 3, sphere 46, trait 0, free 0 |
 | `encounter.border` | 6 | 53 | push 10, rider 6, sphere 35, trait 2, free 0 |
 | `encounter.delve` | 3 | 34 | push 8, rider 4, sphere 20, trait 2, free 0 |
 | `encounter.company` | 4 | 20 | push 4, rider 0, sphere 16, trait 0, free 0 |
@@ -69,7 +69,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 **Hand monotony (advisory)** — one card kind dominates:
 
 - `encounter` — 71% `sphere` across 85 cards
-- `encounter.slice` — 75% `sphere` across 56 cards
+- `encounter.slice` — 75% `sphere` across 61 cards
 - `encounter.border` — 66% `sphere` across 53 cards
 - `encounter.company` — 80% `sphere` across 20 cards
 - `encounter.realm` — 100% `sphere` across 8 cards
