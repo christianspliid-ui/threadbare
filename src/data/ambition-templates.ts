@@ -301,12 +301,20 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     displayName: 'Forge a Legendary Weapon',
     category: 'mastery',
     reachFloors: { iron: 0.4, veil: 0.3 },
-    requiredTraits: ['master_smith'],
+    // THR-1348: the gate is retired. `master_smith` was the pool's only non-empty
+    // `requiredTraits`, and its sole producer is a tier-4 cursed artifact's
+    // `trait_grant` that `seedPossessions` can never deal — so `passesEligibility`
+    // rejected every mortal on every seed before scoring ran, and the census read
+    // 0 holders of any tier three seeds running. The trait stays real (the Anvil
+    // still grants it) and moves to `boostingTraits` below, so the pairing keeps
+    // a consumer. The reach floors are what make this a mastery ambition.
+    requiredTraits: [],
     blockingTraits: [],
     sphereAffinities: ['matter', 'energy'],
     bondModifiers: [],
     // THR-813: retired `perfectionist`; the live mastery boost carries this ambition.
-    boostingTraits: ['trait.mastery.spell-weaver'],
+    // THR-1348: `master_smith` boosts rather than gates (see `requiredTraits`).
+    boostingTraits: ['trait.mastery.spell-weaver', 'master_smith'],
     reachAffinity: { iron: 0.7, veil: 0.6, stone: 0.3 },
     // THR-1297 slice 5: the `masterwork_item` kind's home ambition. A legend needs
     // both halves — the making, and the going out to find what it is made from —
@@ -336,7 +344,10 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'forge_materials',
-        condition: { type: 'agent_has_trait', trait: 'rare_ore_secured' },
+        // THR-1348: `rare_ore_secured` was a dead trait (no resource model produces
+        // it — `traitRefReconciliation.test.ts`). Stone is the finding reach: the
+        // right metal, found at last.
+        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.3 },
         prose: ['The metal sang when struck. Not iron. Something older.'],
       },
       {
@@ -353,7 +364,10 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_lacks_trait', trait: 'master_smith' },
+        // THR-1348: the reach-floor mirror — a hand that loses its iron lets the
+        // forge go cold. Replaces `agent_lacks_trait master_smith`, which fired on
+        // tick one for every holder once the gate above was retired.
+        condition: { type: 'agent_reach_below', reach: 'iron', threshold: 0.3 },
         prose: ['The forge grew cold. The masterwork would never be.'],
       },
     ],

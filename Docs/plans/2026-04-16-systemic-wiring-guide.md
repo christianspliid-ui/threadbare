@@ -2623,6 +2623,8 @@ unchanged, and every card reaches the system that owns the change:
 | The Kindled Ambition | `assign_ambition` | ambitions |
 | The Compulsion | `plant_compulsion` | agent decision bias (THR-886) |
 
+`assign_ambition` also pulls a below-spotlight holder into the deciding tier when the template is strategic-profiled (THR-1348 — see *Attention follows ambition* under world-minted ambitions below).
+
 `assign_ambition` and `plant_compulsion` are the only new kinds, and both exist because the
 capability was genuinely missing. Reactive ambition templates had **no assignment path at
 all** outside `ambitionTick` (THR-812 / THR-726), so a whole class of authored templates was
@@ -3110,6 +3112,8 @@ printf "tick 60\nagent @hero\nevents 20\nexit\n" | npm run cli -- --seed 42 --ma
 ```
 
 **Where it lives:** `src/engine/ambitionTick.ts` — `mintAmbitionsFromEvents` (pure: reads graph + snapshot, returns the winning assignment or `null`) and its caller on the all-actor walk, which writes the `pursues` edge and records the per-event cap. Rules table and the pool itself: `src/data/ambition-templates.ts`. The card-granted route into the *same* pool is `assign_ambition` — see the nudge-card capability above; both paths end at one assignment, so a template authored here is reachable from a played card too.
+
+**Attention follows ambition (THR-1348).** Every path onto the graph — worldgen, births, the binder's mint, the mint lane, the re-evaluation pass, the card — ends in `assignAmbitionToActor` (`src/engine/ambitionAssignment.ts`), and that helper runs `pullHolderIntoSpotlight` (`src/engine/spotlightPull.ts`) after the edge (the binder's support mint alone passes `skipSpotlightPull` — a clerk minted for someone else's work stays an ambient face by contract). **What this means for a template author:** give a template a `strategicProfile` and any mortal who takes it up below the spotlight is pulled into the deciding tier at assignment, swapping out the least-recently-witnessed spotlight mortal with no strategic ambition; leave the profile off and the ambition is a private want that changes nobody's tier. Only spotlight mortals run the decision loop, so a strategic template without this pull was unreachable for most of its holders (`npm run census:reachability` reports the tier split per ambition). Do not gate an ambition on a trait no seed can deal — `requiredTraits` is checked before scoring, and `ambition_forge_legend` sat at zero holders on every seed for exactly that reason until the gate became a boost.
 
 ## Capability: The Divine Receipt — the god learns how a cast landed (THR-727)
 

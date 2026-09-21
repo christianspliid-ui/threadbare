@@ -11,6 +11,7 @@
  *   speed N        — set auto-run speed to N ticks/sec
  *   status         — print game state summary
  *   agents         — list all agents with location and tier
+ *   spotlight      — the spotlight-pull ledger (THR-1348): pulls, displacements, refusals
  *   agent <id>     — inspect a single agent (partial id match)
  *   events [N]     — show last N tick events (default 10)
  *   graph          — print graph node counts by type
@@ -46,6 +47,7 @@ import { startUndertakingForReview, setUndertakingBandPin, getUndertakingPinVerd
 import { enqueueUndertakingMoments } from '../src/engine/undertakingMoments';
 import { followAgent as followAgentWrite, isFollowed as isFollowedRead } from '../src/engine/followedAgents';
 import { isAutonomousDecisionActor as isSpotlightActor } from '../src/engine/strategicKindReachability';
+import { readSpotlightLedger } from '../src/engine/spotlightPull';
 import { getUndertakingObjectType, ownershipCensus } from '../src/data/undertaking-objects';
 import { prepareEncounterSupportBundle } from '../src/engine/encounterSupportBundle';
 import { buildEncounterBinderContext } from '../src/engine/binding/encounterBinderContext';
@@ -286,6 +288,31 @@ function printAgents(): void {
     const isAscendant = a.id === state.ascendantId ? ` ${CYAN}(YOU)${RESET}` : '';
     console.log(`  ${dim(a.id.slice(0, 8))}  ${BOLD}${a.properties.name ?? 'unnamed'}${RESET}  tier:${tier}  at:${locName}${isAscendant}`);
   }
+}
+
+/**
+ * `spotlight` — attention follows ambition (THR-1348). The ledger the pull writes on
+ * actor nodes: who was pulled into the deciding tier, by which ambition, whom they
+ * displaced, and who was refused and why. Sibling of `agents`.
+ */
+function printSpotlight(): void {
+  const ledger = readSpotlightLedger(state.graph);
+  const deciding = state.graph.getNodesByType('actor').filter(isSpotlightActor).length;
+  const swaps = ledger.pulled.filter(p => p.demotedId !== null).length;
+  console.log(header(`Spotlight pulls (${ledger.pulled.length})`));
+  console.log(`  deciding mortals now: ${deciding} · swapped ${swaps} · net-additive ${ledger.pulled.length - swaps} · overflow outstanding ${ledger.overflow} of ${ledger.overflowAllowance} allowed`);
+  const nameOf = (id: string) => state.graph.getNode(id)?.name ?? id;
+  for (const p of ledger.pulled) {
+    console.log(`  ${dim(`t${String(p.tick).padStart(4)}`)}  ${BOLD}${nameOf(p.id)}${RESET} ${dim(p.id)}  ← ${p.templateId}` +
+      (p.demotedId ? `  displaced ${nameOf(p.demotedId)} ${dim(p.demotedId)}` : `  ${dim('(net-additive)')}`));
+  }
+  if (ledger.refused.length > 0) {
+    console.log(`  ${BOLD}refused${RESET} (${ledger.refused.length})`);
+    for (const r of ledger.refused) {
+      console.log(`  ${dim(`t${String(r.tick).padStart(4)}`)}  ${nameOf(r.id)} ${dim(r.id)}  ${r.reason}`);
+    }
+  }
+  if (ledger.pulled.length === 0 && ledger.refused.length === 0) console.log(dim('  no pull has run yet'));
 }
 
 function printAgent(partialId: string): void {
@@ -1295,6 +1322,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}chapters${RESET} [agent]  Archived + active encounter chapters (THR-603), optionally by agent|@hero`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
+  console.log(`  ${BOLD}spotlight${RESET}        Spotlight-pull ledger (THR-1348): who was pulled into the deciding tier, whom they displaced, who was refused`);
   console.log(`  ${BOLD}groups${RESET}           List companies (members, cohesion, destination)`);
   console.log(`  ${BOLD}genome${RESET} <name>    Inspect settlement genome result (sublocations, NPCs, archetype)`);
   console.log(`  ${BOLD}traces${RESET} [N]       Show last N traces (default 10)`);
@@ -2183,6 +2211,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'agents':
       printAgents();
+      break;
+    case 'spotlight':
+      printSpotlight();
       break;
     case 'agent': {
       if (!arg) {

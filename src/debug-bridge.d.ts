@@ -1273,6 +1273,16 @@ export interface DebugBridge {
   /** Every live `StrategicProjectRuntime` (undertaking) on the board. Async. */
   getStrategicProjects(): Promise<unknown[]>;
   /**
+   * Attention follows ambition (THR-1348) — the spotlight-pull ledger read off the
+   * actor nodes: `pulled` (who was pulled into the spotlight, by which ambition, at
+   * which tick, and whom they displaced — `demotedId: null` for a net-additive pull),
+   * `overflow` (outstanding net-additive pulls) against `overflowAllowance` (the share of
+   * the deciding population this world may add, capped by `SPOTLIGHT_AMBITION_PULL_MAX`), and `refused` (the last refusal per mortal: `budget`, `no_capability_path`,
+   * `already_pulled`, `disabled`). Empty ledger, never null, when no game is loaded.
+   * Sorted by tick then id. Async — `await` it. CLI sibling: `spotlight`.
+   */
+  getSpotlightLedger(): Promise<import('./engine/spotlightPull').SpotlightLedger>;
+  /**
    * Completed/abandoned undertaking history, narrowed to one actor id when
    * given. Note this filters on an exact `actorId` — unlike most accessors it
    * takes no name or `@hero` alias. Async.

@@ -94,7 +94,9 @@ Seven authored packs under `src/data/strategic-packs/` (merchant, builder, schol
 
 ### The census
 
-`npm run census:undertakings` (`scripts/undertaking-census.ts`) — undertaking / encounter / idle shares, starts per mortal, variety at a fixed start sample (cross-seed mean), the per-mortal cap, the vendetta share. Review-lever starts (`startedBy: 'review_lever'`) are excluded from its counts.
+`npm run census:undertakings` (`scripts/undertaking-census.ts`) — undertaking / encounter / idle shares, starts per mortal, variety at a fixed start sample (cross-seed mean), the per-mortal cap, the vendetta share. Review-lever starts (`startedBy: 'review_lever'`) are excluded from its counts. Since THR-1348 it also reports spotlight pulls, swaps and refusals beside `meanAutonomousMortals`, because a net-additive pull moves that denominator.
+
+**Who can hold a work — attention follows ambition (THR-1348, shipped 2026-09-22).** Only spotlight mortals run the decision loop, so an ambition held at notable or ambient tier was *silenced*: never offered to the board, never refused, never traced — `merchant-expansion` was unreachable on eleven seeds in twelve. Christian's ruling (2026-09-10) kept the aperture and moved the holder: a strategic-profiled ambition **pulls its holder into the spotlight at assignment** (`src/engine/spotlightPull.ts`, called from `assignAmbitionToActor`, which every ambition writer now routes through), swapping out the least-recently-witnessed spotlight mortal with no strategic ambition so the deciding population stays flat; a threaded mortal is never demoted; a mortal is pulled once. `npm run census:reachability` (`scripts/kind-reachability.ts`) measures all three ambition pools, excludes the avatar, and names every pull, displacement and refusal per seed. `ambition_forge_legend`'s separate zero-holder failure was an assignment gate (`requiredTraits: ['master_smith']`, a trait no seed can deal) and is repaired to a boost.
 
 ### The words
 
@@ -106,6 +108,7 @@ UL (`Docs/ubiquitous-language/Agents.md`, `Encounters.md`): **undertaking**, **k
 - `Docs/plans/2026-09-02-thr-1300-undertaking-factory.md` — this line (doc 6/6).
 - `Docs/plans/2026-08-26-thr-1292-undertaking-substrate.md` (doc 1), `…-thr-1297-action-library.md` (doc 2, the kind-row schema), `…-thr-1296-…` (doc 3), `…-thr-1298-reactive-loop.md` (doc 4), `…-thr-1299-calling-and-surfaces.md` (doc 5) — the map's carve-up; `Docs/plans/INDEX.md` carries the exact filenames.
 - `Docs/plans/2026-09-02-thr-1349-decision-board-cutover.md` — the one board and the census gates.
+- `Docs/plans/2026-09-21-thr-1348-attention-follows-ambition.md` — the spotlight pull (THR-1348, shipped 2026-09-22): who below the spotlight can hold a work, answered by pulling the holder up.
 
 ## Rejected approaches
 
@@ -120,5 +123,5 @@ UL (`Docs/ubiquitous-language/Agents.md`, `Encounters.md`): **undertaking**, **k
 ## Open questions
 
 - The `sublocation` and `faction` destroy verbs — the two empty D columns the pilot batch is gap-weighted toward.
-- The ambient-tier aperture (THR-1348): who below the spotlight can hold a work.
+- ~~The ambient-tier aperture (THR-1348): who below the spotlight can hold a work.~~ Answered 2026-09-22: nobody below it — the work pulls the holder up (§ The census).
 - The harm supply under the live board (THR-1388): no destroy verb starts on the default seeds in 300 ticks; the factory adds supply and reports, it does not retune.

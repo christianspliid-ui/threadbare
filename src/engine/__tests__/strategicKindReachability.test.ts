@@ -94,6 +94,21 @@ describe('isAutonomousDecisionActor', () => {
 
 // ─── measureStrategicReachability ─────────────────────────────────
 
+describe('measureStrategicReachability — default pools (THR-1348)', () => {
+  it('measures the event-minted and grievance pools too, not AMBITION_TEMPLATES alone', async () => {
+    const { AMBITION_TEMPLATES, EVENT_MINTED_AMBITION_TEMPLATES, GRIEVANCE_AMBITION_TEMPLATES } =
+      await import('../../data/ambition-templates');
+    const beyond = [...EVENT_MINTED_AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES]
+      .filter(t => t.strategicProfile && !AMBITION_TEMPLATES.some(a => a.id === t.id));
+    // Not vacuous: the minted pools carry strategic profiles the old default hid.
+    expect(beyond.length).toBeGreaterThan(0);
+
+    const rowIds = measureStrategicReachability(new WorldGraph()).rows.map(r => r.ambitionId);
+    for (const t of beyond) expect(rowIds).toContain(t.id);
+    for (const t of AMBITION_TEMPLATES.filter(a => a.strategicProfile)) expect(rowIds).toContain(t.id);
+  });
+});
+
 describe('measureStrategicReachability', () => {
   const trade = template('amb_trade', 'merchant', ['t_route', 't_survey']);
   const war = template('amb_war', 'warlord', ['t_raid']);

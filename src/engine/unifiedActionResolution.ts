@@ -122,6 +122,7 @@ import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
 import { createUnifiedActionEventNode } from './encounterEventNode';
+import { markWitnessed } from './spotlightPull';
 import type { BalanceEvent } from '../types/balanceEval';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { recordBalanceEvent } from './balanceTelemetry';
@@ -2604,6 +2605,17 @@ export function executeStepResult(
   const targetNodeType = action.targetId !== action.actorId
     ? state.graph.getNode(action.targetId)?.type
     : undefined;
+
+  // ── THR-1348: witnessed. A mortal is witnessed when their encounter resolves and
+  // the player could have seen it — this site, where the Event node is minted. The
+  // actor, an actor-typed target, and the bound cast; never the scene's unbound
+  // extras. `lastWitnessedTick` is what the spotlight pull's demotion order reads.
+  markWitnessed(state.graph, tick, [
+    action.actorId,
+    ...(targetNodeType === 'actor' ? [action.targetId] : []),
+    ...(action.supportBindings ?? []).filter(b => b.kind === 'actor').map(b => b.nodeId),
+  ]);
+
   const unifiedEventNodeId = createUnifiedActionEventNode({
     graph: state.graph,
     actorId: action.actorId,

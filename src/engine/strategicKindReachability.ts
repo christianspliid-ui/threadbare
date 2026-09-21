@@ -31,8 +31,23 @@ import { profileWorkIds } from './strategicActionCandidates';
 import { UNDERTAKING_MODEL, type UndertakingModel } from '../data/strategic-action-constants';
 import type { GraphNode } from '../types/graph';
 import type { AmbitionTemplate } from '../types/ambition';
-import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import {
+  AMBITION_TEMPLATES,
+  EVENT_MINTED_AMBITION_TEMPLATES,
+  GRIEVANCE_AMBITION_TEMPLATES,
+} from '../data/ambition-templates';
 import { getAmbitionTemplateId } from './ambitionShape';
+
+/**
+ * Every ambition pool an actor can hold a template from (THR-1348). The census
+ * defaulted to `AMBITION_TEMPLATES` alone and three strategic profiles in the
+ * event-minted and grievance pools were invisible to it.
+ */
+export const ALL_AMBITION_TEMPLATE_POOLS: readonly AmbitionTemplate[] = [
+  ...AMBITION_TEMPLATES,
+  ...EVENT_MINTED_AMBITION_TEMPLATES,
+  ...GRIEVANCE_AMBITION_TEMPLATES,
+];
 
 /**
  * The tier whose actors run the autonomous decision loop.
@@ -106,7 +121,7 @@ export function measureStrategicReachability(
     readonly model?: UndertakingModel;
   } = {},
 ): StrategicReachabilityReport {
-  const templates = options.templates ?? AMBITION_TEMPLATES;
+  const templates = options.templates ?? ALL_AMBITION_TEMPLATE_POOLS;
   const excluded = options.excludedActorIds ?? new Set<string>();
 
   // One pass over the actors: for each ambition template id, how many holders reach

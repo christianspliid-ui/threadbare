@@ -43,14 +43,13 @@ import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenera
 import { mulberry32 } from '../lib/prng';
 import { seedAllRarityTiers } from './raritySeeding';
 import { seedLatentEssenceSources } from './essenceSourceSeeding';
-import { assignInitialAmbitions } from './ambitionAssignment';
+import { assignInitialAmbitions, assignAmbitionToActor } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { computeSphereAggregate, normalizeAggregate } from './phaseSphereAggregation';
 import { getDoomIdentityMatrix } from '../data/doom-identity-matrices';
 import { getOriginPortraitUrl } from '../data/avatar-portrait-assets';
 import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
-import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 import { defaultFollowedAgentIds } from './undertakingCheckpoints';
 import { recomputeCalling } from './calling';
 import { publishDynamicFactionDefinitions } from '../data/faction-definition-lookup';
@@ -681,35 +680,12 @@ export function devSeedTheFirst(state: GameState): string {
     bonds: [],
   };
   const assignments = assignInitialAmbitions(AMBITION_TEMPLATES, snapshot, 42 + 29173);
+  // THR-1348: routed through the one funnel (same node, same edge, byte for byte).
+  // The First carries no `spotlightTier`, which reads as spotlight, so no pull runs.
   for (const assignment of assignments) {
-    const ambitionNodeId = `ambition.${assignment.templateId}`;
-    if (!graph.getNode(ambitionNodeId)) {
-      const tmpl = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
-      graph.addNode({
-        id: ambitionNodeId,
-        type: 'ambition',
-        name: tmpl?.displayName ?? assignment.templateId,
-        properties: {
-          [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
-          templateId: assignment.templateId,
-          displayName: tmpl?.displayName ?? assignment.templateId,
-          category: tmpl?.category ?? 'survival',
-          reachAffinity: tmpl?.reachAffinity ?? {},
-          totalMilestones: tmpl?.milestones.length ?? 0,
-        },
-      });
-    }
-    graph.addEdge({
-      id: `pursues_${agentId}_${ambitionNodeId}`,
-      source: agentId,
-      target: ambitionNodeId,
-      type: 'pursues',
-      properties: {
-        priority: assignment.priority,
-        status: 'active',
-        assignedTick: 0,
-        completedMilestones: [],
-      },
+    assignAmbitionToActor(graph, agentId, assignment.templateId, 0, {
+      priority: assignment.priority,
+      seed: state.seed,
     });
   }
 
@@ -963,7 +939,10 @@ export function devSeedAscendantTestPackage(state: GameState): void {
   ];
   for (const cp of counterparties) {
     if (!graph.getNode(cp.id)) {
-      graph.addNode({ id: cp.id, type: 'actor', name: cp.name, properties: { actorType: 'individual' } });
+      // THR-1348: `'ambient'`, explicitly. These three carry no capabilities and no
+      // location; the unset-means-spotlight default put them in the deciding tier
+      // where they decided nothing — the lair-elite defect (THR-1403) in another coat.
+      graph.addNode({ id: cp.id, type: 'actor', name: cp.name, properties: { actorType: 'individual', spotlightTier: 'ambient' } });
     }
   }
 

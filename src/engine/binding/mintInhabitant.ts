@@ -378,6 +378,11 @@ export function mintInhabitant(
       assignAmbitionToActor(graph, nodeId, assignment.templateId, state.tick, {
         priority: assignment.priority,
         mintedByLabel: 'undertaking_binder',
+        // THR-1348: no spotlight pull for a support mint. The contract above this
+        // block — an ambient face, the same person whatever tick the queue drains —
+        // is pinned by `mintInhabitant.test.ts`, and a pull would break both halves.
+        // Whether a minted extra should ever be a builder is THR-1523's question.
+        skipSpotlightPull: true,
       });
     }
 
