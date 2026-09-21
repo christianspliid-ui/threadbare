@@ -570,6 +570,37 @@ export interface DebugBridge {
   } | null>;
 
   /**
+   * THR-1479: every live appointment — a placed, timed seed a mortal holds — with
+   * the slack and regime the decision phase is acting on this tick. Optionally
+   * one mortal's (id, id prefix, or partial name, case-insensitive).
+   *
+   * The seed is the appointment's one record: `seedId` names it in
+   * `pendingEncounterSeeds`, `favourEdgeId` the `owes_favor` edge that is the
+   * promise on the sheet, and `broken` whether the meeting was missed. `slack` is
+   * `dueTick − tick − travelTicks` (null when the place cannot be resolved or
+   * reached); `regime` is `far | leaning | departing | waiting | lost |
+   * place_lost`. Empty when the game is not loaded or nothing matches.
+   */
+  getAppointments: (agentIdOrName?: string) => Promise<Array<{
+    agentId: string;
+    agentName: string;
+    seedId: string;
+    seedLabel: string;
+    placeId: string;
+    placeName: string;
+    dueTick: number;
+    windowTicks: number;
+    slack: number | null;
+    travelTicks: number | null;
+    regime: 'far' | 'leaning' | 'departing' | 'waiting' | 'lost' | 'place_lost';
+    leaveMargin: number;
+    counterpartyId: string | null;
+    counterpartyName: string | null;
+    favourEdgeId: string | null;
+    broken: boolean;
+  }>>;
+
+  /**
    * THR-1142: read an agent's live travel intent — where an `agent_relocation`
    * aftermath effect sent them, and how far along they are.
    *

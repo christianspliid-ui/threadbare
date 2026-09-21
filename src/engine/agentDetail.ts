@@ -12,6 +12,7 @@ import type { WorldGraph } from './graph';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { CoreProfile } from '../types/coreRegistry';
 import { getAgentAttachments, type AttachmentSummary, type AttachmentFullEntry } from './agentAttachments';
+import { isAppointmentFavour, APPOINTMENT_FAVOUR_PROP } from './appointments';
 import type { ReachDomain, TraitDefinitionProperties, TraitAssignmentProperties } from '../types/traits';
 import type { InfluenceTier } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
@@ -241,6 +242,18 @@ export interface FavorSummary {
   context: string;
   /** true = agent is the debtor; false = agent is the creditor */
   isDebtor: boolean;
+  /**
+   * THR-1479 — present when the favour is the promise behind an appointment: the
+   * place and the due tick, and whether the meeting was missed. A broken
+   * appointment favour still lists (unlike an ordinary broken favour), because
+   * "broken" is the reading the sheet owes until the reckoning retires it.
+   */
+  appointment?: {
+    placeId: string;
+    placeName: string;
+    dueTick: number;
+    broken: boolean;
+  };
 }
 
 /** Social leverage data bundled into AgentDetail (THR-30) */
@@ -814,15 +827,30 @@ export function getAgentDetail(
     .slice(0, 5);
 
   const favorsOwed: FavorSummary[] = graph.getOutgoingEdges(agentId, 'owes_favor')
-    .filter(e => !(e.properties.redeemed as boolean) && !(e.properties.broken as boolean))
+    // THR-1479: an appointment favour lists while broken — the sheet owes the
+    // "broken" reading until the reckoning's aftermath retires the edge.
+    .filter(e => !(e.properties.redeemed as boolean)
+      && (!(e.properties.broken as boolean) || isAppointmentFavour(e)))
     .map(e => {
       const creditorNode = graph.getNode(e.target);
+      const appointmentProps = isAppointmentFavour(e)
+        ? e.properties[APPOINTMENT_FAVOUR_PROP] as { locationId?: string; dueTick?: number }
+        : undefined;
+      const appointment = appointmentProps && typeof appointmentProps.locationId === 'string'
+        ? {
+            placeId: appointmentProps.locationId,
+            placeName: graph.getNode(appointmentProps.locationId)?.name ?? appointmentProps.locationId,
+            dueTick: typeof appointmentProps.dueTick === 'number' ? appointmentProps.dueTick : 0,
+            broken: !!(e.properties.broken as boolean),
+          }
+        : undefined;
       return {
         counterpartyId: e.target,
         counterpartyName: creditorNode?.name ?? '(unknown)',
         magnitude: (e.properties.magnitude as number) ?? 0,
         context: (e.properties.context as string) ?? '',
         isDebtor: true,
+        ...(appointment ? { appointment } : {}),
       };
     })
     .sort((a, b) => b.magnitude - a.magnitude)

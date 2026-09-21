@@ -67,6 +67,8 @@ import type { TickProfileTrace } from '../src/types/trace';
 import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
 import { spawnDebugBand, spawnDebugCompanion } from '../src/engine/debugWorldSpawnTools';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
+import { describeAppointments } from '../src/engine/appointments';
+import { resolveAxiologicalProfile } from '../src/engine/encounterScoring';
 import { hexDistance } from '../src/lib/hexMath';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
@@ -555,6 +557,33 @@ function printEncounters(): void {
   }
   if (actions.length > 20) {
     console.log(dim(`  ... and ${actions.length - 20} more`));
+  }
+}
+
+// THR-1479: live appointments — the seed queue's placed, timed seeds, with the
+// slack and regime the decision phase is acting on.
+function printAppointments(agentQuery?: string): void {
+  let agentId: string | undefined;
+  if (agentQuery) {
+    const node = resolveAgentNode(agentQuery);
+    if (!node) {
+      console.log(header(`Appointments — no agent matched "${agentQuery}"`));
+      return;
+    }
+    agentId = node.id;
+  }
+  const rows = describeAppointments(
+    state,
+    (id) => resolveAxiologicalProfile(state.graph, id, state.tick, state.worldSoul?.fundament),
+    agentId,
+  );
+  console.log(header(`Appointments — ${rows.length}${agentQuery ? ` (filter: ${agentQuery})` : ''}`));
+  for (const r of rows) {
+    const slack = r.slack === null ? 'no place' : Number.isFinite(r.slack) ? r.slack.toFixed(1) : 'unreachable';
+    console.log(
+      `  ${dim(r.seedId.slice(-8))}  ${r.agentName}  at ${r.placeName}  due t${r.dueTick} (+${r.windowTicks}w)  slack ${slack}  ${r.regime}${r.broken ? '  BROKEN' : ''}${r.counterpartyName ? `  with ${r.counterpartyName}` : ''}`,
+    );
+    console.log(dim(`            "${r.seedLabel}"  margin ${r.leaveMargin.toFixed(1)}`));
   }
 }
 
@@ -1321,6 +1350,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}essence${RESET}          Essence pool`);
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}chapters${RESET} [agent]  Archived + active encounter chapters (THR-603), optionally by agent|@hero`);
+  console.log(`  ${BOLD}appointments${RESET} [agent]  Live appointments — place, due tick, slack, regime (THR-1479), optionally by agent|@hero`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}spotlight${RESET}        Spotlight-pull ledger (THR-1348): who was pulled into the deciding tier, whom they displaced, who was refused`);
   console.log(`  ${BOLD}groups${RESET}           List companies (members, cohesion, destination)`);
@@ -2269,6 +2299,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'chapters':
       printChapters(arg || undefined);
+      break;
+    case 'appointments':
+      printAppointments(arg || undefined);
       break;
     case 'factions':
       printFactions();

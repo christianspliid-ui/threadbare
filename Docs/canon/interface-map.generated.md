@@ -17,11 +17,11 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 104 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 9 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **133** |
+| **Total** | **135** |
 
 ## Contracts by producing subsystem
 
@@ -143,6 +143,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `a-concealed-sale-ends-the-company-that-was-sold` | A member who took coin for what the company knew is why it ends — the sale is recorded as the dissolution reason, not laundered into the collapse it caused. | property: `hiddenMarks` | Companies & Group Travel | 🟢 LIVE | — |
+| `appointment-pulls-agent-movement` | An encounter ending can bind a mortal to a place by a time (THR-1479). The seed carries an `appointment` block — place, due tick, window, counterparty, missed branch — and the decision phase reads it every tick: slack (due − now − travel) is priced by the movement graph, the mortal *leans* toward the place through a second additive term on the relocation channel while the slack is inside the horizon, and *departs* through a journey candidate scored by `scoreMovementCandidate` and queued through the ordinary `initMovementState` writer once the slack falls under their leave margin (a formula over `courage_prudence` and `loyalty_ambition` that can go negative, so a Renegade chooses to miss). No second movement path; if the board outvotes the promise, `appointment_regime` traces it and nothing is forced. Registered LEAKED-with-ticket at filing: slice 1 lands the primitive and its first user; slice 2 (THR-1518) lands the census that proves a seeded run actually pulls a mortal — the reachability row, proven by a census hit rather than by a gate that reads the code (the THR-1497 lesson). | function: `resolveAppointmentContext`, `computeAppointmentPull`, `appointmentRegime`, `computeAppointmentSlack` | Movement & Colocation | 🔴 LEAKED | THR-1518 |
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template. | function: `assembleRewardPool`, `instantiateReward`, `instantiateAgreementReward` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-faction-ids-resolve-to-seeded-faction-nodes` | When an ending says it changed your standing with a guild, your standing with that guild actually changes. | function: `bindFactionDefinitionIds`, `resolveFactionNodeId`, `applyFactionReputationGain` | Factions & Succession | 🟢 LIVE | — |
@@ -161,6 +162,7 @@ remediation ticket or the build fails.
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `missed-appointment-breaks-agreement` | A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind's `favor` class, no new type. When the window closes without the mortal on the place's hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet's Bonds row reads the broken favour ("They owe … a meeting at … — broken") until the reckoning's aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed's. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world. | function: `breakAppointmentFavour`, `redeemAppointmentFavour`, `isAppointmentFavour`, `writeAppointmentEvent` | Secrets & Favors | 🔴 LEAKED | THR-1518 |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
 | `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-883 |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. THR-1002 extended the read to the toast tier: the first sentence of that overview is now the toast message, where the toast previously discarded it and said `Your <internal template name> <band>.` — the payload check this row recorded as unverified, on ~93% of casts. | function: `processPlayerReceipts`, `aftermathSummary`, `receiptToastSentence` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -348,6 +350,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/ambitionTick.ts`
 - **Other hits:** `src/data/ambition-templates.ts`, `src/engine/agentResidence.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-23: 15-tick cadence; milestone events observed firing. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `appointment-pulls-agent-movement` — 🔴 LEAKED
+
+- **Intent:** An encounter ending can bind a mortal to a place by a time (THR-1479). The seed carries an `appointment` block — place, due tick, window, counterparty, missed branch — and the decision phase reads it every tick: slack (due − now − travel) is priced by the movement graph, the mortal *leans* toward the place through a second additive term on the relocation channel while the slack is inside the horizon, and *departs* through a journey candidate scored by `scoreMovementCandidate` and queued through the ordinary `initMovementState` writer once the slack falls under their leave margin (a formula over `courage_prudence` and `loyalty_ambition` that can go negative, so a Renegade chooses to miss). No second movement path; if the board outvotes the promise, `appointment_regime` traces it and nothing is forced. Registered LEAKED-with-ticket at filing: slice 1 lands the primitive and its first user; slice 2 (THR-1518) lands the census that proves a seeded run actually pulls a mortal — the reachability row, proven by a census hit rather than by a gate that reads the code (the THR-1497 lesson).
+- **Producer → Consumer:** Encounters & Dilemmas → Movement & Colocation
+- **UL terms:** *Appointment*, *Encounter Seed*
+- **Module:** `src/engine/appointments.ts`
+- **Production hits:** 4 total — 0 write, 2 read, 2 unclassified
+- **Write sites:** —
+- **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
+- **Other hits:** `src/engine/appointments.ts`, `src/engine/encounterSeeding.ts`
+- **Verdict:** Pinned by badgeOverride: Shipped with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain), but the census that proves a mortal on a seeded run is pulled and departs is slice 2 — flips 🟢 on a census hit, never on a gate that reads the code.
 
 ### `area-partition-to-map` — 🟢 LIVE
 
@@ -938,10 +952,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Content Query*, *Content Tag*, *Encounter*
 - **Module:** `src/engine/encounterSeeding.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/encounterSeeding.ts`
 - **Read sites:** `src/engine/nudgeGrantLiveness.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-tags.ts`, `src/engine/contentQuery.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-tags.ts`, `src/engine/contentQuery.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-09-12: THR-1488 slice 4. Seventeen family tags seated and applied to 78 templates by prefix, so every aliased family names exactly the set its prefix named (asserted as a superset-both-ways guard in encounterSeedLiveness.test.ts — the tag may be wider, as #delve became when encounter.delve_into_depths joined a family its id spelling could never reach, but never narrower). ENCOUNTER_FAMILY_TAGS rewrites the prefix form for one release; a prefix with no row falls through to the pre-change scan, so the 41 dead families behave exactly as before while being counted. The gate validateEncounterSeedRefs is fatal on a dead templateId and an empty query and advisory on a dead prefix; wired into check:encounter (which sweeps encounter.* only) and into a corpus-wide vitest over all 744 templates, because every one of the seven fatal findings lived OUTSIDE the encounter. prefix and the runner alone reported the corpus clean. Both fatal arms falsified on encounter.slice.bargain_at_crossroads and each failed by name in both the runner and the vitest, then reverted. The seven dead references were repaired onto family queries in the same pass: the Court's tip to the watch, its two district inquiries, and the courtier's off-books commission can now arrive for the first time.
 
 ### `encounter-timeline-to-incident-bundle` — 🟢 LIVE
@@ -1184,6 +1198,18 @@ exit
 - **Other hits:** `src/components/Game/momentCardModel.ts`, `src/debug-bridge.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/ambition.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
 
+### `missed-appointment-breaks-agreement` — 🔴 LEAKED
+
+- **Intent:** A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind's `favor` class, no new type. When the window closes without the mortal on the place's hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet's Bonds row reads the broken favour ("They owe … a meeting at … — broken") until the reckoning's aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed's. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world.
+- **Producer → Consumer:** Encounters & Dilemmas → Secrets & Favors
+- **UL terms:** *Appointment*, *Agreement*
+- **Module:** `src/engine/appointments.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/encounterSeeding.ts`
+- **Read sites:** `src/engine/agentDetail.ts`
+- **Other hits:** `src/engine/appointments.ts`
+- **Verdict:** Pinned by badgeOverride: Shipped with the evaluator test proving kept redeems and missed breaks on a fixture world, and the sheet reads the broken favour; the seeded-run census that proves a real mortal misses a real meeting is slice 2.
+
 ### `mortal-dies-through-one-funnel` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`). Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
@@ -1329,10 +1355,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Agent*
 - **Module:** `src/engine/relocationIntent.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/relocationIntent.ts`, `src/types/movement.ts`
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/appointments.ts`, `src/engine/relocationIntent.ts`, `src/types/movement.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `repertoire-deals-into-encounter-hand` — 🟢 LIVE
@@ -1511,10 +1537,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 101 total — 2 write, 4 read, 95 unclassified
+- **Production hits:** 103 total — 2 write, 4 read, 97 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts` +90 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts` +92 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE

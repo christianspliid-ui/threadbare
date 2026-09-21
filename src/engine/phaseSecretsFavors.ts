@@ -179,6 +179,10 @@ function processFavorTensionAndExpiry(
     const broken = (props.broken as boolean) ?? false;
 
     if (redeemed || broken) continue;
+    // THR-1479 — an appointment's promise lives as long as its seed: kept redeems
+    // it, missed breaks it. Forgiving it at eighty ticks would erase a promise that
+    // falls due at a hundred and thirty-two.
+    if (props.appointment && typeof props.appointment === 'object') continue;
 
     const age = tick - grantedTick;
     const debtorId = edge.source;

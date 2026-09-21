@@ -823,12 +823,13 @@ describe('THR-1078: authoring metadata never reaches a player-facing prose field
     expect(offenders).toEqual([]);
   });
 
-  it('the nine vertical-slice templates still author a description', () => {
+  it('the ten vertical-slice templates still author a description', () => {
     // The fix was to rewrite these strings, not to delete them — a blank subtitle
     // would be a different regression on the same surface.
-    // Nine since THR-1182 added The Table That Holds.
+    // Nine since THR-1182 added The Table That Holds; ten since THR-1479 added
+    // The Stranger Finds Them (the crossroads appointment's missed branch).
     const slice = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('encounter.slice.'));
-    expect(slice.length).toBe(9);
+    expect(slice.length).toBe(10);
     for (const t of slice) {
       expect(t.description, `${t.id} lost its description`).toBeTruthy();
     }

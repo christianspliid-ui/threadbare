@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 108 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 109 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -28,7 +28,7 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 | `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 3 · agreement 2 · omen 2 · power 1 | 108 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 9 · power 4 · omen 2 · agreement 1 | 113 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · power 4 · agreement 2 · legendary 1 | 113 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · power 5 · omen 4 · agreement 1 · legendary 1 | 129 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · power 5 · omen 4 · agreement 1 · legendary 1 | 130 |  |
 | `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · power 4 · agreement 1 | 153 |  |
 | `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · condition 5 · power 2 · legendary 1 | 86 |  |
 | `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · power 4 · agreement 1 | 114 |  |
@@ -90,7 +90,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**63 tags.**
+**64 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -139,6 +139,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#road` | Of the ways between places. | companion 4 | 4 |  |
 | `#court` | Of halls, titles, and who is standing where. | companion 3 | 3 |  |
 | `#checkpoint` | Of the place where someone asks you what you are carrying. | condition 1 · item 1 · power 1 | 3 |  |
+| `#crossroads_debt` | What comes to collect on a promise made at a crossroads and not kept. | encounter 1 | 1 |  |
 | `#guild_errand` | Work set by the Adventurers' Guild — a posting taken off the board. | encounter 5 | 5 |  |
 | `#circle_errand` | Work set by the Arcane Circle — study, survey, and the reagents study needs. | encounter 5 | 5 |  |
 | `#fellowship_errand` | Work set by the Builders' Fellowship — stone cut, walls held, bridges thrown. | encounter 5 | 5 |  |

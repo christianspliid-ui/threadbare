@@ -257,6 +257,60 @@ export const RELOCATION_NEAREST_SETTLEMENT_MAX_HEXES = 12;
  */
 export const RELOCATION_AWAY_MAX_HEXES = 20;
 
+// ─── Appointments (THR-1479) ─────────────────────────────────────────────────
+//
+// A seed bound to a place and a due tick. The mortal leans toward the place as
+// the slack shrinks, departs when it falls under their leave margin, and misses
+// the meeting when the window closes without them. Every number below is the
+// tuning surface for that curve; the plan doc's constants table is the source.
+
+/** How long the meeting can be kept once due — one day at the 12-tick day. */
+export const APPOINTMENT_WINDOW_TICKS = 12;
+
+/** Slack at or below which the lean begins (two days). Above it, life continues. */
+export const APPOINTMENT_PULL_HORIZON_TICKS = 24;
+
+/**
+ * Additive pull at the place, decayed by hex distance (`W / (1 + dist)`) — the
+ * relocation channel's second term. Twice `RELOCATION_INTENT_SCORE_WEIGHT` on
+ * purpose: a promise *is* the trade THR-1142 declined to make for a mere lean.
+ */
+export const APPOINTMENT_PULL_WEIGHT = 1.0;
+
+/** Multiplier on a leaning-regime candidate whose tick cost exceeds the slack. */
+export const APPOINTMENT_OVERRUN_DISCOUNT = 0.25;
+
+/** Base slack at which the mortal departs (half a day). */
+export const APPOINTMENT_LEAVE_MARGIN_TICKS = 6;
+
+/** Margin added at full prudence (`courage_prudence = -1`, a Watcher). */
+export const APPOINTMENT_PRUDENCE_MARGIN_TICKS = 12;
+
+/**
+ * Margin removed at full ambition (`loyalty_ambition = -1`, a Renegade). At the
+ * defaults the margin spans `[-6, 18]`, so a Renegade can *choose* to miss — the
+ * director's "rare and personality-driven", and where a god's whisper belongs.
+ */
+export const APPOINTMENT_AMBITION_MARGIN_TICKS = 12;
+
+/**
+ * Motivation pull of the synthetic journey candidate in the departing regime,
+ * scored by `scoreMovementCandidate` against the best remaining encounter.
+ */
+export const APPOINTMENT_JOURNEY_PULL = 1.0;
+
+/** Ticks after the window closes before the missed sequel is eligible. */
+export const APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS = 12;
+
+/** A fourth appointment is refused at plant, with a trace. */
+export const APPOINTMENT_MAX_PER_MORTAL = 3;
+
+/** Chronicle significance of kept / missed. */
+export const APPOINTMENT_EVENT_SIGNIFICANCE = 0.5;
+
+/** Magnitude of the promise favour, on the `owes_favor` 0–1 scale the leverage readers sort by. */
+export const APPOINTMENT_FAVOUR_MAGNITUDE = 0.5;
+
 /**
  * Get terrain tax for a specific terrain type
  *

@@ -328,6 +328,15 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
+2026-09-21 by Claude Code (THR-1479 — the appointment primitive, slice 1). Two contracts
+registered **🔴 LEAKED-with-ticket at filing**, deliberately: `appointment-pulls-agent-movement`
+(Encounters & Dilemmas → Movement & Colocation: the seed's `appointment` block leans and
+departs a mortal through the decision phase) and `missed-appointment-breaks-agreement`
+(Encounters & Dilemmas → Secrets & Favors: a missed window marks the `owes_favor` promise
+`broken`, and the sheet reads it). Both ship with unit, evaluator and generated-world tests and
+one authored user (the Crossroads bargain); they flip 🟢 on a **census hit** from a seeded run
+(slice 2, THR-1518) — never on a gate that reads the code, the THR-1497 lesson that a wired,
+gated, contract-green capability can still be structurally unreachable. Earlier:
 2026-08-06 by Claude Code (THR-723 implementation). Rows regenerate mechanically; this page's
 protocol is reviewed monthly. Implementation correction to the original audit, carried from
 2026-07-23 (THR-717): the `attachment-tier-advancement` row was badged 🟠 PARTIAL on the

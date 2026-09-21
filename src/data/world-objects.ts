@@ -198,6 +198,8 @@ export const POWER_SUBCATEGORIES: readonly string[] = ['bestowed', 'spell'];
 export const EVENT_TYPES: readonly string[] = [
   'encounter_outcome', 'undertaking_outcome', 'action_resolved', 'narrative', 'ripple_consequence', 'combat_started', 'divine_spark',
   'faction_quest', 'bounty',
+  // THR-1479 — a mortal was (or was not) at the place by the time.
+  'appointment_kept', 'appointment_missed',
 ];
 
 // ─── The registry ───────────────────────────────────────────────────

@@ -90,8 +90,10 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
   },
   {
     name: 'Encounters & Dilemmas',
-    aliases: ['encounter', 'dilemma', 'aftermath', 'chapter', 'reaction', 'content object', 'content tag', 'content query', 'tag vocabulary'],
-    activityKeywords: ['encounter', 'dilemma', 'aftermath', 'reaction'],
+    // THR-1479 — an appointment is a placed, timed encounter seed; kept / missed
+    // are judged in the seed evaluator, so the badge reads them here too.
+    aliases: ['encounter', 'dilemma', 'aftermath', 'chapter', 'reaction', 'content object', 'content tag', 'content query', 'tag vocabulary', 'appointment', 'rendezvous', 'due tick'],
+    activityKeywords: ['encounter', 'dilemma', 'aftermath', 'reaction', 'appointment'],
     domains: ['encounter', 'encounters', 'dilemma'],
     phaseMatch: /\b(encounter|dilemma|aftermath)\b/i,
     note: 'The core narrative engine — scoring, eligibility, resolution, aftermath reactions, chapter archive.',
@@ -228,8 +230,10 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
   },
   {
     name: 'Movement & Colocation',
-    aliases: ['movement', 'travel', 'pathfinding', 'colocation', 'sublocation'],
-    activityKeywords: ['movement', 'reroute', 'colocation'],
+    // THR-1479 — `appointment` / `rendezvous` / `due tick`: the appointment pull
+    // and journey live in the decision phase; the DORMANT badge must see them.
+    aliases: ['movement', 'travel', 'pathfinding', 'colocation', 'sublocation', 'appointment', 'rendezvous', 'due tick'],
+    activityKeywords: ['movement', 'reroute', 'colocation', 'appointment'],
     domains: ['avatarmove', 'movement'],
     phaseMatch: /\b(movement|colocation|sublocation dissolution)\b/i,
     note: 'Goal-directed agent movement, same-hex colocation detection, sublocation dissolution.',

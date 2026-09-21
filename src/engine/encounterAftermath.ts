@@ -33,7 +33,14 @@ import {
 import { observeResidence } from './agentResidence';
 import type { MembershipChangeResult } from './factionMembership';
 import { joinFaction, leaveFaction, adjustMemberRank, resolveFactionNodeId } from './factionMembership';
-import { RELOCATION_INTENT_TTL_TICKS } from '../data/movement-content';
+import {
+  RELOCATION_INTENT_TTL_TICKS,
+  APPOINTMENT_WINDOW_TICKS,
+  APPOINTMENT_MAX_PER_MORTAL,
+  APPOINTMENT_FAVOUR_MAGNITUDE,
+} from '../data/movement-content';
+import type { PlantedAppointment } from '../types/unifiedAction';
+import { agentAppointmentSeeds, APPOINTMENT_FAVOUR_PROP } from './appointments';
 import { assignAmbitionToActor } from './ambitionAssignment';
 import { collectBusyActorIds } from './spotlightPull';
 import type { TraceEntry } from '../types/trace';
@@ -1647,8 +1654,83 @@ export function applyEncounterAftermathReaction(
               inheritedBindings: action.supportBindings,
             }
           : undefined;
+        const seedId = `seed_${actionId}_${reaction.id}_${i}`;
+        const seedTargetId = effect.targetAgentId ?? actorAgentId ?? '';
+
+        // ── THR-1479: an appointment ──────────────────────────────────────
+        // Bind the place (`$here` / `$cast:<key>` / literal) and the counterparty,
+        // refuse a fourth, and write the promise — an `owes_favor` edge of a
+        // particular shape. Every failure plants today's placeless seed and traces
+        // why (NFP #4); `check:encounter` makes an unbound sentinel an authoring
+        // error before it ships. The seed is the appointment's one record; the
+        // favour edge is the promise, not a second copy of the meeting.
+        let plantedAppointment: PlantedAppointment | undefined;
+        if (effect.appointment) {
+          const block = effect.appointment;
+          const castNodeId = (ref: string): string | undefined =>
+            action?.supportBindings?.find(b => b.key === ref.slice(AFTERMATH_CAST_SENTINEL_PREFIX.length))?.nodeId;
+          const resolvePlace = (ref: string): string | undefined => {
+            const id = ref === AFTERMATH_HERE_SENTINEL
+              ? resolveSceneHere(state.graph, action?.actorId, 'location') ?? undefined
+              : ref.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ? castNodeId(ref) : ref;
+            // Resolve-don't-trust: a place is somewhere with a hex, or it is not a place.
+            return id && resolveLocationToHex(state.graph, id) ? id : undefined;
+          };
+          const resolveParty = (ref: string | undefined): string | undefined => {
+            if (!ref) return undefined;
+            const id = ref.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ? castNodeId(ref)
+              : ref === AFTERMATH_TARGET_SENTINEL ? action?.targetId
+                : ref;
+            return id && state.graph.getNode(id)?.type === 'actor' ? id : undefined;
+          };
+          const placeId = resolvePlace(block.locationId);
+          const targetLive = !!state.graph.getNode(seedTargetId);
+          const held = agentAppointmentSeeds(
+            { pendingEncounterSeeds: [...(state.pendingEncounterSeeds ?? []), ...nextSeeds] },
+            seedTargetId,
+          ).length;
+          const refused: 'over_max' | 'place_unresolved' | undefined =
+            !placeId || !targetLive ? 'place_unresolved'
+              : held >= APPOINTMENT_MAX_PER_MORTAL ? 'over_max'
+                : undefined;
+          const dueTick = tick + effect.delayTicks;
+          const windowTicks = block.windowTicks ?? APPOINTMENT_WINDOW_TICKS;
+          if (!refused && placeId) {
+            const counterpartyId = resolveParty(block.counterpartyId);
+            const favourEdgeId = `owes_favor_appt_${seedId}`;
+            // Creditor is the counterparty when the scene cast one, else the place
+            // itself — a favour to a crossroads is what "I will be there" means.
+            state.graph.addEdge({
+              id: favourEdgeId,
+              source: seedTargetId,
+              target: counterpartyId ?? placeId,
+              type: 'owes_favor',
+              properties: {
+                grantedTick: tick,
+                magnitude: APPOINTMENT_FAVOUR_MAGNITUDE,
+                context: 'appointment',
+                [APPOINTMENT_FAVOUR_PROP]: { seedId, locationId: placeId, dueTick },
+              },
+            });
+            plantedAppointment = { locationId: placeId, dueTick, windowTicks, counterpartyId, missed: block.missed, favourEdgeId };
+            touchWorld(runtime);
+            mutationSummary.touchedWorld = true;
+          }
+          const placeName = placeId ? state.graph.getNode(placeId)?.name ?? placeId : block.locationId;
+          emitTrace({
+            tick, category: 'appointment_planted', agentId: seedTargetId,
+            seedId, locationId: placeId ?? block.locationId, dueTick, windowTicks,
+            counterpartyId: plantedAppointment?.counterpartyId,
+            templateId: effect.templateId,
+            refused,
+            summary: refused
+              ? `Appointment refused (${refused}): "${effect.seedLabel}" planted placeless for ${seedTargetId}`
+              : `Appointment planted: ${seedTargetId} at ${placeName} by tick ${dueTick} (window ${windowTicks}) — "${effect.seedLabel}"`,
+          });
+        }
+
         const seed: PendingEncounterSeed = {
-          seedId: `seed_${actionId}_${reaction.id}_${i}`,
+          seedId,
           sourceEncounterId: encounterId,
           sourceReactionId: reaction.id,
           encounterFamily: effect.encounterFamily,
@@ -1657,13 +1739,14 @@ export function applyEncounterAftermathReaction(
           // comes due, not here. Planting a drawn id would freeze the family as it
           // stood twenty ticks before the sequel is owed.
           query: effect.query,
-          targetAgentId: effect.targetAgentId ?? actorAgentId ?? '',
+          targetAgentId: seedTargetId,
           eligibleAfterTick: tick + effect.delayTicks,
           priority: effect.priority ?? 1.0,
           seedLabel: effect.seedLabel,
           plantedTick: tick,
           sourceEventNodeId: action?.eventNodeId,
           ...inheritedContext,
+          ...(plantedAppointment ? { appointment: plantedAppointment } : {}),
         };
         nextSeeds = [...nextSeeds, seed];
         const seedEvent: TickEvent = {

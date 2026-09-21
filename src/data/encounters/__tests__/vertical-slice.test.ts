@@ -136,7 +136,11 @@ describe('vertical slice — the Seeded Sequel rule', () => {
     const planted: string[] = [];
     for (const template of VERTICAL_SLICE_TEMPLATES) {
       for (const effect of allAftermathEffects(template)) {
-        if (effect.kind === 'encounter_seed' && effect.templateId) planted.push(effect.templateId);
+        if (effect.kind !== 'encounter_seed') continue;
+        if (effect.templateId) planted.push(effect.templateId);
+        // THR-1479 — an appointment's missed branch is a seed too, judged by the
+        // same rule when it names a literal.
+        if (effect.appointment?.missed.templateId) planted.push(effect.appointment.missed.templateId);
       }
     }
     // Population guard: the slice designs three seeds; zero found means the
@@ -149,9 +153,14 @@ describe('vertical slice — the Seeded Sequel rule', () => {
 
   it('every sequel is reachable — something in the slice seeds it', () => {
     const seeded = new Set<string>();
+    const seededByTag = new Set<string>();
     for (const template of VERTICAL_SLICE_TEMPLATES) {
       for (const effect of allAftermathEffects(template)) {
-        if (effect.kind === 'encounter_seed' && effect.templateId) seeded.add(effect.templateId);
+        if (effect.kind !== 'encounter_seed') continue;
+        if (effect.templateId) seeded.add(effect.templateId);
+        // THR-1479 — a missed branch names a *family* by query; a sequel is
+        // reachable when it carries a tag some missed branch draws from.
+        for (const tag of effect.appointment?.missed.query?.tags ?? []) seededByTag.add(tag);
       }
     }
     for (const sequelId of [
@@ -164,6 +173,13 @@ describe('vertical slice — the Seeded Sequel rule', () => {
     ]) {
       expect(seeded.has(sequelId), `sequel ${sequelId} is planted by no parent`).toBe(true);
     }
+    // THR-1479 — the reckoning is reached by family, never by literal id.
+    const reckoning = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.fullMoonReckoning)!;
+    expect(
+      (reckoning.tags ?? []).some((tag) => seededByTag.has(tag)),
+      `${reckoning.id} carries no tag any appointment's missed branch draws from`,
+    ).toBe(true);
+    expect(seeded.has(SLICE_TEMPLATE_IDS.fullMoonReckoning), 'the reckoning must be a family, not a literal').toBe(false);
   });
 });
 
@@ -397,38 +413,37 @@ describe('vertical slice — the April migration bar (THR-973)', () => {
   });
 });
 
-describe('vertical slice — the crossroads promise is a real claim (THR-1110)', () => {
+describe('vertical slice — the crossroads promise is a real claim (THR-1110, re-cut by THR-1479)', () => {
   const crossroads = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.crossroads)!;
 
   /** The accept path — the fork's `negative` pole, where the word is given. */
   const acceptVariant = crossroads.aftermathConfig?.variants?.negative;
   const acceptEffects = (acceptVariant?.reactions ?? []).flatMap((r) => r.effects);
+  const acceptSeed = acceptEffects.find(
+    (e) => e.kind === 'encounter_seed' && e.templateId === SLICE_TEMPLATE_IDS.fullMoon,
+  ) as Extract<EncounterAftermathReactionEffect, { kind: 'encounter_seed' }> | undefined;
 
-  it('the accept path grants an agreement attachment, not only an encounter seed', () => {
-    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant');
-    expect(
-      grant,
-      'the promise shipped carried by its seed alone until THR-1110 — the seed is a scheduled '
-      + 'encounter, not a thing the bearer holds',
-    ).toBeDefined();
-    expect((grant as { templateId?: string }).templateId).toBe('agreement.bargain.promise_given');
+  it('the accept path plants an appointment, not a placeless seed', () => {
+    // THR-1110 made the promise a claim the bearer holds (an attachment beside a
+    // placeless seed). THR-1479 fused the two: the seed carries the place and the
+    // time, and the planter writes the `owes_favor` edge that *is* the promise on
+    // the sheet — one claim, not two.
+    expect(acceptSeed, 'the accept path no longer plants The Full Moon Collection').toBeDefined();
+    expect(acceptSeed?.appointment, 'the seed carries no appointment block — the place is a wish again').toBeDefined();
+    expect(acceptSeed?.appointment?.locationId).toBe('$here');
   });
 
-  it('the agreement names a counterparty — a promise needs someone on the other end', () => {
-    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant') as
-      { counterpartyId?: string } | undefined;
-    expect(grant?.counterpartyId).toBe('$cast:stranger');
+  it('the appointment names a counterparty — a promise needs someone on the other end', () => {
+    expect(acceptSeed?.appointment?.counterpartyId).toBe('$cast:stranger');
   });
 
   it('the counterparty sentinel resolves against a cast member the template actually declares', () => {
-    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant') as
-      { counterpartyId?: string } | undefined;
-    const key = grant!.counterpartyId!.replace('$cast:', '');
+    const key = acceptSeed!.appointment!.counterpartyId!.replace('$cast:', '');
     const cast = (crossroads.supportBundle ?? []).filter((s) => s.kind === 'actor');
     expect(
       cast.some((s) => s.key === key),
-      `the grant binds $cast:${key} but the template casts no such actor — the sentinel would `
-      + 'stay unbound and the grant would silently no-op',
+      `the appointment binds $cast:${key} but the template casts no such actor — the sentinel would `
+      + 'stay unbound and the promise would be owed to the crossroads instead',
     ).toBe(true);
   });
 
@@ -437,12 +452,23 @@ describe('vertical slice — the crossroads promise is a real claim (THR-1110)',
     expect((stranger as { persistence?: string } | undefined)?.persistence).toBe('must-persist');
   });
 
-  it('the bond and the collection fall due together', () => {
-    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant') as
-      { durationOverride?: number | null } | undefined;
-    const seed = acceptEffects.find((e) => e.kind === 'encounter_seed') as
-      { delayTicks?: number } | undefined;
-    expect(grant?.durationOverride).toBe(seed?.delayTicks);
+  it('one promise on the sheet — the promise_given grant no longer rides beside the appointment', () => {
+    const grant = acceptEffects.find(
+      (e) => e.kind === 'attachment_grant' && (e as { templateId?: string }).templateId === 'agreement.bargain.promise_given',
+    );
+    expect(grant, 'two records of one promise drift; the favour edge the planter writes is the claim').toBeUndefined();
+    expect(acceptSeed?.delayTicks).toBe(SLICE_FULL_MOON_DELAY_TICKS);
+  });
+
+  it('the missed branch is a family the reckoning carries, never an ungated id', () => {
+    const missed = acceptSeed!.appointment!.missed;
+    expect(missed.templateId).toBeUndefined();
+    expect(missed.query?.kind).toBe('encounter_template');
+    const reckoning = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.fullMoonReckoning)!;
+    for (const tag of missed.query?.tags ?? []) {
+      expect(reckoning.tags, `the reckoning does not carry ${tag}`).toContain(tag);
+    }
+    expect(missed.seedLabel.trim().length).toBeGreaterThan(0);
   });
 
   it('the chip names the promise as a resolvable concept rather than bare text', () => {
@@ -543,7 +569,7 @@ describe('vertical slice — a declared attachment grant is the one its band wri
 });
 
 describe('vertical slice — registration', () => {
-  it('all nine templates are in the live pool', () => {
+  it('all ten templates are in the live pool', () => {
     const poolIds = new Set(UNIFIED_ACTION_TEMPLATES.map((t) => t.id));
     for (const id of Object.values(SLICE_TEMPLATE_IDS)) {
       expect(poolIds.has(id), `${id} is not registered`).toBe(true);
@@ -798,28 +824,27 @@ describe('vertical slice — The Table That Holds (THR-1182)', () => {
   });
 });
 
-describe('vertical slice — the crossroads chain promises only what the seed performs (THR-1476)', () => {
+describe('vertical slice — the crossroads chain promises only what an effect performs (THR-1476, THR-1479)', () => {
   /**
    * Prose rule 7b: prose may not set a constraint on future world behaviour that
-   * no effect enacts. `encounter_seed` carries `delayTicks`, `targetAgentId` and
-   * `inheritContext` and **nothing spatial** — `encounterSeeding` fires it on the
-   * agent wherever they stand — and no appointment, rendezvous or return-to drive
-   * exists. So this chain may promise a *time* and the *same cast*, never a place
-   * and never a journey the mortal makes.
+   * no effect enacts. THR-1476 made this chain true **by removal** — the seed had
+   * no spatial field, so the stranger found them. THR-1479 makes it true **by
+   * construction**: the accept path's seed carries an `appointment` block, so
+   * "collect it here at the next full moon" is a sentence the engine performs,
+   * and the *kept* sequel may say they kept the night they promised.
    *
-   * **What this gate is, honestly.** A regression pin on the specific
-   * constructions THR-1476 removed, not a general 7b enforcer: rule 7b is a
-   * judgment about whether an effect enacts a sentence, and no regex decides
-   * that. The enforcement surface is the authoring spec (prose rule 7b), the
-   * critic's design-conformance pass, and the systems auditor's Aftermath
-   * Supportability question. This test stops *these* sentences coming back.
+   * The rule did not move; its one exception did. So this gate now has two arms:
+   * the appointment seed is the only seed on the chain allowed to promise a
+   * place, and the chain's *placeless* re-seeds (the refuse path's, and the Full
+   * Moon's second-visit) still may not — nothing walks the mortal back to a tree
+   * for those, and their labels stay in the truthful register.
    *
-   * Falsified against the pre-fix strings: the opening's "collect it here at the
-   * next full moon", the carry-the-promise intent's "an appointment at the end of
-   * it", the sequel's "Keep the appointment" purposeLine, its "The appointment was
-   * kept" band, the "walk back" card band, the base gift chip's "They kept the
-   * night they promised", and the refuse path's "The road bends back toward a dead
-   * tree" seed label each trip a pattern below.
+   * **What this gate is, honestly.** A regression pin on specific constructions,
+   * not a general 7b enforcer: whether an effect enacts a sentence is a judgment,
+   * and the enforcement surface is the authoring spec (rule 7b and its
+   * exception), the critic's pass, and the systems auditor's Aftermath
+   * Supportability question. This test stops *these* sentences coming back on
+   * the seeds that cannot perform them.
    */
   const CHAIN_IDS: readonly string[] = [
     SLICE_TEMPLATE_IDS.crossroads,
@@ -909,82 +934,77 @@ describe('vertical slice — the crossroads chain promises only what the seed pe
   }
 
   /**
-   * The constructions that made the untruth. Each asserts either a *place* the
-   * mortal is told to meet, or an appointment they are credited with keeping —
-   * the two things the seed cannot make true.
-   *
-   * `appointment` is banned outright on this chain rather than pattern-matched:
-   * every use of it here was the defect, and the truthful register ("he finds
-   * them", "a second visit") costs nothing. Elsewhere the word can be honest, so
-   * the ban stays scoped to the two templates above.
+   * The constructions a *placeless* seed cannot make true: a road that bends
+   * the mortal back, an appointment they are credited with keeping. Applied to
+   * the chain's placeless seeds' labels only — the appointment seed is allowed
+   * (and expected) to promise the place.
    */
-  const BANNED: readonly { pattern: RegExp; why: string }[] = [
-    { pattern: /\bappointments?\b/i, why: 'the seed schedules no meeting the mortal attends' },
-    { pattern: /\bcollect it here\b/i, why: 'the seed carries no location' },
-    { pattern: /\bwalk back\b/i, why: 'nothing walks the mortal back' },
-    {
-      pattern: /\bcomes? back (here|to the crossroads)\b/i,
-      why: 'nothing returns the mortal to a place',
-    },
-    {
-      pattern: /\b(be|been) (here|there) (at|by|when) the (next )?full moon\b/i,
-      why: 'the mortal is never placed',
-    },
-    {
-      pattern: /\bkept the night they promised\b/i,
-      why: 'the mortal kept nothing — he arrived',
-    },
-    {
-      pattern: /\bthe road bends back\b/i,
-      why: 'the re-seed does not bend the road back to the tree',
-    },
+  const BANNED_ON_PLACELESS_SEEDS: readonly { pattern: RegExp; why: string }[] = [
+    { pattern: /\bappointments?\b/i, why: 'a placeless seed schedules no meeting the mortal attends' },
+    { pattern: /\bthe road bends back\b/i, why: 'a placeless re-seed does not bend the road back to the tree' },
+    { pattern: /\bcollect it here\b/i, why: 'a placeless seed carries no location' },
   ];
 
-  it('names no place or kept appointment the engine cannot perform', () => {
+  it('the walker still sees the whole chain (population guard)', () => {
     const chain = VERTICAL_SLICE_TEMPLATES.filter((t) => CHAIN_IDS.includes(t.id));
-    // Population guard: both templates must be found. Zero or one here means the
-    // chain was renamed and this gate went blind rather than clean.
+    // Both templates must be found. Zero or one here means the chain was renamed
+    // and this gate went blind rather than clean.
     expect(chain.map((t) => t.id).sort()).toEqual([...CHAIN_IDS].sort());
-
-    const hits: string[] = [];
     let inspected = 0;
     for (const template of chain) {
       const strings = playerFacingStrings(template);
       expect(strings.length, `${template.id}: walker found no prose`).toBeGreaterThan(20);
       inspected += strings.length;
-      for (const { where, text } of strings) {
-        for (const { pattern, why } of BANNED) {
-          if (pattern.test(text)) {
-            hits.push(`${template.id} ${where}: /${pattern.source}/ — ${why}`);
-          }
-        }
-      }
     }
     expect(inspected).toBeGreaterThan(50);
-    expect(hits, `prose rule 7b violations:\n${hits.join('\n')}`).toEqual([]);
   });
 
-  it('the accept path still plants the seed and the claim the truthful prose describes', () => {
-    // The rewrite is truthful by *removal*, so this pins that nothing load-bearing
-    // left with the words: the promise is still a claim with a term, and the
-    // sequel is still planted at the delay the prose counts forward to.
-    const crossroads = VERTICAL_SLICE_TEMPLATES.find(
-      (t) => t.id === SLICE_TEMPLATE_IDS.crossroads,
-    )!;
-    const effects = allAftermathEffects(crossroads);
+  it('exactly one seed on the chain promises a place, and it is the appointment', () => {
+    const placed: string[] = [];
+    const placeless: { where: string; label: string }[] = [];
+    for (const template of VERTICAL_SLICE_TEMPLATES.filter((t) => CHAIN_IDS.includes(t.id))) {
+      for (const effect of allAftermathEffects(template)) {
+        if (effect.kind !== 'encounter_seed') continue;
+        if (effect.appointment) placed.push(`${template.id} → ${effect.templateId}`);
+        else placeless.push({ where: `${template.id} → ${effect.templateId ?? effect.encounterFamily ?? 'query'}`, label: effect.seedLabel });
+      }
+    }
+    expect(placed).toEqual([`${SLICE_TEMPLATE_IDS.crossroads} → ${SLICE_TEMPLATE_IDS.fullMoon}`]);
+    // The chain's re-seeds (refuse path, second visit) stay placeless and their
+    // labels stay in the truthful register.
+    expect(placeless.length).toBeGreaterThanOrEqual(2);
+    const hits = placeless.flatMap(({ where, label }) =>
+      BANNED_ON_PLACELESS_SEEDS.filter(({ pattern }) => pattern.test(label)).map(({ pattern, why }) =>
+        `${where}: /${pattern.source}/ — ${why}`),
+    );
+    expect(hits, `prose rule 7b violations on placeless seeds:\n${hits.join('\n')}`).toEqual([]);
+  });
 
-    const seed = effects.find(
-      (e) => e.kind === 'encounter_seed' && e.templateId === SLICE_TEMPLATE_IDS.fullMoon,
-    );
-    expect(seed, 'the accept path no longer plants The Full Moon Collection').toBeDefined();
-    expect(seed && seed.kind === 'encounter_seed' ? seed.delayTicks : undefined).toBe(
-      SLICE_FULL_MOON_DELAY_TICKS,
-    );
+  it('the place the opening promises is the place the appointment binds', () => {
+    // "collect it here" is true only because the block says `$here` — the
+    // crossroads the scene happens at. A literal id or `$target` here would let
+    // the prose and the effect name two different places.
+    const crossroads = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.crossroads)!;
+    const opening = playerFacingStrings(crossroads).find((s) => /collect it here/i.test(s.text));
+    expect(opening, 'the opening no longer makes the promise the appointment performs').toBeDefined();
+    const seed = allAftermathEffects(crossroads).find(
+      (e) => e.kind === 'encounter_seed' && e.appointment,
+    ) as Extract<EncounterAftermathReactionEffect, { kind: 'encounter_seed' }>;
+    expect(seed.appointment?.locationId).toBe('$here');
+    expect(seed.delayTicks).toBe(SLICE_FULL_MOON_DELAY_TICKS);
+  });
 
-    const grant = effects.find(
-      (e) => e.kind === 'attachment_grant' && e.templateId === 'agreement.bargain.promise_given',
+  it('the kept sequel fires only from the appointment, so its prose may say they kept the night', () => {
+    // Every planter of The Full Moon Collection in the slice carries the block;
+    // a second, placeless planter would make "They kept the night they promised"
+    // false on the path it took.
+    const planters = VERTICAL_SLICE_TEMPLATES.flatMap((t) =>
+      allAftermathEffects(t)
+        .filter((e) => e.kind === 'encounter_seed' && e.templateId === SLICE_TEMPLATE_IDS.fullMoon)
+        .map((e) => ({ from: t.id, placed: !!(e as { appointment?: unknown }).appointment })),
     );
-    expect(grant, 'the promise is no longer a claim the bearer holds').toBeDefined();
+    expect(planters.length).toBeGreaterThan(0);
+    expect(planters.every((p) => p.placed), `a placeless planter of the kept sequel: ${JSON.stringify(planters)}`).toBe(true);
   });
 });
 
@@ -1074,7 +1094,7 @@ describe('vertical slice — every path authors the losing bands it can reach (T
   it('authors critical_failure on every path, and failure on every path with a fail_action step', () => {
     // Population guards: the predicate is worthless over a shrunken roster or
     // a roster with no forks (the case this gate exists for).
-    expect(VERTICAL_SLICE_TEMPLATES.length).toBe(9);
+    expect(VERTICAL_SLICE_TEMPLATES.length).toBe(10);
     const forked = VERTICAL_SLICE_TEMPLATES.filter((t) => reachablePathKeys(t).length > 1);
     expect(forked.length, 'no forked template — the per-path gate proves nothing').toBeGreaterThan(0);
     // And the rule must actually ask for `failure` somewhere, or it collapses
@@ -1147,11 +1167,11 @@ describe('vertical slice — every path authors the losing bands it can reach (T
 });
 
 describe('vertical slice — every encounter authors the failure band (THR-1468)', () => {
-  it('authors `failure` on all nine templates', () => {
+  it('authors `failure` on all ten templates', () => {
     // Population guard: the predicate is worthless over an empty or shrunken
     // roster, and a renamed export would make this gate pass by inspecting
     // nothing (the vacuous-probe shape).
-    expect(VERTICAL_SLICE_TEMPLATES.length).toBe(9);
+    expect(VERTICAL_SLICE_TEMPLATES.length).toBe(10);
 
     const missing = VERTICAL_SLICE_TEMPLATES.filter(
       (t) => !authoredOutcomeBands(t).includes('failure'),
