@@ -29,7 +29,6 @@
 import type { WorldGraph } from './graph';
 import { profileWorkIds } from './strategicActionCandidates';
 import { UNDERTAKING_MODEL, type UndertakingModel } from '../data/strategic-action-constants';
-import type { GraphNode } from '../types/graph';
 import type { AmbitionTemplate } from '../types/ambition';
 import {
   AMBITION_TEMPLATES,
@@ -49,28 +48,13 @@ export const ALL_AMBITION_TEMPLATE_POOLS: readonly AmbitionTemplate[] = [
   ...GRIEVANCE_AMBITION_TEMPLATES,
 ];
 
-/**
- * The tier whose actors run the autonomous decision loop.
- *
- * Legacy nodes without `spotlightTier` default to `spotlight`, matching
- * `phaseAgentDecision`'s own read — the default is load-bearing, not cosmetic,
- * because worldgen-era fixtures omit the property entirely.
- */
-export const AUTONOMOUS_DECISION_TIER = 'spotlight';
-
-/**
- * Does this node reach the autonomous decision loop at all?
- *
- * **Shared with `phaseAgentDecision` on purpose (THR-1329).** An instrument that
- * re-implements the population it measures drifts away from it silently, and then
- * reports reachability for a loop that no longer exists. The avatar exclusion stays
- * at the call site: the decision phase skips the player's avatar because the player
- * drives it, which is not a statement about whether the tier has agency.
- */
-export function isAutonomousDecisionActor(node: GraphNode): boolean {
-  return node.properties.actorType === 'individual'
-    && (node.properties.spotlightTier ?? AUTONOMOUS_DECISION_TIER) === AUTONOMOUS_DECISION_TIER;
-}
+// The tier predicate lives in the leaf module `decisionTier.ts` since THR-1348 (the
+// spotlight pull needs it from inside the lifecycle import chain, and importing it
+// from here closed a ring through `strategicActionCandidates` → `undertaking-cells`).
+// Re-exported so every existing importer — `phaseAgentDecision`, the census scripts,
+// the CLI — keeps its one shared predicate (THR-1329).
+export { AUTONOMOUS_DECISION_TIER, isAutonomousDecisionActor } from './decisionTier';
+import { isAutonomousDecisionActor } from './decisionTier';
 
 /** One behaviour family's standing in one world. */
 export interface StrategicReachabilityRow {

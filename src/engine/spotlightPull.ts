@@ -41,7 +41,10 @@ import type { GameState, TickEvent } from '../types/gameState';
 import type { SpotlightTier } from '../types/npc';
 import type { SpotlightPullRefusal, SpotlightPullTrace } from '../types/trace';
 import { hydrateToTier, demoteToTier } from './npcGraduation';
-import { isAutonomousDecisionActor } from './strategicKindReachability';
+// From the leaf module, not `strategicKindReachability`: that module imports the
+// candidate generator, and this one sits inside the lifecycle import chain — the
+// ring it closed is documented in `decisionTier.ts`.
+import { isAutonomousDecisionActor } from './decisionTier';
 import { findAmbitionTemplateById } from '../data/ambition-templates';
 import { getAmbitionTemplateId } from './ambitionShape';
 import { emitTrace } from './traceBuffer';
