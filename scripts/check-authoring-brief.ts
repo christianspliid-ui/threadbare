@@ -65,14 +65,35 @@ export const BATCH_SLOT_FLOOR_THRESHOLD = 6;
 /** Minimum `query_prize` slots a batch brief must record. */
 export const QUERY_PRIZE_BRIEF_FLOOR = 1;
 
+/**
+ * The second die-B face a batch owes (THR-1518). Duplicated from `packetDice.ts`
+ * for the same reason `QUERY_PRIZE_FACE` is — see that constant's note.
+ */
+export const APPOINTMENT_FACE = 'appointment';
+
+/**
+ * Minimum `appointment` slots a batch brief must record. Mirrors
+ * `PACKET_BATCH_BOUNDS.appointmentFloor` (`APPOINTMENT_BRIEF_FLOOR` in the plan's
+ * words). **The second and last floor on die B** — THR-1489's arithmetic; the
+ * catalog check refuses a third, and so should a reader of this file.
+ */
+export const APPOINTMENT_BRIEF_FLOOR = 1;
+
 export interface BriefFloorReport {
   readonly path: string;
   readonly slots: number;
   readonly queryPrizeSlots: number;
-  /** False only for a brief that is a batch *and* misses the floor. */
+  /** `appointment` faces the brief records (THR-1518). */
+  readonly appointmentSlots: number;
+  /** False only for a brief that is a batch *and* misses either floor. */
   readonly satisfied: boolean;
   /** True when the brief records too few slots to be judged. */
   readonly belowThreshold: boolean;
+}
+
+/** Collapse a face id or printed label to the form the parser compares on. */
+function faceKey(face: string): string {
+  return face.trim().toLowerCase().replace(/[\s_-]+/g, '');
 }
 
 /**
@@ -90,18 +111,22 @@ export function briefFloorReport(path: string, content: string): BriefFloorRepor
   for (const line of content.split('\n')) {
     const match = /^\s*shape:\s*([^[\n]+)/.exec(line);
     if (!match) continue;
-    shapes.push(match[1].trim().toLowerCase().replace(/[\s_-]+/g, ''));
+    shapes.push(faceKey(match[1]));
   }
-  const wanted = QUERY_PRIZE_FACE.replace(/[\s_-]+/g, '');
-  const queryPrizeSlots = shapes.filter(shape => shape === wanted).length;
+  const queryPrizeSlots = shapes.filter(shape => shape === faceKey(QUERY_PRIZE_FACE)).length;
+  const appointmentSlots = shapes.filter(shape => shape === faceKey(APPOINTMENT_FACE)).length;
   const belowThreshold = shapes.length < BATCH_SLOT_FLOOR_THRESHOLD;
 
   return {
     path,
     slots: shapes.length,
     queryPrizeSlots,
+    appointmentSlots,
     belowThreshold,
-    satisfied: belowThreshold || queryPrizeSlots >= QUERY_PRIZE_BRIEF_FLOOR,
+    satisfied:
+      belowThreshold
+      || (queryPrizeSlots >= QUERY_PRIZE_BRIEF_FLOOR
+        && appointmentSlots >= APPOINTMENT_BRIEF_FLOOR),
   };
 }
 
@@ -201,26 +226,35 @@ function reportBriefFloor(): number {
 
   if (judged.length === 0) {
     console.info(
-      `info: query-prize floor — VACUOUS: ${reports.length} brief(s) scanned, none records `
+      `info: die-B floors — VACUOUS: ${reports.length} brief(s) scanned, none records `
         + `${BATCH_SLOT_FLOOR_THRESHOLD}+ rolled slots, so no batch was judged.`,
     );
     return 0;
   }
 
-  const authored = judged.reduce((sum, report) => sum + report.queryPrizeSlots, 0);
+  const queries = judged.reduce((sum, report) => sum + report.queryPrizeSlots, 0);
+  const appointments = judged.reduce((sum, report) => sum + report.appointmentSlots, 0);
   console.info(
-    `info: query-prize floor — ${judged.length} batch brief(s) judged, `
-      + `${authored} \`${QUERY_PRIZE_FACE}\` slot(s) authored.`,
+    `info: die-B floors — ${judged.length} batch brief(s) judged, `
+      + `${queries} \`${QUERY_PRIZE_FACE}\` and ${appointments} \`${APPOINTMENT_FACE}\` `
+      + 'slot(s) authored.',
   );
 
   if (violations.length === 0) return 0;
 
   for (const report of violations) {
+    const missed = [
+      report.queryPrizeSlots < QUERY_PRIZE_BRIEF_FLOOR
+        ? `${report.queryPrizeSlots} \`${QUERY_PRIZE_FACE}\` face(s), under the floor of ${QUERY_PRIZE_BRIEF_FLOOR}`
+        : undefined,
+      report.appointmentSlots < APPOINTMENT_BRIEF_FLOOR
+        ? `${report.appointmentSlots} \`${APPOINTMENT_FACE}\` face(s), under the floor of ${APPOINTMENT_BRIEF_FLOOR}`
+        : undefined,
+    ].filter((line): line is string => line !== undefined);
     process.stderr.write(
       `error: ${report.path} rolls ${report.slots} slot(s) and records `
-        + `${report.queryPrizeSlots} \`${QUERY_PRIZE_FACE}\` face(s), under the floor of `
-        + `${QUERY_PRIZE_BRIEF_FLOOR}. Re-roll with \`npm run draw:packet\` (which forces the `
-        + 'floor), or state the override and its reason in the brief.\n',
+        + `${missed.join('; ')}. Re-roll with \`npm run draw:packet\` (which forces both `
+        + 'floors), or state the override and its reason in the brief.\n',
     );
   }
   return AUTHORING_BRIEF_DRIFT_EXIT_CODE;

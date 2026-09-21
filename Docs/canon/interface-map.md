@@ -328,6 +328,13 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
+2026-09-22 by Claude Code (THR-1518 — the appointment harness, slice 2). The two THR-1479
+contracts below flipped **🟢 LIVE** on the evidence they were registered to wait for: a **census
+hit** on a seeded 200-tick run (seed 42, medium — the Crossroads bargain plants its appointment on
+the live board; `check:content-model-census` prints *Reachability: HIT*) and the two live-proof
+arms (`appointment_kept` with the mortal present at the due tick and the Full Moon Collection
+spawning at the place; `appointment_missed` with the mortal stood on another hex, the promise
+marked `broken`, the reckoning following). Never on a gate that reads the code. Earlier:
 2026-09-21 by Claude Code (THR-1479 — the appointment primitive, slice 1). Two contracts
 registered **🔴 LEAKED-with-ticket at filing**, deliberately: `appointment-pulls-agent-movement`
 (Encounters & Dilemmas → Movement & Colocation: the seed's `appointment` block leans and

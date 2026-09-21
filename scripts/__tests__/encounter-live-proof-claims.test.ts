@@ -14,9 +14,31 @@ import {
   computeVerdict,
   selectHand,
   selectReaction,
+  strongestScope,
+  type DeclarationScope,
   type DeclarationSurface,
   type VerdictClaim,
 } from '../encounter-live-proof-claims';
+
+describe('strongestScope (THR-1518)', () => {
+  it('prefers reachable over every excuse, and the more specific excuse over the vaguer', () => {
+    const order: readonly DeclarationScope[] = ['absent', 'band_scoped', 'reaction_scoped', 'reachable'];
+    for (let i = 0; i < order.length; i++) {
+      for (let j = 0; j < order.length; j++) {
+        const expected = order[Math.max(i, j)];
+        expect(strongestScope(order[i], order[j])).toBe(expected);
+        expect(strongestScope(order[j], order[i])).toBe(expected);
+      }
+    }
+  });
+
+  it('is what lets an appointment seed still count as "the seed this run planted"', () => {
+    // The composition side files an appointment under `appointments`, not `seeds`;
+    // the seed_planted claim reads both and takes the assertable one.
+    expect(strongestScope('absent', 'reachable')).toBe('reachable');
+    expect(strongestScope('reachable', 'absent')).toBe('reachable');
+  });
+});
 
 describe('computeVerdict', () => {
   const baseline: VerdictClaim[] = [

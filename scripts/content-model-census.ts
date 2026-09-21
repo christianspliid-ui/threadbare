@@ -70,6 +70,9 @@ import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import { clearTraces, enableTracing } from '../src/engine/traceBuffer';
 import { CONTENT_QUERY_SITES, type ContentQuerySite } from '../src/types/contentQuery';
+import type { GameState } from '../src/types/gameState';
+import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
+import { systemConnections } from '../src/data/content-eval/compositionContract';
 import { buildViews } from './generate-content-tag-catalog.js';
 import { createRingHarvester } from './ring-harvest.js';
 import {
@@ -112,6 +115,40 @@ export interface SiteCensusRow {
   readonly ring?: { readonly resolved: number; readonly empty: number };
 }
 
+/**
+ * The appointment counters (THR-1518) — the reachability row for THR-1479.
+ *
+ * All **off state**, the THR-1514 discipline: `planted` is every seed observed in
+ * `pendingEncounterSeeds` carrying an `appointment` block over the run; `kept` and
+ * `missed` are the `appointment_kept` / `appointment_missed` Event nodes on the
+ * graph at the end (the seeding phase writes one per judgement, and Event nodes are
+ * never pruned). `authored` is read off the corpus through `systemConnections`, the
+ * same predicate the quota and the live proof use, so the three surfaces cannot
+ * disagree about what "authors an appointment" means.
+ *
+ * `reachability` is the row the plan carried that the ticket did not: a **hit** is a
+ * planted appointment on a seeded run — proof that the site the live board walks
+ * actually reaches one, which no gate that reads the code can give (THR-1497). Zero
+ * planted with authored > 0 is *unreached*, and zero authored is *dead* — the retro's
+ * "dead primitive" finding once it holds across two batches.
+ */
+export interface AppointmentCensus {
+  readonly authored: number;
+  readonly authoredBy: readonly string[];
+  /**
+   * How many times a template that authors an appointment was *spawned* on the run
+   * (state-sourced: new `unifiedActions` per tick). Separates the two causes an
+   * UNREACHED verdict can have — the parent never fired on this seed, or it fired
+   * and the planting path (a branch, a reaction) was not the one taken.
+   */
+  readonly parentsFired: number;
+  readonly planted: number;
+  readonly kept: number;
+  readonly missed: number;
+  readonly missedByReason: Readonly<Record<string, number>>;
+  readonly reachability: 'hit' | 'unreached' | 'dead';
+}
+
 export interface ContentModelCensus {
   readonly ticks: number;
   readonly seed: number;
@@ -122,6 +159,48 @@ export interface ContentModelCensus {
   readonly seeds?: SeedLedgerSummary;
   /** What the per-tick ring harvest saw, and how many entries it provably missed. */
   readonly ring?: { readonly harvested: number; readonly evictedUnseen: number };
+  /** Appointments authored / planted / kept / missed — the THR-1479 reachability row. */
+  readonly appointments?: AppointmentCensus;
+}
+
+/** The shape of an Event node as {@link foldAppointments} reads it. */
+export interface AppointmentEventLike {
+  readonly eventType?: unknown;
+  readonly reason?: unknown;
+}
+
+/**
+ * Fold the appointment counters from what the run observed.
+ *
+ * Pure and separately exported so a test can reach it: the run boots a world, and
+ * the judgement worth pinning is the fold — that a planted appointment reads as a
+ * **hit**, that zero planted with authored users reads as *unreached* rather than
+ * vanishing, and that zero authored reads as *dead*.
+ */
+export function foldAppointments(
+  authoredBy: readonly string[],
+  plantedSeedIds: ReadonlySet<string>,
+  events: readonly AppointmentEventLike[],
+  parentsFired = 0,
+): AppointmentCensus {
+  const kept = events.filter(e => e.eventType === 'appointment_kept').length;
+  const missedEvents = events.filter(e => e.eventType === 'appointment_missed');
+  const missedByReason: Record<string, number> = {};
+  for (const e of missedEvents) {
+    const reason = typeof e.reason === 'string' ? e.reason : 'unknown';
+    missedByReason[reason] = (missedByReason[reason] ?? 0) + 1;
+  }
+  const authored = [...authoredBy].sort();
+  return {
+    authored: authored.length,
+    authoredBy: authored,
+    parentsFired,
+    planted: plantedSeedIds.size,
+    kept,
+    missed: missedEvents.length,
+    missedByReason,
+    reachability: authored.length === 0 ? 'dead' : plantedSeedIds.size > 0 ? 'hit' : 'unreached',
+  };
 }
 
 /**
@@ -201,6 +280,25 @@ export function runCensus(
   const ledger = new SeedConsumptionLedger();
   ledger.observe(initial);
 
+  // THR-1518 — every appointment seed ever seen pending, off state, per tick. A seed
+  // planted and judged inside one tick would be missed by an end read; per-tick
+  // observation is the same discipline the ledger applies to consumptions.
+  const authoredBy = UNIFIED_ACTION_TEMPLATES
+    .filter(template => systemConnections(template).includes('appointments'))
+    .map(template => template.id);
+  const authoredSet = new Set(authoredBy);
+  const plantedAppointments = new Set<string>();
+  const parentActions = new Set<string>();
+  const observeAppointments = (s: GameState): void => {
+    for (const pending of s.pendingEncounterSeeds ?? []) {
+      if (pending.appointment) plantedAppointments.add(pending.seedId);
+    }
+    for (const action of s.unifiedActions) {
+      if (authoredSet.has(action.templateId)) parentActions.add(action.actionId);
+    }
+  };
+  observeAppointments(initial);
+
   let state = initial;
   for (let tick = 0; tick < ticks; tick++) {
     // Fail-soft (NFP #4): a throw mid-run is a result, not a crash of the census —
@@ -217,7 +315,12 @@ export function runCensus(
     }
     harvester.harvest();
     ledger.observe(state);
+    observeAppointments(state);
   }
+
+  const appointmentEvents = state.graph
+    .getNodesByType('event')
+    .map(node => node.properties as AppointmentEventLike);
 
   return {
     ticks,
@@ -230,6 +333,7 @@ export function runCensus(
     ),
     seeds: ledger.summary(),
     ring: { harvested: harvester.traces.length, evictedUnseen: harvester.evictedUnseen },
+    appointments: foldAppointments(authoredBy, plantedAppointments, appointmentEvents, parentActions.size),
   };
 }
 
@@ -311,6 +415,42 @@ export function renderCensus(census: ContentModelCensus): string {
           + 'not counted in the rows above.',
       );
     }
+    lines.push('');
+  }
+
+  if (census.appointments) {
+    const a = census.appointments;
+    lines.push('### Appointments (state)');
+    lines.push('');
+    const reasons = Object.entries(a.missedByReason)
+      .sort(([x], [y]) => x.localeCompare(y))
+      .map(([reason, n]) => `${reason} ${n}`)
+      .join(', ');
+    lines.push(
+      `${a.authored} template(s) author an appointment; their parents fired ${a.parentsFired} `
+        + `time(s) on this run, ${a.planted} planted, ${a.kept} kept, ${a.missed} missed`
+        + `${a.missed > 0 ? ` (${reasons})` : ''}.`,
+    );
+    lines.push(
+      a.reachability === 'hit'
+        ? `**Reachability: HIT** — the live board reached an appointment on a seeded run, which `
+          + 'no gate that reads the code can prove (THR-1497). The two THR-1479 interface '
+          + 'contracts stand on this row.'
+        : a.reachability === 'unreached'
+          ? `> ⚠️ **Reachability: UNREACHED** — ${a.authored} template(s) author an appointment and `
+            + `none was planted. ${a.parentsFired === 0
+              ? 'The parent never fired on this seed (an eligibility or selection question, not a planting one)'
+              : `The parent fired ${a.parentsFired} time(s) and the planting path was not taken (a branch or reaction question)`}; `
+            + 're-run at another seed before reading it as dead.'
+          : '> ⚠️ **Reachability: DEAD** — no template authors an appointment. Two batches at '
+            + 'zero is the retro\'s *dead primitive* finding (THR-1479 § Kill criteria); the die '
+            + 'floor and the systems-prompt entry are the first suspects.',
+    );
+    if (a.authored > 0) lines.push(`Authored by: ${a.authoredBy.map(id => `\`${id}\``).join(', ')}.`);
+    lines.push(
+      'Counted off state: `planted` is every pending seed seen carrying an `appointment` block, '
+        + '`kept` / `missed` are the Event nodes the seeding phase writes. Exact, never a ring floor.',
+    );
     lines.push('');
   }
 

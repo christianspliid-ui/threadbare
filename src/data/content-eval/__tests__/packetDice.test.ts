@@ -27,7 +27,12 @@ import { drawPlotHooks } from '../plotHooks';
 import { drawConsequenceHand } from '../consequenceDraw';
 import { SEED_DICE_BATCH_BOUNDS, rollSeedDice } from '../seedDice';
 import {
+  APPOINTMENT_BRIEF_FLOOR,
+  APPOINTMENT_SHAPE_ID,
   DECISION_SHAPE_FACES,
+  DIE_B_FLOORS,
+  DIE_B_MAX_FLOORS,
+  type DecisionShapeId,
   PACKET_BATCH_BOUNDS,
   PACKET_DEFAULT_SLOTS,
   PACKET_MAX_SLOTS,
@@ -77,10 +82,11 @@ describe('catalog health', () => {
 
   it('pins the four dice to the face counts canon states', () => {
     expect(REACH_FACES).toHaveLength(8);
-    // 8 since THR-1489 added `query_prize`. The count is pinned here *and* in
-    // `packetDiceCatalogViolations`, which is the point: a face added on one
-    // side only is the drift the catalog check exists to catch.
-    expect(DECISION_SHAPE_FACES).toHaveLength(8);
+    // 8 since THR-1489 added `query_prize`, 9 since THR-1518 added `appointment`.
+    // The count is pinned here *and* in `packetDiceCatalogViolations`, which is
+    // the point: a face added on one side only is the drift the catalog check
+    // exists to catch.
+    expect(DECISION_SHAPE_FACES).toHaveLength(9);
     expect(SETTING_CLASSES).toHaveLength(8);
     expect(SYSTEM_TARGET_FACES).toHaveLength(14);
   });
@@ -103,6 +109,34 @@ describe('catalog health', () => {
     expect(DECISION_SHAPE_FACES.map(f => f.id)).toContain(QUERY_PRIZE_SHAPE_ID);
     expect(SHAPES_BELOW_QUERY_PRIZE_FLOOR).not.toContain(QUERY_PRIZE_SHAPE_ID);
     expect(SHAPES_BELOW_QUERY_PRIZE_FLOOR).toHaveLength(DECISION_SHAPE_FACES.length - 1);
+  });
+
+  it('carries exactly two floors on die B, and no third (THR-1518)', () => {
+    // The Done-when, pinned: `query_prize` and `appointment` are the two floors
+    // THR-1489's arithmetic allows, and the catalog check refuses a third. Both
+    // faces must exist on the table, both floors must fit the shape cap, and
+    // `APPOINTMENT_BRIEF_FLOOR` is the plan's name for the second.
+    expect(DIE_B_FLOORS.map(f => f.id)).toEqual([QUERY_PRIZE_SHAPE_ID, APPOINTMENT_SHAPE_ID]);
+    expect(DIE_B_FLOORS).toHaveLength(DIE_B_MAX_FLOORS);
+    expect(APPOINTMENT_BRIEF_FLOOR).toBe(PACKET_BATCH_BOUNDS.appointmentFloor);
+    expect(APPOINTMENT_BRIEF_FLOOR).toBe(1);
+    expect(DECISION_SHAPE_FACES.map(f => f.id)).toContain(APPOINTMENT_SHAPE_ID);
+    for (const f of DIE_B_FLOORS) {
+      expect(f.floor).toBeLessThanOrEqual(PACKET_BATCH_BOUNDS.decisionShapeCap);
+    }
+    expect(DIE_B_FLOORS.reduce((sum, f) => sum + f.floor, 0))
+      .toBeLessThanOrEqual(PACKET_DEFAULT_SLOTS);
+  });
+
+  it('falsification — the catalog check would refuse a third floor', () => {
+    // `packetDiceCatalogViolations` reads the frozen list, so the clause is
+    // re-derived here over a perturbed one (the controlled-arm rule): three
+    // floors is over the ceiling, two is not.
+    const third = [...DIE_B_FLOORS, { id: 'seeded_sequel' as const, floor: 1, label: 'sequel' }];
+    expect(floorCountViolations(third)).toEqual([
+      `die B carries 3 floors; ${DIE_B_MAX_FLOORS} is the ceiling`,
+    ]);
+    expect(floorCountViolations(DIE_B_FLOORS)).toEqual([]);
   });
 
   it('falsification — the catalog check refuses an unsatisfiable query-prize floor', () => {
@@ -148,6 +182,13 @@ describe('catalog health', () => {
  * verbatim so both arms are reachable; if the module's clauses and these ever
  * disagree, the control assertion above goes red.
  */
+/** The catalog check's floor-count clause, re-derived over a supplied list. */
+function floorCountViolations(floors: readonly { id: string; floor: number }[]): readonly string[] {
+  return floors.length > DIE_B_MAX_FLOORS
+    ? [`die B carries ${floors.length} floors; ${DIE_B_MAX_FLOORS} is the ceiling`]
+    : [];
+}
+
 function unsatisfiableFloorViolations(input: {
   floor: number;
   cap: number;
@@ -313,47 +354,64 @@ describe('caps hold by construction', () => {
     }
   });
 
-  it('forces the query-prize floor at the last slot that can still meet it', () => {
-    // THR-1489. Same shape as the scale-floor test above: a one-slot batch has
-    // exactly one chance, so its single slot must roll `query_prize` whatever
-    // the unconstrained die said — and a six-slot batch must carry at least one.
+  it('forces both die-B floors by the last slots that can still meet them', () => {
+    // THR-1489 / THR-1518. Same shape as the scale-floor test above: a one-slot
+    // batch has exactly one chance and two floors owing, so its single slot must
+    // roll *a* floor face whatever the unconstrained die said; a two-slot batch
+    // must carry one of each; a six-slot batch must carry at least one of each.
+    const floorIds = DIE_B_FLOORS.map(f => f.id);
     for (const seed of SEEDS) {
-      expect(rollPacket({ briefSlug: seed, slots: 1 }).slots[0].decisionShape.id)
-        .toBe(QUERY_PRIZE_SHAPE_ID);
+      expect(floorIds).toContain(rollPacket({ briefSlug: seed, slots: 1 }).slots[0].decisionShape.id);
+
+      const two = rollPacket({ briefSlug: seed, slots: 2 }).slots.map(s => s.decisionShape.id);
+      expect([...two].sort(), `${seed} two slots met both floors`).toEqual([...floorIds].sort());
 
       const packet = rollPacket({ briefSlug: seed, slots: PACKET_DEFAULT_SLOTS });
-      const rolled = packet.slots.filter(s => s.decisionShape.id === QUERY_PRIZE_SHAPE_ID);
-      expect(rolled.length, `${seed} met the query-prize floor`)
-        .toBeGreaterThanOrEqual(PACKET_BATCH_BOUNDS.queryPrizeFloor);
+      for (const f of DIE_B_FLOORS) {
+        const rolled = packet.slots.filter(s => s.decisionShape.id === f.id);
+        expect(rolled.length, `${seed} met the ${f.label} floor`).toBeGreaterThanOrEqual(f.floor);
+      }
       expect(packet.spread.find(row => row.axis === 'query prize')?.satisfied).toBe(true);
+      expect(packet.spread.find(row => row.axis === 'appointment')?.satisfied).toBe(true);
     }
   });
 
-  it('falsification — the query-prize floor is forced, not lucky', () => {
-    // The guard above passes for free if `query_prize` happens to be common
-    // enough to turn up unaided in every batch. So assert the *correction*: at
-    // least one seed across the spread must have had its last slot pulled onto
-    // the face by the floor, naming the floor as the cause. Without that, the
-    // block above is describing luck.
+  it('falsification — the die-B floors are forced, not lucky', () => {
+    // The guard above passes for free if the floor faces happen to be common
+    // enough to turn up unaided in every batch. So assert the *correction*: across
+    // the seed spread some batch must have had a slot pulled onto each floor face
+    // by the floor, naming the floor as the cause. Without that, the block above
+    // is describing luck.
     const forced = SEEDS.flatMap(seed =>
       rollPacket({ briefSlug: seed, slots: PACKET_DEFAULT_SLOTS }).corrections,
-    ).filter(c => c.axis === 'decisionShape' && c.reason.includes('query-prize floor'));
+    ).filter(c => c.axis === 'decisionShape' && c.reason.includes(' floor (≥'));
+    const floorIds = DIE_B_FLOORS.map(f => f.id);
 
     expect(forced.length).toBeGreaterThan(0);
-    expect(forced.every(c => c.replacedWith === QUERY_PRIZE_SHAPE_ID)).toBe(true);
+    expect(forced.every(c => floorIds.includes(c.replacedWith as DecisionShapeId))).toBe(true);
+    // Each floor did some forcing somewhere in the spread — a floor that is never
+    // the cause of a correction is a floor the table meets by accident.
+    for (const f of DIE_B_FLOORS) {
+      expect(
+        forced.some(c => c.replacedWith === f.id && c.reason.includes(`${f.label} floor`)),
+        `${f.label} floor forced at least one slot`,
+      ).toBe(true);
+    }
     // And the correction replaced something — a no-op correction is never recorded.
     expect(forced.every(c => c.rolled !== c.replacedWith)).toBe(true);
   });
 
-  it('holds the decision-shape cap even on a slot the floor forced', () => {
-    // The cap and the floor share one exclusion set. If the floor were applied
-    // after the cap rather than with it, a forced slot could push `query_prize`
-    // past its cap of 2 and the spread would report a bust the roller caused.
+  it('holds the decision-shape cap even on a slot a floor forced', () => {
+    // The cap and the floors share one exclusion set. If a floor were applied
+    // after the cap rather than with it, a forced slot could push its face past
+    // the cap of 2 and the spread would report a bust the roller caused.
     for (const seed of SEEDS) {
       const packet = rollPacket({ briefSlug: seed, slots: PACKET_DEFAULT_SLOTS });
-      const count = packet.slots.filter(s => s.decisionShape.id === QUERY_PRIZE_SHAPE_ID).length;
-      expect(count, `${seed} kept query_prize under the shape cap`)
-        .toBeLessThanOrEqual(PACKET_BATCH_BOUNDS.decisionShapeCap);
+      for (const f of DIE_B_FLOORS) {
+        const count = packet.slots.filter(s => s.decisionShape.id === f.id).length;
+        expect(count, `${seed} kept ${f.id} under the shape cap`)
+          .toBeLessThanOrEqual(PACKET_BATCH_BOUNDS.decisionShapeCap);
+      }
     }
   });
 
@@ -510,6 +568,7 @@ describe('the spread', () => {
       // and the brief's Variance-targets table carries the matching row, which
       // is what this test is really asserting.
       'query prize',
+      'appointment',
       'setting class',
       'system target',
       'P3 stake shape',

@@ -79,6 +79,12 @@ import {
   applyEncounterAftermathReaction,
   resolveAftermathContextForAgent,
 } from '../src/engine/encounterAftermath';
+import { rebindLocatedAt } from '../src/engine/relocationIntent';
+import { resolveLocationToHex } from '../src/engine/encounterAwareness';
+import { getLocationNodes } from '../src/engine/sublocationShape';
+import type { SimulationRuntime } from '../src/engine/simulationRuntime';
+import { APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS } from '../src/data/movement-content';
+import { computeAppointmentSlack } from '../src/engine/appointments';
 
 import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../src/data/unified-action-templates';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
@@ -94,6 +100,7 @@ import {
 import { isActionStepBranch, isStepFailure } from '../src/types/unifiedAction';
 import type {
   ActionStep,
+  PendingEncounterSeed,
   UnifiedAction,
   UnifiedActionOutcome,
   UnifiedActionTemplate,
@@ -104,6 +111,7 @@ import {
   computeVerdict,
   selectHand as selectHandFrom,
   selectReaction,
+  strongestScope,
   type ClaimStatus,
   type DeclarationScope,
   type PlayMode,
@@ -142,6 +150,24 @@ const WARMUP_TICKS = 2;
  */
 const MAX_RESOLUTION_TICKS = 60;
 
+/**
+ * Ticks an appointment arm may drive past the plant before giving up (THR-1518).
+ *
+ * The Crossroads promise falls due 132 ticks after the plant with a 12-tick window,
+ * and the missed sequel is eligible `APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS` after
+ * the window closes. The cap has to clear all of that with room for a longer
+ * authored delay; a run that reaches it reports the seed's state rather than a
+ * verdict about the mortal.
+ */
+const APPOINTMENT_ARM_TICK_CAP = 320;
+
+/**
+ * Ticks the missed arm keeps driving after the miss, so the report can say what
+ * became of the missed sequel (spawned, withered, still pending) rather than
+ * stopping at the moment the promise broke.
+ */
+const APPOINTMENT_SEQUEL_GRACE_TICKS = 4;
+
 /** Deterministic offset mixed into the per-template rng seed. */
 const TEMPLATE_RNG_SALT = 0x9e3779b9;
 
@@ -171,7 +197,9 @@ type ClaimName =
   | 'seed_planted'
   | 'condition_applied'
   | 'content_query_resolved'
-  | 'concepts_declared';
+  | 'concepts_declared'
+  | 'appointment_kept'
+  | 'appointment_missed';
 
 interface ProofClaim {
   readonly name: ClaimName;
@@ -460,6 +488,234 @@ function appliedEffectKinds(actionId: string): ReadonlySet<string> {
   return kinds;
 }
 
+/** What driving a staged world to resolution produced. */
+interface Resolution {
+  state: GameState;
+  runtime: SimulationRuntime;
+  ticksSpent: number;
+  crashed?: string;
+}
+
+/**
+ * Tick a staged world until its encounter resolves, or the bound is spent.
+ *
+ * Extracted from `runOne` so the appointment arms (THR-1518) can drive a second
+ * fresh world through the identical loop — the hand re-committed per step, the
+ * same bound — rather than a copy that could drift from the first.
+ */
+function tickToResolution(
+  world: SpawnedWorld,
+  hand: readonly string[],
+): Resolution {
+  let state = withCommittedHand(world.state, world.actionId, hand);
+  let ticksSpent = 0;
+  let crashed: string | undefined;
+  const runtime = createSimulationRuntime();
+
+  while (ticksSpent < MAX_RESOLUTION_TICKS) {
+    const current = findAction(state, world.actionId);
+    if (current?.resolved) break;
+    try {
+      state = runTick(state, [], runtime);
+    } catch (error) {
+      crashed = error instanceof Error ? error.message : String(error);
+      break;
+    }
+    ticksSpent++;
+    // The hand is per-step: re-commit after each tick so a multi-step encounter
+    // carries its cards into every step rather than only the first.
+    state = withCommittedHand(state, world.actionId, hand);
+  }
+
+  return { state, runtime, ticksSpent, crashed };
+}
+
+/** What applying one aftermath reaction produced. */
+interface ReactionOutcome {
+  state: GameState;
+  reactionApplied?: string;
+  reactionRefusal?: string;
+}
+
+/**
+ * Apply one aftermath reaction to a resolved encounter, deterministically.
+ *
+ * The headless equivalent of the player picking a card off the aftermath, through
+ * the same engine entry points the CLI's `--auto-aftermath` uses. See the note at
+ * the call site in `runOne` for why an `alreadyApplied` refusal is read as "the
+ * effects are already in the world" and never as "no reaction fired".
+ */
+function applyOneReaction(
+  state: GameState,
+  world: SpawnedWorld,
+  resolved: UnifiedAction | undefined,
+  runtime: SimulationRuntime,
+): ReactionOutcome {
+  const available = resolved?.aftermathSummary?.reactions ?? [];
+  const pick = selectReaction(available);
+  if (!pick) return { state };
+
+  const context = resolveAftermathContextForAgent(state, world.actorId, pick);
+  if ('error' in context) {
+    if (context.alreadyApplied) {
+      return {
+        state,
+        reactionApplied: autonomousReactionId(world.actionId) ?? available[0]?.id,
+      };
+    }
+    return { state, reactionRefusal: context.error };
+  }
+  try {
+    const applied = applyEncounterAftermathReaction(
+      state,
+      context.action,
+      context.reaction,
+      state.tick,
+      runtime,
+    );
+    return { state: applied.state, reactionApplied: context.reaction.id };
+  } catch (error) {
+    return { state, reactionRefusal: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+// ─── Appointment arms (THR-1518) ─────────────────────────────────────
+
+/** The appointment seeds this template planted, off `state.pendingEncounterSeeds`. */
+function plantedAppointments(state: GameState, templateId: string): readonly PendingEncounterSeed[] {
+  return (state.pendingEncounterSeeds ?? []).filter(
+    seed => seed.sourceEncounterId === templateId && seed.appointment !== undefined,
+  );
+}
+
+/** The kept / missed Event node the seeding phase wrote for this seed, if any. */
+function appointmentEvent(
+  state: GameState,
+  kind: 'appointment_kept' | 'appointment_missed',
+  seedId: string,
+): { tick: number; reason?: string; locationId?: string } | undefined {
+  for (const node of state.graph.getNodesByType('event')) {
+    const props = node.properties as Record<string, unknown>;
+    if (props.eventType !== kind || props.seedId !== seedId) continue;
+    return {
+      tick: typeof props.tick === 'number' ? props.tick : state.tick,
+      reason: typeof props.reason === 'string' ? props.reason : undefined,
+      locationId: typeof props.locationId === 'string' ? props.locationId : undefined,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * What this tick says about a seed's sequel, if anything: the action it spawned, or
+ * the consumption event that ended it. Read **per tick** — `state.tickEvents` is the
+ * current tick's events only, and a resolved action is cleaned up a few ticks later,
+ * so a read at the end of a 160-tick drive would report "gone, unknown" for a sequel
+ * that spawned and ran (the false *withered* THR-1510 minted, one layer over).
+ */
+function sequelObservation(state: GameState, seedId: string): string | undefined {
+  const spawned = state.unifiedActions.find(action => action.spawnedFromSeedId === seedId);
+  if (spawned) return `sequel '${spawned.templateId}' spawned at tick ${spawned.startTick}`;
+  const consumed = state.tickEvents.find(
+    event => event.id.startsWith(`${seedId}_`) && !event.id.endsWith('_missed'),
+  );
+  if (consumed) return `seed left the pool: ${consumed.id.slice(seedId.length + 1)} at tick ${consumed.tick}`;
+  return undefined;
+}
+
+/** The sequel's fate when no tick observed one: still pending, or gone unobserved. */
+function sequelFate(state: GameState, seedId: string, observed: string | undefined): string {
+  if (observed) return observed;
+  const pending = (state.pendingEncounterSeeds ?? []).find(seed => seed.seedId === seedId);
+  if (pending) return `seed still pending at tick ${state.tick} (eligible tick ${pending.eligibleAfterTick})`;
+  return 'seed gone and no tick observed its consumption — unknown, not a drop (read the seeding phase)';
+}
+
+/** How many away-candidates the missed arm probes for a reachable one before settling. */
+const AWAY_CANDIDATE_PROBES = 24;
+
+/**
+ * A place on a hex other than the appointment's, for the missed arm to stand the
+ * mortal on. Deterministic (Location-tier nodes in id order) and Location-tier
+ * only, so the miss is an honest *absent* rather than an artefact of standing in
+ * a Place the resolver cannot place.
+ *
+ * Prefers a place the mortal could have travelled from: the first candidate whose
+ * slack prices a finite journey. An unreachable one still misses — the seeding
+ * arm judges it `unreachable` — but the ordinary miss the proof is for is the
+ * mortal who *could* have gone and did not, and the report should say `absent`
+ * where the world allows it. Bounded probes (each is a pathfind), then the first
+ * candidate regardless.
+ */
+function awayFrom(state: GameState, actorId: string, seed: PendingEncounterSeed): string | undefined {
+  const appointment = seed.appointment;
+  if (!appointment) return undefined;
+  const placeHex = resolveLocationToHex(state.graph, appointment.locationId);
+  const candidates = getLocationNodes(state.graph)
+    .filter(node => {
+      const hex = resolveLocationToHex(state.graph, node.id);
+      return hex !== null && (placeHex === null || hex.col !== placeHex.col || hex.row !== placeHex.row);
+    })
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const original = getAgentLocationId(state.graph, actorId);
+  for (const candidate of candidates.slice(0, AWAY_CANDIDATE_PROBES)) {
+    rebindLocatedAt(state.graph, actorId, candidate.id, 'edge_liveproof_located');
+    const slack = computeAppointmentSlack(state.graph, actorId, appointment, state.tick);
+    if (slack && Number.isFinite(slack.travelTicks) && !slack.atPlace) {
+      if (original) rebindLocatedAt(state.graph, actorId, original, 'edge_liveproof_located');
+      return candidate.id;
+    }
+  }
+  if (original) rebindLocatedAt(state.graph, actorId, original, 'edge_liveproof_located');
+  return candidates[0]?.id;
+}
+
+/**
+ * Drive the world until the seed is judged (kept or missed), or the cap is spent.
+ *
+ * Returns the state the arm ended on; the claim reads the Event node off it. The
+ * sequel is watched every tick (see {@link sequelObservation}) and the drive stops
+ * once its fate is known or a short grace after the judgement runs out. A throw
+ * mid-arm is a result (NFP #4): the ticks that ran still say what they saw.
+ */
+function driveAppointment(
+  state: GameState,
+  runtime: SimulationRuntime,
+  seed: PendingEncounterSeed,
+  until: 'appointment_kept' | 'appointment_missed',
+): { state: GameState; ticks: number; crashed?: string; sequel?: string } {
+  const appointment = seed.appointment;
+  const closes = appointment
+    ? appointment.dueTick + appointment.windowTicks + APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS + APPOINTMENT_SEQUEL_GRACE_TICKS
+    : state.tick;
+  let ticks = 0;
+  let crashed: string | undefined;
+  let sequel: string | undefined;
+  let graceLeft = -1;
+  while (ticks < APPOINTMENT_ARM_TICK_CAP && state.tick <= closes) {
+    if (graceLeft === 0) break;
+    if (graceLeft < 0 && appointmentEvent(state, until, seed.seedId)) {
+      // Judged. Keep driving until the sequel's fate is seen, or a grace runs out.
+      graceLeft = until === 'appointment_kept'
+        ? APPOINTMENT_SEQUEL_GRACE_TICKS
+        : APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS + APPOINTMENT_SEQUEL_GRACE_TICKS;
+    }
+    try {
+      state = runTick(state, [], runtime);
+    } catch (error) {
+      crashed = error instanceof Error ? error.message : String(error);
+      break;
+    }
+    ticks++;
+    if (!sequel) sequel = sequelObservation(state, seed.seedId);
+    if (graceLeft > 0) {
+      graceLeft--;
+      if (sequel) break;
+    }
+  }
+  return { state, ticks, crashed, sequel };
+}
+
 function runOne(template: UnifiedActionTemplate): LiveProofResult {
   const declared = new Set(systemConnections(template));
   const claims: ProofClaim[] = [];
@@ -528,27 +784,10 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
       : 'action did not appear in state.unifiedActions',
   );
 
-  let state = withCommittedHand(world.state, world.actionId, hand);
-
   // ── Tick to resolution ──
-  let ticksSpent = 0;
-  let crashed: string | undefined;
-  const runtime = createSimulationRuntime();
-
-  while (ticksSpent < MAX_RESOLUTION_TICKS) {
-    const current = findAction(state, world.actionId);
-    if (current?.resolved) break;
-    try {
-      state = runTick(state, [], runtime);
-    } catch (error) {
-      crashed = error instanceof Error ? error.message : String(error);
-      break;
-    }
-    ticksSpent++;
-    // The hand is per-step: re-commit after each tick so a multi-step encounter
-    // carries its cards into every step rather than only the first.
-    state = withCommittedHand(state, world.actionId, hand);
-  }
+  const driven = tickToResolution(world, hand);
+  let state = driven.state;
+  const { ticksSpent, crashed, runtime } = driven;
 
   claim(
     'no_tick_crash',
@@ -598,33 +837,10 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
   let reactionApplied: string | undefined;
   let reactionRefusal: string | undefined;
   if (didResolve) {
-    const available = resolved?.aftermathSummary?.reactions ?? [];
-    const pick = selectReaction(available);
-    if (pick) {
-      const context = resolveAftermathContextForAgent(state, world.actorId, pick);
-      if ('error' in context) {
-        if (context.alreadyApplied) {
-          reactionApplied = autonomousReactionId(world.actionId)
-            ?? available[0]?.id;
-        } else {
-          reactionRefusal = context.error;
-        }
-      } else {
-        try {
-          const applied = applyEncounterAftermathReaction(
-            state,
-            context.action,
-            context.reaction,
-            state.tick,
-            runtime,
-          );
-          state = applied.state;
-          reactionApplied = context.reaction.id;
-        } catch (error) {
-          reactionRefusal = error instanceof Error ? error.message : String(error);
-        }
-      }
-    }
+    const outcome = applyOneReaction(state, world, resolved, runtime);
+    state = outcome.state;
+    reactionApplied = outcome.reactionApplied;
+    reactionRefusal = outcome.reactionRefusal;
   }
 
   // ── Delivery claims, each gated on the declaration ──
@@ -779,11 +995,15 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
     );
   }
 
-  const seedScope = scopeOf('seeds');
+  // THR-1518 — an appointment seed earns `appointments` in place of `seeds` on the
+  // composition side, but it is still a planted seed here: the claim reads
+  // whichever of the two connections this run can reach.
+  const seedScope = strongestScope(scopeOf('seeds'), scopeOf('appointments'));
+  const seedSystem = scopeOf('seeds') === seedScope ? 'seeds' : 'appointments';
   if (seedScope === 'absent') {
     claim('seed_planted', 'not_declared', 'template declares no encounter seed');
   } else if (seedScope !== 'reachable') {
-    claim('seed_planted', 'not_declared', `seed ${scopeReason('seeds', seedScope)}`);
+    claim('seed_planted', 'not_declared', `seed ${scopeReason(seedSystem, seedScope)}`);
   } else {
     const planted = (state.pendingEncounterSeeds ?? []).filter(
       seedEntry => seedEntry.sourceEncounterId === template.id,
@@ -913,6 +1133,148 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
           : 'authored a content query on this run\'s path but no content.query_* trace '
             + 'fired — the query site was never reached',
       );
+    }
+  }
+
+  // ── appointment_kept / appointment_missed (THR-1518) ──
+  //
+  // Gated on `appointments` through the same `scopeOf` as every claim above, so a
+  // template that plants no appointment is never failed for keeping none. Both
+  // arms are read **off state** — the `appointment_kept` / `appointment_missed`
+  // Event node the seeding phase writes, the seed's rewrite, the sequel's
+  // `spawnedFromSeedId` — never off the ring, which a 140-tick drive would evict
+  // many times over (THR-1514's lesson).
+  //
+  // The kept arm continues *this* world: the mortal (the ascendant, who has no
+  // decision phase and so stays where the harness stood them) is at the place the
+  // seed bound them to, and the drive runs to the due tick. The missed arm needs a
+  // second fresh world, because the graph is mutated in place and there is no
+  // cheap clone: the same seed stages the same encounter, resolves the same way,
+  // applies the same reaction, and then the mortal is stood on another hex before
+  // the window closes. Present and absent, as the plan says — same run otherwise.
+  const appointmentScope = scopeOf('appointments');
+  if (appointmentScope === 'absent') {
+    claim('appointment_kept', 'not_declared', 'template plants no appointment');
+    claim('appointment_missed', 'not_declared', 'template plants no appointment');
+  } else if (appointmentScope !== 'reachable') {
+    const why = `appointment ${scopeReason('appointments', appointmentScope)}`;
+    claim('appointment_kept', 'not_declared', why);
+    claim('appointment_missed', 'not_declared', why);
+  } else {
+    const planted = plantedAppointments(state, template.id);
+    if (planted.length === 0) {
+      const why = 'declared an appointment on this run\'s path but pendingEncounterSeeds '
+        + 'carries no seed with an appointment block';
+      claim('appointment_kept', 'fail', why);
+      claim('appointment_missed', 'fail', why);
+    } else {
+      const seedEntry = planted[0];
+      const appointment = seedEntry.appointment!;
+      const placeName = state.graph.getNode(appointment.locationId)?.name ?? appointment.locationId;
+
+      // Present. Stand them at the place if the binder put the meeting elsewhere
+      // (a `$cast:<key>` place), then drive to the due tick.
+      const actorHex = getAgentLocationId(state.graph, world.actorId);
+      const atPlace = actorHex !== undefined && (() => {
+        const a = resolveLocationToHex(state.graph, actorHex);
+        const p = resolveLocationToHex(state.graph, appointment.locationId);
+        return a !== null && p !== null && a.col === p.col && a.row === p.row;
+      })();
+      if (!atPlace) rebindLocatedAt(state.graph, world.actorId, appointment.locationId, 'edge_liveproof_located');
+      const kept = driveAppointment(state, runtime, seedEntry, 'appointment_kept');
+      const keptEvent = appointmentEvent(kept.state, 'appointment_kept', seedEntry.seedId);
+      const keptFate = sequelFate(kept.state, seedEntry.seedId, kept.sequel);
+      if (kept.crashed) {
+        claim('appointment_kept', 'fail', `runTick threw while driving to the due tick: ${kept.crashed}`);
+      } else if (keptEvent) {
+        claim(
+          'appointment_kept',
+          'pass',
+          `present at ${placeName}: kept at tick ${keptEvent.tick} (due ${appointment.dueTick}, `
+            + `window ${appointment.windowTicks}) after ${kept.ticks} tick(s); ${keptFate}`,
+        );
+      } else {
+        const missedInstead = appointmentEvent(kept.state, 'appointment_missed', seedEntry.seedId);
+        claim(
+          'appointment_kept',
+          'fail',
+          missedInstead
+            ? `present at ${placeName}, yet judged missed (${missedInstead.reason ?? 'no reason'}) `
+              + `at tick ${missedInstead.tick} — the kept arm is not reading the hex`
+            : `present at ${placeName}, drove ${kept.ticks} tick(s) to tick ${kept.state.tick} `
+              + `(due ${appointment.dueTick}) and no appointment_kept Event was written; ${keptFate}`,
+        );
+      }
+
+      // Absent. A second fresh world, identical up to the plant, then elsewhere.
+      let missedClaimed = false;
+      try {
+        const twinWorld = spawnInFreshWorld(template, seed);
+        const twinDriven = tickToResolution(twinWorld, hand);
+        let twin = twinDriven.state;
+        const twinResolved = findAction(twin, twinWorld.actionId);
+        if (twinResolved?.resolved) {
+          twin = applyOneReaction(twin, twinWorld, twinResolved, twinDriven.runtime).state;
+        }
+        const twinPlanted = plantedAppointments(twin, template.id);
+        const twinSeed = twinPlanted[0];
+        if (!twinSeed?.appointment) {
+          claim(
+            'appointment_missed',
+            'fail',
+            'the twin world (same seed, same hand) resolved without planting the appointment — '
+              + 'the run is not deterministic, which is a harness defect, not a content one',
+          );
+          missedClaimed = true;
+        } else {
+          const away = awayFrom(twin, twinWorld.actorId, twinSeed);
+          if (!away) {
+            claim('appointment_missed', 'not_declared', 'no place on another hex to stand the mortal on');
+            missedClaimed = true;
+          } else {
+            rebindLocatedAt(twin.graph, twinWorld.actorId, away, 'edge_liveproof_located');
+            const awayName = twin.graph.getNode(away)?.name ?? away;
+            const missed = driveAppointment(twin, twinDriven.runtime, twinSeed, 'appointment_missed');
+            const missedEvent = appointmentEvent(missed.state, 'appointment_missed', twinSeed.seedId);
+            const rewritten = (missed.state.pendingEncounterSeeds ?? []).find(
+              s => s.seedId === twinSeed.seedId && s.missedAppointment !== undefined,
+            );
+            const fate = sequelFate(missed.state, twinSeed.seedId, missed.sequel);
+            if (missed.crashed) {
+              claim('appointment_missed', 'fail', `runTick threw while driving past the window: ${missed.crashed}`);
+            } else if (missedEvent) {
+              claim(
+                'appointment_missed',
+                'pass',
+                `absent (stood at ${awayName}): missed (${missedEvent.reason ?? 'no reason'}) at tick `
+                  + `${missedEvent.tick} (window closed ${twinSeed.appointment.dueTick + twinSeed.appointment.windowTicks}) `
+                  + `after ${missed.ticks} tick(s); seed ${rewritten ? 'rewritten into its missed branch' : 'consumed'}; ${fate}`,
+              );
+            } else {
+              const keptInstead = appointmentEvent(missed.state, 'appointment_kept', twinSeed.seedId);
+              claim(
+                'appointment_missed',
+                'fail',
+                keptInstead
+                  ? `absent (stood at ${awayName}), yet judged kept at tick ${keptInstead.tick} — `
+                    + 'the missed arm is not reading the hex'
+                  : `absent (stood at ${awayName}), drove ${missed.ticks} tick(s) to tick ${missed.state.tick} `
+                    + `(window closed ${twinSeed.appointment.dueTick + twinSeed.appointment.windowTicks}) and no `
+                    + `appointment_missed Event was written; ${fate}`,
+              );
+            }
+            missedClaimed = true;
+          }
+        }
+      } catch (error) {
+        if (!missedClaimed) {
+          claim(
+            'appointment_missed',
+            'fail',
+            `the twin world threw: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
     }
   }
 

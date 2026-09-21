@@ -9,7 +9,72 @@
 import { describe, it, expect } from "vitest";
 
 import { CONTENT_QUERY_SITES } from "../../src/types/contentQuery";
-import { censusSites, renderCensus } from "../content-model-census.js";
+import { censusSites, foldAppointments, renderCensus } from "../content-model-census.js";
+
+describe("the appointment counters (THR-1518)", () => {
+  it("reads a planted appointment as a reachability HIT, with kept / missed off the Event nodes", () => {
+    const fold = foldAppointments(
+      ["encounter.slice.bargain_at_crossroads"],
+      new Set(["seed_1", "seed_2"]),
+      [
+        { eventType: "appointment_kept" },
+        { eventType: "appointment_missed", reason: "absent" },
+        { eventType: "appointment_missed", reason: "chose_to_miss" },
+        { eventType: "appointment_missed", reason: "absent" },
+        // Falsification: other Event kinds are not counted as either.
+        { eventType: "encounter_resolved" },
+      ],
+      3,
+    );
+    expect(fold).toMatchObject({
+      authored: 1,
+      parentsFired: 3,
+      planted: 2,
+      kept: 1,
+      missed: 3,
+      missedByReason: { absent: 2, chose_to_miss: 1 },
+      reachability: "hit",
+    });
+  });
+
+  it("reads authored-but-never-planted as UNREACHED, not as a hit and not as dead", () => {
+    // The THR-1497 shape: wired, gated, authored, and no player meets it.
+    const fold = foldAppointments(["encounter.slice.bargain_at_crossroads"], new Set(), []);
+    expect(fold.reachability).toBe("unreached");
+    expect(fold.planted).toBe(0);
+  });
+
+  it("reads zero authored as DEAD — the retro's dead-primitive finding", () => {
+    expect(foldAppointments([], new Set(), []).reachability).toBe("dead");
+    // And a stray Event node cannot make a dead primitive look alive.
+    expect(foldAppointments([], new Set(), [{ eventType: "appointment_kept" }]).reachability).toBe("dead");
+  });
+
+  it("renders the block with the verdict line and the authored list", () => {
+    const rendered = renderCensus({
+      ticks: 200,
+      seed: 42,
+      deadTags: [],
+      liveTags: 1,
+      sites: censusSites([]),
+      appointments: foldAppointments(
+        ["encounter.slice.bargain_at_crossroads"],
+        new Set(["seed_1"]),
+        [{ eventType: "appointment_missed", reason: "absent" }],
+      ),
+    });
+    expect(rendered).toContain("### Appointments (state)");
+    expect(rendered).toContain("Reachability: HIT");
+    expect(rendered).toContain("fired 0 time(s) on this run, 1 planted, 0 kept, 1 missed (absent 1)");
+    expect(rendered).toContain("`encounter.slice.bargain_at_crossroads`");
+
+    const unreached = renderCensus({
+      ticks: 200, seed: 42, deadTags: [], liveTags: 1, sites: censusSites([]),
+      appointments: foldAppointments(["encounter.x"], new Set(), []),
+    });
+    expect(unreached).toContain("Reachability: UNREACHED");
+  });
+});
 
 describe("the query-site census", () => {
   it("reports a row for every site, including those with no traces", () => {

@@ -134,6 +134,32 @@ export const ANCHOR_SENTINEL_HERE = '$here';
  */
 export const ANCHOR_SENTINEL_REALM = '$realm';
 
+/**
+ * The place this encounter's ending bound the mortal to — THR-1518.
+ *
+ * A PATH chip reporting an appointment ("A meeting at the Crossroads, in eleven days")
+ * is about a *place by a time*, and the object the player would click is the place. The
+ * engine-derived seed chip already links it (`buildAftermathConsequences` resolves the
+ * seed's own `locationId`); an *authored* chip had no form that could — `$here` is where
+ * the scene is happening, which for a `$cast:<key>` appointment is a different place,
+ * and a literal location id is minted per world and correctly refused.
+ *
+ * **Conditional like `$artifact`, not unconditional like `$here`:** the referent is one
+ * the template has to *create* — an `encounter_seed` carrying an `appointment` block
+ * somewhere in its effects. A chip claiming a meeting on a template that plants none is
+ * the sentinel equivalent of a typo'd cast key, and this is where it is catchable.
+ *
+ * **Resolves off the promise on the graph, never off `state`.** The planter writes the
+ * appointment as an `owes_favor` edge from the mortal carrying `properties.appointment =
+ * { seedId, locationId, dueTick }` (the Agreement kind's `favor` class), so the chip's
+ * resolver — which is handed a graph and an actor, not the seed list — reads the mortal's
+ * live appointment favours and answers the place of the one falling due soonest. Kept,
+ * the edge is removed and the chip falls back to text; missed, the edge is `broken` and
+ * the chip still points at the place the mortal did not reach (the reckoning's chip is
+ * about exactly that). NFP #4: no favour, no position, no place ⇒ `undefined`.
+ */
+export const ANCHOR_SENTINEL_APPOINTMENT = '$appointment';
+
 /** Whether a declared `entityId` is a sentinel rather than a literal id. */
 export function isAnchorSentinel(entityId: string): boolean {
   return entityId.startsWith('$');
@@ -151,6 +177,7 @@ export type AnchorDeclarationVerdict =
         | 'artifact'
         | 'here'
         | 'realm'
+        | 'appointment'
         | 'attachment_template';
     }
   | { readonly ok: false; readonly reason: string };
@@ -193,6 +220,14 @@ export interface ClassifyAnchorOptions {
    * shipping gate (`chipAnchorViolations`) always computes and passes it.
    */
   readonly bindsRealm?: boolean;
+  /**
+   * Whether this template authors an `encounter_seed` carrying an `appointment` block
+   * anywhere — THR-1518. Same contract as `mintsArtifact`: `$appointment` on a chip is a
+   * claim that this ending bound the mortal to a place by a time, and a template that
+   * plants no appointment has no place for the chip to report. Optional; absent means
+   * "the caller cannot say". The shipping gate always computes and passes it.
+   */
+  readonly plantsAppointment?: boolean;
 }
 
 /**
@@ -228,6 +263,22 @@ export function classifyAnchorDeclaration(
       };
     }
     return { ok: true, form: 'realm' };
+  }
+
+  // THR-1518 — conditional like `$artifact`: the referent is a place the template's
+  // own ending has to bind the mortal to. Whether *this* world still holds the promise
+  // (kept edges are removed) is a runtime outcome the other half fails soft.
+  if (entityId === ANCHOR_SENTINEL_APPOINTMENT) {
+    if (options.plantsAppointment === false) {
+      return {
+        ok: false,
+        reason:
+          `'${entityId}' names the place this encounter's ending bound the mortal to, but `
+          + 'the template authors no `encounter_seed` with an `appointment` block anywhere '
+          + '— so there is nothing for it to point at',
+      };
+    }
+    return { ok: true, form: 'appointment' };
   }
 
   if (entityId === ANCHOR_SENTINEL_ARTIFACT) {
@@ -273,6 +324,7 @@ export function classifyAnchorDeclaration(
         + `'${ANCHOR_SENTINEL_ARTIFACT}', `
         + `'${ANCHOR_SENTINEL_HERE}', `
         + `'${ANCHOR_SENTINEL_REALM}', `
+        + `'${ANCHOR_SENTINEL_APPOINTMENT}', `
         + `'${ANCHOR_SENTINEL_CAST_PREFIX}<key>', `
         + `'${ANCHOR_SENTINEL_FACTION_PREFIX}<defId>'`,
     };
@@ -362,6 +414,13 @@ export function resolveAnchorDeclaration(
       ?? undefined;
   }
 
+  // THR-1518 — the place of the mortal's soonest appointment, read off the promise edge
+  // the planter wrote. `undefined` when they hold none (kept ⇒ redeemed and removed) or
+  // the place is gone, so the chip renders as text rather than a dead link (Law 21).
+  if (entityId === ANCHOR_SENTINEL_APPOINTMENT) {
+    return findAppointmentPlaceId(context);
+  }
+
   if (entityId.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) {
     return context.castNodeIdByKey.get(entityId.slice(ANCHOR_SENTINEL_CAST_PREFIX.length));
   }
@@ -405,6 +464,41 @@ export function resolveAnchorDeclaration(
  * decides between `artifact` and `artifact_legendary` at mint, and an author writing
  * `$artifact` is naming the thing, not its tier.
  */
+/**
+ * The place of the actor's soonest live appointment, off the `owes_favor` promise edges.
+ *
+ * One reader of the shape `encounterAftermath` writes (`properties.appointment =
+ * { seedId, locationId, dueTick }`) — the same key `isAppointmentFavour` reads, so this
+ * cannot disagree with the sheet about which favours are appointments. Soonest-due wins
+ * because a chip on the ending that *just* planted a meeting is about that meeting, and
+ * the one just planted is, on any lawful path, the one due last only when an earlier
+ * promise is already on the sheet — in which case the earlier one is still the place
+ * the mortal is bound to next. Ties break by seed id, never by edge insertion order.
+ */
+function findAppointmentPlaceId(context: ResolveAnchorContext): string | undefined {
+  const { graph, actorId } = context;
+  if (!actorId) return undefined;
+
+  const promises = graph
+    .getOutgoingEdges(actorId, 'owes_favor')
+    .map(edge => {
+      const raw = edge.properties?.appointment;
+      if (!raw || typeof raw !== 'object') return undefined;
+      const block = raw as { locationId?: unknown; dueTick?: unknown; seedId?: unknown };
+      if (typeof block.locationId !== 'string') return undefined;
+      return {
+        locationId: block.locationId,
+        dueTick: typeof block.dueTick === 'number' ? block.dueTick : Number.POSITIVE_INFINITY,
+        seedId: typeof block.seedId === 'string' ? block.seedId : '',
+      };
+    })
+    .filter((p): p is { locationId: string; dueTick: number; seedId: string } => p !== undefined)
+    .filter(p => graph.getNode(p.locationId) !== undefined)
+    .sort((a, b) => a.dueTick - b.dueTick || a.seedId.localeCompare(b.seedId));
+
+  return promises[0]?.locationId;
+}
+
 function findSpawnedArtifactNodeId(context: ResolveAnchorContext): string | undefined {
   const { graph, actorId, encounterTemplateId } = context;
   if (!encounterTemplateId) return undefined;

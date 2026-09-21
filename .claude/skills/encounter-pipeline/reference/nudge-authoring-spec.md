@@ -1404,7 +1404,7 @@ is now a red gate rather than a line in a report.
 | `scar` | What the trial cost them, on body or spirit — a wound, a debt, a confidence spent |
 | `bond` | Who now stands with them, or against them |
 | `boon` | What they earned, and *why* they earned it |
-| `path` | A way that has opened **and that the game will act on** — a planted seed, an unlocked route or option the simulation tracks. Nothing *held* yet, but state moved: a way that opens only in the words is not a PATH (rule 0 / Law 56) |
+| `path` | A way that has opened **and that the game will act on** — a planted seed, an unlocked route or option the simulation tracks, or an **appointment** (THR-1479: a seed bound to a place by a time — the mortal leans toward it, goes, keeps it or misses it; the chip may anchor the place with `$appointment`, THR-1518). Nothing *held* yet, but state moved: a way that opens only in the words is not a PATH (rule 0 / Law 56) |
 
 There is no fifth bucket, and no "other". If a consequence fits none of the four, that is
 a signal the consequence is not personal enough to be one — not a signal the taxonomy
@@ -1468,6 +1468,12 @@ npm run draw:hooks -- <briefSeed> --reach <reach>
 the template does not exist yet. It prints **three story seeds** drawn from the project's
 own inspiration corpus (the Obsidian `Archetypes/` pages, the four recoverable numbered
 hooks, and unshipped drafts), each with its themes, its source, and the weight it drew at.
+
+**A hook may be a meeting to keep (THR-1518).** `hook.meeting_to_keep` rolls a premise whose
+back is an `appointment` block — someone has given their word to be at a place by a time,
+and the road has other ideas. Until THR-1479 that premise was unwritable (prose rule 7b: the
+engine could not perform a place-and-time promise); now it is the one lawful way to write
+one, and the die-B `appointment` face (floor ≥1 per batch) is what makes a batch reach for it.
 
 **Take one as the starting point, or blend two.** Then record both on the brief:
 
@@ -1704,7 +1710,7 @@ a player would recognise it, not an effect kind:
 | `condition` | Something the trial did to body or spirit | `condition_attachment`, `apply_condition`, `remove_condition` |
 | `knowledge` | Something they now know | `intelligence`, `spawn_clue` |
 | `secret` | Something they know that others must not | `hidden_mark`, `secret_discovery`, `favor_creation` |
-| `story_seed` | A scene planted for later | `encounter_seed` |
+| `story_seed` | A scene planted for later — placeless, **or placed and timed** | `encounter_seed`; with an `appointment` block it is a **PATH the mortal walks** (THR-1479): place, window, counterparty, and a `missed` branch, both sequels authored with the parent |
 | `thread` | A tie to the divine, tightened or cut | `thread_strengthen` / `thread_weaken` / `thread_break` |
 | `drive` | What they now want, or cannot stop doing | `assign_ambition`, `plant_compulsion` |
 | `movement` | Where they go next | `agent_relocation` |

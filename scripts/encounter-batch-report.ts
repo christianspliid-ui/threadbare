@@ -382,6 +382,59 @@ lines.push('');
   lines.push('');
 }
 
+// ── Appointment census (THR-1518) ──
+//
+// The same shape as the content-query census above, for the same reason: THR-1479's
+// kill criterion — *"two batches after slice 2 lands, the census reports zero
+// authored appointments → retro finding dead primitive"* — needs a number per batch
+// printed where the batch is read. Counted off `composition.systems` (`appointments`,
+// the key an appointment seed earns in place of `seeds`) and the two live-proof
+// claims that drive the mortal present and absent.
+{
+  const withAppointment = ids.filter(id =>
+    gateById.get(id)?.composition.systems.includes('appointments'),
+  );
+  const provedKept = ids.filter(id =>
+    liveById.get(id)?.claims.some(
+      claim => claim.name === 'appointment_kept' && claim.status === 'pass',
+    ),
+  );
+  const provedMissed = ids.filter(id =>
+    liveById.get(id)?.claims.some(
+      claim => claim.name === 'appointment_missed' && claim.status === 'pass',
+    ),
+  );
+
+  lines.push('## Appointment census');
+  lines.push('');
+  lines.push(
+    `**${withAppointment.length} of ${ids.length}** encounter(s) author an appointment; `
+      + `**${provedKept.length}** kept one live (mortal present at the due tick) and `
+      + `**${provedMissed.length}** missed one live (mortal absent, the promise broken).`,
+  );
+  lines.push('');
+  if (withAppointment.length === 0) {
+    lines.push(
+      '> ⚠️ **Zero appointments authored.** The batch brief\'s die-B floor (`appointment`, '
+        + '≥1 per batch of six — the second and last floor on that die) exists to stop this. '
+        + 'Two consecutive batches at zero is the retro\'s "dead primitive" finding for the '
+        + 'appointment (THR-1479 § Kill criteria) — record it if this is the second.',
+    );
+  } else {
+    lines.push(`Authored by: ${withAppointment.map(id => `\`${id}\``).join(', ')}.`);
+    const unproved = withAppointment.filter(id => !provedKept.includes(id) || !provedMissed.includes(id));
+    if (unproved.length > 0) {
+      lines.push('');
+      lines.push(
+        `> ${unproved.length} authored appointment(s) did not prove both arms on their live run `
+          + '— either the path carrying the seed was not taken, or the mortal was not judged '
+          + 'inside the drive. The `appointment_kept` / `appointment_missed` claim rows say which.',
+      );
+    }
+  }
+  lines.push('');
+}
+
 // ── Package verdicts (THR-1154) ──
 //
 // The director's frame: prose and chips are one package, judged together or not at

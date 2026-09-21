@@ -36,6 +36,7 @@ player, the batch is not ready to run.
 | Reach spread | <e.g. no reach more than twice across 6> |
 | Decision shapes | <from the roster: single test / consequence chain / fork / opt-in / sequel / query prize> |
 | Query prize | ≥1 ending hands out its prize **by query, not by id** (packet die B floor) |
+| Appointment | ≥1 ending binds the mortal to **a place by a time** — an `appointment` block with both sequels (packet die B's second and last floor, THR-1518) |
 | Tone | <e.g. at most two that resolve grim> |
 | Step counts | <e.g. two 1-step, three 2-step, one 3-step> |
 | Setting class | no class more than twice (packet die C; gap-weighted toward thin classes) |
@@ -101,6 +102,39 @@ never needs a re-roll to comply.
 The batch report prints the census (`queries authored`), and two consecutive batches
 authoring zero is the retro's "dead primitive" finding — the floor is what keeps that
 verdict reachable by judgement rather than by neglect.
+
+### The `appointment` face (die B, floor ≥1 per batch) — THR-1518
+
+Die B's ninth face, and its **second and last floor** (THR-1489's arithmetic: a third would
+put half the shape axis under forced draws — `packetDiceCatalogViolations` refuses one). A
+slot that rolls `appointment` still picks a step shape; what it owes on top is an ending
+that binds the mortal to **a place by a time**:
+
+```ts
+// The seed carries the place, the window, the other party, and what fires if they
+// are not there — both sequels authored with the parent, never an ungated id:
+{
+  kind: 'encounter_seed',
+  templateId: 'encounter.slice.full_moon_collection',   // the kept branch, a gated literal
+  targetAgentId: '$actor', delayTicks: 132, inheritContext: true,
+  seedLabel: 'A promise made at the crossroads falls due at the full moon.',
+  appointment: {
+    locationId: '$here', counterpartyId: '$cast:stranger',
+    missed: { query: { kind: 'encounter_template', tags: ['#crossroads_debt'] },
+              seedLabel: 'A promise broken at the crossroads has a way of finding the road.' },
+  },
+}
+```
+
+The mortal leans toward the place, departs by their leave margin, keeps it by standing on
+the hex in the window, or misses it and the `missed` branch finds them wherever they are;
+the promise is an `owes_favor` edge on their sheet, broken on a miss. **A meeting that
+cannot be missed is not a promise** — `check:encounter` fails an appointment with no
+`missed` branch, and the composition report earns the `appointments` quota key only with
+both. The prose may now say *collect it here at the next full moon* (prose rule 7b's one
+exception). `draw:packet` forces this face the same way it forces `query_prize`; the batch
+report prints `appointments authored`, and the weekly census prints kept / missed off a
+seeded run — that census hit, not any gate, is what makes the primitive count as reached.
 
 ## Systems quota targets
 
