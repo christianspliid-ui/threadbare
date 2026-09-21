@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-20 20:56 local (2026-09-20 18:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-21 17:40 local (2026-09-21 15:40 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,26 +11,28 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting at a place by a time. Your direction from 12 September. **Start here:** higher priority, and its blocker (THR-1487) finished on the 12th, so only the plan doc remains.
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 
-**The ask: say "design THR-1479" in a chat.** The build queue is empty — 0 building, 0 waiting, nothing filed since 17:27 UTC. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue.
+**The ask: say "design THR-1479" in a chat.** The build queue has been empty for 22 hours — 0 building, 0 waiting, nothing filed since 17:27 UTC Sunday. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue.
 
 ### Finish the sitting — two encounters left, screen now clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
-You stopped after four feedback batches on Saturday 12 September with *"more batches expected."* Everything those batches produced is shipped and live — **including the last blemish.** The raw `{sphere_flavor}` placeholder that was printing in conversation scenes is fixed and live as of 17:27 UTC on 20 September ([THR-1516](https://linear.app/threadbare/issue/THR-1516)). Nothing on these two needs reading past any more.
+You stopped after four feedback batches on Saturday 12 September with *"more batches expected."* Everything those batches produced is shipped and live — **including the last blemish.** The raw `{sphere_flavor}` placeholder that was printing in conversation scenes is fixed and live ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)); the deployed site is serving that commit.
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map — encounters reaching into factions, war, economy and divine actions — which is exactly the supply the queue is short of. Say **"work the map"** in a chat when done.
 
-### Were the stops deliberate? (lane silence, 13–16, 17 and 18 September)
+### Were the stops deliberate? (lane silence — now four episodes, latest ate a working Monday)
 
-Every local lane stopped Sunday 13 September 21:00 → Wednesday 16 September 15:55 (~67h), again Thursday 17 September 07:55 → 17:55 (~10h), and again Friday 18 September 02:55 → 18:44 (~16h). None had a pause marker.
+It happened again, and this one is different from the weekend gaps you already ruled on. The probe's own words:
 
-**The evidence says the machine was off, not that a lane broke.** The hourly cleanup script — a Windows task with no connection to Claude — stops and restarts at exactly those boundaries; on the 18th every lane fired in one catch-up burst at 18:44; and the Wednesday workflow retro, due 16 September mid-morning, simply never fired. GitHub's own scheduled jobs stayed green throughout, because they don't run here.
+> No scheduled Claude Code lane has written to origin/main or origin/ops since 2026-09-20T18:57:10.000Z — 20.7h of fleet-wide silence, past the 6h threshold, and no pause marker is set. Either the lanes are broken, or this is a deliberate pause that was never declared.
 
-**If it was you:** nothing to do. Next time, a pause marker at `~/.claude/threadbare-pause.json` keeps this off your list. **If it wasn't:** say so, and the next session looks into why the machine went quiet. Silence reads as "deliberate."
+In local time that is **Sunday 20:57 → Monday 17:37** — overnight, then all of Monday's working day. Earlier episodes: 13–16 September (~67h), 17 September (~10h), 18 September (~16h). None had a pause marker.
 
-*(This weekend's stop — Saturday 11:33 → Sunday 12:37 local — is not part of the ask. Weekend quiet is normal by your own ruling, and every lane resumed together.)*
+**The evidence says the machine was off, not that a lane broke.** Every lane fired together in one catch-up burst at 17:37 today; the hourly Windows cleanup script, which has no connection to Claude, stopped at the same boundary and has not run since; GitHub's own scheduled jobs stayed green throughout, because they don't run here.
+
+**If it was you:** nothing to do. A pause marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet. Silence reads as "deliberate."
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
@@ -38,15 +40,15 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
-- **2026-09-20 — the raw `{sphere_flavor}` placeholder no longer prints in conversation scenes** ([THR-1516](https://linear.app/threadbare/issue/THR-1516)). Merged 17:27, live. This was the last blemish on your review sitting.
-- **2026-09-20 — finished PRs no longer go red on a stopwatch; the slow test arms got an explicit timeout** ([THR-1517](https://linear.app/threadbare/issue/THR-1517)). Merged 17:18; 47 minutes from filed to fixed.
-- **2026-09-19 — the unused "lose a hard fight → Wounded/Terrified" rule is deleted; wounds come from each encounter's written ending** ([THR-1503](https://linear.app/threadbare/issue/THR-1503)). Veto window closed with the merge; live.
-- **2026-09-19 — the change classifier reads uncommitted work, and the pickup lane runs it on code changes** ([THR-1513](https://linear.app/threadbare/issue/THR-1513)). Merged 01:10, live.
-- **2026-09-19 — a finished work outside a town now has somewhere for its encounter to land** ([THR-1515](https://linear.app/threadbare/issue/THR-1515)). Merged 00:10, live.
-- **2026-09-19 — the retro draft picks its period from the newest retro report** ([THR-1512](https://linear.app/threadbare/issue/THR-1512)). Merged 00:08.
-- **2026-09-18 — the six unused family tags are deleted** ([THR-1501](https://linear.app/threadbare/issue/THR-1501)). Veto window closed with the merge at 21:18 in silence; any tag restores with one line.
-- **2026-09-18 — the undertaking proof script decides seed consumption off state, not off evicted traces** ([THR-1514](https://linear.app/threadbare/issue/THR-1514)). Merged 20:31, live.
-- **2026-09-18 — a finished work's follow-up encounter is offered at the town the work touched** ([THR-1511](https://linear.app/threadbare/issue/THR-1511)). Your veto window closed with the merge at 19:33; live.
+- **2026-09-20 — the raw `{sphere_flavor}` placeholder no longer prints in conversation scenes** ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). Merged 17:27, live. This was the last blemish on your review sitting.
+- **2026-09-20 — finished PRs no longer go red on a stopwatch; the slow test arms got an explicit timeout** ([THR-1517](https://linear.app/threadbare/issue/THR-1517/the-multi-tick-arms-in-orchestratortestts-have-no-explicit-timeout-and)). Merged 17:18; 47 minutes from filed to fixed.
+- **2026-09-19 — the unused "lose a hard fight → Wounded/Terrified" rule is deleted; wounds come from each encounter's written ending** ([THR-1503](https://linear.app/threadbare/issue/THR-1503/processencounterconditions-gates-on-a-template-category-no-shipped)). Veto window closed with the merge; live.
+- **2026-09-19 — the change classifier reads uncommitted work, and the pickup lane runs it on code changes** ([THR-1513](https://linear.app/threadbare/issue/THR-1513/classifydiffs-browser-verify-reminder-falls-back-to-the-working-tree)). Merged 01:10, live.
+- **2026-09-19 — a finished work outside a town now has somewhere for its encounter to land** ([THR-1515](https://linear.app/threadbare/issue/THR-1515/catalyst-families-have-no-member-for-a-hamlet-or-the-wild-a-settlement)). Merged 00:10, live.
+- **2026-09-19 — the retro draft picks its period from the newest retro report** ([THR-1512](https://linear.app/threadbare/issue/THR-1512/retro-draft-derives-its-period-from-the-newest-committed-retro-report)). Merged 00:08.
+- **2026-09-18 — the six unused family tags are deleted** ([THR-1501](https://linear.app/threadbare/issue/THR-1501/six-family-tags-are-now-orphaned-no-bearer-no-reader-sunset-or-author)). Veto window closed with the merge at 21:18 in silence; any tag restores with one line.
+- **2026-09-18 — the undertaking proof script decides seed consumption off state, not off evicted traces** ([THR-1514](https://linear.app/threadbare/issue/THR-1514/undertaking-live-proof-and-content-model-census-decide-seed)). Merged 20:31, live.
+- **2026-09-18 — a finished work's follow-up encounter is offered at the town the work touched** ([THR-1511](https://linear.app/threadbare/issue/THR-1511/undertaking-catalysts-wither-where-the-actor-stands-every-cell)). Your veto window closed with the merge at 19:33; live.
 - **2026-09-17 — the five quarantined Meet The First scenes are redrawn and back in the game** ([THR-876](https://linear.app/threadbare/issue/THR-876)). Merged 18:23, live.
 
 ---
