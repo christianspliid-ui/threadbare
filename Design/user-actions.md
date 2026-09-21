@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-21 17:40 local (2026-09-21 15:40 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-21 17:57 local (2026-09-21 15:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ No decision owed — the direction on both is already yours. They need a session
 - **[THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by)** — a mortal keeps or misses a meeting at a place by a time. Your direction from 12 September. **Start here:** higher priority, and its blocker (THR-1487) finished on the 12th, so only the plan doc remains.
 - **[THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)** — a held town is a faction position. Your sentence from 10 September.
 
-**The ask: say "design THR-1479" in a chat.** The build queue has been empty for 22 hours — 0 building, 0 waiting, nothing filed since 17:27 UTC Sunday. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue.
+**The ask: say "design THR-1479" in a chat.** Ready for Dev, In Dev and Implementation Planning are all 0 for a second day; nothing has merged since Sunday 19:27 local. All 11 non-wayfinder Todo items have been read and every one declines for needing design first; the other 15 are wayfinder tickets that never enter the queue.
 
 ### Finish the sitting — two encounters left, screen now clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -22,15 +22,13 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass charters the hub map — encounters reaching into factions, war, economy and divine actions — which is exactly the supply the queue is short of. Say **"work the map"** in a chat when done.
 
-### Were the stops deliberate? (lane silence — now four episodes, latest ate a working Monday)
+### Were the stops deliberate? (lane silence — four episodes; the latest has now ended)
 
-It happened again, and this one is different from the weekend gaps you already ruled on. The probe's own words:
+Monday's stop is over: every lane fired on schedule this hour and the machine is awake. The question it raised is still unanswered.
 
-> No scheduled Claude Code lane has written to origin/main or origin/ops since 2026-09-20T18:57:10.000Z — 20.7h of fleet-wide silence, past the 6h threshold, and no pause marker is set. Either the lanes are broken, or this is a deliberate pause that was never declared.
+In local time the stop ran **Sunday 20:57 → Monday 17:37** — overnight, then all of Monday's working day. Earlier episodes: 13–16 September (~67h), 17 September (~10h), 18 September (~16h). None had a pause marker. The weekend gaps in between are declined under your 11 September ruling and are not part of this ask.
 
-In local time that is **Sunday 20:57 → Monday 17:37** — overnight, then all of Monday's working day. Earlier episodes: 13–16 September (~67h), 17 September (~10h), 18 September (~16h). None had a pause marker.
-
-**The evidence says the machine was off, not that a lane broke.** Every lane fired together in one catch-up burst at 17:37 today; the hourly Windows cleanup script, which has no connection to Claude, stopped at the same boundary and has not run since; GitHub's own scheduled jobs stayed green throughout, because they don't run here.
+**The evidence says the machine was off, not that a lane broke.** Every lane fired together in one catch-up burst at 17:37; the hourly Windows cleanup script, which has no connection to Claude, stopped at the same boundary and resumed with it; GitHub's own scheduled jobs stayed green throughout, because they don't run here.
 
 **If it was you:** nothing to do. A pause marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet. Silence reads as "deliberate."
 
