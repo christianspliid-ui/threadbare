@@ -1,18 +1,18 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### The builder lane is out of model credit — a top-up is the only lever
 
-Seven failures in a row, all identical: *"You've reached your Fable limit."* — **10:11 through 16:11 local**, on the hour, each lasting about eight seconds. Last successful run: 09:11. The next attempt is 17:11.
+Eight failures in a row, all identical: *"You've reached your Fable limit."* — **10:11 through 17:11 local**, on the hour, each lasting about eight seconds. Last successful run: 09:11. The next attempt is 18:11.
 
 **Top up** at [claude.ai usage settings](https://claude.ai/settings/usage) — or wait for the quota window to reset, if you know when that is.
 
 **The alternative you were offered earlier today is not real.** Previous briefings said a session could move the lane off Fable if you asked. It cannot: there is no model setting on a scheduled lane in any file or control an agent can reach — it lives in your app's settings. That half of the ask was withdrawn after a session went looking for it.
 
-**A finished job is waiting.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits — is designed, was claimed at 10:21 local, and re-verified unstarted this hour: no branch, no pull request, no code. The builder resumes it by itself. Only this lane is affected; planning, grooming and briefing run fine.
+**A finished job is waiting, and the board is now still.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits — is designed, was claimed at 10:21 local, and re-verified unstarted this hour: no branch, no pull request, no code. Nothing else is waiting to be built. The builder resumes it by itself. Only this lane is affected; planning, grooming and briefing run fine.
 
 ### One design hour: are scenes being offered to exactly the people who will refuse them?
 
@@ -58,7 +58,7 @@ The one question: **is the integrated encounter experience at an acceptable stat
 
 Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. The four stops, in local time: **17 September** (~10h, through Thursday's working day), **18 September** (~16h, into Friday afternoon), the **Saturday→Sunday** gap (~25h), and **Sunday 20:57 → Monday 17:41**. None had a pause marker. Weekend and overnight quiet is declined under your 8 August and 11 September rulings and is not part of this ask — the two weekday gaps are.
 
-**Today's seven consecutive credit failures are the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. What it still does not explain is why lanes on a *different* model went quiet in the same windows.
+**Today's eight consecutive credit failures are the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. What it still does not explain is why lanes on a *different* model went quiet in the same windows.
 
 **If it was you:** nothing to do — a marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet.
 
