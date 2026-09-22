@@ -3327,7 +3327,12 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Appointment', 'Encounter Seed'],
     mechanism: {
       kind: 'function',
-      symbols: ['resolveAppointmentContext', 'computeAppointmentPull', 'appointmentRegime', 'computeAppointmentSlack'],
+      // `agentAppointmentSeeds` is the planter's hook into the module (THR-1524):
+      // encounterAftermath.ts reads the mortal's standing appointments through it
+      // before it writes the seed, so the write site names a symbol it actually
+      // carries. Without it the Tier-2 grep found no declared symbol at the write
+      // site and classified the row LEAKED — which the badge pin had been masking.
+      symbols: ['agentAppointmentSeeds', 'resolveAppointmentContext', 'computeAppointmentPull', 'appointmentRegime', 'computeAppointmentSlack'],
       module: 'src/engine/appointments.ts',
     },
     writeSites: ['src/engine/encounterAftermath.ts'],
@@ -3336,11 +3341,10 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/phaseAgentDecision.ts',
       'src/engine/__tests__/appointments.test.ts',
     ],
-    badgeOverride: {
-      badge: 'LEAKED',
-      reason:
-        'Shipped with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain). THR-1518 (2026-09-22) landed the harness and MEASURED the row: `check:encounter-live` proves the mechanics on a seeded world (present → kept at tick 136, the Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the promise broken), but `check:content-model-census` reads UNREACHED on seeds 42 / 99 / 7 at 200 ticks and on 42 / 99 at 1000 — the Crossroads fired once in 1000 ticks and the mortal refused. That is the THR-1497 shape, and this row stays red until a census HIT (THR-1524), never on a gate that reads the code.',
-      deferralTicket: 'THR-1524',
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1524 — the census HIT. Shipped by THR-1479 with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain); THR-1518 proved the mechanics on a seeded world through `check:encounter-live` (present → kept at tick 136, the Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the promise broken) and then MEASURED the reachability row UNREACHED on every seed — the Crossroads fired once in 1000 ticks and the mortal refused. Two content defects on the parent, both fixed in vertical-slice.ts: (1) `settings: [wayside]` alone is camp | oasis | wilderness, 8 of 974 locations on seed 42 / medium and 5.5% of mortal-ticks (urban 50%, rural 37%, ruin 2.3%, sampled every 10 ticks over 200) — none of the four wayside-only slice encounters fired in 200 ticks; the Crossroads now registers at rural + ruin + wayside with an opening per class. (2) `motivations: [tradition_novelty]` named the fork axis, and `computeDesireScore` sums the SIGNED profile value, so the board handed the scene to Archivists (positive pole, who refuse) and floored Heretics (negative pole, the planting arm) at MINIMUM_DESIRE — 34 of 65 profiled mortals lean novelty and none ever met him; selection moved to the Eye axis (`revelation_discretion`, the scene\'s own reach) and the fork stays on tradition. `npm run check:content-model-census -- --ticks 200 --seed 42 --map medium` now prints `Reachability: HIT` — parents fired 3, 2 planted, 0 kept, 0 missed; seed 99 / 200 ticks: 11 firings, 7 planted, one kept (the Full Moon Collection fired from the kept arm, `spawnedFromSeedId` set); seed 7 / 200 ticks: see the THR-1524 status fragment. Pinned by vertical-slice.test.ts (THR-1524 block): a slice fork whose planting arm is the negative pole may not name that axis in `motivations` — restoring the old axis fails it (falsified 2026-09-22) — and the Crossroads registers past wayside. Not a gate that reads the code: the census counts the seed off `pendingEncounterSeeds` per tick.',
     },
   },
   {
@@ -3361,11 +3365,10 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/phaseSecretsFavors.ts',
       'src/engine/__tests__/encounterSeeding-appointment.test.ts',
     ],
-    badgeOverride: {
-      badge: 'LEAKED',
-      reason:
-        'Shipped with the evaluator test proving kept redeems and missed breaks on a fixture world, and the sheet reads the broken favour. THR-1518 (2026-09-22) proved the miss on a seeded world through `check:encounter-live` (the mortal stood on another hex, `appointment_missed` written, the favour `broken`, the reckoning following), but no mortal on the live board has yet planted an appointment for the census to count — UNREACHED on every seed tried. Flips with its sibling on a census HIT (THR-1524).',
-      deferralTicket: 'THR-1524',
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1524 — flips with its sibling on the census HIT. Shipped by THR-1479 with the evaluator test proving kept redeems and missed breaks on a fixture world, and the sheet reads the broken favour; THR-1518 proved the miss on a seeded world through `check:encounter-live` (the mortal stood on another hex, `appointment_missed` written, the favour `broken`, the reckoning following). What was missing was a mortal on the live board planting a promise for the window to close on — the parent never reached them (see `appointment-pulls-agent-movement` for the two content defects and the numbers). After the fix `check:content-model-census -- --ticks 200 --seed 42 --map medium` prints `Reachability: HIT` (parents fired 3, 2 planted); seed 99 plants 7 in 200 ticks and keeps one. The miss itself is the same judgement on a seeded world that the live proof exercised — a promise planted by the board is broken by `evaluateEncounterSeeds` exactly as the harness-planted one was — so this row stands on the same HIT its sibling does, never on the evaluator test alone.',
     },
   },
   {

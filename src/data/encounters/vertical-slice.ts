@@ -1930,14 +1930,34 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
   steps: [CROSSROADS_MEASURE_STEP, CROSSROADS_FORK],
   apCost: 1,
   actorAffinities: ['individual'],
-  motivations: ['tradition_novelty'],
-  settings: ['wayside'],
+  // THR-1524 — the selection axis is deliberately NOT the fork's axis. The fork
+  // (CROSSROADS_FORK) decides on `tradition_novelty` and the accept path — the
+  // one that plants the appointment — is the *negative* pole. `computeDesireScore`
+  // sums the signed profile value, so a template whose `motivations` names the
+  // fork axis draws the mortals on its positive pole (Archivists, who refuse) and
+  // floors the ones who would accept at MINIMUM_DESIRE. Measured before this
+  // change (seed 42 / medium / 1000 ticks): one firing, refused; 34 of 65
+  // profiled mortals lean novelty and none of them ever met him. The Eye axis is
+  // this Eye-reach scene's own: a Seeker is drawn to take the measure of a man who
+  // knows too much, and whichever way they lean on tradition is then free to
+  // decide the bargain. The hand still argues both poles of the fork axis.
+  motivations: ['revelation_discretion'],
+  // THR-1524 — a crossroads is a road thing, not a camp thing. `wayside` alone is
+  // camp | oasis | wilderness, which is 8 places in a 974-location medium world
+  // (seed 42) — none of the four wayside-only slice encounters fired in 200 ticks.
+  // Rural lanes and the old roads past ruins are where a traveler actually meets a
+  // crossroads at dusk; the kept sequel is a gated literal (not subtype-gated at
+  // spawn) and the missed sequel already registers at every class, so only the
+  // parent needed the wider envelope.
+  settings: ['rural', 'ruin', 'wayside'],
   // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it
   // (CROSSROADS_MEASURE_STEP).
   openings: {
+    rural: '{name} comes to the crossroads outside {location} at dusk, where the lane meets the road.',
+    ruin: '{name} comes to the crossroads below {location} at dusk, where the old road still runs.',
     wayside: '{name} comes to the crossroads at {location} at dusk.',
   },
-  locationSubtypes: expandSettings(['wayside']),
+  locationSubtypes: expandSettings(['rural', 'ruin', 'wayside']),
   // THR-1110 — casts the stranger so the promise has a second party to bind to,
   // and so the accept path's `inheritContext: true` has bindings to carry into
   // The Full Moon Collection.

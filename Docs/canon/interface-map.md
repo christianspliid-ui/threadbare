@@ -328,6 +328,18 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
+2026-09-22 by Claude Code (THR-1524 — appointment reachability). The two THR-1479 contracts
+`appointment-pulls-agent-movement` and `missed-appointment-breaks-agreement` **flip 🟢 LIVE on a
+census HIT**, the only evidence the row accepts: `check:content-model-census -- --ticks 200 --seed 42
+--map medium` prints `Reachability: HIT` (parents fired 3, 2 planted), seed 99 plants 7 in 200
+ticks and keeps one. The Crossroads never reached a mortal who would plant one for two content
+reasons, both fixed on the parent alone: `wayside` is 8 of 974 locations and 5.5% of mortal-ticks
+on a medium world (none of the four wayside-only slice encounters fired in 200 ticks), so the
+bargain now registers at rural + ruin + wayside; and `motivations` named the fork axis while
+`computeDesireScore` sums the *signed* value, so the board drew the pole that refuses and floored
+the pole that plants — selection moved to the scene's own Eye axis, the fork stays on tradition.
+`vertical-slice.test.ts` pins both (a negative-pole planting arm may not select on its fork axis;
+falsified by restoring the old axis). Earlier:
 2026-09-22 by Claude Code (THR-1518 — the appointment harness, slice 2). The two THR-1479
 contracts below **stay 🔴 LEAKED-with-ticket**, now pointing at THR-1524, and that is the row
 doing its job: the harness landed (`check:encounter-live` claims `appointment_kept` /
