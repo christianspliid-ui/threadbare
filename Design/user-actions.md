@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 13:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 14:00 local (12:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### The builder lane is out of model credit — top up, or move it off Fable
 
-The lane that builds has now failed **three times in a row** with *"You've reached your Fable limit."* — 10:11 local (after sixteen minutes, having just claimed a job), 11:11 (seven seconds) and 12:11 (eight seconds). Its next attempt is 13:10 local and will do the same until the quota clears.
+The lane that builds has now failed **four times in a row** with *"You've reached your Fable limit."* — 10:11 local (after sixteen minutes, having just claimed a job), then 11:11, 12:11 and 13:11, each lasting seven or eight seconds. Its next attempt is 14:10 local and will do the same until the quota clears.
 
 **Nothing is lost and nothing is at risk.** No branch was pushed, no work is half-finished, and the shelf it draws from is empty anyway — so today's cost is one claimed job ([THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits)) sitting still until the 14:00 sweep releases it. Only this lane is affected; the planning and briefing lanes run a different model and are fine.
 
@@ -29,7 +29,7 @@ When the world decides *which mortal* should be handed a scene, it favours morta
 
 ### May a lane draft a design doc on its own? — *from tb-orchestrator*
 
-Your 6 August rule: the hourly planning lane stages design work but never authors it. **The recorded reason is that the lane ran the cheaper Sonnet model.** It runs Opus now — the same model an attended design session uses — so the stated reason has quietly expired.
+Your 6 August rule: the hourly planning lane stages design work but never authors it. **The recorded reason is that the lane ran the cheaper Sonnet model.** It runs Opus now — the same model an attended design session uses — so the stated reason has quietly expired. ([The rule, in the process canon](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md).)
 
 The rule may still be right for a reason never written down: an unattended lane writing designs skips the back-and-forth of a real design chat, and you may want a person in the room when the game's shape is decided.
 
@@ -61,7 +61,7 @@ The one question: **is the integrated encounter experience at an acceptable stat
 
 Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. In local time the last stop ran **Sunday 20:57 → Monday 17:41** — overnight, then most of Monday's working day. Earlier: 17 September (~10h), 18 September (~16h), and the Saturday→Sunday gap (~25h). None had a pause marker. Weekend and overnight quiet is declined under your 8 August and 11 September rulings and is not part of this ask.
 
-**Today's credit failure is the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. That fits the episodes better than a machine fault, and matches the corroborating signs: the lanes fired together in one catch-up burst, and GitHub's own jobs stayed green because they don't run here. What it does not yet explain is why lanes on a *different* model went quiet in the same windows.
+**Today's repeated credit failure is the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. That fits the episodes better than a machine fault, and matches the corroborating signs: the lanes fired together in one catch-up burst, and GitHub's own jobs stayed green because they don't run here. What it does not yet explain is why lanes on a *different* model went quiet in the same windows.
 
 **If it was you:** nothing to do — a marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet.
 
@@ -78,11 +78,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 - **2026-09-22 — places now earn traits from their own fortunes, and the encounter pool reads them** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), traits wave 2 slice 1). Merged and live.
 - **2026-09-21 — two silently-closed halves of the appointment feature were restored** 20 minutes after Linear closed them unbuilt. The cause is the toggle above.
 - **2026-09-21 — the design queue refilled itself and the builder started working again.** The "start the staged designs" ask led the briefing for eleven runs.
-- **2026-09-20 — the raw `{sphere_flavor}` placeholder no longer prints in conversation scenes** ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). Merged 17:27, live — the last blemish on your review sitting.
-- **2026-09-20 — finished PRs no longer go red on a stopwatch; the slow test arms got an explicit timeout** ([THR-1517](https://linear.app/threadbare/issue/THR-1517/the-multi-tick-arms-in-orchestratortestts-have-no-explicit-timeout-and)). 47 minutes from filed to fixed.
-- **2026-09-19 — the unused "lose a hard fight → Wounded/Terrified" rule is deleted; wounds come from each encounter's written ending** ([THR-1503](https://linear.app/threadbare/issue/THR-1503/processencounterconditions-gates-on-a-template-category-no-shipped)). Veto window closed with the merge; live.
 
 ---
 
-Older resolved items and every earlier version of this file: `git log -p origin/ops -- Design/user-actions.md`.
-The hourly brief that leads with one of these: [`Design/briefing.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/briefing.md).
+Older entries and every prior version of this file: `git log -p origin/ops -- Design/user-actions.md`.
+Hourly brief: [`Design/briefing.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/briefing.md).
