@@ -3104,6 +3104,8 @@ export interface TracedContentQuery {
   readonly anyTags?: readonly string[];
   readonly tier?: number | { readonly min?: number; readonly max?: number };
   readonly exclude?: readonly string[];
+  /** The bearer-trait term (THR-1520), judged at the site rather than by the resolver. */
+  readonly requiresBearerTrait?: { readonly traitId: string; readonly minLevel?: number };
 }
 
 /**
@@ -3139,6 +3141,8 @@ export interface ContentQueryResolvedTrace extends TraceBase {
    */
   judgedAtLocationId?: string;
   judgedAt?: 'resolution_anchor' | 'target_location';
+  /** Candidates the query's `exclude` list removed — the bearer already held them (THR-1520). */
+  excludedCount?: number;
 }
 
 /**
@@ -3158,6 +3162,12 @@ export interface ContentQueryEmptyTrace extends TraceBase {
   /** As on {@link ContentQueryResolvedTrace} (THR-1511): the last place the gate was judged at. */
   judgedAtLocationId?: string;
   judgedAt?: 'resolution_anchor' | 'target_location';
+  /**
+   * Candidates `exclude` removed (THR-1520). An empty query whose count is non-zero is a
+   * bearer who already holds everything the recipe could deal — a different fix from a
+   * filter that names nothing.
+   */
+  excludedCount?: number;
 }
 
 /**

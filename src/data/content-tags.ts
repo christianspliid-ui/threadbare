@@ -307,6 +307,85 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   T('#craft_commission', 'family', 'A piece of work ordered from a maker, and answerable to whoever ordered it.', ['encounter_template']),
 ];
 
+/**
+ * The trait vocabulary (THR-1520, traits wave 2 slice 2).
+ *
+ * **Why these are seated and not stripped.** Registering the six trait content files as
+ * content catalogs put forty-five spellings under the tag contract at once. The
+ * migration's seating rule (a reader, or `CONTENT_TAG_MIN_BEARERS` bearers) was a filter
+ * over a folksonomy — one hundred and fifty-three spellings, sixty-two of them one
+ * author's word for one entry. This set is not that: it is a designed vocabulary — one
+ * category word per trait class, one pole word per continuum side, and for the
+ * reputations exactly one positive and one negative word per reach — and every spelling
+ * has a bearer on the day it lands, so none ships DEAD. Stripping the reputation words
+ * would leave *Iron, positive* and *Iron, negative* indistinguishable to a query, which
+ * is the opposite of what the vocabulary is for. Two spellings were retired instead of
+ * seated: `#general` (one bearer, no meaning) and `#power` (one bearer, and the word is
+ * a content kind's).
+ *
+ * **Scoping.** The category and pole words are scoped to the two trait kinds; the
+ * reputation and walk-of-life words are unscoped, since a condition or an item may
+ * honestly wear `#fear` or `#economic`.
+ */
+const traitTags: readonly ContentTagDef[] = [
+  // The trait classes — the word each definition file authors on every entry.
+  T('#core', 'family', 'A Core trait — where a mortal sits on one of the five continua that make up character.', ['trait_template']),
+  T('#personality', 'family', 'An emergent personality trait — a reach leaning hardened into a way of choosing.', ['trait_template']),
+  T('#mastery', 'family', 'A mastery — competence earned by doing a thing until the world noticed.', ['trait_template']),
+  T('#reputation', 'family', 'A reputation — what others have come to say about the bearer, deserved or not.', ['trait_template']),
+  T('#cultural', 'family', 'A formative mark a culture or a guild stamps on its own.', ['trait_template']),
+  T('#condition', 'family', 'A condition — a passing state laid on a bearer, which wears off or is cured.', ['condition_template']),
+  T('#scar', 'family', 'A scar — a condition that does not heal; what a loss left behind.', ['condition_template']),
+  T('#location', 'family', 'Carried by a place rather than a person — a condition a settlement is under.', ['condition_template']),
+
+  // The poles. Not the polarity axis: a vice is not a wound, and the condition
+  // classifier must keep reading exactly two words there.
+  T('#virtue', 'family', 'The virtue pole of a continuum or axis — the bearer leans toward the better end.', ['trait_template']),
+  T('#vice', 'family', 'The vice pole — the bearer leans toward the worse end, and it shows.', ['trait_template']),
+
+  // The five Core continua, by id. Authored rather than derived so a sixth continuum
+  // fails the tag contract by name until someone writes its line.
+  T('#core_warmth', 'family', 'Of the Warmth continuum — Warm to Cold; how much care a mortal spends on others.', ['trait_template']),
+  T('#core_hope', 'family', 'Of the Hope continuum — Hopeful to Bitter; whether they expect the world to come right.', ['trait_template']),
+  T('#core_forgiveness', 'family', 'Of the Forgiveness continuum — Forgiving to Vengeful; what they do with a harm done to them.', ['trait_template']),
+  T('#core_humility', 'family', 'Of the Humility continuum — Humble to Proud; how large they hold themselves to be.', ['trait_template']),
+  T('#core_integrity', 'family', 'Of the Integrity continuum — True to False; whether the inner self and the outer agree.', ['trait_template']),
+
+  // Walks of life the trait files name and the rest of the corpus did not.
+  T('#economic', 'family', 'Of coin, debt and trade — earned in the counting of money, or in the losing of it.'),
+  T('#guild', 'family', 'Of a guild — sworn to its rules and standing on its rolls.'),
+  T('#loss', 'family', 'Marked by something lost — a fortune, a standing, a way back.'),
+  T('#monopoly', 'family', 'Of a trade cornered — one hand on every route that matters.'),
+  T('#smuggling', 'family', 'Of goods moved past the ones who would tax or forbid them.'),
+  T('#debt', 'family', 'Of money owed and not yet paid.'),
+  T('#construction', 'family', 'Of things raised — walls, roads, halls, and the patrons who paid for them.'),
+  T('#perception', 'family', 'Of noticing — the detail others walk past.'),
+  T('#stability', 'family', 'Of holding firm — unmoved when the ground or the crowd shifts.'),
+  T('#fear', 'family', 'Of terror — what it does to the one caught in it, and what wards against it.'),
+  T('#sacred', 'family', 'Of holy ground — a place kept, tended, and answered to.'),
+  T('#martial', 'family', 'Of soldiering — known by the sword, for good or ill.'),
+
+  // The reputation words: one positive and one negative per reach, plus renown.
+  T('#honor', 'family', 'Known for keeping faith when it cost something.'),
+  T('#violence', 'family', 'Known for hurting more than was needed.'),
+  T('#generosity', 'family', 'Known for giving freely, and being remembered for it.'),
+  T('#exploitation', 'family', 'Known for squeezing the ones who could not refuse.'),
+  T('#discretion', 'family', 'Known for keeping what should be kept quiet.'),
+  T('#criminal', 'family', 'Known for taking what the law says was not theirs.'),
+  T('#magic', 'family', 'Known for what they can do with the unseen.'),
+  T('#wisdom', 'family', 'Known for seeing clearly, and for being asked.'),
+  T('#danger', 'family', 'Known as a thing to stand well back from.'),
+  T('#warmth', 'family', 'Known for a kindness people go out of their way for.'),
+  T('#manipulation', 'family', 'Known for moving people without their noticing.'),
+  T('#espionage', 'family', 'Known for knowing what they were not meant to know.'),
+  T('#infrastructure', 'family', 'Known for what they built and kept standing.'),
+  T('#trust', 'family', 'Known as someone whose work can be leaned on.'),
+  T('#tyranny', 'family', 'Known for holding a place by force and calling it order.'),
+  T('#devotion', 'family', 'Known for a faith kept in public and in private.'),
+  T('#fanaticism', 'family', 'Known for a faith that burns everyone nearby.'),
+  T('#renown', 'family', 'Known widely, by name — the standing itself, before any judgment of it.'),
+];
+
 // ─── The vocabulary ─────────────────────────────────────────────────
 
 export const CONTENT_TAGS: readonly ContentTagDef[] = [
@@ -316,6 +395,7 @@ export const CONTENT_TAGS: readonly ContentTagDef[] = [
   ...formTags,
   ...familyTags,
   ...encounterFamilyTags,
+  ...traitTags,
 ];
 
 const BY_TAG: ReadonlyMap<string, ContentTagDef> = new Map(CONTENT_TAGS.map(d => [d.tag, d]));

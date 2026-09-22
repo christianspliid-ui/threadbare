@@ -108,8 +108,10 @@ import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-att
 import { getCompanions } from '../src/engine/companions';
 import { COMPANION_MAX } from '../src/data/companion-templates';
 import { WORLD_OBJECT_KINDS, barePlaceTypeId } from '../src/data/world-objects';
-import { resolveContentQuery, CONTENT_QUERY_MAX_CANDIDATES } from '../src/engine/contentQuery';
+import { resolveContentQueryDetailed, CONTENT_QUERY_MAX_CANDIDATES } from '../src/engine/contentQuery';
 import { sessionContentCatalogs } from '../src/engine/contentCatalogView';
+import { contentQueryAdmitsBearer } from '../src/engine/contentQueryBearer';
+import { heldTemplateIdsOf } from '../src/engine/rewardPool';
 import type { ContentQuery } from '../src/types/contentQuery';
 import { CONTENT_OBJECT_KINDS } from '../src/data/content-objects';
 import { CONTENT_CATALOGS, catalogKey, entriesOfKind } from '../src/data/contentCatalogs';
@@ -1922,11 +1924,17 @@ ${BOLD}Write-time guard${RESET}: ${warned.length === 0 ? GREEN + 'no unregistere
  *
  *   query {"kind":"item_template","tags":["#weapon","#entropy"]}
  *   query {"kind":"power_template","classes":["bestowed"]}
+ *   query {"kind":"condition_template","classes":["condition"]} --bearer @hero
+ *
+ * `--bearer <agent|@hero>` (THR-1520) asks the bearer's side of the question: what the
+ * mortal already holds becomes the query's `exclude` list when it names none, and the
+ * `requiresBearerTrait` term is judged against them — the reward pool's own rules.
  */
 function handleQuery(raw: string): void {
-  const text = raw.trim();
+  const [queryText, bearerRef] = raw.split(/\s+--bearer\s+/);
+  const text = (queryText ?? '').trim();
   if (!text) {
-    console.log(`${DIM}Usage: query <json>   e.g. query {"kind":"item_template","tags":["#weapon"]}${RESET}`);
+    console.log(`${DIM}Usage: query <json> [--bearer <agent|@hero>]   e.g. query {"kind":"item_template","tags":["#weapon"]}${RESET}`);
     return;
   }
   let parsed: ContentQuery;
@@ -1942,8 +1950,29 @@ function handleQuery(raw: string): void {
     return;
   }
 
-  const hits = resolveContentQuery(parsed, sessionContentCatalogs(state.graph));
+  let bearerId: string | undefined;
+  let held: string[] = [];
+  if (bearerRef !== undefined) {
+    const bearer = resolveAgentNode(bearerRef.trim());
+    if (!bearer) {
+      console.log(`${RED}No agent matching "${bearerRef.trim()}" — running the query bearer-less${RESET}`);
+    } else {
+      bearerId = bearer.id;
+      held = heldTemplateIdsOf(state.graph, bearerId);
+    }
+  }
+  const effective = bearerId !== undefined && parsed.exclude === undefined && held.length > 0
+    ? { ...parsed, exclude: held }
+    : parsed;
+  const { hits, excludedIds } = resolveContentQueryDetailed(effective, sessionContentCatalogs(state.graph));
   const truncated = hits.length > CONTENT_QUERY_MAX_CANDIDATES;
+  if (bearerId !== undefined) {
+    const admitted = contentQueryAdmitsBearer(state.graph, bearerId, parsed);
+    console.log(`${DIM}bearer ${bearerId}: holds ${held.length} template${held.length === 1 ? '' : 's'}, ${excludedIds.length} excluded${parsed.requiresBearerTrait ? `, trait term ${admitted ? `${GREEN}met` : `${RED}unmet`}${RESET}${DIM}` : ''}${RESET}`);
+    if (excludedIds.length > 0) console.log(`  ${DIM}already held: ${excludedIds.join(', ')}${RESET}`);
+  } else if (parsed.requiresBearerTrait) {
+    console.log(`${DIM}requiresBearerTrait needs --bearer to be judged; the resolver ignores it${RESET}`);
+  }
   const badge = hits.length > 0 ? `${GREEN}${hits.length}${RESET}` : `${RED}0${RESET}`;
   console.log(`
 ${BOLD}Content query${RESET} — ${badge} candidate${hits.length === 1 ? '' : 's'}${truncated ? ` ${YELLOW}(a draw would see the first ${CONTENT_QUERY_MAX_CANDIDATES})${RESET}` : ''}`);

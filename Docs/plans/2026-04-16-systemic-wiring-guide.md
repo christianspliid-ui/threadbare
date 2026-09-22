@@ -1612,7 +1612,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 |---|---|---|
 | `reputationDelta` | `number` | Direct reputation score change on this outcome |
 | `tierPromotionEligible` | `boolean` | Allows capability tier promotion if this outcome fires |
-| `rewardPool` | `RewardPoolRecipe` | Attachment pool draw on success |
+| `rewardPool` | `RewardPoolRecipe` | Attachment pool draw on success. `categoryWeights` + `tagFilters?` + `sphereTint?` + `requiresBearerTrait?` (THR-1520 — a `TraitPredicate`; only a recipient holding the trait is dealt from the pool, judged through `resolveTraitPredicate` at draw time, so `{ traitId: '#craft' }` and `{ traitId: 'Master Smith', minLevel: 2 }` both work; the bad-outcome flip drops it). **Dedup is automatic**: the recipient is never dealt a template they already hold on a `possesses` / `has_trait` edge — you do not author it, and `content.query_*` traces show what it removed as `excludedCount` |
 | `effects` | `EncounterAftermathReactionEffect[]` | **THR-783** — aftermath effects applied when *this* outcome side fires. Full effect vocabulary, same as an aftermath reaction. See below. |
 
 **Step-outcome effects (THR-783, shipped 2026-07-26).** You can hang the entire aftermath effect vocabulary on a single step outcome, without authoring an aftermath reaction the agent has to pick. Declare `effects` on whichever side should fire it:

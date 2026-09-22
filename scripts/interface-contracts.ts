@@ -991,9 +991,17 @@ export const CONTRACTS: readonly Contract[] = [
     // Two entry points, one write path. `assembleRewardPool` is the draw; THR-1110's
     // `attachment_grant` aftermath effect calls the instantiators directly, so an
     // author can name the thing instead of weighting a category.
+    // THR-1520: the pool now reads the recipient's own `possesses` / `has_trait` edges
+    // back — `heldTemplateIdsOf` — so the write path this contract records is also a
+    // read path of its own output: a template the bearer holds is never drawn for them
+    // again. The world carve additionally refuses the instances this contract mints
+    // (`properties.source === REWARD_EDGE_SOURCE`) as candidates, because a clone wears
+    // the template's type and tags and the by-type scan had been offering every mortal's
+    // prize back to the pool. `assembleRewardPoolDetailed` is the same assembly with the
+    // dedup bookkeeping (`excludedIds`, `bearerAdmitted`) the traces and levers read.
     mechanism: {
       kind: 'function',
-      symbols: ['assembleRewardPool', 'instantiateReward', 'instantiateAgreementReward'],
+      symbols: ['assembleRewardPool', 'assembleRewardPoolDetailed', 'heldTemplateIdsOf', 'instantiateReward', 'instantiateAgreementReward'],
       module: 'src/engine/rewardPool.ts',
     },
     writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts'],
@@ -1001,6 +1009,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/orchestrator.ts',
       'src/engine/unifiedActionResolution.ts',
       'src/engine/encounterAftermath.ts',
+      'src/engine/contentQueryBearer.ts',
     ],
     verifiedLive: { date: '2026-08-14', evidence: `possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). ${AUDIT_EVIDENCE}` },
   },

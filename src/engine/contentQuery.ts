@@ -54,6 +54,7 @@ import type {
 } from '../types/contentQuery';
 import { emitTrace } from './traceBuffer';
 import { LOCATION_CONDITION_ID_PREFIX } from '../data/condition-trait-content';
+import { REWARD_EDGE_SOURCE } from '../types/attachments';
 
 
 // ─── Tunable constants (NFP #1) ─────────────────────────────────────
@@ -123,6 +124,10 @@ const GRAPH_BACKED: Readonly<Partial<Record<ContentObjectKindId, {
   legendary_template: { nodeType: 'artifact_legendary', classes: null },
   condition_template: { nodeType: 'trait', classes: ['condition', 'scar'] },
   power_template: { nodeType: 'trait', classes: ['bestowed', 'spell'] },
+  // THR-1520 — a mortal's own traits, the five classes the trait content files author.
+  // `innate`, `destiny` and `experience` are minted, never authored, so they are not a
+  // content kind's candidates; a query for "a mastery" finds the seeded definitions.
+  trait_template: { nodeType: 'trait', classes: ['core', 'personality', 'mastery', 'reputation', 'cultural'] },
 };
 
 function readTier(value: unknown): RarityTier | null {
@@ -173,6 +178,13 @@ function carveNodes(
   const out: ContentQueryCandidate[] = [];
   for (const node of nodes) {
     if (node.type !== shape.nodeType) continue;
+    // THR-1520 — a prize `instantiateReward` cloned onto a mortal is a *held thing*, not
+    // library content: it wears the template's type and tags, so the by-type scan found
+    // it and the pool could deal another mortal a clone of somebody's clone (and, after
+    // dedup by template id, deal the *same* mortal their own prize again by that route).
+    // The stamp the instantiator writes is the declaration; `rewardPool-dedup.test.ts`
+    // carries the pre-fix arm.
+    if (node.properties.source === REWARD_EDGE_SOURCE) continue;
     const candidate = candidateFromNode(kind, node as GraphNode);
     if (shape.classes && (candidate.cls === null || !shape.classes.includes(candidate.cls))) continue;
     out.push(candidate);
@@ -258,7 +270,14 @@ function tierInWindow(tier: RarityTier | null, window: ContentTierWindow | undef
   return true;
 }
 
-function matches(candidate: ContentQueryCandidate, query: ContentQuery): boolean {
+/**
+ * Every narrowing term except `exclude` — split out so a detailed resolve can say which
+ * candidates the exclude list removed, rather than folding them into "did not match".
+ * `requiresBearerTrait` is deliberately not read here: it is a term about the bearer,
+ * judged at the call site (`contentQueryAdmitsBearer`), and a resolver that read it
+ * would stop being pure.
+ */
+function matchesExceptExclude(candidate: ContentQueryCandidate, query: ContentQuery): boolean {
   // THR-790 — the bearer-kind carve. `condition_template` is every `trait` node of
   // class `condition` or `scar`, and that has always included the place's conditions
   // (`trait.condition.location.*`): measured on `main` 2026-09-21, 45 shipped
@@ -287,8 +306,47 @@ function matches(candidate: ContentQueryCandidate, query: ContentQuery): boolean
     if (!query.anyTags.some(t => candidate.tags.includes(t))) return false;
   }
   if (!tierInWindow(candidate.tier, query.tier)) return false;
-  if (query.exclude && query.exclude.includes(candidate.id)) return false;
   return true;
+}
+
+function isExcluded(candidate: ContentQueryCandidate, query: ContentQuery): boolean {
+  return query.exclude !== undefined && query.exclude.includes(candidate.id);
+}
+
+/** A resolve that also names what `exclude` took away (THR-1520). */
+export interface ContentQueryResolution {
+  readonly hits: readonly ContentQueryHit[];
+  /**
+   * Candidates that matched every other term and were removed by `exclude` — what the
+   * bearer would have been dealt again. Sorted by id within each kind, like `hits`.
+   * Empty when the query carries no exclude list.
+   */
+  readonly excludedIds: readonly string[];
+}
+
+/**
+ * {@link resolveContentQuery} plus the ids the exclude list removed.
+ *
+ * Same purity, same order. The reward pool reads this so `content.query_*` can carry
+ * the count of what dedup dropped, and `__DEBUG.queryContent` the ids themselves —
+ * a dedup that cannot be seen is a dedup that cannot be tuned.
+ */
+export function resolveContentQueryDetailed(
+  query: ContentQuery,
+  catalogs: ContentCatalogs,
+): ContentQueryResolution {
+  const hits: ContentQueryHit[] = [];
+  const excludedIds: string[] = [];
+  for (const kind of kindsOf(query)) {
+    const matched = catalogs.candidates(kind)
+      .filter(c => matchesExceptExclude(c, query))
+      .sort((a, b) => a.id.localeCompare(b.id));
+    for (const c of matched) {
+      if (isExcluded(c, query)) excludedIds.push(c.id);
+      else hits.push({ kind: c.kind, id: c.id, tier: c.tier });
+    }
+  }
+  return { hits, excludedIds };
 }
 
 /**
@@ -302,14 +360,14 @@ export function resolveContentQuery(
   query: ContentQuery,
   catalogs: ContentCatalogs,
 ): readonly ContentQueryHit[] {
-  const hits: ContentQueryHit[] = [];
-  for (const kind of kindsOf(query)) {
-    const matched = catalogs.candidates(kind)
-      .filter(c => matches(c, query))
-      .sort((a, b) => a.id.localeCompare(b.id));
-    for (const c of matched) hits.push({ kind: c.kind, id: c.id, tier: c.tier });
-  }
-  return hits;
+  // The plain resolve is the detailed one minus the bookkeeping — one predicate, so the
+  // two can never disagree about what a query returns.
+  return resolveContentQueryDetailed(query, catalogs).hits;
+}
+
+/** True when one candidate satisfies every term of the query, `exclude` included. */
+export function candidateMatches(candidate: ContentQueryCandidate, query: ContentQuery): boolean {
+  return matchesExceptExclude(candidate, query) && !isExcluded(candidate, query);
 }
 
 /** True when the query names content that exists. The one predicate every gate asks. */
@@ -343,6 +401,10 @@ export function describeContentQuery(query: ContentQuery): string {
       : `@t${query.tier.min ?? ''}-${query.tier.max ?? ''}`);
   }
   if (query.exclude?.length) parts.push(`-[${query.exclude.join(',')}]`);
+  if (query.requiresBearerTrait) {
+    const { traitId, minLevel } = query.requiresBearerTrait;
+    parts.push(`?bearer:${traitId}${minLevel !== undefined ? `>=${minLevel}` : ''}`);
+  }
   return parts.join('');
 }
 
@@ -399,8 +461,18 @@ export function traceContentQuery(params: {
    */
   readonly judgedAtLocationId?: string;
   readonly judgedAt?: 'resolution_anchor' | 'target_location';
+  /**
+   * How many candidates the query's `exclude` list removed (THR-1520) — what the bearer
+   * would otherwise have been dealt again. Zero when the site populates no exclude list;
+   * a site that does populate one owes the count, since the trace cannot derive it from
+   * the list's length (an excluded id the query would not have matched anyway is not a
+   * removal).
+   */
+  readonly excludedCount?: number;
 }): void {
   const { site, query, candidateCount, tick, pickedId, actorId, templateId, judgedAtLocationId, judgedAt } = params;
+  const excludedCount = params.excludedCount ?? 0;
+  const heldNote = excludedCount > 0 ? ` (${excludedCount} already held)` : '';
   if (candidateCount === 0) {
     emitTrace({
       category: 'content.query_empty',
@@ -411,7 +483,8 @@ export function traceContentQuery(params: {
       templateId,
       judgedAtLocationId,
       judgedAt,
-      summary: `${site}: query matched nothing`,
+      excludedCount,
+      summary: `${site}: query matched nothing${heldNote}`,
     });
     return;
   }
@@ -427,6 +500,7 @@ export function traceContentQuery(params: {
     templateId,
     judgedAtLocationId,
     judgedAt,
-    summary: `${site}: ${candidateCount} candidate${candidateCount === 1 ? '' : 's'}${pickedId ? ` → ${pickedId}` : ''}`,
+    excludedCount,
+    summary: `${site}: ${candidateCount} candidate${candidateCount === 1 ? '' : 's'}${heldNote}${pickedId ? ` → ${pickedId}` : ''}`,
   });
 }

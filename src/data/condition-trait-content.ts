@@ -360,7 +360,7 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'public',
       domainContributions: { iron: -0.04, eye: -0.04, stone: -0.04 },
-      tags: ['#condition', '#general', '#negative'],
+      tags: ['#condition', '#negative'],
       flavorText: 'Their limbs carry the weight of a world that will not let them rest.',
       censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,

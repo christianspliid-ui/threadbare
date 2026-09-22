@@ -39,6 +39,7 @@ export type ContentObjectKindId =
   | 'legendary_template'
   | 'condition_template'
   | 'power_template'
+  | 'trait_template'
   | 'agreement_template'
   | 'companion_template'
   | 'ambition_template'
@@ -60,6 +61,7 @@ export const CONTENT_OBJECT_KIND_IDS: readonly ContentObjectKindId[] = [
   'legendary_template',
   'condition_template',
   'power_template',
+  'trait_template',
   'agreement_template',
   'companion_template',
   'ambition_template',

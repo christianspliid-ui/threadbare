@@ -148,6 +148,8 @@ export const CONTENT_PROSE_ADAPTERS: Readonly<Record<ContentObjectKindId, ProseA
 
   item_template: attachmentNode,
   condition_template: attachmentNode,
+  // A trait definition is the same node-literal shape as a condition (THR-1520).
+  trait_template: attachmentNode,
 
   power_template: (e) =>
     // Spells are the one power catalog that is flat rather than node-shaped.
