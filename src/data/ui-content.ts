@@ -475,6 +475,13 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Goods',
     desc: 'Portable worth in a mortal\'s hands — grain, cloth, tools. Goods are spent, traded, stolen and eaten; unlike a possession with a name, they are counted rather than kept.',
   },
+  // THR-1448 — the hold line on the mortal sheet's Faction strand: *keeps Ashford for
+  // the Realm of the Vael · grip firm*. The grip word bands the stance's degradation
+  // (Law 13); the number stays on the trace and the debug tab.
+  'ui.hold': {
+    label: 'A Hold',
+    desc: 'A town a mortal keeps by commitment rather than owns: worked, or it slips. Kept on a Realm\'s ground, it makes the keeper a subject of that court, and the town\'s business comes to their door.',
+  },
   'ui.held_by': {
     label: 'Held By',
     desc: 'Whose writ runs here. A Realm holds the towns of its domain; a guild or an order can hold the town its hall stands in. Ground nobody holds is unclaimed, and the border on the map stops there.',

@@ -179,6 +179,27 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
     reputationReward: REALM_ENCOUNTER_REPUTATION_REWARD,
     questType: 'standard',
   }],
+  // THR-1448 — the town-keeper pair. A held town is a faction position: the two
+  // templates carry `requiresHold: { ofRealm: true }` and reach a keeper through two
+  // doors this row does not control — the filter's hold gate and the supply arm that
+  // offers `requiresHold` content past the rank's `encounterAccess` allowlist. So
+  // `minRank: 'stranger'` (the ladder's floor) is the whole point, not a default: the
+  // keeper's own content gates on the hold, never on the rank, and cannot fade while
+  // the town is kept. `questType: 'standard'` for the same reason the three above.
+  ['encounter.realm.keepers_petition', {
+    factionDefId: CLASS_SCOPED_META_DEF_ID,
+    factionClass: REALM_FACTION_CLASS,
+    minRank: 'stranger',
+    reputationReward: REALM_ENCOUNTER_REPUTATION_REWARD,
+    questType: 'standard',
+  }],
+  ['encounter.realm.crowns_reckoning', {
+    factionDefId: CLASS_SCOPED_META_DEF_ID,
+    factionClass: REALM_FACTION_CLASS,
+    minRank: 'stranger',
+    reputationReward: REALM_ENCOUNTER_REPUTATION_REWARD,
+    questType: 'standard',
+  }],
 ]);
 
 // ─── Templates ───────────────────────────────────────────────────────────

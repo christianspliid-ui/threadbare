@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 154 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 155 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -24,11 +24,11 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 164 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 165 |  |
 | `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 119 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 121 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 118 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 138 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 139 |  |
 | `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 158 |  |
 | `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 92 |  |
 | `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 119 |  |
@@ -90,7 +90,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**109 tags.**
+**110 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -152,7 +152,8 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#temple_errand` | Work set by the Temple of Spheres — observance, offering, and the spheres' own asking. | encounter 5 | 5 |  |
 | `#thieves_errand` | Work set by the Thieves' Guild — quiet, deniable, and paid in kind. | encounter 5 | 5 |  |
 | `#court_errand` | Work set by the Underking's Court — a favour asked by someone who does not ask. | encounter 5 | 5 |  |
-| `#crown_errand` | Work set by a Realm's crown — the summons, the levy, the due. | encounter 3 | 3 |  |
+| `#crown_errand` | Work set by a Realm's crown — the summons, the levy, the due. | encounter 5 | 5 |  |
+| `#town_keeper` | The town's troubles arriving at its keeper's door as the crown's business — the petition, the reckoning. | encounter 2 | 2 |  |
 | `#tavern_night` | An evening in a common room, and whatever the evening turns into. | encounter 10 | 10 |  |
 | `#delve` | A descent into somewhere closed — a ruin, a vault, a hole that goes down. | encounter 4 | 4 |  |
 | `#threshold_errand` | Work at a crossing place, where the road or the world changes hands. | encounter 2 | 2 |  |

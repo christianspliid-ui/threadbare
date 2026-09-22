@@ -238,6 +238,62 @@ export const CONTROL_RENEWAL_EVENT_SIGNIFICANCE = 0.4;
 export const controlRenewalMessage = (actorName: string, targetName: string): string =>
   `${actorName} keeps their grip on ${targetName}`;
 
+// ─── A held town is a faction position (THR-1448) ────────────────────
+//
+// A hold on a Realm's ground opens a **standing** with that Realm: the keeper is,
+// in the crown's eyes, the one who keeps that town. The standing itself is a
+// *reading* (`holdStanding.ts`) computed from the active stances and the political
+// map; the one write is the `member_of` edge it opens, seeded with the reputation
+// below. `rank` is never written — it is a derived cache with disagreeing writers
+// (THR-1211), and `getDerivedMembershipRank` is the reader everyone uses.
+
+/**
+ * Reputation written **once** on the membership a hold opens — inside *subject* on
+ * the realm ladder (`REALM_RANK_THRESHOLDS`: subject `0.15`, yeoman `0.30`), so the
+ * keeper reads the ladder's own second rung the day the standing opens.
+ *
+ * Never topped up by renewal and never floored: doing the court's work is how the
+ * rank climbs, keeping the town is only what opens the door. A keeper who never
+ * answers the court slides toward *stranger* while still keeping the town — and the
+ * town's own business keeps coming through the `requiresHold` supply arm regardless.
+ */
+export const HOLD_STANDING_REPUTATION_SEED = 0.2;
+
+/**
+ * The board term's weight on `computeTemperamentWeight` — same order as
+ * `UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT`, so a keeper's work leans toward what
+ * they hold without swamping the ambition and reach terms.
+ *
+ * Kill criterion (plan): keepers doing nothing but hold-work → halve this before
+ * moving the share below.
+ */
+export const HELD_TOWN_AFFINITY_WEIGHT = 0.3;
+
+/**
+ * The term's value for the Realm's *other* holdings (and the Realm itself), as a
+ * share of the held town's `1`. Everything else scores `0`, which is what makes the
+ * term discriminate by construction — the opposite of the THR-1301 shape.
+ */
+export const HELD_REALM_AFFINITY_SHARE = 0.5;
+
+/**
+ * `degradation` → the word the sheet reads (Law 13 — the number stays on the trace
+ * and the debug tab). Bands are upper bounds, ascending: a hold at or below the first
+ * bound reads *firm*, at or below the second *slipping*, else *failing*.
+ */
+export const HOLD_GRIP_WORDS: ReadonlyArray<readonly [number, string]> = [
+  [0.33, 'firm'],
+  [0.66, 'slipping'],
+  [1, 'failing'],
+];
+
+/** Significance of the chronicle line when a standing opens — the renewal line's 0.4. */
+export const HOLD_STANDING_EVENT_SIGNIFICANCE = 0.4;
+
+/** The chronicle line when a hold opens a standing with the Realm whose ground it sits on. */
+export const holdStandingOpenedMessage = (actorName: string, townName: string, realmName: string): string =>
+  `${actorName} keeps ${townName} for ${realmName}`;
+
 
 // ─── Normalization ──────────────────────────────────────────────────
 

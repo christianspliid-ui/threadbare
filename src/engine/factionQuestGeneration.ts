@@ -39,6 +39,7 @@ import {
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { QUEST_HOOK_PRIORITY_BOOST, QUEST_HOOK_COOLDOWN_TICKS } from './ruins/constants';
+import type { HoldReader } from './holdStanding';
 
 // ─── Ruin Quest Hook Boost ───────────────────────────────────────────────────
 
@@ -73,6 +74,7 @@ function getActiveRuinQuestTemplateIds(graph: WorldGraph, tick: number): Set<str
  * @param agentId - The agent to generate candidates for
  * @param locationId - The agent's current location
  * @param tick - Current tick (for cooldown checks)
+ * @param holdReader - The hold reader (THR-1448); absent → no `requiresHold` supply arm
  * @returns Array of EncounterCacheEntry candidates to merge into scoring
  */
 export function generateFactionQuestCandidates(
@@ -80,6 +82,7 @@ export function generateFactionQuestCandidates(
   agentId: string,
   locationId: string,
   _tick: number,
+  holdReader?: HoldReader,
 ): EncounterCacheEntry[] {
   const candidates: EncounterCacheEntry[] = [];
 
@@ -88,6 +91,10 @@ export function generateFactionQuestCandidates(
 
   // Pre-collect active ruin quest hooks once — applies boost for Adventurer's Guild members
   const activeRuinHooks = getActiveRuinQuestTemplateIds(graph, _tick);
+
+  // The standing the agent's hold opens (THR-1448), resolved once — `null` for the
+  // overwhelming majority who hold nothing, at the cost of a scan of the stances.
+  const standing = holdReader?.standingFor(agentId) ?? null;
 
   for (const edge of memberEdges) {
     const props = edge.properties as Partial<MemberOfEdgeProperties>;
@@ -103,10 +110,22 @@ export function generateFactionQuestCandidates(
     // Get quest templates accessible at current rank
     const accessibleTemplates = getAccessibleTemplates(definition, currentRank);
 
+    // The `requiresHold` supply arm (THR-1448). A keeper receives the Realm's
+    // town-keeper content *because they keep the town*, not because the court likes
+    // them — so for the Realm the standing names, every template of this class that
+    // carries `requiresHold` is offered regardless of the rank's `encounterAccess`
+    // allowlist, which is `[]` at *stranger*. Without this arm a keeper whose seeded
+    // reputation has faded would be supplied nothing, and the plan's story — the
+    // court stops asking, the town's business keeps arriving — would dead-end at the
+    // supply side before the filter's own `requiresHold` gate ever saw it.
+    const keeperTemplates = standing?.realmNodeId === edge.target
+      ? getHoldTemplates(definition).filter(t => !accessibleTemplates.includes(t))
+      : [];
+
     // Quest hook boost applies only to Adventurer's Guild members (Channel 6)
     const isAdventurersGuild = factionDefId === 'adventuring_guild';
 
-    for (const template of accessibleTemplates) {
+    for (const template of [...accessibleTemplates, ...keeperTemplates]) {
       const meta = FACTION_ENCOUNTER_META.get(template.id);
       const nextTier = getNextRank(definition, currentRank);
       const reputationGap = nextTier ? Math.max(0, nextTier.minReputation - reputation) : 1;
@@ -212,6 +231,22 @@ export function getAccessibleTemplates(
       accessPrefixes.some(prefix => id.startsWith(prefix)))
     .map(([id]) => getUnifiedTemplateById(id))
     .filter((t): t is UnifiedActionTemplate => t !== undefined);
+}
+
+/**
+ * The templates of a faction definition that carry `requiresHold` (THR-1448) — the
+ * town-keeper's own content, supplied to a keeper past the rank's `encounterAccess`
+ * allowlist by `generateFactionQuestCandidates`.
+ *
+ * Reads the same registry `getAccessibleTemplates` reads and resolves through the
+ * same lookup, so a template is either supplied by one arm or the other and never
+ * by neither. Exported for the tests that falsify the decayed-*stranger* arm.
+ */
+export function getHoldTemplates(definition: FactionDefinition): UnifiedActionTemplate[] {
+  return [...FACTION_ENCOUNTER_META.entries()]
+    .filter(([, meta]) => metaBelongsToDefinitionId(meta, definition.id))
+    .map(([id]) => getUnifiedTemplateById(id))
+    .filter((t): t is UnifiedActionTemplate => t !== undefined && t.requiresHold !== undefined);
 }
 
 // ─── Lifecycle Candidates (Join & Promotion) — TB-061 ────────────────────

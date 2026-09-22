@@ -67,6 +67,12 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.realm.court_summons',
   'encounter.realm.border_levy',
   'encounter.realm.tithe_demanded',
+  // THR-1448, the town-keeper pair — the first content gated on a hold (`requiresHold`)
+  // rather than a rank. Nudge-native like the three court encounters above: authored
+  // specials plus a `deal` fill on every step, no `authoredChoices`, so no choices whose
+  // poles could be encoded.
+  'encounter.realm.keepers_petition',
+  'encounter.realm.crowns_reckoning',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {

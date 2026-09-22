@@ -48,7 +48,13 @@ import {
   MOMENT_COMPLETION_SIGNIFICANCE,
   HARM_ON_AFFLICT,
   INSTANT_COMPLETION_BAND,
+  HOLD_STANDING_REPUTATION_SEED,
+  HOLD_STANDING_EVENT_SIGNIFICANCE,
+  holdStandingOpenedMessage,
 } from '../data/strategic-action-constants';
+import { joinFaction, findMembershipEdge } from './factionMembership';
+import { groundRealmNodeId, type HoldStandingLedgerEntry } from './holdStanding';
+import type { RealmProjection } from './realmProjection';
 import {
   createTradeRoute,
   createLocation,
@@ -1438,6 +1444,132 @@ function applySeizeRetirement(
     kept.push(control);
   }
   return kept;
+}
+
+// ─── A held town is a faction position (THR-1448) ────────────────────
+
+/**
+ * Open the standing each active stance holds with the Realm whose ground its town
+ * sits on, once, and close it when the stance is gone.
+ *
+ * **The standing is a reading** (`holdStanding.ts`); this is its one write. When a
+ * stance names a town on a Realm's ground and the ledger has not seen that stance,
+ * the keeper joins the Realm through `joinFaction` — the same edge shape every other
+ * membership path writes — and the membership is seeded with
+ * `HOLD_STANDING_REPUTATION_SEED`, inside *subject* on the court ladder, so
+ * `meetsFactionRankRequirement` opens (it answers `false` for a non-member) and the
+ * court's own content reaches the keeper through `encounterAccess`. **`rank` is never
+ * written**: it is a derived cache with disagreeing writers (THR-1211). A keeper who
+ * is already a member gets `membershipMinted: false` and no seed — the standing
+ * opens on the membership they earned.
+ *
+ * **Why one reconciliation and not a write at the claim arm.** A stance is minted in
+ * the decision phase (`2a`), the `control:claim` completion arm of
+ * `executeStrategicAction`, which the review lever also calls — neither has the
+ * runtime, and the political map is the runtime's to own. Running here in `2a.55`,
+ * one idempotent pass over every active stance keyed on the session ledger, is what
+ * makes a fresh claim, a saved world and a world seeded with stances all take the
+ * same path: the standing opens on the next `2a.55` pass after the stance exists.
+ * One tick of lag against a ten-tick grace is invisible; two write sites that could
+ * drift is not.
+ *
+ * **What ends it (Q5).** The standing ends exactly where the stance does — collapse
+ * or seize, both of which retire the record before this runs — and the ledger entry
+ * is traced closed. **The membership survives** at whatever reputation it earned; a
+ * court remembers its keeper, and `REALM_REPUTATION_DECAY_MULTIPLIER` is the existing
+ * mechanism that lets that memory fade. Retiring the edge here would be a second,
+ * bespoke expulsion path.
+ *
+ * Fail-soft (NFP #4): a town in the wilds opens nothing and is ledgered `null` so it
+ * is not re-asked every tick; `faction_not_found` traces the reason and opens the
+ * standing on the ground alone; a projection that could not be built (`null`) means
+ * every unledgered stance waits for the next pass rather than being ledgered wrong.
+ *
+ * `events` is the caller's accumulator for this tick, mutated in place — the same
+ * contract `retireControl` and `applyControlRenewal` use.
+ */
+export function reconcileHoldStandings(
+  graph: WorldGraph,
+  controls: readonly StrategicControlState[],
+  projection: RealmProjection | null,
+  tick: number,
+  ledger: Map<string, HoldStandingLedgerEntry>,
+  events: import('../types/gameState').TickEvent[],
+): void {
+  const live = new Set<string>();
+
+  for (const control of controls) {
+    if (!control.active) continue;
+    live.add(control.controlId);
+    if (ledger.has(control.controlId)) continue;
+    // No map this tick: leave the stance unledgered so the next pass asks again,
+    // rather than recording a standing the ground could not be read for.
+    if (!projection) continue;
+
+    const realmNodeId = groundRealmNodeId(graph, projection, control.targetNodeId);
+    if (!realmNodeId) {
+      // A hold in the wilds is just a hold — nothing traced beyond the stance's own.
+      ledger.set(control.controlId, { actorId: control.actorId, targetNodeId: control.targetNodeId, realmNodeId: null });
+      continue;
+    }
+
+    const joined = joinFaction(graph, control.actorId, realmNodeId, tick);
+    const membershipMinted = joined.changed;
+    if (membershipMinted) {
+      // Seed `reputation` — never `rank`. `joinFaction` wrote the guild-hall floor;
+      // a keeper starts as a *subject*, the ladder's own second rung.
+      const edge = findMembershipEdge(graph, control.actorId, realmNodeId);
+      if (edge) {
+        graph.updateEdge(edge.id, {
+          properties: { ...edge.properties, reputation: HOLD_STANDING_REPUTATION_SEED },
+        });
+      }
+    }
+
+    ledger.set(control.controlId, { actorId: control.actorId, targetNodeId: control.targetNodeId, realmNodeId });
+
+    const actorName = graph.getNode(control.actorId)?.name ?? control.actorId;
+    const townName = graph.getNode(control.targetNodeId)?.name ?? control.targetNodeId;
+    const realmName = graph.getNode(realmNodeId)?.name ?? realmNodeId;
+
+    emitTrace({
+      category: 'strategic_control_lifecycle',
+      tick,
+      actorId: control.actorId,
+      targetNodeId: control.targetNodeId,
+      event: 'position_opened',
+      realmNodeId,
+      membershipMinted,
+      ...(joined.reason && joined.reason !== 'already_member' ? { membershipRefused: joined.reason } : {}),
+      summary: `Standing opened: ${actorName} keeps ${townName} for ${realmName}${membershipMinted ? ' (membership minted)' : ''}`,
+    } as TraceEntry);
+
+    events.push({
+      id: `hold_standing_opened_${control.controlId}_${tick}`,
+      tick,
+      type: 'agent_action',
+      message: holdStandingOpenedMessage(actorName, townName, realmName),
+      significance: HOLD_STANDING_EVENT_SIGNIFICANCE,
+      actorId: control.actorId,
+    });
+  }
+
+  // Standings whose stance is gone — collapsed or seized this tick, or drained on a
+  // saved world's first pass. The membership stays; only the reading closes.
+  for (const [controlId, entry] of [...ledger.entries()]) {
+    if (live.has(controlId)) continue;
+    ledger.delete(controlId);
+    if (!entry.realmNodeId) continue;
+    emitTrace({
+      category: 'strategic_control_lifecycle',
+      tick,
+      actorId: entry.actorId,
+      targetNodeId: entry.targetNodeId,
+      event: 'position_closed',
+      realmNodeId: entry.realmNodeId,
+      summary: `Standing closed: ${graph.getNode(entry.actorId)?.name ?? entry.actorId} no longer keeps ${graph.getNode(entry.targetNodeId)?.name ?? entry.targetNodeId} for ${graph.getNode(entry.realmNodeId)?.name ?? entry.realmNodeId}`,
+    } as TraceEntry);
+  }
 }
 
 // ─── Control Upkeep — a hold is kept by working it (THR-1287) ───────

@@ -298,6 +298,11 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   // `#court_errand` above is the Underking's and cannot be reused; a crown's work is a
   // crown errand.
   T('#crown_errand', 'family', 'Work set by a Realm\'s crown — the summons, the levy, the due.', ['encounter_template']),
+  // THR-1448 — the crown's business that comes to a *keeper*: a mortal who holds a
+  // town on the Realm's ground. Seated beside `#crown_errand` rather than folded into
+  // it because the two are reached by different doors — the errand by court rank, the
+  // keeper's work by the hold (`requiresHold`), which never fades while the town is kept.
+  T('#town_keeper', 'family', 'The town\'s troubles arriving at its keeper\'s door as the crown\'s business — the petition, the reckoning.', ['encounter_template']),
 
   // Families that are not a faction's posting.
   T('#tavern_night', 'family', 'An evening in a common room, and whatever the evening turns into.', ['encounter_template']),

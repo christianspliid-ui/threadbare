@@ -270,6 +270,8 @@ So there is now **one** effect for "they think better/worse of you" wherever the
 
 **Read it anywhere** with `getReputationWith(graph, a, b)` — it dispatches across membership, this edge, a personal bond, and neutral, and always returns the same five words. Never read the stores directly; that is how six vocabularies grew.
 
+**The hold gate (THR-1448) — the other way to be known here first.** A template may declare `requiresHold: { ofRealm: true }`, and it is then offered only to a mortal whose **hold standing** names the Realm whose ground the encounter sits on — a keeper of a town (`control:claim × Location`) on that Realm's ground. It is a template field, not a `FACTION_ENCOUNTER_META` column, read in the filter beside `requiredReputationWith` with the same fail-open convention, and — the half that matters — **supplied** to a keeper past the rank's `encounterAccess` allowlist by `generateFactionQuestCandidates`, so keeper content reaches a keeper at *stranger* and keeps reaching them after the court has stopped asking. Author it with a class-scoped realm meta row at `minRank: 'stranger'` (the hold is the gate, never the rank) and the `#town_keeper` family tag; `$realm` binds the same Realm the gate names, because both read the political map's ground. Two shipped users: `encounter.realm.keepers_petition`, `encounter.realm.crowns_reckoning`. What it is *not*: a way to gate on owning a Freehold (`owns` has no clock and no standing), or on holding standing with a guild (a guild is not landed).
+
 ---
 
 ### Capability 5: Graph Operations — Changing the World's Structure

@@ -33,6 +33,7 @@ import { buildAreaProjection } from './areaProjection';
 import type { AreaProjection } from './areaProjection';
 import { buildRealmProjection, emptyRealmProjection, fingerprintFactionControls } from './realmProjection';
 import type { RealmProjection } from './realmProjection';
+import type { HoldStandingLedgerEntry } from './holdStanding';
 import type { RoleCensus } from './binding/roleCensus';
 import { createBindingIndex, type BindingIndex } from './binding/bindingRegistry';
 import type { DistanceMatrix } from './distanceMatrix';
@@ -253,6 +254,19 @@ export interface SimulationRuntime {
    */
   realmProjectionFingerprint: string | null;
 
+  /**
+   * Which hold standings this session has announced (THR-1448): stance `controlId`
+   * → the Realm node id the standing named, or `null` for a hold in the wilds.
+   *
+   * The standing itself is a *reading* (`holdStanding.ts`) and stores nothing; this
+   * is only the ledger the `2a.55` reconciliation uses to open each standing once —
+   * mint the membership, trace `position_opened`, say the chronicle line — and to
+   * trace `position_closed` when a stance it announced is gone. Session-owned so a
+   * saved world re-announces on its first pass (idempotent: `joinFaction` answers
+   * `already_member`) rather than carrying one playthrough's ledger into the next.
+   */
+  holdStandings: Map<string, HoldStandingLedgerEntry>;
+
   // ── The binder's reverse binding index (THR-1296 §4) ──
   /**
    * nodeId → ledger positions, so the `removeNode` hook is one Map lookup rather
@@ -347,6 +361,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     realmProjection: null,
     realmProjectionBuiltAt: -1,
     realmProjectionFingerprint: null,
+    holdStandings: new Map(),
     bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
     aftermathEventSeq: 0,
@@ -672,6 +687,7 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.realmProjection = null;
   runtime.realmProjectionBuiltAt = -1;
   runtime.realmProjectionFingerprint = null;
+  runtime.holdStandings.clear();
   // The ledger survives a cache reset (it is game state); the index over it does not.
   runtime.bindingIndex = createBindingIndex();
   clearTimelines();

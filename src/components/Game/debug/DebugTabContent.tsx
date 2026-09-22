@@ -10,6 +10,7 @@ import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { PendingVignette } from '../../../types/journeyEngine';
 import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strategicAction';
+import type { HoldStandingLedgerEntry } from '../../../engine/holdStanding';
 import { getCallingPresentation } from '../../../engine/calling';
 import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
@@ -127,6 +128,8 @@ export interface DebugTabContentProps {
   retinueAgents?: readonly RetinueAgent[];
   /** Strategic runtime state for the strategic debug tab. */
   strategicState?: StrategicRuntimeState;
+  /** The session's announced hold standings (THR-1448) — the Realm beside each control row. */
+  holdStandings?: ReadonlyMap<string, HoldStandingLedgerEntry>;
   /** Omen state for the omens debug tab (THR-19). */
   omenState?: OmenState;
   /** Doom identity matrix for milestone display in omens tab (THR-21). */
@@ -169,7 +172,7 @@ export function DebugTabContent({
   cacheEntries, encounterProgress, onZoomToLocation,
   getWebGLDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore,
   encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge,
-  retinueAgents, strategicState, omenState, doomIdentityMatrix,
+  retinueAgents, strategicState, holdStandings, omenState, doomIdentityMatrix,
   hiddenMarks, pendingEncounterSeeds, regionalDetectionPressure, archetypeDrift, activeDelves,
   getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
   controlEffects, essenceReserves,
@@ -278,7 +281,7 @@ export function DebugTabContent({
     );
   }
   if (viewMode === 'cli') return <CommandTab retinueAgents={retinueAgents} followAgentId={effectiveAgentId} />;
-  if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
+  if (viewMode === 'strategic') return <StrategicDebugTab strategicState={strategicState} holdStandings={holdStandings} graph={graph} effectiveAgentId={effectiveAgentId} currentTick={currentTick} />;
   if (viewMode === 'social') {
     return (
       <SocialTabContent
@@ -344,11 +347,13 @@ function ForeshadowingReceiptTable({ receipt }: { receipt: MotiveReceipt }) {
 
 function StrategicDebugTab({
   strategicState,
+  holdStandings,
   graph,
   effectiveAgentId,
   currentTick,
 }: {
   strategicState?: StrategicRuntimeState;
+  holdStandings?: ReadonlyMap<string, HoldStandingLedgerEntry>;
   graph?: WorldGraph;
   effectiveAgentId?: string;
   currentTick: number;
@@ -514,11 +519,20 @@ function StrategicDebugTab({
           {activeControls.map(ctrl => {
             const pres = getCallingPresentation(graph?.getNode(ctrl.actorId), ctrl.behaviorFamily);
             const targetNode = graph?.getNode(ctrl.targetNodeId);
+            // THR-1448 — the Realm the standing names, off the session ledger: a stance
+            // announced onto a Realm shows it; one in the wilds shows nothing; one not
+            // yet announced (opens on the next 2a.55 pass) shows a pending mark.
+            const ledgered = holdStandings?.get(ctrl.controlId);
+            const realmName = ledgered?.realmNodeId
+              ? (graph?.getNode(ledgered.realmNodeId)?.name ?? ledgered.realmNodeId.slice(-8))
+              : undefined;
             return (
               <div key={ctrl.controlId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>
                 <span style={{ color: pres.color, fontSize: 'var(--text-xs)' }}>{pres.glyph}</span>
                 <span style={{ flex: 1, fontSize: 'var(--text-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {ctrl.actorId.slice(-8)} → {targetNode?.name ?? ctrl.targetNodeId.slice(-8)}
+                  {realmName && <span style={{ color: 'var(--text-muted)' }}> · for {realmName}</span>}
+                  {holdStandings && !ledgered && <span style={{ color: 'var(--text-muted)' }}> · standing pending</span>}
                 </span>
                 <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', flexShrink: 0 }}>
                   {getHealthLabel(ctrl.degradation)}

@@ -2481,6 +2481,28 @@ export interface UnifiedActionTemplate {
     readonly atLeast: string;
   };
 
+  /**
+   * Hold gate (THR-1448) — the town-keeper's own content.
+   *
+   * A template carrying `{ ofRealm: true }` is offered only to a mortal whose
+   * **hold standing** names the Realm whose ground this encounter sits on: a mortal
+   * keeping a town (a `control:claim × Location` stance) for the crown that claims
+   * that ground. It is a template field rather than a `FACTION_ENCOUNTER_META`
+   * column because `minRank` is required on every one of ~150 rows and an optional
+   * sibling there would be silently absent everywhere.
+   *
+   * Two doors read it. The **filter** (`encounterFilterPipeline.ts`) hides the
+   * template from a non-keeper, with the `requiredReputationWith` convention — an
+   * unresolvable template or an absent hold reader fails *open*, because a gate that
+   * can only hide content must never empty a pool on a lookup miss. The **supply**
+   * side (`factionQuestGeneration.ts`) offers it to a keeper regardless of the
+   * rank's `encounterAccess` allowlist, so the town's business keeps arriving at the
+   * keeper's door after the court has stopped asking.
+   */
+  readonly requiresHold?: {
+    readonly ofRealm: true;
+  };
+
   // ── Layer revelation gating ─────────────────────────────────────
 
   /**
