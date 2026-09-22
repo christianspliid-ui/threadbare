@@ -89,7 +89,7 @@ function entry(templateId: string, locationId: string): EncounterCacheEntry {
   return {
     templateId, locationId, sublocationId: null, sublocationTypeId: null,
     reachPrimary: 'heart' as ReachDomain, reachSecondary: 'gold' as ReachDomain,
-    threatRating: 'trivial', encounterType: 'social', motivations: [], requiresPresence: false,
+    threatRating: 'trivial', encounterType: 'explore', motivations: [], requiresPresence: false,
     remotePenalty: 0, questPriority: 3, isQuestEncounter: false, totalTickCost: 2,
     successRewardEstimate: 0.04, stepCount: 2, stepDifficulties: [0.35, 0.4],
     stepReaches: ['heart' as ReachDomain, 'gold' as ReachDomain],
