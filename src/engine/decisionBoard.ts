@@ -121,12 +121,14 @@ import {
   UNDERTAKING_PROGRESS_PER_ADVANCE,
   UNDERTAKING_AMBITION_CENTRALITY_BOOST,
   UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT,
+  HELD_TOWN_AFFINITY_WEIGHT,
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
   BOARD_VARIETY_PENALTY_WEIGHT,
   UNDERTAKING_NEUTRAL_DESIRE,
   UNDERTAKING_VERB_PAYOFF,
   UNDERTAKING_VERB_DIFFICULTY,
 } from '../data/strategic-action-constants';
+import { heldTownAffinity, type HoldStanding } from './holdStanding';
 
 // ─── Contract ───────────────────────────────────────────────────
 
@@ -156,6 +158,14 @@ export interface BoardEntry {
    * whose EVT already folds its five-band expected utility.
    */
   readonly advanceProbability?: number;
+  /**
+   * The held-town term inside `temperamentWeight` (THR-1448), for an undertaking:
+   * `1` on a Location the actor holds, the Realm share on the Realm's other
+   * holdings, else `0`. Carried for the same reason `ambitionBoost` is — the census
+   * measures its spread, and a term present in no trace is how the last one went
+   * vacuous.
+   */
+  readonly heldTownAffinity?: number;
   /**
    * The ambition-centrality term inside `desireMultiplier`, for an undertaking;
    * `undefined` for an encounter, which is scored on its own path.
@@ -202,6 +212,11 @@ export interface BoardInput {
   /** Ranked strategic candidates, as `scoreStrategicCandidates` produced them. */
   readonly strategicCandidates: readonly ScoredStrategicCandidate[];
   readonly fundament?: FundamentState;
+  /**
+   * The agent's hold standing (THR-1448), resolved once by the caller — `null` or
+   * absent when they hold nothing, which is the overwhelming case and costs nothing.
+   */
+  readonly holdStanding?: HoldStanding | null;
 }
 
 // ─── Payoff ─────────────────────────────────────────────────────
@@ -396,18 +411,29 @@ export function ambitionPrefersVerb(
  * and, as its heat decays, competes fairly and eventually leaves the board on its
  * own. Urgency *is* the decay curve: there is no grievance scheduler anywhere, and
  * the plan's substrate ruling is that the one board is the competition surface.
+ *
+ * The fourth weight is the held-town term (THR-1448): `heldTownAffinity01` is `1`
+ * when the candidate's object is a Location the actor holds through an active
+ * stance, `HELD_REALM_AFFINITY_SHARE` on the Realm's other holdings, `0` for every
+ * other candidate — computed at the call site, where the candidate is in scope, on
+ * the `grievanceHeat01` pattern. A keeper's board leans toward what they hold; it
+ * goes here, on the temperament weight, and never on `desireMultiplier` (which is
+ * axiological and shared with the encounter path) nor as a bridge constant between
+ * families (THR-1301's lesson).
  */
 export function computeTemperamentWeight(
   template: StrategicActionTemplate | undefined,
   reach: ReachDomain,
   ambitionNamesThisKind: boolean,
   grievanceHeat01 = 0,
+  heldTownAffinity01 = 0,
 ): number {
   const reachAffinity = template?.reachProfile?.[reach] ?? 0;
   return 1
     + UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT * (ambitionNamesThisKind ? 1 : 0)
     + UNDERTAKING_TEMPERAMENT_REACH_WEIGHT * clamp01(reachAffinity)
-    + GRIEVANCE_URGENCY_WEIGHT * clamp01(grievanceHeat01);
+    + GRIEVANCE_URGENCY_WEIGHT * clamp01(grievanceHeat01)
+    + HELD_TOWN_AFFINITY_WEIGHT * clamp01(heldTownAffinity01);
 }
 
 // ─── Variety ────────────────────────────────────────────────────
@@ -503,8 +529,13 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       findGrievanceForAmbitionTemplate(graph, candidate.actorId, candidate.ambitionId),
     );
 
+    // A held town is a faction position (THR-1448): the keeper's work leans toward
+    // what they hold. Keyed on the candidate's *object*, so most candidates read `0`
+    // and the term discriminates by construction.
+    const affinity = heldTownAffinity(input.holdStanding, candidate.targetNodeId);
+
     const temperamentWeight = computeTemperamentWeight(
-      template, reach, ambitionPrefersVerb(candidate.ambitionId, template), grievanceHeat,
+      template, reach, ambitionPrefersVerb(candidate.ambitionId, template), grievanceHeat, affinity,
     );
 
     const varietyMultiplier = computeBoardVarietyMultiplier(
@@ -520,6 +551,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       varietyMultiplier,
       advanceProbability,
       ambitionBoost,
+      heldTownAffinity: affinity,
       score: evt * desireMultiplier * temperamentWeight * varietyMultiplier,
       candidateIndex: index,
     });

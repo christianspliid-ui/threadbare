@@ -293,7 +293,7 @@ not "fix" ambition display there.
 
 ## Unaudited subsystems (audit-on-touch)
 
-Contract rows not yet written for: War & Armies · Factions & Succession · Rival Schemes ·
+Contract rows not yet written for: War & Armies · Factions & Succession (the territorial seam and, since THR-1448, the held-town standing — `held-town-opens-realm-standing`, `held-town-supplies-keeper-content-past-rank-access` — are covered; the rest audit-on-touch) · Rival Schemes ·
 Doom/Journey · Mandate · Essence & Divine Economy · Encounters & Dilemmas (core) · Culture ·
 Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
 Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·

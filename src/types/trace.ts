@@ -2641,6 +2641,13 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     advanceProbability?: number;
     /** The ambition-centrality input to `desireMultiplier`; undertakings only. */
     ambitionBoost?: number;
+    /**
+     * The held-town term inside `temperamentWeight` (THR-1448): `1` on a Location the
+     * actor holds, `HELD_REALM_AFFINITY_SHARE` on the Realm's other holdings, else `0`.
+     * Undertakings only. Carried so the census can measure the term's spread rather
+     * than assert it exists.
+     */
+    heldTownAffinity?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
@@ -2729,7 +2736,18 @@ export interface StrategicControlLifecycleTrace extends TraceBase {
   category: 'strategic_control_lifecycle';
   actorId: string;
   targetNodeId: string;
-  event: 'collapsed' | 'reclaim_refused' | 'already_held' | 'renewed' | 'seized';
+  event:
+    | 'collapsed' | 'reclaim_refused' | 'already_held' | 'renewed' | 'seized'
+    // THR-1448 — the standing a hold opens with the Realm whose ground the town sits
+    // on, and its closing when the stance ends. Agent-facing member names; the player
+    // word is *subject* (`position` names the divine court).
+    | 'position_opened' | 'position_closed';
+  /** The Realm the standing names; on `position_opened` / `position_closed`. */
+  realmNodeId?: string;
+  /** Whether the standing minted a new `member_of` edge; `false` when already a member. On `position_opened`. */
+  membershipMinted?: boolean;
+  /** Why no membership landed when the Realm could not be joined; on `position_opened`. */
+  membershipRefused?: string;
   /** The cell whose completion renewed the hold; only present on `renewed`. */
   variant?: UndertakingVerbVariant;
   /** Degradation before the renewal; only on `renewed`. */

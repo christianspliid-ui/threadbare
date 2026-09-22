@@ -438,18 +438,67 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
         </div>
       </section>
 
-      {hasKnowledge(card.knowledgeLevel, 'recognised') && card.factionName && (
+      {hasKnowledge(card.knowledgeLevel, 'recognised') && (card.factionName || card.holdTownName) && (
         <section>
           <SectionHeading as="h2">Faction</SectionHeading>
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <FactionName card={card} graph={graph} onOpenFaction={onOpenFaction} />
-              {card.factionRank && (
-                <p className="text-xs" style={{ color: card.factionThemeColor ?? 'var(--accent-gold)' }}>
-                  {card.factionRank}
-                </p>
-              )}
-            </div>
+            {card.factionName && (
+              <div className="flex items-center justify-between gap-3">
+                <FactionName card={card} graph={graph} onOpenFaction={onOpenFaction} />
+                {card.factionRank && (
+                  <p className="text-xs" style={{ color: card.factionThemeColor ?? 'var(--accent-gold)' }}>
+                    {card.factionRank}
+                  </p>
+                )}
+              </div>
+            )}
+            {/* A held town is a faction position (THR-1448): the hold line beneath the
+                rank — *keeps Ashford for the Realm of the Vael · grip firm*. Town and
+                Realm are doors through the one router (THR-1482); the grip is a word
+                (Law 13). A hold in unclaimed wilds reads with no Realm. */}
+            {card.holdTownName && (
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }} data-testid="hold-line">
+                keeps{' '}
+                {card.holdTownId && onOpenEntity ? (
+                  <button
+                    onClick={() => onOpenEntity(card.holdTownId!)}
+                    title={`Open ${card.holdTownName}`}
+                    className="underline decoration-dotted cursor-pointer"
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', font: 'inherit' }}
+                    data-testid="hold-town-link"
+                  >
+                    {card.holdTownName}
+                  </button>
+                ) : (
+                  <span data-testid="hold-town-link">{card.holdTownName}</span>
+                )}
+                {card.holdRealmName && (
+                  <>
+                    {' for '}
+                    {card.holdRealmNodeId && onOpenFaction ? (
+                      <button
+                        onClick={() => onOpenFaction(card.holdRealmNodeId!, card.holdRealmName!)}
+                        title={`Open ${card.holdRealmName}`}
+                        className="underline decoration-dotted cursor-pointer"
+                        style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', font: 'inherit' }}
+                        data-testid="hold-realm-link"
+                      >
+                        {card.holdRealmName}
+                      </button>
+                    ) : (
+                      <span data-testid="hold-realm-link">{card.holdRealmName}</span>
+                    )}
+                  </>
+                )}
+                {card.holdGripWord && (
+                  <Tooltip id="ui.hold">
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }} data-testid="hold-grip-word">
+                      {' · grip '}{card.holdGripWord}
+                    </span>
+                  </Tooltip>
+                )}
+              </p>
+            )}
             {hasKnowledge(card.knowledgeLevel, 'known') && card.factionReputation != null && (
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>

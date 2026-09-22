@@ -4981,6 +4981,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             sphereAggregate={gameState.worldSoul?.aggregate}
             agentKnowledge={gameState.agentKnowledge}
             strategicState={gameState.strategicState}
+            holdStandings={runtime?.holdStandings}
             omenState={gameState.omenState}
             doomIdentityMatrix={gameState.doomIdentityMatrix}
             hiddenMarks={gameState.hiddenMarks}

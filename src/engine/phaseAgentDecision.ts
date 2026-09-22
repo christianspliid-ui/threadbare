@@ -58,7 +58,8 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS } from '../data/agent-behavior-constants';
 import type { SimulationRuntime } from './simulationRuntime';
-import { touchWorld, applyEncounterCacheUpdate } from './simulationRuntime';
+import { touchWorld, applyEncounterCacheUpdate, ensureRealmProjection } from './simulationRuntime';
+import { createHoldReader } from './holdStanding';
 import { buildEncounterBinderContext } from './binding/encounterBinderContext';
 import { resolveRelocationIntentForAgent } from './relocationIntent';
 import { observeResidence } from './agentResidence';
@@ -388,6 +389,16 @@ export function phaseAgentDecision(
     if (tile.coord.row >= mapRows) mapRows = tile.coord.row + 1;
   }
 
+  // A held town is a faction position (THR-1448): one reader per pass for the
+  // `requiresHold` supply arm, the filter's `requiresHold` gate and the board's
+  // held-town term. The political map is resolved lazily and at most once, and only
+  // if some agent this pass actually holds something.
+  const holdReader = createHoldReader(
+    graph,
+    state.strategicState?.controls,
+    runtime ? () => ensureRealmProjection(runtime, graph, state.tiles, state.tick) : null,
+  );
+
   // Build set of avatar IDs to exclude from autonomous decision-making
   const avatarNodeIds = new Set<string>();
   if (state.ascendantId) {
@@ -706,6 +717,7 @@ export function phaseAgentDecision(
         agentId,
         locationId,
         state.tick,
+        holdReader,
       );
 
       // Generate faction lifecycle candidates: join & promotion (TB-061)
@@ -739,6 +751,7 @@ export function phaseAgentDecision(
         mapCols,
         mapRows,
         runtime,
+        holdReader,
       );
       const rawCandidates = filterResult.candidates;
 
@@ -990,6 +1003,7 @@ export function phaseAgentDecision(
             encounterCandidates: decision.topCandidates,
             strategicCandidates: scoredStrategic,
             fundament: state.worldSoul?.fundament,
+            holdStanding: holdReader.standingFor(agentId),
           });
 
           // An empty board is a real verdict, not a missing one: it is what the
@@ -1059,6 +1073,9 @@ export function phaseAgentDecision(
                 : {}),
               ...(e.ambitionBoost !== undefined
                 ? { ambitionBoost: e.ambitionBoost }
+                : {}),
+              ...(e.heldTownAffinity !== undefined
+                ? { heldTownAffinity: e.heldTownAffinity }
                 : {}),
             })),
             agreement,

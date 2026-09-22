@@ -24,7 +24,8 @@ import { getAvatarHexPosition } from '../../../engine/visibility';
 import type { ToastItem } from '../../../types/notification';
 import type { HexCoord } from '../../../types';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
-import { touchWorld } from '../../../engine/simulationRuntime';
+import { touchWorld, ensureRealmProjection } from '../../../engine/simulationRuntime';
+import { createHoldReader } from '../../../engine/holdStanding';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
@@ -197,7 +198,14 @@ export function useAgentInteraction({
     // Omniscience lifts the card to the top level instead of the familiarity
     // the player earned — that is the whole point of the debug flag (THR-1412).
     const knowledgeLevel = omniscienceMode ? 'transparent' : getKnowledgeLevel(familiarity);
-    const card = getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel, gameState.seed, gameState.tick);
+    // A held town is a faction position (THR-1448): the standing is read through the
+    // runtime's one political map, lazily — a mortal with no stance never touches it.
+    const hold = createHoldReader(
+      gameState.graph,
+      gameState.strategicState?.controls,
+      runtime ? () => ensureRealmProjection(runtime, gameState.graph, gameState.tiles, gameState.tick) : null,
+    ).standingFor(selectedAgentId);
+    const card = getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel, gameState.seed, gameState.tick, hold);
 
     // One rule for reading a mortal's mind (THR-1433): the live answer rides on the
     // card so every tab asks the same predicate, and the intention line is built

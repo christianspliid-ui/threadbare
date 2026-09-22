@@ -60,6 +60,7 @@ import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { FactionEncounterMeta } from '../types/faction';
 import { meetsFactionRankRequirement } from './factionReputation';
 import { meetsReputationWithRequirement } from './reputation';
+import type { HoldReader } from './holdStanding';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import { KPI_FUNNEL_MAX_TEMPLATES } from './kpi/kpiConstants';
 import { BRANCHING_QUEST_SKIP_OUTGROWTH, BRANCHING_CAP_RESERVE } from './encounter/branchingConstants';
@@ -237,6 +238,12 @@ export function filterByPrerequisites(
   entries: readonly EncounterCacheEntry[],
   agentId: string,
   graph: WorldGraph,
+  /**
+   * The hold reader for the `requiresHold` gate (THR-1448). Optional for the same
+   * reason `template` is guarded below: a caller built without one (tests, the codex)
+   * skips that gate rather than hiding everything.
+   */
+  holdReader?: HoldReader,
 ): EncounterCacheEntry[] {
   const agentNode = graph.getNode(agentId);
   if (!agentNode) return [...entries];
@@ -404,6 +411,23 @@ export function filterByPrerequisites(
           graph, agentId, counterpartyId, template.requiredReputationWith.atLeast)) {
         continue;
       }
+    }
+
+    // Hold gate (THR-1448) — the town-keeper's own content. A template carrying
+    // `requiresHold` is offered only to a mortal whose hold standing names the Realm
+    // whose ground this encounter sits on. Same convention as the reputation gate
+    // above, and for the same reason: guarded on `template` (the field lives there
+    // and nowhere else) and guarded on the reader, so an unresolvable template or a
+    // caller with no reader passes — this gate can only ever *hide* content, and
+    // failing open on a lookup miss is the direction that cannot silently empty a
+    // pool. The ground the encounter sits on is asked of the same reader; a
+    // location the map cannot place falls back to the keeper's own Realm, so the
+    // location side fails open too while the keeper test itself never does.
+    if (template?.requiresHold && holdReader) {
+      const standing = holdReader.standingFor(agentId);
+      if (!standing?.realmNodeId) continue;
+      const encounterRealm = holdReader.groundRealmOf(entry.locationId) ?? standing.realmNodeId;
+      if (encounterRealm !== standing.realmNodeId) continue;
     }
 
     // Faction rank gate (THR-805) — the senior/elite tail of guild progression.
@@ -764,6 +788,8 @@ export function runFilterPipeline(
   mapCols?: number,
   mapRows?: number,
   runtime?: FilterPipelineRuntime,
+  /** The hold reader for the `requiresHold` gate (THR-1448); absent → that gate fails open. */
+  holdReader?: HoldReader,
 ): FilterResult {
   // Fast path: empty input
   if (allEntries.length === 0) {
@@ -806,7 +832,7 @@ export function runFilterPipeline(
 
   // Stage 3: Prerequisites + Reputation Gates + Outgrowth Lock
   try {
-    current = filterByPrerequisites(current, agentId, graph);
+    current = filterByPrerequisites(current, agentId, graph, holdReader);
   } catch {
     // Keep previous stage's output
   }

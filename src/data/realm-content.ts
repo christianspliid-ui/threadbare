@@ -273,19 +273,28 @@ const REALM_RANK_SLOTS: Record<typeof REALM_RANK_LADDER[number], number | null> 
 /**
  * Encounter-template prefixes each rank unlocks, cumulative up the ladder.
  *
- * **Declared, and read by nobody** — which is the state of `encounterAccess` on all
- * thirteen faction definitions, by design. The rank gate
- * (`encounterFilterPipeline.ts`) keys on the per-template `minRank` in
- * `FACTION_ENCOUNTER_META` and says in its own comment why: a prefix gate is only as
- * correct as its spelling, and `merchant_consortium` declared `mc_trade.*` against
- * `mct.*` templates for months, matching nothing at any tier.
+ * **Read by the supply side, not by the gate** — corrected by THR-1448; this docblock
+ * used to say *"declared, and read by nobody"*, and that was false. `encounterAccess`
+ * is the allowlist `getAccessibleTemplates` (`factionQuestGeneration.ts`) filters a
+ * member's faction candidates through on the live decision path
+ * (`phaseAgentDecision.ts`), so at *stranger* — `[]` — a member is **supplied
+ * nothing** of the Realm's, whatever the filter would later admit. What is true is
+ * that the *rank gate* (`encounterFilterPipeline.ts`) does not read it: it keys on
+ * the per-template `minRank` in `FACTION_ENCOUNTER_META` and says in its own comment
+ * why — a prefix gate is only as correct as its spelling, and `merchant_consortium`
+ * declared `mc_trade.*` against `mct.*` templates for months, matching nothing at any
+ * tier. Supply and gate are two different doors; this list is the supply door's key.
  *
- * The prefixes are nonetheless kept honest here (THR-1454). The first draft named
+ * The town-keeper content (`requiresHold`, THR-1448) is the one exception on the
+ * supply side: a keeper is offered it past this allowlist, because the town's
+ * business arrives at the keeper's door for as long as they keep the town, not for
+ * as long as the court likes them.
+ *
+ * The prefixes are kept honest here (THR-1454). The first draft named
  * `realm.quest.` / `realm.senior.` / …, and the realm content that then landed is
  * `encounter.realm.*` — so the list named a prefix no template would ever carry, which
  * is the same rot one level up that THR-1488 measured across the seed corpus (41 of 51
- * authored families matching nothing). A declaration nothing reads is cheap to leave
- * wrong and free to keep right; it is kept right.
+ * authored families matching nothing).
  */
 const REALM_RANK_ACCESS: Record<typeof REALM_RANK_LADDER[number], string[]> = {
   stranger: [],

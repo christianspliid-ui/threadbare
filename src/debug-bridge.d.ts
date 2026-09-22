@@ -1329,6 +1329,21 @@ export interface DebugBridge {
   /** Every live `StrategicProjectRuntime` (undertaking) on the board. Async. */
   getStrategicProjects(): Promise<unknown[]>;
   /**
+   * A held town is a faction position (THR-1448) — the **hold standing** a mortal's
+   * `control:claim` stance opens with the Realm whose ground the town sits on, read
+   * through the runtime's one political map (never a projection of its own).
+   *
+   * With an agent query (name, partial name, id or `@hero`): that mortal's reading —
+   * `townId`/`townName`, `realmNodeId`/`realmName` (`null` for a hold in unclaimed
+   * wilds), `heldLocationIds`, the Realm's `realmHeldLocationIds`, `grip` (the
+   * stance's `degradation`, raw) beside `gripWord` (*firm · slipping · failing*, the
+   * sheet's word), and `ledgered` (whether this session's `2a.55` pass has announced
+   * it — `position_opened` traced, membership minted). `null` when they hold nothing
+   * or no match. Omitted: one reading per keeper in the world, `[]` when none.
+   * Async — `await` it. CLI sibling: `hold [agent|@hero]`.
+   */
+  getHoldStanding(agentQuery?: string): Promise<unknown>;
+  /**
    * Attention follows ambition (THR-1348) — the spotlight-pull ledger read off the
    * actor nodes: `pulled` (who was pulled into the spotlight, by which ambition, at
    * which tick, and whom they displaced — `demotedId: null` for a net-additive pull),

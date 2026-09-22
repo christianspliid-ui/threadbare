@@ -64,7 +64,8 @@ import {
   aggregatePhaseTimings,
 } from '../src/engine/traceBuffer';
 import type { TickProfileTrace } from '../src/types/trace';
-import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
+import { createSimulationRuntime, ensureEncounterCache, ensureRealmProjection, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
+import { createHoldReader, gripWord } from '../src/engine/holdStanding';
 import { spawnDebugBand, spawnDebugCompanion } from '../src/engine/debugWorldSpawnTools';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { describeAppointments } from '../src/engine/appointments';
@@ -1429,6 +1430,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}aftermath pick${RESET} <agent|@hero> [reactionId]  Apply an aftermath reaction`);
   console.log(`  ${BOLD}strategic${RESET} [agent] Strategic action summary (global or per-agent)`);
   console.log(`  ${BOLD}projects${RESET}         Active strategic projects`);
+  console.log(`  ${BOLD}hold${RESET} [agent|@hero]  The standing a mortal's held town opens with the Realm (THR-1448); every keeper when omitted`);
   console.log(`  ${BOLD}history${RESET} [agent]   Strategic action history`);
   console.log(`  ${BOLD}seed${RESET}             Print current seed`);
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
@@ -2389,6 +2391,10 @@ function handleCommand(line: string): boolean {
       printStrategicProjects();
       break;
     }
+    case 'hold': {
+      printHoldStandings(arg || undefined);
+      break;
+    }
     case 'history': {
       printStrategicHistory(arg || undefined);
       break;
@@ -2551,6 +2557,41 @@ function printStrategicProjects(): void {
     const status = p.status === 'active' ? GREEN : p.status === 'completed' ? CYAN : RED;
     console.log(`  ${status}[${p.status}]${RESET} ${actorNode?.name ?? p.actorId}: ${p.templateId}`);
     console.log(`    → ${targetNode?.name ?? p.targetNodeId ?? 'none'} (${pct}% — ${p.progress}/${p.progressRequired})`);
+  }
+}
+
+/**
+ * THR-1448 — a held town is a faction position. One line per keeper: the town, the
+ * Realm whose ground it sits on (or *unclaimed ground*), the grip in words beside the
+ * raw degradation, and whether this session's `2a.55` pass has announced it.
+ */
+function printHoldStandings(agentQuery?: string): void {
+  const controls = state.strategicState?.controls ?? [];
+  const reader = createHoldReader(
+    state.graph,
+    controls,
+    () => ensureRealmProjection(runtime, state.graph, state.tiles, state.tick),
+  );
+  let keeperIds = [...new Set(controls.filter(c => c.active).map(c => c.actorId))];
+  if (agentQuery) {
+    const match = resolveAgentNode(agentQuery);
+    if (!match) { console.log(`${RED}No agent matching "${agentQuery}"${RESET}`); return; }
+    console.log(`${DIM}resolved: ${match.name} (${match.id})${RESET}`);
+    keeperIds = [match.id];
+  }
+  const rows = keeperIds.map(id => reader.standingFor(id)).filter((s): s is NonNullable<typeof s> => s !== null);
+  if (rows.length === 0) {
+    console.log(`${YELLOW}${agentQuery ? 'Holds nothing' : 'No keeper holds a town'}${RESET}`);
+    return;
+  }
+  console.log(header(`Hold standings (${rows.length})`));
+  for (const s of rows) {
+    const name = state.graph.getNode(s.actorId)?.name ?? s.actorId;
+    const town = state.graph.getNode(s.townId)?.name ?? s.townId;
+    const realm = s.realmNodeId ? (state.graph.getNode(s.realmNodeId)?.name ?? s.realmNodeId) : null;
+    const ledgered = [...runtime.holdStandings.values()].some(e => e.actorId === s.actorId);
+    console.log(`  ${CYAN}${name}${RESET} keeps ${town}${realm ? ` for ${realm}` : ` ${DIM}(unclaimed ground — no standing)${RESET}`}`);
+    console.log(`    grip ${gripWord(s.grip)} (${s.grip.toFixed(2)}) · held: ${s.heldLocationIds.length} · realm holds: ${s.realmHeldLocationIds.length} · ${ledgered ? 'announced' : 'not yet announced (opens on the next 2a.55 pass)'}`);
   }
 }
 

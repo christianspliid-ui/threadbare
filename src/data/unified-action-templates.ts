@@ -221,6 +221,8 @@ import { THE_BLINDED_ORACLE_TEMPLATE } from './encounters/the-blinded-oracle';
 import { THE_UNFINISHED_RITE_TEMPLATE } from './encounters/the-unfinished-rite';
 import { THE_BEAST_IN_THE_GRANARY_TEMPLATE } from './encounters/the-beast-in-the-granary';
 import { COURT_SUMMONS_TEMPLATE } from './encounters/court-summons';
+import { KEEPERS_PETITION_TEMPLATE } from './encounters/keepers-petition';
+import { CROWNS_RECKONING_TEMPLATE } from './encounters/crowns-reckoning';
 import { BORDER_LEVY_TEMPLATE } from './encounters/border-levy';
 import { TITHE_DEMANDED_TEMPLATE } from './encounters/tithe-demanded';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
@@ -5669,6 +5671,9 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   COURT_SUMMONS_TEMPLATE,
   BORDER_LEVY_TEMPLATE,
   TITHE_DEMANDED_TEMPLATE,
+  // THR-1448 — the town-keeper pair, gated on the hold (`requiresHold`).
+  KEEPERS_PETITION_TEMPLATE,
+  CROWNS_RECKONING_TEMPLATE,
 ];
 
 /**
@@ -5761,6 +5766,8 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   COURT_SUMMONS_TEMPLATE,
   BORDER_LEVY_TEMPLATE,
   TITHE_DEMANDED_TEMPLATE,
+  KEEPERS_PETITION_TEMPLATE,
+  CROWNS_RECKONING_TEMPLATE,
 ];
 
 /**

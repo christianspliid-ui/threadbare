@@ -2254,6 +2254,42 @@ if (import.meta.env.DEV) {
       if (!state?.strategicState) return [];
       return state.strategicState.projects;
     },
+    // THR-1448 — a held town is a faction position. The reading one mortal's hold
+    // opens, through the runtime's one political map; every keeper's when omitted.
+    getHoldStanding: async (agentQuery?: string) => {
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state) return agentQuery ? null : [];
+      const { createHoldReader, gripWord } = await import('./engine/holdStanding');
+      const { ensureRealmProjection } = await import('./engine/simulationRuntime');
+      const reader = createHoldReader(
+        state.graph,
+        state.strategicState?.controls,
+        runtime ? () => ensureRealmProjection(runtime, state.graph, state.tiles, state.clock.currentTick) : null,
+      );
+      const describe = (agentId: string) => {
+        const standing = reader.standingFor(agentId);
+        if (!standing) return null;
+        return {
+          ...standing,
+          actorName: state.graph.getNode(standing.actorId)?.name ?? standing.actorId,
+          townName: state.graph.getNode(standing.townId)?.name ?? standing.townId,
+          realmName: standing.realmNodeId
+            ? (state.graph.getNode(standing.realmNodeId)?.name ?? standing.realmNodeId)
+            : null,
+          gripWord: gripWord(standing.grip),
+          ledgered: [...runtime?.holdStandings.values() ?? []].some(e => e.actorId === standing.actorId),
+        };
+      };
+      if (agentQuery) {
+        const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+        const resolved = resolveDebugAgent(state, agentQuery);
+        if (isDebugAgentMiss(resolved)) return null;
+        return describe(resolved.node.id);
+      }
+      const keepers = new Set((state.strategicState?.controls ?? []).filter(c => c.active).map(c => c.actorId));
+      return [...keepers].map(describe).filter(s => s !== null);
+    },
     // THR-1348 — attention follows ambition. The ledger the pull writes on actor
     // nodes: who was pulled into the spotlight, whom they displaced, who was refused.
     getSpotlightLedger: async () => {

@@ -2847,6 +2847,96 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.',
     },
   },
+  // ─── A held town is a faction position (THR-1448) ────────────────
+  // Four rows, the first for Factions & Succession outside the territorial seam.
+  {
+    id: 'held-town-opens-realm-standing',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: FACTIONS,
+    intent:
+      'A hold on a Realm’s ground opens a standing with that Realm (THR-1448). The standing is a reading over the active stances and the political map; its one write is the `member_of` edge `reconcileHoldStandings` mints once per stance through `joinFaction`, seeded inside *subject* by writing `reputation` — never `rank` — so `meetsFactionRankRequirement` opens and the court’s content reaches the keeper. The membership outlives the hold.',
+    ulTerms: ['hold', 'Realm', 'Faction'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'reconcileHoldStandings', 'holdStanding', 'HOLD_STANDING_REPUTATION_SEED', 'joinFaction',
+        // The consumers read the edge the write leaves — the same membership every other path reads.
+        'getFactionMembershipEdges', 'meetsFactionRankRequirement',
+      ],
+      module: 'src/engine/strategicActionLifecycle.ts',
+    },
+    writeSites: ['src/engine/strategicActionLifecycle.ts', 'src/engine/phaseStrategicProjects.ts'],
+    readSites: [
+      'src/engine/factionQuestGeneration.ts',
+      'src/engine/factionReputation.ts',
+      'src/engine/agentDetail.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1448. On a fixture (`holdStanding.test.ts`): a stance on a town inside a Realm’s projection mints `member_of` with `reputation = HOLD_STANDING_REPUTATION_SEED`, `rank` stays 0 and derives to *subject*; a second pass writes and announces nothing; an existing member reads `membershipMinted: false` and keeps their reputation; a wilds stance opens nothing; a gone stance traces `position_closed` and leaves the edge. On a **generated** world (`holdStandingReach.test.ts`, heavy lane, seed 42 small): a real mortal claims a real town on a Realm’s ground through `claimControl`, one `runTick` traces `position_opened` naming the projection’s Realm with the membership minted at the seed, and collapsing the stance closes the standing with the membership present.',
+    },
+  },
+  {
+    id: 'held-town-affinity-on-the-board',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: AMBITIONS,
+    intent:
+      'A keeper’s work leans toward what they hold (THR-1448). `computeTemperamentWeight` gains one additive term keyed on the *candidate’s object* — `1` on a Location the actor holds through an active stance, `HELD_REALM_AFFINITY_SHARE` on the Realm’s other holdings, `0` elsewhere — so it discriminates by construction rather than paying every candidate (THR-1301). Carried on `boardTop[].heldTownAffinity` so the census can measure its spread.',
+    ulTerms: ['hold', 'Undertaking'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['heldTownAffinity', 'computeTemperamentWeight', 'HELD_TOWN_AFFINITY_WEIGHT', 'HELD_REALM_AFFINITY_SHARE', 'createHoldReader'],
+      module: 'src/engine/holdStanding.ts',
+    },
+    writeSites: ['src/engine/holdStanding.ts'],
+    readSites: ['src/engine/decisionBoard.ts', 'src/engine/phaseAgentDecision.ts'],
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1448. `decisionBoardHeldTown.test.ts`: the same `use × Location` cell aimed at the held town, at a Realm holding and at an unrelated town scores three distinct `heldTownAffinity` values (1 / share / 0) on one board and the held town wins by exactly `HELD_TOWN_AFFINITY_WEIGHT` on the temperament weight with EVT and desire equal; a board with no standing is score-for-score the board before the term. `holdStandingReach.test.ts` repeats the pair on a generated world against the keeper’s *real* standing, and reports the term’s distribution across the keeper’s live boards over ten ticks.',
+    },
+  },
+  {
+    id: 'requires-hold-gates-town-keeper-content',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A template carrying `requiresHold: { ofRealm: true }` is offered only to a mortal whose hold standing names the Realm whose ground the encounter sits on (THR-1448). Read in the filter beside `requiredReputationWith` with the same fail-open convention: an unresolvable template or an absent reader passes, because a gate that can only hide content must never empty a pool on a lookup miss.',
+    ulTerms: ['hold', 'Realm', 'Encounter'],
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['requiresHold', 'filterByPrerequisites', 'standingFor', 'groundRealmOf'],
+      module: 'src/engine/encounterFilterPipeline.ts',
+    },
+    writeSites: ['src/data/encounters/keepers-petition.ts', 'src/data/encounters/crowns-reckoning.ts'],
+    readSites: ['src/engine/encounterFilterPipeline.ts'],
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1448. `holdStandingGates.test.ts`: the keeper of the encounter’s Realm is admitted and a stranger in the same town is hidden; a keeper of a *different* Realm is hidden (the encounter’s ground decides); a keeper whose town is in the wilds is hidden; no reader, an unresolvable template id, and a location the map cannot place each fail open for the keeper while the stranger stays hidden; the court’s own rows are untouched. Repeated on a generated world in `holdStandingReach.test.ts`.',
+    },
+  },
+  {
+    id: 'held-town-supplies-keeper-content-past-rank-access',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: FACTIONS,
+    intent:
+      'The town’s business arrives at the keeper’s door for as long as they keep the town, not for as long as the court likes them (THR-1448). `generateFactionQuestCandidates` offers a keeper every `requiresHold` template of the Realm the standing names regardless of the rank’s `encounterAccess` allowlist — which is `[]` at *stranger* — while the court’s general rows keep the allowlist and stop when the seeded reputation fades.',
+    ulTerms: ['hold', 'Realm', 'Faction'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['getHoldTemplates', 'generateFactionQuestCandidates', 'getAccessibleTemplates', 'requiresHold', 'standingFor'],
+      module: 'src/engine/factionQuestGeneration.ts',
+    },
+    writeSites: ['src/engine/factionQuestGeneration.ts'],
+    readSites: ['src/engine/phaseAgentDecision.ts'],
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1448. The decayed-*stranger* arm, falsified not asserted (`holdStandingGates.test.ts`): a keeper at reputation 0.05 (below *subject* 0.15) is supplied both town-keeper rows and none of the three court rows; a non-keeper member at the same reputation is supplied neither (the pre-fix arm); a keeper at *subject* gets the court rows through the allowlist and each keeper row exactly once; the arm keys on the Realm the standing names, so a member of Brenn keeping a town on Aldmark’s ground gets nothing from Brenn; without a reader the path is what it was. Repeated on a generated world in `holdStandingReach.test.ts` by dropping the keeper’s edge below the ladder’s subject floor.',
+    },
+  },
   {
     id: 'seize-retires-losers-control-stance',
     producerSystem: 'Strategic Projects & Control',

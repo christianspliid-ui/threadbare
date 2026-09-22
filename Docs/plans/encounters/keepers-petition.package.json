@@ -1,0 +1,325 @@
+{
+  "slug": "keepers-petition",
+  "doc": [
+    "The Keeper's Petition — slot 1 of the town-keeper pair (THR-1448), the first",
+    "content gated on a hold rather than a rank: `requiresHold: { ofRealm: true }`.",
+    "",
+    "Brief: `Docs/plans/encounters/town-keeper-brief.md`.",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "  1 P1 arrival?      Yes, per class: the crown's levy comes to `{actor}`'s door at",
+    "                     `{location}` (urban), or the reeve finds them at the gate of",
+    "                     their own fields (rural). Agent and place are graph names.",
+    "  2 P2 events?       The reeve rides at dusk; two households have already come to",
+    "                     the door; nobody has agreed to anything. Costs paid, not scenery.",
+    "  3 P3 one stake?    Obligation: the keeper apportions the due and has both",
+    "                     households stand behind the figure, or the reeve writes that",
+    "                     the keeper could not, and the court reads that.",
+    "  4 ≤80 words?       Opening + spine are inside budget at both classes.",
+    "  5 Read aloud?      Every sentence is a report. No interior sensation anywhere.",
+    "  6 Stated, never encoded? The yard's temper is stated ('nobody in the yard has",
+    "                     agreed to anything yet'), never implied by furniture.",
+    "  7 Every sentence works? Each states the challenge, the test, or the outcome.",
+    "  8 Nothing unintroduced? The reeve, the levy, the dusk ride and the court's",
+    "                     reading all appear in prose before a card or a chip names them.",
+    "  9 One named person? `{cast:reeve}` — the crown's reeve, on stage at both beats.",
+    " 10 Stake in a sentence? 'Does the figure go to the court settled, with two",
+    "                     households behind it, or with the keeper's name against it?'",
+    " 11 Cards verb+noun, spell-style? Yes; the three specials are named imperative",
+    "                     verb + noun and state mechanism, no odds-talk, no digits.",
+    " 12 Opening per class? `urban` and `rural`, both written, enforced by",
+    "                     `validateSettingEnvelope`.",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "  Crux            The town's troubles arrive at the keeper's door as the crown's",
+    "                  business: a levy the town cannot agree on, and a reeve who rides",
+    "                  at dusk with whatever figure the keeper gives him.",
+    "  Whose problem?  The keeper's, by construction — `requiresHold` means the actor",
+    "                  keeps this town for the Realm whose ground it sits on. A",
+    "                  stranger is never offered it (the filter gate), and a keeper",
+    "                  faded to *stranger* still is (the supply arm).",
+    "  Reach = theme?  Step 0 tests Heart and is *about* hearing two households",
+    "                  without the yard turning. Step 1 tests Gold and is *about*",
+    "                  apportioning a due so both stand behind it. Chosen first.",
+    "  Shape           query → prize (the settled figure).",
+    "  Consequence hand (binding, THR-1145): `condition` + `omen`.",
+    "                  `condition` — `apply_condition` (`trait.condition.shaken`) on the",
+    "                  failure side: a keeper who could not settle their own town's due",
+    "                  leaves the yard shaken, and the sheet carries it.",
+    "                  `omen` — `emit_omen` (cultural) on the success side: a kept town",
+    "                  meeting the crown's levy without a fist raised is the kind of",
+    "                  thing a country tells about, and the telling biases what comes.",
+    "  Spine           `faction_reputation_gain` on `$realm`, both directions — the",
+    "                  crown-errand family's shared spine (THR-1454). The hold gate is",
+    "                  what opens the door; the court's standing is what the door moves.",
+    "  Cool failure?   Nobody is turned out. The figure goes to court unsettled with",
+    "                  the keeper's name on it, and the keeper is shaken.",
+    "  Systems quota   cast + conditions + reputation + factions + omens — five, two",
+    "                  over the contract's floor.",
+    "",
+    "─── `requiresHold` and `minRank: 'stranger'` (recorded for the next author) ─",
+    "  The meta row carries `minRank: 'stranger'` — the ladder's floor — on purpose:",
+    "  the keeper's own content gates on the hold, never on the rank, so it cannot",
+    "  fade while the town is kept. `$realm` binds `factionId` from the political map",
+    "  at the actor's hex (`resolveSceneRealm`), which for a keeper *is* the Realm",
+    "  the hold names (Q1, ground only) — the gate and the sentinel agree by",
+    "  construction."
+  ],
+  "template": {
+    "id": "encounter.realm.keepers_petition",
+    "tags": ["#crown_errand", "#town_keeper"],
+    "rarityTier": 2,
+    "intrinsicTier": "background",
+    "name": "The Keeper's Petition",
+    "reach": "heart",
+    "crudType": "read",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": ["individual"],
+    "motivations": ["loyalty_ambition", "honesty_cunning"],
+    "requiresHold": { "ofRealm": true },
+    "settings": ["urban", "rural"],
+    "openings": {
+      "urban": "The crown's levy on {location} came to {actor}'s door this morning in the hand of {cast:reeve}, and two households of the town came in behind it to say the other should carry it.",
+      "rural": "{cast:reeve} found {actor} at the gate of their own fields with the crown's levy on {location} written out, and two households of the town a step behind him, each saying the other should carry it."
+    },
+    "steps": [
+      {
+        "reach": "heart",
+        "duration": { "min": 1, "max": 2 },
+        "difficulty": 0.35,
+        "purposeLine": "Hear the town",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "{cast:reeve} rides for the court at dusk with whatever figure {actor} gives him. The two households stand in the yard and neither has agreed to anything. {actor} keeps this town for the crown, and the crown has sent its reeve to see how they keep it.",
+        "successAfterimage": "They let both households say the whole of it, and both stayed in the yard.",
+        "failureAfterimage": "One household walked out of the yard before the other had finished.",
+        "successAtCostAfterimage": "They heard both out, and it took the morning and most of their patience.",
+        "criticalSuccessAfterimage": "They named what each household was really afraid of before either had said it.",
+        "criticalFailureAfterimage": "They took a side before the second household had spoken, and the yard saw it.",
+        "deal": { "count": 4, "tags": ["insight", "social"] },
+        "nudges": [
+          {
+            "id": "petition.still_the_yard",
+            "name": "Still The Yard",
+            "sphere": "order",
+            "essenceCost": 2,
+            "forecastDelta": 0.12,
+            "imageTag": "generic.oath",
+            "effectLine": "Settle the yard so each household waits its turn to speak. A real help.",
+            "bandProse": {
+              "success": "The yard went quiet for each household in turn, and the keeper heard both.",
+              "failure": "The yard was quiet, and the quiet was the two households not looking at each other."
+            }
+          },
+          {
+            "id": "petition.weigh_the_grievance",
+            "name": "Weigh The Grievance",
+            "sphere": "mind",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "imageTag": "generic.memory",
+            "effectLine": "Sharpen their sense of which household's grievance is the older one, and which is only this year's. A real help.",
+            "bandProse": {
+              "critical_success": "They knew the old quarrel under the new one before the yard had named it.",
+              "success_at_cost": "They found the older grievance, and it was theirs to carry once they had.",
+              "failure": "They read the old quarrel true and it did not help with the new one."
+            }
+          }
+        ],
+        "failureMetadata": {
+          "effects": [
+            { "kind": "faction_reputation_gain", "factionId": "$realm", "amount": -0.02 }
+          ]
+        }
+      },
+      {
+        "reach": "gold",
+        "duration": { "min": 1, "max": 2 },
+        "difficulty": 0.4,
+        "purposeLine": "Settle the due",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "{cast:reeve} has the levy written and wants a name against every line of it. {actor} has to apportion what {location} owes between the two households and have both stand behind the figure, or the reeve writes that the keeper could not, and the court reads that.",
+        "successAfterimage": "The figure went to the court with two households standing behind it.",
+        "failureAfterimage": "The reeve wrote the figure himself, and wrote who could not.",
+        "successAtCostAfterimage": "The figure went to the court settled, and the keeper carried a share of it themselves to make it so.",
+        "criticalSuccessAfterimage": "The households paid, and thanked the keeper for the apportioning.",
+        "criticalFailureAfterimage": "Neither household paid, and the reeve carried that to the court with the keeper's name on it.",
+        "successMetadata": {
+          "effects": [
+            { "kind": "faction_reputation_gain", "factionId": "$realm", "amount": 0.06 },
+            {
+              "kind": "emit_omen",
+              "category": "cultural",
+              "intensity": 0.3,
+              "narrativeHook": "A kept town met the crown's levy without a fist raised, and the country heard that its keeper had done it.",
+              "scope": { "kind": "global" },
+              "sphereAlignment": "order"
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            { "kind": "faction_reputation_gain", "factionId": "$realm", "amount": -0.05 },
+            { "kind": "apply_condition", "conditionTraitId": "trait.condition.shaken", "targetAgentId": "$actor" }
+          ]
+        },
+        "deal": { "count": 5, "tags": ["presence", "social"] },
+        "nudges": [
+          {
+            "id": "petition.loosen_the_purse",
+            "name": "Loosen The Purse",
+            "sphere": "spirit",
+            "essenceCost": 2,
+            "forecastDelta": 0.12,
+            "imageTag": "generic.warmth",
+            "effectLine": "Warm the richer household toward carrying a little more than its share. A real help.",
+            "bandProse": {
+              "success": "The richer household offered the larger share before the keeper had asked it.",
+              "failure": "The richer household was warm to the keeper and cold to the figure."
+            }
+          }
+        ]
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "reeve",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": ["official", "merchant", "civilian"],
+        "supportRole": "crown_reeve",
+        "spawnNpcRole": "official",
+        "spawnName": "Hal Brennock"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "The crown's reeve is at the keeper's door with the town's levy, and two households behind him who will not agree who carries it. Settle the figure by dusk and the court reads a town well kept. Miss it and the court reads the keeper's name.",
+      "success": "The figure went to the court with two households standing behind it. The reeve will say the town is kept.",
+      "failure": "The reeve wrote the figure himself and rode at dusk with the keeper's name against it. The court will read that before it reads anything else."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {},
+      "fallback": {
+        "overview": "The reeve has ridden for the court. What the crown reads of its keeper this season is written.",
+        "changes": [
+          {
+            "id": "petition.the_yard_heard",
+            "kind": "growth",
+            "title": "A yard, heard",
+            "detail": "A morning between two households teaches the heart reach.",
+            "polarity": "gain",
+            "concepts": [{ "text": "heart reach", "tooltipId": "reach.heart" }]
+          }
+        ],
+        "reactions": [
+          {
+            "id": "petition.sleep_on_it",
+            "label": "Let them sleep before the next petition",
+            "effects": [{ "kind": "remove_condition", "conditionTraitId": "trait.condition.shaken" }]
+          }
+        ],
+        "byOutcome": {
+          "success": {
+            "overview": "The figure went to the court settled, with two households behind it. The reeve will say the town is kept, and the court keeps a list of towns that are.",
+            "changes": [
+              {
+                "id": "petition.settled_the_due",
+                "kind": "faction_reputation",
+                "category": "boon",
+                "direction": "gain",
+                "stateNoun": { "text": "court standing", "entityId": "$realm", "visualKind": "faction", "tooltipId": "ui.standing" },
+                "title": "Settled the due",
+                "causeClause": "Apportioned the crown's levy and had the town stand behind it",
+                "detail": "Their standing with the crown rose.",
+                "polarity": "gain",
+                "concepts": [{ "text": "standing", "tooltipId": "ui.standing" }]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "The figure went to the court settled, and the keeper's own purse is lighter for the settling. The households know it, and so will the reeve.",
+            "changes": [
+              {
+                "id": "petition.settled_at_own_cost",
+                "kind": "faction_reputation",
+                "category": "boon",
+                "direction": "gain",
+                "stateNoun": { "text": "court standing", "entityId": "$realm", "visualKind": "faction", "tooltipId": "ui.standing" },
+                "title": "Settled it out of their own hand",
+                "causeClause": "Carried a share of the levy to see it settled",
+                "detail": "Their standing with the crown rose, and it cost them.",
+                "polarity": "gain",
+                "concepts": [{ "text": "standing", "tooltipId": "ui.standing" }]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "The reeve wrote the figure himself and rode at dusk. {actor} left the yard with neither household behind them and the keeper's name on the crown's paper.",
+            "changes": [
+              {
+                "id": "petition.left_the_yard_shaken",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "stateNoun": { "text": "Shaken", "entityId": "trait.condition.shaken", "visualKind": "attachment" },
+                "title": "Left the yard shaken",
+                "causeClause": "Could not settle their own town's due",
+                "detail": "{actor} left the yard shaken.",
+                "polarity": "loss",
+                "concepts": [{ "text": "shaken", "entityId": "trait.condition.shaken", "visualKind": "attachment" }]
+              },
+              {
+                "id": "petition.could_not_settle",
+                "kind": "faction_reputation",
+                "category": "scar",
+                "direction": "loss",
+                "stateNoun": { "text": "court standing", "entityId": "$realm", "visualKind": "faction", "tooltipId": "ui.standing" },
+                "title": "Could not settle it",
+                "causeClause": "The reeve wrote who could not",
+                "detail": "Their standing with the crown slipped.",
+                "polarity": "loss",
+                "concepts": [{ "text": "standing", "tooltipId": "ui.standing" }]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "Neither household paid, and {cast:reeve} carried that to the court with the keeper's name against the whole figure. The town will be asked again, and the keeper will be asked why.",
+            "changes": [
+              {
+                "id": "petition.the_yard_turned",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "stateNoun": { "text": "Shaken", "entityId": "trait.condition.shaken", "visualKind": "attachment" },
+                "title": "The yard turned on them",
+                "causeClause": "Took a side and lost both",
+                "detail": "{actor} left the yard shaken.",
+                "polarity": "loss",
+                "concepts": [{ "text": "shaken", "entityId": "trait.condition.shaken", "visualKind": "attachment" }]
+              },
+              {
+                "id": "petition.the_keepers_name",
+                "kind": "faction_reputation",
+                "category": "scar",
+                "direction": "loss",
+                "stateNoun": { "text": "court standing", "entityId": "$realm", "visualKind": "faction", "tooltipId": "ui.standing" },
+                "title": "The keeper's name on the paper",
+                "causeClause": "The whole figure went to court unsettled under their name",
+                "detail": "Their standing with the crown fell hard.",
+                "polarity": "loss",
+                "concepts": [{ "text": "standing", "tooltipId": "ui.standing" }]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A two-step petition: hear two households quarrel over the crown's levy on the town the actor keeps, then apportion the due so the reeve carries a settled figure to the court. The first town-keeper encounter — gated on the hold, never on the rank."
+  }
+}

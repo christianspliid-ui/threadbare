@@ -12,9 +12,9 @@ import {
   EXPIRING_LOCATION_PROPERTIES,
   LOCATION_BOOST_EXPIRY_SUFFIX,
 } from '../data/strategic-action-constants';
-import { advanceStrategicProjects } from './strategicActionLifecycle';
+import { advanceStrategicProjects, reconcileHoldStandings } from './strategicActionLifecycle';
 import { enqueueUndertakingMoments } from './undertakingMoments';
-import { applyEncounterCacheUpdate, type SimulationRuntime } from './simulationRuntime';
+import { applyEncounterCacheUpdate, ensureRealmProjection, type SimulationRuntime } from './simulationRuntime';
 
 /**
  * Expire timed location boosts (THR-1292 §3).
@@ -92,9 +92,29 @@ export function phaseStrategicProjects(
     }
   }
 
+  // A held town is a faction position (THR-1448): open the standing each surviving
+  // stance holds with the Realm whose ground its town sits on, once per session,
+  // and close the ones whose stance the loop above just retired. Runs after the
+  // neglect loop so a stance collapsing this tick never opens a standing it is
+  // about to lose. Needs the runtime for the political map and the ledger; a
+  // runtime-less caller (a fixture harness) gets the stances and no standings.
+  const standingEvents: TickEvent[] = [];
+  if (runtime) {
+    try {
+      const projection = ensureRealmProjection(runtime, state.graph, state.tiles, state.tick);
+      reconcileHoldStandings(
+        state.graph, result.strategicState.controls, projection, state.tick,
+        runtime.holdStandings, standingEvents,
+      );
+    } catch (err) {
+      // Never let the standing be what breaks the tick (NFP #4).
+      console.warn('[phaseStrategicProjects] hold standing reconciliation failed', err);
+    }
+  }
+
   const out: Partial<GameState> = {
     strategicState: result.strategicState,
-    tickEvents: [...state.tickEvents, ...expiryEvents, ...result.events],
+    tickEvents: [...state.tickEvents, ...expiryEvents, ...result.events, ...standingEvents],
   };
   // The mentorship fold plants the offer, milestone and terminal seeds that the
   // retired phase 2.33 used to plant (THR-1292 §3).

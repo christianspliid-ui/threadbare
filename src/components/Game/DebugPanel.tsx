@@ -13,6 +13,7 @@ import type { WorldGraph } from '../../engine/graph';
 import type { EncounterNotification } from '../../types/encounterVisibility';
 import type { PendingVignette } from '../../types/journeyEngine';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
+import type { HoldStandingLedgerEntry } from '../../engine/holdStanding';
 import type { OmenState } from '../../types/omen';
 import type { DoomIdentityMatrix } from '../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../types/unifiedAction';
@@ -49,6 +50,8 @@ export interface DebugPanelProps {
   preferredViewMode?: string;
   preferredViewNonce?: number;
   strategicState?: StrategicRuntimeState;
+  /** The session's announced hold standings (THR-1448), for the strategic tab's Realm column. */
+  holdStandings?: ReadonlyMap<string, HoldStandingLedgerEntry>;
   omenState?: OmenState;
   doomIdentityMatrix?: DoomIdentityMatrix | null;
   /** Hidden marks for the Marks inspector tab (THR-136). */
@@ -81,7 +84,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true,
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
   sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
-  strategicState, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
+  strategicState, holdStandings, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
   regionalDetectionPressure, archetypeDrift,
   activeDelves, getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
   controlEffects, essenceReserves,
@@ -218,6 +221,7 @@ export const DebugPanel = React.memo(function DebugPanel({
           agentKnowledge={agentKnowledge}
           retinueAgents={retinueAgents}
           strategicState={strategicState}
+          holdStandings={holdStandings}
           omenState={omenState}
           doomIdentityMatrix={doomIdentityMatrix}
           hiddenMarks={hiddenMarks}

@@ -51,6 +51,7 @@ import {
   type MentorshipSummary, getFactionMembershipEdges } from './graphQueries';
 import type { SphereName } from '../types';
 import type { MemberOfEdgeProperties } from '../types/disposition';
+import { gripWord, type HoldStanding } from './holdStanding';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { computeRankFromReputation } from '../types/faction';
 import {
@@ -415,6 +416,18 @@ export interface AgentInfoCardData {
   factionIconGlyph?: string;
   /** Faction theme color for UI styling */
   factionThemeColor?: string;
+  /**
+   * A held town is a faction position (THR-1448) — the hold line under the Faction
+   * strand's rank: *keeps Ashford for the Realm of the Vael · grip firm*. Set at
+   * `recognised`+ when the mortal keeps a town through an active stance. The Realm
+   * fields are absent for a hold in unclaimed wilds, and the line then reads
+   * *keeps Ashford · grip firm*. The grip is a word, never the number (Law 13).
+   */
+  holdTownName?: string;
+  holdTownId?: string;
+  holdRealmName?: string;
+  holdRealmNodeId?: string;
+  holdGripWord?: string;
   cultureName?: string;
   topValues?: { pair: ValuePair; word: string }[];
   domains?: { domain: ReachDomain; word: string; tier: number }[];
@@ -1371,6 +1384,12 @@ export function getAgentInfoCard(
   knowledgeLevel: KnowledgeLevel,
   seed = 0,
   tick = 0,
+  /**
+   * The mortal's hold standing (THR-1448), resolved by the caller through the
+   * runtime's political map — `null`/absent when they hold nothing or the caller has
+   * no map. The card reads it; it never builds a projection of its own.
+   */
+  hold: HoldStanding | null = null,
 ): AgentInfoCardData | null {
   const detail = getAgentDetail(graph, agentId, ascendantId);
   if (!detail) return null;
@@ -1529,6 +1548,25 @@ export function getAgentInfoCard(
     if (detail.portraitUrl) {
       card.portraitUrl = detail.portraitUrl;
     }
+    // A held town is a faction position (THR-1448). Today a mortal's hold has no words
+    // on any player surface — `degradation` is a debug label and a marker opacity —
+    // and the visibility-parity rule makes this the sheet's one line for it.
+    if (hold) {
+      const town = graph.getNode(hold.townId);
+      if (town) {
+        card.holdTownId = town.id;
+        card.holdTownName = town.name ?? town.id;
+        card.holdGripWord = gripWord(hold.grip);
+        if (hold.realmNodeId) {
+          const realm = graph.getNode(hold.realmNodeId);
+          if (realm) {
+            card.holdRealmNodeId = realm.id;
+            card.holdRealmName = realm.name ?? realm.id;
+          }
+        }
+      }
+    }
+
     if (detail.factionName) {
       card.factionName = detail.factionName;
       // Populate faction rank/reputation from member_of edge
