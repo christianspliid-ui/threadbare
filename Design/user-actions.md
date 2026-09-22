@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 01:56 local (2026-09-21 23:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 03:00 local (01:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Turn off Linear's auto-complete for sub-issues — it is closing unbuilt work
 
-When a parent issue closes, Linear marks its unfinished children finished too. Last night that closed [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff) — the tooling and the counter that make the appointment feature *get used* — 0.3 seconds after part one closed. Neither was ever started. The orchestrator caught it in twenty minutes and restored both; **nothing was lost, and the builder did nothing wrong.** THR-1518 is now genuinely being built.
+When a parent issue closes, Linear marks its unfinished children finished too. On 21 September that closed [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff) — the tooling and the counter that make the appointment feature *get used* — 0.3 seconds after part one closed. Neither had been started. The orchestrator restored both within twenty minutes; **nothing was lost, and the builder did nothing wrong.** THR-1518 has since shipped for real.
 
 **The fix:** [Linear → Team settings → General](https://linear.app/threadbare/settings/teams/THR/general) → turn off auto-completing sub-issues on parent completion.
 
-**It is still loaded.** [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) sits in the queue with three unfinished children ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the), [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits), [THR-1522](https://linear.app/threadbare/issue/THR-1522/traits-wave-2-slice-4-the-deferred-location-trait-consumers-merchant)) — re-verified on the board this run. A hand-written warning guards it; a toggle guards it permanently. *— from tb-orchestrator*
+**It is still loaded.** [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) tops the queue with three unfinished children ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the), [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits), [THR-1522](https://linear.app/threadbare/issue/THR-1522/traits-wave-2-slice-4-the-deferred-location-trait-consumers-merchant)) — re-verified this run, one of them claimable right now. A hand-written warning guards it; a toggle guards it permanently. *— from tb-orchestrator*
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -34,13 +34,13 @@ The rule may still be right for a reason never written down: an unattended lane 
 
 ### Were the stops deliberate? (lane silence — four episodes, all ended)
 
-Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. The question the episodes raised is still unanswered.
+Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. The question the episodes raised is still open.
 
-In local time the last stop ran **Sunday 20:57 → Monday 17:41** — overnight, then most of Monday's working day. Earlier: 17 September (~10h), 18 September (~16h), and the Saturday→Sunday gap (~25h). None had a pause marker. Weekend and overnight gaps are declined under your 8 August and 11 September rulings and are not part of this ask; the probe's current worst gap is one of those.
+In local time the last stop ran **Sunday 20:57 → Monday 17:41** — overnight, then most of Monday's working day. Earlier: 17 September (~10h), 18 September (~16h), and the Saturday→Sunday gap (~25h). None had a pause marker. Weekend and overnight quiet is declined under your 8 August and 11 September rulings and is not part of this ask.
 
 **The evidence says the machine was off, not that a lane broke.** Every lane fired together in one catch-up burst; the hourly Windows cleanup script, which has no connection to Claude, stopped at the same boundary and resumed with it; GitHub's own scheduled jobs stayed green throughout, because they don't run here.
 
-**If it was you:** nothing to do. A marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet. Silence reads as "deliberate" — and if you confirm it, recalibrating the probe is ours to do, not yours to repeat.
+**If it was you:** nothing to do — a marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet. Recalibrating the probe is ours, not yours to repeat.
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
@@ -48,8 +48,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
-- **2026-09-22 — the slow-test job that was red on `main` went green on its own.** Post-merge **Heavy simulation tests** passed on the newest commit; the follow-up owed by an executor session is no longer owed.
-- **2026-09-21 — two silently-closed halves of the appointment feature are back in the queue.** [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff) restored 20 minutes after Linear closed them unbuilt. The cause is the toggle above.
+- **2026-09-22 — the appointment feature's authoring half is built and proven.** [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) (the harness that teaches encounter authors the new promise exists) and [THR-1524](https://linear.app/threadbare/issue/THR-1524/appointment-reachability-the-crossroads-plants-nothing-on-the-live) (proving it reaches the live board) both merged; the third part is queued.
+- **2026-09-21 — two silently-closed halves of the appointment feature were restored** 20 minutes after Linear closed them unbuilt. The cause is the toggle above.
 - **2026-09-21 — the design queue refilled itself and the builder is working again.** [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) shipped with four items queued behind it. The "start the staged designs" ask led the briefing for eleven runs.
 - **2026-09-20 — the raw `{sphere_flavor}` placeholder no longer prints in conversation scenes** ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). Merged 17:27, live. This was the last blemish on your review sitting.
 - **2026-09-20 — finished PRs no longer go red on a stopwatch; the slow test arms got an explicit timeout** ([THR-1517](https://linear.app/threadbare/issue/THR-1517/the-multi-tick-arms-in-orchestratortestts-have-no-explicit-timeout-and)). Merged 17:18; 47 minutes from filed to fixed.
