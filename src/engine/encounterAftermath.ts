@@ -1700,6 +1700,9 @@ export function applyEncounterAftermathReaction(
             const favourEdgeId = `owes_favor_appt_${seedId}`;
             // Creditor is the counterparty when the scene cast one, else the place
             // itself — a favour to a crossroads is what "I will be there" means.
+            // THR-1527: `redeemed` / `broken` are in the schema's required set
+            // (`EDGE_SCHEMA.owes_favor`), written `false` like every other favour
+            // writer — a kept meeting removes the edge, a missed one flips `broken`.
             state.graph.addEdge({
               id: favourEdgeId,
               source: seedTargetId,
@@ -1709,6 +1712,8 @@ export function applyEncounterAftermathReaction(
                 grantedTick: tick,
                 magnitude: APPOINTMENT_FAVOUR_MAGNITUDE,
                 context: 'appointment',
+                redeemed: false,
+                broken: false,
                 [APPOINTMENT_FAVOUR_PROP]: { seedId, locationId: placeId, dueTick },
               },
             });

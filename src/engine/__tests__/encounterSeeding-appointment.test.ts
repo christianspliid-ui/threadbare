@@ -14,7 +14,7 @@
  *  • `a fourth appointment is refused`: dropping the `APPOINTMENT_MAX_PER_MORTAL`
  *    check plants four.
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WorldGraph } from '../graph';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { evaluateEncounterSeeds } from '../encounterSeeding';
@@ -119,6 +119,28 @@ describe('the plant', () => {
     expect(favour.source).toBe('actor-hero');
     expect(favour.target).toBe('actor-stranger');
     expect(getTraces().some(t => t.category === 'appointment_planted' && !(t as { refused?: string }).refused)).toBe(true);
+  });
+
+  // THR-1527: `EDGE_SCHEMA.owes_favor` requires `redeemed` and `broken` beside the
+  // three the planter always wrote. The other three favour writers set both to
+  // `false`; the planter did not, and the heavy 150-tick edge-integrity smoke went
+  // red the moment THR-1524 made the Crossroads reach a mortal on seed 42. The
+  // warning is the same `[GraphSchema]` line that smoke collects, so this is the
+  // fast-lane copy of that assertion, red before the fix.
+  it('writes the promise with the schema\'s full required set — redeemed and broken start false (THR-1527)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const state = plant(buildState(), runtime);
+      const favour = state.graph.getEdge(readPlantedAppointment(state.pendingEncounterSeeds![0])!.favourEdgeId!)!;
+      expect(favour.properties.redeemed).toBe(false);
+      expect(favour.properties.broken).toBe(false);
+      const schemaWarnings = warn.mock.calls
+        .map(call => String(call[0]))
+        .filter(line => line.includes('[GraphSchema]') && line.includes('"owes_favor"'));
+      expect(schemaWarnings).toEqual([]);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('plants placeless when the place sentinel cannot bind, and says why', () => {
