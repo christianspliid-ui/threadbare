@@ -1,19 +1,19 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 14:00 local (12:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 15:05 local (13:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### The builder lane is out of model credit — top up, or move it off Fable
 
-The lane that builds has now failed **four times in a row** with *"You've reached your Fable limit."* — 10:11 local (after sixteen minutes, having just claimed a job), then 11:11, 12:11 and 13:11, each lasting seven or eight seconds. Its next attempt is 14:10 local and will do the same until the quota clears.
+Five failures in a row, all identical: *"You've reached your Fable limit."* — **10:11, 11:11, 12:11, 13:11 and 14:11 local**, each lasting seven or eight seconds. The next attempt is 15:10 and will do the same until the quota clears.
 
-**Nothing is lost and nothing is at risk.** No branch was pushed, no work is half-finished, and the shelf it draws from is empty anyway — so today's cost is one claimed job ([THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits)) sitting still until the 14:00 sweep releases it. Only this lane is affected; the planning and briefing lanes run a different model and are fine.
+**A finished job is waiting for it.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits, the third traits slice — is fully designed, was claimed at 10:21 local, and the builder **resumes it by itself** the moment it can run. Nothing was lost: no branch, no code, nothing to undo. Earlier briefs said this top-up only buys an idle hour; that was wrong, and the correction is the whole point.
 
 - **Top up** at [claude.ai usage settings](https://claude.ai/settings/usage) — or wait for the window to reset, if you know when that is.
 - **Or move the lane off Fable** — say so in a chat and a session will change it. It is your configuration, so no session will change it unasked.
 
-This is also the likeliest explanation for the silence episodes below — you flagged in August that usage limits would do exactly this.
+Only this lane is affected; planning, grooming and briefing run a different model and are fine.
 
 ### One design hour: are scenes being offered to exactly the people who will refuse them?
 
@@ -24,8 +24,6 @@ When the world decides *which mortal* should be handed a scene, it favours morta
 **Measured, not suspected.** A Bargain at the Crossroads fired once in a thousand ticks and was refused; the meeting it was meant to arrange never happened on any seed. A content fix to that one scene made it fire 3 and 11 times on two seeds. Every other scene written to the same house guide is still starved — **and the guide still tells authors to write them that way**.
 
 **The fork:** either the rule was always meant to draw both kinds of mortal (and the code has quietly disagreed with its own documentation for months), or the lopsidedness *is* the design — a Protector really should be drawn to a mercy scene — and the house guide must stop telling authors to reuse that axis for the fork. Open a chat and say you want to work THR-1525.
-
-*Ranked below the builder this hour only because a design hour produces a job and nothing is currently alive to build it. It remains the only thing that refills the shelf.*
 
 ### May a lane draft a design doc on its own? — *from tb-orchestrator*
 
@@ -61,7 +59,7 @@ The one question: **is the integrated encounter experience at an acceptable stat
 
 Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. In local time the last stop ran **Sunday 20:57 → Monday 17:41** — overnight, then most of Monday's working day. Earlier: 17 September (~10h), 18 September (~16h), and the Saturday→Sunday gap (~25h). None had a pause marker. Weekend and overnight quiet is declined under your 8 August and 11 September rulings and is not part of this ask.
 
-**Today's repeated credit failure is the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. That fits the episodes better than a machine fault, and matches the corroborating signs: the lanes fired together in one catch-up burst, and GitHub's own jobs stayed green because they don't run here. What it does not yet explain is why lanes on a *different* model went quiet in the same windows.
+**Today's five consecutive credit failures are the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. What it still does not explain is why lanes on a *different* model went quiet in the same windows.
 
 **If it was you:** nothing to do — a marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet.
 
@@ -81,5 +79,5 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ---
 
-Older entries and every prior version of this file: `git log -p origin/ops -- Design/user-actions.md`.
-Hourly brief: [`Design/briefing.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/briefing.md).
+Older resolved items and every earlier revision of this file: `git log -p origin/ops -- Design/user-actions.md`.
+Run history and health detail: [`Design/briefing.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/briefing.md), refreshed hourly.
