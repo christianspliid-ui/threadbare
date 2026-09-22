@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-22 08:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-22 09:56 local (07:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -9,7 +9,7 @@ When the world picks *which mortal* gets offered a scene, it favours the mortal 
 
 **The fork is yours because both readings are defensible.** Either the rule was always meant to draw both kinds of mortal — and the code has quietly disagreed with its own documentation for months — or the lopsidedness *is* the design, a Protector really should be drawn to a mercy scene, and the house guide must stop telling authors to reuse that axis for the fork. Whichever you pick, the work after it is ordinary.
 
-**It leads a third hour because nothing behind it can take its place.** The build shelf did refill this hour — one job, released when the piece ahead of it finished — but the planning lane may hold only one design on its desk, and THR-1525 is on it. It comes off in a chat with you or not at all.
+**This hour it is sharper, not softer.** The held-town feature landed at 09:27 and closed out, so **nothing is being built right now** — one job sits on the shelf and the builder lane will likely take it within the hour, leaving zero again. The planning lane may hold only one design on its desk, and THR-1525 is on it. It comes off in a chat with you or not at all.
 
 ## Also waiting (5)
 
@@ -21,15 +21,14 @@ When the world picks *which mortal* gets offered a scene, it favours the mortal 
 
 ## Queue
 
-**Starved — 1 ready, 1 in flight.** The shelf came back off zero by ordinary throughput, not by anything getting unstuck.
+**Starved — 1 ready, 0 in flight.** The stuck pull request cleared itself this hour, which emptied the in-flight column rather than filling the shelf.
 
-- **Ready to build:** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) (traits wave 2, slice 3 — artifact traits). It was blocked by slice 2, which merged at 07:54 local; the planning lane promoted it at 08:30 with a full coordination block. A builder will likely claim it within the hour, and then the shelf is empty again.
-- **In flight:** [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) (a held town is a faction position). No parked claims.
-- **27 items in Todo, none promotable.** 15 are wayfinder decision tickets; of the remaining 12, every one is waiting on a design call rather than on another job. That is the shape behind the lead ask, and it has not moved in three hours.
+- **Ready to build:** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) (traits wave 2, slice 3 — artifact traits), unclaimed, with a full coordination block. The builder lane runs again about 10:10 local; when it takes this, the shelf is empty and nothing on the board can refill it.
+- **In flight: nothing.** [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) (a held town is a faction position) merged and closed at 09:27 local — see Resolved. No parked claims.
+- **27 items in Todo, none promotable.** 15 are wayfinder decision tickets; of the remaining 12, every one is waiting on a design call rather than on another job. Unchanged for four hours — that is the shape behind the lead ask.
 
 ## Health
 
-- **[PR #1981](https://github.com/christianspliid-ui/threadbare/pull/1981) still cannot merge** — a conflict in six generated/docs files *and* a failing required check, unchanged for 2h 43m. Needs a session to merge `origin/main`, resolve, then read the failing check before pushing; `update-branch` will not fix it. Executor work, already written onto its ticket.
-- **The slow post-merge test job went red again** — "Heavy simulation tests" has been failing on the newest commit on `main` for about an hour. It is not a required check, so nothing is blocked by it, but the fix it needs is owed. Executor work; last hour's brief called this one green, and that is no longer true.
-- **Lane silence — the weekend gap is declined, per your 8 August and 11 September rulings.** The worst episode (25.1h) ran Saturday 11:33 → Sunday 12:37 local, squarely weekend-shaped. The Sunday-evening → Monday-afternoon episode (20.7h) is mostly overnight and has since recovered. It stays a standing question, not this hour's lead.
-- **Everything else green.** The live site is serving the newest commit, CI and all three scheduled GitHub jobs healthy, all 9 scheduled tasks within a slot of schedule, the git reaper ran at 08:40, the home checkout is level with `origin/main`, and engine tick cost is 67 ms/tick — 10% *under* the 7-day median.
+- **The slow post-merge test job is still red** — "Heavy simulation tests" has been failing on the newest commit on `main` for about two hours. It is not a required check, so nothing is blocked by it, but the fix it needs is owed and no session has claimed it. Executor work, not yours.
+- **Lane silence — the weekend gap stays declined, per your 8 August and 11 September rulings.** The worst episode (25.1h) ran Saturday 11:33 → Sunday 12:37 local, squarely weekend-shaped. The two weekday episodes on 17 and 18 September are what keep the standing question open; nothing new happened.
+- **Everything else green.** [PR #1981](https://github.com/christianspliid-ui/threadbare/pull/1981) merged at 09:27 and no PRs are now waiting; the live site is serving the newest commit (`f3f9fb60`); CI and the Linear auto-close job are green; all 9 scheduled tasks are within a slot of schedule; the git reaper ran at 09:40; the home checkout is level with `origin/main`; and engine tick cost is 67 ms/tick — 9% *under* the 7-day median of 74.
