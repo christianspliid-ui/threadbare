@@ -231,6 +231,55 @@ describe('vertical slice — agent-decided forks (THR-894)', () => {
   });
 });
 
+/**
+ * THR-1524 — a fork whose planting arm sits on the negative pole must not select
+ * on the fork's own axis.
+ *
+ * `computeDesireScore` sums the *signed* profile value over `motivations`, so a
+ * template that names its fork axis there draws the mortals on that axis's
+ * positive pole and floors the negative pole at `MINIMUM_DESIRE`. When the arm
+ * that plants the sequel is the negative one (the Crossroads: Heretics accept,
+ * Archivists refuse), the board hands the scene to exactly the mortals who will
+ * not take it — measured on seed 42 / medium / 1000 ticks as one firing, refused,
+ * zero appointments planted, with 34 of 65 profiled mortals leaning novelty.
+ * Restoring `motivations: ['tradition_novelty']` on the Crossroads fails this.
+ */
+describe('vertical slice — a negative-pole planting arm does not select on its fork axis (THR-1524)', () => {
+  const plantsSeed = (variant: AftermathVariant | undefined): boolean =>
+    (variant?.reactions ?? []).some((r) =>
+      (r.effects ?? []).some((e) => e.kind === 'encounter_seed'),
+    );
+
+  const negativePlanters = VERTICAL_SLICE_TEMPLATES.flatMap((t) =>
+    (t.steps ?? [])
+      .filter(isActionStepBranch)
+      .filter((b): b is ActionStepBranch => b.decidedBy !== undefined && 'axis' in b.decidedBy)
+      .filter(() => {
+        const variants = t.aftermathConfig?.variants ?? {};
+        return plantsSeed(variants.negative) && !plantsSeed(variants.positive);
+      })
+      .map((b) => [t.name, t, (b.decidedBy as { axis: string }).axis] as const),
+  );
+
+  it('the Crossroads is one (guards the assertion below against a silent re-cut)', () => {
+    expect(negativePlanters.map(([, t]) => t.id)).toContain(SLICE_TEMPLATE_IDS.crossroads);
+  });
+
+  it.each(negativePlanters)('%s does not name its fork axis in `motivations`', (_name, template, axis) => {
+    expect(template.motivations, `${template.id}: selection on ${axis} starves the planting pole`)
+      .not.toContain(axis);
+  });
+
+  it('the Crossroads registers past the wayside class — 8 places on a medium world was no supply', () => {
+    const crossroads = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.crossroads)!;
+    expect(crossroads.settings).toContain('rural');
+    // Envelope honesty holds for the wider envelope too: one opening per class.
+    for (const cls of crossroads.settings ?? []) {
+      expect(crossroads.openings?.[cls as keyof typeof crossroads.openings], `${cls}: no opening`).toBeTruthy();
+    }
+  });
+});
+
 describe('vertical slice — the April migration bar (THR-973)', () => {
   /** Every authored variant on a template: the keyed ones and the fallback. */
   function allVariants(template: UnifiedActionTemplate): AftermathVariant[] {

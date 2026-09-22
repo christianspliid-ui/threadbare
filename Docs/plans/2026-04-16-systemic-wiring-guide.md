@@ -3966,11 +3966,35 @@ dead), or **DEAD** (nothing authors one; two batches at zero is the retro's *dea
 and the die floor and the systems-prompt entry are the first suspects). **Measured 2026-09-22, the
 row read UNREACHED** on seeds 42 / 99 / 7 at 200 ticks and 42 / 99 at 1000: the Crossroads fired
 once in 1000 ticks on the live board and the mortal refused. So the two interface contracts
-`appointment-pulls-agent-movement` and `missed-appointment-breaks-agreement` **stay 🔴 LEAKED**,
+`appointment-pulls-agent-movement` and `missed-appointment-breaks-agreement` **stayed 🔴 LEAKED**,
 repointed to THR-1524 — they flip on a census HIT and on nothing else, which is the whole of the
 Capability 30 lesson applied one primitive later, this time caught before the flip rather than
-after. The floor is the remedy: the next batch must author a second appointment-bearing encounter,
-and it should carry broad `settings` and a planting path not gated behind one pole of a value axis.
+after.
+
+**Measured again 2026-09-22 (THR-1524): HIT.** The parent never reached a mortal who would plant
+one for two content reasons, and both are rules for the next appointment you author:
+
+- **Setting supply.** `settings: ['wayside']` is `camp | oasis | wilderness` — 8 of 974 locations
+  on a seed-42 medium world and **5.5% of mortal-ticks** (urban 50%, rural 37%, ruin 2.3%, sampled
+  every 10 ticks over 200). None of the four wayside-only slice encounters fired in 200 ticks. A
+  scene that must be *reached* wants the classes mortals actually stand in; the Crossroads now
+  registers at rural + ruin + wayside with one opening per class. Only the parent needed the wider
+  envelope: the kept sequel is a literal id, which `evaluateEncounterSeeds` does not subtype-gate,
+  and the missed sequel already registers at every class.
+- **Do not select on the fork's axis when the planting arm is its negative pole.**
+  `computeDesireScore` sums the **signed** profile value over `motivations`, so a template that
+  names its fork axis there draws the mortals on the *positive* pole and floors the negative pole
+  at `MINIMUM_DESIRE`. The Crossroads plants on `negative` (Heretics accept, Archivists refuse), so
+  the board handed it to exactly the mortals who would not take it — 34 of 65 profiled mortals lean
+  novelty and none ever met him. Selection moved to the scene's own Eye axis
+  (`revelation_discretion`); the fork and the hand's leaning cards stay on `tradition_novelty`.
+  The spec's step 6 ("name the value axis it runs on (`motivations`)") is the wrong instruction for
+  this shape; `vertical-slice.test.ts` pins the rule for the slice and fails if the old axis returns.
+
+After both: `check:content-model-census -- --ticks 200 --seed 42 --map medium` prints
+**Reachability: HIT** (parents fired 3, 2 planted); seed 99 fires 11 times in 200 ticks, plants 7
+and keeps one (the Full Moon Collection spawning from the kept arm on the live board). Both
+contracts read 🟢 with the census line as their evidence.
 
 **What is deliberately not here.** No halt-tolerance constant (a running undertaking is never
 abandoned and the checkpoint deferral already prices an absence); no `appointment` Agreement class
