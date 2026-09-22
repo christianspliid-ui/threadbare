@@ -222,6 +222,39 @@ export const LOCATION_WATCHED_SHADOW_PENALTY = -0.06;
  */
 export const LOCATION_TENDED_SHRINE_VEIL_BONUS = 0.05;
 
+// ─── The four minted location traits' effect rows (THR-790) ──────────────────
+// These four are not inflicted by an aftermath; `phaseLocationTraits` mints them
+// from the world's own scalars and releases them when the scalar recovers
+// (thresholds in `location-trait-constants.ts`). Each carries at least one row in
+// the tables below plus a pool row there, because a trait with no reader is the
+// gate theatre THR-800 named — `CONDITION_IDS_WITHOUT_EFFECT` stays empty.
+
+/**
+ * Movement multiplier for *Welcoming* — a place worth the road. Below 1 on purpose:
+ * the only location condition that makes a place *cheaper* to reach, mirroring
+ * `LOCATION_CROWDED_MULTIPLIER` (1.2) from the other side. `conditionEffectLine`
+ * reads a sub-unity tax as *"Travel through here costs less."*
+ */
+export const LOCATION_WELCOMING_MULTIPLIER = 0.85;
+
+/**
+ * Gold penalty on steps resolved in a *Lawless* place — contracts, ledgers and
+ * terms mean less where nobody enforces them. The watch penalty's band.
+ */
+export const LOCATION_LAWLESS_GOLD_PENALTY = -0.05;
+
+/**
+ * Veil bonus on steps resolved where the veil is thin — the rite takes more easily.
+ * The tended shrine's magnitude, on the same axis.
+ */
+export const LOCATION_VEIL_THIN_VEIL_BONUS = 0.05;
+
+/**
+ * Heart penalty on steps resolved on *Haunted* ground — people here do not open up.
+ * A shade heavier than the watch penalty, well inside the step-modifier cap.
+ */
+export const LOCATION_HAUNTED_HEART_PENALTY = -0.06;
+
 /**
  * Clamp on the summed location-condition term, mirroring `TERRAIN_MODIFIER_CAP`.
  *
@@ -546,6 +579,84 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+
+  // ─── Minted location traits (THR-790, traits wave 2 slice 1) ────────────
+  // The first location conditions with a **producer from the world's own scalars**:
+  // `phaseLocationTraits` mints each from a sustained reading (prosperity, unrest,
+  // magical saturation, the dead) and releases it when the reading recovers, so
+  // none carries a `CONDITION_DURATIONS` row — a minted trait has no term, it has a
+  // cause. Same prefix, same subcategory, same `has_trait` edge as the six above,
+  // which is what lets the movement tax, the step modifier, the target gate and the
+  // location page read them with no new code. Thresholds and the pool rows live in
+  // `location-trait-constants.ts`; the effect rows sit in the two tables below.
+  {
+    id: 'trait.condition.location.welcoming',
+    type: 'trait',
+    name: 'Welcoming',
+    properties: {
+      subcategory: 'condition',
+      description: 'Long prosperity has opened this place. Doors stand ajar, the market runs late, and the road in feels shorter than it is.',
+      importance: 0.6,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the movement tax and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#social', '#positive'],
+      flavorText: 'Nobody here asks where you came from before they ask what you will drink.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.lawless',
+    type: 'trait',
+    name: 'Lawless',
+    properties: {
+      subcategory: 'condition',
+      description: 'Unrest has held here so long that nobody enforces anything. Quiet work is easy and a contract is worth what the other party feels like.',
+      importance: 0.8,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the Gold step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#shadow', '#negative'],
+      flavorText: 'The watch-house has a new family living in it. They seem nice.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.veil_thin',
+    type: 'trait',
+    name: 'Veil-thin',
+    properties: {
+      subcategory: 'condition',
+      description: 'Magic has soaked into the ground here and not drained away. Rites take more easily, and stranger things than rites come looking.',
+      importance: 0.7,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the Veil step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#arcane', '#positive'],
+      flavorText: 'Candles burn a little blue. The old woman at the well says they always have.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.haunted',
+    type: 'trait',
+    name: 'Haunted',
+    properties: {
+      subcategory: 'condition',
+      description: 'Many died here where the veil was already thin, and something of them stayed. Travellers hurry through and the living do not open up.',
+      importance: 0.9,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the movement tax, the Heart step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#supernatural', '#negative'],
+      flavorText: 'The names on the stones are fresh. Some of the stones are not.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
 ];
 
 /** Map of condition trait IDs to their default durations */
@@ -625,6 +736,12 @@ export const LOCATION_CONDITION_MOVEMENT_TAX: Record<string, number> = {
   'trait.condition.location.plague_scare': LOCATION_AVOIDED_MULTIPLIER,
   'trait.condition.location.harvest_blight': LOCATION_AVOIDED_MULTIPLIER,
   'trait.condition.location.festival': LOCATION_CROWDED_MULTIPLIER,
+  // THR-790 — the two minted traits that change the road. *Welcoming* is the one
+  // sub-unity row in the table (a place worth the road); *Haunted* is avoided the
+  // way a plague town is. `lawless` and `veil_thin` carry no tax: what they change
+  // is the work done in a place, so their reader is the step table below.
+  'trait.condition.location.welcoming': LOCATION_WELCOMING_MULTIPLIER,
+  'trait.condition.location.haunted': LOCATION_AVOIDED_MULTIPLIER,
   // `under_watch` and `tended_shrine` deliberately carry no tax: what a watcher or
   // a kept shrine changes is the work you do in a place, not how long it takes to
   // walk in. Their reader is `LOCATION_CONDITION_STEP_MODIFIER` below (THR-1483).
@@ -653,4 +770,11 @@ export const LOCATION_CONDITION_STEP_MODIFIER: Record<
 > = {
   'trait.condition.location.under_watch': { shadow: LOCATION_WATCHED_SHADOW_PENALTY },
   'trait.condition.location.tended_shrine': { veil: LOCATION_TENDED_SHRINE_VEIL_BONUS },
+  // THR-790 — the minted traits' step terms. Each names the one reach the fiction
+  // moves: a lawless town devalues the contract, thin ground answers the rite,
+  // haunted ground closes people's mouths. `welcoming` carries none — its effect
+  // is the road (above) and the pool, not the roll.
+  'trait.condition.location.lawless': { gold: LOCATION_LAWLESS_GOLD_PENALTY },
+  'trait.condition.location.veil_thin': { veil: LOCATION_VEIL_THIN_VEIL_BONUS },
+  'trait.condition.location.haunted': { heart: LOCATION_HAUNTED_HEART_PENALTY },
 };

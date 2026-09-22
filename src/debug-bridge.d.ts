@@ -601,6 +601,31 @@ export interface DebugBridge {
   }>>;
 
   /**
+   * THR-790: every location trait on every place-tier Location — or one place's,
+   * matched by id, id prefix, or partial name (case-insensitive).
+   *
+   * A row per `has_trait` edge whose target is a `trait.condition.location.*`
+   * definition: the four the phase mints from the world's own scalars (*Welcoming*,
+   * *Lawless*, *Veil-thin*, *Haunted*; `source` reads `phaseLocationTraits`,
+   * `ticksRemaining` is null because a minted trait has a cause, not a term) and the
+   * six an aftermath plants (`source` names the aftermath, `ticksRemaining` counts
+   * down). `sustain` is the place's four counters this tick, so "how close is this
+   * town to Welcoming?" is answerable before the word appears. Reads the same edges
+   * the location page and the three engine readers read. Empty when the game is not
+   * loaded or nothing matches. Always `await` it.
+   */
+  getLocationTraits: (locationIdOrName?: string) => Promise<Array<{
+    locationId: string;
+    locationName: string;
+    traitId: string;
+    traitName: string;
+    since: number | null;
+    source: string | null;
+    ticksRemaining: number | null;
+    sustain: Record<'welcoming' | 'lawless' | 'veilThin' | 'haunted', number>;
+  }>>;
+
+  /**
    * THR-1142: read an agent's live travel intent — where an `agent_relocation`
    * aftermath effect sent them, and how far along they are.
    *

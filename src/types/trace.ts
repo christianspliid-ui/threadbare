@@ -76,7 +76,7 @@ export type TraceCategory =
   | 'prosperity_tick' | 'wealth_delta' | 'econ_shock_seeded'
   | 'trade_route_volume_change' | 'trade_route_dissolved'
   | 'settlement_tier_change' | 'target_action_filter'
-  | 'hex_state' | 'unrest_tick' | 'saturation_tick'
+  | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
@@ -529,7 +529,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved',
   'settlement_tier_change', 'target_action_filter',
-  'hex_state', 'unrest_tick', 'saturation_tick',
+  'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
@@ -1508,6 +1508,28 @@ export interface SettlementTierChangeTrace extends TraceBase {
   sustainedTicks: number;
   prosperity: number;
 }
+/**
+ * Trace: location traits minted, released or superseded this tick (THR-790).
+ *
+ * One aggregate per tick in which any place-tier Location gained or lost a
+ * `trait.condition.location.*` trait through `phaseLocationTraits`. Each mint names
+ * the scalar it read and the value that crossed the threshold, so "why is this town
+ * Welcoming?" is answerable from the buffer alone. Never emitted on a quiet tick.
+ */
+export interface LocationTraitTrace extends TraceBase {
+  category: 'location_trait';
+  minted: ReadonlyArray<{
+    locationId: string;
+    traitId: string;
+    input: 'prosperity' | 'unrest' | 'saturation';
+    value: number;
+    sustainTicks: number;
+  }>;
+  released: ReadonlyArray<{ locationId: string; traitId: string; value: number }>;
+  superseded: ReadonlyArray<{ locationId: string; removed: string; by: string }>;
+  /** Mints held back because the definition node was missing from the graph (fail-soft). */
+  skippedMissingDefinition: number;
+}
 /** Trace: player target-action filter cascade (emitted once per getTargetActionSlots call) */
 export interface TargetActionFilterTrace extends TraceBase {
   category: 'target_action_filter';
@@ -1706,6 +1728,8 @@ export interface ScoringTrace extends TraceBase {
     surfaceKey?: string;
     /** Signed economic-context term from settlement boom/bust × template-family affinity (THR-725). 0 in the neutral band. */
     economicContextBonus?: number;
+    /** Additive pool term from the place's location traits × the template's tags (THR-790). 0 at an unmarked place. */
+    locationTraitBonus?: number;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;
@@ -3722,6 +3746,7 @@ export type TraceEntry =
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
   | SettlementTierChangeTrace
+  | LocationTraitTrace
   | TargetActionFilterTrace
   | HexStateTickTrace
   | UnrestTickTrace

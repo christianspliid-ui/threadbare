@@ -76,6 +76,7 @@ import type { TraceBuffer } from './traceBuffer';
 import { computeBranchingCuratorMultiplier } from './encounter/branchingCurator';
 import { computeSurfaceKey, getSurfaceAxisValues } from './encounterSurface';
 import { computeEconomicContextBonus, resolveGoverningProsperity } from './economicContext';
+import { computeLocationTraitBonus } from './locationTraitBonus';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -581,6 +582,8 @@ export interface ScoredCandidate {
   reputationBonus: number;
   /** Signed additive term from the settlement's boom/bust state and the template family's economic affinity (THR-725). 0 inside the neutral prosperity band or for families with no authored row. Already folded into finalScore's baseScore. */
   economicContextBonus: number;
+  /** Additive term from the place's location traits × the template's tags (THR-790; = computeLocationTraitBonus). 0 at an unmarked place. Already folded into finalScore's baseScore. */
+  locationTraitBonus: number;
   /** Hex distance from the agent to the encounter location (THR-641); Infinity when unreachable. Receipt derives the `proximity` pull from it. */
   hexDistanceToEntry: number;
   /** Flat additive boost from actionable intelligence held by the agent (THR-113). 0 or INTEL_SCORING_BONUS. */
@@ -1283,8 +1286,14 @@ export function scoreAndSelect(
         : resolveGoverningProsperity(graph, entry.locationId);
     const economicContextBonus = computeEconomicContextBonus(candidateProsperity, entry.templateId);
 
+    // 20c. Location traits (THR-790) — a welcoming town leans toward its markets and
+    // common rooms, a lawless one toward the quiet work, thin or haunted ground toward
+    // the uncanny. Reuses the same `locationNode`; 0 at any place carrying no
+    // `trait.condition.location.*` edge, so every pre-THR-790 score is unchanged.
+    const locationTraitBonus = computeLocationTraitBonus(graph, locationNode, entry.templateId);
+
     // 21. Final score — rarity + role affinity multipliers on baseScore (exploration/ruins/chain bonuses are fixed)
-    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + economicContextBonus + resonance + globalResonance;
+    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + economicContextBonus + locationTraitBonus + resonance + globalResonance;
     // 22. Doom identity + omen bias — additive, applied after all multipliers (already capped at source)
     const identityBiasBonus = encounterTypeBias?.[entry.encounterType] ?? 0;
     // 23. Hidden mark reveal bonus — encounters matching an agent's marks score higher (THR-112)
@@ -1393,6 +1402,7 @@ export function scoreAndSelect(
       bondBonus,
       reputationBonus,
       economicContextBonus,
+      locationTraitBonus,
       hexDistanceToEntry: distance,
       intelBonus,
       identityBiasBonus,
@@ -1479,6 +1489,8 @@ function buildTrace(
       identityBiasBonus: c.identityBiasBonus,
       // THR-725 — the economy's contribution, so "why did a famine town pick this?" is answerable.
       economicContextBonus: c.economicContextBonus,
+      // THR-790 — the place's traits, so "why did a haunted town pick this?" is answerable too.
+      locationTraitBonus: c.locationTraitBonus,
     })),
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,

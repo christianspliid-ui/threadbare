@@ -409,6 +409,14 @@ export const CONDITION_TRAVEL_TAX_BANDS: readonly MagnitudeBand[] = [
 ];
 
 /**
+ * The reading for a place whose movement multiplier is **below one** (THR-790) —
+ * today only *Welcoming*. One sentence, no ladder: a single sub-unity row does not
+ * justify a band vocabulary, and a word invented for a rung nothing stands on is
+ * the chip-that-promises-what-the-engine-cannot-enact failure.
+ */
+export const CONDITION_TRAVEL_CHEAPER_SENTENCE = 'Travel through here costs less.';
+
+/**
  * The term for a condition whose duration nothing declares — neither the grant
  * nor `CONDITION_DURATIONS`. Honest about the gap rather than guessing a number
  * (NFP #4): it is still true that the state ends.
@@ -496,11 +504,19 @@ export function conditionEffectLine(
   // that grew one would otherwise have its travel cost silently dropped, and a
   // surface that omits half an effect is the defect this whole derivation exists
   // to prevent.
+  //
+  // THR-790 — a multiplier *below* one is the same substrate read from the other
+  // side: *Welcoming* is the first location condition that makes a place cheaper to
+  // reach, and `movementCost.ts` compounds it exactly as it compounds a tax above
+  // one. It gets its own sentence rather than a band word, because there is one
+  // such row and "costs a little less" would be inventing a ladder nothing climbs.
   const tax = LOCATION_CONDITION_MOVEMENT_TAX[node.id];
   const travelSentence =
     typeof tax === 'number' && Number.isFinite(tax) && tax > 1
       ? `Travel through here costs ${magnitudeWord(tax, CONDITION_TRAVEL_TAX_BANDS)}.`
-      : null;
+      : typeof tax === 'number' && Number.isFinite(tax) && tax > 0 && tax < 1
+        ? CONDITION_TRAVEL_CHEAPER_SENTENCE
+        : null;
 
   const effect = [reachSentence, travelSentence].filter(s => s !== null).join(' ');
 
