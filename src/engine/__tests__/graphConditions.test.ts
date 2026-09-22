@@ -133,6 +133,49 @@ describe('evaluateGraphCondition', () => {
     });
   });
 
+  // ── agent_kept_appointment (THR-1519) ─────────────────────────
+  describe('agent_kept_appointment', () => {
+    const keptEvent = (id: string) => ({ id, type: 'event', properties: { eventType: 'appointment_kept' } });
+    const missedEvent = (id: string) => ({ id, type: 'event', properties: { eventType: 'appointment_missed' } });
+    const took = (agent: string, event: string) => ({ source: agent, target: event, type: 'participated_in', properties: {} });
+
+    it('counts the kept Events the agent participated in', () => {
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: {} }, keptEvent('e1')],
+        [took('a1', 'e1')],
+      );
+      const cond: GraphCondition = { type: 'agent_kept_appointment', minCount: 1 };
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
+    });
+
+    it('ignores missed Events — a broken promise is not progress', () => {
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: {} }, missedEvent('e1'), missedEvent('e2')],
+        [took('a1', 'e1'), took('a1', 'e2')],
+      );
+      const cond: GraphCondition = { type: 'agent_kept_appointment', minCount: 1 };
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('honours minCount and ignores other agents\' kept Events', () => {
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: {} }, { id: 'a2', properties: {} }, keptEvent('e1'), keptEvent('e2'), keptEvent('e3')],
+        [took('a1', 'e1'), took('a2', 'e2'), took('a2', 'e3')],
+      );
+      expect(evaluateGraphCondition({ type: 'agent_kept_appointment', minCount: 2 }, graph, 'a1')).toBe(false);
+      expect(evaluateGraphCondition({ type: 'agent_kept_appointment', minCount: 2 }, graph, 'a2')).toBe(true);
+    });
+
+    it('fails soft to false on a missing agent and on a participated_in edge to a non-Event', () => {
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: {} }, { id: 'enc', type: 'event', properties: { eventType: 'encounter' } }],
+        [took('a1', 'enc'), took('ghost', 'enc')],
+      );
+      expect(evaluateGraphCondition({ type: 'agent_kept_appointment', minCount: 1 }, graph, 'ghost')).toBe(false);
+      expect(evaluateGraphCondition({ type: 'agent_kept_appointment', minCount: 1 }, graph, 'a1')).toBe(false);
+    });
+  });
+
   describe('agent_lacks_trait', () => {
     it('returns true when agent does not have the trait', () => {
       const graph = createMockGraph(

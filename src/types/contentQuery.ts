@@ -44,6 +44,7 @@
  */
 import type { ContentObjectKindId } from '../data/content-objects';
 import type { RarityTier } from './rarity';
+import type { TraitPredicate } from './traits';
 
 /**
  * A tier window. A bare tier means exactly that tier; `{ min, max }` is inclusive on
@@ -84,8 +85,24 @@ export interface ContentQuery {
   readonly anyTags?: readonly string[];
   /** Inclusive tier window; absent means any tier. */
   readonly tier?: ContentTierWindow;
-  /** Ids never returned — the running encounter's own template, a prize already granted. */
+  /**
+   * Ids never returned — the running encounter's own template, a prize already granted.
+   *
+   * Populated by the reward pool from what the bearer already holds (THR-1520): a mortal
+   * who carries template X is never dealt X again, the way a companion at the cap is
+   * never offered. `content.query_*` traces carry how many candidates the list removed.
+   */
   readonly exclude?: readonly string[];
+  /**
+   * The bearer must hold a trait this predicate names — *"a relic only a Master Smith
+   * may be dealt"* (THR-1520). A term about the **recipient**, so the resolver never
+   * reads it: `resolveContentQuery` is pure and bearer-blind, and the term is judged
+   * at the call site through `contentQueryAdmitsBearer` (`src/engine/contentQueryBearer.ts`),
+   * which routes it through `resolveTraitPredicate` like every other trait gate in the
+   * engine (THR-786). A site with no bearer to judge treats the term as unmet — nothing
+   * offered rather than offered wrongly, the companion rule.
+   */
+  readonly requiresBearerTrait?: TraitPredicate;
 }
 
 /** One resolved candidate. `tier` is null when the entry does not declare one. */
@@ -104,6 +121,8 @@ export type ContentQuerySite =
   | 'step_reward_pool'
   | 'encounter_seed'
   | 'undertaking_catalyst'
+  /** A completed work's appointment — the meeting a `create × Agreement` arranged (THR-1519). */
+  | 'undertaking_appointment'
   | 'condition_pool'
   | 'debug';
 
@@ -123,6 +142,7 @@ export const CONTENT_QUERY_SITES: readonly ContentQuerySite[] = [
   'step_reward_pool',
   'encounter_seed',
   'undertaking_catalyst',
+  'undertaking_appointment',
   'condition_pool',
   'debug',
 ];

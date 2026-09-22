@@ -13,6 +13,7 @@ import type { AttachmentEffect, ActivatedAbility } from './effects';
 import type { ContentCensusTag } from './contentCensus';
 import type { RarityTier } from './rarity';
 import type { SphereName } from './index';
+import type { TraitPredicate } from './traits';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from './rarity';
 
 // ─── Possession Subcategories ───────────────────────────────────
@@ -219,10 +220,28 @@ export const ATTACHMENT_CATEGORY_NAMES: Record<AttachmentCategory, string> = {
  * Only declares category weights and optional filters.
  * Tier curve and bad outcome chance are resolved at runtime from outcome quality.
  */
+/**
+ * The `properties.source` stamp `instantiateReward` writes on every prize it clones
+ * (THR-1520 moved it here from `rewardPool.ts`, which re-exports it). The content query's
+ * world carve reads it to tell a *held instance* from *library content*: a clone carries
+ * the template's type and tags, so without the stamp the world view would offer a
+ * mortal's prize back to the pool as a candidate in its own right.
+ */
+export const REWARD_EDGE_SOURCE = 'encounter_reward';
+
 export interface RewardPoolRecipe {
   categoryWeights: Partial<Record<AttachmentCategory, number>>;
   tagFilters?: string[];
   sphereTint?: string;
+  /**
+   * Only a bearer holding a trait this predicate names may be dealt from the pool
+   * (THR-1520) — *"a relic only a Master Smith may be dealt"*. Judged against the
+   * recipient at draw time through the engine's one trait gate (`resolveTraitPredicate`,
+   * THR-786); a draw with no recipient to judge treats the term as unmet and offers
+   * nothing. Projected onto the content query as `requiresBearerTrait`, where the
+   * authoring-time gate ignores it (it is bearer-blind by design).
+   */
+  requiresBearerTrait?: TraitPredicate;
 }
 
 /**

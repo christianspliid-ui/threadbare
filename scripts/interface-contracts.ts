@@ -991,9 +991,17 @@ export const CONTRACTS: readonly Contract[] = [
     // Two entry points, one write path. `assembleRewardPool` is the draw; THR-1110's
     // `attachment_grant` aftermath effect calls the instantiators directly, so an
     // author can name the thing instead of weighting a category.
+    // THR-1520: the pool now reads the recipient's own `possesses` / `has_trait` edges
+    // back — `heldTemplateIdsOf` — so the write path this contract records is also a
+    // read path of its own output: a template the bearer holds is never drawn for them
+    // again. The world carve additionally refuses the instances this contract mints
+    // (`properties.source === REWARD_EDGE_SOURCE`) as candidates, because a clone wears
+    // the template's type and tags and the by-type scan had been offering every mortal's
+    // prize back to the pool. `assembleRewardPoolDetailed` is the same assembly with the
+    // dedup bookkeeping (`excludedIds`, `bearerAdmitted`) the traces and levers read.
     mechanism: {
       kind: 'function',
-      symbols: ['assembleRewardPool', 'instantiateReward', 'instantiateAgreementReward'],
+      symbols: ['assembleRewardPool', 'assembleRewardPoolDetailed', 'heldTemplateIdsOf', 'instantiateReward', 'instantiateAgreementReward'],
       module: 'src/engine/rewardPool.ts',
     },
     writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts'],
@@ -1001,6 +1009,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/orchestrator.ts',
       'src/engine/unifiedActionResolution.ts',
       'src/engine/encounterAftermath.ts',
+      'src/engine/contentQueryBearer.ts',
     ],
     verifiedLive: { date: '2026-08-14', evidence: `possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). ${AUDIT_EVIDENCE}` },
   },
@@ -3474,14 +3483,19 @@ export const CONTRACTS: readonly Contract[] = [
       // before it writes the seed, so the write site names a symbol it actually
       // carries. Without it the Tier-2 grep found no declared symbol at the write
       // site and classified the row LEAKED — which the badge pin had been masking.
-      symbols: ['agentAppointmentSeeds', 'resolveAppointmentContext', 'computeAppointmentPull', 'appointmentRegime', 'computeAppointmentSlack'],
+      // THR-1519 factored the plant into `plantAppointmentPromise` — the one planter
+      // both write sites call (the aftermath after binding its sentinels, the
+      // undertaking lifecycle after resolving the work's site), so the symbol the
+      // write sites carry is now the planter itself.
+      symbols: ['plantAppointmentPromise', 'agentAppointmentSeeds', 'resolveAppointmentContext', 'computeAppointmentPull', 'appointmentRegime', 'computeAppointmentSlack'],
       module: 'src/engine/appointments.ts',
     },
-    writeSites: ['src/engine/encounterAftermath.ts'],
+    writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/strategicActionLifecycle.ts'],
     readSites: [
       'src/engine/encounterScoring.ts',
       'src/engine/phaseAgentDecision.ts',
       'src/engine/__tests__/appointments.test.ts',
+      'src/engine/__tests__/undertakingAppointmentPayoff.test.ts',
     ],
     verifiedLive: {
       date: '2026-09-22',
@@ -3498,10 +3512,12 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Appointment', 'Agreement'],
     mechanism: {
       kind: 'function',
-      symbols: ['breakAppointmentFavour', 'redeemAppointmentFavour', 'isAppointmentFavour', 'writeAppointmentEvent'],
+      symbols: ['breakAppointmentFavour', 'redeemAppointmentFavour', 'isAppointmentFavour', 'writeAppointmentEvent', 'plantAppointmentPromise'],
       module: 'src/engine/appointments.ts',
     },
-    writeSites: ['src/engine/encounterSeeding.ts', 'src/engine/encounterAftermath.ts'],
+    // THR-1519: the promise edge is written by `plantAppointmentPromise`, which the
+    // aftermath and the undertaking lifecycle both call; the seeding site breaks it.
+    writeSites: ['src/engine/encounterSeeding.ts', 'src/engine/encounterAftermath.ts', 'src/engine/strategicActionLifecycle.ts'],
     readSites: [
       'src/engine/agentDetail.ts',
       'src/engine/phaseSecretsFavors.ts',

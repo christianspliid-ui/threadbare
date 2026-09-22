@@ -71,6 +71,7 @@ export type ContentObjectKindId =
   | 'legendary_template'
   | 'condition_template'
   | 'power_template'
+  | 'trait_template'
   | 'agreement_template'
   | 'companion_template'
   | 'ambition_template'
@@ -280,11 +281,17 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     id: 'condition_template',
     gameWord: 'Condition',
     ulTerm: 'Traits.md#trait-category',
-    idPrefixes: ['reward_', 'starter_', 'anomaly_'],
+    // `trait.condition.` and `trait.scar.` (THR-1520): the trait content files' conditions
+    // and scars — the same nodes the graph carve has always returned for this kind.
+    idPrefixes: ['reward_', 'starter_', 'anomaly_', 'trait.condition.', 'trait.scar.'],
     catalogs: [
       { module: 'data/reward-attachment-catalog', export: 'REWARD_CONDITIONS' },
       { module: 'data/starter-attachments', export: 'STARTER_CONDITIONS' },
       { module: 'data/anomaly-reward-catalog', export: 'ANOMALY_CONDITIONS' },
+      { module: 'data/condition-trait-content', export: 'CONDITION_TRAIT_DEFINITIONS' },
+      // Shared with the Trait kind; the prefixes partition it (two scars and one condition
+      // are this kind's, the masteries, reputations and cultural trait are Trait's).
+      { module: 'data/economic-trait-content', export: 'ECONOMIC_TRAIT_DEFINITIONS' },
     ],
     // All 46 entries carry both. Polarity is required here and nowhere else: a condition
     // that does not say whether it helps or harms is the one shape the proxy-event
@@ -295,7 +302,7 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     gate: 'check:attachment',
     owningSystem: 'Effects & Conditions',
     status: 'live',
-    note: 'Wounds, diseases, strains; blessings and curses as signed conditions. Entries are shared `trait` definition nodes with `subcategory: condition | scar` — one node per kind, per-bearer state on the `has_trait` edge (THR-1395). The `#positive` / `#negative` polarity the proxy-event classifier already reads is the seed of slice 2\'s polarity axis.',
+    note: 'Wounds, diseases, strains; blessings and curses as signed conditions. Entries are shared `trait` definition nodes with `subcategory: condition | scar` — one node per kind, per-bearer state on the `has_trait` edge (THR-1395). The `#positive` / `#negative` polarity the proxy-event classifier already reads is the seed of slice 2\'s polarity axis. THR-1520 seated the trait content files here too: the eighteen `trait.condition.*` definitions (the ten place conditions among them) and the condition / scar half of `ECONOMIC_TRAIT_DEFINITIONS` — the nodes the graph carve has always returned for this kind, now visible to `check:attachment` and the tag contract.',
   }),
   K({
     id: 'power_template',
@@ -315,6 +322,34 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
     note: 'A god\'s gift (`bestowed`) and a spell a mortal learned (`spell`) — two classes of one kind, per THR-1429. The bestowed half is `trait` definition nodes in the reward catalogs; the spell half is `SpellTemplate` literals seeded into the same node shape. Two catalog shapes, one kind, because what a query asks for is "a power", never "a power in the literal form of a trait node".',
+  }),
+  K({
+    id: 'trait_template',
+    gameWord: 'Trait',
+    ulTerm: 'Traits.md#trait',
+    idPrefixes: ['trait.core.', 'trait.personality.', 'trait.mastery.', 'trait.reputation.', 'trait.cultural.'],
+    catalogs: [
+      { module: 'data/core-trait-content', export: 'CORE_TRAIT_DEFINITIONS' },
+      { module: 'data/personality-trait-content', export: 'PERSONALITY_TRAIT_DEFINITIONS' },
+      { module: 'data/mastery-trait-content', export: 'MASTERY_TRAIT_DEFINITIONS' },
+      { module: 'data/reputation-trait-content', export: 'REPUTATION_TRAIT_DEFINITIONS' },
+      // Shared with the Condition kind: the economic file mixes masteries, a cultural
+      // trait and reputations with two scars and a condition, and the prefix sets
+      // partition it the way the encounter / action kinds partition the unified array.
+      { module: 'data/economic-trait-content', export: 'ECONOMIC_TRAIT_DEFINITIONS' },
+    ],
+    // Measured at seating (THR-1520): every entry carries its category word (`#core`,
+    // `#personality`, `#mastery`, `#reputation`, `#cultural`) on the family axis.
+    requiredAxes: ['family'],
+    // No projection from `subcategory`: the category word is authored beside a second
+    // family word (`#combat`, `#honor`), and the projection rule would read the second
+    // as a contradiction of the first.
+    projections: {},
+    instantiatesAs: 'trait',
+    gate: 'check:attachment',
+    owningSystem: 'Personality & Emergent Traits',
+    status: 'live',
+    note: 'A mortal\'s own identity — Core continua poles, emergent personality poles, masteries, reputations, and the cultural marks a guild or a people stamps on its own. Seated by THR-1520 so the trait content files are content the model can see: `check:attachment` gates their tags, and a query for "a mastery" resolves against the seeded definitions. Conditions and scars are the Condition kind even where they live in the same file; `innate`, `destiny` and `experience` traits are minted at runtime and belong to no catalog.',
   }),
   K({
     id: 'agreement_template',

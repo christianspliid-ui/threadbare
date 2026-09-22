@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 110 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 155 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -24,14 +24,14 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · omen 4 · power 4 · agreement 1 | 160 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 3 · agreement 2 · omen 2 · power 1 | 108 |  |
-| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 9 · power 4 · omen 2 · agreement 1 | 113 |  |
-| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · power 4 · agreement 2 · legendary 1 | 113 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · power 5 · omen 4 · agreement 1 · legendary 1 | 131 |  |
-| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · power 4 · agreement 1 | 153 |  |
-| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · condition 5 · power 2 · legendary 1 | 86 |  |
-| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · power 4 · agreement 1 | 114 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 165 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 119 |  |
+| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 121 |  |
+| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 118 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 139 |  |
+| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 158 |  |
+| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 92 |  |
+| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 119 |  |
 
 ## sphere
 
@@ -90,7 +90,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**65 tags.**
+**110 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -109,25 +109,25 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#wound` | Hurt taken, and still healing or still open. | condition 10 | 10 |  |
 | `#disease` | A sickness in the body, which spreads if it can. | condition 5 | 5 |  |
 | `#physical` | Of the body rather than the mind or the soul. | condition 9 | 9 |  |
-| `#divine` | Of the gods — it answers to worship, not to craft. | item 13 · condition 6 · power 2 | 21 |  |
-| `#arcane` | Of learned working — known by study rather than by gift. | item 13 · power 5 | 18 |  |
-| `#supernatural` | Beyond the ordinary run of things, without saying how. | condition 7 · power 2 · item 1 | 10 |  |
-| `#mystical` | Half-understood even by those who use it. | item 4 | 4 |  |
+| `#divine` | Of the gods — it answers to worship, not to craft. | item 13 · condition 7 · trait 3 · power 2 | 25 |  |
+| `#arcane` | Of learned working — known by study rather than by gift. | item 13 · power 5 · condition 1 | 19 |  |
+| `#supernatural` | Beyond the ordinary run of things, without saying how. | condition 8 · power 2 · item 1 | 11 |  |
+| `#mystical` | Half-understood even by those who use it. | item 4 · condition 1 · trait 1 | 6 |  |
 | `#nature` | Of growing things and the weather they grow under. | condition 1 · item 1 · legendary 1 · power 1 | 4 |  |
 | `#fate` | It touches what is coming rather than what is here. | item 3 · condition 1 · power 1 | 5 |  |
 | `#vision` | It shows what is not in front of the eye. | condition 1 · item 1 · power 1 | 3 |  |
 | `#temporal` | It works on time — delaying, hastening, or remembering. | item 4 · condition 2 | 6 |  |
-| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 11 · power 2 | 43 |  |
-| `#knowledge` | Of learning — what is written, taught, or worked out. | item 9 · condition 1 | 10 |  |
+| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 13 · power 2 · trait 1 | 46 |  |
+| `#knowledge` | Of learning — what is written, taught, or worked out. | item 9 · trait 2 · condition 1 | 12 |  |
 | `#craft` | Of making — the trades, and the hands that keep them. | item 8 · power 1 | 9 |  |
 | `#healing` | Of mending people. | item 8 · power 4 · condition 3 | 15 |  |
 | `#restoration` | Of putting back what was taken or broken. | item 4 | 4 |  |
 | `#survival` | Of staying alive where staying alive is the work. | item 10 · power 2 | 12 |  |
-| `#stealth` | Of going unseen and unheard. | item 6 · power 2 | 8 |  |
-| `#social` | Of people and standing — it works through others. | item 5 · power 2 | 7 |  |
-| `#trade` | Of buying and selling. | item 5 · condition 1 | 6 |  |
+| `#stealth` | Of going unseen and unheard. | item 6 · trait 3 · power 2 | 11 |  |
+| `#social` | Of people and standing — it works through others. | condition 5 · item 5 · trait 3 · power 2 | 15 |  |
+| `#trade` | Of buying and selling. | item 5 · condition 1 · trait 1 | 7 |  |
 | `#commercial` | Of the counting-house — contracts, ledgers, and terms. | item 3 | 3 |  |
-| `#travel` | Of the road, and of getting somewhere else. | item 9 | 9 |  |
+| `#travel` | Of the road, and of getting somewhere else. | item 9 · condition 1 | 10 |  |
 | `#discovery` | Of finding what nobody had found. | item 5 | 5 |  |
 | `#patronage` | Of being owed a favour by someone who matters. | item 1 · power 1 | 2 |  |
 | `#territorial` | Of ground held, claimed, or argued over. | item 2 · condition 1 | 3 |  |
@@ -159,6 +159,51 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#threshold_errand` | Work at a crossing place, where the road or the world changes hands. | encounter 2 | 2 |  |
 | `#broker_errand` | Work arranged by someone who trades in arrangements rather than goods. | encounter 1 | 1 |  |
 | `#craft_commission` | A piece of work ordered from a maker, and answerable to whoever ordered it. | encounter 1 | 1 |  |
+| `#core` | A Core trait — where a mortal sits on one of the five continua that make up character. | trait 10 | 10 |  |
+| `#personality` | An emergent personality trait — a reach leaning hardened into a way of choosing. | trait 16 | 16 |  |
+| `#mastery` | A mastery — competence earned by doing a thing until the world noticed. | trait 9 | 9 |  |
+| `#reputation` | A reputation — what others have come to say about the bearer, deserved or not. | trait 19 | 19 |  |
+| `#cultural` | A formative mark a culture or a guild stamps on its own. | trait 1 | 1 |  |
+| `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 19 | 19 |  |
+| `#scar` | A scar — a condition that does not heal; what a loss left behind. | condition 2 | 2 |  |
+| `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 10 | 10 |  |
+| `#virtue` | The virtue pole of a continuum or axis — the bearer leans toward the better end. | trait 13 | 13 |  |
+| `#vice` | The vice pole — the bearer leans toward the worse end, and it shows. | trait 13 | 13 |  |
+| `#core_warmth` | Of the Warmth continuum — Warm to Cold; how much care a mortal spends on others. | trait 2 | 2 |  |
+| `#core_hope` | Of the Hope continuum — Hopeful to Bitter; whether they expect the world to come right. | trait 2 | 2 |  |
+| `#core_forgiveness` | Of the Forgiveness continuum — Forgiving to Vengeful; what they do with a harm done to them. | trait 2 | 2 |  |
+| `#core_humility` | Of the Humility continuum — Humble to Proud; how large they hold themselves to be. | trait 2 | 2 |  |
+| `#core_integrity` | Of the Integrity continuum — True to False; whether the inner self and the outer agree. | trait 2 | 2 |  |
+| `#economic` | Of coin, debt and trade — earned in the counting of money, or in the losing of it. | trait 7 · condition 4 | 11 |  |
+| `#guild` | Of a guild — sworn to its rules and standing on its rolls. | trait 1 | 1 |  |
+| `#loss` | Marked by something lost — a fortune, a standing, a way back. | condition 2 | 2 |  |
+| `#monopoly` | Of a trade cornered — one hand on every route that matters. | trait 1 | 1 |  |
+| `#smuggling` | Of goods moved past the ones who would tax or forbid them. | trait 1 | 1 |  |
+| `#debt` | Of money owed and not yet paid. | condition 1 | 1 |  |
+| `#construction` | Of things raised — walls, roads, halls, and the patrons who paid for them. | trait 1 | 1 |  |
+| `#perception` | Of noticing — the detail others walk past. | trait 1 | 1 |  |
+| `#stability` | Of holding firm — unmoved when the ground or the crowd shifts. | trait 1 | 1 |  |
+| `#fear` | Of terror — what it does to the one caught in it, and what wards against it. | condition 1 | 1 |  |
+| `#sacred` | Of holy ground — a place kept, tended, and answered to. | condition 1 | 1 |  |
+| `#martial` | Of soldiering — known by the sword, for good or ill. | trait 2 | 2 |  |
+| `#honor` | Known for keeping faith when it cost something. | trait 1 | 1 |  |
+| `#violence` | Known for hurting more than was needed. | trait 1 | 1 |  |
+| `#generosity` | Known for giving freely, and being remembered for it. | trait 1 | 1 |  |
+| `#exploitation` | Known for squeezing the ones who could not refuse. | trait 1 | 1 |  |
+| `#discretion` | Known for keeping what should be kept quiet. | trait 1 | 1 |  |
+| `#criminal` | Known for taking what the law says was not theirs. | trait 1 | 1 |  |
+| `#magic` | Known for what they can do with the unseen. | trait 2 | 2 |  |
+| `#wisdom` | Known for seeing clearly, and for being asked. | trait 2 | 2 |  |
+| `#danger` | Known as a thing to stand well back from. | trait 1 | 1 |  |
+| `#warmth` | Known for a kindness people go out of their way for. | trait 1 | 1 |  |
+| `#manipulation` | Known for moving people without their noticing. | trait 1 | 1 |  |
+| `#espionage` | Known for knowing what they were not meant to know. | trait 1 | 1 |  |
+| `#infrastructure` | Known for what they built and kept standing. | trait 2 | 2 |  |
+| `#trust` | Known as someone whose work can be leaned on. | trait 1 | 1 |  |
+| `#tyranny` | Known for holding a place by force and calling it order. | trait 1 | 1 |  |
+| `#devotion` | Known for a faith kept in public and in private. | trait 1 | 1 |  |
+| `#fanaticism` | Known for a faith that burns everyone nearby. | trait 1 | 1 |  |
+| `#renown` | Known widely, by name — the standing itself, before any judgment of it. | trait 1 | 1 |  |
 
 ## polarity
 
@@ -168,8 +213,8 @@ Whether the thing is good or ill to carry. The two words the condition proxy-eve
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#positive` | A good thing to carry — it helps the one who holds it. | condition 19 | 19 |  |
-| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 27 | 27 |  |
+| `#positive` | A good thing to carry — it helps the one who holds it. | condition 25 · trait 8 | 33 |  |
+| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 42 · trait 8 | 50 |  |
 
 ## Kinds and their required axes
 
@@ -184,6 +229,7 @@ An entry of a kind must carry every axis its registry row requires. The column g
 | `legendary_template` | `family` | — |
 | `condition_template` | `family` `polarity` | — |
 | `power_template` | `family` | `sphere` ← `sphereAffinity` |
+| `trait_template` | `family` | — |
 | `agreement_template` | `reach` `family` | — |
 | `companion_template` | `family` | — |
 | `ambition_template` | — | — |

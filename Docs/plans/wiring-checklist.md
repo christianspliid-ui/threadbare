@@ -6,6 +6,21 @@
 
 ---
 
+## Draw-by-trait completion — never dealt what you hold, a bearer-trait term, the trait catalogs seated (THR-1520)
+
+> Plan doc: `Docs/plans/2026-09-21-thr-790-traits-wave-2.md` § Done when › Slice 2.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/rewardPool.ts` — `heldTemplateIdsOf` / `templateIdOfHeldInstance` (the exclude list off `possesses` / `has_trait`), `assembleRewardPoolDetailed` (pool + `excludedIds` + `bearerAdmitted`), `toContentQuery` projects `requiresBearerTrait`, the harm table drops it | wherever `drawSeededReward` runs (aftermath `reward_draw`, step `rewardPool`) | — | reads graph edges | `content.query_resolved` / `content.query_empty` (`excludedCount`, `query.exclude`, `query.requiresBearerTrait`) | `__DEBUG.queryContent(q, bearer)`, CLI `query … --bearer` |
+| `engine/contentQuery.ts` — `resolveContentQueryDetailed`, the reward-instance skip in `carveNodes` (`REWARD_EDGE_SOURCE`), `trait_template` in `GRAPH_BACKED`, `?bearer:` in `describeContentQuery` | — (pure) | — | — | via `traceContentQuery` | same |
+| `engine/contentQueryBearer.ts` (new) — `contentQueryAdmitsBearer` → `resolveTraitPredicate` | called by the pool | — | — | — | `bearerAdmitted` on the levers |
+| `types/contentQuery.ts` (`exclude` semantics, `requiresBearerTrait`), `types/attachments.ts` (`RewardPoolRecipe.requiresBearerTrait`, `REWARD_EDGE_SOURCE`), `types/trace.ts` (`excludedCount`, traced term) | — | — | — | — | — |
+| `data/content-objects.ts` — kind `trait_template`; Condition gains `trait.condition.` / `trait.scar.` + two catalogs. Mirrors: `types/contentRef.ts`, `data/contentCatalogs.ts`, `data/surface-registry.ts` (sheet `null`, noted), `engine/contentEntryResolver.ts`, `content-eval/attachmentContract.ts` (`ATTACHMENT_KIND_IDS`) | — | content card (`ContentRef` router) | — | — | `__DEBUG.getContentObjects()`, CLI `content trait_template`, `check:attachment --all` |
+| `data/content-tags.ts` — 45 `family` tags; `economic-trait-content.ts` (+`#negative` on two scars), `condition-trait-content.ts` (−`#general`), `reputation-trait-content.ts` (−`#power`) | content | — | — | — | `contentTags.test.ts`, `generate-content-tag-catalog` |
+
+Player controls: none. UI pillar N/A — no player surface changed; the content card for a trait entry renders through the existing `attachmentNode` adapter.
+
 ## Appointments — a mortal keeps or misses a meeting at a place by a time (THR-1479 slice 1)
 
 > Plan doc: `Docs/plans/2026-09-21-thr-1479-appointment-primitive.md` § Wiring.
@@ -15,6 +30,10 @@
 | `engine/appointments.ts` (new — `readPlantedAppointment`, `computeAppointmentSlack`, `leaveMargin`, `appointmentRegime`, `resolveAppointmentContext`, `computeAppointmentPull`, favour + Event helpers, `describeAppointments`) | `2a` decision (called from `phaseAgentDecision`) | — | reads `pendingEncounterSeeds[]` + graph | — | `__DEBUG.getAppointments`, CLI `appointments` |
 | `engine/encounterAftermath.ts` — `encounter_seed` plant site binds `$here` / `$cast:*`, writes the `owes_favor` promise, refuses over `APPOINTMENT_MAX_PER_MORTAL` | aftermath | PATH chip | `pendingEncounterSeeds[].appointment`, graph `owes_favor` | `appointment_planted` | `EncounterSeedsTab` appt row |
 | `engine/encounterSeeding.ts` — kept / missed / wait / place-lost arm before the ladder; `resolutionLocationId = place` on kept | `2a.8` | — | `pendingEncounterSeeds[]` (`appointment`, `missedAppointment`), Event nodes | `appointment_kept`, `appointment_missed` | `__DEBUG.getSeeds()`, `EncounterSeedsTab` |
+| `engine/appointments.ts` — `plantAppointmentPromise`, the **one planter** (THR-1519): live-target and hex checks, `over_max` refusal, the `owes_favor` promise edge, the `appointment_planted` trace (now with `source`). Called by `encounterAftermath.ts` after sentinel binding and by `strategicActionLifecycle.ts` after site resolution | aftermath · strategic completion | — | graph `owes_favor` | `appointment_planted` (`source: encounter \| undertaking`) | trace viewer |
+| `engine/strategicActionLifecycle.ts` — `maybePlantAppointmentPayoff` (THR-1519): a completed work whose template carries `appointmentPayoff` plants an appointment seed on its actor at the catalyst anchor, counterparty = the site mortal; all three completion arms; no PRNG | strategic completion (`2a.x` instant / project advance) | — | `pendingEncounterSeeds[]` (`sourceReactionId = undertaking_appointment`) | via the planter | `__DEBUG.getSeeds()`, CLI `appointments` |
+| `data/undertaking-cells.ts` — `UNDERTAKING_CELL_APPOINTMENTS` (THR-1519): the bounded per-cell payoff table, read into `appointmentPayoff` at synthesis; `applyCellOverride` honours `override.appointmentPayoff`. Row: `cell.create.agreement` (kept `#thieves_errand`, missed `#court_errand`) | content | — | — | — | `undertakingCodex` (cell card), `check:undertaking` `catalysts` block |
+| `graphConditions.ts` — `agent_kept_appointment` (THR-1519): count of `appointment_kept` Event nodes the mortal `participated_in` ≥ `minCount`; missed never count | `checkMilestones` via `evaluateAmbitionProgress` | Ambition milestones | Reads Event nodes + `participated_in` | — (pure) | `ambition_uncover_secrets` milestone `secrets_kept_word` (2 of 4) |
 | `engine/encounterScoring.ts` — `appointmentBonus`, the second additive term on the relocation channel | `2a` | — | — | inside `encounter_scoring` (`appointmentBonus` on `ScoredCandidate`) | trace viewer |
 | `engine/phaseAgentDecision.ts` — context per holder, overrun discount, departing drop, strategic work filter, journey via `initMovementState`, moving-guard reroute | `2a` | — | `movementState` (existing writer), `appointmentRegimeMemo` | `appointment_regime` (on change + journey) | trace viewer |
 | `engine/phaseSecretsFavors.ts` — the expiry sweep skips appointment favours | `2a.x` secrets/favours | — | — | — | — |

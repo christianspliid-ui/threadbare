@@ -812,10 +812,21 @@ export interface DebugBridge {
    * spell. `truncated` says the set is larger than a *draw* would see — resolution itself
    * is uncapped.
    *
+   * **The bearer's side (THR-1520).** Pass a `bearer` — id, id prefix, partial name or
+   * `@hero` — and the lever answers *what could this mortal be dealt*: when the query
+   * names no `exclude` list of its own, what the bearer already holds (`possesses` /
+   * `has_trait`, template ids recovered from the instance form) becomes the list, exactly
+   * as `assembleRewardPool` builds it; `excludedIds` names what that removed, and
+   * `bearerAdmitted` is the `requiresBearerTrait` verdict (always `true` when the query
+   * carries no term; `false` for a term with no bearer to judge). `bearerFound` is `null`
+   * when no bearer was asked for and `false` when the ref matched nobody — in which case
+   * the query ran bearer-less rather than erroring.
+   *
    * Returns `null` when there is no game state. Always `await` it.
    *
    * @example
    *   await window.__DEBUG.queryContent({ kind: 'item_template', tags: ['#weapon', '#entropy'] })
+   *   await window.__DEBUG.queryContent({ kind: 'condition_template', classes: ['condition'] }, '@hero')
    */
   queryContent: (query: {
     kind: string | readonly string[];
@@ -824,11 +835,18 @@ export interface DebugBridge {
     anyTags?: readonly string[];
     tier?: number | { min?: number; max?: number };
     exclude?: readonly string[];
-  }) => Promise<{
+    requiresBearerTrait?: { traitId: string; minLevel?: number };
+  }, bearer?: string) => Promise<{
     query: unknown;
     candidateCount: number;
     truncated: boolean;
     hits: ReadonlyArray<{ kind: string; id: string; tier: number | null }>;
+    /** Candidates the `exclude` list removed — what the bearer would have been dealt again. */
+    excludedIds: readonly string[];
+    bearerId: string | null;
+    bearerFound: boolean | null;
+    heldTemplateIds: readonly string[];
+    bearerAdmitted: boolean;
   } | null>;
   /** Snapshot of the trace ring buffer. Empty unless tracing was enabled first. */
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
@@ -1387,9 +1405,9 @@ export interface DebugBridge {
    * key in either means the build is not the one you think. The state assertion for any
    * browser-verify run that opens a card.
    *
-   * Every `content` row carries `card: 'content'`; its `sheet` is `'codex'` for the six
-   * kinds the codex catalogues and `null` for the six it does not (THR-1495), each `null`
-   * carrying its measured reason in `note`.
+   * Every `content` row carries `card: 'content'`; its `sheet` is `'codex'` for the kinds
+   * the codex catalogues and `null` for the ones it does not (THR-1495; `trait_template`
+   * since THR-1520), each `null` carrying its measured reason in `note`.
    */
   getSurfaceRegistry(): Promise<{
     worldRef: Record<string, { card: string; sheet: string | null; note?: string }>;

@@ -110,6 +110,32 @@ export type DecisionFamily =
 // ─── Strategic Action Template ──────────────────────────────────────
 // A reusable blueprint for a proactive world-shaping step.
 
+/**
+ * A work whose payoff is a meeting (THR-1519). Authored on the template — the cell
+ * table `UNDERTAKING_CELL_APPOINTMENTS`, or a package override — and read by
+ * `maybePlantAppointmentPayoff` at completion. Both branches are queries: the kept
+ * branch fires at the place, judged there; the missed branch fires wherever the mortal
+ * is once the window closes. A literal id is deliberately not admitted here — an
+ * ungated id is the drift the query exists to prevent (THR-1488).
+ */
+export interface UndertakingAppointmentPayoff {
+  /** Ticks from completion to the due tick. Default `UNDERTAKING_APPOINTMENT_DELAY_TICKS`. */
+  readonly delayTicks?: number;
+  /** How long the meeting can be kept once due. Default `APPOINTMENT_WINDOW_TICKS`. */
+  readonly windowTicks?: number;
+  /** The meeting — the kept branch. */
+  readonly meeting: ContentQuery;
+  /** The chip and chronicle line for the planted seed. */
+  readonly seedLabel: string;
+  /** What fires when the mortal is not there in the window. */
+  readonly missed: {
+    readonly query: ContentQuery;
+    readonly seedLabel: string;
+    /** Ticks after the window closes before the missed sequel is eligible. Default `APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS`. */
+    readonly delayTicks?: number;
+  };
+}
+
 export interface StrategicActionTemplate {
   readonly id: string;
   readonly displayName: string;
@@ -170,6 +196,19 @@ export interface StrategicActionTemplate {
    * authored (the migration order: land the query, then delete the ids).
    */
   readonly catalystQuery?: ContentQuery;
+
+  /**
+   * THR-1519 (slice 3 of THR-1479) — a work whose payoff is a *meeting*. On
+   * completion the undertaking plants an appointment seed on its actor: the place is
+   * the work's site (resolved the way the catalyst anchor is — where the object of the
+   * work stands), the due tick is completion plus `delayTicks`, the counterparty is
+   * the site when the site is a mortal, and both branches are content queries. It
+   * goes through slice 1's one planter (`plantAppointmentPromise`), so the favour
+   * edge, the `over_max` refusal and the `appointment_planted` trace are the
+   * encounter path's exactly. Unlike the catalyst there is no chance roll: a promise
+   * is the work's product, not its wake.
+   */
+  readonly appointmentPayoff?: UndertakingAppointmentPayoff;
 
   /** Target validation: what kind of graph target this step needs */
   readonly targetRule: StrategicTargetRule;

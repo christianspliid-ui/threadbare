@@ -14,11 +14,12 @@
 import type { WorldGraph } from './graph';
 import { readBonusOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import { REWARD_TIER_BONUS_CAP } from '../data/effect-constants';
-import type {
-  ResolvedRewardRecipe,
-  RewardPoolRecipe,
-  AttachmentTier,
-  AttachmentCategory,
+import {
+  REWARD_EDGE_SOURCE,
+  type ResolvedRewardRecipe,
+  type RewardPoolRecipe,
+  type AttachmentTier,
+  type AttachmentCategory,
 } from '../types/attachments';
 import type { OutcomeType } from '../types/resolution';
 import type { UnifiedActionOutcome } from '../types/unifiedAction';
@@ -26,11 +27,12 @@ import type { AttachmentEffect, ContentGrantEffect } from '../types/effects';
 import type { ContentQuery, ContentQuerySite } from '../types/contentQuery';
 import type { ContentObjectKindId } from '../data/content-objects';
 import {
-  resolveContentQuery,
+  resolveContentQueryDetailed,
   graphContentCatalogs,
   traceContentQuery,
   type ContentCatalogs,
 } from './contentQuery';
+import { contentQueryAdmitsBearer } from './contentQueryBearer';
 import { mulberry32 } from '../lib/prng';
 import { applyResourceDelta } from './effects/resourceDelta';
 import { emitTrace } from './traceBuffer';
@@ -138,6 +140,19 @@ export function toContentQuery(
   recipe: RewardPoolRecipe,
   category: AttachmentCategory,
 ): ContentQuery | null {
+  const base = baseContentQuery(recipe, category);
+  if (!base) return null;
+  // THR-1520: the bearer-trait term rides the query so a trace and a describer can
+  // show it, and stays invisible to the resolver, which never reads it.
+  return recipe.requiresBearerTrait !== undefined
+    ? { ...base, requiresBearerTrait: recipe.requiresBearerTrait }
+    : base;
+}
+
+function baseContentQuery(
+  recipe: RewardPoolRecipe,
+  category: AttachmentCategory,
+): ContentQuery | null {
   switch (category) {
     case 'possession':
     case 'spell':
@@ -171,31 +186,104 @@ function getCandidateNodes(
   category: AttachmentCategory,
   tagFilters?: string[],
   catalogs?: ContentCatalogs,
-): Array<{ id: string; tier: number }> {
-  const query = toContentQuery({ categoryWeights: {}, tagFilters }, category);
-  if (!query) return [];
+  /** Template ids the bearer already holds — the query's `exclude` list (THR-1520). */
+  exclude?: readonly string[],
+): { candidates: Array<{ id: string; tier: number }>; excludedIds: readonly string[] } {
+  const base = toContentQuery({ categoryWeights: {}, tagFilters }, category);
+  if (!base) return { candidates: [], excludedIds: [] };
+  const query = exclude !== undefined && exclude.length > 0 ? { ...base, exclude } : base;
 
-  return resolveContentQuery(query, catalogs ?? graphContentCatalogs(graph))
+  const { hits, excludedIds } = resolveContentQueryDetailed(query, catalogs ?? graphContentCatalogs(graph));
+  return {
     // Tier defaults to 1 exactly where it used to: a node with no declared tier is a
     // tier-1 candidate, so it still draws under every curve.
-    .map(hit => ({ id: hit.id, tier: hit.tier ?? 1 }));
+    candidates: hits.map(hit => ({ id: hit.id, tier: hit.tier ?? 1 })),
+    excludedIds,
+  };
+}
+
+/**
+ * The template id an instance on a bearer came from (THR-1520).
+ *
+ * `instantiateReward` clones a template under
+ * `${REWARD_INSTANTIATE_PREFIX}_${bearerId}_${tick}_${templateId}`; the prefix and
+ * the bearer are known at the call site and the tick is digits, so the template id is
+ * whatever follows — including any underscores of its own. An id that does not wear the
+ * reward form is a definition held directly (a starter attachment's `has_trait` edge
+ * points at the definition node; `assignTrait` does the same) and is already the
+ * template id. Round-trip pinned by `rewardPool-dedup.test.ts`, so a change to the
+ * instance form fails there rather than silently ending dedup.
+ */
+export function templateIdOfHeldInstance(instanceId: string, bearerId: string): string {
+  const ownPrefix = `${REWARD_INSTANTIATE_PREFIX}_${bearerId}_`;
+  if (!instanceId.startsWith(ownPrefix)) return instanceId;
+  const rest = instanceId.slice(ownPrefix.length);
+  const m = /^\d+_(.+)$/.exec(rest);
+  return m ? m[1] : instanceId;
+}
+
+/**
+ * Everything the bearer already holds, as the reward pool's `exclude` list (THR-1520):
+ * the template id behind each `possesses` / `has_trait` target, **and the target itself**.
+ * Sorted and de-duplicated. A mortal who carries template X is never dealt X again, the
+ * way a companion at the cap is never offered.
+ *
+ * Both ids are needed because an instantiated prize is a clone with the template's
+ * `type` and tags, and the world view (`graphContentCatalogs`) reads by type — so the
+ * bearer's own instance is a candidate in its own right, and excluding the template
+ * alone would still let the pool deal them a clone of their clone. (Instances held by
+ * *other* bearers remain candidates on the world view; that is a pre-existing leak of
+ * the carve, recorded on the THR-1520 closeout rather than widened into here.)
+ *
+ * Reads the two edge types the pool writes and nothing else; a bonded legendary
+ * (`bonded_to`) is never in a pool, and an agreement is edge-shaped and keeps its own
+ * catalog filter.
+ */
+export function heldTemplateIdsOf(graph: WorldGraph, bearerId: string): string[] {
+  const out = new Set<string>();
+  for (const edgeType of ['possesses', 'has_trait'] as const) {
+    for (const edge of graph.getOutgoingEdges(bearerId, edgeType)) {
+      out.add(edge.target);
+      out.add(templateIdOfHeldInstance(edge.target, bearerId));
+    }
+  }
+  return [...out].sort();
+}
+
+/** What {@link assembleRewardPoolDetailed} knows beyond the pool itself (THR-1520). */
+export interface AssembledRewardPool {
+  readonly pool: PoolEntry[];
+  /** Candidates dedup removed — matched the recipe, already held by the bearer. */
+  readonly excludedIds: readonly string[];
+  /** The bearer's held template ids that formed the `exclude` list; empty with no bearer. */
+  readonly heldTemplateIds: readonly string[];
+  /** False when the recipe's `requiresBearerTrait` term is unmet (or unjudgeable) — the pool is then empty. */
+  readonly bearerAdmitted: boolean;
 }
 
 /**
  * Assemble a weighted pool. Each candidate's weight = categoryWeight × tierCurve[tier].
  * Agreement candidates come from the agreement catalog (edge-backed, not nodes).
  */
-export function assembleRewardPool(
+export function assembleRewardPoolDetailed(
   graph: WorldGraph,
   recipe: ResolvedRewardRecipe,
   /**
    * The agent who would receive the reward. Required for companion candidates —
    * the cap and unique filters are per-bearer, so without it companions are
-   * simply not offered rather than offered wrongly (THR-1096).
+   * simply not offered rather than offered wrongly (THR-1096) — and, since THR-1520,
+   * for dedup against what they hold and for the `requiresBearerTrait` term.
    */
   bearerId?: string,
-): PoolEntry[] {
+): AssembledRewardPool {
   const pool: PoolEntry[] = [];
+  const heldTemplateIds = bearerId !== undefined ? heldTemplateIdsOf(graph, bearerId) : [];
+  const excludedIds: string[] = [];
+
+  // THR-1520: the recipe's bearer-trait term, judged here and never by the resolver.
+  // Unmet — or unjudgeable, with no bearer — means nothing is offered from any category.
+  const bearerAdmitted = contentQueryAdmitsBearer(graph, bearerId, { requiresBearerTrait: recipe.requiresBearerTrait });
+  if (!bearerAdmitted) return { pool, excludedIds, heldTemplateIds, bearerAdmitted };
   // One view per assembly, so a multi-category recipe scans each kind once rather than
   // once per category. Nothing is scanned until a category asks for it, which is why
   // building this per draw costs no more than the per-category `getNodesByType` it
@@ -235,12 +323,14 @@ export function assembleRewardPool(
       continue;
     }
 
-    const candidates = getCandidateNodes(
+    const { candidates, excludedIds: dropped } = getCandidateNodes(
       graph,
       category as AttachmentCategory,
       recipe.tagFilters,
       catalogs,
+      heldTemplateIds,
     );
+    for (const id of dropped) if (!excludedIds.includes(id)) excludedIds.push(id);
 
     for (const candidate of candidates) {
       const tierWeight = recipe.tierCurve[candidate.tier as AttachmentTier] ?? 0;
@@ -251,7 +341,16 @@ export function assembleRewardPool(
     }
   }
 
-  return pool;
+  return { pool, excludedIds, heldTemplateIds, bearerAdmitted };
+}
+
+/** The weighted pool alone — {@link assembleRewardPoolDetailed} without the dedup bookkeeping. */
+export function assembleRewardPool(
+  graph: WorldGraph,
+  recipe: ResolvedRewardRecipe,
+  bearerId?: string,
+): PoolEntry[] {
+  return assembleRewardPoolDetailed(graph, recipe, bearerId).pool;
 }
 
 /**
@@ -301,8 +400,8 @@ export const BAD_OUTCOME_CATEGORY_WEIGHTS: Partial<Record<AttachmentCategory, nu
 /** Reward node ID prefix */
 export const REWARD_INSTANTIATE_PREFIX = 'reward';
 
-/** Source tag for reward-created edges */
-export const REWARD_EDGE_SOURCE = 'encounter_reward';
+/** Source tag for reward-created edges and cloned prizes — lives in `types/attachments.ts` since THR-1520; re-exported here for its callers. */
+export { REWARD_EDGE_SOURCE };
 
 /** Default ticks for condition duration when not specified on template */
 export const REWARD_CONDITION_DEFAULT_TICKS = 15;
@@ -491,6 +590,8 @@ function traceRewardQuery(
   recipe: RewardPoolRecipe,
   candidateCount: number,
   pickedId: string | undefined,
+  /** What dedup did (THR-1520): the exclude list the bearer's holdings formed, and how many candidates it removed. */
+  dedup: { readonly heldTemplateIds: readonly string[]; readonly excludedCount: number },
 ): void {
   const kinds: ContentObjectKindId[] = [];
   for (const [category, weight] of Object.entries(recipe.categoryWeights)) {
@@ -502,7 +603,13 @@ function traceRewardQuery(
   }
   traceContentQuery({
     site: params.site ?? 'reward_draw',
-    query: { kind: kinds, tags: recipe.tagFilters },
+    query: {
+      kind: kinds,
+      tags: recipe.tagFilters,
+      ...(dedup.heldTemplateIds.length > 0 ? { exclude: dedup.heldTemplateIds } : {}),
+      ...(recipe.requiresBearerTrait !== undefined ? { requiresBearerTrait: recipe.requiresBearerTrait } : {}),
+    },
+    excludedCount: dedup.excludedCount,
     // The weighted pool's size, not the resolved set's: the tier curve drops candidates
     // the band cannot reach, and what the reader wants to know is how much the draw had
     // left to choose from.
@@ -541,15 +648,20 @@ export function drawSeededReward(
   // the same prize.
   const badRoll = rng();
   const isBadOutcome = badRoll < resolved.badOutcomeChance;
+  // The harm table drops the recipe's bearer-trait term along with its tag filter: the
+  // term says who may be dealt the *prize*, and a mortal who lacks it is not thereby
+  // spared the wound (THR-1520).
   const effectiveRecipe = isBadOutcome
-    ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined }
+    ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined, requiresBearerTrait: undefined }
     : resolved;
 
   // `recipientId` feeds the companion cap/unique filters (THR-1096); every other
   // category ignores it.
-  const pool = assembleRewardPool(graph, effectiveRecipe, recipientId);
+  const assembled = assembleRewardPoolDetailed(graph, effectiveRecipe, recipientId);
+  const pool = assembled.pool;
+  const dedup = { heldTemplateIds: assembled.heldTemplateIds, excludedCount: assembled.excludedIds.length };
   if (pool.length === 0) {
-    traceRewardQuery(params, effectiveRecipe, pool.length, undefined);
+    traceRewardQuery(params, effectiveRecipe, pool.length, undefined, dedup);
     return {
       isBadOutcome, poolSize: 0, drawRoll: null,
       drawnTemplateId: null, instantiation: null, tier: null, templateName: null,
@@ -558,7 +670,7 @@ export function drawSeededReward(
 
   const drawRoll = rng();
   const drawnTemplateId = drawFromPool(pool, drawRoll);
-  traceRewardQuery(params, effectiveRecipe, pool.length, drawnTemplateId ?? undefined);
+  traceRewardQuery(params, effectiveRecipe, pool.length, drawnTemplateId ?? undefined, dedup);
   if (!drawnTemplateId) {
     return {
       isBadOutcome, poolSize: pool.length, drawRoll,

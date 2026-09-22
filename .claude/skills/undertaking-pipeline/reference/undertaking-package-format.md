@@ -50,6 +50,7 @@ compile even though it compiled.
 | `motiveGate[]`, `harmClass` | Required on every `destroy`. |
 | `catalystQuery` | The encounter family the work may seed, by kind and tags: `{ kind: 'encounter_template', tags: ['#consortium_errand'] }`. **This is the field to author** (THR-1488). |
 | `catalystEncounterIds[]` | *Deprecated.* Literal encounter ids. Kept one release for un-migrated packs; `check:undertaking` fails an id that names no registered template. |
+| `appointmentPayoff` | **A work whose payoff is a meeting** (THR-1519): `{ meeting: ContentQuery, seedLabel, missed: { query: ContentQuery, seedLabel, delayTicks? }, delayTicks?, windowTicks? }`. On completion the actor plants an *appointment* (THR-1479) at the work's site — the kept branch is `meeting`, judged at the place; `missed` fires wherever the mortal is once the window closes. Both branches are queries, never ids; `check:undertaking` fails an empty one under `catalysts`, and the meeting counts in the write set. On a cell package it is a legal `override` key; the cell's own row lives in `UNDERTAKING_CELL_APPOINTMENTS`. |
 
 ### Catalysts — author the query, never the list (THR-1488)
 

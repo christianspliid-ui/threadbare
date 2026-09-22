@@ -1794,25 +1794,44 @@ if (import.meta.env.DEV) {
       anyTags?: readonly string[];
       tier?: number | { min?: number; max?: number };
       exclude?: readonly string[];
-    }) => {
+      requiresBearerTrait?: { traitId: string; minLevel?: number };
+    }, bearer?: string) => {
       const state = _gameStateProvider?.();
       if (!state) return null;
-      const [m, view] = await Promise.all([
+      const [m, view, gate, pool] = await Promise.all([
         import('./engine/contentQuery'),
         import('./engine/contentCatalogView'),
+        import('./engine/contentQueryBearer'),
+        import('./engine/rewardPool'),
       ]);
       // Loose in, checked at resolve: a console user types raw JSON, and a `kind` that
       // names nothing simply resolves empty — which is the honest answer and the one
       // this lever exists to give, rather than a type error the console cannot show.
       const typed = query as unknown as import('./types/contentQuery').ContentQuery;
+      // THR-1520 — the bearer's side. `bearer` resolves like every other agent lever
+      // (id, id prefix, partial name, `@hero`). When given and the query names no exclude
+      // list of its own, what the bearer already holds becomes the list — the reward
+      // pool's rule — and the `requiresBearerTrait` term is judged against them. Without
+      // a bearer the term is unmet, the same answer the pool gives a draw with no recipient.
+      const bearerNode = bearer !== undefined ? await resolveAgentNode(bearer) : null;
+      const bearerId = bearerNode?.id;
+      const heldTemplateIds = bearerId !== undefined ? pool.heldTemplateIdsOf(state.graph, bearerId) : [];
+      const effective = bearerId !== undefined && typed.exclude === undefined && heldTemplateIds.length > 0
+        ? { ...typed, exclude: heldTemplateIds }
+        : typed;
       // The *session* view, not the graph-only one: at a console you want to ask about
       // an encounter template as readily as about a prize.
-      const hits = m.resolveContentQuery(typed, view.sessionContentCatalogs(state.graph));
+      const { hits, excludedIds } = m.resolveContentQueryDetailed(effective, view.sessionContentCatalogs(state.graph));
       return {
-        query,
+        query: effective,
         candidateCount: hits.length,
         truncated: hits.length > m.CONTENT_QUERY_MAX_CANDIDATES,
         hits: hits.map((h) => ({ kind: h.kind, id: h.id, tier: h.tier })),
+        excludedIds: [...excludedIds],
+        bearerId: bearerId ?? null,
+        bearerFound: bearer === undefined ? null : bearerNode !== null,
+        heldTemplateIds,
+        bearerAdmitted: gate.contentQueryAdmitsBearer(state.graph, bearerId, typed),
       };
     },
 

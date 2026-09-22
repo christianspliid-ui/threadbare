@@ -47,20 +47,24 @@
 import type { GraphEdge, GraphNode } from '../types/graph';
 import type { GameState } from '../types/gameState';
 import type { AxiologicalProfile } from '../types/agent';
-import type { PendingEncounterSeed, PlantedAppointment } from '../types/unifiedAction';
-import type { AppointmentRegime } from '../types/trace';
+import type { AppointmentBlock, PendingEncounterSeed, PlantedAppointment } from '../types/unifiedAction';
+import type { AppointmentPlantedTrace, AppointmentRegime } from '../types/trace';
 import type { WorldGraph } from './graph';
 import { hexDistance } from '../lib/hexMath';
+import { emitTrace } from './traceBuffer';
 import { resolveLocationToHex } from './encounterAwareness';
 import { findShortestPath } from './pathfinding';
 import { isPlaceNode } from './sublocationShape';
 import { getAgentLocationId } from './graphQueries';
 import {
   APPOINTMENT_AMBITION_MARGIN_TICKS,
+  APPOINTMENT_FAVOUR_MAGNITUDE,
   APPOINTMENT_LEAVE_MARGIN_TICKS,
+  APPOINTMENT_MAX_PER_MORTAL,
   APPOINTMENT_PRUDENCE_MARGIN_TICKS,
   APPOINTMENT_PULL_HORIZON_TICKS,
   APPOINTMENT_PULL_WEIGHT,
+  APPOINTMENT_WINDOW_TICKS,
 } from '../data/movement-content';
 
 /** Edge property key that marks an `owes_favor` edge as an appointment's promise. */
@@ -95,7 +99,9 @@ export function readPlantedAppointment(seed: PendingEncounterSeed | undefined): 
 
 /** Every live appointment seed a mortal holds, nearest due first. */
 export function agentAppointmentSeeds(
-  state: Pick<GameState, 'pendingEncounterSeeds'>,
+  // Widened to a readonly view (THR-1519) so a planter can count the seeds it has not
+  // yet appended to state without copying them; every `GameState` still satisfies it.
+  state: { readonly pendingEncounterSeeds?: readonly PendingEncounterSeed[] },
   agentId: string,
 ): PendingEncounterSeed[] {
   const seeds = state.pendingEncounterSeeds ?? [];
@@ -254,6 +260,101 @@ export function readRegimeMemo(agentNode: GraphNode | undefined): { seedId: stri
   return { seedId: memo.seedId, regime: memo.regime as AppointmentRegime };
 }
 
+// ─── The one planter ─────────────────────────────────────────────────────────
+
+/** What a planter hands in: refs already resolved to node ids — the binding is the caller's business. */
+export interface PlantAppointmentInput {
+  readonly graph: WorldGraph;
+  /** The seeds already planted this pass and not yet on state — counted toward `APPOINTMENT_MAX_PER_MORTAL`. */
+  readonly pendingSeeds: readonly PendingEncounterSeed[];
+  readonly seedId: string;
+  readonly targetAgentId: string;
+  /** Resolved Location / Place node id, or `undefined` when the caller could not bind one. */
+  readonly placeId: string | undefined;
+  /** Resolved counterparty agent id, or `undefined`; the creditor is then the place itself. */
+  readonly counterpartyId?: string;
+  readonly tick: number;
+  readonly dueTick: number;
+  readonly windowTicks?: number;
+  readonly missed: AppointmentBlock['missed'];
+  /** For the trace: the label and, when there is one, the template behind the plant. */
+  readonly seedLabel: string;
+  readonly templateId?: string;
+  /** The unresolved ref, for the refused trace — what the author wrote, not what failed to bind. */
+  readonly authoredPlaceRef?: string;
+  readonly source: NonNullable<AppointmentPlantedTrace['source']>;
+}
+
+export type PlantAppointmentResult =
+  | { readonly planted: PlantedAppointment; readonly refused?: undefined }
+  | { readonly planted?: undefined; readonly refused: NonNullable<AppointmentPlantedTrace['refused']> };
+
+/**
+ * The one planter (THR-1479, factored for THR-1519 so the undertaking grid and the
+ * encounter aftermath cannot drift): checks the target is live and the place has a
+ * hex, refuses a fourth, writes the promise — an `owes_favor` edge of a particular
+ * shape — and traces. It does **not** build the seed and it does **not** bump
+ * `worldVersion`: the caller owns the seed's other fields and the runtime, and this
+ * module deliberately imports nothing that imports the scoring path.
+ *
+ * Every refusal is a plain result, never a throw (NFP #4); the caller plants today's
+ * placeless seed and the trace says why.
+ */
+export function plantAppointmentPromise(input: PlantAppointmentInput): PlantAppointmentResult {
+  const { graph, seedId, targetAgentId, tick, dueTick, missed, source } = input;
+  const placeId = input.placeId && resolveLocationToHex(graph, input.placeId) ? input.placeId : undefined;
+  const targetLive = !!graph.getNode(targetAgentId);
+  const held = agentAppointmentSeeds({ pendingEncounterSeeds: input.pendingSeeds }, targetAgentId).length;
+  const refused: NonNullable<AppointmentPlantedTrace['refused']> | undefined =
+    !placeId || !targetLive ? 'place_unresolved'
+      : held >= APPOINTMENT_MAX_PER_MORTAL ? 'over_max'
+        : undefined;
+  const windowTicks = input.windowTicks ?? APPOINTMENT_WINDOW_TICKS;
+
+  let planted: PlantedAppointment | undefined;
+  if (!refused && placeId) {
+    const counterpartyId = input.counterpartyId && graph.getNode(input.counterpartyId)?.type === 'actor'
+      ? input.counterpartyId
+      : undefined;
+    const favourEdgeId = `owes_favor_appt_${seedId}`;
+    // Creditor is the counterparty when there is one, else the place itself — a
+    // favour to a crossroads is what "I will be there" means. THR-1527: `redeemed` /
+    // `broken` are in the schema's required set (`EDGE_SCHEMA.owes_favor`), written
+    // `false` like every other favour writer — a kept meeting removes the edge, a
+    // missed one flips `broken`.
+    graph.addEdge({
+      id: favourEdgeId,
+      source: targetAgentId,
+      target: counterpartyId ?? placeId,
+      type: 'owes_favor',
+      properties: {
+        grantedTick: tick,
+        magnitude: APPOINTMENT_FAVOUR_MAGNITUDE,
+        context: 'appointment',
+        redeemed: false,
+        broken: false,
+        [APPOINTMENT_FAVOUR_PROP]: { seedId, locationId: placeId, dueTick },
+      },
+    });
+    planted = { locationId: placeId, dueTick, windowTicks, counterpartyId, missed, favourEdgeId };
+  }
+
+  const placeName = placeId ? graph.getNode(placeId)?.name ?? placeId : input.authoredPlaceRef ?? input.placeId ?? '(unbound)';
+  emitTrace({
+    tick, category: 'appointment_planted', agentId: targetAgentId,
+    seedId, locationId: placeId ?? input.authoredPlaceRef ?? input.placeId ?? '', dueTick, windowTicks,
+    counterpartyId: planted?.counterpartyId,
+    templateId: input.templateId,
+    source,
+    refused,
+    summary: refused
+      ? `Appointment refused (${refused}): "${input.seedLabel}" planted placeless for ${targetAgentId}`
+      : `Appointment planted: ${targetAgentId} at ${placeName} by tick ${dueTick} (window ${windowTicks}) — "${input.seedLabel}"`,
+  });
+
+  return planted ? { planted } : { refused: refused! };
+}
+
 // ─── The promise and the record ──────────────────────────────────────────────
 
 /** Kept, or the world lost the place: the promise is released. Fail-soft on a missing edge. */
@@ -314,11 +415,18 @@ export function writeAppointmentEvent(
         ...(reason ? { reason } : {}),
       },
     });
+    // THR-1519: `EDGE_SCHEMA` requires `role` / `outcome` / `tick` on `participated_in`
+    // and `tick` on `occurred_at` — written the way `createEncounterEventNode` writes
+    // them. The first live kept meetings (seed 42, three of them) each cost the
+    // heavy edge-integrity smoke four schema warnings while these were `{}`.
     if (graph.getNode(agentId)) {
-      graph.addEdge({ id: `participated_in_${eventNodeId}`, source: agentId, target: eventNodeId, type: 'participated_in', properties: {} });
+      graph.addEdge({
+        id: `participated_in_${eventNodeId}`, source: agentId, target: eventNodeId, type: 'participated_in',
+        properties: { role: 'primary', outcome: kind === 'appointment_kept' ? 'kept' : 'missed', tick },
+      });
     }
     if (graph.getNode(locationId)) {
-      graph.addEdge({ id: `occurred_at_${eventNodeId}`, source: eventNodeId, target: locationId, type: 'occurred_at', properties: {} });
+      graph.addEdge({ id: `occurred_at_${eventNodeId}`, source: eventNodeId, target: locationId, type: 'occurred_at', properties: { tick } });
     }
     return eventNodeId;
   } catch (err) {

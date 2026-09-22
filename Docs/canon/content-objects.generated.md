@@ -8,13 +8,13 @@ generator: npm run generate-content-objects
 
 > **GENERATED — do not hand-edit.** Rendered by `npm run generate-content-objects` from the registry (`src/data/content-objects.ts`) and a static census of the catalogs it names. The hand page — what the kinds mean and how to add one — is [`content-objects.md`](content-objects.md).
 
-12 kinds · 1144 claimed entries across 32 catalogs.
+13 kinds · 1220 claimed entries across 38 catalogs.
 
 ## Drift
 
 No drift: every catalog id is claimed by a kind, and every kind's prefixes claim entries in its own catalogs.
 
-**Ungated kinds — 4 of 12.** Counted, not fatal: most content kinds have no machine gate yet, and closing that is what the later slices of THR-1481 are judged by.
+**Ungated kinds — 4 of 13.** Counted, not fatal: most content kinds have no machine gate yet, and closing that is what the later slices of THR-1481 are judged by.
 
 - `action_template`
 - `ambition_template`
@@ -30,8 +30,9 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 | `undertaking_template` | Undertaking | 116 | `MERCHANT_STRATEGIC_TEMPLATES` (6/6)<br>`BUILDER_STRATEGIC_TEMPLATES` (9/9)<br>`SCHOLAR_STRATEGIC_TEMPLATES` (7/7)<br>`ZEALOT_STRATEGIC_TEMPLATES` (6/6)<br>`COURT_STRATEGIC_TEMPLATES` (15/15)<br>`WARLORD_STRATEGIC_TEMPLATES` (9/9)<br>`WANDERER_STRATEGIC_TEMPLATES` (4/4)<br>`FACTORY_STRATEGIC_TEMPLATES` (0/0)<br>`UNDERTAKING_CELL_TEMPLATES` (60/60) | `undertaking` | card → codex | `npm run check:undertaking` | Ambitions & Undertakings | 🟢 LIVE |
 | `item_template` | Item | 134 | `REWARD_POSSESSIONS` (111/111)<br>`TREASURE_MAPS` (5/5)<br>`STARTER_POSSESSIONS` (8/8)<br>`ANOMALY_SIGNATURE_ARTIFACTS` (10/10) | `item` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `legendary_template` | Legendary artifact | 3 | `ARTIFACT_TEMPLATES` (3/3) | `legendary_artifact` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `condition_template` | Condition | 46 | `REWARD_CONDITIONS` (35/35)<br>`STARTER_CONDITIONS` (5/5)<br>`ANOMALY_CONDITIONS` (6/6) | `condition` | card → codex | `npm run check:attachment` | Effects & Conditions | 🟢 LIVE |
+| `condition_template` | Condition | 67 | `REWARD_CONDITIONS` (35/35)<br>`STARTER_CONDITIONS` (5/5)<br>`ANOMALY_CONDITIONS` (6/6)<br>`CONDITION_TRAIT_DEFINITIONS` (18/18)<br>`ECONOMIC_TRAIT_DEFINITIONS` (3/8) | `condition` | card → codex | `npm run check:attachment` | Effects & Conditions | 🟢 LIVE |
 | `power_template` | Power | 25 | `REWARD_BESTOWED_POWERS` (12/12)<br>`ANOMALY_BESTOWED_POWERS` (8/8)<br>`SPELL_TEMPLATES` (5/5) | `power` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
+| `trait_template` | Trait | 55 | `CORE_TRAIT_DEFINITIONS` (10/10)<br>`PERSONALITY_TRAIT_DEFINITIONS` (16/16)<br>`MASTERY_TRAIT_DEFINITIONS` (7/7)<br>`REPUTATION_TRAIT_DEFINITIONS` (17/17)<br>`ECONOMIC_TRAIT_DEFINITIONS` (5/8) | `trait` | card only | `npm run check:attachment` | Personality & Emergent Traits | 🟢 LIVE |
 | `agreement_template` | Agreement | 7 | `AGREEMENT_REWARD_TEMPLATES` (7/7) | `agreement` | card → codex | `npm run check:attachment` | Secrets & Favors | 🟢 LIVE |
 | `companion_template` | Companion | 9 | `COMPANION_TEMPLATES` (9/9) | `companion` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `ambition_template` | Ambition | 20 | `AMBITION_TEMPLATES` (10/10)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | card → codex | — | Ambitions & Undertakings | 🟢 LIVE |
@@ -51,6 +52,7 @@ Required axes and projections land with the vocabulary in slice 2 (`src/data/con
 | `legendary_template` | `family` | — |
 | `condition_template` | `family`, `polarity` | — |
 | `power_template` | `family` | sphere ← `sphereAffinity` |
+| `trait_template` | `family` | — |
 | `agreement_template` | `reach`, `family` | — |
 | `companion_template` | `family` | — |
 | `ambition_template` | _(slice 2)_ | — |
@@ -68,8 +70,9 @@ Prefixes are claimed for **totality**, not ownership: every id in a kind's catal
 | `undertaking_template` | `strategic_` `cell.` |
 | `item_template` | `reward_` `starter_` `anomaly_` |
 | `legendary_template` | `worldforge_` `heartseed_` `voidgate_` |
-| `condition_template` | `reward_` `starter_` `anomaly_` |
+| `condition_template` | `reward_` `starter_` `anomaly_` `trait.condition.` `trait.scar.` |
 | `power_template` | `reward_` `anomaly_` `spell_` |
+| `trait_template` | `trait.core.` `trait.personality.` `trait.mastery.` `trait.reputation.` `trait.cultural.` |
 | `agreement_template` | `agreement.` |
 | `companion_template` | `companion.` |
 | `ambition_template` | `ambition_` |
@@ -95,6 +98,7 @@ What a granted entry becomes. The reverse pointer — a `content`-status world-o
 | `legendary_template` | `legendary_artifact` | live |
 | `condition_template` | `condition` | live |
 | `power_template` | `power` | live |
+| `trait_template` | `trait` | live |
 | `agreement_template` | `agreement` | live |
 | `companion_template` | `companion` | live |
 | `ambition_template` | `ambition` | live |
@@ -108,8 +112,9 @@ What a granted entry becomes. The reverse pointer — a `content`-status world-o
 - **Undertaking** (`undertaking_template`, UL `Agents.md#undertaking`) — A multi-tick work a mortal commits to — the seven authored packs, the factory's compiled output, and the synthesised cells (verb × object type) that superseded the hand-written packs under the `cells` model. `catalystEncounterIds` on these templates is the dormant literal-id path slice 4 replaces with a query.
 - **Item** (`item_template`, UL `Traits.md#attachment`) — Arms, mounts, tomes, relics, tools, provisions — the possession catalog the reward pool already draws from by tag (`reward_draw`, THR-1146), which makes this the one kind the content query is modelled on rather than added to. Entries are `GraphNode` literals, not a template type, so the tag axes are the only vocabulary they share.
 - **Legendary artifact** (`legendary_template`, UL `Traits.md#attachment`) — An item with its own trait graph, bonded rather than possessed. Three entries, each its own id namespace — the one kind whose prefixes are entity names, because there are too few for a family to have formed. A fourth artifact adds a fourth prefix; when that is tiresome, the kind takes a shared `legendary_` prefix and this note is the reason it did not start with one.
-- **Condition** (`condition_template`, UL `Traits.md#trait-category`) — Wounds, diseases, strains; blessings and curses as signed conditions. Entries are shared `trait` definition nodes with `subcategory: condition | scar` — one node per kind, per-bearer state on the `has_trait` edge (THR-1395). The `#positive` / `#negative` polarity the proxy-event classifier already reads is the seed of slice 2's polarity axis.
+- **Condition** (`condition_template`, UL `Traits.md#trait-category`) — Wounds, diseases, strains; blessings and curses as signed conditions. Entries are shared `trait` definition nodes with `subcategory: condition | scar` — one node per kind, per-bearer state on the `has_trait` edge (THR-1395). The `#positive` / `#negative` polarity the proxy-event classifier already reads is the seed of slice 2's polarity axis. THR-1520 seated the trait content files here too: the eighteen `trait.condition.*` definitions (the ten place conditions among them) and the condition / scar half of `ECONOMIC_TRAIT_DEFINITIONS` — the nodes the graph carve has always returned for this kind, now visible to `check:attachment` and the tag contract.
 - **Power** (`power_template`, UL `Traits.md#power`) — A god's gift (`bestowed`) and a spell a mortal learned (`spell`) — two classes of one kind, per THR-1429. The bestowed half is `trait` definition nodes in the reward catalogs; the spell half is `SpellTemplate` literals seeded into the same node shape. Two catalog shapes, one kind, because what a query asks for is "a power", never "a power in the literal form of a trait node".
+- **Trait** (`trait_template`, UL `Traits.md#trait`) — A mortal's own identity — Core continua poles, emergent personality poles, masteries, reputations, and the cultural marks a guild or a people stamps on its own. Seated by THR-1520 so the trait content files are content the model can see: `check:attachment` gates their tags, and a query for "a mastery" resolves against the seeded definitions. Conditions and scars are the Condition kind even where they live in the same file; `innate`, `destiny` and `experience` traits are minted at runtime and belong to no catalog.
 - **Agreement** (`agreement_template`, UL `Traits.md#attachment`) — A favour owed or a mark held — an edge between two parties, so the template names a relationship rather than a thing. Its `tier` is a bare `number` today where every sibling catalog carries a `RarityTier`; slice 2 retypes it, which is why the content query's tier window is specified over `RarityTier` and not over the field.
 - **Companion** (`companion_template`, UL `Agents.md#companion`) — A face that walks with one mortal and grants small always-on bonuses; never an agent. Already tag-bearing, and already drawn by the reward pool — the second kind the content query costs nothing to serve.
 - **Ambition** (`ambition_template`, UL `Agents.md#undertaking`) — What a mortal wants, and the shape of the work it offers. Three catalogs by how one is minted — assigned at seeding, grown from a grievance, or minted by an event — which is a provenance distinction, not a kind distinction, so they share one row.

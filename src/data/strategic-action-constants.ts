@@ -165,6 +165,26 @@ export const STRATEGIC_CATALYST_SEED_PRIORITY = 0.6;
  */
 export const STRATEGIC_CATALYST_REACTION_ID = 'strategic_catalyst';
 
+/**
+ * Ticks between a work's completion and the meeting it arranged (THR-1519) — the
+ * `dueTick` of a cell's `appointmentPayoff` is completion plus this. Longer than the
+ * catalyst's three so the mortal has a road to walk and the leave margin has room to
+ * mean something; inside `APPOINTMENT_PULL_HORIZON_TICKS` (24) so the lean starts
+ * the moment the promise is made.
+ */
+export const UNDERTAKING_APPOINTMENT_DELAY_TICKS = 18;
+
+/** Priority carried by a work's appointment seed — a promise outranks a wake (`STRATEGIC_CATALYST_SEED_PRIORITY`). */
+export const UNDERTAKING_APPOINTMENT_SEED_PRIORITY = 0.8;
+
+/**
+ * The `sourceReactionId` a work's appointment seed carries (THR-1519). The
+ * `STRATEGIC_CATALYST_REACTION_ID` pattern: one string the planter stamps and the
+ * seeding site reads back, so the resolution is attributed to the undertaking and not
+ * to an encounter ending.
+ */
+export const UNDERTAKING_APPOINTMENT_REACTION_ID = 'undertaking_appointment';
+
 /** Ticks before unattended control states begin degrading */
 export const STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS = 10;
 

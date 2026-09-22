@@ -26,7 +26,10 @@ interface ReputationTraitNode {
   id: string;
   type: 'trait';
   name: string;
-  properties: TraitDefinitionProperties;
+  // The index signature is what lets the catalog be a `ContentCatalogEntry` (THR-1520):
+  // an interface without one is not assignable to the entry's open property bag, and
+  // every other node-shaped catalog is typed `GraphNode[]`, which has it.
+  properties: TraitDefinitionProperties & Record<string, unknown>;
 }
 
 // ─── Scope shorthand ───────────────────────────────────────────────
@@ -496,7 +499,7 @@ export const REPUTATION_TRAIT_DEFINITIONS: ReputationTraitNode[] = [
       maxLevel: 3,
       visibility: 'public',
       domainContributions: {},
-      tags: ['#power', '#reputation', '#renown'],
+      tags: ['#reputation', '#renown'],
       flavorText: 'When they speak, the room listens. Not from love or fear — from gravity.',
       reputationEffects: {
         reactions: [

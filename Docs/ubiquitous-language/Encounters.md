@@ -348,13 +348,15 @@ Distinguish from `DealContextTag` (`might`, `finesse`, …), which is a **card-c
 
 **Aliases:** ContentQuery
 **Also see:** `[[Content Object]]`, `[[Content Tag]]`, `[[Aftermath]]`
-**Status:** proposed — resolver lands in THR-1487 (THR-1481 slice 3)
+**Status:** canonical — resolver landed in THR-1487 (THR-1481 slice 3); bearer-side terms THR-1520
 
 A request for content **by kind and tags rather than by id** — *"an item tagged `#weapon` and `#entropy`"* instead of *"`reward_arms_bronze_spear`"*. The shape the reward pool's tag-filtered draw already has (`reward_draw`, THR-1146), generalised so encounter seeds, undertaking catalysts and condition pools can share one resolver.
 
 Why it matters: literal ids rot. 67 of 115 reveal families matched zero templates before THR-844 aliased them; undertaking `catalystEncounterIds` spell `encounter_` where the corpus spells `encounter.`, so none resolve. A query is gated at authoring time against the runtime's own predicate, so a filter that matches nothing fails the build rather than the tick.
 
 Resolution is pure and deterministically ordered; exactly one seeded draw sits on top of it, and gates call the resolver and never the draw.
+
+Two terms are about the **recipient** and are judged at the call site, never by the resolver (THR-1520): `exclude` — ids never returned, which the reward pool fills with everything the bearer already holds — and `requiresBearerTrait` — a `[[TraitPredicate]]` only a bearer satisfying it may be dealt past. The resolver returns the same hits with the trait term and without it; a site with no bearer to judge treats the term as unmet.
 
 ---
 
