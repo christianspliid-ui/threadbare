@@ -38,6 +38,12 @@ import { AMBITION_TEMPLATES, GRIEVANCE_AMBITION_TEMPLATES, EVENT_MINTED_AMBITION
 import { OMEN_TEMPLATES } from './omenTemplates';
 import { NUDGE_CARD_LIBRARY } from './nudge-card-library';
 import { SPELL_TEMPLATES } from './spell-templates';
+import { CORE_TRAIT_DEFINITIONS } from './core-trait-content';
+import { PERSONALITY_TRAIT_DEFINITIONS } from './personality-trait-content';
+import { MASTERY_TRAIT_DEFINITIONS } from './mastery-trait-content';
+import { REPUTATION_TRAIT_DEFINITIONS } from './reputation-trait-content';
+import { ECONOMIC_TRAIT_DEFINITIONS } from './economic-trait-content';
+import { CONDITION_TRAIT_DEFINITIONS } from './condition-trait-content';
 
 import { CONTENT_OBJECT_KINDS, type ContentCatalogRef, type ContentObjectKindId } from './content-objects';
 
@@ -89,6 +95,13 @@ export const CONTENT_CATALOGS: Readonly<Record<string, readonly ContentCatalogEn
   'data/omenTemplates#OMEN_TEMPLATES': OMEN_TEMPLATES,
   'data/nudge-card-library#NUDGE_CARD_LIBRARY': NUDGE_CARD_LIBRARY,
   'data/spell-templates#SPELL_TEMPLATES': SPELL_TEMPLATES,
+  // THR-1520 — the six trait content files.
+  'data/core-trait-content#CORE_TRAIT_DEFINITIONS': CORE_TRAIT_DEFINITIONS,
+  'data/personality-trait-content#PERSONALITY_TRAIT_DEFINITIONS': PERSONALITY_TRAIT_DEFINITIONS,
+  'data/mastery-trait-content#MASTERY_TRAIT_DEFINITIONS': MASTERY_TRAIT_DEFINITIONS,
+  'data/reputation-trait-content#REPUTATION_TRAIT_DEFINITIONS': REPUTATION_TRAIT_DEFINITIONS,
+  'data/economic-trait-content#ECONOMIC_TRAIT_DEFINITIONS': ECONOMIC_TRAIT_DEFINITIONS,
+  'data/condition-trait-content#CONDITION_TRAIT_DEFINITIONS': CONDITION_TRAIT_DEFINITIONS,
 };
 
 /** The entries a registry ref names, or `undefined` when the loader has no such key. */

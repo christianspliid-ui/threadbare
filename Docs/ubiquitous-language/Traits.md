@@ -16,6 +16,8 @@ A trait is **inert on its bearer**. It carries no behavior of its own — every 
 
 The player-facing word for a trait is the trait's own display name, never the category or the id. Trait **levels are never surfaced as numerals** — words only, per the game's legibility law.
 
+**Also a content kind.** Since THR-1520 (2026-09-22) the five mortal-trait content files are the `trait_template` kind of the content-object registry (game word *Trait*, becomes the world object `trait`), so a trait is a thing an author may write into a catalog, gated by `check:attachment`, and findable by kind and tag (`{ kind: 'trait_template', tags: ['#mastery'] }`). Conditions and scars stay the Condition kind even where they share a file. A **bearer-trait term** on a content query (`requiresBearerTrait`, a `[[TraitPredicate]]`) says only a bearer holding the trait may be dealt the content; it is judged at the call site through the one trait gate, never by the resolver.
+
 ---
 
 ### Trait Assignment

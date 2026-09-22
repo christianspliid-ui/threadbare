@@ -159,6 +159,11 @@ export const SURFACE_BY_CONTENT_KIND: Readonly<Record<ContentObjectKindId, Surfa
   },
   condition_template: { card: 'content', sheet: 'codex' },
   power_template: { card: 'content', sheet: 'codex' },
+  trait_template: {
+    card: 'content',
+    sheet: null,
+    note: 'Withheld for want of a shelf, not by ruling (THR-1520): the codex has no category that catalogues a mortal\'s own traits — its `conditions` rail reads `subcategory: condition` and nothing reads `mastery`, `reputation`, `core`, `personality` or `cultural`. A trait is met on its bearer\'s sheet today. Chartering a codex shelf for the trait catalogs is a design decision this slice records rather than takes.',
+  },
   agreement_template: { card: 'content', sheet: 'codex' },
   companion_template: {
     card: 'content',

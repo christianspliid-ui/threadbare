@@ -231,7 +231,9 @@ describe('surface registry — content kinds', () => {
     const withheld = CONTENT_OBJECT_KIND_IDS
       .filter(id => SURFACE_BY_CONTENT_KIND[id].sheet === null)
       .sort();
-    expect(withheld).toEqual(['encounter_template', 'omen_template']);
+    // `trait_template` (THR-1520) is withheld for want of a codex shelf, not by ruling —
+    // its row's note says so; charter one and this line moves.
+    expect(withheld).toEqual(['encounter_template', 'omen_template', 'trait_template']);
   });
 
   it('fills the content-object registry surface column from this one source', () => {

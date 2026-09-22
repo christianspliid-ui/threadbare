@@ -6,6 +6,21 @@
 
 ---
 
+## Draw-by-trait completion — never dealt what you hold, a bearer-trait term, the trait catalogs seated (THR-1520)
+
+> Plan doc: `Docs/plans/2026-09-21-thr-790-traits-wave-2.md` § Done when › Slice 2.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/rewardPool.ts` — `heldTemplateIdsOf` / `templateIdOfHeldInstance` (the exclude list off `possesses` / `has_trait`), `assembleRewardPoolDetailed` (pool + `excludedIds` + `bearerAdmitted`), `toContentQuery` projects `requiresBearerTrait`, the harm table drops it | wherever `drawSeededReward` runs (aftermath `reward_draw`, step `rewardPool`) | — | reads graph edges | `content.query_resolved` / `content.query_empty` (`excludedCount`, `query.exclude`, `query.requiresBearerTrait`) | `__DEBUG.queryContent(q, bearer)`, CLI `query … --bearer` |
+| `engine/contentQuery.ts` — `resolveContentQueryDetailed`, the reward-instance skip in `carveNodes` (`REWARD_EDGE_SOURCE`), `trait_template` in `GRAPH_BACKED`, `?bearer:` in `describeContentQuery` | — (pure) | — | — | via `traceContentQuery` | same |
+| `engine/contentQueryBearer.ts` (new) — `contentQueryAdmitsBearer` → `resolveTraitPredicate` | called by the pool | — | — | — | `bearerAdmitted` on the levers |
+| `types/contentQuery.ts` (`exclude` semantics, `requiresBearerTrait`), `types/attachments.ts` (`RewardPoolRecipe.requiresBearerTrait`, `REWARD_EDGE_SOURCE`), `types/trace.ts` (`excludedCount`, traced term) | — | — | — | — | — |
+| `data/content-objects.ts` — kind `trait_template`; Condition gains `trait.condition.` / `trait.scar.` + two catalogs. Mirrors: `types/contentRef.ts`, `data/contentCatalogs.ts`, `data/surface-registry.ts` (sheet `null`, noted), `engine/contentEntryResolver.ts`, `content-eval/attachmentContract.ts` (`ATTACHMENT_KIND_IDS`) | — | content card (`ContentRef` router) | — | — | `__DEBUG.getContentObjects()`, CLI `content trait_template`, `check:attachment --all` |
+| `data/content-tags.ts` — 45 `family` tags; `economic-trait-content.ts` (+`#negative` on two scars), `condition-trait-content.ts` (−`#general`), `reputation-trait-content.ts` (−`#power`) | content | — | — | — | `contentTags.test.ts`, `generate-content-tag-catalog` |
+
+Player controls: none. UI pillar N/A — no player surface changed; the content card for a trait entry renders through the existing `attachmentNode` adapter.
+
 ## Appointments — a mortal keeps or misses a meeting at a place by a time (THR-1479 slice 1)
 
 > Plan doc: `Docs/plans/2026-09-21-thr-1479-appointment-primitive.md` § Wiring.

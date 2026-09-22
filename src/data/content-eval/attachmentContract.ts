@@ -45,6 +45,8 @@ export const ATTACHMENT_KIND_IDS: readonly ContentObjectKindId[] = [
   'legendary_template',
   'condition_template',
   'power_template',
+  // THR-1520 — the trait content files, once they were registered catalogs.
+  'trait_template',
   'agreement_template',
   'companion_template',
 ];
