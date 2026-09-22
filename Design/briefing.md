@@ -1,15 +1,15 @@
 # Briefing
-**Generated:** 2026-09-22 07:57 local (05:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-22 08:58 local (06:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**One design hour on [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants) — are scenes being handed to exactly the mortals who will refuse them?** Open a chat and say you want to work THR-1525.
+**One design hour on [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) — are scenes being handed to exactly the mortals who will refuse them?** Open a chat and say you want to work THR-1525.
 
 When the world picks *which mortal* gets offered a scene, it favours the mortal who leans one way on the scene's named value. But when that scene's choice then forks on the same value, the arm that matters is usually the other one — so the game reliably offers a two-way choice to the person who will take the dull arm. **Measured, not suspected:** A Bargain at the Crossroads fired once in a thousand ticks and was refused, and the meeting it was meant to arrange never happened on any seed. Pointing that one scene at a different value made it fire 3 and 11 times on two seeds.
 
 **The fork is yours because both readings are defensible.** Either the rule was always meant to draw both kinds of mortal — and the code has quietly disagreed with its own documentation for months — or the lopsidedness *is* the design, a Protector really should be drawn to a mercy scene, and the house guide must stop telling authors to reuse that axis for the fork. Whichever you pick, the work after it is ordinary.
 
-**It leads again because the shelf behind it is now empty.** The build queue went from one job to zero this hour, and the planning lane's one-design-desk rule means nothing else can take THR-1525's place until it comes off — and it can only come off in a chat with you.
+**It leads a third hour because nothing behind it can take its place.** The build shelf did refill this hour — one job, released when the piece ahead of it finished — but the planning lane may hold only one design on its desk, and THR-1525 is on it. It comes off in a chat with you or not at all.
 
 ## Also waiting (5)
 
@@ -21,15 +21,15 @@ When the world picks *which mortal* gets offered a scene, it favours the mortal 
 
 ## Queue
 
-**Starved — 0 ready, 2 in flight.** The shelf emptied by ordinary throughput, not by a failure: THR-1519 merged at 06:52 local and THR-1520 — the sole occupant of Ready for Dev — was claimed at 07:11 to replace it, with nothing behind it.
+**Starved — 1 ready, 1 in flight.** The shelf came back off zero by ordinary throughput, not by anything getting unstuck.
 
-- **In flight, both healthy:** [THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the) (traits wave 2, slice 2) and [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) (a held town is a faction position). No parked claims.
-- **28 items in Todo, none promotable.** 15 are wayfinder decision tickets; of the remaining 13, every one is waiting on a design call rather than on another job. The planning lane widened its scan into the Idea column by hand this run and found the same shape there.
-- **Superseded:** yesterday's grooming report asked for a design session on THR-1479. That feature finished overnight — all three parts merged — so the ask is closed, but its diagnosis was right and still is: the missing step is plan-doc authoring.
+- **Ready to build:** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) (traits wave 2, slice 3 — artifact traits). It was blocked by slice 2, which merged at 07:54 local; the planning lane promoted it at 08:30 with a full coordination block. A builder will likely claim it within the hour, and then the shelf is empty again.
+- **In flight:** [THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and) (a held town is a faction position). No parked claims.
+- **27 items in Todo, none promotable.** 15 are wayfinder decision tickets; of the remaining 12, every one is waiting on a design call rather than on another job. That is the shape behind the lead ask, and it has not moved in three hours.
 
 ## Health
 
-- **[PR #1981](https://github.com/christianspliid-ui/threadbare/pull/1981) cannot merge** — a conflict in six generated/docs files *and* a failing required check. Needs a session to merge `origin/main`, resolve, and read the failing check before pushing; `update-branch` will not fix it. Executor work, already written onto its ticket by the planning lane.
-- **Lane silence — the weekend gap is declined, per your 8 August and 11 September rulings.** The worst episode (25.1h) ran Saturday 11:33 → Sunday 12:37 local, squarely weekend-shaped. The Sunday-evening → Monday-afternoon episode (20.7h) is mostly overnight and has since recovered with heavy activity. Raising a self-healed gap as your lead would crowd out a real ask, so it stays a standing question, not this hour's.
-- **Home checkout is 4 commits behind `origin/main`** — expected drift on the read-only mirror; nothing unique is stranded there.
-- **Everything else green.** Deploy pending (latest commit pushed under 20 minutes ago), CI and all three scheduled GitHub jobs healthy, all 9 scheduled tasks within a slot of schedule, the git reaper ran at 07:42, and engine tick cost is 70 ms/tick — 6% *under* the 7-day median.
+- **[PR #1981](https://github.com/christianspliid-ui/threadbare/pull/1981) still cannot merge** — a conflict in six generated/docs files *and* a failing required check, unchanged for 2h 43m. Needs a session to merge `origin/main`, resolve, then read the failing check before pushing; `update-branch` will not fix it. Executor work, already written onto its ticket.
+- **The slow post-merge test job went red again** — "Heavy simulation tests" has been failing on the newest commit on `main` for about an hour. It is not a required check, so nothing is blocked by it, but the fix it needs is owed. Executor work; last hour's brief called this one green, and that is no longer true.
+- **Lane silence — the weekend gap is declined, per your 8 August and 11 September rulings.** The worst episode (25.1h) ran Saturday 11:33 → Sunday 12:37 local, squarely weekend-shaped. The Sunday-evening → Monday-afternoon episode (20.7h) is mostly overnight and has since recovered. It stays a standing question, not this hour's lead.
+- **Everything else green.** The live site is serving the newest commit, CI and all three scheduled GitHub jobs healthy, all 9 scheduled tasks within a slot of schedule, the git reaper ran at 08:40, the home checkout is level with `origin/main`, and engine tick cost is 67 ms/tick — 10% *under* the 7-day median.

@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 08:58 local (06:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### One design hour: are scenes being offered to exactly the people who will refuse them?
 
-[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), on the design desk since 06:37 local.
+[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), on the design desk since 06:37 local.
 
 When the world decides *which mortal* should be handed a scene, it favours mortals who lean one way on the scene's named value — tradition over novelty, say. But when that scene's choice then *forks* on the same value, the arm that actually matters is often the other one. So the game reliably hands a two-way choice to the person who will take the boring arm.
 
@@ -23,7 +23,7 @@ The rule may still be right for a reason never written down: an unattended lane 
 - **Yes** → it drafts the first pass, runs the same audits an attended session uses, and you review a draft instead of starting from nothing.
 - **No** → nothing changes, and the design sessions are yours to run.
 
-**The shelf hit zero this hour** — it was one job an hour ago. Three tickets arrived in the night and all three were declined as questions rather than work: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live). A yes would not settle THR-1525 — that one is a question about meaning and stays yours — but it would let the lane draft the other two.
+**The shelf is one job deep** — it hit zero an hour ago and refilled only because a blocker cleared on its own. Three tickets arrived overnight and all three were declined as questions rather than work: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the). A yes would not settle THR-1525 — that one is a question about meaning and stays yours — but it would let the lane draft the other two.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -60,10 +60,10 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-22 — a mortal is never dealt a trait they already carry, and the artifact catalogues are seated** ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the), traits wave 2 slice 2). Merged 07:54 local via [#1983](https://github.com/christianspliid-ui/threadbare/pull/1983); it was the sole gate on slice 3, which is now on the build shelf.
 - **2026-09-22 — the appointment feature is complete: a mortal can now be promised a meeting, keep it or miss it, and a work can be built around it.** The third and last part, [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff), merged at 06:52 local; [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by), [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1524](https://linear.app/threadbare/issue/THR-1524/appointment-reachability-the-crossroads-plants-nothing-on-the-live) closed ahead of it.
-- **2026-09-22 — the slow post-merge test job is green again** on the newest commit, after five hours red. No action was needed beyond the repair that had already landed.
 - **2026-09-22 — the appointment planter now records a promise as kept or broken on the promise itself** ([THR-1527](https://linear.app/threadbare/issue/THR-1527/the-appointment-planter-writes-an-owes-favor-edge-without-its-two)). Merged 05:24 local via [#1980](https://github.com/christianspliid-ui/threadbare/pull/1980).
-- **2026-09-22 — places now earn traits from their own fortunes, and the encounter pool reads them** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), traits wave 2 slice 1). Merged and live; three follow-on slices remain, one of which the measurement may have made moot.
+- **2026-09-22 — places now earn traits from their own fortunes, and the encounter pool reads them** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), traits wave 2 slice 1). Merged and live; two follow-on slices remain, one of which the measurement may have made moot.
 - **2026-09-21 — two silently-closed halves of the appointment feature were restored** 20 minutes after Linear closed them unbuilt. The cause is the toggle above.
 - **2026-09-21 — the design queue refilled itself and the builder is working again.** The "start the staged designs" ask led the briefing for eleven runs.
 - **2026-09-20 — the raw `{sphere_flavor}` placeholder no longer prints in conversation scenes** ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). Merged 17:27, live. This was the last blemish on your review sitting.
