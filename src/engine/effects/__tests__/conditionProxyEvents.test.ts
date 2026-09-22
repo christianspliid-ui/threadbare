@@ -182,7 +182,13 @@ describe('THR-1244 — condition → damaged/healed proxy', () => {
       // deleted (zero writers since THR-1206, read-tolerance window lapsed). The
       // pin moving DOWN is the same deliberate bump in the other direction — a
       // retirement should have to be stated here too, not absorbed silently.
-      expect(checked).toBe(61);
+      // 61 → 65 with THR-790: the four minted location traits joined
+      // `condition-trait-content` — `welcoming` (`#positive`), `lawless`
+      // (`#negative`), `veil_thin` (`#positive`), `haunted` (`#negative`). All
+      // four are a place's, so none can land on a mortal and reach the proxy;
+      // they are counted here because the polarity rule binds every condition
+      // definition, whoever bears it.
+      expect(checked).toBe(65);
     });
 
     it('classifies wounds and curses as harm, boons as not', () => {

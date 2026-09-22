@@ -162,6 +162,32 @@ describe('DecisionBreakdown', () => {
     expect(screen.getByTestId('econ-context-bonus').textContent).toContain('econ: +0.075');
   });
 
+  // THR-790 — the place's traits render only when the place is marked.
+  it('renders the location-trait bonus when a candidate carries one, and omits it at zero', () => {
+    const candidate = {
+      templateId: 'encounter.market_haggle',
+      locationId: 'ashford',
+      isLocal: true,
+      valuePerTick: 0.6,
+      desireMultiplier: 1.1,
+      finalScore: 0.7,
+      travelCost: 0,
+      completionProb: 0.6,
+    };
+    const marked: TraceEntry[] = [
+      makeScoringTrace('agent-1', 5, { topCandidates: [{ ...candidate, locationTraitBonus: 0.1 }] }),
+    ];
+    const { unmount } = render(<DecisionBreakdown agentId="agent-1" traces={marked} />);
+    expect(screen.getByTestId('location-trait-bonus').textContent).toContain('place: +0.100');
+    unmount();
+
+    const unmarked: TraceEntry[] = [
+      makeScoringTrace('agent-1', 5, { topCandidates: [{ ...candidate, locationTraitBonus: 0 }] }),
+    ];
+    render(<DecisionBreakdown agentId="agent-1" traces={unmarked} />);
+    expect(screen.queryByTestId('location-trait-bonus')).toBeNull();
+  });
+
   it('omits the economic-context line for a neutral-economy candidate', () => {
     const traces: TraceEntry[] = [
       makeScoringTrace('agent-1', 5, {

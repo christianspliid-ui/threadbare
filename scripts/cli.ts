@@ -68,6 +68,7 @@ import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWor
 import { spawnDebugBand, spawnDebugCompanion } from '../src/engine/debugWorldSpawnTools';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { describeAppointments } from '../src/engine/appointments';
+import { describeLocationTraits } from '../src/engine/phaseLocationTraits';
 import { resolveAxiologicalProfile } from '../src/engine/encounterScoring';
 import { hexDistance } from '../src/lib/hexMath';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
@@ -585,6 +586,44 @@ function printAppointments(agentQuery?: string): void {
     );
     console.log(dim(`            "${r.seedLabel}"  margin ${r.leaveMargin.toFixed(1)}`));
   }
+}
+
+// THR-790: the traits places carry — minted from the world's own scalars by
+// `phaseLocationTraits`, or planted by an aftermath — with each place's sustain
+// counters, so "how close is this town to Welcoming?" reads before the word does.
+function printLocationTraits(locationQuery?: string): void {
+  const rows = describeLocationTraits(state.graph, locationQuery || undefined);
+  console.log(header(`Location traits — ${rows.length}${locationQuery ? ` (filter: ${locationQuery})` : ''}`));
+  for (const r of rows) {
+    const term = r.ticksRemaining !== null ? `${r.ticksRemaining}t left` : 'until it lifts';
+    console.log(
+      `  ${r.locationName} ${dim(`(${r.locationId})`)}  ${r.traitName}  since t${r.since ?? '?'}  ${term}  ${dim(r.source ?? 'source unknown')}`,
+    );
+  }
+  if (locationQuery) {
+    // One place asked for: its counters are the answer even when it carries nothing yet.
+    const first = rows[0];
+    if (first) {
+      console.log(dim(`            sustain: welcoming ${first.sustain.welcoming}  lawless ${first.sustain.lawless}  veilThin ${first.sustain.veilThin}  haunted ${first.sustain.haunted}`));
+    } else {
+      const matches = describeLocationTraitsCounters(locationQuery);
+      for (const line of matches) console.log(dim(`            ${line}`));
+    }
+  }
+}
+
+/** The sustain counters of the places a query matches, for a place that carries no trait yet. */
+function describeLocationTraitsCounters(locationQuery: string): string[] {
+  const lowered = locationQuery.toLowerCase();
+  const out: string[] = [];
+  for (const loc of state.graph.getNodesByType('location')) {
+    if (loc.properties.parentLocationId) continue;
+    if (!(loc.id === locationQuery || loc.id.startsWith(locationQuery) || (loc.name ?? '').toLowerCase().includes(lowered))) continue;
+    const p = loc.properties as Record<string, unknown>;
+    const read = (k: string) => (typeof p[`locationTraitSustain.${k}`] === 'number' ? (p[`locationTraitSustain.${k}`] as number) : 0);
+    out.push(`${loc.name} (${loc.id}): no location trait — sustain welcoming ${read('welcoming')}  lawless ${read('lawless')}  veilThin ${read('veilThin')}  haunted ${read('haunted')}`);
+  }
+  return out;
 }
 
 // THR-603: list archived + active encounter chapters, optionally filtered by agent.
@@ -1351,6 +1390,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}chapters${RESET} [agent]  Archived + active encounter chapters (THR-603), optionally by agent|@hero`);
   console.log(`  ${BOLD}appointments${RESET} [agent]  Live appointments — place, due tick, slack, regime (THR-1479), optionally by agent|@hero`);
+  console.log(`  ${BOLD}traits${RESET} [location]  Location traits — what each place carries and since when (THR-790); with a place named, its sustain counters too`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}spotlight${RESET}        Spotlight-pull ledger (THR-1348): who was pulled into the deciding tier, whom they displaced, who was refused`);
   console.log(`  ${BOLD}groups${RESET}           List companies (members, cohesion, destination)`);
@@ -2302,6 +2342,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'appointments':
       printAppointments(arg || undefined);
+      break;
+    case 'traits':
+      printLocationTraits(arg || undefined);
       break;
     case 'factions':
       printFactions();

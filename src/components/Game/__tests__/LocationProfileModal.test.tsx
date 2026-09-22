@@ -338,6 +338,67 @@ describe('LocationProfileModal — active conditions (THR-1143)', () => {
     expect(section.textContent).not.toContain('trait.condition');
   });
 
+  // ─── THR-790: the effect line, the parity AttachmentDetailView already had ───
+
+  it('THR-790: a condition row states what the state does here, derived from the rows the engine reads', () => {
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graphWithConditions()}
+        onClose={() => {}}
+      />,
+    );
+    const effect = screen.getByTestId('location-condition-effect');
+    // The same sentence the hover derives from `LOCATION_CONDITION_MOVEMENT_TAX` —
+    // one derivation, two surfaces (Law 27), and no numeral in it (Law 13).
+    expect(effect.textContent).toBe('Travel through here costs far more.');
+    expect(effect.textContent).not.toMatch(/\d/);
+  });
+
+  it('THR-790: a minted trait reads its effect and no term — it has a cause, not a duration', () => {
+    const graph = graphWithKeep();
+    seedEncounterTraitDefinitions(graph);
+    // What `phaseLocationTraits` writes: a bare `has_trait` edge, no `ticksRemaining`.
+    graph.addEdge({
+      id: 'e.has_trait.loc_0.welcoming',
+      source: 'loc_0',
+      target: 'trait.condition.location.welcoming',
+      type: 'has_trait',
+      properties: { level: 1, acquiredTick: 40, source: 'phaseLocationTraits', visibility: 'public' },
+    } as never);
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graph}
+        onClose={() => {}}
+      />,
+    );
+    const section = screen.getByTestId('location-profile-conditions');
+    expect(section.textContent).toContain('Welcoming');
+    expect(screen.getByTestId('location-condition-effect').textContent).toBe('Travel through here costs less.');
+    expect(section.textContent).toContain('until it lifts');
+    expect(section.textContent).not.toContain('trait.condition');
+  });
+
+  it('THR-790: every shipped location condition renders a state-backed effect line — none is decoration (Law 56)', () => {
+    for (const id of LOCATION_CONDITION_IDS) {
+      const graph = graphWithKeep();
+      seedEncounterTraitDefinitions(graph);
+      graph.addEdge({
+        id: `e.has_trait.loc_0.${id}`, source: 'loc_0', target: id, type: 'has_trait', properties: { level: 1 },
+      } as never);
+      const { unmount } = render(
+        <LocationProfileModal name="Ardenmor Keep" locationId="loc_0" graph={graph} onClose={() => {}} />,
+      );
+      const effect = screen.getByTestId('location-condition-effect');
+      expect(effect.textContent, `${id} renders an empty effect`).toBeTruthy();
+      expect(effect.textContent).not.toMatch(/\d/);
+      unmount();
+    }
+  });
+
   it('Law 17: every shipped location condition resolves a tooltip from the one registry', () => {
     for (const id of LOCATION_CONDITION_IDS) {
       const content = resolveAttachmentTemplateTooltip(id);

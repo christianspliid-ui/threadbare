@@ -178,6 +178,26 @@ describe('THR-800 — authored trait refs resolve against shipped definitions', 
     expect(dead).toEqual(EXPECTED_DEAD);
   });
 
+  it('THR-790: the four minted location traits join as live definitions and widen nothing', async () => {
+    // Traits wave 2 slice 1 added four definitions with a *producer* in the same slice
+    // (`phaseLocationTraits`), so they never enter the dead-ref set — and, being new
+    // ids nothing authored against, they cannot silently discharge a dead ref either.
+    // The equality assertion above is unchanged; this pins the four exist so a
+    // definition that stops shipping fails here by name rather than as a phase that
+    // quietly mints nothing.
+    const graph = graphWithShippedDefinitions();
+    for (const id of [
+      'trait.condition.location.welcoming',
+      'trait.condition.location.lawless',
+      'trait.condition.location.veil_thin',
+      'trait.condition.location.haunted',
+    ]) {
+      expect(graph.getNode(id), `missing minted location trait ${id}`).toBeDefined();
+    }
+    const report = await validateTraitRefs(graph);
+    expect([...new Set(report.dead.map(d => d.ref))].sort()).toEqual(EXPECTED_DEAD);
+  });
+
   it('resolves every ref repointed by this ticket', async () => {
     const report = await validateTraitRefs(graphWithShippedDefinitions());
     const dead = new Set(report.dead.map(d => d.ref));

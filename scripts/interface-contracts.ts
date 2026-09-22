@@ -421,8 +421,56 @@ export const CONTRACTS: readonly Contract[] = [
 
   // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
   // Audit-on-touch: this subsystem was ⚪ UNAUDITED until THR-786 unified the six
-  // trait-predicate read sites. These two rows cover the predicate boundary only;
-  // minting, decay, and display remain unwritten (waves 2–3, THR-790/THR-791).
+  // trait-predicate read sites. These two rows cover the predicate boundary only.
+  // Minting began with THR-790 (`location-traits-shift-encounter-pool`, below);
+  // decay and display rows for the remaining waves stay unwritten (THR-791).
+  {
+    id: 'location-traits-shift-encounter-pool',
+    producerSystem: TRAITS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A place earns a trait from what the world already measures about it — long prosperity, long unrest, lingering magic, the dead — and the encounters that gather there follow the trait, so a marked town tells different stories from an unmarked one without anyone authoring the town.',
+    ulTerms: ['Location Trait', 'Trait', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        // Write side — the minting phase and the readout it shares with the CLI.
+        'phaseLocationTraits',
+        'describeLocationTraits',
+        // Read side — the pool term `scoreAndSelect` adds, and the table it reads.
+        'computeLocationTraitBonus',
+        'LOCATION_TRAIT_ENCOUNTER_BONUS',
+      ],
+      module: 'src/engine/phaseLocationTraits.ts',
+    },
+    writeSites: ['src/engine/phaseLocationTraits.ts'],
+    readSites: [
+      'src/engine/encounterScoring.ts',
+      'src/engine/locationTraitBonus.ts',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+      'scripts/location-trait-census.ts',
+    ],
+    // THR-790, traits wave 2 slice 1 — the first producer of location traits from the
+    // world's own state. Before it, every `trait.condition.location.*` edge was planted
+    // by an encounter aftermath (THR-1143's six), so the parent plan's kill criterion —
+    // *does the pool at a marked place differ from the pool at an unmarked one?* — had
+    // nothing to measure. This row is that criterion's contract: the phase writes the
+    // edge, `scoreAndSelect` reads it as one additive term keyed trait × content tag,
+    // and `npm run census:location-traits` measures the shift per seed.
+    //
+    // The load-bearing clause is that the four new traits ride the *existing* prefix,
+    // subcategory and effect tables, so the three THR-1143 readers (movement tax, step
+    // modifier, target gating) and the location page read them with no new code — the
+    // producer is new, the substrate is not. Hysteresis is the settlement-promotion
+    // phase's; a minted edge has no term and is released by the phase, never by
+    // `decayConditions`.
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        "THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.",
+    },
+  },
   {
     id: 'reputation-with-unified-read',
     producerSystem: FACTIONS,
@@ -2118,10 +2166,14 @@ export const CONTRACTS: readonly Contract[] = [
         // Place feels its enclosing Location's conditions.
         'LOCATION_CONDITION_STEP_MODIFIER',
         'collectLocationConditionContributions',
+        // THR-790 — the second writer, and the first from the world's own state: the
+        // minting phase puts four more definitions under the same prefix and the same
+        // two tables, so every reader above picks them up unchanged.
+        'phaseLocationTraits',
       ],
       module: 'src/data/condition-trait-content.ts',
     },
-    writeSites: ['src/engine/encounterAftermath.ts'],
+    writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/phaseLocationTraits.ts'],
     readSites: [
       'src/engine/movementCost.ts',
       'src/engine/targetContextBuilders.ts',

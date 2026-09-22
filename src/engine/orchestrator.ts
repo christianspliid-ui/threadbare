@@ -138,6 +138,7 @@ import { phaseHexState } from './phaseHexState';
 import { revealLayer, resetDiscoveryEventCounter } from './revelationResolver';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
+import { phaseLocationTraits } from './phaseLocationTraits';
 import { phaseSpherePressure } from './phaseSpherePressure';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseQuintessence } from './phaseQuintessence';
@@ -3627,6 +3628,18 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     const r = runInlinePhase('magical_saturation', s, () => phaseMagicalSaturation(s));
     s = r.next;
     phaseEventCounts['magical_saturation'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6385: Location Traits (a place earns a condition-trait from sustained prosperity / unrest / saturation and loses it when the reading recovers, THR-790)
+  // Registered after 6.638 (magical saturation) — the *second* 6.638, the decay
+  // phase above, not the hex-state phase that shares the label — so every scalar
+  // the four rules read is this tick's. Calls `touchWorld` itself on any mint or
+  // release; `assignTrait` / `removeTrait` do not.
+  {
+    const r = runInlinePhase('location_trait', s, () => phaseLocationTraits(s, runtime));
+    s = r.next;
+    phaseEventCounts['location_trait'] = r.eventDelta;
   }
   prevEventCount = s.tickEvents.length;
 

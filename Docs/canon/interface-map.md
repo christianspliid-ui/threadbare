@@ -195,8 +195,10 @@ by an unchanged-behavior contract suite. `trait-ref-authoring-vocabulary` is �
 **measured, not assumed**: `__DEBUG.validateTraitRefs()` reports 62 authored trait refs that
 resolve to no trait definition, because authored refs are bare snake_case keys while every
 definition uses `trait.<category>.<kebab>` ids / Title Case names / `#tags` — two
-vocabularies that have never intersected. Remediation: **THR-800**. Trait *minting*, decay,
-and display rows are still unwritten (waves 2–3, THR-790/THR-791).
+vocabularies that have never intersected. Remediation: **THR-800**. Trait *minting* began with
+`location-traits-shift-encounter-pool` (THR-790, 2026-09-22 — `phaseLocationTraits` mints four
+`trait.condition.location.*` traits from the world's own scalars and `scoreAndSelect` reads them
+as one pool term); decay and display rows for the remaining waves are still unwritten (THR-791).
 
 **Dealt hands** — 1 contract, written 2026-08-25 (THR-1247), **LIVE since 2026-08-26 (THR-1254)**.
 `repertoire-deals-into-encounter-hand` covers the Repertoire supplying most of an encounter's

@@ -202,6 +202,12 @@ export const DecisionBreakdown = React.memo(function DecisionBreakdown({
                     {' | '}econ: {c.economicContextBonus > 0 ? '+' : ''}{c.economicContextBonus.toFixed(3)}
                   </span>
                 )}
+                {/* THR-790 — the place's traits, rendered only when the place is marked. */}
+                {c.locationTraitBonus != null && c.locationTraitBonus !== 0 && (
+                  <span data-testid="location-trait-bonus">
+                    {' | '}place: {c.locationTraitBonus > 0 ? '+' : ''}{c.locationTraitBonus.toFixed(3)}
+                  </span>
+                )}
               </div>
             </div>
           ))}
