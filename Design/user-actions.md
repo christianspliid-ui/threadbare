@@ -1,14 +1,14 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 15:05 local (13:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 16:05 local (14:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### The builder lane is out of model credit — top up, or move it off Fable
 
-Five failures in a row, all identical: *"You've reached your Fable limit."* — **10:11, 11:11, 12:11, 13:11 and 14:11 local**, each lasting seven or eight seconds. The next attempt is 15:10 and will do the same until the quota clears.
+Six failures in a row, all identical: *"You've reached your Fable limit."* — **10:11, 11:11, 12:11, 13:11, 14:11 and 15:11 local**, each lasting seven or eight seconds. Last successful run: 09:11. The next attempt is 16:10 and will do the same until the quota clears.
 
-**A finished job is waiting for it.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits, the third traits slice — is fully designed, was claimed at 10:21 local, and the builder **resumes it by itself** the moment it can run. Nothing was lost: no branch, no code, nothing to undo. Earlier briefs said this top-up only buys an idle hour; that was wrong, and the correction is the whole point.
+**A finished job is waiting for it.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits, the third traits slice — is fully designed, was claimed at 10:21 local, and the builder **resumes it by itself** the moment it can run. Nothing was lost: no branch, no code, nothing to undo.
 
 - **Top up** at [claude.ai usage settings](https://claude.ai/settings/usage) — or wait for the window to reset, if you know when that is.
 - **Or move the lane off Fable** — say so in a chat and a session will change it. It is your configuration, so no session will change it unasked.
@@ -59,7 +59,7 @@ The one question: **is the integrated encounter experience at an acceptable stat
 
 Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. In local time the last stop ran **Sunday 20:57 → Monday 17:41** — overnight, then most of Monday's working day. Earlier: 17 September (~10h), 18 September (~16h), and the Saturday→Sunday gap (~25h). None had a pause marker. Weekend and overnight quiet is declined under your 8 August and 11 September rulings and is not part of this ask.
 
-**Today's five consecutive credit failures are the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. What it still does not explain is why lanes on a *different* model went quiet in the same windows.
+**Today's six consecutive credit failures are the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. What it still does not explain is why lanes on a *different* model went quiet in the same windows.
 
 **If it was you:** nothing to do — a marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet.
 
