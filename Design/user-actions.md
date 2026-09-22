@@ -1,8 +1,18 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 07:00 local (05:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
+
+### One design hour: are scenes being offered to exactly the people who will refuse them?
+
+[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), on the design desk since 06:37 local.
+
+When the world decides *which mortal* should be handed a scene, it favours mortals who lean one way on the scene's named value — tradition over novelty, say. But when that scene's choice then *forks* on the same value, the arm that actually matters is often the other one. So the game reliably hands a two-way choice to the person who will take the boring arm.
+
+**Measured, not suspected.** A Bargain at the Crossroads fired once in a thousand ticks and was refused; the meeting it was meant to arrange never happened on any seed. A content fix to that one scene made it fire 3 and 11 times on two seeds. Every other scene written to the same house guide is still starved — **and the guide still tells authors to write them that way**, so the corpus grows the problem while the question waits.
+
+**The fork:** either the rule was always meant to draw both kinds of mortal (and the code has quietly disagreed with its own documentation for months), or the lopsidedness *is* the design — a Protector really should be drawn to a mercy scene — and the house guide must stop telling authors to reuse that axis for the fork. Both readings are defensible; whichever you pick, the work after it is ordinary. Open a chat and say you want to work THR-1525.
 
 ### May a lane draft a design doc on its own? — *from tb-orchestrator*
 
@@ -13,17 +23,7 @@ The rule may still be right for a reason never written down: an unattended lane 
 - **Yes** → it drafts the first pass, runs the same audits an attended session uses, and you review a draft instead of starting from nothing.
 - **No** → nothing changes, and the design sessions are yours to run.
 
-**It is biting harder this hour.** The appointment feature finished overnight and nothing replaced it: the shelf is down to one job. The three tickets that arrived in the night were all declined as questions rather than work — [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live).
-
-### One design hour: are scenes being offered to exactly the people who will refuse them? — *from tb-orchestrator*
-
-[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), staged to In Design at 06:37 local.
-
-When the world decides *which mortal* should be handed a scene, it favours mortals who lean one way on the scene's named value — tradition over novelty, say. But when that scene's choice then *forks* on the same value, the arm that actually matters is often the other one. So the game reliably hands a two-way choice to the person who will take the boring arm.
-
-**Measured, not suspected.** A Bargain at the Crossroads fired once in a thousand ticks and was refused; the meeting it was meant to arrange never happened on any seed. A content fix to that one scene made it fire 3 and 11 times on two seeds. Every other scene written to the same house guide is still starved — **and the guide still tells authors to write them that way**, so the corpus grows the problem while the question waits.
-
-**The fork:** either the rule was always meant to draw both kinds of mortal (and the code has quietly disagreed with its own documentation for months), or the lopsidedness *is* the design — a Protector really should be drawn to a mercy scene — and the house guide must stop telling authors to reuse that axis for the fork. Both readings are defensible; whichever you pick, the work after it is ordinary. Open a chat and say you want to work THR-1525.
+**The shelf hit zero this hour** — it was one job an hour ago. Three tickets arrived in the night and all three were declined as questions rather than work: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live). A yes would not settle THR-1525 — that one is a question about meaning and stays yours — but it would let the lane draft the other two.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -37,7 +37,7 @@ When a parent issue closes, Linear marks its unfinished children finished too. *
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
-You stopped after four feedback batches on Saturday 12 September with *"more batches expected."* Everything those batches produced is shipped and live — including the last blemish, the raw `{sphere_flavor}` placeholder in conversation scenes ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). The deploy probe confirms the live site is serving it.
+You stopped after four feedback batches on Saturday 12 September with *"more batches expected."* Everything those batches produced is shipped and live — including the last blemish, the raw `{sphere_flavor}` placeholder in conversation scenes ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)).
 
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
