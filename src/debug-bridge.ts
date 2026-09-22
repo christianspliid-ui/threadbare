@@ -2672,6 +2672,15 @@ if (import.meta.env.DEV) {
       }));
     },
 
+    // THR-790: the traits a place carries — minted by `phaseLocationTraits` from the
+    // world's own scalars, or planted by an aftermath — with the four sustain counters.
+    getLocationTraits: async (locationIdOrName?: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return [];
+      const { describeLocationTraits } = await import('./engine/phaseLocationTraits');
+      return describeLocationTraits(graph, locationIdOrName);
+    },
+
     // THR-1142: travel-intent readout — where an encounter ending sent this agent.
     getRelocationIntent: async (agentIdOrName: string) => {
       const graph = _graphProvider?.();

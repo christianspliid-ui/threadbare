@@ -143,6 +143,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 - **[Trait](./Traits.md#trait)** — a named piece of identity on a graph object; definitions are nodes, assignments are `has_trait` edges; inert on the bearer, powered by whoever references it
 - **[Trait Assignment](./Traits.md#trait-assignment)** — the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation
+- **[Location Trait](./Traits.md#location-trait)** — a `condition` trait whose bearer is a place-tier Location, declared by the `trait.condition.location.*` id prefix; planted by an aftermath with a term, or minted by `phaseLocationTraits` from the world's own scalars with none (THR-790)
 - **[Trait Category](./Traits.md#trait-category)** — one of ten classes stored as `subcategory`; a lifecycle contract (acquisition, removal, trigger), not a label
 - **[Destiny](./Traits.md#destiny)** — the forward-contract category: a world-minted promise, always visible; currently reserved and empty
 - **[Trait Ref](./Traits.md#trait-ref)** — how content names a trait: node id, short id, display name, or tag; resolves to a set, predicates ANY-match

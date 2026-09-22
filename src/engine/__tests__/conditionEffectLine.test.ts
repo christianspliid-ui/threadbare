@@ -26,6 +26,7 @@ import type { GraphNode } from '../../types/graph';
 import {
   CONDITION_MAGNITUDE_BANDS,
   CONDITION_TERM_UNKNOWN,
+  CONDITION_TRAVEL_CHEAPER_SENTENCE,
   CONDITION_TRAVEL_TAX_BANDS,
   conditionEffectLine,
   containsNumeral,
@@ -245,6 +246,28 @@ describe('conditionEffectLine — the shipped corpus', () => {
     expect(reading.effect).toBe('Travel through here costs far more.');
     // 360 ticks — a season, read as weeks rather than as a two-digit day count.
     expect(reading.term).toBe('Lasts about four weeks.');
+  });
+
+  it('reads a sub-unity travel multiplier as cheaper travel, and a minted trait as termless (THR-790)', () => {
+    // *Welcoming* is the one row below 1 in the tax table. Before THR-790 the
+    // derivation read only `tax > 1`, so a place that was cheaper to reach rendered
+    // no effect at all — an exemption in all but name.
+    const welcoming = CONDITIONS.find(n => n.id === 'trait.condition.location.welcoming')!;
+    expect(LOCATION_CONDITION_MOVEMENT_TAX[welcoming.id]).toBeLessThan(1);
+    const reading = conditionEffectLine(welcoming)!;
+    expect(reading.effect).toBe(CONDITION_TRAVEL_CHEAPER_SENTENCE);
+    // No `CONDITION_DURATIONS` row: a minted trait has a cause, not a term.
+    expect(reading.term).toBe(`Lasts ${CONDITION_TERM_UNKNOWN}.`);
+
+    // Falsification: a multiplier of exactly 1 is no effect on either side.
+    const flat = syntheticCondition({ domainContributions: {} }, 'trait.condition.location.__flat');
+    expect(conditionEffectLine(flat)).toBeNull();
+  });
+
+  it('reads Haunted from both its substrates — the road and the roll', () => {
+    const haunted = CONDITIONS.find(n => n.id === 'trait.condition.location.haunted')!;
+    const reading = conditionEffectLine(haunted)!;
+    expect(reading.effect).toBe('Heart slightly lower. Travel through here costs more.');
   });
 });
 

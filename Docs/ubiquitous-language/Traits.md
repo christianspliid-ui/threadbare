@@ -32,6 +32,22 @@ Legal bearers are fixed by the edge schema: `actor` (individual, group, faction,
 
 ---
 
+### Location Trait
+
+**Aliases:** Place Trait, Location Condition
+**Also see:** `[[Trait]]`, `[[Trait Assignment]]`, `[[Trait Category]]`, `[[Location]]`
+**Status:** canonical
+
+A `condition`-category `[[Trait]]` whose bearer is a place — a `has_trait` edge from a place-tier `[[Location]]` to a definition under the id prefix `trait.condition.location.*`. The prefix is the declaration: a definition under it is a place's, everything else is a person's (`LOCATION_CONDITION_ID_PREFIX`, `src/data/condition-trait-content.ts`). No new category, no new field.
+
+Two ways a place comes to carry one. **Planted**: an encounter aftermath writes it with a term (`apply_condition` with `targetLocationId` / `$here`) — *Closed for the Season*, *Festival*, *Plague Scare*, *Under Watch*, *Blighted Harvest*, *A Tended Shrine* — and `ticksRemaining` counts it down. **Minted** (THR-790): `phaseLocationTraits` reads the world's own scalars every tick and, when one has held past its threshold for `LOCATION_TRAIT_SUSTAIN_TICKS`, writes the edge with no term — *Welcoming* (prosperity), *Lawless* (unrest), *Veil-thin* (magical saturation), *Haunted* (saturation and the dead) — and removes it when the reading falls below release. A minted location trait has a cause, not a duration.
+
+What reads it: the movement tax (`LOCATION_CONDITION_MOVEMENT_TAX`), the per-reach step modifier on work done at the place (`LOCATION_CONDITION_STEP_MODIFIER`), target-action gating, the encounter pool's `locationTraitBonus` (trait × content tag, `LOCATION_TRAIT_ENCOUNTER_BONUS`), and the location page, which shows the trait's name with the effect line derived from those same rows. Every shipped location trait carries at least one such row — a location trait with no reader is the gate theatre THR-800 named. A `condition_template` content query excludes location traits unless it names `classes: ['location']`.
+
+The player-facing word is the definition's display name, never the category, the id, or *location condition*; *location trait* is the design word for the family.
+
+---
+
 ### Trait Category
 
 **Aliases:** Trait Subcategory

@@ -39,6 +39,7 @@ import { getLocationHolder } from '../../engine/realmHolder';
 import { clampRarityTier } from '../../types/rarity';
 import { locationSubtypeName } from '../../data/location-words';
 import { durationLabel } from '../../engine/aftermathWords';
+import { resolveConditionEffectLine } from '../../engine/attachmentTemplateIndex';
 import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../../engine/hexZoom';
 import type { WorldGraph } from '../../engine/graph';
@@ -84,6 +85,13 @@ interface ActiveLocationCondition {
   name: string;
   /** Remaining term in words — never ticks (Law 13/14). */
   term: string;
+  /**
+   * What the condition does here, derived from the same rows the engine reads
+   * (THR-790 — the parity `AttachmentDetailView` already had). Null when the
+   * definition has no effect substrate, in which case the row shows the name alone
+   * rather than an invented sentence.
+   */
+  effect: string | null;
 }
 
 /**
@@ -114,6 +122,9 @@ function readActiveConditions(
       templateId: edge.target,
       name: def.name ?? edge.target,
       term: hasTerm ? durationLabel(remaining) : INDEFINITE_TERM_COPY,
+      // The effect half only — the term column beside it already answers "for how
+      // long", and a minted trait (THR-790) has no term to state twice.
+      effect: resolveConditionEffectLine(edge.target)?.effect ?? null,
       sortKey: hasTerm ? remaining : Number.POSITIVE_INFINITY,
     });
   }
@@ -306,9 +317,22 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
                       </span>
                     }
                   >
-                    <Tooltip id={`attachment.${condition.templateId}`}>
-                      <ListRow.Title>{condition.name}</ListRow.Title>
-                    </Tooltip>
+                    {/* Name over effect, stacked: ListRow lays its children out in a
+                        row, and the effect is a second line about the same state, not
+                        a second column. */}
+                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                      <Tooltip id={`attachment.${condition.templateId}`}>
+                        <ListRow.Title>{condition.name}</ListRow.Title>
+                      </Tooltip>
+                      {/* THR-790 — what the state does to this place, in the words the
+                          engine's own rows derive (Law 56: the sentence is state-backed
+                          or absent). The hover carries the same reading plus its term. */}
+                      {condition.effect && (
+                        <ListRow.Subtitle>
+                          <span data-testid="location-condition-effect">{condition.effect}</span>
+                        </ListRow.Subtitle>
+                      )}
+                    </div>
                   </ListRow>
                 ))}
               </div>

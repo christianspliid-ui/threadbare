@@ -189,6 +189,14 @@ The mortal leans toward the place as the slack (`due − now − travel`) shrink
 
 **This is prose rule 7b's one lawful exception.** "Collect it here at the next full moon" may be written only on a seed that carries the block; `check:encounter` fails an appointment with no missed branch (`appointment_missing_branch`) or a dead one. A Bargain at the Crossroads is the worked example — read its accept reaction before authoring one. Plan doc: [2026-09-21-thr-1479-appointment-primitive.md](../plans/2026-09-21-thr-1479-appointment-primitive.md).
 
+## The pool reads the place's traits (THR-790)
+
+A place-tier Location can carry **location traits** — `trait.condition.location.*` definitions on a `has_trait` edge. Six are planted by aftermaths (THR-1143); four are **minted from the world's own scalars** by `phaseLocationTraits` and released when the reading recovers: *Welcoming* (sustained prosperity), *Lawless* (sustained unrest), *Veil-thin* (magical saturation) and *Haunted* (saturation plus the dead). `scoreAndSelect` adds `locationTraitBonus` beside the economic-context term: for each trait the candidate's place carries, each **content tag the template carries** is looked up in `LOCATION_TRAIT_ENCOUNTER_BONUS` (`src/data/location-trait-constants.ts`) and the hits are summed, capped at `LOCATION_TRAIT_ENCOUNTER_BONUS_CAP`.
+
+**What this means for an author.** A template joins a marked town's pool by being *about* the right thing — the rows name seated content tags on any axis, and a template's projected reach tag (`#gold`, `#shadow`, `#veil`, …) is what carries the term today, since only 16 of 236 shipped encounters carry an authored family word. Author the `form` and `family` axes as the content-model section above says, and a `#tavern_night` or `#delve` template leans into the town that suits it without naming the trait. To *gate* on a place's condition, `requiredTargetTraits` on a location target already works; to *plant* one, `apply_condition` with `targetLocationId` / `$here` (THR-1143 / THR-1446). A `condition_template` query never returns a place's condition unless it says `classes: ['location']` — the bearer-kind carve, so an untagged `condition` recipe cannot deal a mortal *Festival*.
+
+`npm run census:location-traits` reports the pool shift at marked vs unmarked places — the parent plan's kill-criterion instrument. Plan doc: [2026-09-21-thr-790-traits-wave-2.md](../plans/2026-09-21-thr-790-traits-wave-2.md).
+
 ## The scene-sentinel vocabulary (THR-1446)
 
 Aftermath effects name people and places with **sentinels**, not node ids — the ids are minted per run, so an author cannot know them. The authoritative table is [`src/engine/sceneSentinels.ts`](../../src/engine/sceneSentinels.ts); read it rather than any prose list, including this one (impediment #725 is what a stale copy costs).
@@ -251,6 +259,8 @@ Each encounter's primary reach maps to an archetype-axis in the Cosmological Pat
 - **Phase 2a wiring (THR-306):** When THR-306 lands, the `encounter-pipeline` skill will load this Canon page as its explicit Step 0. Until then, authoring agents must load this page manually before running the pipeline.
 
 ## Last-reviewed
+
+2026-09-22 by Claude Fable (THR-790 — the pool-reads-the-place section added: the four minted location traits, the `locationTraitBonus` term keyed trait × content tag, the bearer-kind carve on `condition_template`, and the pool census).
 
 2026-09-12 by Claude Opus (THR-1488 — the content-query section added: encounter `tags`, `encounter_seed.query`, the deprecation of `encounterFamily` with the 41-of-51 measurement, and the game-word rule for family tags).
 

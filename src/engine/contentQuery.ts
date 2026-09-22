@@ -53,9 +53,18 @@ import type {
   ContentTierWindow,
 } from '../types/contentQuery';
 import { emitTrace } from './traceBuffer';
+import { LOCATION_CONDITION_ID_PREFIX } from '../data/condition-trait-content';
 
 
 // ─── Tunable constants (NFP #1) ─────────────────────────────────────
+
+/**
+ * The class word that opts a `condition_template` query *into* a place's conditions
+ * (THR-790). A bearer kind, not a `subcategory`: the six shipped location conditions
+ * and the four minted ones all carry `subcategory: 'condition'`, and what tells them
+ * apart from a mortal's is the id prefix `LOCATION_CONDITION_ID_PREFIX`.
+ */
+export const LOCATION_BEARER_CLASS = 'location';
 
 /**
  * Cap on the resolved set a **draw** picks from. Inherits the role
@@ -250,8 +259,24 @@ function tierInWindow(tier: RarityTier | null, window: ContentTierWindow | undef
 }
 
 function matches(candidate: ContentQueryCandidate, query: ContentQuery): boolean {
-  if (query.classes && query.classes.length > 0) {
-    if (candidate.cls === null || !query.classes.includes(candidate.cls)) return false;
+  // THR-790 — the bearer-kind carve. `condition_template` is every `trait` node of
+  // class `condition` or `scar`, and that has always included the place's conditions
+  // (`trait.condition.location.*`): measured on `main` 2026-09-21, 45 shipped
+  // `condition` recipes with no tag filter could deal a mortal *Festival*. The
+  // substrate already declares which conditions are a place's — the id prefix is the
+  // declaration (THR-1143) — so a `condition_template` query excludes ids under it
+  // unless it names the place class, `classes: ['location']`, which is the opt-in
+  // path and returns *only* the place's conditions. No new field, no new
+  // discriminator; `contentQuery-bearerKind.test.ts` carries the pre-fix arm.
+  const wantsPlace = query.classes?.includes(LOCATION_BEARER_CLASS) ?? false;
+  if (candidate.kind === 'condition_template') {
+    const isPlace = candidate.id.startsWith(LOCATION_CONDITION_ID_PREFIX);
+    if (isPlace !== wantsPlace) return false;
+  }
+  // `location` is a bearer word, not a `subcategory`; it never has to match `cls`.
+  const classWords = query.classes?.filter(c => c !== LOCATION_BEARER_CLASS);
+  if (classWords && classWords.length > 0) {
+    if (candidate.cls === null || !classWords.includes(candidate.cls)) return false;
   }
   // ALL-of. An entry with no tags fails any non-empty filter — the reward pool's rule
   // (`rewardCandidateMatchesTags` returns false for a tagless node), preserved exactly.

@@ -4002,3 +4002,57 @@ abandoned and the checkpoint deferral already prices an absence); no `appointmen
 the appointment**). The god does not make appointments between mortals — *only encounters mint
 appointments for now* — but an undertaking may (THR-1519, `create × Agreement` with an
 `appointment` payoff).
+
+## Capability 32: A place earns traits from its own fortunes, and the pool reads them (THR-790)
+
+A town that has been prosperous for three days is *Welcoming*. One that has been restless that
+long is *Lawless*. Ground where magic has soaked in and not drained is *Veil-thin*, and where
+many have died there too it is *Haunted*. Nobody authors any of this: `phaseLocationTraits`
+(orchestrator `6.6385`) reads `prosperity`, `unrest`, `magicalSaturation` and `deathCount` off
+the place tier every tick and mints a `trait.condition.location.*` edge when a reading has held
+past its threshold for `LOCATION_TRAIT_SUSTAIN_TICKS`, releasing it when the reading recovers.
+Every threshold is in `src/data/location-trait-constants.ts`, each calibrated against a measured
+world (the file says how).
+
+**What it means for content you author.** Three things, none of which name the trait:
+
+1. **Your template leans into the towns that suit it — through its tags.** `scoreAndSelect`
+   adds `locationTraitBonus`: for each trait the place carries, each *content tag* your template
+   carries is looked up in `LOCATION_TRAIT_ENCOUNTER_BONUS` and the hits are summed (capped at
+   `LOCATION_TRAIT_ENCOUNTER_BONUS_CAP`). The rows name seated tags on any axis, so the projected
+   reach tag your typed `reach` field already gives you (`#gold`, `#shadow`, `#veil`…) is enough
+   for the term to fire; an authored family word (`#tavern_night`, `#delve`, `#thieves_errand`)
+   sharpens it. Author the `form` and `family` axes per Capability 29; never author a reach tag.
+2. **A place's condition is not a mortal's prize.** A `condition_template` query — the reward
+   pool's `condition` category, `inflict_condition`'s pool, your own `reward_draw` — never returns
+   a `trait.condition.location.*` id unless you say `classes: ['location']`. Measured before the
+   fix, 45 untagged `condition` recipes could deal a mortal *Festival*. To put a condition on a
+   place on purpose, use `apply_condition` with `targetLocationId` or `$here` (THR-1143 / THR-1446).
+3. **Gate on it if you want to.** `requiredTargetTraits` on a location target already reads the
+   place's `has_trait` edges (THR-1143), so `{ traitId: 'trait.condition.location.haunted' }`
+   makes a template eligible only on haunted ground. Nothing in the shipped corpus does yet; this
+   is the door.
+
+**What the player sees.** The word on the place's page with its derived effect line — *Haunted*
+reads *"Heart slightly lower. Travel through here costs more."*, *Welcoming* reads *"Travel
+through here costs less."* — one chronicle line on mint (`{place} has become {word}.`), none on
+release. `window.__DEBUG.getLocationTraits(placeOrName?)` and the CLI `traits [location]` list
+every place's traits with the four sustain counters, so *how close is this town to Welcoming?* is
+answerable before the word appears.
+
+**What is deliberately not here.** No `#blood-soaked` — there is no per-location battle record
+and the death count would call a plague a massacre; the dead enter *Haunted* instead. No new
+subcategory, field or edge type: the id prefix is the declaration (THR-1143), which is what lets
+the movement tax, the step modifier, the target gate and the page read the four with no new code.
+Merchant routing, prose and the Broken-state bonus are slice 4 (THR-1522); artifact traits are
+slice 3 (THR-1521).
+
+**Measure before you tune.** `npm run census:location-traits -- --seeds 42,99 --ticks 150`
+reports, per trait, how many places carried it and the share of each row tag among encounters
+resolved at marked versus unmarked places, with a verdict — `UNMINTED` (no place reached the
+threshold), `UNDERSAMPLED`, `MOVES`, `FLAT`. A `FLAT` means the rows are too small or the corpus
+lacks the tags; an `UNMINTED` means the thresholds, not the pool. This is the trait layer's own
+kill criterion (`2026-07-26-traits-trigger-architecture.md` § Kill criteria) as an instrument.
+*Veil-thin* and *Haunted* read `UNMINTED` on every headless run by construction — saturation is
+written only by divine action and spellwork, which the CLI world never does — so their proof is a
+browser world, not this census.
