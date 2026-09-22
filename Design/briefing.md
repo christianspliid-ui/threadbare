@@ -1,37 +1,34 @@
 # Briefing
-**Generated:** 2026-09-22 16:05 local (14:05 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-22 16:55 local (14:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Top up the builder's credit.** [claude.ai usage settings](https://claude.ai/settings/usage). Or say the word in a chat and a session moves that lane onto a different model.
+**Top up the builder's model credit — [claude.ai usage settings](https://claude.ai/settings/usage). It is the only lever, and nothing is being built until it moves.**
 
-**Six failures now, not five** — 10:11, 11:11, 12:11, 13:11, 14:11 and **15:11 local**, every one the same seven-second death: *"You've reached your Fable limit."* Last successful run was 09:11 this morning. The next attempt is 16:10 and will do the same.
+Seven failed attempts in a row now, every one identical — *"You've reached your Fable limit."* — at **10:11, 11:11, 12:11, 13:11, 14:11, 15:11 and 16:11 local**, each lasting about eight seconds. Last successful run: 09:11. The next attempt is 17:11 and will fail the same way.
 
-Nothing else has changed, and the reason to act is the one the last brief corrected itself on: a complete, designed job is already claimed with the builder's name on it — [artifact traits](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits): artifacts that carry a history, cursed things the systems can finally *see* as cursed, the artifact sheet showing it. The builder took it at 10:21, died seven minutes later, and **picks it straight back up by itself** the moment it can run. Nothing was lost — no branch, no code, nothing to undo.
+**Correction to what you were told earlier today.** The last few briefings offered you a second option: *"or say the word and a session will move the lane off Fable."* **That option does not exist.** A session checked this hour and there is no model setting on a scheduled lane anywhere an agent can reach — not in the lane's instruction file, not in the controls a session has for editing a scheduled task. Whatever picks the model lives in your app's settings. If you have been waiting for an agent to take this off your plate, nothing was coming.
 
-So this is not money to wake an idle machine. It is a finished-on-paper slice of the game sitting unbuilt because a quota ran out **six and a half hours ago**.
+**Nothing is lost while it sits.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits, the third traits slice — is fully designed, was claimed at 10:21 local, and was re-checked this hour: no branch, no pull request, no code started. The builder picks it up and carries on by itself the moment it can run. No open pull requests, the code on main is green, the site is live and current.
 
 ## Also waiting (6)
 
-- **[One design hour on THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) — are scenes being handed to exactly the mortals who will refuse them?** Unchanged, and the only thing that refills the shelf once THR-1521 ships. Detail in [`user-actions.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
-- **May a lane draft a design doc on its own?** Your [6 August rule](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md) rests on a model choice that has since changed; a yes would let the planning lane write first drafts instead of leaving the shelf bare.
-- **[Turn off Linear's auto-complete for sub-issues](https://linear.app/threadbare/settings/teams/THR/general)** — it erased five pieces of unbuilt work in four hours on Sunday; all recovered, and a warning note on the parent ticket did not stop it.
-- **[Finish the review sitting](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)** — two encounters left, screen clean: [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan).
-- **Were the stops deliberate?** — four lane-silence episodes, all ended, none since Monday 17:41 local. Today's six credit failures make the usage-limit explanation you gave in August stronger still; the open half is Monday's daytime stop.
-- **Fog or witness** — should a stranger's sheet show the wound you just watched an encounter give them, or does the fog stay honest? Silence leaves it as-is.
+- **[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) — scenes are offered to exactly the people who will refuse them.** One design hour; a question about what the rule was always meant to mean. On the design desk 34 hours.
+- **May an unattended lane draft a design doc?** Your 6 August rule says no, and its recorded reason (the lane ran a cheaper model) has expired. *— from tb-orchestrator*
+- **[Turn off Linear's auto-complete for sub-issues](https://linear.app/threadbare/settings/teams/THR/general)** — it closed five unbuilt pieces of work in four hours on Sunday. All recovered; the setting still fires. *— from tb-orchestrator*
+- **[THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — two encounters left in the sitting**, screen clean, everything your last batches raised is shipped.
+- **Were the lane stops deliberate?** Four silent episodes, 17–21 September, none with a pause marker. Everything is running now.
+- **Fog or witness** — should a stranger's sheet show the wound you just watched them take? Silence leaves it as-is.
 
 ## Queue
 
-**Starved — nothing ready to build, for a seventh hour.**
+**Starved — 0 ready to build.** Ready for Dev is empty and has been all day; In Dev holds one item, THR-1521, claimed and waiting on the builder above. In Design holds one, THR-1525, which is the design ask above. Todo holds 28, none of them dev-ready: 15 are wayfinder decision tickets, 6 need a design pass first, 3 have unmet triggers, 4 are not executor work.
 
-- **Ready to build: 0.** Read live this run. [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) was the last item off the shelf this morning.
-- **In flight: THR-1521, claimed 10:21 local, untouched since.** No branch, no pull request, nothing half-written — checked again this run. The builder reclaims it by itself when it can run; the twice-daily sweep that would otherwise release it lands nearer 20:00 local than 14:00. Nothing turns on which gets there first — the same top-up clears both.
-- **28 items in Todo, none promotable.** 15 are wayfinder decision tickets waiting on you; of the other 13, every one waits on a design call rather than on another builder. That shape is unchanged for eleven hours and is why both asks above exist.
+The board has not moved since 10:22 local — six and a half hours. That is what a stopped builder and an unanswered design question produce together, and both levers above are yours.
+
+No parked In-Dev issues. No stale Ready-for-Dev items. Nothing blocked on another agent.
 
 ## Health
 
-- **The builder lane is dead, not stumbling** — six consecutive failures on the identical credit message, 08:11Z through 13:11Z, each lasting seven or eight seconds. Isolated to that one lane: planning, grooming and briefing run a different model and all fired on schedule.
-- **The slow post-merge test job is green on the current tip, and no fix is owed** — re-verified against GitHub this run, not carried over. `f3f9fb60` failed its **push** run at 09:27 local and **passed the scheduled re-run on the same commit at 10:32**. Two test files time out intermittently under load, already tracked. The automated probe reads "red" because it looks at the push run only — the probe is wrong here, not the code.
-- **The stale-claim sweep failed its morning run** (1 of its last 5, a transient network error before it reached the sweep). An executor's fix, not yours; it costs nothing today because the only claim it would release is the one the builder will take back itself.
-- **Lane silence stays declined** under your 8 August and 11 September rulings — the worst episode (25.1h) ran Saturday 11:33 → Sunday 12:37 local, squarely weekend-shaped. The weekday daytime portions are folded into the standing question above rather than re-asked.
-- **Everything else green.** No pull requests open; the live site is serving the newest commit ([`f3f9fb60`](https://github.com/christianspliid-ui/threadbare/commit/f3f9fb60948263b03a816c20593117d8080b1e69)); CI and the Linear auto-close job green; all 9 scheduled tasks within a slot of schedule; the git reaper ran at 15:40 local; the home checkout is level with `origin/main`; engine tick cost **67 ms/tick, 6% under** the 7-day median of 71.
+- **Heavy simulation tests are red on the latest main** (9 h). This runs after merge and is not a required check, so nothing is blocked by it — a session owes the follow-up fix. Not yours.
+- Everything else green: the site is serving the latest commit, CI is green on main, all 9 scheduled lanes are within schedule, no pull requests waiting, engine tick cost 65 ms/tick — 8% *below* its 7-day median.

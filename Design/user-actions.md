@@ -1,23 +1,22 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 16:05 local (14:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### The builder lane is out of model credit — top up, or move it off Fable
+### The builder lane is out of model credit — a top-up is the only lever
 
-Six failures in a row, all identical: *"You've reached your Fable limit."* — **10:11, 11:11, 12:11, 13:11, 14:11 and 15:11 local**, each lasting seven or eight seconds. Last successful run: 09:11. The next attempt is 16:10 and will do the same until the quota clears.
+Seven failures in a row, all identical: *"You've reached your Fable limit."* — **10:11 through 16:11 local**, on the hour, each lasting about eight seconds. Last successful run: 09:11. The next attempt is 17:11.
 
-**A finished job is waiting for it.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits, the third traits slice — is fully designed, was claimed at 10:21 local, and the builder **resumes it by itself** the moment it can run. Nothing was lost: no branch, no code, nothing to undo.
+**Top up** at [claude.ai usage settings](https://claude.ai/settings/usage) — or wait for the quota window to reset, if you know when that is.
 
-- **Top up** at [claude.ai usage settings](https://claude.ai/settings/usage) — or wait for the window to reset, if you know when that is.
-- **Or move the lane off Fable** — say so in a chat and a session will change it. It is your configuration, so no session will change it unasked.
+**The alternative you were offered earlier today is not real.** Previous briefings said a session could move the lane off Fable if you asked. It cannot: there is no model setting on a scheduled lane in any file or control an agent can reach — it lives in your app's settings. That half of the ask was withdrawn after a session went looking for it.
 
-Only this lane is affected; planning, grooming and briefing run a different model and are fine.
+**A finished job is waiting.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits — is designed, was claimed at 10:21 local, and re-verified unstarted this hour: no branch, no pull request, no code. The builder resumes it by itself. Only this lane is affected; planning, grooming and briefing run fine.
 
 ### One design hour: are scenes being offered to exactly the people who will refuse them?
 
-[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), on the design desk since 06:37 local yesterday.
+[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), on the design desk since 06:37 local on 21 September.
 
 When the world decides *which mortal* should be handed a scene, it favours mortals who lean one way on the scene's named value — tradition over novelty, say. But when that scene's choice then *forks* on the same value, the arm that actually matters is often the other one. So the game reliably hands a two-way choice to the person who will take the boring arm.
 
@@ -34,7 +33,7 @@ The rule may still be right for a reason never written down: an unattended lane 
 - **Yes** → it drafts the first pass, runs the same audits an attended session uses, and you review a draft instead of starting from nothing.
 - **No** → nothing changes, and the design sessions are yours to run.
 
-**The shelf is empty and nothing is being built.** Four tickets arrived overnight and all four were declined as questions rather than work: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). A yes would not settle THR-1525 — that one is a question about meaning and stays yours — but it would let the lane draft the other three.
+**The shelf is empty and nothing is being built.** Four tickets arrived and all four were declined as questions rather than work: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). A yes would not settle THR-1525 — that one stays yours — but it would let the lane draft the other three.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -44,7 +43,7 @@ When a parent issue closes, Linear marks its unfinished children finished too. *
 
 **The fix:** [Linear → Team settings → General](https://linear.app/threadbare/settings/teams/THR/general) → turn off auto-completing sub-issues on parent completion.
 
-Both recoveries happened only because an hourly sweep looked, and a hand-written warning on the parent ticket was in place and did not stop it — a note cannot stop a setting. It fires again the next time a parent with unfinished children is completed. *— from tb-orchestrator*
+Both recoveries happened only because an hourly sweep looked, and a hand-written warning on the parent ticket did not stop it — a note cannot stop a setting. It fires again the next time a parent with unfinished children is completed. *— from tb-orchestrator*
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -57,9 +56,9 @@ The one question: **is the integrated encounter experience at an acceptable stat
 
 ### Were the stops deliberate? (lane silence — four episodes, all ended)
 
-Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. In local time the last stop ran **Sunday 20:57 → Monday 17:41** — overnight, then most of Monday's working day. Earlier: 17 September (~10h), 18 September (~16h), and the Saturday→Sunday gap (~25h). None had a pause marker. Weekend and overnight quiet is declined under your 8 August and 11 September rulings and is not part of this ask.
+Every lane has fired on schedule since Monday 17:41 local, re-verified this run, so nothing is stopped now. The four stops, in local time: **17 September** (~10h, through Thursday's working day), **18 September** (~16h, into Friday afternoon), the **Saturday→Sunday** gap (~25h), and **Sunday 20:57 → Monday 17:41**. None had a pause marker. Weekend and overnight quiet is declined under your 8 August and 11 September rulings and is not part of this ask — the two weekday gaps are.
 
-**Today's six consecutive credit failures are the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. What it still does not explain is why lanes on a *different* model went quiet in the same windows.
+**Today's seven consecutive credit failures are the strongest evidence yet for the explanation you gave in August** — a usage limit stops a lane and it resumes when the quota clears. What it still does not explain is why lanes on a *different* model went quiet in the same windows.
 
 **If it was you:** nothing to do — a marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so, and the next session looks into why the machine keeps going quiet.
 
@@ -69,6 +68,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
+- **2026-09-22 — the "move the builder off Fable" option was withdrawn.** A session went looking for how it would do that and found no model setting on a scheduled lane anywhere an agent can reach. The top-up is the whole lever. *— found by tb-orchestrator*
 - **2026-09-22 — holding a town now means something to a faction** ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)). Merged 09:27 local via [#1981](https://github.com/christianspliid-ui/threadbare/pull/1981); your 10 September direction, and its stuck pull request cleared without needing you.
 - **2026-09-22 — a mortal is never dealt a trait they already carry, and the artifact catalogues are seated** ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the)). Merged 07:54 local via [#1983](https://github.com/christianspliid-ui/threadbare/pull/1983).
 - **2026-09-22 — the appointment feature is complete: a mortal can be promised a meeting, keep it or miss it, and a work can be built around it** ([THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff) merged 06:52 local, with THR-1479, THR-1518 and THR-1524 closing ahead of it).
