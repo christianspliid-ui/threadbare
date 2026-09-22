@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 06:00 local (04:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-22 07:00 local (05:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,17 +13,27 @@ The rule may still be right for a reason never written down: an unattended lane 
 - **Yes** → it drafts the first pass, runs the same audits an attended session uses, and you review a draft instead of starting from nothing.
 - **No** → nothing changes, and the design sessions are yours to run.
 
-**It is biting now.** The build queue is two items deep, and the three tickets that arrived overnight were all declined as questions rather than work — [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live). What is moving is being fed by repairs.
+**It is biting harder this hour.** The appointment feature finished overnight and nothing replaced it: the shelf is down to one job. The three tickets that arrived in the night were all declined as questions rather than work — [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less), [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live).
+
+### One design hour: are scenes being offered to exactly the people who will refuse them? — *from tb-orchestrator*
+
+[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants), staged to In Design at 06:37 local.
+
+When the world decides *which mortal* should be handed a scene, it favours mortals who lean one way on the scene's named value — tradition over novelty, say. But when that scene's choice then *forks* on the same value, the arm that actually matters is often the other one. So the game reliably hands a two-way choice to the person who will take the boring arm.
+
+**Measured, not suspected.** A Bargain at the Crossroads fired once in a thousand ticks and was refused; the meeting it was meant to arrange never happened on any seed. A content fix to that one scene made it fire 3 and 11 times on two seeds. Every other scene written to the same house guide is still starved — **and the guide still tells authors to write them that way**, so the corpus grows the problem while the question waits.
+
+**The fork:** either the rule was always meant to draw both kinds of mortal (and the code has quietly disagreed with its own documentation for months), or the lopsidedness *is* the design — a Protector really should be drawn to a mercy scene — and the house guide must stop telling authors to reuse that axis for the fork. Both readings are defensible; whichever you pick, the work after it is ordinary. Open a chat and say you want to work THR-1525.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
-When a parent issue closes, Linear marks its unfinished children finished too. **It happened twice in four hours last night, erasing five pieces of authored work** — two parts of the appointment feature at 00:12 local, then all three parts under [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) at 04:15, a quarter of a second after the parent closed. None had been started.
+When a parent issue closes, Linear marks its unfinished children finished too. **It happened twice in four hours on Sunday night, erasing five pieces of authored work** — two parts of the appointment feature at 00:12 local, then all three parts under [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) at 04:15, a quarter of a second after the parent closed. None had been started.
 
 **Nothing was lost, and no builder did anything wrong.** All five were restored, each verified unstarted four ways first; the longest erasure lasted twenty minutes.
 
 **The fix:** [Linear → Team settings → General](https://linear.app/threadbare/settings/teams/THR/general) → turn off auto-completing sub-issues on parent completion.
 
-**Why it is still here but no longer leading.** It cannot fire this hour — no parent with unfinished children is being worked, checked this run. It fires again the next time one is, and both recoveries so far happened only because an hourly sweep looked. A hand-written warning on the parent ticket was in place and did not stop it; a note cannot stop a setting. *— from tb-orchestrator*
+**Why it is still here but not leading.** It cannot fire this hour — no parent with unfinished children is being worked, checked this run. It fires again the next time one is, and both recoveries so far happened only because an hourly sweep looked. A hand-written warning on the parent ticket was in place and did not stop it; a note cannot stop a setting. *— from tb-orchestrator*
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -50,16 +60,16 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). A
 
 ## Resolved this period
 
-- **2026-09-22 — the appointment planter now records a promise as kept or broken on the promise itself** ([THR-1527](https://linear.app/threadbare/issue/THR-1527/the-appointment-planter-writes-an-owes-favor-edge-without-its-two)). Merged 05:24 local via [#1980](https://github.com/christianspliid-ui/threadbare/pull/1980); the edge-integrity check it was written for passes. A different slow test is still red — see the brief's Health section.
+- **2026-09-22 — the appointment feature is complete: a mortal can now be promised a meeting, keep it or miss it, and a work can be built around it.** The third and last part, [THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff), merged at 06:52 local; [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by), [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) and [THR-1524](https://linear.app/threadbare/issue/THR-1524/appointment-reachability-the-crossroads-plants-nothing-on-the-live) closed ahead of it.
+- **2026-09-22 — the slow post-merge test job is green again** on the newest commit, after five hours red. No action was needed beyond the repair that had already landed.
+- **2026-09-22 — the appointment planter now records a promise as kept or broken on the promise itself** ([THR-1527](https://linear.app/threadbare/issue/THR-1527/the-appointment-planter-writes-an-owes-favor-edge-without-its-two)). Merged 05:24 local via [#1980](https://github.com/christianspliid-ui/threadbare/pull/1980).
 - **2026-09-22 — places now earn traits from their own fortunes, and the encounter pool reads them** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), traits wave 2 slice 1). Merged and live; three follow-on slices remain, one of which the measurement may have made moot.
-- **2026-09-22 — the appointment feature's authoring half is built and proven.** [THR-1518](https://linear.app/threadbare/issue/THR-1518/appointment-primitive-slice-2-the-authoring-harness-guide-spec-die) (the harness that teaches encounter authors the new promise exists) and [THR-1524](https://linear.app/threadbare/issue/THR-1524/appointment-reachability-the-crossroads-plants-nothing-on-the-live) (proving it reaches the live board) both merged; the third part is queued.
 - **2026-09-21 — two silently-closed halves of the appointment feature were restored** 20 minutes after Linear closed them unbuilt. The cause is the toggle above.
-- **2026-09-21 — the design queue refilled itself and the builder is working again.** [THR-1479](https://linear.app/threadbare/issue/THR-1479/appointment-primitive-a-mortal-keeps-or-misses-a-meeting-at-a-place-by) shipped with four items queued behind it. The "start the staged designs" ask led the briefing for eleven runs.
+- **2026-09-21 — the design queue refilled itself and the builder is working again.** The "start the staged designs" ask led the briefing for eleven runs.
 - **2026-09-20 — the raw `{sphere_flavor}` placeholder no longer prints in conversation scenes** ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)). Merged 17:27, live. This was the last blemish on your review sitting.
 - **2026-09-20 — finished PRs no longer go red on a stopwatch; the slow test arms got an explicit timeout** ([THR-1517](https://linear.app/threadbare/issue/THR-1517/the-multi-tick-arms-in-orchestratortestts-have-no-explicit-timeout-and)). Merged 17:18; 47 minutes from filed to fixed.
 - **2026-09-19 — the unused "lose a hard fight → Wounded/Terrified" rule is deleted; wounds come from each encounter's written ending** ([THR-1503](https://linear.app/threadbare/issue/THR-1503/processencounterconditions-gates-on-a-template-category-no-shipped)). Veto window closed with the merge; live.
 - **2026-09-19 — the change classifier reads uncommitted work, and the pickup lane runs it on code changes** ([THR-1513](https://linear.app/threadbare/issue/THR-1513/classifydiffs-browser-verify-reminder-falls-back-to-the-working-tree)). Merged 01:10, live.
-- **2026-09-19 — a finished work outside a town now has somewhere for its encounter to land** ([THR-1515](https://linear.app/threadbare/issue/THR-1515/catalyst-families-have-no-member-for-a-hamlet-or-the-wild-a-settlement)). Merged 00:10, live.
 
 ---
 
