@@ -104,6 +104,8 @@ export type ContentQuerySite =
   | 'step_reward_pool'
   | 'encounter_seed'
   | 'undertaking_catalyst'
+  /** A completed work's appointment — the meeting a `create × Agreement` arranged (THR-1519). */
+  | 'undertaking_appointment'
   | 'condition_pool'
   | 'debug';
 
@@ -123,6 +125,7 @@ export const CONTENT_QUERY_SITES: readonly ContentQuerySite[] = [
   'step_reward_pool',
   'encounter_seed',
   'undertaking_catalyst',
+  'undertaking_appointment',
   'condition_pool',
   'debug',
 ];

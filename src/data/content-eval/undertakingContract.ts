@@ -273,6 +273,9 @@ export function undertakingWriteSet(template: StrategicActionTemplate, row = row
   const catalysts = [
     ...(template.catalystEncounterIds ?? []),
     ...(template.catalystQuery ? [describeContentQuery(template.catalystQuery)] : []),
+    // THR-1519 — the meeting a work arranges is a write (a seed and a promise edge),
+    // recorded here so a cell whose only product is a meeting is not read as vacuous.
+    ...(template.appointmentPayoff ? [`appointment: ${describeContentQuery(template.appointmentPayoff.meeting)}`] : []),
   ];
   const object = template.cellVariant && template.objectTypeId
     ? { verb: template.cellVariant, objectTypeId: template.objectTypeId }
@@ -437,6 +440,21 @@ export function checkUndertakingContract(
   }
   if (template.catalystQuery && !contentQueryHasCandidates(template.catalystQuery, staticContentCatalogs())) {
     fail('catalysts', `catalystQuery matches no content: ${describeContentQuery(template.catalystQuery)}`);
+  }
+  // THR-1519 — a work's appointment is judged by the seed's own rule: both branches
+  // are queries with members, or the promise cannot be kept *or* missed. A payoff
+  // with one dead branch is the cutscene-with-a-walk the ruling forbids.
+  if (template.appointmentPayoff) {
+    const payoff = template.appointmentPayoff;
+    const catalogs = staticContentCatalogs();
+    if (!contentQueryHasCandidates(payoff.meeting, catalogs)) {
+      fail('catalysts', `appointmentPayoff.meeting matches no content: ${describeContentQuery(payoff.meeting)}`);
+    }
+    if (!payoff.missed?.query) {
+      fail('catalysts', 'appointmentPayoff has no missed branch — a meeting that cannot be missed is not a promise');
+    } else if (!contentQueryHasCandidates(payoff.missed.query, catalogs)) {
+      fail('catalysts', `appointmentPayoff.missed matches no content: ${describeContentQuery(payoff.missed.query)}`);
+    }
   }
 
   // ── Enrichment dry-run ──

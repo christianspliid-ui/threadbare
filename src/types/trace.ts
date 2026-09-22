@@ -3179,7 +3179,7 @@ export interface RelocationResolvedTrace extends TraceBase {
 
 // ─── Appointments (THR-1479) ───────────────────────────────────────────────
 
-/** Trace: an encounter ending planted a placed, timed seed — or refused to. */
+/** Trace: an encounter ending — or a completed undertaking (THR-1519) — planted a placed, timed seed, or refused to. */
 export interface AppointmentPlantedTrace extends TraceBase {
   category: 'appointment_planted';
   seedId: string;
@@ -3187,7 +3187,13 @@ export interface AppointmentPlantedTrace extends TraceBase {
   dueTick: number;
   windowTicks: number;
   counterpartyId?: string;
+  /** The encounter template the seed fires, or the undertaking template that planted it. */
   templateId?: string;
+  /**
+   * Which planter called (THR-1519): an encounter ending's `encounter_seed` effect, or
+   * a completed undertaking's `appointmentPayoff`. Absent on pre-THR-1519 traces.
+   */
+  source?: 'encounter' | 'undertaking';
   /** Present when the plant fell back to a placeless seed. */
   refused?: 'over_max' | 'place_unresolved';
 }

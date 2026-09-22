@@ -4000,8 +4000,58 @@ contracts read 🟢 with the census line as their evidence.
 abandoned and the checkpoint deferral already prices an absence); no `appointment` Agreement class
 (a promise to be somewhere is still a favour); no second record on the mortal node (**the seed is
 the appointment**). The god does not make appointments between mortals — *only encounters mint
-appointments for now* — but an undertaking may (THR-1519, `create × Agreement` with an
-`appointment` payoff).
+appointments for now* — but an undertaking may (THR-1519, below).
+
+### Slice 3 — a work whose payoff is a meeting (THR-1519)
+
+**What you can now author:** a cell (or a package override on one) that, on completion, plants an
+appointment on its actor. The surface is one optional template field,
+`appointmentPayoff: UndertakingAppointmentPayoff` (`src/types/strategicAction.ts`), authored for
+cells in the bounded table `UNDERTAKING_CELL_APPOINTMENTS` (`src/data/undertaking-cells.ts`, the
+`UNDERTAKING_CELL_CATALYSTS` pattern) and overridable per package (`override.appointmentPayoff`):
+
+```ts
+'cell.create.agreement': {
+  meeting: { kind: 'encounter_template', tags: ['#thieves_errand'] },   // the kept branch — judged AT the place
+  seedLabel: 'What was dug up wants talking about — a meeting, where the secret was found.',
+  missed: { query: { kind: 'encounter_template', tags: ['#court_errand'] }, seedLabel: '…' },
+  // delayTicks?: UNDERTAKING_APPOINTMENT_DELAY_TICKS (18) · windowTicks?: APPOINTMENT_WINDOW_TICKS
+}
+```
+
+- **Place** = where the work stands, resolved exactly as the catalyst anchor is
+  (`catalystAnchorLocationId`). For `create × Agreement` the site rule is `colocated_actor`, so the
+  place is the Location the *subject of the mark* stands at when the work finishes, and that mortal
+  is the **counterparty** — the promise (`owes_favor`, appointment shape) is owed to them. A site
+  that stands nowhere refuses `place_unresolved` and the seed plants placeless (today's fail-soft).
+- **One planter.** `maybePlantAppointmentPayoff` (`strategicActionLifecycle.ts`, all three
+  completion arms) hands the resolved ids to `plantAppointmentPromise` (`appointments.ts`), the
+  same function the aftermath's `encounter_seed.appointment` calls after binding its sentinels —
+  so the `over_max` refusal, the favour edge and the `appointment_planted` trace (now carrying
+  `source: 'encounter' | 'undertaking'`) cannot drift between the two. **No chance roll**: a
+  promise is the work's product, not its wake, and the rng stream is untouched.
+- **Both branches are queries** — a literal id is not admitted on the type. `check:undertaking`'s
+  `catalysts` block fails a payoff whose meeting or missed query is empty, and the meeting is
+  recorded in the write set (`appointment: <query>`), so a cell whose only product is a meeting is
+  not read as vacuous. The seed's resolution traces at the new site `undertaking_appointment`
+  (`seedQuerySite`, keyed on `UNDERTAKING_APPOINTMENT_REACTION_ID`).
+- **Family coverage is a test, not an assumption** (`undertakingCellAppointments.test.ts`): the
+  kept family must have an individual-performable member for *every* settlement tier, because the
+  kept arm is judged at the place; `#thieves_errand` is the one leverage family with a
+  `hamlet`-accepting member. The missed arm fires wherever the mortal is; `#court_errand` withers
+  at a hamlet, which is the placeless path's existing fail-soft.
+- **The milestone reader.** `GraphCondition` gains `{ type: 'agent_kept_appointment', minCount }`
+  — the count of `appointment_kept` Event nodes the mortal `participated_in`; missed ones never
+  count. `ambition_uncover_secrets` lists it as its fourth milestone (`secrets_kept_word`,
+  `completion: 2 of 4`), so the road the cell opens has somewhere to lead.
+- **Keeping is presence** (fixed here, measured on seed 42). A kept meeting whose sequel withers
+  at the place — the family gated to settlements, the place a ruin — used to drop the seed on the
+  withered exit without redeeming the promise or writing the Event. `recordKeptAppointment` now
+  runs on both exits of `evaluateEncounterSeeds`; the trace's `resolvedTemplateId` reads
+  `withered:<query>` when the world had nothing to say. Author the meeting family for coverage
+  first — the probe table: no shipped family has a location-ungated member that reads as a meeting.
+- **Declined:** `use × Agreement:appointment`. Keeping an appointment is a journey the decision
+  phase makes, not a work at a site with checkpoints.
 
 ## Capability 32: A place earns traits from its own fortunes, and the pool reads them (THR-790)
 

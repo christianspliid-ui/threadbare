@@ -308,8 +308,13 @@ describe('the promise edge and the Event kind', () => {
     const node = graph.getNode(id)!;
     expect(node.type).toBe('event');
     expect(node.properties.eventType).toBe('appointment_kept');
-    expect(graph.getOutgoingEdges('actor-hero', 'participated_in').some(e => e.target === id)).toBe(true);
-    expect(graph.getOutgoingEdges(id, 'occurred_at')[0]?.target).toBe('loc-far');
+    const took = graph.getOutgoingEdges('actor-hero', 'participated_in').find(e => e.target === id);
+    expect(took).toBeDefined();
+    // THR-1519: the schema's required set, so the heavy edge-integrity smoke stays silent.
+    expect(took!.properties).toMatchObject({ role: 'primary', outcome: 'kept', tick: 100 });
+    const at = graph.getOutgoingEdges(id, 'occurred_at')[0];
+    expect(at?.target).toBe('loc-far');
+    expect(at?.properties.tick).toBe(100);
     // Same seed, same tick: a duplicate id is logged, not thrown.
     expect(() => writeAppointmentEvent(graph, { kind: 'appointment_kept', agentId: 'actor-hero', locationId: 'loc-far', tick: 100, seedId: 'seed-1' })).not.toThrow();
   });

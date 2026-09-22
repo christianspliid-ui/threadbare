@@ -29,6 +29,9 @@ import {
   STRATEGIC_CATALYST_SEED_DELAY_TICKS,
   STRATEGIC_CATALYST_SEED_PRIORITY,
   STRATEGIC_CATALYST_REACTION_ID,
+  UNDERTAKING_APPOINTMENT_DELAY_TICKS,
+  UNDERTAKING_APPOINTMENT_SEED_PRIORITY,
+  UNDERTAKING_APPOINTMENT_REACTION_ID,
   STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS,
   STRATEGIC_CONTROL_DEGRADATION_RATE,
   CONTROL_RENEWING_VARIANTS,
@@ -71,6 +74,7 @@ import {
 import { resolveDurableActorLocation, mintRouteIdentity } from './tradeRouteOps';
 import { resolveUndertakingCompletion } from './undertakingResolver';
 import { catalystAnchorLocationId } from './undertakingCatalystAnchor';
+import { plantAppointmentPromise } from './appointments';
 import { cellCompletionProse } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
@@ -532,6 +536,8 @@ export function executeStrategicAction(
 
       // Check for catalyst seeding — anchored on what this mutation created (THR-1511).
       catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng, ops);
+      // The meeting the work arranged, when its template names one (THR-1519).
+      maybePlantAppointmentPayoff(state, candidate, tick, ops);
 
       // ── The capability rider is NOT paid here (THR-1440) ──
       //
@@ -661,6 +667,7 @@ export function executeStrategicAction(
 
     case 'seed_encounter': {
       catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
+      maybePlantAppointmentPayoff(state, candidate, tick);
       const historyEntry = createHistoryEntry(candidate, tick, [], catalystSeeded);
       const updatedHistory = pruneHistory([...currentState.history, historyEntry], tick);
 
@@ -1019,6 +1026,9 @@ export function advanceStrategicProjects(
       // Anchored on what this completion created (THR-1511): the wake of a road is
       // offered in the town the road reaches, not at the fort it was laid from.
       const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng, ops);
+      // The meeting the work arranged, when its template names one (THR-1519) —
+      // deterministic, no roll: a promise is the work's product, not its wake.
+      maybePlantAppointmentPayoff(state, candidate, tick, ops);
 
       // Christening (THR-1291 §2): the work earns its proper name here, between the
       // mutation and the history write, because this is the one point where every
@@ -2074,6 +2084,83 @@ function maybeSeedCatalyst(
   const existingSeeds = state.pendingEncounterSeeds ?? [];
   state.pendingEncounterSeeds = [...existingSeeds, seed];
 
+  return true;
+}
+
+// ─── Appointment payoff (THR-1519) ──────────────────────────────────
+
+/**
+ * A work whose payoff is a meeting: on completion, plant an appointment seed on the
+ * actor through slice 1's one planter (`plantAppointmentPromise`).
+ *
+ * - **Place** — where the work stands, resolved exactly as the catalyst anchor is
+ *   (`catalystAnchorLocationId`): for `create × Agreement` the site is the mortal the
+ *   secret was dug up about, so the place is the Location they stand at when the
+ *   work finishes. A site with no place (a faction, a trait) refuses
+ *   `place_unresolved` and the seed plants placeless — today's fail-soft.
+ * - **Counterparty** — the site when it is a non-faction mortal other than the
+ *   actor; the promise is then owed to them. Otherwise the place is the creditor.
+ * - **Due** — completion + the payoff's `delayTicks`
+ *   (`UNDERTAKING_APPOINTMENT_DELAY_TICKS`).
+ * - **Branches** — the kept branch is the seed's own `query`; the missed branch rides
+ *   the `appointment` block and the seeding site rewrites the seed to it when the
+ *   window closes. Both are queries; the contract's `catalysts` block refuses a
+ *   dead one.
+ *
+ * No PRNG (NFP #3): unlike the catalyst there is no chance roll, so the rng stream
+ * of every pre-THR-1519 run is unchanged. Returns whether a seed was planted at all
+ * (placed or placeless); a template without a payoff returns `false` and touches
+ * nothing. Exported for the unit test.
+ */
+export function maybePlantAppointmentPayoff(
+  state: GameState,
+  candidate: StrategicActionCandidate,
+  tick: number,
+  ops: readonly GraphOpResult[] = [],
+): boolean {
+  const template = getStrategicTemplate(candidate.templateId);
+  const payoff = template?.appointmentPayoff;
+  if (!payoff) return false;
+
+  const seedId = `appointment_${candidate.templateId}_${candidate.actorId}_${tick}`;
+  const placeId = catalystAnchorLocationId(state.graph, candidate, ops);
+  const site = candidate.targetNodeId ? state.graph.getNode(candidate.targetNodeId) : undefined;
+  const counterpartyId = site && site.type === 'actor' && site.properties.actorType !== 'faction' && site.id !== candidate.actorId
+    ? site.id
+    : undefined;
+  const dueTick = tick + (payoff.delayTicks ?? UNDERTAKING_APPOINTMENT_DELAY_TICKS);
+
+  const result = plantAppointmentPromise({
+    graph: state.graph,
+    pendingSeeds: state.pendingEncounterSeeds ?? [],
+    seedId,
+    targetAgentId: candidate.actorId,
+    placeId,
+    counterpartyId,
+    tick,
+    dueTick,
+    windowTicks: payoff.windowTicks,
+    missed: payoff.missed,
+    seedLabel: payoff.seedLabel,
+    templateId: candidate.templateId,
+    authoredPlaceRef: candidate.targetNodeId,
+    source: 'undertaking',
+  });
+
+  const seed: PendingEncounterSeed = {
+    seedId,
+    sourceEncounterId: candidate.candidateId,
+    // Read back by `seedQuerySite` so the resolution traces at `undertaking_appointment`.
+    sourceReactionId: UNDERTAKING_APPOINTMENT_REACTION_ID,
+    query: payoff.meeting,
+    targetAgentId: candidate.actorId,
+    eligibleAfterTick: dueTick,
+    priority: UNDERTAKING_APPOINTMENT_SEED_PRIORITY,
+    seedLabel: payoff.seedLabel,
+    plantedTick: tick,
+    ...(result.planted ? { appointment: result.planted } : {}),
+  };
+  state.pendingEncounterSeeds = [...(state.pendingEncounterSeeds ?? []), seed];
   return true;
 }
 

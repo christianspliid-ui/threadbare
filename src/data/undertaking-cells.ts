@@ -24,6 +24,7 @@ import type {
   StrategicExecutionMode,
   StrategicTargetRule,
   BehaviorFamily,
+  UndertakingAppointmentPayoff,
   UndertakingObjectTypeId,
   UndertakingVerb,
   UndertakingVerbVariant,
@@ -199,6 +200,45 @@ export const UNDERTAKING_CELL_CATALYSTS: Readonly<Record<string, ContentQuery>> 
   'cell.destroy.location': { kind: 'encounter_template', tags: ['#watch_errand'] },
 };
 
+/**
+ * A work whose payoff is a meeting (THR-1519, slice 3 of THR-1479) — the appointment
+ * a finished cell arranges, by cell id. The `UNDERTAKING_CELL_CATALYSTS` pattern: a
+ * bounded authored table read once at synthesis into `appointmentPayoff`, overridable
+ * per package. Unlike the catalyst there is no chance roll — the meeting is the work's
+ * product, not its wake — and the seed is an *appointment*: placed at the work's site,
+ * due `delayTicks` after completion, kept or missed under slice 1's rule.
+ *
+ * **Why `create × Agreement` and only it, for now.** Digging up a secret is done
+ * *about somebody* — the cell's site rule is `colocated_actor`, so the work's site is
+ * a mortal, and a mortal is the one object a meeting can be with. The counterparty is
+ * that mortal, the place is where they stand when the work finishes, and the promise
+ * is the digger's: *I will be there*. Ruling 2 (*only encounters mint appointments
+ * for now*) means *not the god*; the ticket's own connectivity table asks for this
+ * cell, so it is in scope.
+ *
+ * **Both families are chosen for coverage first.** The kept branch is judged at the
+ * place (`resolutionLocationId`), so its family must have an individual-performable
+ * member for every settlement tier a mortal can stand at — `#thieves_errand` is the
+ * one leverage-economy family with a `hamlet`-accepting member. The missed branch
+ * fires wherever the mortal is; `#court_errand` (*a favour asked by someone who does
+ * not ask*) is what a stood-up subject sends, and its members accept `town` through
+ * `capital`; at a hamlet it withers, which is today's placeless fail-soft.
+ * `undertakingCellAppointments.test.ts` asserts the coverage rather than assuming it.
+ *
+ * `use × Agreement:appointment` is declined by the plan — keeping an appointment is a
+ * journey the decision phase makes, not a work at a site with checkpoints.
+ */
+export const UNDERTAKING_CELL_APPOINTMENTS: Readonly<Record<string, UndertakingAppointmentPayoff>> = {
+  'cell.create.agreement': {
+    meeting: { kind: 'encounter_template', tags: ['#thieves_errand'] },
+    seedLabel: 'What was dug up wants talking about — a meeting, where the secret was found.',
+    missed: {
+      query: { kind: 'encounter_template', tags: ['#court_errand'] },
+      seedLabel: 'The one who was not met sends someone who does not ask.',
+    },
+  },
+};
+
 /** "an attachment", "a room" — the display name is a player word (UI Law 14). */
 function withArticle(noun: string): string {
   return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
@@ -250,6 +290,8 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
     harmClass: variant === 'destroy' ? HARM_ON_DESTROY[type.id] : variant === 'control:seize' ? HARM_ON_SEIZE : variant === 'change:lower' ? HARM_ON_LOWER : undefined,
     // THR-1497: the family this cell's completion stirs, when the table names one.
     catalystQuery: UNDERTAKING_CELL_CATALYSTS[cellTemplateId(variant, type.id)],
+    // THR-1519: the meeting this cell's completion arranges, when the table names one.
+    appointmentPayoff: UNDERTAKING_CELL_APPOINTMENTS[cellTemplateId(variant, type.id)],
     // A cell's mutation is the resolver's, never a hint; declared so the legacy
     // instant path, if ever reached with the flag off, does nothing rather than guess.
     mutationHint: { type: 'no_mutation' },
@@ -293,6 +335,8 @@ export interface UndertakingCellOverride {
   readonly catalystEncounterIds?: readonly string[];
   /** The family this override's completion stirs, replacing the cell's own row (THR-1497). */
   readonly catalystQuery?: ContentQuery;
+  /** The meeting this override's completion arranges, replacing the cell's own row (THR-1519). */
+  readonly appointmentPayoff?: UndertakingAppointmentPayoff;
   readonly reachProfile?: Partial<Record<ReachDomain, number>>;
 }
 
@@ -325,6 +369,7 @@ export function applyCellOverride(cellId: string, slug: string, override: Undert
     projectDuration: override.projectDuration ?? (executionMode === 'multi_tick_project' ? base.projectDuration : undefined),
     catalystEncounterIds: override.catalystEncounterIds ?? base.catalystEncounterIds,
     catalystQuery: override.catalystQuery ?? base.catalystQuery,
+    appointmentPayoff: override.appointmentPayoff ?? base.appointmentPayoff,
     reachProfile: override.reachProfile ?? base.reachProfile,
   };
 }

@@ -54,7 +54,7 @@ import { getAgentLocation } from './graphQueries';
 import { resolveToParentLocation } from './sublocationShape';
 import { getGroupMembers, isAgentGone, isBandNode } from './groups/groupQueries';
 import { FAMILY_SEED_MAX_CANDIDATES } from '../data/effect-constants';
-import { STRATEGIC_CATALYST_REACTION_ID } from '../data/strategic-action-constants';
+import { STRATEGIC_CATALYST_REACTION_ID, UNDERTAKING_APPOINTMENT_REACTION_ID } from '../data/strategic-action-constants';
 import {
   CONTENT_QUERY_MAX_CANDIDATES,
   describeContentQuery,
@@ -141,7 +141,10 @@ export function seedContentQuery(seed: PendingEncounterSeed): ContentQuery | und
  * carries that nothing else stamps.
  */
 export function seedQuerySite(seed: PendingEncounterSeed): ContentQuerySite {
-  return seed.sourceReactionId === STRATEGIC_CATALYST_REACTION_ID ? 'undertaking_catalyst' : 'encounter_seed';
+  if (seed.sourceReactionId === STRATEGIC_CATALYST_REACTION_ID) return 'undertaking_catalyst';
+  // THR-1519: a work's appointment is the third planter on this one site.
+  if (seed.sourceReactionId === UNDERTAKING_APPOINTMENT_REACTION_ID) return 'undertaking_appointment';
+  return 'encounter_seed';
 }
 
 /**
@@ -495,6 +498,42 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
   let nextTickEvents = [...state.tickEvents];
   let nextRecentEvents = [...state.recentEvents];
 
+  // THR-1479 — the meeting was kept: the promise is redeemed, the Event kind records
+  // it, and the chronicle gets its line. One writer for both exits of a kept seed
+  // (THR-1519): the fired path and the withered path. Keeping is *presence* — a
+  // mortal who stood at the place in the window kept their word whether or not the
+  // world had a scene to offer them, so a kept meeting whose sequel withered (the
+  // family gated to settlements, the place a ruin) must not leave the promise on the
+  // sheet unredeemed and the milestone uncounted. Measured on seed 42 before this:
+  // three `create × Agreement` meetings kept at a ruin, three dangling promises, zero
+  // `appointment_kept` Events.
+  const recordKeptAppointment = (seed: PendingEncounterSeed, kept: PlantedAppointment, resolvedTemplateId: string): void => {
+    redeemAppointmentFavour(state.graph, kept.favourEdgeId);
+    writeAppointmentEvent(state.graph, {
+      kind: 'appointment_kept', agentId: seed.targetAgentId, locationId: kept.locationId,
+      tick, seedId: seed.seedId,
+    });
+    if (runtime) touchWorld(runtime);
+    const agentName = state.graph.getNode(seed.targetAgentId)?.name ?? seed.targetAgentId;
+    const placeName = state.graph.getNode(kept.locationId)?.name ?? kept.locationId;
+    const keptEvent: TickEvent = {
+      id: `${seed.seedId}_kept`,
+      tick,
+      type: 'narrative',
+      message: `${agentName} keeps their word at ${placeName}.`,
+      significance: APPOINTMENT_EVENT_SIGNIFICANCE,
+      actorId: seed.targetAgentId,
+    };
+    nextTickEvents = [...nextTickEvents, keptEvent];
+    nextRecentEvents = appendRecentEvent(nextRecentEvents, keptEvent);
+    emitTrace({
+      tick, category: 'appointment_kept', agentId: seed.targetAgentId,
+      seedId: seed.seedId, locationId: kept.locationId, dueTick: kept.dueTick,
+      arrivedTick: tick, resolvedTemplateId,
+      summary: `Appointment kept: ${agentName} at ${placeName} (due ${kept.dueTick}, tick ${tick}) → ${resolvedTemplateId}`,
+    });
+  };
+
   for (const pendingSeed of eligible) {
     // Reassigned by the appointment arm below (a kept meeting is judged at its place;
     // a lost place fires the kept branch placeless). Every other seed passes through.
@@ -757,32 +796,7 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
 
       // THR-1479 — the meeting was kept: the promise is redeemed, the Event kind
       // records it, and the chronicle gets its line.
-      if (keptAppointment) {
-        redeemAppointmentFavour(state.graph, keptAppointment.favourEdgeId);
-        writeAppointmentEvent(state.graph, {
-          kind: 'appointment_kept', agentId: seed.targetAgentId, locationId: keptAppointment.locationId,
-          tick, seedId: seed.seedId,
-        });
-        if (runtime) touchWorld(runtime);
-        const agentName = state.graph.getNode(seed.targetAgentId)?.name ?? seed.targetAgentId;
-        const placeName = state.graph.getNode(keptAppointment.locationId)?.name ?? keptAppointment.locationId;
-        const keptEvent: TickEvent = {
-          id: `${seed.seedId}_kept`,
-          tick,
-          type: 'narrative',
-          message: `${agentName} keeps their word at ${placeName}.`,
-          significance: APPOINTMENT_EVENT_SIGNIFICANCE,
-          actorId: seed.targetAgentId,
-        };
-        nextTickEvents = [...nextTickEvents, keptEvent];
-        nextRecentEvents = appendRecentEvent(nextRecentEvents, keptEvent);
-        emitTrace({
-          tick, category: 'appointment_kept', agentId: seed.targetAgentId,
-          seedId: seed.seedId, locationId: keptAppointment.locationId, dueTick: keptAppointment.dueTick,
-          arrivedTick: tick, resolvedTemplateId,
-          summary: `Appointment kept: ${agentName} at ${placeName} (due ${keptAppointment.dueTick}, tick ${tick}) → ${resolvedTemplateId}`,
-        });
-      }
+      if (keptAppointment) recordKeptAppointment(seed, keptAppointment, resolvedTemplateId);
       continue;
     }
 
@@ -835,6 +849,10 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         outcome: 'fired',
         summary: `Seed fired (family-only narrative): "${seed.seedLabel}" → ${seed.encounterFamily ?? describeSeedQuery(query)}`,
       });
+      // THR-1519 — kept, but the world had nothing to say: the word was still kept.
+      if (keptAppointment) {
+        recordKeptAppointment(seed, keptAppointment, `withered:${seed.encounterFamily ?? describeSeedQuery(query)}`);
+      }
       continue;
     }
 

@@ -214,6 +214,19 @@ export function evaluateGraphCondition(
         { traitId: condition.trait },
       );
 
+    // THR-1519. Reads the Event kind slice 1 writes (`writeAppointmentEvent`): the
+    // mortal `participated_in` an `event` node whose `eventType` is `appointment_kept`.
+    // Missed ones share the edge shape and are filtered out by type — the whole point
+    // of a kept-word milestone is that only the kept ones count. Fails soft to `false`
+    // on a missing agent, the `agent_deceased` rule: absence is never progress.
+    case 'agent_kept_appointment': {
+      if (!graph.getNode(agentId)) return false;
+      const kept = graph.getOutgoingEdges(agentId, 'participated_in')
+        .filter((e) => graph.getNode(e.target)?.properties.eventType === 'appointment_kept')
+        .length;
+      return kept >= condition.minCount;
+    }
+
     // THR-808. Fails soft to `false` on a missing node: `phaseAmbitionProgress` walks
     // live `actor` nodes to reach this, so the agent always exists at call time, and
     // treating absence as death would be an auto-complete waiting to happen. THR-812
