@@ -273,12 +273,13 @@ export type SystemConnection =
   | 'conditions'
   | 'reputation'
   | 'factions'
-  | 'content_query';
+  | 'content_query'
+  | 'appointments';
 
 /**
  * Canonical order, so two templates connecting to the same systems report
  * identically regardless of authoring order (NFP #3). Also the enumeration
- * {@link systemSurfacesForOutcome} initialises from — one list, so a seventh
+ * {@link systemSurfacesForOutcome} initialises from — one list, so an eighth
  * connection cannot be added to the type and silently missed by that record.
  */
 export const SYSTEM_CONNECTIONS: readonly SystemConnection[] = [
@@ -289,7 +290,24 @@ export const SYSTEM_CONNECTIONS: readonly SystemConnection[] = [
   'reputation',
   'factions',
   'content_query',
+  'appointments',
 ];
+
+/** Whether an authored effect is a placed, timed seed — an appointment (THR-1479). */
+function isAppointmentSeed(effect: EncounterAftermathReactionEffect): boolean {
+  return effect.kind === 'encounter_seed' && effect.appointment !== undefined;
+}
+
+/**
+ * Whether an `encounter_seed` runs a content query on *some* path — its own
+ * kept branch, or an appointment's missed branch (THR-1518). The missed branch
+ * is a seed in its own right (`evaluateEncounterSeeds` rewrites the pending seed
+ * into it), so a query there is reached for exactly as a query on the kept one.
+ */
+function seedRunsQuery(effect: EncounterAftermathReactionEffect): boolean {
+  if (effect.kind !== 'encounter_seed') return false;
+  return effect.query !== undefined || effect.appointment?.missed?.query !== undefined;
+}
 
 export interface CompositionReport {
   readonly templateId: string;
@@ -708,6 +726,9 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
       field => (effect as unknown as Record<string, unknown>)[field] === SENTINEL_REALM,
     ),
   );
+  // THR-1518 — `$appointment` is the third sentinel whose referent the template must
+  // create: a PATH chip claiming a meeting is honest only on a template that plants one.
+  const plantsAppointment = allAftermathEffects(template).some(isAppointmentSeed);
   // Faces overlap — a band that authors no `changes` inherits the variant's, so
   // the same chip is reachable on several endings. Reporting it once keeps the
   // fix list the shape an author acts on.
@@ -723,7 +744,9 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
       );
       for (const ref of declared) {
         if (ref.entityId) {
-          const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys, mintsArtifact, bindsRealm });
+          const verdict = classifyAnchorDeclaration(ref.entityId, {
+            supportKeys, mintsArtifact, bindsRealm, plantsAppointment,
+          });
           if (!verdict.ok) {
             reported.add(change.id);
             out.push(
@@ -1134,7 +1157,14 @@ export function systemConnections(
 
   if (castSpecs(template).length > 0) found.add('cast');
   if (hasReward(template)) found.add('rewards');
-  if (effects.some(e => e.kind === 'encounter_seed')) found.add('seeds');
+  // THR-1518 — an appointment seed earns `appointments` *in place of* `seeds`,
+  // not beside it. The plan's ceiling: an appointment is worth two of the
+  // quota's three at most (`appointments` + `content_query` when its missed
+  // branch is a query), the same as a query seed today (`seeds` + `content_query`).
+  // Counting it as `seeds` too would make one effect worth the whole quota, and a
+  // quota one effect can satisfy is not a quota.
+  if (effects.some(e => e.kind === 'encounter_seed' && !isAppointmentSeed(e))) found.add('seeds');
+  if (effects.some(isAppointmentSeed)) found.add('appointments');
   if (effects.some(e => CONDITION_EFFECT_KINDS.has(e.kind))) found.add('conditions');
 
   // THR-1489 — the content query as a counted connection.
@@ -1155,7 +1185,10 @@ export function systemConnections(
   // it is not authored as one, and counting it would hand the new key to the
   // whole legacy corpus on day one — which would make the census measure
   // nothing and the "new factory output required to carry it" rule unenforceable.
-  if (effects.some(e => e.kind === 'encounter_seed' && e.query !== undefined)) {
+  //
+  // THR-1518 — an appointment's *missed* branch is a seed too, so a query there
+  // counts (`seedRunsQuery`). The Crossroads' missed branch is `#crossroads_debt`.
+  if (effects.some(seedRunsQuery)) {
     found.add('content_query');
   }
 
@@ -1266,10 +1299,11 @@ export function isAdditiveConditionEffectKind(kind: string): boolean {
 function systemsOfEffect(effect: EncounterAftermathReactionEffect): readonly SystemConnection[] {
   const out: SystemConnection[] = [];
   if (PERSISTENT_EFFECT_KINDS.has(effect.kind)) out.push('rewards');
-  if (effect.kind === 'encounter_seed') out.push('seeds');
+  if (effect.kind === 'encounter_seed' && !isAppointmentSeed(effect)) out.push('seeds');
+  if (isAppointmentSeed(effect)) out.push('appointments');
   // Same predicate as `systemConnections`'s arm, so the Stage 3 union answer and
   // the Stage 4 per-band answer cannot disagree about whether a query is here.
-  if (effect.kind === 'encounter_seed' && effect.query !== undefined) out.push('content_query');
+  if (seedRunsQuery(effect)) out.push('content_query');
   if (CONDITION_EFFECT_KINDS.has(effect.kind)) out.push('conditions');
   if (REPUTATION_EFFECT_KINDS.has(effect.kind)) out.push('reputation');
   if (FACTION_EFFECT_KINDS.has(effect.kind)) out.push('factions');
@@ -1719,6 +1753,25 @@ export function checkCompositionContract(
       'systems',
       `connects to ${systems.length} game system(s) `
         + `[${systems.join(', ') || 'none'}], under the quota of ${COMPOSITION_SYSTEMS_QUOTA_MIN}`,
+    );
+  }
+
+  // THR-1518 — both branches or a composition error. An appointment with no
+  // missed branch is the cutscene-with-a-walk the director's ruling forbids
+  // (*a meeting that cannot be missed is not a promise*). The seed-liveness gate
+  // (`appointment_missing_branch`, THR-1479) already fails `check:encounter` on
+  // it; this is the same rule where an author reads the composition report, and
+  // it earns the `appointments` key back — a template cannot reach quota on a
+  // half-authored appointment.
+  for (const effect of allAftermathEffects(template)) {
+    if (!isAppointmentSeed(effect) || effect.kind !== 'encounter_seed') continue;
+    const missed = effect.appointment?.missed;
+    if (missed && (missed.templateId || missed.query)) continue;
+    add(
+      'systems',
+      `appointment seed '${effect.seedLabel}' authors no missed branch — a meeting that `
+        + 'cannot be missed is not a promise; give `appointment.missed` a gated literal '
+        + 'or a query, authored with the parent (THR-1479)',
     );
   }
 

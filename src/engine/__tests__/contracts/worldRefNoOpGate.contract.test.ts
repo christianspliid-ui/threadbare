@@ -86,6 +86,10 @@ const NOOP_GATE_TICK_BUDGET = 20;
  * rather than a definition id, so it resolves only for an actor standing on claimed
  * ground. The gate therefore picks its actor from the map (see `realmActorId`) instead of
  * taking `agentIds[0]` on faith, and pins the unclaimed-ground drop as its own arm.
+ *
+ * `appointment` (THR-1518) is the ninth: the place a promise binds the mortal to, read off
+ * the `owes_favor` edge the planter writes at aftermath — so, like `artifact`, it can only
+ * resolve *after* an ending has been applied, and it is mint-bound below.
  */
 const EXPECTED_FORMS = [
   'actor',
@@ -96,6 +100,7 @@ const EXPECTED_FORMS = [
   'artifact',
   'here',
   'realm',
+  'appointment',
 ] as const;
 type AnchorForm = (typeof EXPECTED_FORMS)[number];
 
@@ -111,6 +116,7 @@ const ANCHOR_FORM_KIND: Partial<Record<AnchorForm, string>> = {
   faction: 'faction',
   here: 'location',
   realm: 'faction',
+  appointment: 'location',
 };
 
 /**
@@ -122,7 +128,7 @@ const ANCHOR_FORM_KIND: Partial<Record<AnchorForm, string>> = {
  * set above stays closed; if content ever authors one, the count assertion below is
  * where that shows up, not a silent skip.
  */
-const MINT_BOUND_FORMS: ReadonlySet<AnchorForm> = new Set<AnchorForm>(['artifact']);
+const MINT_BOUND_FORMS: ReadonlySet<AnchorForm> = new Set<AnchorForm>(['artifact', 'appointment']);
 
 /**
  * Anchors that declare an `entityId` and no `visualKind`, and so never reach a resolver.

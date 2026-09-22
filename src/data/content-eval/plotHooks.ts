@@ -221,6 +221,18 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
   },
 
   // ── Adventure & Quest archetypes (vault) ──────────────────────────
+  // THR-1518 — the premise the appointment primitive (THR-1479) makes writable: a
+  // meeting to keep. Rolled here so the Plot-Hook Draw can hand an author the
+  // front of an encounter whose back is an `appointment` block — the place-and-
+  // time promise prose rule 7b forbade until the engine could perform it.
+  {
+    id: 'hook.meeting_to_keep',
+    hook: 'Someone has given their word to be at a place by a time, and the road between here and there has other ideas about it.',
+    themes: ['journey', 'bargain'],
+    reaches: ['heart', 'eye'],
+    source: 'THR-1479 — the appointment primitive (A Bargain at the Crossroads → The Full Moon Collection / The Stranger Finds Them)',
+    usedBy: [],
+  },
   {
     id: 'hook.desperate_escort',
     hook: 'Someone who must survive the journey cannot make it alone, and every hour of travel is an hour the pursuit gains.',

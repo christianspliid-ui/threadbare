@@ -129,6 +129,26 @@ export function classifyDeclaration(
   return 'absent';
 }
 
+/**
+ * The more assertable of two scopes (THR-1518).
+ *
+ * An appointment seed earns `appointments` in place of `seeds` on the composition
+ * side, so a claim about "the seed this run planted" has two connections to read
+ * and should take whichever this run can reach. `reachable` beats every excuse;
+ * among the excuses, the one that says more about *why* wins — a reaction nobody
+ * picked is a more specific fact than a band fate did not roll, and either beats
+ * `absent`.
+ */
+export function strongestScope(a: DeclarationScope, b: DeclarationScope): DeclarationScope {
+  const rank: Readonly<Record<DeclarationScope, number>> = {
+    reachable: 3,
+    reaction_scoped: 2,
+    band_scoped: 1,
+    absent: 0,
+  };
+  return rank[a] >= rank[b] ? a : b;
+}
+
 // ─── Reaction selection ──────────────────────────────────────────────
 
 /** The shape {@link selectReaction} needs — an aftermath reaction's id. */

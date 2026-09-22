@@ -3339,8 +3339,8 @@ export const CONTRACTS: readonly Contract[] = [
     badgeOverride: {
       badge: 'LEAKED',
       reason:
-        'Shipped with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain), but the census that proves a mortal on a seeded run is pulled and departs is slice 2 — flips 🟢 on a census hit, never on a gate that reads the code.',
-      deferralTicket: 'THR-1518',
+        'Shipped with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain). THR-1518 (2026-09-22) landed the harness and MEASURED the row: `check:encounter-live` proves the mechanics on a seeded world (present → kept at tick 136, the Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the promise broken), but `check:content-model-census` reads UNREACHED on seeds 42 / 99 / 7 at 200 ticks and on 42 / 99 at 1000 — the Crossroads fired once in 1000 ticks and the mortal refused. That is the THR-1497 shape, and this row stays red until a census HIT (THR-1524), never on a gate that reads the code.',
+      deferralTicket: 'THR-1524',
     },
   },
   {
@@ -3364,8 +3364,8 @@ export const CONTRACTS: readonly Contract[] = [
     badgeOverride: {
       badge: 'LEAKED',
       reason:
-        'Shipped with the evaluator test proving kept redeems and missed breaks on a fixture world, and the sheet reads the broken favour; the seeded-run census that proves a real mortal misses a real meeting is slice 2.',
-      deferralTicket: 'THR-1518',
+        'Shipped with the evaluator test proving kept redeems and missed breaks on a fixture world, and the sheet reads the broken favour. THR-1518 (2026-09-22) proved the miss on a seeded world through `check:encounter-live` (the mortal stood on another hex, `appointment_missed` written, the favour `broken`, the reckoning following), but no mortal on the live board has yet planted an appointment for the census to count — UNREACHED on every seed tried. Flips with its sibling on a census HIT (THR-1524).',
+      deferralTicket: 'THR-1524',
     },
   },
   {

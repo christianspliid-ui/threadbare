@@ -144,7 +144,41 @@ export const PACKET_BATCH_BOUNDS = {
    * decision with the census in hand, which is what the batch report prints.
    */
   queryPrizeFloor: 1,
+  /**
+   * At least this many slots in a batch must roll `appointment` (THR-1518).
+   *
+   * The second floor on die B, for the same reason as the first: THR-1479's
+   * kill criterion — *"two batches after slice 2 lands, the census reports zero
+   * authored appointments → retro finding dead primitive"* — and Christian's
+   * framing that a primitive the authoring agent does not reach for is a dead
+   * feature (*"without that connectivity it is a dead feature"*).
+   *
+   * **This is the last free floor on this die.** THR-1489's arithmetic: with a
+   * shape cap of two, each floor spends one forced slot of a six-slot batch, so
+   * two floors put a third of the shape axis under forced draws and a third
+   * floor would put half of it there — at which point the die is not rolling
+   * the structure, it is rolling which floor to satisfy first. {@link DIE_B_MAX_FLOORS}
+   * holds the ceiling and {@link packetDiceCatalogViolations} refuses a third.
+   */
+  appointmentFloor: 1,
 } as const;
+
+/**
+ * THR-1518 — the die-B `appointment` floor by the name the plan gives it
+ * (`Docs/plans/2026-09-21-thr-1479-appointment-primitive.md` § Constants table).
+ * Seated in {@link PACKET_BATCH_BOUNDS} beside `queryPrizeFloor` rather than in
+ * the movement constants, per the intent-judge's note: it is a brief-time bound,
+ * not an engine one.
+ */
+export const APPOINTMENT_BRIEF_FLOOR = PACKET_BATCH_BOUNDS.appointmentFloor;
+
+/**
+ * How many floors die B may carry. Two, and the number is the point — see
+ * `PACKET_BATCH_BOUNDS.appointmentFloor`'s note for the arithmetic. Adding a
+ * third is a design-session decision with Christian, never an authoring one; the
+ * catalog check turns red rather than letting the table drift there.
+ */
+export const DIE_B_MAX_FLOORS = 2;
 
 /** Weight of a setting class the corpus already covers most densely. */
 export const SETTING_BASE_WEIGHT = 1;
@@ -191,7 +225,7 @@ export const PACKET_DEFAULT_RARITY_TIER: RarityTier = 2;
 
 export const REACH_FACES: readonly ReachDomain[] = REACH_DOMAINS;
 
-// ─── Die B — decision shape, 7 faces · batch cap ≤2 ──────────────────
+// ─── Die B — decision shape, 9 faces · batch cap ≤2 · two floors ─────
 
 export type DecisionShapeId =
   | 'single_test'
@@ -201,7 +235,8 @@ export type DecisionShapeId =
   | 'personality_fork'
   | 'opt_in_complication'
   | 'seeded_sequel'
-  | 'query_prize';
+  | 'query_prize'
+  | 'appointment';
 
 export interface DecisionShapeFace {
   readonly id: DecisionShapeId;
@@ -301,10 +336,62 @@ export const DECISION_SHAPE_FACES: readonly DecisionShapeFace[] = [
       + 'steps. The floor of one per batch (THR-1481 § Kill criteria) is what keeps the '
       + 'content query from going dead by never being reached for.',
   },
+  // THR-1518. The second ending-constraining face, and the second floor. Like
+  // `query_prize` it composes with a step structure rather than replacing one:
+  // a slot that rolls it still picks Single Test or a Fork; what it owes is that
+  // one of its endings binds the mortal to a place by a time.
+  //
+  // Why a floor and not merely a face: THR-1479 shipped the primitive with one
+  // authored user and a systems auditor that knows it exists, and neither makes
+  // an author *reach* for it under a deadline. The catalyst query proved the
+  // shape of that death (THR-1497): wired, gated, contract-green, unreachable.
+  // The floor is what makes the census's "zero authored" reading a judgement
+  // rather than the default outcome of neglect.
+  {
+    id: 'appointment',
+    label: 'Appointment',
+    steps: 'any + a placed, timed sequel',
+    useWhen:
+      'An ending binds the mortal to **a place by a time**: the seed carries an '
+      + '`appointment` block (`locationId: \'$here\'` or `$cast:<key>`, a window, the other '
+      + 'party, and a `missed` branch that is a gated literal or a query — never an ungated '
+      + 'id). The mortal leans toward the place, goes, and keeps it by standing there in the '
+      + 'window, or misses it and the missed branch finds them wherever they are. Both '
+      + 'sequels are authored with the parent — a meeting that cannot be missed is not a '
+      + 'promise, and `check:encounter` fails one. Compose it with whichever step structure '
+      + 'the scene wants; this face constrains the consequence, not the steps. The floor of '
+      + 'one per batch (THR-1479 § Kill criteria) is what keeps the appointment from going '
+      + 'dead by never being reached for. A Bargain at the Crossroads is the worked example.',
+  },
 ];
 
 /** The face {@link PACKET_BATCH_BOUNDS.queryPrizeFloor} counts. */
 export const QUERY_PRIZE_SHAPE_ID: DecisionShapeId = 'query_prize';
+
+/** The face {@link PACKET_BATCH_BOUNDS.appointmentFloor} counts (THR-1518). */
+export const APPOINTMENT_SHAPE_ID: DecisionShapeId = 'appointment';
+
+/** One floor on die B: the face it names, how many slots owe it, and how a report prints it. */
+export interface DieBFloor {
+  readonly id: DecisionShapeId;
+  readonly floor: number;
+  /** As the spread row and the brief gate print it — `query-prize`, `appointment`. */
+  readonly label: string;
+}
+
+/**
+ * Every floor die B carries, in the order the spread reports them.
+ *
+ * **One list, read by the roller, the spread, the catalog check and the tests**, so
+ * a floor added here is enforced, reported and health-checked in the same edit —
+ * and a floor added anywhere else is the drift the catalog check exists to catch.
+ * Its length is capped at {@link DIE_B_MAX_FLOORS}; see that constant for why two
+ * is the ceiling and not a starting point.
+ */
+export const DIE_B_FLOORS: readonly DieBFloor[] = [
+  { id: QUERY_PRIZE_SHAPE_ID, floor: PACKET_BATCH_BOUNDS.queryPrizeFloor, label: 'query-prize' },
+  { id: APPOINTMENT_SHAPE_ID, floor: PACKET_BATCH_BOUNDS.appointmentFloor, label: 'appointment' },
+];
 
 /**
  * The faces excluded at the last chance to meet the query-prize floor.
@@ -312,7 +399,10 @@ export const QUERY_PRIZE_SHAPE_ID: DecisionShapeId = 'query_prize';
  * Mirrors {@link SCALES_BELOW_FLOOR} exactly — the floor is enforced by
  * narrowing the table on the last slot that can still satisfy it, never by
  * re-rolling until it lands, so the packet stays deterministic off the brief
- * slug (NFP #3).
+ * slug (NFP #3). With two floors on the die (THR-1518) the roller narrows to
+ * *every* still-deficient floor face at once — see the die-B arm of
+ * {@link rollPacket} — so this list is the single-floor reading, kept for the
+ * tests that pin the mechanism.
  */
 export const SHAPES_BELOW_QUERY_PRIZE_FLOOR: readonly DecisionShapeId[] =
   DECISION_SHAPE_FACES.map(face => face.id).filter(id => id !== QUERY_PRIZE_SHAPE_ID);
@@ -736,20 +826,32 @@ export function rollPacket(input: PacketInput): EncounterPacket {
 
     // ── Die B — decision shape ───────────────────────────────────────
     //
-    // The cap and the floor are enforced through the one exclusion set, so a
-    // slot forced onto `query_prize` is still refused it once the cap is spent —
+    // The cap and the floors are enforced through the one exclusion set, so a
+    // slot forced onto a floor face is still refused it once the cap is spent —
     // an unsatisfiable pair would otherwise silently prefer whichever rule was
     // applied second. `packetDiceCatalogViolations` proves the pair satisfiable
     // before a packet is ever printed, so the intersection here is never empty.
-    const queryPrizeDeficit =
-      PACKET_BATCH_BOUNDS.queryPrizeFloor - (shapeTally.get(QUERY_PRIZE_SHAPE_ID) ?? 0);
-    const forceQueryPrize =
-      queryPrizeDeficit > 0 && slotCount - index <= queryPrizeDeficit;
+    //
+    // Two floors since THR-1518, and one mechanism for both: the slots left are
+    // measured against the *sum* of the still-open deficits, and when they run
+    // out the table narrows to every deficient floor face at once — so a batch
+    // owing both is forced onto one of the two, and the next slot onto the
+    // other. Forcing them one at a time would let a batch spend its last slot
+    // on the first floor and report the second as an unmet bound nobody could
+    // have met.
+    const openFloors = DIE_B_FLOORS
+      .map(f => ({ ...f, deficit: f.floor - (shapeTally.get(f.id) ?? 0) }))
+      .filter(f => f.deficit > 0);
+    const shapeFloorDeficit = openFloors.reduce((sum, f) => sum + f.deficit, 0);
+    const forceShapeFloor = shapeFloorDeficit > 0 && slotCount - index <= shapeFloorDeficit;
     const shapeExclusions = new Set<DecisionShapeId>(
       cappedFaces(shapeTally, PACKET_BATCH_BOUNDS.decisionShapeCap),
     );
-    if (forceQueryPrize) {
-      for (const id of SHAPES_BELOW_QUERY_PRIZE_FLOOR) shapeExclusions.add(id);
+    if (forceShapeFloor) {
+      const deficientIds = new Set(openFloors.map(f => f.id));
+      for (const face of DECISION_SHAPE_FACES) {
+        if (!deficientIds.has(face.id)) shapeExclusions.add(face.id);
+      }
     }
 
     const shapeRoll = rollWithCap(
@@ -762,9 +864,9 @@ export function rollPacket(input: PacketInput): EncounterPacket {
       'decisionShape',
       shapeRoll.rolledFirst,
       shapeRoll.drawn,
-      forceQueryPrize
-        ? `last slot that can still meet the query-prize floor `
-          + `(≥${PACKET_BATCH_BOUNDS.queryPrizeFloor})`
+      forceShapeFloor
+        ? `last slot that can still meet the `
+          + openFloors.map(f => `${f.label} floor (≥${f.floor})`).join(' and ')
         : `decision-shape cap ${PACKET_BATCH_BOUNDS.decisionShapeCap} already reached for `
           + `'${shapeRoll.rolledFirst}'`,
     );
@@ -918,15 +1020,13 @@ function buildSpread(t: SpreadTallies): readonly PacketSpreadRow[] {
     // because a cap and a floor bust for opposite reasons and a reader fixing
     // one needs to see which bit. Reported even at zero — an axis that vanishes
     // when it is unmet is the census failure this slice exists to close.
-    {
-      axis: 'query prize',
-      counts: [
-        [QUERY_PRIZE_SHAPE_ID, t.shapeTally.get(QUERY_PRIZE_SHAPE_ID) ?? 0],
-      ],
-      bound: `≥${PACKET_BATCH_BOUNDS.queryPrizeFloor} query-prize ending`,
-      satisfied:
-        (t.shapeTally.get(QUERY_PRIZE_SHAPE_ID) ?? 0) >= PACKET_BATCH_BOUNDS.queryPrizeFloor,
-    },
+    // One row per floor (THR-1518 made it two), off the one list the roller reads.
+    ...DIE_B_FLOORS.map((f): PacketSpreadRow => ({
+      axis: f.label === 'query-prize' ? 'query prize' : f.label,
+      counts: [[f.id, t.shapeTally.get(f.id) ?? 0]],
+      bound: `≥${f.floor} ${f.label} ending`,
+      satisfied: (t.shapeTally.get(f.id) ?? 0) >= f.floor,
+    })),
     {
       axis: 'setting class',
       counts: countsOf(t.settingTally),
@@ -993,7 +1093,7 @@ export function packetDiceCatalogViolations(): readonly string[] {
 
   const expectedCounts: readonly [string, number, number][] = [
     ['reach', REACH_FACES.length, 8],
-    ['decision shape', DECISION_SHAPE_FACES.length, 8],
+    ['decision shape', DECISION_SHAPE_FACES.length, 9],
     ['setting class', SETTING_CLASSES.length, 8],
     ['system target', SYSTEM_TARGET_FACES.length, 14],
   ];
@@ -1027,30 +1127,53 @@ export function packetDiceCatalogViolations(): readonly string[] {
     problems.push('the decision-shape table is too small for a default batch at its cap');
   }
 
-  // THR-1489 — the floor's own satisfiability, in the same posture as the caps
+  // THR-1489 — each floor's own satisfiability, in the same posture as the caps
   // above. A floor naming a face the table does not carry, or asking for more
   // slots of it than the cap allows, is unsatisfiable on *every* batch forever:
   // `rollPacket` would force a last-chance slot onto an empty exclusion set and
   // the spread would report a bust nobody could ever fix by authoring better.
   // That is a table bug, and the whole reason this function runs before a packet
   // is printed.
-  if (!DECISION_SHAPE_FACES.some(face => face.id === QUERY_PRIZE_SHAPE_ID)) {
+  for (const f of DIE_B_FLOORS) {
+    if (!DECISION_SHAPE_FACES.some(face => face.id === f.id)) {
+      problems.push(
+        `the ${f.label} floor names '${f.id}', which the decision-shape table does not carry`,
+      );
+    }
+    if (f.floor > PACKET_BATCH_BOUNDS.decisionShapeCap) {
+      problems.push(
+        `the ${f.label} floor (${f.floor}) exceeds the `
+          + `decision-shape cap (${PACKET_BATCH_BOUNDS.decisionShapeCap}) — no batch can satisfy both`,
+      );
+    }
+    if (f.floor > PACKET_DEFAULT_SLOTS) {
+      problems.push(
+        `the ${f.label} floor (${f.floor}) exceeds a default batch's ${PACKET_DEFAULT_SLOTS} slots`,
+      );
+    }
+  }
+  // THR-1518 — the floors together. Two floors of one each spend two of a
+  // six-slot batch; the sum has to fit, and the *count* has to hold at the
+  // ceiling THR-1489 measured, or the die stops rolling structure and starts
+  // rolling which floor to satisfy first.
+  const floorSum = DIE_B_FLOORS.reduce((sum, f) => sum + f.floor, 0);
+  if (floorSum > PACKET_DEFAULT_SLOTS) {
     problems.push(
-      `the query-prize floor names '${QUERY_PRIZE_SHAPE_ID}', which the decision-shape `
-        + 'table does not carry',
+      `the die-B floors together ask for ${floorSum} slots of a default batch's `
+        + `${PACKET_DEFAULT_SLOTS}`,
     );
   }
-  if (PACKET_BATCH_BOUNDS.queryPrizeFloor > PACKET_BATCH_BOUNDS.decisionShapeCap) {
+  if (DIE_B_FLOORS.length > DIE_B_MAX_FLOORS) {
     problems.push(
-      `the query-prize floor (${PACKET_BATCH_BOUNDS.queryPrizeFloor}) exceeds the `
-        + `decision-shape cap (${PACKET_BATCH_BOUNDS.decisionShapeCap}) — no batch can satisfy both`,
+      `die B carries ${DIE_B_FLOORS.length} floors; ${DIE_B_MAX_FLOORS} is the ceiling `
+        + '(THR-1489 arithmetic, THR-1518 spent the last one) — a third is a design decision, '
+        + 'not a table edit',
     );
   }
-  if (PACKET_BATCH_BOUNDS.queryPrizeFloor > PACKET_DEFAULT_SLOTS) {
-    problems.push(
-      `the query-prize floor (${PACKET_BATCH_BOUNDS.queryPrizeFloor}) exceeds a default `
-        + `batch's ${PACKET_DEFAULT_SLOTS} slots`,
-    );
+  const floorIds = new Set<string>();
+  for (const f of DIE_B_FLOORS) {
+    if (floorIds.has(f.id)) problems.push(`die B floors name '${f.id}' twice`);
+    floorIds.add(f.id);
   }
   if (REACH_FACES.length * PACKET_BATCH_BOUNDS.reachCap < PACKET_DEFAULT_SLOTS) {
     problems.push('the reach table is too small for a default batch at its cap');

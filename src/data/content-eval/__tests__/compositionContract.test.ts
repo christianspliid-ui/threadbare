@@ -365,6 +365,104 @@ describe('Composition Contract — each block falsified from the passing exempla
       expect(blocksOf(withoutQuery)).toContain('systems');
       expect(blocksOf(withQuery)).not.toContain('systems');
     });
+
+    // ── appointments as a counted connection (THR-1518) ──
+    //
+    // The plan's rule, verbatim: *an appointment seed earns `appointments` in
+    // place of `seeds`, plus `content_query` when its missed branch is a query —
+    // two at most, the same ceiling a query seed has today.* Same empty base as
+    // the block above, so the arithmetic is attributable to the one field.
+    describe('systems: an appointment seed earns `appointments` in place of `seeds`', () => {
+      const withAppointment = (
+        missed: { templateId?: string; query?: ContentQuery } | undefined,
+      ): UnifiedActionTemplate => ({
+        ...EMPTY_BASE,
+        aftermathConfig: {
+          ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!,
+          variants: {},
+          fallback: {
+            ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback,
+            changes: [],
+            byOutcome: {},
+            reactions: [
+              {
+                id: 'thr_1518_probe',
+                label: 'Carry the promise',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'encounter.slice.full_moon_collection',
+                    targetAgentId: '$actor',
+                    delayTicks: 12,
+                    seedLabel: 'a promise falls due',
+                    appointment: {
+                      locationId: '$here',
+                      ...(missed ? { missed: { ...missed, seedLabel: 'the debt finds them' } } : {}),
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      }) as unknown as UnifiedActionTemplate;
+
+      it('earns `appointments` instead of `seeds`, and `content_query` off a queried missed branch', () => {
+        const queried = systemConnections(
+          withAppointment({ query: { kind: 'encounter_template', tags: ['#crossroads_debt'] } }),
+        );
+        // Falsification: the seed must NOT be counted as a placeless seed as well —
+        // that would make one effect worth the whole quota.
+        expect(queried).not.toContain('seeds');
+        expect(queried).toContain('appointments');
+        expect(queried).toContain('content_query');
+        // rewards (a seed is a persistent consequence) + content_query + appointments:
+        // the same three a query seed earns today, with `seeds` swapped for `appointments`.
+        expect(queried).toEqual(['rewards', 'content_query', 'appointments']);
+        expect(queried.length).toBe(COMPOSITION_SYSTEMS_QUOTA_MIN);
+        expect(blocksOf(withAppointment({ query: { kind: 'encounter_template', tags: ['#crossroads_debt'] } })))
+          .not.toContain('systems');
+      });
+
+      it('a literal missed branch earns `appointments` alone — one short of the quota', () => {
+        const literal = systemConnections(
+          withAppointment({ templateId: 'encounter.slice.full_moon_reckoning' }),
+        );
+        expect(literal).toEqual(['rewards', 'appointments']);
+        expect(literal).not.toContain('content_query');
+        expect(literal.length).toBe(COMPOSITION_SYSTEMS_QUOTA_MIN - 1);
+        expect(blocksOf(withAppointment({ templateId: 'encounter.slice.full_moon_reckoning' })))
+          .toContain('systems');
+      });
+
+      it('an appointment with no missed branch is a composition error, not a half-earned key', () => {
+        const single = withAppointment(undefined);
+        const report = checkCompositionContract(single);
+        const missing = report.violations.filter(
+          v => v.block === 'systems' && v.message.includes('authors no missed branch'),
+        );
+        expect(missing).toHaveLength(1);
+        expect(missing[0].message).toContain('a promise falls due');
+
+        // The controlled arm: the same template with the branch authored carries no
+        // such violation — the error is about the branch, not the appointment.
+        const both = checkCompositionContract(
+          withAppointment({ query: { kind: 'encounter_template', tags: ['#crossroads_debt'] } }),
+        );
+        expect(both.violations.some(v => v.message.includes('authors no missed branch'))).toBe(false);
+      });
+
+      it('the first user carries the key — the Crossroads bargain reads as an appointment', () => {
+        const crossroads = UNIFIED_ACTION_TEMPLATES.find(
+          t => t.id === 'encounter.slice.bargain_at_crossroads',
+        );
+        expect(crossroads).toBeDefined();
+        const systems = systemConnections(crossroads!);
+        expect(systems).toContain('appointments');
+        // Its missed branch is `#crossroads_debt`, a query.
+        expect(systems).toContain('content_query');
+      });
+    });
   });
 });
 

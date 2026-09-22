@@ -3868,3 +3868,113 @@ contract-green and 🟢 LIVE on the interface map, and no player will ever meet 
 connectivity hook was satisfied; none of them asked *"is this site on the path the live decision
 board walks?"* Reachability under the live model is a separate question from wiring, and only a
 census hit answers it.
+
+## Capability 31: Appointments — a mortal keeps, or misses, a meeting at a place by a time (THR-1479, THR-1518)
+
+Until THR-1479 an `encounter_seed` promised a tick and a cast and never a place, so *"collect it
+here at the next full moon"* was a sentence the engine could not perform and prose rule 7b
+forbade it. Now a seed may carry an **`appointment` block**, and the sentence is lawful — on that
+seed's path and only there. Christian's framing is the requirement this section exists to meet:
+*"the encounter that we gave feedback on … would have to have been built by an agent who knew of
+and would use the appointment feature … without that connectivity it is a dead feature."* So the
+primitive ships with the four surfaces Capability 30 names — the brief rolls it, a gate counts it,
+the live proof proves it, the census reports it — and one more that Capability 30 learned the hard
+way: a **reachability row** from a seeded run.
+
+**The worked example — A Bargain at the Crossroads, as it should have been written.** The accept
+reaction plants one seed:
+
+```ts
+{
+  kind: 'encounter_seed',
+  templateId: SLICE_TEMPLATE_IDS.fullMoon,          // the KEPT branch: one authored scene, a gated literal
+  targetAgentId: '$actor',
+  delayTicks: SLICE_FULL_MOON_DELAY_TICKS,           // the due tick, authored as ticks-from-plant
+  seedLabel: 'A promise made at the crossroads falls due at the full moon.',
+  inheritContext: true,                              // the stranger rides into the sequel
+  appointment: {
+    locationId: '$here',                             // the crossroads the scene happens at
+    counterpartyId: '$cast:stranger',                // the other party; needs no agency, the seed brings them
+    missed: {                                        // the MISSED branch: a family, so a second reckoning joins by tag
+      query: { kind: 'encounter_template', tags: ['#crossroads_debt'] },
+      seedLabel: 'A promise broken at the crossroads has a way of finding the road.',
+    },
+  },
+}
+```
+
+What the engine then does, so the prose can say it: the planter binds `$here` / `$cast:*`, writes the
+promise as an `owes_favor` edge carrying `properties.appointment` (the Agreement kind's `favor`
+class — one claim on the sheet, which is why the Crossroads stopped granting `promise_given`), and
+refuses a fourth (`APPOINTMENT_MAX_PER_MORTAL`). Every tick the decision phase prices the slack
+(`due − now − travel`, off the movement graph); inside the horizon the mortal **leans** (a second
+pull on the relocation channel, candidates that would outlast the slack discounted), and once the
+slack falls under their **leave margin** — a formula over `courage_prudence` and `loyalty_ambition`
+that can go negative, so a Renegade *chooses* to miss — they **depart** through the ordinary movement
+writer. On the hex in the window, the kept branch fires *at the place* and the favour is redeemed;
+window closed, the seed rewrites itself into its missed branch, the favour is marked `broken`
+(the sheet reads it until the reckoning retires it), and the missed sequel fires wherever they
+stand. Twelve named constants in `movement-content.ts`; four traces (`appointment_planted`,
+`appointment_regime`, `appointment_kept`, `appointment_missed`); `__DEBUG.getAppointments`, CLI
+`appointments`.
+
+**The two-sequel rule.** Both branches are authored with the parent, a gated literal or a query,
+never an ungated id — the THR-844 rot applied to the primitive built to end it. **A meeting that
+cannot be missed is not a promise** (director ruling, 2026-09-12): `check:encounter` fails an
+appointment with no `missed` branch (`appointment_missing_branch`, fatal), the composition report
+carries the same finding in its `systems` block, and the `appointments` quota key is earned only
+with both. The kept branch is a literal when it is one authored scene (the Full Moon Collection);
+the missed branch is a query when it is a *kind* (`#crossroads_debt`) — do not invert them.
+
+**Prose rule 7b's single lawful exception.** A place-and-time promise may be written only on a seed
+carrying `appointment`, and only when its `missed` branch exists. The spec's rule 34, the SKILL's
+REVISE trigger, and the systems auditor's *Live primitives* list all name it — the auditor BLOCKs
+a placed promise with no block, and an appointment with no missed branch. Everywhere else the
+truthful shape is still that the other party *finds* them (THR-1476).
+
+**1. The brief rolls it.** Die B's ninth face, `appointment`, with a **floor of one per batch of
+six** (`PACKET_BATCH_BOUNDS.appointmentFloor`, `APPOINTMENT_BRIEF_FLOOR`). It is the **second and
+last floor** on that die: THR-1489's arithmetic — each floor spends one forced slot of six, and a
+third would put half the shape axis under forced draws — so `packetDiceCatalogViolations` refuses a
+third (`DIE_B_MAX_FLOORS`). `draw:packet` forces both floors by the last slots that can still meet
+them, and `check:authoring-brief` fails a brief of six recording zero of either. The Plot-Hook Draw
+can hand you the front of one: `hook.meeting_to_keep`.
+
+**2. A gate counts it.** `appointments` is a systems-quota connection key. **An appointment seed
+earns `appointments` in place of `seeds`, plus `content_query` when its missed branch is a query —
+two at most**, the same ceiling a query seed has today. Not `seeds` as well: one effect worth the
+whole quota is not a quota. `check:chip-anchors` accepts **`$appointment`** as a chip anchor — the
+place the ending bound the mortal to, read off the promise edge, conditional (like `$artifact`) on
+the template planting one; the engine-derived PATH chip (*"A meeting at the Crossroads, in eleven
+days."*) links the place without an anchor being authored.
+
+**3. The live proof proves it.** `check:encounter-live` claims `appointment_kept` and
+`appointment_missed`, both **off state** — the Event node the seeding phase writes, the seed's
+rewrite, the sequel's `spawnedFromSeedId` — never off the ring, which a 140-tick drive evicts many
+times over. The kept arm continues the run with the mortal standing at the place and drives to the
+due tick; the missed arm stages a **twin world** (same seed, same hand, same reaction — the graph is
+mutated in place, so a second world is the only honest copy), stands the mortal on another hex it
+could have travelled from, and drives past the window. Measured 2026-09-22 on seed 42 / medium: the
+Crossroads keeps at tick 136 (due 136) and the Full Moon Collection spawns *there*; the twin misses
+at tick 149 (window closed 148) and the reckoning follows.
+
+**4. The census reports it — and this is the reachability row.** `npm run check:content-model-census`
+(weekly hygiene § 11) prints *Appointments (state)*: templates that author one, seeds planted on the
+seeded run, kept, missed by reason, and a verdict — **HIT** (an appointment was planted on the live
+board), **UNREACHED** (authored, never planted on this seed — re-run at another before reading it as
+dead), or **DEAD** (nothing authors one; two batches at zero is the retro's *dead primitive* finding,
+and the die floor and the systems-prompt entry are the first suspects). **Measured 2026-09-22, the
+row read UNREACHED** on seeds 42 / 99 / 7 at 200 ticks and 42 / 99 at 1000: the Crossroads fired
+once in 1000 ticks on the live board and the mortal refused. So the two interface contracts
+`appointment-pulls-agent-movement` and `missed-appointment-breaks-agreement` **stay 🔴 LEAKED**,
+repointed to THR-1524 — they flip on a census HIT and on nothing else, which is the whole of the
+Capability 30 lesson applied one primitive later, this time caught before the flip rather than
+after. The floor is the remedy: the next batch must author a second appointment-bearing encounter,
+and it should carry broad `settings` and a planting path not gated behind one pole of a value axis.
+
+**What is deliberately not here.** No halt-tolerance constant (a running undertaking is never
+abandoned and the checkpoint deferral already prices an absence); no `appointment` Agreement class
+(a promise to be somewhere is still a favour); no second record on the mortal node (**the seed is
+the appointment**). The god does not make appointments between mortals — *only encounters mint
+appointments for now* — but an undertaking may (THR-1519, `create × Agreement` with an
+`appointment` payoff).

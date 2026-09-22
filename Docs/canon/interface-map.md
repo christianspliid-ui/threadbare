@@ -328,6 +328,17 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
+2026-09-22 by Claude Code (THR-1518 — the appointment harness, slice 2). The two THR-1479
+contracts below **stay 🔴 LEAKED-with-ticket**, now pointing at THR-1524, and that is the row
+doing its job: the harness landed (`check:encounter-live` claims `appointment_kept` /
+`appointment_missed` and proves both on a seeded world — present → kept at tick 136 with the
+Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the
+promise `broken`, the reckoning following), and `check:content-model-census` measured the
+reachability row for the first time: **UNREACHED** on seeds 42 / 99 / 7 at 200 ticks and on
+42 / 99 at 1000 — the Crossroads bargain fired once in 1000 ticks on the live board and the
+mortal refused. Exactly the THR-1497 shape (wired, gated, green, unreached), surfaced by the
+census rather than hidden by a flip. Die B's `appointment` floor is the remedy already in
+place: the next batch must author a second appointment-bearing encounter. Earlier:
 2026-09-22 by Claude Code (THR-1348 — attention follows ambition). One contract added
 **🟢 LIVE on landing**, `strategic-ambition-pulls-holder-into-spotlight` (Ambitions &
 Undertakings → Agent Lifecycle: a strategic-profiled ambition assigned below the spotlight

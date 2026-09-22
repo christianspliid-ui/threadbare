@@ -16,6 +16,8 @@
 import { describe, it, expect } from "vitest";
 
 import {
+  APPOINTMENT_BRIEF_FLOOR,
+  APPOINTMENT_FACE,
   BATCH_SLOT_FLOOR_THRESHOLD,
   QUERY_PRIZE_BRIEF_FLOOR,
   QUERY_PRIZE_FACE,
@@ -54,15 +56,46 @@ describe("the query-prize floor", () => {
     expect(report.satisfied).toBe(false);
   });
 
-  it("passes the same batch once one slot carries the face", () => {
-    // The controlled arm: identical input but for the single face under test, so
-    // the failure above is attributable to the floor and not to the fixture's
+  it("passes the same batch once one slot carries each floor face", () => {
+    // The controlled arm: identical input but for the two faces under test, so
+    // the failure above is attributable to the floors and not to the fixture's
     // shape, its slot count, or the parser failing to see the block at all.
-    const withFace = [QUERY_PRIZE_FACE, ...SIX_WITHOUT_QUERY.slice(1)];
-    const report = briefFloorReport("fixture.md", brief(withFace));
+    const withFaces = [QUERY_PRIZE_FACE, APPOINTMENT_FACE, ...SIX_WITHOUT_QUERY.slice(2)];
+    const report = briefFloorReport("fixture.md", brief(withFaces));
 
     expect(report.slots).toBe(BATCH_SLOT_FLOOR_THRESHOLD);
     expect(report.queryPrizeSlots).toBe(QUERY_PRIZE_BRIEF_FLOOR);
+    expect(report.appointmentSlots).toBe(APPOINTMENT_BRIEF_FLOOR);
+    expect(report.satisfied).toBe(true);
+  });
+
+  it("fails a batch that meets the query-prize floor but not the appointment floor (THR-1518)", () => {
+    // Both arms of the second floor. A batch of six with a query prize and no
+    // appointment is exactly the batch the pre-THR-1518 gate passed; it must
+    // now fail, and adding the one face must be what flips it.
+    const queryOnly = [QUERY_PRIZE_FACE, ...SIX_WITHOUT_QUERY.slice(1)];
+    const without = briefFloorReport("fixture.md", brief(queryOnly));
+    expect(without.queryPrizeSlots).toBe(QUERY_PRIZE_BRIEF_FLOOR);
+    expect(without.appointmentSlots).toBe(0);
+    expect(without.satisfied).toBe(false);
+
+    const withAppointment = [QUERY_PRIZE_FACE, APPOINTMENT_FACE, ...SIX_WITHOUT_QUERY.slice(2)];
+    expect(briefFloorReport("fixture.md", brief(withAppointment)).satisfied).toBe(true);
+
+    // And the appointment alone does not discharge the query floor — the two are
+    // independent, not alternatives.
+    const appointmentOnly = [APPOINTMENT_FACE, ...SIX_WITHOUT_QUERY.slice(1)];
+    expect(briefFloorReport("fixture.md", brief(appointmentOnly)).satisfied).toBe(false);
+  });
+
+  it("reads the appointment face by its printed label too", () => {
+    const labelled = [
+      "Appointment  [any + a placed, timed sequel]",
+      QUERY_PRIZE_FACE,
+      ...SIX_WITHOUT_QUERY.slice(2),
+    ];
+    const report = briefFloorReport("fixture.md", brief(labelled));
+    expect(report.appointmentSlots).toBe(1);
     expect(report.satisfied).toBe(true);
   });
 
