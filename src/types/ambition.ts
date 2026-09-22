@@ -23,6 +23,14 @@ export type GraphCondition =
   | { type: 'agent_has_trait'; trait: string }
   | { type: 'agent_lacks_trait'; trait: string }
   /**
+   * The agent has kept at least `minCount` appointments (THR-1519, slice 3 of
+   * THR-1479): the count of `appointment_kept` Event nodes the agent
+   * `participated_in`. Missed meetings (`appointment_missed`) are deliberately not
+   * counted — a broken promise is not progress toward anything. Fails soft to
+   * `false` on a missing agent, so it can never auto-complete a milestone.
+   */
+  | { type: 'agent_kept_appointment'; minCount: number }
+  /**
    * The pursuing agent is dead (THR-808).
    *
    * Self-referential twin of `target_agent_eliminated`, and the honest shape for the

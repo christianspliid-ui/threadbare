@@ -735,8 +735,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         condition: { type: 'agent_has_trait', trait: 'trait.reputation.shadow.positive' },
         prose: ['The knowledge settled in, heavy and quiet as silt.'],
       },
+      // THR-1519: the road `create × Agreement` opens. The digger arranges a meeting
+      // with the one the secret was about and keeps it — a kept word is how an
+      // uncoverer of secrets earns the next one. Reads the `appointment_kept` Event
+      // the seeding site writes; a missed meeting counts for nothing.
+      {
+        id: 'secrets_kept_word',
+        condition: { type: 'agent_kept_appointment', minCount: 1 },
+        prose: ['They were where they said they would be. That is worth more than the secret.'],
+      },
     ],
-    completion: { requires: 2, of: 3 },
+    // Four milestones, two required (THR-1519 added the fourth): a kept meeting is a
+    // fourth road to the same end, not a harder end.
+    completion: { requires: 2, of: 4 },
     abandonmentTriggers: [
       {
         condition: { type: 'agent_reach_below', reach: 'eye', threshold: 0.15 },
@@ -752,6 +763,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       secrets_ruin: ['Dust and dead languages. A promising start.'],
       secrets_eye: ['Seeing clearly now — too clearly, perhaps.'],
       secrets_trait: ['The secret sits inside him like a second heartbeat.'],
+      secrets_kept_word: ['A promise kept, and a door that stays open because of it.'],
     },
     completionProse: [
       'The ancient truth surfaced at last. Whether it was worth the finding remains to be seen.',

@@ -3384,14 +3384,19 @@ export const CONTRACTS: readonly Contract[] = [
       // before it writes the seed, so the write site names a symbol it actually
       // carries. Without it the Tier-2 grep found no declared symbol at the write
       // site and classified the row LEAKED — which the badge pin had been masking.
-      symbols: ['agentAppointmentSeeds', 'resolveAppointmentContext', 'computeAppointmentPull', 'appointmentRegime', 'computeAppointmentSlack'],
+      // THR-1519 factored the plant into `plantAppointmentPromise` — the one planter
+      // both write sites call (the aftermath after binding its sentinels, the
+      // undertaking lifecycle after resolving the work's site), so the symbol the
+      // write sites carry is now the planter itself.
+      symbols: ['plantAppointmentPromise', 'agentAppointmentSeeds', 'resolveAppointmentContext', 'computeAppointmentPull', 'appointmentRegime', 'computeAppointmentSlack'],
       module: 'src/engine/appointments.ts',
     },
-    writeSites: ['src/engine/encounterAftermath.ts'],
+    writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/strategicActionLifecycle.ts'],
     readSites: [
       'src/engine/encounterScoring.ts',
       'src/engine/phaseAgentDecision.ts',
       'src/engine/__tests__/appointments.test.ts',
+      'src/engine/__tests__/undertakingAppointmentPayoff.test.ts',
     ],
     verifiedLive: {
       date: '2026-09-22',
@@ -3408,10 +3413,12 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Appointment', 'Agreement'],
     mechanism: {
       kind: 'function',
-      symbols: ['breakAppointmentFavour', 'redeemAppointmentFavour', 'isAppointmentFavour', 'writeAppointmentEvent'],
+      symbols: ['breakAppointmentFavour', 'redeemAppointmentFavour', 'isAppointmentFavour', 'writeAppointmentEvent', 'plantAppointmentPromise'],
       module: 'src/engine/appointments.ts',
     },
-    writeSites: ['src/engine/encounterSeeding.ts', 'src/engine/encounterAftermath.ts'],
+    // THR-1519: the promise edge is written by `plantAppointmentPromise`, which the
+    // aftermath and the undertaking lifecycle both call; the seeding site breaks it.
+    writeSites: ['src/engine/encounterSeeding.ts', 'src/engine/encounterAftermath.ts', 'src/engine/strategicActionLifecycle.ts'],
     readSites: [
       'src/engine/agentDetail.ts',
       'src/engine/phaseSecretsFavors.ts',
