@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-09-19
+last_validated_against: 2026-09-23
 ---
 
 # Pull Work
@@ -412,7 +412,42 @@ Reached only on the Step 1.7 upstream-clean path (work still in flight). Before 
 
   **`Todo`, not `In Dev` — the destination is the whole point (THR-846).** This line used to read "keep state In Dev … Cowork re-scopes", naming a lane retired 2026-07-21 (THR-654) *and* a state its successor never reads: `tb-orchestrator` scans `Todo` and `Ready for Dev` only and is forbidden from touching `In Dev` at all, while `stale-claim-sweep` keys off **stale claims**, which a deliberate unassigned park is not. THR-838 escalated exactly as instructed at 2026-07-29T00:12Z and then sat ~13 h holding a finished, well-argued split proposal that no lane could see, as the orchestrator promoted other work past it twice. Two grooming runs had already applied this same move by hand (THR-838; THR-778 on 2026-07-28) before it was written down here. The general rule the line is an instance of: **every park must name the lane that reads the destination.**
 - **If no checkpoint exists *and* no claim comment from this lane exists:** the ticket is **unclaimed, not resumable** — see below. This is the hand-created-`In Dev` shape, and it is the one case where "resume" is the wrong verb.
-- **If no checkpoint exists but a claim comment does:** fall through to Step 5 and re-read the plan doc as normal. A prior run of this lane did claim it; the pass simply ended without checkpointing.
+- **If no checkpoint exists but a claim comment does:** run the **stranded-work probe** below *before* re-reading the plan doc. A prior run of this lane did claim it and the pass ended without checkpointing, which is exactly the shape a usage-limit death leaves. Only when the probe comes back empty do you fall through to Step 5 and re-implement.
+
+#### Stranded-work probe — look at worktrees, not just branches (THR-1529)
+
+**A dead session's work may exist only as uncommitted edits in a local worktree.** Branches, PRs and Linear cannot see it. THR-1521's whole slice sat that way for ~19.5 h (39 files, zero commits) while every branch-and-PR check reported "unstarted". The mid-run WIP push (§ *Mid-run — WIP push before the verify phase*) closes this gap for new runs. This probe finds what a run killed before that push left behind. Step 1.6 has already proven the predecessor dead, so reading its worktree is safe.
+
+```bash
+ID="thr-<number>"   # lower-case id, e.g. thr-1521
+git fetch origin --quiet
+# (a) pushed WIP: any local or remote branch naming the id
+git for-each-ref --format='%(refname:short) %(committerdate:relative)' "refs/heads/*$ID*" "refs/remotes/origin/*$ID*"
+# (b) every worktree with real uncommitted changes, largest first. The filter drops the
+#     per-worktree debris nearly every tree carries (measured 2026-09-23: 238 of the
+#     box's worktrees read dirty unfiltered, almost all on settings.local.json alone).
+git worktree list --porcelain | awk '/^worktree /{w=substr($0,10)} /^branch /{print w "\t" $2}' \
+  | while IFS="$(printf '\t')" read -r wt br; do
+      n=$(git -C "$wt" status --porcelain 2>/dev/null \
+          | grep -vE ' \.claude/settings\.local\.json$| \.codesight/' | wc -l)
+      [ "$n" -gt 0 ] && printf '%s\t%s\t%s changed\n' "$wt" "${br#refs/heads/}" "$n"
+    done | sort -t"$(printf '\t')" -k3 -rn | head -20
+```
+
+Read the top of (b) against the ticket. Most rows are other lanes' routine leftovers: `kwf-*` briefing trees carry 3 paths each by design, and the reaper removes them. Tested 2026-09-23 against the real incident, THR-1521's stranded worktree sorted first (`quirky-knuth-1bb9b6  thr-1521-artifact-traits  39 changed`).
+
+- **A branch hit from (a) with commits ahead of `origin/main`:** check it out and resume from its tip. It is the dead run's WIP push.
+- **A dirty worktree whose branch names the id, or whose changed paths match the ticket's *Files to touch*:** that is the stranded slice. Commit it **in place** (`git -C "$wt" add -A && git -C "$wt" commit -m "wip(thr-XXX): recovered stranded work from <wt>"`), push that branch, and continue on it. To keep working in your own worktree instead, run `git -C "$wt" switch --detach` first so the branch is free to check out. Commit before doing anything else: the reaper can take an idle worktree at any time.
+- **A dirty worktree that plainly belongs to another ticket:** leave it untouched and name it in your run output.
+- **Empty on both reads:** nothing is stranded. Fall through to Step 5 and re-implement.
+
+**Fail-soft:** if either read errors, log one warning and fall through to Step 5. Re-implementing costs a run, while blocking on a broken probe strands the ticket.
+
+```
+[pull-work] Step 1.8: stranded-work probe — worktree ../quirky-knuth-1bb9b6 (thr-1521-artifact-traits) has 39 uncommitted paths. Committing in place, resuming on it.
+[pull-work] Step 1.8: stranded-work probe — pushed WIP branch origin/thr-1521-artifact-traits (2 commits ahead). Resuming from its tip.
+[pull-work] Step 1.8: stranded-work probe — nothing stranded. Falling through to Step 5.
+```
 
 #### `In Dev` + assigned-to-me + no claim comment = unclaimed (impediment #763)
 
@@ -788,6 +823,26 @@ Never report a bare "plan doc not found": that reads as a bad reference and send
 On success: issue is claimed (`In Dev`, assigned to `me`), plan doc loaded, and pickup context is ready for implementation.
 
 On refusal: leave the issue unclaimed when possible, post a concise bounce note, and stop.
+
+## Mid-run — WIP push before the verify phase (THR-1529)
+
+**Once the implementation is written and before the long gate run starts, commit it and push the branch.** "Before the gate run" means before `npm test`, `npm run test:heavy`, the typecheck ratchet, `vite build`, the engine smoke and any Playwright capture. Order it after the home-tree cleanliness gate and `npm run classify:diff`, which are both cheap and both want to see the change first:
+
+```bash
+git add -A
+git commit -m "wip(thr-XXX): <summary> — checkpoint before verify" -m "Work in progress. Not a closing commit."
+git push -u origin HEAD
+```
+
+- **No close keyword in the WIP commit, and no PR yet.** Refer to the issue as a bare `THR-XXX`. The closing commit, which carries the keyword on its own line, comes later as a **new commit on top**. Do not amend the WIP commit: it is already pushed, and amending it means a force-push.
+- **Why it has to happen here.** A session killed by a usage limit gets no chance to post a checkpoint comment, so THR-632's protocol never fires. THR-1521's run (2026-09-22) died 26 minutes in with the **whole slice written and nothing committed**: 39 files in a local worktree, zero commits on its branch, no push. Eight later runs died within seconds on the same limit, and the stranded diff was found by hand ~19.5 h later, long past the reaper's 180-min idle guard. A pushed WIP branch survives both the dead session and the reaper, and Step 1.8's stranded-work probe finds it by name.
+- **Docs-track tickets may skip it.** Their gates take seconds, so the window it protects barely exists. Every code-track ticket pushes.
+- **Fail-soft:** if the push fails (network, auth), log one line and carry on to the gates. The local commit alone still survives a killed session, and Step 1.8's worktree probe finds it.
+
+```
+[pull-work] mid-run: WIP pushed (thr-1529-wip-push, 1 commit) — entering verify.
+[pull-work] mid-run: WIP committed, push failed (<reason>) — entering verify; the local commit is the fallback.
+```
 
 ## Closeout — home-tree cleanliness gate (run before `git commit`)
 
