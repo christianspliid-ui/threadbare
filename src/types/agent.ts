@@ -18,6 +18,12 @@ export type ValuePair =
   | 'courage_prudence';            // Meta   — Vanguard (+1) vs Watcher (-1)
   // Removed in TB-075 Phase 1: frankness_propriety (Eye), humility_pride (Stone), stoicism_passion (Flesh)
 
+/** Which pole of a named motivation a template draws, when it should draw only one (THR-1525). */
+export type MotivationPole = 'positive' | 'negative';
+
+/** Optional per-axis pole pins on a template's `motivations`. An axis absent here draws both poles. */
+export type MotivationPoles = Partial<Record<ValuePair, MotivationPole>>;
+
 /** Actor's axiological profile: +1.0 = virtue (first pole), -1.0 = flaw (second pole) */
 export type AxiologicalProfile = Record<ValuePair, number>;
 

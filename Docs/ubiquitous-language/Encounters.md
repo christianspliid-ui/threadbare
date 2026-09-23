@@ -616,3 +616,19 @@ The authoring-time contract an encounter template must satisfy to be **compositi
 **Live caveat: it scopes to the `encounter.*` prefix.** `ENCOUNTER_ID_PREFIXES` is `['encounter.']`, so a template whose id does not start with that string is not measured by this gate at all — including when it lives in `src/data/encounters/`. A sweep that reports "the corpus is clean" is reporting on the prefix, not the directory.
 
 Code anchors: `src/data/content-eval/compositionContract.ts` (`checkCompositionContract`), `src/data/content-eval/retrofitPending.ts` (`RETROFIT_PENDING`), `scripts/check-encounter.ts` (`ENCOUNTER_ID_PREFIXES`), `Docs/plans/2026-08-08-encounter-factory-workflow.md` §1.
+
+---
+
+### Motivations
+
+**Aliases:** `motivations` (template field); motivation pole pin (`motivationPoles`)
+**Also see:** `[[AxiologicalProfile]]` (`Agents.md`), `[[ValuePair]]` (`Agents.md`), `[[UnifiedActionTemplate]]`
+**Status:** canonical (seated by THR-1525, delegated seating 2026-09-11)
+
+The template field that names the values a scene is *about*, as `ValuePair`s. It drives who is drawn to the scene: each mortal's desire for it is their **conviction** on the named values, meaning how strongly they lean, **either way**. A Heretic and an Archivist are both drawn to a scene about tradition. Undertakings carry the same field, read by the same function.
+
+**Not "which side the scene is for."** Before THR-1525 the score summed signed values. Every value-tagged scene therefore drew only the virtue pole and floored the flaw pole (Conquerors, Puppeteers, Heretics, Renegades…). The code's own docstring and every author already read the field the other way.
+
+**Optional pole pin.** `motivationPoles` narrows one named axis to one pole, for the rare scene that one side should seek. A pin is authored only with a written reason. Pinning the axis a fork on the same template decides on draws only that arm's mortals, and `check:encounter` warns about it. The whole-corpus reading is the tunable `DESIRE_SCORE_POLE_MODE` (`'absolute'`; `'signed'` is the rollback).
+
+Code anchors: `src/engine/encounterScoring.ts` (`computeDesireScore`), `src/types/agent.ts` (`MotivationPoles`), `src/data/content-eval/motivationPoleChecks.ts`.

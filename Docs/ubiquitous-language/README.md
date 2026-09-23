@@ -138,6 +138,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[cast (verb)](./Encounters.md#cast-verb)** — what a god does with a divine action card; rolls the mortal ladder with one asymmetry, a floor at success-at-cost. Unrelated to the noun [Cast](./Encounters.md#cast)
 - **[Forecast tier](./Encounters.md#forecast-tier)** — the five-word **pre-roll** odds reading (*doomed · perilous · uncertain · favorable · fated*); never an outcome word, and never interconverts with one
 - **[Composition Contract](./Encounters.md#composition-contract)** — the encounter line’s authoring gate; shrinking ratchet, no exemptions; not the Undertaking Contract, and it scopes to the `encounter.*` prefix
+- **[Motivations](./Encounters.md#motivations)** — the template field naming the values a scene is *about*; mortals who lean strongly either way are drawn (THR-1525); optional `motivationPoles` pin narrows one axis to one pole
 
 ### Traits
 

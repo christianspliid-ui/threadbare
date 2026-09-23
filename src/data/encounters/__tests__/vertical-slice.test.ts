@@ -26,6 +26,7 @@ import type {
   UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../types/unifiedAction';
+import type { ValuePair } from '../../../types/agent';
 import {
   authoredOutcomeBands,
   authoredOutcomeBandsOnVariant,
@@ -232,42 +233,46 @@ describe('vertical slice — agent-decided forks (THR-894)', () => {
 });
 
 /**
- * THR-1524 — a fork whose planting arm sits on the negative pole must not select
- * on the fork's own axis.
+ * THR-1524 → THR-1525 — a fork's planting arm must not be starved by selection.
  *
- * `computeDesireScore` sums the *signed* profile value over `motivations`, so a
- * template that names its fork axis there draws the mortals on that axis's
- * positive pole and floors the negative pole at `MINIMUM_DESIRE`. When the arm
- * that plants the sequel is the negative one (the Crossroads: Heretics accept,
- * Archivists refuse), the board hands the scene to exactly the mortals who will
- * not take it — measured on seed 42 / medium / 1000 ticks as one firing, refused,
- * zero appointments planted, with 34 of 65 profiled mortals leaning novelty.
- * Restoring `motivations: ['tradition_novelty']` on the Crossroads fails this.
+ * THR-1524 measured the Crossroads (Heretics accept and plant, Archivists refuse)
+ * firing once in 1000 ticks on seed 42 / medium, refused, zero appointments
+ * planted: under the then-signed desire score, naming the fork axis in
+ * `motivations` drew only the positive pole. THR-1525 made an unpinned axis draw
+ * **both** poles, so naming the fork axis is now safe. The starvation can only be
+ * re-authored by *pinning* the fork axis (`motivationPoles`) to the pole opposite
+ * the planting arm — which is what this guards.
  */
-describe('vertical slice — a negative-pole planting arm does not select on its fork axis (THR-1524)', () => {
+describe('vertical slice — a planting arm is never starved by a pole pin (THR-1524, THR-1525)', () => {
   const plantsSeed = (variant: AftermathVariant | undefined): boolean =>
     (variant?.reactions ?? []).some((r) =>
       (r.effects ?? []).some((e) => e.kind === 'encounter_seed'),
     );
 
-  const negativePlanters = VERTICAL_SLICE_TEMPLATES.flatMap((t) =>
+  /** [name, template, fork axis, the one pole whose arm plants the sequel]. */
+  const singlePoleForks = VERTICAL_SLICE_TEMPLATES.flatMap((t) =>
     (t.steps ?? [])
       .filter(isActionStepBranch)
       .filter((b): b is ActionStepBranch => b.decidedBy !== undefined && 'axis' in b.decidedBy)
-      .filter(() => {
+      .flatMap((b) => {
         const variants = t.aftermathConfig?.variants ?? {};
-        return plantsSeed(variants.negative) && !plantsSeed(variants.positive);
-      })
-      .map((b) => [t.name, t, (b.decidedBy as { axis: string }).axis] as const),
+        const pos = plantsSeed(variants.positive);
+        const neg = plantsSeed(variants.negative);
+        if (pos === neg) return [];
+        const axis = (b.decidedBy as { axis: ValuePair }).axis;
+        return [[t.name, t, axis, pos ? 'positive' : 'negative'] as const];
+      }),
   );
 
-  it('the Crossroads is one (guards the assertion below against a silent re-cut)', () => {
-    expect(negativePlanters.map(([, t]) => t.id)).toContain(SLICE_TEMPLATE_IDS.crossroads);
+  it('the Crossroads is one, planting on its negative pole (guards against a silent re-cut)', () => {
+    const crossroads = singlePoleForks.find(([, t]) => t.id === SLICE_TEMPLATE_IDS.crossroads);
+    expect(crossroads?.[3]).toBe('negative');
   });
 
-  it.each(negativePlanters)('%s does not name its fork axis in `motivations`', (_name, template, axis) => {
-    expect(template.motivations, `${template.id}: selection on ${axis} starves the planting pole`)
-      .not.toContain(axis);
+  it.each(singlePoleForks)('%s does not pin its fork axis against the planting pole', (_name, template, axis, plantingPole) => {
+    const pin = template.motivationPoles?.[axis];
+    expect(pin === undefined || pin === plantingPole, `${template.id}: ${axis} pinned ${pin} starves the ${plantingPole} planting arm`)
+      .toBe(true);
   });
 
   it('the Crossroads registers past the wayside class — 8 places on a medium world was no supply', () => {

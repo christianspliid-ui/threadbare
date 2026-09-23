@@ -1930,17 +1930,16 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
   steps: [CROSSROADS_MEASURE_STEP, CROSSROADS_FORK],
   apCost: 1,
   actorAffinities: ['individual'],
-  // THR-1524 — the selection axis is deliberately NOT the fork's axis. The fork
-  // (CROSSROADS_FORK) decides on `tradition_novelty` and the accept path — the
-  // one that plants the appointment — is the *negative* pole. `computeDesireScore`
-  // sums the signed profile value, so a template whose `motivations` names the
-  // fork axis draws the mortals on its positive pole (Archivists, who refuse) and
-  // floors the ones who would accept at MINIMUM_DESIRE. Measured before this
-  // change (seed 42 / medium / 1000 ticks): one firing, refused; 34 of 65
-  // profiled mortals lean novelty and none of them ever met him. The Eye axis is
-  // this Eye-reach scene's own: a Seeker is drawn to take the measure of a man who
-  // knows too much, and whichever way they lean on tradition is then free to
-  // decide the bargain. The hand still argues both poles of the fork axis.
+  // THR-1524 — the selection axis is the scene's own Eye axis, not the fork's.
+  // The Crossroads is about what a stranger knows and whether it gets said: Seekers
+  // and Sentinels alike are drawn to take the measure of a man who knows too much
+  // (since THR-1525 an unpinned motivation draws both poles), and whichever way
+  // they lean on tradition is then free to decide the bargain. The hand still
+  // argues both poles of the fork axis. History: THR-1524 first moved selection
+  // off `tradition_novelty` because the then-signed desire score drew only its
+  // positive pole (Archivists, who refuse) and floored the novelty-leaners who
+  // accept — one firing, refused, in 1000 ticks on seed 42 / medium. THR-1525
+  // removed that reason; the Eye axis stays because it is the right one.
   motivations: ['revelation_discretion'],
   // THR-1524 — a crossroads is a road thing, not a camp thing. `wayside` alone is
   // camp | oasis | wilderness, which is 8 places in a 974-location medium world

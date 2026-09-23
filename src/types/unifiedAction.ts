@@ -3,7 +3,7 @@ import type { ReachDomain, TraitPredicate } from './traits';
 import type { SphereName, CreationSphereName, HexCoord, LocationSubtype } from './index';
 import type { OmenCategory, EmittedOmenScope } from './omen';
 import type { ActorType } from './graph';
-import type { ValuePair } from './agent';
+import type { ValuePair, MotivationPoles } from './agent';
 import type { GraphOp } from './graphOp';
 import type { TargetCategory } from './targetContext';
 import type { ControlSpec } from './controlEffect';
@@ -2539,7 +2539,12 @@ export interface UnifiedActionTemplate {
   readonly contestsWith?: readonly string[];
 
   // Selection
+  /** The values this scene is *about*. Mortals leaning strongly either way on a named
+   *  value are drawn to it (THR-1525); `motivationPoles` narrows an axis to one pole. */
   readonly motivations: readonly ValuePair[];
+  /** Optional per-axis pole pins (THR-1525). Author one only with written evidence
+   *  that the scene should draw one side of the value; absent ⇒ both poles drawn. */
+  readonly motivationPoles?: MotivationPoles;
 
   // Narrative
   readonly narrativeTemplates: {

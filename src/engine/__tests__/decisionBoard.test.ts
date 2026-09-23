@@ -254,11 +254,14 @@ describe('computeBoardDesireMultiplier', () => {
   const pair = VALUE_PAIRS[0] as ValuePair;
 
   it('responds to the agent’s profile — the term is not a constant', () => {
+    // THR-1525: an unpinned axis reads conviction, so either pole outranks indifference
+    // and the two poles score alike.
     const aligned = computeBoardDesireMultiplier([pair], profileOf({ [pair]: 0.8 }), 0);
     const neutral = computeBoardDesireMultiplier([pair], profileOf({ [pair]: 0 }), 0);
-    const opposed = computeBoardDesireMultiplier([pair], profileOf({ [pair]: -0.8 }), 0);
+    const opposite = computeBoardDesireMultiplier([pair], profileOf({ [pair]: -0.8 }), 0);
     expect(aligned).toBeGreaterThan(neutral);
-    expect(neutral).toBeGreaterThanOrEqual(opposed);
+    expect(opposite).toBeGreaterThan(neutral);
+    expect(opposite).toBeCloseTo(aligned, 10);
   });
 
   it('responds to the ambition boost with no authored motivations at all', () => {
@@ -282,16 +285,22 @@ describe('computeBoardDesireMultiplier', () => {
 
   it('does NOT loosen the mismatch case the neutral branch sits next to', () => {
     // The whole point of the branch is that it separates "said nothing" from "said
-    // something this actor leans against". If an authored-but-opposed set ever rose
-    // to neutral, the branch would have stopped discriminating and mortals would
-    // pursue what they do not value — which is the design this ticket declined.
-    const opposed = computeBoardDesireMultiplier(
-      [VALUE_PAIRS[0] as ValuePair],
-      profileOf({ [VALUE_PAIRS[0] as ValuePair]: -0.9 }),
-      0,
-    );
-    expect(opposed).toBeLessThan(computeBoardDesireMultiplier([], profileOf(), 0));
-    expect(opposed).toBeCloseTo(Math.pow(MINIMUM_DESIRE, PERSONALITY_SCORE_EXPONENT), 10);
+    // something this actor does not care about or is pinned against". If an
+    // authored-but-mismatched set ever rose to neutral, the branch would have stopped
+    // discriminating. Since THR-1525 the opposite pole of an *unpinned* axis is not a
+    // mismatch (it is conviction about the same value); the mismatches that must
+    // still floor are **pinned opposition** and **indifference**.
+    const p0 = VALUE_PAIRS[0] as ValuePair;
+    const silent = computeBoardDesireMultiplier([], profileOf(), 0);
+    const floor = Math.pow(MINIMUM_DESIRE, PERSONALITY_SCORE_EXPONENT);
+
+    const pinnedOpposed = computeBoardDesireMultiplier([p0], profileOf({ [p0]: -0.9 }), 0, { [p0]: 'positive' });
+    expect(pinnedOpposed).toBeLessThan(silent);
+    expect(pinnedOpposed).toBeCloseTo(floor, 10);
+
+    const indifferent = computeBoardDesireMultiplier([p0], profileOf({ [p0]: 0 }), 0);
+    expect(indifferent).toBeLessThan(silent);
+    expect(indifferent).toBeCloseTo(floor, 10);
   });
 
   it('leaves a well-matched authored set ahead of silence', () => {
