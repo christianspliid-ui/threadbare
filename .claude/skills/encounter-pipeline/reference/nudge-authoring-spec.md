@@ -439,7 +439,13 @@ before the first sentence of prose**:
    written answer, but **a healthy corpus slice runs on choices, and some encounters
    should be designed for one** — a fork is where personality becomes story. If yes:
    name the value axis it runs on (`motivations`), the two poles as concrete courses of
-   action, and what each pole's path changes downstream. **The mortal decides, driven
+   action, and what each pole's path changes downstream. `motivations` names what the
+   scene is *about*: it draws mortals who lean strongly **either** way on that value, so
+   naming the fork's own axis brings both arms' mortals to the fork (THR-1525). The
+   optional `motivationPoles` pin narrows one axis to one pole, for the rare scene one
+   side should seek. **Pinning a fork's own axis draws only one arm's mortals** — do it
+   only when that is the point; `check:encounter` warns when you do. Author a pin only
+   with a written reason (a comment naming the pole and why), never from a title. **The mortal decides, driven
    by their own values and the god's lean — never the player.** Mechanism: the
    agent-decided branch selector (generalized from Meet The First's pole lean — the
    mortal's axiological profile on the axis plus the net lean of the committed cards

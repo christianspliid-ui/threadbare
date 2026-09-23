@@ -138,9 +138,15 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       while (state.tick < appointment.dueTick) {
         state = tickAndHarvest(state, runtime, sink);
       }
-      const regimes = sink.filter(t => t.category === 'appointment_regime') as Array<TraceEntry & { regime: string; journeyQueued?: boolean }>;
-      expect(regimes.length, 'no appointment_regime trace — the decision phase never resolved the context').toBeGreaterThan(0);
-      expect(regimes.every(r => r.agentId === actorId)).toBe(true);
+      // Scoped to the planted mortal. Since THR-1525 the live world plants appointments
+      // of its own — the Crossroads now reaches the novelty-leaners who accept it — so
+      // another mortal's regime in the sink is the system working, not a leak.
+      const allRegimes = sink.filter(t => t.category === 'appointment_regime') as Array<TraceEntry & { agentId: string; regime: string; journeyQueued?: boolean }>;
+      const regimes = allRegimes.filter(r => r.agentId === actorId);
+      expect(regimes.length, 'no appointment_regime trace for the planted mortal — the decision phase never resolved the context').toBeGreaterThan(0);
+      if (allRegimes.length > regimes.length) {
+        console.info(`[THR-1479] organic appointments alongside the plant: ${new Set(allRegimes.filter(r => r.agentId !== actorId).map(r => r.agentId)).size} other mortal(s)`);
+      }
       // The curve ran: at least one non-far regime before due.
       expect(regimes.some(r => r.regime !== 'far'), `regimes seen: ${regimes.map(r => r.regime).join(',')}`).toBe(true);
       // Reported, not gated (see the file header).

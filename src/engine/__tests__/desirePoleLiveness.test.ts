@@ -23,6 +23,7 @@ import { computeDesireScore } from '../encounterScoring';
 import { computeBoardDesireMultiplier } from '../decisionBoard';
 import { getAllStrategicTemplates } from '../strategicActionCandidates';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { UNDERTAKING_CELL_TEMPLATES } from '../../data/undertaking-cells';
 import type { AxiologicalProfile, ValuePair } from '../../types/agent';
 
 const SEED = 42;
@@ -46,7 +47,10 @@ describe(`desire reads both poles on a generated world (THR-1525, seed ${SEED}, 
     .filter((p): p is AxiologicalProfile => p !== undefined);
 
   const encounterTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => (t.motivations?.length ?? 0) > 0);
-  const undertakings = getAllStrategicTemplates().filter(t => (t.motivations?.length ?? 0) > 0);
+  // The authored templates and the live undertaking grid (THR-1392 cells, what the
+  // board actually offers under the cells model) — both read the one function.
+  const undertakings = [...getAllStrategicTemplates(), ...UNDERTAKING_CELL_TEMPLATES]
+    .filter(t => (t.motivations?.length ?? 0) > 0);
 
   it('the populations are non-vacuous', () => {
     expect(profiles.length).toBeGreaterThan(20);
