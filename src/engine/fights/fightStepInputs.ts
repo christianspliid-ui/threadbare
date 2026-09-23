@@ -1,0 +1,189 @@
+/**
+ * One function derives a fight step's inputs, for the roll and for the forecast
+ * (THR-1537, plan doc `Docs/plans/2026-09-23-fight-block.md` §3–3b).
+ *
+ * A fight step is an ordinary step carrying `fightRole`. It differs from any other
+ * step in exactly four inputs, and all four are decided here:
+ *
+ *  - **reach** — authored, then the card's override (a beast that must be read
+ *    rather than struck), then the fighter's own `encounter_reach_override`. The
+ *    swap is read *before* capability, which is the ordering the legacy road gets
+ *    wrong (THR-1530 found it at `encounter.ts:402/409`).
+ *  - **difficulty** — the card's Dread (nerve) or Might (clash), plus the
+ *    opponent's own passive/conditional modifiers for that reach, so a monster's
+ *    powers and gear price the step (THR-1530 §5).
+ *  - **scale** — always `FIGHT_STEP_SCALE`. At `local` the 0.65 floor erases a
+ *    monster's Might (THR-1531).
+ *  - **modifiers** — the fighter's standing modifiers (items, conditions, the
+ *    effect modifier family) as one named term, read in a **combat** context so
+ *    an `in_combat` charm works on a clash the card moved to Eye. The unified
+ *    road's roll does not read standing modifiers for ordinary steps; that
+ *    road-wide gap is THR-1535, and when it lands this term becomes the general
+ *    one.
+ *
+ * **Pure.** The attended forecast calls this from the UI (FB7), so it writes
+ * nothing: no spend, no node write. Reading it ten times is reading it once.
+ */
+
+import type { GameState } from '../../types/gameState';
+import type {
+  ActionScale,
+  ActionStep,
+  UnifiedAction,
+  UnifiedActionTemplate,
+} from '../../types/unifiedAction';
+import type {
+  FightNamedModifier,
+  FightOpponentStatus,
+  FightRole,
+  FightStepInputs,
+} from '../../types/fight';
+import {
+  FIGHT_ENCOUNTER_TYPE,
+  FIGHT_RATING_DIFFICULTY,
+  FIGHT_STANDING_MODIFIER_NAME,
+  FIGHT_STEP_SCALE,
+} from '../../data/fight-constants';
+import { resolveOpposedCastNodeId } from '../encounters/nudges';
+import { isAgentGone } from '../groups/groupQueries';
+import { buildPredicateContext, hasEffectsFormat, resolveEffectModifiers } from '../effectResolver';
+import { computeResolutionModifiers } from '../resolutionModifiers';
+import { readReachOverride } from '../effects/ruleOverrideConsumers';
+import { resolveStepDefinition } from '../unifiedActionLifecycle';
+import { defaultOpponentCard, readOpponentCard } from './opponentCard';
+
+/**
+ * A step's fight role, or undefined for an ordinary step. `difficultyContext:
+ * 'opponent_rated'` without a role resolves as a clash — the context is what
+ * `fightRole` implies, so carrying it alone asks for the same pricing.
+ */
+export function fightRoleOf(step: Pick<ActionStep, 'fightRole' | 'difficultyContext'> | undefined): FightRole | undefined {
+  if (!step) return undefined;
+  if (step.fightRole) return step.fightRole;
+  return step.difficultyContext === 'opponent_rated' ? 'clash' : undefined;
+}
+
+/** The scale a step resolves at: `FIGHT_STEP_SCALE` for a fight step, the template's otherwise. */
+export function stepScaleFor(
+  template: Pick<UnifiedActionTemplate, 'scale'>,
+  step: Pick<ActionStep, 'fightRole' | 'difficultyContext'> | undefined,
+): ActionScale | undefined {
+  return fightRoleOf(step) ? FIGHT_STEP_SCALE : template.scale;
+}
+
+/**
+ * Whether the action's current step is a fight step. Band opposition reads it to
+ * leave fight steps alone (plan doc § Substrate inventory): a fight is between its
+ * fighter and its opponent, never a company contest.
+ */
+export function isActionOnFightStep(
+  action: Pick<UnifiedAction, 'currentStep' | 'choiceHistory'>,
+  template: UnifiedActionTemplate | undefined,
+): boolean {
+  if (!template) return false;
+  try {
+    return fightRoleOf(resolveStepDefinition(template, action.currentStep, action.choiceHistory)) !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Who this step fights (plan doc §1). An `opponentRef` must bind — it never falls
+ * back to the target. Only a step without one fights the action's target.
+ */
+export function resolveFightOpponent(
+  state: Pick<GameState, 'graph'>,
+  action: Pick<UnifiedAction, 'actorId' | 'targetId' | 'supportBindings'>,
+  step: Pick<ActionStep, 'opponentRef'>,
+): { opponentId: string | null; status: FightOpponentStatus } {
+  const opponentId = step.opponentRef
+    ? resolveOpposedCastNodeId(step.opponentRef, action.supportBindings) ?? null
+    : action.targetId || null;
+  if (!opponentId) return { opponentId: null, status: 'unbound' };
+  const node = state.graph.getNode(opponentId);
+  if (!node) return { opponentId, status: 'unbound' };
+  if (opponentId === action.actorId) return { opponentId, status: 'self' };
+  if (isAgentGone(node)) return { opponentId, status: 'deceased' };
+  return { opponentId, status: 'bound' };
+}
+
+/**
+ * Derive a fight step's inputs. Returns undefined for a step with no fight role.
+ *
+ * Until FB2 (THR-1538) routes a missing opponent through the no-roll end, an
+ * opponent that is not `bound` fights as `FIGHT_DEFAULT_CARD` (fail-soft), and
+ * `opponentStatus` records why.
+ */
+export function resolveFightStepInputs(
+  state: GameState,
+  action: UnifiedAction,
+  step: ActionStep,
+  template: Pick<UnifiedActionTemplate, 'sphereAffinity'>,
+): FightStepInputs | undefined {
+  const role = fightRoleOf(step);
+  if (!role) return undefined;
+  const graph = state.graph;
+
+  const { opponentId, status } = resolveFightOpponent(state, action, step);
+  const card = status === 'bound'
+    ? readOpponentCard(graph, opponentId, state.tick)
+    : defaultOpponentCard(null);
+
+  // Reach: authored → card → the fighter's own swap, read before capability.
+  const authoredReach = step.reach;
+  let reach = (role === 'nerve' ? card.nerveReach : card.clashReach) ?? authoredReach;
+  const swap = readReachOverride(
+    { graph, effectStates: state.effectStates, persisted: state, tick: state.tick },
+    action.actorId,
+    'fightStepInputs',
+  );
+  if (swap && swap.from === reach) reach = swap.to;
+
+  // Difficulty: the card's word, then the opponent's own modifiers for this reach.
+  const baseDifficulty = FIGHT_RATING_DIFFICULTY[role === 'nerve' ? card.dread : card.might];
+  let opponentModifierDelta = 0;
+  if (status === 'bound' && opponentId && hasEffectsFormat(graph, opponentId)) {
+    const opponentCtx = buildPredicateContext(graph, opponentId, reach, FIGHT_ENCOUNTER_TYPE);
+    opponentModifierDelta = resolveEffectModifiers(
+      graph, opponentId, reach, opponentCtx, state.effectStates,
+    ).reachModifiers[reach] ?? 0;
+  }
+  const difficulty = Math.max(0, Math.min(1, baseDifficulty + opponentModifierDelta));
+
+  // The fighter's standing modifiers, in a combat context. The swap is already
+  // applied above, so no override context is passed: a second read would swap
+  // twice.
+  const locationEdges = graph.getOutgoingEdges(action.actorId, 'located_at');
+  const locationId = locationEdges.length > 0 ? locationEdges[0].target : '';
+  const standing = computeResolutionModifiers(
+    graph,
+    action.actorId,
+    locationId,
+    reach,
+    template.sphereAffinity,
+    state.effectStates,
+    undefined,
+    FIGHT_ENCOUNTER_TYPE,
+  );
+
+  const modifiers: FightNamedModifier[] = [];
+  if (standing.totalModifier !== 0) {
+    modifiers.push({ name: FIGHT_STANDING_MODIFIER_NAME, delta: standing.totalModifier });
+  }
+  const modifierTotal = modifiers.reduce((sum, m) => sum + m.delta, 0);
+
+  return {
+    role,
+    opponentId: status === 'bound' ? opponentId : null,
+    opponentStatus: status,
+    card,
+    reach,
+    authoredReach,
+    difficulty,
+    opponentModifierDelta,
+    scale: FIGHT_STEP_SCALE,
+    modifiers,
+    modifierTotal,
+  };
+}

@@ -23,6 +23,7 @@ import type {
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces';
+import type { FightStepTrace } from './traces/fight-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -510,7 +511,9 @@ export type TraceCategory =
   // The ref router — where the player's navigation went, and where it did not (THR-1490).
   // Interfaces in `src/types/traces/ui-traces.ts`.
   | 'ui_ref_opened'
-  | 'ui_ref_unroutable';
+  | 'ui_ref_unroutable'
+  // Fights — one per fight step (THR-1537). Interfaces in `src/types/traces/fight-traces.ts`.
+  | 'fight.step';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -766,6 +769,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'branching_curator_nudge',
   // Resolution input telemetry (THR-451)
   'resolution.input',
+  // Fights — one per fight step (THR-1537)
+  'fight.step',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -4047,6 +4052,8 @@ export type TraceEntry =
   | BranchingCuratorNudgeTrace
   // Resolution input telemetry (THR-451)
   | ResolutionInputTrace
+  // Fights (THR-1537)
+  | FightStepTrace
   // Story-so-far digest (THR-455)
   | ThreadStoryComposedTrace
   // Event feed hygiene (THR-456)

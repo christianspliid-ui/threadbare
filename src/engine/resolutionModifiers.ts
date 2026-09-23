@@ -685,6 +685,12 @@ export function computeResolutionModifiers(
   encounterSphereAffinity: SphereName | undefined,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
   overrideCtx?: RuleOverrideContext,
+  /**
+   * THR-1537 — the predicate context's encounter type. A fight step passes
+   * `'combat'` so `in_combat` reads "is a fight exchange" whatever the step's
+   * reach; absent, `inCombat` keys on the reach alone, as before.
+   */
+  encounterType?: string,
 ): ModifierBreakdown {
   // THR-1241: `encounter_reach_override` owns this site. A step names the reach
   // it tests; a swap says "when this step would test X, test Y instead" — an
@@ -713,7 +719,7 @@ export function computeResolutionModifiers(
 
   if (hasEffectsFormat(graph, agentId)) {
     // New path: resolve all effects via the generic effect system
-    const ctx = buildPredicateContext(graph, agentId, stepReach);
+    const ctx = buildPredicateContext(graph, agentId, stepReach, encounterType);
     effectResult = resolveEffectModifiers(graph, agentId, stepReach, ctx, effectStates);
     effectModifier = effectResult.reachModifiers[stepReach] ?? 0;
   }
