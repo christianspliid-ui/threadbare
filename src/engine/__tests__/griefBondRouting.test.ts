@@ -50,7 +50,7 @@ function makeProject(): StrategicProjectRuntime {
     startedTick: 0,
     lastProgressTick: PASS,
     status: 'completed',
-  } as StrategicProjectRuntime;
+  } as unknown as StrategicProjectRuntime;
 }
 
 function makeState(graph: WorldGraph, tick: number, seed: number): GameState {
@@ -154,6 +154,19 @@ describe('a killing reaches the victim\'s living bonds', () => {
     expect(reached).toContain(FRIEND);
     expect(reached).not.toContain(STRANGER);
     expect(reached).not.toContain('actor.dead_friend');
+  });
+
+  it('routes nothing for a self-facing collapse — a dead owner\'s abandoned work wronged nobody', () => {
+    // The seed-42 census caught this: an owner dies, their undertaking ends
+    // `actor_lost`, and the self-facing abandonment node names the dead owner as victim.
+    const graph = makeWorld();
+    bond(graph, VICTIM, SISTER, 0.9);
+    const eventId = createUndertakingOutcomeNode({
+      graph, project: { ...makeProject(), actorId: VICTIM }, harmClass: 'undertaking_abandoned',
+      tick: PASS, victimAgentId: VICTIM, selfFacing: true,
+    })!;
+    expect(eventId).toBeDefined();
+    expect(griefEdge(graph, SISTER, eventId)).toBeUndefined();
   });
 
   it('routes nothing when the victim is still alive — they carry their own wound', () => {

@@ -254,7 +254,13 @@ export function createUndertakingOutcomeNode(
   // living bonds carry it instead, tagged `viaBondOf` so the provenance prose can say
   // whose death it was. Same shape as the faction-leader routing above. The corpse's
   // own edge stays: it is the honest record of who was harmed.
-  const griefBondIds = victimAgentId
+  //
+  // Only a harm with a culprit grieves anyone. A self-facing outcome names its owner as
+  // the victim — and when the owner died mid-undertaking, that owner is dead here — but
+  // a friend's unfinished work collapsing is not a wound done to their bonds; routing it
+  // would hand the living a drive to rebuild something nobody destroyed. Measured on the
+  // seed-42 census: all eight bond edges it first wrote were `undertaking_abandoned`.
+  const griefBondIds = victimAgentId && culpritAgentId
     ? routeGriefToBonds(graph, eventNodeId, victimAgentId, culpritAgentId, harmClass, tick)
     : [];
 
