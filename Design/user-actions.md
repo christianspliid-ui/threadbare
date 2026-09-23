@@ -1,18 +1,22 @@
 # User Action Required
 
-**Last updated:** 2026-09-22 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-23 07:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### The builder lane is out of model credit — a top-up is the only lever
+### The builder lane is out of model credit, and a top-up is the only fix
 
-Eight failures in a row, all identical: *"You've reached your Fable limit."* — **10:11 through 17:11 local**, on the hour, each lasting about eight seconds. Last successful run: 09:11. The next attempt is 18:11.
+On 22 September the builder failed eight times in a row, every hour from **10:11 to 17:11 local**, and each time the error was *"You've reached your Fable limit."* The machine was off overnight (about 19:40 to 07:30), so it has not tried since. **The next attempt is about 08:11 on 23 September.** If the limit reset overnight, the builder starts working again without you and this ask goes away.
 
-**Top up** at [claude.ai usage settings](https://claude.ai/settings/usage) — or wait for the quota window to reset, if you know when that is.
+If it has not reset, **top up** at [claude.ai usage settings](https://claude.ai/settings/usage). No agent can move a scheduled lane onto a different model, because that setting lives in your app.
 
-**The alternative you were offered earlier today is not real.** Previous briefings said a session could move the lane off Fable if you asked. It cannot: there is no model setting on a scheduled lane in any file or control an agent can reach — it lives in your app's settings. That half of the ask was withdrawn after a session went looking for it.
+**One job is waiting:** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits), artifact traits. It is designed and claimed. I checked again at 07:58 on 23 September and nothing has been started: no branch, no pull request. The builder picks it up again by itself.
 
-**A finished job is waiting, and the board is now still.** [THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits) — artifact traits — is designed, was claimed at 10:21 local, and re-verified unstarted this hour: no branch, no pull request, no code. Nothing else is waiting to be built. The builder resumes it by itself. Only this lane is affected; planning, grooming and briefing run fine.
+### Heavy simulation tests have been failing on main for 24 hours
+
+The probe's own words: "Heavy simulation tests" has been failing on main for 24 hours and nobody has picked it up — the code on main has a problem the merge gate does not check.
+
+Nothing is blocked. This test lane runs after merges, not as a gate. Fixing it is a builder session's job, not a decision for you. It waits behind the credit ask above, because while that lane is out of credit no session can take it on.
 
 ### One design hour: are scenes being offered to exactly the people who will refuse them?
 
