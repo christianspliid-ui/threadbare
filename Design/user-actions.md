@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-23 10:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-23 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,11 +38,11 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass unlocks the next stage: encounters reaching into factions, war, economy and divine actions. Say **"work the map"** in a chat when done.
 
-### Were the weekday stops deliberate? (lane silence, all ended)
+### Were you away from the app on Monday 14 and Tuesday 15 September? (lane silence, all ended)
 
-The lanes stopped on **17 September** (~10h, through Thursday's working day) and **18 September** (~16h, into Friday afternoon). Neither stop had a pause marker. Weekend and overnight quiet is already declined under your 8 August and 11 September rulings.
+The question is narrower now. [Today's workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) read the computer's power log. **The 17 and 18 September stops are explained: the computer was asleep**, and lanes cannot run on a sleeping machine. But on **14 and 15 September the computer was awake all day, and no lane started at all**. So either the Claude app was closed, or the lanes were switched off.
 
-The builder's run of credit failures on 22 September supports your August explanation: a usage limit stops a lane, and it resumes when the quota clears. What that does not explain is why lanes on a *different* model went quiet in the same windows. **If it was you:** nothing to do. A marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If it wasn't:** say so.
+**If you were away or had the app closed:** nothing to do. A marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If you weren't:** say so, and it becomes a fault to chase.
 
 ### Fog or witness — does a stranger's sheet show what you just watched happen?
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-23 — the 17 and 18 September lane stops are explained.** The computer was asleep, according to [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md).
 - **2026-09-23 — the builder's credit came back without a top-up.** Its 08:11 run succeeded, and the ask that led the brief all yesterday is closed.
 - **2026-09-23 — artifacts can now carry traits, such as storied or cursed, and the artifact sheet shows them** ([THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits)). Merged 08:37 local via [#1985](https://github.com/christianspliid-ui/threadbare/pull/1985).
 - **2026-09-23 — the "heavy simulation tests failing" item left your list.** It is a slow test runner rather than broken code, which makes it a technical call, not yours.
@@ -59,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-22 — the appointment feature is complete** ([THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff), with THR-1479, THR-1518 and THR-1524).
 - **2026-09-22 — the appointment planter now records whether a promise was kept or broken** ([THR-1527](https://linear.app/threadbare/issue/THR-1527/the-appointment-planter-writes-an-owes-favor-edge-without-its-two)).
 - **2026-09-22 — places now earn traits from their own fortunes** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)).
-- **2026-09-21 — two silently-closed halves of the appointment feature were restored** 20 minutes after Linear closed them unbuilt.
 
 ---
 
