@@ -5345,6 +5345,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   name={nodeName}
                   artifactId={nodeId}
                   graph={gameState.graph}
+                  worldVersion={runtime.worldVersion}
                   onClose={onClose}
                 />
               );

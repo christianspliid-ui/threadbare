@@ -127,7 +127,7 @@ export interface WorldObjectKind {
    * named kind must itself resolve — directly, or through its own `via` — to a
    * `worldRef`, so a chain can neither end nowhere nor cycle.
    */
-  readonly via?: WorldObjectKindId;
+  readonly via?: WorldObjectKindId | readonly WorldObjectKindId[];
   /**
    * The quotable ruling for a kind reachable by *nothing* — no route, no bearer's card,
    * no catalog. Deliberately narrow: the reachability pin holds an explicit allowlist of
@@ -339,10 +339,13 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     note: 'Wounds, diseases, strains; blessings and curses as signed conditions; scars as permanent ones. Shared definitions, per-bearer state on the `has_trait` edge (THR-1395): the seeded catalogue was already one node per kind, and `spellActivation`\'s `condition_inflict` — the one writer that minted a node per application — now points every bearer of a template at the same definition. The undertaking *object* for a Condition is not this definition but one mortal\'s bearing of it — the `has_trait` edge (THR-1436): the one kind where the two registries\' shapes differ on purpose, because what a healer cures is a wound on a person, never the wound as a kind.',
   }),
   K({
-    id: 'trait', gameWord: 'Trait', ulTerm: 'Traits.md#trait', worldRef: null, via: 'mortal',
+    // `via` is every bearer whose card shows a trait (THR-1521): a mortal's sheet, the
+    // location page (place conditions, THR-1143 / THR-790) and the artifact sheet
+    // (`trait.artifact.*`). The reachability pin walks each member.
+    id: 'trait', gameWord: 'Trait', ulTerm: 'Traits.md#trait', worldRef: null, via: ['mortal', 'location', 'item'],
     shape: { kind: 'node', nodeType: 'trait', discriminator: { key: 'subcategory', values: TRAIT_SUBCATEGORIES } },
-    owningSystem: 'Personality & Emergent Traits', writers: ['gameInit', 'culturalTraits', 'capabilityGrowth', 'encounterChains', 'reputation'], status: 'live',
-    note: 'The graph\'s vocabulary of what a thing *is*: shared definition nodes, per-bearer state on `has_trait`. Tags refine traits; they are not a general object taxonomy. THR-1395 brought the `experience` subcategory back to that rule — encounter growth and chain mastery minted one node per bearer (44 nodes for 44 bearers on a seeded medium world at tick 30) and now share one per domain and one per chain.',
+    owningSystem: 'Personality & Emergent Traits', writers: ['gameInit', 'culturalTraits', 'capabilityGrowth', 'encounterChains', 'reputation', 'artifactTraits'], status: 'live',
+    note: 'The graph\'s vocabulary of what a thing *is*: shared definition nodes, per-bearer state on `has_trait`. Tags refine traits; they are not a general object taxonomy. THR-1395 brought the `experience` subcategory back to that rule — encounter growth and chain mastery minted one node per bearer (44 nodes for 44 bearers on a seeded medium world at tick 30) and now share one per domain and one per chain. Bearers are mortals, places and — since THR-1521 — things: `artifact` / `artifact_legendary` carry `trait.artifact.*` definitions (*Storied*, *Cursed*) through `artifactTraits.ts`, the one writer, which refuses a holding face.',
   }),
   K({
     id: 'agreement', gameWord: 'Agreement', ulTerm: 'Traits.md#attachment', worldRef: null, via: 'mortal',

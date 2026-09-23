@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 112 |
+| 🟢 LIVE | 113 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 21 |
-| **Total** | **141** |
+| **Total** | **142** |
 
 ## Contracts by producing subsystem
 
@@ -77,6 +77,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `artifact-traits-on-the-edge` | A thing can be Storied or Cursed the way a mortal can be wounded, and every reader — the trait gate, the sheet, the debug readout — sees the same edge. | function: `assignArtifactTrait`, `recordArtifactEncounterPresence`, `readArtifactTraits`, `describeArtifactTraits` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `attachment-activated-effects` | Player-activated item powers (ActivatedAbility). | node-prop: `activatedEffects` | Encounters & Dilemmas | 🔴 LEAKED | THR-720 |
 | `attachment-character-sheet-display` | The character sheet shows what an agent carries. | function: `getAgentAttachments` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `attachment-domain-contributions` | Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility. | node-prop: `stat_contribution`, `collectStatContributions`, `domainContributions` | Personality & Emergent Traits | 🟢 LIVE | — |
@@ -381,6 +382,18 @@ remediation ticket or the build fails.
 - **Other hits:** `src/debug-bridge.ts`, `src/engine/hexGrid.ts`, `src/engine/regionPolitical.ts`, `src/engine/regionTypes.ts`
 - **Verdict:** Verified 2026-09-10: THR-1155 slice 1. Measured on `main` before the change: the flood-fill left 22-198 land hexes with no region across seeds 42/99/7 at all four map sizes, and the watershed left 0-24 - so BOTH partitions had holes, in different places, and `gameInit` joined them by list position. Two defects surfaced on the way and are fixed here rather than filed. (1) The watershed split pass never pruned `hexSet`, so a later chunk BFS re-collected an earlier chunk hexes and listed them twice: 147 hexes in two clusters on a seed-42 medium world, 1735 in two or three on an epic one, which inflated every split region hexes.length, its label-size gate and its Area hexCount. (2) `edgeBorderCost` read `geoParams.elevation` unguarded, which only became reachable from fixture tiles once the watershed was the one detector. Coverage is asserted on GENERATED worlds, never a fixture, because the holes were a property of real terrain - islands no province capital sat on - and a hand-built grid would not have had one. The controlled arm builds exactly such an island and confirms the nearest-cluster fill is what closes it, not the assertion. `effectScope('region')` was a radius-4 disc around the caster and is now real Area membership, tested against a fixture where the two answers disagree in both directions. Tests: `src/engine/__tests__/worldSeed.areas.test.ts` (16), `effectScope.region.test.ts` (3), `GeoBorderMesh.test.ts` (6), `RegionLabelOverlay.area.test.tsx` (3), `regionLabels.test.ts` (17). Full suite 19855 green; heavy lane 202 green; 30-tick seed-42 smoke reached tick 30, 495 agents, 61 events.
 
+### `artifact-traits-on-the-edge` — 🟢 LIVE
+
+- **Intent:** A thing can be Storied or Cursed the way a mortal can be wounded, and every reader — the trait gate, the sheet, the debug readout — sees the same edge.
+- **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
+- **UL terms:** *Trait*, *Attachment*
+- **Module:** `src/engine/artifactTraits.ts`
+- **Production hits:** 10 total — 5 write, 2 read, 3 unclassified
+- **Write sites:** `src/engine/encounter.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/returnEngine.ts`, `src/engine/strategicGraphOps.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/components/Game/ArtifactSheet.tsx`, `src/debug-bridge.ts`
+- **Other hits:** `src/data/artifact-trait-content.ts`, `src/engine/artifactTraits.ts`, `src/types/edgeSchema.ts`
+- **Verdict:** Verified 2026-09-22: THR-1521 (traits wave 2, slice 3). `has_trait.sourceNodeType` gained `artifact` / `artifact_legendary`; `artifactTraits.ts` is the ONE writer and carries the holdings carve-out (a holding face is type-legal and refused — the schema is per node type, so the refusal cannot live in the row). Producers: `mintMasterwork` stamps `trait.artifact.storied` at level 1; `curse_artifact` writes `trait.artifact.cursed` beside THR-661's `properties.cursed` flag (untyped, read by nobody) and `nullify_artifact` removes it; the monster return's `cursed: true` op gets the same edge at its one apply site; both encounter-growth roads (`encounter.ts`, `unifiedActionResolution.ts`) call `recordArtifactEncounterPresence`, which lifts Storied a level every `ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL` encounters to `maxLevel`. Consumers: `resolveTraitPredicate` with the artifact as bearer (by tag `#cursed`, by id, by name — the pre-fix arm proves the flag alone satisfied none), `ArtifactSheet`'s Traits chips (words, never a numeral), `__DEBUG.getArtifactTraits`, CLI `traits`. The `condition_template` carve excludes `trait.artifact.*` unless the query names `classes: ['artifact']`, with a pre-fix arm proving the raw carve does index them. Non-vacuous by `src/engine/__tests__/artifactTraits.test.ts` (schema, carve-out, cursed-before/after, mint, climb, cap, carve, seating, traces) and `ArtifactSheet.test.tsx` (Law 56 chip anchored to the edge, Law 13 words, Law 4 absence, holding face never shows one, tag chips through the shared vocabulary).
+
 ### `ascendant-affinity-cast-capability` — 🟢 LIVE
 
 - **Intent:** The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band.
@@ -418,10 +431,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 45 total — 4 write, 2 read, 39 unclassified
+- **Production hits:** 46 total — 4 write, 2 read, 40 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +34 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +35 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -698,10 +711,10 @@ exit
 - **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/companions.ts`
-- **Production hits:** 43 total — 2 write, 2 read, 39 unclassified
+- **Production hits:** 44 total — 2 write, 2 read, 40 unclassified
 - **Write sites:** `src/data/companion-templates.ts`, `src/engine/companions.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +34 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +35 more
 - **Verdict:** Verified 2026-08-14: THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer's stone raw score by exactly the template's +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
@@ -826,10 +839,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **UL terms:** *Content Tag*, *Content Object*
 - **Module:** `src/data/content-tags.ts`
-- **Production hits:** 15 total — 2 write, 3 read, 10 unclassified
+- **Production hits:** 15 total — 2 write, 2 read, 11 unclassified
 - **Write sites:** `src/data/content-eval/contentTagRetrofitPending.ts`, `src/data/content-tags.ts`
-- **Read sites:** `src/components/Codex/CodexTagFilter.tsx`, `src/components/Game/AttachmentDetailView.tsx`, `src/data/content-eval/attachmentContract.ts`
-- **Other hits:** `src/data/contentCatalogs.ts`, `src/data/contentEntryTags.ts`, `src/data/location-trait-constants.ts`, `src/engine/contentCatalogView.ts`, `src/engine/contentEntryResolver.ts` +5 more
+- **Read sites:** `src/components/Codex/CodexTagFilter.tsx`, `src/data/content-eval/attachmentContract.ts`
+- **Other hits:** `src/components/Game/contentTagChips.ts`, `src/data/contentCatalogs.ts`, `src/data/contentEntryTags.ts`, `src/data/location-trait-constants.ts`, `src/engine/contentCatalogView.ts` +6 more
 - **Verdict:** Verified 2026-09-12: THR-1486 slice 2. 96 tags seated (8 reach + 12 sphere derived, 2 polarity, 74 authored) against 153 spellings measured in the registry's own catalogs: 16 bare spellings rewritten with their #, 63 removed from their entries under the seating rule (>=1 runtime reader OR >= CONTENT_TAG_MIN_BEARERS bearers), the rest moved onto the derived axes. contentTags.test.ts pins every claim against the real catalogs and each arm was falsified: an unseated tag on starter_iron_blade fails by name in both the test and check:attachment; a ratchet entry that passes is reported STALE by both; dropping a family tag from companion.wayfarer fails required_axes. check:attachment -- --all is green over 224 entries across the six attachment kinds. The ratchet is empty, which is what let ArtifactTemplate/CompanionTemplate/AgreementRewardTemplate/SpellTemplate tags tighten to readonly ContentTag[]. The census adapters moved off dominantReachFromEffects onto the tag axis — the derivation disagreed with the author's own tag on 9 of 106 attachments, 3 of 5 spells and 6 of 33 conditions, which is what closes THR-477 in favour of authoring; the 18 entries that had a reach only by derivation were authored at the migration. censusTag kept its scale half (132 of 193 literals carried scale and nothing else, and contentCensus/matrix.ts reads it) against the plan's call to retire the field outright.
 
 ### `contested-outcome-band-reaches-the-player` — 🟢 LIVE
@@ -1121,10 +1134,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 151 total — 3 write, 7 read, 141 unclassified
+- **Production hits:** 153 total — 3 write, 7 read, 143 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +136 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +138 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1293,10 +1306,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 77 total — 2 write, 3 read, 72 unclassified
+- **Production hits:** 81 total — 2 write, 3 read, 76 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/attachment-slot-constants.ts`, `src/data/choice-set-catalog.ts` +67 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +71 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1615,10 +1628,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 103 total — 2 write, 4 read, 97 unclassified
+- **Production hits:** 105 total — 2 write, 4 read, 99 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts` +92 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts` +94 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -1649,10 +1662,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefIndex.ts`
-- **Production hits:** 14 total — 2 write, 5 read, 7 unclassified
+- **Production hits:** 16 total — 2 write, 5 read, 9 unclassified
 - **Write sites:** `src/engine/traitRefIndex.ts`, `src/engine/traits.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/graphConditions.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/engine/contentQueryBearer.ts`, `src/engine/kpi/branchingDistance.ts`, `src/engine/meetingEncounter.ts`, `src/engine/simulationRuntime.ts`, `src/types/attachments.ts` +2 more
+- **Other hits:** `src/data/artifact-trait-content.ts`, `src/engine/contentQueryBearer.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/kpi/branchingDistance.ts`, `src/engine/meetingEncounter.ts` +4 more
 - **Verdict:** Verified 2026-07-26: THR-786. All six pre-existing trait vocabularies now route through `collectBearerTraitRefs` + `bearerMatchesPredicate`: encounter filter pipeline (`requiredTraits`/`blockedByTraits`), effect-predicate context builder (`has_trait:`/`lacks_trait:` sugar), graphConditions (`agent_has_trait`/`agent_lacks_trait`), ambition snapshot eligibility (`buildAmbitionAgentSnapshot`), spell prerequisites (`checkPrerequisites`), and item-granted keys. Non-vacuous by the unchanged-behavior contract suite `src/engine/__tests__/contracts/traitPredicate.contract.test.ts`, which pins each site's pre-migration vocabulary (31 PRESERVED assertions, all green pre- and post-migration) and separately asserts the 4 deliberate widenings + 2 dead-read repairs, each of which was verified failing before the migration. Reach note (THR-811, 2026-07-27): the encounter read site resolved its template via `getAnyEncounterById`, so `requiredTraits`/`blockedByTraits` were unreadable on 43 of the 213 cache-registrable template ids — the predicate was shared but the encounter site could not see the authoring on that id set. It now resolves via getUnifiedTemplateById; no production encounter template declares either field yet, so this widened reach rather than changing any current verdict. Seventh consumer added (THR-802, 2026-07-27): `src/engine/kpi/branchingDistance.ts` was a production reader the THR-786 migration could not see — both its `requiredTraits` reads sat inside the THR-489 red typecheck baseline as `Property 'requiredTraits' does not exist`, so the grep for typed readers missed them and it kept comparing `e.target` to `req.traitId`. It now routes through the shared pair like every other site. Diagnostic-only (the `kpi:branching-audit` CLI path, never the tick loop), so this changes what the readout reports rather than any gate outcome; covered by `src/engine/kpi/__tests__/branchingDistanceTraitGate.thr802.test.ts`, falsified 5-of-6-red against the pre-fix build.
 
 ### `trait-ref-authoring-vocabulary` — 🔴 LEAKED
@@ -1844,10 +1857,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 251 total — 2 write, 6 read, 243 unclassified
+- **Production hits:** 253 total — 2 write, 6 read, 245 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +238 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +240 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `yield-is-a-verb` — 🟢 LIVE

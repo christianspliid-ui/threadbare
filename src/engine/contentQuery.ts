@@ -54,6 +54,7 @@ import type {
 } from '../types/contentQuery';
 import { emitTrace } from './traceBuffer';
 import { LOCATION_CONDITION_ID_PREFIX } from '../data/condition-trait-content';
+import { ARTIFACT_TRAIT_ID_PREFIX } from '../data/artifact-trait-content';
 import { REWARD_EDGE_SOURCE } from '../types/attachments';
 
 
@@ -66,6 +67,13 @@ import { REWARD_EDGE_SOURCE } from '../types/attachments';
  * apart from a mortal's is the id prefix `LOCATION_CONDITION_ID_PREFIX`.
  */
 export const LOCATION_BEARER_CLASS = 'location';
+
+/**
+ * The bearer word that opts a `condition_template` query into a *thing's* traits
+ * (THR-1521) — `classes: ['artifact']` returns only `trait.artifact.*` definitions, and
+ * a query without it never deals a mortal *Storied*. Same rule as the place class.
+ */
+export const ARTIFACT_BEARER_CLASS = 'artifact';
 
 /**
  * Cap on the resolved set a **draw** picks from. Inherits the role
@@ -288,12 +296,17 @@ function matchesExceptExclude(candidate: ContentQueryCandidate, query: ContentQu
   // path and returns *only* the place's conditions. No new field, no new
   // discriminator; `contentQuery-bearerKind.test.ts` carries the pre-fix arm.
   const wantsPlace = query.classes?.includes(LOCATION_BEARER_CLASS) ?? false;
+  // THR-1521 — the same carve for a thing's traits: `trait.artifact.*` is excluded
+  // unless the query names `classes: ['artifact']`, and then only those return.
+  const wantsArtifact = query.classes?.includes(ARTIFACT_BEARER_CLASS) ?? false;
   if (candidate.kind === 'condition_template') {
     const isPlace = candidate.id.startsWith(LOCATION_CONDITION_ID_PREFIX);
     if (isPlace !== wantsPlace) return false;
+    const isArtifactTrait = candidate.id.startsWith(ARTIFACT_TRAIT_ID_PREFIX);
+    if (isArtifactTrait !== wantsArtifact) return false;
   }
-  // `location` is a bearer word, not a `subcategory`; it never has to match `cls`.
-  const classWords = query.classes?.filter(c => c !== LOCATION_BEARER_CLASS);
+  // `location` / `artifact` are bearer words, not a `subcategory`; they never have to match `cls`.
+  const classWords = query.classes?.filter(c => c !== LOCATION_BEARER_CLASS && c !== ARTIFACT_BEARER_CLASS);
   if (classWords && classWords.length > 0) {
     if (candidate.cls === null || !classWords.includes(candidate.cls)) return false;
   }

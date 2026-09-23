@@ -23,6 +23,7 @@ import {
 } from '../traitDefinitionSeeding';
 import { MASTERY_TRAIT_DEFINITIONS } from '../../data/mastery-trait-content';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../data/condition-trait-content';
+import { ARTIFACT_TRAIT_DEFINITIONS } from '../../data/artifact-trait-content';
 import type { CosmologyProfile, HexTile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
 
@@ -55,11 +56,13 @@ function tinyTiles(): HexTile[] {
 // ─── Definition-array integrity ────────────────────────────────────
 
 describe('ENCOUNTER_TRAIT_DEFINITIONS', () => {
-  it('covers both shipped families with no id collisions', () => {
+  it('covers every shipped family with no id collisions', () => {
     expect(MASTERY_TRAIT_DEFINITIONS.length).toBeGreaterThan(0);
     expect(CONDITION_TRAIT_DEFINITIONS.length).toBeGreaterThan(0);
+    // THR-1521 — the artifact family (Storied, Cursed) is the third.
+    expect(ARTIFACT_TRAIT_DEFINITIONS.length).toBeGreaterThan(0);
     expect(ENCOUNTER_TRAIT_DEFINITIONS).toHaveLength(
-      MASTERY_TRAIT_DEFINITIONS.length + CONDITION_TRAIT_DEFINITIONS.length,
+      MASTERY_TRAIT_DEFINITIONS.length + CONDITION_TRAIT_DEFINITIONS.length + ARTIFACT_TRAIT_DEFINITIONS.length,
     );
 
     const ids = ENCOUNTER_TRAIT_DEFINITIONS.map(n => n.id);

@@ -28,7 +28,7 @@ The player-facing word for a trait is the trait's own display name, never the ca
 
 The `has_trait` edge binding a bearer to a trait definition. Edge properties (`TraitAssignmentProperties`) carry `level`, `acquiredTick`, `lastReinforcedTick`, `source` (what caused acquisition), `visibility`, an optional `ticksRemaining` countdown, and optional `modifiers`. The definition is shared; the assignment is per-bearer, which is why level, expiry, and provenance live on the edge and not on the node.
 
-Legal bearers are fixed by the edge schema: `actor` (individual, group, faction, culture, god, ascendant), `location`, and `sublocation`. Artifacts and reified relationships are named as bearers by the design but are not yet schema-legal — each arrives with its own wave as an additive `sourceNodeType` extension.
+Legal bearers are fixed by the edge schema: `actor` (individual, group, faction, culture, god, ascendant), `location`, `sublocation`, and — since THR-1521 (2026-09-22) — `artifact` and `artifact_legendary` (see `[[Artifact Trait]]`; a holding face is type-legal but refused by the one writer, because a freehold is bookkeeping, not a thing). Reified relationships are named as bearers by the design but are not yet schema-legal — they arrive with their own wave as an additive `sourceNodeType` extension.
 
 `ticksRemaining` is the live countdown the condition decay phase decrements; absent means the assignment never expires. It is distinct from the authored `durationTicks` provenance value, which is kept but never decremented.
 
@@ -47,6 +47,22 @@ Two ways a place comes to carry one. **Planted**: an encounter aftermath writes 
 What reads it: the movement tax (`LOCATION_CONDITION_MOVEMENT_TAX`), the per-reach step modifier on work done at the place (`LOCATION_CONDITION_STEP_MODIFIER`), target-action gating, the encounter pool's `locationTraitBonus` (trait × content tag, `LOCATION_TRAIT_ENCOUNTER_BONUS`), and the location page, which shows the trait's name with the effect line derived from those same rows. Every shipped location trait carries at least one such row — a location trait with no reader is the gate theatre THR-800 named. A `condition_template` content query excludes location traits unless it names `classes: ['location']`.
 
 The player-facing word is the definition's display name, never the category, the id, or *location condition*; *location trait* is the design word for the family.
+
+---
+
+### Artifact Trait
+
+**Aliases:** Thing's Trait, Item Trait
+**Also see:** `[[Trait]]`, `[[Trait Assignment]]`, `[[Location Trait]]`, `[[Attachment]]`, `[[TraitPredicate]]`
+**Status:** canonical
+
+A `condition`-category `[[Trait]]` whose bearer is a *thing* — a `has_trait` edge from an `artifact` or `artifact_legendary` node to a definition under the id prefix `trait.artifact.*` (`ARTIFACT_TRAIT_ID_PREFIX`, `src/data/artifact-trait-content.ts`). The prefix is the declaration, the `[[Location Trait]]` rule carried one object family further: no new category, no new field. A **holding face** — the `artifact` node `holdings.ts` mints to mirror an `owns` edge — is never a bearer; the one writer (`src/engine/artifactTraits.ts`) refuses it.
+
+Two definitions, and only two, because only per-bearer *state* justifies an edge; `#masterwork` / `#heirloom` / `#stolen` stay family tags. **Storied** — the thing has been where things happened: stamped at level one when a masterwork is made, and climbing a level every `ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL` encounters its bearer resolves with it about them, to `maxLevel`; the level is shown in words, never a numeral. **Cursed** — a curse rides in the thing: written beside the `curse_artifact` verb's untyped `properties.cursed` flag (THR-661), which nothing ever read, so that the one trait gate (`[[TraitPredicate]]`) sees a cursed blade the way it sees a wounded mortal; removed by `nullify_artifact`. The bearer-side hidden mark is unchanged.
+
+What reads it: `resolveTraitPredicate` with the artifact as bearer (`requiredTraits: [{ traitId: '#cursed' }]`), the artifact sheet's *Traits* chips, `__DEBUG.getArtifactTraits` and CLI `traits`. A `condition_template` content query excludes artifact traits unless it names `classes: ['artifact']`, so the reward pool never deals a mortal *Storied*.
+
+The player-facing word is the definition's display name; *artifact trait* is the design word for the family.
 
 ---
 

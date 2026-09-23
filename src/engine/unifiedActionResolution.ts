@@ -92,6 +92,7 @@ import type { HexMutation } from '../types/hexMutation';
 import type { RevelationMutation } from './revelationResolver';
 import { applyRevelationMutations } from './revelationResolver';
 import { applyEncounterGrowth } from './capabilityGrowth';
+import { recordArtifactEncounterPresence } from './artifactTraits';
 import { applyChainStageCompletion } from './encounterChains';
 import { handleTierPromotion } from './tierPromotion';
 import { accruePlayerReachPractice } from './phaseAscendantProgression';
@@ -1782,6 +1783,9 @@ export function executeStepResult(
       // THR-1241: `tier_advancement_cost_multiplier` reads here.
       { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
     );
+    // THR-1521: the things carried through this step were present in it (see
+    // `encounter.ts` for the legacy road — both roads, or neither).
+    recordArtifactEncounterPresence(state.graph, action.actorId, tick);
     growthApplied = growthResult.growthApplied;
     growthDomain = growthResult.domain;
     growthTierFrom = growthResult.previousTier;

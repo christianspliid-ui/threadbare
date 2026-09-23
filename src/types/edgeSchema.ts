@@ -64,12 +64,16 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   // ── Trait ───────────────────────────────────────────────────
   has_trait: {
     type: 'has_trait',
-    sourceNodeType: ['actor', 'location', 'sublocation'],
+    // THR-1521 — artifacts of either tier are bearers. A holding face (`type: 'artifact'`,
+    // `attachmentCategory: 'holding'`, minted by `holdings.ts`) is type-legal here but
+    // never a bearer: the schema is per node *type*, so that carve-out lives in the one
+    // writer, `artifactTraits.assignArtifactTrait`, not in this row.
+    sourceNodeType: ['actor', 'location', 'sublocation', 'artifact', 'artifact_legendary'],
     targetNodeType: 'trait',
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Actor, location, or sublocation has a trait. Edge properties: level, tick, decay, appliedAt, ticksRemaining, durationTicks, intensity, sourceEncounterId. ticksRemaining is the live countdown decayConditions decrements (absent = never expires); durationTicks is the authored total kept as provenance (THR-761).',
+    description: 'Actor, location, sublocation, or artifact has a trait (artifacts since THR-1521 — `trait.artifact.*` definitions only, written by `artifactTraits.ts`; a holding face is refused there). Edge properties: level, tick, decay, appliedAt, ticksRemaining, durationTicks, intensity, sourceEncounterId. ticksRemaining is the live countdown decayConditions decrements (absent = never expires); durationTicks is the authored total kept as provenance (THR-761).',
   },
 
   // ── Companions (THR-1096) ──────────────────────────────────

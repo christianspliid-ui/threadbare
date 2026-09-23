@@ -57,6 +57,7 @@ import { resolveAttachmentTooltip } from './attachmentTooltip';
 import { conditionEffectLine, type ConditionEffectReading } from './aftermathWords';
 import type { TooltipContent } from '../types/tooltip';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
+import { ARTIFACT_TRAIT_DEFINITIONS } from '../data/artifact-trait-content';
 import {
   REWARD_POSSESSIONS,
   REWARD_CONDITIONS,
@@ -107,6 +108,8 @@ export const ATTACHMENT_TOOLTIP_MIN_BODY = 40;
  */
 export const ATTACHMENT_TEMPLATE_SOURCES: readonly GraphNode[] = [
   ...CONDITION_TRAIT_DEFINITIONS,
+  // THR-1521 — a thing's traits hover the same way a mortal's conditions do.
+  ...ARTIFACT_TRAIT_DEFINITIONS,
   ...REWARD_CONDITIONS,
   ...REWARD_BESTOWED_POWERS,
   ...REWARD_POSSESSIONS,

@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 155 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 156 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -90,7 +90,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**110 tags.**
+**111 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -104,8 +104,9 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#bestowed` | Given by a god rather than found or made. | power 12 | 12 |  |
 | `#anti-magic` | It refuses the unseen, or blunts what draws on it. | item 2 · condition 1 | 3 |  |
 | `#blessing` | A favour that rides along, for as long as it lasts. | condition 11 | 11 |  |
-| `#curse` | A weight laid on someone, and not easily set down. | condition 10 | 10 |  |
-| `#cursed` | It carries a curse with it — the harm comes with the having. | item 8 · legendary 2 · condition 1 | 11 |  |
+| `#curse` | A weight laid on someone, and not easily set down. | condition 11 | 11 |  |
+| `#cursed` | It carries a curse with it — the harm comes with the having. | item 8 · condition 2 · legendary 2 | 12 |  |
+| `#storied` | It has been where things happened, and the tales about it are told. | condition 1 | 1 |  |
 | `#wound` | Hurt taken, and still healing or still open. | condition 10 | 10 |  |
 | `#disease` | A sickness in the body, which spreads if it can. | condition 5 | 5 |  |
 | `#physical` | Of the body rather than the mind or the soul. | condition 9 | 9 |  |
@@ -164,7 +165,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#mastery` | A mastery — competence earned by doing a thing until the world noticed. | trait 9 | 9 |  |
 | `#reputation` | A reputation — what others have come to say about the bearer, deserved or not. | trait 19 | 19 |  |
 | `#cultural` | A formative mark a culture or a guild stamps on its own. | trait 1 | 1 |  |
-| `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 19 | 19 |  |
+| `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 21 | 21 |  |
 | `#scar` | A scar — a condition that does not heal; what a loss left behind. | condition 2 | 2 |  |
 | `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 10 | 10 |  |
 | `#virtue` | The virtue pole of a continuum or axis — the bearer leans toward the better end. | trait 13 | 13 |  |
@@ -213,8 +214,8 @@ Whether the thing is good or ill to carry. The two words the condition proxy-eve
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#positive` | A good thing to carry — it helps the one who holds it. | condition 25 · trait 8 | 33 |  |
-| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 42 · trait 8 | 50 |  |
+| `#positive` | A good thing to carry — it helps the one who holds it. | condition 26 · trait 8 | 34 |  |
+| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 43 · trait 8 | 51 |  |
 
 ## Kinds and their required axes
 

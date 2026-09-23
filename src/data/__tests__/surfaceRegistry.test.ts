@@ -100,22 +100,30 @@ describe('surface registry — totality', () => {
 
 describe('world-object reachability — every kind is reachable from the game', () => {
   /** Walk a kind's `via` chain to the `worldRef` it ends at, or explain why it does not. */
-  function resolve(id: WorldObjectKindId): { ok: true; hops: number } | { ok: false; why: string } {
-    const seen = new Set<WorldObjectKindId>();
-    let cursor: WorldObjectKindId | undefined = id;
-    let hops = 0;
-    while (cursor) {
-      if (seen.has(cursor)) return { ok: false, why: `via cycle at "${cursor}"` };
-      seen.add(cursor);
-      const row = byId.get(cursor);
-      if (!row) return { ok: false, why: `via names "${cursor}", which is not a kind` };
-      if (row.worldRef) return { ok: true, hops };
-      if (row.contentKind) return { ok: true, hops };
-      if (NO_SURFACE_ALLOWLIST.includes(row.id)) return { ok: true, hops };
-      cursor = row.via;
-      hops++;
+  function resolve(
+    id: WorldObjectKindId,
+    seen: Set<WorldObjectKindId> = new Set(),
+    hops = 0,
+  ): { ok: true; hops: number } | { ok: false; why: string } {
+    if (seen.has(id)) return { ok: false, why: `via cycle at "${id}"` };
+    seen.add(id);
+    const row = byId.get(id);
+    if (!row) return { ok: false, why: `via names "${id}", which is not a kind` };
+    if (row.worldRef) return { ok: true, hops };
+    if (row.contentKind) return { ok: true, hops };
+    if (NO_SURFACE_ALLOWLIST.includes(row.id)) return { ok: true, hops };
+    if (row.via === undefined) return { ok: false, why: 'no worldRef, no via, no contentKind, not allowlisted' };
+    // THR-1521 — a row may be reached through several bearers (a Trait sits on a
+    // mortal's sheet, the location page and the artifact sheet); every member of the
+    // list must resolve, so a bearer that ends nowhere still fails the pin.
+    const vias = Array.isArray(row.via) ? row.via : [row.via as WorldObjectKindId];
+    let deepest = hops;
+    for (const next of vias) {
+      const r = resolve(next, new Set(seen), hops + 1);
+      if (!r.ok) return { ok: false, why: `via "${next}": ${r.why}` };
+      deepest = Math.max(deepest, r.hops);
     }
-    return { ok: false, why: 'no worldRef, no via, no contentKind, not allowlisted' };
+    return { ok: true, hops: deepest };
   }
 
   it('resolves every WORLD_OBJECT_KINDS row', () => {

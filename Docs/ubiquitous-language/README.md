@@ -142,8 +142,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 ### Traits
 
 - **[Trait](./Traits.md#trait)** — a named piece of identity on a graph object; definitions are nodes, assignments are `has_trait` edges; inert on the bearer, powered by whoever references it
-- **[Trait Assignment](./Traits.md#trait-assignment)** — the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation
+- **[Trait Assignment](./Traits.md#trait-assignment)** — the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation, and (THR-1521) artifact
 - **[Location Trait](./Traits.md#location-trait)** — a `condition` trait whose bearer is a place-tier Location, declared by the `trait.condition.location.*` id prefix; planted by an aftermath with a term, or minted by `phaseLocationTraits` from the world's own scalars with none (THR-790)
+- **[Artifact Trait](./Traits.md#artifact-trait)** — a `condition` trait whose bearer is a thing (`artifact` / `artifact_legendary`), declared by the `trait.artifact.*` id prefix; *Storied* (stamped by `mintMasterwork`, climbs with encounter presence) and *Cursed* (the readable form of `curse_artifact`); a holding face is never a bearer (THR-1521)
 - **[Trait Category](./Traits.md#trait-category)** — one of ten classes stored as `subcategory`; a lifecycle contract (acquisition, removal, trigger), not a label
 - **[Destiny](./Traits.md#destiny)** — the forward-contract category: a world-minted promise, always visible; currently reserved and empty
 - **[Trait Ref](./Traits.md#trait-ref)** — how content names a trait: node id, short id, display name, or tag; resolves to a set, predicates ANY-match

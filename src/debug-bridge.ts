@@ -2736,6 +2736,61 @@ if (import.meta.env.DEV) {
       return describeLocationTraits(graph, locationIdOrName);
     },
 
+    // THR-1521: the traits a thing carries — Storied / Cursed on artifacts.
+    getArtifactTraits: async (artifactIdOrName?: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return [];
+      const { describeArtifactTraits } = await import('./engine/artifactTraits');
+      return describeArtifactTraits(graph, artifactIdOrName);
+    },
+
+    // THR-1521: stamp an artifact trait for a review — the dev lever that lets the sheet's
+    // Traits slot be photographed without waiting for a masterwork to be made in-run.
+    stampArtifactTrait: async (target: string, traitRef: string = 'storied') => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph) return { ok: false as const, reason: 'no_game' as const };
+      const { assignArtifactTrait, isArtifactTraitBearer } = await import('./engine/artifactTraits');
+      const { ARTIFACT_TRAIT_ID_PREFIX } = await import('./data/artifact-trait-content');
+      const traitId = traitRef.startsWith(ARTIFACT_TRAIT_ID_PREFIX)
+        ? traitRef
+        : `${ARTIFACT_TRAIT_ID_PREFIX}${traitRef.replace(/^#/, '')}`;
+
+      // An artifact by id or exact name first; else an agent query (`@hero` included)
+      // and the first thing they carry that can bear a trait.
+      let artifactId: string | null = null;
+      const direct = graph.getNode(target);
+      if (direct && isArtifactTraitBearer(direct)) artifactId = direct.id;
+      if (!artifactId) {
+        const lowered = target.toLowerCase();
+        const byName = [...graph.getNodesByType('artifact'), ...graph.getNodesByType('artifact_legendary')]
+          .find(n => isArtifactTraitBearer(n) && (n.name ?? '').toLowerCase() === lowered);
+        if (byName) artifactId = byName.id;
+      }
+      if (!artifactId) {
+        const agent = await resolveAgentNode(target);
+        if (agent) {
+          const carried = [
+            ...graph.getOutgoingEdges(agent.id, 'possesses'),
+            ...graph.getOutgoingEdges(agent.id, 'bonded_to'),
+          ].map(e => graph.getNode(e.target)).find(n => isArtifactTraitBearer(n));
+          if (carried) artifactId = carried.id;
+        }
+      }
+      if (!artifactId) return { ok: false as const, reason: 'no_artifact_resolved' as const };
+
+      const result = assignArtifactTrait(graph, artifactId, traitId, {
+        tick: state?.tick ?? 0,
+        source: 'debug_stamp',
+      });
+      const runtime = _runtimeProvider?.();
+      if (runtime) {
+        const { touchWorld } = await import('./engine/simulationRuntime');
+        touchWorld(runtime);
+      }
+      return { ...result, artifactId, traitId, artifactName: graph.getNode(artifactId)?.name ?? artifactId };
+    },
+
     // THR-1142: travel-intent readout — where an encounter ending sent this agent.
     getRelocationIntent: async (agentIdOrName: string) => {
       const graph = _graphProvider?.();

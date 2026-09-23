@@ -70,6 +70,7 @@ import { spawnDebugBand, spawnDebugCompanion } from '../src/engine/debugWorldSpa
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { describeAppointments } from '../src/engine/appointments';
 import { describeLocationTraits } from '../src/engine/phaseLocationTraits';
+import { describeArtifactTraits } from '../src/engine/artifactTraits';
 import { resolveAxiologicalProfile } from '../src/engine/encounterScoring';
 import { hexDistance } from '../src/lib/hexMath';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
@@ -612,6 +613,18 @@ function printLocationTraits(locationQuery?: string): void {
       const matches = describeLocationTraitsCounters(locationQuery);
       for (const line of matches) console.log(dim(`            ${line}`));
     }
+  }
+}
+
+/** THR-1521 — the traits things carry: Storied (with its presence count) and Cursed. */
+function printArtifactTraits(query?: string): void {
+  const rows = describeArtifactTraits(state.graph, query || undefined);
+  console.log(header(`Artifact traits — ${rows.length}${query ? ` (filter: ${query})` : ''}`));
+  for (const r of rows) {
+    const word = r.levelWord ? `— ${r.levelWord}` : '';
+    console.log(
+      `  ${r.artifactName} ${dim(`(${r.artifactId})`)}  ${r.name} ${word}  since t${r.since ?? '?'}  ${dim(`present in ${r.encountersPresent} encounter(s)`)}  ${dim(r.source ?? 'source unknown')}`,
+    );
   }
 }
 
@@ -1393,7 +1406,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}chapters${RESET} [agent]  Archived + active encounter chapters (THR-603), optionally by agent|@hero`);
   console.log(`  ${BOLD}appointments${RESET} [agent]  Live appointments — place, due tick, slack, regime (THR-1479), optionally by agent|@hero`);
-  console.log(`  ${BOLD}traits${RESET} [location]  Location traits — what each place carries and since when (THR-790); with a place named, its sustain counters too`);
+  console.log(`  ${BOLD}traits${RESET} [location]  Location traits — what each place carries and since when (THR-790); with a place named, its sustain counters too. Then the artifact traits (THR-1521): Storied / Cursed on things, with the presence count Storied climbs on`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}spotlight${RESET}        Spotlight-pull ledger (THR-1348): who was pulled into the deciding tier, whom they displaced, who was refused`);
   console.log(`  ${BOLD}groups${RESET}           List companies (members, cohesion, destination)`);
@@ -2376,6 +2389,7 @@ function handleCommand(line: string): boolean {
       break;
     case 'traits':
       printLocationTraits(arg || undefined);
+      printArtifactTraits(arg || undefined);
       break;
     case 'factions':
       printFactions();

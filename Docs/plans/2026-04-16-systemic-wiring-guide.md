@@ -4108,3 +4108,31 @@ kill criterion (`2026-07-26-traits-trigger-architecture.md` § Kill criteria) as
 *Veil-thin* and *Haunted* read `UNMINTED` on every headless run by construction — saturation is
 written only by divine action and spellwork, which the CLI world never does — so their proof is a
 browser world, not this census.
+
+## Capability 33: A thing can carry a trait — Storied and Cursed on artifacts (THR-1521)
+
+**What it is.** `has_trait` admits `artifact` / `artifact_legendary` sources. Two definitions
+under `trait.artifact.*` (`src/data/artifact-trait-content.ts`): **Storied** — stamped at level 1
+by `mintMasterwork`, climbing a level every `ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL` encounters
+the bearer resolves with the thing about them (`recordArtifactEncounterPresence`, both growth
+roads) — and **Cursed**, written by `curse_artifact` beside THR-661's `properties.cursed` flag
+and removed by `nullify_artifact`. One writer, `src/engine/artifactTraits.ts`; a holding face is
+refused.
+
+**What an author can do with it.**
+
+- **Gate on a thing's trait.** `requiredTraits: [{ traitId: '#cursed' }]` resolves through the one
+  trait gate with the *artifact* as bearer — the same `TraitPredicate` shape as a mortal's, by
+  tag, id (`trait.artifact.cursed`) or name (`Cursed`). `#storied` with `minLevel: 2` asks for a
+  thing that *has seen much*.
+- **Deal a thing's trait deliberately.** A `condition_template` content query never returns
+  `trait.artifact.*` unless it names `classes: ['artifact']` — the same opt-in the place class
+  uses — so a reward recipe cannot hand a mortal *Storied* by accident and an author who wants
+  to curse a found blade says so.
+- **Never author `properties.cursed`.** The flag still exists for the nullify path; the edge is
+  what readers see. Write the trait through the verb (`curse_artifact`), not the property.
+
+**Where it shows.** The artifact sheet's *Traits* chips (name, level in words, polarity as
+sentiment, hover through the attachment tooltip index); `__DEBUG.getArtifactTraits(idOrName)` and
+`__DEBUG.stampArtifactTrait('@hero', 'storied')` for a review capture; CLI `traits`; the
+`artifact_trait` trace per change.

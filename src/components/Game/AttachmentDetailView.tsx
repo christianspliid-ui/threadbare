@@ -11,22 +11,7 @@ import { pickFallbackFlavor } from '../../data/reveal-content';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 import { durationLabel } from '../../engine/aftermathWords';
 import { resolveConditionEffectLine } from '../../engine/attachmentTemplateIndex';
-import { contentTagTooltipId, getContentTag, type ContentTagAxis } from '../../data/content-tags';
-
-/**
- * One glyph per axis, so a chip's *kind* reads before its word does — the same
- * vocabulary the codex filter row paints (THR-1486).
- */
-const TAG_AXIS_GLYPH: Readonly<Record<ContentTagAxis, string>> = {
-  form: '◇',     // ◇ — what the thing is
-  family: '○',   // ○ — what class it belongs to
-  reach: '◈',    // ◈ — the cosmology's doing axis
-  sphere: '✦',   // ✦ — the cosmology's fuelling axis
-  polarity: '●', // ● — good or ill to carry
-};
-
-/** Axis glyph for a tag the vocabulary no longer knows — a chip without one reads as broken. */
-const TAG_GLYPH_FALLBACK = '◈';
+import { contentTagChips } from './contentTagChips';
 
 export interface AttachmentDetailData {
   id: string;
@@ -181,16 +166,8 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   // vocabulary no longer knows still renders, without a hover, because an entry whose
   // only description is a retired word should not become wordless.
   if (attachment.tags.length > 0) {
-    const chips: ChipDescriptor[] = attachment.tags.map(tag => {
-      const def = getContentTag(tag);
-      const bare = (tag.startsWith('#') ? tag.slice(1) : tag).replace(/_/g, ' ');
-      return {
-        label: bare,
-        tooltipId: def ? contentTagTooltipId(def.tag) : undefined,
-        glyph: def ? TAG_AXIS_GLYPH[def.axis] : TAG_GLYPH_FALLBACK,
-        dataKey: { attribute: 'content-tag', value: tag },
-      };
-    });
+    // Shared with `ArtifactSheet` since THR-1521 — one chip vocabulary per tag list.
+    const chips: ChipDescriptor[] = contentTagChips(attachment.tags);
     sections.push({
       kind: 'chips',
       label: 'Tags',

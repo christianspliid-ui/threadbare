@@ -76,7 +76,7 @@ export type TraceCategory =
   | 'prosperity_tick' | 'wealth_delta' | 'econ_shock_seeded'
   | 'trade_route_volume_change' | 'trade_route_dissolved'
   | 'settlement_tier_change' | 'target_action_filter'
-  | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait'
+  | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
@@ -529,7 +529,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved',
   'settlement_tier_change', 'target_action_filter',
-  'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait',
+  'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
@@ -1529,6 +1529,24 @@ export interface LocationTraitTrace extends TraceBase {
   superseded: ReadonlyArray<{ locationId: string; removed: string; by: string }>;
   /** Mints held back because the definition node was missing from the graph (fail-soft). */
   skippedMissingDefinition: number;
+}
+/**
+ * Trace: an artifact trait stamped, climbed or removed (THR-1521).
+ *
+ * One entry per change, not per tick — the events are rare (a masterwork minted, a
+ * blade cursed, a storied thing reaching its next word every
+ * `ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL` encounters). `source` names the writer
+ * (`mint_masterwork`, `curse_artifact`, `encounter_presence:<count>`), so "why is this
+ * thing Storied?" is answerable from the buffer alone.
+ */
+export interface ArtifactTraitTrace extends TraceBase {
+  category: 'artifact_trait';
+  artifactId: string;
+  artifactName: string;
+  traitId: string;
+  change: 'stamped' | 'climbed' | 'removed';
+  level: number;
+  source: string;
 }
 /** Trace: player target-action filter cascade (emitted once per getTargetActionSlots call) */
 export interface TargetActionFilterTrace extends TraceBase {
@@ -3781,6 +3799,7 @@ export type TraceEntry =
   | TradeRouteDissolvedTrace
   | SettlementTierChangeTrace
   | LocationTraitTrace
+  | ArtifactTraitTrace
   | TargetActionFilterTrace
   | HexStateTickTrace
   | UnrestTickTrace
