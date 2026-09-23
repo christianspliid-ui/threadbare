@@ -1,18 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-09-23 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-23 20:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
-
-### One design hour: are scenes being offered to exactly the people who will refuse them?
-
-[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), on the design desk since 06:37 local on 21 September. **The builder has no game work left. Its one open job, a process fix (THR-1529), is stuck on a failing docs check. This item is what holds up the next design being staged.**
-
-When the world decides *which mortal* should be handed a scene, it favours mortals who lean one way on the scene's named value, such as tradition over novelty. But when that scene's choice then *forks* on the same value, the arm that matters is often the other one. So the game reliably hands a two-way choice to the person who will take the boring arm.
-
-**Measured, not suspected.** A Bargain at the Crossroads fired once in a thousand ticks and was refused. The meeting it was meant to arrange never happened on any seed. A content fix to that one scene made it fire 3 and 11 times on two seeds. Every other scene written to the same house guide is still starved, **and the guide still tells authors to write them that way**.
-
-**The fork:** maybe the rule was always meant to draw both kinds of mortal, and the code has quietly disagreed with its own documentation for months. Or maybe the lean *is* the design: a Protector really should be drawn to a mercy scene. In that case the house guide must stop telling authors to reuse that value for the fork. Open a chat and say you want to work THR-1525.
 
 ### May a lane draft a design doc on its own? — *from tb-orchestrator*
 
@@ -21,7 +11,7 @@ Your 6 August rule: the hourly planning lane stages design work but never author
 - **Yes** → it drafts the first pass, runs the same audits an attended session uses, and you review a draft instead of starting from nothing.
 - **No** → nothing changes, and the design sessions are yours to run.
 
-**A yes would let the lane draft three designs:** [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). THR-1525 stays yours either way.
+**A yes would let the lane draft three designs:** [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location).
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -40,7 +30,7 @@ The one question: **is the integrated encounter experience at an acceptable stat
 
 ### Were you away from the app on Monday 14 and Tuesday 15 September? (lane silence, all ended)
 
-The question is narrower now. [Today's workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) read the computer's power log. **The 17 and 18 September stops are explained: the computer was asleep**, and lanes cannot run on a sleeping machine. But on **14 and 15 September the computer was awake all day, and no lane started at all**. So either the Claude app was closed, or the lanes were switched off.
+[Today's workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) read the computer's power log. **The 17 and 18 September stops are explained: the computer was asleep**, and lanes cannot run on a sleeping machine. But on **14 and 15 September the computer was awake all day, and no lane started at all**. So either the Claude app was closed, or the lanes were switched off.
 
 **If you were away or had the app closed:** nothing to do. A marker at `~/.claude/threadbare-pause.json` keeps this off your list next time. **If you weren't:** say so, and it becomes a fault to chase.
 
@@ -50,6 +40,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-23 — THR-1525 ruled: mortals are drawn from both poles, with an optional per-axis pin.** [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-23-desire-score-both-poles.md) merged via [#1988](https://github.com/christianspliid-ui/threadbare/pull/1988). [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) is now ready for the builder.
 - **2026-09-23 — the 17 and 18 September lane stops are explained.** The computer was asleep, according to [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md).
 - **2026-09-23 — the builder's credit came back without a top-up.** Its 08:11 run succeeded, and the ask that led the brief all yesterday is closed.
 - **2026-09-23 — artifacts can now carry traits, such as storied or cursed, and the artifact sheet shows them** ([THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits)). Merged 08:37 local via [#1985](https://github.com/christianspliid-ui/threadbare/pull/1985).
@@ -59,7 +50,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-22 — a mortal is never dealt a trait they already carry** ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the)). Merged via [#1983](https://github.com/christianspliid-ui/threadbare/pull/1983).
 - **2026-09-22 — the appointment feature is complete** ([THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff), with THR-1479, THR-1518 and THR-1524).
 - **2026-09-22 — the appointment planter now records whether a promise was kept or broken** ([THR-1527](https://linear.app/threadbare/issue/THR-1527/the-appointment-planter-writes-an-owes-favor-edge-without-its-two)).
-- **2026-09-22 — places now earn traits from their own fortunes** ([THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)).
 
 ---
 

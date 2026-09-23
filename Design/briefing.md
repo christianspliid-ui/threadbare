@@ -1,36 +1,34 @@
 # Briefing
-**Generated:** 2026-09-23 19:58 local (17:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-23 20:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**One design hour: [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its). Are scenes being offered to exactly the people who will refuse them?**
+**Yes or no: may the planning lane write first-draft designs itself?** *— from tb-orchestrator*
 
-The builder has **no game work left**. Nothing is ready, and its one open job is a process fix whose pull request is stuck (see Health). The planning lane may not stage anything new while THR-1525 sits on the design desk. That makes this the one decision that gets game work moving again.
+Your 6 August rule says it stages design work but never writes it. The reason recorded for the rule was that the lane ran the cheaper Sonnet model. It runs Opus now, so that reason no longer holds. ([The rule, in the process canon](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md).)
 
-The fork: the game offers a scene to mortals who lean one way on the scene's value. When the scene's choice then splits on that same value, the arm that matters is usually the other one. There are two readings:
+- **Yes:** it drafts [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location), runs the same audits a design chat would, and you review drafts.
+- **No:** nothing changes, and design stays in chats with you.
 
-- The draw was always meant to reach both kinds of mortal, and the code has drifted from its own docs.
-- The lean is the design, and the house guide has to stop telling authors to build forks on the same value.
+This matters now because the builder has **one** game job ready after tonight's ruling (below). Nothing else is lined up behind it.
 
-Open a chat and say you want to work THR-1525. The full question is in [user-actions](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+## Also waiting (4)
 
-## Also waiting (5)
-
-- **May the planning lane draft design docs itself?** The reason given for the rule against it has expired. A yes would let it draft [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). *— from tb-orchestrator*
-- **Turn off Linear's auto-complete for sub-issues** at [Team settings → General](https://linear.app/threadbare/settings/teams/THR/general). On Sunday it closed five jobs nobody had built. All five are restored. *— from tb-orchestrator*
-- **Finish the sitting** for [THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with). Two encounters are left, and nothing is broken on screen.
-- **Were you away from the app on Monday 14 and Tuesday 15 September?** The stops on 17 and 18 September are explained: the computer was asleep. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md)*
+- **Turn off Linear's auto-complete for sub-issues** at [Team settings → General](https://linear.app/threadbare/settings/teams/THR/general). On Sunday it closed five jobs that nobody had built. All five are restored. *— from tb-orchestrator*
+- **Finish the sitting** for [THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with). Two encounters are left, and nothing on screen is broken.
+- **Were you away from the app on Monday 14 and Tuesday 15 September?** *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md)*
 - **Fog or witness:** should a stranger's sheet show the wound you just watched them take? If you say nothing, it stays as it is.
 
 ## Queue
 
-**Starved: nothing ready, one job in progress, no parked jobs.** [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) is claimed, with its PR open (a process fix); untouched since 10:16 UTC, ~7h40. The only live design item is [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), about 37 hours on the desk; it is the ask above. The orchestrator re-surfaces it at its 48-hour mark, ~06:37 local tomorrow.
+**Starved: one ready, one in progress, no parked jobs.**
+- **Your THR-1525 ruling landed.** Mortals are now drawn from both poles, with an optional pin, per the [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-23-desire-score-both-poles.md). [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) went to Ready for Dev at 20:43 local. It is the builder's only game job. The next pickup is due ~21:11 local.
+- [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) is a process fix. It is claimed, its PR is stuck, and nothing has been pushed to it since 12:17 local (~8h40). See Health.
 
 ## Health
 
-- **THR-1529's pull request is still orphaned.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed "Docs gates" ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/35847857034)) and has had no push since 10:17 UTC. The builder counts an issue with an open closing PR as not holding the work slot, so no lane resumes it. **A session must fix the failing docs check on the branch.** This is the builder's job, not yours.
-- **Engine speed:** the probe reports: "tick cost 98 ms/tick steady, 34% above the 7-day median (73, 86 rows since be463370); top phase agent_decision, 503 agents. Name the merges between be463370 and c1318329: git log --oneline --merges be463370..c1318329". Same game code as the last five readings (85 → 91 → 98 → 90 → 98 ms), so this still reads as machine load, not a code regression.
-- **Heavy simulation tests:** the probe says "failing on main for 36 hours". The latest run on the current game code ([08:34 UTC](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948)) passed; the daily red-then-green pattern on unchanged code points to a slow runner. A technical call, not yours.
-- **Lane silence:** the worst recent gap (25 hours, Saturday into Sunday) falls on a weekend. Declined under your 11 September ruling.
-- **Worktree reaper:** 5 worktrees await disposition (last run 19:40 local). Routine.
-- Everything else is green. The live site is serving the latest game code; later commits touched only docs. CI is healthy, and all nine scheduled lanes are on time.
+- **THR-1529's pull request is still orphaned.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed "Docs gates" and has had no push since 10:17 UTC. **A session must fix the failing docs check on the branch.** That is the builder's job, not yours.
+- **Heavy simulation tests:** the probe says it has been "failing on main for 37 hours". The latest run on the current game code ([08:34 UTC](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948)) passed. The pattern is the same each day: red, then green on unchanged code, which points to a slow runner. This is a technical call, not yours.
+- **Lane silence:** the worst recent gap (25 hours, Saturday into Sunday) falls on a weekend. It is declined under your 11 September ruling.
+- **Worktree reaper:** 5 worktrees are waiting to be sorted (last run 20:40 local). This is routine.
+- Everything else is green. Engine speed is back inside its normal range (91 ms/tick). The live site is serving the latest game code, CI is healthy, and all nine scheduled lanes are on time.
