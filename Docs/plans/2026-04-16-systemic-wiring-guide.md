@@ -4139,3 +4139,42 @@ refused.
 sentiment, hover through the attachment tooltip index); `__DEBUG.getArtifactTraits(idOrName)` and
 `__DEBUG.stampArtifactTrait('@hero', 'storied')` for a review capture; CLI `traits`; the
 `artifact_trait` trace per change.
+
+## Capability 34: Fight steps — a step rated against its opponent (THR-1537)
+
+**What it is.** A step carrying `fightRole: 'nerve' | 'clash'` is a **fight step** (plan doc
+`Docs/plans/2026-09-23-fight-block.md`). It resolves through the same `resolveStepCore` every
+step uses, but four of its inputs come from `resolveFightStepInputs`
+(`src/engine/fights/fightStepInputs.ts`), not from the authored step:
+
+- **Difficulty** comes from the opponent's **card** (`readOpponentCard`,
+  `src/engine/fights/opponentCard.ts`): Dread prices the nerve step, Might each clash, through
+  `FIGHT_RATING_DIFFICULTY`. The opponent's own `passive` / `conditional` modifiers for that reach
+  are added, so a monster's gear prices the step. The authored `difficulty` is a placeholder the
+  roll never reads.
+- **Reach** is the authored reach, then the card's `nerveReach` / `clashReach`, then the fighter's
+  own `encounter_reach_override`.
+- **Scale** is always `FIGHT_STEP_SCALE` (`regional`), whatever the template's scale, and so is
+  the critical-failure severity.
+- **Modifiers**: the fighter's standing modifiers (items, conditions, effect stacks) ride the roll
+  as the named term `standing`, read in a **combat** context, so an `in_combat` item works on a
+  clash the card moved off Iron.
+
+After the roll the step is what it actually tested: growth, tier promotion, consumable charges, the
+frozen step record, telemetry and the event node's `reachTested` all read the **resolved** reach
+and difficulty. Band opposition never contests a fight step.
+
+**What an author can do with it — today, nothing directly.** The `fightBlock(spec)` helper and the
+first fight template (`fight.lair.confront`) land in FB7; the clock, harm, forks and events in
+FB2–FB6. Two fields exist now:
+
+- `fightRole` on `ActionStep` — never hand-author it; `fightBlock` stamps it.
+- `opponentRef` on `ActionStep` — a cast key naming the opponent, resolved like
+  `StepNudge.opposes`. **When set it must bind**; it never falls back to the target. Absent, the
+  opponent is the action's target.
+
+`difficultyContext: 'opponent_rated'` is the context `fightRole` implies; a step carrying it alone
+resolves as a clash.
+
+**Where it shows.** One `fight.step` trace per fight step (card, resolved reach, difficulty,
+opponent delta, scale, named modifiers, band); `resolution.input` reports the regional scale.

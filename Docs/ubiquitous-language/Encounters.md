@@ -632,3 +632,77 @@ The template field that names the values a scene is *about*, as `ValuePair`s. It
 **Optional pole pin.** `motivationPoles` narrows one named axis to one pole, for the rare scene that one side should seek. A pin is authored only with a written reason. Pinning the axis a fork on the same template decides on draws only that arm's mortals, and `check:encounter` warns about it. The whole-corpus reading is the tunable `DESIRE_SCORE_POLE_MODE` (`'absolute'`; `'signed'` is the rollback).
 
 Code anchors: `src/engine/encounterScoring.ts` (`computeDesireScore`), `src/types/agent.ts` (`MotivationPoles`), `src/data/content-eval/motivationPoleChecks.ts`.
+
+---
+
+### Fight
+
+**Aliases:** fight block, fight step
+**Also see:** `[[Opponent Card]]`, `[[Nerve Step]]`, `[[Clash Step]]`, `[[Encounter]]`
+**Status:** canonical (seated by THR-1537, delegated seating 2026-09-11)
+
+A short run of ordinary encounter steps that the engine runs as a fight: one **nerve** step, then up to three **clash** steps, rated against one opponent. A step is a fight step when it carries `ActionStep.fightRole`. Every fight behaviour is engine logic keyed on that marker, and authors write no fight effects.
+
+**Not a new resolver.** Every fight roll is `resolveStepCore`, the same six-band ladder every step uses. A fight step differs in four inputs, all derived by `resolveFightStepInputs`: its reach (the card may override it), its difficulty (from the card), its scale (always `FIGHT_STEP_SCALE`, `regional`) and the fighter's standing modifiers, read in a combat context.
+
+**Not an army battle.** `Battle` and `battleState` belong to War, Armies & Battles, a separate system. A fight is one fighter against one opponent.
+
+Code anchors: `src/engine/fights/fightStepInputs.ts`, `src/types/fight.ts`, `src/data/fight-constants.ts`; plan `Docs/plans/2026-09-23-fight-block.md`.
+
+---
+
+### Opponent Card
+
+**Aliases:** card (fight), `OpponentCard`
+**Also see:** `[[Fight]]`, `[[Dread]]`, `[[Might]]`, `[[Repertoire]]`, `[[Nudge]]`
+**Status:** canonical (seated by THR-1537, delegated seating 2026-09-11)
+
+A fight's rating record for its opponent: Dread, Might, optional reach overrides, the opponent's clock and temper. Read by `readOpponentCard` from one of three sources: a monster's `monsterState`, a card **derived** from a mortal opponent's raw Iron score, or the fail-soft default (fair, fair, clock 3).
+
+**Not a Card in the god's repertoire, and not a nudge card.** Those are what the player plays; an opponent card is what the player's mortal fights against. Reading one is pure: the attended forecast may read it any number of times.
+
+Code anchors: `src/engine/fights/opponentCard.ts`, `src/types/fight.ts` (`OpponentCard`).
+
+---
+
+### Dread
+
+**Aliases:** —
+**Also see:** `[[Opponent Card]]`, `[[Might]]`, `[[Nerve Step]]`
+**Status:** canonical (seated by THR-1537, delegated seating 2026-09-11)
+
+An opponent rating: how hard the opponent is to **face**. One of `gentle | fair | steep | severe`; it sets the difficulty of the nerve step through `FIGHT_RATING_DIFFICULTY`. A mortal opponent's Dread is one word below their Might, and one word harder again when they are famous (reputation at *Revered*).
+
+**Not the Iron lexicon word "Dread"** (`src/types/traits.ts`), which names a trait-tier word. The two senses never meet in one surface.
+
+---
+
+### Might
+
+**Aliases:** —
+**Also see:** `[[Opponent Card]]`, `[[Dread]]`, `[[Clash Step]]`
+**Status:** canonical (seated by THR-1537, delegated seating 2026-09-11)
+
+An opponent rating: how hard the opponent is to **beat**. One of `gentle | fair | steep | severe`; it sets the difficulty of every clash step. A mortal opponent's Might is derived from their **raw** Iron score (`FIGHT_DERIVED_MIGHT_BANDS`), because capability saturates near 1.0 and would rate every seasoned fighter the same.
+
+**Not the `DealContextTag` `might`**, the card-context tag a clash step's deal may also carry. The two senses agree, so neither is renamed.
+
+---
+
+### Nerve Step
+
+**Aliases:** nerve, `fightRole: 'nerve'`
+**Also see:** `[[Fight]]`, `[[Clash Step]]`, `[[Dread]]`
+**Status:** canonical (seated by THR-1537, delegated seating 2026-09-11)
+
+The first step of a fight: whether the mortal stands to face the opponent at all. Rated by the opponent's Dread. Its reach defaults to Heart, and the opponent card may override it (a beast that must be read through the Veil rather than faced down).
+
+---
+
+### Clash Step
+
+**Aliases:** clash, exchange, `fightRole: 'clash'`
+**Also see:** `[[Fight]]`, `[[Nerve Step]]`, `[[Might]]`
+**Status:** canonical (seated by THR-1537, delegated seating 2026-09-11)
+
+One exchange of blows in a fight, rated by the opponent's Might. Its reach defaults to Iron, and the opponent card may override it. **After the roll, a clash is the step it actually was:** growth, consumable charges, the frozen step record and the event node's `reachTested` all read the resolved reach, so a clash the card moved to Eye grows Eye.
