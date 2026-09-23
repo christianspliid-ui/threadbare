@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-23 20:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-23 21:58 local (19:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -12,6 +12,10 @@ Your 6 August rule: the hourly planning lane stages design work but never author
 - **No** → nothing changes, and the design sessions are yours to run.
 
 **A yes would let the lane draft three designs:** [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location).
+
+### Design session wanted: sequel scenes fire on their own ([THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the)) — *from tb-orchestrator*
+
+The follow-up scenes of the crossroads bargain and the swindled family can fire on their own. So a stranger turns up to collect on a promise the mortal never made. This is a bug in the appointments work you already approved. The design question is small: how a scene marks itself "only reachable as a sequel". **The builder has nothing queued** behind [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its). It takes about half an hour in a chat and has no creative fork. Say **"design THR-1526"**. A yes on the ask above would let the lane draft it instead.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -40,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-23 — the builder picked up [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) at 21:11 local**, one pickup after your ruling.
 - **2026-09-23 — THR-1525 ruled: mortals are drawn from both poles, with an optional per-axis pin.** [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-23-desire-score-both-poles.md) merged via [#1988](https://github.com/christianspliid-ui/threadbare/pull/1988). [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) is now ready for the builder.
 - **2026-09-23 — the 17 and 18 September lane stops are explained.** The computer was asleep, according to [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md).
 - **2026-09-23 — the builder's credit came back without a top-up.** Its 08:11 run succeeded, and the ask that led the brief all yesterday is closed.
@@ -49,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-22 — holding a town now means something to a faction** ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)). Merged via [#1981](https://github.com/christianspliid-ui/threadbare/pull/1981).
 - **2026-09-22 — a mortal is never dealt a trait they already carry** ([THR-1520](https://linear.app/threadbare/issue/THR-1520/traits-wave-2-slice-2-draw-by-trait-completion-dedup-against-what-the)). Merged via [#1983](https://github.com/christianspliid-ui/threadbare/pull/1983).
 - **2026-09-22 — the appointment feature is complete** ([THR-1519](https://linear.app/threadbare/issue/THR-1519/appointment-primitive-slice-3-the-undertaking-grid-a-work-whose-payoff), with THR-1479, THR-1518 and THR-1524).
-- **2026-09-22 — the appointment planter now records whether a promise was kept or broken** ([THR-1527](https://linear.app/threadbare/issue/THR-1527/the-appointment-planter-writes-an-owes-favor-edge-without-its-two)).
 
 ---
 
