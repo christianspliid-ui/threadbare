@@ -38,6 +38,7 @@ import { resolveLocationToHex } from '../encounterAwareness';
 import { applyCohesionDelta } from './groupCohesion';
 import { writeGrudge } from '../grievance/grudgeEdge';
 import { markMortalDead } from '../agentLifecycle';
+import type { RuleOverrideContext } from '../effects/ruleOverrideConsumers';
 import {
   getActiveGroups,
   getGroupLeader,
@@ -357,6 +358,7 @@ function applyCasualty(
   groupId: string,
   rng: () => number,
   tick: number,
+  overrideCtx?: RuleOverrideContext,
 ): GraphNode | undefined {
   const members = livingMembers(graph, groupId).sort((a, b) => a.id.localeCompare(b.id));
   if (members.length === 0) return undefined;
@@ -371,7 +373,10 @@ function applyCasualty(
   // THR-1430: through the one funnel, in `retain` — which is exactly what this site
   // has always done. The funnel adds the Aspect echo this path never checked: a band
   // casualty who happens to be an Aspect of the god now echoes instead of simply dying.
-  const death = markMortalDead(graph, victim.id, tick, { cause: 'band', mode: 'retain' });
+  //
+  // THR-1534: the ward is asked too. A warded victim yields no casualty this contest,
+  // and nobody else is picked in their place — the ward is the story, not a re-roll.
+  const death = markMortalDead(graph, victim.id, tick, { cause: 'band', mode: 'retain' }, undefined, overrideCtx);
   if (death.outcome === 'not_a_mortal' || death.outcome === 'warded') return undefined;
   return graph.getNode(victim.id) ?? victim;
 }
@@ -444,7 +449,9 @@ export function applyContestConsequences(
   // the non-lethal rung is a design commitment, not a low roll.
   let casualty: GraphNode | undefined;
   if (!isNonLethalContest(opposition.initiator.templateId) && rng() < BAND_CASUALTY_CHANCE) {
-    casualty = applyCasualty(graph, loserGroupId, rng, state.tick);
+    casualty = applyCasualty(graph, loserGroupId, rng, state.tick, {
+      graph, effectStates: state.effectStates, persisted: state, tick: state.tick,
+    });
   }
 
   const grudgeWritten = writeGrudge(graph, opposition.initiatorGroupId, opposition.bandGroupId, state.tick, 'group_engagement');

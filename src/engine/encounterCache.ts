@@ -24,7 +24,7 @@ import type { ReachDomain } from '../types/traits';
 import type { ThreatRating, EncounterType } from '../types/encounter';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
-import type { ValuePair } from '../types/agent';
+import type { ValuePair, MotivationPoles } from '../types/agent';
 import type { HexTile, SphereName } from '../types/index';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
@@ -97,6 +97,8 @@ export interface EncounterCacheEntry {
   threatRating: ThreatRating;
   encounterType: EncounterType;
   motivations: ValuePair[];
+  /** THR-1525: optional per-axis pole pins, copied from the template. */
+  motivationPoles?: MotivationPoles;
   visibleTo?: string[];
   requiresPresence: boolean;
   remotePenalty: number;
@@ -231,6 +233,7 @@ function buildEntryUnified(
     threatRating: RARITY_TO_THREAT[tmpl.rarityTier] ?? 'moderate',
     encounterType: CRUD_TO_ENCOUNTER_TYPE[tmpl.crudType] ?? 'explore',
     motivations: [...tmpl.motivations],
+    ...(tmpl.motivationPoles ? { motivationPoles: { ...tmpl.motivationPoles } } : {}),
     visibleTo: undefined,
     requiresPresence: true,
     remotePenalty: 0,

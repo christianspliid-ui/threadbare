@@ -8,6 +8,7 @@
  */
 
 import type { NodeType, EdgeType } from './graph';
+import type { RuleOverrideContext } from '../engine/effects/ruleOverrideConsumers';
 
 // ─── Symbolic References ─────────────────────────────────────────
 
@@ -44,6 +45,12 @@ export interface GraphOpContext {
   tick?: number;
   /** Extra named references for complex templates */
   extras?: Record<string, string>;
+  /**
+   * THR-1534: the rule-override context a death op asks the ward with. Every
+   * builder that holds `GameState` fills it; absent, `mark_mortal_dead` cannot
+   * read `death_prevented` and behaves as it did before (fail-soft, NFP #4).
+   */
+  overrideCtx?: RuleOverrideContext;
 }
 
 /**

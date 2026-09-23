@@ -46,7 +46,7 @@ import { computeAppointmentPull, type AppointmentContext } from './appointments'
 import { hexDistance } from '../lib/hexMath';
 import { DRAW_TOGETHER_PULL_WEIGHT } from '../data/group-constants';
 import type { ScoringTrace } from '../types/trace';
-import type { ValuePair, AxiologicalProfile } from '../types/agent';
+import type { ValuePair, AxiologicalProfile, MotivationPoles } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
@@ -81,6 +81,7 @@ import { computeLocationTraitBonus } from './locationTraitBonus';
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
   MINIMUM_DESIRE,
+  DESIRE_SCORE_POLE_MODE,
   GROWTH_REWARD_WEIGHT,
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
@@ -108,6 +109,7 @@ export {
 
 import {
   MINIMUM_DESIRE,
+  DESIRE_SCORE_POLE_MODE,
   GROWTH_REWARD_WEIGHT,
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
@@ -553,7 +555,10 @@ export interface ScoredCandidate {
   travelCost: number;
   totalCost: number;
   valuePerTick: number;
+  /** THR-1525: conviction over the encounter motivations — |v| on unpinned axes, signed on pinned ones. */
   axiologicalScore: number;
+  /** THR-1525: how many motivations carry a pole pin (0 = both poles drawn on every axis). */
+  pinnedAxes?: number;
   /** THR-531: axiologicalScore × PERSONALITY_SELECTION_WEIGHT — the amplified personality
    * alignment term that feeds the desire multiplier. Labeled for inspectability (NFP #2). */
   personalityBias: number;
@@ -823,18 +828,48 @@ export function estimateCompletionProb(
 // ─── Desire Score ───────────────────────────────────────────────
 
 /**
- * Sum the agent's axiological profile values for each motivation pair.
- * Uses absolute values so both poles contribute positively to desire.
+ * How strongly a mortal is drawn to a scene about these values (THR-1525).
+ *
+ * `motivations` names what a scene is *about*, not which side it is for. Per named
+ * value `m`, with `v = profile[m] ?? 0`:
+ * - unpinned → `|v|` under `DESIRE_SCORE_POLE_MODE = 'absolute'` (the design: a
+ *   mortal leaning strongly either way is drawn), or `v` under `'signed'` (the
+ *   pre-THR-1525 virtue-only reading, kept for census comparison and rollback);
+ * - pinned `'positive'` → `v`; pinned `'negative'` → `-v` (the scene draws one pole
+ *   and actively repels the other).
+ *
+ * A malformed pin value reads as unpinned (fail-soft). A pin on an axis not in
+ * `motivations` is ignored. Returns the sum over `motivations`; empty ⇒ `0`.
  */
 export function computeDesireScore(
-  motivations: ValuePair[],
+  motivations: readonly ValuePair[],
   profile: AxiologicalProfile,
+  poles?: MotivationPoles,
 ): number {
+  const signedUnpinned = (DESIRE_SCORE_POLE_MODE as string) === 'signed';
   let score = 0;
   for (const motivation of motivations) {
-    score += profile[motivation] ?? 0;
+    const v = profile[motivation] ?? 0;
+    const pin = poles?.[motivation];
+    if (pin === 'positive') score += v;
+    else if (pin === 'negative') score -= v;
+    else score += signedUnpinned ? v : Math.abs(v);
   }
   return score;
+}
+
+/** THR-1525: how many of `motivations` carry a valid pole pin (trace inspection). */
+export function countPinnedMotivations(
+  motivations: readonly ValuePair[],
+  poles?: MotivationPoles,
+): number {
+  if (!poles) return 0;
+  let n = 0;
+  for (const m of motivations) {
+    const pin = poles[m];
+    if (pin === 'positive' || pin === 'negative') n++;
+  }
+  return n;
 }
 
 // ─── Ambition Boost ─────────────────────────────────────────────
@@ -1172,14 +1207,16 @@ export function scoreAndSelect(
     const euRanking = expectedUtility > 0 ? expectedUtility : expectedReward;
     const valuePerTick = (euRanking + pushBenefit + resistBenefit) / totalCost;
 
-    // 7. Axiological score — raw signed alignment over the encounter's motivation pairs.
-    const axiologicalScore = computeDesireScore(entry.motivations, profile);
+    // 7. Axiological score — conviction over the values this encounter is about
+    // (THR-1525): |v| on unpinned axes (either pole draws), signed on pinned ones.
+    const axiologicalScore = computeDesireScore(entry.motivations, profile, entry.motivationPoles);
 
     // 7a. Divine value-overlay delta (THR-641) — how much the divine influence
-    // overlay shifted alignment toward THIS encounter's motivations. Signed; the
-    // receipt keeps only positive mass (steering *toward* the matter).
+    // overlay intensified the conviction this encounter is about, in either
+    // direction (THR-1525). Signed; the receipt keeps only positive mass, so a god
+    // pushing a mortal across zero can yield a negative delta the receipt drops.
     const divineOverlayBonus = hasDivineInfluence
-      ? axiologicalScore - computeDesireScore(entry.motivations, profileWithoutDivine)
+      ? axiologicalScore - computeDesireScore(entry.motivations, profileWithoutDivine, entry.motivationPoles)
       : 0;
 
     // 7b. Personality bias (THR-531) — amplify the axiological alignment so agents clearly
@@ -1382,6 +1419,7 @@ export function scoreAndSelect(
       totalCost,
       valuePerTick,
       axiologicalScore,
+      pinnedAxes: countPinnedMotivations(entry.motivations, entry.motivationPoles),
       personalityBias,
       ambitionBoost,
       desireMultiplier,
@@ -1470,6 +1508,7 @@ function buildTrace(
       desireMultiplier: c.desireMultiplier,
       personalityBias: c.personalityBias,
       axiologicalScore: c.axiologicalScore,
+      ...(c.pinnedAxes ? { pinnedAxes: c.pinnedAxes } : {}),
       familiarityPenalty: c.familiarityPenalty,
       explorationBonus: c.explorationBonus,
       chainBonus: c.chainBonus,

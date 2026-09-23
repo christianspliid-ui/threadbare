@@ -124,6 +124,12 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Floor for desire multiplier. Prevents zero scores for neutral encounters. Lower = stronger axiological influence.',
         'src/data/agent-behavior-constants.ts', [0.01, 0.5],
         'encounterScoring → desire multiplier'),
+      {
+        exportName: 'DESIRE_SCORE_POLE_MODE', value: abc.DESIRE_SCORE_POLE_MODE, type: 'string',
+        description: "How an unpinned motivation reads the profile (THR-1525). 'absolute' = mortals leaning strongly either way are drawn to a scene about that value; 'signed' = pre-THR-1525 virtue-only draw (rollback).",
+        sourceFile: 'src/data/agent-behavior-constants.ts',
+        usedBy: 'encounterScoring.computeDesireScore → encounter + undertaking desire',
+      },
       n('GROWTH_REWARD_WEIGHT', abc.GROWTH_REWARD_WEIGHT,
         'Weight for tier growth value in expected reward. 0 = ignore growth, 1 = growth dominates scoring.',
         'src/data/agent-behavior-constants.ts', [0.0, 1.0],

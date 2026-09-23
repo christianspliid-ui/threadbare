@@ -761,27 +761,47 @@ export const BOARD_VARIETY_PENALTY_WEIGHT = 0.7;
  */
 export const UNDERTAKING_NEUTRAL_DESIRE = 1.0;
 
-/** Board mix: weight of "the agent's active ambition names this kind/verb". */
-export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 0.3;
+/**
+ * Board mix: weight of "the agent's active ambition names this kind/verb".
+ *
+ * **Retuned 0.3 → 1.6 with THR-1525** (and the reach weight 0.2 → 0.8, the
+ * centrality ceiling 0.5 → 1.2 beside it). The old weights were calibrated on the
+ * signed desire reading, under which a flaw-leaning mortal's *encounter* desire sat
+ * at the floor while undertakings kept their ambition boost, so the board handed
+ * flaw-leaners to undertakings by default. About half the undertaking share the
+ * census floors were measured against came from that defect. Once encounters read
+ * both poles, the same weights gave 13.6% / 15.9% share and 2.3 / 2.8 starts per
+ * mortal per 100 ticks (floor 4) on seeds 42 / 99. Sweep (150 ticks, medium,
+ * ambition / reach / centrality → share, starts): 0.6/0.4/0.5 → 19%/13%, 3.1/2.2;
+ * 2.0/1.0/0.5 → 22%/30%, 3.7/5.9; 1.2/0.8/1.0 → 27%/24%, 4.6/3.7;
+ * 1.5/1.0/1.0 → 25%/27%, 4.3/4.4 (seed-42 variety sample unfilled);
+ * 2.0/1.0/1.0 → 34.5%/29%, 6.5/5.2 (hugs the 0.35 ceiling); **1.6/0.8/1.2 →
+ * 29.0%/30.7%, 5.3/5.1, census PASS**, which is where the pre-flip board sat
+ * (28.9%/29.5%, 5.6/5.2). No single lever restored throughput: temperament alone
+ * lifts share faster than starts, centrality alone barely moves either.
+ */
+export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 1.6;
 
-/** Board mix: weight of the agent's reach affinity for the undertaking's reach. */
-export const UNDERTAKING_TEMPERAMENT_REACH_WEIGHT = 0.2;
+/** Board mix: weight of the agent's reach affinity for the undertaking's reach. Retuned 0.2 → 0.8 with THR-1525 — see the ambition weight above. */
+export const UNDERTAKING_TEMPERAMENT_REACH_WEIGHT = 0.8;
 
 /**
  * Board desire: the **ceiling** of the undertaking ambition boost (THR-1302).
  *
- * Deliberately equal to the encounter path's `AMBITION_REACH_BOOST`, and
- * deliberately a separate constant. Same number, different meaning: on the
- * encounter path 0.5 is the flat boost paid whenever *any* pursued ambition
- * cares about the candidate's reach; here it is the *most* an undertaking can be
- * paid, earned only by one sitting on its own ambition's most-preferred reach.
+ * Born equal to the encounter path's `AMBITION_REACH_BOOST` (0.5) and deliberately
+ * a separate constant, which is what let THR-1525 raise it to 1.2 without moving
+ * the encounter path (see `UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT` for the sweep).
+ * Different meaning too: on the encounter path the boost is paid flat whenever
+ * *any* pursued ambition cares about the candidate's reach; here it is the *most*
+ * an undertaking can be paid, earned only by one sitting on its own ambition's
+ * most-preferred reach.
  *
  * Separate rather than shared because the two are now different shapes, and
  * `getAmbitionBoostForEntry` is on the encounter ranking path — turning one knob
  * must not move the other. Retuning the board's undertaking pull relative to
  * encounters is what this constant is for (NFP #1).
  */
-export const UNDERTAKING_AMBITION_CENTRALITY_BOOST = 0.5;
+export const UNDERTAKING_AMBITION_CENTRALITY_BOOST = 1.2;
 
 // ─── Cutover gate (measured, never asserted) ────────────────────────
 //

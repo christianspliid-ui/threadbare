@@ -1583,7 +1583,8 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `requiredTargetTraits` | `string[]` | Target node must have all listed traits (AND logic) |
 | `requiredNodeProperties` | `Record<string, unknown>` | Target node property key/value pairs that must match |
 | `crudType` | `'create'\|'read'\|'update'\|'delete'` | Determines motivation alignment scoring and reputation polarity heuristic |
-| `motivations` | `ValuePair[]` | Which axiological value pairs drive agent interest |
+| `motivations` | `ValuePair[]` | The values the scene is *about*. Desire is the mortal's conviction on them, **either way** (THR-1525): a scene about tradition draws Heretics and Archivists alike |
+| `motivationPoles` | `Partial<Record<ValuePair, 'positive'|'negative'>>` | Optional (THR-1525). Pins a named axis to one pole, so only that side is drawn and the other is repelled. Author one only with a written reason. Pinning a fork's own axis draws one arm's mortals, and `check:encounter` warns. Also valid on `StrategicActionTemplate` |
 | `rarityTier` | `1\|2\|3\|4` | Narrative significance (1=common, 4=legendary); drives visual treatment and unlock logic |
 | `reach` | `ReachDomain` | Primary capability domain tested across all steps |
 | `requiresReach` | `ReachDomain` | **Reach gate (THR-503).** Player-action cards only: hides this template in the ActionDrawer unless the ascendant's affinity in this reach ≥ `REACH_GATE_MIN_AFFINITY`. A **permanent** filter — the ascendant's primary+secondary reach is fixed for the whole run, so an off-reach card is never shown (not even dimmed as aspiration). Omit → no reach restriction. Use for reach-flavored investment cards. |
@@ -3983,15 +3984,17 @@ one for two content reasons, and both are rules for the next appointment you aut
   registers at rural + ruin + wayside with one opening per class. Only the parent needed the wider
   envelope: the kept sequel is a literal id, which `evaluateEncounterSeeds` does not subtype-gate,
   and the missed sequel already registers at every class.
-- **Do not select on the fork's axis when the planting arm is its negative pole.**
-  `computeDesireScore` sums the **signed** profile value over `motivations`, so a template that
-  names its fork axis there draws the mortals on the *positive* pole and floors the negative pole
-  at `MINIMUM_DESIRE`. The Crossroads plants on `negative` (Heretics accept, Archivists refuse), so
-  the board handed it to exactly the mortals who would not take it — 34 of 65 profiled mortals lean
-  novelty and none ever met him. Selection moved to the scene's own Eye axis
-  (`revelation_discretion`); the fork and the hand's leaning cards stay on `tradition_novelty`.
-  The spec's step 6 ("name the value axis it runs on (`motivations`)") is the wrong instruction for
-  this shape; `vertical-slice.test.ts` pins the rule for the slice and fails if the old axis returns.
+- **Selection must reach the planting arm's mortals — superseded as a content rule by THR-1525.**
+  When THR-1524 measured this, `computeDesireScore` summed the **signed** profile value over
+  `motivations`, so naming the fork axis drew only its positive pole. The Crossroads plants on
+  `negative` (Heretics accept, Archivists refuse), so the board handed it to exactly the mortals who
+  would not take it: 34 of 65 profiled mortals lean novelty, and none ever met him. THR-1524 moved
+  selection to the scene's own Eye axis (`revelation_discretion`), which stays because it is the
+  right axis for an Eye scene. **Since THR-1525 an unpinned motivation draws both poles**, so
+  naming a fork's own axis in `motivations` is safe and brings both arms' mortals to the fork. The
+  shape can now only be re-authored by *pinning* the fork axis (`motivationPoles`) against the
+  planting arm. `check:encounter` warns on any pin over a template's own fork axis, and
+  `vertical-slice.test.ts` fails if a slice fork is pinned against its planting pole.
 
 After both: `check:content-model-census -- --ticks 200 --seed 42 --map medium` prints
 **Reachability: HIT** (parents fired 3, 2 planted); seed 99 fires 11 times in 200 ticks, plants 7

@@ -253,7 +253,11 @@ describe('estimateCompletionProb', () => {
 // ─── computeDesireScore ─────────────────────────────────────────
 
 describe('computeDesireScore', () => {
-  it('sums motivation values from profile', () => {
+  // THR-1525: `motivations` names what a scene is about; an unpinned axis reads
+  // |v|, so a flaw-leaner is drawn as strongly as a virtue-leaner. Pre-THR-1525 this
+  // case summed signed (0.8 + −0.3 = 0.5); that reading lives on behind
+  // DESIRE_SCORE_POLE_MODE = 'signed' (desirePoleMode.signed.test.ts).
+  it('sums conviction (absolute value) over unpinned motivations', () => {
     const profile = makeProfile({
       mercy_ruthlessness: 0.8,
       honesty_cunning: -0.3,
@@ -263,7 +267,28 @@ describe('computeDesireScore', () => {
       ['mercy_ruthlessness', 'honesty_cunning'],
       profile,
     );
-    expect(score).toBeCloseTo(0.5, 5);
+    expect(score).toBeCloseTo(1.1, 5);
+  });
+
+  it('a pinned positive axis reads signed toward the virtue pole', () => {
+    const profile = makeProfile({ honesty_cunning: -0.3 });
+    expect(computeDesireScore(['honesty_cunning'], profile, { honesty_cunning: 'positive' }))
+      .toBeCloseTo(-0.3, 10);
+  });
+
+  it('a pinned negative axis reads signed toward the flaw pole', () => {
+    const flaw = makeProfile({ honesty_cunning: -0.3 });
+    const virtue = makeProfile({ honesty_cunning: 0.3 });
+    expect(computeDesireScore(['honesty_cunning'], flaw, { honesty_cunning: 'negative' })).toBeCloseTo(0.3, 10);
+    expect(computeDesireScore(['honesty_cunning'], virtue, { honesty_cunning: 'negative' })).toBeCloseTo(-0.3, 10);
+  });
+
+  it('a malformed pin reads as unpinned (fail-soft), and a pin off the motivations is ignored', () => {
+    const profile = makeProfile({ honesty_cunning: -0.3, mercy_ruthlessness: -0.5 });
+    expect(computeDesireScore(['honesty_cunning'], profile, { honesty_cunning: 'sideways' as never }))
+      .toBeCloseTo(0.3, 10);
+    expect(computeDesireScore(['honesty_cunning'], profile, { mercy_ruthlessness: 'positive' }))
+      .toBeCloseTo(0.3, 10);
   });
 
   it('returns 0 for empty motivations', () => {

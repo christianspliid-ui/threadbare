@@ -86,6 +86,7 @@ import {
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
 import { doctrineV2Warnings } from '../src/data/content-eval/doctrineV2Checks';
+import { pinnedForkAxisWarnings } from '../src/data/content-eval/motivationPoleChecks';
 import {
   validateNudgeGrantRefs,
   validateContentQueries,
@@ -308,6 +309,10 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
   const warnings = [
     ...audit.warnings,
     ...doctrineV2Warnings(template),
+    // THR-1525 — a `motivationPoles` pin over the axis one of this template's own forks
+    // decides on draws only one arm's mortals to the fork. Warn, not fail: a one-arm
+    // draw can be intended.
+    ...pinnedForkAxisWarnings(template),
     // THR-1488 — a legacy `encounterFamily` prefix that matches no template. Warn, not
     // fail: 41 of the corpus's 51 families are in this state, they predate the query,
     // and `ENCOUNTER_FAMILY_TAGS` deliberately leaves them on the pre-change prefix path

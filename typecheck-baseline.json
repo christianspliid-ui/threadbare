@@ -1,5 +1,5 @@
 {
-  "total": 2826,
+  "total": 2825,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -238,7 +238,6 @@
     "src/engine/__tests__/agentSelection.test.ts": 1,
     "src/engine/__tests__/ambitionTick-actorId.test.ts": 1,
     "src/engine/__tests__/ambitionTick.test.ts": 2,
-    "src/engine/__tests__/appointment-generatedWorld.test.ts": 1,
     "src/engine/__tests__/armyAttrition.test.ts": 1,
     "src/engine/__tests__/armySpawning.test.ts": 2,
     "src/engine/__tests__/armyVisibility.test.ts": 6,

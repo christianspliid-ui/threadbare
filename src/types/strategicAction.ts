@@ -5,7 +5,7 @@
 // scored alongside encounter candidates in phaseAgentDecision.
 
 import type { ReachDomain } from './traits';
-import type { ValuePair } from './agent';
+import type { ValuePair, MotivationPoles } from './agent';
 import type { EdgeType } from './graph';
 import type { CluePrecision } from './knowledge';
 import type { ContentQuery } from './contentQuery';
@@ -312,6 +312,11 @@ export interface StrategicActionTemplate {
    * silently, forever).
    */
   readonly motivations?: readonly ValuePair[];
+
+  /** Optional per-axis pole pins over `motivations` (THR-1525). Absent ⇒ a mortal
+   *  leaning strongly either way on a named value is drawn; a pin narrows that axis
+   *  to one pole. Author only with written evidence of one-pole intent. */
+  readonly motivationPoles?: MotivationPoles;
 
   // ─── Counter-play authoring (THR-1297 §2) ─────────────────────────
 
