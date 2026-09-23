@@ -50,6 +50,7 @@ import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs } from './traitRefIndex';
 import { observeResidence, type ResidenceObservation } from './agentResidence';
+import { isAgentGone } from './groups/groupQueries';
 import type { AgentResidenceTrace } from '../types/trace';
 import {
   AMBITION_KIND_TEMPLATE,
@@ -235,6 +236,8 @@ type MintTuple =
       culpritName?: string;
       /** Set when the harm was done to a faction and reached this agent as its leader (THR-1383). */
       viaFactionName?: string;
+      /** Set when the harm killed someone this agent loved and reached them as grief (THR-1536). */
+      viaBondOfName?: string;
       harmMagnitude: number;
       chainDepth: number;
     };
@@ -286,12 +289,15 @@ function composeHarmLabel(
   locationName?: string,
   culpritName?: string,
   viaFactionName?: string,
+  viaBondOfName?: string,
 ): string {
   const stem = HARM_CLASS_LABELS[harmClass];
   const placed = locationName ? `${stem} of ${locationName}` : stem;
   // "the razing of Thornhall, done to the Ironwrights — Hesk's work": a leader carrying
   // their guild's wound reads whose it was, or the drive looks like a personal loss.
-  const owned = viaFactionName ? `${placed}, done to ${viaFactionName}` : placed;
+  // A bond grieving reads whose death it was: "the killing of Dunmar, done to Mara — Hesk's work".
+  const doneTo = viaFactionName ?? viaBondOfName;
+  const owned = doneTo ? `${placed}, done to ${doneTo}` : placed;
   return culpritName ? `${owned} — ${culpritName}'s work` : owned;
 }
 
@@ -329,6 +335,7 @@ function gatherMintTuples(
     ev: { id: string; properties: Record<string, unknown> },
     relation: MintRelation,
     viaFactionId?: string,
+    viaBondOf?: string,
   ): MintTuple | null => {
     const harmClass = ev.properties.harmClass as UndertakingHarmClass | undefined;
     if (!harmClass || !UNDERTAKING_MINTING_RULES[harmClass]) return null;
@@ -384,6 +391,7 @@ function gatherMintTuples(
         ? undefined
         : graph.getNode(culpritAgentId)?.name,
       viaFactionName: viaFactionId ? graph.getNode(viaFactionId)?.name : undefined,
+      viaBondOfName: viaBondOf ? graph.getNode(viaBondOf)?.name : undefined,
       harmMagnitude: (ev.properties.harmMagnitude as number | undefined) ?? 0,
       chainDepth: (ev.properties.chainDepth as number | undefined) ?? 0,
     };
@@ -413,7 +421,11 @@ function gatherMintTuples(
       // wronged party and lets a suppressed counter-mint (slice 6) come back through
       // the side door.
       seen.add(ev.id);
-      const tuple = undertakingTuple(ev, relation, e.properties.viaFactionId as string | undefined);
+      const tuple = undertakingTuple(
+        ev, relation,
+        e.properties.viaFactionId as string | undefined,
+        e.properties.viaBondOf as string | undefined,
+      );
       if (!tuple) continue;
       out.push(tuple);
     }
@@ -503,7 +515,7 @@ export function mintAmbitionsFromEvents(
 
     const entries = UNDERTAKING_MINTING_RULES[t.harmClass][t.relation];
     if (!entries) continue;
-    const label = composeHarmLabel(t.harmClass, t.locationName, t.culpritName, t.viaFactionName);
+    const label = composeHarmLabel(t.harmClass, t.locationName, t.culpritName, t.viaFactionName, t.viaBondOfName);
     for (const entry of entries) {
       if (existingTemplateIds.has(entry.templateId)) continue;
       candidates.push({
@@ -620,9 +632,12 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
     'first-sighting': 0, moved: 0, unchanged: 0, 'no-position': 0,
   };
 
-  // Get all individual actors
+  // Get all living individual actors. The retained dead (THR-1430 keeps a slain
+  // mortal's node as a record) do not pursue: skipped before residence observation and
+  // minting, so a corpse is never minted a vendetta against its own killer (THR-1536).
+  // Their grief is routed to their living bonds at write time instead.
   const actors = graph.getNodesByType('actor').filter(
-    n => n.properties.actorType === 'individual',
+    n => n.properties.actorType === 'individual' && !isAgentGone(n),
   );
 
   for (const actor of actors) {

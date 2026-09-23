@@ -2258,6 +2258,12 @@ export interface UndertakingOutcomeEventTrace extends TraceBase {
    * from under in-flight undertakings.
    */
   siteOriginStale?: true;
+  /**
+   * The slain victim's living bonds this harm was routed to as their own wound
+   * (`viaBondOf`, THR-1536). Absent when the victim is alive, not an individual, or
+   * had no bond warm enough to grieve.
+   */
+  griefBondIds?: string[];
 }
 
 /** Every state a grievance can move through (THR-1298 slice 5). */
