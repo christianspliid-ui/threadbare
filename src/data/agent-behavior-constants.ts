@@ -28,6 +28,15 @@ export const STEP_PROBABILITY_OFFSET = 0.7;
  * @range 0.01–0.5 (lower = stronger axiological influence on decisions) */
 export const MINIMUM_DESIRE = 0.05;
 
+/** How an unpinned motivation reads the mortal's axiological profile (THR-1525).
+ * `'absolute'` — the ruled design: `motivations` names what a scene is *about*, and
+ * mortals who lean strongly either way on that value are drawn to it.
+ * `'signed'` — the pre-THR-1525 reading (virtue pole drawn, flaw pole floored), kept
+ * one constant away for census comparison and rollback. A pinned axis
+ * (`motivationPoles`) ignores this and reads signed in its pinned direction.
+ * Any value other than `'signed'` is treated as `'absolute'`. */
+export const DESIRE_SCORE_POLE_MODE: 'absolute' | 'signed' = 'absolute';
+
 /** Weight for tier growth value in expected reward.
  * @range 0.0–1.0 (0 = ignore growth, 1 = growth dominates) */
 export const GROWTH_REWARD_WEIGHT = 0.4;

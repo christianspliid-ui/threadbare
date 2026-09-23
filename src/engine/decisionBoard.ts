@@ -85,7 +85,7 @@ import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
 import type { FundamentState } from '../types/worldSoul';
-import type { AxiologicalProfile, ValuePair } from '../types/agent';
+import type { AxiologicalProfile, MotivationPoles, ValuePair } from '../types/agent';
 import type { DecisionFamily, StrategicActionTemplate } from '../types/strategicAction';
 import type { ScoredCandidate } from './encounterScoring';
 import type { ScoredStrategicCandidate } from './strategicActionScoring';
@@ -253,7 +253,8 @@ export function resolveUndertakingPayoff(
  * and reach effects, and neither has an undertaking analogue to read.
  *
  * **Silence is neutrality, not revulsion (THR-1349).** `computeDesireScore` sums
- * signed profile values, so an *unauthored* motivation set scores exactly `0` —
+ * the actor's conviction over the named values, so an *unauthored* motivation set
+ * scores exactly `0` —
  * indistinguishable, downstream, from an actor who actively wants none of what the
  * option offers. The floor then maps both to `MINIMUM_DESIRE ** EXPONENT` =
  * `0.0112`, roughly 250× below a matched candidate's `2.775`.
@@ -272,9 +273,12 @@ export function resolveUndertakingPayoff(
  * not the returned multiplier: the ambition boost still adds to it and the exponent
  * still applies, so a silent template with a central ambition outranks a silent one
  * without — the discrimination that survives is the one the content did not decline
- * to express. This deliberately does **not** loosen the mismatch case: a template
- * that names motivations its proposer leans against still floors, because mortals
- * genuinely should not pursue what they do not value.
+ * to express. This deliberately does **not** loosen the floor for authored sets.
+ * Since THR-1525 an unpinned axis reads `|v|` — a template names what the
+ * undertaking is *about*, and a proposer leaning strongly either way is drawn — so
+ * the floor now catches **indifference** (near-zero on every named value) and
+ * **pinned opposition** (a `motivationPoles` pin the proposer leans against), not
+ * the opposite pole of an unpinned value.
  *
  * **THR-1377 authored all 35 and the branch was deliberately kept.** It is now
  * unreachable from the shipped corpus — `undertaking-motivations.test.ts` pins
@@ -292,6 +296,7 @@ export function computeBoardDesireMultiplier(
   motivations: readonly ValuePair[],
   profile: AxiologicalProfile,
   ambitionBoost: number,
+  poles?: MotivationPoles,
 ): number {
   // The *only* divergence from the encounter pipeline, and it is confined to the
   // axiological term: an unauthored set contributes neutrality instead of the `0`
@@ -300,7 +305,7 @@ export function computeBoardDesireMultiplier(
   // ambition centrality rather than becoming a flat constant.
   const personalityBias = motivations.length === 0
     ? UNDERTAKING_NEUTRAL_DESIRE
-    : computeDesireScore(motivations as ValuePair[], profile) * PERSONALITY_SELECTION_WEIGHT;
+    : computeDesireScore(motivations, profile, poles) * PERSONALITY_SELECTION_WEIGHT;
   const base = Math.max(personalityBias + ambitionBoost, MINIMUM_DESIRE);
   return Math.pow(Math.max(base, 0.01), PERSONALITY_SCORE_EXPONENT);
 }
@@ -518,6 +523,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       template?.motivations ?? [],
       profile,
       ambitionBoost,
+      template?.motivationPoles,
     );
 
     // The grievance this candidate would pursue, if any (THR-1298 slice 6). Resolved
