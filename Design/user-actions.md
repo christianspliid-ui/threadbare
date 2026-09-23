@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-09-23 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-23 12:55 local (10:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### One design hour: are scenes being offered to exactly the people who will refuse them?
 
-[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), on the design desk since 06:37 local on 21 September. **The builder's shelf has been empty since 08:37 on 23 September, and this item is what holds up the next design being staged.**
+[THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), on the design desk since 06:37 local on 21 September. **The builder is on its last job (a process fix, THR-1529). After that its shelf is empty, and this item is what holds up the next design being staged.**
 
 When the world decides *which mortal* should be handed a scene, it favours mortals who lean one way on the scene's named value, such as tradition over novelty. But when that scene's choice then *forks* on the same value, the arm that matters is often the other one. So the game reliably hands a two-way choice to the person who will take the boring arm.
 
