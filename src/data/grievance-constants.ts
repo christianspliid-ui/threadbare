@@ -177,3 +177,25 @@ export const COVET_SWITCH_BELOW = 4;
 
 /** Live covet edges (`hostile_to`, cause `covets`) a mortal may hold at once. */
 export const MAX_COVET_RIVALRIES_PER_ACTOR = 1;
+
+// ─── Grief reaches the living (THR-1536) ─────────────────────────────
+
+/**
+ * How many of a slain mortal's bonds a death is routed to as their own wound.
+ *
+ * A retained death leaves the victim's `participated_in role:'target'` edge on a corpse,
+ * and the dead do not pursue — so without this routing a killing reached only the
+ * witnesses standing at the site, never the sibling or friend elsewhere who loved them.
+ * The top bonds by sentiment carry it instead. Kept small because the per-event mint cap
+ * (`MINT_MAX_PER_EVENT` in `ambitionTick.ts`) is shared with those witnesses: a beloved mortal's death
+ * should turn a few hearts, not recruit a crowd. The kill criterion on THR-1536 lowers
+ * this to 1 if bond-routed vendettas crowd out the rest of the grievance supply.
+ */
+export const GRIEF_BOND_MAX = 3;
+
+/**
+ * The warmest a `relates_to` bond must run (sentiment, range −1…1) for its holder to
+ * grieve. At 0.25 an acquaintance of neutral standing does not take up a vendetta for
+ * someone they barely liked; a friend, a sibling or a mentor does.
+ */
+export const GRIEF_BOND_MIN_SENTIMENT = 0.25;

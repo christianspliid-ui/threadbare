@@ -22,7 +22,9 @@
 import type { WorldGraph } from '../graph';
 import type { StrategicProjectRuntime, UndertakingHarmClass } from '../../types/strategicAction';
 import { HARM_MAGNITUDE_BY_CLASS } from '../../data/ambition-minting-rules';
+import { GRIEF_BOND_MAX, GRIEF_BOND_MIN_SENTIMENT } from '../../data/grievance-constants';
 import { getFactionLeaderId } from '../factionNetwork';
+import { isAgentGone } from '../groups/groupQueries';
 import { emitTrace } from '../traceBuffer';
 import type { TraceEntry, UndertakingOutcomeSiteResolution } from '../../types/trace';
 
@@ -244,6 +246,24 @@ export function createUndertakingOutcomeNode(
     }
   }
 
+  // ── participated_in: a slain victim's bonds → event (role 'target') (THR-1536) ──
+  //
+  // A retained death (the plot, band casualties, commissioned killings) leaves the
+  // victim's target edge on a corpse, and the ambition phase skips the dead — so a
+  // killing used to reach only witnesses standing at the site. The victim's warmest
+  // living bonds carry it instead, tagged `viaBondOf` so the provenance prose can say
+  // whose death it was. Same shape as the faction-leader routing above. The corpse's
+  // own edge stays: it is the honest record of who was harmed.
+  //
+  // Only a harm with a culprit grieves anyone. A self-facing outcome names its owner as
+  // the victim — and when the owner died mid-undertaking, that owner is dead here — but
+  // a friend's unfinished work collapsing is not a wound done to their bonds; routing it
+  // would hand the living a drive to rebuild something nobody destroyed. Measured on the
+  // seed-42 census: all eight bond edges it first wrote were `undertaking_abandoned`.
+  const griefBondIds = victimAgentId && culpritAgentId
+    ? routeGriefToBonds(graph, eventNodeId, victimAgentId, culpritAgentId, harmClass, tick)
+    : [];
+
   // ── occurred_at: event → site ──
   //
   // The site is what makes witnesses possible: the mint lane finds witnesses by
@@ -276,6 +296,7 @@ export function createUndertakingOutcomeNode(
     ...(siteId && { siteId }),
     siteResolution,
     ...(siteOriginStale && { siteOriginStale }),
+    ...(griefBondIds.length > 0 && { griefBondIds }),
     summary: culpritAgentId
       ? (victimAgentId
         ? `${harmClass}: ${culpritAgentId} → ${victimAgentId} (magnitude ${harmMagnitude})`
@@ -284,4 +305,65 @@ export function createUndertakingOutcomeNode(
   } as TraceEntry);
 
   return eventNodeId;
+}
+
+/**
+ * Route a slain individual's harm to their warmest living bonds (THR-1536).
+ *
+ * Fires only when the victim is an individual who is already gone at write time — a
+ * living victim carries their own wound, and a faction is routed to its leader above.
+ * Bonds are `relates_to` edges in either direction whose `sentiment` is at least
+ * `GRIEF_BOND_MIN_SENTIMENT`; the stronger direction wins when both exist. The culprit,
+ * the dead, and anything that is not a living individual are never reached. Ties break
+ * on id so the choice is deterministic (NFP #3).
+ *
+ * Returns the ids actually written, for the trace. Every write is guarded (NFP #4): a
+ * victim with no qualifying bond writes nothing, and the harm still registers for
+ * witnesses through `occurred_at`.
+ */
+function routeGriefToBonds(
+  graph: WorldGraph,
+  eventNodeId: string,
+  victimAgentId: string,
+  culpritAgentId: string | undefined,
+  harmClass: UndertakingHarmClass,
+  tick: number,
+): string[] {
+  const victim = graph.getNode(victimAgentId);
+  if (victim?.type !== 'actor' || victim.properties.actorType !== 'individual') return [];
+  if (!isAgentGone(victim)) return [];
+
+  const warmth = new Map<string, number>();
+  const consider = (otherId: string, sentiment: unknown): void => {
+    if (typeof sentiment !== 'number' || sentiment < GRIEF_BOND_MIN_SENTIMENT) return;
+    if (otherId === victimAgentId || otherId === culpritAgentId) return;
+    const other = graph.getNode(otherId);
+    if (other?.type !== 'actor' || other.properties.actorType !== 'individual') return;
+    if (isAgentGone(other)) return;
+    warmth.set(otherId, Math.max(warmth.get(otherId) ?? -Infinity, sentiment));
+  };
+  for (const e of graph.getOutgoingEdges(victimAgentId, 'relates_to')) consider(e.target, e.properties.sentiment);
+  for (const e of graph.getIncomingEdges(victimAgentId, 'relates_to')) consider(e.source, e.properties.sentiment);
+
+  const chosen = [...warmth.entries()]
+    .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+    .slice(0, GRIEF_BOND_MAX)
+    .map(([id]) => id);
+
+  const written: string[] = [];
+  for (const bondId of chosen) {
+    try {
+      graph.addEdge({
+        id: `${bondId}_participated_in_${eventNodeId}`,
+        source: bondId,
+        target: eventNodeId,
+        type: 'participated_in',
+        properties: { role: 'target', outcome: 'success', harmClass, tick, viaBondOf: victimAgentId },
+      });
+      written.push(bondId);
+    } catch (err) {
+      console.warn(`[UndertakingOutcomeNode] Failed to add grief edge for ${bondId}:`, err);
+    }
+  }
+  return written;
 }
