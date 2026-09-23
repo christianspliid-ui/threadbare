@@ -608,10 +608,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 176 total — 1 write, 3 read, 172 unclassified
+- **Production hits:** 181 total — 1 write, 3 read, 177 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +167 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +172 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -1226,10 +1226,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Faction*, *Prerequisite*
 - **Module:** `src/engine/factionMembership.ts`
-- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
+- **Production hits:** 21 total — 1 write, 1 read, 19 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/engine/binding/mintInhabitant.ts` +12 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/fight-constants.ts` +14 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mentorship-rides-undertaking-checkpoints` — 🟢 LIVE
@@ -1282,10 +1282,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 25 total — 4 write, 3 read, 18 unclassified
+- **Production hits:** 27 total — 4 write, 3 read, 20 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +13 more
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +15 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -1306,10 +1306,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 81 total — 2 write, 3 read, 76 unclassified
+- **Production hits:** 82 total — 2 write, 3 read, 77 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +71 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +72 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1410,10 +1410,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 288 total — 1 write, 1 read, 286 unclassified
+- **Production hits:** 291 total — 1 write, 1 read, 289 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +281 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +284 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1526,10 +1526,10 @@ exit
 - **Intent:** Every RuleOverrideKey is read by the one system that owns the rule it bends, through a single shared reader.
 - **Producer → Consumer:** Effects & Conditions → Effects & Conditions
 - **Module:** `src/engine/effects/ruleOverrideConsumers.ts`
-- **Production hits:** 13 total — 1 write, 11 read, 1 unclassified
+- **Production hits:** 14 total — 1 write, 11 read, 2 unclassified
 - **Write sites:** `src/engine/effects/ruleOverrideConsumers.ts`
 - **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/capabilityGrowth.ts`, `src/engine/conditionDecay.ts`, `src/engine/effectTick.ts`, `src/engine/encounterAwareness.ts` +6 more
-- **Other hits:** `src/engine/effects/index.ts`
+- **Other hits:** `src/engine/effects/index.ts`, `src/engine/fights/fightStepInputs.ts`
 - **Verdict:** Verified 2026-08-26: THR-1241. This is the read half of the contract THR-1240 opened, and the exact deadness class this registry exists to catch: the store kept overrides correctly and eleven of thirteen keys had NO consumer at all, so `getActiveRuleOverride` greps green on both sides while `death_prevented` did nothing. Five keys had shipped content promising a player something that never happened (death_prevented, awareness_range_bonus, healing_multiplier, spawn_rate_multiplier, tier_advancement_cost_multiplier). Each key now has exactly one owning site, listed above; doom_rate_multiplier — the only key that HAD a consumer — was migrated off its hand-rolled inline scan in phaseDoom onto the same reader, because that scan saw only attachment-declared overrides, folded unclamped, and ignored duration/cooldown/suppression. A non-neutral read emits effect.rule_override_consumed carrying its site, so a wired-but-never-triggered key is distinguishable from an unwired one. Unit coverage: src/engine/effects/__tests__/ruleOverrideConsumers.test.ts (19 tests) drives the OWNING SITES, never the reader — asserting readMultiplierOverride returns 0.5 would pass against a build where no site calls it, which is stage 2 wearing the stage 3 name. Each key is asserted in both arms (with override, bare control) against an observable outcome: a traversal cost, a wound countdown, a reputation delta, a tier curve. Known partial reach, stated rather than papered over: backlash_severity_multiplier is wired into evaluateBacklash, whose caller activateSpell has no production caller yet — the key is live in code and goes live in play when spell activation does. Two derived readings are judgement calls argued at their sites: tier_advancement_cost_multiplier inverts into growth (no priced transaction exists for a tier, so the cost IS the growth owed), and backlash_severity_multiplier shifts an enum one band rather than scaling a number that does not exist.
 
 ### `secrets-consequences` — 🟢 LIVE
@@ -1592,10 +1592,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/stepResolutionCore.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
 - **Write sites:** `src/engine/stepResolutionCore.ts`
 - **Read sites:** `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`, `src/engine/undertakingReviewLevers.ts`
+- **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`, `src/engine/undertakingReviewLevers.ts`, `src/types/fight.ts`
 - **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
 
 ### `strategic-ambition-pulls-holder-into-spotlight` — 🟢 LIVE
