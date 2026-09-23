@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-09-23 12:55 local (10:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-23 13:55 local (11:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **One design hour: [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its). Are scenes being offered to exactly the people who will refuse them?**
 
-The builder has **no game work left**. It is now on its last job, a housekeeping fix to its own crash recovery ([THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push)). After that its shelf is empty. The planning lane may not stage anything new while THR-1525 sits on the design desk, so this is still the one decision that gets game work moving again.
+The builder has **no game work left**. Its last job is a housekeeping fix to its own crash recovery ([THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push)), and that job is waiting on a docs-check repair. After it lands, the shelf is empty. The planning lane may not stage anything new while THR-1525 sits on the design desk, so this is still the one decision that gets game work moving again.
 
 The fork: the game offers a scene to mortals who lean one way on the scene's value. When the scene's choice then splits on that same value, the arm that matters is usually the other one. Either the draw was always meant to reach both kinds of mortal, and the code has drifted from its own docs. Or the lean is the design, and the house guide has to stop telling authors to build forks on the same value. Open a chat and say you want to work THR-1525. The full question is in [user-actions](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
@@ -19,12 +19,12 @@ The fork: the game offers a scene to mortals who lean one way on the scene's val
 
 ## Queue
 
-**Starved: nothing ready, one job in progress, no parked jobs.** The builder claimed [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) this hour. It is a process fix that clears the materiality bar: one builder run died 26 minutes into a job. After it lands, the shelf is empty. The only live design item is [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), about 30 hours on the desk; it is the ask above.
+**Starved: nothing ready, one job in progress, no parked jobs.** [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) is claimed and in progress (a process fix that clears the materiality bar). The only live design item is [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), about 31 hours on the desk; it is the ask above. Daily grooming notes that [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded) is a design session's call under your delegation ruling. It does not need you.
 
 ## Health
 
-- **THR-1529's pull request is blocked on a failing docs check.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed its [Docs gates run](https://github.com/christianspliid-ui/threadbare/actions/runs/35847857034/job/107138340091). It will not merge until a session pushes a fix. It is 38 minutes old, so the builder may still be on it. This is the builder's job, not yours.
-- **Heavy simulation tests are green on today's commit.** The [08:34 UTC run](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948) passed on the same code that failed at 06:37, so the red was a slow runner, not broken code. The probe still reports "failing on main for 29 hours" because it counts the earlier red run. This is a technical call, not yours. The lasting fix is a session's job: a longer time limit on those world-building tests.
+- **THR-1529's pull request is still blocked on a failing docs check.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed "Docs gates" and has had no new push since 10:15 UTC, which is about 1h40 now. The 11:11 builder run did not fix it. The next builder run (~12:10 UTC) resumes its own claim. This is the builder's job, not yours.
+- **Heavy simulation tests:** the probe still says "failing on main for 30 hours". The latest run on today's code ([08:34 UTC](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948)) passed. The pattern repeats daily: red first, then green on the same code. That points to a slow runner, not broken code. This is a technical call, not yours; the lasting fix (a longer time limit) is a session's job.
 - **Lane silence:** the worst recent gap (25 hours, Saturday into Sunday) falls on a weekend. It is declined under your 11 September ruling.
-- **Worktree reaper:** 5 worktrees await a decision on what to do with them (the 12:40 run). This is routine and is the reaper's call.
-- Everything else is green. The live site is serving the latest game code (f50759a4). Later commits touched only docs. CI is healthy, and all nine scheduled lanes are on time. Engine speed is 75 ms/tick, 6% above the 7-day median of 70, which is within normal range.
+- **Worktree reaper:** 5 worktrees await disposition (13:40 run). Routine; this is the reaper's call.
+- Everything else is green. The live site is serving the latest game code (f50759a4); later commits touched only docs. CI is healthy, and all nine scheduled lanes are on time. Engine speed is 85 ms/tick, 20% above the 7-day median of 71. That is under the 25% alert line, on unchanged code (the last hour read 75), so it is measurement noise to watch, not a regression.
