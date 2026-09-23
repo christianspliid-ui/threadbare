@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 01:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -15,13 +15,13 @@ Your 6 August rule: the hourly planning lane stages design work but never author
 
 ### Design session wanted: sequel scenes fire on their own ([THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the)) — *from tb-orchestrator*
 
-The follow-up scenes of the crossroads bargain and the swindled family can fire on their own. So a stranger turns up to collect on a promise the mortal never made. This is a bug in the appointments work you already approved. The design question is small: how a scene marks itself "only reachable as a sequel". **The builder has finished THR-1525, THR-1534 and THR-1536. Its only queued job is the first fight slice ([THR-1537](https://linear.app/threadbare/issue/THR-1537/fight-block-fb1-fight-steps-read-their-opponent)).** It takes about half an hour in a chat and has no creative fork. Say **"design THR-1526"**. A yes on the ask above would let the lane draft it instead.
+The follow-up scenes of the crossroads bargain and the swindled family can fire on their own. So a stranger turns up to collect on a promise the mortal never made. This is a bug in the appointments work you already approved. The design question is small: how a scene marks itself "only reachable as a sequel". **The builder has finished THR-1525, THR-1534, THR-1536 and the first fight slice ([THR-1537](https://linear.app/threadbare/issue/THR-1537/fight-block-fb1-fight-steps-read-their-opponent)). Its ready queue is empty until the next fight slices open.** It takes about half an hour in a chat and has no creative fork. Say **"design THR-1526"**. A yes on the ask above would let the lane draft it instead.
 
 ### The odds shown are not the odds rolled ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)) — *from tb-orchestrator*
 
 Right now, a mortal's items, conditions and standing change the percentage the player sees. They do not change the actual dice on the main encounter path. So every item bonus is decorative, and the shown odds are wrong by exactly that amount. The fix makes the dice honour them. That shifts the odds on **every** ordinary encounter step at once, which is why it was filed *held*.
 
-**Are you OK with that global balance shift landing unattended?** A yes promotes it to the build queue. The ticket already stops itself if success rates move by more than 10 points. Nothing else waits on it.
+**Are you OK with that global balance shift landing unattended?** A yes no longer sends it straight to the builder: it edits the same file as every fight-block slice, so it lands after the whole fight block (FB1 to FB7). The ticket already stops itself if success rates move by more than 10 points. Nothing else waits on it.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — fight steps now take their opponent into account** ([THR-1537](https://linear.app/threadbare/issue/THR-1537/fight-block-fb1-fight-steps-read-their-opponent), fight block FB1). Merged 01:41 local via [#1998](https://github.com/christianspliid-ui/threadbare/pull/1998), and live on the site.
 - **2026-09-24 — a killing's grief now reaches the victim's family and friends, not the corpse** ([THR-1536](https://linear.app/threadbare/issue/THR-1536/a-killings-grief-reaches-only-the-corpse-the-ambition-phase-walks-the)). Merged 00:35 local via [#1994](https://github.com/christianspliid-ui/threadbare/pull/1994). It is live on the site.
 - **2026-09-23 — two death paths no longer skip the "will not die" ward** ([THR-1534](https://linear.app/threadbare/issue/THR-1534)). Merged via [#1990](https://github.com/christianspliid-ui/threadbare/pull/1990), and live on the site.
 - **2026-09-23 — mortals now want both ends of what they value** ([THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its)). Merged 22:41 local via [#1989](https://github.com/christianspliid-ui/threadbare/pull/1989), and live on the site.
@@ -59,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-23 — artifacts can now carry traits, such as storied or cursed, and the artifact sheet shows them** ([THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits)). Merged 08:37 local via [#1985](https://github.com/christianspliid-ui/threadbare/pull/1985).
 - **2026-09-23 — the "heavy simulation tests failing" item left your list.** It is a slow test runner rather than broken code, which makes it a technical call, not yours.
 - **2026-09-22 — the "move the builder off Fable" option was withdrawn.** No agent can change a scheduled lane's model.
-- **2026-09-22 — holding a town now means something to a faction** ([THR-1448](https://linear.app/threadbare/issue/THR-1448/a-held-town-is-a-faction-position-holding-opens-faction-encounters-and)). Merged via [#1981](https://github.com/christianspliid-ui/threadbare/pull/1981).
 
 ---
 
