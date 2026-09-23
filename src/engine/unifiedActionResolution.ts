@@ -1617,6 +1617,8 @@ export function executeStepResult(
         targetId: action.targetId,
         locationId: action.targetId, // default — caller can override
         tick,
+        // THR-1534: lets a `mark_mortal_dead` op ask the "will not die" ward.
+        overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
       };
 
       try {
@@ -3152,6 +3154,7 @@ export function phaseUnifiedActionProgress(
             targetId: completing_action.targetId,
             locationId: completing_action.targetId,
             tick: state.tick,
+            overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick: state.tick },
           }, { tick: state.tick, emitTrace: true });
         }
         // Emit discovery TickEvents and essence rewards for hidden site reveals

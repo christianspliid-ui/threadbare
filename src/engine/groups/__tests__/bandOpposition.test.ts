@@ -391,6 +391,47 @@ describe('applyContestConsequences', () => {
     expect(result.casualtyId).not.toBe('band.m0');
   });
 
+  // THR-1534: the band casualty path now asks the "will not die" ward. With the roll
+  // pinned at 0 the victim is the first non-leader, `band.m1`; ward exactly that one.
+  function wardAgainstDeath(graph: WorldGraph, agentId: string): void {
+    graph.addNode({
+      id: `charm.${agentId}`, type: 'artifact', name: 'Charm',
+      properties: {
+        effects: [{
+          type: 'modify_rules', rule: 'death_prevented', value: true,
+          scope: { scope: 'self' }, ticks: 'permanent',
+        }],
+      },
+    });
+    graph.addEdge({
+      id: `e.${agentId}.has`, type: 'possesses', source: agentId, target: `charm.${agentId}`, properties: {},
+    });
+  }
+
+  it('a warded victim survives: no casualty, and nobody is picked in their place', () => {
+    const { graph, state } = confrontationWorld();
+    wardAgainstDeath(graph, 'band.m1');
+
+    const result = applyContestConsequences(state, opposition(state), 'success', 'failure', () => 0)!;
+
+    expect(result.casualtyId).toBeUndefined();
+    expect(graph.getNode('band.m1')!.properties.deceased).toBeUndefined();
+    expect(graph.getNode('band.m2')!.properties.deceased).toBeUndefined();
+    const trace = getTraces().filter(t => t.category === 'group_contested');
+    expect(trace).toHaveLength(1);
+    expect((trace[0] as { casualtyId?: string }).casualtyId).toBeUndefined();
+  });
+
+  it('an unwarded victim still dies when someone else in the band is warded (regression)', () => {
+    const { graph, state } = confrontationWorld();
+    wardAgainstDeath(graph, 'band.m2');
+
+    const result = applyContestConsequences(state, opposition(state), 'success', 'failure', () => 0)!;
+
+    expect(result.casualtyId).toBe('band.m1');
+    expect(graph.getNode('band.m1')!.properties.deceased).toBe(true);
+  });
+
   it('writes a standing rivalry both ways, once', () => {
     const { graph, state } = confrontationWorld();
     const opp = opposition(state);

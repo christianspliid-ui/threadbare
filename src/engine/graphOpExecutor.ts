@@ -427,6 +427,8 @@ function executeMarkMortalDead(graph: WorldGraph, op: GraphOp, ctx: GraphOpConte
     nodeId,
     ctx.tick ?? 0,
     { cause, byActorId: ctx.actorId, mode: 'retain' },
+    undefined,
+    ctx.overrideCtx,
   );
 
   if (result.outcome === 'not_a_mortal') {

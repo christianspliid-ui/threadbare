@@ -332,6 +332,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         targetId: effect.targetNodeId ?? `hex:${effect.targetHexCol},${effect.targetHexRow}`,
         locationId: effect.targetNodeId ?? '',
         tick: state.tick,
+        overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick: state.tick },
       };
       executeGraphOps(state.graph, [...effect.perTickGraphOps], ctx, {
         tick: state.tick,
