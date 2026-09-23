@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 45,
+      "termCount": 46,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -4039,6 +4039,37 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#composition-contract",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "motivations",
+      "name": "Motivations",
+      "aliases": [
+        "`motivations` (template field); motivation pole pin (`motivationPoles`)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1525, delegated seating 2026-09-11",
+      "oneLiner": "the template field naming the values a scene is *about*; mortals who lean strongly either way are drawn (THR-1525); optional `motivationPoles` pin narrows one axis to one pole",
+      "body": "The template field that names the values a scene is *about*, as `ValuePair`s. It drives who is drawn to the scene: each mortal's desire for it is their **conviction** on the named values, meaning how strongly they lean, **either way**. A Heretic and an Archivist are both drawn to a scene about tradition. Undertakings carry the same field, read by the same function.\n\n**Not \"which side the scene is for.\"** Before THR-1525 the score summed signed values. Every value-tagged scene therefore drew only the virtue pole and floored the flaw pole (Conquerors, Puppeteers, Heretics, Renegades…). The code's own docstring and every author already read the field the other way.\n\n**Optional pole pin.** `motivationPoles` narrows one named axis to one pole, for the rare scene that one side should seek. A pin is authored only with a written reason. Pinning the axis a fork on the same template decides on draws only that arm's mortals, and `check:encounter` warns about it. The whole-corpus reading is the tunable `DESIRE_SCORE_POLE_MODE` (`'absolute'`; `'signed'` is the rollback).\n\nCode anchors: `src/engine/encounterScoring.ts` (`computeDesireScore`), `src/types/agent.ts` (`MotivationPoles`), `src/data/content-eval/motivationPoleChecks.ts`.",
+      "seeAlso": [
+        {
+          "raw": "AxiologicalProfile",
+          "termName": "AxiologicalProfile",
+          "resolvedSlug": "agents#axiologicalprofile"
+        },
+        {
+          "raw": "ValuePair",
+          "termName": "ValuePair",
+          "resolvedSlug": "agents#valuepair"
+        },
+        {
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#motivations",
       "contentAdjacent": true
     },
     {
