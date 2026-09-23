@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-23 17:55 local (15:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-23 18:55 local (16:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,13 +24,13 @@ Open a chat and say you want to work THR-1525. The full question is in [user-act
 
 ## Queue
 
-**Starved: nothing ready, one job in progress, no parked jobs.** [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) is claimed, with its PR open (a process fix). The only live design item is [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), about 35 hours on the desk; it is the ask above. The orchestrator re-surfaces it at its 48-hour mark, ~06:37 local tomorrow.
+**Starved: nothing ready, one job in progress, no parked jobs.** [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) is claimed, with its PR open (a process fix); untouched since 10:16 UTC, ~6h40. The only live design item is [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), about 36 hours on the desk; it is the ask above. The orchestrator re-surfaces it at its 48-hour mark, ~06:37 local tomorrow. The backlog-grooming lane notes that [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded)'s options A–D are a design session's pick under the agreed-outcome rule, not yours.
 
 ## Health
 
-- **THR-1529's pull request is orphaned, not just slow.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed "Docs gates" at the `check:predicate-copies` step ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/35847857034)). It has had no push since 10:15 UTC, about 5h40 now. The builder runs explain why no run has touched it: it counts an issue with an open closing PR as *not* holding the work slot, so there is "nothing to resume". No lane will ever push the fix, and each builder run exits in about 30 seconds. **A session must fix the predicate-copies failure on the branch.** This is the builder's job, not yours. The skip rule is a gap in the pickup flow, noted for the weekly retro.
-- **Engine speed:** the probe reports: "tick cost 98 ms/tick steady, 36% above the 7-day median (72, 86 rows since ee8f4909); top phase agent_decision, 503 agents. Name the merges between ee8f4909 and c1318329: git log --oneline --merges ee8f4909..c1318329". But the same commit (c1318329) measured 64 ms at 12:55 UTC, then 85, 91 and now 98 this afternoon. Code that did not change got slower, which points to machine load, not a regression. Watch whether it holds.
-- **Heavy simulation tests:** the probe says "failing on main for 34 hours". The latest run on the current game code ([08:34 UTC](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948)) passed. The daily pattern holds: red first, then green on the same code. That points to a slow runner, not broken code. This is a technical call, not yours.
-- **Lane silence:** the worst recent gap (25 hours, Saturday into Sunday) falls on a weekend. It is declined under your 11 September ruling.
-- **Worktree reaper:** 5 worktrees await disposition. Routine; this is the reaper's call.
-- Everything else is green. The live site is serving the latest game code; later commits touched only docs. CI is healthy, and the scheduled lanes are on time.
+- **THR-1529's pull request is still orphaned.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed "Docs gates" at the `check:predicate-copies` step ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/35847857034)) and has had no push since 10:17 UTC. The builder counts an issue with an open closing PR as not holding the work slot, so no lane resumes it. **A session must fix the predicate-copies failure on the branch.** This is the builder's job, not yours; the skip rule is noted for the weekly retro.
+- **Engine speed:** the probe reports: "tick cost 90 ms/tick steady, 25% above the 7-day median (72, 86 rows since 527ed118); top phase agent_decision, 503 agents. Name the merges between 527ed118 and c1318329: git log --oneline --merges 527ed118..c1318329". Same commit as the last four readings (64 → 85 → 91 → 98 → 90 ms), so this still reads as machine load, not a code regression.
+- **Heavy simulation tests:** the probe says "failing on main for 35 hours". The latest run on the current game code ([08:34 UTC](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948)) passed; the daily red-then-green pattern on unchanged code points to a slow runner. A technical call, not yours.
+- **Lane silence:** the worst recent gap (25 hours, Saturday into Sunday) falls on a weekend. Declined under your 11 September ruling.
+- **Worktree reaper:** 5 worktrees await disposition (last run 18:40 local). Routine.
+- Everything else is green. The live site is serving the latest game code; later commits touched only docs. CI is healthy, and all nine scheduled lanes are on time.
