@@ -19,6 +19,7 @@ import type { RelocationDestination } from './movement';
 import type { NudgeCardTypeId } from '../data/nudge-card-library';
 import type { ContentTag } from '../data/content-tags';
 import type { ContentQuery } from './contentQuery';
+import type { FightRole } from './fight';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -1885,8 +1886,28 @@ export interface ActionStep {
    *   and `tierScaledDuration` is what finally made the sentence true; the
    *   marker stayed one enum rather than splitting, because both numbers are
    *   per-step and both index off the same source tier.
+   * - `'opponent_rated'` (THR-1537) — difficulty comes from the opponent's card
+   *   (Dread for a nerve step, Might for a clash) plus the opponent's own
+   *   modifier delta. Implied by {@link fightRole}; a step carrying it without a
+   *   `fightRole` resolves as a clash.
    */
-  readonly difficultyContext?: 'intel_sensitive' | 'target_tier_scaled';
+  readonly difficultyContext?: 'intel_sensitive' | 'target_tier_scaled' | 'opponent_rated';
+  /**
+   * THR-1537 — the fight marker. A step with a `fightRole` is a fight step: it is
+   * rated against its opponent's card, resolves at `FIGHT_STEP_SCALE` whatever
+   * the template's scale, may have its reach overridden by the card, and reads
+   * the fighter's standing modifiers in a combat context. Every fight behaviour
+   * is engine logic keyed on this field; authors write no fight effects.
+   * Absent ⇒ an ordinary step, byte-identical to before.
+   */
+  readonly fightRole?: FightRole;
+  /**
+   * THR-1537 — the cast key naming this fight step's opponent, resolved like
+   * `StepNudge.opposes` against the action's `supportBindings`. **When set it
+   * must bind**: an unbound ref never falls back to the action's target. Absent
+   * ⇒ the opponent is the action's target.
+   */
+  readonly opponentRef?: string;
   readonly onSuccess: readonly GraphOp[];
   readonly onFailure: readonly GraphOp[];
   readonly failBehavior: StepFailBehavior;

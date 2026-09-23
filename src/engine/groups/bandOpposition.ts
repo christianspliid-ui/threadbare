@@ -284,6 +284,13 @@ export function synthesizeBandCounter(
 export function collectBandOppositions(
   completing: readonly UnifiedAction[],
   state: GameState,
+  /**
+   * THR-1537 — true when the action's current step is a fight step. Band
+   * opposition never resolves one: the band's contest would roll the step's
+   * placeholder difficulty on its authored reach, through `contestation.ts`,
+   * instead of the fight's opponent card. Absent ⇒ no action is a fight step.
+   */
+  isFightStep?: (action: UnifiedAction) => boolean,
 ): BandOpposition[] {
   const graph = state.graph;
   const oppositions: BandOpposition[] = [];
@@ -295,6 +302,7 @@ export function collectBandOppositions(
     if (action.resolved) continue;
 
     try {
+      if (isFightStep?.(action)) continue;
       const company = getGroupOf(graph, action.actorId);
       if (!company) continue;
       // A band's own encounter is not a contest with itself.

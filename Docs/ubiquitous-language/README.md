@@ -139,6 +139,12 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Forecast tier](./Encounters.md#forecast-tier)** — the five-word **pre-roll** odds reading (*doomed · perilous · uncertain · favorable · fated*); never an outcome word, and never interconverts with one
 - **[Composition Contract](./Encounters.md#composition-contract)** — the encounter line’s authoring gate; shrinking ratchet, no exemptions; not the Undertaking Contract, and it scopes to the `encounter.*` prefix
 - **[Motivations](./Encounters.md#motivations)** — the template field naming the values a scene is *about*; mortals who lean strongly either way are drawn (THR-1525); optional `motivationPoles` pin narrows one axis to one pole
+- **[Fight](./Encounters.md#fight)** — a nerve step then up to three clash steps, rated against one opponent; ordinary steps marked `fightRole`, no new resolver; not an army battle (THR-1537)
+- **[Opponent Card](./Encounters.md#opponent-card)** — a fight's rating record for its opponent (Dread, Might, reach overrides, clock, temper); not a repertoire Card or a nudge card
+- **[Dread](./Encounters.md#dread)** — opponent rating for the nerve step; not the Iron lexicon word
+- **[Might](./Encounters.md#might)** — opponent rating for each clash; derived from a mortal's raw Iron score
+- **[Nerve Step](./Encounters.md#nerve-step)** — a fight's first step: whether the mortal stands at all
+- **[Clash Step](./Encounters.md#clash-step)** — one exchange of blows; after the roll it is the step it actually was (the resolved reach)
 
 ### Traits
 

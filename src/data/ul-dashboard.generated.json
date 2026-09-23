@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 46,
+      "termCount": 52,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -4070,6 +4070,212 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#motivations",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "fight",
+      "name": "Fight",
+      "aliases": [
+        "fight block",
+        "fight step"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1537, delegated seating 2026-09-11",
+      "oneLiner": "a nerve step then up to three clash steps, rated against one opponent; ordinary steps marked `fightRole`, no new resolver; not an army battle (THR-1537)",
+      "body": "A short run of ordinary encounter steps that the engine runs as a fight: one **nerve** step, then up to three **clash** steps, rated against one opponent. A step is a fight step when it carries `ActionStep.fightRole`. Every fight behaviour is engine logic keyed on that marker, and authors write no fight effects.\n\n**Not a new resolver.** Every fight roll is `resolveStepCore`, the same six-band ladder every step uses. A fight step differs in four inputs, all derived by `resolveFightStepInputs`: its reach (the card may override it), its difficulty (from the card), its scale (always `FIGHT_STEP_SCALE`, `regional`) and the fighter's standing modifiers, read in a combat context.\n\n**Not an army battle.** `Battle` and `battleState` belong to War, Armies & Battles, a separate system. A fight is one fighter against one opponent.\n\nCode anchors: `src/engine/fights/fightStepInputs.ts`, `src/types/fight.ts`, `src/data/fight-constants.ts`; plan `Docs/plans/2026-09-23-fight-block.md`.",
+      "seeAlso": [
+        {
+          "raw": "Opponent Card",
+          "termName": "Opponent Card",
+          "resolvedSlug": "encounters#opponent-card"
+        },
+        {
+          "raw": "Nerve Step",
+          "termName": "Nerve Step",
+          "resolvedSlug": "encounters#nerve-step"
+        },
+        {
+          "raw": "Clash Step",
+          "termName": "Clash Step",
+          "resolvedSlug": "encounters#clash-step"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#fight",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "opponent-card",
+      "name": "Opponent Card",
+      "aliases": [
+        "card (fight)",
+        "`OpponentCard`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1537, delegated seating 2026-09-11",
+      "oneLiner": "a fight's rating record for its opponent (Dread, Might, reach overrides, clock, temper); not a repertoire Card or a nudge card",
+      "body": "A fight's rating record for its opponent: Dread, Might, optional reach overrides, the opponent's clock and temper. Read by `readOpponentCard` from one of three sources: a monster's `monsterState`, a card **derived** from a mortal opponent's raw Iron score, or the fail-soft default (fair, fair, clock 3).\n\n**Not a Card in the god's repertoire, and not a nudge card.** Those are what the player plays; an opponent card is what the player's mortal fights against. Reading one is pure: the attended forecast may read it any number of times.\n\nCode anchors: `src/engine/fights/opponentCard.ts`, `src/types/fight.ts` (`OpponentCard`).",
+      "seeAlso": [
+        {
+          "raw": "Fight",
+          "termName": "Fight",
+          "resolvedSlug": "encounters#fight"
+        },
+        {
+          "raw": "Dread",
+          "termName": "Dread",
+          "resolvedSlug": "encounters#dread"
+        },
+        {
+          "raw": "Might",
+          "termName": "Might",
+          "resolvedSlug": "encounters#might"
+        },
+        {
+          "raw": "Repertoire",
+          "termName": "Repertoire",
+          "resolvedSlug": "encounters#repertoire"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#opponent-card",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "dread",
+      "name": "Dread",
+      "aliases": [
+        "—"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1537, delegated seating 2026-09-11",
+      "oneLiner": "opponent rating for the nerve step; not the Iron lexicon word",
+      "body": "An opponent rating: how hard the opponent is to **face**. One of `gentle | fair | steep | severe`; it sets the difficulty of the nerve step through `FIGHT_RATING_DIFFICULTY`. A mortal opponent's Dread is one word below their Might, and one word harder again when they are famous (reputation at *Revered*).\n\n**Not the Iron lexicon word \"Dread\"** (`src/types/traits.ts`), which names a trait-tier word. The two senses never meet in one surface.",
+      "seeAlso": [
+        {
+          "raw": "Opponent Card",
+          "termName": "Opponent Card",
+          "resolvedSlug": "encounters#opponent-card"
+        },
+        {
+          "raw": "Might",
+          "termName": "Might",
+          "resolvedSlug": "encounters#might"
+        },
+        {
+          "raw": "Nerve Step",
+          "termName": "Nerve Step",
+          "resolvedSlug": "encounters#nerve-step"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#dread",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "might",
+      "name": "Might",
+      "aliases": [
+        "—"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1537, delegated seating 2026-09-11",
+      "oneLiner": "opponent rating for each clash; derived from a mortal's raw Iron score",
+      "body": "An opponent rating: how hard the opponent is to **beat**. One of `gentle | fair | steep | severe`; it sets the difficulty of every clash step. A mortal opponent's Might is derived from their **raw** Iron score (`FIGHT_DERIVED_MIGHT_BANDS`), because capability saturates near 1.0 and would rate every seasoned fighter the same.\n\n**Not the `DealContextTag` `might`**, the card-context tag a clash step's deal may also carry. The two senses agree, so neither is renamed.",
+      "seeAlso": [
+        {
+          "raw": "Opponent Card",
+          "termName": "Opponent Card",
+          "resolvedSlug": "encounters#opponent-card"
+        },
+        {
+          "raw": "Dread",
+          "termName": "Dread",
+          "resolvedSlug": "encounters#dread"
+        },
+        {
+          "raw": "Clash Step",
+          "termName": "Clash Step",
+          "resolvedSlug": "encounters#clash-step"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#might",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "nerve-step",
+      "name": "Nerve Step",
+      "aliases": [
+        "nerve",
+        "`fightRole: 'nerve'`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1537, delegated seating 2026-09-11",
+      "oneLiner": "a fight's first step: whether the mortal stands at all",
+      "body": "The first step of a fight: whether the mortal stands to face the opponent at all. Rated by the opponent's Dread. Its reach defaults to Heart, and the opponent card may override it (a beast that must be read through the Veil rather than faced down).",
+      "seeAlso": [
+        {
+          "raw": "Fight",
+          "termName": "Fight",
+          "resolvedSlug": "encounters#fight"
+        },
+        {
+          "raw": "Clash Step",
+          "termName": "Clash Step",
+          "resolvedSlug": "encounters#clash-step"
+        },
+        {
+          "raw": "Dread",
+          "termName": "Dread",
+          "resolvedSlug": "encounters#dread"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#nerve-step",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "clash-step",
+      "name": "Clash Step",
+      "aliases": [
+        "clash",
+        "exchange",
+        "`fightRole: 'clash'`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1537, delegated seating 2026-09-11",
+      "oneLiner": "one exchange of blows; after the roll it is the step it actually was (the resolved reach)",
+      "body": "One exchange of blows in a fight, rated by the opponent's Might. Its reach defaults to Iron, and the opponent card may override it. **After the roll, a clash is the step it actually was:** growth, consumable charges, the frozen step record and the event node's `reachTested` all read the resolved reach, so a clash the card moved to Eye grows Eye.",
+      "seeAlso": [
+        {
+          "raw": "Fight",
+          "termName": "Fight",
+          "resolvedSlug": "encounters#fight"
+        },
+        {
+          "raw": "Nerve Step",
+          "termName": "Nerve Step",
+          "resolvedSlug": "encounters#nerve-step"
+        },
+        {
+          "raw": "Might",
+          "termName": "Might",
+          "resolvedSlug": "encounters#might"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#clash-step",
       "contentAdjacent": true
     },
     {

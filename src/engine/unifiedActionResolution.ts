@@ -192,6 +192,11 @@ import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { spendConsumableCharges } from './effects/consumableCharges';
 import { tierScaledDifficulty } from './targetTierScaling';
+import { isActionOnFightStep, resolveFightStepInputs, stepScaleFor } from './fights/fightStepInputs';
+import { FIGHT_ENCOUNTER_TYPE } from '../data/fight-constants';
+import type { FightStepInputs } from '../types/fight';
+import type { ReachDomain } from '../types/traits';
+import type { FightStepTrace } from '../types/traces/fight-traces';
 import { resolveToParentLocation } from './sublocationShape';
 import {
   PLAYER_CAST_VARIANCE_ENABLED,
@@ -250,6 +255,15 @@ export interface StepResolutionResult {
   resistCost: number;
   /** Phase 3: The outcome before resist downgrade, if resist happened */
   preResistOutcome?: StepOutcome;
+  /**
+   * THR-1537 (plan doc §3c) — the reach and difficulty this step actually
+   * resolved at, set on fight steps only. The phase loop passes them on to
+   * `executeStepResult`, whose post-roll readers (growth, promotion, charges,
+   * step prose, telemetry, the event node) read these rather than the authored
+   * `step.reach` / `step.difficulty`. Absent ⇒ the authored values, as before.
+   */
+  reach?: ReachDomain;
+  difficulty?: number;
 }
 
 /**
@@ -315,15 +329,23 @@ export function resolveUncontestedStep(
     return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
-  let effectiveDifficulty = step.difficulty;
+  // THR-1537 — a fight step is rated against its opponent. One pure function
+  // derives its reach, difficulty, scale and the fighter's named terms, for this
+  // roll and (FB7) for the attended forecast, so the odds shown are the odds
+  // rolled. Undefined for every ordinary step, which keeps them byte-identical.
+  const fightInputs = resolveFightStepInputs(state, action, step, template);
+  const stepReach = fightInputs?.reach ?? step.reach;
+  const stepScale = fightInputs ? fightInputs.scale : template.scale;
+
+  let effectiveDifficulty = fightInputs?.difficulty ?? step.difficulty;
   // THR-1073: a step may price its difficulty from the target's attachment tier,
   // so advancing Mythic→Legendary rolls against the authored hard number rather
   // than the tier-1 one every advancement used to share. The table lives in
   // `attachment-tier-content.ts` (NFP #1) — nothing numeric is decided here.
-  if (step.difficultyContext === 'target_tier_scaled') {
+  if (!fightInputs && step.difficultyContext === 'target_tier_scaled') {
     effectiveDifficulty = tierScaledDifficulty(step, state.graph.getNode(action.targetId)?.properties);
   }
-  if (step.difficultyContext === 'intel_sensitive') {
+  if (!fightInputs && step.difficultyContext === 'intel_sensitive') {
     const targetNode = state.graph.getNode(action.targetId);
     const locationId = targetNode?.type === 'location'
       ? action.targetId
@@ -363,8 +385,11 @@ export function resolveUncontestedStep(
   // Fail-soft: `resolveGroupStep` returns undefined for a disbanded or emptied
   // company, and the whole lookup is skipped for a template without the 'group'
   // affinity, so the individual path below is the default in every other case.
+  //
+  // THR-1537 — fight steps skip it: the named fighter always rolls, and company
+  // help counts once, through the Company advantage (FB7), never twice.
   const groupNode = getGroupOf(state.graph, action.actorId);
-  const groupStep = groupNode && (template.actorAffinities ?? []).includes('group')
+  const groupStep = !fightInputs && groupNode && (template.actorAffinities ?? []).includes('group')
     ? resolveGroupStep(state.graph, groupNode.id, step.reach, action.actorId)
     : undefined;
 
@@ -379,21 +404,25 @@ export function resolveUncontestedStep(
     ? computeCapabilityWithRawBonus(
       state.graph,
       capabilityNodeId,
-      step.reach,
+      stepReach,
       ascendantCastRawBonus(
-        getAscendantDomainAffinities(state.graph, capabilityNodeId)?.[step.reach],
+        getAscendantDomainAffinities(state.graph, capabilityNodeId)?.[stepReach],
       ),
     )
-    : computeCapability(state.graph, capabilityNodeId, step.reach);
+    : computeCapability(state.graph, capabilityNodeId, stepReach);
 
   // Sphere factor: small bonus if actor's location has sphere influence
   // (simplified — full implementation would check location sphere influence)
   const sphereFactor = 0;
-  const predicateContext = buildPredicateContext(state.graph, action.actorId, step.reach);
+  // THR-1537 — a fight step's context says "combat", so an `in_combat` shaper
+  // works on a clash the card moved off Iron.
+  const predicateContext = buildPredicateContext(
+    state.graph, action.actorId, stepReach, fightInputs ? FIGHT_ENCOUNTER_TYPE : undefined,
+  );
   const testShapers = collectTestShapers(
     state.graph,
     action.actorId,
-    step.reach,
+    stepReach,
     predicateContext,
     state.effectStates,
   );
@@ -420,7 +449,7 @@ export function resolveUncontestedStep(
   // THR-728: push is mortal-only. It spends the actor's quintessence pre-roll, and
   // the ascendant has no place in that economy.
   const pushAllowed = PLAYER_CAST_PUSH_ENABLED || action.source !== 'player';
-  if (pushAllowed && isPushEligible(action.templateId) && step.difficulty >= 0.3) {
+  if (pushAllowed && isPushEligible(action.templateId) && (fightInputs?.difficulty ?? step.difficulty) >= 0.3) {
     const actorNode = state.graph.getNode(action.actorId);
     if (actorNode && canSpendQuintessence(actorNode, 'push')) {
       pushModifier = getPushModifier(actorNode);
@@ -464,8 +493,11 @@ export function resolveUncontestedStep(
   // channel as push, so scale adjustment, the probability floor, and the trace
   // all see one consistent modifier total. (THR-1121 removed the intervention
   // boost from this sum — see the note at `rememberedChoice` above.)
+  //
+  // THR-1537 — a fight step's named terms (the fighter's standing modifiers) ride
+  // it too. Zero for every ordinary step.
   const totalActionModifiers = pushModifier + (groupStep?.totalBonus ?? 0)
-    + nudgeModifierTotal;
+    + nudgeModifierTotal + (fightInputs?.modifierTotal ?? 0);
 
   // ── THR-1292 slice 2: the band ladder is no longer implemented here ──
   //
@@ -481,10 +513,10 @@ export function resolveUncontestedStep(
   // see the asymmetry note in `stepResolutionCore.ts`'s header.
   const core = resolveStepCore({
     actorId: action.actorId,
-    reach: step.reach,
+    reach: stepReach,
     capability,
     difficulty: effectiveDifficulty,
-    scale: template.scale,
+    scale: stepScale,
     actionModifiers: totalActionModifiers,
     testShapers,
     sphereFactor,
@@ -511,7 +543,7 @@ export function resolveUncontestedStep(
     tick: state.tick,
     actorId: action.actorId,
     templateId: action.templateId,
-    scale: template.scale ?? 'regional',
+    scale: stepScale ?? 'regional',
     capability: trace.capability,
     difficulty: trace.difficulty,
     rawDifficulty: trace.rawDifficulty,
@@ -533,7 +565,7 @@ export function resolveUncontestedStep(
     actingMemberId: groupStep?.actingMemberId,
     groupAssistCount: groupStep?.assistCount,
     groupBonus: groupStep?.totalBonus,
-    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${trace.capability.toFixed(2)} diff=${trace.difficulty.toFixed(2)} P=${trace.probability.toFixed(2)} roll=${trace.roll} raw=${trace.rawOutcome}${trace.floorUpgradeApplied ? ' [floor↑]' : ''}${trace.playerFloorApplied ? ' [player-floor↑]' : ''} → ${trace.outcome}${groupStep ? ` [company ${groupStep.actingMemberName} +${groupStep.totalBonus.toFixed(2)} assists=${groupStep.assistCount}]` : ''}`,
+    summary: `resolution.input: ${action.templateId} scale=${stepScale ?? 'regional'} cap=${trace.capability.toFixed(2)} diff=${trace.difficulty.toFixed(2)} P=${trace.probability.toFixed(2)} roll=${trace.roll} raw=${trace.rawOutcome}${trace.floorUpgradeApplied ? ' [floor↑]' : ''}${trace.playerFloorApplied ? ' [player-floor↑]' : ''} → ${trace.outcome}${groupStep ? ` [company ${groupStep.actingMemberName} +${groupStep.totalBonus.toFixed(2)} assists=${groupStep.assistCount}]` : ''}`,
   } as ResolutionInputTrace);
 
   // Phase 3: the library returned spend intents; this caller queues them. Order is
@@ -543,6 +575,10 @@ export function resolveUncontestedStep(
     for (const intent of core.spendIntents) {
       state.pendingQuintessenceEvents.push(intent);
     }
+  }
+
+  if (fightInputs) {
+    emitFightStepTrace(state.tick, action, template, fightInputs, core.outcome, core.probability);
   }
 
   const ops = isStepSuccess(core.outcome) ? step.onSuccess : step.onFailure;
@@ -563,7 +599,51 @@ export function resolveUncontestedStep(
     resistSucceeded: core.resistSucceeded,
     resistCost: core.resistCost,
     preResistOutcome: core.preResistOutcome,
+    ...(fightInputs ? { reach: fightInputs.reach, difficulty: effectiveDifficulty } : {}),
   };
+}
+
+/** THR-1537 — one `fight.step` trace per fight step, once its band is known. */
+function emitFightStepTrace(
+  tick: number,
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  inputs: FightStepInputs,
+  band: StepOutcome,
+  probability: number,
+): void {
+  emitTrace({
+    category: 'fight.step',
+    tick,
+    agentId: action.actorId,
+    actionId: action.actionId,
+    templateId: template.id,
+    fighterId: action.actorId,
+    opponentId: inputs.opponentId,
+    opponentStatus: inputs.opponentStatus,
+    role: inputs.role,
+    exchange: action.currentStep,
+    card: {
+      dread: inputs.card.dread,
+      might: inputs.card.might,
+      reach: inputs.reach,
+      authoredReach: inputs.authoredReach,
+      readFrom: inputs.card.source,
+    },
+    difficulty: inputs.difficulty,
+    opponentModifierDelta: inputs.opponentModifierDelta,
+    scale: inputs.scale,
+    modifiers: inputs.modifiers.map((m) => ({ name: m.name, delta: m.delta })),
+    band,
+    probability,
+    clockDelta: 0,
+    clockNow: inputs.card.clockFilled,
+    clockSize: inputs.card.clockSize,
+    harmQueued: 0,
+    conditionsApplied: [] as string[],
+    summary: `fight.step: ${template.id} ${inputs.role} vs ${inputs.opponentId ?? 'none'} (${inputs.card.source}) `
+      + `${inputs.reach} diff=${inputs.difficulty.toFixed(2)} scale=${inputs.scale} P=${probability.toFixed(2)} → ${band}`,
+  } as FightStepTrace);
 }
 
 function hashString(input: string): number {
@@ -1306,7 +1386,19 @@ export function executeStepResult(
   state: GameState,
   rng: () => number,
   tick: number,
-  resolutionStats?: { capability: number; probability: number; roll: number },
+  resolutionStats?: {
+    capability: number;
+    probability: number;
+    roll: number;
+    /**
+     * THR-1537 (plan doc §3c) — a fight step's resolved reach and difficulty.
+     * Every post-roll reader below reads `resolutionStats?.reach ?? step.reach`
+     * (and the same for difficulty), so a clash the card moved to Eye grows Eye,
+     * spends an Eye charge and is recorded as an Eye step.
+     */
+    reach?: ReachDomain;
+    difficulty?: number;
+  },
   runtime?: SimulationRuntime,
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
   const events: TickEvent[] = [];
@@ -1675,7 +1767,12 @@ export function executeStepResult(
     graph: state.graph,
     doomIdentityComplicationBias: state.doomIdentityMatrix?.complicationBias,
     // THR-571 E2: scale-appropriate consequence tier for critical_failure.
-    critFailureSeverity: resolveCritFailureSeverity(template.scale),
+    // THR-1537: a fight step's critical failure has the severity of the scale it
+    // resolved at (`FIGHT_STEP_SCALE`), not the template's.
+    critFailureSeverity: resolveCritFailureSeverity(stepScaleFor(
+      template,
+      resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+    )),
   };
 
   // Phase 3: Compute differentiated consequences (all templates for failure tiers; THR-20)
@@ -1750,6 +1847,10 @@ export function executeStepResult(
     resolveStepDefinition(template, action.currentStep, action.choiceHistory),
     state,
   ).step;
+  // THR-1537 (plan doc §3c) — below, every post-roll reader of the step's reach
+  // or difficulty reads `resolutionStats?.reach ?? step.reach` (and likewise for
+  // difficulty): what the step actually tested. Identical to the authored values
+  // on every ordinary step, since the resolver sets neither field for them.
   const stepMetadata = getStepOutcomeMetadata(step, outcome);
   const metadataReputationDelta = applyOutcomeReputationDelta(state, action.actorId, stepMetadata);
   // THR-783: authored step-outcome effects (conditions, marks, seeds …). No-ops for
@@ -1771,13 +1872,13 @@ export function executeStepResult(
   let growthTierTo: number | undefined;
   if (step) {
     // Unified action difficulty is 0-1; scale to 0-100 for growth computation
-    const difficultyScaled = step.difficulty * 100;
+    const difficultyScaled = (resolutionStats?.difficulty ?? step.difficulty) * 100;
     const isSuccess = isStepSuccess(outcome);
     const tierPromotionEligible = Boolean(isSuccess && stepMetadata?.tierPromotionEligible);
     const growthResult = applyEncounterGrowth(
       state.graph,
       action.actorId,
-      step.reach,
+      (resolutionStats?.reach ?? step.reach),
       difficultyScaled,
       isSuccess,
       tierPromotionEligible,
@@ -1798,7 +1899,7 @@ export function executeStepResult(
       const promotion = handleTierPromotion(
         state.graph,
         action.actorId,
-        step.reach,
+        (resolutionStats?.reach ?? step.reach),
         growthResult.newTier,
       );
 
@@ -1815,7 +1916,7 @@ export function executeStepResult(
           id: `ua_${action.actionId}_promotion_${tick}`,
           tick,
           type: 'tier_promotion',
-          message: `${agentName} reached ${step.reach} tier ${growthResult.newTier}: "${promotion.traitGranted}"`,
+          message: `${agentName} reached ${(resolutionStats?.reach ?? step.reach)} tier ${growthResult.newTier}: "${promotion.traitGranted}"`,
           significance: 0.8,
           actorId: action.actorId,
         });
@@ -1829,8 +1930,8 @@ export function executeStepResult(
           agentId: action.actorId,
           sourceSystem: 'unified_action',
           templateId: action.templateId,
-          reach: step.reach,
-          growthReach: step.reach,
+          reach: (resolutionStats?.reach ?? step.reach),
+          growthReach: (resolutionStats?.reach ?? step.reach),
           growthDelta: growthResult.growthApplied,
           newTier: growthResult.newTier,
         });
@@ -1941,12 +2042,12 @@ export function executeStepResult(
     const record: StepProseRecord = {
       index: resolvedStepIndex,
       label: step.narrativeTemplate
-        ? `Step ${resolvedStepIndex + 1}: ${step.reach}`
+        ? `Step ${resolvedStepIndex + 1}: ${(resolutionStats?.reach ?? step.reach)}`
         : `Step ${resolvedStepIndex + 1}`,
       narrativeProse,
       afterimageProse,
       outcome,
-      reach: step.reach,
+      reach: (resolutionStats?.reach ?? step.reach),
       choiceId: choiceMemory?.choiceId,
       choiceText: choiceMemory?.choiceText,
       complicationProse: consequence.complication?.prose,
@@ -1966,7 +2067,7 @@ export function executeStepResult(
       actorId: action.actorId,
       stepIndex: resolvedStepIndex,
       outcomeBand: stepOutcomeToOutcomeBand(outcome),
-      reach: step.reach,
+      reach: (resolutionStats?.reach ?? step.reach),
       proseLength: narrativeProse.length,
       summary: `step_prose_recorded: ${template.name} step ${resolvedStepIndex + 1} ${outcome}`,
     } as any);
@@ -2176,7 +2277,7 @@ export function executeStepResult(
     const chargeResult = spendConsumableCharges(
       state.graph,
       action.actorId,
-      step.reach,
+      (resolutionStats?.reach ?? step.reach),
       chargeStates,
       tick,
     );
@@ -2196,8 +2297,8 @@ export function executeStepResult(
       tick,
       template: template.name,
       step: `${action.currentStep + 1}/${template.steps.length}`,
-      reach: step.reach,
-      diff: step.difficulty,
+      reach: (resolutionStats?.reach ?? step.reach),
+      diff: (resolutionStats?.difficulty ?? step.difficulty),
       cap: resolutionStats.capability,
       prob: resolutionStats.probability,
       roll: resolutionStats.roll,
@@ -2220,8 +2321,8 @@ export function executeStepResult(
         sourceSystem: 'unified_action',
         templateId: action.templateId,
         stepIndex: action.currentStep,
-        reach: step.reach,
-        difficulty: step.difficulty,
+        reach: (resolutionStats?.reach ?? step.reach),
+        difficulty: (resolutionStats?.difficulty ?? step.difficulty),
         capability: resolutionStats.capability,
         probability: resolutionStats.probability,
         roll: resolutionStats.roll,
@@ -2629,7 +2730,7 @@ export function executeStepResult(
     templateId: template.id,
     templateName: template.name,
     stepIndex: action.currentStep,
-    stepReach: template.steps[action.currentStep]?.reach,
+    stepReach: resolutionStats?.reach ?? template.steps[action.currentStep]?.reach,
     outcome,
     tick,
     tierPromotionOccurred: !!(promotionTraitGranted),
@@ -2943,7 +3044,15 @@ export function phaseUnifiedActionProgress(
   // action its side of the fight. The synthesized counters are transient — they are
   // resolved in this loop and never enter `state.unifiedActions` — so they are held
   // in a local pool rather than pushed onto `actions`.
-  const bandOppositions = collectBandOppositions(completing, state);
+  //
+  // THR-1537 — band opposition never resolves a fight step: a fight is between its
+  // fighter and its opponent, and the band's roll would price the step's
+  // placeholder difficulty on its authored reach.
+  const bandOppositions = collectBandOppositions(
+    completing,
+    state,
+    (a) => isActionOnFightStep(a, resolveUnifiedTemplate(templates, a.templateId)),
+  );
   const counterPool = new Map<string, UnifiedAction>(
     bandOppositions.map((o) => [o.counter.actionId, o.counter]),
   );
@@ -3125,7 +3234,8 @@ export function phaseUnifiedActionProgress(
     // Execute and advance
     const { updatedAction, events: stepEvents } = executeStepResult(
       completing_action, template, outcome, opsToExecute, state, rng, state.tick,
-      { capability, probability, roll }, runtime,
+      // THR-1537 — a fight step's resolved reach and difficulty ride along (§3c).
+      { capability, probability, roll, reach: stepResult.reach, difficulty: stepResult.difficulty }, runtime,
     );
 
     // If this action targets a hex, route through hexActionBridge to get mutations
