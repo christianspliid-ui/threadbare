@@ -16,6 +16,8 @@ import type { MeetingChoiceRecord } from '../types/meetingEncounter';
 import type { BeatOutcome, OrdealOutcome } from '../types/journeyEngine';
 import type { CooperationStrategy } from '../types/disposition';
 import type { GraphNode, GraphEdge } from '../types/graph';
+import { assignArtifactTrait } from './artifactTraits';
+import { ARTIFACT_CURSED_TRAIT_ID } from '../data/artifact-trait-content';
 import type {
   ReturnOutcome,
   ReturnRelationshipState,
@@ -499,6 +501,12 @@ export function applyRippleConsequences(
           if (node) {
             const newProps = { ...node.properties, ...(op.data.properties as Record<string, unknown>) };
             graph.updateNode(op.targetId, { properties: newProps });
+            // THR-1521 — the monster return's `cursed: true` is the same curse as
+            // `curse_artifact`'s, so it gets the same readable edge (fail-soft on a
+            // non-artifact or a holding face: the writer refuses, the flag stays).
+            if ((op.data.properties as Record<string, unknown>)?.cursed === true) {
+              assignArtifactTrait(graph, op.targetId, ARTIFACT_CURSED_TRAIT_ID, { tick, source: 'return_monster' });
+            }
           }
         }
       } catch {

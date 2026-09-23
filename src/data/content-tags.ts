@@ -204,6 +204,8 @@ const familyTags: readonly ContentTagDef[] = [
   T('#blessing', 'family', 'A favour that rides along, for as long as it lasts.'),
   T('#curse', 'family', 'A weight laid on someone, and not easily set down.'),
   T('#cursed', 'family', 'It carries a curse with it — the harm comes with the having.'),
+  // THR-1521 — a thing's trait word; the ref a gate names it by (`traitId: '#storied'`).
+  T('#storied', 'family', 'It has been where things happened, and the tales about it are told.'),
   T('#wound', 'family', 'Hurt taken, and still healing or still open.'),
   T('#disease', 'family', 'A sickness in the body, which spreads if it can.'),
   T('#physical', 'family', 'Of the body rather than the mind or the soul.'),

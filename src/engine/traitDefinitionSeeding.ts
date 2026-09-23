@@ -52,6 +52,7 @@ import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import { MASTERY_TRAIT_DEFINITIONS } from '../data/mastery-trait-content';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
+import { ARTIFACT_TRAIT_DEFINITIONS } from '../data/artifact-trait-content';
 
 /**
  * The encounter-owned trait definition families seeded at world construction.
@@ -61,6 +62,9 @@ import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
 export const ENCOUNTER_TRAIT_DEFINITIONS: readonly GraphNode[] = [
   ...MASTERY_TRAIT_DEFINITIONS,
   ...CONDITION_TRAIT_DEFINITIONS,
+  // THR-1521 — the two traits a thing can bear (`trait.artifact.*`), seeded so
+  // `mintMasterwork` and `curse_artifact` find their definition on every world.
+  ...ARTIFACT_TRAIT_DEFINITIONS,
 ];
 
 /**

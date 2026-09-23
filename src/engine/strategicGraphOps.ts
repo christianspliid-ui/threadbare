@@ -16,6 +16,8 @@ import {
   WARBAND_TARGET_MEMBER_COUNT,
 } from '../data/strategic-action-constants';
 import { getAgentLocationId, getAgentsAtLocation, getFactionMembershipEdges } from './graphQueries';
+import { assignArtifactTrait } from './artifactTraits';
+import { ARTIFACT_STORIED_TRAIT_ID } from '../data/artifact-trait-content';
 // ── The T3 tier's writers (THR-1309) ──
 // Imported rather than reproduced: each of these is the *single* writer for its shape,
 // and a second mint site is a second shape (the lesson `groupShape.ts` records).
@@ -823,6 +825,11 @@ export function mintMasterwork(
       type: 'possesses',
       properties: { modifiers: {}, tags: ['masterwork'] },
     });
+
+    // THR-1521 — a masterwork is born Storied at level 1; the level climbs with the
+    // encounters it is carried through (`recordArtifactEncounterPresence`). Fail-soft:
+    // a refused stamp leaves the item intact and the mint still succeeds.
+    assignArtifactTrait(graph, itemId, ARTIFACT_STORIED_TRAIT_ID, { tick, source: 'mint_masterwork' });
 
     return { success: true, op: 'mint_masterwork', createdId: itemId };
   } catch (e) {

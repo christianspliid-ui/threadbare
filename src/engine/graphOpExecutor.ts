@@ -26,6 +26,8 @@ import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../types/battl
 import type { AttachmentEffect } from '../types/effects';
 import { SPHERE_EFFECT_TABLE, isArtifactNode } from './ascendantPrimitives';
 import { advanceAttachmentTier } from './attachmentTierAdvancement';
+import { assignArtifactTrait, removeArtifactTrait } from './artifactTraits';
+import { ARTIFACT_CURSED_TRAIT_ID } from '../data/artifact-trait-content';
 import { CURSE_QUINTESSENCE_DRAIN } from '../data/ascendant-expression-constants';
 import {
   deriveSourceTier,
@@ -1211,6 +1213,10 @@ function executeCurseArtifact(
   graph.updateNode(artifact.id, {
     properties: { effects: [...existing, curse], cursed: true, curseConcealed: true },
   });
+  // THR-1521 — the readable form of the curse. `properties.cursed` was an untyped flag
+  // read by nobody; the `has_trait` edge is what `resolveTraitPredicate` and the sheet
+  // see. Fail-soft: a holding face keeps its flag and gets no edge (never a bearer).
+  assignArtifactTrait(graph, artifact.id, ARTIFACT_CURSED_TRAIT_ID, { tick: ctx.tick ?? 0, source: 'curse_artifact' });
   return { op, success: true };
 }
 
@@ -1236,6 +1242,8 @@ function executeNullifyArtifact(
   graph.updateNode(artifact.id, {
     properties: { effects: [], attunedSphere: undefined, cursed: false, curseConcealed: false },
   });
+  // THR-1521 — the curse's readable form goes with the flag.
+  removeArtifactTrait(graph, artifact.id, ARTIFACT_CURSED_TRAIT_ID, { tick: ctx.tick ?? 0, source: 'nullify_artifact' });
   return { op, success: true };
 }
 

@@ -17,7 +17,7 @@ status: live
 | Category | Backing edge | Examples |
 |----------|-------------|----------|
 | Possession | `possesses` → node | Arms, vestments, tomes, mounts, relics, consumables |
-| Condition | `has_trait` → node (trait subcategory) | Wounds, diseases, curses, blessings, bestowed powers |
+| Condition | `has_trait` → node (trait subcategory) | Wounds, diseases, curses, blessings, bestowed powers. Since THR-1521 an artifact bears its own two — *Storied* and *Cursed*, `trait.artifact.*` — through `src/engine/artifactTraits.ts`; the artifact sheet shows them as trait chips |
 | Spell | `possesses` → spell node | Learned incantations, bound magics |
 | Power | `possesses` → power node | Bestowed divine gifts (Spirit Sight, Bloodward) |
 | Agreement | `relates_to` **edge** (no target node) | Oaths, pacts, debts, favours, treaties |

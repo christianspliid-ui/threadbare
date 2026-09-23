@@ -531,6 +531,36 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'artifact-traits-on-the-edge',
+    producerSystem: ATTACHMENTS,
+    consumerSystem: TRAITS,
+    intent:
+      'A thing can be Storied or Cursed the way a mortal can be wounded, and every reader — the trait gate, the sheet, the debug readout — sees the same edge.',
+    ulTerms: ['Trait', 'Attachment'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['assignArtifactTrait', 'recordArtifactEncounterPresence', 'readArtifactTraits', 'describeArtifactTraits'],
+      module: 'src/engine/artifactTraits.ts',
+    },
+    writeSites: [
+      'src/engine/strategicGraphOps.ts',
+      'src/engine/graphOpExecutor.ts',
+      'src/engine/returnEngine.ts',
+      'src/engine/encounter.ts',
+      'src/engine/unifiedActionResolution.ts',
+    ],
+    readSites: [
+      'src/components/Game/ArtifactSheet.tsx',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-22',
+      evidence:
+        'THR-1521 (traits wave 2, slice 3). `has_trait.sourceNodeType` gained `artifact` / `artifact_legendary`; `artifactTraits.ts` is the ONE writer and carries the holdings carve-out (a holding face is type-legal and refused — the schema is per node type, so the refusal cannot live in the row). Producers: `mintMasterwork` stamps `trait.artifact.storied` at level 1; `curse_artifact` writes `trait.artifact.cursed` beside THR-661\'s `properties.cursed` flag (untyped, read by nobody) and `nullify_artifact` removes it; the monster return\'s `cursed: true` op gets the same edge at its one apply site; both encounter-growth roads (`encounter.ts`, `unifiedActionResolution.ts`) call `recordArtifactEncounterPresence`, which lifts Storied a level every `ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL` encounters to `maxLevel`. Consumers: `resolveTraitPredicate` with the artifact as bearer (by tag `#cursed`, by id, by name — the pre-fix arm proves the flag alone satisfied none), `ArtifactSheet`\'s Traits chips (words, never a numeral), `__DEBUG.getArtifactTraits`, CLI `traits`. The `condition_template` carve excludes `trait.artifact.*` unless the query names `classes: [\'artifact\']`, with a pre-fix arm proving the raw carve does index them. Non-vacuous by `src/engine/__tests__/artifactTraits.test.ts` (schema, carve-out, cursed-before/after, mint, climb, cap, carve, seating, traces) and `ArtifactSheet.test.tsx` (Law 56 chip anchored to the edge, Law 13 words, Law 4 absence, holding face never shows one, tag chips through the shared vocabulary).',
+    },
+  },
+  {
     id: 'trait-ref-authoring-vocabulary',
     producerSystem: TRAITS,
     consumerSystem: AMBITIONS,

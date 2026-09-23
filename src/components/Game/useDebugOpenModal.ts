@@ -16,6 +16,8 @@ interface DebugModalOpeners {
  *   agent    → AgentProfileModal for the first retinue agent (The First in seeded games)
  *   location → LocationProfileModal for the first location node
  *   faction  → FactionSheet for the first faction actor node
+ *   artifact → ArtifactSheet for the first artifact carrying a trait, else the first
+ *              non-holding artifact (THR-1521)
  *
  * No `army` target: armies are war-gated (a seed-42 medium world raises its first
  * host around tick 45), so nothing exists at mount, and a wait-for-one variant
@@ -71,8 +73,22 @@ export function useDebugOpenModal(
           else console.warn('[useDebugOpenModal] No faction found for debug.openModal=faction');
           break;
         }
+        case 'artifact': {
+          // THR-1521 — the artifact sheet. Prefer a thing that carries a trait (so the
+          // sheet's Traits slot has something to show), else the first non-holding
+          // artifact; a holding face is a mirror of an `owns` edge, never a sheet target.
+          const things = [
+            ...graph.getNodesByType('artifact'),
+            ...graph.getNodesByType('artifact_legendary'),
+          ].filter(n => (n.properties as Record<string, unknown>).attachmentCategory !== 'holding');
+          const storied = things.find(n => graph.getOutgoingEdges(n.id, 'has_trait').length > 0);
+          const target = storied ?? things[0];
+          if (target) openers.openStubModal(target.id, 'artifact');
+          else console.warn('[useDebugOpenModal] No artifact found for debug.openModal=artifact');
+          break;
+        }
         default:
-          console.warn(`[useDebugOpenModal] Unknown modal target: "${modal}". Supported: agent, location, faction`);
+          console.warn(`[useDebugOpenModal] Unknown modal target: "${modal}". Supported: agent, location, faction, artifact`);
       }
     }, 500);
 

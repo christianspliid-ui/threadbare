@@ -31,6 +31,7 @@ import { getQuintessenceRatio } from '../types/quintessence';
 import { mapResolverOutcomeToStep } from './unifiedActionResolution';
 import { emitTrace } from './traceBuffer';
 import { applyEncounterGrowth } from './capabilityGrowth';
+import { recordArtifactEncounterPresence } from './artifactTraits';
 import { handleTierPromotion } from './tierPromotion';
 import type { GrowthResult } from './capabilityGrowth';
 import type { PromotionResult } from './tierPromotion';
@@ -618,6 +619,9 @@ export function resolveEncounter(
     // halves advancement must halve it on both roads or it halves it on neither.
     { graph: state.graph, effectStates: state.effectStates, persisted: state, tick: state.tick },
   );
+  // THR-1521: the things carried through this step were present in it — a storied
+  // thing's level climbs with the tales. Same seam on both growth roads; fail-soft.
+  recordArtifactEncounterPresence(state.graph, progress.actorId, state.tick);
 
   // Handle tier promotion if crossed
   let promotion: PromotionResult | undefined;

@@ -626,6 +626,49 @@ export interface DebugBridge {
   }>>;
 
   /**
+   * THR-1521: every artifact trait on every thing — or one thing's, matched by id, id
+   * prefix, or partial name (case-insensitive).
+   *
+   * A row per `has_trait` edge whose target is a `trait.artifact.*` definition:
+   * *Storied* (stamped at level 1 by `mintMasterwork`; `encountersPresent` is the count
+   * the level climbs on, `ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL` per word) and *Cursed*
+   * (written beside THR-661's `properties.cursed` flag by `curse_artifact`; removed by
+   * `nullify_artifact`). `levelWord` is what the sheet shows — never a numeral. A
+   * holding face is never listed: it cannot bear one. Reads the same edges the artifact
+   * sheet reads. Empty when the game is not loaded or nothing matches. Always `await` it.
+   */
+  getArtifactTraits: (artifactIdOrName?: string) => Promise<Array<{
+    artifactId: string;
+    artifactName: string;
+    traitId: string;
+    name: string;
+    level: number;
+    levelWord: string | null;
+    polarity: 'positive' | 'negative' | 'neutral';
+    since: number | null;
+    source: string | null;
+    description: string | null;
+    encountersPresent: number;
+  }>>;
+
+  /**
+   * THR-1521: stamp an artifact trait on a thing, for a review capture — `storied`
+   * (default) or `cursed`, bare or `#`-prefixed or the full `trait.artifact.*` id.
+   *
+   * `target` is an artifact id or exact name, or an agent query (`@hero`, an id, a
+   * name) whose first trait-bearing possession is stamped. Refuses a holding face and a
+   * non-artifact the way the engine writer does (`ok: false` with the writer's reason);
+   * seeds the definition on demand; bumps the world version, so an open sheet shows the
+   * trait on its next render (a stamp alone schedules none — follow it with `tick(1)`).
+   * Dev lever only — production traits come from `mintMasterwork` and `curse_artifact`.
+   * Always `await` it.
+   */
+  stampArtifactTrait: (target: string, traitRef?: string) => Promise<
+    | { ok: true; edgeId: string; alreadyHeld: boolean; artifactId: string; artifactName: string; traitId: string }
+    | { ok: false; reason: string; artifactId?: string; artifactName?: string; traitId?: string }
+  >;
+
+  /**
    * THR-1142: read an agent's live travel intent — where an `agent_relocation`
    * aftermath effect sent them, and how far along they are.
    *

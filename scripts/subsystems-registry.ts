@@ -110,7 +110,9 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Personality & Emergent Traits',
     aliases: ['personality', 'trait', 'traits', 'becoming', 'axiological', 'temperament'],
     activityKeywords: ['personality', 'trait', 'core_personality'],
-    domains: ['personality', 'core', 'trait', 'traits'],
+    // `artifact` (THR-1521): `artifactTraits.ts` — the one writer of a thing's `has_trait`
+    // edges — is a trait writer that happens to name its bearer, so it homes with traits.
+    domains: ['personality', 'core', 'trait', 'traits', 'artifact'],
     phaseMatch: /\b(personality|trait)\b/i,
     note: 'Layered: worldgen baseline → core → emergent traits (THR-527/542/561).',
   },

@@ -283,12 +283,16 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     ulTerm: 'Traits.md#trait-category',
     // `trait.condition.` and `trait.scar.` (THR-1520): the trait content files' conditions
     // and scars — the same nodes the graph carve has always returned for this kind.
-    idPrefixes: ['reward_', 'starter_', 'anomaly_', 'trait.condition.', 'trait.scar.'],
+    // `trait.artifact.` (THR-1521): the two conditions a *thing* bears — the same
+    // `condition` class, carved from a mortal's query by prefix (`classes: ['artifact']`
+    // opts in), the way `trait.condition.location.` is carved by `classes: ['location']`.
+    idPrefixes: ['reward_', 'starter_', 'anomaly_', 'trait.condition.', 'trait.scar.', 'trait.artifact.'],
     catalogs: [
       { module: 'data/reward-attachment-catalog', export: 'REWARD_CONDITIONS' },
       { module: 'data/starter-attachments', export: 'STARTER_CONDITIONS' },
       { module: 'data/anomaly-reward-catalog', export: 'ANOMALY_CONDITIONS' },
       { module: 'data/condition-trait-content', export: 'CONDITION_TRAIT_DEFINITIONS' },
+      { module: 'data/artifact-trait-content', export: 'ARTIFACT_TRAIT_DEFINITIONS' },
       // Shared with the Trait kind; the prefixes partition it (two scars and one condition
       // are this kind's, the masteries, reputations and cultural trait are Trait's).
       { module: 'data/economic-trait-content', export: 'ECONOMIC_TRAIT_DEFINITIONS' },
