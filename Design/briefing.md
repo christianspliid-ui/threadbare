@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-23 14:55 local (12:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-23 15:58 local (13:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,12 +19,12 @@ The fork: the game offers a scene to mortals who lean one way on the scene's val
 
 ## Queue
 
-**Starved: nothing ready, one job in progress, no parked jobs.** [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) is claimed and in progress (a process fix that clears the materiality bar). The only live design item is [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), about 32 hours on the desk; it is the ask above. Daily grooming notes that [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded) is a design session's call under your delegation ruling. It does not need you.
+**Starved: nothing ready, one job in progress, no parked jobs.** [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) is claimed and in progress (a process fix that clears the materiality bar). The only live design item is [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its), about 33 hours on the desk; it is the ask above. Daily grooming notes that [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded) is a design session's call under your delegation ruling. It does not need you.
 
 ## Health
 
-- **THR-1529's pull request is still stuck on a failing docs check.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed ["Docs gates"](https://github.com/christianspliid-ui/threadbare/actions/runs/35847857034/job/107138340091) and has had no new push since 10:15 UTC, about 2h40 now. Neither the 11:11 nor the 12:11 builder run fixed it. The next builder run (~13:11 UTC) resumes its own claim. This is the builder's job, not yours.
-- **Heavy simulation tests:** the probe says "failing on main for 31 hours". The latest run on today's code ([08:34 UTC](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948)) passed. The daily pattern holds: red first, then green on the same code. That points to a slow runner, not broken code. This is a technical call, not yours; the lasting fix (a longer time limit) is a session's job.
+- **THR-1529's pull request is still stuck on a failing docs check.** [PR #1987](https://github.com/christianspliid-ui/threadbare/pull/1987) failed "Docs gates" and has had no new push since 10:17 UTC, about 3h40 now. The 11:11, 12:11 and 13:11 builder runs all left it untouched. The next builder run (~14:11 UTC) resumes its own claim. This is the builder's job, not yours.
+- **Heavy simulation tests:** the probe says "failing on main for 32 hours". The latest run on today's code ([08:34 UTC](https://github.com/christianspliid-ui/threadbare/actions/runs/35837874948)) passed. The daily pattern holds: red first, then green on the same code. That points to a slow runner, not broken code. This is a technical call, not yours; the lasting fix (a longer time limit) is a session's job.
 - **Lane silence:** the worst recent gap (25 hours, Saturday into Sunday) falls on a weekend. It is declined under your 11 September ruling.
-- **Worktree reaper:** 5 worktrees await disposition (14:40 run). Routine; this is the reaper's call.
-- Everything else is green. The live site is serving the latest game code (f50759a4); later commits touched only docs. CI is healthy, and all nine scheduled lanes are on time. Engine speed is 64 ms/tick, 10% below the 7-day median of 71.
+- **Worktree reaper:** 5 worktrees await disposition (15:40 run). Routine; this is the reaper's call.
+- Everything else is green. The live site is serving the latest game code (f50759a4); later commits touched only docs. CI is healthy, and all nine scheduled lanes are on time. Engine speed is 85 ms/tick, 20% above the 7-day median of 71 — inside the 25% band.
