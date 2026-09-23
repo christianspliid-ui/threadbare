@@ -30,7 +30,7 @@
       "filename": "Traits.md",
       "title": "Traits",
       "contentAdjacent": true,
-      "termCount": 17,
+      "termCount": 18,
       "blurb": "Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not."
     },
     {
@@ -4093,8 +4093,8 @@
       ],
       "status": "canonical",
       "statusNote": null,
-      "oneLiner": "the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation",
-      "body": "The `has_trait` edge binding a bearer to a trait definition. Edge properties (`TraitAssignmentProperties`) carry `level`, `acquiredTick`, `lastReinforcedTick`, `source` (what caused acquisition), `visibility`, an optional `ticksRemaining` countdown, and optional `modifiers`. The definition is shared; the assignment is per-bearer, which is why level, expiry, and provenance live on the edge and not on the node.\n\nLegal bearers are fixed by the edge schema: `actor` (individual, group, faction, culture, god, ascendant), `location`, and `sublocation`. Artifacts and reified relationships are named as bearers by the design but are not yet schema-legal — each arrives with its own wave as an additive `sourceNodeType` extension.\n\n`ticksRemaining` is the live countdown the condition decay phase decrements; absent means the assignment never expires. It is distinct from the authored `durationTicks` provenance value, which is kept but never decremented.",
+      "oneLiner": "the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation, and (THR-1521) artifact",
+      "body": "The `has_trait` edge binding a bearer to a trait definition. Edge properties (`TraitAssignmentProperties`) carry `level`, `acquiredTick`, `lastReinforcedTick`, `source` (what caused acquisition), `visibility`, an optional `ticksRemaining` countdown, and optional `modifiers`. The definition is shared; the assignment is per-bearer, which is why level, expiry, and provenance live on the edge and not on the node.\n\nLegal bearers are fixed by the edge schema: `actor` (individual, group, faction, culture, god, ascendant), `location`, `sublocation`, and — since THR-1521 (2026-09-22) — `artifact` and `artifact_legendary` (see `[[Artifact Trait]]`; a holding face is type-legal but refused by the one writer, because a freehold is bookkeeping, not a thing). Reified relationships are named as bearers by the design but are not yet schema-legal — they arrive with their own wave as an additive `sourceNodeType` extension.\n\n`ticksRemaining` is the live countdown the condition decay phase decrements; absent means the assignment never expires. It is distinct from the authored `durationTicks` provenance value, which is kept but never decremented.",
       "seeAlso": [
         {
           "raw": "Trait",
@@ -4155,6 +4155,48 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Traits.md#location-trait",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "artifact-trait",
+      "name": "Artifact Trait",
+      "aliases": [
+        "Thing's Trait",
+        "Item Trait"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "a `condition` trait whose bearer is a thing (`artifact` / `artifact_legendary`), declared by the `trait.artifact.*` id prefix; *Storied* (stamped by `mintMasterwork`, climbs with encounter presence) and *Cursed* (the readable form of `curse_artifact`); a holding face is never a bearer (THR-1521)",
+      "body": "A `condition`-category `[[Trait]]` whose bearer is a *thing* — a `has_trait` edge from an `artifact` or `artifact_legendary` node to a definition under the id prefix `trait.artifact.*` (`ARTIFACT_TRAIT_ID_PREFIX`, `src/data/artifact-trait-content.ts`). The prefix is the declaration, the `[[Location Trait]]` rule carried one object family further: no new category, no new field. A **holding face** — the `artifact` node `holdings.ts` mints to mirror an `owns` edge — is never a bearer; the one writer (`src/engine/artifactTraits.ts`) refuses it.\n\nTwo definitions, and only two, because only per-bearer *state* justifies an edge; `#masterwork` / `#heirloom` / `#stolen` stay family tags. **Storied** — the thing has been where things happened: stamped at level one when a masterwork is made, and climbing a level every `ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL` encounters its bearer resolves with it about them, to `maxLevel`; the level is shown in words, never a numeral. **Cursed** — a curse rides in the thing: written beside the `curse_artifact` verb's untyped `properties.cursed` flag (THR-661), which nothing ever read, so that the one trait gate (`[[TraitPredicate]]`) sees a cursed blade the way it sees a wounded mortal; removed by `nullify_artifact`. The bearer-side hidden mark is unchanged.\n\nWhat reads it: `resolveTraitPredicate` with the artifact as bearer (`requiredTraits: [{ traitId: '#cursed' }]`), the artifact sheet's *Traits* chips, `__DEBUG.getArtifactTraits` and CLI `traits`. A `condition_template` content query excludes artifact traits unless it names `classes: ['artifact']`, so the reward pool never deals a mortal *Storied*.\n\nThe player-facing word is the definition's display name; *artifact trait* is the design word for the family.",
+      "seeAlso": [
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        },
+        {
+          "raw": "Trait Assignment",
+          "termName": "Trait Assignment",
+          "resolvedSlug": "traits#trait-assignment"
+        },
+        {
+          "raw": "Location Trait",
+          "termName": "Location Trait",
+          "resolvedSlug": "traits#location-trait"
+        },
+        {
+          "raw": "Attachment",
+          "termName": "Attachment",
+          "resolvedSlug": "traits#attachment"
+        },
+        {
+          "raw": "TraitPredicate",
+          "termName": "TraitPredicate",
+          "resolvedSlug": "traits#traitpredicate"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#artifact-trait",
       "contentAdjacent": true
     },
     {
