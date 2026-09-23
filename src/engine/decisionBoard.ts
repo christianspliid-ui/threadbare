@@ -405,7 +405,8 @@ export function ambitionPrefersVerb(
 /**
  * The family mix the THR-1280 verdict requires.
  *
- * `1 + 0.3 × [the ambition prefers this verb] + 0.2 × reachAffinity + 0.4 × heat`.
+ * `1 + 1.6 × [the ambition prefers this verb] + 0.8 × reachAffinity + 0.4 × heat`
+ * (+ `0.3 × heldTown`; the first two weights were 0.3 / 0.2 until THR-1525).
  * An encounter candidate sits at a flat `1.0`, so these weights are the whole of
  * how an undertaking's pull is tuned *relative* to an encounter's — the tunable
  * the plan asks for, in one place (NFP #1).
