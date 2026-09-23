@@ -301,13 +301,13 @@ Each slice is one Linear issue in the Physical Conflict project, not a child of 
 **Suggested model:** opus.
 
 **Parallel-safe with:**
-- plan doc 4's F3 and F4: disjoint files;
+- plan doc 4's F4: disjoint files. Plan doc 4's F3 is disjoint too, except `src/debug-bridge.ts`/`.d.ts` (listed under Mutex with; corrected 2026-09-24);
 - THR-1535 (if it lands before FB1): disjoint. THR-1534 and THR-1525 are merged.
 
 **Mutex with:**
 - E2 with plan doc 1's D1/D2 and plan doc 3's M3: all extend `src/engine/fights/fightOutcome.ts` (`onFightEnded`); run in sequence;
 - E1 with plan doc 2's FB slices: E1 edits `src/engine/unifiedActionResolution.ts` (the opponent side); it is blocked by FB7, so this holds by construction;
-- E1 with plan doc 3's M1 and plan doc 4's F1/F2: all edit `src/debug-bridge.ts`/`.d.ts`, and E1 and M1 both edit `scripts/cli.ts`;
+- E1 with plan doc 3's M1, plan doc 4's F1/F2/F3 and plan doc 6's H2: all edit `src/debug-bridge.ts`/`.d.ts` (each adds accessors, so a conflict is an additive merge), and E1 and M1 both edit `scripts/cli.ts`;
 - E3 with plan doc 3's M4 and M3: all three edit `src/types/trace.ts` (`fight.trigger`; union members only);
 - any slice editing `phaseColocationDetection.ts`, `phaseAgentDecision.ts` or `groups/groupMovement.ts` (E3);
 - E2 with plan doc 3's M3/M4 and plan doc 1's D1: all edit `src/types/trace.ts` (union members and fields only);
