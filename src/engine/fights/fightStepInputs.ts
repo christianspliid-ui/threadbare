@@ -16,10 +16,11 @@
  *    monster's Might (THR-1531).
  *  - **modifiers** — the fighter's standing modifiers (items, conditions, the
  *    effect modifier family) as one named term, read in a **combat** context so
- *    an `in_combat` charm works on a clash the card moved to Eye. The unified
- *    road's roll does not read standing modifiers for ordinary steps; that
- *    road-wide gap is THR-1535, and when it lands this term becomes the general
- *    one.
+ *    an `in_combat` charm works on a clash the card moved to Eye. Ordinary steps
+ *    read theirs through `computeStandingModifierTotal` (THR-1535). A fight step
+ *    keeps this read because it differs in two ways that matter — the combat
+ *    predicate context, and the reach swap applied before it — and the roll skips
+ *    the ordinary read on fight steps, so every step is read exactly once.
  *
  * **Pure.** The attended forecast calls this from the UI (FB7), so it writes
  * nothing: no spend, no node write. Reading it ten times is reading it once.

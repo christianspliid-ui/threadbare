@@ -7,9 +7,10 @@
  * 1. **Parity.** Over ≥ 200 real cache-entry steps across every scale, the planner's
  *    step probability equals the probability the resolver rolls the d100 against
  *    (`previewStepProbability` — the roll's own derivation, run dry). Excluded, as the
- *    plan excludes them: nudges, push, company and standing modifiers — the things a
- *    mortal cannot foresee, or (standing modifiers) that the roll does not yet read
- *    (THR-1535 extends this test when it lands).
+ *    plan excludes them: nudges, push and company — the things a mortal cannot
+ *    foresee. **Standing modifiers are included** (THR-1535): the roll reads them
+ *    and the planner adds the same per-reach total, so a second pass runs the whole
+ *    sample with the mortal carrying gear and standing on rough ground.
  * 2. **`F`.** On a fixture with one `fail_action` and one `continue_weakened` step, the
  *    engagement forecast is the exact product and differs from `completionProb`.
  * 3. **Growth.** The growth term varies with difficulty (it was constant: the 0–1
@@ -21,6 +22,7 @@ import { EncounterCacheManager, type EncounterCacheEntry } from '../encounterCac
 import { previewStepProbability } from '../unifiedActionResolution';
 import { estimateEncounterGrowthValue, estimateStepProbability, scoreAndSelect } from '../encounterScoring';
 import {
+  createStandingModifierReader,
   forecastEncounterExpectedUtility,
   forecastStepProbabilities,
   isPushEligible,
@@ -66,7 +68,7 @@ function stateOf(graph: WorldGraph): GameState {
   } as unknown as GameState;
 }
 
-function worldWithActor(raw: number): WorldGraph {
+function worldWithActor(raw: number, standing = false): WorldGraph {
   const graph = new WorldGraph();
   const caps: Record<string, number> = {};
   for (const r of ALL_REACHES) caps[r] = raw;
@@ -74,6 +76,20 @@ function worldWithActor(raw: number): WorldGraph {
     id: 'mortal', type: 'actor', name: 'Mortal',
     properties: { actorType: 'individual', domainCapabilities: caps },
   });
+  if (standing) {
+    // THR-1535 — a charm on three reaches and a mountain underfoot: an effect-family
+    // term and a terrain term, both of which the roll now reads.
+    graph.addNode({ id: 'here', type: 'location', name: 'Here', properties: { terrainType: 'mountain' } });
+    graph.addEdge({ id: 'e.here', source: 'mortal', target: 'here', type: 'located_at', properties: {} });
+    graph.addNode({
+      id: 'item.charm', type: 'artifact', name: 'Luck Charm',
+      properties: {
+        tier: 1,
+        effects: (['iron', 'heart', 'eye'] as const).map((reach) => ({ type: 'passive', reach, value: 0.05 })),
+      },
+    });
+    graph.addEdge({ id: 'e.charm', source: 'mortal', target: 'item.charm', type: 'possesses', properties: {} });
+  }
   return graph;
 }
 
@@ -117,18 +133,19 @@ interface ParitySample {
   resolver: number;
 }
 
-function collectParitySamples(): ParitySample[] {
+function collectParitySamples(standing = false): ParitySample[] {
   const entries = sampleCacheEntries();
   const samples: ParitySample[] = [];
   for (const raw of RAW_LEVELS) {
-    const graph = worldWithActor(raw);
+    const graph = worldWithActor(raw, standing);
     const state = stateOf(graph);
+    const standingOf = createStandingModifierReader(graph, 'mortal', state.effectStates);
     for (const entry of entries) {
       // Push is a mortal's own spend, excluded as the plan excludes it.
       if (isPushEligible(entry.templateId)) continue;
       const tmpl = templateOf(entry.templateId);
       if (!tmpl) continue;
-      const forecast = forecastEncounterExpectedUtility(entry, 'mortal', graph);
+      const forecast = forecastEncounterExpectedUtility(entry, 'mortal', graph, undefined, standingOf);
       for (let i = 0; i < entry.stepCount; i++) {
         const sb = tmpl.steps[i];
         const authored = isActionStepBranch(sb) ? sb.fallback : sb;
@@ -142,7 +159,9 @@ function collectParitySamples(): ParitySample[] {
           templateId: entry.templateId,
           step: i,
           scale: entry.scale,
-          planner: estimateStepProbability(cap, entry.stepDifficulties[i], undefined, entry.scale),
+          planner: estimateStepProbability(
+            cap, entry.stepDifficulties[i], standingOf(entry.stepReaches[i], entry.sphereAffinity), entry.scale,
+          ),
           plannerQuantised: forecast.stepForecasts[i].successProbability,
           resolver,
         });
@@ -182,6 +201,27 @@ describe('the planner forecasts the odds the dice use (planner-forecast-equals-r
     const rolled = estimateStepProbability(0.55, 0.45, undefined, 'local');
     expect(rolled).toBeGreaterThanOrEqual(0.65);
     expect(forecastStepProbabilities(0.55, 0.45, undefined, 'local').successProbability).toBeCloseTo(0.65, 2);
+  });
+});
+
+describe('with standing modifiers in play, the planner still plans with the roll (THR-1535)', () => {
+  const samples = collectParitySamples(true);
+  const bare = collectParitySamples(false);
+
+  it('the gear and the ground actually move the roll on the sample', () => {
+    // Same sample, same order: only the gear and the ground differ. Steps on a
+    // scale floor or the ceiling cannot move; the rest must.
+    expect(samples.length).toBe(bare.length);
+    const moved = samples.filter((x, i) => Math.abs(x.resolver - bare[i].resolver) > 1e-9).length;
+    console.info(`[THR-1535 parity] standing moved ${moved} of ${samples.length} sampled steps`);
+    expect(moved).toBeGreaterThanOrEqual(100);
+  });
+
+  it('planner P equals resolver P on every sampled step', () => {
+    for (const x of samples) expect(x.planner, `${x.templateId}#${x.step}`).toBeCloseTo(x.resolver, 9);
+    for (const x of samples) {
+      expect(Math.abs(x.plannerQuantised - x.resolver), `${x.templateId}#${x.step}`).toBeLessThan(0.01 + 1e-9);
+    }
   });
 });
 

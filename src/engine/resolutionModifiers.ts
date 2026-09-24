@@ -63,6 +63,7 @@ import {
   LOCATION_CONDITION_STEP_MODIFIER_CAP,
 } from '../data/condition-trait-content';
 import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
+import { UNIFIED_ROLL_READS_STANDING_MODIFIERS } from '../data/standing-modifier-constants';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -811,4 +812,37 @@ export function computeResolutionModifiers(
     totalModifier,
     contributions,
   };
+}
+
+// ─── The roll's standing-modifier term (THR-1535) ────────────────
+
+/**
+ * THR-1535 — the one standing-modifier total an ordinary unified-road step rolls
+ * with, and the planner plans with.
+ *
+ * Reads exactly what the attended forecast (`buildNudgePhaseModel`) reads: the
+ * actor's `located_at` target as the location, the step's authored reach (no reach
+ * override — capability on this road is computed on the authored reach, and a
+ * modifier total on a swapped reach would count gear toward a test the actor is
+ * not rolling), the template's sphere, and the live effect states. A fight step
+ * never comes here: `resolveFightStepInputs` reads its fighter's standing in a
+ * combat context, with the swap applied, as its own named term.
+ *
+ * Returns 0 when `UNIFIED_ROLL_READS_STANDING_MODIFIERS` is off (one-flag revert).
+ * Fail-soft: an actor with no location reads '' — terrain and place conditions
+ * then contribute nothing, everything else still counts.
+ */
+export function computeStandingModifierTotal(
+  graph: WorldGraph,
+  actorId: string,
+  stepReach: ReachDomain,
+  encounterSphereAffinity: SphereName | undefined,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): number {
+  if (!UNIFIED_ROLL_READS_STANDING_MODIFIERS) return 0;
+  const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
+  const locationId = locEdges.length > 0 ? locEdges[0].target : '';
+  return computeResolutionModifiers(
+    graph, actorId, locationId, stepReach, encounterSphereAffinity, effectStates,
+  ).totalModifier;
 }

@@ -156,7 +156,12 @@ import type { NpcRole } from '../types/npc';
 import type { HexTile } from '../types/index';
 import { getRarityTier } from './rarity';
 import { RARITY_ENCOUNTER_SCORE_MULTIPLIER } from '../data/rarity-constants';
-import { forecastEncounterExpectedUtility, type EncounterForecast } from './plannerForecast';
+import {
+  createStandingModifierReader,
+  forecastEncounterExpectedUtility,
+  type EncounterForecast,
+  type StandingModifierReader,
+} from './plannerForecast';
 
 // ─── Sphere Resonance Constants ─────────────────────────────────
 
@@ -847,7 +852,10 @@ export function estimateCompletionProb(
   entry: EncounterCacheEntry,
   agentId: string,
   graph: WorldGraph,
+  /** THR-1535 — the agent's standing modifiers; absent → a fresh reader. */
+  standing?: StandingModifierReader,
 ): number {
+  const standingOf = standing ?? createStandingModifierReader(graph, agentId);
   let prob = 1.0;
   for (let i = 0; i < entry.stepCount; i++) {
     let cap: number;
@@ -856,7 +864,9 @@ export function estimateCompletionProb(
     } catch {
       cap = 0.5; // Fail-soft: uncertain capability
     }
-    prob *= estimateStepProbability(cap, entry.stepDifficulties[i], undefined, entry.scale);
+    prob *= estimateStepProbability(
+      cap, entry.stepDifficulties[i], standingOf(entry.stepReaches[i], entry.sphereAffinity), entry.scale,
+    );
   }
   return prob;
 }
@@ -1165,6 +1175,11 @@ export function scoreAndSelect(
   let preNoveltyBestScore = -Infinity;
   let preNoveltyBestId: string | null = null;
 
+  // THR-1535 — the mortal's standing modifiers, read once per (reach, sphere) for
+  // this whole decision pass: the roll adds the same total, so the odds planned
+  // with are the odds rolled.
+  const standing = createStandingModifierReader(graph, agentId, effectStates);
+
   // THR-464 rung 6: Pre-compute funnel total once (O(n_templates)) for the global share ceiling.
   const funnel = runtime?.eligibilityFunnel ?? null;
   let funnelTotal = 0;
@@ -1176,7 +1191,7 @@ export function scoreAndSelect(
 
   for (const entry of candidates) {
     // 1. Completion probability (kept for backward compat / trace output)
-    let completionProb = estimateCompletionProb(entry, agentId, graph);
+    let completionProb = estimateCompletionProb(entry, agentId, graph, standing);
     if (!entry.requiresPresence && entry.remotePenalty > 0) {
       completionProb *= 1 - entry.remotePenalty;
     }
@@ -1194,7 +1209,7 @@ export function scoreAndSelect(
     // Uses the same math as live resolution via forecastEncounterExpectedUtility.
     // Reward scale includes both direct reward and growth value.
     const rewardWithGrowth = entry.successRewardEstimate + growthValue;
-    const forecast = forecastEncounterExpectedUtility(entry, agentId, graph, rewardWithGrowth);
+    const forecast = forecastEncounterExpectedUtility(entry, agentId, graph, rewardWithGrowth, standing);
     const expectedUtility = forecast.expectedUtility;
     const engagementForecast = forecast.engagementForecast;
     const pushBenefit = forecast.pushBenefit;
