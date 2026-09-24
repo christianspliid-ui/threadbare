@@ -43,6 +43,19 @@ import { buildPredicateContext, evaluateOptionalCondition } from './effects/effe
 import { isImmuneToAnyTag } from './effects/effectQueries';
 import { raiseConditionDamaged, raiseConditionHealed } from './effects/conditionProxyEvents';
 import {
+  applyConditionToActor,
+  CONDITION_DEFAULT_INTENSITY,
+  CONDITION_DEFAULT_DURATION_TICKS,
+} from './effects/conditionApplier';
+// THR-1542 — the condition writer moved to its own module so the effect
+// dispatcher can reach it; re-exported here so every importer keeps its import.
+export {
+  applyConditionToActor,
+  CONDITION_DEFAULT_INTENSITY,
+  CONDITION_DEFAULT_DURATION_TICKS,
+} from './effects/conditionApplier';
+export type { ApplyConditionOpts, ApplyConditionResult } from './effects/conditionApplier';
+import {
   THREAD_STRENGTHEN_DEFAULT,
   THREAD_WEAKEN_DEFAULT,
   THREAD_BRANCH_INITIAL_STRENGTH,
@@ -165,11 +178,8 @@ import type { SceneSentinelField, SceneSentinelKind } from './sceneSentinels';
 /** Initial reputationScore on a faction node when first read (matches DEFAULT_REPUTATION for agents). */
 export const DEFAULT_FACTION_REPUTATION = 0.5;
 
-/** Default intensity on apply_condition when the effect omits it. */
-export const CONDITION_DEFAULT_INTENSITY = 0.5;
-
-/** Default durationTicks on apply_condition when omitted. 0 = indefinite (no auto-expiry). */
-export const CONDITION_DEFAULT_DURATION_TICKS = 0;
+// `CONDITION_DEFAULT_INTENSITY` / `CONDITION_DEFAULT_DURATION_TICKS` moved with
+// the condition writer to `effects/conditionApplier.ts` (THR-1542); re-exported above.
 
 /** Max aftermath_invalid_tally_key traces emitted per tick before rate-limiting. */
 export const INVALID_TALLY_KEY_TRACE_RATE_LIMIT = 50;
@@ -341,91 +351,9 @@ function locationCarrierKind(graph: WorldGraph, nodeId: string): string {
   return 'location';
 }
 
-/** Options for `applyConditionToActor`. */
-export interface ApplyConditionOpts {
-  readonly tick: number;
-  /** Defaults to `CONDITION_DEFAULT_INTENSITY`. */
-  readonly intensity?: number;
-  /** Defaults to `CONDITION_DEFAULT_DURATION_TICKS` (0 = indefinite). */
-  readonly durationTicks?: number;
-  /** The new `has_trait` edge's id. Defaults to `has_trait_<target>_<condition>_<tick>`. */
-  readonly edgeId?: string;
-  /**
-   * Merged onto the new `has_trait` edge after the applier's fixed properties
-   * (plan doc 1's Scarred passes `inflictedBy` and `scarredTick`; the aftermath
-   * passes its encounter and reaction ids).
-   */
-  readonly edgeProperties?: Record<string, unknown>;
-  /** Runs after the edge is written and before the `damaged` proxy is raised. */
-  readonly onApplied?: (applied: { edgeId: string; intensity: number; durationTicks: number }) => void;
-}
-
-export type ApplyConditionResult =
-  | { readonly applied: true; readonly edgeId: string; readonly intensity: number; readonly durationTicks: number }
-  | {
-    readonly applied: false;
-    readonly reason: 'target_node_missing' | 'condition_template_missing' | 'tag_immunity';
-    readonly immuneTag?: string;
-  };
-
-/**
- * The one condition writer (THR-1539, fight-block plan doc §7). Lands a condition
- * trait on a carrier as a `has_trait` edge: refused when the carrier or the
- * condition is missing, or when the carrier is immune to one of the condition's
- * tags (THR-1242); otherwise written with a live `ticksRemaining` counter
- * (THR-761), then the `damaged` proxy is raised (THR-1244).
- *
- * Extracted from the aftermath's `apply_condition` case, which now delegates to
- * it unchanged. Band conditions (fights), `inflict_condition`, fight
- * complications and Scarred all call this, so tag immunity and the proxy events
- * behave the same everywhere. Traces are the caller's: each path traces in its
- * own vocabulary.
- */
-export function applyConditionToActor(
-  state: GameState,
-  targetId: string,
-  conditionTraitId: string,
-  opts: ApplyConditionOpts,
-): ApplyConditionResult {
-  if (!state.graph.getNode(targetId)) return { applied: false, reason: 'target_node_missing' };
-  const conditionNode = state.graph.getNode(conditionTraitId);
-  if (!conditionNode) return { applied: false, reason: 'condition_template_missing' };
-  const immuneTag = isImmuneToAnyTag(
-    state.graph, targetId,
-    (conditionNode.properties.tags as string[] | undefined) ?? [],
-    state.effectStates,
-  );
-  if (immuneTag !== null) return { applied: false, reason: 'tag_immunity', immuneTag };
-
-  const intensity = opts.intensity ?? CONDITION_DEFAULT_INTENSITY;
-  const durationTicks = opts.durationTicks ?? CONDITION_DEFAULT_DURATION_TICKS;
-  const edgeId = opts.edgeId ?? `has_trait_${targetId}_${conditionTraitId}_${opts.tick}`;
-  state.graph.addEdge({
-    id: edgeId,
-    source: targetId,
-    target: conditionTraitId,
-    type: 'has_trait',
-    properties: {
-      appliedAt: opts.tick,
-      durationTicks,
-      // THR-761: `decayConditions` is the only tick-driven expiry path and it
-      // counts down `ticksRemaining`, not `durationTicks`. Writing only the
-      // latter made every aftermath condition permanent. `durationTicks` stays
-      // as the authored total (provenance + UI progress denominator); this is
-      // the live counter. 0 = indefinite, so omit the field and the decay loop
-      // skips the edge entirely.
-      ...(durationTicks > 0 ? { ticksRemaining: durationTicks } : {}),
-      intensity,
-      ...(opts.edgeProperties ?? {}),
-    },
-  });
-  opts.onApplied?.({ edgeId, intensity, durationTicks });
-  // THR-1244: raised after the edge is written, so a reactive inspecting the
-  // bearer sees the condition it is firing on. Self-gating on harm + person
-  // carrier — see `conditionProxyEvents`.
-  raiseConditionDamaged(state, targetId, conditionTraitId, intensity);
-  return { applied: true, edgeId, intensity, durationTicks };
-}
+// `ApplyConditionOpts`, `ApplyConditionResult` and `applyConditionToActor` live in
+// `effects/conditionApplier.ts` since THR-1542 and are re-exported at the top of
+// this module, unchanged.
 
 export function resolveAftermathTarget(
   effect: EncounterAftermathReactionEffect,

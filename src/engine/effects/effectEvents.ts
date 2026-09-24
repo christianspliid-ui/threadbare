@@ -46,6 +46,7 @@ import type {
 import type { ReachDomain } from '../../types/traits';
 import { collectAttachmentEffects } from './effectWalker';
 import { addEventStack } from '../effectTick';
+import { advanceFightClock } from '../fights/fightClock';
 import { STACKING_GLOBAL_CAP } from '../../data/effect-constants';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -321,6 +322,31 @@ export function processEffectEvent(
               mode: 'one_shot',
               skipped: 'no_target',
               wanted: effect.target,
+            },
+          });
+          break;
+        }
+
+        // THR-1542 (fight block FB6, plan doc §10) — a fight clock is not a node
+        // number to clamp: it goes through the one clock writer, which writes a
+        // monster's clock directly and a mortal opponent's through the node
+        // mailbox the fight handler drains before its clock-full check. So an
+        // item's `fight_clock +1` on a clash counts in that same clash.
+        if (effect.resource === 'fight_clock') {
+          const write = advanceFightClock(graph, targetId!, effect.amount, `item:${attachmentId}`, tick);
+          traces.push({
+            type: 'effect_tick',
+            tick,
+            agentId,
+            attachmentId,
+            action: 'decay',
+            details: {
+              effectType: 'resource_manipulate',
+              mode: 'one_shot',
+              resource: 'fight_clock',
+              targetId: targetId!,
+              previousValue: write?.before ?? 0,
+              currentValue: write?.after ?? 0,
             },
           });
           break;

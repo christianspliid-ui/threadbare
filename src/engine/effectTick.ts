@@ -58,6 +58,7 @@ import {
   DURATION_DECAY_MIN_STEP,
 } from '../data/effect-constants';
 import { getAgentLocation } from './graphQueries';
+import { advanceFightClock } from './fights/fightClock';
 
 // ═══════════════════════════════════════════════════════════════════
 // Effect Tick Result
@@ -391,14 +392,33 @@ function tickHexEffect(
  * handler that did not exist and the mode was dead in both places.
  */
 function tickResourceManipulate(
-  effect: { type: 'resource_manipulate'; resource: 'essence' | 'quintessence'; target: string; amount: number; mode: 'per_tick' | 'one_shot' },
+  effect: { type: 'resource_manipulate'; resource: 'essence' | 'quintessence' | 'fight_clock'; target: string; amount: number; mode: 'per_tick' | 'one_shot' },
   agentNode: GraphNode,
   attachmentId: string,
   agentId: string,
   tick: number,
+  graph: WorldGraph,
 ): { trace?: EffectTickTrace } {
   if (effect.mode !== 'per_tick') return {};
   if (effect.target !== 'self') return {}; // 'other_agent' targeting not handled per-tick
+
+  // THR-1542 (fight block FB6, plan doc §10) — a bleeding or regenerating
+  // opponent for free: a per-tick `fight_clock` on the bearer (a bleed inflicted
+  // on a beast, a monster's own regeneration) moves the bearer's clock through
+  // the one clock writer. A monster's clock is written directly; a mortal's goes
+  // to the node mailbox, drained by their fight's next step (and cleared as stale
+  // by the next fight's start when no fight was running).
+  if (effect.resource === 'fight_clock') {
+    const write = advanceFightClock(graph, agentId, effect.amount, `tick:${attachmentId}`, tick);
+    if (!write || write.after === write.before) return {};
+    return {
+      trace: {
+        type: 'effect_tick', tick, agentId, attachmentId,
+        action: 'decay',
+        details: { effectType: 'resource_manipulate', resource: 'fight_clock', previousValue: write.before, currentValue: write.after },
+      },
+    };
+  }
 
   const current = (agentNode.properties[effect.resource] as number) ?? 0;
   // Clamp to [0, max]. Quintessence has a max capacity; essence has no defined max.
@@ -533,7 +553,7 @@ export function tickEffects(
           }
           case 'resource_manipulate': {
             if (agentNode) {
-              const r = tickResourceManipulate(effect, agentNode, node.id, agentId, tick);
+              const r = tickResourceManipulate(effect, agentNode, node.id, agentId, tick, graph);
               if (r.trace) traces.push(r.trace);
             }
             break;

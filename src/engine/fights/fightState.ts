@@ -349,6 +349,11 @@ function landFightBand(
   // (2) the step's effect events (THR-1541, plan doc §9): the fighter's outcome,
   // then — if the clash landed — `attacked` and `damaged`. Their reactives and
   // items may write the clock; a per-fight write lands in the mailbox drained next.
+  // THR-1542 (FB6) — a persistent clock is written directly, so what the events
+  // did to it is read as the difference across them.
+  const persistentBeforeEvents = fight.persistent && fight.opponentId
+    ? readOpponentCard(graph, fight.opponentId, tick).clockFilled
+    : 0;
   raiseFightStepOutcome(state, fighterId, fight.opponentId, events.reach, outcome, events.rng);
   raiseFightClashLanded(state, fighterId, fight.opponentId, outcome, delta, events.rng);
   // (3) the mailbox drain: this step's own effect-path writes count as a blow.
@@ -362,7 +367,11 @@ function landFightBand(
   // (4) the complication's `fight_clock` — FB7 (THR-1543) reads it here.
   // (5) the re-read.
   if (fight.persistent && fight.opponentId) {
-    fight = { ...fight, clockNow: readOpponentCard(graph, fight.opponentId, tick).clockFilled };
+    const afterEvents = readOpponentCard(graph, fight.opponentId, tick).clockFilled;
+    // A net-positive effect-path write this step (an item's `fight_clock +1`)
+    // is a blow landed this step, as the mailbox drain's is for a mortal (§5).
+    if (afterEvents > persistentBeforeEvents) blowLanded = true;
+    fight = { ...fight, clockNow: afterEvents };
   }
   if (blowLanded) fight = { ...fight, blowsLanded: fight.blowsLanded + 1 };
 

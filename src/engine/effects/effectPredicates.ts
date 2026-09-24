@@ -109,6 +109,12 @@ export function evaluatePredicate(
     const locationId = predicate.slice('faction_controls:'.length);
     return ctx.controlledLocations.has(locationId);
   }
+  // THR-1542 (fight block FB6) — the bearer's own fight clock is filled above n.
+  if (predicate.startsWith('clock_above:')) {
+    const threshold = parseFloat(predicate.slice('clock_above:'.length));
+    if (isNaN(threshold)) return false;
+    return (ctx.fightClockFilled ?? 0) > threshold;
+  }
 
   // Unknown predicate — fail-soft: treat as false
   return false;
@@ -372,5 +378,17 @@ export function buildPredicateContext(
     intelCategories,
     reputationScore,
     controlledLocations,
+    fightClockFilled: readOwnFightClock(agentNode?.properties.monsterState),
   };
+}
+
+/**
+ * THR-1542 — the agent's own persistent fight clock, for `clock_above:`. Reads the
+ * `monsterState` bag inline (the fight modules sit downstream of this one), as
+ * last written; a missing bag or a non-finite value reads 0 (fail-soft).
+ */
+function readOwnFightClock(bag: unknown): number {
+  if (!bag || typeof bag !== 'object') return 0;
+  const filled = (bag as Record<string, unknown>).clockFilled;
+  return typeof filled === 'number' && Number.isFinite(filled) ? Math.max(0, filled) : 0;
 }

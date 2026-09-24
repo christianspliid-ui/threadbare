@@ -40,6 +40,8 @@ import type {
   ChoiceOption,
   PredicateContext,
   ChoiceSetResolutionTrace,
+  ResourceManipulateEffect,
+  InflictConditionEffect,
 } from '../types/effects';
 import {
   CASCADE_MAX_DEPTH,
@@ -47,7 +49,7 @@ import {
   COMPEL_MAX_TICKS,
   CHOICE_SET_MAX_OPTIONS,
 } from '../data/effect-constants';
-import { evaluatePredicate } from './effects/effectPredicates';
+import { evaluatePredicate, evaluateOptionalCondition } from './effects/effectPredicates';
 import { mulberry32 } from '../lib/prng';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -92,6 +94,36 @@ export interface ExecutionResult {
    * Caller is responsible for surfacing the ChoiceSetModal.
    */
   pendingChoice?: PendingChoiceData;
+  /**
+   * THR-1542 — fight-clock writes a `resource_manipulate` `'fight_clock'` asked
+   * for. The executor stays pure; `applyExecutionResult` routes each through
+   * `advanceFightClock`, the one clock writer.
+   */
+  fightClockRequests?: FightClockRequest[];
+  /**
+   * THR-1542 — conditions an `inflict_condition` asked for. Applied by
+   * `applyExecutionResult` through `applyConditionToActor`, the one condition
+   * writer, which needs the game state an executor does not hold.
+   */
+  conditionRequests?: ConditionRequest[];
+}
+
+/** One fight-clock write an executor asked for (THR-1542). */
+export interface FightClockRequest {
+  readonly opponentId: string;
+  /** Segments: positive wears the clock toward a win, negative rewinds it. */
+  readonly delta: number;
+  /** Recorded on the `fight.clock` trace. */
+  readonly cause: string;
+}
+
+/** One condition an executor asked for (THR-1542). */
+export interface ConditionRequest {
+  readonly targetId: string;
+  readonly conditionTraitId: string;
+  readonly casterId: string;
+  readonly durationTicks?: number;
+  readonly intensity?: number;
 }
 
 interface GraphMutation {
@@ -531,6 +563,9 @@ export function executeCascade(
   const allTraces: ExecutionTrace[] = [];
   const allOverlays: ActiveTerrainOverlay[] = [];
   const allRuleOverrides: ActiveRuleOverride[] = [];
+  // THR-1542 — a cascade carries its members' fight-clock and condition requests.
+  const allClockRequests: FightClockRequest[] = [];
+  const allConditionRequests: ConditionRequest[] = [];
   const warnings: string[] = [];
   let effectCount = 0;
 
@@ -541,6 +576,8 @@ export function executeCascade(
   if (triggerResult.terrainOverlays) allOverlays.push(...triggerResult.terrainOverlays);
   if (triggerResult.ruleOverrides) allRuleOverrides.push(...triggerResult.ruleOverrides);
   if (triggerResult.warnings) warnings.push(...triggerResult.warnings);
+  if (triggerResult.fightClockRequests) allClockRequests.push(...triggerResult.fightClockRequests);
+  if (triggerResult.conditionRequests) allConditionRequests.push(...triggerResult.conditionRequests);
   effectCount++;
 
   // Execute follow-on effects
@@ -556,6 +593,8 @@ export function executeCascade(
     if (result.terrainOverlays) allOverlays.push(...result.terrainOverlays);
     if (result.ruleOverrides) allRuleOverrides.push(...result.ruleOverrides);
     if (result.warnings) warnings.push(...result.warnings);
+    if (result.fightClockRequests) allClockRequests.push(...result.fightClockRequests);
+    if (result.conditionRequests) allConditionRequests.push(...result.conditionRequests);
     effectCount++;
   }
 
@@ -570,6 +609,8 @@ export function executeCascade(
     terrainOverlays: allOverlays.length > 0 ? allOverlays : undefined,
     ruleOverrides: allRuleOverrides.length > 0 ? allRuleOverrides : undefined,
     warnings: warnings.length > 0 ? warnings : undefined,
+    ...(allClockRequests.length > 0 ? { fightClockRequests: allClockRequests } : {}),
+    ...(allConditionRequests.length > 0 ? { conditionRequests: allConditionRequests } : {}),
   };
 }
 
@@ -770,19 +811,19 @@ export function executeEffect(
     case 'axiological_drift':
     case 'range_modifier':
     case 'tag_immunity':
-    case 'resource_manipulate':
     case 'hex_effect':
     case 'slot_bonus':
     case 'stat_contribution':
-      return {
-        success: true,
-        mutations: [],
-        traces: [{
-          effectType: effect.type,
-          casterId: ctx.casterId,
-          details: { note: 'Modifier/state effect — applied by resolver/tick, not executor' },
-        }],
-      };
+      return modifierOnlyResult(effect.type, ctx);
+    // THR-1542 (fight block FB6): the one executed resource. A reactive or spell
+    // `fight_clock` must reach the clock from here — without this branch a monster
+    // could never rewind its own clock on `damaged`. Essence and quintessence stay
+    // tick/event-applied: the no-op above.
+    case 'resource_manipulate':
+      if (effect.resource === 'fight_clock') return executeFightClock(effect, ctx);
+      return modifierOnlyResult(effect.type, ctx);
+    case 'inflict_condition':
+      return executeInflictCondition(effect, ctx);
   }
 
   // THR-1239: exhaustiveness guard. Every member of `AttachmentEffect` is handled
@@ -796,6 +837,109 @@ export function executeEffect(
     mutations: [],
     traces: [],
     warnings: [`Unknown effect type: ${(_exhaustive as { type: string }).type}`],
+  };
+}
+
+/** A modifier/state effect: applied by the resolver or the tick, never executed. */
+function modifierOnlyResult(effectType: AttachmentEffect['type'], ctx: ExecutionContext): ExecutionResult {
+  return {
+    success: true,
+    mutations: [],
+    traces: [{
+      effectType,
+      casterId: ctx.casterId,
+      details: { note: 'Modifier/state effect — applied by resolver/tick, not executor' },
+    }],
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Type 36 (fight clock) and Type 42: fight vocabulary (THR-1542)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Resolve an effect's `self` / other target: the caster, or the event's
+ * counterpart (`ctx.targetId`, a fight opponent on a fight raise).
+ */
+function resolveSelfOrOther(isSelf: boolean, ctx: ExecutionContext): string | undefined {
+  return isSelf ? ctx.casterId : ctx.targetId;
+}
+
+/** A skipped fight-vocabulary effect: traced, not failed (fail-soft). */
+function skippedResult(effectType: string, ctx: ExecutionContext, reason: string): ExecutionResult {
+  return {
+    success: false,
+    mutations: [],
+    traces: [{ effectType, casterId: ctx.casterId, details: { skipped: reason } }],
+    warnings: [`${effectType} skipped: ${reason}`],
+  };
+}
+
+/**
+ * `resource_manipulate` `'fight_clock'` (fight block plan doc §10): ask for a write
+ * to a fight clock. `self` is the caster's own clock (a monster rewinding itself on
+ * `damaged`); `other_agent` is the counterpart's. The write itself is
+ * `applyExecutionResult`'s, through `advanceFightClock`.
+ */
+export function executeFightClock(
+  effect: ResourceManipulateEffect,
+  ctx: ExecutionContext,
+): ExecutionResult {
+  if (!evaluateOptionalCondition(effect.condition, ctx.predicateContext)) {
+    return skippedResult('resource_manipulate', ctx, 'condition_unmet');
+  }
+  const opponentId = resolveSelfOrOther(effect.target === 'self', ctx);
+  if (!opponentId || !ctx.graph.getNode(opponentId)) {
+    return skippedResult('resource_manipulate', ctx, 'no_target');
+  }
+  if (!Number.isFinite(effect.amount) || effect.amount === 0) {
+    return skippedResult('resource_manipulate', ctx, 'zero_amount');
+  }
+  return {
+    success: true,
+    mutations: [],
+    traces: [{
+      effectType: 'resource_manipulate',
+      casterId: ctx.casterId,
+      targetId: opponentId,
+      details: { resource: 'fight_clock', delta: effect.amount },
+    }],
+    fightClockRequests: [{ opponentId, delta: effect.amount, cause: `effect:${ctx.casterId}` }],
+  };
+}
+
+/**
+ * `inflict_condition` (fight block plan doc §10): ask for a condition on the
+ * caster or the counterpart. Applied by `applyExecutionResult` through the one
+ * condition writer, which honours tag immunity.
+ */
+export function executeInflictCondition(
+  effect: InflictConditionEffect,
+  ctx: ExecutionContext,
+): ExecutionResult {
+  if (!evaluateOptionalCondition(effect.condition, ctx.predicateContext)) {
+    return skippedResult('inflict_condition', ctx, 'condition_unmet');
+  }
+  const targetId = resolveSelfOrOther(effect.target === 'self', ctx);
+  if (!targetId || !ctx.graph.getNode(targetId)) {
+    return skippedResult('inflict_condition', ctx, 'no_target');
+  }
+  return {
+    success: true,
+    mutations: [],
+    traces: [{
+      effectType: 'inflict_condition',
+      casterId: ctx.casterId,
+      targetId,
+      details: { conditionTraitId: effect.conditionTraitId },
+    }],
+    conditionRequests: [{
+      targetId,
+      conditionTraitId: effect.conditionTraitId,
+      casterId: ctx.casterId,
+      ...(effect.durationTicks !== undefined ? { durationTicks: effect.durationTicks } : {}),
+      ...(effect.intensity !== undefined ? { intensity: effect.intensity } : {}),
+    }],
   };
 }
 

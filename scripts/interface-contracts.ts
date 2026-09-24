@@ -4265,9 +4265,10 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: {
       kind: 'edge-prop',
       symbols: ['has_trait', 'ticksRemaining'],
-      module: 'src/engine/encounterAftermath.ts',
+      // THR-1542 moved the writer to its own module (re-exported from encounterAftermath).
+      module: 'src/engine/effects/conditionApplier.ts',
     },
-    writeSites: ['src/engine/encounterAftermath.ts'],
+    writeSites: ['src/engine/effects/conditionApplier.ts'],
     readSites: ['src/engine/conditionDecay.ts'],
   },
   // ── FB5 (THR-1541, plan §9) — the plan's Interface impact row "fight → effect
@@ -4291,6 +4292,30 @@ export const CONTRACTS: readonly Contract[] = [
     },
     writeSites: ['src/engine/fights/fightEvents.ts'],
     readSites: ['src/engine/effects/effectEventDispatch.ts', 'src/engine/effects/effectEvents.ts'],
+  },
+  // ── FB6 (THR-1542, plan §10) — the effect vocabulary reaches a fight: `resource_manipulate`
+  // `'fight_clock'` at all three sites, and `inflict_condition`. No `verifiedLive`, for the
+  // FB2 rows' reason: no shipped template carries a fight block until FB7, and no shipped
+  // item or power carries the new vocabulary yet; the evidence today is
+  // `src/engine/fights/__tests__/fightVocabulary.test.ts`.
+  {
+    id: 'effects-write-fight-clock',
+    producerSystem: 'Effects & Conditions',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A charm can land the blow a fighter missed, a beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights — every one of them on the same clock the fighter's blows fill, so a spell's blow can win the fight.",
+    ulTerms: ['Fight Clock'],
+    // The executor (reactive and spell nested effects, via `applyExecutionResult`), the
+    // one-shot item path and the per-tick path all call the one clock writer. A mortal
+    // opponent's write lands in the node mailbox, drained by the fight handler before its
+    // clock-full check.
+    mechanism: {
+      kind: 'function',
+      symbols: ['advanceFightClock', 'fight_clock'],
+      module: 'src/engine/fights/fightClock.ts',
+    },
+    writeSites: ['src/engine/effects/effectEventDispatch.ts', 'src/engine/effects/effectEvents.ts', 'src/engine/effectTick.ts'],
+    readSites: ['src/engine/fights/fightState.ts'],
   },
 ];
 

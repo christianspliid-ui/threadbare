@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 115 |
+| 🟢 LIVE | 114 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 26 |
+| 🔵 UNVERIFIED-OK | 27 |
 | **Total** | **149** |
 
 ## Contracts by producing subsystem
@@ -138,6 +138,7 @@ remediation ticket or the build fails.
 | `aura-reaches-resolution-modifiers` | A nearby agent's aura tilts the step someone else is resolving — the one modifier the acting agent does not carry, named on the panel like every other. | function: `collectAuraEffectsNear`, `selectAuraEmitters`, `resolveAuraModifiers`, `collectAuraContributions` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `effect-executor-overlay-persistence` | Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern. | function: `applyExecutionOverlays`, `expireOverlays`, `getPersistedRuleOverride` | Effects & Conditions | 🟢 LIVE | — |
 | `effect-vocabulary-consolidated-spellings` | Every effect capability content can author reaches a live mechanism — duplicate spellings are retired and their content migrated onto the mechanism that already executes. | function: `applySuppressions`, `getRevealRanges`, `isImmuneToAnyTag`, `normalizeTag` | Effects & Conditions | 🟢 LIVE | — |
+| `effects-write-fight-clock` | A charm can land the blow a fighter missed, a beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights — every one of them on the same clock the fighter's blows fill, so a spell's blow can win the fight. | function: `advanceFightClock`, `fight_clock` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `rule-overrides-reach-owning-sites` | Every RuleOverrideKey is read by the one system that owns the rule it bends, through a single shared reader. | function: `readMultiplierOverride`, `readBonusOverride`, `readFlagOverride`, `readReachOverride` | Effects & Conditions | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
@@ -234,7 +235,6 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `capability-thresholds-read-the-reach-share` | Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time. | function: `computeReachShare`, `computeReachShares`, `REACH_SHARE_FULL_RAW`, `meetsJoinPrerequisites` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
@@ -701,18 +701,6 @@ exit
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +66 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
-### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
-
-- **Intent:** Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time.
-- **Producer → Consumer:** Spheres & Quintessence → Ambitions & Undertakings
-- **UL terms:** *Domain Capability*, *Prerequisite*
-- **Module:** `src/engine/domainCapability.ts`
-- **Production hits:** 20 total — 2 write, 10 read, 8 unclassified
-- **Write sites:** `src/data/reach-share-constants.ts`, `src/engine/domainCapability.ts`
-- **Read sites:** `src/debug-bridge.ts`, `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/gameInit.ts` +5 more
-- **Other hits:** `src/data/ambition-templates.ts`, `src/data/arcane-circle-definition.ts`, `src/data/holy-order-dawn-definition.ts`, `src/data/temple-of-spheres-definition.ts`, `src/data/thieves-guild-definition.ts` +3 more
-- **Verdict:** Verified 2026-09-24: THR-1562. Before, the seven requirement sites read four different numbers: ambition floors, milestones and abandonment compared the raw store (10–40+) against 0–1 thresholds, so every mortal passed every floor, milestones passed on first check and abandonment never fired; spells and `reach_above:` read `properties.domainCapability` (singular), which nothing writes; guild joins compared the dice curve against thresholds authored raw. Now all read `computeReachShare` (effective raw ÷ 40, capped at 1). Asserting tests: `reachShare.test.ts` (the function; each site — floors via the snapshot, a shipped spell and its `reach_drain` check, the shipped `reach_above:star:0.10` trickle, a thieves-guild join, the premonition window; a corpus test that every authored threshold kind is 0 < t ≤ 1; the abandonment idiom) and `graphConditions.test.ts` (a fail with the reader supplied; an un-migrated 0–1 fixture fails closed). Live, `npm run census:reach-gates`, medium, seeds 42 · 99 × 150 ticks, before (main 07d51e3e) → after: milestones completed 270 · 322 → 29 · 36; ambitions completed 33 · 38 → 6 · 5; abandoned 4 · 2 → 12 · 26; reach term of the winning ambition score 100% → 78% · 77%; mortals-with-capabilities holding ≥1 eligible ambition 100% · 100%; protagonist milestones met on first check at tick 0 66% · 64% → 49% · 51%.
-
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
 
 - **Intent:** A hold is kept by working it (THR-1287). The band and the cell variant an undertaking completion already carries decide whether the holder’s control stance renews — so the neglect loop, which before this had no counterparty at all and could only ever increment, is finally something a mortal can push back against.
@@ -967,11 +955,23 @@ exit
 - **Intent:** Every effect capability content can author reaches a live mechanism — duplicate spellings are retired and their content migrated onto the mechanism that already executes.
 - **Producer → Consumer:** Effects & Conditions → Effects & Conditions
 - **Module:** `src/engine/effects/effectSuppression.ts`
-- **Production hits:** 9 total — 2 write, 4 read, 3 unclassified
+- **Production hits:** 10 total — 2 write, 4 read, 4 unclassified
 - **Write sites:** `src/engine/effects/effectSuppression.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/effects/effectQueries.ts`, `src/engine/encounterAftermath.ts`, `src/engine/encounterAwareness.ts`, `src/engine/phaseMovement.ts`
-- **Other hits:** `src/engine/effectExecutors.ts`, `src/engine/effects/index.ts`, `src/types/trace.ts`
+- **Other hits:** `src/engine/effectExecutors.ts`, `src/engine/effects/conditionApplier.ts`, `src/engine/effects/index.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-08-26: THR-1242. Nine spellings retired and their content migrated: graph_mutation/outcome_shift/auto_succeed had zero refs; reroll (3) -> test_shaper, swap_reach (1) -> the encounter_reach_override rule key, haste/slow/freeze_duration (13) -> cooldown/movement/duration multiplier keys, create_barrier (5) -> alter_terrain with the shrouded/warded overlays. Retiring a spelling is NOT the same claim as keeping the capability, so the tests come in two shapes: retirement sweeps run against the REAL catalogs (a fixture would verify fiction, since the claim is about what ships) and match only a `type: 'x'` position, because a bare substring sweep for "slow" hits an adjective table in archetype-content and would report a false positive forever. Three primitives were wired rather than migrated, and each was a different shape of dead. `suppress` was the inverse of the usual case — a CONSUMER with no producer: EffectRuntimeState.suppressed has been read by effectResolver, effectQueries, consumableCharges and effectEvents since the primitive architecture landed and set by nothing, so four artifacts promised to silence magic and silenced nothing; applySuppressions is now its one writer, run once per tick before the effect tick so an attachment silenced this tick does not also act this tick. `reveal` had 17 content refs and no consumer of any kind; it now floors the awareness horizon (encounters target) and lifts fog on arrival (hexes target). `tag_immunity` had a complete query with ZERO callers AND a namespace mismatch that would have made it read as wired and block nothing — condition trait nodes carry #-prefixed tags while most immunity content wrote them bare, so `fear` would never have matched `#fear`; content is migrated to the # spelling and comparison normalizes both sides. Non-vacuous by falsification: reverting the walker to its private MAX_EFFECTS_PER_NODE=12 fails exactly the three content-guard tests, and removing the self-cancel guard from applySuppressions fails exactly the one that names it (4 failed / 79 passed), so the tests assert the wiring rather than the helpers. The create_barrier migration additionally required giving the stage-2 overlay store its first PRODUCTION reader (movementCost for warded, encounterAwareness for shrouded) — without it the migration would have moved five artifacts from a dead spelling onto a dead mechanism: persisted, traced, and still changing nothing a player could feel.
+
+### `effects-write-fight-clock` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A charm can land the blow a fighter missed, a beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights — every one of them on the same clock the fighter's blows fill, so a spell's blow can win the fight.
+- **Producer → Consumer:** Effects & Conditions → Encounters & Dilemmas
+- **UL terms:** *Fight Clock*
+- **Module:** `src/engine/fights/fightClock.ts`
+- **Production hits:** 7 total — 3 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effectTick.ts`
+- **Read sites:** `src/engine/fights/fightState.ts`
+- **Other hits:** `src/engine/effectExecutors.ts`, `src/engine/fights/fightClock.ts`, `src/types/effects.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
 
@@ -1046,11 +1046,11 @@ exit
 - **Intent:** A fight leaves its mark as the ordinary conditions — inspired, shaken, terrified, wounded — so every ward, cure and reader that knows a condition knows a fight's wound.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
-- **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 106 total — 1 write, 1 read, 104 unclassified
-- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Module:** `src/engine/effects/conditionApplier.ts`
+- **Production hits:** 107 total — 1 write, 1 read, 105 unclassified
+- **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +99 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +100 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-harm-queues-quintessence` — 🔵 UNVERIFIED-OK
@@ -1094,10 +1094,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 13 total — 1 write, 1 read, 11 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/engine/fights/fightForks.ts`, `src/engine/fights/fightState.ts`, `src/types/fight.ts`, `src/types/traces/fight-traces.ts`
+- **Other hits:** `src/data/fight-constants.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectPredicates.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
@@ -1384,10 +1384,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 82 total — 2 write, 3 read, 77 unclassified
+- **Production hits:** 83 total — 2 write, 3 read, 78 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +72 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +73 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1810,10 +1810,10 @@ exit
 - **Intent:** Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **Module:** `src/engine/undertakingCapabilityGrowth.ts`
-- **Production hits:** 56 total — 2 write, 2 read, 52 unclassified
+- **Production hits:** 57 total — 2 write, 2 read, 53 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCapabilityGrowth.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +47 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +48 more
 - **Verdict:** Verified 2026-09-08: THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
