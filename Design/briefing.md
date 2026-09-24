@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-24 14:57 local (12:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-24 15:57 local (13:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,18 +23,17 @@ The one question: **is the integrated encounter experience good enough?** A pass
 
 ## Queue
 
-**Healthy: eleven jobs ready, one in progress, no parked jobs.**
-- **In progress: [reach on one scale](https://linear.app/threadbare/issue/THR-1562/ambition-reach-floors-and-reach-milestones-compare-raw-capability-10)**. The builder claimed it at 14:35 and opened [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013). A required check is failing, so it will not merge until the builder pushes a fix.
-- **Newly in the build queue:** the last two fight-block slices, [FB6: the effect vocabulary for fights](https://linear.app/threadbare/issue/THR-1542/fight-block-fb6-effect-vocabulary-for-fights) and [FB7: the first playable fight](https://linear.app/threadbare/issue/THR-1543/fight-block-fb7-the-block-the-template-advantages-allies-events). Both are High.
-- High: [war news from what really happened](https://linear.app/threadbare/issue/THR-1564/war-news-never-reaches-the-player-in-normal-play-armies-battles-and).
+**Healthy: ten jobs ready, one in progress, no parked jobs.**
+- **Just shipped:** [FB6: the effect vocabulary for fights](https://linear.app/threadbare/issue/THR-1542/fight-block-fb6-effect-vocabulary-for-fights) merged at 15:49 via [#2014](https://github.com/christianspliid-ui/threadbare/pull/2014) and is live. An item or spell can now push a fight clock or inflict a condition mid-fight.
+- **In progress: [reach on one scale](https://linear.app/threadbare/issue/THR-1562/ambition-reach-floors-and-reach-milestones-compare-raw-capability-10)**, pull request [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013). See Health.
+- High: [FB7: the first playable fight](https://linear.app/threadbare/issue/THR-1543/fight-block-fb7-the-block-the-template-advantages-allies-events) (the last fight-block slice), [war news from what really happened](https://linear.app/threadbare/issue/THR-1564/war-news-never-reaches-the-player-in-normal-play-armies-battles-and).
 - Medium: [commander deleted, not marked dead](https://linear.app/threadbare/issue/THR-1566/a-commander-killed-in-battle-is-deleted-not-marked-dead-no-body-no), [M1: the monster card](https://linear.app/threadbare/issue/THR-1544/monsters-m1-the-monster-card), [item bursts](https://linear.app/threadbare/issue/THR-1568/items-that-promise-a-burst-when-struck-never-give-it-a-reactions-timed), [wards](https://linear.app/threadbare/issue/THR-1569/fear-wards-wound-cures-and-curse-wards-miss-the-real-conditions), [wayside encounters](https://linear.app/threadbare/issue/THR-1567/three-wayside-only-slice-encounters-almost-never-fire-the-unsafe).
 - Low: [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location), [seed targets](https://linear.app/threadbare/issue/THR-1565/three-seed-targets-tell-the-wrong-story-the-healers-grateful-kin-the), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573/the-follow-button-doesnt-say-it-keeps-a-mortal-in-the-spotlight).
 
 ## Health
 
-- **PR [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013) (THR-1562) has a failing required check.** Auto-merge is armed but will not fire. It is 19 minutes old and its builder is still working, so this is the builder's job.
-- **Heavy simulation tests are still red on main** (about 5 hours, five runs in a row). It was last diagnosed as one test running out of time, not a defect. The fix is owed by a builder, and no job has been filed yet.
-- **Tick cost:** 97 ms/tick steady, 38% above the 7-day median (70, 90 rows since da01eb15); top phase agent_decision, 497 agents. Name the merges between da01eb15 and 07d51e3e: `git log --oneline --merges da01eb15..07d51e3e`. The same commit measured 79 ms last hour, and a builder was running tests on this machine during this measurement. So this may be load noise. If the next reading is also high, treat it as real.
+- **PR [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013) (THR-1562) now also has a merge conflict**, on top of its failing required check. FB6 merged first and touched the same four doc files (authoring brief, interface map, wiring guide, wiring checklist). The builder needs to merge `main`, resolve, and fix the failing check. This is the builder's job.
+- **Heavy simulation tests were red on main for about 5 hours** (last failure on the #2012 merge; last diagnosed as one test running out of time). A fresh run on the FB6 merge is in progress. No job is filed for it yet.
 - **Lane silence:** the worst recent gap was 25 hours, from Saturday 19 into Sunday 20. It falls on a weekend, so your 11 September ruling declines it.
 - **Worktree reaper:** 5 worktrees are waiting to be sorted. Routine.
-- Everything else is green. The live site serves the #2012 merge, CI is healthy, all nine scheduled lanes are on time, and the home tree is current on `main`.
+- Everything else is green. The live site serves the FB6 merge, CI is healthy, all nine scheduled lanes are on time, the home tree is current on `main`, and tick cost is back in range (86 ms/tick, down from 97 last hour).
