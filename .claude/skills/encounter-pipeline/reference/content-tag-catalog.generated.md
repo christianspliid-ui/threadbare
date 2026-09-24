@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 156 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 157 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -90,7 +90,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**111 tags.**
+**112 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -165,6 +165,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#mastery` | A mastery — competence earned by doing a thing until the world noticed. | trait 9 | 9 |  |
 | `#reputation` | A reputation — what others have come to say about the bearer, deserved or not. | trait 19 | 19 |  |
 | `#cultural` | A formative mark a culture or a guild stamps on its own. | trait 1 | 1 |  |
+| `#temper` | How a creature breaks when a fight turns. | trait 4 | 4 |  |
 | `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 21 | 21 |  |
 | `#scar` | A scar — a condition that does not heal; what a loss left behind. | condition 2 | 2 |  |
 | `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 10 | 10 |  |
