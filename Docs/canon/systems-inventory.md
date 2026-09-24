@@ -298,7 +298,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `faction` (14) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
-| `fights` (8) | `fights/fightClock.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/opponentCard.ts` | `THR-1261`, `THR-1264`, `THR-1530`, `THR-1531`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541` |
+| `fights` (10) | `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/opponentCard.ts` | `THR-1261`, `THR-1264`, `THR-1271`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543` |
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
@@ -375,6 +375,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | `THR-1394` |
 | `ruins` (10) | `ruins/clueLifecycle.ts`, `ruins/clueRumors.ts`, `ruins/constants.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-149`, `THR-150`, `THR-1506`, `THR-151`, `THR-152`, `THR-153`, `THR-156` |
+| `scaled` (1) | `scaledForecast.ts` | `THR-1535`, `THR-1543` |
 | `scene` (3) | `sceneHere.ts`, `sceneRealm.ts`, `sceneSentinels.ts` | `THR-1025`, `THR-1110`, `THR-1143`, `THR-1144`, `THR-1175`, `THR-1446`, `THR-1462`, `THR-1499` |
 | `schism` (1) | `schismPlant.ts` | `THR-430` |
 | `scry` (1) | `scry.ts` | — |
@@ -423,4 +424,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 194 engine domains · 577 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 195 engine domains · 580 modules._
