@@ -14,6 +14,7 @@ import type { GameState } from '../types/gameState';
 import type { ArmyState } from '../types/army';
 import { getArmyTerrainCost } from './armyMovement';
 import { emitTrace } from './traceBuffer';
+import { reportWar, captureArmySide } from './armyNotifications';
 import { deriveSupplyTier, readArmySupply, readArmySupplyMax } from './armySupply';
 import {
   STRAINED_SUPPLY_ATTRITION_PENALTY,
@@ -56,6 +57,9 @@ export const COHESION_THRESHOLDS = {
   critical: 0.30,
   collapse: 0.10,
 } as const;
+
+/** The thresholds whose crossing the war news words as *falling apart*, not *fraying* (THR-1564). */
+export const ARMY_BREAKING_THRESHOLDS: ReadonlySet<string> = new Set(['critical', 'collapse']);
 
 /** Template IDs for threshold encounters */
 export const THRESHOLD_ENCOUNTER_TEMPLATES: Record<string, string> = {
@@ -173,9 +177,18 @@ export function phaseArmyAttrition(state: GameState): void {
         thresholdCrossed,
       });
 
+      // War news (THR-1564): an army fraying is recorded (never shown) at the crossing.
+      if (thresholdCrossed) {
+        reportWar(state, {
+          kind: 'army_fraying',
+          side: captureArmySide(state, armyNode.id),
+          severity: ARMY_BREAKING_THRESHOLDS.has(thresholdCrossed) ? 'breaking' : 'fraying',
+        });
+      }
+
       // Force disbandment at Cohesion 0
       if (cohesionAfter <= 0) {
-        disbandArmy(state, armyNode.id);
+        disbandArmy(state, armyNode.id, 'attrition');
       }
     } catch (err) {
       // Fail-soft: log and skip this army
@@ -223,12 +236,23 @@ function hasActiveLairAtHex(state: GameState, hexNodeId: string): boolean {
 }
 
 /**
+ * Why an army is disbanded. `'battle'` is the aftermath breaking the loser: the battle's
+ * ending line already tells it, so it is not reported twice (THR-1564).
+ */
+export type DisbandReason = 'battle' | 'attrition' | 'other';
+
+/**
  * Disband an army: remove the actor node, release the commander.
  * Commander stays at their current location.
  */
-export function disbandArmy(state: GameState, armyId: string): void {
+export function disbandArmy(state: GameState, armyId: string, reason: DisbandReason = 'other'): void {
   const armyNode = state.graph.getNode(armyId);
   if (!armyNode) return;
+
+  // War news (THR-1564): reported before removeNode, while the army's edges exist.
+  if (reason !== 'battle') {
+    reportWar(state, { kind: 'army_disbanded', side: captureArmySide(state, armyId) });
+  }
 
   // Find commander before removing army
   const commandedByEdges = state.graph.getOutgoingEdges(armyId, 'commanded_by');

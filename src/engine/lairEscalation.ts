@@ -351,7 +351,7 @@ function spawnAdjacentLair(
  *
  * Mutates `state` in place (same pattern as phaseBattleDetection, phaseFactionAmbitions).
  *
- * Position: after phaseBattleTick (2.357), before phaseArmyNotifications (2.358).
+ * Position: after phaseBattleTick (2.357), before phaseColocationDetection (2.36).
  * This ensures battles at lair hexes resolve before escalation ticks.
  *
  * `runtime` is optional so fixtures can drive the phase bare. When present, a subtype

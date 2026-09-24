@@ -24,6 +24,7 @@ import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces';
 import type { FightClockTrace, FightEndTrace, FightForkTrace, FightStepTrace } from './traces/fight-traces';
+import type { WarReportedTrace } from './traces/war-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -518,7 +519,9 @@ export type TraceCategory =
   | 'fight.clock'
   | 'fight.end'
   // Fights — one per runtime fork decision (THR-1540).
-  | 'fight.fork';
+  | 'fight.fork'
+  // War news — one per reportWar call (THR-1564). Interface in `src/types/traces/war-traces.ts`.
+  | 'war.reported';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -781,6 +784,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'fight.end',
   // Fights — one per runtime fork decision (THR-1540)
   'fight.fork',
+  // War news — one per reportWar call (THR-1564)
+  'war.reported',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -4071,6 +4076,7 @@ export type TraceEntry =
   | FightClockTrace
   | FightEndTrace
   | FightForkTrace
+  | WarReportedTrace
   // Story-so-far digest (THR-455)
   | ThreadStoryComposedTrace
   // Event feed hygiene (THR-456)

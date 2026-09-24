@@ -2158,6 +2158,22 @@ export interface DebugBridge {
     settlementId: string | null;
     spotlightCount: number;
   }>;
+
+  /**
+   * THR-1564 — The war news: every line `reportWar` wrote (id prefix `evt_war_`), from
+   * this tick's events, the rolling 100-entry `recentEvents` buffer and the chronicle,
+   * sorted by tick. `inChronicle` says whether the line reached the Chronicle panel.
+   * Written from state, so it works with tracing off. Synchronous.
+   */
+  getWarNews: () => Array<{
+    id: string;
+    tick: number;
+    /** The TickEvent type, or `'chronicle'` for a line only the chronicle still holds. */
+    type: string;
+    significance: number;
+    message: string;
+    inChronicle: boolean;
+  }>;
 }
 
 /** Result of `window.__DEBUG.forcePremonition` (THR-1414). */

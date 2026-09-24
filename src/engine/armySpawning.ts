@@ -26,6 +26,7 @@ import type { FactionAmbitionType } from '../types/faction';
 import { computeCapability, computeTier } from './domainCapability';
 import { findAllShortestPaths } from './pathfinding';
 import { emitTrace } from './traceBuffer';
+import { reportWar, captureArmySide } from './armyNotifications';
 
 // ─── Eligibility ────────────────────────────────────────────────────────
 
@@ -307,6 +308,10 @@ export function spawnArmy(
       headcount: ARMY_SIZE_HEADCOUNT[size],
       cohesion: ARMY_COHESION_BASE[size],
     });
+
+    // War news (THR-1564): reported here, where the army is raised, not read back off
+    // the trace above — traces are off in normal play. Fail-soft on a bare worldgen state.
+    reportWar(state, { kind: 'army_raised', side: captureArmySide(state, armyId), placeId: locationId });
 
     return armyId;
   } catch (err) {
