@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -11,9 +11,7 @@ Your 6 August rule: the hourly planning lane stages design work but never author
 - **Yes** → it drafts the first pass, runs the same audits an attended session uses, and you review a draft instead of starting from nothing.
 - **No** → nothing changes, and the design sessions are yours to run.
 
-**No hurry right now:** you are designing all three of these yourself this morning.
-
-**A yes would have let the lane draft three designs:** [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location).
+**Three design jobs are waiting for a design session now:** [items](https://linear.app/threadbare/issue/THR-1570), [power runtime](https://linear.app/threadbare/issue/THR-1571) and [spells](https://linear.app/threadbare/issue/THR-1572). With a yes, the lane could draft first passes of these.
 
 ### The odds shown are not the odds rolled ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)) — *from tb-orchestrator*
 
@@ -48,6 +46,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — your three morning designs are handed to the builder**: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). The plans merged via [#2002](https://github.com/christianspliid-ui/threadbare/pull/2002), [#2003](https://github.com/christianspliid-ui/threadbare/pull/2003) and [#2004](https://github.com/christianspliid-ui/threadbare/pull/2004).
+- **2026-09-24 — fights now deal harm, conditions and momentum** ([THR-1539](https://linear.app/threadbare/issue/THR-1539/fight-block-fb3-harm-conditions-momentum), fight block FB3). Merged 09:33 local via [#2006](https://github.com/christianspliid-ui/threadbare/pull/2006), and live on the site.
 - **2026-09-24 — the "design session wanted for THR-1526" ask is closed.** You are designing [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location) this morning.
 - **2026-09-24 — a won siege now keeps the town it took** ([THR-1563](https://linear.app/threadbare/issue/THR-1563)). Merged 08:31 local via [#2000](https://github.com/christianspliid-ui/threadbare/pull/2000).
 - **2026-09-24 — fights now run on a clock and can end early** ([THR-1538](https://linear.app/threadbare/issue/THR-1538/fight-block-fb2-fightstate-the-clock-early-end), fight block FB2). Merged 07:59 local via [#1999](https://github.com/christianspliid-ui/threadbare/pull/1999).
@@ -56,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — a killing's grief now reaches the victim's family and friends, not the corpse** ([THR-1536](https://linear.app/threadbare/issue/THR-1536/a-killings-grief-reaches-only-the-corpse-the-ambition-phase-walks-the)). Merged 00:35 local via [#1994](https://github.com/christianspliid-ui/threadbare/pull/1994). It is live on the site.
 - **2026-09-23 — two death paths no longer skip the "will not die" ward** ([THR-1534](https://linear.app/threadbare/issue/THR-1534)). Merged via [#1990](https://github.com/christianspliid-ui/threadbare/pull/1990), and live on the site.
 - **2026-09-23 — mortals now want both ends of what they value** ([THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its)). Merged 22:41 local via [#1989](https://github.com/christianspliid-ui/threadbare/pull/1989), and live on the site.
-- **2026-09-23 — THR-1525 ruled: mortals are drawn from both poles, with an optional per-axis pin.** [Plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-23-desire-score-both-poles.md) merged via [#1988](https://github.com/christianspliid-ui/threadbare/pull/1988). [THR-1525](https://linear.app/threadbare/issue/THR-1525/signed-desire-score-vs-the-specs-step-6-a-fork-that-plants-on-its) is now ready for the builder.
-- **2026-09-23 — the 17 and 18 September lane stops are explained.** The computer was asleep, according to [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md).
 
 ---
 
