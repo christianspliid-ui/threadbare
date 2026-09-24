@@ -2407,6 +2407,24 @@ export interface UnifiedActionTemplate {
    */
   readonly drawableWhileBroken?: boolean;
   /**
+   * Drawable by **the decision board** (THR-1526). Omit (or `true`) for the ordinary
+   * default: the encounter cache registers the template at every location its
+   * envelope matches, and any mortal there may be offered it.
+   *
+   * `false` marks a **seed-only sequel** — a template whose opening assumes its parent
+   * (a promise made, a family met, a word broken). It starts only when something
+   * *names* it: a seed (`templateId` or `query`), an appointment's kept or missed
+   * branch, a trigger, or a debug spawn (`?spawn=`, `spawn encounter`). The cache
+   * build (`isDrawable`, `encounterCache.ts`) and the delivery-beat filter skip it;
+   * seed resolution is untouched, so a named sequel still resolves.
+   *
+   * Unrelated to *Draw Together* and to the reward/consequence draws — "drawn" here
+   * means offered unprompted by the board. Keep the template in its catalog array
+   * (the query catalog reads it) and keep its `locationSubtypes` (`eligibleAt` reads
+   * them); this flag is the only thing that keeps it off the board.
+   */
+  readonly drawable?: boolean;
+  /**
    * Trait gate (THR-801) — every predicate must be satisfied for this template
    * to be drawable. Evaluated in `filterByPrerequisites` (stage 3 of the encounter
    * filter pipeline) through the shared THR-786 resolver, so each `traitId` is a

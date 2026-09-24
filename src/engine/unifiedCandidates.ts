@@ -117,6 +117,9 @@ export function generateUnifiedCandidates(
     if (template.scale === 'cosmic' || template.scale === 'regional') {
       continue;
     }
+    // THR-1526: a seed-only sequel is never offered unprompted (deprecated path; kept
+    // so the intent survives if it is ever revived).
+    if (template.drawable === false) continue;
 
     // Filter by actor affinity
     if (template.actorAffinities && template.actorAffinities.length > 0) {

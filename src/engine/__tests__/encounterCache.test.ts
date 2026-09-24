@@ -7,6 +7,7 @@ import {
   REPUTATION_REWARD_WEIGHT,
   LOOT_REWARD_WEIGHT,
   DOMAIN_EXERCISE_WEIGHT,
+  isDrawable,
 } from '../encounterCache';
 import { getEncountersByLocationType } from '../../data/encounter-content';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -29,10 +30,11 @@ function branchingCountForType(locationType: string): number {
  * All templates the cache attaches to a given location type: standard (encounter-content),
  * branching (THR-452), and regional-scale registrations (THR-779). Mirrors the three
  * sources `buildEntriesForLocationAndSublocations` appends, so entry-count assertions stay
- * exact rather than drifting when a new supplement array is registered.
+ * exact rather than drifting when a new supplement array is registered. Applies the same
+ * `isDrawable` predicate the cache does (THR-1526): a seed-only sequel is never registered.
  */
 function allTemplatesForType(locationType: string): UnifiedActionTemplate[] {
-  return [
+  return ([
     ...getEncountersByLocationType(locationType),
     ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES.filter(
       t => t.locationSubtypes?.includes(locationType as never),
@@ -40,7 +42,7 @@ function allTemplatesForType(locationType: string): UnifiedActionTemplate[] {
     ...CACHE_REGISTERED_REGIONAL_TEMPLATES.filter(
       t => t.locationSubtypes?.includes(locationType as never),
     ),
-  ];
+  ] as UnifiedActionTemplate[]).filter(isDrawable);
 }
 
 // ─── Helpers ────────────────────────────────────────────────────

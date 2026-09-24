@@ -368,6 +368,8 @@ const step0ReadTheGround: ActionStep = {
 
 export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.one_body_short',
+  // THR-1526: a seed target (Standing the Line plants it) whose opening stands alone.
+  drawable: true,
   rarityTier: 2,
   intrinsicTier: 'story_beat',
   name: 'One Body Short',

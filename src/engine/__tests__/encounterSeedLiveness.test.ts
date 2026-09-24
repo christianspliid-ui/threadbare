@@ -33,6 +33,18 @@ import { validateEncounterSeedRefs } from '../nudgeGrantLiveness';
 import { ENCOUNTER_FAMILY_TAGS, seedContentQuery } from '../encounterSeeding';
 import { contentQueryHasCandidates } from '../contentQuery';
 import { staticContentCatalogs } from '../contentCatalogView';
+import {
+  buildSeedPlanterIndex,
+  describePlantSite,
+  ENGINE_PLANTED_SEED_ONLY_IDS,
+} from '../seedOnlySequels';
+import { getAllStrategicTemplates } from '../strategicActionCandidates';
+import { EncounterCacheManager } from '../encounterCache';
+import { ALL_DELIVERY_BEATS } from '../deliveryBeatAdapter';
+import { WorldGraph } from '../graph';
+import { SETTING_CLASSES, expandSettings } from '../../data/settingClasses';
+import { SOCIAL_SCENE_TEMPLATES } from '../../data/social-scene-templates';
+import { FACTION_ENCOUNTER_TEMPLATES } from '../../data/faction-encounter-content';
 
 const CORPUS = [...UNIFIED_ACTION_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES];
 
@@ -160,6 +172,121 @@ describe('the repaired sequels can now actually arrive', () => {
     // them, not to add them, so a future reader does not "fix" it by reintroducing one.
     for (const gone of ['cg.patrol.wall_walk', 'cg.senior.inquisition', 'noble.commission']) {
       expect(getUnifiedTemplateById(gone), `${gone} exists now — revisit the repair`).toBeUndefined();
+    }
+  });
+});
+
+// ─── Seed-only sequels (THR-1526) ───────────────────────────────────────────
+//
+// Plan: `Docs/plans/2026-09-24-thr-1526-seed-only-encounters.md` § Content gates.
+// A sequel whose opening assumes its parent (`drawable: false`) must start only when that
+// parent plants it. These four gates are fatal: `check:encounter` sees `encounter.*` only,
+// and its two seed-only warnings are the author's early signal, not the line.
+
+/** The four shipped sequels that are untrue off the board — a named regression pin. */
+const SHIPPED_SEED_ONLY_SEQUELS = [
+  'encounter.slice.full_moon_collection',
+  'encounter.slice.full_moon_reckoning',
+  'encounter.slice.swindler_found',
+  'encounter.slice.grateful_kin',
+] as const;
+
+/**
+ * The one query site allowed to resolve each non-drawable template — its declared
+ * planter. Any other query that reaches a seed-only sequel is a draw broad enough to
+ * start it without its promise (the foreign-query pin).
+ */
+const DECLARED_QUERY_PLANTERS: Readonly<Record<string, readonly string[]>> = {
+  // The Crossroads' missed branch: `#crossroads_debt`.
+  'encounter.slice.full_moon_reckoning': ['encounter.slice.bargain_at_crossroads'],
+};
+
+const NON_DRAWABLE = CORPUS.filter(t => t.drawable === false);
+const planterIndex = buildSeedPlanterIndex(getAllStrategicTemplates());
+
+describe('seed-only sequels never reach the board (THR-1526)', () => {
+  it('the four shipped sequels are flagged drawable: false', () => {
+    for (const id of SHIPPED_SEED_ONLY_SEQUELS) {
+      expect(getUnifiedTemplateById(id)?.drawable, `${id} is drawable — it would fire with no promise behind it`).toBe(false);
+    }
+    // And they stay in the query catalog — removing them would starve the missed branch.
+    for (const id of SHIPPED_SEED_ONLY_SEQUELS) {
+      expect(LOCATION_BRANCHING_ENCOUNTER_TEMPLATES.some(t => t.id === id), `${id} left LOCATION_BRANCHING`).toBe(true);
+    }
+  });
+
+  it('every template-authored appointment branch target is non-drawable', () => {
+    // An appointment branch names its promise ("comes back to the crossroads…"), so a
+    // board draw of its target always tells an untrue story. Undertaking-cell appointments
+    // are deliberately excluded: they name generic family queries (`#thieves_errand`,
+    // `#court_errand`) whose faction-quest members stand alone and must stay drawable —
+    // the foreign-query pin below is what keeps those families clear of sequels.
+    const offenders: string[] = [];
+    let branches = 0;
+    for (const [id, sites] of planterIndex.plantersOf) {
+      for (const site of sites) {
+        if (site.branch === 'plain' || site.planterId.startsWith('cell.')) continue;
+        branches++;
+        if (getUnifiedTemplateById(id)?.drawable !== false) offenders.push(`${id} ← ${describePlantSite(site)}`);
+      }
+    }
+    expect(branches, 'no appointment branches found — the sweep would pass over nothing').toBeGreaterThanOrEqual(2);
+    expect(offenders, `drawable appointment branch targets:\n  ${offenders.join('\n  ')}`).toEqual([]);
+  });
+
+  it('no foreign query resolves a non-drawable template (the foreign-query pin)', () => {
+    const offenders: string[] = [];
+    for (const { site, hits } of planterIndex.querySites) {
+      for (const id of hits) {
+        if (getUnifiedTemplateById(id)?.drawable !== false) continue;
+        if ((DECLARED_QUERY_PLANTERS[id] ?? []).includes(site.planterId)) continue;
+        offenders.push(`${id} ← ${describePlantSite(site)}`);
+      }
+    }
+    expect(planterIndex.querySites.length).toBeGreaterThan(10);
+    expect(offenders, `queries broad enough to draw a seed-only sequel:\n  ${offenders.join('\n  ')}`).toEqual([]);
+  });
+
+  it('no non-drawable template sits on any draw path: cache build, delivery beats, or the generators', () => {
+    expect(NON_DRAWABLE.length).toBeGreaterThanOrEqual(SHIPPED_SEED_ONLY_SEQUELS.length);
+    const flagged = new Set(NON_DRAWABLE.map(t => t.id));
+
+    // The cache, over one location per subtype of every setting class.
+    const graph = new WorldGraph();
+    for (const subtype of expandSettings([...SETTING_CLASSES])) {
+      graph.addNode({ id: `loc.${subtype}`, type: 'location', name: subtype, properties: { locationType: subtype } });
+    }
+    const cache = new EncounterCacheManager();
+    cache.buildFullCache(graph);
+    const cached = cache.getAllEntries().filter(e => flagged.has(e.templateId));
+    expect(cache.getAllEntries().length, 'the cache built nothing — vacuous').toBeGreaterThan(100);
+    expect(cached.map(e => `${e.templateId}@${e.locationId}`)).toEqual([]);
+
+    // Divine-vision delivery beats.
+    expect(ALL_DELIVERY_BEATS.filter(b => b.templateId && flagged.has(b.templateId)).map(b => b.templateId)).toEqual([]);
+
+    // Candidate sources that do not read the cache.
+    for (const [name, list] of [
+      ['social scenes', SOCIAL_SCENE_TEMPLATES],
+      ['faction quests', FACTION_ENCOUNTER_TEMPLATES],
+    ] as const) {
+      expect(list.filter(t => t.drawable === false).map(t => t.id), `${name} lists a seed-only template`).toEqual([]);
+    }
+  });
+
+  it('every non-drawable template has a planter, so none is unreachable content', () => {
+    const orphans = NON_DRAWABLE
+      .filter(t => !planterIndex.plantersOf.has(t.id) && !ENGINE_PLANTED_SEED_ONLY_IDS.includes(t.id))
+      .map(t => t.id);
+    expect(orphans).toEqual([]);
+  });
+
+  it('the Swindler Found and the Grateful Kin are still planted by content', () => {
+    // Their chain stays reachable: the Swindled Family (widened to rural) plants both;
+    // the Wandering Healer also plants the Kin (THR-1565 may repoint that seed).
+    for (const id of ['encounter.slice.swindler_found', 'encounter.slice.grateful_kin']) {
+      const planters = (planterIndex.plantersOf.get(id) ?? []).map(s => s.planterId);
+      expect(planters, `${id} lost every planter`).toContain('encounter.slice.swindled_family');
     }
   });
 });
