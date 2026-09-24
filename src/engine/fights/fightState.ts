@@ -42,6 +42,7 @@ import { isAgentGone } from '../groups/groupQueries';
 import { resolveLocationToHex } from '../encounterAwareness';
 import { defaultOpponentCard, readOpponentCard } from './opponentCard';
 import { fightRoleOf, resolveFightOpponent } from './fightStepInputs';
+import { applyFightBandCondition, fightMomentumAfter, queueFightHarm } from './fightHarm';
 import {
   advanceFightClock,
   applyPerFightClockDelta,
@@ -157,9 +158,56 @@ export function fightStateForNoRollEnd(
 }
 
 /**
- * The fight handler (plan doc §5–6). Runs once per rolled fight step; returns the
+ * The fight handler (plan doc §5–7). Runs once per rolled fight step; returns the
  * action carrying the updated `fightState` (with `result` set when the fight is
  * decided). A step without `fightRole` comes back unchanged.
+ *
+ * Two halves: `landFightBand` moves the clock and decides the result (FB2); then
+ * the step's costs land (FB3) — its harm is queued as `fight_harm`, its band
+ * condition is applied through `applyConditionToActor`, and its momentum is
+ * carried into the next fight step. The costs land on every band, including the
+ * one that ends the fight: a rout leaves the fighter `terrified`, a strike-down
+ * `wounded` at the severe intensity (plan doc §7).
+ */
+export function applyFightStepResult(
+  state: GameState,
+  action: UnifiedAction,
+  template: Pick<UnifiedActionTemplate, 'steps'>,
+  step: ActionStep,
+  outcome: StepOutcome,
+  tick: number,
+  opts: { readonly difficulty?: number } = {},
+): UnifiedAction {
+  const role = fightRoleOf(step);
+  if (!role) return action;
+  const landed = landFightBand(state, action, template, step, outcome, tick);
+  const fight = landed.fightState;
+  if (!fight) return landed;
+
+  const harm = queueFightHarm(state, action.actorId, {
+    role,
+    band: outcome,
+    attended: action.effectiveTier === 'story_beat',
+    difficulty: opts.difficulty ?? step.difficulty,
+    berserk: fight.berserk,
+  }, tick);
+  const condition = applyFightBandCondition(state, action.actorId, role, outcome, tick, action.actionId);
+  return {
+    ...landed,
+    fightState: {
+      ...fight,
+      harmTaken: fight.harmTaken + harm,
+      conditionsApplied: condition && !fight.conditionsApplied.includes(condition)
+        ? [...fight.conditionsApplied, condition]
+        : fight.conditionsApplied,
+      momentum: fightMomentumAfter(role, outcome),
+    },
+  };
+}
+
+/**
+ * The fight's band landing (plan doc §5–6): creates `fightState` at the first
+ * fight step, moves the clock and decides the result.
  *
  * The clock-full check, in the plan's order: (1) the band's landing write;
  * (2) the step's effect events (FB5); (3) the per-fight mailbox drain;
@@ -168,7 +216,7 @@ export function fightStateForNoRollEnd(
  * blow this step waits for the next landing blow; none by the last clash →
  * `broke_off`.
  */
-export function applyFightStepResult(
+function landFightBand(
   state: Pick<GameState, 'graph'>,
   action: UnifiedAction,
   template: Pick<UnifiedActionTemplate, 'steps'>,

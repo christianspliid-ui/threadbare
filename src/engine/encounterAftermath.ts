@@ -341,6 +341,92 @@ function locationCarrierKind(graph: WorldGraph, nodeId: string): string {
   return 'location';
 }
 
+/** Options for `applyConditionToActor`. */
+export interface ApplyConditionOpts {
+  readonly tick: number;
+  /** Defaults to `CONDITION_DEFAULT_INTENSITY`. */
+  readonly intensity?: number;
+  /** Defaults to `CONDITION_DEFAULT_DURATION_TICKS` (0 = indefinite). */
+  readonly durationTicks?: number;
+  /** The new `has_trait` edge's id. Defaults to `has_trait_<target>_<condition>_<tick>`. */
+  readonly edgeId?: string;
+  /**
+   * Merged onto the new `has_trait` edge after the applier's fixed properties
+   * (plan doc 1's Scarred passes `inflictedBy` and `scarredTick`; the aftermath
+   * passes its encounter and reaction ids).
+   */
+  readonly edgeProperties?: Record<string, unknown>;
+  /** Runs after the edge is written and before the `damaged` proxy is raised. */
+  readonly onApplied?: (applied: { edgeId: string; intensity: number; durationTicks: number }) => void;
+}
+
+export type ApplyConditionResult =
+  | { readonly applied: true; readonly edgeId: string; readonly intensity: number; readonly durationTicks: number }
+  | {
+    readonly applied: false;
+    readonly reason: 'target_node_missing' | 'condition_template_missing' | 'tag_immunity';
+    readonly immuneTag?: string;
+  };
+
+/**
+ * The one condition writer (THR-1539, fight-block plan doc §7). Lands a condition
+ * trait on a carrier as a `has_trait` edge: refused when the carrier or the
+ * condition is missing, or when the carrier is immune to one of the condition's
+ * tags (THR-1242); otherwise written with a live `ticksRemaining` counter
+ * (THR-761), then the `damaged` proxy is raised (THR-1244).
+ *
+ * Extracted from the aftermath's `apply_condition` case, which now delegates to
+ * it unchanged. Band conditions (fights), `inflict_condition`, fight
+ * complications and Scarred all call this, so tag immunity and the proxy events
+ * behave the same everywhere. Traces are the caller's: each path traces in its
+ * own vocabulary.
+ */
+export function applyConditionToActor(
+  state: GameState,
+  targetId: string,
+  conditionTraitId: string,
+  opts: ApplyConditionOpts,
+): ApplyConditionResult {
+  if (!state.graph.getNode(targetId)) return { applied: false, reason: 'target_node_missing' };
+  const conditionNode = state.graph.getNode(conditionTraitId);
+  if (!conditionNode) return { applied: false, reason: 'condition_template_missing' };
+  const immuneTag = isImmuneToAnyTag(
+    state.graph, targetId,
+    (conditionNode.properties.tags as string[] | undefined) ?? [],
+    state.effectStates,
+  );
+  if (immuneTag !== null) return { applied: false, reason: 'tag_immunity', immuneTag };
+
+  const intensity = opts.intensity ?? CONDITION_DEFAULT_INTENSITY;
+  const durationTicks = opts.durationTicks ?? CONDITION_DEFAULT_DURATION_TICKS;
+  const edgeId = opts.edgeId ?? `has_trait_${targetId}_${conditionTraitId}_${opts.tick}`;
+  state.graph.addEdge({
+    id: edgeId,
+    source: targetId,
+    target: conditionTraitId,
+    type: 'has_trait',
+    properties: {
+      appliedAt: opts.tick,
+      durationTicks,
+      // THR-761: `decayConditions` is the only tick-driven expiry path and it
+      // counts down `ticksRemaining`, not `durationTicks`. Writing only the
+      // latter made every aftermath condition permanent. `durationTicks` stays
+      // as the authored total (provenance + UI progress denominator); this is
+      // the live counter. 0 = indefinite, so omit the field and the decay loop
+      // skips the edge entirely.
+      ...(durationTicks > 0 ? { ticksRemaining: durationTicks } : {}),
+      intensity,
+      ...(opts.edgeProperties ?? {}),
+    },
+  });
+  opts.onApplied?.({ edgeId, intensity, durationTicks });
+  // THR-1244: raised after the edge is written, so a reactive inspecting the
+  // bearer sees the condition it is firing on. Self-gating on harm + person
+  // carrier — see `conditionProxyEvents`.
+  raiseConditionDamaged(state, targetId, conditionTraitId, intensity);
+  return { applied: true, edgeId, intensity, durationTicks };
+}
+
 export function resolveAftermathTarget(
   effect: EncounterAftermathReactionEffect,
   action: UnifiedAction | undefined,
@@ -2199,8 +2285,52 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
-        const targetNode = state.graph.getNode(resolvedId);
-        if (!targetNode) {
+        // THR-1539 — the writer is `applyConditionToActor`, extracted unchanged so
+        // fight bands, `inflict_condition` and Scarred land conditions the same way.
+        // The traces stay here, in the aftermath's vocabulary.
+        const conditionResult = applyConditionToActor(state, resolvedId, effect.conditionTraitId, {
+          tick,
+          intensity: effect.intensity,
+          durationTicks: effect.durationTicks,
+          edgeId: `has_trait_${resolvedId}_${effect.conditionTraitId}_${tick}_${i}`,
+          edgeProperties: { sourceEncounterId: encounterId, sourceReactionId: reaction.id },
+          onApplied: ({ intensity, durationTicks }) => {
+            const targetNode = state.graph.getNode(resolvedId)!;
+            mutationSummary.touchedStructure = true;
+            const condKind = (target.kind === 'agent' || target.kind === 'faction'
+              || target.kind === 'sublocation' || target.kind === 'location')
+              ? target.kind
+              : 'agent' as const;
+            emitTrace({
+              tick, category: 'condition_applied', agentId: actorAgentId,
+              targetId: resolvedId, targetKind: condKind,
+              conditionTraitId: effect.conditionTraitId, durationTicks, intensity,
+              encounterId, reactionId: reaction.id,
+              summary: `condition_applied[${i}]: ${effect.conditionTraitId} → ${resolvedId} (intensity=${intensity}, duration=${durationTicks || 'indefinite'})`,
+            });
+            if (isLocationCarrier(state.graph, resolvedId)) {
+              emitTrace({
+                tick, category: 'location_condition_applied', agentId: actorAgentId,
+                locationId: resolvedId, locationName: targetNode.name,
+                carrierKind: locationCarrierKind(state.graph, resolvedId),
+                conditionTemplateId: effect.conditionTraitId,
+                ticksRemaining: durationTicks > 0 ? durationTicks : 0,
+                encounterId, reactionId: reaction.id,
+                summary: `location_condition_applied[${i}]: ${effect.conditionTraitId} → ${targetNode.name} (${durationTicks > 0 ? `${durationTicks}t` : 'indefinite'})`,
+              });
+            }
+            emitTrace({
+              tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'apply_condition',
+              effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId, intensity, durationTicks },
+              success: true,
+              effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+              summary: `apply_condition[${i}]: ${effect.conditionTraitId} → ${resolvedId}`,
+            });
+          },
+        });
+        if (!conditionResult.applied && conditionResult.reason === 'target_node_missing') {
           emitTrace({
             tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
@@ -2219,8 +2349,7 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
-        const conditionNode = state.graph.getNode(effect.conditionTraitId);
-        if (!conditionNode) {
+        if (!conditionResult.applied && conditionResult.reason === 'condition_template_missing') {
           emitTrace({
             tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
@@ -2237,18 +2366,8 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
-        // ── tag_immunity (THR-1242) ──
-        // `isImmuneToTag` has existed since the query layer landed and had zero
-        // callers, so nine shipped wards against fear, poison and curses blocked
-        // nothing. This is the gate: a condition whose tags the target is immune
-        // to never lands. Refused before the edge is written rather than removed
-        // after, so no other system observes a condition that should not exist.
-        const immuneTag = isImmuneToAnyTag(
-          state.graph, resolvedId,
-          (conditionNode.properties.tags as string[] | undefined) ?? [],
-          state.effectStates,
-        );
-        if (immuneTag !== null) {
+        if (!conditionResult.applied && conditionResult.reason === 'tag_immunity') {
+          const immuneTag = conditionResult.immuneTag;
           emitTrace({
             tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
@@ -2260,66 +2379,6 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
-
-        const intensity = effect.intensity ?? CONDITION_DEFAULT_INTENSITY;
-        const durationTicks = effect.durationTicks ?? CONDITION_DEFAULT_DURATION_TICKS;
-        const edgeId = `has_trait_${resolvedId}_${effect.conditionTraitId}_${tick}_${i}`;
-        state.graph.addEdge({
-          id: edgeId,
-          source: resolvedId,
-          target: effect.conditionTraitId,
-          type: 'has_trait',
-          properties: {
-            appliedAt: tick,
-            durationTicks,
-            // THR-761: `decayConditions` is the only tick-driven expiry path and it
-            // counts down `ticksRemaining`, not `durationTicks`. Writing only the
-            // latter made every aftermath condition permanent. `durationTicks` stays
-            // as the authored total (provenance + UI progress denominator); this is
-            // the live counter. 0 = indefinite, so omit the field and the decay loop
-            // skips the edge entirely.
-            ...(durationTicks > 0 ? { ticksRemaining: durationTicks } : {}),
-            intensity,
-            sourceEncounterId: encounterId,
-            sourceReactionId: reaction.id,
-          },
-        });
-        mutationSummary.touchedStructure = true;
-        const condKind = (target.kind === 'agent' || target.kind === 'faction'
-          || target.kind === 'sublocation' || target.kind === 'location')
-          ? target.kind
-          : 'agent' as const;
-        emitTrace({
-          tick, category: 'condition_applied', agentId: actorAgentId,
-          targetId: resolvedId, targetKind: condKind,
-          conditionTraitId: effect.conditionTraitId, durationTicks, intensity,
-          encounterId, reactionId: reaction.id,
-          summary: `condition_applied[${i}]: ${effect.conditionTraitId} → ${resolvedId} (intensity=${intensity}, duration=${durationTicks || 'indefinite'})`,
-        });
-        if (isLocationCarrier(state.graph, resolvedId)) {
-          emitTrace({
-            tick, category: 'location_condition_applied', agentId: actorAgentId,
-            locationId: resolvedId, locationName: targetNode.name,
-            carrierKind: locationCarrierKind(state.graph, resolvedId),
-            conditionTemplateId: effect.conditionTraitId,
-            ticksRemaining: durationTicks > 0 ? durationTicks : 0,
-            encounterId, reactionId: reaction.id,
-            summary: `location_condition_applied[${i}]: ${effect.conditionTraitId} → ${targetNode.name} (${durationTicks > 0 ? `${durationTicks}t` : 'indefinite'})`,
-          });
-        }
-        emitTrace({
-          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
-          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
-          effectKind: 'apply_condition',
-          effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId, intensity, durationTicks },
-          success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
-          summary: `apply_condition[${i}]: ${effect.conditionTraitId} → ${resolvedId}`,
-        });
-        // THR-1244: raised after the edge is written, so a reactive inspecting the
-        // bearer sees the condition it is firing on. Self-gating on harm + person
-        // carrier — see `conditionProxyEvents`.
-        raiseConditionDamaged(state, resolvedId, effect.conditionTraitId, intensity);
         break;
       }
 

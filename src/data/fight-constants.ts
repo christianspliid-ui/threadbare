@@ -160,3 +160,99 @@ export const FIGHT_RESULT_STEP_ID = 'fight';
  * `fightState.clockNow`; the fight handler drains this mailbox instead.
  */
 export const FIGHT_CLOCK_MAILBOX_PROP = 'pendingFightClockDelta';
+
+// ─── FB3 (THR-1539): harm, conditions, momentum ─────────────────
+
+/**
+ * The one harm scale: equal to `QUINTESSENCE_ENCOUNTER_FAILURE_EROSION`, so a
+ * fight wound and a failed encounter step cost in the same currency (plan doc §7).
+ */
+export const FIGHT_HARM_BASE = 0.03;
+
+/**
+ * Clash band → harm multiplier (THR-1531). Bands not listed cost nothing. A
+ * critical failure (struck down) is harm ×5, THR-1266.
+ */
+export const FIGHT_CLASH_HARM_MULT: Readonly<Partial<Record<StepOutcome, number>>> = {
+  near_miss: 0.5,
+  success_at_cost: 1,
+  failure: 1,
+  critical_failure: 5,
+};
+
+/** Nerve band → harm multiplier (THR-1531). A rout is harm ×3. */
+export const FIGHT_NERVE_HARM_MULT: Readonly<Partial<Record<StepOutcome, number>>> = {
+  near_miss: 0.5,
+  success_at_cost: 0.5,
+  failure: 1,
+  critical_failure: 3,
+};
+
+/** Harm multiplier once an opponent has gone berserk (FB4 sets `berserk`). */
+export const FIGHT_BERSERK_HARM_MULT = 1.5;
+
+/** Clash difficulty added once an opponent has gone berserk. */
+export const FIGHT_BERSERK_MIGHT_DELTA = 0.15;
+
+/** The `QuintessenceEvent.source` fight harm is queued under. */
+export const FIGHT_HARM_SOURCE = 'fight_harm';
+
+/** Intensity of a band condition (matches `CONDITION_DEFAULT_INTENSITY`). */
+export const FIGHT_CONDITION_INTENSITY = 0.5;
+
+/** `wounded` on a clash critical failure: struck down (THR-1266's "high intensity"). */
+export const FIGHT_CONDITION_INTENSITY_SEVERE = 0.9;
+
+/** A band condition: the condition trait, and whether it lands at the severe intensity. */
+export interface FightBandCondition {
+  readonly conditionTraitId: string;
+  readonly severe?: boolean;
+}
+
+/**
+ * Nerve band → condition (plan doc §7, THR-1266). The rout (critical failure)
+ * leaves the fighter `terrified`; plan doc 1's rout face relies on it.
+ */
+export const FIGHT_NERVE_CONDITIONS: Readonly<Partial<Record<StepOutcome, FightBandCondition>>> = {
+  critical_success: { conditionTraitId: 'trait.condition.inspired' },
+  near_miss: { conditionTraitId: 'trait.condition.shaken' },
+  success_at_cost: { conditionTraitId: 'trait.condition.shaken' },
+  failure: { conditionTraitId: 'trait.condition.terrified' },
+  critical_failure: { conditionTraitId: 'trait.condition.terrified' },
+};
+
+/**
+ * Clash band → condition (plan doc §7, THR-1266). Struck down (critical failure)
+ * is `wounded` at `FIGHT_CONDITION_INTENSITY_SEVERE`; plan doc 1's mauling face
+ * relies on it.
+ */
+export const FIGHT_CLASH_CONDITIONS: Readonly<Partial<Record<StepOutcome, FightBandCondition>>> = {
+  success_at_cost: { conditionTraitId: 'trait.condition.wounded' },
+  failure: { conditionTraitId: 'trait.condition.wounded' },
+  critical_failure: { conditionTraitId: 'trait.condition.wounded', severe: true },
+};
+
+/** × the fighter's live `courage_prudence` lean, on the nerve step (a named term). */
+export const FIGHT_NERVE_COURAGE_WEIGHT = 0.15;
+
+/** Nerve band → the modifier carried into the first clash. */
+export const FIGHT_NERVE_CARRY: Readonly<Partial<Record<StepOutcome, number>>> = {
+  critical_success: 0.10,
+  success: 0,
+  near_miss: -0.05,
+  success_at_cost: -0.05,
+  failure: -0.10,
+};
+
+/** Clash band → the modifier carried into the next clash. */
+export const FIGHT_CLASH_MOMENTUM: Readonly<Partial<Record<StepOutcome, number>>> = {
+  critical_success: 0.10,
+  success: 0.05,
+  near_miss: 0,
+  success_at_cost: -0.05,
+  failure: -0.05,
+};
+
+/** The named terms courage and momentum ride on (factor lines, plan doc §7). */
+export const FIGHT_COURAGE_MODIFIER_NAME = 'courage';
+export const FIGHT_MOMENTUM_MODIFIER_NAME = 'momentum';

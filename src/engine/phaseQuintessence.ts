@@ -30,6 +30,13 @@ import { buildPredicateContext, collectPreventLossEffects } from './effectResolv
  */
 const QUINTESSENCE_NODE_TYPES: NodeType[] = ['actor', 'location'];
 
+/**
+ * The `QuintessenceEvent.source` a spell's price is queued under (the `use × Power`
+ * undertaking cell). Settled outside `prevent_loss`: a ward covers harm, never a
+ * price the caster chose to pay (THR-1530 §3, THR-1539).
+ */
+export const QUINTESSENCE_SPELL_PRICE_SOURCE = 'spell_price';
+
 function consumePreventLossAttachment(state: GameState, attachmentId: string): void {
   try {
     state.graph.removeNode(attachmentId);
@@ -109,9 +116,16 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
   const graph = state.graph;
 
   // ── Step 1: Accumulate deltas per target ─────────────────────────────
+  // THR-1539 (THR-1530 §3) — a spell's price is accumulated apart from harm, so a
+  // ward (`prevent_loss`) covers harm only: a warded caster still pays for the
+  // spell. Every other source settles exactly as before.
   const deltaMap = new Map<string, number>();
+  const priceMap = new Map<string, number>();
   for (const evt of events) {
-    deltaMap.set(evt.targetNodeId, (deltaMap.get(evt.targetNodeId) ?? 0) + evt.delta);
+    // Every target keys `deltaMap` at its first event, so settlement order is unchanged.
+    if (!deltaMap.has(evt.targetNodeId)) deltaMap.set(evt.targetNodeId, 0);
+    const bucket = evt.source === QUINTESSENCE_SPELL_PRICE_SOURCE ? priceMap : deltaMap;
+    bucket.set(evt.targetNodeId, (bucket.get(evt.targetNodeId) ?? 0) + evt.delta);
   }
 
   // ── Step 2: Apply accumulated deltas ─────────────────────────────────
@@ -119,7 +133,8 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
     const node = graph.getNode(nodeId);
     if (!node) continue; // fail-soft: unknown node
 
-    const adjustedDelta = applyQuintessenceLossPrevention(state, nodeId, totalDelta, runtime);
+    const adjustedDelta = applyQuintessenceLossPrevention(state, nodeId, totalDelta, runtime)
+      + (priceMap.get(nodeId) ?? 0);
     const current = (node.properties.quintessence ?? QUINTESSENCE_DEFAULT) as number;
     const max = (node.properties.quintessenceMax ?? QUINTESSENCE_MAX_DEFAULT) as number;
     const updated = Math.max(0, Math.min(max, current + adjustedDelta));
