@@ -293,13 +293,13 @@ describe('the temper checkpoint at half clock', () => {
     const tpl = fightTemplate(3);
     const baseline = world();
     const before = runBands(baseline, tpl, ['success']);
-    const plainClash = resolveFightStepInputs(baseline, before, tpl.steps[1], tpl)!.difficulty;
+    const plainClash = resolveFightStepInputs(baseline, before, tpl.steps[1] as ActionStep, tpl)!.difficulty;
     const state = world();
     const a = runBands(state, tpl, ['success', 'near_miss']);
     expect(a.fightState).toMatchObject({ berserk: true, temperFired: true });
     expect(a.fightState!.result).toBeUndefined();
     expect(a.fightState!.forks.at(-1)).toMatchObject({ kind: 'temper', choice: 'berserk' });
-    const berserkClash = resolveFightStepInputs(state, a, tpl.steps[2], tpl)!.difficulty;
+    const berserkClash = resolveFightStepInputs(state, a, tpl.steps[2] as ActionStep, tpl)!.difficulty;
     expect(berserkClash).toBeCloseTo(plainClash + FIGHT_BERSERK_MIGHT_DELTA);
   });
 

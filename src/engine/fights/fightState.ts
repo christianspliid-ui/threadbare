@@ -182,7 +182,7 @@ export function applyFightStepResult(
 ): UnifiedAction {
   const role = fightRoleOf(step);
   if (!role) return action;
-  const landed = landFightBand(state, action, template, step, outcome, tick);
+  const landed = landFightBand(state, action, step, outcome, tick);
   const fight = landed.fightState;
   if (!fight) return landed;
 
@@ -264,7 +264,6 @@ function standFirmCoin(): number {
 function landFightBand(
   state: Pick<GameState, 'graph'>,
   action: UnifiedAction,
-  template: Pick<UnifiedActionTemplate, 'steps'>,
   step: ActionStep,
   outcome: StepOutcome,
   tick: number,
