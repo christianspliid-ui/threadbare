@@ -341,6 +341,8 @@ const traitTags: readonly ContentTagDef[] = [
   T('#mastery', 'family', 'A mastery — competence earned by doing a thing until the world noticed.', ['trait_template']),
   T('#reputation', 'family', 'A reputation — what others have come to say about the bearer, deserved or not.', ['trait_template']),
   T('#cultural', 'family', 'A formative mark a culture or a guild stamps on its own.', ['trait_template']),
+  // THR-1544 — the temper class word; seated by plan doc 3 (monsters as opponents).
+  T('#temper', 'family', 'How a creature breaks when a fight turns.', ['trait_template']),
   T('#condition', 'family', 'A condition — a passing state laid on a bearer, which wears off or is cured.', ['condition_template']),
   T('#scar', 'family', 'A scar — a condition that does not heal; what a loss left behind.', ['condition_template']),
   T('#location', 'family', 'Carried by a place rather than a person — a condition a settlement is under.', ['condition_template']),

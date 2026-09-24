@@ -1,6 +1,6 @@
 # Ubiquitous Language — Traits
 
-Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not.
+Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the twelve category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not.
 
 ---
 
@@ -72,9 +72,9 @@ The player-facing word is the definition's display name; *artifact trait* is the
 **Also see:** `[[Trait]]`, `[[Destiny]]`, `[[Selection-Competence Separation]]`, `[[Trait Assignment]]`
 **Status:** canonical
 
-One of ten classes on a trait definition, stored as the `subcategory` property (the field is named `subcategory`, not `category` — code reading `properties.category` reads `undefined`). The ten are: `innate`, `cultural`, `personality`, `mastery`, `reputation`, `condition`, `scar`, `bestowed`, `destiny`, `core`.
+One of twelve classes on a trait definition, stored as the `subcategory` property (the field is named `subcategory`, not `category` — code reading `properties.category` reads `undefined`). The twelve (`TraitCategory`, `src/types/traits.ts`) are: `innate`, `cultural`, `personality`, `mastery`, `reputation`, `condition`, `scar`, `bestowed`, `destiny`, `core`, `spell` (THR-1429, the Power kind's learned class) and `temper` (THR-1544, see `[[Temper]]`). *(Corrected 2026-09-24, THR-1544: this entry said "ten" after `spell` had already made eleven.)*
 
-**A category is a lifecycle contract, not a label.** It defines how traits in it are acquired, how they are removed, and when they trigger — every trait in a category obeys its category's rules, and the individual definition only supplies flavor. In contract terms: `innate` is worldgen-minted and permanent; `cultural` is inherited from a culture and permanent; `personality` is threshold-minted from the axiological axes and drifts as those axes drift; `mastery` is earned through encounters and promotion and decays when not reinforced; `reputation` is minted by the reputation phase and fades with standing; `condition` is inflicted and expires on its countdown or is mended; `scar` is minted by aftermath and overflow and is permanent save rare rites; `bestowed` is granted by a god or an item and is revocable by its grantor; `destiny` is a world-minted promise; and `core` is reserved for run-defining identity such as The First bond.
+**A category is a lifecycle contract, not a label.** It defines how traits in it are acquired, how they are removed, and when they trigger — every trait in a category obeys its category's rules, and the individual definition only supplies flavor. In contract terms: `innate` is worldgen-minted and permanent; `cultural` is inherited from a culture and permanent; `personality` is threshold-minted from the axiological axes and drifts as those axes drift; `mastery` is earned through encounters and promotion and decays when not reinforced; `reputation` is minted by the reputation phase and fades with standing; `condition` is inflicted and expires on its countdown or is mended; `scar` is minted by aftermath and overflow and is permanent save rare rites; `bestowed` is granted by a god or an item and is revocable by its grantor; `destiny` is a world-minted promise; `core` is reserved for run-defining identity such as The First bond; `spell` is learned from a tradition and held until forgotten; and `temper` is minted at `createNamedElite`, permanent, changed only by `trait_grant` or removal, and read at the fight's temper checkpoint.
 
 Shipped static coverage is uneven by design and worth knowing before authoring against a category: reputation (19), personality (16), core (10), mastery (9), condition (7), scar (2), cultural (1). `innate` and `bestowed` have no static definitions — they are minted at runtime. `destiny` has none of either.
 
@@ -237,6 +237,22 @@ A `[[Power]]` that is **anatomy**: stamped at seeding on monsters and unusual be
 **No code anchor yet.** Unlike its two siblings there is no `AttachmentCategory` member for it as of this entry's landing (2026-08-25); the term is ratified vocabulary awaiting implementation, so content that means it should not reach for an existing category as a stand-in.
 
 **Do not confuse it with the `innate` `[[Trait Category]]`**, which is a worldgen-minted, permanent *trait* class. The collision is exact in wording and empty in substance: one is a name minted at worldgen, the other a capability stamped at seeding.
+
+**Nor with `[[Temper]]`.** A monster's temper is also stamped when it is minted, but it is how the creature *breaks*, not something it can *do*. The mint in `createNamedElite` is the seam where innate powers will later be stamped; the temper edge written there does not stand in for them.
+
+---
+
+### Temper
+
+**Aliases:** monster temper, `trait.temper.*`
+**Also see:** `[[Trait Category]]`, `[[Innate Power]]`, `[[Trait]]`, `[[Opponent Card]]`
+**Status:** canonical — seated by delegation 2026-09-24 (THR-1544)
+
+How a creature breaks when a fight turns. One of four trait definitions: *stubborn* (digs in and fights on), *berserk* (goes wild and hits harder), *skittish* (looks for a way out and may flee) and *bargains* (offers terms instead of dying; the id is `trait.temper.bargainer`). Each lair monster is minted with its family's temper as a `has_trait` edge (`createNamedElite` → `mintMonsterCard`, `src/engine/monsters/monsterCard.ts`); the fight block reads it by id prefix (`readTemper`) at the temper checkpoint, once the opponent's clock is half full. An opponent with no temper edge fights as stubborn.
+
+Temper is a **trait**, not a property, so later spells, items and cards can calm or enrage a creature through `trait_grant` with no new writer. Its class is `temper` (`subcategory: 'temper'`), its class word the `#temper` tag, and it contributes no capability. The definitions live in `src/data/temper-trait-content.ts` and belong to the Trait content kind.
+
+**Not an `[[Innate Power]]`** (something a creature can *do*) **and not the `innate` class** (a worldgen-minted mark). The fight's own type for it is `FightTemper` (`src/types/fight.ts`).
 
 ---
 

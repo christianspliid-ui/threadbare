@@ -8,7 +8,7 @@ generator: npm run generate-content-objects
 
 > **GENERATED — do not hand-edit.** Rendered by `npm run generate-content-objects` from the registry (`src/data/content-objects.ts`) and a static census of the catalogs it names. The hand page — what the kinds mean and how to add one — is [`content-objects.md`](content-objects.md).
 
-13 kinds · 1223 claimed entries across 39 catalogs.
+13 kinds · 1227 claimed entries across 40 catalogs.
 
 ## Drift
 
@@ -32,7 +32,7 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 | `legendary_template` | Legendary artifact | 3 | `ARTIFACT_TEMPLATES` (3/3) | `legendary_artifact` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `condition_template` | Condition | 69 | `REWARD_CONDITIONS` (35/35)<br>`STARTER_CONDITIONS` (5/5)<br>`ANOMALY_CONDITIONS` (6/6)<br>`CONDITION_TRAIT_DEFINITIONS` (18/18)<br>`ARTIFACT_TRAIT_DEFINITIONS` (2/2)<br>`ECONOMIC_TRAIT_DEFINITIONS` (3/8) | `condition` | card → codex | `npm run check:attachment` | Effects & Conditions | 🟢 LIVE |
 | `power_template` | Power | 25 | `REWARD_BESTOWED_POWERS` (12/12)<br>`ANOMALY_BESTOWED_POWERS` (8/8)<br>`SPELL_TEMPLATES` (5/5) | `power` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `trait_template` | Trait | 55 | `CORE_TRAIT_DEFINITIONS` (10/10)<br>`PERSONALITY_TRAIT_DEFINITIONS` (16/16)<br>`MASTERY_TRAIT_DEFINITIONS` (7/7)<br>`REPUTATION_TRAIT_DEFINITIONS` (17/17)<br>`ECONOMIC_TRAIT_DEFINITIONS` (5/8) | `trait` | card only | `npm run check:attachment` | Personality & Emergent Traits | 🟢 LIVE |
+| `trait_template` | Trait | 59 | `CORE_TRAIT_DEFINITIONS` (10/10)<br>`PERSONALITY_TRAIT_DEFINITIONS` (16/16)<br>`MASTERY_TRAIT_DEFINITIONS` (7/7)<br>`REPUTATION_TRAIT_DEFINITIONS` (17/17)<br>`ECONOMIC_TRAIT_DEFINITIONS` (5/8)<br>`TEMPER_TRAIT_DEFINITIONS` (4/4) | `trait` | card only | `npm run check:attachment` | Personality & Emergent Traits | 🟢 LIVE |
 | `agreement_template` | Agreement | 7 | `AGREEMENT_REWARD_TEMPLATES` (7/7) | `agreement` | card → codex | `npm run check:attachment` | Secrets & Favors | 🟢 LIVE |
 | `companion_template` | Companion | 9 | `COMPANION_TEMPLATES` (9/9) | `companion` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `ambition_template` | Ambition | 20 | `AMBITION_TEMPLATES` (10/10)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | card → codex | — | Ambitions & Undertakings | 🟢 LIVE |
@@ -72,7 +72,7 @@ Prefixes are claimed for **totality**, not ownership: every id in a kind's catal
 | `legendary_template` | `worldforge_` `heartseed_` `voidgate_` |
 | `condition_template` | `reward_` `starter_` `anomaly_` `trait.condition.` `trait.scar.` `trait.artifact.` |
 | `power_template` | `reward_` `anomaly_` `spell_` |
-| `trait_template` | `trait.core.` `trait.personality.` `trait.mastery.` `trait.reputation.` `trait.cultural.` |
+| `trait_template` | `trait.core.` `trait.personality.` `trait.mastery.` `trait.reputation.` `trait.cultural.` `trait.temper.` |
 | `agreement_template` | `agreement.` |
 | `companion_template` | `companion.` |
 | `ambition_template` | `ambition_` |

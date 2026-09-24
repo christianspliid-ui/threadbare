@@ -9,6 +9,8 @@
  */
 
 import type { SphereName } from './index';
+import type { FightRatingWord } from './fight';
+import type { ReachDomain } from './traits';
 
 // ─── Lair Tier ────────────────────────────────────────────────────────────────
 
@@ -99,3 +101,39 @@ export const DANGER_ZONE_LABELS: Record<DangerZone, string> = {
   borderland: 'Moderate Risk',
   wilderness: 'Danger Zone',
 };
+
+// ─── Monster card (THR-1544, plan doc 3 § Engine 1) ──────────────────────────
+
+/**
+ * A monster's family — one per creation sphere, plus the Force family as the
+ * fallback for a foundation-sphere lair. The Time family's id `echo` is not the
+ * Aspect echo (`MortalDeathOutcome 'echo'`); the player-facing word is the
+ * family's card line.
+ */
+export type MonsterFamilyId =
+  | 'beast' | 'golem' | 'stormkin' | 'behemoth'
+  | 'mindthing' | 'wraith' | 'echo' | 'blight';
+
+/**
+ * The fighting card a lair's elite carries on its node (`properties.monsterState`),
+ * following the `battleState` / `armyState` typed-bag pattern. Written at mint by
+ * `createNamedElite`; hardened by the major → legendary escalation; its clock is
+ * written only by the fight block's `advanceFightClock`. Read by `readOpponentCard`.
+ *
+ * Temper is **not** on the card: it is a `has_trait` edge to a `trait.temper.*`
+ * definition, so spells, items and cards can later calm or enrage a monster
+ * through `trait_grant`.
+ */
+export interface MonsterState {
+  readonly family: MonsterFamilyId;
+  readonly dread: FightRatingWord;
+  readonly might: FightRatingWord;
+  readonly nerveReach?: ReachDomain;
+  readonly clashReach?: ReachDomain;
+  readonly clockSize: number;
+  /** 0 at mint; written only by `advanceFightClock`. Never reset by hardening. */
+  readonly clockFilled: number;
+  readonly clockUpdatedTick: number;
+  /** False at mint; set by the fight's temper checkpoint or a hunt's track step. */
+  readonly temperShown: boolean;
+}

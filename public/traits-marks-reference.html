@@ -349,7 +349,7 @@
       </ul>
 
       <h3>The ten categories &amp; shipped coverage <span class="flag impl">IMPL</span> · <span class="flag design">DESIGN</span> (destiny)</h3>
-      <p><code>TraitCategory</code> (<code>src/types/traits.ts:12</code>) declares ten. A category is an acquisition/removal/trigger contract, not a label. Static definition coverage is uneven by design — measured across the six <code>src/data/*-trait-content.ts</code> files, <strong>69 definitions</strong> ship statically:</p>
+      <p><code>TraitCategory</code> (<code>src/types/traits.ts:18</code>) declares twelve (with <code>spell</code>, THR-1429, and <code>temper</code>, THR-1544). A category is an acquisition/removal/trigger contract, not a label. Static definition coverage is uneven by design — measured across the six <code>src/data/*-trait-content.ts</code> files, <strong>69 definitions</strong> ship statically:</p>
       <table class="tunables">
         <thead><tr><th>Category</th><th>Static defs</th><th>Contract · producer</th></tr></thead>
         <tbody>
@@ -363,6 +363,7 @@
           <tr><td>innate</td><td>0 static</td><td>Minted at runtime as <code>trait_formative_*</code> nodes · <code>culturalTraits.ts</code></td></tr>
           <tr><td>bestowed</td><td>0 static</td><td>Minted at grant time · <code>tierPromotion.ts</code>, <code>rewardPool.ts</code>, <code>hexActionBridge.ts</code></td></tr>
           <tr><td>spell</td><td>1 per template, shared</td><td>THR-1429 — the Power kind's second class. One definition node per <code>SPELL_TEMPLATES</code> entry, minted at seeding · <code>seedAttachments.ts</code>, <code>spell-templates.ts</code>. A bearer holds <code>knows_spell</code> (known, unlimited) and/or <code>has_trait</code> (wielded, capped by <code>SLOT_CAPS.spell</code>) to the <em>same</em> node; per-bearer state lives on the edge.</td></tr>
+          <tr><td>temper</td><td>4</td><td>THR-1544 — how a lair monster breaks when a fight turns (<em>stubborn</em>, <em>berserk</em>, <em>skittish</em>, <em>bargains</em>). Minted at <code>createNamedElite</code> (<code>mintMonsterCard</code>, <code>src/engine/monsters/monsterCard.ts</code>), permanent, changed only by <code>trait_grant</code> or removal, read by the fight's temper checkpoint (<code>readTemper</code>) · definitions <code>src/data/temper-trait-content.ts</code>, seeded by <code>traitDefinitionSeeding.ts</code>; class word <code>#temper</code>; no capability contributions</td></tr>
           <tr><td>destiny</td><td>0</td><td><strong>Reserved.</strong> No definition, no producer, no reader</td></tr>
         </tbody>
       </table>

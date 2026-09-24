@@ -147,7 +147,7 @@
 - **Personality & Emergent Traits** — REACHED-BY-OP
   - _the op_ `cure_condition` (Destroy × condition) — `traits.ts`
 - **Ambitions & Undertakings** — REACHED-BY-OP
-  - _the op_ `plot_death` (Destroy × mortal) — `agentLifecycle.ts`, `strategicGraphOps.ts`, `undertakingMotive.ts`
+  - _the op_ `plot_death` (Destroy × mortal) — `agentLifecycle.ts`, `monsters/isMonster.ts`, `strategicGraphOps.ts`, `undertakingMotive.ts`
   - _the op_ `seal_power` (Destroy × power) — `undertakingMotive.ts`
   - _reads_ **Agent Lifecycle** — `ambitionTick.ts` grievance funnel — reads the `named_death` outcome node and THR-1383's seen-rule to decide whether a vendetta is minted
   - _reads_ **Reputation & Influence** — `grievance/grudgeEdge.ts`, `grievance/covetRivalry.ts`, `undertakingMotive.ts` — the `hostile_to` edge destroy × Standing writes is a motive gate on later cells
@@ -163,7 +163,7 @@
   - _the op_ `create_trade_route` (Create × route) — `strategicGraphOps.ts`, `tradeRouteOps.ts`
   - _the op_ `blockade_route` (Lower × route) — `strategicGraphOps.ts`
   - _the op_ `record_intelligence` (Observe × route) — `groupShape.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`
-  - _the op_ `plot_death` (Destroy × mortal) — `agentLifecycle.ts`, `strategicGraphOps.ts`, `undertakingMotive.ts`
+  - _the op_ `plot_death` (Destroy × mortal) — `agentLifecycle.ts`, `monsters/isMonster.ts`, `strategicGraphOps.ts`, `undertakingMotive.ts`
   - _the op_ `found_faction` (Create × faction) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
   - _the op_ `record_intelligence` (Observe × faction) — `groupShape.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`
   - _the op_ `raise_warband` (Create × company) — `strategicGraphOps.ts`

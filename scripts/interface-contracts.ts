@@ -4229,6 +4229,29 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/fights/fightState.ts'],
     readSites: ['src/engine/fights/fightOutcome.ts'],
   },
+  // ── Physical Conflict — monsters as opponents (THR-1544, plan 2026-09-23-monsters-as-opponents
+  // M1) — the plan's Interface impact row "lair escalation → monster card". The lair's
+  // escalation writes the card; the fight's opponent reader and the monster listing read it.
+  {
+    id: 'lair-escalation-mints-monster-card',
+    producerSystem: RUINS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made.",
+    ulTerms: ['Opponent Card', 'Temper'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['mintMonsterCard', 'hardenMonsterCard', 'monsterState'],
+      module: 'src/engine/monsters/monsterCard.ts',
+    },
+    writeSites: ['src/engine/monsters/monsterCard.ts', 'src/engine/lairEscalation.ts'],
+    readSites: ['src/engine/fights/opponentCard.ts', 'src/engine/monsters/listMonsters.ts'],
+    verifiedLive: {
+      date: '2026-09-24',
+      evidence:
+        'THR-1544 M1. Seed 42 medium, 120 ticks, CLI `monsters`: 14 monsters listed, every one carrying a card (14/14) — blight, stormkin, behemoth and golem families, all legendary by then, so every card also shows the hardening (clock 5, Dread one word up). Non-vacuous by `src/engine/monsters/__tests__/monsterCard.test.ts`: each of the eight families is minted and then read back through `readOpponentCard` with `source: \'monsterState\'` and the family\'s temper from the `trait.temper.*` edge; the real `phaseLairEscalation` both mints and hardens; a foundation-sphere lair falls back to the Force family; a graph with no temper definitions mints the card and skips the edge.',
+    },
+  },
   // ── FB3 (THR-1539, plan §7) — the plan's Interface impact rows "encounter step →
   // quintessence queue" (extend with `fight_harm`) and "encounter step → conditions
   // applier" (extend with fight bands). No `verifiedLive`, for the FB2 rows' reason:

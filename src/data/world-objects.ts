@@ -190,7 +190,7 @@ export type RouteKind = typeof ROUTE_KINDS[number];
 
 /** Trait subcategories that are *traits* (what a thing is); conditions and scars are the Condition kind. */
 /** `bestowed` is the Power kind's; `condition` and `scar` are the Condition kind's. */
-export const TRAIT_SUBCATEGORIES: readonly string[] = ['innate', 'mastery', 'reputation', 'personality', 'core', 'destiny', 'cultural', 'experience'];
+export const TRAIT_SUBCATEGORIES: readonly string[] = ['innate', 'mastery', 'reputation', 'personality', 'core', 'destiny', 'cultural', 'experience', 'temper'];
 export const CONDITION_SUBCATEGORIES: readonly string[] = ['condition', 'scar'];
 /** The Power kind's classes as subcategories: a god's gift, and a spell a mortal learned (THR-1429). */
 export const POWER_SUBCATEGORIES: readonly string[] = ['bestowed', 'spell'];

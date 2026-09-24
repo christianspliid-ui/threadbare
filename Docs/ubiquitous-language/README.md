@@ -15,7 +15,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 | [Cosmology.md](./Cosmology.md) | Reaches, Spheres, Foundation/Creation, domain capability, prerequisites | ✅ |
 | [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Faction, Realm, Rival, Thread, Avatar | ✅ |
 | [Encounters.md](./Encounters.md) | Encounter, Template, UAT, Aftermath, Reaction, Seed, Hidden Mark, Awareness | ✅ |
-| [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility — plus the attachment layer: Attachment, Effect, Power, Spell, Bestowal, Innate Power | ✅ |
+| [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility — plus the attachment layer: Attachment, Effect, Power, Spell, Bestowal, Innate Power, Temper | ✅ |
 | [Prose.md](./Prose.md) | IPK, Enrichment Placeholder, Resolver, Strata, Narrative Lexicon, Chronicle | ✅ |
 | [Graph.md](./Graph.md) | World Object, Area, Location, Place, Route, Node, Edge, WorldGraph, NodeType, EdgeType, versioning, position model | ❌ |
 | [Coordination.md](./Coordination.md) | CC session types, Linear states, claim discipline, WIP, Coordination Block (+ retired Cowork/Codex terms) | ❌ |
@@ -156,7 +156,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Trait Assignment](./Traits.md#trait-assignment)** — the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation, and (THR-1521) artifact
 - **[Location Trait](./Traits.md#location-trait)** — a `condition` trait whose bearer is a place-tier Location, declared by the `trait.condition.location.*` id prefix; planted by an aftermath with a term, or minted by `phaseLocationTraits` from the world's own scalars with none (THR-790)
 - **[Artifact Trait](./Traits.md#artifact-trait)** — a `condition` trait whose bearer is a thing (`artifact` / `artifact_legendary`), declared by the `trait.artifact.*` id prefix; *Storied* (stamped by `mintMasterwork`, climbs with encounter presence) and *Cursed* (the readable form of `curse_artifact`); a holding face is never a bearer (THR-1521)
-- **[Trait Category](./Traits.md#trait-category)** — one of ten classes stored as `subcategory`; a lifecycle contract (acquisition, removal, trigger), not a label
+- **[Trait Category](./Traits.md#trait-category)** — one of twelve classes stored as `subcategory`; a lifecycle contract (acquisition, removal, trigger), not a label
 - **[Destiny](./Traits.md#destiny)** — the forward-contract category: a world-minted promise, always visible; currently reserved and empty
 - **[Trait Ref](./Traits.md#trait-ref)** — how content names a trait: node id, short id, display name, or tag; resolves to a set, predicates ANY-match
 - **[TraitPredicate](./Traits.md#traitpredicate)** — the canonical gate `{ traitId, minLevel? }`; settles the ambition-key vs template-predicate `requiredTraits` collision
@@ -169,6 +169,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Spell](./Traits.md#spell)** — a Power learned from a magic tradition; carries an agency, an arena, and a price
 - **[Bestowal](./Traits.md#bestowal)** — a god-given Power; player-facing name for the `bestowed_power` kind, whose code identifier stays; not the `bestowed` trait category
 - **[Innate Power](./Traits.md#innate-power)** — a Power that is anatomy, stamped at seeding; no code anchor yet, and not the `innate` trait category
+- **[Temper](./Traits.md#temper)** — how a creature breaks when a fight turns (*stubborn*, *berserk*, *skittish*, *bargains*); a `trait.temper.*` trait each lair monster is minted with, read at the fight's temper checkpoint (THR-1544)
 - **[Tag Namespace](./Traits.md#tag-namespace)** — every content tag is written `#`-prefixed across one shared namespace; `normalizeTag` strips one leading `#` as a safety net, but the convention is the rule
 
 ### Prose

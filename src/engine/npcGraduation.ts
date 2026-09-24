@@ -20,6 +20,7 @@ import { VALUE_PAIRS } from '../types/agent';
 import type { AxiologicalProfile } from '../types/agent';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { DEFAULT_REPUTATION } from '../types/disposition';
+import { isMonster } from './monsters/isMonster';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────────────────
 
@@ -376,6 +377,8 @@ export function phaseNpcGraduation(state: GameState): NpcGraduatedEvent[] {
     const tier = actor.properties.spotlightTier as SpotlightTier | undefined;
     // Skip spotlight agents and legacy nodes
     if (tier === undefined || tier === 'spotlight') continue;
+    // THR-1544 — a lair's monster is never promoted into the mortal tiers.
+    if (isMonster(actor)) continue;
 
     const importance = (actor.properties.importance as number | undefined) ?? 0;
 

@@ -59,6 +59,7 @@ import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import { TAVERN_SUBLOCATION_TYPE_ID } from './sublocation';
+import { isMonster } from './monsters/isMonster';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -582,6 +583,9 @@ function findVisibleAgents(
       if (!agentNode) continue;
       if (agentNode.type !== 'actor') continue;
       if (agentNode.properties.actorType !== 'individual') continue;
+      // THR-1544 — a lair's monster is not a social partner. Explicit, rather than
+      // relying on its ambient tier and faction-less shape to keep it out.
+      if (isMonster(agentNode)) continue;
       const spotlightTier = (agentNode.properties.spotlightTier ?? 'spotlight') as string;
       const factionLinked = getFactionMembershipEdges(graph, edge.source)
         .some(memberEdge => (memberEdge.properties.factionDefId as string | undefined) != null);

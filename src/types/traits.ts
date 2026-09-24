@@ -15,7 +15,7 @@ import type { ContentCensusTag } from './contentCensus';
  * reads them through one shape; the subcategory is what tells a study apart from a gift.
  * One shared definition node per spell (THR-1395), per-bearer state on the edge.
  */
-export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'core' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed' | 'spell';
+export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'core' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed' | 'spell' | 'temper';
 
 // ─── Reputation Trait Effects (parseable payload) ──────────────────
 

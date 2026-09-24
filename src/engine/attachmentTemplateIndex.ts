@@ -58,6 +58,7 @@ import { conditionEffectLine, type ConditionEffectReading } from './aftermathWor
 import type { TooltipContent } from '../types/tooltip';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
 import { ARTIFACT_TRAIT_DEFINITIONS } from '../data/artifact-trait-content';
+import { TEMPER_TRAIT_DEFINITIONS } from '../data/temper-trait-content';
 import {
   REWARD_POSSESSIONS,
   REWARD_CONDITIONS,
@@ -110,6 +111,8 @@ export const ATTACHMENT_TEMPLATE_SOURCES: readonly GraphNode[] = [
   ...CONDITION_TRAIT_DEFINITIONS,
   // THR-1521 — a thing's traits hover the same way a mortal's conditions do.
   ...ARTIFACT_TRAIT_DEFINITIONS,
+  // THR-1544 — a monster's temper hovers like any other trait on its sheet.
+  ...TEMPER_TRAIT_DEFINITIONS,
   ...REWARD_CONDITIONS,
   ...REWARD_BESTOWED_POWERS,
   ...REWARD_POSSESSIONS,
