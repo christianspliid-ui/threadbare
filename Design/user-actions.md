@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 20:54 local (18:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 21:57 local (19:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -40,6 +40,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — the game now measures the odds mortals face, by skill level** ([THR-1578](https://linear.app/threadbare/issue/THR-1578/forecast-window-s1-the-gauge-measure-the-odds-per-proficiency-kpis-and), forecast window S1). This changes no gameplay yet. Merged 21:44 local via [#2021](https://github.com/christianspliid-ui/threadbare/pull/2021), and live on the site.
 - **2026-09-24 — when two mortals fight, both now roll** ([THR-1556](https://linear.app/threadbare/issue/THR-1556/duels-e1-opposed-exchanges), duels E1). Merged 20:45 local via [#2019](https://github.com/christianspliid-ui/threadbare/pull/2019), and live on the site. Not a review ask yet: monsters in scenes and the fight screen are still to come.
 - **2026-09-24 — you answered "yes to THR-1535"**: the dice will now honour items, conditions and standing ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)). It is in the build queue.
 - **2026-09-24 — you ruled on how much who a mortal is should weigh** ([THR-1575](https://linear.app/threadbare/issue/THR-1575/the-dice-read-every-protagonist-as-a-master-capabilitys-curve)): mortals take on tasks at 50–65% odds, skill decides which ones. The plan merged via [#2018](https://github.com/christianspliid-ui/threadbare/pull/2018) and [#2020](https://github.com/christianspliid-ui/threadbare/pull/2020); the first two slices ([S1](https://linear.app/threadbare/issue/THR-1578), [S2](https://linear.app/threadbare/issue/THR-1579)) are in the build queue.
@@ -49,7 +50,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — skill floors on ambitions, milestones and spells now actually gate** ([THR-1562](https://linear.app/threadbare/issue/THR-1562/ambition-reach-floors-and-reach-milestones-compare-raw-capability-10)). Merged 16:22 local via [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013), and live on the site.
 - **2026-09-24 — an item or spell can now push a fight clock forward or back, or inflict a condition mid-fight** ([THR-1542](https://linear.app/threadbare/issue/THR-1542/fight-block-fb6-effect-vocabulary-for-fights), FB6). Merged 15:49 local via [#2014](https://github.com/christianspliid-ui/threadbare/pull/2014).
 - **2026-09-24 — traits and items can now react when a fighter is struck, lands a blow or wins** ([THR-1541](https://linear.app/threadbare/issue/THR-1541/fight-block-fb5-fight-events), FB5). Merged 13:38 local via [#2012](https://github.com/christianspliid-ui/threadbare/pull/2012).
-- **2026-09-24 — sequel-only encounters no longer turn up on the open board** ([THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the)). Merged 12:43 local via [#2011](https://github.com/christianspliid-ui/threadbare/pull/2011).
 
 ---
 
