@@ -34,13 +34,13 @@ import { KPI_FORECAST_PARITY_MAX } from '../kpi/kpiConstants';
 import { isActionStepBranch } from '../../types/unifiedAction';
 import type { GameState } from '../../types/gameState';
 import type { ActionScale, UnifiedAction, UnifiedActionTemplate } from '../../types/unifiedAction';
-import type { ReachDomain } from '../../types/traits';
+import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
 
 beforeEach(() => disableTracing());
 afterEach(() => disableTracing());
 
 const TICK = 50;
-const ALL_REACHES: ReachDomain[] = ['iron', 'gold', 'heart', 'veil', 'eye', 'hand', 'root', 'star'];
+const ALL_REACHES: readonly ReachDomain[] = REACH_DOMAINS;
 /** Location kinds sampled — enough to put every scale in the sample. */
 const LOCATION_TYPES = ['hamlet', 'town', 'city', 'capital', 'ruins', 'mining', 'ruined_city', 'wilderness', 'wayside', 'temple'];
 /** Raw capabilities the sampled mortal is given — a novice, a journeyman and a specialist. */

@@ -277,7 +277,9 @@ describe('contract 2 — one band ladder in the engine', () => {
       // is the failure this set exists to prevent, not an instance of it.
       'decisionBoard.ts',
       'encounter.ts',
-      'encounterScoring.ts',
+      // `encounterScoring.ts` left this set with THR-1579: its step forecast now reads
+      // `scaledStepProbability` (`scaledForecast.ts`, below), so the planner cannot
+      // forecast a step past the scale offset and floor the core applies.
       'meetingEncounter.ts',
       'plannerForecast.ts',
       // Added by THR-1002, deliberately and in the open. `playerCastReadout.ts`

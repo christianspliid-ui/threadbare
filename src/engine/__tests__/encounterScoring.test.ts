@@ -1,5 +1,6 @@
 ﻿import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
+import { MIN_PROBABILITY_BY_SCALE } from '../resolutionScaleAdjust';
 import type { DistanceMatrix } from '../distanceMatrix';
 import type { EncounterCacheEntry } from '../encounterCache';
 import type { AxiologicalProfile, ValuePair } from '../../types/agent';
@@ -179,11 +180,13 @@ function buildTestGraph(opts: {
 // ─── estimateStepProbability ────────────────────────────────────
 
 describe('estimateStepProbability', () => {
-  it('returns floor when capability matches difficulty (Phase 2: no planner offset)', () => {
-    // Phase 2: capability=0.5, difficulty=0.5 → 0.5 - 0.5 + 0 = 0.0 → clamped to 0.05
+  it('returns the scale floor when capability matches difficulty (Phase 2: no planner offset)', () => {
+    // Phase 2: capability=0.5, difficulty=0.5 → 0.5 - 0.5 + 0 = 0.0. THR-1579: the
+    // planner forecasts what the core rolls, so an unscaled step reads the regional
+    // floor (0.20) and a cosmic one the global floor (0.05) — never the bare clamp.
     // (Old: had +STEP_PROBABILITY_OFFSET → 0.7. That planner-only offset is removed.)
-    const p = estimateStepProbability(0.5, 0.5);
-    expect(p).toBe(0.05);
+    expect(estimateStepProbability(0.5, 0.5)).toBe(MIN_PROBABILITY_BY_SCALE.regional);
+    expect(estimateStepProbability(0.5, 0.5, undefined, 'cosmic')).toBe(0.05);
   });
 
   it('returns higher probability for high capability vs low difficulty', () => {
@@ -193,7 +196,7 @@ describe('estimateStepProbability', () => {
   });
 
   it('returns lower probability for low capability vs high difficulty', () => {
-    const p = estimateStepProbability(0.1, 0.9);
+    const p = estimateStepProbability(0.1, 0.9, undefined, 'cosmic');
     expect(p).toBeLessThan(0.2);
   });
 
@@ -202,9 +205,10 @@ describe('estimateStepProbability', () => {
     const high = estimateStepProbability(1.0, 0);
     expect(high).toBe(0.95);
 
-    // Very low capability, very high difficulty
-    const low = estimateStepProbability(0.0, 1.0);
-    expect(low).toBe(0.05);
+    // Very low capability, very high difficulty — the global floor at cosmic scale,
+    // the scale's own floor elsewhere (THR-1579: what the core rolls).
+    expect(estimateStepProbability(0.0, 1.0, undefined, 'cosmic')).toBe(0.05);
+    expect(estimateStepProbability(0.0, 1.0, undefined, 'local')).toBe(MIN_PROBABILITY_BY_SCALE.local);
   });
 
   it('uses same math as shared resolver (Phase 2 parity)', () => {
@@ -227,10 +231,11 @@ describe('estimateCompletionProb', () => {
 
     const prob = estimateCompletionProb(entry, 'agent_1', graph);
     // Phase 2: Each step: computeCapability(no traits) → sigmoid(0) ≈ 0.018
-    // Step prob = 0.018 - 0.5 + 0 = -0.482 → clamped to 0.05 (floor)
-    // Product of 2 steps: 0.05 * 0.05 = 0.0025
-    expect(prob).toBeGreaterThan(0);
-    expect(prob).toBeLessThan(0.01);
+    // Step prob = 0.018 - 0.5 + 0 = -0.482 → the regional scale floor the core
+    // rolls at (THR-1579): 0.20. Product of 2 steps: 0.20 * 0.20 = 0.04
+    expect(prob).toBeCloseTo(MIN_PROBABILITY_BY_SCALE.regional ** 2, 10);
+    // At cosmic scale the global floor: 0.05 * 0.05 = 0.0025.
+    expect(estimateCompletionProb({ ...entry, scale: 'cosmic' }, 'agent_1', graph)).toBeLessThan(0.01);
   });
 
   it('high-capability agent has higher completion probability', () => {
