@@ -17,6 +17,8 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import type { SphereName } from '../types/index';
 import { emitTrace } from './traceBuffer';
 import { disbandArmy } from './armyAttrition';
+import { rebindLocatedAt } from './relocationIntent';
+import { resolveToParentLocation } from './sublocationShape';
 import { stampRealmSeat } from './realmSeat';
 import { touchStructure } from './simulationRuntime';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -418,6 +420,47 @@ function emitConquestTrace(
 // ─── Aftermath Application ──────────────────────────────────────────────
 
 /**
+ * Move everyone standing in a Place that is about to be destroyed up to its parent
+ * Location (THR-1563).
+ *
+ * `removeNode` drops every edge on the Place, including its occupants' `located_at`,
+ * and the three-tier position model requires every agent to sit on exactly one tier —
+ * an agent with no `located_at` falls outside movement, awareness, colocation and the
+ * map. The parent comes from `resolveToParentLocation`; `fallbackParentId` (the
+ * settlement whose `contains` edge named the Place) covers a Place whose
+ * `parentLocationId` is missing or dangling. Fail-soft: never throws.
+ */
+function relocateOccupantsToParent(
+  state: GameState,
+  placeId: string,
+  fallbackParentId: string,
+): number {
+  const graph = state.graph;
+  const place = graph.getNode(placeId);
+  if (!place) return 0;
+  const parent = resolveToParentLocation(graph, place);
+  const parentId = parent && parent.id !== placeId ? parent.id : fallbackParentId;
+  if (!graph.getNode(parentId)) return 0;
+
+  const occupantIds = graph.getIncomingEdges(placeId, 'located_at').map(e => e.source);
+  for (const occupantId of occupantIds) {
+    try { rebindLocatedAt(graph, occupantId, parentId); } catch { /* fail-soft */ }
+  }
+  if (occupantIds.length > 0) {
+    emitTrace({
+      tick: state.tick,
+      category: 'faction_ambition',
+      summary: `${occupantIds.length} occupant(s) of ${place.name} displaced to ${graph.getNode(parentId)?.name ?? parentId} as it is destroyed`,
+      event: 'aftermath_occupants_displaced',
+      placeId,
+      parentId,
+      occupantIds,
+    });
+  }
+  return occupantIds.length;
+}
+
+/**
  * Apply aftermath consequences when a battle/siege resolves.
  *
  * Called by resolveBattle after determining the outcome.
@@ -526,6 +569,7 @@ export function applyAftermath(
     }
 
     for (const subId of sublocationsDestroyed) {
+      relocateOccupantsToParent(state, subId, settlementId!);
       try { graph.removeNode(subId); } catch { /* already gone */ }
     }
 
@@ -619,7 +663,15 @@ export function applyAftermath(
   }
 
   // ── Disband losing army ──
-  if (loserNode) {
+  //
+  // Only an *army* is disbanded (THR-1563). A siege writes the besieged settlement's
+  // id as its `defenderArmyId` (siegeResolution: "Settlement acts as 'defender
+  // army'"), so on an attacker victory `loserNode` is the town itself — and
+  // `disbandArmy` is a `removeNode`, which deleted the settlement together with its
+  // residents' `located_at`, the `controls` edge the conquest above had just written,
+  // its trade routes and its Places. The settlement has already taken its losses
+  // (prosperity, tier, Places, routes, conquest); it stays on the map.
+  if (loserNode && loserState) {
     disbandArmy(state, loserArmyId);
   }
 
