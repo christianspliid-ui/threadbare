@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 116 |
+| 🟢 LIVE | 117 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 29 |
-| **Total** | **153** |
+| **Total** | **154** |
 
 ## Contracts by producing subsystem
 
@@ -226,6 +226,12 @@ remediation ticket or the build fails.
 | `location-traits-shift-encounter-pool` | A place earns a trait from what the world already measures about it — long prosperity, long unrest, lingering magic, the dead — and the encounters that gather there follow the trait, so a marked town tells different stories from an unmarked one without anyone authoring the town. | function: `phaseLocationTraits`, `describeLocationTraits`, `computeLocationTraitBonus`, `LOCATION_TRAIT_ENCOUNTER_BONUS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `trait-predicate-resolution` | A trait gate anywhere in the engine means the same thing: the world reacts to who someone is, by the same rules whichever system is asking. | function: `resolveTraitPredicate`, `collectBearerTraitRefs`, `bearerMatchesPredicate` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `trait-ref-authoring-vocabulary` | An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet. | function: `validateTraitRefs`, `buildTraitRefIndex`, `resolveTraitRefs` | Ambitions & Undertakings | 🔴 LEAKED | THR-800 |
+
+### Ruins, Clues & Delves
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Secrets & Favors
 
@@ -442,10 +448,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 46 total — 4 write, 2 read, 40 unclassified
+- **Production hits:** 47 total — 4 write, 2 read, 41 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +35 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +36 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -550,10 +556,10 @@ exit
 - **Intent:** Items grant abilities to their bearer (e.g. cavalry_charge).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Trait*
-- **Production hits:** 22 total — 4 write, 4 read, 14 unclassified
+- **Production hits:** 24 total — 4 write, 4 read, 16 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/gameInit.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/spellActivation.ts`, `src/engine/worldSeed.ts`
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/ambition-templates.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts` +9 more
+- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/ambition-templates.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/temper-trait-content.ts` +11 more
 - **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` consumes it on `ambition_forge_legend` — as a `boostingTraits` entry since THR-1348 (2026-09-22; it was the `requiredTraits` gate, which no seed could ever satisfy because the Anvil is a tier-4 cursed artifact `seedPossessions` never deals, so the ambition had zero holders on every seed). `grantedTraitConsumers.test.ts` asserts the boosting side: the granted key reaches the snapshot and `scoreDesirability` ranks the ambition higher with the Anvil than without, on one fixed stream. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.
 
 ### `attachment-worldgen-starters` — 🟢 LIVE
@@ -734,10 +740,10 @@ exit
 - **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/companions.ts`
-- **Production hits:** 44 total — 2 write, 2 read, 40 unclassified
+- **Production hits:** 45 total — 2 write, 2 read, 41 unclassified
 - **Write sites:** `src/data/companion-templates.ts`, `src/engine/companions.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +35 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/charteredKindsCodex.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +36 more
 - **Verdict:** Verified 2026-08-14: THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer's stone raw score by exactly the template's +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
@@ -983,10 +989,10 @@ exit
 - **Producer → Consumer:** Effects & Conditions → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 11 total — 3 write, 1 read, 7 unclassified
+- **Production hits:** 13 total — 3 write, 1 read, 9 unclassified
 - **Write sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effectTick.ts`
 - **Read sites:** `src/engine/fights/fightState.ts`
-- **Other hits:** `src/data/complication-templates.ts`, `src/debug-bridge.ts`, `src/engine/complicationEffects.ts`, `src/engine/effectExecutors.ts`, `src/engine/fights/fightClock.ts` +2 more
+- **Other hits:** `src/data/complication-templates.ts`, `src/debug-bridge.ts`, `src/engine/complicationEffects.ts`, `src/engine/effectExecutors.ts`, `src/engine/fights/fightClock.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
@@ -1063,10 +1069,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 109 total — 1 write, 1 read, 107 unclassified
+- **Production hits:** 111 total — 1 write, 1 read, 109 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +102 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +104 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1135,10 +1141,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Production hits:** 22 total — 1 write, 1 read, 20 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/debug-bridge.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts` +9 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/debug-bridge.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts` +15 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
@@ -1292,6 +1298,18 @@ exit
 - **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/incidentRecorder.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. `recordTick` is called once per tick from the tick-end site beside `validateTickOutput` with `runtime` already in scope, and both rings are read by `incidentBundle`'s `events` and `census` sections plus `__DEBUG.getIncidentRecorderStats()`. Owned on `SimulationRuntime` rather than at module scope, per the load-bearing decision, so a second playthrough cannot inherit the first one's events. Non-vacuous by `src/engine/__tests__/incidentRecorder.test.ts` (wrap behaviour asserted past `INCIDENT_EVENT_RING_SIZE`, oldest-first order across the wrap, and a throwing census that increments `misses`, leaves the tick untouched, and still records the *next* tick — the last clause falsifies the guard rather than confirming it) and by `incidentBundle.test.ts`'s census/recorder assertion.
 
+### `lair-escalation-mints-monster-card` — 🟢 LIVE
+
+- **Intent:** A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made.
+- **Producer → Consumer:** Ruins, Clues & Delves → Encounters & Dilemmas
+- **UL terms:** *Opponent Card*, *Temper*
+- **Module:** `src/engine/monsters/monsterCard.ts`
+- **Production hits:** 18 total — 2 write, 2 read, 14 unclassified
+- **Write sites:** `src/engine/lairEscalation.ts`, `src/engine/monsters/monsterCard.ts`
+- **Read sites:** `src/engine/fights/opponentCard.ts`, `src/engine/monsters/listMonsters.ts`
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/debug-bridge.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/fights/fightClock.ts` +9 more
+- **Verdict:** Verified 2026-09-24: THR-1544 M1. Seed 42 medium, 120 ticks, CLI `monsters`: 14 monsters listed, every one carrying a card (14/14) — blight, stormkin, behemoth and golem families, all legendary by then, so every card also shows the hardening (clock 5, Dread one word up). Non-vacuous by `src/engine/monsters/__tests__/monsterCard.test.ts`: each of the eight families is minted and then read back through `readOpponentCard` with `source: 'monsterState'` and the family's temper from the `trait.temper.*` edge; the real `phaseLairEscalation` both mints and hardens; a foundation-sphere lair falls back to the Force family; a graph with no temper definitions mints the card and skips the edge.
+
 ### `location-condition-taxes-movement-and-gates-templates` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery.
@@ -1401,10 +1419,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 30 total — 4 write, 3 read, 23 unclassified
+- **Production hits:** 31 total — 4 write, 3 read, 24 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +18 more
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +19 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -1425,10 +1443,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 85 total — 2 write, 3 read, 80 unclassified
+- **Production hits:** 87 total — 2 write, 3 read, 82 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +75 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +77 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1634,10 +1652,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 105 total — 1 write, 1 read, 103 unclassified
+- **Production hits:** 106 total — 1 write, 1 read, 104 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +98 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +99 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
