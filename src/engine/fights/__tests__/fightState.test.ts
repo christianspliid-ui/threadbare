@@ -74,7 +74,9 @@ function fightWorld(opts: { monsterState?: Record<string, unknown> } = {}): Worl
   graph.addNode({ id: 'loc-far', type: 'location', name: 'Far', properties: { hexCol: 9, hexRow: 9 } });
   graph.addNode({
     id: 'hero', type: 'actor', name: 'Hero',
-    properties: { actorType: 'individual', domainCapabilities: { iron: 14, heart: 14 } },
+    // A courageous hero: FB4's concession fork (THR-1540) fights on after every
+    // wounding clash, so these clock and ending tests read the band alone.
+    properties: { actorType: 'individual', domainCapabilities: { iron: 14, heart: 14 }, axiologicalProfile: { courage_prudence: 0.8 } },
   });
   graph.addEdge({ id: 'e.hero.at', source: 'hero', target: 'loc-1', type: 'located_at', properties: {} });
   graph.addNode({

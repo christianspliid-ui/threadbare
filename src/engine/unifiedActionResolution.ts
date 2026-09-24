@@ -1877,9 +1877,13 @@ export function executeStepResult(
   // ordinary step it is `action` itself.
   // THR-1539 — it also queues the step's harm, lands its band condition and carries
   // its momentum; harm reads the step's resolved difficulty (plan doc §3c, §7).
+  // THR-1540 — and it takes the fight's forks (temper, then concession), on the
+  // step rng after the core's draws, weighing the dealt hand's lean.
   let fightAction = fightRoleOf(fightStepDef)
     ? applyFightStepResult(state, action, template, fightStepDef, outcome, tick, {
       difficulty: resolutionStats?.difficulty ?? fightStepDef.difficulty,
+      rng,
+      handNudges: composeDealtStepFromState(fightStepDef, state).step.nudges,
     })
     : action;
 

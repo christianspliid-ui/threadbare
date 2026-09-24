@@ -2616,3 +2616,15 @@ Plan: `Docs/plans/2026-09-23-fight-block.md` §7. Every fight step now costs the
 | `engine/fights/fightStepInputs.ts` (`courage` and `momentum` named terms; berserk clash `FIGHT_BERSERK_MIGHT_DELTA`) | roll (and the forecast in FB7) | forecast factor lines (FB7) | reads `fightState.momentum` / `berserk` | inside `fight.step` (`modifiers`) | `fight.step` trace |
 
 **Declared, not yet reached:** `fight.step`'s `harmQueued` / `conditionsApplied` fields still trace 0 / `[]` (the trace is emitted at the roll, before the handler runs); `fightState` carries the real values. `berserk` is set by FB4.
+
+## The forks — fight block FB4 (THR-1540)
+
+Plan: `Docs/plans/2026-09-23-fight-block.md` §8, §5 (precedence), §12 (quarter's side rule). After a clash, the fighter may yield after a wounding exchange, and the opponent shows its temper at half clock. Both are decided at runtime and recorded in `fightState.forks`, never as choice memories. There is no new phase, node type, edge type or component. No shipped template carries `fightRole` until FB7, so every live step is byte-identical.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/fights/fightForks.ts` (new: `runFightForks`, `resolveQuarterOffer`, `temperCheckpoint`, `isFighterBehind`) | inside the fight handler (`applyFightStepResult`, unified-action progress), after the clock-full check and the step's costs | — (plan doc 4) | `fightState.forks` / `result` / `temperFired` / `berserk`; opponent node `monsterState.temperShown` | `fight.fork` | `fight.fork` trace; `getFightState(...).forks` in FB7 |
+| `engine/fights/fightState.ts` (`applyFightStepResult` runs the forks, then sets `broke_off` on an undecided last step; `FightStepResultOptions` carries `rng` and `handNudges`) · `engine/unifiedActionResolution.ts` (passes the step rng and the dealt step's nudges) | unified-action progress | existing encounter veil | `unifiedActions[].fightState` | — | — |
+| `types/traces/fight-traces.ts` (`FightForkTrace`) · `types/trace.ts` (`fight.fork` in the THR-928 trio) · `data/fight-constants.ts` (`FIGHT_TEMPER_CLOCK_FRACTION`, `FIGHT_CONCESSION_BANDS`, `FIGHT_CONCESSION_AXIS`, `FIGHT_BARGAIN_AXIS`, `FIGHT_TEMPER_SHOWN_PROP`) | — | — | — | — | — |
+
+**Declared, not yet reached:** `resolveQuarterOffer` has no production caller until FB7 (THR-1543) wires the `fight_offer_quarter` complication to it. `monsterState.temperShown` is written only on an opponent carrying `monsterState` (plan doc 3's M1). The lair card that reads it is plan doc 4's.

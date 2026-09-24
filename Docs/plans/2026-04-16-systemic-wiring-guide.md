@@ -4230,3 +4230,29 @@ logic keyed on `fightRole`. Authors write none of it, and must not add step effe
   `FIGHT_CLASH_MOMENTUM`).
 - **Wards cover harm, never a spell's price.** `phaseQuintessence` settles `source: 'spell_price'`
   outside `prevent_loss`, so a `prevent_loss` ward you author will not refund the `use × Power` cost.
+
+**The forks (FB4, THR-1540).** A fight decides two things at runtime, in
+`src/engine/fights/fightForks.ts`. Never author them as branches or `decidedBy` forks:
+
+- **Concession.** After a clash that wounds (`FIGHT_CONCESSION_BANDS`: at cost, failure) and is not
+  the last, the fighter stands or yields through `decideBranchPole` on `courage_prudence`: the live
+  profile lean plus the hand's lean. The negative pole sets `result: 'yielded'`. **To let the god sway
+  a stand, give a clash step's cards a `poleLean` on `courage_prudence`.** A card played on the
+  wounding clash is weighed in that clash's decision.
+- **Temper.** It fires once, when the opponent's clock first reaches `ceil(clockSize × FIGHT_TEMPER_CLOCK_FRACTION)`,
+  or at the first clash if the clock starts there. The temper comes from the card's
+  `monsterState.temper`, else a `trait.temper.<skittish|berserk|bargainer|stubborn>` trait on the
+  opponent, else `stubborn`. **Author an opponent's temper by giving it that trait.** Skittish sets
+  `driven_off`. Berserk sets `fightState.berserk`, which makes later clashes harder and costlier.
+  Bargainer is weighed by the *fighter* on `mercy_ruthlessness`: mercy sets `bargained`,
+  ruthlessness refuses. A persistent opponent carrying `monsterState` gets `temperShown: true`.
+- **Precedence.** `overcome` comes first, then temper, then concession. No fork runs once a result is
+  set. A fight still undecided at its last step ends `broke_off` *after* the forks, so a flight or a
+  bargain on the last clash still decides the ending.
+- **Forks are not choice memories.** Each lands in `fightState.forks` and a `fight.fork` trace. Key
+  aftermath variants on the result (`fight:yielded`, `fight:driven_off`, `fight:bargained`), never
+  on a fork.
+- **Quarter offered** (`resolveQuarterOffer`, wired to the `fight_offer_quarter` complication in
+  FB7): if the fighter is behind (`wounds > blowsLanded`), their concession runs now; it lapses on
+  the last clash. Otherwise the opponent's temper shows now, and a stubborn or already-shown temper
+  refuses.

@@ -10,8 +10,11 @@
 import type { TraceBase } from '../trace';
 import type { ActionScale, StepOutcome } from '../unifiedAction';
 import type { ReachDomain } from '../traits';
+import type { ValuePair } from '../agent';
 import type {
   FightEndReason,
+  FightFork,
+  FightTemper,
   FightOpponentStatus,
   FightRatingWord,
   FightResult,
@@ -72,6 +75,34 @@ export interface FightClockTrace extends TraceBase {
   /** Where the write landed: the monster's card, the action's per-fight clock, or the mailbox. */
   store: 'monsterState' | 'fightState' | 'mailbox';
   actionId?: string;
+}
+
+/**
+ * Emitted for each runtime decision inside a fight (THR-1540, plan doc §8): the
+ * fighter's concession after a wounding clash, the opponent's temper at half
+ * clock, and a quarter offer's answer. Forks are never choice memories.
+ */
+export interface FightForkTrace extends TraceBase {
+  category: 'fight.fork';
+  actionId: string;
+  templateId: string;
+  fighterId: string;
+  opponentId: string | null;
+  fork: FightFork['kind'];
+  side: 'fighter' | 'opponent';
+  /** The step index the fork was taken on. */
+  stepIndex: number;
+  /** The value axis the decision read; null for a temper that decides alone. */
+  axis: ValuePair | null;
+  temper?: FightTemper;
+  profileLean: number;
+  cardLean: number;
+  decidedBy: FightFork['decidedBy'];
+  choice: FightFork['choice'];
+  /** What set the fork off: the clash itself, or a `fight_offer_quarter` complication. */
+  trigger: 'clash' | 'quarter';
+  /** True when a persistent clock started at or past the temper checkpoint. */
+  temperAtStart?: boolean;
 }
 
 /** Emitted exactly once per fight, when its result is set (THR-1538). */

@@ -681,10 +681,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
 - **UL terms:** *Archetype Drift*, *Nudge*
 - **Module:** `src/engine/encounters/branchDecision.ts`
-- **Production hits:** 5 total — 1 write, 0 read, 4 unclassified
+- **Production hits:** 6 total — 1 write, 0 read, 5 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** —
-- **Other hits:** `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/standing-the-line.ts`, `src/engine/encounters/branchDecision.ts`, `src/testing/contentInvariants.ts`
+- **Other hits:** `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/standing-the-line.ts`, `src/engine/encounters/branchDecision.ts`, `src/engine/fights/fightForks.ts`, `src/testing/contentInvariants.ts`
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'applyAgentDecidedBranches' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `calling-derivation` — 🟢 LIVE
@@ -1067,10 +1067,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/engine/fights/fightState.ts`, `src/types/fight.ts`, `src/types/traces/fight-traces.ts`
+- **Other hits:** `src/data/fight-constants.ts`, `src/engine/fights/fightForks.ts`, `src/engine/fights/fightState.ts`, `src/types/fight.ts`, `src/types/traces/fight-traces.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
@@ -1461,10 +1461,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 294 total — 1 write, 1 read, 292 unclassified
+- **Production hits:** 295 total — 1 write, 1 read, 293 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +287 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +288 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

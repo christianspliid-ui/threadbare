@@ -87,7 +87,11 @@ function fightWorld(hero: Record<string, unknown> = {}): WorldGraph {
   graph.addNode({ id: 'loc-1', type: 'location', name: 'Den', properties: { hexCol: 2, hexRow: 2 } });
   graph.addNode({
     id: 'hero', type: 'actor', name: 'Hero',
-    properties: { actorType: 'individual', domainCapabilities: { iron: 14, heart: 14 }, quintessence: 1, ...hero },
+    // Courageous, so FB4's concession fork (THR-1540) never yields mid-harm-chain.
+    properties: {
+      actorType: 'individual', domainCapabilities: { iron: 14, heart: 14 }, quintessence: 1,
+      axiologicalProfile: { courage_prudence: 0.8 }, ...hero,
+    },
   });
   graph.addEdge({ id: 'e.hero.at', source: 'hero', target: 'loc-1', type: 'located_at', properties: {} });
   graph.addNode({
