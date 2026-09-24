@@ -191,7 +191,9 @@ export function applyFightStepResult(
     difficulty: opts.difficulty ?? step.difficulty,
     berserk: fight.berserk,
   }, tick);
-  const condition = applyFightBandCondition(state, action.actorId, role, outcome, tick, action.actionId);
+  const condition = applyFightBandCondition(
+    state, action.actorId, role, outcome, tick, action.actionId, action.currentStep,
+  );
   return {
     ...landed,
     fightState: {

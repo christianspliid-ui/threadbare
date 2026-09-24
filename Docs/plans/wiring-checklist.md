@@ -2602,3 +2602,17 @@ Plan: `Docs/plans/2026-09-23-fight-block.md` §4–6. A fight carries `UnifiedAc
 | `types/fight.ts` (`FightState`, `FightResult`, `FightFork`, `FightAdvantage`, `FightEndingRecord`, `FightLairOutcome`) · `types/traces/fight-traces.ts` (`FightClockTrace`, `FightEndTrace`) · `types/trace.ts` (trio) · `data/fight-constants.ts` · `engine/effects/effectEventDispatch.ts` (site `fight_end`) | — | — | — | — | — |
 
 **Declared, not yet reached:** `fightState.forks` (FB4); `harmTaken`, `conditionsApplied`, `momentum` (FB3); `advantages` (FB7); `ending`, `opponentEnding`, `lairOutcome` (plan docs 1, 5 and 3). The dispatcher ships with no branch. The rolled route raises no `combat_*` event until FB5 (THR-1541).
+
+## Harm, conditions, momentum — fight block FB3 (THR-1539)
+
+Plan: `Docs/plans/2026-09-23-fight-block.md` §7. Every fight step now costs the fighter: harm is queued as `fight_harm`, the band's condition lands through the one condition writer, and momentum carries into the next fight step. No new phase, node type, edge type or component. No shipped template carries `fightRole` until FB7, so the only live behaviour change is the `spell_price` split (a warded caster on `use × Power` now pays).
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/fights/fightHarm.ts` (new: `computeFightErosion`, `queueFightHarm`, `pendingQuintessenceRatio`, `fightHarmFloorFor` / `isBondedFirst`, `applyFightBandCondition`, `fightMomentumAfter`) | inside the fight handler (`applyFightStepResult`, unified-action progress) → settled by `phaseQuintessence` | existing quintessence readouts; sheet conditions | `pendingQuintessenceEvents` (`source: 'fight_harm'`); `fightState.harmTaken` / `conditionsApplied` / `momentum` | existing quintessence + `effect.event_raised` (`damaged`) | `fightState` on the action; `getFightState` in FB7 |
+| `engine/encounterAftermath.ts` (`applyConditionToActor` extracted; the `apply_condition` case delegates) | aftermath + fight handler | sheet conditions | `has_trait` condition edges | the aftermath's own traces (unchanged); none new | sheet |
+| `engine/phaseQuintessence.ts` (`QUINTESSENCE_SPELL_PRICE_SOURCE`; price settled outside `prevent_loss`) | quintessence phase | — | node `quintessence` | existing balance telemetry | — |
+| `engine/outcomeConsequences.ts` (`computeOutcomeConsequence(..., { fightStep })` drops the band quintessence event) · `engine/unifiedActionResolution.ts` (passes it; hands the resolved difficulty to the handler) | unified-action progress | — | — | `consequence_applied` reads `qDelta: 0` on a fight step | trace viewer |
+| `engine/fights/fightStepInputs.ts` (`courage` and `momentum` named terms; berserk clash `FIGHT_BERSERK_MIGHT_DELTA`) | roll (and the forecast in FB7) | forecast factor lines (FB7) | reads `fightState.momentum` / `berserk` | inside `fight.step` (`modifiers`) | `fight.step` trace |
+
+**Declared, not yet reached:** `fight.step`'s `harmQueued` / `conditionsApplied` fields still trace 0 / `[]` (the trace is emitted at the roll, before the handler runs); `fightState` carries the real values. `berserk` is set by FB4.

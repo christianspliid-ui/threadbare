@@ -171,6 +171,7 @@ export function applyFightBandCondition(
   band: StepOutcome,
   tick: number,
   actionId: string,
+  stepIndex: number,
 ): string | undefined {
   const condition = fightBandCondition(role, band);
   if (!condition) return undefined;
@@ -178,7 +179,8 @@ export function applyFightBandCondition(
     tick,
     intensity: condition.severe ? FIGHT_CONDITION_INTENSITY_SEVERE : FIGHT_CONDITION_INTENSITY,
     durationTicks: CONDITION_DURATIONS[condition.conditionTraitId] ?? 0,
-    edgeId: `has_trait_${actorId}_${condition.conditionTraitId}_${tick}_fight_${actionId}`,
+    // Unique per fight step: a fight can wound twice, and a test may run steps in one tick.
+    edgeId: `has_trait_${actorId}_${condition.conditionTraitId}_${tick}_fight_${actionId}_${stepIndex}`,
     edgeProperties: { sourceActionId: actionId, source: 'fight' },
   });
   return result.applied ? condition.conditionTraitId : undefined;
