@@ -33,7 +33,7 @@ import { DUEL_OPPONENT_STREAM_SALT, FIGHT_ENCOUNTER_TYPE, FIGHT_MORTAL_CLOCK } f
 import { mulberry32 } from '../../lib/prng';
 import { computeCapability } from '../domainCapability';
 import { buildPredicateContext, collectTestShapers } from '../effectResolver';
-import { resolveStepCore } from '../stepResolutionCore';
+import { resolveStepCore, type StepCoreInput } from '../stepResolutionCore';
 import { fightRoleOf, resolveFightOpponent, resolveFightStepInputs } from './fightStepInputs';
 
 /** Whether this step belongs to an agent-mode (duel) fight block. */
@@ -144,13 +144,15 @@ export function rollOpponentSide(
 
   const graph = state.graph;
   const capability = computeCapability(graph, opponentId, inputs.reach);
+  // `collectTestShapers` returns the effect layer's shaper shape, which the core
+  // reads structurally — the fighter's road passes it the same way.
   const testShapers = collectTestShapers(
     graph,
     opponentId,
     inputs.reach,
     buildPredicateContext(graph, opponentId, inputs.reach, FIGHT_ENCOUNTER_TYPE),
     state.effectStates,
-  );
+  ) as unknown as StepCoreInput['testShapers'];
   const core = resolveStepCore({
     actorId: opponentId,
     reach: inputs.reach,

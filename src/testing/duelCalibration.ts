@@ -10,8 +10,10 @@
  *    at capability ≈ 0.89 (THR-1531's bold-guard nerve);
  *  - the **strong** fixture, the actor: raw clash 30 (capability ≈ 1.0), whose
  *    derived Might reads *severe*;
- *  - the **weak** fixture: raw clash **exactly 15** (capability ≈ 0.83) — at 14 its
- *    Might reads *gentle* and the strong side's odds jump;
+ *  - the **weak** fixture: raw clash **exactly 15** — at 14 its Might reads
+ *    *gentle* and the strong side's odds jump. The plan quotes capability ≈ 0.83
+ *    there; the live sigmoid reads ≈ 0.88 (the report prints it). The raw pin is
+ *    the binding one, because the derived card reads raw, not capability;
  *  - mid-fight complications **off** (THR-1264's sim had none), through
  *    `executeStepResult`'s `noComplications` calibration lever;
  *  - **everything reset between duels**: harm, conditions, value drift, grown
@@ -28,7 +30,7 @@
  */
 
 import { WorldGraph } from '../engine/graph';
-import { createUnifiedAction } from '../engine/unifiedActionLifecycle';
+import { createUnifiedAction, resetUnifiedActionCounter } from '../engine/unifiedActionLifecycle';
 import { executeStepResult, resolveUncontestedStep } from '../engine/unifiedActionResolution';
 import { computeCapability } from '../engine/domainCapability';
 import { mulberry32 } from '../lib/prng';
@@ -218,6 +220,10 @@ export function runDuelCalibration(
   duels: number = DUEL_CALIBRATION_DUELS,
   seed = 1264,
 ): DuelCalibrationReport {
+  // The opponent's stream keys on the action id, minted from a module counter a
+  // game resets at init (`orchestrator.initializeGameState`); a calibration is its
+  // own game, so it resets it too — the same seed then fights the same duels.
+  resetUnifiedActionCounter();
   const graph = fixtureWorld();
   const raw: Record<string, Record<string, number>> = {};
   for (const id of [STRONG, WEAK]) {
