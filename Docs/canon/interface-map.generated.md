@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 114 |
+| 🟢 LIVE | 115 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 26 |
-| **Total** | **148** |
+| **Total** | **149** |
 
 ## Contracts by producing subsystem
 
@@ -234,6 +234,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `capability-thresholds-read-the-reach-share` | Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time. | function: `computeReachShare`, `computeReachShares`, `REACH_SHARE_FULL_RAW`, `meetsJoinPrerequisites` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
@@ -699,6 +700,18 @@ exit
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +66 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
+
+### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
+
+- **Intent:** Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time.
+- **Producer → Consumer:** Spheres & Quintessence → Ambitions & Undertakings
+- **UL terms:** *Domain Capability*, *Prerequisite*
+- **Module:** `src/engine/domainCapability.ts`
+- **Production hits:** 20 total — 2 write, 10 read, 8 unclassified
+- **Write sites:** `src/data/reach-share-constants.ts`, `src/engine/domainCapability.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/gameInit.ts` +5 more
+- **Other hits:** `src/data/ambition-templates.ts`, `src/data/arcane-circle-definition.ts`, `src/data/holy-order-dawn-definition.ts`, `src/data/temple-of-spheres-definition.ts`, `src/data/thieves-guild-definition.ts` +3 more
+- **Verdict:** Verified 2026-09-24: THR-1562. Before, the seven requirement sites read four different numbers: ambition floors, milestones and abandonment compared the raw store (10–40+) against 0–1 thresholds, so every mortal passed every floor, milestones passed on first check and abandonment never fired; spells and `reach_above:` read `properties.domainCapability` (singular), which nothing writes; guild joins compared the dice curve against thresholds authored raw. Now all read `computeReachShare` (effective raw ÷ 40, capped at 1). Asserting tests: `reachShare.test.ts` (the function; each site — floors via the snapshot, a shipped spell and its `reach_drain` check, the shipped `reach_above:star:0.10` trickle, a thieves-guild join, the premonition window; a corpus test that every authored threshold kind is 0 < t ≤ 1; the abandonment idiom) and `graphConditions.test.ts` (a fail with the reader supplied; an un-migrated 0–1 fixture fails closed). Live, `npm run census:reach-gates`, medium, seeds 42 · 99 × 150 ticks, before (main 07d51e3e) → after: milestones completed 270 · 322 → 29 · 36; ambitions completed 33 · 38 → 6 · 5; abandoned 4 · 2 → 12 · 26; reach term of the winning ambition score 100% → 78% · 77%; mortals-with-capabilities holding ≥1 eligible ambition 100% · 100%; protagonist milestones met on first check at tick 0 66% · 64% → 49% · 51%.
 
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
 
@@ -1797,10 +1810,10 @@ exit
 - **Intent:** Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **Module:** `src/engine/undertakingCapabilityGrowth.ts`
-- **Production hits:** 57 total — 2 write, 2 read, 53 unclassified
+- **Production hits:** 56 total — 2 write, 2 read, 52 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCapabilityGrowth.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +48 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +47 more
 - **Verdict:** Verified 2026-09-08: THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK

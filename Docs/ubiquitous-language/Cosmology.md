@@ -70,6 +70,8 @@ The affinity of an actor or location for a particular Sphere, stored as an `alig
 
 A tiered measure of how proficient an actor is across a Reach. Domain Capability gates access to actions — an actor must meet the capability tier plus sphere alignment check to perform certain actions. Ascendants use the same prerequisite system as mortal agents; power level is tunable, not structurally special-cased.
 
+**Two scales, one store (THR-1562, delegated seating 2026-09-24).** Capability is stored as a raw score and read on two scales. The **dice** read the capability curve (a sigmoid, `computeCapability`), which is what a resolution roll and a forecast see. Every **requirement** — an ambition's floor and milestones, a spell's minimum reach, a guild's join requirement, a `reach_above:` condition — reads the **reach share** (`computeReachShare`: the effective raw score ÷ `REACH_SHARE_FULL_RAW`, capped at 1), so 1.0 means as good as the best ordinary protagonist starts. Authored requirement numbers are always shares (0–1), never raw scores. Fights, sieges and journeys read the raw score with thresholds authored raw.
+
 ---
 
 ### Cosmology Profile
@@ -98,4 +100,4 @@ The derived meta-property tracking an actor's integrity-of-self and centrality t
 **Also see:** `[[Domain Capability]]`, `[[Sphere Alignment]]`
 **Status:** canonical
 
-A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for the Ascendant. Both conditions must pass for the action to appear in the action pool.
+A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for the Ascendant. Both conditions must pass for the action to appear in the action pool. A prerequisite's capability number is a **reach share** (0–1), read against the actor's full standing in the Reach — training, traits, items and company — never against the raw store or the dice curve (THR-1562; see `[[Domain Capability]]`).
