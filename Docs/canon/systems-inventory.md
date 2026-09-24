@@ -34,7 +34,7 @@ names like `TB-073`) a premise might use.
 
 | Subsystem | Status | Aliases (search keys) | Domains | Tick phases |
 |---|---|---|---|---|
-| **War, Armies & Battles** | 🟢 ACTIVE | war, warfare, army, armies, battle, siege, warband, conflict, invasion, cohesion, campaign | `army`, `battle` | `2.352`, `2.355`, `2.356`, `2.357`, `2.358` |
+| **War, Armies & Battles** | 🟢 ACTIVE | war, warfare, army, armies, battle, siege, warband, conflict, invasion, cohesion, campaign | `army`, `battle` | `2.352`, `2.355`, `2.356`, `2.357` |
 | **Factions & Succession** | 🟢 ACTIVE | faction, guild, order, succession, rank, schism | `faction`, `chosenfactionpowers`, `schism` | `6.55`, `6.56` |
 | **Rival Gods & Schemes** | 🟢 ACTIVE | rival, rivals, scheme, pantheon, antagonist | `rival` | `3` |
 | **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
@@ -146,7 +146,6 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `2.356` | Battle Detection | `TB-073` | orchestrator |
 | `2.357` | Battle Tick | `TB-073` | orchestrator |
 | `2.3575` | Lair Escalation | `M2.5` | orchestrator |
-| `2.358` | Army Notifications | `TB-073` | orchestrator |
 | `2.36` | Colocation Detection | — | orchestrator |
 | `2.361` | Colocation Aggregation — collapse same-hex same-tick encounter storms | `THR-456` | orchestrator |
 | `2.37` | Colocation Revelations | — | orchestrator |
@@ -235,7 +234,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `appointments` (1) | `appointments.ts` | `THR-1479` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
 | `area` (1) | `areaProjection.ts` | `THR-1155` |
-| `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `Phase 7`, `TB-073`, `THR-626` |
+| `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `TB-073`, `THR-1564`, `THR-626` |
 | `artifact` (1) | `artifactTraits.ts` | `THR-1521` |
 | `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-1213`, `THR-1318`, `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
@@ -423,4 +422,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 194 engine domains · 577 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 194 engine domains · 577 modules._

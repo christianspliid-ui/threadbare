@@ -288,12 +288,22 @@ already caught an uncounted writer (`lairEscalation` → `seedMonsterFaction`). 
 This moves **War & Armies** and **Factions & Succession** off the unaudited list only for the
 territorial seam — the rest of both subsystems is still audit-on-touch.
 
+**One contract added by THR-1564 (2026-09-24), negative first** — `war-news-reaches-chronicle`.
+The war lines were built by a phase that read the trace buffer, and traces are off unless the
+debug panel is open, so in normal play the player was never told a war was happening. Every
+writer existed and every reader existed; what was missing was a path that did not run through
+the debug layer. The contract is therefore written as a prohibition — *nothing player-facing
+reads a trace* — with one named door, `reportWar`, that each war writer calls where its event
+happens. Its asserting tests run with tracing **disabled**, and one of them requires a
+tracing-on and a tracing-off run to write identical lines. Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 
 ## Unaudited subsystems (audit-on-touch)
 
-Contract rows not yet written for: War & Armies · Factions & Succession (the territorial seam and, since THR-1448, the held-town standing — `held-town-opens-realm-standing`, `held-town-supplies-keeper-content-past-rank-access` — are covered; the rest audit-on-touch) · Rival Schemes ·
+Contract rows not yet written for: War & Armies (the territorial seam and, since THR-1564, the war news — `war-news-reaches-chronicle` — are covered; the rest audit-on-touch) · Factions & Succession (the territorial seam and, since THR-1448, the held-town standing — `held-town-opens-realm-standing`, `held-town-supplies-keeper-content-past-rank-access` — are covered; the rest audit-on-touch) · Rival Schemes ·
 Doom/Journey · Mandate · Essence & Divine Economy · Encounters & Dilemmas (core) · Culture ·
 Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
 Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·
@@ -330,7 +340,13 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-09-24 by Claude Code (THR-1526 — seed-only sequels). **Added** `seed-only-sequels-never-drawn`,
+2026-09-24 by Claude Code (THR-1564 — war news from state). **Added** `war-news-reaches-chronicle`,
+🟢 LIVE: each war writer reports its line through `reportWar` into `state.tickEvents`, and
+`phaseNarrative` promotes it; the trace-reading `phaseArmyNotifications` is retired. Verified
+by `warNews.test.ts` with tracing off and a 150-tick seed-42 headless run (11 endings in the
+chronicle with tracing off, identical with it on). `trace-ring-to-incident-bundle` **preserved**:
+traces stay off by default and stay the debug layer.
+Earlier: 2026-09-24 by Claude Code (THR-1526 — seed-only sequels). **Added** `seed-only-sequels-never-drawn`,
 🟢 LIVE: a template marked `drawable: false` is skipped by the encounter cache build (`isDrawable`)
 and the delivery beats (`isDeliverableBranchingEncounter`), and only its planter starts it. Verified by
 `npm run census:firings` (seeds 42/99 × 200 ticks: 0 board firings for the four sequels). `missed-appointment-breaks-agreement`

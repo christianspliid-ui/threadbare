@@ -70,7 +70,7 @@ A persistent record of a significant event in an agent or faction's history (`Ch
 **Also see:** `[[Chronicle Entry]]`, `[[Thread Tug]]`
 **Status:** canonical
 
-A `TickEvent` produced during the tick loop carrying a prose message and optional sphere coloring, significance score, and spatial coordinates. Narrative events flow to the UI's event feed and may trigger notifications. The significance score (0–1) controls UI prominence — high-significance events produce alerts; low-significance events appear in the chronicle.
+A `TickEvent` produced during the tick loop carrying a prose message and optional sphere coloring, significance score, and spatial coordinates. Narrative events flow to the UI's event feed and may trigger notifications. The significance score (0–1) controls UI prominence: an event at or above the chronicle threshold (0.8; 0.65 for omens) is promoted into the chronicle by `phaseNarrative`, and lower-significance events stay in the event record only. An alert (toast or modal) needs an explicit `notification` directive on the event — significance alone never raises one. *(Corrected 2026-09-24, THR-1564: this entry used to say the opposite — high significance makes alerts and low significance lands in the chronicle — which the code has never done.)*
 
 ---
 
