@@ -330,6 +330,14 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
+2026-09-24 by Claude Code (THR-1523 — unwatched builders step back).
+`strategic-ambition-pulls-holder-into-spotlight` **extended**, stays 🟢 LIVE: when no mortal
+without a strategic want can make room, an unwatched builder (no witnessed scene and no
+undertaking progress for `SPOTLIGHT_UNWATCHED_BUILDER_TICKS`, never travelling, followed or
+threaded, one per day) steps back; symbols gain `spotlightUnwatchedDemotedTick` and
+`rankedDemotionCandidates`; the retained dead hold no slot and a mortal is pulled once per
+batch. Re-verified by the census (150 ticks PASS both seeds; the class fires at 300 ticks,
+1 of 14 / 1 of 17 protagonists stepped back) and `spotlightPullUnwatched.test.ts`. Earlier:
 2026-09-22 by Claude Code (THR-1524 — appointment reachability). The two THR-1479 contracts
 `appointment-pulls-agent-movement` and `missed-appointment-breaks-agreement` **flip 🟢 LIVE on a
 census HIT**, the only evidence the row accepts: `check:content-model-census -- --ticks 200 --seed 42

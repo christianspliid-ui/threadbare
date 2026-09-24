@@ -2490,6 +2490,9 @@ export function applyEncounterAftermathReaction(
             // spotlight through the same hook the world's own mints use.
             seed: state.seed,
             busyActorIds: collectBusyActorIds(state),
+            // THR-1523: an unwatched builder may step back for the kindled mortal.
+            followedAgentIds: state.followedAgentIds ?? [],
+            projects: state.strategicState?.projects ?? [],
           },
         );
 

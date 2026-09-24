@@ -319,6 +319,13 @@ function printSpotlight(): void {
       console.log(`  ${dim(`t${String(r.tick).padStart(4)}`)}  ${nameOf(r.id)} ${dim(r.id)}  ${r.reason}`);
     }
   }
+  // THR-1523 — builders who stepped back unwatched, and how long nobody had watched them.
+  if (ledger.unwatchedDemotions.length > 0) {
+    console.log(`  ${BOLD}stepped back unwatched${RESET} (${ledger.unwatchedDemotions.length})`);
+    for (const u of ledger.unwatchedDemotions) {
+      console.log(`  ${dim(`t${String(u.tick).padStart(4)}`)}  ${nameOf(u.agentId)} ${dim(u.agentId)}  unwatched ${u.unwatchedTicks} ticks`);
+    }
+  }
   if (ledger.pulled.length === 0 && ledger.refused.length === 0) console.log(dim('  no pull has run yet'));
 }
 

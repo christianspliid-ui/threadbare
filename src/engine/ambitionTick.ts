@@ -12,7 +12,7 @@ import type { SphereName } from '../types/index';
 import type { AxiologicalProfile } from '../types/agent';
 import type { WorldGraph } from './graph';
 import { evaluateAmbitionProgress } from './ambitionLifecycle';
-import { assignInitialAmbitions, assignAmbitionToActor, MAX_ACTIVE_AMBITIONS } from './ambitionAssignment';
+import { assignInitialAmbitions, assignAmbitionToActor, spentSpotlightPull, MAX_ACTIVE_AMBITIONS } from './ambitionAssignment';
 import { collectBusyActorIds, flushSpotlightPullTrace } from './spotlightPull';
 import {
   AMBITION_TEMPLATES,
@@ -612,6 +612,11 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
   // Mortals mid-act — never demoted by a spotlight pull this pass (THR-1348). Built
   // once per phase, not per assignment: O(actions + projects), not O(actors × …).
   const busyActorIds = collectBusyActorIds(state);
+  // THR-1523: the unwatched-builder rule reads who the player follows and when each
+  // mortal's work last advanced. `?? []` — an absent field is an empty list; only an
+  // omitted option fails closed.
+  const followedAgentIds = state.followedAgentIds ?? [];
+  const strategicProjects = state.strategicState?.projects ?? [];
 
   // World-minted ambition accumulators — ONE aggregate trace per tick (THR-726).
   let mintedCount = 0;
@@ -828,6 +833,10 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
       let currentActiveCount = graph.getOutgoingEdges(actor.id, 'pursues')
         .filter(e => (e.properties.status as string) === 'active')
         .length;
+      // THR-1523 §5: one spotlight pull per holder per pass — the first strategic want
+      // this actor takes up (minted or re-evaluated) spends it; a refusal is recorded
+      // once, not once per want.
+      let actorPullSpent = false;
 
       // ── World-minted ambitions (THR-726): events write desire into free slots
       //    BEFORE spontaneous drift, so a razed hometown mints avengers/refugees. ──
@@ -976,9 +985,13 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             },
             seed: state.seed,
             busyActorIds,
+            followedAgentIds,
+            projects: strategicProjects,
+            skipSpotlightPull: holderId === actor.id && actorPullSpent,
           });
           if (!mintAssignment.assigned) continue;
           if (mintAssignment.pull?.pulled) newEvents.push(mintAssignment.pull.event);
+          if (holderId === actor.id && spentSpotlightPull(mintAssignment)) actorPullSpent = true;
 
           // Minting is silent (desire is interior) — no tickEvent; aggregate trace only.
           mintedCount++;
@@ -1015,9 +1028,13 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               priority: assignment.priority,
               seed: state.seed,
               busyActorIds,
+              followedAgentIds,
+              projects: strategicProjects,
+              skipSpotlightPull: actorPullSpent,
             });
             if (!reevalAssignment.assigned) continue;
             if (reevalAssignment.pull?.pulled) newEvents.push(reevalAssignment.pull.event);
+            if (spentSpotlightPull(reevalAssignment)) actorPullSpent = true;
 
             const template = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
             const prose = template?.selectionProse[0]

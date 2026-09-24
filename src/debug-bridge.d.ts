@@ -1410,7 +1410,10 @@ export interface DebugBridge {
    * which tick, and whom they displaced — `demotedId: null` for a net-additive pull),
    * `overflow` (outstanding net-additive pulls) against `overflowAllowance` (the share of
    * the deciding population this world may add, capped by `SPOTLIGHT_AMBITION_PULL_MAX`), and `refused` (the last refusal per mortal: `budget`, `no_capability_path`,
-   * `already_pulled`, `disabled`). Empty ledger, never null, when no game is loaded.
+   * `already_pulled`, `disabled`), and `unwatchedDemotions` (THR-1523 — the builders who
+   * stepped back for a pull after going unwatched: `{ agentId, tick, unwatchedTicks }`,
+   * where `unwatchedTicks` is how long they had gone with no witnessed scene and no
+   * undertaking progress). Empty ledger, never null, when no game is loaded.
    * Sorted by tick then id. Async — `await` it. CLI sibling: `spotlight`.
    */
   getSpotlightLedger(): Promise<import('./engine/spotlightPull').SpotlightLedger>;
