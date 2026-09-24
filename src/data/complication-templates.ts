@@ -843,4 +843,195 @@ export const COMPLICATION_TEMPLATES: ComplicationTemplate[] = [
     ],
     significanceBoost: 0.5,
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FIGHT — mid-fight events (THR-1543, fight block §12; THR-1265 starter table)
+  //
+  // Drawn only on fight steps (`requires.inFight`), and a fight step draws only
+  // these. Their `fight_*` effects are applied by the fight handler, not the
+  // complication applier. A fight step resolves at `regional`, so its failure and
+  // its critical failure both draw from `standard`; an at-cost exchange draws
+  // from `minor` (at COMPLICATION_MINOR_WEIGHT). No fight event is `severe`.
+  // Voice: GM narration in the game's register — what happens, plainly.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  {
+    id: 'complication.fight.footing_gives',
+    category: 'scar',
+    name: 'The Footing Gives',
+    reachAffinity: ['iron', 'stone'],
+    severity: 'standard',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_momentum', delta: -0.10 }],
+    proseTemplates: [
+      'The ground slides under {name}\'s feet. The next exchange starts from one knee.',
+      'Loose stone gives way, and {name} loses the ground they were holding.',
+    ],
+    significanceBoost: 0.0,
+  },
+
+  {
+    id: 'complication.fight.mud_and_blood',
+    category: 'scar',
+    name: 'Mud and Blood',
+    reachAffinity: ['iron'],
+    severity: 'minor',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_momentum', delta: -0.05 }],
+    proseTemplates: [
+      'The ground is churned to mud and blood, and every step {name} takes costs more than the last.',
+      'Mud drags at {name}\'s boots. The fight slows, and slow favours {opponent}.',
+    ],
+    significanceBoost: 0.0,
+  },
+
+  {
+    id: 'complication.fight.blade_bites_stone',
+    category: 'scar',
+    name: 'The Blade Bites Stone',
+    reachAffinity: ['iron'],
+    severity: 'standard',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_momentum', delta: -0.05 }],
+    proseTemplates: [
+      '{name}\'s swing goes wide and bites stone. The shock runs up both arms.',
+      'The blow meant for {opponent} strikes rock instead, and {name}\'s hands go numb.',
+    ],
+    significanceBoost: 0.0,
+  },
+
+  {
+    id: 'complication.fight.haft_cracks',
+    category: 'scar',
+    name: 'The Haft Cracks',
+    reachAffinity: ['iron'],
+    severity: 'standard',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_momentum', delta: -0.10 }],
+    proseTemplates: [
+      'Something in {name}\'s grip cracks. It will hold for now, but not for long.',
+      'The haft splits along the grain. {name} fights on with a weapon they no longer trust.',
+    ],
+    significanceBoost: 0.1,
+  },
+
+  {
+    id: 'complication.fight.blood_in_the_eyes',
+    category: 'scar',
+    name: 'Blood in the Eyes',
+    reachAffinity: ['iron', 'eye'],
+    severity: 'minor',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_condition', conditionTraitId: 'trait.condition.shaken', side: 'fighter' }],
+    proseTemplates: [
+      'A cut above the brow runs into {name}\'s eyes. They fight half-blind, and it shakes them.',
+      'Blood runs into {name}\'s eyes. For a moment {opponent} is only a shape.',
+    ],
+    significanceBoost: 0.0,
+  },
+
+  {
+    id: 'complication.fight.it_roars',
+    category: 'scar',
+    name: 'It Roars',
+    reachAffinity: ['heart', 'iron'],
+    severity: 'standard',
+    requires: { inFight: 'monster' },
+    effects: [{ type: 'fight_condition', conditionTraitId: 'trait.condition.terrified', side: 'fighter' }],
+    proseTemplates: [
+      '{opponent} roars, and the sound goes through {name} like cold water. Fear takes hold.',
+      'The roar fills the den. {name}\'s courage fails, and they are terrified.',
+    ],
+    significanceBoost: 0.1,
+  },
+
+  {
+    id: 'complication.fight.calls_its_kin',
+    category: 'scar',
+    name: 'It Calls Its Kin',
+    reachAffinity: ['iron', 'heart'],
+    severity: 'standard',
+    requires: { inFight: 'monster' },
+    effects: [{ type: 'fight_clock', delta: -1 }],
+    proseTemplates: [
+      '{opponent} cries out and something answers from the dark. It has help now, and it gets its breath back.',
+      'Others of its kind come to {opponent}\'s call. The ground {name} won is lost again.',
+    ],
+    significanceBoost: 0.2,
+  },
+
+  {
+    id: 'complication.fight.crowd_sees_it_falter',
+    category: 'witness',
+    name: 'The Crowd Sees It Falter',
+    reachAffinity: ['heart', 'iron'],
+    severity: 'minor',
+    requires: { inFight: 'mortal', witnessesPresent: true },
+    effects: [{ type: 'fight_momentum', delta: 0.05 }],
+    proseTemplates: [
+      'The onlookers see {opponent} falter and start to shout for {name}. It helps.',
+      '{witness} calls out for {name}, and others take it up. {opponent} hears it too.',
+    ],
+    significanceBoost: 0.0,
+  },
+
+  {
+    id: 'complication.fight.stranger_steps_in',
+    category: 'collateral_success',
+    name: 'A Stranger Steps In',
+    reachAffinity: [],
+    severity: 'standard',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_momentum', delta: 0.10 }],
+    proseTemplates: [
+      'A stranger steps in beside {name} for one exchange, and is gone before anyone can ask their name.',
+      'Someone nobody knows takes a blow meant for {name}. Then they are gone.',
+    ],
+    significanceBoost: 0.1,
+  },
+
+  {
+    id: 'complication.fight.learn_how_it_moves',
+    category: 'collateral_success',
+    name: 'You Learn How It Moves',
+    reachAffinity: ['eye', 'iron'],
+    severity: 'minor',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_momentum', delta: 0.10 }],
+    proseTemplates: [
+      'The blow costs {name}, but it teaches them how {opponent} moves. The next one will be different.',
+      '{name} takes the hit and sees the pattern in it. {opponent} always turns the same way.',
+    ],
+    significanceBoost: 0.0,
+  },
+
+  {
+    id: 'complication.fight.ground_drinks_it',
+    category: 'worsening_convergence',
+    name: 'The Ground Drinks It',
+    reachAffinity: [],
+    severity: 'standard',
+    requires: { inFight: true },
+    effects: [{ type: 'sphere_pressure', sphere: 'entropy', magnitude: 0.05 }],
+    proseTemplates: [
+      'The blood spilled here soaks into the ground, and the ground takes it gladly.',
+      'The earth under {name} drinks the blood. The place will remember this fight.',
+    ],
+    significanceBoost: 0.1,
+  },
+
+  {
+    id: 'complication.fight.quarter_offered',
+    category: 'partial_progress',
+    name: 'Quarter Offered',
+    reachAffinity: [],
+    severity: 'standard',
+    requires: { inFight: true },
+    effects: [{ type: 'fight_offer_quarter' }],
+    proseTemplates: [
+      'For a breath the fighting stops, and quarter is offered to whoever is losing.',
+      'Both sides step back. Someone has to decide whether this ends here.',
+    ],
+    significanceBoost: 0.1,
+  },
 ];

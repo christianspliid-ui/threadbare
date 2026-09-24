@@ -87,6 +87,11 @@ function requirementsMet(
     if (!hasIt) return false;
   }
   if (req.reachIn && !req.reachIn.includes(ctx.template.reach)) return false;
+  // THR-1543 — a mid-fight event needs a fight, and the right kind of opponent.
+  if (req.inFight) {
+    if (!ctx.fight) return false;
+    if (req.inFight !== true && req.inFight !== ctx.fight.opponentKind) return false;
+  }
 
   return true;
 }
@@ -205,7 +210,13 @@ function fillProse(
   else if (ctx.activeOmenCategory === 'cultural') omenAtmosphere = 'shifting social currents';
   else if (ctx.activeOmenCategory === 'seasonal') omenAtmosphere = 'the turning of the season';
 
+  // THR-1543 — a mid-fight event names the one the fighter faces.
+  const opponentName = ctx.fight?.opponentId
+    ? ctx.graph.getNode(ctx.fight.opponentId)?.name ?? 'the foe'
+    : 'the foe';
+
   return template
+    .replace(/\{opponent\}/g, opponentName)
     .replace(/\{name\}/g, actorName)
     .replace(/\{possessive\}/g, possessive)
     .replace(/\{location\}/g, locationName)
@@ -266,8 +277,16 @@ export function selectComplication(
   }
 
   // 1. Filter: severity + requirements
-  const eligible = COMPLICATION_TEMPLATES.filter(
-    t => t.severity === severity && requirementsMet(t, ctx),
+  // THR-1543 (fight block §12): a fight step draws only mid-fight events, and an
+  // ordinary step never draws one — `requirementsMet` covers the second half.
+  // A fight's author may merge its own events into its pool (`fightBlock` spec).
+  const pool = ctx.fight?.authored?.length
+    ? [...COMPLICATION_TEMPLATES, ...ctx.fight.authored]
+    : COMPLICATION_TEMPLATES;
+  const eligible = pool.filter(
+    t => t.severity === severity
+      && (!ctx.fight || t.requires?.inFight !== undefined)
+      && requirementsMet(t, ctx),
   );
 
   if (eligible.length === 0) {

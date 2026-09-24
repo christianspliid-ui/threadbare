@@ -279,7 +279,7 @@ Rules of play for the Nudge Model. Engine substrate shipped with THR-773; the pl
 
 ### Fights
 
-Rules of play for the fight block ([Docs/plans/2026-09-23-fight-block.md](../plans/2026-09-23-fight-block.md)). The engine core is landing slice by slice; **no shipped encounter contains a fight until FB7 (THR-1543)** lands the first fight template, so today these rules are reachable only through tests.
+Rules of play for the fight block ([Docs/plans/2026-09-23-fight-block.md](../plans/2026-09-23-fight-block.md)). The first fight template, **The Beast in Its Den** (`fight.lair.confront`), shipped with FB7 (THR-1543). It is never drawn at random: it arrives when a lair's beast is confronted (plan docs 3 and 6), or through the review lever `__DEBUG.spawnFight`.
 
 **A fight is ordinary encounter steps, run as a fight** [IMPL — THR-1537, `ActionStep.fightRole`, [src/engine/fights/fightStepInputs.ts](../../src/engine/fights/fightStepInputs.ts)]. One **nerve** step (does the mortal stand at all), then up to three **clash** steps (the exchanges), all against one opponent. Every roll is the same sigmoid → d100 → band ladder as any step. What differs is the price: the opponent's **card** rates the nerve step by its *Dread* and each clash by its *Might*, and every fight step resolves at the regional scale whatever the encounter's own scale, so a monster's strength is never erased by a small scene's generous floor.
 
@@ -305,7 +305,18 @@ Rules of play for the fight block ([Docs/plans/2026-09-23-fight-block.md](../pla
 
 **Gear and powers can strike, mend and curse** [IMPL — THR-1542, `resource_manipulate` `'fight_clock'`, `inflict_condition`]. A charm, a spell or a monster's power can move the opponent's clock just as a blow does. A charm can land the blow a mortal missed, and if that fills the clock, the fight is won in that exchange. A beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights. A power can also lay a condition, such as a curse or fear, on either side. A ward against that kind of condition turns it aside.
 
-**Help from the world** [DESIGN — FB7, THR-1543]. Old grudges, secrets, favours, companions and storied arms will tilt the odds as named, visible terms. These are not live yet.
+**Help from the world** [IMPL — THR-1543, `readFightAdvantages` in [src/engine/fights/fightAdvantages.ts](../../src/engine/fights/fightAdvantages.ts)]. When a fight starts, the world is read once for what the mortal brings to it, and each thing found is a named line on the odds:
+- **An old wound**: a grudge born of a real injury against this opponent makes every blow land easier. A mere quarrel does not.
+- **Their secret**: a mortal who knows something the opponent would rather keep throws it at them on the first exchange where they are losing. The secret is spent: it is out in the world now, and remembered.
+- **A favour called**: someone on the hex who owes the mortal a favour stands beside them, and the debt is paid by it, once per fight. A promise made to keep an appointment is never called in this way.
+- **Company**: every member of the mortal's company on the same hex fights beside them, up to three. The opponent is never counted, even if they are of the same company. Company help counts once: a company's usual stand-in and assist do not apply to a fight.
+- **Storied arms and a blessing** steady the nerve step. **A curse**, whether a condition or a cursed thing carried, drags every exchange.
+
+The god sees each of these on the forecast, in words. Nothing is spent until the fight itself runs; looking at the odds costs the mortal nothing.
+
+**Things happen mid-fight** [IMPL — THR-1543, twelve `complication.fight.*` entries in [src/data/complication-templates.ts](../../src/data/complication-templates.ts), `requires.inFight`]. When an exchange goes badly, a fight draws only from its own events: the footing gives, mud and blood, the blade bites stone, the haft cracks, blood in the eyes, it roars, it calls its kin, the crowd sees it falter, a stranger steps in, you learn how it moves, the ground drinks it, quarter offered. Some move the next exchange's odds, one lays fear or a shaken nerve, a beast calling its kin mends its clock, and quarter goes to whichever side is losing. A beast roars and calls its kin; a mortal opponent does neither. Ordinary encounters never draw a fight's events.
+
+**The odds shown are the odds rolled** [IMPL — THR-1543, `forecastActionAtScale` in [src/engine/scaledForecast.ts](../../src/engine/scaledForecast.ts)]. A fight step's forecast is priced from the same opponent card, the same reach, the same named lines and the same regional floor as the roll itself, with and without the god's cards. A mortal too weak to reach the floor on their own is still shown the floor's odds, because that is what they roll.
 
 ### Your first encounter — Meet The First
 

@@ -2561,6 +2561,175 @@ if (import.meta.env.DEV) {
       return pin ? { ...pin, status: 'pending' as const } : null;
     },
 
+    // ── Fight review levers (THR-1543, fight block FB7) ───────────────────
+    /**
+     * A fight's own state — `action.fightState` plus where the action stands. Read
+     * `fightState.result`, `clockNow`/`clockSize`, `advantages` (with `spent`),
+     * `forks` and `endReason` here rather than from traces, which are off unless
+     * tracing is enabled.
+     */
+    getFightState: (actionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const action = (state.unifiedActions ?? []).find(a => a.actionId === actionId);
+      if (!action) return { error: `no unified action ${actionId}` };
+      return {
+        actionId,
+        templateId: action.templateId,
+        fighterId: action.actorId,
+        opponentId: action.fightState?.opponentId ?? action.targetId ?? null,
+        currentStep: action.currentStep,
+        resolved: action.resolved,
+        outcome: action.outcome ?? null,
+        stepOutcomes: [...action.stepOutcomes],
+        fightState: action.fightState ?? null,
+      };
+    },
+
+    /** The opponent card a fight against this actor would read right now (lazy clock recovery included). */
+    inspectOpponentCard: async (idOrName: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const node = (await resolveAgentNode(idOrName)) ?? state.graph.getNode(idOrName) ?? null;
+      if (!node) return { error: `no actor matched "${idOrName}"` };
+      const { readOpponentCard } = await import('./engine/fights/opponentCard');
+      return { opponentId: node.id, name: node.name ?? node.id, card: readOpponentCard(state.graph, node.id, state.tick) };
+    },
+
+    /**
+     * The review lever for a fight: moves `@hero` to the target's location (a fight
+     * whose sides no longer share a hex ends `separated`), then stages
+     * `fight.lair.confront` on `@hero` against the named target, open, as The First.
+     * `clockFilled` presets a persistent (monster) clock through `advanceFightClock`
+     * (cause `debug`); a mortal's per-fight clock is cleared at fight start, so the
+     * preset only holds against a card that carries `monsterState`. `outcome` pins
+     * the band through `setOutcomePin` (read `getOutcomePinVerdict()`).
+     * `fighterRaw` stamps the hero's raw capability in all eight reaches and
+     * `fighterConditions` lands conditions on the hero — the setups for the
+     * forecast checks at the regional floor and below it.
+     */
+    spawnFight: async (
+      targetIdOrName: string,
+      opts: { clockFilled?: number; outcome?: string; fighterRaw?: number; fighterConditions?: readonly string[] } = {},
+    ) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { success: false, message: 'no live game state' };
+      const target = await resolveAgentNode(targetIdOrName);
+      if (!target) return { success: false, message: `no actor matched "${targetIdOrName}"` };
+      const hero = await resolveAgentNode('@hero');
+      if (!hero) return { success: false, message: 'no @hero to fight with' };
+      if (hero.id === target.id) return { success: false, message: 'a fighter cannot fight themself' };
+      const graph = state.graph;
+      const targetLocation = graph.getOutgoingEdges(target.id, 'located_at')[0]?.target;
+      if (!targetLocation) return { success: false, message: `${target.name} has no location` };
+      const heroLocation = graph.getOutgoingEdges(hero.id, 'located_at')[0]?.target;
+      if (heroLocation !== targetLocation) {
+        const move = (_encounterBridge?.moveAgent as ((...a: unknown[]) => { success?: boolean; message?: string }) | undefined)
+          ?.(hero.id, { locationQuery: targetLocation });
+        if (!move?.success) return { success: false, message: `could not move @hero: ${move?.message ?? 'no bridge'}` };
+      }
+      const runtime = _runtimeProvider?.();
+      if (typeof opts.fighterRaw === 'number' && Number.isFinite(opts.fighterRaw)) {
+        const { REACH_DOMAINS } = await import('./types/traits');
+        const raw: Record<string, number> = {};
+        for (const reach of REACH_DOMAINS) raw[reach] = opts.fighterRaw;
+        graph.getNode(hero.id)!.properties.domainCapabilities = raw;
+      }
+      if (opts.fighterConditions?.length) {
+        const { applyConditionToActor } = await import('./engine/encounterAftermath');
+        for (const conditionId of opts.fighterConditions) {
+          applyConditionToActor(state, hero.id, conditionId, { tick: state.tick, durationTicks: 100 });
+        }
+      }
+      if (typeof opts.clockFilled === 'number' && Number.isFinite(opts.clockFilled)) {
+        const [{ advanceFightClock }, { readOpponentCard }] = await Promise.all([
+          import('./engine/fights/fightClock'),
+          import('./engine/fights/opponentCard'),
+        ]);
+        const now = readOpponentCard(graph, target.id, state.tick).clockFilled;
+        advanceFightClock(graph, target.id, opts.clockFilled - now, 'debug', state.tick);
+      }
+      if (runtime) {
+        const { touchWorld } = await import('./engine/simulationRuntime');
+        touchWorld(runtime);
+      }
+      const { FIGHT_LAIR_CONFRONT_ID } = await import('./data/encounters/fight-lair-confront');
+      if (opts.outcome) {
+        const pin = await import('./engine/debugOutcomePin');
+        if (!pin.isReviewableOutcomeBand(opts.outcome)) {
+          return { success: false, message: `${opts.outcome} is not a reviewable band` };
+        }
+        pin.setOutcomePin(FIGHT_LAIR_CONFRONT_ID, opts.outcome);
+      }
+      type SpawnResult = import('./engine/debugEncounterTools').DebugSpawnEncounterResult;
+      const spawn = _encounterBridge?.spawnEncounter as ((...a: unknown[]) => SpawnResult) | undefined;
+      if (!spawn) return { success: false, message: 'Encounter bridge not registered' };
+      const result = spawn(hero.id, FIGHT_LAIR_CONFRONT_ID, {
+        open: true,
+        courtPosition: 'the_first',
+        targetId: target.id,
+      });
+      return { ...result, fighterId: hero.id, opponentId: target.id };
+    },
+
+    /**
+     * THR-1543 (fight block §3b) — the odds shown against the odds rolled, for an
+     * action's current step: the attended forecast (the stage's own phase model and
+     * `forecastWithNudges`) beside the resolver's probability for the same step
+     * (`previewStepProbability`, the roll's own derivation, run dry). `equal`
+     * compares the d100 thresholds, the number a roll is actually judged against.
+     * `selectedNudgeIds` selects cards in both. Read-only: nothing is spent.
+     */
+    getFightForecastCheck: async (actionId: string, selectedNudgeIds: readonly string[] = []) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const action = (state.unifiedActions ?? []).find(a => a.actionId === actionId);
+      if (!action) return { error: `no unified action ${actionId}` };
+      const [
+        { getUnifiedTemplateById },
+        { getAnyEncounterById },
+        { resolveStepDefinition },
+        { buildNudgePhaseModel },
+        { forecastWithNudges },
+        { previewStepProbability },
+      ] = await Promise.all([
+        import('./data/unified-action-templates'),
+        import('./data/encounter-content'),
+        import('./engine/unifiedActionLifecycle'),
+        import('./components/Game/encounter-stage/adapters/buildNudgePhaseModel'),
+        import('./components/Game/encounter-stage/useNudgeHand'),
+        import('./engine/unifiedActionResolution'),
+      ]);
+      const template = getUnifiedTemplateById(action.templateId) ?? getAnyEncounterById(action.templateId);
+      if (!template) return { error: `no template ${action.templateId}` };
+      const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+      const phase = buildNudgePhaseModel({
+        template, activeAction: action, step, graph: state.graph, gameState: state, allowEmptyHand: true,
+      });
+      if (!phase) return { error: 'no forecast phase for this step' };
+      const forecast = forecastWithNudges(phase, selectedNudgeIds);
+      const resolverProbability = previewStepProbability(action, template, state, selectedNudgeIds);
+      const forecastThreshold = Math.floor(forecast.probability * 100);
+      const resolverThreshold = resolverProbability === undefined ? null : Math.floor(resolverProbability * 100);
+      return {
+        actionId,
+        stepIndex: action.currentStep,
+        fightRole: step.fightRole ?? null,
+        reach: phase.testPanel.reach,
+        difficulty: phase.testPanel.difficultyValue,
+        forecastScale: phase.forecastScale ?? null,
+        forecastWord: forecast.word,
+        forecastProbability: forecast.probability,
+        forecastThreshold,
+        resolverProbability: resolverProbability ?? null,
+        resolverThreshold,
+        equal: resolverThreshold !== null && resolverThreshold === forecastThreshold,
+        selectedNudgeIds: [...selectedNudgeIds],
+        cards: phase.cards.map(c => ({ id: c.id, name: c.name, forecastDelta: c.forecastDelta })),
+        factors: phase.testPanel.factors.map(f => ({ text: f.text, polarity: f.polarity, delta: f.delta ?? null })),
+      };
+    },
+
     // ── Undertaking review levers (THR-1300 slice 2) ──────────────────────
     // The start lever mutates state, so it is delegated to the encounter bridge
     // GameView registers (the `spawnEncounter` shape); the pin and the force flag

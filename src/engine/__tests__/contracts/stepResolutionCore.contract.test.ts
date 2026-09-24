@@ -291,6 +291,14 @@ describe('contract 2 — one band ladder in the engine', () => {
       // the silent drift this pin exists to prevent (and was the shape of THR-998).
       'playerCastReadout.ts',
       'resolutionScaleAdjust.ts',
+      // Added by THR-1543 (fight block FB7), deliberately and in the open.
+      // `scaledForecast.ts` forecasts a step exactly as the core rolls it — the
+      // scale's difficulty step, then the post-roll floor — through
+      // `computeResolutionThreshold` and `computeOutcomeProbabilities`, the same
+      // functions `forecastAction` wraps. It rolls nothing and classifies no band;
+      // it exists so the attended forecast quotes the threshold the d100 is judged
+      // against on a fight step, rather than re-typing the floor beside the core.
+      'scaledForecast.ts',
       'stepResolutionCore.ts',
     ]);
   });

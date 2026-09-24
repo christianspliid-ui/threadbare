@@ -78,6 +78,8 @@ export type FightOpponentStatus =
 export interface FightNamedModifier {
   readonly name: string;
   readonly delta: number;
+  /** The factor line in words (an advantage's label), when the name alone is a key. */
+  readonly label?: string;
 }
 
 /**
@@ -103,6 +105,8 @@ export interface FightStepInputs {
   readonly modifiers: readonly FightNamedModifier[];
   /** Sum of `modifiers`. */
   readonly modifierTotal: number;
+  /** FB7 — every advantage the fighter brings (the fight's, or read directly before it starts). */
+  readonly advantages: readonly FightAdvantage[];
 }
 
 // ─── FB2 (THR-1538): the fight's own state ──────────────────────

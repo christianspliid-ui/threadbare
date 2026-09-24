@@ -748,3 +748,17 @@ A **broke off** fight can end without a roll: when its opponent never appeared, 
 The result is written as one choice memory (`fight:<result>`) at `fightResultIndex(steps)`, an index no step owns, so aftermath variants key on it without disturbing the cards the god played.
 
 Code anchors: `src/engine/fights/fightState.ts`, `src/engine/fights/fightOutcome.ts` (`onFightEnded`), `src/types/fight.ts`.
+
+---
+
+### Fight Advantage
+
+**Aliases:** advantage (fight), `FightAdvantage`, edges from the world (THR-1532)
+**Also see:** `[[Fight]]`, `[[Clash Step]]`, `[[Nerve Step]]`, `[[Edge]]`
+**Status:** canonical (seated by THR-1543, delegated seating 2026-09-11)
+
+Something the world lends a fighter, read once when a fight starts and carried as a **named term** on the odds: an *old wound* (a grudge born of a real injury against this opponent), *their secret* (spent on the first exchange where the fighter is losing), *a favour called* (someone on the hex who owes them stands beside them), *company* (members of their company on the hex, up to three), *Storied arms* and *Blessed* (the nerve step), *Cursed* (every exchange). Each is shown on the forecast in words.
+
+**Not a graph Edge.** THR-1532 called these "edges from the world"; the code term is *advantage* because **Edge** is the canonical word for a graph relationship. The advantages are *read from* edges (`hostile_to`, `knows_secret_of`, `owes_favor`, `member_of`), and a spent one leaves its edge in place — the favour marked redeemed, the secret marked revealed. Reading is pure (the forecast reads it freely); only the fight handler spends.
+
+Code anchors: `src/engine/fights/fightAdvantages.ts` (`readFightAdvantages`), `src/engine/fights/fightAllies.ts` (`getCompanyMembersAtHex`), `src/data/fight-constants.ts`.

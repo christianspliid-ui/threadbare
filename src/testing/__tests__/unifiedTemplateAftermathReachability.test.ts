@@ -15,7 +15,9 @@ import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import {
   assertAftermathVariantsProducible,
   assertDecidedAftermathReachable,
+  assertFightBlockRules,
 } from '../contentInvariants';
+import { FIGHT_LAIR_CONFRONT_ID } from '../../data/encounters/fight-lair-confront';
 import { isActionStepBranch, resolveAftermathVariant } from '../../types/unifiedAction';
 import type {
   UnifiedActionOutcome,
@@ -449,5 +451,55 @@ describe('aftermath variant shape across the real corpus (THR-1054)', () => {
 
     // And the consequence the predicate stands in for: the authored band is invisible.
     expect(resolveAftermathVariant(nested, undefined, 'failure').overview).toBe('The base ending.');
+  });
+});
+
+/**
+ * THR-1543 (fight block FB7) — the fight is a third producer of aftermath variant
+ * keys, and the block's two content rules run catalog-wide.
+ */
+describe('fight blocks (catalog-wide, THR-1543)', () => {
+  const confront = () => UNIFIED_ACTION_TEMPLATES.find((t) => t.id === FIGHT_LAIR_CONFRONT_ID)!;
+
+  it('every template keeps the fight block terminal, with no step reward pool on a fight step', () => {
+    for (const template of UNIFIED_ACTION_TEMPLATES) {
+      assertFightBlockRules(template);
+    }
+  });
+
+  it('inspects a non-empty population of fight templates', () => {
+    const fights = UNIFIED_ACTION_TEMPLATES.filter((t) =>
+      t.steps.some((s) => !isActionStepBranch(s) && s.fightRole));
+    expect(fights.map((t) => t.id)).toContain(FIGHT_LAIR_CONFRONT_ID);
+  });
+
+  it('fight:<result> keys are producible on a template ending in a fight block', () => {
+    expect(() => assertAftermathVariantsProducible(confront())).not.toThrow();
+  });
+
+  it('rejects content after a fight block', () => {
+    const real = confront();
+    const opening = real.steps[0];
+    const broken = { ...real, steps: [...real.steps, { ...opening, fightRole: undefined }] } as UnifiedActionTemplate;
+    expect(() => assertFightBlockRules(broken)).toThrow(/terminal rule/);
+  });
+
+  it('rejects a step reward pool on a fightRole step', () => {
+    const real = confront();
+    const [nerve, ...rest] = real.steps;
+    const pooled = {
+      ...real,
+      steps: [{ ...nerve, successMetadata: { rewardPool: { categoryWeights: { possession: 1 } } } }, ...rest],
+    } as UnifiedActionTemplate;
+    expect(() => assertFightBlockRules(pooled)).toThrow(/step reward pool/);
+  });
+
+  it('a fight:* key on a template without a fight block still fails producibility', () => {
+    const real = confront();
+    const noBlock = {
+      ...real,
+      steps: real.steps.map((s) => ({ ...s, fightRole: undefined })),
+    } as UnifiedActionTemplate;
+    expect(() => assertAftermathVariantsProducible(noBlock)).toThrow(/can be produced by nothing/);
   });
 });

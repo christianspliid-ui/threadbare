@@ -36,6 +36,7 @@ import type { EncounterChoiceMemory } from '../../types/encounter';
 import type { FightEndReason, FightState, OpponentCard } from '../../types/fight';
 import {
   FIGHT_CLOCK_BY_BAND,
+  FIGHT_CONDITION_INTENSITY,
   FIGHT_RESULT_CHOICE_PREFIX,
   FIGHT_RESULT_STEP_ID,
   FIGHT_RESULT_WORDS,
@@ -52,7 +53,17 @@ import {
   clearStaleFightClockMailbox,
   drainFightClockMailbox,
 } from './fightClock';
-import { runFightForks } from './fightForks';
+import { resolveQuarterOffer, runFightForks } from './fightForks';
+import type { ComplicationEffect } from '../../types/complication';
+import type { TickEvent } from '../../types/gameState';
+import {
+  readFightAdvantages,
+  secretAppliesToClash,
+  spendFavourAtFightStart,
+  spendSecretAfterClash,
+} from './fightAdvantages';
+import { CONDITION_DURATIONS } from '../../data/condition-trait-content';
+import { applyConditionToActor } from '../encounterAftermath';
 import {
   raiseFightClashLanded,
   raiseFightOvercome,
@@ -61,14 +72,10 @@ import {
 } from './fightEvents';
 import type { ReachDomain } from '../../types/traits';
 
-/**
- * The index the fight's result memory is written at: past the terminal block, an
- * index no step owns (plan doc §6, "the memory rule"). A fight template's
- * aftermath sets `branchOnStep: fightResultIndex(steps)`.
- */
-export function fightResultIndex(steps: readonly unknown[]): number {
-  return steps.length;
-}
+// The index the fight's result memory is written at lives with the authoring helper
+// (FB7), so a fight template can name it without importing the engine.
+import { fightResultIndex } from '../../data/fights/fightBlock';
+export { fightResultIndex };
 
 /** A fresh fight state, read from the opponent's card at the block's first fight step. */
 export function createFightState(card: OpponentCard): FightState {
@@ -191,12 +198,22 @@ export function applyFightStepResult(
 ): UnifiedAction {
   const role = fightRoleOf(step);
   if (!role) return action;
+  const effects = opts.complicationEffects ?? [];
+  // FB7 (plan doc §11): the secret applied to this clash iff the fighter was
+  // behind going into it — read off the fight as it stood before the blow lands.
+  const secretApplied = role === 'clash' ? secretAppliesToClash(action.fightState) : undefined;
   const landed = landFightBand(state, action, step, outcome, tick, {
     reach: opts.reach ?? step.reach,
     rng: opts.rng ?? standFirmCoin,
+    complicationClock: effects.reduce((sum, e) => sum + (e.type === 'fight_clock' ? e.delta : 0), 0),
   });
-  const fight = landed.fightState;
+  let fight = landed.fightState;
   if (!fight) return landed;
+  if (secretApplied) {
+    const spent = spendSecretAfterClash(state, action.actorId, fight.opponentId, fight.advantages, secretApplied);
+    fight = { ...fight, advantages: spent.advantages };
+    opts.events?.push(...spent.events);
+  }
 
   // The step's costs read the fight as it stood when the blow landed: a berserk
   // turn decided by this clash's temper prices the *next* clash, not this one.
@@ -210,15 +227,34 @@ export function applyFightStepResult(
   const condition = applyFightBandCondition(
     state, action.actorId, role, outcome, tick, action.actionId, action.currentStep,
   );
+  // FB7 (plan doc §12): the step complication's fight effects, each through the
+  // fight's own writer — momentum onto the carried term, a condition through
+  // `applyConditionToActor`. (Its clock write landed at step (4) of the check.)
+  const complicationMomentum = effects.reduce(
+    (sum, e) => sum + (e.type === 'fight_momentum' ? e.delta : 0), 0,
+  );
+  const conditionsApplied = new Set(fight.conditionsApplied);
+  if (condition) conditionsApplied.add(condition);
+  for (const effect of effects) {
+    if (effect.type !== 'fight_condition') continue;
+    const targetId = effect.side === 'fighter' ? action.actorId : fight.opponentId;
+    if (!targetId) continue;
+    const applied = applyConditionToActor(state, targetId, effect.conditionTraitId, {
+      tick,
+      intensity: FIGHT_CONDITION_INTENSITY,
+      durationTicks: CONDITION_DURATIONS[effect.conditionTraitId] ?? 0,
+      edgeId: `has_trait_${targetId}_${effect.conditionTraitId}_${tick}_fightcomp_${action.actionId}_${action.currentStep}`,
+      edgeProperties: { sourceActionId: action.actionId, source: 'fight_complication' },
+    });
+    if (applied.applied && effect.side === 'fighter') conditionsApplied.add(effect.conditionTraitId);
+  }
   const costed: UnifiedAction = {
     ...landed,
     fightState: {
       ...fight,
       harmTaken: fight.harmTaken + harm,
-      conditionsApplied: condition && !fight.conditionsApplied.includes(condition)
-        ? [...fight.conditionsApplied, condition]
-        : fight.conditionsApplied,
-      momentum: fightMomentumAfter(role, outcome),
+      conditionsApplied: [...conditionsApplied],
+      momentum: fightMomentumAfter(role, outcome) + complicationMomentum,
     },
   };
 
@@ -238,6 +274,21 @@ export function applyFightStepResult(
     tick,
     handNudges: opts.handNudges,
   }, role) ?? costed.fightState!;
+  // FB7 (plan doc §12): quarter offered — to whichever side is losing. After the
+  // clash's own forks, and never once a result is set.
+  if (role === 'clash' && !decided.result && effects.some((e) => e.type === 'fight_offer_quarter')) {
+    decided = resolveQuarterOffer({
+      state,
+      action: { ...costed, fightState: decided },
+      templateId: action.templateId,
+      stepIndex: action.currentStep,
+      outcome,
+      isLast,
+      rng: opts.rng ?? standFirmCoin,
+      tick,
+      handNudges: opts.handNudges,
+    }) ?? decided;
+  }
   if (isLast && !decided.result) decided = { ...decided, result: 'broke_off' };
   return { ...costed, fightState: decided };
 }
@@ -255,6 +306,13 @@ export interface FightStepResultOptions {
   readonly rng?: () => number;
   /** The resolved (dealt) step's cards, for the hand's lean on a fork's axis. */
   readonly handNudges?: readonly StepNudge[];
+  /**
+   * FB7 (plan doc §12) — the effects of the complication selected for this step.
+   * Only the `fight_*` members are read; the complication applier ignores them.
+   */
+  readonly complicationEffects?: readonly ComplicationEffect[];
+  /** Where the handler puts the tick events its world writes produce (a spent secret's chronicle line). */
+  readonly events?: TickEvent[];
 }
 
 /**
@@ -284,7 +342,7 @@ function landFightBand(
   step: ActionStep,
   outcome: StepOutcome,
   tick: number,
-  events: { readonly reach: ReachDomain; readonly rng: () => number },
+  events: { readonly reach: ReachDomain; readonly rng: () => number; readonly complicationClock?: number },
 ): UnifiedAction {
   const role = fightRoleOf(step);
   if (!role) return action;
@@ -299,7 +357,14 @@ function landFightBand(
     const boundId = status === 'bound' ? opponentId : null;
     const card = boundId ? readOpponentCard(graph, boundId, tick) : defaultOpponentCard(null);
     if (boundId && !card.persistent) clearStaleFightClockMailbox(graph, boundId, tick, action.actionId);
-    fight = createFightState(card);
+    // FB7 (plan doc §11): the advantages, read once — the same pure read the
+    // forecast made — and the favour spent now, exactly once per fight.
+    fight = {
+      ...createFightState(card),
+      advantages: spendFavourAtFightStart(
+        state, fighterId, readFightAdvantages(state, fighterId, boundId), tick, action.actionId,
+      ),
+    };
     // THR-1541 (plan doc §9) — the handler's first run: the fight has started, for
     // both sides, before this step's outcome is raised. A reactive on it (a roar)
     // therefore moves the first clash, never the nerve roll it follows.
@@ -320,6 +385,10 @@ function landFightBand(
 
   if (role === 'nerve') {
     raiseFightStepOutcome(state, fighterId, fight.opponentId, events.reach, outcome, events.rng);
+    // A complication's clock write lands on the nerve step too; no clock-full check runs here.
+    if (events.complicationClock) {
+      fight = writeComplicationClock(graph, fight, events.complicationClock, tick, action.actionId);
+    }
     if (outcome === 'critical_failure') fight = { ...fight, result: 'routed' };
     return { ...action, fightState: fight };
   }
@@ -364,7 +433,13 @@ function landFightBand(
       if (drained > 0) blowLanded = true;
     }
   }
-  // (4) the complication's `fight_clock` — FB7 (THR-1543) reads it here.
+  // (4) the complication's `fight_clock` (FB7, plan doc §12). A per-fight clock is
+  // written on `fightState` directly — through the mailbox it would arrive after
+  // the drain and miss the re-read. A positive write is a blow landed this step.
+  if (events.complicationClock) {
+    fight = writeComplicationClock(graph, fight, events.complicationClock, tick, action.actionId);
+    if (events.complicationClock > 0) blowLanded = true;
+  }
   // (5) the re-read.
   if (fight.persistent && fight.opponentId) {
     const afterEvents = readOpponentCard(graph, fight.opponentId, tick).clockFilled;
@@ -382,6 +457,21 @@ function landFightBand(
     raiseFightOvercome(state, fighterId, fight.opponentId, events.rng);
   }
   return { ...action, fightState: fight };
+}
+
+/** A complication's `fight_clock` write, through the fight's one clock writer for its card. */
+function writeComplicationClock(
+  graph: WorldGraph,
+  fight: FightState,
+  delta: number,
+  tick: number,
+  actionId: string,
+): FightState {
+  if (fight.persistent && fight.opponentId) {
+    advanceFightClock(graph, fight.opponentId, delta, 'complication', tick, actionId);
+    return { ...fight, clockNow: readOpponentCard(graph, fight.opponentId, tick).clockFilled };
+  }
+  return applyPerFightClockDelta(fight, delta, 'complication', tick, actionId).fightState;
 }
 
 /**

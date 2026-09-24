@@ -4317,6 +4317,49 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/effects/effectEventDispatch.ts', 'src/engine/effects/effectEvents.ts', 'src/engine/effectTick.ts'],
     readSites: ['src/engine/fights/fightState.ts'],
   },
+  // ── FB7 (THR-1543, plan §11–12) — the world lends a fighter its advantages and spends
+  // them through the writers the secrets phase already uses; a fight draws its own
+  // mid-fight events. FB7 ships the first fight template (`fight.lair.confront`), but it
+  // is spawn-only, so no `verifiedLive` until plan doc 3's lair trigger spawns fights in
+  // live play; the evidence today is `src/engine/fights/__tests__/fightBlockFB7.test.ts`
+  // and the 400-fight calibration (`npm run calibrate:fights`).
+  {
+    id: 'fight-spends-favour-and-secret',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Secrets & Favors',
+    intent:
+      'A mortal who is owed a favour can call it in when a fight comes, and one who knows the opponent\'s secret can throw it in their face when losing — the debt is paid and the secret is out, remembered on the same edges the rest of the world reads.',
+    ulTerms: ['Fight Advantage'],
+    // Read pure at fight start (`readFightAdvantages`, which the forecast also calls);
+    // spent only by the handler: the favour through `redeemFavor` when `fightState` is
+    // created, the secret through the reveal consequences after the clash it applied to.
+    // Neither edge is removed (`redeemed` / `revealed`).
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['owes_favor', 'knows_secret_of', 'redeemFavor', 'applySecretRevelationConsequences'],
+      module: 'src/engine/fights/fightAdvantages.ts',
+    },
+    writeSites: ['src/engine/fights/fightAdvantages.ts'],
+    readSites: ['src/engine/leverageOps.ts', 'src/engine/phaseSecretsFavors.ts'],
+  },
+  {
+    id: 'fight-complications-scoped',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'When an exchange goes badly, the fight draws from its own events — the footing gives, it roars, quarter is offered — and those events move the fight itself: its odds, its clock, a fighter\'s nerve.',
+    ulTerms: ['Fight'],
+    // `ComplicationContext.fight` scopes the pool (a fight step draws only
+    // `requires.inFight`; an ordinary step never does); the handler reads the selected
+    // complication's `fight_*` effects and applies each through the fight's own writer.
+    mechanism: {
+      kind: 'function',
+      symbols: ['fightComplicationScope', 'inFight', 'fight_momentum', 'fight_clock', 'fight_offer_quarter', 'fight_condition'],
+      module: 'src/engine/complicationSelection.ts',
+    },
+    writeSites: ['src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/fights/fightState.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

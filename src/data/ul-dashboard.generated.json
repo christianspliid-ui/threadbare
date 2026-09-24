@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 55,
+      "termCount": 56,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -4384,6 +4384,44 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#fight-result",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "fight-advantage",
+      "name": "Fight Advantage",
+      "aliases": [
+        "advantage (fight)",
+        "`FightAdvantage`",
+        "edges from the world (THR-1532)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1543, delegated seating 2026-09-11",
+      "oneLiner": "what the world lends a fighter at fight start (old wound, their secret, a favour called, company, Storied arms, Blessed, Cursed), each a named term on the odds; not a graph Edge (THR-1543)",
+      "body": "Something the world lends a fighter, read once when a fight starts and carried as a **named term** on the odds: an *old wound* (a grudge born of a real injury against this opponent), *their secret* (spent on the first exchange where the fighter is losing), *a favour called* (someone on the hex who owes them stands beside them), *company* (members of their company on the hex, up to three), *Storied arms* and *Blessed* (the nerve step), *Cursed* (every exchange). Each is shown on the forecast in words.\n\n**Not a graph Edge.** THR-1532 called these \"edges from the world\"; the code term is *advantage* because **Edge** is the canonical word for a graph relationship. The advantages are *read from* edges (`hostile_to`, `knows_secret_of`, `owes_favor`, `member_of`), and a spent one leaves its edge in place — the favour marked redeemed, the secret marked revealed. Reading is pure (the forecast reads it freely); only the fight handler spends.\n\nCode anchors: `src/engine/fights/fightAdvantages.ts` (`readFightAdvantages`), `src/engine/fights/fightAllies.ts` (`getCompanyMembersAtHex`), `src/data/fight-constants.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Fight",
+          "termName": "Fight",
+          "resolvedSlug": "encounters#fight"
+        },
+        {
+          "raw": "Clash Step",
+          "termName": "Clash Step",
+          "resolvedSlug": "encounters#clash-step"
+        },
+        {
+          "raw": "Nerve Step",
+          "termName": "Nerve Step",
+          "resolvedSlug": "encounters#nerve-step"
+        },
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#fight-advantage",
       "contentAdjacent": true
     },
     {

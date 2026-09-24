@@ -53,6 +53,7 @@ import {
   unknownPackageKeys,
   type EncounterContentPackage,
 } from '../src/data/content-eval/encounterPackage';
+import { expandFightBlockSteps } from '../src/data/fights/fightBlock';
 
 // ─── Args ────────────────────────────────────────────────────────────
 
@@ -92,6 +93,20 @@ if (unknown.length > 0) {
 }
 
 const pkg = parsed as EncounterContentPackage;
+
+// THR-1543 — a package step `{ "fightBlock": { … } }` is pre-expanded into the
+// block's plain steps before anything validates or emits, so the compiled module
+// inlines the steps and no function reaches the generated action catalog.
+const pkgTemplate = (pkg as unknown as { template?: { steps?: unknown } }).template;
+if (pkgTemplate && Array.isArray(pkgTemplate.steps)) {
+  try {
+    pkgTemplate.steps = expandFightBlockSteps(pkgTemplate.steps);
+  } catch (error) {
+    console.error(`Fight block in '${packagePath}' is malformed: ${(error as Error).message}`);
+    process.exit(1);
+  }
+}
+
 const violations = encounterPackageViolations(pkg);
 if (violations.length > 0) {
   console.error(`Package has ${violations.length} violation(s):`);

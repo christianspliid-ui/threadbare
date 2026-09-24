@@ -26,7 +26,7 @@ import type {
   UnifiedActionTemplate,
   StepOutcome,
 } from '../types/unifiedAction';
-import type { ActionStepOutcomeMetadata } from '../types/unifiedAction';
+import type { ActionStep, ActionStepOutcomeMetadata } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import {
   type DerivedChange,
@@ -192,7 +192,13 @@ import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { spendConsumableCharges } from './effects/consumableCharges';
 import { tierScaledDifficulty } from './targetTierScaling';
-import { fightRoleOf, isActionOnFightStep, resolveFightStepInputs, stepScaleFor } from './fights/fightStepInputs';
+import {
+  fightComplicationScope,
+  fightRoleOf,
+  isActionOnFightStep,
+  resolveFightStepInputs,
+  stepScaleFor,
+} from './fights/fightStepInputs';
 import { FIGHT_ENCOUNTER_TYPE, FIGHT_RESULT_ACTION_OUTCOME } from '../data/fight-constants';
 import type { FightEndReason, FightStepInputs } from '../types/fight';
 import {
@@ -291,71 +297,25 @@ export interface StepResolutionResult {
  */
 export { mapResolverOutcomeToStep } from './stepResolutionCore';
 
-export function resolveUncontestedStep(
+/**
+ * THR-1543 — everything `resolveUncontestedStep` derives from the action, the
+ * template and the graph before it calls the step core: the step's reach, scale
+ * and difficulty (a fight step's from its opponent's card), the company answer,
+ * capability, the test shapers, the push, and the one modifier total.
+ *
+ * Extracted so the roll and the debug forecast probe (`previewStepProbability`)
+ * share one derivation — the fight block's promise is that the odds shown are the
+ * odds rolled (plan doc §3b), and a probe that re-derived them would only prove it
+ * agreed with itself. `dryRun` prices the push without spending it and skips the
+ * intelligence trace; nothing else differs, and it draws no rng either way.
+ */
+function deriveStepRollInputs(
   action: UnifiedAction,
   template: UnifiedActionTemplate,
   state: GameState,
-  rng: () => number,
-): StepResolutionResult {
-  // THR-1247 — re-derive the dealt fill before anything reads the hand.
-  //
-  // `resolveStepDefinition` returns the *authored* nudges only, and every reader
-  // below (`collectNudgeModifiers`, `selectActiveRider`, `dispatchNudgeCommitments`,
-  // `collectNudgeBandProse`) resolves a committed id against that list, skipping
-  // what it cannot find. Without this line a dealt card the player paid for would
-  // contribute no delta, no rider, no cost channel, no grant and no band prose —
-  // shown, charged, and inert.
-  //
-  // Sound because dealing is pure and zero-PRNG: the same repertoire and the
-  // same declaration yield the same cards here as they did on the render path.
-  // A step with no `deal` comes back by reference, so this is a no-op for every
-  // shipped template.
-  const step = composeDealtStepFromState(
-    resolveStepDefinition(template, action.currentStep, action.choiceHistory),
-    state,
-  ).step;
-  const noPushResist = { pushAttempted: false, pushCost: 0, resistAttempted: false, resistSucceeded: false, resistCost: 0 };
-
-  if (!step) {
-    return { outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0, ...noPushResist };
-  }
-
-  // THR-1538 (plan doc §1) — a fight whose opponent never bound, has died, or no
-  // longer shares the fighter's hex ends here, before any roll. The band fields
-  // are inert: `executeStepResult` takes its no-roll branch on `fightEnd`, which
-  // records no `StepOutcome`, runs no consequence and grants no growth.
-  const fightEndReason = checkFightContinuation(state, action, step);
-  if (fightEndReason) {
-    return {
-      outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0,
-      ...noPushResist,
-      fightEnd: { reason: fightEndReason },
-    };
-  }
-
-  // THR-1030 — the outcome-band review pin (`?outcome=<band>`). Read once here so
-  // the two auto-success early returns below honour it too; a reviewer asking for
-  // `critical_failure` on a divine action must not be handed a silent success.
-  // In the main path it is applied at the *tail*, after the roll and every floor,
-  // so the resolution genuinely runs and the trace stays honest.
-  const pinnedBand = outcomePinFor(action.templateId);
-
-  // Divine actions (difficulty 0) always succeed
-  if (step.difficulty === 0) {
-    const outcome = pinnedBand ?? 'success';
-    const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
-    return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
-  }
-
-  // THR-728: player casts roll the same ladder mortals do — but never below the
-  // floor applied at the tail of this function. With the master switch off, the
-  // pre-THR-728 auto-success early-return is restored verbatim (one-flag revert).
-  if (!PLAYER_CAST_VARIANCE_ENABLED && action.source === 'player') {
-    const outcome = pinnedBand ?? 'success';
-    const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
-    return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
-  }
-
+  step: ActionStep,
+  dryRun: boolean,
+) {
   // THR-1537 — a fight step is rated against its opponent. One pure function
   // derives its reach, difficulty, scale and the fighter's named terms, for this
   // roll and (FB7) for the attended forecast, so the odds shown are the odds
@@ -394,10 +354,12 @@ export function resolveUncontestedStep(
       const weight = band === 'reliable' ? 1 : band === 'uncertain' ? 0.5 : 0;
       if (weight > 0) {
         effectiveDifficulty = Math.max(0, step.difficulty + INTEL_DIFFICULTY_BONUS * weight);
-        emitIntelligenceReferenced(state.tick, action.actorId, intelMatch.recordId, 'difficulty_modifier', {
-          templateId: action.templateId,
-          intelCategory: intelMatch.category,
-        });
+        if (!dryRun) {
+          emitIntelligenceReferenced(state.tick, action.actorId, intelMatch.recordId, 'difficulty_modifier', {
+            templateId: action.templateId,
+            intelCategory: intelMatch.category,
+          });
+        }
       }
     }
   }
@@ -480,7 +442,8 @@ export function resolveUncontestedStep(
     const actorNode = state.graph.getNode(action.actorId);
     if (actorNode && canSpendQuintessence(actorNode, 'push')) {
       pushModifier = getPushModifier(actorNode);
-      pushEvent = spendQuintessence(actorNode, 'push', `action_push_${action.templateId}`, state.tick);
+      // A dry run (the forecast probe) prices the push without spending it.
+      if (!dryRun) pushEvent = spendQuintessence(actorNode, 'push', `action_push_${action.templateId}`, state.tick);
     }
   }
 
@@ -526,19 +489,34 @@ export function resolveUncontestedStep(
   const totalActionModifiers = pushModifier + (groupStep?.totalBonus ?? 0)
     + nudgeModifierTotal + (fightInputs?.modifierTotal ?? 0);
 
-  // ── THR-1292 slice 2: the band ladder is no longer implemented here ──
-  //
-  // Everything above derives the core's inputs from the action, the template and
-  // the graph. Everything below applies what the core hands back. The core owns
-  // scale adjustment → d100 → floors → band mapping → resist → rider → debug pin,
-  // and it owns them for the undertaking caller too, so there is exactly one
-  // implementation of the six-band ladder in the engine.
-  //
-  // It mutates nothing: quintessence comes back as `spendIntents` for this
-  // function to queue, and telemetry comes back as `tracePayload` for this
-  // function to emit. Push stays here because it is pre-roll and draws no rng —
-  // see the asymmetry note in `stepResolutionCore.ts`'s header.
-  const core = resolveStepCore({
+  return {
+    fightInputs,
+    stepReach,
+    stepScale,
+    effectiveDifficulty,
+    groupNode,
+    groupStep,
+    capability,
+    sphereFactor,
+    testShapers,
+    pushEvent,
+    totalActionModifiers,
+  };
+}
+
+/** The step core's input, built from the derived roll inputs (shared by the roll and the probe). */
+function buildStepCoreInput(
+  action: UnifiedAction,
+  step: ActionStep,
+  state: GameState,
+  inputs: ReturnType<typeof deriveStepRollInputs>,
+  pinnedBand: ReturnType<typeof outcomePinFor>,
+): Parameters<typeof resolveStepCore>[0] {
+  const {
+    stepReach, capability, effectiveDifficulty, stepScale, totalActionModifiers,
+    testShapers, sphereFactor, pushEvent,
+  } = inputs;
+  return {
     actorId: action.actorId,
     reach: stepReach,
     capability,
@@ -559,7 +537,123 @@ export function resolveUncontestedStep(
     bandOverride: pinnedBand,
     tick: state.tick,
     sourceLabel: 'unified_action',
-  }, rng);
+  };
+}
+
+/**
+ * THR-1543 (fight block §3b) — the probability the resolver would roll this
+ * step's d100 against right now, without rolling: the same derivation and the
+ * same step core, with the push priced but not spent and no trace emitted.
+ * `activeNudges` overrides the committed hand (the "with a card selected" probe).
+ * Undefined for a step that would not roll (no step, a fight's no-roll end, a
+ * difficulty-0 or auto-success step). The debug bridge's forecast-equality
+ * assertion is its reader; nothing on the tick path calls it.
+ */
+export function previewStepProbability(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  state: GameState,
+  activeNudges?: readonly string[],
+): number | undefined {
+  const probeAction = activeNudges ? { ...action, activeNudges: [...activeNudges] } : action;
+  const step = composeDealtStepFromState(
+    resolveStepDefinition(template, probeAction.currentStep, probeAction.choiceHistory),
+    state,
+  ).step;
+  if (!step || checkFightContinuation(state, probeAction, step)) return undefined;
+  if (step.difficulty === 0) return undefined;
+  if (!PLAYER_CAST_VARIANCE_ENABLED && probeAction.source === 'player') return undefined;
+  const inputs = deriveStepRollInputs(probeAction, template, state, step, true);
+  // The core draws the d100 (and a resist) from the rng; any value serves, since
+  // only the probability — fixed before the roll — is read.
+  const core = resolveStepCore(buildStepCoreInput(probeAction, step, state, inputs, undefined), () => 0.5);
+  return core.probability;
+}
+
+export function resolveUncontestedStep(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  state: GameState,
+  rng: () => number,
+): StepResolutionResult {
+  // THR-1247 — re-derive the dealt fill before anything reads the hand.
+  //
+  // `resolveStepDefinition` returns the *authored* nudges only, and every reader
+  // below (`collectNudgeModifiers`, `selectActiveRider`, `dispatchNudgeCommitments`,
+  // `collectNudgeBandProse`) resolves a committed id against that list, skipping
+  // what it cannot find. Without this line a dealt card the player paid for would
+  // contribute no delta, no rider, no cost channel, no grant and no band prose —
+  // shown, charged, and inert.
+  //
+  // Sound because dealing is pure and zero-PRNG: the same repertoire and the
+  // same declaration yield the same cards here as they did on the render path.
+  // A step with no `deal` comes back by reference, so this is a no-op for every
+  // shipped template.
+  const step = composeDealtStepFromState(
+    resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+    state,
+  ).step;
+  const noPushResist = { pushAttempted: false, pushCost: 0, resistAttempted: false, resistSucceeded: false, resistCost: 0 };
+
+  if (!step) {
+    return { outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0, ...noPushResist };
+  }
+
+  // THR-1538 (plan doc §1) — a fight whose opponent never bound, has died, or no
+  // longer shares the fighter's hex ends here, before any roll. The band fields
+  // are inert: `executeStepResult` takes its no-roll branch on `fightEnd`, which
+  // records no `StepOutcome`, runs no consequence and grants no growth.
+  const fightEndReason = checkFightContinuation(state, action, step);
+  if (fightEndReason) {
+    return {
+      outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0,
+      ...noPushResist,
+      fightEnd: { reason: fightEndReason },
+    };
+  }
+
+  // THR-1030 — the outcome-band review pin (`?outcome=<band>`). Read once here so
+  // the two auto-success early returns below honour it too; a reviewer asking for
+  // `critical_failure` on a divine action must not be handed a silent success.
+  // In the main path it is applied at the *tail*, after the roll and every floor,
+  // so the resolution genuinely runs and the trace stays honest.
+  const pinnedBand = outcomePinFor(action.templateId);
+
+  // Divine actions (difficulty 0) always succeed
+  if (step.difficulty === 0) {
+    const outcome = pinnedBand ?? 'success';
+    const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
+    return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
+  }
+
+  // THR-728: player casts roll the same ladder mortals do — but never below the
+  // floor applied at the tail of this function. With the master switch off, the
+  // pre-THR-728 auto-success early-return is restored verbatim (one-flag revert).
+  if (!PLAYER_CAST_VARIANCE_ENABLED && action.source === 'player') {
+    const outcome = pinnedBand ?? 'success';
+    const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
+    return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
+  }
+
+  const rollInputs = deriveStepRollInputs(action, template, state, step, false);
+  const {
+    fightInputs, stepScale, effectiveDifficulty, groupNode, groupStep, capability, pushEvent,
+  } = rollInputs;
+
+  // ── THR-1292 slice 2: the band ladder is no longer implemented here ──
+  //
+  // Everything above derives the core's inputs from the action, the template and
+  // the graph (THR-1543: in `deriveStepRollInputs`, shared with the forecast
+  // probe). Everything below applies what the core hands back. The core owns
+  // scale adjustment → d100 → floors → band mapping → resist → rider → debug pin,
+  // and it owns them for the undertaking caller too, so there is exactly one
+  // implementation of the six-band ladder in the engine.
+  //
+  // It mutates nothing: quintessence comes back as `spendIntents` for this
+  // function to queue, and telemetry comes back as `tracePayload` for this
+  // function to emit. Push stays caller-side because it is pre-roll and draws no
+  // rng — see the asymmetry note in `stepResolutionCore.ts`'s header.
+  const core = resolveStepCore(buildStepCoreInput(action, step, state, rollInputs, pinnedBand), rng);
 
   const trace = core.tracePayload;
 
@@ -1783,6 +1877,13 @@ export function executeStepResult(
   const locationUnrest = typeof locationNode?.properties?.unrest === 'number'
     ? locationNode.properties.unrest : 0;
 
+  // THR-1543 (fight block §12) — a fight step draws only mid-fight events, and
+  // names its opponent. The step definition is resolved once more below for the
+  // handler; both reads are pure.
+  const complicationFightStep = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  const complicationFight = fightRoleOf(complicationFightStep)
+    ? fightComplicationScope(state, action, complicationFightStep)
+    : undefined;
   const complicationContext: ComplicationContext = {
     action,
     template,
@@ -1805,6 +1906,7 @@ export function executeStepResult(
       template,
       resolveStepDefinition(template, action.currentStep, action.choiceHistory),
     )),
+    ...(complicationFight ? { fight: complicationFight } : {}),
   };
 
   // Phase 3: Compute differentiated consequences (all templates for failure tiers; THR-20)
@@ -1886,6 +1988,9 @@ export function executeStepResult(
       reach: resolutionStats?.reach ?? fightStepDef.reach,
       rng,
       handNudges: composeDealtStepFromState(fightStepDef, state).step.nudges,
+      // THR-1543 — the step complication's fight effects, applied by the handler.
+      complicationEffects: consequence.complication?.effects,
+      events,
     })
     : action;
 
