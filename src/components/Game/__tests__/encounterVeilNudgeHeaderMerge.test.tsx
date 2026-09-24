@@ -80,9 +80,14 @@ function buildGraph(): WorldGraph {
       // anti-vacuity guard caught exactly that. Measured on this fixture
       // (base tier → tier with all five cards played): `{}` doomed → doomed,
       // `heart: 6` doomed → doomed (the capability sigmoid is still near its
-      // floor), `heart: 12` perilous → favorable. Twelve is the value that
-      // gives the hand somewhere to move the die to.
-      domainCapabilities: { heart: 12 },
+      // floor), `heart: 12` perilous → favorable. Twelve was the value that
+      // gave the hand somewhere to move the die to.
+      //
+      // THR-1535 — the forecast now carries the slice's `local` scale, so it
+      // shows the 0.65 floor the dice really use: at `heart: 12` the base already
+      // sits on that floor and the whole hand no longer changes the tier word.
+      // Twenty puts the base above the floor with room for the hand to move it.
+      domainCapabilities: { heart: 20 },
     },
   });
   graph.addNode({ id: TARGET_ID, type: 'location', name: 'Market Row', properties: {} });

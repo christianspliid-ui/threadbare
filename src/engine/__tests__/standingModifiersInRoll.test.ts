@@ -146,7 +146,7 @@ function sampleSteps(): Array<{ tmpl: UnifiedActionTemplate; step: number }> {
       const authored = isActionStepBranch(sb) ? sb.fallback : sb;
       // Per-roll difficulty reads (target tier, intelligence) and fight steps are
       // priced elsewhere; carryover lines depend on a prior band. Not this contract.
-      if (authored.difficultyContext || authored.fightRole || authored.carryover) return;
+      if (authored.difficultyContext || authored.fightRole || authored.carryoverFactorLines) return;
       out.push({ tmpl, step: i });
     });
   }

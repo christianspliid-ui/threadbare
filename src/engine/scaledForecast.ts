@@ -14,8 +14,8 @@
  * rolled against.
  *
  * Pure and rng-free: the attended forecast calls it from the UI on every toggle.
- * The fight block wires it for fight steps (FB7); the same gap on every other
- * unified-road step is THR-1535's.
+ * The fight block wires it for fight steps (FB7); THR-1535 wires it for every
+ * other unified-road step (`buildNudgePhaseModel` always carries the step's scale).
  */
 
 import type { ActionScale } from '../types/unifiedAction';

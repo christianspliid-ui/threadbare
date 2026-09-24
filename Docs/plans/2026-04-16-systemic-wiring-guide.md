@@ -1258,6 +1258,10 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 **Where to find the implementation:** `collectAuraEffectsNear` / `selectAuraEmitters` / `resolveAuraModifiers` in `src/engine/effectAura.ts`, called from `collectAuraContributions` in `src/engine/resolutionModifiers.ts`. It is resolved **lazily, at the moment a step resolves** — never as a per-tick proximity sweep — so an aura costs nothing until somebody near it actually rolls.
 
+### Note: `passive` and `conditional` effects now move every unified-road roll (THR-1535)
+
+Before 2026-09-25 an item's `passive` / `conditional` reach bonus showed up in the attended forecast but **never reached the dice** on the unified road — only fight steps (THR-1537) and the legacy road read it. Now `resolveUncontestedStep` adds `computeStandingModifierTotal` (`src/engine/resolutionModifiers.ts`) for whoever rolls: items and their effects, traits, terrain, the place's conditions, sphere alignment, divine attention, auras and altered rules, on the step's authored reach with live effect states. The mortal planner adds the same total, so a mortal reaches for work their gear helps with. **For authors:** a +0.05 passive on Heart is now +5 points on every Heart step the bearer rolls, attended or not — price items with that in mind. The `resolution.input` trace names the share as `standingModifiers`; `UNIFIED_ROLL_READS_STANDING_MODIFIERS` (`src/data/standing-modifier-constants.ts`) reverts it in one flag.
+
 ### Capability 25: One Capability, One Spelling — the Consolidated Effect Vocabulary (THR-1242)
 
 **What it does:** nine effect spellings left the `AttachmentEffect` union, and three primitives that had been declared-but-inert became live. If you have authored attachment effects before, some words you used no longer exist — and some you avoided now work.
