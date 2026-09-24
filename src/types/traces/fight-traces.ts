@@ -56,6 +56,13 @@ export interface FightStepTrace extends TraceBase {
   /** FB3 (THR-1539) queues fight harm; until then 0. */
   harmQueued: number;
   conditionsApplied: string[];
+  /** THR-1556 (duels) — `'agent'` on a duel step; absent on an NPC-mode fight. */
+  fightMode?: 'agent';
+  /** THR-1556 — the opponent's synthesized band and odds on a duel step. */
+  opponentBand?: StepOutcome;
+  opponentProbability?: number;
+  /** THR-1556 — the fighter's own per-fight clock, as the step began. */
+  fighterClockNow?: number;
 }
 
 /**
@@ -123,4 +130,8 @@ export interface FightEndTrace extends TraceBase {
   advantages: string[];
   /** Set when `onFightEnded` threw; the action still resolved. */
   dispatchError?: string;
+  /** THR-1556 (duels) — `'agent'` on a duel; how the opponent lost, and the fighter's own clock. */
+  fightMode?: 'agent';
+  opponentLoss?: import('../fight').FightOpponentLoss;
+  fighterClockNow?: number;
 }

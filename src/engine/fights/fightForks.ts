@@ -214,6 +214,98 @@ export function runFightForks(ctx: FightForkContext, role: 'nerve' | 'clash'): F
   return fight;
 }
 
+// ─── Duels: both sides decide (THR-1556, duels plan doc §4) ─────────────────
+
+/** Whether the opponent of a duel is behind: more wounding exchanges taken than blows landed. */
+export function isDuelOpponentBehind(fight: Pick<FightState, 'opponentWounds' | 'opponentBlowsLanded'>): boolean {
+  return (fight.opponentWounds ?? 0) > (fight.opponentBlowsLanded ?? 0);
+}
+
+/**
+ * One side's stand-or-yield decision in a duel, recorded with its `side`. The
+ * fighter's lean adds the god's hand (only ever on the god's own mortal, who is
+ * always the duel's actor, plan doc §6); the opponent has no hand, so its card
+ * lean is 0. Returns whether that side yielded.
+ */
+function decideDuelSide(
+  ctx: FightForkContext,
+  fight: FightState,
+  side: 'fighter' | 'opponent',
+  trigger: FightForkTrace['trigger'],
+): { fight: FightState; yielded: boolean } {
+  const actorId = side === 'fighter' ? ctx.action.actorId : fight.opponentId;
+  if (!actorId) return { fight, yielded: false };
+  const profileLean = readLiveAxisLean(ctx.state, actorId, FIGHT_CONCESSION_AXIS);
+  const cardLean = side === 'fighter'
+    ? sumHandLean(ctx.handNudges, ctx.action.activeNudges, FIGHT_CONCESSION_AXIS)
+    : 0;
+  const decision = decideBranchPole(profileLean, cardLean, ctx.rng);
+  const yielded = decision.pole === 'negative';
+  const recorded = recordFork(ctx, fight,
+    {
+      stepIndex: ctx.stepIndex, kind: 'concession', side,
+      choice: yielded ? 'yield' : 'fight_on', decidedBy: decision.decidedBy,
+    },
+    { axis: FIGHT_CONCESSION_AXIS, profileLean: decision.profileLean, cardLean: decision.cardLean, trigger });
+  return { fight: recorded, yielded };
+}
+
+/** The yield outcome of a duel fork, read from the fighter's side (plan doc §3's matrix). */
+function applyDuelYields(fight: FightState, fighterYields: boolean, opponentYields: boolean): FightState {
+  if (fighterYields && opponentYields) return { ...fight, result: 'broke_off', opponentLoss: 'yielded' };
+  if (fighterYields) return { ...fight, result: 'yielded' };
+  if (opponentYields) return { ...fight, result: 'overcome', opponentLoss: 'yielded' };
+  return fight;
+}
+
+/**
+ * A duel clash's concession forks (plan doc §4): each side whose own band wounded
+ * it (at cost, failure) decides, fighter first, then opponent — both on the step
+ * rng, drawn only inside the neutral band. Not after the last clash, where a yield
+ * is moot. No-op once a result is set.
+ */
+export function runDuelForks(
+  ctx: FightForkContext,
+  opponentOutcome: StepOutcome,
+): FightState | undefined {
+  let fight = ctx.action.fightState;
+  if (!fight || fight.result || ctx.isLast) return fight;
+  let fighterYields = false;
+  let opponentYields = false;
+  if (FIGHT_CONCESSION_BANDS.includes(ctx.outcome)) {
+    const out = decideDuelSide(ctx, fight, 'fighter', 'clash');
+    fight = out.fight;
+    fighterYields = out.yielded;
+  }
+  if (FIGHT_CONCESSION_BANDS.includes(opponentOutcome)) {
+    const out = decideDuelSide(ctx, fight, 'opponent', 'clash');
+    fight = out.fight;
+    opponentYields = out.yielded;
+  }
+  return applyDuelYields(fight, fighterYields, opponentYields);
+}
+
+/**
+ * `fight_offer_quarter` in a duel (plan doc §2): quarter goes to whichever side
+ * is losing — the fighter when behind, else the opponent when behind — and runs
+ * that side's concession fork. Neither behind: the offer finds no taker (traced
+ * `none`). On the last clash it lapses. No-op once a result is set.
+ */
+export function resolveDuelQuarterOffer(ctx: FightForkContext): FightState | undefined {
+  const fight = ctx.action.fightState;
+  if (!fight || fight.result) return fight;
+  const side: 'fighter' | 'opponent' | null = isFighterBehind(fight)
+    ? 'fighter'
+    : isDuelOpponentBehind(fight) ? 'opponent' : null;
+  if (!side || ctx.isLast) {
+    return recordFork(ctx, fight,
+      { stepIndex: ctx.stepIndex, kind: 'concession', side: side ?? 'fighter', choice: 'none', decidedBy: 'conviction' },
+      { axis: FIGHT_CONCESSION_AXIS, profileLean: 0, cardLean: 0, trigger: 'quarter' });
+  }
+  const out = decideDuelSide(ctx, fight, side, 'quarter');
+  return applyDuelYields(out.fight, side === 'fighter' && out.yielded, side === 'opponent' && out.yielded);
+}
+
 /**
  * `fight_offer_quarter`'s side rule (plan doc §12, THR-1265): quarter is offered
  * to whichever side is losing.

@@ -33,10 +33,11 @@ import type {
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../types/encounter';
-import type { FightEndReason, FightState, OpponentCard } from '../../types/fight';
+import type { FightEndReason, FightRole, FightState, OpponentCard, OpponentFightRoll } from '../../types/fight';
 import {
   FIGHT_CLOCK_BY_BAND,
   FIGHT_CONDITION_INTENSITY,
+  FIGHT_MORTAL_CLOCK,
   FIGHT_RESULT_CHOICE_PREFIX,
   FIGHT_RESULT_STEP_ID,
   FIGHT_RESULT_WORDS,
@@ -53,7 +54,8 @@ import {
   clearStaleFightClockMailbox,
   drainFightClockMailbox,
 } from './fightClock';
-import { resolveQuarterOffer, runFightForks } from './fightForks';
+import { resolveDuelQuarterOffer, resolveQuarterOffer, runDuelForks, runFightForks } from './fightForks';
+import { duelOpponentId, mirrorFightState, opponentStream, rollOpponentSide } from './opposedRoll';
 import type { ComplicationEffect } from '../../types/complication';
 import type { TickEvent } from '../../types/gameState';
 import {
@@ -198,6 +200,12 @@ export function applyFightStepResult(
 ): UnifiedAction {
   const role = fightRoleOf(step);
   if (!role) return action;
+  // THR-1556 (duels plan doc §1–4) — an agent-mode fight against a mortal is a
+  // duel: both sides rolled, and the matrix below decides it. Every other fight
+  // takes the NPC-mode handler below, byte-identical to before.
+  if (duelOpponentId(state, action, step)) {
+    return applyDuelStepResult(state, action, template, step, role, outcome, tick, opts);
+  }
   const effects = opts.complicationEffects ?? [];
   // FB7 (plan doc §11): the secret applied to this clash iff the fighter was
   // behind going into it — read off the fight as it stood before the blow lands.
@@ -313,6 +321,13 @@ export interface FightStepResultOptions {
   readonly complicationEffects?: readonly ComplicationEffect[];
   /** Where the handler puts the tick events its world writes produce (a spent secret's chronicle line). */
   readonly events?: TickEvent[];
+  /**
+   * THR-1556 (duels) — the opponent's synthesized roll for this step, rolled by
+   * `resolveUncontestedStep` right after the fighter's. Absent on a duel step
+   * (a caller that did not carry it) ⇒ the handler rolls it itself, on the same
+   * seeded stream, so the band is identical either way.
+   */
+  readonly opponentRoll?: OpponentFightRoll;
 }
 
 /**
@@ -472,6 +487,277 @@ function writeComplicationClock(
     return { ...fight, clockNow: readOpponentCard(graph, fight.opponentId, tick).clockFilled };
   }
   return applyPerFightClockDelta(fight, delta, 'complication', tick, actionId).fightState;
+}
+
+// ─── Duels: the opposed exchange (THR-1556, duels plan doc §1–4) ─────────────
+
+/**
+ * A per-fight clock write on the **fighter's** clock (the opponent's blow). The
+ * fight's one per-fight writer, pointed at the fighter's side through the mirror,
+ * so the write is traced against the fighter exactly as the opponent's is.
+ */
+function applyFighterClockDelta(
+  fight: FightState,
+  fighterId: string,
+  delta: number,
+  cause: string,
+  tick: number,
+  actionId: string,
+): FightState {
+  const mirrored = applyPerFightClockDelta(mirrorFightState(fight, fighterId), delta, cause, tick, actionId).fightState;
+  return { ...fight, fighterClockNow: mirrored.clockNow };
+}
+
+/**
+ * A fresh duel state: both cards derived, both clocks per-fight and empty, both
+ * sides' advantages read once — and each side's favour spent now, exactly once
+ * (plan doc §1–2).
+ */
+function createDuelState(
+  state: GameState,
+  fighterId: string,
+  opponentId: string,
+  tick: number,
+  actionId: string,
+): FightState {
+  const card = readOpponentCard(state.graph, opponentId, tick);
+  return {
+    ...createFightState(card),
+    // A mortal's clock is per-fight: it starts empty whatever the card says.
+    clockAtStart: 0,
+    clockNow: 0,
+    persistent: false,
+    advantages: spendFavourAtFightStart(
+      state, fighterId, readFightAdvantages(state, fighterId, opponentId), tick, actionId,
+    ),
+    fightMode: 'agent',
+    fighterClockSize: FIGHT_MORTAL_CLOCK,
+    fighterClockNow: 0,
+    opponentBands: [],
+    opponentMomentum: 0,
+    opponentAdvantages: spendFavourAtFightStart(
+      state, opponentId, readFightAdvantages(state, opponentId, fighterId), tick, actionId,
+    ),
+    opponentWounds: 0,
+    opponentBlowsLanded: 0,
+    opponentHarmTaken: 0,
+  };
+}
+
+/**
+ * The duel handler (plan doc §3's matrix, read from the fighter's side). Both
+ * bands are known: the fighter's `outcome` and the opponent's synthesized roll.
+ *
+ *  - **Nerve:** a critical failure is a rout. Both → `routed` (`opponentLoss`
+ *    `'routed'`); the opponent alone → `overcome` / `'routed'`.
+ *  - **Clash:** the rolls come first. A critical failure strikes that side down;
+ *    both → `struck_down` / `'struck_down'`. Otherwise each band advances the
+ *    *other* side's clock through `FIGHT_CLOCK_BY_BAND`; both clocks full in one
+ *    exchange is a double knockout (`struck_down` / `'struck_down'`); the
+ *    opponent's alone → `overcome` / `'clock'`; the fighter's alone → `struck_down`.
+ *  - Each side's own band harms itself (harm, band condition, momentum).
+ *  - Then the concession forks, for each side its own band wounded; both yield →
+ *    `broke_off` / `'yielded'`. A fight still undecided at its last clash ends
+ *    `broke_off`.
+ *
+ * Temper is an NPC-mode fork (a monster's card); a duel has none.
+ */
+function applyDuelStepResult(
+  state: GameState,
+  action: UnifiedAction,
+  template: Pick<UnifiedActionTemplate, 'steps'> & Partial<Pick<UnifiedActionTemplate, 'sphereAffinity'>>,
+  step: ActionStep,
+  role: FightRole,
+  outcome: StepOutcome,
+  tick: number,
+  opts: FightStepResultOptions,
+): UnifiedAction {
+  const graph = state.graph;
+  const fighterId = action.actorId;
+  const rng = opts.rng ?? standFirmCoin;
+  const effects = opts.complicationEffects ?? [];
+  // The opponent's roll, as the resolver drew it — or drawn here on the same
+  // stream when the caller did not carry it (a direct call, a test).
+  const roll = opts.opponentRoll ?? rollOpponentSide(state, action, template, step);
+
+  let fight: FightState;
+  const opponentId = duelOpponentId(state, action, step)!;
+  if (!action.fightState) {
+    clearStaleFightClockMailbox(graph, opponentId, tick, action.actionId);
+    clearStaleFightClockMailbox(graph, fighterId, tick, action.actionId);
+    fight = createDuelState(state, fighterId, opponentId, tick, action.actionId);
+    raiseFightStarted(state, fighterId, opponentId, rng);
+  } else {
+    fight = action.fightState;
+    // Writes between steps count toward each clock but are not this step's blow.
+    const between = drainFightClockMailbox(graph, opponentId);
+    if (between !== 0) fight = applyPerFightClockDelta(fight, between, 'mailbox', tick, action.actionId).fightState;
+    const betweenFighter = drainFightClockMailbox(graph, fighterId);
+    if (betweenFighter !== 0) {
+      fight = applyFighterClockDelta(fight, fighterId, betweenFighter, 'mailbox', tick, action.actionId);
+    }
+  }
+  if (!roll) return { ...action, fightState: fight };
+  const oppBand = roll.band;
+  // The opponent's effect-event raises draw from its own sibling stream.
+  const oppRng = opponentStream(state, action.actionId, opponentId, action.currentStep, 'events');
+  const secretApplied = role === 'clash' ? secretAppliesToClash(action.fightState) : undefined;
+  const oppSecretApplied = role === 'clash' && action.fightState
+    ? secretAppliesToClash(mirrorFightState(action.fightState, fighterId))
+    : undefined;
+  fight = { ...fight, opponentBands: [...(fight.opponentBands ?? []), oppBand] };
+
+  if (role === 'nerve') {
+    raiseFightStepOutcome(state, fighterId, opponentId, opts.reach ?? step.reach, outcome, rng);
+    raiseFightStepOutcome(state, opponentId, fighterId, roll.reach, oppBand, oppRng);
+    const complicationClock = effects.reduce((sum, e) => sum + (e.type === 'fight_clock' ? e.delta : 0), 0);
+    if (complicationClock) {
+      fight = applyPerFightClockDelta(fight, complicationClock, 'complication', tick, action.actionId).fightState;
+    }
+    const fighterRouts = outcome === 'critical_failure';
+    const opponentRouts = oppBand === 'critical_failure';
+    if (fighterRouts && opponentRouts) fight = { ...fight, result: 'routed', opponentLoss: 'routed' };
+    else if (fighterRouts) fight = { ...fight, result: 'routed' };
+    else if (opponentRouts) fight = { ...fight, result: 'overcome', opponentLoss: 'routed' };
+  } else {
+    fight = {
+      ...fight,
+      exchanges: fight.exchanges + 1,
+      wounds: fight.wounds + (FIGHT_WOUNDING_BANDS.includes(outcome) ? 1 : 0),
+      opponentWounds: (fight.opponentWounds ?? 0) + (FIGHT_WOUNDING_BANDS.includes(oppBand) ? 1 : 0),
+    };
+    const fighterDown = outcome === 'critical_failure';
+    const opponentDown = oppBand === 'critical_failure';
+    raiseFightStepOutcome(state, fighterId, opponentId, opts.reach ?? step.reach, outcome, rng);
+    raiseFightStepOutcome(state, opponentId, fighterId, roll.reach, oppBand, oppRng);
+    if (fighterDown || opponentDown) {
+      // The rolls come first: a critical failure ends the exchange before any clock.
+      if (fighterDown && opponentDown) fight = { ...fight, result: 'struck_down', opponentLoss: 'struck_down' };
+      else if (fighterDown) fight = { ...fight, result: 'struck_down' };
+      else fight = { ...fight, result: 'overcome', opponentLoss: 'struck_down' };
+    } else {
+      let fighterBlow = false;
+      let opponentBlow = false;
+      // (1) each band's landing write, on the other side's clock.
+      const fighterDelta = FIGHT_CLOCK_BY_BAND[outcome] ?? 0;
+      const opponentDelta = FIGHT_CLOCK_BY_BAND[oppBand] ?? 0;
+      if (fighterDelta > 0) {
+        fighterBlow = true;
+        fight = applyPerFightClockDelta(fight, fighterDelta, 'clash', tick, action.actionId).fightState;
+      }
+      if (opponentDelta > 0) {
+        opponentBlow = true;
+        fight = applyFighterClockDelta(fight, fighterId, opponentDelta, 'clash', tick, action.actionId);
+      }
+      // (2) the effect events — each side's blow on the other; items and powers
+      // write the clocks through the node mailboxes, drained next.
+      raiseFightClashLanded(state, fighterId, opponentId, outcome, fighterDelta, rng);
+      raiseFightClashLanded(state, opponentId, fighterId, oppBand, opponentDelta, oppRng);
+      // (3) the mailbox drains: this step's effect-path writes count as blows.
+      const drained = drainFightClockMailbox(graph, opponentId);
+      if (drained !== 0) {
+        fight = applyPerFightClockDelta(fight, drained, 'mailbox', tick, action.actionId).fightState;
+        if (drained > 0) fighterBlow = true;
+      }
+      const drainedFighter = drainFightClockMailbox(graph, fighterId);
+      if (drainedFighter !== 0) {
+        fight = applyFighterClockDelta(fight, fighterId, drainedFighter, 'mailbox', tick, action.actionId);
+        if (drainedFighter > 0) opponentBlow = true;
+      }
+      // (4) the complication's `fight_clock` lands on the opponent, as in NPC mode.
+      const complicationClock = effects.reduce((sum, e) => sum + (e.type === 'fight_clock' ? e.delta : 0), 0);
+      if (complicationClock) {
+        fight = applyPerFightClockDelta(fight, complicationClock, 'complication', tick, action.actionId).fightState;
+        if (complicationClock > 0) fighterBlow = true;
+      }
+      if (fighterBlow) fight = { ...fight, blowsLanded: fight.blowsLanded + 1 };
+      if (opponentBlow) fight = { ...fight, opponentBlowsLanded: (fight.opponentBlowsLanded ?? 0) + 1 };
+      // (5) both clocks read.
+      const opponentBeaten = fighterBlow && fight.clockNow >= fight.clockSize;
+      const fighterBeaten = opponentBlow
+        && (fight.fighterClockNow ?? 0) >= (fight.fighterClockSize ?? FIGHT_MORTAL_CLOCK);
+      if (opponentBeaten && fighterBeaten) {
+        fight = { ...fight, result: 'struck_down', opponentLoss: 'struck_down' };
+      } else if (opponentBeaten) {
+        fight = { ...fight, result: 'overcome', opponentLoss: 'clock' };
+        raiseFightOvercome(state, fighterId, opponentId, rng);
+      } else if (fighterBeaten) {
+        fight = { ...fight, result: 'struck_down' };
+        raiseFightOvercome(state, opponentId, fighterId, oppRng);
+      }
+    }
+  }
+
+  // Each side's secret is spent after the clash it applied to (FB7, both sides).
+  if (secretApplied) {
+    const spent = spendSecretAfterClash(state, fighterId, opponentId, fight.advantages, secretApplied);
+    fight = { ...fight, advantages: spent.advantages };
+    opts.events?.push(...spent.events);
+  }
+  if (oppSecretApplied) {
+    const spent = spendSecretAfterClash(state, opponentId, fighterId, fight.opponentAdvantages ?? [], oppSecretApplied);
+    fight = { ...fight, opponentAdvantages: spent.advantages };
+    opts.events?.push(...spent.events);
+  }
+
+  // Each side's own band harms itself: harm, the band condition, the momentum.
+  const attended = action.effectiveTier === 'story_beat';
+  const harm = queueFightHarm(state, fighterId, {
+    role, band: outcome, attended, difficulty: opts.difficulty ?? step.difficulty,
+  }, tick);
+  const opponentHarm = queueFightHarm(state, opponentId, {
+    role, band: oppBand, attended, difficulty: roll.difficulty,
+  }, tick);
+  const condition = applyFightBandCondition(state, fighterId, role, outcome, tick, action.actionId, action.currentStep);
+  applyFightBandCondition(state, opponentId, role, oppBand, tick, action.actionId, action.currentStep);
+  const conditionsApplied = new Set(fight.conditionsApplied);
+  if (condition) conditionsApplied.add(condition);
+  for (const effect of effects) {
+    if (effect.type !== 'fight_condition') continue;
+    const targetId = effect.side === 'fighter' ? fighterId : opponentId;
+    const applied = applyConditionToActor(state, targetId, effect.conditionTraitId, {
+      tick,
+      intensity: FIGHT_CONDITION_INTENSITY,
+      durationTicks: CONDITION_DURATIONS[effect.conditionTraitId] ?? 0,
+      edgeId: `has_trait_${targetId}_${effect.conditionTraitId}_${tick}_fightcomp_${action.actionId}_${action.currentStep}`,
+      edgeProperties: { sourceActionId: action.actionId, source: 'fight_complication' },
+    });
+    if (applied.applied && effect.side === 'fighter') conditionsApplied.add(effect.conditionTraitId);
+  }
+  const complicationMomentum = effects.reduce(
+    (sum, e) => sum + (e.type === 'fight_momentum' ? e.delta : 0), 0,
+  );
+  fight = {
+    ...fight,
+    harmTaken: fight.harmTaken + harm,
+    opponentHarmTaken: (fight.opponentHarmTaken ?? 0) + opponentHarm,
+    conditionsApplied: [...conditionsApplied],
+    momentum: fightMomentumAfter(role, outcome) + complicationMomentum,
+    opponentMomentum: fightMomentumAfter(role, oppBand),
+  };
+
+  // The forks, on the step rng after both rolls: both sides' concession, then a
+  // quarter offer; none once a result is set.
+  const isLast = isLastFightStep(template, action.currentStep);
+  const forkCtx = {
+    state,
+    action: { ...action, fightState: fight },
+    templateId: action.templateId,
+    stepIndex: action.currentStep,
+    outcome,
+    isLast,
+    rng,
+    tick,
+    handNudges: opts.handNudges,
+  };
+  if (role === 'clash') {
+    fight = runDuelForks(forkCtx, oppBand) ?? fight;
+    if (!fight.result && effects.some((e) => e.type === 'fight_offer_quarter')) {
+      fight = resolveDuelQuarterOffer({ ...forkCtx, action: { ...action, fightState: fight } }) ?? fight;
+    }
+    if (isLast && !fight.result) fight = { ...fight, result: 'broke_off' };
+  }
+  return { ...action, fightState: fight };
 }
 
 /**

@@ -29,6 +29,7 @@
 import type { ActionStep, StepNudge, StepOutcome } from '../../types/unifiedAction';
 import type { ReachDomain } from '../../types/traits';
 import type { ComplicationTemplate } from '../../types/complication';
+import type { FightMode } from '../../types/fight';
 import {
   FIGHT_DEFAULT_CLASH_REACH,
   FIGHT_DEFAULT_NERVE_REACH,
@@ -46,6 +47,12 @@ export interface FightStepProse {
 }
 
 export interface FightBlockSpec {
+  /**
+   * THR-1556 (duels plan doc §1) — `'agent'` makes the fight opposed: both sides
+   * are mortals who roll. Stamped on every step as `fightMode`. Default `'npc'`,
+   * which stamps nothing, so an NPC-mode block is byte-identical to before.
+   */
+  readonly mode?: FightMode;
   /** Clash steps after the nerve step. Default and maximum: `FIGHT_EXCHANGE_CAP`. */
   readonly exchanges?: number;
   /**
@@ -106,6 +113,54 @@ export const FIGHT_DEFAULT_AFTERIMAGES: Readonly<Record<'nerve' | 'clash', Reado
   },
 };
 
+/**
+ * THR-1556 (duels plan doc § Prose tables) — the agent-mode defaults. In a duel
+ * both sides roll, so an exchange line says what passed between two people, not
+ * what one did to a card. Keyed on the fighter's band, like the NPC-mode table.
+ */
+export const FIGHT_DUEL_AFTERIMAGES: Readonly<Record<'nerve' | 'clash', Readonly<Record<StepOutcome, string>>>> = {
+  nerve: {
+    critical_success: '{name} squares up to {opponent}, and does not blink.',
+    success: '{name} squares up to {opponent}.',
+    near_miss: '{name} squares up to {opponent}, but the hands are not steady.',
+    success_at_cost: '{name} stays, though every part of them wants to go.',
+    failure: '{name} stays, but the fear is in them now.',
+    critical_failure: '{name} turns and runs from {opponent}.',
+  },
+  clash: {
+    critical_success: '{name} gets inside {opponent}\'s guard and cuts deep.',
+    success: '{name} cuts {opponent}.',
+    near_miss: '{name} and {opponent} trade cuts.',
+    success_at_cost: '{name} cuts {opponent} and is cut in turn.',
+    failure: '{opponent} cuts {name}.',
+    critical_failure: '{opponent} cuts {name} down.',
+  },
+};
+
+/**
+ * THR-1556 — the other side's line, keyed on the **opponent's** band: what their
+ * roll did to the fighter. Data for plan doc 4's header and the chronicle; the
+ * step's own afterimage stays the fighter's.
+ */
+export const FIGHT_DUEL_OPPONENT_LINES: Readonly<Record<'nerve' | 'clash', Readonly<Record<StepOutcome, string>>>> = {
+  nerve: {
+    critical_success: '{opponent} stands, and wants this.',
+    success: '{opponent} stands.',
+    near_miss: '{opponent} stands, badly.',
+    success_at_cost: '{opponent} stands, shaking.',
+    failure: 'The fear gets into {opponent}.',
+    critical_failure: '{opponent} breaks and runs.',
+  },
+  clash: {
+    critical_success: '{opponent} lands a clean, telling blow.',
+    success: '{opponent} lands a blow.',
+    near_miss: '{opponent} lands a glancing one.',
+    success_at_cost: '{opponent} lands one and pays for it.',
+    failure: '{opponent} lands nothing.',
+    critical_failure: '{opponent} goes down.',
+  },
+};
+
 /** The default pressure lines, when the spec authors none. */
 const DEFAULT_NERVE_NARRATIVE = 'Before the first blow, {name} has to find the nerve to stand against {opponent}.';
 const DEFAULT_CLASH_NARRATIVE = 'The {exchange} exchange: {name} closes with {opponent}.';
@@ -118,11 +173,13 @@ function afterimageFields(
   role: 'nerve' | 'clash',
   token: string,
   overrides: Partial<Record<StepOutcome, string>> | undefined,
+  mode: FightMode = 'npc',
 ): Pick<ActionStep,
   'successAfterimage' | 'failureAfterimage' | 'successAtCostAfterimage'
   | 'criticalSuccessAfterimage' | 'criticalFailureAfterimage' | 'nearMissAfterimage'> {
+  const defaults = mode === 'agent' ? FIGHT_DUEL_AFTERIMAGES : FIGHT_DEFAULT_AFTERIMAGES;
   const line = (band: StepOutcome) =>
-    (overrides?.[band] ?? FIGHT_DEFAULT_AFTERIMAGES[role][band]).replace(/\{opponent\}/g, token);
+    (overrides?.[band] ?? defaults[role][band]).replace(/\{opponent\}/g, token);
   return {
     criticalSuccessAfterimage: line('critical_success'),
     successAfterimage: line('success'),
@@ -158,6 +215,7 @@ export function fightBlock(spec: FightBlockSpec = {}): ActionStep[] {
     onSuccess: [],
     onFailure: [],
     ...(spec.opponentRef ? { opponentRef: spec.opponentRef } : {}),
+    ...(spec.mode === 'agent' ? { fightMode: 'agent' as const } : {}),
     ...(spec.deal ? { deal: spec.deal } : {}),
     ...(spec.complications?.length ? { fightComplications: spec.complications } : {}),
   } as const;
@@ -168,7 +226,7 @@ export function fightBlock(spec: FightBlockSpec = {}): ActionStep[] {
     reach: spec.nerveReach ?? FIGHT_DEFAULT_NERVE_REACH,
     narrativeTemplate: fill(spec.nerve?.narrativeTemplate ?? DEFAULT_NERVE_NARRATIVE),
     ...(spec.nerve?.purposeLine ? { purposeLine: spec.nerve.purposeLine } : {}),
-    ...afterimageFields('nerve', token, spec.nerve?.afterimages),
+    ...afterimageFields('nerve', token, spec.nerve?.afterimages, spec.mode),
     ...(spec.nerveNudges?.length ? { nudges: spec.nerveNudges } : {}),
   };
 
@@ -181,7 +239,7 @@ export function fightBlock(spec: FightBlockSpec = {}): ActionStep[] {
       reach: spec.clashReach ?? FIGHT_DEFAULT_CLASH_REACH,
       narrativeTemplate: fill(prose?.narrativeTemplate ?? DEFAULT_CLASH_NARRATIVE, i),
       ...(prose?.purposeLine ? { purposeLine: prose.purposeLine } : {}),
-      ...afterimageFields('clash', token, prose?.afterimages),
+      ...afterimageFields('clash', token, prose?.afterimages, spec.mode),
       ...(spec.clashNudges?.length ? { nudges: spec.clashNudges } : {}),
     });
   }

@@ -2583,6 +2583,12 @@ if (import.meta.env.DEV) {
         outcome: action.outcome ?? null,
         stepOutcomes: [...action.stepOutcomes],
         fightState: action.fightState ?? null,
+        // THR-1556 (duels) — the opposed side, lifted for a glance; null on an NPC-mode fight.
+        fightMode: action.fightState?.fightMode ?? (action.fightState ? 'npc' : null),
+        fighterClockSize: action.fightState?.fighterClockSize ?? null,
+        fighterClockNow: action.fightState?.fighterClockNow ?? null,
+        opponentBands: action.fightState?.opponentBands ? [...action.fightState.opponentBands] : null,
+        opponentLoss: action.fightState?.opponentLoss ?? null,
       };
     },
 
@@ -2678,6 +2684,50 @@ if (import.meta.env.DEV) {
         targetId: target.id,
       });
       return { ...result, fighterId: hero.id, opponentId: target.id };
+    },
+
+    /**
+     * THR-1556 (duels plan doc § Debug inspection) — stage a duel: moves `b` to
+     * `a`'s location (a duel whose sides no longer share a hex ends `separated`),
+     * then stages `fight.duel.grudge` with `a` as the actor and `b` as the
+     * opponent, open. Both sides roll. `courtPosition` threads `a` first (e.g.
+     * `the_first`) so the veil opens on the duel.
+     */
+    spawnDuel: async (
+      aIdOrName: string,
+      bIdOrName: string,
+      opts: { courtPosition?: string } = {},
+    ) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { success: false, message: 'no live game state' };
+      const a = await resolveAgentNode(aIdOrName);
+      const b = await resolveAgentNode(bIdOrName);
+      if (!a || !b) return { success: false, message: `no actor matched "${!a ? aIdOrName : bIdOrName}"` };
+      if (a.id === b.id) return { success: false, message: 'a duellist cannot duel themself' };
+      const graph = state.graph;
+      const aLocation = graph.getOutgoingEdges(a.id, 'located_at')[0]?.target;
+      if (!aLocation) return { success: false, message: `${a.name} has no location` };
+      const bLocation = graph.getOutgoingEdges(b.id, 'located_at')[0]?.target;
+      if (bLocation !== aLocation) {
+        const move = (_encounterBridge?.moveAgent as ((...x: unknown[]) => { success?: boolean; message?: string }) | undefined)
+          ?.(b.id, { locationQuery: aLocation });
+        if (!move?.success) return { success: false, message: `could not move ${b.name}: ${move?.message ?? 'no bridge'}` };
+      }
+      const runtime = _runtimeProvider?.();
+      if (runtime) {
+        const { touchWorld } = await import('./engine/simulationRuntime');
+        touchWorld(runtime);
+      }
+      const { FIGHT_DUEL_GRUDGE_ID } = await import('./data/encounters/fight-duel-grudge');
+      type SpawnResult = import('./engine/debugEncounterTools').DebugSpawnEncounterResult;
+      const spawn = _encounterBridge?.spawnEncounter as ((...x: unknown[]) => SpawnResult) | undefined;
+      if (!spawn) return { success: false, message: 'Encounter bridge not registered' };
+      const result = spawn(a.id, FIGHT_DUEL_GRUDGE_ID, {
+        open: true,
+        ...(opts.courtPosition ? { courtPosition: opts.courtPosition } : {}),
+        targetId: b.id,
+      });
+      return { ...result, fighterId: a.id, opponentId: b.id };
     },
 
     /**

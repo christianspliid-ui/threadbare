@@ -21,6 +21,7 @@ import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
+import { getFightEncounterById } from './fights/fight-templates';
 import { getBorderlandEncounterById } from './borderland-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from './secret-encounter-content';
 
@@ -14204,6 +14205,8 @@ export function getAnyEncounterById(id: string): UnifiedActionTemplate | undefin
     ?? getMercenaryEncounterById(id)
     ?? getArmyEncounterById(id)
     ?? getMonsterEncounterById(id)
+    // THR-1556 — the standalone non-monster fights (the systemic duel).
+    ?? getFightEncounterById(id)
     ?? getBorderlandEncounterById(id)
     ?? SECRET_DISCOVERY_ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
 }
