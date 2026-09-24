@@ -45,6 +45,7 @@ import { REPUTATION_TRAIT_DEFINITIONS } from './reputation-trait-content';
 import { ECONOMIC_TRAIT_DEFINITIONS } from './economic-trait-content';
 import { CONDITION_TRAIT_DEFINITIONS } from './condition-trait-content';
 import { ARTIFACT_TRAIT_DEFINITIONS } from './artifact-trait-content';
+import { TEMPER_TRAIT_DEFINITIONS } from './temper-trait-content';
 
 import { CONTENT_OBJECT_KINDS, type ContentCatalogRef, type ContentObjectKindId } from './content-objects';
 
@@ -105,6 +106,8 @@ export const CONTENT_CATALOGS: Readonly<Record<string, readonly ContentCatalogEn
   'data/condition-trait-content#CONDITION_TRAIT_DEFINITIONS': CONDITION_TRAIT_DEFINITIONS,
   // THR-1521 — a thing's two traits, under the Condition kind.
   'data/artifact-trait-content#ARTIFACT_TRAIT_DEFINITIONS': ARTIFACT_TRAIT_DEFINITIONS,
+  // THR-1544 — how a lair's monster breaks, under the Trait kind.
+  'data/temper-trait-content#TEMPER_TRAIT_DEFINITIONS': TEMPER_TRAIT_DEFINITIONS,
 };
 
 /** The entries a registry ref names, or `undefined` when the loader has no such key. */

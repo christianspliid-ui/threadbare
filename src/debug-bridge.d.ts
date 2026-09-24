@@ -1907,6 +1907,15 @@ export interface DebugBridge {
     | { readonly opponentId: string; readonly name: string; readonly card: import('./types/fight').OpponentCard }
   >;
 
+  /** Every lair monster in the world with its card (THR-1544, plan doc 3): id, name,
+   *  lair and its tier (`major` / `legendary` / `cleared`), family, Dread, Might, clock
+   *  (as stored — no lazy recovery; `inspectOpponentCard` applies that), temper (from its
+   *  `trait.temper.*` edge; stubborn when none), `temperShown`, and `deceased` — slain
+   *  monsters are listed too. `cardMissing: true` flags a monster node with no
+   *  `monsterState` (the M1 kill criterion). Ordered by id. Resolves `[]` with no live
+   *  game. **Async.** The row shape is pinned: plan docs 4 and 6 build on it. */
+  listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
+
   /** The fight review lever. Moves `@hero` to the target's location, then stages
    *  `fight.lair.confront` on `@hero` against the named target — open, as The First.
    *  Use this rather than `?spawn=fight.lair.confront`, which stages the template with

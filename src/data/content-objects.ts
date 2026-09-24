@@ -334,7 +334,8 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     id: 'trait_template',
     gameWord: 'Trait',
     ulTerm: 'Traits.md#trait',
-    idPrefixes: ['trait.core.', 'trait.personality.', 'trait.mastery.', 'trait.reputation.', 'trait.cultural.'],
+    // `trait.temper.` (THR-1544): how a lair's monster breaks when a fight turns.
+    idPrefixes: ['trait.core.', 'trait.personality.', 'trait.mastery.', 'trait.reputation.', 'trait.cultural.', 'trait.temper.'],
     catalogs: [
       { module: 'data/core-trait-content', export: 'CORE_TRAIT_DEFINITIONS' },
       { module: 'data/personality-trait-content', export: 'PERSONALITY_TRAIT_DEFINITIONS' },
@@ -344,6 +345,7 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       // trait and reputations with two scars and a condition, and the prefix sets
       // partition it the way the encounter / action kinds partition the unified array.
       { module: 'data/economic-trait-content', export: 'ECONOMIC_TRAIT_DEFINITIONS' },
+      { module: 'data/temper-trait-content', export: 'TEMPER_TRAIT_DEFINITIONS' },
     ],
     // Measured at seating (THR-1520): every entry carries its category word (`#core`,
     // `#personality`, `#mastery`, `#reputation`, `#cultural`) on the family axis.

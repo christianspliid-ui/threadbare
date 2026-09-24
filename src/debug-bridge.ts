@@ -2596,6 +2596,14 @@ if (import.meta.env.DEV) {
       return { opponentId: node.id, name: node.name ?? node.id, card: readOpponentCard(state.graph, node.id, state.tick) };
     },
 
+    /** Every lair monster with its card (THR-1544). Slain monsters are listed, flagged. */
+    listMonsters: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { listMonsters } = await import('./engine/monsters/listMonsters');
+      return listMonsters(state.graph);
+    },
+
     /**
      * The review lever for a fight: moves `@hero` to the target's location (a fight
      * whose sides no longer share a hex ends `separated`), then stages

@@ -108,6 +108,7 @@ import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES
 import { getFactionLeaderId } from '../engine/factionNetwork';
 import { REWARD_POSSESSIONS } from './reward-attachment-catalog';
 import { ANOMALY_SIGNATURE_ARTIFACTS } from './anomaly-reward-catalog';
+import { isMonster } from '../engine/monsters/isMonster';
 import {
   ROUTE_IDENTITY_SUBTYPE,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
@@ -1853,7 +1854,9 @@ function readPlotDeferral(ctx: ObjectVerbContext): number {
 function isPlottableMortal(n: GraphNode | undefined): boolean {
   if (!n || n.type !== 'actor') return false;
   const props = n.properties as Record<string, unknown>;
-  return props.actorType === 'individual' && props.deceased !== true;
+  // THR-1544 — a lair's monster is not a mortal to plot against; hunting it is its
+  // own branch (plan doc 6). `isMonster` is the one definition.
+  return props.actorType === 'individual' && props.deceased !== true && !isMonster(n);
 }
 
 /**

@@ -30,6 +30,7 @@ import { emitTrace } from './traceBuffer';
 import { pickCulturalName } from '../data/culture-name-pools';
 import { generateLairName } from './naming/lairNames';
 import { resolveLairClearing } from './lairClearing';
+import { hardenMonsterCard, mintMonsterCard } from './monsters/monsterCard';
 import { touchStructure, type SimulationRuntime } from './simulationRuntime';
 import type { WorldGraph } from './graph';
 
@@ -244,6 +245,10 @@ function createNamedElite(state: GameState, lairNode: GraphNode): string {
     type: 'located_at',
     properties: {},
   });
+
+  // THR-1544 — the monster card and its temper edge. Every elite is minted with one,
+  // so no reader ever meets an elite without a card.
+  mintMonsterCard(graph, eliteId, lairNode, tick);
 
   return eliteId;
 }
@@ -467,6 +472,11 @@ export function phaseLairEscalation(state: GameState, runtime?: SimulationRuntim
         summary: `Lair ${lairNode.id} upgraded major→legendary, monster faction seeded`,
         tick,
       } as Parameters<typeof emitTrace>[0]);
+
+      // THR-1544 — the lair's monster hardens with it: +1 clock, one word of Dread,
+      // and its wounds (clockFilled) kept.
+      const legendaryNode = graph.getNode(lairNode.id);
+      if (legendaryNode) hardenMonsterCard(graph, legendaryNode, tick);
     }
 
     // ── 4. Adjacent lair spawning ────────────────────────────────────────

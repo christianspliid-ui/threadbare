@@ -21,6 +21,7 @@
  *   essence        — print essence pool
  *   encounters     — list active encounters / unified actions
  *   factions       — list factions
+ *   monsters       — list lair monsters with their cards (THR-1544)
  *   groups         — list companies (the group layer): members, cohesion, destination
  *   spawn band <faction> [--role raider|defender] — force a faction to field an NPC band
  *   genome <name>  — inspect settlement genome result (sublocations, NPCs, archetype)
@@ -36,6 +37,7 @@
 import * as readline from 'readline';
 import { getStrategicTemplate } from '../src/engine/strategicActionCandidates';
 import { objectDisplayName } from '../src/engine/undertakingProse';
+import { listMonsters } from '../src/engine/monsters/listMonsters';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -701,6 +703,32 @@ function printFactions(): void {
     const members = state.graph.getIncomingEdges(f.id, 'belongs_to').length;
     console.log(`  ${dim(f.id.slice(0, 8))}  ${BOLD}${f.properties.name ?? 'unnamed'}${RESET}  members:${members}`);
   }
+}
+
+/**
+ * List lair monsters with their cards (THR-1544). Ends with the M1 predicate line:
+ * every monster node carries `monsterState`, or the count of those that do not.
+ */
+function printMonsters(): void {
+  const rows = listMonsters(state.graph);
+  console.log(header(`Monsters (${rows.length})`));
+  if (rows.length === 0) {
+    console.log('  No lair monsters yet.');
+    return;
+  }
+  for (const m of rows) {
+    const status = m.deceased ? dim(' slain') : '';
+    const missing = m.cardMissing ? ' NO CARD' : '';
+    console.log(
+      `  ${dim(m.id)}  ${BOLD}${m.name}${RESET}  ${m.family}  dread:${m.dread} might:${m.might}`
+      + `  clock ${m.clockFilled}/${m.clockSize}  ${m.temper}${m.temperShown ? ' (shown)' : ''}`
+      + `  lair:${m.lairId} (${m.lairTier})${status}${missing}`,
+    );
+  }
+  const lacking = rows.filter(m => m.cardMissing).length;
+  console.log(lacking === 0
+    ? `  Every monster carries a card (${rows.length}/${rows.length}).`
+    : `  ${lacking} of ${rows.length} monsters carry NO card.`);
 }
 
 /**
@@ -1422,6 +1450,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}appointments${RESET} [agent]  Live appointments — place, due tick, slack, regime (THR-1479), optionally by agent|@hero`);
   console.log(`  ${BOLD}traits${RESET} [location]  Location traits — what each place carries and since when (THR-790); with a place named, its sustain counters too. Then the artifact traits (THR-1521): Storied / Cursed on things, with the presence count Storied climbs on`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
+  console.log(`  ${BOLD}monsters${RESET}         List lair monsters with their cards (family, Dread/Might, clock, temper)`);
   console.log(`  ${BOLD}spotlight${RESET}        Spotlight-pull ledger (THR-1348): who was pulled into the deciding tier, whom they displaced, who was refused`);
   console.log(`  ${BOLD}groups${RESET}           List companies (members, cohesion, destination)`);
   console.log(`  ${BOLD}genome${RESET} <name>    Inspect settlement genome result (sublocations, NPCs, archetype)`);
@@ -2457,6 +2486,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'factions':
       printFactions();
+      break;
+    case 'monsters':
+      printMonsters();
       break;
     case 'groups':
     case 'companies':

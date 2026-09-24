@@ -47,6 +47,7 @@ import type { WorldGraph } from './graph';
 import { resolveLocationToHex } from './encounterAwareness';
 import { isAgentGone } from './groups/groupQueries';
 import { emitTrace } from './traceBuffer';
+import { isMonster } from './monsters/isMonster';
 
 // ─── Constants (NFP #1: Tunability) ──────────────────────────────────────────
 
@@ -97,12 +98,13 @@ interface Challenger {
  * Excludes the dead, the lairs' own bosses, and armies. `isMonsterElite` is the flag the
  * elite writer actually sets — an earlier pass of this module filtered on `isMonster`,
  * which no producer writes, so every boss read as a challenger and each lair counted its
- * own garrison toward its own fall.
+ * own garrison toward its own fall. Since THR-1544 the test is the shared `isMonster`
+ * predicate (`monsters/isMonster.ts`), which reads that flag or a `monsterState` card.
  */
 function isChallenger(node: GraphNode): boolean {
   if (isAgentGone(node)) return false;
   const props = node.properties as Record<string, unknown>;
-  if (props.isMonsterElite === true) return false;
+  if (isMonster(node)) return false;
   if (props.armyState != null) return false;
   return true;
 }
