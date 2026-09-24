@@ -20,6 +20,7 @@ import type {
 import type { EncounterSupportBinding, EncounterChoiceMemory } from '../types/encounter';
 import { SCALE_PRIORITY, isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
 import { tierScaledDuration } from './targetTierScaling';
+import { FIGHT_RESULT_ACTION_OUTCOME } from '../data/fight-constants';
 
 // ─── Counter for deterministic IDs ──────────────────────────────
 
@@ -184,6 +185,23 @@ export function advanceStep(
       ...action,
       resolved: true,
       outcome: actionOutcome,
+      stepOutcomes: newStepOutcomes,
+      hadCriticalStep: computeHadCriticalStep(newStepOutcomes),
+    };
+  }
+
+  // THR-1538 (plan doc §6) — a fight whose result is set ends the action now, like
+  // the natural final step, but its outcome is read from the result, never from
+  // `computeFinalActionOutcome`: that reads any failure in the history as
+  // `success_at_cost`, so a yield would read as a success. Runs after the
+  // critical-failure short-circuit above and never overrides it (a rout or a
+  // struck-down fighter already maps to `critical_failure`).
+  const fightResult = action.fightState?.result;
+  if (fightResult) {
+    return {
+      ...action,
+      resolved: true,
+      outcome: FIGHT_RESULT_ACTION_OUTCOME[fightResult],
       stepOutcomes: newStepOutcomes,
       hadCriticalStep: computeHadCriticalStep(newStepOutcomes),
     };

@@ -706,3 +706,35 @@ The first step of a fight: whether the mortal stands to face the opponent at all
 **Status:** canonical (seated by THR-1537, delegated seating 2026-09-11)
 
 One exchange of blows in a fight, rated by the opponent's Might. Its reach defaults to Iron, and the opponent card may override it. **After the roll, a clash is the step it actually was:** growth, consumable charges, the frozen step record and the event node's `reachTested` all read the resolved reach, so a clash the card moved to Eye grows Eye.
+
+---
+
+### Fight Clock
+
+**Aliases:** clock (fight), the clock, `clockFilled`, `fightState.clockNow`
+**Also see:** `[[Fight]]`, `[[Opponent Card]]`, `[[Clash Step]]`, `[[Fight Result]]`, `[[Doom Clock]]`
+**Status:** canonical (seated by THR-1538, delegated seating 2026-09-11)
+
+An opponent's wear in a fight, in segments. Each landing clash fills it (`FIGHT_CLOCK_BY_BAND`: a critical +2, a hit, a traded blow or a hit at cost +1, a miss 0). **A full clock is won by a blow, not by itself:** the fight is overcome on the clash that lands while the clock is full and the opponent lives. A full clock with no blow this exchange waits for the next landing blow; none by the last clash, and the fight breaks off.
+
+Two stores, one writer (`advanceFightClock`). A **monster's** clock lives on its node (`monsterState.clockFilled`) and persists across fights, so several mortals' blows add up on one beast; it recovers one segment per `FIGHT_CLOCK_RECOVERY_TICKS`, read lazily. A **mortal opponent's** clock lives on the fight (`fightState.clockNow`) and dies with it.
+
+**Not the Doom Clock**, the world's campaign timer. The two never share a surface.
+
+Code anchors: `src/engine/fights/fightClock.ts`, `src/engine/fights/fightState.ts` (`applyFightStepResult`), `src/data/fight-constants.ts`.
+
+---
+
+### Fight Result
+
+**Aliases:** `FightResult`, `fight:<result>`
+**Also see:** `[[Fight]]`, `[[Fight Clock]]`, `[[Aftermath]]`
+**Status:** canonical (seated by THR-1538, delegated seating 2026-09-11)
+
+How a fight ended: *overcome*, *driven off*, *bargained*, *yielded*, *broke off*, *routed* (broke on the nerve step) or *struck down* (a clash's critical failure). A set result ends the encounter at once; later steps never run. The encounter's outcome is **read from the result** (`FIGHT_RESULT_ACTION_OUTCOME`), never aggregated from the steps, so a yield after a wound reads as a failure to "after the fight" items and to the aftermath.
+
+A **broke off** fight can end without a roll: when its opponent never appeared, died, or no longer shares the fighter's hex (`endReason`: `no_opponent` / `opponent_gone` / `separated`). It still reaches its aftermath.
+
+The result is written as one choice memory (`fight:<result>`) at `fightResultIndex(steps)`, an index no step owns, so aftermath variants key on it without disturbing the cards the god played.
+
+Code anchors: `src/engine/fights/fightState.ts`, `src/engine/fights/fightOutcome.ts` (`onFightEnded`), `src/types/fight.ts`.

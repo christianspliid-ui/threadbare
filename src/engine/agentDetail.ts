@@ -1286,6 +1286,8 @@ const DEATH_CAUSE_WORDS: Readonly<Record<string, string>> = {
   commission: 'slain',
   band: 'fell in a fight',
   lifecycle: 'died',
+  // THR-1538 — a fight is a public deed; the sheet names the victor (see `killerIsKnown`).
+  fight: 'slain',
 };
 
 /**
@@ -1298,6 +1300,9 @@ const DEATH_CAUSE_WORDS: Readonly<Record<string, string>> = {
  */
 function killerIsKnown(graph: WorldGraph, victimId: string, killerId: string): boolean {
   try {
+    // THR-1538 — a death in a fight was seen: a fight is a public deed, and plan doc
+    // 1's chronicle line names the victor, so the sheet and the lair card do too.
+    if (graph.getNode(victimId)?.properties.deathCause === 'fight') return true;
     for (const edge of graph.getIncomingEdges(killerId, 'knows_secret_of')) {
       if (edge.source !== killerId) return true;
     }

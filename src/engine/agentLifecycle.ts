@@ -165,7 +165,10 @@ function drainMintValve(
 // ─── The one death funnel (THR-1430) ──────────────────────────────
 
 /** Why a mortal died — carried on the node so the chronicle and the sheet can say it. */
-export type MortalDeathCause = 'plot' | 'band' | 'lifecycle' | 'commission';
+export type MortalDeathCause = 'plot' | 'band' | 'lifecycle' | 'commission'
+  // THR-1538 — a fight's killing blow. Declared here, once, so plan docs 1 and 3
+  // (the defeat faces and the monster writes) share one member.
+  | 'fight';
 
 /**
  * What `markMortalDead` did. `warded` and `echo` are outcomes, not failures — a caller
