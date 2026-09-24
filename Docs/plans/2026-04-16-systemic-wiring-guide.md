@@ -4302,3 +4302,45 @@ What an author can rely on:
 
 Trace: each raise emits `effect.event_raised` with its `site` — `fight_start`, `fight_step`,
 `fight_clash`, `fight_overcome` or `fight_end`.
+
+**Effect vocabulary for fights (FB6, THR-1542).** Three additions let an item, a trait or a power
+act *on* a fight, not only react to one. Author them anywhere an `AttachmentEffect` goes.
+
+| Vocabulary | Shape | What it does |
+|---|---|---|
+| `resource_manipulate` on the fight clock | `{ type: 'resource_manipulate', resource: 'fight_clock', target: 'self' \| 'other_agent', amount, mode }` | Moves a fight clock by `amount` segments (positive wears it toward a win, negative rewinds it) through `advanceFightClock`, the one clock writer |
+| `inflict_condition` (new type) | `{ type: 'inflict_condition', conditionTraitId, target: 'self' \| 'counterpart', durationTicks?, intensity?, condition? }` | Lands a condition through `applyConditionToActor`: tag immunity refuses it, and the `damaged` proxy fires |
+| `clock_above:n` (predicate) | any `condition` field | True while the bearer's own persistent clock (`monsterState.clockFilled`) is above `n`. A mortal has no clock outside a fight and reads 0 |
+
+`fight_clock` is live at all three sites that read `resource_manipulate`, and each site picks its
+target differently:
+
+- **As a nested effect** (a `reactive`, a `cascade`, a spell): the executor returns a request and
+  `applyExecutionResult` writes it. `target: 'self'` is the bearer. `'other_agent'` is the raise's
+  counterpart, which is the other side on a fight raise. *A beast that knits as it is struck:*
+  `reactive { trigger: 'damaged', effect: { resource_manipulate, resource: 'fight_clock', target: 'self', amount: -1 } }`.
+- **`mode: 'one_shot'` on an item**: fires on the bearer's first `encounter_outcome` after it is
+  attached, which on a fight step is aimed at the opponent. *A charm that lands the blow you missed:*
+  `{ resource: 'fight_clock', target: 'other_agent', amount: 1, mode: 'one_shot' }`. Note that it
+  spends on the **first** fight step it sees, which is the nerve step if the item was carried in.
+- **`mode: 'per_tick'`**: only `target: 'self'`, the bearer's own clock. *A bleed on a beast:* give
+  it a condition trait carrying `{ resource: 'fight_clock', target: 'self', amount: 1, mode: 'per_tick' }`,
+  for example through `inflict_condition`. A monster's clock bleeds between fights. A mortal's write
+  waits in the mailbox for their fight's next step, and is cleared as stale if no fight is running.
+
+What an author can rely on:
+
+- **It lands on the same clock the fighter's blows fill.** A monster's clock is written on its node.
+  A mortal opponent's per-fight clock is written to the node's mailbox (`pendingFightClockDelta`),
+  which the handler drains *before* its clock-full check. So a write made during a clash counts in
+  that clash.
+- **A positive write during a clash is a blow landed.** If it fills the clock, the fighter wins that
+  clash (`overcome`), even on a band that landed nothing itself.
+- **Recovery comes first.** A write to a monster's clock applies the segments it has recovered
+  since its last write before adding its own.
+- **Conditions go through the one writer.** `inflict_condition` never writes a `has_trait` edge by
+  hand. The edge carries `inflictedBy: <caster>`. The writer now lives in
+  `src/engine/effects/conditionApplier.ts`; `encounterAftermath` re-exports it unchanged.
+
+Traces: `fight.clock` with cause `effect:<caster>`, `item:<attachment>` or `tick:<attachment>`; an
+`inflict_condition` legacy effect trace records applied or refused (with the `immuneTag`).

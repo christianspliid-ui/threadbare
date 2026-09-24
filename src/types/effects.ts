@@ -55,7 +55,11 @@ export type ParameterizedCondition =
   | `has_intel:${string}`
   | `reputation_above:${string}`
   | `reputation_below:${string}`
-  | `faction_controls:${string}`;
+  | `faction_controls:${string}`
+  // THR-1542 (fight block FB6, plan doc §10): the bearer's own fight clock is
+  // filled above n segments. Reads the persistent clock (`monsterState`), so it
+  // is a monster's predicate; a mortal has no clock outside a fight and reads 0.
+  | `clock_above:${string}`;
 
 /** Union of all condition types */
 export type EffectPredicate = EffectCondition | ParameterizedCondition;
@@ -715,15 +719,52 @@ export interface TagImmunityEffect {
   readonly condition?: EffectPredicate;
 }
 
-/** Type 36: Per-tick or one-shot drain/restore of essence or quintessence */
+/**
+ * Type 36: Per-tick or one-shot drain/restore of essence or quintessence — or,
+ * since THR-1542 (fight block FB6, plan doc §10), a write to a fight clock.
+ *
+ * `'fight_clock'` routes to `advanceFightClock`, the one clock writer: a monster's
+ * persistent clock is written directly, a mortal opponent's per-fight clock
+ * through its node's mailbox, which the fight handler drains. `amount` is in
+ * segments: positive wears the clock down toward a win, negative rewinds it.
+ * Live at all three sites: the executor (reactive and spell nested effects),
+ * the one-shot item path, and the per-tick path.
+ */
 export interface ResourceManipulateEffect {
   readonly type: 'resource_manipulate';
-  readonly resource: 'essence' | 'quintessence';
+  readonly resource: 'essence' | 'quintessence' | 'fight_clock';
+  /**
+   * `'self'` = the bearer; `'other_agent'` = the event's counterpart (a fight
+   * opponent on a fight raise). For `'fight_clock'`, whose clock is written.
+   */
   readonly target: 'self' | 'other_agent';
-  /** Amount per application — positive = restore, negative = drain */
+  /** Amount per application — positive = restore, negative = drain (fight clock: segments) */
   readonly amount: number;
   /** 'per_tick' = every tick, 'one_shot' = fires once then marks consumed */
   readonly mode: 'per_tick' | 'one_shot';
+  readonly condition?: EffectPredicate;
+}
+
+/**
+ * Type 42: Put a condition on the bearer or on the event's counterpart (THR-1542,
+ * fight block FB6, plan doc §10 — THR-1530 §5). For monster special moves, curse
+ * spells and cursed items.
+ *
+ * Routed through `applyConditionToActor`, the one condition writer, so tag
+ * immunity refuses it and the `damaged` proxy fires exactly as for an aftermath
+ * `apply_condition` or a fight band's condition. An executor returns it as a
+ * request; `applyExecutionResult`, which holds the game state, applies it.
+ */
+export interface InflictConditionEffect {
+  readonly type: 'inflict_condition';
+  /** The condition trait node id (e.g. `trait.condition.terrified`). */
+  readonly conditionTraitId: string;
+  /** `'self'` = the bearer; `'counterpart'` = the event's other agent (a fight opponent). */
+  readonly target: 'self' | 'counterpart';
+  /** Defaults to the applier's `CONDITION_DEFAULT_DURATION_TICKS` (0 = indefinite). */
+  readonly durationTicks?: number;
+  /** Defaults to the applier's `CONDITION_DEFAULT_INTENSITY`. */
+  readonly intensity?: number;
   readonly condition?: EffectPredicate;
 }
 
@@ -840,7 +881,9 @@ export type AttachmentEffect =
   // GameView nested-choice use, and is the one member a generator must not emit.
   | ChoiceSetEffect
   // Capability (41)
-  | StatContributionEffect;
+  | StatContributionEffect
+  // Fights (42) — THR-1542
+  | InflictConditionEffect;
 
 // ═══════════════════════════════════════════════════════════════════
 // Spell Framework
@@ -1008,6 +1051,12 @@ export interface PredicateContext {
   readonly reputationScore: number;
   /** Location IDs currently controlled by this agent's faction. */
   readonly controlledLocations: ReadonlySet<string>;
+  /**
+   * THR-1542 — the agent's own persistent fight clock (`monsterState.clockFilled`),
+   * for `clock_above:`. As last written: lazy recovery is applied at the next
+   * fight or clock write, not here (the builder has no tick). Absent = 0.
+   */
+  readonly fightClockFilled?: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════

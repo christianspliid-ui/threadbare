@@ -44,6 +44,8 @@ import { emitTrace } from '../traceBuffer';
 import { processEffectEvent, applyEffectEventResult, type EffectEvent } from './effectEvents';
 import { applyExecutionOverlays } from './effectOverlayStore';
 import { buildPredicateContext } from './effectPredicates';
+import { applyConditionToActor } from './conditionApplier';
+import { advanceFightClock } from '../fights/fightClock';
 
 /** Where a raise came from — carried on the trace so the producer is one grep away. */
 export type EffectEventSite =
@@ -137,6 +139,51 @@ export function applyExecutionResult(
 ): void {
   applyExecutionMutations(state.graph, exec.mutations);
   applyExecutionOverlays(state, exec.terrainOverlays, exec.ruleOverrides, tick);
+  applyFightVocabularyRequests(state, exec, tick);
+}
+
+/**
+ * THR-1542 (fight block FB6, plan doc §10) — the fight vocabulary's writes.
+ * `resource_manipulate` `'fight_clock'` goes through `advanceFightClock`, the one
+ * clock writer: a monster's clock directly, a mortal opponent's through the
+ * node mailbox the fight handler drains before its clock-full check.
+ * `inflict_condition` goes through `applyConditionToActor`, which honours tag
+ * immunity and raises the `damaged` proxy.
+ *
+ * Each request is applied independently and fail-soft, like the mutations.
+ */
+function applyFightVocabularyRequests(
+  state: GameState,
+  exec: ExecutionResult,
+  tick: number,
+): void {
+  for (const req of exec.fightClockRequests ?? []) {
+    try {
+      advanceFightClock(state.graph, req.opponentId, req.delta, req.cause, tick);
+    } catch {
+      /* fail-soft: one bad clock write must not stop the others */
+    }
+  }
+  for (const req of exec.conditionRequests ?? []) {
+    try {
+      const result = applyConditionToActor(state, req.targetId, req.conditionTraitId, {
+        tick,
+        ...(req.durationTicks !== undefined ? { durationTicks: req.durationTicks } : {}),
+        ...(req.intensity !== undefined ? { intensity: req.intensity } : {}),
+        edgeProperties: { inflictedBy: req.casterId },
+      });
+      emitLegacyEffectTrace({
+        effectType: 'inflict_condition',
+        casterId: req.casterId,
+        targetId: req.targetId,
+        details: result.applied
+          ? { conditionTraitId: req.conditionTraitId, applied: true, edgeId: result.edgeId }
+          : { conditionTraitId: req.conditionTraitId, applied: false, reason: result.reason, immuneTag: result.immuneTag },
+      });
+    } catch {
+      /* fail-soft */
+    }
+  }
 }
 
 /**

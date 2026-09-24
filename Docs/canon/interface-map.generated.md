@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 26 |
-| **Total** | **148** |
+| 🔵 UNVERIFIED-OK | 27 |
+| **Total** | **149** |
 
 ## Contracts by producing subsystem
 
@@ -138,6 +138,7 @@ remediation ticket or the build fails.
 | `aura-reaches-resolution-modifiers` | A nearby agent's aura tilts the step someone else is resolving — the one modifier the acting agent does not carry, named on the panel like every other. | function: `collectAuraEffectsNear`, `selectAuraEmitters`, `resolveAuraModifiers`, `collectAuraContributions` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `effect-executor-overlay-persistence` | Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern. | function: `applyExecutionOverlays`, `expireOverlays`, `getPersistedRuleOverride` | Effects & Conditions | 🟢 LIVE | — |
 | `effect-vocabulary-consolidated-spellings` | Every effect capability content can author reaches a live mechanism — duplicate spellings are retired and their content migrated onto the mechanism that already executes. | function: `applySuppressions`, `getRevealRanges`, `isImmuneToAnyTag`, `normalizeTag` | Effects & Conditions | 🟢 LIVE | — |
+| `effects-write-fight-clock` | A charm can land the blow a fighter missed, a beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights — every one of them on the same clock the fighter's blows fill, so a spell's blow can win the fight. | function: `advanceFightClock`, `fight_clock` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `rule-overrides-reach-owning-sites` | Every RuleOverrideKey is read by the one system that owns the rule it bends, through a single shared reader. | function: `readMultiplierOverride`, `readBonusOverride`, `readFlagOverride`, `readReachOverride` | Effects & Conditions | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
@@ -954,11 +955,23 @@ exit
 - **Intent:** Every effect capability content can author reaches a live mechanism — duplicate spellings are retired and their content migrated onto the mechanism that already executes.
 - **Producer → Consumer:** Effects & Conditions → Effects & Conditions
 - **Module:** `src/engine/effects/effectSuppression.ts`
-- **Production hits:** 9 total — 2 write, 4 read, 3 unclassified
+- **Production hits:** 10 total — 2 write, 4 read, 4 unclassified
 - **Write sites:** `src/engine/effects/effectSuppression.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/effects/effectQueries.ts`, `src/engine/encounterAftermath.ts`, `src/engine/encounterAwareness.ts`, `src/engine/phaseMovement.ts`
-- **Other hits:** `src/engine/effectExecutors.ts`, `src/engine/effects/index.ts`, `src/types/trace.ts`
+- **Other hits:** `src/engine/effectExecutors.ts`, `src/engine/effects/conditionApplier.ts`, `src/engine/effects/index.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-08-26: THR-1242. Nine spellings retired and their content migrated: graph_mutation/outcome_shift/auto_succeed had zero refs; reroll (3) -> test_shaper, swap_reach (1) -> the encounter_reach_override rule key, haste/slow/freeze_duration (13) -> cooldown/movement/duration multiplier keys, create_barrier (5) -> alter_terrain with the shrouded/warded overlays. Retiring a spelling is NOT the same claim as keeping the capability, so the tests come in two shapes: retirement sweeps run against the REAL catalogs (a fixture would verify fiction, since the claim is about what ships) and match only a `type: 'x'` position, because a bare substring sweep for "slow" hits an adjective table in archetype-content and would report a false positive forever. Three primitives were wired rather than migrated, and each was a different shape of dead. `suppress` was the inverse of the usual case — a CONSUMER with no producer: EffectRuntimeState.suppressed has been read by effectResolver, effectQueries, consumableCharges and effectEvents since the primitive architecture landed and set by nothing, so four artifacts promised to silence magic and silenced nothing; applySuppressions is now its one writer, run once per tick before the effect tick so an attachment silenced this tick does not also act this tick. `reveal` had 17 content refs and no consumer of any kind; it now floors the awareness horizon (encounters target) and lifts fog on arrival (hexes target). `tag_immunity` had a complete query with ZERO callers AND a namespace mismatch that would have made it read as wired and block nothing — condition trait nodes carry #-prefixed tags while most immunity content wrote them bare, so `fear` would never have matched `#fear`; content is migrated to the # spelling and comparison normalizes both sides. Non-vacuous by falsification: reverting the walker to its private MAX_EFFECTS_PER_NODE=12 fails exactly the three content-guard tests, and removing the self-cancel guard from applySuppressions fails exactly the one that names it (4 failed / 79 passed), so the tests assert the wiring rather than the helpers. The create_barrier migration additionally required giving the stage-2 overlay store its first PRODUCTION reader (movementCost for warded, encounterAwareness for shrouded) — without it the migration would have moved five artifacts from a dead spelling onto a dead mechanism: persisted, traced, and still changing nothing a player could feel.
+
+### `effects-write-fight-clock` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A charm can land the blow a fighter missed, a beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights — every one of them on the same clock the fighter's blows fill, so a spell's blow can win the fight.
+- **Producer → Consumer:** Effects & Conditions → Encounters & Dilemmas
+- **UL terms:** *Fight Clock*
+- **Module:** `src/engine/fights/fightClock.ts`
+- **Production hits:** 7 total — 3 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effectTick.ts`
+- **Read sites:** `src/engine/fights/fightState.ts`
+- **Other hits:** `src/engine/effectExecutors.ts`, `src/engine/fights/fightClock.ts`, `src/types/effects.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
 
@@ -1033,11 +1046,11 @@ exit
 - **Intent:** A fight leaves its mark as the ordinary conditions — inspired, shaken, terrified, wounded — so every ward, cure and reader that knows a condition knows a fight's wound.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
-- **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 106 total — 1 write, 1 read, 104 unclassified
-- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Module:** `src/engine/effects/conditionApplier.ts`
+- **Production hits:** 107 total — 1 write, 1 read, 105 unclassified
+- **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +99 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +100 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-harm-queues-quintessence` — 🔵 UNVERIFIED-OK
@@ -1081,10 +1094,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 13 total — 1 write, 1 read, 11 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/engine/fights/fightForks.ts`, `src/engine/fights/fightState.ts`, `src/types/fight.ts`, `src/types/traces/fight-traces.ts`
+- **Other hits:** `src/data/fight-constants.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectPredicates.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
@@ -1371,10 +1384,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 82 total — 2 write, 3 read, 77 unclassified
+- **Production hits:** 83 total — 2 write, 3 read, 78 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +72 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +73 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
