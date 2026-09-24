@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 117 |
+| 🟢 LIVE | 118 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 29 |
-| **Total** | **154** |
+| **Total** | **155** |
 
 ## Contracts by producing subsystem
 
@@ -181,6 +181,7 @@ remediation ticket or the build fails.
 | `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `requires-hold-gates-town-keeper-content` | A template carrying `requiresHold: { ofRealm: true }` is offered only to a mortal whose hold standing names the Realm whose ground the encounter sits on (THR-1448). Read in the filter beside `requiredReputationWith` with the same fail-open convention: an unresolvable template or an absent reader passes, because a gate that can only hide content must never empty a pool on a lookup miss. | module-export: `requiresHold`, `filterByPrerequisites`, `standingFor`, `groundRealmOf` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `resolved-actions-feed-band-kpi` | Whether mortals of every skill level win their own challenges about as often as each other, and whether the harder challenges go to the more skilled — measured, so the principle that success stays level while ambition grows cannot drift again unseen. | function: `stampEngagementCommit`, `recordEngagementResolution`, `recordBoardDecision`, `recordIdleDecision`, `computeEngagementKpiReport` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags`, `toContentQuery` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seed-only-sequels-never-drawn` | A sequel whose opening assumes its parent — a promise made, a family met, a word broken — is marked `drawable: false` on its template, and the decision board never offers it: only its planter (a seed, an appointment's kept or missed branch, a trigger, a debug spawn) starts it (THR-1526). The encounter cache build skips it at all four appends (`isDrawable`), the divine-vision delivery beats refuse it (`isDeliverableBranchingEncounter`), and the deprecated array-scored path carries the same one-line gate. Seed resolution never reads the flag, so a named sequel still resolves, and the template keeps its catalog membership and its envelope because the seed query and `eligibleAt` read both. Before this contract the Full Moon Reckoning fired from the board and told mortals who had given no word that they had broken it (THR-1524's firing census: the Reckoning 1 and the Swindler Found 16 board firings on seed 42 over 200 ticks, their parents 0). | function: `isDrawable`, `isDeliverableBranchingEncounter`, `drawable` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -625,10 +626,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 189 total — 1 write, 3 read, 185 unclassified
+- **Production hits:** 194 total — 1 write, 3 read, 190 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +180 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +185 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -1547,10 +1548,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 300 total — 1 write, 1 read, 298 unclassified
+- **Production hits:** 302 total — 1 write, 1 read, 300 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +293 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +295 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1600,6 +1601,17 @@ exit
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`
 - **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/company-drama.ts`, `src/data/faction-encounter-content.ts`, `src/data/realm-content.ts` +8 more
 - **Verdict:** Verified 2026-09-22: THR-1448. `holdStandingGates.test.ts`: the keeper of the encounter’s Realm is admitted and a stranger in the same town is hidden; a keeper of a *different* Realm is hidden (the encounter’s ground decides); a keeper whose town is in the wilds is hidden; no reader, an unresolvable template id, and a location the map cannot place each fail open for the keeper while the stranger stays hidden; the court’s own rows are untouched. Repeated on a generated world in `holdStandingReach.test.ts`.
+
+### `resolved-actions-feed-band-kpi` — 🟢 LIVE
+
+- **Intent:** Whether mortals of every skill level win their own challenges about as often as each other, and whether the harder challenges go to the more skilled — measured, so the principle that success stays level while ambition grows cannot drift again unseen.
+- **Producer → Consumer:** Encounters & Dilemmas → Diagnostics & Incident Capture
+- **Module:** `src/engine/kpi/engagementKpi.ts`
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/orchestrator.ts`, `src/engine/phaseAgentDecision.ts`
+- **Read sites:** `src/engine/kpi/gameplayKpi.ts`
+- **Other hits:** `src/engine/kpi/engagementKpi.ts`, `src/engine/simulationRuntime.ts`
+- **Verdict:** Verified 2026-09-24: THR-1578. Seeded worlds 42/99/7 x 120 ticks (`npm run gameplay-report`): 144-281 stamped engagements per seed folded into bands, 23-29 unstamped (band `unknown` - seeded, forced and legacy paths, deliberately outside the invariant). The first wiring keyed stamps on `action.id`, a field `UnifiedAction` does not have, so every stamp collided on `undefined` and half the resolutions read `unknown`; the heavy wiring test `src/engine/__tests__/engagementWindow.invariant.test.ts` (stamped > unknown on seed 42 x 30) caught it and passes on `actionId`. Arithmetic pinned by `src/engine/kpi/__tests__/engagementKpi.test.ts`.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
 

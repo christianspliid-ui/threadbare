@@ -1597,7 +1597,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | Field | Type | What It Controls |
 |---|---|---|
 | `reach` | `ReachDomain` | Which capability domain resolves this step |
-| `difficulty` | `number` | **0–1 scale** → sigmoid → probability (NOT 0-100) |
+| `difficulty` | `number` | **0–1 scale** — the proficiency the step demands, on the capability scale (NOT 0-100). Pick it as the level of the mortal the step is written for; mortals at that level should engage it at about even odds (THR-1575 forecast window — see `Docs/canon/encounters.md` § Four load-bearing rules, and `npm run measure:roll-spread` for per-band coverage) |
 | `duration` | `{ min: number, max: number }` | Tick range to resolve (e.g. `{ min: 1, max: 2 }`) |
 | `failBehavior` | `'continue_weakened' \| 'fail_action'` | What happens on step failure: continue with disadvantage or end encounter |
 | `onSuccess` | `GraphOp[]` | Graph mutations applied immediately on success (usually `[]` for simple encounters) |

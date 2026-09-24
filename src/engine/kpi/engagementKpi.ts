@@ -11,7 +11,7 @@
  * - **In-window share** — how many of a mortal's own choices it made at a
  *   forecast inside `[ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH]`.
  * - **Idle rate** — the share of agent decisions that reached the board and
- *   came back empty.
+ *   ended on the idle path (drift / trivial local / stay).
  * - **The two historical traps** (Christian, 2026-09-24): `retry_after_failure_rate`
  *   (retry loops) and `max_failure_streak` p95 (the stuck spiral), plus
  *   `attempted_difficulty_trend` (progression).
@@ -43,6 +43,8 @@ import {
   ENGAGEMENT_LOG_MAX,
 } from './kpiConstants';
 import { ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH } from '../../data/agent-behavior-constants';
+import { SCALE_DIFFICULTY_OFFSETS } from '../resolutionScaleAdjust';
+import type { ActionScale } from '../../types/unifiedAction';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -92,7 +94,7 @@ export interface EngagementBandTotals {
 
 /** Lifetime engagement ledger — owned by `SimulationRuntime`, one per session. */
 export interface EngagementLedger {
-  /** Commit stamps awaiting resolution, keyed by `UnifiedAction.id`. */
+  /** Commit stamps awaiting resolution, keyed by `UnifiedAction.actionId`. */
   stamps: Map<string, EngagementStamp>;
   /** Lifetime per-band totals over *free-choice* stamped engagements, plus `unknown`. */
   bandTotals: Record<EngagementBandKey, EngagementBandTotals>;
@@ -101,7 +103,7 @@ export interface EngagementLedger {
   /** Free-choice commits whose forecast sat inside the window / all free-choice commits. */
   inWindowCommits: number;
   freeChoiceCommits: number;
-  /** Agent decisions that reached the board / of those, how many came back idle. */
+  /** Agent decisions that reached the board / of those, how many took the idle path. */
   boardDecisions: number;
   idleDecisions: number;
 }
@@ -120,7 +122,7 @@ export interface EngagementKpiReport {
   /** Share of free-choice commits whose forecast sat inside the engagement window. */
   inWindowShare: number;
   freeChoiceCommits: number;
-  /** Share of board-reaching decisions that came back idle. */
+  /** Share of board-reaching decisions that ended on the idle path. */
   idleRate: number;
   boardDecisions: number;
   /** Share of failed free-choice engagements followed by the same mortal re-engaging the same template within `RETRY_WINDOW_TICKS`. */
@@ -168,6 +170,25 @@ export function proficiencyBandFor(capability: number): ProficiencyBand {
   return 'master';
 }
 
+/**
+ * The proficiency a template's steps demand: the mean authored step difficulty plus
+ * the scale offset the roll applies. Branch nodes (no `difficulty`) are skipped; a
+ * template with no rollable step reads NaN, which the stamp treats as "skip".
+ */
+export function demandedDifficultyOf(
+  steps: ReadonlyArray<object>,
+  scale: ActionScale | undefined,
+): number {
+  const difficulties: number[] = [];
+  for (const st of steps) {
+    const d = (st as { difficulty?: unknown }).difficulty;
+    if (typeof d === 'number' && Number.isFinite(d)) difficulties.push(d);
+  }
+  if (difficulties.length === 0) return NaN;
+  const offset = SCALE_DIFFICULTY_OFFSETS[scale ?? 'regional'] ?? 0;
+  return difficulties.reduce((s, d) => s + d, 0) / difficulties.length + offset;
+}
+
 export function isInEngagementWindow(forecast: number): boolean {
   return forecast >= ENGAGE_WINDOW_LOW && forecast <= ENGAGE_WINDOW_HIGH;
 }
@@ -196,10 +217,14 @@ export function stampEngagementCommit(
   }
 }
 
-/** Count one agent decision that reached the board; `idle` when the board came back empty. */
-export function recordBoardDecision(ledger: EngagementLedger, idle: boolean): void {
+/** Count one agent decision that reached the board (the idle rate's denominator). */
+export function recordBoardDecision(ledger: EngagementLedger): void {
   ledger.boardDecisions++;
-  if (idle) ledger.idleDecisions++;
+}
+
+/** Count one of those decisions that ended on the idle path (drift / trivial local / stay). */
+export function recordIdleDecision(ledger: EngagementLedger): void {
+  ledger.idleDecisions++;
 }
 
 /** Fold a newly-resolved action in. Call once per action at the newly-resolved transition. */

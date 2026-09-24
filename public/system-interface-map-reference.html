@@ -848,6 +848,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; The gauge for the forecast window
+      <span class="lead">Added 2026-09-24 (THR-1578, the first slice of THR-1575). A measurement, not a behaviour: it records whether mortals of every skill level win their own challenges about as often, and whether the harder ones go to the more skilled.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">A mortal commits to an encounter, then it resolves <span class="arrow">&#10230;</span> The engagement gauge: success and attempted difficulty per proficiency band, plus the retry-loop and failure-streak traps (<code>resolved-actions-feed-band-kpi</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1578. The decision phase stamps what the mortal knew at commit &mdash; its capability on the template&rsquo;s primary reach, the difficulty the steps demand after the scale offset, and the planner&rsquo;s forecast &mdash; into a map on <code>SimulationRuntime</code> keyed by <code>actionId</code>. <code>UnifiedAction</code> gains no field. The orchestrator&rsquo;s newly-resolved transition folds the outcome in before the prune, the same lifetime-counter shape as the branching-fire count. <strong>The first wiring was wrong in a way no unit test could see:</strong> it keyed stamps on <code>action.id</code>, a field the action does not have, so every stamp collided on <code>undefined</code> and half the resolutions fell to band <code>unknown</code>. The heavy wiring test (stamped &gt; unknown on a real seeded world) caught it. Baseline on seeds 42/99/7 &times; 120 ticks: every covered band wins 67&ndash;75%, the in-window share is 8&ndash;15%, and attempted difficulty already rises with skill (0.03 &rarr; 0.25). The rows sit in the KPI report as <em>advisory</em> until THR-1582 makes the choice rule seek the window.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

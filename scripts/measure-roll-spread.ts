@@ -37,7 +37,7 @@ import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
 import { MONSTER_FAMILIES } from '../src/data/monster-families';
 import { FIGHT_RATING_DIFFICULTY, FIGHT_STEP_SCALE } from '../src/data/fight-constants';
-import { PROFICIENCY_BANDS, proficiencyBandFor, isSuccessFamily } from '../src/engine/kpi/engagementKpi';
+import { PROFICIENCY_BANDS, proficiencyBandFor, isSuccessFamily, demandedDifficultyOf } from '../src/engine/kpi/engagementKpi';
 import type { ProficiencyBand } from '../src/engine/kpi/engagementKpi';
 import { KPI_FLOOR_PINNED_MAX } from '../src/engine/kpi/kpiConstants';
 import type { ResolutionInputTrace } from '../src/types/trace';
@@ -170,10 +170,8 @@ function coverage(): void {
   let encounterTotal = 0;
   for (const tmpl of UNIFIED_ACTION_TEMPLATES) {
     if (!isEncounterAction(tmpl.id)) continue;
-    const steps = tmpl.steps ?? [];
-    if (steps.length === 0) continue;
-    const offset = SCALE_DIFFICULTY_OFFSETS[tmpl.scale ?? 'regional'] ?? 0;
-    const demanded = steps.reduce((s, st) => s + (st.difficulty ?? 0), 0) / steps.length + offset;
+    const demanded = demandedDifficultyOf(tmpl.steps ?? [], tmpl.scale);
+    if (!Number.isFinite(demanded)) continue;
     encounters[proficiencyBandFor(demanded)]++;
     encounterTotal++;
   }

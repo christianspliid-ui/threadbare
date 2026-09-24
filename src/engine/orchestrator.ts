@@ -3878,7 +3878,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
           // forecast) into the engagement ledger. Encounters only — an unstamped one
           // counts as band `unknown` and stays out of the level-success invariant.
           if (isEncounterAction(a.templateId)) {
-            recordEngagementResolution(runtime.engagementLedger, a.id, a.outcome, s.tick);
+            recordEngagementResolution(runtime.engagementLedger, a.actionId, a.outcome, s.tick);
           }
         }
         const stampedAction = { ...a, completedAtTick: s.tick };

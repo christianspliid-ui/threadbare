@@ -78,9 +78,8 @@ import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
-import { recordBoardDecision, stampEngagementCommit } from './kpi/engagementKpi';
+import { recordBoardDecision, recordIdleDecision, stampEngagementCommit, demandedDifficultyOf } from './kpi/engagementKpi';
 import { computeCapability } from './domainCapability';
-import { SCALE_DIFFICULTY_OFFSETS } from './resolutionScaleAdjust';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
@@ -1153,9 +1152,9 @@ export function phaseAgentDecision(
         }
       }
 
-      // THR-1578: the idle-rate gauge — one row per decision that got this far,
-      // idle when neither an encounter nor a strategic action won.
-      if (runtime) recordBoardDecision(runtime.engagementLedger, decisionFamily === 'idle');
+      // THR-1578: the idle-rate gauge's denominator — one row per decision that got
+      // this far. The numerator is counted where the mortal actually idles, below.
+      if (runtime) recordBoardDecision(runtime.engagementLedger);
 
       // ── Compulsion Check ──────────────────────────────────────────
       // Before committing, check if this agent is eligible for a Compulsion
@@ -1477,12 +1476,8 @@ export function phaseAgentDecision(
               // offset, and the planner's forecast — for the engagement gauge.
               if (runtime) {
                 try {
-                  const steps = unifiedTemplate.steps ?? [];
-                  const scaleOffset = SCALE_DIFFICULTY_OFFSETS[unifiedTemplate.scale ?? 'regional'] ?? 0;
-                  const attemptedDifficulty = steps.length > 0
-                    ? steps.reduce((sum, st) => sum + (st.difficulty ?? 0), 0) / steps.length + scaleOffset
-                    : NaN;
-                  stampEngagementCommit(runtime.engagementLedger, action.id, {
+                  const attemptedDifficulty = demandedDifficultyOf(unifiedTemplate.steps ?? [], unifiedTemplate.scale);
+                  stampEngagementCommit(runtime.engagementLedger, action.actionId, {
                     agentId,
                     templateId: unifiedTemplate.id,
                     committedTick: state.tick,
@@ -1839,6 +1834,8 @@ export function phaseAgentDecision(
           idleReason = 'below_score_threshold';
         }
 
+        // THR-1578: the idle-rate gauge's numerator.
+        if (runtime) recordIdleDecision(runtime.engagementLedger);
         const localEntries = encounterCache.getEntriesForLocation(locationId);
         const idle = resolveIdleBehavior(
           agentId,

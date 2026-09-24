@@ -200,7 +200,7 @@ function printReport(report: GameplayKpiReport, ascendant?: ReachDomain): void {
   for (const t of report.thresholds) {
     const col = statusColor(t.status);
     const mark = t.status === 'green' ? '✓' : t.status === 'red' ? '✗' : '~';
-    console.log(`      ${col}${mark}${RESET} ${t.metric.padEnd(30)} ${fix2(t.value).padStart(6)}`);
+    console.log(`      ${col}${mark}${RESET} ${t.metric.padEnd(30)} ${fix2(t.value).padStart(6)}${t.advisory ? `  ${DIM}(advisory)${RESET}` : ''}`);
   }
 }
 

@@ -4415,6 +4415,30 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/unifiedActionResolution.ts'],
     readSites: ['src/engine/fights/fightState.ts'],
   },
+  // -- Resolved engagements -> the forecast-window gauge (THR-1578, THR-1575 S1) --
+  // The decision phase stamps what a mortal knew at commit (proficiency on the
+  // primary reach, the difficulty the steps demand, the planner's forecast); the
+  // orchestrator's newly-resolved transition folds the outcome in before the prune.
+  // The stamp lives on the runtime, never on `UnifiedAction`.
+  {
+    id: 'resolved-actions-feed-band-kpi',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: DIAGNOSTICS,
+    intent:
+      'Whether mortals of every skill level win their own challenges about as often as each other, and whether the harder challenges go to the more skilled — measured, so the principle that success stays level while ambition grows cannot drift again unseen.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['stampEngagementCommit', 'recordEngagementResolution', 'recordBoardDecision', 'recordIdleDecision', 'computeEngagementKpiReport'],
+      module: 'src/engine/kpi/engagementKpi.ts',
+    },
+    writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/orchestrator.ts'],
+    readSites: ['src/engine/kpi/gameplayKpi.ts', 'scripts/gameplay-report.ts'],
+    verifiedLive: {
+      date: '2026-09-24',
+      evidence:
+        "THR-1578. Seeded worlds 42/99/7 x 120 ticks (`npm run gameplay-report`): 144-281 stamped engagements per seed folded into bands, 23-29 unstamped (band `unknown` - seeded, forced and legacy paths, deliberately outside the invariant). The first wiring keyed stamps on `action.id`, a field `UnifiedAction` does not have, so every stamp collided on `undefined` and half the resolutions read `unknown`; the heavy wiring test `src/engine/__tests__/engagementWindow.invariant.test.ts` (stamped > unknown on seed 42 x 30) caught it and passes on `actionId`. Arithmetic pinned by `src/engine/kpi/__tests__/engagementKpi.test.ts`.",
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

@@ -1087,6 +1087,9 @@ Pure telemetry layer: KPI report + eligibility funnel counters + debug surfaces.
 | KPI tab component | `src/components/Game/debug/KpiDebugTab.tsx` | On-demand compute via `__DEBUG.getKpiReport()`. Refresh button. |
 | Batch script | `scripts/gameplay-report.ts` | `npm run gameplay-report` — esbuild-bundled; seeds/ticks/map flags; outputs JSON to `Docs/playtests/kpi/`. |
 | Tests | `src/testing/__tests__/gameplayKpi.test.ts`, `eligibilityFunnel.test.ts` | 10 + 7 = 17 tests. |
+| Engagement gauge (THR-1578) | `src/engine/kpi/engagementKpi.ts` | `EngagementLedger` on `SimulationRuntime.engagementLedger`. Stamped by `phaseAgentDecision` at commit (`stampEngagementCommit`, keyed by `actionId`; `recordBoardDecision` / `recordIdleDecision`), folded by `orchestrator.ts` at the newly-resolved transition (`recordEngagementResolution`). Read by `computeGameplayKpiReport().engagement` → `gameplay-report`, CLI `kpi`, `window.__DEBUG.getKpiReport()`. |
+| Roll-spread gauge (THR-1578) | `scripts/measure-roll-spread.ts` | `npm run measure:roll-spread` — harvests `resolution.input` (with `reach`) over seeded worlds; P histogram, floor-pinned share, spreads, content coverage per band. |
+| Tests (THR-1578) | `src/engine/kpi/__tests__/engagementKpi.test.ts`, `src/engine/__tests__/engagementWindow.invariant.test.ts` (heavy) | Gauge arithmetic; real-world wiring; the level-success invariant (skipped until THR-1582). |
 
 ---
 
