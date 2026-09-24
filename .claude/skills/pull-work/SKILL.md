@@ -429,7 +429,7 @@ git for-each-ref --format='%(refname:short) %(committerdate:relative)' "refs/hea
 git worktree list --porcelain | awk '/^worktree /{w=substr($0,10)} /^branch /{print w "\t" $2}' \
   | while IFS="$(printf '\t')" read -r wt br; do
       n=$(git -C "$wt" status --porcelain 2>/dev/null \
-          | grep -vE ' \.claude/settings\.local\.json$| \.codesight/' | wc -l)
+          | grep -Ev ' \.claude/settings\.local\.json$| \.codesight/' | wc -l)
       [ "$n" -gt 0 ] && printf '%s\t%s\t%s changed\n' "$wt" "${br#refs/heads/}" "$n"
     done | sort -t"$(printf '\t')" -k3 -rn | head -20
 ```
