@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 18:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 19:57 local (17:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -54,6 +54,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — every lair beast now has a fighting card and a temper** ([THR-1544](https://linear.app/threadbare/issue/THR-1544/monsters-m1-the-monster-card), monsters M1). Merged 19:40 local via [#2017](https://github.com/christianspliid-ui/threadbare/pull/2017), and live on the site. Not a review ask yet: duels are still to come.
 - **2026-09-24 — war news now reaches the chronicle in normal play** ([THR-1564](https://linear.app/threadbare/issue/THR-1564/war-news-never-reaches-the-player-in-normal-play-armies-battles-and)), not only when the debug panel is open. Merged 18:34 local via [#2016](https://github.com/christianspliid-ui/threadbare/pull/2016), and live on the site.
 - **2026-09-24 — the fight block is finished: the first playable fight, a monster in its lair** ([THR-1543](https://linear.app/threadbare/issue/THR-1543/fight-block-fb7-the-block-the-template-advantages-allies-events), FB7). Merged 18:13 local via [#2015](https://github.com/christianspliid-ui/threadbare/pull/2015). Not a review ask yet: the monster card and duels are still to come.
 - **2026-09-24 — skill floors on ambitions, milestones and spells now actually gate** ([THR-1562](https://linear.app/threadbare/issue/THR-1562/ambition-reach-floors-and-reach-milestones-compare-raw-capability-10), reach on one scale). Before, every mortal qualified for everything. Merged 16:22 local via [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013), and live on the site.
@@ -63,7 +64,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — mid-fight, a fighter now decides whether to yield or fight on** ([THR-1540](https://linear.app/threadbare/issue/THR-1540/fight-block-fb4-the-forks), fight block FB4). Merged 11:34 local via [#2008](https://github.com/christianspliid-ui/threadbare/pull/2008), and live on the site.
 - **2026-09-24 — builders nobody is watching now step back, and the spotlight follows who is building** ([THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), your morning design). Merged 10:43 local via [#2007](https://github.com/christianspliid-ui/threadbare/pull/2007), and live on the site.
 - **2026-09-24 — your three morning designs are handed to the builder**: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). The plans merged via [#2002](https://github.com/christianspliid-ui/threadbare/pull/2002), [#2003](https://github.com/christianspliid-ui/threadbare/pull/2003) and [#2004](https://github.com/christianspliid-ui/threadbare/pull/2004).
-- **2026-09-24 — fights now deal harm, conditions and momentum** ([THR-1539](https://linear.app/threadbare/issue/THR-1539/fight-block-fb3-harm-conditions-momentum), fight block FB3). Merged 09:33 local via [#2006](https://github.com/christianspliid-ui/threadbare/pull/2006), and live on the site.
 
 ---
 
