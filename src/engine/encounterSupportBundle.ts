@@ -18,6 +18,8 @@ import {
   type BindingIndex,
 } from './binding/bindingRegistry';
 import type { RoleCensus } from './binding/roleCensus';
+import { isAgentGone } from './groups/groupQueries';
+import { isMonster } from './monsters/isMonster';
 
 const PERMANENT_SUBLOCATION_PERSISTENCE: SublocationPersistence = { type: 'permanent' };
 
@@ -157,11 +159,24 @@ function findExistingActorSupport(
   placementId: string,
   spec: EncounterSupportActorSpec,
 ): string | null {
+  // THR-1545: the dead are never cast. A retained death keeps its `located_at` edge
+  // ("Edges are left standing", `agentLifecycle.ts`), so without this filter a band
+  // casualty could be cast as a scene's guard, and a felled monster's body would bind
+  // as the beast a hunt goes to fight. `isAgentGone` is the dual test the seed
+  // inheritance drop uses, so both sides of a scene agree on who is dead.
   const candidates = getAllActorsAtLocation(state.graph, placementId)
-    .filter(node => node.properties.actorType === 'individual');
+    .filter(node => node.properties.actorType === 'individual' && !isAgentGone(node));
+
+  // THR-1545: a property match names the one creature the scene is about, and it
+  // wins before any role match. It never falls through to the role branches: a spec
+  // that asked for the lair's beast must not settle for whoever holds a role.
+  if (spec.matchProperty) {
+    const { key, value } = spec.matchProperty;
+    return candidates.find(node => node.properties[key] === value)?.id ?? null;
+  }
 
   const supportMatch = candidates.find(
-    node => node.properties.encounterSupportRole === spec.supportRole,
+    node => !isMonster(node) && node.properties.encounterSupportRole === spec.supportRole,
   );
   if (supportMatch) return supportMatch.id;
 
@@ -169,6 +184,8 @@ function findExistingActorSupport(
   if (reusableRoles.size === 0) return null;
 
   const roleMatch = candidates.find(node => {
+    // THR-1545: the role branches cast people, never a lair's monster.
+    if (isMonster(node)) return false;
     if (node.properties.encounterSupportRole !== undefined) return false;
     const npcRole = node.properties.npcRole as string | undefined;
     return npcRole !== undefined && reusableRoles.has(npcRole);
@@ -317,6 +334,11 @@ function resolveActorSupport(
       reused: true,
     };
   }
+
+  // THR-1545: a property-matched spec is never materialized. The cast system does
+  // not mint a monster (`createNamedElite` owns creation); an unmatched key stays
+  // unbound, and the fight that names it ends `no_opponent`.
+  if (spec.matchProperty) return null;
 
   if (spec.delivery !== 'lazy-materialize-on-trigger' && !(options.allowMaterializePreseeded && spec.delivery === 'pre-seeded')) {
     return null;
@@ -613,7 +635,10 @@ function prepareEncounterSupportBundleInternal(
     if (spec.delivery === 'blocked-primitive') continue;
     if (spec.kind !== 'actor') continue;
     let binding: EncounterSupportBinding | null = null;
-    if (useBinder) {
+    // THR-1545: a `matchProperty` spec is the one shape the scored binder cannot
+    // answer — it reads no property match, and its `unresolved` is honoured, so it
+    // would refuse the beast. Such a spec always takes the legacy route.
+    if (useBinder && !spec.matchProperty) {
       const routed = resolveActorSupportViaBinder(
         state, template.id, anchorLocationId, bindings, spec, options.binder!, options,
       );

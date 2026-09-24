@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 119 |
+| 🟢 LIVE | 120 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 29 |
-| **Total** | **156** |
+| **Total** | **157** |
 
 ## Contracts by producing subsystem
 
@@ -234,6 +234,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `lair-monster-gates-the-hunt` | A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part. | node-prop: `namedEliteId`, `liveLairMonsterAt`, `requiresLiveMonster`, `matchProperty` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Secrets & Favors
 
@@ -1002,10 +1003,10 @@ exit
 - **Intent:** An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive.
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **Module:** `src/engine/encounterSupportBundle.ts`
-- **Production hits:** 10 total — 5 write, 2 read, 3 unclassified
+- **Production hits:** 11 total — 5 write, 2 read, 4 unclassified
 - **Write sites:** `src/data/encounters/one-body-short.ts`, `src/engine/binding/encounterBinderContext.ts`, `src/engine/debugEncounterTools.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/phaseAgentDecision.ts`
 - **Read sites:** `src/engine/binding/applyBinding.ts`, `src/engine/binding/binder.ts`
-- **Other hits:** `src/data/default-support-bundles.ts`, `src/engine/binding/undertakingBindPass.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/data/default-support-bundles.ts`, `src/engine/binding/undertakingBindPass.ts`, `src/types/encounter.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-08-27: THR-1305. Slice 6 left this row UNVERIFIED-OK on measurement rather than caution — 120 ticks at seed 42/medium produced 91 encounter actions across 52 templates and zero firings of the exemplar, so no live run had travelled the route. It is now travelled, and the thing that made the proof cheap is the fix itself: the review levers were wired to the same board. `?spawn=`, `?forceencounters` and the CLI `spawn encounter` supplied no `EncounterBinderContext`, so a migrated template was cast by the legacy first-role-match resolver and wrote no ledger row — content review of a migrated encounter reviewed a different casting than players get. Live proof, CLI seed 42/medium: `tick 30` then `spawn encounter @hero encounter.border.one_body_short` leaves `state.strategicState.bindings` holding `{projectId:'enc_encounter.border.one_body_short_asc.archetype.chaos_0', castKey:'survivor', persistence:'must-persist', boundRole:'mercenary', boundAtTick:30, status:'live'}`. Control arm in the same harness: the un-migrated `cg.quest.gate_duty` writes zero `enc_*` rows, so the opt-in gate still holds live and the row is not evidence that every template now ledgers. The assembly rule (a context is built only when BOTH a runtime and `strategicState` exist, else the legacy path) moved into `binding/encounterBinderContext.ts` so the four call sites share one copy; `getBindings` tolerates an absent strategic state by returning `[]`, so an assembler skipping that check would write rows to an unowned array and report a successful bind. Non-vacuous by `src/engine/binding/__tests__/debugToolsBinderWiring.test.ts` (7 tests, both entry points, both fallback arms) — falsified in two controlled arms: with the binder not threaded, 2-of-7 red; with the caller's agent *query* stamped as `actorId` instead of the resolved node id, 1-of-7 red because `binder.ts`'s self-exclusion (`node.id === request.actorId`) stops matching and the agent is cast as their own fellow survivor. The 8 golden opt-in tests are unchanged and green, so the un-migrated corpus is untouched.
 
 ### `encounter-seed-resolves-by-query` — 🟢 LIVE
@@ -1119,10 +1120,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Result*
 - **Module:** `src/engine/fights/fightState.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/fights/fightState.ts`
 - **Read sites:** `src/engine/fights/fightOutcome.ts`
-- **Other hits:** `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fights/fightBlock.ts`, `src/testing/contentInvariants.ts`
+- **Other hits:** `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fights/fightBlock.ts`, `src/data/monster-encounter-content.ts`, `src/testing/contentInvariants.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-spends-favour-and-secret` — 🔵 UNVERIFIED-OK
@@ -1143,10 +1144,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 23 total — 1 write, 1 read, 21 unclassified
+- **Production hits:** 24 total — 1 write, 1 read, 22 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/debug-bridge.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts` +16 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/debug-bridge.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts` +17 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
@@ -1306,11 +1307,23 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Encounters & Dilemmas
 - **UL terms:** *Opponent Card*, *Temper*
 - **Module:** `src/engine/monsters/monsterCard.ts`
-- **Production hits:** 19 total — 2 write, 2 read, 15 unclassified
+- **Production hits:** 20 total — 2 write, 2 read, 16 unclassified
 - **Write sites:** `src/engine/lairEscalation.ts`, `src/engine/monsters/monsterCard.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`, `src/engine/monsters/listMonsters.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/debug-bridge.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/fights/fightClock.ts` +10 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/debug-bridge.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/fights/fightClock.ts` +11 more
 - **Verdict:** Verified 2026-09-24: THR-1544 M1. Seed 42 medium, 120 ticks, CLI `monsters`: 14 monsters listed, every one carrying a card (14/14) — blight, stormkin, behemoth and golem families, all legendary by then, so every card also shows the hardening (clock 5, Dread one word up). Non-vacuous by `src/engine/monsters/__tests__/monsterCard.test.ts`: each of the eight families is minted and then read back through `readOpponentCard` with `source: 'monsterState'` and the family's temper from the `trait.temper.*` edge; the real `phaseLairEscalation` both mints and hardens; a foundation-sphere lair falls back to the Force family; a graph with no temper definitions mints the card and skips the edge.
+
+### `lair-monster-gates-the-hunt` — 🟢 LIVE
+
+- **Intent:** A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part.
+- **Producer → Consumer:** Ruins, Clues & Delves → Encounters & Dilemmas
+- **UL terms:** *Opponent Card*
+- **Module:** `src/engine/monsters/liveMonster.ts`
+- **Production hits:** 12 total — 1 write, 4 read, 7 unclassified
+- **Write sites:** `src/engine/lairEscalation.ts`
+- **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/monsters/liveMonster.ts`, `src/engine/unifiedCandidates.ts`
+- **Other hits:** `src/components/Game/HexSidebar.tsx`, `src/data/monster-encounter-content.ts`, `src/engine/lairClearing.ts`, `src/engine/monsters/monsterCard.ts`, `src/types/encounter.ts` +2 more
+- **Verdict:** Verified 2026-09-25: THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.
 
 ### `location-condition-taxes-movement-and-gates-templates` — 🔵 UNVERIFIED-OK
 
@@ -1421,10 +1434,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 31 total — 4 write, 3 read, 24 unclassified
+- **Production hits:** 32 total — 4 write, 3 read, 25 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +19 more
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts`, `src/engine/binding/roleCensus.ts`, `src/engine/binding/undertakingBindPass.ts` +20 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -1561,10 +1574,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 302 total — 1 write, 1 read, 300 unclassified
+- **Production hits:** 303 total — 1 write, 1 read, 301 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +295 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +296 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1677,10 +1690,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 106 total — 1 write, 1 read, 104 unclassified
+- **Production hits:** 107 total — 1 write, 1 read, 105 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +99 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +100 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE

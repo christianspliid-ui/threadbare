@@ -26,9 +26,12 @@
  * NFP #1: All difficulty values are named constants (Tunability).
  */
 
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ActionStep, AftermathVariant, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { FightResult } from '../types/fight';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import { FIGHT_LAIR_CONFRONT } from './encounters/fight-lair-confront';
+import { fightBlock, fightResultIndex } from './fights/fightBlock';
+import { FIGHT_RESULT_CHOICE_PREFIX } from './fight-constants';
 
 // ─── Tunable Constants ──────────────────────────────────────────────────────
 
@@ -40,12 +43,6 @@ const MINOR_HUNT_DRIVE_DIFFICULTY = 0.35;
 
 /** Approach step for named elite — careful reconnaissance against dangerous prey. */
 const ELITE_HUNT_APPROACH_DIFFICULTY = 0.45;
-
-/** Confrontation step for named elite — sustained combat with a legendary creature. */
-const ELITE_HUNT_CONFRONTATION_DIFFICULTY = 0.60;
-
-/** Final reckoning for named elite — climax against a wounded beast at full fury. */
-const ELITE_HUNT_RECKONING_DIFFICULTY = 0.75;
 
 /** Sense step for wilderness ambush — perception under pressure. */
 const AMBUSH_SENSE_DIFFICULTY = 0.35;
@@ -86,6 +83,237 @@ const HORDE_RAID_DEVASTATION_PROSPERITY_HIT = -25;
 
 /** Defense rating reduction on a lair after defenders are driven through. */
 const LAIR_DEFENSE_DEFENSE_REDUCTION = -10;
+
+// ─── monster.hunt.named_elite (THR-1545) ────────────────────────────────────
+//
+// The hunt for a major lair's named monster (monsters plan doc § Encounter
+// templates). One tracking step, then a fight block against the cast `beast`:
+//
+//   - `beast` binds the living monster standing in the lair by `matchProperty`
+//     (`isMonsterElite`). It is never materialized. Unbound — the beast died between
+//     the draw and the bind — the fight ends `broke_off` / `no_opponent` at its first
+//     fight step, and never falls back to the action's target (the lair).
+//   - `requiresLiveMonster` keeps the draw (and the Adventurers' Guild's offer) to a
+//     lair whose beast still lives.
+//   - The aftermath keys on the fight's result memory. The return seed
+//     (`named_elite_creature_returns`) is planted only where the beast lived, and
+//     carries the lair target and the `beast` binding (`inheritContext`), so the
+//     sequel fights the same creature — or ends `opponent_gone` if it has died since.
+//
+// A declared cast key always resolves in prose (bound name, else `spawnName`), so
+// `{?has_cast:beast}` cannot tell a bound beast from an unbound one. `spawnName` is
+// the real fallback: an unbound hunt reads "the beast", which is still true.
+
+/** The cast key naming the hunted monster. */
+const ELITE_HUNT_BEAST_KEY = 'beast';
+
+const ELITE_HUNT_FIGHT_STEPS = fightBlock({
+  opponentRef: ELITE_HUNT_BEAST_KEY,
+  deal: { count: 4, tags: ['might', 'peril'] },
+  nerve: {
+    narrativeTemplate:
+      '{cast:beast} does not roar at first. ' +
+      'It looks at {name} the way an old dog looks at a familiar guest, and then it does roar. ' +
+      '{?has_artifact}{name} raises {artifact:weapon}.{/has_artifact}' +
+      '{?no_artifact}{name} has only what {they} brought.{/no_artifact}',
+    purposeLine: 'Stand your ground',
+  },
+  clashes: [
+    { narrativeTemplate: '{cast:beast} comes at {name} across the cavern floor.', purposeLine: 'Land a blow' },
+    { narrativeTemplate: '{name} and {cast:beast} are both bleeding. Neither slows down.', purposeLine: 'Land a blow' },
+    { narrativeTemplate: 'The cavern is small. Either {name} or {cast:beast} will not walk out of it.', purposeLine: 'Land a blow' },
+  ],
+});
+
+const ELITE_HUNT_STEPS: ActionStep[] = [
+  {
+    reach: 'eye',
+    duration: { min: 2, max: 2 },
+    difficulty: ELITE_HUNT_APPROACH_DIFFICULTY,
+    failBehavior: 'continue_weakened',
+    onSuccess: [],
+    onFailure: [],
+    narrativeTemplate:
+      'The creature in the lair near {location} has a name: {cast:beast}. ' +
+      'Hunters have come for it before. {name} has heard at least four of their names. ' +
+      '{?has_ally}{ally:strongest} is waiting to hear how this ends.{/has_ally}' +
+      '{?no_ally}No one came with {them}. If this goes badly, only the beast will know how.{/no_ally}',
+    successAfterimage:
+      '{name} finds the chamber where {cast:beast} sleeps, and comes at it from the right side.',
+    failureAfterimage:
+      '{name} reaches the inner chamber at the wrong angle, and {cast:beast} is already awake.',
+  },
+  ...ELITE_HUNT_FIGHT_STEPS,
+];
+
+/** One line per fight result, keyed on the fight's result memory. */
+const ELITE_HUNT_RESULT_LINES: Readonly<Record<FightResult, string>> = {
+  overcome: '{cast:beast} is dead. {name}\'s name will be sung beside it.',
+  driven_off: '{cast:beast} fled deeper into the lair, carrying {name}\'s marks.',
+  bargained: '{name} and {cast:beast} came to terms in the dark. Neither will say what was agreed.',
+  broke_off: 'The hunt ended without a victor. {cast:beast} still holds its lair.',
+  yielded: '{name} gave ground and backed out of the lair. {cast:beast} let {them} go.',
+  routed: '{name} broke and ran from {cast:beast}.',
+  struck_down: '{cast:beast} struck {name} down in its lair.',
+};
+
+const ELITE_HUNT_CHANGES: AftermathVariant['changes'] = [
+  {
+    id: 'named_elite_legend_shift',
+    kind: 'reputation',
+    title: 'A Legend Engaged',
+    detail: 'A named creature has been hunted. Whatever happened in the cavern will be told.',
+    polarity: 'mixed',
+  },
+];
+
+const ELITE_HUNT_REACTION_PROMPT = 'What does the god take from this confrontation?';
+
+const ELITE_HUNT_REACTIONS: NonNullable<AftermathVariant['reactions']> = [
+  {
+    id: 'named_elite_witness_mark',
+    label: '{name} stood eye-to-eye with the named thing.',
+    intent:
+      'There is a kind of looking that imprints itself on a person. ' +
+      '{name} did not look away. That is a thing the world will register, and not all the registrations are comfortable.',
+    effects: [
+      {
+        kind: 'hidden_mark',
+        category: 'secret_knowledge',
+        severity: 0.55,
+        label: 'Met the named beast and held the gaze',
+        revealFamilies: ['monster.hunt', 'monster.encounter', 'tavern', 'court'],
+      },
+    ],
+    closeAfterSelection: true,
+  },
+  {
+    id: 'named_elite_creature_lore',
+    label: 'The beast taught what it could not help teaching.',
+    intent:
+      'Three minutes of close combat with a thing of that age is more knowledge than most chroniclers ' +
+      'collect in a lifetime. {name} carries it out of the cavern like a wound that knows things.',
+    effects: [
+      {
+        kind: 'intelligence',
+        category: 'cultural_knowledge',
+        label: 'Lore of a named elite predator',
+        detail:
+          'The way the beast moved at full commitment, the cadences of its breath, ' +
+          'the precise sphere-tinted resonance of its roar. Useful against legends of its kind, ' +
+          'devastatingly useful against this individual if it surfaces again.',
+        reliability: 0.92,
+      },
+    ],
+    closeAfterSelection: true,
+  },
+  {
+    id: 'named_elite_legend_grows',
+    label: 'The story will not stay the size it is now.',
+    intent:
+      'A named beast confronted is a story that wants to keep growing. Tavern-singers will inflate it; ' +
+      'rivals will resent it; older creatures of the same species will hear about the body and consider their own affairs. ' +
+      'The god lets the rumour run.',
+    effects: [
+      {
+        kind: 'encounter_seed',
+        encounterFamily: 'tavern',
+        delayTicks: 18,
+        priority: 0.9,
+        seedLabel: 'Tavern songs about {name} and the named beast have started traveling',
+      },
+    ],
+    closeAfterSelection: true,
+  },
+];
+
+/**
+ * The return seed — planted only by the results that leave the beast alive. It
+ * carries the lair target and the `beast` binding (`inheritContext`), so the sequel
+ * hunts the same creature: a beast that died before the seed spawns arrives unbound
+ * (`no_opponent`), one that dies after the spawn ends the fight `opponent_gone`.
+ */
+const ELITE_HUNT_RETURN_REACTION: NonNullable<AftermathVariant['reactions']>[number] = {
+  id: 'named_elite_creature_returns',
+  label: 'The beast lived. It remembers the face.',
+  intent:
+    'This is not the end of the story; it is the start of a different one. ' +
+    'Wounded, ancient, marked by one mortal in particular, the beast becomes a hunter in its turn.',
+  effects: [
+    {
+      kind: 'encounter_seed',
+      templateId: 'monster.hunt.named_elite',
+      delayTicks: 35,
+      priority: 1.1,
+      inheritContext: true,
+      seedLabel: 'The named beast has been seen again, and the wounds {name} gave it have not healed clean',
+    },
+  ],
+  closeAfterSelection: true,
+};
+
+/** A result that leaves the beast alive plants the return seed; `overcome` does not. */
+function eliteHuntVariant(result: FightResult): AftermathVariant {
+  return {
+    overview: ELITE_HUNT_RESULT_LINES[result],
+    changes: ELITE_HUNT_CHANGES,
+    reactionPrompt: ELITE_HUNT_REACTION_PROMPT,
+    reactions: result === 'overcome'
+      ? ELITE_HUNT_REACTIONS
+      : [...ELITE_HUNT_REACTIONS, ELITE_HUNT_RETURN_REACTION],
+  };
+}
+
+export const MONSTER_HUNT_NAMED_ELITE: UnifiedActionTemplate = {
+  id: 'monster.hunt.named_elite',
+  name: 'The Named Beast',
+  rarityTier: 3,
+  intrinsicTier: 'story_beat',
+  reach: 'iron',
+  crudType: 'delete',
+  scale: 'local',
+  locationSubtypes: ['lair'],
+  apCost: 1,
+  actorAffinities: ['individual'],
+  sphereAffinity: 'force',
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
+  requiresLiveMonster: true,
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: ELITE_HUNT_BEAST_KEY,
+      // Bound, never made: the lair's monster already exists, or there is no hunt.
+      delivery: 'pre-seeded',
+      persistence: 'scene-only',
+      supportRole: 'beast',
+      spawnNpcRole: 'beast',
+      spawnName: 'the beast',
+      matchProperty: { key: 'isMonsterElite', value: true },
+    },
+  ],
+  steps: ELITE_HUNT_STEPS,
+  narrativeTemplates: {
+    initiation: '{name} hunts {cast:beast} at its lair near {location}.',
+    success: '{name} came back from the lair of {cast:beast}.',
+    failure: '{name} came back from the lair of {cast:beast} beaten.',
+  },
+  aftermathConfig: {
+    branchOnStep: fightResultIndex(ELITE_HUNT_STEPS),
+    variants: Object.fromEntries(
+      (Object.keys(ELITE_HUNT_RESULT_LINES) as FightResult[]).map(
+        (result) => [`${FIGHT_RESULT_CHOICE_PREFIX}${result}`, eliteHuntVariant(result)],
+      ),
+    ),
+    // No fight result: the tracking step went badly enough to end the hunt before the
+    // fight began. The beast lives, so this ending plants the return seed too.
+    fallback: {
+      overview: '{name} never reached {cast:beast}. It still holds its lair.',
+      changes: ELITE_HUNT_CHANGES,
+      reactionPrompt: ELITE_HUNT_REACTION_PROMPT,
+      reactions: [...ELITE_HUNT_REACTIONS, ELITE_HUNT_RETURN_REACTION],
+    },
+  },
+};
 
 // ─── Templates ──────────────────────────────────────────────────────────────
 
@@ -250,199 +478,9 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   },
 
   // ── monster.hunt.named_elite ───────────────────────────────────────────────
-  {
-    id: 'monster.hunt.named_elite',
-    name: 'The Named Beast',
-    rarityTier: 3,
-    intrinsicTier: 'story_beat',
-    reach: 'iron',
-    crudType: 'delete',
-    scale: 'local',
-    locationSubtypes: ['lair'],
-    apCost: 1,
-    actorAffinities: ['individual'],
-    sphereAffinity: 'force',
-    motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
-    steps: [
-      {
-        reach: 'eye',
-        duration: { min: 2, max: 2 },
-        difficulty: ELITE_HUNT_APPROACH_DIFFICULTY,
-        failBehavior: 'continue_weakened',
-        onSuccess: [],
-        onFailure: [],
-        narrativeTemplate:
-          'The creature has a name. That is the first thing about it — ' +
-          'longer than {name}, older than any house in {location}, repeated in lullabies the way other places repeat saints. ' +
-          'Hunters have come for it before. {name} has heard at least four of those names; ' +
-          'the rest are not remembered, which is its own kind of warning. ' +
-          '{?has_ally}Somewhere on the road home, {ally:strongest} is waiting to hear which name gets added to the song. ' +
-          'That thought is not a comfort, but it is a weight, and weight is useful at this distance.{/has_ally}' +
-          '{?no_ally}No witness. If this goes badly, the only person who will know how it went is the beast.{/no_ally}',
-        successAfterimage:
-          '{name} finds the resting chamber — the place where this thing has slept for so long that ' +
-          'the rock is worn into the shape of it. The angle is good. The light, when it comes, will be on the right side.',
-        failureAfterimage:
-          'The lair is more cunning than the creature inside it. ' +
-          '{name} arrives at the inner chamber with the wrong angle, the wrong breath, the wrong second.',
-      },
-      {
-        reach: 'iron',
-        duration: { min: 3, max: 3 },
-        difficulty: ELITE_HUNT_CONFRONTATION_DIFFICULTY,
-        failBehavior: 'continue_weakened',
-        onSuccess: [],
-        onFailure: [],
-        narrativeTemplate:
-          'The named beast does not roar at first. ' +
-          'It looks at {name} the way an old dog looks at a familiar guest — recognition, almost — ' +
-          'and then it does roar, and the sound is a thing {name} will hear in dreams for a long time. ' +
-          '{?has_artifact}{artifact:weapon} sings against the cavern wall as {name} sets {their} guard. ' +
-          'There is a reason famous weapons end up in the hands of people who are about to need them.{/has_artifact}' +
-          '{?no_artifact}{name} has only what {they} brought. {They} chose to come anyway. ' +
-          'That choice is part of the fight now.{/no_artifact}',
-        successAfterimage:
-          '{name} reads the openings as they come — not all at once, but in the order of small concessions ' +
-          'that compound. The beast\'s body no longer holds itself the way it did at the start. The next minute will decide the next decade.',
-        failureAfterimage:
-          'The creature is bigger inside the cavern than its tracks made it look. ' +
-          '{name} is driven against the rock and feels the shape of {their} own end touch {their} ribs. ' +
-          'The beast does not press the kill — it has all the time in the world.',
-      },
-      {
-        reach: 'iron',
-        duration: { min: 2, max: 2 },
-        difficulty: ELITE_HUNT_RECKONING_DIFFICULTY,
-        failBehavior: 'fail_action',
-        onSuccess: [],
-        onFailure: [],
-        successMetadata: {
-          rewardPool: {
-            categoryWeights: { bestowed_power: 0.45, possession: 0.30, condition: 0.25 },
-            tagFilters: ['#beast'],
-          },
-          tierPromotionEligible: true,
-          reputationDelta: 0.18,
-        },
-        failureMetadata: {
-          rewardPool: {
-            categoryWeights: { condition: 0.65, possession: 0.35 },
-            tagFilters: ['#beast'],
-          },
-          reputationDelta: -0.06,
-        },
-        narrativeTemplate:
-          'Cornered, the creature changes shape — not literally, but in the way it holds itself. ' +
-          'This is what it was made for, this last minute, and it has been saving the worst of itself for it. ' +
-          '{name} has been saving things too. The cavern is small enough that one of them will not come back out.',
-        successAfterimage:
-          'The named beast is dead. The silence that follows is louder than the fight was. ' +
-          '{name} stands among bones older than any kingdom, holding a weapon that is now famous in a different way.',
-        failureAfterimage:
-          'The beast slips deeper into the lair through a fissure {name} did not know about. ' +
-          'It is wounded; it is also ancient, and an ancient wounded thing is the most dangerous version of itself.',
-      },
-    ],
-    narrativeTemplates: {
-      initiation: '{name} hunts the named beast at its ancestral lair near {location}.',
-      success: 'The named beast is dead. {name}\'s name is now spoken in the same breath.',
-      failure: 'The beast withdrew into the deep lair. It will be larger when {name} returns, and angrier.',
-    },
-    aftermathConfig: {
-      branchOnStep: 0,
-      variants: {},
-      fallback: {
-        overview:
-          'A named creature has been moved against. ' +
-          'Either the song that mentions it gains a verse, or the song that mentions {name} loses one — ' +
-          'and either ending propagates outward in ways that don\'t care whether {name} wanted to be a legend.',
-        changes: [
-          {
-            id: 'named_elite_legend_shift',
-            kind: 'reputation',
-            title: 'A Legend Engaged',
-            detail: 'A named creature has been hunted. Whatever happened in the cavern will be told.',
-            polarity: 'mixed',
-          },
-        ],
-        reactionPrompt: 'What does the god take from this confrontation?',
-        reactions: [
-          {
-            id: 'named_elite_witness_mark',
-            label: '{name} stood eye-to-eye with the named thing.',
-            intent:
-              'There is a kind of looking that imprints itself on a person. ' +
-              '{name} did not look away. That is a thing the world will register, and not all the registrations are comfortable.',
-            effects: [
-              {
-                kind: 'hidden_mark',
-                category: 'secret_knowledge',
-                severity: 0.55,
-                label: 'Met the named beast and held the gaze',
-                revealFamilies: ['monster.hunt', 'monster.encounter', 'tavern', 'court'],
-              },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'named_elite_creature_lore',
-            label: 'The beast taught what it could not help teaching.',
-            intent:
-              'Three minutes of close combat with a thing of that age is more knowledge than most chroniclers ' +
-              'collect in a lifetime. {name} carries it out of the cavern like a wound that knows things.',
-            effects: [
-              {
-                kind: 'intelligence',
-                category: 'cultural_knowledge',
-                label: 'Lore of a named elite predator',
-                detail:
-                  'The way the beast moved at full commitment, the cadences of its breath, ' +
-                  'the precise sphere-tinted resonance of its roar. Useful against legends of its kind, ' +
-                  'devastatingly useful against this individual if it surfaces again.',
-                reliability: 0.92,
-              },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'named_elite_legend_grows',
-            label: 'The story will not stay the size it is now.',
-            intent:
-              'A named beast confronted is a story that wants to keep growing. Tavern-singers will inflate it; ' +
-              'rivals will resent it; older creatures of the same species will hear about the body and consider their own affairs. ' +
-              'The god lets the rumour run.',
-            effects: [
-              {
-                kind: 'encounter_seed',
-                encounterFamily: 'tavern',
-                delayTicks: 18,
-                priority: 0.9,
-                seedLabel: 'Tavern songs about {name} and the named beast have started traveling',
-              },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'named_elite_creature_returns',
-            label: 'If the beast lived, it remembers the face.',
-            intent:
-              'Failure here is not the end of the story; it is the start of a different story. ' +
-              'Wounded, ancient, marked by one human in particular, the beast becomes a hunter in its turn.',
-            effects: [
-              {
-                kind: 'encounter_seed',
-                templateId: 'monster.hunt.named_elite',
-                delayTicks: 35,
-                priority: 1.1,
-                seedLabel: 'The named beast has been seen again, and the wounds {name} gave it have not healed clean',
-              },
-            ],
-            closeAfterSelection: true,
-          },
-        ],
-      },
-    },
-  },
+  // THR-1545 (monsters plan doc §4): the hunt's climax is a fight against the lair's
+  // own monster, cast as `beast` by `matchProperty` and drawn only where it lives.
+  MONSTER_HUNT_NAMED_ELITE,
 
   // ── monster.encounter.ambush ───────────────────────────────────────────────
   {

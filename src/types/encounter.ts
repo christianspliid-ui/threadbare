@@ -224,6 +224,17 @@ export interface EncounterSupportActorSpec {
   readonly preferredLocationKey?: string;
   /** Faction definition ID for faction membership on spawn. */
   readonly factionDefId?: string;
+  /**
+   * Bind the living actor at the placement whose property `key` equals `value`
+   * (THR-1545, monsters plan doc §4) — how a scene casts a creature the world already
+   * has, such as a lair's monster (`{ key: 'isMonsterElite', value: true }`).
+   *
+   * Checked before role matching. A spec carrying it **never materializes**: the cast
+   * system does not mint what it could not find, and an unmatched key stays unbound.
+   * It always takes the legacy route, even on a `useScoredBinder` template, because
+   * the scored binder reads no property match.
+   */
+  readonly matchProperty?: { readonly key: string; readonly value: unknown };
 }
 
 /** Location support spec — defines a sublocation to bind or materialize for an encounter. */
