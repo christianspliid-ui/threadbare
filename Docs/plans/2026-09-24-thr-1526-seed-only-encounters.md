@@ -167,15 +167,15 @@ Checked against `Docs/plans/wiring-checklist.md`: every module below names its o
 | `isDeliverableBranchingEncounter` | module load (`ALL_DELIVERY_BEATS`) | Director beat surfaces | — | none new | `debug-bridge` delivery-beat listing (`:784-802`) |
 | `scripts/firing-census.ts` (new) | offline (CLI harness) | — | reads each tick's new unified actions | — | the census report |
 
-**Prose pipeline:** the one authored opening binds through the existing setting-envelope path (`proseEnrichment.ts`). **Player controls:** none.
+**Prose pipeline:** the one authored opening binds through the existing setting-envelope path (the openings compile, `src/data/settingClasses.ts:141-170`). **Player controls:** none.
 
 ## Constants table
 
-No tunable numbers. The flag is a declared property of a template, not a threshold (NFP #1 N/A).
+N/A — no tunable numbers. The flag is a declared property of a template, not a threshold (NFP #1).
 
 ## Tracing
 
-No new trace type. The flag is authored data, visible on the template, and the effect is a cache membership the DebugPanel already lists. NFP #2 is met by:
+N/A — no new trace type. The flag is authored data, visible on the template, and the effect is a cache membership the DebugPanel already lists. NFP #2 is met by:
 - the field itself;
 - the corpus tests naming every non-drawable template;
 - the firing census, which attributes every firing to a seed or to the board.
