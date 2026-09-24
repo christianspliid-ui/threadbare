@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-09-11
+last_validated_against: 2026-09-23
 ---
 
 # Keep Work Flowing (CC)
@@ -35,6 +35,8 @@ Never echo the token. `[]` → move on. Otherwise, oldest first, allowlisted aut
 ### 2. Board scan
 
 `list_issues(team:"Threadbare", state:"Ready for Dev", limit:100)` and `state:"In Dev", limit:50`. Sort by priority in memory (`orderBy:"priority"` errors at runtime). Judge the queue: **starved** (≤1) / **healthy** / **backed up** (>15). Flag blocked top-of-queue items, stale items (>7 days), and **every parked In-Dev issue** (assignee null) — this scan is the only one that looks (THR-846). A park that is shipped-awaiting-close or held on a decision only Christian can make → the ask list; any other park → one Queue line with its age. Verify-after-write on any Linear write (rare here).
+
+**Never call a claimed job "unstarted", "no code" or "nothing lost" from branches and PRs alone (THR-1529).** A session killed mid-run can leave its entire slice as uncommitted edits in a local worktree, and branches, PRs and Linear cannot see that. THR-1521's 39-file slice sat that way ~19.5 h while seven consecutive briefs told Christian "no branch, no pull request, no code … Nothing was lost". Before writing any such line about an In-Dev issue, run the stranded-work probe from `pull-work` Step 1.8 (§ *Stranded-work probe*: pushed branches naming the id, plus filtered dirty worktrees). It is read-only (`git -C … status`) and within this lane's remit. If it finds a dirty worktree for the issue, the Queue line says so: *"work is sitting uncommitted in local worktree `<name>`, idle <N> min"*, with the idle age measured against the reaper's 180-min guard (`WORKTREE_MIN_IDLE_MINUTES`). Past that guard it goes on the Health line: the reaper can delete it and the next pickup run has to recover it. That recovery is executor work, not an ask. If the probe cannot run, say "liveness unknown", never "nothing lost".
 
 ### 3. Health probes
 
