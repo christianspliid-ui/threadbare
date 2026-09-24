@@ -54,6 +54,14 @@ import {
 } from '../../../../engine/encounters/dealHand';
 import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
 import { forecastAction } from '../../../../engine/resolutionService';
+import { forecastActionAtScale } from '../../../../engine/scaledForecast';
+import { resolveFightStepInputs } from '../../../../engine/fights/fightStepInputs';
+import type { FightStepInputs } from '../../../../types/fight';
+import {
+  FIGHT_ENCOUNTER_TYPE,
+  FIGHT_NAMED_TERM_LINES,
+  FIGHT_STANDING_MODIFIER_NAME,
+} from '../../../../data/fight-constants';
 import {
   buildNudgeHand,
   collectHeldTraitIds,
@@ -469,11 +477,45 @@ function essenceReader(pool: Readonly<Record<string, number>> | undefined) {
 function readNextStepDemand(
   template: UnifiedActionTemplate,
   currentStep: number,
+  fightInputsFor?: (step: ActionStep) => FightStepInputs | undefined,
 ): WhisperNextStep {
   const next = template.steps?.[currentStep + 1];
   if (!next) return { kind: 'none' };
   if (isActionStepBranch(next)) return { kind: 'unsettled' };
+  // THR-1543 (fight block § Content pillar) — a fight step's authored reach and
+  // difficulty are placeholders the roll never reads; the Whisper quotes what the
+  // opponent's card will actually ask.
+  const fight = next.fightRole ? fightInputsFor?.(next) : undefined;
+  if (fight) return { kind: 'demand', reach: fight.reach, difficulty: fight.difficulty };
   return { kind: 'demand', reach: next.reach, difficulty: next.difficulty };
+}
+
+/**
+ * THR-1543 — a fight step's inputs for the forecast, derived by the same pure
+ * function the roll uses (fight block §3b). Undefined for an ordinary step, or
+ * when the builder has no game state to read the opponent from (fail-soft: the
+ * step then forecasts as an ordinary one, exactly as before FB7).
+ */
+function fightInputsForForecast(
+  gameState: GameState | undefined,
+  activeAction: UnifiedAction,
+  step: ActionStep,
+  template: UnifiedActionTemplate,
+): FightStepInputs | undefined {
+  if (!step.fightRole || !gameState) return undefined;
+  try {
+    return resolveFightStepInputs(gameState, activeAction, step, template);
+  } catch {
+    return undefined;
+  }
+}
+
+/** The factor line for one of the fight's own named terms (courage, momentum, an advantage). */
+function fightTermLine(name: string, delta: number, label: string | undefined): string {
+  if (label) return label;
+  const words = FIGHT_NAMED_TERM_LINES[name];
+  if (!words) return name;
+  return delta >= 0 ? words.for : words.against;
 }
 
 /**
@@ -617,16 +659,34 @@ export function buildNudgePhaseModel(
   // excluded here — `forecastInput.actionModifiers` is the floor the hand adds
   // its selected deltas onto, so the hook can recompute without re-deriving
   // capability on every toggle.
-  const capability = computeCapability(graph, actorId, step.reach);
+  //
+  // THR-1543 (fight block §3b) — a fight step forecasts from the inputs the roll
+  // uses: the card's reach and difficulty, the fighter's standing modifiers read in
+  // a combat context, and the fight's named terms (courage, momentum, advantages).
+  // Pure: reading the advantages here spends nothing.
+  const fightInputs = fightInputsForForecast(gameState, activeAction, step, template);
+  const stepReach = fightInputs?.reach ?? step.reach;
+  const capability = computeCapability(graph, actorId, stepReach);
   const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
   const locationId = locEdges.length > 0 ? locEdges[0].target : '';
-  const standing = computeResolutionModifiers(
-    graph,
-    actorId,
-    locationId,
-    step.reach,
-    template.sphereAffinity,
-  );
+  const standing = fightInputs
+    ? computeResolutionModifiers(
+      graph,
+      actorId,
+      locationId,
+      stepReach,
+      template.sphereAffinity,
+      gameState?.effectStates,
+      undefined,
+      FIGHT_ENCOUNTER_TYPE,
+    )
+    : computeResolutionModifiers(
+      graph,
+      actorId,
+      locationId,
+      step.reach,
+      template.sphereAffinity,
+    );
   // THR-892 — the carryover line the prior step's band earned, if the author wrote
   // one. It contributes to the floor exactly as a trait variant does, so the hand
   // adds its selected deltas on top of a forecast that already carries it.
@@ -635,15 +695,18 @@ export function buildNudgePhaseModel(
     collectNudgeModifiers(step, undefined, variants, priorStepOutcome(activeAction)),
   );
   const variantDifficultyDelta = sumVariantDifficultyDelta(variants);
-  const effectiveDifficulty = Math.max(0, Math.min(1, step.difficulty + variantDifficultyDelta));
+  const effectiveDifficulty = Math.max(
+    0, Math.min(1, (fightInputs?.difficulty ?? step.difficulty) + variantDifficultyDelta),
+  );
 
   const forecastInput: ResolutionInput = {
     actorId,
-    domain: step.reach,
+    domain: stepReach,
     capability,
     difficulty: effectiveDifficulty,
     sphereFactor: 0,
-    actionModifiers: standing.totalModifier + traitModifierTotal,
+    // A fight step's standing modifiers already ride inside its named terms.
+    actionModifiers: (fightInputs ? fightInputs.modifierTotal : standing.totalModifier) + traitModifierTotal,
     // `collectTestShapers` returns `ResolvedTestShaper` (attachment-centric
     // field names) while `ResolutionInput` wants `ResolutionTestShaper`. The
     // two carry the same information under different names, so the mapping is
@@ -658,7 +721,10 @@ export function buildNudgePhaseModel(
     })),
   };
 
-  const baseSummary = forecastAction(forecastInput);
+  // THR-1543 — a fight step resolves at `FIGHT_STEP_SCALE`, so its forecast takes
+  // the core's scale step and post-roll floor (`forecastActionAtScale`).
+  const forecastScale = fightInputs?.scale;
+  const baseSummary = forecastScale ? forecastActionAtScale(forecastInput, forecastScale) : forecastAction(forecastInput);
   const baseForecast = forecastModelFrom(
     baseSummary.forecastTier,
     baseSummary.successProbability,
@@ -751,7 +817,7 @@ export function buildNudgePhaseModel(
   // and the world's contribution follows.
   for (const line of deriveStepFactorLines({
     actorName: graph.getNode(actorId)?.name,
-    reach: step.reach,
+    reach: stepReach,
     capability,
     contributions: standing.contributions,
     carryover,
@@ -770,6 +836,21 @@ export function buildNudgePhaseModel(
     });
   }
 
+  // ── The fight's named terms (THR-1543, fight block §7, §11) ─────
+  // Courage, momentum and each advantage the world lent the fighter, as factor
+  // lines with no hidden number. The standing term is already spoken for by the
+  // derived lines above, which project the same contributions.
+  for (const term of fightInputs?.modifiers ?? []) {
+    if (term.name === FIGHT_STANDING_MODIFIER_NAME || term.delta === 0) continue;
+    factors.push({
+      id: `fight:${term.name}`,
+      text: enrich(fightTermLine(term.name, term.delta, term.label)),
+      polarity: term.delta >= 0 ? 'for' : 'against',
+      source: `fight:${term.name}`,
+      delta: term.delta,
+    });
+  }
+
   // ── The Whisper's reveal (THR-1179) ─────────────────────────────
   // The one card that pays for a *line* rather than for odds. It renders only
   // once no matter how many Whispers are committed — a second copy of the same
@@ -784,7 +865,10 @@ export function buildNudgePhaseModel(
   );
   if (revealsNextDemand) {
     const line = deriveWhisperRevealLine({
-      nextStep: readNextStepDemand(template, activeAction.currentStep),
+      nextStep: readNextStepDemand(
+        template, activeAction.currentStep,
+        (next) => fightInputsForForecast(gameState, activeAction, next, template),
+      ),
       difficultyWord,
     });
     factors.push({
@@ -837,8 +921,8 @@ export function buildNudgePhaseModel(
     stepIndex: activeAction.currentStep,
     motive,
     testPanel: {
-      reach: step.reach,
-      reachLabel: step.reach.charAt(0).toUpperCase() + step.reach.slice(1),
+      reach: stepReach,
+      reachLabel: stepReach.charAt(0).toUpperCase() + stepReach.slice(1),
       purposeLine: step.purposeLine != null ? enrich(step.purposeLine) : undefined,
       difficultyWord: difficultyWord(effectiveDifficulty),
       difficultyValue: effectiveDifficulty,
@@ -846,6 +930,7 @@ export function buildNudgePhaseModel(
     },
     baseForecast,
     forecastInput,
+    ...(forecastScale ? { forecastScale } : {}),
     traitModifierTotal,
     cards,
     withheld,

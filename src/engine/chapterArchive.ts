@@ -25,6 +25,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { StepProseRecord } from '../types/stepProseRecord';
 import type { GameState } from '../types/gameState';
 import type { SimulationRuntime } from './simulationRuntime';
 import type {
@@ -198,7 +199,12 @@ function buildStepRecord(
 
   try {
     const resolved = resolveStepDefinition(template, index, action.choiceHistory);
-    label = resolved.narrativeTemplate ? `Step ${index + 1}: ${resolved.reach}` : `Step ${index + 1}`;
+    // THR-1543 (fight block §3c) — label a step by the reach it actually tested,
+    // frozen on its prose record at resolution (a clash the card moved to Eye is
+    // an Eye step); the authored reach otherwise, identical on ordinary steps.
+    const testedReach = (action.stepProseHistory as readonly StepProseRecord[] | undefined)
+      ?.find((r) => r.index === index)?.reach ?? resolved.reach;
+    label = resolved.narrativeTemplate ? `Step ${index + 1}: ${testedReach}` : `Step ${index + 1}`;
     narrativeProse = enrichProse(resolved.narrativeTemplate ?? '', ctx) || FADED_STEP_PROSE;
 
     if (outcome) {

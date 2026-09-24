@@ -290,3 +290,78 @@ export const FIGHT_BARGAIN_AXIS = 'mercy_ruthlessness' as const;
 
 /** The `monsterState` flag the temper checkpoint sets, so the lair card may name the temper once seen. */
 export const FIGHT_TEMPER_SHOWN_PROP = 'temperShown';
+
+// ─── The block, advantages and allies (FB7, THR-1543; plan doc §11–12) ──────
+
+/** Most clash steps in one fight block — the default and the maximum (THR-1531). */
+export const FIGHT_EXCHANGE_CAP = 3;
+
+/** The duration every fight step carries: one tick per exchange. */
+export const FIGHT_STEP_DURATION: Readonly<{ min: number; max: number }> = { min: 1, max: 1 };
+
+/**
+ * The fail behaviour every fight step carries. A failing exchange must not end the
+ * action (`advanceStep` ends on `fail_action`); a critical failure still ends it by
+ * the lifecycle's own rule.
+ */
+export const FIGHT_STEP_FAIL_BEHAVIOR = 'continue_weakened' as const;
+
+/** The grudge advantage: an injury-class `hostile_to` toward the opponent (clash steps). */
+export const FIGHT_ADVANTAGE_OLD_WOUND = 0.10;
+
+/** The spent-secret advantage: the first clash where the fighter is behind. */
+export const FIGHT_ADVANTAGE_SECRET = 0.10;
+
+/** Storied arms: a carried thing at or above this Storied level steadies the nerve step. */
+export const FIGHT_ADVANTAGE_STORIED_MIN_LEVEL = 2;
+export const FIGHT_ADVANTAGE_STORIED = 0.05;
+
+/** Blessed: the nerve step only. */
+export const FIGHT_ADVANTAGE_BLESSED = 0.05;
+
+/** Cursed (the condition, or a cursed thing carried): clash steps only. */
+export const FIGHT_ADVANTAGE_CURSED = -0.05;
+
+/** Each ally at the fighter's side — a favour called, or a company member on the hex. */
+export const FIGHT_ALLY_ASSIST = 0.05;
+
+/** Most company members counted as allies in one fight (THR-1271). */
+export const FIGHT_ALLY_MAX = 3;
+
+/** The advantage keys — one per row of the plan doc's §11 table. */
+export const FIGHT_ADVANTAGE_KEYS = {
+  oldWound: 'old_wound',
+  secret: 'their_secret',
+  favour: 'favour_called',
+  company: 'company',
+  storied: 'storied_arms',
+  blessed: 'blessed',
+  cursed: 'cursed',
+} as const;
+
+/**
+ * The advantage lines the forecast and the trace name (Law 13/14: words, never a
+ * key). `{opponent}` is the opponent's name; `{ally}` the ally's.
+ */
+export const FIGHT_ADVANTAGE_LABELS: Readonly<Record<string, string>> = {
+  old_wound: 'An old wound between them sharpens every blow',
+  their_secret: 'Knows a secret {opponent} would rather keep',
+  favour_called: '{ally} answers an old favour and stands beside them',
+  company: '{ally} of their company fights at their side',
+  storied_arms: 'Carries a thing that has seen fights before',
+  blessed: 'Blessed, and it steadies the nerve',
+  cursed: 'Cursed, and the curse drags at every blow',
+};
+
+/** The condition traits the Blessed and Cursed advantages read. */
+export const FIGHT_BLESSED_CONDITION_ID = 'trait.condition.blessed';
+export const FIGHT_CURSED_CONDITION_ID = 'trait.condition.cursed';
+
+/** The factor-line words for the fight's own named terms (courage, momentum). */
+export const FIGHT_NAMED_TERM_LINES: Readonly<Record<string, { readonly for: string; readonly against: string }>> = {
+  courage: { for: 'Their courage steadies them', against: 'Their caution holds them back' },
+  momentum: { for: 'The last exchange carries them forward', against: 'The last exchange has them on the back foot' },
+};
+
+/** The complication pool's placeholder for the opponent's name. */
+export const FIGHT_OPPONENT_PLACEHOLDER = '{opponent}';

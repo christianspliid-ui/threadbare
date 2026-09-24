@@ -163,6 +163,9 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       'encounter.', 'encounter_', 'enc.', 'borderland.', 'social.', 'tavern.', 'npc_',
       'monster.', 'army.', 'reputation.', 'faction.', 'mentorship.', 'liminal.',
       'broker.', 'healer.', 'crafting.', 'star.', 'stone.', 'veil.', 'eye.', 'gold.',
+      // THR-1543 — the standalone fight templates (`fight.lair.confront`). Claimed for the
+      // encounter kind, so a `{ kind: 'encounter_template' }` query can find them.
+      'fight.',
       // The faction quest families, two-letter by convention (THR-1481 names these
       // `encounterFamily` prefixes as the literal-id rot slice 4 replaces with tags).
       'ag.', 'mc.', 'tg.', 'ac.', 'bf.', 'cg.', 'hod.', 'uk.', 'rb.', 'mct.', 'lk.', 'ts.', 'fa.',

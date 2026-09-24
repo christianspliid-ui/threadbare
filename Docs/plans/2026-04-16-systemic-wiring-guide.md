@@ -4173,9 +4173,8 @@ After the roll the step is what it actually tested: growth, tier promotion, cons
 frozen step record, telemetry and the event node's `reachTested` all read the **resolved** reach
 and difficulty. Band opposition never contests a fight step.
 
-**What an author can do with it — today, nothing directly.** The `fightBlock(spec)` helper and the
-first fight template (`fight.lair.confront`) land in FB7; the clock, harm, forks and events in
-FB2–FB6. Two fields exist now:
+**What an author writes.** Use the `fightBlock(spec)` helper (FB7, below) rather than these
+fields by hand; the clock, harm, forks and events are FB2–FB6. The two step fields it stamps:
 
 - `fightRole` on `ActionStep` — never hand-author it; `fightBlock` stamps it.
 - `opponentRef` on `ActionStep` — a cast key naming the opponent, resolved like
@@ -4361,3 +4360,61 @@ What an author can rely on:
 
 Traces: `fight.clock` with cause `effect:<caster>`, `item:<attachment>` or `tick:<attachment>`; an
 `inflict_condition` legacy effect trace records applied or refused (with the `immuneTag`).
+
+**The block, the template, advantages, allies and mid-fight events (FB7, THR-1543).** The authoring
+surface for fights. What an author can now do:
+
+- **Write a fight with `fightBlock(spec)`** (`src/data/fights/fightBlock.ts`). It returns plain
+  `ActionStep[]`: one nerve step and `exchanges` clash steps (default and maximum
+  `FIGHT_EXCHANGE_CAP`, 3), each stamped with `fightRole`, `opponentRef` (when the spec names one),
+  the placeholder difficulty, `FIGHT_STEP_DURATION`, `FIGHT_STEP_FAIL_BEHAVIOR` and the default
+  reaches (heart, iron). Spec fields: `exchanges`, `opponentRef`, `nerveReach` / `clashReach`,
+  `nerve` and `clashes` (per-exchange `narrativeTemplate`, `purposeLine`, `afterimages` by band;
+  `{exchange}` reads *first* / *second* / *third*), `nerveNudges` / `clashNudges`, `deal`, and
+  `complications`. The default afterimages cover all six bands on both roles; a new
+  `ActionStep.nearMissAfterimage` carries the *trades blows* line (absent ⇒ `successAfterimage`).
+- **A package step `{ "fightBlock": { … } }`** is pre-expanded by `npm run compile:encounter`
+  (`expandFightBlockSteps`), so no function reaches the generated catalog.
+- **The block is terminal, and a fight step has no reward pool.** Once a step carries `fightRole`,
+  every later step must too; a fight inside a branch is a sequel planted through `encounter_seed` or
+  an appointment. Both rules run catalog-wide (`assertFightBlockRules`). A fight's prize is drawn from
+  its result (plan doc 1), never per exchange.
+- **Key the aftermath on `fight:<result>`** at `branchOnStep: fightResultIndex(steps)`. The
+  producibility invariant now counts a terminal fight block as the third producer of variant keys.
+- **The first template, `fight.lair.confront`** ("The Beast in Its Den",
+  `src/data/encounters/fight-lair-confront.ts`), registered in `MONSTER_ENCOUNTER_TEMPLATES`, and
+  found by `getAnyEncounterById` and by an `encounter_template` content query (the `fight.` prefix
+  is claimed for that kind). **Spawn-only:** no `locationSubtypes`, so it is never drawn. Its
+  opponent is the action's target; its hand is dealt from the god's Repertoire
+  (`deal: { count: 4, tags: ['might', 'peril'] }`).
+- **Advantages are read from the world, never authored.** `readFightAdvantages`
+  (`src/engine/fights/fightAdvantages.ts`) reads, once at fight start: an **old wound**
+  (`hostile_to` with an injury-class cause, `isInjuryProvenance`; +0.10 clash), **their secret**
+  (a live `knows_secret_of`; +0.10 on the first clash where the fighter is behind), **a favour
+  called** (a live, non-appointment `owes_favor` from a mortal on the hex; an ally), **company**
+  (`getCompanyMembersAtHex`, capped at `FIGHT_ALLY_MAX`, never the opponent), **Storied arms**
+  (a carried thing at Storied level ≥ 2; nerve), **Blessed** (nerve) and **Cursed** (the
+  condition or a cursed carried thing; clash). Each is a named term on the roll and a factor line on
+  the forecast. **Spent only by the fight handler, through the existing writers:** the favour by
+  `redeemFavor` when `fightState` is created (once per fight; the edge stays, `redeemed: true`), the
+  secret by the reveal path after the clash it applied to (the edge stays, `revealed: true`).
+  So *to give a mortal an edge in a fight, give them the relationship* — a grudge, a secret, a debt
+  owed, a company — and the fight finds it.
+- **Mid-fight events are complications with `requires.inFight`** (`true`, `'monster'` or
+  `'mortal'`). A fight step draws **only** those, and an ordinary step never draws one. Four effect
+  types exist for them, applied by the fight handler (the complication applier ignores them):
+  `fight_momentum { delta }`, `fight_clock { delta }` (lands at step (4) of the clock-full check; a
+  positive write is a blow), `fight_offer_quarter` (to whichever side is losing) and
+  `fight_condition { conditionTraitId, side }` (through `applyConditionToActor`). Twelve ship in
+  `src/data/complication-templates.ts` (`complication.fight.*`); `{opponent}` names the opponent in
+  their prose. Merge a fight's own events with `fightBlock({ complications: [...] })`.
+- **The forecast is the roll.** On a fight step the stage forecasts from `resolveFightStepInputs`
+  and `forecastActionAtScale` (`src/engine/scaledForecast.ts`): the card's reach and difficulty, the
+  named terms, the regional scale step and the core's post-roll floor. The veil header's threat and
+  reach, the Whisper's next-step demand, and the past-step labels (Scene So Far, the chapter
+  archive, reading `StepProseRecord.reach`) all show what the step tests, not its placeholders.
+
+Inspect: `__DEBUG.spawnFight(target, { clockFilled?, outcome?, fighterRaw?, fighterConditions? })`,
+`getFightState(actionId)`, `inspectOpponentCard(id)`, `getFightForecastCheck(actionId, cardIds?)`;
+CLI `spawn fight <agent|@hero> --target <actor>`; `npm run calibrate:fights` (400 fights against
+THR-1531's Major elite row).

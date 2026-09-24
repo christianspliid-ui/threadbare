@@ -765,6 +765,14 @@ export interface EncounterStageNudgePhaseModel {
    * resolution makes, so the word the player reads is the word they get.
    */
   forecastInput: ResolutionInput;
+  /**
+   * THR-1543 (fight block §3b) — the scale this step resolves at, when the roll
+   * applies one the plain forecast does not (a fight step's `FIGHT_STEP_SCALE`).
+   * Present ⇒ the hand forecasts through `forecastActionAtScale`, the core's scale
+   * step and post-roll floor, after the selected cards' deltas are summed. Absent
+   * ⇒ `forecastAction`, exactly as before.
+   */
+  forecastScale?: import('../../../types/unifiedAction').ActionScale;
   /** Standing trait-variant contribution, already inside `forecastInput`. */
   traitModifierTotal: number;
   cards: EncounterStageNudgeCardModel[];

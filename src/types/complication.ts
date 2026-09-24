@@ -90,6 +90,13 @@ export interface ComplicationRequirement {
   atSettlement?: boolean;
   /** Requires the action's reach domain to be one of these */
   reachIn?: ReachDomain[];
+  /**
+   * THR-1543 (fight block §12) — a mid-fight event. Fight steps draw **only**
+   * `inFight` templates and ordinary steps never draw them. `'monster'` /
+   * `'mortal'` narrow it to one kind of opponent (a beast that roars; a crowd
+   * that takes sides).
+   */
+  inFight?: true | 'monster' | 'mortal';
 }
 
 // ─── Effects ─────────────────────────────────────────────────────────────
@@ -106,7 +113,16 @@ export type ComplicationEffect =
   | { type: 'relates_to_create'; basis: 'debt' | 'bond' | 'rivalry'; targetSelection: 'random_present' | 'faction' }
   | { type: 'rival_awareness'; delta: number }
   | { type: 'quintessence_delta'; delta: number }
-  | { type: 'discovery'; discoveryType: 'location' | 'sublocation' | 'information' };
+  | { type: 'discovery'; discoveryType: 'location' | 'sublocation' | 'information' }
+  // THR-1543 (fight block §12) — mid-fight effects. The complication applier does
+  // nothing for them (the `partial_progress` precedent): the fight handler reads
+  // them off the step's selected complication and applies each through the
+  // fight's own writer — the clock, the momentum field, the concession/temper rule
+  // and `applyConditionToActor`.
+  | { type: 'fight_momentum'; delta: number }
+  | { type: 'fight_clock'; delta: number }
+  | { type: 'fight_offer_quarter' }
+  | { type: 'fight_condition'; conditionTraitId: string; side: 'fighter' | 'opponent' };
 
 // ─── Template ─────────────────────────────────────────────────────────────
 
@@ -206,4 +222,15 @@ export interface ComplicationContext {
    * `'severe'` (the old un-scaled behaviour). Only read for critical_failure.
    */
   critFailureSeverity?: ComplicationSeverity;
+  /**
+   * THR-1543 — set on a fight step: who the fight is against and what kind of
+   * opponent it is. Scopes the pool to `inFight` templates and fills
+   * `{opponent}`. Absent on every ordinary step.
+   */
+  fight?: {
+    opponentId: string | null;
+    opponentKind: 'monster' | 'mortal';
+    /** Events the fight's author merged into its pool (`fightBlock(spec).complications`). */
+    authored?: readonly ComplicationTemplate[];
+  };
 }

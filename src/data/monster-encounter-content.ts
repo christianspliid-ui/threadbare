@@ -28,6 +28,7 @@
 
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import { FIGHT_LAIR_CONFRONT } from './encounters/fight-lair-confront';
 
 // ─── Tunable Constants ──────────────────────────────────────────────────────
 
@@ -943,6 +944,11 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     },
   },
+
+  // ── fight.lair.confront ───────────────────────────────────────────────────
+  // THR-1543 — the first standalone fight template: spawn-only (no location
+  // subtypes), found by `getAnyEncounterById` through this catalog.
+  FIGHT_LAIR_CONFRONT,
 ];
 
 // ─── Lookup ─────────────────────────────────────────────────────────────────
