@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-25 01:55 local (23:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -40,6 +40,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-25 — the named-beast hunt now fights the lair's own monster** ([THR-1545](https://linear.app/threadbare/issue/THR-1545/monsters-m2-monsters-in-scenes), monsters M2). Merged 01:43 local via [#2024](https://github.com/christianspliid-ui/threadbare/pull/2024), and live on the site. Not a review ask yet: the fight screen is still to come.
 - **2026-09-25 — the odds shown are now the odds rolled**: the dice honour items, conditions and standing ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)). Merged 00:44 local via [#2023](https://github.com/christianspliid-ui/threadbare/pull/2023), and live on the site.
 - **2026-09-24 — mortals now plan with the same odds the dice use** ([THR-1579](https://linear.app/threadbare/issue/THR-1579/forecast-window-s2-the-forecast-is-the-roll-mortals-plan-with-the-odds), forecast window S2). Merged 22:49 local via [#2022](https://github.com/christianspliid-ui/threadbare/pull/2022), and live on the site. S3 is next in the build queue.
 - **2026-09-24 — the game now measures the odds mortals face, by skill level** ([THR-1578](https://linear.app/threadbare/issue/THR-1578/forecast-window-s1-the-gauge-measure-the-odds-per-proficiency-kpis-and), forecast window S1). This changes no gameplay yet. Merged 21:44 local via [#2021](https://github.com/christianspliid-ui/threadbare/pull/2021), and live on the site.
@@ -49,7 +50,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — every lair beast now has a fighting card and a temper** ([THR-1544](https://linear.app/threadbare/issue/THR-1544/monsters-m1-the-monster-card), monsters M1). Merged 19:40 local via [#2017](https://github.com/christianspliid-ui/threadbare/pull/2017), and live on the site.
 - **2026-09-24 — war news now reaches the chronicle in normal play** ([THR-1564](https://linear.app/threadbare/issue/THR-1564/war-news-never-reaches-the-player-in-normal-play-armies-battles-and)). Merged 18:34 local via [#2016](https://github.com/christianspliid-ui/threadbare/pull/2016), and live on the site.
 - **2026-09-24 — the fight block is finished: the first playable fight, a monster in its lair** ([THR-1543](https://linear.app/threadbare/issue/THR-1543/fight-block-fb7-the-block-the-template-advantages-allies-events), FB7). Merged 18:13 local via [#2015](https://github.com/christianspliid-ui/threadbare/pull/2015).
-- **2026-09-24 — skill floors on ambitions, milestones and spells now actually gate** ([THR-1562](https://linear.app/threadbare/issue/THR-1562/ambition-reach-floors-and-reach-milestones-compare-raw-capability-10)). Merged 16:22 local via [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013), and live on the site.
 
 ---
 
