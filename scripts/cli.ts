@@ -48,6 +48,8 @@ import { enqueueUndertakingMoments } from '../src/engine/undertakingMoments';
 import { followAgent as followAgentWrite, isFollowed as isFollowedRead } from '../src/engine/followedAgents';
 import { isAutonomousDecisionActor as isSpotlightActor } from '../src/engine/strategicKindReachability';
 import { readSpotlightLedger } from '../src/engine/spotlightPull';
+import { computeReachShare } from '../src/engine/domainCapability';
+import type { ReachDomain } from '../src/types/traits';
 import { getUndertakingObjectType, ownershipCensus } from '../src/data/undertaking-objects';
 import { prepareEncounterSupportBundle } from '../src/engine/encounterSupportBundle';
 import { buildEncounterBinderContext } from '../src/engine/binding/encounterBinderContext';
@@ -380,9 +382,12 @@ function printAgent(partialId: string): void {
     const caps = match.properties.domainCapabilities as Record<string, number>;
     const entries = Object.entries(caps).filter(([, v]) => v > 0);
     if (entries.length > 0) {
-      console.log(`  Capabilities:`);
+      // THR-1562: the reach share (0–1) beside the stored base — the share is what
+      // every requirement (ambition floors, milestones, spells, guild joins) reads.
+      console.log(`  Capabilities (base → share):`);
       for (const [k, v] of entries.sort((a, b) => b[1] - a[1])) {
-        console.log(`    ${k}: ${v}`);
+        const share = computeReachShare(state.graph, match.id, k as ReachDomain);
+        console.log(`    ${k}: ${v} → ${share.toFixed(2)}`);
       }
     }
   }

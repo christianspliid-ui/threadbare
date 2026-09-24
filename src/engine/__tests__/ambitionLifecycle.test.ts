@@ -99,7 +99,7 @@ describe('checkMilestones', () => {
     // but network not met (only 1 trade_alliance bond)
     const graph = createMockGraph(
       [
-        { id: 'agent1', properties: { domainCapabilities: { gold: 0.8 } } },
+        { id: 'agent1', properties: { domainCapabilities: { gold: 32 } } },
         { id: 'loc1', properties: { locationType: 'market' } },
         { id: 'agent2', properties: {} },
       ],
@@ -124,7 +124,7 @@ describe('checkMilestones', () => {
 
   it('returns empty array when no new milestones are completed', () => {
     const graph = createMockGraph(
-      [{ id: 'agent1', properties: { domainCapabilities: { gold: 0.3 } } }],
+      [{ id: 'agent1', properties: { domainCapabilities: { gold: 12 } } }],
       [],
     );
 
@@ -136,7 +136,7 @@ describe('checkMilestones', () => {
 describe('checkAbandonment', () => {
   it('returns true when abandonment trigger fires', () => {
     const graph = createMockGraph(
-      [{ id: 'agent1', properties: { domainCapabilities: { gold: 0.1 } } }],
+      [{ id: 'agent1', properties: { domainCapabilities: { gold: 4 } } }],
       [],
     );
 
@@ -145,7 +145,7 @@ describe('checkAbandonment', () => {
 
   it('returns false when no triggers fire', () => {
     const graph = createMockGraph(
-      [{ id: 'agent1', properties: { domainCapabilities: { gold: 0.5 } } }],
+      [{ id: 'agent1', properties: { domainCapabilities: { gold: 20 } } }],
       [],
     );
 
@@ -158,7 +158,7 @@ describe('evaluateAmbitionProgress', () => {
     // Agent has gold 0.8 (wealth) and controls a market (dominance) — 2 of 3
     const graph = createMockGraph(
       [
-        { id: 'agent1', properties: { domainCapabilities: { gold: 0.8 } } },
+        { id: 'agent1', properties: { domainCapabilities: { gold: 32 } } },
         { id: 'loc1', properties: { locationType: 'market' } },
       ],
       [{ source: 'agent1', target: 'loc1', type: 'controls', properties: {} }],
@@ -178,7 +178,7 @@ describe('evaluateAmbitionProgress', () => {
     // Also controls a market, but doesn't matter
     const graph = createMockGraph(
       [
-        { id: 'agent1', properties: { domainCapabilities: { gold: 0.1 } } },
+        { id: 'agent1', properties: { domainCapabilities: { gold: 4 } } },
         { id: 'loc1', properties: { locationType: 'market' } },
       ],
       [{ source: 'agent1', target: 'loc1', type: 'controls', properties: {} }],
@@ -196,7 +196,7 @@ describe('evaluateAmbitionProgress', () => {
     // Agent has gold 0.8 (wealth met) but no bonds and no market control
     // Only 1 of 3 milestones met — not enough for completion (needs 2)
     const graph = createMockGraph(
-      [{ id: 'agent1', properties: { domainCapabilities: { gold: 0.8 } } }],
+      [{ id: 'agent1', properties: { domainCapabilities: { gold: 32 } } }],
       [],
     );
 

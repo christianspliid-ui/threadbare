@@ -114,11 +114,11 @@ describe('ambition eligibility consumes granted traits', () => {
 
   it('an agent holding the anvil carries master_smith into the snapshot and scores the ambition higher', () => {
     const withAnvil = buildAmbitionAgentSnapshot(
-      graphWithItem(anvil.effects as AttachmentEffect[], { capabilities: { iron: 0.9, veil: 0.9 } }),
+      graphWithItem(anvil.effects as AttachmentEffect[], { capabilities: { iron: 36, veil: 36 } }),
       'agent-1',
     );
     const without = buildAmbitionAgentSnapshot(
-      graphWithItem([], { capabilities: { iron: 0.9, veil: 0.9 } }),
+      graphWithItem([], { capabilities: { iron: 36, veil: 36 } }),
       'agent-1',
     );
 
@@ -131,7 +131,7 @@ describe('ambition eligibility consumes granted traits', () => {
   });
 
   it('the same agent without the anvil is eligible on reach alone — the gate is gone', () => {
-    const graph = graphWithItem([], { capabilities: { iron: 0.9, veil: 0.9 } });
+    const graph = graphWithItem([], { capabilities: { iron: 36, veil: 36 } });
     const snapshot = buildAmbitionAgentSnapshot(graph, 'agent-1');
 
     expect(passesEligibility(forgeLegend, snapshot)).toBe(true);

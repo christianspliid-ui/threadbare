@@ -125,7 +125,9 @@ export const UNDERKING_COURT_DEFINITION: FactionDefinition = {
     { type: 'remove_encounters', params: {} },
     { type: 'reputation_penalty', params: { amount: 0.3 } },
   ],
-  joinPrerequisites: { shadow: 15 },
+  // THR-1562: reach shares (0–1); raw ÷ REACH_SHARE_FULL_RAW (40), so the old raw
+  // requirement is kept exactly and becomes reachable.
+  joinPrerequisites: { shadow: 0.375 },
   reputationAlignment: {
     shadow: 'negative',
     heart: 'negative',

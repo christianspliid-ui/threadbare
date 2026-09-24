@@ -128,7 +128,7 @@ describe('the re-evaluation writer reaches the spotlight pull', () => {
     // writer ever could. An assignment that lands without a pull fails this test.
     const g = new WorldGraph();
     const caps: Record<string, number> = {};
-    for (const r of REACH_DOMAINS) caps[r] = 0.9;
+    for (const r of REACH_DOMAINS) caps[r] = 36; // raw (THR-1562: share 0.9)
     g.addNode({
       id: 'n', type: 'actor', name: 'Nessa',
       properties: { actorType: 'individual', spotlightTier: 'notable', npcRole: 'merchant', domainCapabilities: caps },

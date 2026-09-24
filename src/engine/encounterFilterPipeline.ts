@@ -39,7 +39,7 @@ import { filterByAwareness } from './encounterAwareness';
 import { brokenGateActive } from './brokenState';
 import { getFactionAwarenessEntries } from './factionAwareness';
 import { isEncounterVisibleToAgent } from './questVisibility';
-import { computeCapability } from './domainCapability';
+import { computeCapability, computeReachShare } from './domainCapability';
 import {
   THREAT_CAPABILITY_BANDS,
   THREAT_COURAGE_THRESHOLD,
@@ -378,17 +378,8 @@ export function filterByPrerequisites(
         const def = getFactionDefinition(
           resolveMetaFactionDefId(graph, agentId, meta, entry.locationId),
         );
-        if (def?.joinPrerequisites) {
-          let meetsAll = true;
-          for (const [reach, minCap] of Object.entries(def.joinPrerequisites)) {
-            try {
-              const cap = computeCapability(graph, agentId, reach as ReachDomain);
-              if (cap < minCap) { meetsAll = false; break; }
-            } catch {
-              meetsAll = false; break; // fail-soft: can't compute → doesn't meet
-            }
-          }
-          if (!meetsAll) continue;
+        if (def?.joinPrerequisites && !meetsJoinPrerequisites(graph, agentId, def.joinPrerequisites)) {
+          continue;
         }
       }
     }
@@ -913,4 +904,25 @@ function buildTrace(
     afterCap,
     summary: `Agent ${agentId}: ${cacheSize} → ${afterCap} candidates`,
   };
+}
+
+/**
+ * Guild join gate (THR-1562): does the agent meet every `joinPrerequisites` entry?
+ * Reads the reach share (0–1), the scale the requirements are authored on. This used
+ * to read the dice curve (0–1) against requirements authored raw (15–25), so every
+ * guild join with requirements was never offered. Fail-soft: a throwing walk → not met.
+ */
+export function meetsJoinPrerequisites(
+  graph: WorldGraph,
+  agentId: string,
+  prerequisites: Partial<Record<ReachDomain, number>>,
+): boolean {
+  for (const [reach, minShare] of Object.entries(prerequisites)) {
+    try {
+      if (computeReachShare(graph, agentId, reach as ReachDomain) < (minShare as number)) return false;
+    } catch {
+      return false;
+    }
+  }
+  return true;
 }

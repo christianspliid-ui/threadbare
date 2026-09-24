@@ -124,7 +124,9 @@ export const HOLY_ORDER_DAWN_DEFINITION: FactionDefinition = {
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },
   ],
-  joinPrerequisites: { star: 15, iron: 15 },
+  // THR-1562: reach shares (0–1); raw ÷ REACH_SHARE_FULL_RAW (40), so the old raw
+  // requirement is kept exactly and becomes reachable.
+  joinPrerequisites: { star: 0.375, iron: 0.375 },
   reputationAlignment: {
     star: 'positive',
     iron: 'positive',

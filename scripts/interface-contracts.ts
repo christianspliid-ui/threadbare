@@ -2855,6 +2855,39 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'capability-thresholds-read-the-reach-share',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: AMBITIONS,
+    intent:
+      'Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time.',
+    ulTerms: ['Domain Capability', 'Prerequisite'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['computeReachShare', 'computeReachShares', 'REACH_SHARE_FULL_RAW', 'meetsJoinPrerequisites'],
+      module: 'src/engine/domainCapability.ts',
+    },
+    writeSites: ['src/engine/domainCapability.ts', 'src/data/reach-share-constants.ts'],
+    readSites: [
+      'src/engine/ambitionTick.ts',
+      'src/engine/worldSeed.ts',
+      'src/engine/gameInit.ts',
+      'src/engine/graphConditions.ts',
+      'src/engine/spellActivation.ts',
+      'src/engine/effects/effectPredicates.ts',
+      'src/engine/encounterFilterPipeline.ts',
+      'src/engine/strategicActionCandidates.ts',
+      'src/engine/phaseDivinePremonition.ts',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+      'scripts/reach-gate-census.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-24',
+      evidence:
+        'THR-1562. Before, the seven requirement sites read four different numbers: ambition floors, milestones and abandonment compared the raw store (10–40+) against 0–1 thresholds, so every mortal passed every floor, milestones passed on first check and abandonment never fired; spells and `reach_above:` read `properties.domainCapability` (singular), which nothing writes; guild joins compared the dice curve against thresholds authored raw. Now all read `computeReachShare` (effective raw ÷ 40, capped at 1). Asserting tests: `reachShare.test.ts` (the function; each site — floors via the snapshot, a shipped spell and its `reach_drain` check, the shipped `reach_above:star:0.10` trickle, a thieves-guild join, the premonition window; a corpus test that every authored threshold kind is 0 < t ≤ 1; the abandonment idiom) and `graphConditions.test.ts` (a fail with the reader supplied; an un-migrated 0–1 fixture fails closed). Live, `npm run census:reach-gates`, medium, seeds 42 · 99 × 150 ticks, before (main 07d51e3e) → after: milestones completed 270 · 322 → 29 · 36; ambitions completed 33 · 38 → 6 · 5; abandoned 4 · 2 → 12 · 26; reach term of the winning ambition score 100% → 78% · 77%; mortals-with-capabilities holding ≥1 eligible ambition 100% · 100%; protagonist milestones met on first check at tick 0 66% · 64% → 49% · 51%.',
+    },
+  },
+  {
     id: 'cell-completion-renews-control-stance',
     producerSystem: 'Strategic Projects & Control',
     consumerSystem: 'Strategic Projects & Control',

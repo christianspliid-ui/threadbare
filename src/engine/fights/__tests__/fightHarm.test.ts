@@ -453,7 +453,7 @@ describe('regression: a warded caster on the use × Power cell now pays the pric
           id: 'caster', type: 'actor', name: 'Caster',
           properties: {
             actorType: 'individual', quintessence: 1, doom: 0,
-            domainCapability: all, domainCapabilities: all,
+            domainCapabilities: all,
             essence: 999, essenceBySphere: {},
           },
         });

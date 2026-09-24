@@ -506,6 +506,17 @@ export interface DebugBridge {
   /** Forces a node to graduate to the specified rarity tier. Never demotes. */
   forceGraduate: (nodeId: string, tier: number) => Promise<DebugForceGraduateResult>;
   /**
+   * THR-1562: per-reach effective raw score and reach share (0–1) for an agent. The
+   * share is the scale every capability requirement reads (ambition floors/milestones,
+   * spell `minReach`, `reach_above:`, guild joins); the dice keep the sigmoid.
+   * Accepts `@hero`, an agent id, id prefix, or partial name. Returns null if not found.
+   */
+  getReachShares: (agentIdOrName: string) => Promise<{
+    agentId: string;
+    name: string;
+    reaches: Record<string, { raw: number; share: number }>;
+  } | null>;
+  /**
    * Returns all attachments for an agent (possessions, conditions, powers, agreements).
    * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
    */

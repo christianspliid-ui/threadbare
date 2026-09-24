@@ -41,7 +41,6 @@ function makeGraph(agentId: string, locationId: string): WorldGraph {
       hexCol: 0,
       hexRow: 0,
       axiologicalProfile: {},
-      domainCapability: {},
     },
   };
   const hexNode = {

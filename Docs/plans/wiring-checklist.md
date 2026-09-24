@@ -2638,6 +2638,15 @@ Plan: `Docs/plans/2026-09-23-fight-block.md` §9. A fight raises effect events t
 | `engine/fights/fightEvents.ts` (new: `raiseFightStarted`, `raiseFightStepOutcome`, `raiseFightClashLanded`, `raiseFightOvercome`, `raiseFightEnded`) | inside the fight handler (`landFightBand`, unified-action progress), at step (2) of the clock-full check; `combat_ended` after `finalizeFightEnd` on both routes | — (plan doc 4) | `effectStates` (stacks, cooldowns, expiries) and the graph (reactive executions) | `effect.event_raised` (sites `fight_start` / `fight_step` / `fight_clash` / `fight_overcome` / `fight_end`) | trace viewer |
 | `engine/effects/effectEvents.ts` (`encounter_outcome.combat`, `attacked`, `opponent_overcome`) · `engine/effects/effectEventDispatch.ts` (fight sites; `counterpartId` → `targetId`; `encounterType`) · `data/fight-constants.ts` (`FIGHT_TRADED_BLOW_BANDS`) | every raise site | — | — | — | — |
 
+## Reach on one scale (THR-1562)
+
+Plan: `Docs/plans/2026-09-24-thr-1562-reach-on-one-scale.md`. Every capability *requirement* reads the reach share (`computeReachShare`: effective raw ÷ `REACH_SHARE_FULL_RAW` = 40, capped at 1). No new phase, node type, edge type or component. The dice (`computeCapability`) and fights (raw) are unchanged.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/domainCapability.ts` (new: `computeReachShare`, `computeReachShares`) · `data/reach-share-constants.ts` (new: `REACH_SHARE_FULL_RAW`, `AMBITION_MILESTONE_RESCALE`, `rawToReachShare`) | read wherever a requirement is checked: `ambition_progress` (snapshot, milestones, abandonment), worldgen initial assignment, encounter filtering (guild joins), spell activation, effect predicates, strategic candidates, divine premonition | — (no surface) | reads node properties + edges | none new; existing ambition-selection / eligibility traces carry the compared values | `__DEBUG.getReachShares(agent)`; CLI `agent <name>` prints base → share |
+| `engine/graphConditions.ts` (`ConditionContext.reachShare`; base-only fallback fails closed) · `engine/ambitionLifecycle.ts` (passes the reader) · `engine/encounterFilterPipeline.ts` (new export `meetsJoinPrerequisites`) · `engine/phaseDivinePremonition.ts` (`deriveNudgeCandidates` exported for tests) | as above | — | — | — | `npm run census:reach-gates` (`scripts/reach-gate-census.ts`) |
+
 ## Effect vocabulary for fights — fight block FB6 (THR-1542)
 
 Plan: `Docs/plans/2026-09-23-fight-block.md` §10 (and §5, the clock). The effect vocabulary gains `resource_manipulate` `'fight_clock'`, the `clock_above:` predicate and the `inflict_condition` type. There is no new phase, node type, edge type or component. No shipped item or power carries the new vocabulary yet, and no shipped template carries a fight block until FB7.

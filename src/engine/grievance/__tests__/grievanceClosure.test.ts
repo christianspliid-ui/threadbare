@@ -62,8 +62,8 @@ function addActor(graph: WorldGraph, id: string, props: Record<string, unknown> 
       // suite draws from. A capability sheet with holes in it would make eligibility
       // the reason a template did not mint, and this suite is not about eligibility.
       domainCapabilities: {
-        iron: 0.5, shadow: 0.5, eye: 0.5, gold: 0.5,
-        heart: 0.5, stone: 0.5, star: 0.5, veil: 0.5,
+        iron: 20, shadow: 20, eye: 20, gold: 20,
+        heart: 20, stone: 20, star: 20, veil: 20,
       },
       ...props,
     },

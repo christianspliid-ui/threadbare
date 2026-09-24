@@ -53,6 +53,7 @@ import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
 import { defaultFollowedAgentIds } from './undertakingCheckpoints';
 import { recomputeCalling } from './calling';
 import { publishDynamicFactionDefinitions } from '../data/faction-definition-lookup';
+import { computeReachShares } from './domainCapability';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -671,10 +672,9 @@ export function devSeedTheFirst(state: GameState): string {
 
   // Assign ambitions (same pattern as worldSeed.ts)
   const snapshot: AmbitionAgentSnapshot = {
-    domainCapabilities: {
-      heart: 65, shadow: 45, iron: 30, gold: 20, veil: 35,
-      eye: 25, stone: 15, star: 40,
-    },
+    // THR-1562: reach shares (0–1) read off the node just written, the scale ambition
+    // floors are authored on — never the raw values above.
+    domainCapabilities: computeReachShares(graph, agentId),
     traits: [],
     culturalSpheres: [],
     bonds: [],

@@ -4303,6 +4303,23 @@ What an author can rely on:
 Trace: each raise emits `effect.event_raised` with its `site` — `fight_start`, `fight_step`,
 `fight_clash`, `fight_overcome` or `fight_end`.
 
+## Capability requirements are reach shares (THR-1562)
+
+Every number an author writes as a **capability requirement** is a **reach share** (0–1), never a raw
+capability score: ambition `reachFloors`, `agent_reach_above` / `agent_reach_below` thresholds, spell
+`prerequisites.minReach` and `reach_drain` amounts, the `reach_above:<reach>:<t>` effect predicate,
+faction `joinPrerequisites`, and strategic `resourceHint.reachFloor`.
+
+- **What it reads.** `computeReachShare(graph, id, reach)` = the mortal's *effective* raw score (base +
+  traits + items + companions + controlled resources) ÷ `REACH_SHARE_FULL_RAW` (40), capped at 1. So
+  1.0 = as good as the best ordinary protagonist starts; 0.5 = raw 20.
+- **What it does not read.** The dice keep the sigmoid (`computeCapability`); fights, sieges and journeys
+  keep the raw score with thresholds authored raw. Don't author a requirement against either.
+- **Guard.** `reachShare.test.ts` fails any authored threshold outside 0 < t ≤ 1, and any
+  `agent_reach_below` abandonment trigger that is not below its template's floor for that reach (it
+  would fire on assignment).
+- **Inspect.** `__DEBUG.getReachShares(name)`; CLI `agent <name>`; `npm run census:reach-gates`.
+
 **Effect vocabulary for fights (FB6, THR-1542).** Three additions let an item, a trait or a power
 act *on* a fight, not only react to one. Author them anywhere an `AttachmentEffect` goes.
 

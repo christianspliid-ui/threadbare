@@ -37,8 +37,8 @@ function buildMultiFamilyGraph() {
       actorType: 'individual',
       spotlightTier: 'spotlight',
       domainCapabilities: {
-        gold: 0.6, eye: 0.5, heart: 0.5, shadow: 0.3,
-        iron: 0.6, stone: 0.6, star: 0.5, veil: 0.4, flesh: 0.3,
+        gold: 24, eye: 20, heart: 20, shadow: 12,
+        iron: 24, stone: 24, star: 20, veil: 16, flesh: 12,
       },
     },
   });

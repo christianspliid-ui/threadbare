@@ -23,7 +23,7 @@ function buildTestGraph() {
     properties: {
       actorType: 'individual',
       spotlightTier: 'spotlight',
-      domainCapabilities: { gold: 0.6, eye: 0.4, heart: 0.3, shadow: 0.1, iron: 0.2, stone: 0.2, star: 0.1, veil: 0.1 },
+      domainCapabilities: { gold: 24, eye: 16, heart: 12, shadow: 4, iron: 8, stone: 8, star: 4, veil: 4 },
     },
   });
 
@@ -129,7 +129,7 @@ describe('strategicActionCandidates', () => {
       graph.updateNode('actor_merchant', {
         properties: {
           ...graph.getNode('actor_merchant')!.properties,
-          domainCapabilities: { gold: 0.1, eye: 0.1, heart: 0.1 },
+          domainCapabilities: { gold: 4, eye: 4, heart: 4 },
         },
       });
 
@@ -239,7 +239,7 @@ describe('strategicActionCandidates', () => {
         id: 'actor_homeless',
         name: 'Lost Soul',
         type: 'actor',
-        properties: { actorType: 'individual', domainCapabilities: { gold: 0.6 } },
+        properties: { actorType: 'individual', domainCapabilities: { gold: 24 } },
       });
 
       const rng = mulberry32(42);
@@ -361,7 +361,7 @@ describe('generateStrategicCandidates — route-formation balance bias wiring (T
       properties: {
         actorType: 'individual',
         spotlightTier: 'spotlight',
-        domainCapabilities: { gold: 0.6, eye: 0.4, heart: 0.3, shadow: 0.1, iron: 0.2, stone: 0.2, star: 0.1, veil: 0.1 },
+        domainCapabilities: { gold: 24, eye: 16, heart: 12, shadow: 4, iron: 8, stone: 8, star: 4, veil: 4 },
       },
     });
     // Home village (surplus grain) — not a valid trade-route target subtype, so it is not scored as self.

@@ -11,6 +11,7 @@ import { collectStatContributions } from './effects/effectQueries';
 import { ECON_FACTION_POWER_WEIGHT } from '../data/economic-power-config';
 import type { TraitDefinitionProperties, TraitAssignmentProperties, ReachDomain, DomainContributions } from '../types/traits';
 import { REACH_DOMAINS, NARRATIVE_LEXICON } from '../types/traits';
+import { rawToReachShare } from '../data/reach-share-constants';
 
 /** Sigmoid parameters tuned per design doc */
 const SIGMOID_MIDPOINT = 10;
@@ -130,6 +131,40 @@ export function computeCapability(
 ): number {
   const raw = computeRawScore(graph, nodeId, domain);
   return sigmoid(raw);
+}
+
+/**
+ * The reach share (0–1) for a domain — the scale every capability *requirement* is
+ * read on (THR-1562): ambition floors and milestones, spell `minReach` and the
+ * `reach_drain` check, the `reach_above:` predicate, guild joins, strategic reach
+ * floors and the premonition reach bias.
+ *
+ * `min(1, computeRawScore / REACH_SHARE_FULL_RAW)` — linear over the effective score
+ * (base + traits + items + companions + controlled resources), so it resolves the
+ * whole population where the dice's sigmoid saturates at raw ~20. The dice keep
+ * `computeCapability`; fights keep the raw score. Fail-soft: a throwing walk reads 0,
+ * so the check fails closed.
+ */
+export function computeReachShare(
+  graph: WorldGraph,
+  nodeId: string,
+  domain: ReachDomain,
+): number {
+  try {
+    return rawToReachShare(computeRawScore(graph, nodeId, domain));
+  } catch {
+    return 0;
+  }
+}
+
+/** Reach shares for all eight reaches of a node (THR-1562). */
+export function computeReachShares(
+  graph: WorldGraph,
+  nodeId: string,
+): Record<ReachDomain, number> {
+  const out = {} as Record<ReachDomain, number>;
+  for (const reach of REACH_DOMAINS) out[reach] = computeReachShare(graph, nodeId, reach);
+  return out;
 }
 
 /**

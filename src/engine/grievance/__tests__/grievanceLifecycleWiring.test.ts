@@ -83,7 +83,7 @@ function razedWorld(victimTier: string): WorldGraph {
       properties: {
         actorType: 'individual',
         spotlightTier: id === VICTIM ? victimTier : 'spotlight',
-        domainCapabilities: { iron: 0.4, shadow: 0.3, heart: 0.3, stone: 0.3, gold: 0.3 },
+        domainCapabilities: { iron: 16, shadow: 12, heart: 12, stone: 12, gold: 12 },
       },
     });
   }

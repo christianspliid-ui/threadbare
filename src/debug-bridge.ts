@@ -1413,6 +1413,29 @@ if (import.meta.env.DEV) {
       };
     },
     /**
+     * THR-1562: an agent's reach shares beside their effective raw scores. The share
+     * (0–1, `computeReachShare`) is the scale every capability requirement reads —
+     * ambition floors and milestones, spell `minReach`, `reach_above:`, guild joins.
+     * Accepts `@hero`, an agent id, id prefix, or partial name. Returns null if not found.
+     */
+    getReachShares: async (agentIdOrName: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+      const match = await resolveAgentNode(agentIdOrName);
+      if (!match) return null;
+      const { computeRawScore, computeReachShare } = await import('./engine/domainCapability');
+      const { REACH_DOMAINS } = await import('./types/traits');
+      const reaches = {} as Record<string, { raw: number; share: number }>;
+      for (const reach of REACH_DOMAINS) {
+        reaches[reach] = {
+          raw: computeRawScore(graph, match.id, reach),
+          share: computeReachShare(graph, match.id, reach),
+        };
+      }
+      return { agentId: match.id, name: match.name, reaches };
+    },
+
+    /**
      * Returns all attachments (possessions, conditions, powers, agreements) for an agent.
      * Accepts `@hero`, an agent id, id prefix, or partial name (case-insensitive).
      * Returns null if not found.
