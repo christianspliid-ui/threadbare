@@ -516,8 +516,10 @@ describe('courage on the nerve step and momentum between steps, as named terms',
     const complicationsBefore = a.stepComplications?.length ?? 0;
     a = runStep(state, a, tpl, 'failure');                           // clash 2
     const drawn = (a.stepComplications?.length ?? 0) > complicationsBefore ? a.stepComplications!.at(-1) : undefined;
-    const eventMomentum = (drawn?.effects ?? []).reduce(
-      (sum, e) => sum + (e.type === 'fight_momentum' ? e.delta : 0), 0,
+    // The slot type narrows the effects away; the runtime record carries them.
+    const drawnEffects = (drawn as { effects?: readonly { type: string; delta?: number }[] } | undefined)?.effects ?? [];
+    const eventMomentum = drawnEffects.reduce(
+      (sum: number, e) => sum + (e.type === 'fight_momentum' ? e.delta ?? 0 : 0), 0,
     );
     expect(a.fightState!.momentum).toBeCloseTo(FIGHT_CLASH_MOMENTUM.failure! + eventMomentum, 10);
     expect(momentumOn(a)).toBeCloseTo(FIGHT_CLASH_MOMENTUM.failure! + eventMomentum, 10);

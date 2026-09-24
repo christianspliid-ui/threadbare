@@ -203,13 +203,13 @@ describe('advantages are read from the world at fight start', () => {
 
   it('Storied arms (level ≥ 2) and Blessed steady the nerve; a cursed thing drags the clash', () => {
     const graph = world();
-    graph.addNode({ id: 'blade', type: 'item', name: 'Old Blade', properties: {} });
+    graph.addNode({ id: 'blade', type: 'artifact', name: 'Old Blade', properties: {} });
     graph.addEdge({ id: 'e.hero.blade', source: 'hero', target: 'blade', type: 'possesses', properties: {} });
     graph.addEdge({ id: 'e.has_trait.blade.trait.artifact.storied', source: 'blade', target: 'trait.artifact.storied', type: 'has_trait', properties: { level: 1 } });
     expect(keys(graph)).not.toContain('storied_arms');
     graph.updateEdge('e.has_trait.blade.trait.artifact.storied', { properties: { level: 2 } });
     graph.addEdge({ id: 'e.hero.blessed', source: 'hero', target: 'trait.condition.blessed', type: 'has_trait', properties: {} });
-    graph.addNode({ id: 'ring', type: 'item', name: 'Ring', properties: {} });
+    graph.addNode({ id: 'ring', type: 'artifact', name: 'Ring', properties: {} });
     graph.addEdge({ id: 'e.hero.ring', source: 'hero', target: 'ring', type: 'bonded_to', properties: {} });
     graph.addEdge({ id: 'e.has_trait.ring.trait.artifact.cursed', source: 'ring', target: 'trait.artifact.cursed', type: 'has_trait', properties: {} });
     const advantages = readFightAdvantages({ graph }, 'hero', 'beast');
@@ -333,7 +333,7 @@ describe('Storied arms and Blessed move the nerve roll and its forecast', () => 
   it.each([
     ['Blessed', (g: WorldGraph) => g.addEdge({ id: 'e.hero.blessed', source: 'hero', target: 'trait.condition.blessed', type: 'has_trait', properties: {} })],
     ['Storied arms', (g: WorldGraph) => {
-      g.addNode({ id: 'blade', type: 'item', name: 'Old Blade', properties: {} });
+      g.addNode({ id: 'blade', type: 'artifact', name: 'Old Blade', properties: {} });
       g.addEdge({ id: 'e.hero.blade', source: 'hero', target: 'blade', type: 'possesses', properties: {} });
       g.addEdge({ id: 'e.has_trait.blade.trait.artifact.storied', source: 'blade', target: 'trait.artifact.storied', type: 'has_trait', properties: { level: 3 } });
     }],
