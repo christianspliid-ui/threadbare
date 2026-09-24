@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 07:45 local (05:45 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -15,7 +15,7 @@ Your 6 August rule: the hourly planning lane stages design work but never author
 
 ### Design session wanted: sequel scenes fire on their own ([THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the)) — *from tb-orchestrator*
 
-The follow-up scenes of the crossroads bargain and the swindled family can fire on their own. So a stranger turns up to collect on a promise the mortal never made. This is a bug in the appointments work you already approved. The design question is small: how a scene marks itself "only reachable as a sequel". **The builder has work for now: two fight slices opened at 02:30. After the fight block, only unwritten designs remain.** It takes about half an hour in a chat and has no creative fork. Say **"design THR-1526"**. A yes on the ask above would let the lane draft it instead.
+The follow-up scenes of the crossroads bargain and the swindled family can fire on their own. So a stranger turns up to collect on a promise the mortal never made. This is a bug in the appointments work you already approved. The design question is small: how a scene marks itself "only reachable as a sequel". **The builder has one job waiting (M1) and one in progress (FB2). After the fight block, only unwritten designs remain.** It takes about half an hour in a chat and has no creative fork. Say **"design THR-1526"**. A yes on the ask above would let the lane draft it instead.
 
 ### The odds shown are not the odds rolled ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)) — *from tb-orchestrator*
 
