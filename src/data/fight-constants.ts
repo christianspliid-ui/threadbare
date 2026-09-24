@@ -256,3 +256,30 @@ export const FIGHT_CLASH_MOMENTUM: Readonly<Partial<Record<StepOutcome, number>>
 /** The named terms courage and momentum ride on (factor lines, plan doc §7). */
 export const FIGHT_COURAGE_MODIFIER_NAME = 'courage';
 export const FIGHT_MOMENTUM_MODIFIER_NAME = 'momentum';
+
+// ─── The forks (FB4, THR-1540; plan doc §8) ─────────────────────────────
+
+/**
+ * Where on the opponent's clock the temper checkpoint sits: it fires once, when
+ * `clockNow` first reaches `ceil(clockSize × this)`. A clock that starts at or
+ * past it fires at the first clash.
+ */
+export const FIGHT_TEMPER_CLOCK_FRACTION = 0.5;
+
+/**
+ * Clash bands after which the fighter decides whether to stand or yield. A
+ * critical failure is absent: it already ends the fight struck down.
+ */
+export const FIGHT_CONCESSION_BANDS: readonly StepOutcome[] = ['success_at_cost', 'failure'];
+
+/** The axis the concession fork reads: the positive pole (courage) fights on, the negative yields. */
+export const FIGHT_CONCESSION_AXIS = 'courage_prudence' as const;
+
+/**
+ * The axis a bargainer's offer is weighed on, by the fighter: the positive pole
+ * (mercy) takes the bargain, the negative (ruthlessness) refuses it.
+ */
+export const FIGHT_BARGAIN_AXIS = 'mercy_ruthlessness' as const;
+
+/** The `monsterState` flag the temper checkpoint sets, so the lair card may name the temper once seen. */
+export const FIGHT_TEMPER_SHOWN_PROP = 'temperShown';

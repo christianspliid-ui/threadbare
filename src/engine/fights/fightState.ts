@@ -17,14 +17,15 @@
  *    step owns (`fightResultIndex`), so aftermath variants key on `fight:<result>`
  *    without shadowing a card record the hand wrote by step index.
  *
- * Deterministic: no rng is drawn here (the forks' coin is FB4's, and is drawn only
- * inside the neutral band).
+ * Deterministic: the only draw is the forks' coin (`fightForks.ts`, FB4), from the
+ * step's own rng and only inside the neutral band.
  */
 
 import type { GameState } from '../../types/gameState';
 import type { WorldGraph } from '../graph';
 import type {
   ActionStep,
+  StepNudge,
   StepOutcome,
   UnifiedAction,
   UnifiedActionTemplate,
@@ -49,6 +50,7 @@ import {
   clearStaleFightClockMailbox,
   drainFightClockMailbox,
 } from './fightClock';
+import { runFightForks } from './fightForks';
 
 /**
  * The index the fight's result memory is written at: past the terminal block, an
@@ -176,7 +178,7 @@ export function applyFightStepResult(
   step: ActionStep,
   outcome: StepOutcome,
   tick: number,
-  opts: { readonly difficulty?: number } = {},
+  opts: FightStepResultOptions = {},
 ): UnifiedAction {
   const role = fightRoleOf(step);
   if (!role) return action;
@@ -184,6 +186,8 @@ export function applyFightStepResult(
   const fight = landed.fightState;
   if (!fight) return landed;
 
+  // The step's costs read the fight as it stood when the blow landed: a berserk
+  // turn decided by this clash's temper prices the *next* clash, not this one.
   const harm = queueFightHarm(state, action.actorId, {
     role,
     band: outcome,
@@ -194,7 +198,7 @@ export function applyFightStepResult(
   const condition = applyFightBandCondition(
     state, action.actorId, role, outcome, tick, action.actionId, action.currentStep,
   );
-  return {
+  const costed: UnifiedAction = {
     ...landed,
     fightState: {
       ...fight,
@@ -205,6 +209,45 @@ export function applyFightStepResult(
       momentum: fightMomentumAfter(role, outcome),
     },
   };
+
+  // THR-1540 (plan doc §5, §8) — the forks, after the clock-full check: temper,
+  // then concession; none once a result is set. Then a fight still undecided at
+  // its last step ends `broke_off` — after the forks, so a bargain or a flight on
+  // the last clash still decides how it ends.
+  const isLast = isLastFightStep(template, action.currentStep);
+  let decided = runFightForks({
+    state,
+    action: costed,
+    templateId: action.templateId,
+    stepIndex: action.currentStep,
+    outcome,
+    isLast,
+    rng: opts.rng ?? standFirmCoin,
+    tick,
+    handNudges: opts.handNudges,
+  }, role) ?? costed.fightState!;
+  if (isLast && !decided.result) decided = { ...decided, result: 'broke_off' };
+  return { ...costed, fightState: decided };
+}
+
+/** Options the handler's call site passes: the resolved difficulty, the step rng and the dealt hand. */
+export interface FightStepResultOptions {
+  /** The step's resolved difficulty (plan doc §3c); harm reads it. */
+  readonly difficulty?: number;
+  /** The step's seeded resolution rng — the forks' coin, drawn only inside the neutral band. */
+  readonly rng?: () => number;
+  /** The resolved (dealt) step's cards, for the hand's lean on a fork's axis. */
+  readonly handNudges?: readonly StepNudge[];
+}
+
+/**
+ * The fallback coin when no rng is passed (a direct call with no step stream).
+ * The neutral band then reads the positive pole — the fighter stands, a bargain
+ * is taken — so a caller that never supplied a coin is not handed a yield.
+ * Deterministic, never `Math.random` (NFP #3).
+ */
+function standFirmCoin(): number {
+  return 0;
 }
 
 /**
@@ -253,11 +296,8 @@ function landFightBand(
     }
   }
 
-  const last = isLastFightStep(template, action.currentStep);
-
   if (role === 'nerve') {
     if (outcome === 'critical_failure') fight = { ...fight, result: 'routed' };
-    else if (last) fight = { ...fight, result: 'broke_off' };
     return { ...action, fightState: fight };
   }
 
@@ -301,8 +341,6 @@ function landFightBand(
   const opponentAlive = fight.opponentId === null || !isAgentGone(graph.getNode(fight.opponentId));
   if (fight.clockNow >= fight.clockSize && opponentAlive && blowLanded) {
     fight = { ...fight, result: 'overcome' };
-  } else if (last) {
-    fight = { ...fight, result: 'broke_off' };
   }
   return { ...action, fightState: fight };
 }
