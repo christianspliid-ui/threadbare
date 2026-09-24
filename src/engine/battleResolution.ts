@@ -28,6 +28,7 @@ import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
 import { applyAftermath } from './battleAftermath';
+import { reportWar, captureArmySide, captureBattleForNews } from './armyNotifications';
 import type { SimulationRuntime } from './simulationRuntime';
 import { selectSpotlight, hasThreadToBattle } from './battleSpotlights';
 // NOTE: this module carries its own local `mulberry32` / `hashString` (below) —
@@ -254,6 +255,15 @@ export function createBattleNode(
       defenderArmyId,
       hexId,
       momentum: initialMomentum,
+    });
+
+    // War news (THR-1564): battle joined, reported at the site.
+    reportWar(state, {
+      kind: 'battle_joined',
+      battleId,
+      attacker: captureArmySide(state, attackerArmyId),
+      defender: captureArmySide(state, defenderArmyId),
+      placeId: hexId,
     });
 
     // Effect event: combat_started (THR-1239). Raised only after the battle node
@@ -495,8 +505,18 @@ export function resolveBattle(
   // the aftermath falls on them second.
   raiseBattleEvent(state, bs.attackerArmyId, bs.defenderArmyId, 'combat_ended', 'battle_resolved', 107);
 
+  // War news (THR-1564): capture the sides, the place, the town's holder and the
+  // visibility BEFORE the aftermath — it disbands the loser, may kill its commander and,
+  // on a conquest, hands the town over. Report AFTER it, so a siege that took its town
+  // is told once, by the territory line.
+  const newsCapture = captureBattleForNews(state, battleNodeId);
+
   // Apply aftermath consequences (destruction, commander fate, etc.)
   applyAftermath(state, bs, resolutionType, runtime);
+
+  if (newsCapture) {
+    reportWar(state, { kind: 'battle_ended', battleId: battleNodeId, capture: newsCapture, resolution: resolutionType });
+  }
 
   // Remove battle node (cleans up participates_in and located_at edges)
   graph.removeNode(battleNodeId);

@@ -1,5 +1,5 @@
 {
-  "total": 2825,
+  "total": 2818,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -240,7 +240,6 @@
     "src/engine/__tests__/ambitionTick.test.ts": 2,
     "src/engine/__tests__/armyAttrition.test.ts": 1,
     "src/engine/__tests__/armySpawning.test.ts": 2,
-    "src/engine/__tests__/armyVisibility.test.ts": 6,
     "src/engine/__tests__/ascendant.test.ts": 3,
     "src/engine/__tests__/aspects.test.ts": 1,
     "src/engine/__tests__/attachment-lifecycle-integration.test.ts": 1,
@@ -481,7 +480,6 @@
     "src/engine/ambitionTick.ts": 2,
     "src/engine/armyAttrition.ts": 3,
     "src/engine/armyMovement.ts": 4,
-    "src/engine/armyNotifications.ts": 1,
     "src/engine/armySpawning.ts": 3,
     "src/engine/ascendant.ts": 1,
     "src/engine/ascendantBeat.ts": 3,

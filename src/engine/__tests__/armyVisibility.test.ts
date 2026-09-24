@@ -4,38 +4,18 @@
  * Tests for:
  * 1. Army actor nodes included in graph query results (buildArmyRenderData)
  * 2. Battle node has correct located_at for hex positioning (buildBattleIndicatorData)
- * 3. Thread-based visibility: threaded battle → modal significance, unthreaded → chronicle
- * 4. Army notification tier mapping (phaseArmyNotifications)
+ *
+ * The thread-based visibility of war lines moved to warNews.test.ts (THR-1564).
  *
  * Visual verification of HexMapV2 layers requires Claude in Chrome — not tested here.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { buildArmyRenderData, factionColorFromId, ARMY_FALLBACK_COLOR } from '../../components/HexMapV2/scene/ArmyLayer';
 import { buildBattleIndicatorData } from '../../components/HexMapV2/scene/BattleIndicatorLayer';
-import { phaseArmyNotifications, ARMY_NOTIFICATION_SIGNIFICANCE_THREADED, ARMY_NOTIFICATION_SIGNIFICANCE_UNTHREADED } from '../armyNotifications';
-import { emitTrace, clearTraces, enableTracing, disableTracing } from '../traceBuffer';
-import type { GameState } from '../../types/gameState';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-let counter = 0;
-function nextEventId(): string {
-  return `test_evt_${++counter}`;
-}
-
-function makeState(tick: number, graph: WorldGraph, ascendantId = 'ascendant1'): GameState {
-  return {
-    tick,
-    seed: 42,
-    graph,
-    ascendantId,
-    tickEvents: [],
-    recentEvents: [],
-    chronicleEntries: [],
-  } as unknown as GameState;
-}
 
 /**
  * Creates a location node with hexCol/hexRow properties.
@@ -301,174 +281,7 @@ describe('factionColorFromId', () => {
     expect(colors.size).toBeGreaterThan(1);
   });
 });
-
-describe('phaseArmyNotifications — thread-based visibility', () => {
-  let graph: WorldGraph;
-
-  beforeEach(() => {
-    graph = new WorldGraph();
-    counter = 0;
-    clearTraces();
-    enableTracing();
-
-    // Ascendant node
-    graph.addNode({
-      id: 'ascendant1',
-      type: 'actor',
-      name: 'Test Ascendant',
-      properties: { actorType: 'ascendant' },
-    });
-  });
-
-  afterEach(() => {
-    clearTraces();
-    disableTracing();
-  });
-
-  it('army_raised → high significance when commander is threaded', () => {
-    // Thread an agent
-    graph.addNode({ id: 'agent1', type: 'actor', name: 'Commander', properties: { actorType: 'individual' } });
-    graph.addEdge({ id: 'e_thread', source: 'ascendant1', target: 'agent1', type: 'thread', properties: {} });
-
-    // Emit army_raised trace with commanderId = threaded agent
-    emitTrace({
-      tick: 1,
-      category: 'faction_ambition',
-      summary: 'Army raised by Commander',
-      event: 'army_raised',
-      armyId: 'army1',
-      commanderId: 'agent1',
-      factionId: 'faction1',
-    });
-
-    const state = makeState(1, graph);
-    const update = phaseArmyNotifications(state, nextEventId);
-
-    expect(update.tickEvents).toBeDefined();
-    const armyEvent = update.tickEvents!.find(e => e.type === 'army_mobilization');
-    expect(armyEvent).toBeDefined();
-    expect(armyEvent!.significance).toBe(ARMY_NOTIFICATION_SIGNIFICANCE_THREADED);
-  });
-
-  it('army_raised → low significance when commander is not threaded', () => {
-    // No thread from ascendant to any agent
-    emitTrace({
-      tick: 1,
-      category: 'faction_ambition',
-      summary: 'Foreign army raised',
-      event: 'army_raised',
-      armyId: 'army_foreign',
-      commanderId: 'foreign_commander',
-      factionId: 'foreign_faction',
-    });
-
-    const state = makeState(1, graph);
-    const update = phaseArmyNotifications(state, nextEventId);
-
-    expect(update.tickEvents).toBeDefined();
-    const armyEvent = update.tickEvents!.find(e => e.type === 'army_mobilization');
-    expect(armyEvent).toBeDefined();
-    expect(armyEvent!.significance).toBe(ARMY_NOTIFICATION_SIGNIFICANCE_UNTHREADED);
-  });
-
-  it('battle resolved → high significance when attacker army commander is threaded', () => {
-    // Thread an agent who commands the attacker army
-    graph.addNode({ id: 'commander1', type: 'actor', name: 'General', properties: { actorType: 'individual' } });
-    graph.addEdge({ id: 'e_thread2', source: 'ascendant1', target: 'commander1', type: 'thread', properties: {} });
-
-    // Emit battle resolved trace
-    emitTrace({
-      tick: 1,
-      category: 'faction_ambition',
-      summary: 'Battle resolved: attacker_victory',
-      event: 'resolved',
-      battleId: 'battle1',
-      attackerArmyId: 'commander1', // Same ID as threaded agent (simplified for test)
-      defenderArmyId: 'army_defender',
-      resolutionType: 'attacker_victory',
-    });
-
-    const state = makeState(1, graph);
-    const update = phaseArmyNotifications(state, nextEventId);
-
-    expect(update.tickEvents).toBeDefined();
-    const battleEvent = update.tickEvents!.find(e => e.type === 'battle_resolved');
-    expect(battleEvent).toBeDefined();
-    expect(battleEvent!.significance).toBe(ARMY_NOTIFICATION_SIGNIFICANCE_THREADED);
-  });
-
-  it('siege_established → low significance when no threads to participants', () => {
-    addLocation(graph, 'loc1', 5, 5);
-
-    // Build a real army node so getOutgoingEdges works
-    graph.addNode({ id: 'army_attacker', type: 'actor', name: 'Attacker', properties: { actorType: 'group', armyState: { size: 'warband' } } });
-    // No commanded_by edge → commander not found → not threaded
-
-    emitTrace({
-      tick: 1,
-      category: 'faction_ambition',
-      summary: 'Siege established at castle',
-      event: 'siege_established',
-      siegeId: 'siege1',
-      attackerArmyId: 'army_attacker',
-      settlementId: 'loc1',
-    });
-
-    const state = makeState(1, graph);
-    const update = phaseArmyNotifications(state, nextEventId);
-
-    expect(update.tickEvents).toBeDefined();
-    const siegeEvent = update.tickEvents!.find(e => e.type === 'siege_established');
-    expect(siegeEvent).toBeDefined();
-    expect(siegeEvent!.significance).toBe(ARMY_NOTIFICATION_SIGNIFICANCE_UNTHREADED);
-  });
-
-  it('army notification tier mapping — army_mobilization type is correct', () => {
-    emitTrace({
-      tick: 5,
-      category: 'faction_ambition',
-      summary: 'Test army raised',
-      event: 'army_raised',
-      armyId: 'army_test',
-      commanderId: 'cmd_test',
-      factionId: 'faction_test',
-    });
-
-    const state = makeState(5, graph);
-    const update = phaseArmyNotifications(state, nextEventId);
-
-    expect(update.tickEvents).toBeDefined();
-    const e = update.tickEvents![0];
-    expect(e.type).toBe('army_mobilization');
-    expect(e.tick).toBe(5);
-    expect(typeof e.significance).toBe('number');
-    expect(typeof e.message).toBe('string');
-    expect(e.message.length).toBeGreaterThan(0);
-  });
-
-  it('only processes traces from the current tick', () => {
-    // Emit trace from a different tick
-    emitTrace({
-      tick: 3,
-      category: 'faction_ambition',
-      summary: 'Old army raised',
-      event: 'army_raised',
-      armyId: 'old_army',
-      commanderId: 'old_cmd',
-      factionId: 'old_faction',
-    });
-
-    // State is at tick 5, not 3
-    const state = makeState(5, graph);
-    const update = phaseArmyNotifications(state, nextEventId);
-
-    // Should not produce events (trace is from tick 3, state is tick 5)
-    expect(update.tickEvents ?? []).toHaveLength(0);
-  });
-
-  it('returns empty object when no traces', () => {
-    const state = makeState(1, graph);
-    const update = phaseArmyNotifications(state, nextEventId);
-    expect(update).toEqual({});
-  });
-});
+// The thread-visibility arms that lived here (`phaseArmyNotifications`) hand-fed traces
+// to a phase that read the trace buffer. THR-1564 retired that phase — traces are off in
+// normal play, so it never wrote a line — and moved the arms to `warNews.test.ts`, where
+// they drive the real war writers with tracing disabled.

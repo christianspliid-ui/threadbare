@@ -809,6 +809,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; The war nobody heard
+      <span class="lead">Audited 2026-09-24 (audit-on-touch, THR-1564). Every writer existed and every reader existed; the path between them ran through the debug layer.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">An army raised, a battle joined, a siege laid, a battle ended, a town taken <span class="arrow">&#10230;</span> A line in the player&rsquo;s chronicle &mdash; the war reports itself where it happens, and nothing player-facing reads a trace (<code>war-news-reaches-chronicle</code>)</span><span class="chip live">LIVE</span>
+        <span class="note"><strong>LIVE since THR-1564 (2026-09-24).</strong> This row is a <strong>negative</strong> first: no player-facing surface may be built on traces. The war lines used to be built by <code>phaseArmyNotifications</code>, which read the trace buffer &mdash; and tracing is off unless the debug panel is open, so in normal play the phase found nothing and the player was never told a war was happening, while every CLI run (which always traces) showed the lines. Now each war writer calls <code>reportWar</code> where its event happens; it judges visibility <em>before</em> the aftermath removes the loser, builds one line with no numbers, and pushes one <code>TickEvent</code> that <code>phaseNarrative</code> promotes. Beginnings reach the chronicle when threaded, every battle&rsquo;s ending and every town changing hands reach it regardless, and a siege that takes its town is told once. Falsified with tracing <strong>off</strong>: <code>warNews.test.ts</code> drives the real writers, and a 150-tick seed-42 run puts 11 battle endings in the chronicle &mdash; identical line for line to the same run with tracing on, and up from 0.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight &mdash; The record the build could not hand over
       <span class="lead">Audited 2026-09-10 (audit-on-touch, THR-1134). Two producers had been writing every tick, in production, to a consumer that was stripped from the build.</span>
     </h2>

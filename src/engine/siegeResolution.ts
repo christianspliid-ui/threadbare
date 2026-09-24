@@ -37,6 +37,7 @@ import {
 import { calculateInitialMomentum, resolveBattle } from './battleResolution';
 import type { SimulationRuntime } from './simulationRuntime';
 import { emitTrace } from './traceBuffer';
+import { reportWar, captureArmySide, captureTownSide } from './armyNotifications';
 import { hexDistance } from './delivery';
 import type { BattleResolutionType } from '../types/battle';
 import { resolveEffectiveTier } from './attentionTier';
@@ -290,6 +291,15 @@ export function createSiegeNode(
       fortification,
       momentum: initialMomentum,
       phase: 'opening',
+    });
+
+    // War news (THR-1564): a siege laid, reported at the site.
+    reportWar(state, {
+      kind: 'siege_laid',
+      siegeId,
+      attacker: captureArmySide(state, attackerArmyId),
+      defender: captureTownSide(state, settlementId),
+      townId: settlementId,
     });
 
     return siegeId;

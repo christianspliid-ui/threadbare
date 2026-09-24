@@ -23,6 +23,7 @@ import { stampRealmSeat } from './realmSeat';
 import { touchStructure } from './simulationRuntime';
 import type { SimulationRuntime } from './simulationRuntime';
 import { REALM_CONQUEST_SEVERITY } from '../data/realm-content';
+import { reportWar } from './armyNotifications';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -415,6 +416,18 @@ function emitConquestTrace(
     summary,
     ...fields,
   });
+
+  // War news (THR-1564): the chronicle line for a border that moved, written from state
+  // here rather than read back off the trace above. `retained` changed nothing: not news.
+  if (fields.outcome !== 'retained') {
+    reportWar(state, {
+      kind: 'territory_changed',
+      outcome: fields.outcome,
+      locationId: fields.locationId,
+      fromFactionId: fields.fromFactionId,
+      toFactionId: fields.toFactionId,
+    });
+  }
 }
 
 // ─── Aftermath Application ──────────────────────────────────────────────
@@ -670,7 +683,7 @@ export function applyAftermath(
   // its trade routes and its Places. The settlement has already taken its losses
   // (prosperity, tier, Places, routes, conquest); it stays on the map.
   if (loserNode && loserState) {
-    disbandArmy(state, loserArmyId);
+    disbandArmy(state, loserArmyId, 'battle');
   }
 
   // ── Emit trace ──

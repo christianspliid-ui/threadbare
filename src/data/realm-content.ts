@@ -131,12 +131,13 @@ export const REALM_SEAT_COPY = 'seat of the court';
 /**
  * Prominence of the *takes* / *loses* line in the event feed.
  *
- * Above the unthreaded army notifications (0.3) and below a battle's own resolution —
- * a border moving is worth reading about even when no threaded mortal stood in it,
- * because the map itself changes shape. There is deliberately no toast: the map moving
- * *is* the notification (§ UI).
+ * At the chronicle's threshold (`phaseNarrative` promotes at ≥ 0.8), flat rather than
+ * thread-gated: a border moving is worth reading about even when no threaded mortal stood
+ * in it, because the map itself changes shape. THR-1564 raised it from 0.7, which sat
+ * below every player surface — the line was written and never shown. There is
+ * deliberately no toast: the map moving *is* the notification (§ UI).
  */
-export const REALM_TERRITORY_EVENT_SIGNIFICANCE = 0.7;
+export const REALM_TERRITORY_EVENT_SIGNIFICANCE = 0.85;
 
 // ─── Naming ───────────────────────────────────────────────────────────────────
 

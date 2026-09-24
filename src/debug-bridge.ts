@@ -3492,5 +3492,27 @@ if (import.meta.env.DEV) {
           };
         });
     },
+
+    // THR-1564 — the war news, written from state by `reportWar` (never from traces).
+    // Reads this tick's events and the rolling `recentEvents` buffer, and says which
+    // lines reached the chronicle. Works with tracing off, which is the point.
+    getWarNews: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const inChronicle = new Set((state.chronicleEntries ?? []).map((c) => c.id));
+      const seen = new Set<string>();
+      const out: Array<{ id: string; tick: number; type: string; significance: number; message: string; inChronicle: boolean }> = [];
+      for (const e of [...(state.recentEvents ?? []), ...(state.tickEvents ?? [])]) {
+        if (!e.id.startsWith('evt_war_') || seen.has(e.id)) continue;
+        seen.add(e.id);
+        out.push({ id: e.id, tick: e.tick, type: e.type, significance: e.significance, message: e.message, inChronicle: inChronicle.has(e.id) });
+      }
+      for (const c of state.chronicleEntries ?? []) {
+        if (!c.id.startsWith('evt_war_') || seen.has(c.id)) continue;
+        seen.add(c.id);
+        out.push({ id: c.id, tick: c.tick, type: 'chronicle', significance: 1, message: c.prose, inChronicle: true });
+      }
+      return out.sort((a, b) => a.tick - b.tick);
+    },
   };
 }

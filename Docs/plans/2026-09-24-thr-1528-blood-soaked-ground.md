@@ -228,6 +228,7 @@ Checked against `Docs/plans/wiring-checklist.md`: every module below names its o
 - **Too common.** If more than a quarter of a world's settlements carry it at once, the weights are too generous. Tune the constants before closing.
 - **Too costly.** If tick cost rises more than 2% at medium, the stamp gate is not doing its job. Profile the rule before closing.
 - **War news lands (revisit, not kill).** When THR-1564 ships battle lines built from state, a battle would reach the chronicle twice. THR-1564's executor sets `chronicleSignificance` back to `LOCATION_TRAIT_EVENT_SIGNIFICANCE` in the same PR. This is recorded on THR-1564 too.
+  - *Updated 2026-09-24 (THR-1564 shipped first):* battle endings now reach the chronicle themselves, through `reportWar`. **This ticket ships the blood-soaked rule at `LOCATION_TRAIT_EVENT_SIGNIFICANCE` (0.4) directly**, with no `BLOOD_SOAKED_CHRONICLE_SIGNIFICANCE` override. The `battle_fought` record's `summary` reuses `battleOutcomeSentence` from `src/engine/armyNotifications.ts`, the one builder for a battle's ending.
 
 ## Tracing
 

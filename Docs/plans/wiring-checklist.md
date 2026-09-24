@@ -2657,6 +2657,16 @@ Plan: `Docs/plans/2026-09-23-fight-block.md` §10 (and §5, the clock). The effe
 | `engine/effects/effectEvents.ts` (one-shot `fight_clock`) · `engine/effectTick.ts` (per-tick `fight_clock`) | fight raises / the effect tick | — | as above | `fight.clock` (cause `item:<id>` / `tick:<id>`) | trace viewer |
 | `engine/effects/conditionApplier.ts` (new home of `applyConditionToActor`, re-exported from `encounterAftermath`) · `engine/effects/effectPredicates.ts` (`clock_above:`, `fightClockFilled`) · `engine/fights/fightState.ts` (a positive effect write on a persistent clock counts as a blow) · `types/effects.ts` | — | — | — | — | — |
 
+## War news from state (THR-1564)
+
+Plan: `Docs/plans/2026-09-24-thr-1564-war-news-from-state.md`. Each war writer reports its own line through `reportWar`; the trace-reading phase 2.358 (`phaseArmyNotifications`) is retired. No new node type, edge type, component or `TickEvent` type. **Nothing player-facing reads a trace** — the traces at every war site stay, as the debug layer.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/armyNotifications.ts` (`reportWar`, `captureArmySide` / `captureTownSide` / `captureBattleForNews`, `battleOutcomeSentence`, `WAR_NEWS_*` constants) | inside the war phases (2.352–2.357), `faction_ambitions`, `notable_agendas` | `ChroniclePanel` (via `phaseNarrative` → `chronicleEntries`) | pushes into `state.tickEvents` in place | `war.reported` (one per call; `src/types/traces/war-traces.ts`); the existing war traces unchanged | `__DEBUG.getWarNews()`; debug panel recent events |
+| call sites: `armySpawning.spawnArmy` · `armyAttrition.disbandArmy` (new `reason`; `'battle'` does not report) + the threshold crossing · `battleResolution.createBattleNode` + `resolveBattle` (capture before `applyAftermath`, report after) · `siegeResolution.createSiegeNode` · `battleAftermath.emitConquestTrace` | their existing phases | — | — | — | — |
+| `data/realm-content.ts` (`REALM_TERRITORY_EVENT_SIGNIFICANCE` 0.7 → 0.85) | — | — | — | — | — |
+
 ## The block, the template, advantages, allies, events — fight block FB7 (THR-1543)
 
 Plan: `Docs/plans/2026-09-23-fight-block.md` §11–12 and § Content pillar. The first fight template ships (spawn-only), the world lends advantages the handler spends through the existing favour/secret writers, a fight draws its own complications, and the attended forecast reads the fight's real inputs. No new phase, node type or edge type.

@@ -125,7 +125,6 @@ import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
 import { phaseLairEscalation, resetAdjacentLairCounter } from './lairEscalation';
 import { resetSurveyEventCounter } from './surveyProseComposer';
 import { resetQuestHookEventCounter } from './ruins/questHooks';
-import { phaseArmyNotifications } from './armyNotifications';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
@@ -3256,12 +3255,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.3575: Lair Escalation (M2.5 — tier upgrades, sphere feedback, spawn)
   timeInlinePhase('lair_escalation', s, () => phaseLairEscalation(s, runtime));
 
-  // Phase 2.358: Army Notifications (TB-073 — convert army/battle traces to TickEvents)
-  {
-    const r = runInlinePhase('army_notifications', s, () => phaseArmyNotifications(s, nextEventId));
-    s = r.next;
-    phaseEventCounts['army_notifications'] = r.eventDelta;
-  }
+  // Phase 2.358 (Army Notifications) was retired by THR-1564. It built the war lines by
+  // reading the trace buffer, which is off in normal play, so the player never heard of
+  // the war. Each war writer now reports its own line through `reportWar`
+  // (armyNotifications.ts), pushing into `s.tickEvents` in place inside the phases above
+  // and in faction ambitions / notable agendas; `phaseNarrative` promotes them.
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)

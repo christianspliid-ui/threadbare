@@ -20,7 +20,6 @@ import { applyConquestOrVacuum } from '../battleAftermath';
 import { buildRealmProjection } from '../realmProjection';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { enableTracing, clearTraces, getTraces, disableTracing } from '../traceBuffer';
-import { phaseArmyNotifications } from '../armyNotifications';
 import { REALM_FILL_RADIUS, REALM_TERRITORY_EVENT_SIGNIFICANCE } from '../../data/realm-content';
 import type { GameState } from '../../types/gameState';
 import type { HexTile } from '../../types';
@@ -251,26 +250,24 @@ describe('applyConquestOrVacuum — the political map moves (THR-1155)', () => {
 
 describe('the chronicle line — *takes* / *loses* reaches the feed (THR-1155)', () => {
   /**
-   * `phaseArmyNotifications` is the phase that already runs right after `battle_tick`
-   * and already turns war traces into readable lines, so the territory line is read
-   * there rather than in a phase of its own. These assertions drive the real conquest
-   * and the real phase — nothing is hand-fed a trace.
+   * THR-1564: the conquest reports its own line through `reportWar`, pushed into
+   * `state.tickEvents` in place. Until then a phase read it back off the trace buffer,
+   * which is off in normal play — so these arms run with tracing **disabled**, the state
+   * the player is actually in. Nothing is hand-fed a trace.
    */
-  const runNotifications = (state: GameState) => {
-    let n = 0;
-    return phaseArmyNotifications(state, () => `ev_${n++}`);
+  const runConquest = (state: GameState, locId: string, armyId: string) => {
+    disableTracing();
+    (state as unknown as { tickEvents: unknown[] }).tickEvents = [];
+    applyConquestOrVacuum(state, locId, armyId);
+    return state.tickEvents;
   };
 
   it('names the line after the conquest that produced it, with both Realms as refs', () => {
     const { state } = buildWar();
-    (state as unknown as { tickEvents: unknown[] }).tickEvents = [];
 
-    applyConquestOrVacuum(state, 'loc_1', 'army_0');
-    const update = runNotifications(state);
-
-    const events = (update.tickEvents ?? []).filter(e => e.type === 'realm_territory_change');
+    const events = runConquest(state, 'loc_1', 'army_0').filter(e => e.type === 'realm_territory_change');
     expect(events).toHaveLength(1);
-    expect(events[0].message).toBe('Realm 0 takes Town 1 from Realm 1');
+    expect(events[0].message).toBe('Realm 0 takes Town 1 from Realm 1.');
     expect(events[0].significance).toBe(REALM_TERRITORY_EVENT_SIGNIFICANCE);
 
     // Law 2 — the producer declares. A chronicle surface links these; none parses the
@@ -283,15 +280,13 @@ describe('the chronicle line — *takes* / *loses* reaches the feed (THR-1155)',
 
   it('says nothing when the victor already held the town', () => {
     const { state } = buildWar();
-    (state as unknown as { tickEvents: unknown[] }).tickEvents = [];
 
     // Falsification arm for the line above: a producer that emitted on every aftermath
     // would fill the feed with non-news on every double resolution, and the assertion
     // that a conquest produces a line would prove nothing about conquest.
-    applyConquestOrVacuum(state, 'loc_0', 'army_0');
-    const update = runNotifications(state);
+    const events = runConquest(state, 'loc_0', 'army_0');
 
-    expect((update.tickEvents ?? []).filter(e => e.type === 'realm_territory_change')).toHaveLength(0);
+    expect(events.filter(e => e.type === 'realm_territory_change')).toHaveLength(0);
   });
 });
 

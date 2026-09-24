@@ -4317,6 +4317,38 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/effects/effectEventDispatch.ts', 'src/engine/effects/effectEvents.ts', 'src/engine/effectTick.ts'],
     readSites: ['src/engine/fights/fightState.ts'],
   },
+  // ─── The war reaches the chronicle (THR-1564) ────────────────────
+  // The failure this row exists to make impossible: a player-facing surface built on
+  // traces. The war lines were read back off the trace buffer, which is off unless the
+  // debug panel is open, so in normal play the player never heard of a war. The row is
+  // negative first — nothing player-facing reads a trace — with one named door,
+  // `reportWar`, that every war writer reports through.
+  {
+    id: 'war-news-reaches-chronicle',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: NARRATIVE,
+    intent:
+      'The war reports itself (THR-1564). Each war writer — an army raised, broken apart or fraying, a battle joined, a siege laid, a battle or siege ended, a town changing hands — calls `reportWar` where the event happens, which judges visibility before the aftermath, builds one line with no numbers and pushes one `TickEvent` into `state.tickEvents`. `phaseNarrative` promotes the lines at the chronicle threshold into `chronicleEntries`, which the Chronicle panel renders. Nothing on this path reads a trace.',
+    ulTerms: ['Narrative Event', 'Chronicle Entry'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['reportWar', 'captureBattleForNews', 'battleOutcomeSentence', 'WAR_NEWS_CHRONICLE_SIGNIFICANCE', 'phaseNarrative'],
+      module: 'src/engine/armyNotifications.ts',
+    },
+    writeSites: [
+      'src/engine/armySpawning.ts',
+      'src/engine/armyAttrition.ts',
+      'src/engine/battleResolution.ts',
+      'src/engine/siegeResolution.ts',
+      'src/engine/battleAftermath.ts',
+    ],
+    readSites: ['src/engine/orchestrator.ts'],
+    verifiedLive: {
+      date: '2026-09-24',
+      evidence:
+        'THR-1564. `warNews.test.ts` (21) drives the real writers — `spawnArmy`, `disbandArmy`, `phaseArmyAttrition`, `createBattleNode`, `createSiegeNode`, `resolveBattle`, `applyConquestOrVacuum` — with tracing DISABLED and asserts each kind writes its line in the same tick at the loudness table’s significance; a threaded mortal’s losing army whose commander dies in the aftermath still reports threaded (seed searched, not guessed); a siege that takes its town writes the territory line and no battle line; no line carries a digit; tracing on and off write identical lines. Headless, seed 42 medium, 150 ticks, tracing OFF: 80 war lines, 11 battle and siege endings in `chronicleEntries`, 0 digits — byte-identical to the same run with tracing ON. Before this change the tracing-off run wrote 0.',
+    },
+  },
   // ── FB7 (THR-1543, plan §11–12) — the world lends a fighter its advantages and spends
   // them through the writers the secrets phase already uses; a fight draws its own
   // mid-fight events. FB7 ships the first fight template (`fight.lair.confront`), but it
