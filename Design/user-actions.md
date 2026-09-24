@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 12:58 local (10:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 13:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -54,6 +54,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — traits and items can now react when a fighter is struck, lands a blow or wins** ([THR-1541](https://linear.app/threadbare/issue/THR-1541/fight-block-fb5-fight-events), fight block FB5). Merged 13:38 local via [#2012](https://github.com/christianspliid-ui/threadbare/pull/2012), and live on the site.
 - **2026-09-24 — sequel-only encounters no longer turn up on the open board** ([THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), your morning design). Merged 12:43 local via [#2011](https://github.com/christianspliid-ui/threadbare/pull/2011), and live on the site.
 - **2026-09-24 — mid-fight, a fighter now decides whether to yield or fight on** ([THR-1540](https://linear.app/threadbare/issue/THR-1540/fight-block-fb4-the-forks), fight block FB4). Merged 11:34 local via [#2008](https://github.com/christianspliid-ui/threadbare/pull/2008), and live on the site.
 - **2026-09-24 — builders nobody is watching now step back, and the spotlight follows who is building** ([THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), your morning design). Merged 10:43 local via [#2007](https://github.com/christianspliid-ui/threadbare/pull/2007), and live on the site.
@@ -63,7 +64,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — a won siege now keeps the town it took** ([THR-1563](https://linear.app/threadbare/issue/THR-1563)). Merged 08:31 local via [#2000](https://github.com/christianspliid-ui/threadbare/pull/2000).
 - **2026-09-24 — fights now run on a clock and can end early** ([THR-1538](https://linear.app/threadbare/issue/THR-1538/fight-block-fb2-fightstate-the-clock-early-end), fight block FB2). Merged 07:59 local via [#1999](https://github.com/christianspliid-ui/threadbare/pull/1999).
 - **2026-09-24 — a pickup run killed mid-job no longer leaves its work invisible** ([THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push)). Merged 02:18 local via [#1987](https://github.com/christianspliid-ui/threadbare/pull/1987).
-- **2026-09-24 — fight steps now take their opponent into account** ([THR-1537](https://linear.app/threadbare/issue/THR-1537/fight-block-fb1-fight-steps-read-their-opponent), fight block FB1). Merged 01:41 local via [#1998](https://github.com/christianspliid-ui/threadbare/pull/1998), and live on the site.
 
 ---
 
