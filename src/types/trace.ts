@@ -5360,6 +5360,12 @@ export interface ResolutionInputTrace extends TraceBase {
   scaleOffsetApplied: number;
   sphereFactor: number;
   actionModifiers: number;
+  /**
+   * THR-1535: the standing-modifier share of `actionModifiers` (items, conditions,
+   * the effect family, terrain, place conditions, sphere alignment). Absent when 0,
+   * and on a fight step, whose standing rides its fight named terms instead.
+   */
+  standingModifiers?: number;
   influenceNudge: number;
   /** Effective probability after all floor adjustments. */
   probability: number;

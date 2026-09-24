@@ -136,6 +136,7 @@ import { computeOutcomeConsequence } from './outcomeConsequences';
 import type { ComplicationContext } from '../types/complication';
 import { applyComplicationEffects } from './complicationEffects';
 import { getAgentLocationId, getAgentsAtLocation } from './graphQueries';
+import { computeStandingModifierTotal } from './resolutionModifiers';
 import { processFactionEncounterReputation } from './factionReputation';
 import { processReputationTally } from './phaseReputationTraits';
 import {
@@ -493,8 +494,19 @@ function deriveStepRollInputs(
   //
   // THR-1537 — a fight step's named terms (the fighter's standing modifiers) ride
   // it too. Zero for every ordinary step.
+  //
+  // THR-1535 — an ordinary step now reads the roller's standing modifiers (items,
+  // conditions, the effect family, terrain, place conditions, sphere alignment):
+  // the same total the attended forecast has always shown. Read for whoever rolls
+  // (the company's acting member when one answered), and never for a fight step,
+  // whose standing is already inside `fightInputs.modifierTotal` — one read per step.
+  const standingModifierTotal = fightInputs
+    ? 0
+    : computeStandingModifierTotal(
+      state.graph, capabilityNodeId, stepReach, template.sphereAffinity, state.effectStates,
+    );
   const totalActionModifiers = pushModifier + (groupStep?.totalBonus ?? 0)
-    + nudgeModifierTotal + (fightInputs?.modifierTotal ?? 0);
+    + nudgeModifierTotal + (fightInputs?.modifierTotal ?? 0) + standingModifierTotal;
 
   return {
     fightInputs,
@@ -507,6 +519,7 @@ function deriveStepRollInputs(
     sphereFactor,
     testShapers,
     pushEvent,
+    standingModifierTotal,
     totalActionModifiers,
   };
 }
@@ -674,6 +687,8 @@ export function resolveUncontestedStep(
     scale: stepScale ?? 'regional',
     // THR-1578: additive — the reach the step rolled on.
     ...(rollInputs.stepReach ? { reach: rollInputs.stepReach } : {}),
+    // THR-1535: additive — the standing-modifier share of `actionModifiers`.
+    ...(rollInputs.standingModifierTotal !== 0 ? { standingModifiers: rollInputs.standingModifierTotal } : {}),
     capability: trace.capability,
     difficulty: trace.difficulty,
     rawDifficulty: trace.rawDifficulty,
