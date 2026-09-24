@@ -341,8 +341,11 @@ export function rewardRecipeHasCandidates(recipe: RewardPoolRecipe): boolean {
   return false;
 }
 
-/** Every aftermath effect a template authors, wherever it puts it. */
-function allTemplateEffects(
+/**
+ * Every aftermath effect a template authors, wherever it puts it. Exported (THR-1526)
+ * so the seed-only-sequel planter walk sweeps exactly the sites this gate does.
+ */
+export function allTemplateEffects(
   template: UnifiedActionTemplate,
 ): readonly { effect: EncounterAftermathReactionEffect; site: string }[] {
   const out: { effect: EncounterAftermathReactionEffect; site: string }[] = [];

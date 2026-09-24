@@ -240,6 +240,13 @@ describe('assembleTemplate', () => {
   it('derives locationSubtypes from the declared envelope', () => {
     expect(assembleTemplate(FIXTURE).locationSubtypes).toEqual(expandSettings(['wayside']));
   });
+
+  it('carries drawable: false through to the template (THR-1526 — no allowlist edit needed)', () => {
+    const pkg = { ...FIXTURE, template: { ...FIXTURE.template, drawable: false } } as typeof FIXTURE;
+    expect(unknownPackageKeys(pkg)).toEqual([]);
+    expect(assembleTemplate(pkg).drawable).toBe(false);
+    expect(assembleTemplate(FIXTURE).drawable).toBeUndefined();
+  });
 });
 
 // ─── Emission fidelity ───────────────────────────────────────────────

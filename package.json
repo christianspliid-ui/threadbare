@@ -132,6 +132,7 @@
     "check:node-modules": "node --experimental-strip-types scripts/node-modules-health.ts",
     "repair:donor-node-modules": "node --experimental-strip-types scripts/repair-donor-node-modules.ts",
     "check:cast-targets": "esbuild scripts/check-cast-targets.ts --bundle --platform=node --format=esm --outfile=.cache/check-cast-targets.mjs --external:fs --external:path --external:process --external:url && node .cache/check-cast-targets.mjs",
+    "census:firings": "esbuild scripts/firing-census.ts --bundle --platform=node --format=esm --outfile=.cache/firing-census.mjs --external:fs --external:path && node .cache/firing-census.mjs",
     "census:desire-poles": "esbuild scripts/desire-pole-census.ts --bundle --platform=node --format=esm --outfile=.cache/desire-pole-census.mjs --external:fs --external:path && node .cache/desire-pole-census.mjs",
     "census:undertakings": "esbuild scripts/undertaking-census.ts --bundle --platform=node --format=esm --outfile=.cache/undertaking-census.mjs --external:fs --external:path && node .cache/undertaking-census.mjs",
     "telemetry:calling": "esbuild scripts/calling-telemetry.ts --bundle --platform=node --format=esm --outfile=.cache/calling-telemetry.mjs --external:fs --external:path && node .cache/calling-telemetry.mjs",

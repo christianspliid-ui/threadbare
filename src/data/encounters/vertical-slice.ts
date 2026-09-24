@@ -1921,6 +1921,8 @@ const CROSSROADS_FORK: ActionStepBranch = {
 
 export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.crossroads,
+  // THR-1526: a seed target (the Full Moon Collection re-seeds it) whose opening stands alone.
+  drawable: true,
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'A Bargain at the Crossroads',
@@ -2416,6 +2418,9 @@ const FULL_MOON_STEP: ActionStep = {
 
 export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.fullMoon,
+  // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
+  // board never offers it; only its planter (seed / appointment branch) starts it.
+  drawable: false,
   rarityTier: 3,
   intrinsicTier: 'background',
   name: 'The Full Moon Collection',
@@ -2889,6 +2894,16 @@ const FAMILY_FORK: ActionStepBranch = {
   fallback: FAMILY_PASS_STEP,
 };
 
+/**
+ * The Swindled Family's cast (THR-1526): the wayside and rural defaults composed, as
+ * {@link CROSSROADS_SUPPORT_BUNDLE} composes its own. Keys are disjoint across the two
+ * classes; every spec is pre-seeded, so the bundle adds no one to the world.
+ */
+const FAMILY_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside,
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.rural,
+];
+
 export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.family,
   rarityTier: 2,
@@ -2901,13 +2916,23 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
   apCost: 1,
   actorAffinities: ['individual'],
   motivations: ['mercy_ruthlessness'],
-  settings: ['wayside'],
+  // THR-1526: widened to rural (as THR-1524 widened the Crossroads). The Family is the
+  // only honest planter of the Swindler Found and the Grateful Kin, which are now
+  // seed-only; wayside alone (8 of 974 places on seed 42) fired it zero times.
+  settings: ['wayside', 'rural'],
   // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it
   // (FAMILY_MEETING_STEP).
   openings: {
     wayside: '{name} meets a handcart coming the other way, an hour past {location}.',
+    rural: '{name} catches up with a handcart on the lane out of {location}.',
   },
-  locationSubtypes: expandSettings(['wayside']),
+  locationSubtypes: expandSettings(['wayside', 'rural']),
+  // THR-1526: a seed target (it re-seeds itself) whose opening stands alone.
+  drawable: true,
+  // THR-1526: the widened envelope spans two classes, so the setting-keyed default
+  // resolves to one of them (rural) and a wayside meeting lost its wayside cast. Both
+  // classes' defaults, composed — bind-only, so each binds only who is present.
+  supportBundle: FAMILY_SUPPORT_BUNDLE,
   traitVariants: [
     {
       // Warmth does not need persuading to stop.
@@ -3431,6 +3456,9 @@ const SWINDLER_SUPPORT_BUNDLE: EncounterSupportBundle = [
 
 export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.swindlerFound,
+  // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
+  // board never offers it; only its planter (seed / appointment branch) starts it.
+  drawable: false,
   rarityTier: 3,
   intrinsicTier: 'background',
   name: 'The Swindler Found',
@@ -3905,6 +3933,9 @@ const KIN_STEP: ActionStep = {
 
 export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.gratefulKin,
+  // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
+  // board never offers it; only its planter (seed / appointment branch) starts it.
+  drawable: false,
   rarityTier: 3,
   intrinsicTier: 'background',
   name: 'The Grateful Kin',
@@ -4641,6 +4672,9 @@ function tableStandingReaction(id: string, label: string, intent: string, delta:
 
 export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.tableThatHolds,
+  // THR-1526: a seed target (the Grateful Kin plants it) that is also a reputation-gated
+  // organic draw by design — its opening stands alone.
+  drawable: true,
   rarityTier: 3,
   intrinsicTier: 'background',
   name: 'The Table That Holds',
@@ -5165,6 +5199,9 @@ const RECKONING_STEP: ActionStep = {
 
 export const SLICE_FULL_MOON_RECKONING: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.fullMoonReckoning,
+  // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
+  // board never offers it; only its planter (seed / appointment branch) starts it.
+  drawable: false,
   rarityTier: 3,
   intrinsicTier: 'background',
   name: 'The Stranger Finds Them',

@@ -189,6 +189,8 @@ type EncounterEntry = {
   requiresOpposingBand?: boolean;
   /** THR-731: a decisive loss in this contest never kills. See the template field. */
   contestNonLethal?: boolean;
+  /** THR-1526 — passed through to `UnifiedActionTemplate.drawable` (the converter is an allowlist). */
+  drawable?: boolean;
   /**
    * THR-838 (WS5): template-level trait variants, passed through to
    * `UnifiedActionTemplate.traitVariants`. Absent for every un-migrated entry.
@@ -343,6 +345,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     minGroupMembers: e.minGroupMembers,
     requiresOpposingBand: e.requiresOpposingBand,
     contestNonLethal: e.contestNonLethal,
+    // THR-1526: the board-draw flag. Allowlist passthrough, like `tags` below.
+    drawable: e.drawable,
     // THR-884: the envelope expands first (canonical class order), then any
     // exact-subtype override, then sublocations. Deduplicated so a template
     // declaring both `settings: ['sacred']` and `locationTypes: ['temple']`
@@ -9125,6 +9129,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.rest_and_reflect',
+    // THR-1526: a seed target (it re-seeds itself) whose opening stands alone.
+    drawable: true,
     name: 'Rest and Reflect',
     // THR-1222 — putting the road down happens wherever the road stops. Kept to the
     // three places a traveller actually sleeps; a temple is somewhere you go *to*,

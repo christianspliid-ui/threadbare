@@ -3560,6 +3560,32 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'seed-only-sequels-never-drawn',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A sequel whose opening assumes its parent — a promise made, a family met, a word broken — is marked `drawable: false` on its template, and the decision board never offers it: only its planter (a seed, an appointment\'s kept or missed branch, a trigger, a debug spawn) starts it (THR-1526). The encounter cache build skips it at all four appends (`isDrawable`), the divine-vision delivery beats refuse it (`isDeliverableBranchingEncounter`), and the deprecated array-scored path carries the same one-line gate. Seed resolution never reads the flag, so a named sequel still resolves, and the template keeps its catalog membership and its envelope because the seed query and `eligibleAt` read both. Before this contract the Full Moon Reckoning fired from the board and told mortals who had given no word that they had broken it (THR-1524\'s firing census: the Reckoning 1 and the Swindler Found 16 board firings on seed 42 over 200 ticks, their parents 0).',
+    ulTerms: ['Drawable', 'Encounter Seed', 'Appointment'],
+    mechanism: {
+      kind: 'function',
+      // `drawable` is the write-site symbol: the flag is authored on the template literal.
+      symbols: ['isDrawable', 'isDeliverableBranchingEncounter', 'drawable'],
+      module: 'src/engine/encounterCache.ts',
+    },
+    writeSites: ['src/data/encounters/vertical-slice.ts'],
+    readSites: [
+      'src/engine/encounterCache.ts',
+      'src/engine/deliveryBeatAdapter.ts',
+      'src/engine/unifiedCandidates.ts',
+      'src/engine/__tests__/encounterSeedLiveness.test.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-24',
+      evidence:
+        'THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads\' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.',
+    },
+  },
+  {
     id: 'encounter-seed-resolves-by-query',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: 'Encounters & Dilemmas',

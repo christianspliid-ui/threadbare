@@ -3929,6 +3929,15 @@ carries the same finding in its `systems` block, and the `appointments` quota ke
 with both. The kept branch is a literal when it is one authored scene (the Full Moon Collection);
 the missed branch is a query when it is a *kind* (`#crossroads_debt`) — do not invert them.
 
+**Both branch targets are seed-only (THR-1526).** A sequel whose opening assumes its parent declares
+`drawable: false` on its template, so the decision board never offers it on its own — only its
+planter starts it. Keep it in its catalog array (the missed branch's query reads it) and keep its
+envelope (`eligibleAt` reads it). `encounterSeedLiveness.test.ts` fails a drawable appointment
+branch target, and a foreign query that resolves a seed-only sequel; `check:encounter` warns on a
+`drawable: false` template nothing plants, and on an `encounter.*` seed target on the board that
+has not declared `drawable` either way. `npm run census:firings` attributes every firing to a
+seed or to the board.
+
 **Prose rule 7b's single lawful exception.** A place-and-time promise may be written only on a seed
 carrying `appointment`, and only when its `missed` branch exists. The spec's rule 34, the SKILL's
 REVISE trigger, and the systems auditor's *Live primitives* list all name it — the auditor BLOCKs

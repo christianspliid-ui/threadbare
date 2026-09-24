@@ -283,6 +283,32 @@ describe('vertical slice — a planting arm is never starved by a pole pin (THR-
       expect(crossroads.openings?.[cls as keyof typeof crossroads.openings], `${cls}: no opening`).toBeTruthy();
     }
   });
+
+  it('the Swindled Family registers past the wayside class, with the authored rural opening (THR-1526)', () => {
+    // Its two sequels are seed-only now, so the Family is their only honest supply —
+    // wayside alone fired it zero times in 200 ticks on seed 42.
+    const family = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.family)!;
+    expect(family.settings).toEqual(['wayside', 'rural']);
+    expect(family.openings?.rural).toBe('{name} catches up with a handcart on the lane out of {location}.');
+    expect(family.drawable).toBe(true);
+  });
+
+  it('the four sequels that assume their parent are seed-only; the parents stay drawable (THR-1526)', () => {
+    const byId = new Map(VERTICAL_SLICE_TEMPLATES.map((t) => [t.id, t]));
+    for (const id of [
+      SLICE_TEMPLATE_IDS.fullMoon,
+      SLICE_TEMPLATE_IDS.fullMoonReckoning,
+      SLICE_TEMPLATE_IDS.swindlerFound,
+      SLICE_TEMPLATE_IDS.gratefulKin,
+    ]) {
+      expect(byId.get(id)?.drawable, id).toBe(false);
+      // Envelope kept: eligibleAt reads it to resolve the seed at the mortal's feet.
+      expect(byId.get(id)?.locationSubtypes?.length, id).toBeGreaterThan(0);
+    }
+    for (const id of [SLICE_TEMPLATE_IDS.crossroads, SLICE_TEMPLATE_IDS.family, SLICE_TEMPLATE_IDS.tableThatHolds]) {
+      expect(byId.get(id)?.drawable, id).not.toBe(false);
+    }
+  });
 });
 
 describe('vertical slice — the April migration bar (THR-973)', () => {

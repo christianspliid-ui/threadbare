@@ -287,6 +287,17 @@ function sacredRouteDestinationTemplates(
 }
 
 /**
+ * Whether the decision board may offer this template unprompted (THR-1526).
+ * `drawable: false` marks a seed-only sequel — one whose opening assumes its parent —
+ * which only a seed, an appointment branch, a trigger or a debug spawn may start.
+ * Applied at cache build (every append below) and by the delivery-beat filter; seed
+ * resolution never reads it. Absent means drawable (NFP #6: additive default).
+ */
+export function isDrawable(template: Pick<UnifiedActionTemplate, 'drawable'>): boolean {
+  return template.drawable !== false;
+}
+
+/**
  * Build cache entries for a location and all its sublocations.
  * If sublocations exist: creates entries per sublocation using sublocation-aware template lookup.
  * If no sublocations: falls back to location-level template lookup (sublocationId: null).
@@ -305,12 +316,14 @@ function buildEntriesForLocationAndSublocations(
       const subTypeId = (sub.properties as Record<string, unknown>).sublocationTypeId as string;
       const templates = getEncountersBySublocationAndLocation(subTypeId, locationType);
       for (const tmpl of templates) {
+        if (!isDrawable(tmpl)) continue;
         entries.push(buildEntryUnified(tmpl, locationId, sub.id, subTypeId, difficultyMultiplier));
       }
     }
   } else {
     const templates = getEncountersByLocationType(locationType);
     for (const tmpl of templates) {
+      if (!isDrawable(tmpl)) continue;
       entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
     }
   }
@@ -321,11 +334,13 @@ function buildEntriesForLocationAndSublocations(
   // Both are location-level (sublocationId null), so they attach once per location
   // regardless of how many sublocations it has.
   for (const tmpl of LOCATION_BRANCHING_ENCOUNTER_TEMPLATES) {
+    if (!isDrawable(tmpl)) continue;
     if (tmpl.locationSubtypes?.includes(locationType as never)) {
       entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
     }
   }
   for (const tmpl of CACHE_REGISTERED_REGIONAL_TEMPLATES) {
+    if (!isDrawable(tmpl)) continue;
     if (tmpl.locationSubtypes?.includes(locationType as never)) {
       entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
     }
@@ -338,6 +353,7 @@ function buildEntriesForLocationAndSublocations(
   const alreadyPooled = new Set(entries.map(e => e.templateId));
   for (const tmpl of sacredRouteDestinationTemplates(graph, locationId)) {
     if (alreadyPooled.has(tmpl.id)) continue;
+    if (!isDrawable(tmpl)) continue;
     entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
   }
 

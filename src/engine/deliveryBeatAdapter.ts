@@ -27,6 +27,7 @@
 import type { BeatDefinition } from '../types/ascendantBeat';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../data/unified-action-templates';
+import { isDrawable } from './encounterCache';
 
 /** Stable prefix for every delivery beat id. A beat id is `${PREFIX}${templateId}`. */
 export const DELIVERY_BEAT_ID_PREFIX = 'beat.delivery.';
@@ -66,7 +67,9 @@ export function sourceTemplateIdOf(beatId: string): string | null {
  * entry is silently excluded rather than offered as an empty divine vision.
  */
 export function isDeliverableBranchingEncounter(template: UnifiedActionTemplate): boolean {
-  return Array.isArray(template.steps) && template.steps.length > 0;
+  // THR-1526: a seed-only sequel (`drawable: false`) would otherwise run as a divine
+  // vision beat with its fallback reactions — the same untrue scene by a third route.
+  return isDrawable(template) && Array.isArray(template.steps) && template.steps.length > 0;
 }
 
 /**

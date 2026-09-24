@@ -330,7 +330,12 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-09-24 by Claude Code (THR-1523 — unwatched builders step back).
+2026-09-24 by Claude Code (THR-1526 — seed-only sequels). **Added** `seed-only-sequels-never-drawn`,
+🟢 LIVE: a template marked `drawable: false` is skipped by the encounter cache build (`isDrawable`)
+and the delivery beats (`isDeliverableBranchingEncounter`), and only its planter starts it. Verified by
+`npm run census:firings` (seeds 42/99 × 200 ticks: 0 board firings for the four sequels). `missed-appointment-breaks-agreement`
+**preserved** — the missed branch still resolves by query, and is now the only way the Reckoning fires.
+Earlier: 2026-09-24 by Claude Code (THR-1523 — unwatched builders step back).
 `strategic-ambition-pulls-holder-into-spotlight` **extended**, stays 🟢 LIVE: when no mortal
 without a strategic want can make room, an unwatched builder (no witnessed scene and no
 undertaking progress for `SPOTLIGHT_UNWATCHED_BUILDER_TICKS`, never travelling, followed or

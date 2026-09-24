@@ -47,6 +47,9 @@ npm run compile:encounter -- <path> --force     # overwrite an existing compile
     "motivations": ["preservation_transformation"],
     "settings": ["wayside", "ruin"],           // one opening per declared class:
     "openings": { "wayside": "…", "ruin": "…" },
+    "drawable": false,                        // optional; false = seed-only sequel (THR-1526) —
+                                               //   the board never offers it; only its planter
+                                               //   starts it. Declare it on every seed target.
     "steps": [ /* ActionStep objects — prose, difficulty, hands (StepNudge[]), metadata effects */ ],
     "traitVariants": [ /* TraitVariant[] */ ],
     "supportBundle": [ /* EncounterSupportActorSpec[] */ ],

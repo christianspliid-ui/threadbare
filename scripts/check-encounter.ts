@@ -94,6 +94,8 @@ import {
   validateEncounterSeedRefs,
 } from '../src/engine/nudgeGrantLiveness';
 import { invalidTallyKeyProblems } from '../src/data/content-eval/tallyKeys';
+import { buildSeedPlanterIndex, cacheFedTemplateIds, seedOnlyWarnings } from '../src/engine/seedOnlySequels';
+import { getAllStrategicTemplates } from '../src/engine/strategicActionCandidates';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 
 // ─── Args ────────────────────────────────────────────────────────────
@@ -322,6 +324,10 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
       d => `${d.site} encounter_seed → family '${d.ref}' matches no template `
         + `(name a family tag and add an ENCOUNTER_FAMILY_TAGS row, or author \`query\`)`,
     ),
+    // THR-1526 — seed-only sequels: a `drawable: false` template nothing plants, and an
+    // `encounter.*` seed target on the board that has not declared `drawable`. Warn, not
+    // fail: the fatal line is `encounterSeedLiveness.test.ts`.
+    ...seedOnlyWarnings(template, seedPlanterIndex(), cacheFedIds()),
   ];
 
   // Deliberately does NOT read `warnings`. The doctrine's budgets and register
@@ -346,6 +352,19 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     failed,
     pending: isRetrofitPending(template.id),
   };
+}
+
+// ─── Seed-only sequels (THR-1526) ────────────────────────────────────
+
+// Built once, lazily — the planter walk resolves every seed query in the corpus.
+// (Declared above `runOne`'s first call, which happens in `population.map` below.)
+let planterIndexMemo: ReturnType<typeof buildSeedPlanterIndex> | undefined;
+let cacheFedMemo: ReturnType<typeof cacheFedTemplateIds> | undefined;
+function seedPlanterIndex(): ReturnType<typeof buildSeedPlanterIndex> {
+  return (planterIndexMemo ??= buildSeedPlanterIndex(getAllStrategicTemplates()));
+}
+function cacheFedIds(): ReturnType<typeof cacheFedTemplateIds> {
+  return (cacheFedMemo ??= cacheFedTemplateIds());
 }
 
 // ─── Resolve the population ──────────────────────────────────────────
