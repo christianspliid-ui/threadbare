@@ -322,7 +322,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `intention` (1) | `intentionReading.ts` | `THR-1404`, `THR-1433` |
 | `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
-| `kpi` (3) | `kpi/branchingDistance.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-452`, `THR-457`, `THR-571` |
+| `kpi` (4) | `kpi/branchingDistance.ts`, `kpi/engagementKpi.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-1578`, `THR-452`, `THR-457`, `THR-571` |
 | `lair` (3) | `lairClearing.ts`, `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2`, `THR-1319` |
 | `lake` (2) | `lakeGeneration.ts`, `lakeOutflow.ts` | — |
 | `leverage` (1) | `leverageOps.ts` | `THR-1439` |
@@ -424,4 +424,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 196 engine domains · 584 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 196 engine domains · 585 modules._
