@@ -450,11 +450,9 @@ function relocateOccupantsToParent(
     emitTrace({
       tick: state.tick,
       category: 'faction_ambition',
-      summary: `${occupantIds.length} occupant(s) of ${place.name} displaced to ${graph.getNode(parentId)?.name ?? parentId} as it is destroyed`,
-      event: 'aftermath_occupants_displaced',
-      placeId,
-      parentId,
-      occupantIds,
+      summary: `${occupantIds.length} occupant(s) of ${place.name} displaced to ${graph.getNode(parentId)?.name ?? parentId} as it is destroyed: ${occupantIds.join(', ')}`,
+      locationId: placeId,
+      result: 'occupants_displaced',
     });
   }
   return occupantIds.length;
