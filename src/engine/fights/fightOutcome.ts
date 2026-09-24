@@ -109,9 +109,19 @@ function emitFightEnd(
     harmTaken: fight.harmTaken,
     advantages: fight.advantages.map((a) => a.key),
     ...(dispatchError ? { dispatchError } : {}),
+    // THR-1556 (duels) — the opponent side, on a duel only.
+    ...(fight.fightMode === 'agent' ? {
+      fightMode: 'agent' as const,
+      fighterClockNow: fight.fighterClockNow ?? 0,
+      ...(fight.opponentLoss ? { opponentLoss: fight.opponentLoss } : {}),
+    } : {}),
     summary: `fight.end: ${template.id} ${action.actorId} vs ${fight.opponentId ?? 'none'} → ${fight.result}`
       + `${fight.endReason ? ` (${fight.endReason})` : ''}${rolled ? '' : ' [no roll]'}`
-      + ` clock ${fight.clockNow}/${fight.clockSize}${dispatchError ? ` [dispatch error: ${dispatchError}]` : ''}`,
+      + ` clock ${fight.clockNow}/${fight.clockSize}`
+      + (fight.fightMode === 'agent'
+        ? ` vs ${fight.fighterClockNow ?? 0}/${fight.fighterClockSize ?? 0}${fight.opponentLoss ? ` (opponent ${fight.opponentLoss})` : ''}`
+        : '')
+      + `${dispatchError ? ` [dispatch error: ${dispatchError}]` : ''}`,
   } as FightEndTrace);
 }
 

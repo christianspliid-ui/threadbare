@@ -1908,6 +1908,13 @@ export interface ActionStep {
    * ⇒ the opponent is the action's target.
    */
   readonly opponentRef?: string;
+  /**
+   * THR-1556 (duels plan doc §1) — the fight's mode, stamped by `fightBlock`.
+   * `'agent'` makes the fight **opposed**: the opponent rolls too, on its own
+   * stream, and both sides carry a per-fight clock. Absent ⇒ `'npc'`, the fight
+   * block's one-roller fight, byte-identical to before.
+   */
+  readonly fightMode?: import('./fight').FightMode;
   readonly onSuccess: readonly GraphOp[];
   readonly onFailure: readonly GraphOp[];
   readonly failBehavior: StepFailBehavior;

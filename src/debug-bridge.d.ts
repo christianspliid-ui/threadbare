@@ -1896,6 +1896,15 @@ export interface DebugBridge {
       readonly outcome: string | null;
       readonly stepOutcomes: readonly string[];
       readonly fightState: import('./types/fight').FightState | null;
+      /** THR-1556 — `agent` on a duel, `npc` on a one-roller fight, null before the nerve step. */
+      readonly fightMode: import('./types/fight').FightMode | null;
+      /** THR-1556 — a duel's own-side clock (the opponent's blows); null on an NPC-mode fight. */
+      readonly fighterClockSize: number | null;
+      readonly fighterClockNow: number | null;
+      /** THR-1556 — the opponent's synthesized band per step, nerve first; null on an NPC-mode fight. */
+      readonly opponentBands: readonly string[] | null;
+      /** THR-1556 — how the opponent lost (`clock` / `struck_down` / `yielded` / `routed`), or null. */
+      readonly opponentLoss: import('./types/fight').FightOpponentLoss | null;
     };
 
   /** The opponent card a fight against this actor would read right now: Dread, Might,
@@ -1937,6 +1946,26 @@ export interface DebugBridge {
       readonly fighterRaw?: number;
       readonly fighterConditions?: readonly string[];
     },
+  ) => Promise<{
+    readonly success: boolean;
+    readonly actionId?: string;
+    readonly fighterId?: string;
+    readonly opponentId?: string;
+    readonly message: string;
+  }>;
+
+  /** The duel review lever (THR-1556, duels plan doc § Debug inspection). Moves `b`
+   *  to `a`'s location, then stages `fight.duel.grudge` with `a` as the actor and
+   *  `b` as the opponent, open — an agent-mode fight where both sides roll. Read it
+   *  back with `getFightState(actionId)` (`fightMode`, both clocks, `opponentBands`,
+   *  `opponentLoss`). `courtPosition` threads `a` first (e.g. `the_first`).
+   *  Use this rather than `?spawn=fight.duel.grudge`, which stages a duel with no
+   *  named opponent. Resolves `{ success, actionId, fighterId, opponentId, message }`.
+   *  **Async.** */
+  spawnDuel: (
+    aIdOrName: string,
+    bIdOrName: string,
+    opts?: { readonly courtPosition?: string },
   ) => Promise<{
     readonly success: boolean;
     readonly actionId?: string;

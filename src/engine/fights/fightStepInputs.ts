@@ -171,7 +171,11 @@ export function resolveFightStepInputs(
   // Difficulty: the card's word, then the opponent's own modifiers for this reach.
   const baseDifficulty = FIGHT_RATING_DIFFICULTY[role === 'nerve' ? card.dread : card.might];
   let opponentModifierDelta = 0;
-  if (status === 'bound' && opponentId && hasEffectsFormat(graph, opponentId)) {
+  // THR-1556 (duels plan doc §2): in a duel the opponent rolls for itself, so its
+  // own modifiers ride *its* roll. Pricing them into this step as well would count
+  // them twice — the kill criterion's first named cause.
+  const duel = step.fightMode === 'agent' && card.source !== 'monsterState';
+  if (!duel && status === 'bound' && opponentId && hasEffectsFormat(graph, opponentId)) {
     const opponentCtx = buildPredicateContext(graph, opponentId, reach, FIGHT_ENCOUNTER_TYPE);
     opponentModifierDelta = resolveEffectModifiers(
       graph, opponentId, reach, opponentCtx, state.effectStates,

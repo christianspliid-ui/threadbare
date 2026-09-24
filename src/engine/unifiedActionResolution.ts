@@ -200,7 +200,8 @@ import {
   stepScaleFor,
 } from './fights/fightStepInputs';
 import { FIGHT_ENCOUNTER_TYPE, FIGHT_RESULT_ACTION_OUTCOME } from '../data/fight-constants';
-import type { FightEndReason, FightStepInputs } from '../types/fight';
+import type { FightEndReason, FightStepInputs, OpponentFightRoll } from '../types/fight';
+import { rollOpponentSide } from './fights/opposedRoll';
 import {
   applyFightStepResult,
   checkFightContinuation,
@@ -284,6 +285,12 @@ export interface StepResolutionResult {
    * reads; `executeStepResult` takes its no-roll branch instead.
    */
   fightEnd?: { reason: FightEndReason };
+  /**
+   * THR-1556 (duels plan doc §1) — on a duel step, the opponent's synthesized
+   * roll, drawn on its own stream right after the fighter's. Transient: the phase
+   * loop hands it to `executeStepResult`, and only its band is ever stored.
+   */
+  opponentRoll?: OpponentFightRoll;
 }
 
 /**
@@ -698,8 +705,13 @@ export function resolveUncontestedStep(
     }
   }
 
+  // THR-1556 (duels plan doc §1) — a duel's opponent rolls too: after the
+  // fighter's core, on its own seeded stream, so the step stream above is drawn
+  // exactly as it would be with no opponent roll at all.
+  const opponentRoll = fightInputs ? rollOpponentSide(state, action, template, step) : undefined;
+
   if (fightInputs) {
-    emitFightStepTrace(state.tick, action, template, fightInputs, core.outcome, core.probability);
+    emitFightStepTrace(state.tick, action, template, fightInputs, core.outcome, core.probability, opponentRoll);
   }
 
   const ops = isStepSuccess(core.outcome) ? step.onSuccess : step.onFailure;
@@ -721,6 +733,7 @@ export function resolveUncontestedStep(
     resistCost: core.resistCost,
     preResistOutcome: core.preResistOutcome,
     ...(fightInputs ? { reach: fightInputs.reach, difficulty: effectiveDifficulty } : {}),
+    ...(opponentRoll ? { opponentRoll } : {}),
   };
 }
 
@@ -732,6 +745,7 @@ function emitFightStepTrace(
   inputs: FightStepInputs,
   band: StepOutcome,
   probability: number,
+  opponentRoll?: OpponentFightRoll,
 ): void {
   emitTrace({
     category: 'fight.step',
@@ -762,8 +776,15 @@ function emitFightStepTrace(
     clockSize: inputs.card.clockSize,
     harmQueued: 0,
     conditionsApplied: [] as string[],
+    ...(opponentRoll ? {
+      fightMode: 'agent' as const,
+      opponentBand: opponentRoll.band,
+      opponentProbability: opponentRoll.probability,
+      fighterClockNow: action.fightState?.fighterClockNow ?? 0,
+    } : {}),
     summary: `fight.step: ${template.id} ${inputs.role} vs ${inputs.opponentId ?? 'none'} (${inputs.card.source}) `
-      + `${inputs.reach} diff=${inputs.difficulty.toFixed(2)} scale=${inputs.scale} P=${probability.toFixed(2)} → ${band}`,
+      + `${inputs.reach} diff=${inputs.difficulty.toFixed(2)} scale=${inputs.scale} P=${probability.toFixed(2)} → ${band}`
+      + (opponentRoll ? ` | opponent P=${opponentRoll.probability.toFixed(2)} → ${opponentRoll.band}` : ''),
   } as FightStepTrace);
 }
 
@@ -1521,6 +1542,14 @@ export function executeStepResult(
     difficulty?: number;
     /** THR-1538 (plan doc §1) — the fight ended before its roll; take the no-roll route. */
     fightEnd?: { reason: FightEndReason };
+    /** THR-1556 — a duel step's synthesized opponent roll (`StepResolutionResult.opponentRoll`). */
+    opponentRoll?: OpponentFightRoll;
+    /**
+     * THR-1556 — a calibration lever: no complication is selected for this step.
+     * The duel calibration runs with mid-fight events off (THR-1264's sim had
+     * none). The phase loop never sets it.
+     */
+    noComplications?: boolean;
   },
   runtime?: SimulationRuntime,
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
@@ -1915,7 +1944,8 @@ export function executeStepResult(
   // handler below), so the generic band quintessence event is skipped for it.
   const fightStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const consequence = computeOutcomeConsequence(
-    action.templateId, outcome, action.actorId, tick, complicationContext,
+    action.templateId, outcome, action.actorId, tick,
+    resolutionStats?.noComplications ? undefined : complicationContext,
     { fightStep: fightRoleOf(fightStepDef) !== undefined },
   );
 
@@ -1991,6 +2021,8 @@ export function executeStepResult(
       // THR-1543 — the step complication's fight effects, applied by the handler.
       complicationEffects: consequence.complication?.effects,
       events,
+      // THR-1556 — a duel step carries the opponent's band, rolled with the fighter's.
+      ...(resolutionStats?.opponentRoll ? { opponentRoll: resolutionStats.opponentRoll } : {}),
     })
     : action;
 
@@ -3588,6 +3620,8 @@ export function phaseUnifiedActionProgress(
       {
         capability, probability, roll, reach: stepResult.reach, difficulty: stepResult.difficulty,
         ...(stepResult.fightEnd ? { fightEnd: stepResult.fightEnd } : {}),
+        // THR-1556 — and a duel step carries its opponent's roll.
+        ...(stepResult.opponentRoll ? { opponentRoll: stepResult.opponentRoll } : {}),
       },
       runtime,
     );

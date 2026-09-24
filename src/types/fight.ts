@@ -18,6 +18,33 @@ import type { ActionScale } from './unifiedAction';
 export type FightRole = 'nerve' | 'clash';
 
 /**
+ * THR-1556 (duels plan doc §1) — a fight's mode. `'npc'`: the mortal rolls
+ * against a card. `'agent'`: a **duel** — both sides are mortals who roll, each
+ * against the other's derived card, and each has a per-fight clock.
+ */
+export type FightMode = 'npc' | 'agent';
+
+/** How the opponent of a duel lost (duels plan doc §3), read from the fighter's side. */
+export type FightOpponentLoss = 'clock' | 'struck_down' | 'yielded' | 'routed';
+
+/**
+ * The opponent's synthesized roll for one duel step (duels plan doc §1). Transient:
+ * never an action, never stored in `state.unifiedActions`. Only its band lands on
+ * `fightState.opponentBands` and the `fight.step` trace.
+ */
+export interface OpponentFightRoll {
+  readonly opponentId: string;
+  readonly band: import('./unifiedAction').StepOutcome;
+  readonly probability: number;
+  readonly roll: number;
+  /** The opponent's resolved reach and difficulty (priced from the fighter's card). */
+  readonly reach: ReachDomain;
+  readonly difficulty: number;
+  /** The opponent's own named terms (standing, courage, momentum, advantages). */
+  readonly modifiers: readonly FightNamedModifier[];
+}
+
+/**
  * An opponent rating, in words (THR-1264). Each word maps to one step
  * difficulty through `FIGHT_RATING_DIFFICULTY`, chosen to sit inside the
  * matching `DIFFICULTY_WORD_BANDS` word so the display round-trips.
@@ -211,4 +238,23 @@ export interface FightState {
   readonly ending?: FightEndingRecord;
   readonly opponentEnding?: FightEndingRecord;
   readonly lairOutcome?: FightLairOutcome;
+
+  // ─── THR-1556 (duels plan doc §1–3): the opponent side of an agent-mode fight ───
+  // All optional and absent on an NPC-mode fight, so its shape is unchanged.
+
+  /** `'agent'` for a duel; absent ⇒ `'npc'`. */
+  readonly fightMode?: FightMode;
+  /** The fighter's own per-fight clock — filled by the opponent's landing blows. */
+  readonly fighterClockSize?: number;
+  readonly fighterClockNow?: number;
+  /** The opponent's band on each fight step, in step order (nerve first). */
+  readonly opponentBands?: readonly import('./unifiedAction').StepOutcome[];
+  /** How the opponent lost, when the fight ended with them beaten, yielded or fled. */
+  readonly opponentLoss?: FightOpponentLoss;
+  /** The opponent's running state, mirroring the fighter's. */
+  readonly opponentMomentum?: number;
+  readonly opponentAdvantages?: readonly FightAdvantage[];
+  readonly opponentWounds?: number;
+  readonly opponentBlowsLanded?: number;
+  readonly opponentHarmTaken?: number;
 }

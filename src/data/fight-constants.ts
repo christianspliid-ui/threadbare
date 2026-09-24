@@ -365,3 +365,13 @@ export const FIGHT_NAMED_TERM_LINES: Readonly<Record<string, { readonly for: str
 
 /** The complication pool's placeholder for the opponent's name. */
 export const FIGHT_OPPONENT_PLACEHOLDER = '{opponent}';
+
+// ─── Duels: the opposed fight (THR-1556, duels plan doc `2026-09-23-mortal-duels.md` §1–4) ───
+
+/**
+ * Salt for the duel opponent's own roll stream:
+ * `mulberry32((seed + tick × this + hash(actionId + opponentId)) >>> 0)`. Unused
+ * elsewhere (131 is taken three times), so the opponent's d100 never draws from,
+ * or collides with, the step stream the fighter rolls on.
+ */
+export const DUEL_OPPONENT_STREAM_SALT = 6271;

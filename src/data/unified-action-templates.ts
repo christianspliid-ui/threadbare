@@ -46,6 +46,7 @@ import {
 } from './faction-encounter-content';
 import { ARMY_ENCOUNTER_TEMPLATES } from './army-encounter-content';
 import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
+import { FIGHT_ENCOUNTER_TEMPLATES } from './fights/fight-templates';
 import { BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
 import { INTERVENTION_DEFINITIONS } from './dream-content';
@@ -5596,6 +5597,8 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...ANOMALY_ENCOUNTER_TEMPLATES,
   // Monster encounters — migrated to UnifiedActionTemplate (THR-103)
   ...MONSTER_ENCOUNTER_TEMPLATES,
+  // Standalone fight templates that are not a monster's — THR-1556 (the systemic duel)
+  ...FIGHT_ENCOUNTER_TEMPLATES,
   // Army encounters — migrated to UnifiedActionTemplate (THR-104)
   ...ARMY_ENCOUNTER_TEMPLATES,
   // Borderland encounters — migrated to UnifiedActionTemplate (THR-107)
