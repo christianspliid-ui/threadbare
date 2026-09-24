@@ -68,7 +68,9 @@ import {
 import type { TickProfileTrace } from '../src/types/trace';
 import { createSimulationRuntime, ensureEncounterCache, ensureRealmProjection, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
 import { createHoldReader, gripWord } from '../src/engine/holdStanding';
-import { spawnDebugBand, spawnDebugCompanion } from '../src/engine/debugWorldSpawnTools';
+import { moveDebugAgent, spawnDebugBand, spawnDebugCompanion } from '../src/engine/debugWorldSpawnTools';
+import { mulberry32 as fightSpawnRng } from '../src/lib/prng';
+import { FIGHT_LAIR_CONFRONT_ID } from '../src/data/encounters/fight-lair-confront';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { describeAppointments } from '../src/engine/appointments';
 import { describeLocationTraits } from '../src/engine/phaseLocationTraits';
@@ -1444,6 +1446,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}kpi --json${RESET}       KPI report as raw JSON`);
   console.log(`  ${BOLD}kpi branching-audit${RESET}  Phase A diagnostic: run ${BRANCHING_AUDIT_SEEDS.length} seeds × ${BRANCHING_AUDIT_TICKS} ticks, write Docs/audits/ report`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
+  console.log(`  ${BOLD}spawn fight${RESET} <agent|@hero> --target <actor>  Stage fight.lair.confront against a named opponent (moves the fighter to them)`);
   console.log(`  ${BOLD}spawn undertaking${RESET} <agent|@first> <templateId> [--target <location|actor>] [--band <band>]  Start an undertaking for review (THR-1300)`);
   console.log(`  ${BOLD}undertakings${RESET} [agent|@first]  Active undertakings, with the review pin's verdict when one is set`);
   console.log(`  ${BOLD}objects${RESET} [kind]          World-object kinds with their live counts in this world, and the write-time guard's warnings (THR-1394)`);
@@ -2156,6 +2159,55 @@ function handleSpawnEncounter(agentQuery: string, templateId: string): void {
   console.log(`  Advance with: tick ${action.stepDuration}`);
 }
 
+/**
+ * THR-1543 — `spawn fight <agent|@hero> --target <actor>`: the CLI twin of
+ * `__DEBUG.spawnFight`. Moves the fighter to the opponent's location (a fight whose
+ * sides no longer share a hex ends `separated`), then stages `fight.lair.confront`
+ * with the opponent as its target. Seeded, never `Math.random` (NFP #3).
+ */
+function handleSpawnFight(fighterQuery: string, targetQuery: string): void {
+  const fighter = resolveAgentNode(fighterQuery);
+  const target = resolveAgentNode(targetQuery);
+  if (!fighter || !target) {
+    console.log(`${RED}No agent matching "${!fighter ? fighterQuery : targetQuery}"${RESET}`);
+    return;
+  }
+  if (fighter.id === target.id) {
+    console.log(`${RED}A fighter cannot fight themself.${RESET}`);
+    return;
+  }
+  const template = getUnifiedTemplateById(FIGHT_LAIR_CONFRONT_ID);
+  const targetLocation = state.graph.getOutgoingEdges(target.id, 'located_at')[0]?.target;
+  if (!template || !targetLocation) {
+    console.log(`${RED}Cannot stage the fight: ${!template ? 'template missing' : 'the opponent has no location'}${RESET}`);
+    return;
+  }
+  const moved = moveDebugAgent(state, fighter.id, { locationQuery: targetLocation });
+  if (!moved.success) {
+    console.log(`${RED}Could not move the fighter: ${moved.message}${RESET}`);
+    return;
+  }
+  const action = createUnifiedAction({
+    actorId: fighter.id,
+    templateId: template.id,
+    targetId: target.id,
+    scale: template.scale,
+    source: 'system',
+    tick: state.tick,
+    template,
+    rng: fightSpawnRng(state.seed + state.tick * 43 + fighter.id.length),
+    supportBindings: prepareEncounterSupportBundle(
+      state, template, targetLocation, undefined,
+      buildEncounterBinderContext(runtime, state, fighter.id),
+    ),
+  });
+  state = { ...state, unifiedActions: [...state.unifiedActions, action] };
+  console.log(`${GREEN}✓${RESET} ${fighter.properties.name ?? fighter.id} faces ${target.properties.name ?? target.id} in "${template.name}"`);
+  console.log(`  action:   ${action.actionId}`);
+  console.log(`  steps:    ${template.steps.length} (one nerve, then the exchanges)`);
+  console.log(`  Advance with: tick ${template.steps.length}`);
+}
+
 function parseRunCommandArgs(args: string[]): { speed?: number; autoAftermath: boolean } {
   let speed: number | undefined;
   let autoAftermath = autoAftermathDefault;
@@ -2483,6 +2535,10 @@ function handleCommand(line: string): boolean {
       const subParts = arg.split(/\s+/);
       if (subParts[0] === 'encounter' && subParts.length >= 3) {
         handleSpawnEncounter(subParts[1], subParts.slice(2).join(' '));
+      } else if (subParts[0] === 'fight' && subParts.length >= 4 && subParts.includes('--target')) {
+        // THR-1543 — `spawn fight <agent|@hero> --target <actor...>`.
+        const targetIndex = subParts.indexOf('--target');
+        handleSpawnFight(subParts.slice(1, targetIndex).join(' '), subParts.slice(targetIndex + 1).join(' '));
       } else if (subParts[0] === 'undertaking' && subParts.length >= 3) {
         handleSpawnUndertaking(subParts[1], subParts[2], subParts.slice(3));
       } else if (subParts[0] === 'attachment' && subParts.length >= 3) {
@@ -2496,7 +2552,7 @@ function handleCommand(line: string): boolean {
         const factionQuery = (roleIndex === -1 ? subParts.slice(1) : subParts.slice(1, roleIndex)).join(' ');
         handleSpawnBand(factionQuery, roleIndex === -1 ? undefined : subParts[roleIndex + 1]);
       } else {
-        console.log(`${RED}Usage: spawn encounter|attachment|companion <agent|@hero> <templateId>  |  spawn band <faction> [--role raider|defender]${RESET}`);
+        console.log(`${RED}Usage: spawn encounter|attachment|companion <agent|@hero> <templateId>  |  spawn fight <agent|@hero> --target <actor>  |  spawn band <faction> [--role raider|defender]${RESET}`);
       }
       break;
     }

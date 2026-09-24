@@ -1878,6 +1878,91 @@ export interface DebugBridge {
     }
   >;
 
+  // ── Fight review levers (THR-1543, fight block FB7) ─────────────────────
+
+  /** A fight's own state: `action.fightState` (result, clock, exchanges, wounds,
+   *  blows, momentum, advantages with `spent`, forks, `endReason`, the ending
+   *  records) plus where the action stands. `fightState` is `null` before the nerve
+   *  step resolves. Synchronous. Returns `{ error }` for an unknown action id. */
+  getFightState: (actionId: string) =>
+    | { readonly error: string }
+    | {
+      readonly actionId: string;
+      readonly templateId: string;
+      readonly fighterId: string;
+      readonly opponentId: string | null;
+      readonly currentStep: number;
+      readonly resolved: boolean;
+      readonly outcome: string | null;
+      readonly stepOutcomes: readonly string[];
+      readonly fightState: import('./types/fight').FightState | null;
+    };
+
+  /** The opponent card a fight against this actor would read right now: Dread, Might,
+   *  the card's reach overrides, clock (after lazy recovery), temper, persistence and
+   *  where it was read from (`monsterState` / `derived` / `default`). Matches by id,
+   *  id prefix or partial name. **Async.** */
+  inspectOpponentCard: (idOrName: string) => Promise<
+    | { readonly error: string }
+    | { readonly opponentId: string; readonly name: string; readonly card: import('./types/fight').OpponentCard }
+  >;
+
+  /** The fight review lever. Moves `@hero` to the target's location, then stages
+   *  `fight.lair.confront` on `@hero` against the named target — open, as The First.
+   *  Use this rather than `?spawn=fight.lair.confront`, which stages the template with
+   *  no named opponent.
+   *   - `clockFilled` presets the target's clock through `advanceFightClock` (cause
+   *     `debug`). Holds for a persistent (monster) card; a mortal's per-fight clock
+   *     is cleared at fight start.
+   *   - `outcome` pins the band through `setOutcomePin` — read `getOutcomePinVerdict()`.
+   *   - `fighterRaw` stamps `@hero`'s raw capability in all eight reaches;
+   *     `fighterConditions` lands condition traits on `@hero` (e.g.
+   *     `trait.condition.terrified`). The setups for the forecast checks at the
+   *     regional floor and below it.
+   *  Resolves `{ success, actionId, fighterId, opponentId, message }`. **Async.** */
+  spawnFight: (
+    targetIdOrName: string,
+    opts?: {
+      readonly clockFilled?: number;
+      readonly outcome?: 'critical_success' | 'success' | 'success_at_cost' | 'near_miss' | 'failure' | 'critical_failure';
+      readonly fighterRaw?: number;
+      readonly fighterConditions?: readonly string[];
+    },
+  ) => Promise<{
+    readonly success: boolean;
+    readonly actionId?: string;
+    readonly fighterId?: string;
+    readonly opponentId?: string;
+    readonly message: string;
+  }>;
+
+  /** The odds shown against the odds rolled for an action's current step (fight
+   *  block §3b): the stage's attended forecast (`buildNudgePhaseModel` +
+   *  `forecastWithNudges`) beside `previewStepProbability` — the roll's own
+   *  derivation and step core, run dry (push priced not spent, no trace). `equal`
+   *  compares the d100 thresholds. `selectedNudgeIds` selects cards on both sides;
+   *  `cards` lists what the hand holds. Read-only. **Async.** */
+  getFightForecastCheck: (actionId: string, selectedNudgeIds?: readonly string[]) => Promise<
+    | { readonly error: string }
+    | {
+      readonly actionId: string;
+      readonly stepIndex: number;
+      readonly fightRole: 'nerve' | 'clash' | null;
+      readonly reach: string;
+      readonly difficulty: number;
+      readonly forecastScale: string | null;
+      readonly forecastWord: string;
+      readonly forecastProbability: number;
+      readonly forecastThreshold: number;
+      readonly resolverProbability: number | null;
+      readonly resolverThreshold: number | null;
+      readonly equal: boolean;
+      readonly selectedNudgeIds: readonly string[];
+      readonly cards: readonly { readonly id: string; readonly name: string; readonly forecastDelta: number }[];
+      readonly factors: readonly { readonly text: string; readonly polarity: string; readonly delta: number | null }[];
+    }
+  >;
+
   /** THR-1300 slice 2 — start an undertaking on an agent for review, through the board's
    *  own candidate helpers and start path. Bypasses exactly three generation gates
    *  (`ambition_profile`, `active_cap`, `motive_gate`), each named on the

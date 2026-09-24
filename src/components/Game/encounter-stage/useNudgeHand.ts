@@ -18,6 +18,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { forecastAction } from '../../../engine/resolutionService';
+import { forecastActionAtScale } from '../../../engine/scaledForecast';
 import { FORECAST_TIER_WORDS, NUDGE_BLOCKED_REASONS } from '../../../data/nudge-stage-content';
 import type {
   EncounterStageForecastModel,
@@ -42,10 +43,16 @@ export function forecastWithNudges(
     (sum, id) => sum + (byId.get(id)?.forecastDelta ?? 0),
     0,
   );
-  const summary = forecastAction({
+  const input = {
     ...phase.forecastInput,
     actionModifiers: phase.forecastInput.actionModifiers + nudgeDelta,
-  });
+  };
+  // THR-1543 (fight block §3b) — a step that resolves at a scale the plain forecast
+  // ignores (a fight step) takes the core's scale step and post-roll floor. After
+  // the cards' deltas are summed, because the floor depends on which are chosen.
+  const summary = phase.forecastScale
+    ? forecastActionAtScale(input, phase.forecastScale)
+    : forecastAction(input);
   return {
     tier: summary.forecastTier,
     word: FORECAST_TIER_WORDS[summary.forecastTier],

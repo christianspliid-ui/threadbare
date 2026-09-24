@@ -77,6 +77,12 @@ function applyEffect(
     return;
   }
   if (effect.type === 'partial_progress') return;
+  // THR-1543 — the fight handler reads and applies these itself, through the
+  // fight's own writers (fight block §12); the complication applier does nothing.
+  if (
+    effect.type === 'fight_momentum' || effect.type === 'fight_clock'
+    || effect.type === 'fight_offer_quarter' || effect.type === 'fight_condition'
+  ) return;
 
   const actorNode = state.graph.getNode(ctx.action.actorId);
   if (!actorNode) return;

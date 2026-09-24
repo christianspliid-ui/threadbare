@@ -15,6 +15,12 @@ import { REACH_DOMAINS } from '../types/traits';
 import { VALUE_PAIRS } from '../types/agent';
 import { leansOnAxis, leansOnRoute } from '../engine/encounters/poleLean';
 import { MAX_BRANCH_ROUTES } from '../data/nudge-constants';
+import { FIGHT_RESULT_ACTION_OUTCOME, FIGHT_RESULT_CHOICE_PREFIX } from '../data/fight-constants';
+import { assertFightBlockTerminal, fightResultIndex } from '../data/fights/fightBlock';
+import type { FightResult } from '../types/fight';
+
+/** Every fight result — the keys the fight handler can write as `fight:<result>`. */
+const FIGHT_RESULTS = Object.keys(FIGHT_RESULT_ACTION_OUTCOME) as FightResult[];
 
 const VALID_REACHES = new Set<string>(REACH_DOMAINS);
 const VALID_VALUE_PAIRS = new Set<string>(VALUE_PAIRS);
@@ -234,14 +240,16 @@ export function assertDecidedAftermathReachable(template: UnifiedActionTemplate)
  * `assertDecidedAftermathReachable` asks whether a decided fork points at the
  * right step. This asks the question one level out, and the one that was never
  * asked: is there **any** writer at all that can put this key into
- * `choiceHistory`? There are exactly two, and a variant keyed to neither is
- * unreachable by construction — authored, committed, and rendered to nobody.
+ * `choiceHistory`? There are exactly three, and a variant keyed to none of them
+ * is unreachable by construction — authored, committed, and rendered to nobody.
  *
  * 1. **A `decidedBy` fork** — `applyAgentDecidedBranches` writes the pole key
  *    (`positive`/`negative`) or the declared route key.
  * 2. **`authoredChoices[branchOnStep]`** — the player picks a card and
  *    `recordUnifiedActionChoiceMemory` writes its id. The card ids are required
  *    to match the variant keys; see `UnifiedActionTemplate.authoredChoices`.
+ * 3. **A fight's result** (THR-1543) — the fight handler writes `fight:<result>`
+ *    at `fightResultIndex(steps)` when the template ends in a fight block.
  *
  * The failure mode this closes is total and silent: `resolveAftermathVariant`
  * finds no entry, returns `fallback`, and the tick loop's fail-soft envelope
@@ -275,6 +283,15 @@ export function assertAftermathVariantsProducible(template: UnifiedActionTemplat
     producible.add(card.id);
   }
 
+  // 3. **A fight's result** (THR-1543, fight block §6) — the fight handler writes
+  //    `fight:<result>` at `fightResultIndex(steps)`, an index no step owns, when
+  //    the template's last step carries `fightRole`. A `fight:*` key on a template
+  //    without a terminal block is still orphaned.
+  const lastStep = template.steps[template.steps.length - 1] as { fightRole?: unknown } | undefined;
+  if (lastStep?.fightRole && cfg.branchOnStep === fightResultIndex(template.steps)) {
+    for (const result of FIGHT_RESULTS) producible.add(`${FIGHT_RESULT_CHOICE_PREFIX}${result}`);
+  }
+
   const orphaned = variantKeys.filter((key) => !producible.has(key));
 
   expect(
@@ -282,10 +299,35 @@ export function assertAftermathVariantsProducible(template: UnifiedActionTemplat
     `${template.id} aftermath variant(s) [${orphaned.join(', ')}] can be produced by nothing. `
     + `Step ${cfg.branchOnStep} carries no decidedBy fork offering them and no authoredChoices `
     + `card with that id — the writers are \`applyAgentDecidedBranches\` and the player's pick, `
-    + `and neither can emit these. \`resolveAftermathVariant\` returns \`fallback\` on every `
+    + `and neither can emit these (nor a terminal fight block's \`fight:<result>\`). `
+    + `\`resolveAftermathVariant\` returns \`fallback\` on every `
     + `resolution, so the authored ending reaches nobody and nothing goes red (THR-989). `
     + `Producible here: [${[...producible].join(', ') || 'nothing'}].`,
   ).toEqual([]);
+}
+
+/**
+ * The fight block's two content rules (THR-1543, fight block §6), run catalog-wide:
+ *
+ * 1. **Terminal.** Once a step carries `fightRole`, every later step does too — a
+ *    pure `fightBlock(spec)` cannot see what an author appends to its return value.
+ * 2. **No step reward draw on a fight step.** A fight's prize is the victory yield,
+ *    drawn from the fight's result (plan doc 1), never a per-exchange reward pool.
+ */
+export function assertFightBlockRules(template: UnifiedActionTemplate): void {
+  expect(
+    () => assertFightBlockTerminal(template.steps, template.id),
+    `${template.id} breaks the fight block's terminal rule`,
+  ).not.toThrow();
+  template.steps.forEach((step, index) => {
+    if (isActionStepBranch(step) || !step.fightRole) return;
+    const pools = [step.successMetadata?.rewardPool, step.failureMetadata?.rewardPool].filter(Boolean);
+    expect(
+      pools.length,
+      `${template.id} step ${index} is a fight step carrying a step reward pool — a fight's `
+      + 'prize is drawn from its result, never per exchange (fight block §6).',
+    ).toBe(0);
+  });
 }
 
 export function assertValidStep(step: ActionStepOrBranch, templateId: string): void {

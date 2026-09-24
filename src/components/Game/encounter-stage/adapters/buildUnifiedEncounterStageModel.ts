@@ -25,6 +25,7 @@ import { supportRoleWord } from '../../../../engine/supportRoleWords';
 import { isDefaultSupportSpec } from '../../../../data/default-support-bundles';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
+import { resolveFightStepInputs } from '../../../../engine/fights/fightStepInputs';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import {
   getAgentPortraitUrlFromProperties,
@@ -205,11 +206,29 @@ function buildHeader(
   // second, null only when the agent genuinely has neither.
   const actorNode = graph.getNode(activeAction.actorId);
 
+  // THR-1543 (fight block § Content pillar) — a fight step's authored difficulty
+  // and reach are placeholders the roll never reads; the header's threat and reach
+  // labels read what the opponent's card asks, from the same pure function the
+  // roll uses. Fail-soft: no game state, or a throw, reads the authored values.
+  let headerDifficulty = currentStep.difficulty;
+  let headerReach: string = currentStep.reach;
+  if (currentStep.fightRole && args.gameState) {
+    try {
+      const fight = resolveFightStepInputs(args.gameState, activeAction, currentStep, template);
+      if (fight) {
+        headerDifficulty = fight.difficulty;
+        headerReach = fight.reach;
+      }
+    } catch {
+      // Keep the authored labels.
+    }
+  }
+
   return {
     title: template.name,
     subtitle: enrichProse(rawSubtitle, ctx),
     locationLabel: resolveLocationLabel(graph, activeAction.targetId),
-    threatLabel: difficultyToThreatLabel(currentStep.difficulty),
+    threatLabel: difficultyToThreatLabel(headerDifficulty),
     threadTier,
     familyLabel: agentName,
     agentName,
@@ -217,7 +236,7 @@ function buildHeader(
     portraitUrl: getAgentPortraitUrlFromProperties(actorNode?.properties),
     hexCol: notification.hexCol,
     hexRow: notification.hexRow,
-    reachLabel: reachLabelFor(currentStep.reach),
+    reachLabel: reachLabelFor(headerReach),
   };
 }
 
@@ -484,10 +503,13 @@ function buildHistory(
       // to the re-rendered afterimage summary when no record exists (old saves,
       // legacy path, cap overflow) — never blank, never re-enriched-into-a-wrong-past.
       outcomeWord = stepOutcomeWord(outcome);
-      reachLabel = reachLabelFor(resolvedStep.reach);
       const record = (activeAction.stepProseHistory as readonly StepProseRecord[] | undefined)?.find(
         (r) => r.index === index,
       );
+      // THR-1543 (fight block §3c) — the reach the step actually tested, frozen at
+      // resolution: a clash whose card moved it to Eye is an Eye step. Identical to
+      // the authored reach on every ordinary step.
+      reachLabel = reachLabelFor(record?.reach ?? resolvedStep.reach);
       replayNarrative = record?.narrativeProse || undefined;
       choiceText = record?.choiceText
         ?? activeAction.choiceHistory?.find((c) => c.stepIndex === index)?.choiceText;

@@ -56,6 +56,7 @@ import { readReachOverride } from '../effects/ruleOverrideConsumers';
 import { resolveStepDefinition } from '../unifiedActionLifecycle';
 import { readLiveAxisLean } from '../encounters/branchDecision';
 import { defaultOpponentCard, readOpponentCard } from './opponentCard';
+import { fightAdvantageModifiers, readFightAdvantages } from './fightAdvantages';
 
 /**
  * A step's fight role, or undefined for an ordinary step. `difficultyContext:
@@ -111,6 +112,28 @@ export function resolveFightOpponent(
   if (opponentId === action.actorId) return { opponentId, status: 'self' };
   if (isAgentGone(node)) return { opponentId, status: 'deceased' };
   return { opponentId, status: 'bound' };
+}
+
+/**
+ * THR-1543 (plan doc §12) — the complication pool's view of a fight step: who the
+ * fight is against, and whether that is a monster (it carries `monsterState`) or a
+ * mortal. Scopes the pool to `inFight` events and fills `{opponent}`.
+ */
+export function fightComplicationScope(
+  state: Pick<GameState, 'graph'>,
+  action: Pick<UnifiedAction, 'actorId' | 'targetId' | 'supportBindings' | 'fightState'>,
+  step: Pick<ActionStep, 'opponentRef' | 'fightComplications'>,
+): NonNullable<import('../../types/complication').ComplicationContext['fight']> {
+  const opponentId = action.fightState?.opponentId ?? (() => {
+    const found = resolveFightOpponent(state, action, step);
+    return found.status === 'bound' ? found.opponentId : null;
+  })();
+  const bag = opponentId ? state.graph.getNode(opponentId)?.properties.monsterState : undefined;
+  return {
+    opponentId,
+    opponentKind: bag && typeof bag === 'object' ? 'monster' : 'mortal',
+    ...(step.fightComplications?.length ? { authored: step.fightComplications } : {}),
+  };
 }
 
 /**
@@ -186,6 +209,12 @@ export function resolveFightStepInputs(
   }
   const momentum = action.fightState?.momentum ?? 0;
   if (momentum !== 0) modifiers.push({ name: FIGHT_MOMENTUM_MODIFIER_NAME, delta: momentum });
+  // FB7 (plan doc §11): the advantages the world lent the fighter. Read once at
+  // fight start and persisted on `fightState`; before it exists (the nerve step)
+  // they are read directly — a pure read, so the forecast spends nothing.
+  const advantages = action.fightState?.advantages
+    ?? readFightAdvantages(state, action.actorId, status === 'bound' ? opponentId : null);
+  modifiers.push(...fightAdvantageModifiers(advantages, role, action.fightState));
   const modifierTotal = modifiers.reduce((sum, m) => sum + m.delta, 0);
 
   return {
@@ -200,5 +229,6 @@ export function resolveFightStepInputs(
     scale: FIGHT_STEP_SCALE,
     modifiers,
     modifierTotal,
+    advantages,
   };
 }

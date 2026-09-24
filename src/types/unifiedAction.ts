@@ -1925,6 +1925,17 @@ export interface ActionStep {
   readonly successAtCostAfterimage?: string;
   readonly criticalSuccessAfterimage?: string;
   readonly criticalFailureAfterimage?: string;
+  /**
+   * THR-1543 — the near-miss band's own afterimage (a fight's "holds, badly" /
+   * "trades blows"). Absent ⇒ `successAfterimage`, as before.
+   */
+  readonly nearMissAfterimage?: string;
+  /**
+   * THR-1543 (fight block §12) — mid-fight events an author merged into this
+   * fight's complication pool through `fightBlock(spec).complications`. Read only
+   * on a fight step, alongside the shared `inFight` pool.
+   */
+  readonly fightComplications?: readonly import('./complication').ComplicationTemplate[];
   /** THR-773: authored nudge hand for this step. Absent ⇒ no hand, no nudge path. */
   readonly nudges?: readonly StepNudge[];
   /**
@@ -2881,8 +2892,9 @@ export function afterimageForOutcome(step: ActionStep, outcome: StepOutcome): st
   switch (outcome) {
     case 'critical_success':
       return step.criticalSuccessAfterimage ?? step.successAfterimage;
-    case 'success':
     case 'near_miss':
+      return step.nearMissAfterimage ?? step.successAfterimage;
+    case 'success':
       return step.successAfterimage;
     case 'success_at_cost':
       return step.successAtCostAfterimage ?? step.successAfterimage;

@@ -266,7 +266,12 @@ function hostileEdges(
   }
 }
 
-function isInjuryProvenance(properties: Record<string, unknown>): boolean {
+/**
+ * Whether a `hostile_to` edge's provenance names an injury (a grudge) rather than
+ * friction. Exported for the fight block's Old wound advantage (THR-1543), which
+ * reads "an injury-class grudge" by this same set rather than a second copy of it.
+ */
+export function isInjuryProvenance(properties: Record<string, unknown>): boolean {
   return HOSTILE_PROVENANCE_KEYS.some(key => {
     const value = properties[key];
     return typeof value === 'string' && GRUDGE_PROVENANCE.has(value);

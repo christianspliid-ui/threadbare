@@ -37,6 +37,13 @@ export interface DebugSpawnEncounterOptions {
    * one assemble it with `buildEncounterBinderContext`.
    */
   binder?: EncounterBinderContext;
+  /**
+   * THR-1543 — the action's target node, in place of the agent's location. The
+   * fight review lever (`spawnFight`) stages `fight.lair.confront` against a named
+   * opponent this way: a standalone fight's opponent is its target. An id that does
+   * not resolve falls back to the location (fail-soft).
+   */
+  targetId?: string;
 }
 
 export interface DebugSpawnEncounterContextOptions {
@@ -452,10 +459,11 @@ export function prepareDebugEncounterSpawn(
       state.tick,
     );
     const rng = mulberry32(state.seed + state.tick * 43 + agent.id.length);
+    const targetId = options.targetId && state.graph.getNode(options.targetId) ? options.targetId : locationId;
     const action = createUnifiedAction({
       actorId: agent.id,
       templateId: unifiedTemplate.id,
-      targetId: locationId,
+      targetId,
       scale: unifiedTemplate.scale,
       source: 'system',
       tick: state.tick,
@@ -464,7 +472,7 @@ export function prepareDebugEncounterSpawn(
       supportBindings,
       clearanceGateIds: gateInit.gateIds,
       // THR-1100: target-derived step duration for tier-scaled templates.
-      targetProperties: state.graph.getNode(locationId)?.properties,
+      targetProperties: state.graph.getNode(targetId)?.properties,
     });
 
     // Rebuild notification with unified_action metadata so the dedup key matches
