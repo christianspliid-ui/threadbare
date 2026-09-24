@@ -145,6 +145,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Might](./Encounters.md#might)** — opponent rating for each clash; derived from a mortal's raw Iron score
 - **[Nerve Step](./Encounters.md#nerve-step)** — a fight's first step: whether the mortal stands at all
 - **[Clash Step](./Encounters.md#clash-step)** — one exchange of blows; after the roll it is the step it actually was (the resolved reach)
+- **[Fight Clock](./Encounters.md#fight-clock)** — an opponent's wear in segments; a full clock falls to the next landing blow; a monster's persists on its node; not the Doom Clock (THR-1538)
+- **[Fight Result](./Encounters.md#fight-result)** — how a fight ended (overcome … struck down); ends the encounter at once and sets its outcome; recorded as `fight:<result>`
 
 ### Traits
 

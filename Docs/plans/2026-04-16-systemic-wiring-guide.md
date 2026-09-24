@@ -4178,3 +4178,30 @@ resolves as a clash.
 
 **Where it shows.** One `fight.step` trace per fight step (card, resolved reach, difficulty,
 opponent delta, scale, named modifiers, band); `resolution.input` reports the regional scale.
+
+**The clock, the result and the early end (FB2, THR-1538).** A fight now carries its own state on
+the action, `UnifiedAction.fightState` (`src/types/fight.ts`): the opponent, the clock, the
+exchanges, the wounds and blows, and — once decided — the `result`. What an author can rely on:
+
+- **The clock.** Each clash lands `FIGHT_CLOCK_BY_BAND` on the opponent's clock through the one
+  writer, `advanceFightClock` (`src/engine/fights/fightClock.ts`). A monster (`monsterState` on the
+  node) keeps its clock between fights; a mortal's clock is per fight. A full clock falls to the
+  next landing blow and never ends a fight on its own.
+- **The result ends the encounter.** `overcome`, `driven_off`, `bargained`, `yielded`, `broke_off`,
+  `routed` or `struck_down`. A set result resolves the action at once, and its outcome is
+  `FIGHT_RESULT_ACTION_OUTCOME[result]` — the aftermath's band prose and the `action_trigger` ladder
+  (`encounter_success` / `encounter_failure` …) both read that, not the last step's band.
+- **Key the aftermath on the result.** The result is written as one choice memory, `fight:<result>`,
+  at `fightResultIndex(steps)` (= `steps.length`, an index no step owns). A fight template's
+  `aftermathConfig` sets `branchOnStep: fightResultIndex(steps)` and variants keyed `fight:overcome`,
+  `fight:broke_off`, …. Cards the god committed keep their own step-indexed records.
+- **A fight can end without a roll** (`broke_off` with `endReason` `no_opponent` / `opponent_gone` /
+  `separated`) and still reaches its aftermath, its item triggers and its event node.
+- **World writes on a fight's end go in one place:** `FIGHT_END_BRANCHES` in
+  `src/engine/fights/fightOutcome.ts` (`onFightEnded`). Each branch receives
+  `{ tick, rng, runtime, overrideCtx }` and returns a patch (`ending`, `opponentEnding`,
+  `lairOutcome`) that lands on the resolved action's `fightState`. Empty until plan docs 1, 3 and 5.
+- **Death cause `'fight'`** (`MortalDeathCause`): the sheet reads *slain* and names the victor.
+
+Traces: `fight.clock` per clock write (with `filledByThisWrite`), exactly one `fight.end` per fight
+(`rolled: false` on the no-roll route, `dispatchError` when a branch threw).
