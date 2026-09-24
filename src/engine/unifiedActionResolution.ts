@@ -1809,8 +1809,12 @@ export function executeStepResult(
 
   // Phase 3: Compute differentiated consequences (all templates for failure tiers; THR-20)
   // Phase 6: Gate removed for success tiers — all templates receive band-differentiated consequences
+  // THR-1539 — a fight step's quintessence is its own harm (queued by the fight
+  // handler below), so the generic band quintessence event is skipped for it.
+  const fightStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const consequence = computeOutcomeConsequence(
     action.templateId, outcome, action.actorId, tick, complicationContext,
+    { fightStep: fightRoleOf(fightStepDef) !== undefined },
   );
 
   // Phase 6: Emit consequence_applied trace (NFP #2 inspectability)
@@ -1871,9 +1875,12 @@ export function executeStepResult(
   // `advanceStep`, so the clock-full check can end the fight in this same step.
   // `fightAction` carries the updated `fightState` into everything below; for an
   // ordinary step it is `action` itself.
-  const fightStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  // THR-1539 — it also queues the step's harm, lands its band condition and carries
+  // its momentum; harm reads the step's resolved difficulty (plan doc §3c, §7).
   let fightAction = fightRoleOf(fightStepDef)
-    ? applyFightStepResult(state, action, template, fightStepDef, outcome, tick)
+    ? applyFightStepResult(state, action, template, fightStepDef, outcome, tick, {
+      difficulty: resolutionStats?.difficulty ?? fightStepDef.difficulty,
+    })
     : action;
 
   // Apply capability growth from step resolution

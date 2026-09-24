@@ -39,7 +39,11 @@ import type {
   FightStepInputs,
 } from '../../types/fight';
 import {
+  FIGHT_BERSERK_MIGHT_DELTA,
+  FIGHT_COURAGE_MODIFIER_NAME,
   FIGHT_ENCOUNTER_TYPE,
+  FIGHT_MOMENTUM_MODIFIER_NAME,
+  FIGHT_NERVE_COURAGE_WEIGHT,
   FIGHT_RATING_DIFFICULTY,
   FIGHT_STANDING_MODIFIER_NAME,
   FIGHT_STEP_SCALE,
@@ -50,6 +54,7 @@ import { buildPredicateContext, hasEffectsFormat, resolveEffectModifiers } from 
 import { computeResolutionModifiers } from '../resolutionModifiers';
 import { readReachOverride } from '../effects/ruleOverrideConsumers';
 import { resolveStepDefinition } from '../unifiedActionLifecycle';
+import { readLiveAxisLean } from '../encounters/branchDecision';
 import { defaultOpponentCard, readOpponentCard } from './opponentCard';
 
 /**
@@ -149,7 +154,9 @@ export function resolveFightStepInputs(
       graph, opponentId, reach, opponentCtx, state.effectStates,
     ).reachModifiers[reach] ?? 0;
   }
-  const difficulty = Math.max(0, Math.min(1, baseDifficulty + opponentModifierDelta));
+  // FB3: a berserk opponent hits harder on every clash after it turns (FB4 sets it).
+  const berserkDelta = role === 'clash' && action.fightState?.berserk ? FIGHT_BERSERK_MIGHT_DELTA : 0;
+  const difficulty = Math.max(0, Math.min(1, baseDifficulty + opponentModifierDelta + berserkDelta));
 
   // The fighter's standing modifiers, in a combat context. The swap is already
   // applied above, so no override context is passed: a second read would swap
@@ -171,6 +178,14 @@ export function resolveFightStepInputs(
   if (standing.totalModifier !== 0) {
     modifiers.push({ name: FIGHT_STANDING_MODIFIER_NAME, delta: standing.totalModifier });
   }
+  // FB3 (plan doc §7): courage on the nerve step — the fighter's live lean, never
+  // a hidden number; then the momentum the last fight step carried forward.
+  if (role === 'nerve') {
+    const courage = FIGHT_NERVE_COURAGE_WEIGHT * readLiveAxisLean(state, action.actorId, 'courage_prudence');
+    if (courage !== 0) modifiers.push({ name: FIGHT_COURAGE_MODIFIER_NAME, delta: courage });
+  }
+  const momentum = action.fightState?.momentum ?? 0;
+  if (momentum !== 0) modifiers.push({ name: FIGHT_MOMENTUM_MODIFIER_NAME, delta: momentum });
   const modifierTotal = modifiers.reduce((sum, m) => sum + m.delta, 0);
 
   return {

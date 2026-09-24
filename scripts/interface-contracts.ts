@@ -4170,6 +4170,47 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/fights/fightState.ts'],
     readSites: ['src/engine/fights/fightOutcome.ts'],
   },
+  // ── FB3 (THR-1539, plan §7) — the plan's Interface impact rows "encounter step →
+  // quintessence queue" (extend with `fight_harm`) and "encounter step → conditions
+  // applier" (extend with fight bands). No `verifiedLive`, for the FB2 rows' reason:
+  // no shipped template carries a fight block until FB7; the evidence today is
+  // `src/engine/fights/__tests__/fightHarm.test.ts`.
+  {
+    id: 'fight-harm-queues-quintessence',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'An exchange that goes badly costs the fighter their quintessence, on the same ledger every other hurt settles on — and a ward turns it aside, while a spell\'s price is still paid.',
+    ulTerms: ['Fight', 'Quintessence'],
+    // Queued, never written: `phaseQuintessence` owns the write (THR-1261), and settles
+    // `spell_price` outside `prevent_loss` so a ward covers harm only (THR-1530 §3).
+    mechanism: {
+      kind: 'function',
+      symbols: ['queueFightHarm', 'computeFightErosion', 'pendingQuintessenceEvents'],
+      module: 'src/engine/fights/fightHarm.ts',
+    },
+    writeSites: ['src/engine/fights/fightHarm.ts'],
+    readSites: ['src/engine/phaseQuintessence.ts'],
+  },
+  {
+    id: 'fight-band-conditions',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A fight leaves its mark as the ordinary conditions — inspired, shaken, terrified, wounded — so every ward, cure and reader that knows a condition knows a fight\'s wound.',
+    ulTerms: ['Fight', 'Condition'],
+    // Written through the one condition writer, `applyConditionToActor` (extracted from the
+    // aftermath case so tag immunity and the `damaged` proxy behave identically on both
+    // paths): a `has_trait` edge with a live `ticksRemaining` counter, which the decay
+    // sweep counts down and the capability readers fold in.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['has_trait', 'ticksRemaining'],
+      module: 'src/engine/encounterAftermath.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/conditionDecay.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

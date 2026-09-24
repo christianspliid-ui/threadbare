@@ -205,9 +205,27 @@ const DEFAULT_CONSEQUENCE: OutcomeConsequence = {
  * @param tick - Current game tick
  * @param context - Optional context for complication selection. When absent, no
  *   complication is selected (backward-compatible with legacy callers).
+ * @param opts.fightStep - THR-1539: the step is a fight step. Its quintessence is
+ *   the fight's own harm (`computeFightErosion`, queued as `fight_harm`), so the
+ *   generic band quintessence event is dropped: one harm path per step
+ *   (fight-block plan doc §7). Everything else about the consequence is unchanged.
  * @returns Consequence specification for the caller to apply
  */
 export function computeOutcomeConsequence(
+  templateId: string,
+  outcome: StepOutcome,
+  actorId: string,
+  tick: number,
+  context?: ComplicationContext,
+  opts?: { readonly fightStep?: boolean },
+): OutcomeConsequence {
+  const consequence = computeBandConsequence(templateId, outcome, actorId, tick, context);
+  return opts?.fightStep && consequence.quintessenceEvent
+    ? { ...consequence, quintessenceEvent: null }
+    : consequence;
+}
+
+function computeBandConsequence(
   templateId: string,
   outcome: StepOutcome,
   actorId: string,

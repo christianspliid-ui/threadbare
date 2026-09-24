@@ -4205,3 +4205,28 @@ exchanges, the wounds and blows, and — once decided — the `result`. What an 
 
 Traces: `fight.clock` per clock write (with `filledByThisWrite`), exactly one `fight.end` per fight
 (`rolled: false` on the no-roll route, `dispatchError` when a branch threw).
+
+**Harm, conditions and momentum (FB3, THR-1539).** What a fight step costs the fighter is engine
+logic keyed on `fightRole`. Authors write none of it, and must not add step effects that duplicate it:
+
+- **Harm** is `computeFightErosion` (`src/engine/fights/fightHarm.ts`), queued as a
+  `QuintessenceEvent` with `source: 'fight_harm'`: `FIGHT_HARM_BASE × band multiplier`
+  (`FIGHT_CLASH_HARM_MULT` / `FIGHT_NERVE_HARM_MULT`) × 2 when the action's `effectiveTier` is
+  `story_beat` (never the template's `intrinsicTier`) × the resolved difficulty × 1.5 once the
+  opponent is berserk. It is floored at `QUINTESSENCE_RATIO_FLOOR`, or at `MEETING_QUINTESSENCE_FLOOR`
+  for a bonded First, net of harm already queued this tick. A fight step **skips the generic band
+  quintessence consequence** (`computeOutcomeConsequence(..., { fightStep: true })`): one harm path.
+- **Band conditions** land through **`applyConditionToActor(state, targetId, conditionTraitId, opts)`**
+  (`src/engine/encounterAftermath.ts`), now the one exported condition writer. The aftermath's
+  `apply_condition` case delegates to it unchanged. `opts` carries `intensity`, `durationTicks`, an
+  `edgeId` and an additive `edgeProperties` bag merged onto the `has_trait` edge. Tag immunity and
+  the `damaged` proxy come with it, so **call it rather than writing a `has_trait` condition edge by
+  hand**. Bands: nerve critical success → `inspired`, near miss / at cost → `shaken`, failure and
+  rout → `terrified`; clash at cost / failure → `wounded`, struck down → `wounded` at
+  `FIGHT_CONDITION_INTENSITY_SEVERE`. Recorded in `fightState.conditionsApplied`.
+- **Courage and momentum** are named terms on the roll (`resolveFightStepInputs` modifiers):
+  `courage` on the nerve step (`FIGHT_NERVE_COURAGE_WEIGHT × courage_prudence`), and `momentum`,
+  which is `fightState.momentum` carried from the last fight step (`FIGHT_NERVE_CARRY`,
+  `FIGHT_CLASH_MOMENTUM`).
+- **Wards cover harm, never a spell's price.** `phaseQuintessence` settles `source: 'spell_price'`
+  outside `prevent_loss`, so a `prevent_loss` ward you author will not refund the `use × Power` cost.
