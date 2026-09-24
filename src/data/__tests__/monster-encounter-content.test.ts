@@ -31,7 +31,7 @@ const MIGRATED_HUNT_TEMPLATES = MONSTER_ENCOUNTER_TEMPLATES.filter(t => !t.id.st
  * fight steps follow the block's rules (terminal, continue weakened, default band
  * afterimages), so the legacy step-shape checks below apply to its other steps only.
  */
-const isFightStep = (step: { fightRole?: unknown }): boolean => step.fightRole !== undefined;
+const isFightStep = (step: unknown): boolean => (step as { fightRole?: unknown }).fightRole !== undefined;
 
 describe('monster-encounter-content (THR-103 migration)', () => {
   describe('MONSTER_ENCOUNTER_TEMPLATES', () => {

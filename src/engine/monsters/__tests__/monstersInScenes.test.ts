@@ -31,6 +31,7 @@ import type { EncounterCacheEntry } from '../../encounterCache';
 import type { GameState } from '../../../types/gameState';
 import type { EncounterSupportBinding } from '../../../types/encounter';
 import type {
+  ActionStep,
   EncounterAftermathReaction,
   PendingEncounterSeed,
   StepOutcome,
@@ -39,6 +40,8 @@ import type {
 } from '../../../types/unifiedAction';
 
 const HUNT_ID = 'monster.hunt.named_elite';
+/** The hunt's steps — a linear template, so every entry is an `ActionStep`. */
+const HUNT_STEPS = MONSTER_HUNT_NAMED_ELITE.steps as readonly ActionStep[];
 const TICK = 100;
 const midRng = () => 0.5;
 
@@ -304,7 +307,7 @@ describe('{target:family}', () => {
   });
 
   it('fight.lair.confront opens with the family line', () => {
-    const nerve = FIGHT_LAIR_CONFRONT.steps[0].narrativeTemplate!;
+    const nerve = (FIGHT_LAIR_CONFRONT.steps[0] as ActionStep).narrativeTemplate!;
     expect(nerve).toContain('{target:family}');
     expect(enrichProse(nerve, proseCtx(lairWorld(), 'beast'))).toContain(MONSTER_FAMILIES.beast.cardLine);
   });
@@ -318,7 +321,7 @@ const reactionIds = (key: string) => (variants[key]?.reactions ?? []).map(r => r
 
 describe('monster.hunt.named_elite — the fight and its return seed', () => {
   it('its climax is a fight block against the cast beast', () => {
-    const fight = MONSTER_HUNT_NAMED_ELITE.steps.filter(s => s.fightRole !== undefined);
+    const fight = HUNT_STEPS.filter(s => s.fightRole !== undefined);
     expect(fight.length).toBeGreaterThan(1);
     expect(fight.every(s => s.opponentRef === 'beast')).toBe(true);
     expect(MONSTER_HUNT_NAMED_ELITE.aftermathConfig!.branchOnStep).toBe(MONSTER_HUNT_NAMED_ELITE.steps.length);
@@ -376,7 +379,7 @@ describe('both death windows', () => {
     const state = baseState(graph);
     const tracked = runStep(state, { ...spawned, stepProgress: 1, stepDuration: 1 }, MONSTER_HUNT_NAMED_ELITE, 'success');
     expect(tracked.resolved).toBe(false);
-    expect(MONSTER_HUNT_NAMED_ELITE.steps[tracked.currentStep].fightRole).toBe('nerve');
+    expect(HUNT_STEPS[tracked.currentStep].fightRole).toBe('nerve');
     return { state, action: tracked };
   }
 

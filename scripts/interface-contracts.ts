@@ -3767,10 +3767,15 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/graphOpExecutor.ts',
       'src/data/undertaking-objects.ts',
     ],
+    // THR-1545 (monsters M2, "death funnel → cast binding"): the encounter cast reads
+    // the mark too — no actor spec binds a deceased node — and so does the lair-monster
+    // draw gate, through `isAgentGone`.
     readSites: [
       'src/engine/groups/groupQueries.ts',
       'src/engine/factionNetwork.ts',
       'src/engine/agentDetail.ts',
+      'src/engine/encounterSupportBundle.ts',
+      'src/engine/monsters/liveMonster.ts',
     ],
   },
   {
@@ -4272,6 +4277,34 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-24',
       evidence:
         'THR-1544 M1. Seed 42 medium, 120 ticks, CLI `monsters`: 14 monsters listed, every one carrying a card (14/14) — blight, stormkin, behemoth and golem families, all legendary by then, so every card also shows the hardening (clock 5, Dread one word up). Non-vacuous by `src/engine/monsters/__tests__/monsterCard.test.ts`: each of the eight families is minted and then read back through `readOpponentCard` with `source: \'monsterState\'` and the family\'s temper from the `trait.temper.*` edge; the real `phaseLairEscalation` both mints and hardens; a foundation-sphere lair falls back to the Force family; a graph with no temper definitions mints the card and skips the edge.',
+    },
+  },
+  // ── Monsters M2 (THR-1545, plan 2026-09-23-monsters-as-opponents §4) — the plan's
+  // Interface impact row "lair + monster → encounter draw". The lair's escalation names
+  // its elite; the draw gate and the hunt's cast read the name and the living body.
+  {
+    id: 'lair-monster-gates-the-hunt',
+    producerSystem: RUINS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part.",
+    ulTerms: ['Opponent Card'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['namedEliteId', 'liveLairMonsterAt', 'requiresLiveMonster', 'matchProperty'],
+      module: 'src/engine/monsters/liveMonster.ts',
+    },
+    writeSites: ['src/engine/lairEscalation.ts'],
+    readSites: [
+      'src/engine/monsters/liveMonster.ts',
+      'src/engine/encounterFilterPipeline.ts',
+      'src/engine/unifiedCandidates.ts',
+      'src/engine/encounterSupportBundle.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        'THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.',
     },
   },
   // ── FB3 (THR-1539, plan §7) — the plan's Interface impact rows "encounter step →

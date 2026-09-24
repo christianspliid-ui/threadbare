@@ -2697,6 +2697,17 @@ Plan: `Docs/plans/2026-09-23-monsters-as-opponents.md` §1–3. A lair's named e
 | `engine/monsters/isMonster.ts` (new) → `data/undertaking-objects.ts` (`isPlottableMortal`) · `engine/npcGraduation.ts` (`phaseNpcGraduation`) · `engine/lairClearing.ts` (`isChallenger`) · `engine/socialEncounterGeneration.ts` (`findVisibleAgents`) | each call site's phase | — (`WorldPulse` count is plan doc 4's F1) | — | — | unit tests |
 | `engine/monsters/listMonsters.ts` (new) · `debug-bridge.ts` / `.d.ts` (`listMonsters`) · `scripts/cli.ts` (`monsters`) · `types/traces/monster-traces.ts` (new) · `types/trace.ts` (THR-928 trio) | — | — | — | — | `__DEBUG.listMonsters`, CLI `monsters` |
 
+## Monsters in scenes — Monsters M2 (THR-1545)
+
+Plan: `Docs/plans/2026-09-23-monsters-as-opponents.md` §4 + § Encounter templates. A hunt casts the lair's own monster, is drawn only where it lives, and fights it. No new phase, node type, edge type or trace (the fight traces carry the opponent); no component edit.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/encounterSupportBundle.ts` (`findExistingActorSupport`: the liveness filter on every actor spec, `matchProperty` before role matching, role branches skip monsters; `resolveActorSupport`: a `matchProperty` spec never materializes; a `matchProperty` spec skips the scored binder) · `types/encounter.ts` (`EncounterSupportActorSpec.matchProperty`) | encounter creation (`phaseAgentDecision`), seeds, debug spawns | existing veil (`{cast:beast}`) | `unifiedActions[].supportBindings` | existing (`seed_context_inherited`, `binding_severed`) | CLI `spawn encounter` → `eval` the action's `supportBindings` |
+| `engine/monsters/liveMonster.ts` (new: `liveLairMonsterAt`, `hasLiveLairMonsterAt`) → `engine/encounterFilterPipeline.ts` (`filterByPrerequisites`) · `engine/unifiedCandidates.ts` (`generateUnifiedCandidates`) · `types/unifiedAction.ts` (`requiresLiveMonster`) | encounter draw (both paths; the Guild's quest entries ride the filter pipeline) | — | — | existing filter path | unit tests |
+| `engine/proseEnrichment.ts` (`{target:family}`, `SceneTargetContext.family`, `{?target_has_family}`) · `data/encounters/fight-lair-confront.ts` (the family opening) | prose enrichment | existing veil | — | — | wiring guide |
+| `data/monster-encounter-content.ts` (`MONSTER_HUNT_NAMED_ELITE`: a tracking step, then a fight block against `beast`; `requiresLiveMonster`; `fight:<result>` aftermath; the return seed with `inheritContext`, planted only where the beast lived) | drawn at `lair` (cache + array paths); the Guild's quest offer; its own return seed | existing encounter veil | `unifiedActions[]`, `pendingEncounterSeeds[]` | the fight traces (`fight.step` names the monster) | CLI `spawn encounter @hero monster.hunt.named_elite` |
+
 ## Opposed exchanges — Duels E1 (THR-1556)
 
 Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block against a mortal is a duel: the opponent's roll is synthesized on its own stream, both sides carry a per-fight clock, and both sides take the concession fork. No new phase, node type or edge type; no component edit (the duel's header is plan doc 4's F2).
