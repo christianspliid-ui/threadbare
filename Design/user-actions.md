@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 17:54 local (15:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 18:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -25,7 +25,7 @@ Your 6 August rule: the hourly planning lane stages design work but never author
 
 Right now, a mortal's items, conditions and standing change the percentage the player sees. They do not change the actual dice on the main encounter path. So every item bonus is decorative, and the shown odds are wrong by exactly that amount. The fix makes the dice honour them. That shifts the odds on **every** ordinary encounter step at once, which is why it was filed *held*.
 
-**Are you OK with that global balance shift landing unattended?** A yes no longer sends it straight to the builder: it edits the same file as every fight-block slice, so it lands after the whole fight block (FB1 to FB7). The ticket already stops itself if success rates move by more than 10 points. Nothing else waits on it.
+**Are you OK with that global balance shift landing unattended?** It was held until the whole fight block (FB1 to FB7) had landed, because it edits the same file. **The fight block finished today at 18:13 local**, so a yes now sends it to the builder. The ticket already stops itself if success rates move by more than 10 points. Nothing else waits on it.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -54,6 +54,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — war news now reaches the chronicle in normal play** ([THR-1564](https://linear.app/threadbare/issue/THR-1564/war-news-never-reaches-the-player-in-normal-play-armies-battles-and)), not only when the debug panel is open. Merged 18:34 local via [#2016](https://github.com/christianspliid-ui/threadbare/pull/2016), and live on the site.
+- **2026-09-24 — the fight block is finished: the first playable fight, a monster in its lair** ([THR-1543](https://linear.app/threadbare/issue/THR-1543/fight-block-fb7-the-block-the-template-advantages-allies-events), FB7). Merged 18:13 local via [#2015](https://github.com/christianspliid-ui/threadbare/pull/2015). Not a review ask yet: the monster card and duels are still to come.
 - **2026-09-24 — skill floors on ambitions, milestones and spells now actually gate** ([THR-1562](https://linear.app/threadbare/issue/THR-1562/ambition-reach-floors-and-reach-milestones-compare-raw-capability-10), reach on one scale). Before, every mortal qualified for everything. Merged 16:22 local via [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013), and live on the site.
 - **2026-09-24 — an item or spell can now push a fight clock forward or back, or inflict a condition mid-fight** ([THR-1542](https://linear.app/threadbare/issue/THR-1542/fight-block-fb6-effect-vocabulary-for-fights), fight block FB6). Merged 15:49 local via [#2014](https://github.com/christianspliid-ui/threadbare/pull/2014), and live on the site.
 - **2026-09-24 — traits and items can now react when a fighter is struck, lands a blow or wins** ([THR-1541](https://linear.app/threadbare/issue/THR-1541/fight-block-fb5-fight-events), fight block FB5). Merged 13:38 local via [#2012](https://github.com/christianspliid-ui/threadbare/pull/2012), and live on the site.
@@ -62,8 +64,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — builders nobody is watching now step back, and the spotlight follows who is building** ([THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), your morning design). Merged 10:43 local via [#2007](https://github.com/christianspliid-ui/threadbare/pull/2007), and live on the site.
 - **2026-09-24 — your three morning designs are handed to the builder**: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). The plans merged via [#2002](https://github.com/christianspliid-ui/threadbare/pull/2002), [#2003](https://github.com/christianspliid-ui/threadbare/pull/2003) and [#2004](https://github.com/christianspliid-ui/threadbare/pull/2004).
 - **2026-09-24 — fights now deal harm, conditions and momentum** ([THR-1539](https://linear.app/threadbare/issue/THR-1539/fight-block-fb3-harm-conditions-momentum), fight block FB3). Merged 09:33 local via [#2006](https://github.com/christianspliid-ui/threadbare/pull/2006), and live on the site.
-- **2026-09-24 — the "design session wanted for THR-1526" ask is closed.** You are designing [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location) this morning.
-- **2026-09-24 — a won siege now keeps the town it took** ([THR-1563](https://linear.app/threadbare/issue/THR-1563)). Merged 08:31 local via [#2000](https://github.com/christianspliid-ui/threadbare/pull/2000).
 
 ---
 
