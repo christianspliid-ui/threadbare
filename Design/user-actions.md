@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 01:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -15,7 +15,7 @@ Your 6 August rule: the hourly planning lane stages design work but never author
 
 ### Design session wanted: sequel scenes fire on their own ([THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the)) — *from tb-orchestrator*
 
-The follow-up scenes of the crossroads bargain and the swindled family can fire on their own. So a stranger turns up to collect on a promise the mortal never made. This is a bug in the appointments work you already approved. The design question is small: how a scene marks itself "only reachable as a sequel". **The builder has finished THR-1525, THR-1534, THR-1536 and the first fight slice ([THR-1537](https://linear.app/threadbare/issue/THR-1537/fight-block-fb1-fight-steps-read-their-opponent)). Its ready queue is empty until the next fight slices open.** It takes about half an hour in a chat and has no creative fork. Say **"design THR-1526"**. A yes on the ask above would let the lane draft it instead.
+The follow-up scenes of the crossroads bargain and the swindled family can fire on their own. So a stranger turns up to collect on a promise the mortal never made. This is a bug in the appointments work you already approved. The design question is small: how a scene marks itself "only reachable as a sequel". **The builder has work for now: two fight slices opened at 02:30. After the fight block, only unwritten designs remain.** It takes about half an hour in a chat and has no creative fork. Say **"design THR-1526"**. A yes on the ask above would let the lane draft it instead.
 
 ### The odds shown are not the odds rolled ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)) — *from tb-orchestrator*
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — a pickup run killed mid-job no longer leaves its work invisible** ([THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push)). Merged 02:18 local via [#1987](https://github.com/christianspliid-ui/threadbare/pull/1987).
 - **2026-09-24 — fight steps now take their opponent into account** ([THR-1537](https://linear.app/threadbare/issue/THR-1537/fight-block-fb1-fight-steps-read-their-opponent), fight block FB1). Merged 01:41 local via [#1998](https://github.com/christianspliid-ui/threadbare/pull/1998), and live on the site.
 - **2026-09-24 — a killing's grief now reaches the victim's family and friends, not the corpse** ([THR-1536](https://linear.app/threadbare/issue/THR-1536/a-killings-grief-reaches-only-the-corpse-the-ambition-phase-walks-the)). Merged 00:35 local via [#1994](https://github.com/christianspliid-ui/threadbare/pull/1994). It is live on the site.
 - **2026-09-23 — two death paths no longer skip the "will not die" ward** ([THR-1534](https://linear.app/threadbare/issue/THR-1534)). Merged via [#1990](https://github.com/christianspliid-ui/threadbare/pull/1990), and live on the site.
@@ -59,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-23 — the builder's credit came back without a top-up.** Its 08:11 run succeeded, and the ask that led the brief all yesterday is closed.
 - **2026-09-23 — artifacts can now carry traits, such as storied or cursed, and the artifact sheet shows them** ([THR-1521](https://linear.app/threadbare/issue/THR-1521/traits-wave-2-slice-3-artifact-traits-the-has-trait-schema-admits)). Merged 08:37 local via [#1985](https://github.com/christianspliid-ui/threadbare/pull/1985).
 - **2026-09-23 — the "heavy simulation tests failing" item left your list.** It is a slow test runner rather than broken code, which makes it a technical call, not yours.
-- **2026-09-22 — the "move the builder off Fable" option was withdrawn.** No agent can change a scheduled lane's model.
 
 ---
 
