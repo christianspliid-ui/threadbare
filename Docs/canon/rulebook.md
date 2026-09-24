@@ -301,6 +301,8 @@ Rules of play for the fight block ([Docs/plans/2026-09-23-fight-block.md](../pla
 
 **A mortal's gear and powers answer the fight** [IMPL — THR-1541, [src/engine/fights/fightEvents.ts](../../src/engine/fights/fightEvents.ts)]. A fight tells the mortal's and the opponent's items, traits and powers what is happening: that the fight has begun, how each exchange went, that a blow landed, that the opponent fell, that the fight is over. So a thorned hide bites whoever strikes it, a blade that grows keener with each exchange won does so in a fight whatever reach the exchange was fought on, a trophy charm counts each kill, and a charm that lasts "until the fighting stops" ends when it does. A power that answers the start of a fight, such as a beast's roar, acts once the mortal has stood their nerve, so it changes the first exchange, not the nerve step. What an exchange earns carries into the next exchange's odds as a visible term.
 
+**Gear and powers can strike, mend and curse** [IMPL — THR-1542, `resource_manipulate` `'fight_clock'`, `inflict_condition`]. A charm, a spell or a monster's power can move the opponent's clock just as a blow does. A charm can land the blow a mortal missed, and if that fills the clock, the fight is won in that exchange. A beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights. A power can also lay a condition, such as a curse or fear, on either side. A ward against that kind of condition turns it aside.
+
 **Help from the world** [DESIGN — FB7, THR-1543]. Old grudges, secrets, favours, companions and storied arms will tilt the odds as named, visible terms. These are not live yet.
 
 ### Your first encounter — Meet The First

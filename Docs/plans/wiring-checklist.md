@@ -2637,3 +2637,13 @@ Plan: `Docs/plans/2026-09-23-fight-block.md` §9. A fight raises effect events t
 |--------|-------------------|-------------|-----------------|---------------|------------------|
 | `engine/fights/fightEvents.ts` (new: `raiseFightStarted`, `raiseFightStepOutcome`, `raiseFightClashLanded`, `raiseFightOvercome`, `raiseFightEnded`) | inside the fight handler (`landFightBand`, unified-action progress), at step (2) of the clock-full check; `combat_ended` after `finalizeFightEnd` on both routes | — (plan doc 4) | `effectStates` (stacks, cooldowns, expiries) and the graph (reactive executions) | `effect.event_raised` (sites `fight_start` / `fight_step` / `fight_clash` / `fight_overcome` / `fight_end`) | trace viewer |
 | `engine/effects/effectEvents.ts` (`encounter_outcome.combat`, `attacked`, `opponent_overcome`) · `engine/effects/effectEventDispatch.ts` (fight sites; `counterpartId` → `targetId`; `encounterType`) · `data/fight-constants.ts` (`FIGHT_TRADED_BLOW_BANDS`) | every raise site | — | — | — | — |
+
+## Effect vocabulary for fights — fight block FB6 (THR-1542)
+
+Plan: `Docs/plans/2026-09-23-fight-block.md` §10 (and §5, the clock). The effect vocabulary gains `resource_manipulate` `'fight_clock'`, the `clock_above:` predicate and the `inflict_condition` type. There is no new phase, node type, edge type or component. No shipped item or power carries the new vocabulary yet, and no shipped template carries a fight block until FB7.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/effectExecutors.ts` (`executeFightClock`, `executeInflictCondition`; `fightClockRequests` / `conditionRequests` on `ExecutionResult`, merged by cascades) · `engine/effects/effectEventDispatch.ts` (`applyExecutionResult` applies both) | every executor caller (reactive raises, `phaseDoom`) | — | the opponent node (`monsterState` or the mailbox prop); `has_trait` edges | `fight.clock` (cause `effect:<caster>`); legacy `inflict_condition` effect trace | trace viewer |
+| `engine/effects/effectEvents.ts` (one-shot `fight_clock`) · `engine/effectTick.ts` (per-tick `fight_clock`) | fight raises / the effect tick | — | as above | `fight.clock` (cause `item:<id>` / `tick:<id>`) | trace viewer |
+| `engine/effects/conditionApplier.ts` (new home of `applyConditionToActor`, re-exported from `encounterAftermath`) · `engine/effects/effectPredicates.ts` (`clock_above:`, `fightClockFilled`) · `engine/fights/fightState.ts` (a positive effect write on a persistent clock counts as a blow) · `types/effects.ts` | — | — | — | — | — |
