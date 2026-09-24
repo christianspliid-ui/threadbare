@@ -7,8 +7,8 @@
  * so every fight number lives in one file.
  */
 
-import type { ActionScale } from '../types/unifiedAction';
-import type { FightRatingWord, FightTemper } from '../types/fight';
+import type { ActionScale, StepOutcome, UnifiedActionOutcome } from '../types/unifiedAction';
+import type { FightRatingWord, FightResult, FightTemper } from '../types/fight';
 import type { ReachDomain } from '../types/traits';
 
 /**
@@ -99,3 +99,64 @@ export const FIGHT_ENCOUNTER_TYPE = 'combat';
 
 /** The named term the fighter's standing modifiers ride on (plan doc §3b). */
 export const FIGHT_STANDING_MODIFIER_NAME = 'standing';
+
+// ─── FB2 (THR-1538): the clock and the result ───────────────────
+
+/**
+ * Clash band → segments added to the opponent's clock (plan doc §5, THR-1531).
+ * A critical failure adds nothing: the fighter is struck down and the fight ends.
+ */
+export const FIGHT_CLOCK_BY_BAND: Readonly<Record<StepOutcome, number>> = {
+  critical_success: 2,
+  success: 1,
+  near_miss: 1,
+  success_at_cost: 1,
+  failure: 0,
+  critical_failure: 0,
+};
+
+/**
+ * Clash bands that wound the fighter — the exchanges `FightState.wounds` counts,
+ * and after which the concession fork runs (FB4).
+ */
+export const FIGHT_WOUNDING_BANDS: readonly StepOutcome[] = ['success_at_cost', 'failure', 'critical_failure'];
+
+/**
+ * The action's final outcome for each fight result (plan doc §6). This, not
+ * `computeFinalActionOutcome`, is what the rest of the game reads: that function
+ * reads any failure in the history as `success_at_cost`, so a yield would read
+ * as a success to "after the fight" items and to the aftermath's band prose.
+ */
+export const FIGHT_RESULT_ACTION_OUTCOME: Readonly<Record<FightResult, Extract<UnifiedActionOutcome, StepOutcome>>> = {
+  overcome: 'success',
+  driven_off: 'success',
+  bargained: 'success_at_cost',
+  broke_off: 'success_at_cost',
+  yielded: 'failure',
+  routed: 'critical_failure',
+  struck_down: 'critical_failure',
+};
+
+/** The words the result memory's `choiceText` carries (read by the chapter archive). */
+export const FIGHT_RESULT_WORDS: Readonly<Record<FightResult, string>> = {
+  overcome: 'overcame the foe',
+  driven_off: 'drove the foe off',
+  bargained: 'struck a bargain',
+  broke_off: 'broke off the fight',
+  yielded: 'yielded',
+  routed: 'broke and ran',
+  struck_down: 'was struck down',
+};
+
+/** The result memory's `choiceId` prefix: aftermath variants key on `fight:<result>`. */
+export const FIGHT_RESULT_CHOICE_PREFIX = 'fight:';
+
+/** The result memory's `stepId` and `interventionType`. */
+export const FIGHT_RESULT_STEP_ID = 'fight';
+
+/**
+ * The opponent-node property a per-fight clock's effect-path writes land in (plan
+ * doc §5). An effect executor holds no action, so it cannot write
+ * `fightState.clockNow`; the fight handler drains this mailbox instead.
+ */
+export const FIGHT_CLOCK_MAILBOX_PROP = 'pendingFightClockDelta';

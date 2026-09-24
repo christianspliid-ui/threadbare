@@ -57,7 +57,9 @@ export type EffectEventSite =
   // nothing) unreadable from the trace stream.
   | 'condition_inflicted'
   | 'condition_lifted'
-  | 'doom_threshold';
+  | 'doom_threshold'
+  // THR-1538 — a fight's end (`combat_ended`). FB5 (THR-1541) adds the other fight raises.
+  | 'fight_end';
 
 export interface RaiseEffectEventOptions {
   /** Production site tag, recorded on the `effect.event_raised` trace. */

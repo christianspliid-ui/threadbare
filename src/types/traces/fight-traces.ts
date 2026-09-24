@@ -10,7 +10,14 @@
 import type { TraceBase } from '../trace';
 import type { ActionScale, StepOutcome } from '../unifiedAction';
 import type { ReachDomain } from '../traits';
-import type { FightOpponentStatus, FightRatingWord, FightRole, OpponentCardSource } from '../fight';
+import type {
+  FightEndReason,
+  FightOpponentStatus,
+  FightRatingWord,
+  FightResult,
+  FightRole,
+  OpponentCardSource,
+} from '../fight';
 
 /** Emitted once per fight step, after the band is known. */
 export interface FightStepTrace extends TraceBase {
@@ -39,11 +46,50 @@ export interface FightStepTrace extends TraceBase {
   modifiers: { name: string; delta: number }[];
   band: StepOutcome;
   probability: number;
-  /** FB2 (THR-1538) writes the clock; until then no fight step moves it. */
+  /** Always 0 here: the step is traced before its clock write, which `fight.clock` records (THR-1538). */
   clockDelta: number;
   clockNow: number;
   clockSize: number;
   /** FB3 (THR-1539) queues fight harm; until then 0. */
   harmQueued: number;
   conditionsApplied: string[];
+}
+
+/**
+ * Emitted by every clock write (THR-1538): a clash's band delta, a spell, an item,
+ * a mailbox drain, or a stale mailbox cleared at a new fight's start.
+ */
+export interface FightClockTrace extends TraceBase {
+  category: 'fight.clock';
+  opponentId: string;
+  delta: number;
+  before: number;
+  after: number;
+  /** True when this write took the clock from below full to full. No ending reads it. */
+  filledByThisWrite: boolean;
+  /** `clash` | `mailbox` | `stale_cleared` | `debug` | an effect's tag. */
+  cause: string;
+  /** Where the write landed: the monster's card, the action's per-fight clock, or the mailbox. */
+  store: 'monsterState' | 'fightState' | 'mailbox';
+  actionId?: string;
+}
+
+/** Emitted exactly once per fight, when its result is set (THR-1538). */
+export interface FightEndTrace extends TraceBase {
+  category: 'fight.end';
+  actionId: string;
+  templateId: string;
+  fighterId: string;
+  opponentId: string | null;
+  result: FightResult;
+  endReason?: FightEndReason;
+  /** False on the no-roll route (the opponent never bound, died, or left). */
+  rolled: boolean;
+  exchanges: number;
+  clockAtStart: number;
+  clockNow: number;
+  harmTaken: number;
+  advantages: string[];
+  /** Set when `onFightEnded` threw; the action still resolved. */
+  dispatchError?: string;
 }

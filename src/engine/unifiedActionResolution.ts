@@ -192,9 +192,16 @@ import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { spendConsumableCharges } from './effects/consumableCharges';
 import { tierScaledDifficulty } from './targetTierScaling';
-import { isActionOnFightStep, resolveFightStepInputs, stepScaleFor } from './fights/fightStepInputs';
-import { FIGHT_ENCOUNTER_TYPE } from '../data/fight-constants';
-import type { FightStepInputs } from '../types/fight';
+import { fightRoleOf, isActionOnFightStep, resolveFightStepInputs, stepScaleFor } from './fights/fightStepInputs';
+import { FIGHT_ENCOUNTER_TYPE, FIGHT_RESULT_ACTION_OUTCOME } from '../data/fight-constants';
+import type { FightEndReason, FightStepInputs } from '../types/fight';
+import {
+  applyFightStepResult,
+  checkFightContinuation,
+  fightStateForNoRollEnd,
+} from './fights/fightState';
+import { finalizeFightEnd } from './fights/fightOutcome';
+import { raiseEffectEvent } from './effects/effectEventDispatch';
 import type { ReachDomain } from '../types/traits';
 import type { FightStepTrace } from '../types/traces/fight-traces';
 import { resolveToParentLocation } from './sublocationShape';
@@ -264,6 +271,13 @@ export interface StepResolutionResult {
    */
   reach?: ReachDomain;
   difficulty?: number;
+  /**
+   * THR-1538 (plan doc §1) — set when a fight step ends the fight **without a
+   * roll**: its opponent never bound, died, or no longer shares the fighter's
+   * hex. The band fields above then hold inert zeros that nothing on this route
+   * reads; `executeStepResult` takes its no-roll branch instead.
+   */
+  fightEnd?: { reason: FightEndReason };
 }
 
 /**
@@ -304,6 +318,19 @@ export function resolveUncontestedStep(
 
   if (!step) {
     return { outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0, ...noPushResist };
+  }
+
+  // THR-1538 (plan doc §1) — a fight whose opponent never bound, has died, or no
+  // longer shares the fighter's hex ends here, before any roll. The band fields
+  // are inert: `executeStepResult` takes its no-roll branch on `fightEnd`, which
+  // records no `StepOutcome`, runs no consequence and grants no growth.
+  const fightEndReason = checkFightContinuation(state, action, step);
+  if (fightEndReason) {
+    return {
+      outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0,
+      ...noPushResist,
+      fightEnd: { reason: fightEndReason },
+    };
   }
 
   // THR-1030 — the outcome-band review pin (`?outcome=<band>`). Read once here so
@@ -1398,9 +1425,14 @@ export function executeStepResult(
      */
     reach?: ReachDomain;
     difficulty?: number;
+    /** THR-1538 (plan doc §1) — the fight ended before its roll; take the no-roll route. */
+    fightEnd?: { reason: FightEndReason };
   },
   runtime?: SimulationRuntime,
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
+  if (resolutionStats?.fightEnd) {
+    return executeFightNoRollEnd(action, template, resolutionStats.fightEnd.reason, state, rng, tick, runtime);
+  }
   const events: TickEvent[] = [];
   const beforeSnapshot = snapshotEncounterResolutionContext(state, action);
   const clearanceGateResult = applyClearanceGateStepOutcome(
@@ -1834,6 +1866,16 @@ export function executeStepResult(
     });
   }
 
+  // THR-1538 (plan doc §5–6) — the fight handler. It sits here, after the
+  // consequence and its complication are selected and before growth and
+  // `advanceStep`, so the clock-full check can end the fight in this same step.
+  // `fightAction` carries the updated `fightState` into everything below; for an
+  // ordinary step it is `action` itself.
+  const fightStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  let fightAction = fightRoleOf(fightStepDef)
+    ? applyFightStepResult(state, action, template, fightStepDef, outcome, tick)
+    : action;
+
   // Apply capability growth from step resolution
   //
   // THR-1247 — composed for the same reason the resolution site above is, and
@@ -1888,7 +1930,14 @@ export function executeStepResult(
     );
     // THR-1521: the things carried through this step were present in it (see
     // `encounter.ts` for the legacy road — both roads, or neither).
-    recordArtifactEncounterPresence(state.graph, action.actorId, tick);
+    const presence = recordArtifactEncounterPresence(state.graph, action.actorId, tick);
+    // THR-1538 — a fight records the Storied things whose level rose during it, so
+    // plan doc 4's chips read a state-backed list (Law 56) rather than a trace.
+    if (fightAction.fightState && presence.climbed.length > 0) {
+      const climbs = new Set(fightAction.fightState.storiedClimbs);
+      for (const c of presence.climbed) climbs.add(c.artifactId);
+      fightAction = { ...fightAction, fightState: { ...fightAction.fightState, storiedClimbs: [...climbs] } };
+    }
     growthApplied = growthResult.growthApplied;
     growthDomain = growthResult.domain;
     growthTierFrom = growthResult.previousTier;
@@ -1944,7 +1993,7 @@ export function executeStepResult(
   // still be visible when `advanceStep` resolves the next step's definition.
   // No-op for every template with no such branch, which is every template
   // shipped today.
-  const branchDecision = applyAgentDecidedBranches(state, action, template, step, tick, rng);
+  const branchDecision = applyAgentDecidedBranches(state, fightAction, template, step, tick, rng);
   state.archetypeDrift = branchDecision.archetypeDrift;
   const decidedAction = branchDecision.action;
 
@@ -1955,6 +2004,21 @@ export function executeStepResult(
     decidedAction, outcome, template, rng,
     state.graph.getNode(action.targetId)?.properties,
   );
+
+  // THR-1538 (plan doc §6) — the dispatcher's call site on the rolled route. A set
+  // result resolved the action in `advanceStep` just now, so this runs exactly once
+  // per fight: it writes the result memory, runs `onFightEnded`, and traces
+  // `fight.end`, all before the aftermath below reads the choice history.
+  if (finalAction.resolved && finalAction.fightState?.result) {
+    const ended = finalizeFightEnd(state, finalAction, template, {
+      tick,
+      rng,
+      runtime,
+      overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
+    }, true);
+    finalAction = ended.action;
+    events.push(...ended.events);
+  }
 
   // Partial_progress complication: give the next step a head start (THR-119).
   // Read fraction directly from the ComplicationResult effects — no transient node property needed.
@@ -2331,163 +2395,20 @@ export function executeStepResult(
     }
   }
 
-  // Timeline: ACTION_END event when action fully resolves
+  // Timeline: ACTION_END + balance telemetry when the action fully resolves.
   if (finalAction.resolved) {
-    appendEvent(action.actorId, {
-      phase: 'ACTION_END',
-      tick,
-      template: template.name,
-      status: finalAction.outcome ?? 'unknown',
-      stepResults: finalAction.stepOutcomes.map(o => o === 'success' ? 'P' : 'F').join(''),
-    });
-
-    // Balance telemetry: action_resolved — Phase 3: rich outcome type
-    if (runtime) {
-      const actionResult = mapActionOutcomeToBalanceResult(finalAction.outcome);
-      const actionFinalStatus = isActionSuccess(finalAction.outcome) ? 'completed' : 'abandoned';
-      recordBalanceEvent(runtime, {
-        tick,
-        kind: 'action_resolved',
-        agentId: action.actorId,
-        sourceSystem: 'unified_action',
-        templateId: action.templateId,
-        result: actionResult,
-        finalStatus: actionFinalStatus,
-      });
-
-      // Balance telemetry: encounter_resolved (THR-1284)
-      //
-      // `action_resolved` counts every unified action — divine interventions and
-      // strategic verbs included — so it cannot serve as the encounter counter.
-      // The encounter half was only ever emitted from the legacy progress path in
-      // `orchestrator.ts`, which no live decision reaches: `start_local` builds a
-      // *unified* action from the encounter template, so `balance summary` read
-      // "Encounters: 0 attempted" on a run that had recorded 398 `start_local`
-      // decisions. That legacy emit is left exactly as it is — this is the missing
-      // unified half, not a replacement (NFP #6).
-      //
-      // `isEncounterAction` is the same predicate the chapter archive uses to
-      // decide what is worth archiving as a chapter, so the instrument and the
-      // ledger agree on what an encounter *is* rather than drifting apart behind
-      // two hand-rolled id tests.
-      if (isEncounterAction(action.templateId)) {
-        recordBalanceEvent(runtime, {
-          tick,
-          kind: 'encounter_resolved',
-          agentId: action.actorId,
-          sourceSystem: 'unified_action',
-          encounterId: action.templateId,
-          finalStatus: actionFinalStatus,
-          // Derived from `rarityTier` the way the encounter cache, the event node
-          // and the stage model all derive it. `UnifiedActionTemplate` carries no
-          // `threatRating` field at all — which is why the legacy emit's read of
-          // one banded every legacy encounter as 'unknown' and left
-          // `completionByBand` a single dead row.
-          threatBand: RARITY_TO_THREAT[template.rarityTier] ?? 'unknown',
-        });
-      }
-    }
+    recordResolvedActionTelemetry(action, finalAction, template, tick, runtime);
   }
 
   // ── Action trigger: action_complete / encounter_success / encounter_failure (TB-104 Phase 1B) ──
+  //
+  // THR-1538 (plan doc §6) — a fight feeds the ladder its result's outcome, not the
+  // last step's band: a yield after an at-cost wound must not fire success items.
   if (finalAction.resolved) {
-    const triggerActorNode = state.graph.getNode(action.actorId);
-    if (triggerActorNode) {
-      const tProps = triggerActorNode.properties as Record<string, unknown>;
-      const triggerCtx: ActionTriggerContext = {
-        agentId: action.actorId,
-        tick,
-        agentResources: {
-          essence: (tProps.essence as number) ?? 0,
-          quintessence: (tProps.quintessence as number) ?? 0,
-          quintessenceMax: (tProps.quintessenceMax as number) ?? Infinity,
-          doom: (tProps.doom as number) ?? 0,
-          doomThreshold: (tProps.doomThreshold as number) ?? 100,
-        },
-      };
-      const effectStates = state.effectStates ?? new Map();
-      const attachedEffects = collectAttachmentEffects(state.graph, action.actorId, effectStates);
-
-      // THR-719: on-use item behavior rides this path. Narrative substitution needs
-      // the actor's name, and probability guards need the seeded resolution stream —
-      // never Math.random (NFP #3).
-      triggerCtx.nextRoll = rng;
-      triggerCtx.actorName = triggerActorNode.name;
-
-      // Fire action_complete for any completed action, then the outcome bands.
-      // `ladderEventsFor` widens rather than partitions, so a trigger authored on
-      // `encounter_success` still fires on every outcome `isStepSuccess` accepted
-      // before the bands existed — shipped content keeps its exact behavior.
-      const isEncounterTemplate = template.steps.length > 1;
-      const triggerEvents: ActionTriggerEvent[] = [
-        'action_complete',
-        ...(isEncounterTemplate ? ladderEventsFor(outcome) : []),
-      ];
-
-      const allResults: ActionTriggerResult[] = [];
-      let runningStates: ReadonlyMap<string, EffectRuntimeState> = effectStates;
-      for (const evt of triggerEvents) {
-        const res = checkAndFireActionTriggers(
-          attachedEffects,
-          evt,
-          { ...triggerCtx, agentResources: { ...triggerCtx.agentResources } },
-          runningStates,
-        );
-        allResults.push(res);
-        runningStates = res.updatedStates;
-      }
-
-      const totalFired = allResults.reduce((n, r) => n + r.firedCount, 0);
-      if (totalFired > 0) {
-        const allDeltas = allResults.flatMap(r => r.resourceDeltas);
-        for (const delta of allDeltas) {
-          (tProps as Record<string, number>)[delta.resource] = delta.after;
-        }
-        if (allDeltas.length > 0) {
-          state.graph.updateNode(action.actorId, { properties: tProps });
-        }
-        for (const trace of allResults.flatMap(r => r.traces)) {
-          emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
-        }
-        if (!state.effectStates) state.effectStates = new Map();
-        for (const [k, v] of runningStates) {
-          state.effectStates.set(k, v);
-        }
-
-        // Apply the graph-affecting payloads (condition grant/remove, breakage).
-        const intents = allResults.flatMap(r => r.payloadIntents);
-        if (intents.length > 0) {
-          // `state`, not `state.graph`, since THR-1257: the condition payloads now
-          // raise `damaged` / `healed`. This site already merged `runningStates` into
-          // `state.effectStates` just above and does not thread its own map onward,
-          // so the raise writes `state.effectStates` directly and no map is threaded.
-          const applied = applyActionTriggerPayloads(state, action.actorId, intents, state.tick);
-          if (applied.touchedStructure && runtime) touchStructure(runtime);
-
-          // Surface the authored prose as player-visible aftermath — the whole point
-          // of the ticket is that item drama stops being invisible.
-          for (let ti = 0; ti < intents.length; ti++) {
-            const intent = intents[ti];
-            if (!intent.narrative) continue;
-            const isLoss = intent.payload.kind === 'self_remove'
-              || intent.payload.kind === 'condition_grant';
-            aftermathChanges.push({
-              id: `${action.actionId}:step:${action.currentStep}:trigger:${intent.attachmentId}:${ti}`,
-              kind: intent.payload.kind === 'self_remove' ? 'item' : 'trait',
-              title: intent.payload.kind === 'self_remove'
-                ? 'Something broke'
-                : intent.payload.kind === 'condition_remove'
-                  ? 'Something mended'
-                  : 'The item exacted its price',
-              detail: intent.narrative,
-              polarity: intent.payload.kind === 'condition_remove' ? 'gain' : isLoss ? 'loss' : 'mixed',
-              actorId: action.actorId,
-              actorName: triggerActorNode.name,
-            });
-          }
-        }
-      }
-    }
+    const ladderOutcome: StepOutcome = finalAction.fightState?.result
+      ? FIGHT_RESULT_ACTION_OUTCOME[finalAction.fightState.result]
+      : outcome;
+    fireResolvedActionTriggers(state, action, template, ladderOutcome, tick, rng, runtime, aftermathChanges);
   }
 
   // Generate tick event
@@ -2596,66 +2517,9 @@ export function executeStepResult(
   }
 
   finalAction = appendAftermathChanges(finalAction, aftermathChanges, supersededGrowthIds);
-  if (finalAction.resolved && finalAction.outcome) {
-    const changes = finalAction.aftermathChanges ?? [];
-
-    // Branch-aware aftermath: if the template has an aftermathConfig,
-    // resolve the variant from choice history and use its authored content.
-    const aftermathVariant = resolveTemplateAftermathVariant(
-      template,
-      finalAction.choiceHistory,
-      finalAction.outcome,
-    );
-
-    // THR-1030 — the anti-vacuity half of the `?outcome=` review pin. A pinned band
-    // that no variant authors would otherwise render the *base* ending while the URL
-    // claimed a band, which is precisely the defect THR-989 and THR-973 exist to
-    // find. No-ops entirely when no pin is armed for this template.
-    //
-    // THR-1509 — judged against the SAME choice history `aftermathVariant` above
-    // was resolved from, so the verdict is about the path on screen, not about
-    // whether some other arm of the fork authored the band.
-    recordOutcomePinVerdict(template, finalAction.outcome, finalAction.choiceHistory);
-
-    const reactions = aftermathVariant?.reactions
-      ?? buildEncounterAftermathReactions(template);
-    const finalSummary: EncounterAftermathSummary = {
-      encounterId: action.templateId,
-      outcome: finalAction.outcome,
-      overview: aftermathVariant?.overview ?? buildEncounterAftermathOverview(
-        currentActorName,
-        template.name,
-        finalAction.outcome,
-        changes,
-      ),
-      changes: aftermathVariant
-        ? [...changes, ...aftermathVariant.changes]
-        : changes,
-      narrativeTag: consequence.narrativeTag,
-      // THR-1029 §3 — these two defaults are player-facing prose and were written
-      // in system register. "Consequence thread" is a schema noun, not a game noun,
-      // and the second line was mood rather than mechanism — both fail Law 42
-      // ("UI microcopy explains mechanism, not mood"). The director quoted the
-      // first back verbatim, which is the tell: a default the player notices is a
-      // default that is wrong.
-      //
-      // The choose-framing is also gated on there being more than one reaction, so
-      // the engine never manufactures a question the player cannot answer (Law 25).
-      // The veil suppresses a one-option prompt independently; gating here means
-      // every other surface reading `reactionPrompt` inherits the same honesty.
-      reactionPrompt: aftermathVariant?.reactionPrompt
-        ?? (reactions && reactions.length > 1
-          ? 'Choose what to carry forward.'
-          : changes.length > 0
-            ? 'What this changed.'
-          : undefined),
-      reactions,
-    };
-    finalAction = {
-      ...finalAction,
-      aftermathSummary: finalSummary,
-    };
-  }
+  finalAction = withResolvedAftermathSummary(
+    finalAction, action, template, currentActorName, consequence.narrativeTag,
+  );
   if (finalAction.resolved) {
     // Phase 3: outcome-differentiated event messages
     const outcomeMsg = describeActionOutcome(finalAction.outcome);
@@ -2705,6 +2569,375 @@ export function executeStepResult(
     });
   }
 
+  finalAction = recordStepEventNode(
+    state, action, template, outcome,
+    resolutionStats?.reach ?? template.steps[action.currentStep]?.reach,
+    tick, !!(promotionTraitGranted), runtime, finalAction,
+  );
+
+  return { updatedAction: finalAction, events };
+}
+
+/**
+ * THR-1538 (plan doc §1) — the fight's **no-roll end**: a route through the
+ * resolution tail, not around it. Taken when `resolveUncontestedStep` found the
+ * fight's opponent unbound, dead, or gone from the fighter's hex before the roll.
+ *
+ * It **skips** everything that presumes a roll: the clearance gate, ops, the
+ * consequence and its complication, growth and tier promotion, decided branches,
+ * the `StepOutcome` append (`advanceStep` is not called), step prose, charges,
+ * step telemetry, the success-keyed faction block and the `action_execution`
+ * trace. It **sets** `fightState.result = 'broke_off'` with its `endReason` and
+ * resolves the action with `FIGHT_RESULT_ACTION_OUTCOME.broke_off`. It **still
+ * runs** the tail: the result memory, `onFightEnded` and `fight.end`,
+ * `combat_ended` for a fight already under way, the action triggers, the
+ * aftermath (which reads `fight:broke_off`), the resolved tick event (with no
+ * consequence terms), the resolution telemetry and the event node. Plan docs 3
+ * and 6 depend on it: a hunt whose beast died, or whose hunter left, must still
+ * reach its aftermath.
+ */
+function executeFightNoRollEnd(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  reason: FightEndReason,
+  state: GameState,
+  rng: () => number,
+  tick: number,
+  runtime?: SimulationRuntime,
+): { updatedAction: UnifiedAction; events: TickEvent[] } {
+  const events: TickEvent[] = [];
+  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  const midFight = action.fightState !== undefined;
+  const outcome = FIGHT_RESULT_ACTION_OUTCOME.broke_off;
+
+  let finalAction: UnifiedAction = {
+    ...action,
+    fightState: fightStateForNoRollEnd(state, action, step, reason),
+    resolved: true,
+    outcome,
+  };
+  const ended = finalizeFightEnd(state, finalAction, template, {
+    tick,
+    rng,
+    runtime,
+    overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
+  }, false);
+  finalAction = ended.action;
+  events.push(...ended.events);
+
+  // A fight already under way ends for both sides. (Its start is raised by FB5,
+  // THR-1541, which also raises `combat_ended` on the rolled route.)
+  if (midFight) {
+    const opponentId = finalAction.fightState?.opponentId ?? null;
+    for (const [agentId, counterpartId] of [[action.actorId, opponentId], [opponentId, action.actorId]] as const) {
+      if (!agentId) continue;
+      raiseEffectEvent(state, agentId, { type: 'combat_ended' }, {
+        site: 'fight_end', rng, ...(counterpartId ? { counterpartId } : {}),
+      });
+    }
+  }
+
+  recordResolvedActionTelemetry(action, finalAction, template, tick, runtime);
+
+  const aftermathChanges: EncounterAftermathChange[] = [];
+  fireResolvedActionTriggers(state, action, template, outcome, tick, rng, runtime, aftermathChanges);
+  finalAction = appendAftermathChanges(finalAction, aftermathChanges, []);
+
+  const actorName = state.graph.getNode(action.actorId)?.name ?? 'An agent';
+  finalAction = withResolvedAftermathSummary(finalAction, action, template, actorName, undefined);
+
+  events.push({
+    id: `ua_${action.actionId}_resolved`,
+    tick,
+    type: 'agent_action_resolved',
+    message: `${actorName} ${describeActionOutcome(finalAction.outcome)} ${template.name}.`,
+    significance: isActionSuccess(finalAction.outcome) ? 0.6 : 0.4,
+    actorId: action.actorId,
+  });
+
+  finalAction = recordStepEventNode(
+    state, action, template, outcome, step?.reach, tick, false, runtime, finalAction,
+  );
+  return { updatedAction: finalAction, events };
+}
+
+/**
+ * The resolved action's telemetry: the ACTION_END timeline event and the
+ * `action_resolved` / `encounter_resolved` balance events. Shared by the rolled
+ * route and the fight's no-roll end (THR-1538): a fight that ended without a
+ * roll is still an encounter resolved.
+ */
+function recordResolvedActionTelemetry(
+  action: UnifiedAction,
+  finalAction: UnifiedAction,
+  template: UnifiedActionTemplate,
+  tick: number,
+  runtime: SimulationRuntime | undefined,
+): void {
+  appendEvent(action.actorId, {
+    phase: 'ACTION_END',
+    tick,
+    template: template.name,
+    status: finalAction.outcome ?? 'unknown',
+    stepResults: finalAction.stepOutcomes.map(o => o === 'success' ? 'P' : 'F').join(''),
+  });
+
+  // Balance telemetry: action_resolved — Phase 3: rich outcome type
+  if (runtime) {
+    const actionResult = mapActionOutcomeToBalanceResult(finalAction.outcome);
+    const actionFinalStatus = isActionSuccess(finalAction.outcome) ? 'completed' : 'abandoned';
+    recordBalanceEvent(runtime, {
+      tick,
+      kind: 'action_resolved',
+      agentId: action.actorId,
+      sourceSystem: 'unified_action',
+      templateId: action.templateId,
+      result: actionResult,
+      finalStatus: actionFinalStatus,
+    });
+
+    // Balance telemetry: encounter_resolved (THR-1284)
+    //
+    // `action_resolved` counts every unified action — divine interventions and
+    // strategic verbs included — so it cannot serve as the encounter counter.
+    // The encounter half was only ever emitted from the legacy progress path in
+    // `orchestrator.ts`, which no live decision reaches: `start_local` builds a
+    // *unified* action from the encounter template, so `balance summary` read
+    // "Encounters: 0 attempted" on a run that had recorded 398 `start_local`
+    // decisions. That legacy emit is left exactly as it is — this is the missing
+    // unified half, not a replacement (NFP #6).
+    //
+    // `isEncounterAction` is the same predicate the chapter archive uses to
+    // decide what is worth archiving as a chapter, so the instrument and the
+    // ledger agree on what an encounter *is* rather than drifting apart behind
+    // two hand-rolled id tests.
+    if (isEncounterAction(action.templateId)) {
+      recordBalanceEvent(runtime, {
+        tick,
+        kind: 'encounter_resolved',
+        agentId: action.actorId,
+        sourceSystem: 'unified_action',
+        encounterId: action.templateId,
+        finalStatus: actionFinalStatus,
+        // Derived from `rarityTier` the way the encounter cache, the event node
+        // and the stage model all derive it. `UnifiedActionTemplate` carries no
+        // `threatRating` field at all — which is why the legacy emit's read of
+        // one banded every legacy encounter as 'unknown' and left
+        // `completionByBand` a single dead row.
+        threatBand: RARITY_TO_THREAT[template.rarityTier] ?? 'unknown',
+      });
+    }
+  }
+}
+
+/**
+ * Fire the actor's "after the action" item triggers (TB-104 Phase 1B) and push
+ * their authored prose onto `aftermathChanges`. `ladderOutcome` is the band the
+ * outcome ladder reads: the last step's band, or a fight's result outcome
+ * (THR-1538). Shared by the rolled route and the fight's no-roll end.
+ */
+function fireResolvedActionTriggers(
+  state: GameState,
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  ladderOutcome: StepOutcome,
+  tick: number,
+  rng: () => number,
+  runtime: SimulationRuntime | undefined,
+  aftermathChanges: EncounterAftermathChange[],
+): void {
+  const triggerActorNode = state.graph.getNode(action.actorId);
+  if (triggerActorNode) {
+    const tProps = triggerActorNode.properties as Record<string, unknown>;
+    const triggerCtx: ActionTriggerContext = {
+      agentId: action.actorId,
+      tick,
+      agentResources: {
+        essence: (tProps.essence as number) ?? 0,
+        quintessence: (tProps.quintessence as number) ?? 0,
+        quintessenceMax: (tProps.quintessenceMax as number) ?? Infinity,
+        doom: (tProps.doom as number) ?? 0,
+        doomThreshold: (tProps.doomThreshold as number) ?? 100,
+      },
+    };
+    const effectStates = state.effectStates ?? new Map();
+    const attachedEffects = collectAttachmentEffects(state.graph, action.actorId, effectStates);
+
+    // THR-719: on-use item behavior rides this path. Narrative substitution needs
+    // the actor's name, and probability guards need the seeded resolution stream —
+    // never Math.random (NFP #3).
+    triggerCtx.nextRoll = rng;
+    triggerCtx.actorName = triggerActorNode.name;
+
+    // Fire action_complete for any completed action, then the outcome bands.
+    // `ladderEventsFor` widens rather than partitions, so a trigger authored on
+    // `encounter_success` still fires on every outcome `isStepSuccess` accepted
+    // before the bands existed — shipped content keeps its exact behavior.
+    const isEncounterTemplate = template.steps.length > 1;
+    const triggerEvents: ActionTriggerEvent[] = [
+      'action_complete',
+      ...(isEncounterTemplate ? ladderEventsFor(ladderOutcome) : []),
+    ];
+
+    const allResults: ActionTriggerResult[] = [];
+    let runningStates: ReadonlyMap<string, EffectRuntimeState> = effectStates;
+    for (const evt of triggerEvents) {
+      const res = checkAndFireActionTriggers(
+        attachedEffects,
+        evt,
+        { ...triggerCtx, agentResources: { ...triggerCtx.agentResources } },
+        runningStates,
+      );
+      allResults.push(res);
+      runningStates = res.updatedStates;
+    }
+
+    const totalFired = allResults.reduce((n, r) => n + r.firedCount, 0);
+    if (totalFired > 0) {
+      const allDeltas = allResults.flatMap(r => r.resourceDeltas);
+      for (const delta of allDeltas) {
+        (tProps as Record<string, number>)[delta.resource] = delta.after;
+      }
+      if (allDeltas.length > 0) {
+        state.graph.updateNode(action.actorId, { properties: tProps });
+      }
+      for (const trace of allResults.flatMap(r => r.traces)) {
+        emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
+      }
+      if (!state.effectStates) state.effectStates = new Map();
+      for (const [k, v] of runningStates) {
+        state.effectStates.set(k, v);
+      }
+
+      // Apply the graph-affecting payloads (condition grant/remove, breakage).
+      const intents = allResults.flatMap(r => r.payloadIntents);
+      if (intents.length > 0) {
+        // `state`, not `state.graph`, since THR-1257: the condition payloads now
+        // raise `damaged` / `healed`. This site already merged `runningStates` into
+        // `state.effectStates` just above and does not thread its own map onward,
+        // so the raise writes `state.effectStates` directly and no map is threaded.
+        const applied = applyActionTriggerPayloads(state, action.actorId, intents, state.tick);
+        if (applied.touchedStructure && runtime) touchStructure(runtime);
+
+        // Surface the authored prose as player-visible aftermath — the whole point
+        // of the ticket is that item drama stops being invisible.
+        for (let ti = 0; ti < intents.length; ti++) {
+          const intent = intents[ti];
+          if (!intent.narrative) continue;
+          const isLoss = intent.payload.kind === 'self_remove'
+            || intent.payload.kind === 'condition_grant';
+          aftermathChanges.push({
+            id: `${action.actionId}:step:${action.currentStep}:trigger:${intent.attachmentId}:${ti}`,
+            kind: intent.payload.kind === 'self_remove' ? 'item' : 'trait',
+            title: intent.payload.kind === 'self_remove'
+              ? 'Something broke'
+              : intent.payload.kind === 'condition_remove'
+                ? 'Something mended'
+                : 'The item exacted its price',
+            detail: intent.narrative,
+            polarity: intent.payload.kind === 'condition_remove' ? 'gain' : isLoss ? 'loss' : 'mixed',
+            actorId: action.actorId,
+            actorName: triggerActorNode.name,
+          });
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Attach the aftermath summary to a resolved action: the branch-aware variant
+ * (read from the choice history, so a fight's `fight:<result>` memory selects its
+ * ending) or the derived overview. Shared by the rolled route and the fight's
+ * no-roll end (THR-1538). No-op for an unresolved action.
+ */
+function withResolvedAftermathSummary(
+  finalAction: UnifiedAction,
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  currentActorName: string,
+  narrativeTag: EncounterAftermathSummary['narrativeTag'],
+): UnifiedAction {
+  if (finalAction.resolved && finalAction.outcome) {
+    const changes = finalAction.aftermathChanges ?? [];
+
+    // Branch-aware aftermath: if the template has an aftermathConfig,
+    // resolve the variant from choice history and use its authored content.
+    const aftermathVariant = resolveTemplateAftermathVariant(
+      template,
+      finalAction.choiceHistory,
+      finalAction.outcome,
+    );
+
+    // THR-1030 — the anti-vacuity half of the `?outcome=` review pin. A pinned band
+    // that no variant authors would otherwise render the *base* ending while the URL
+    // claimed a band, which is precisely the defect THR-989 and THR-973 exist to
+    // find. No-ops entirely when no pin is armed for this template.
+    //
+    // THR-1509 — judged against the SAME choice history `aftermathVariant` above
+    // was resolved from, so the verdict is about the path on screen, not about
+    // whether some other arm of the fork authored the band.
+    recordOutcomePinVerdict(template, finalAction.outcome, finalAction.choiceHistory);
+
+    const reactions = aftermathVariant?.reactions
+      ?? buildEncounterAftermathReactions(template);
+    const finalSummary: EncounterAftermathSummary = {
+      encounterId: action.templateId,
+      outcome: finalAction.outcome,
+      overview: aftermathVariant?.overview ?? buildEncounterAftermathOverview(
+        currentActorName,
+        template.name,
+        finalAction.outcome,
+        changes,
+      ),
+      changes: aftermathVariant
+        ? [...changes, ...aftermathVariant.changes]
+        : changes,
+      narrativeTag,
+      // THR-1029 §3 — these two defaults are player-facing prose and were written
+      // in system register. "Consequence thread" is a schema noun, not a game noun,
+      // and the second line was mood rather than mechanism — both fail Law 42
+      // ("UI microcopy explains mechanism, not mood"). The director quoted the
+      // first back verbatim, which is the tell: a default the player notices is a
+      // default that is wrong.
+      //
+      // The choose-framing is also gated on there being more than one reaction, so
+      // the engine never manufactures a question the player cannot answer (Law 25).
+      // The veil suppresses a one-option prompt independently; gating here means
+      // every other surface reading `reactionPrompt` inherits the same honesty.
+      reactionPrompt: aftermathVariant?.reactionPrompt
+        ?? (reactions && reactions.length > 1
+          ? 'Choose what to carry forward.'
+          : changes.length > 0
+            ? 'What this changed.'
+          : undefined),
+      reactions,
+    };
+    finalAction = {
+      ...finalAction,
+      aftermathSummary: finalSummary,
+    };
+  }
+  return finalAction;
+}
+
+/**
+ * Mark the scene's mortals witnessed, mint the step's encounter event node, add
+ * its `caused_by` edge for a seed-spawned action, and persist the node id on the
+ * action (THR-143, THR-1348). Shared by the rolled route and the fight's no-roll
+ * end (THR-1538).
+ */
+function recordStepEventNode(
+  state: GameState,
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  outcome: StepOutcome,
+  stepReach: ReachDomain | undefined,
+  tick: number,
+  tierPromotionOccurred: boolean,
+  runtime: SimulationRuntime | undefined,
+  finalAction: UnifiedAction,
+): UnifiedAction {
   // ── THR-143: Create encounter event node for this unified action step ──
   // Uses the input action's step index (pre-advance) to generate a stable ID.
   // Only propagate targetAgentId for actor-typed targets; unified actions can target
@@ -2730,10 +2963,10 @@ export function executeStepResult(
     templateId: template.id,
     templateName: template.name,
     stepIndex: action.currentStep,
-    stepReach: resolutionStats?.reach ?? template.steps[action.currentStep]?.reach,
+    stepReach,
     outcome,
     tick,
-    tierPromotionOccurred: !!(promotionTraitGranted),
+    tierPromotionOccurred,
   });
 
   // ── THR-143: Emit caused_by edge if this is a seed-spawned action ──
@@ -2791,7 +3024,7 @@ export function executeStepResult(
     ...(action.pendingCausationSourceEventId !== undefined && { pendingCausationSourceEventId: undefined }),
   };
 
-  return { updatedAction: finalAction, events };
+  return finalAction;
 }
 
 // ─── Phase 3: Push/Resist Template Sets ────────────────────────
@@ -3234,8 +3467,13 @@ export function phaseUnifiedActionProgress(
     // Execute and advance
     const { updatedAction, events: stepEvents } = executeStepResult(
       completing_action, template, outcome, opsToExecute, state, rng, state.tick,
-      // THR-1537 — a fight step's resolved reach and difficulty ride along (§3c).
-      { capability, probability, roll, reach: stepResult.reach, difficulty: stepResult.difficulty }, runtime,
+      // THR-1537 — a fight step's resolved reach and difficulty ride along (§3c);
+      // THR-1538 — and a fight that ended before its roll takes the no-roll route (§1).
+      {
+        capability, probability, roll, reach: stepResult.reach, difficulty: stepResult.difficulty,
+        ...(stepResult.fightEnd ? { fightEnd: stepResult.fightEnd } : {}),
+      },
+      runtime,
     );
 
     // If this action targets a hex, route through hexActionBridge to get mutations

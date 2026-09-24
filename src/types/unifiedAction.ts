@@ -2976,6 +2976,12 @@ export interface UnifiedAction {
   readonly supportBindings?: readonly EncounterSupportBinding[];
   /** Persistent clearance/scrutiny shell instances bound at action start. */
   readonly clearanceGateIds?: readonly string[];
+  /**
+   * THR-1538 (fight block FB2) — a fight's action-local state: the opponent, the
+   * clock, the exchanges and, once set, the result. Created at the block's first
+   * fight step. Absent on every action that has never resolved a fight step.
+   */
+  readonly fightState?: import('./fight').FightState;
   /** Accumulated world-facing deltas across resolved steps, used to build the final aftermath summary. */
   readonly aftermathChanges?: readonly EncounterAftermathChange[];
   /** World-facing summary of what changed because this encounter resolved. */
