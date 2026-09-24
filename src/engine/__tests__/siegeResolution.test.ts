@@ -279,6 +279,30 @@ describe('tickSiege', () => {
     }
     expect(graph.getNode(siegeId)).toBeUndefined();
   });
+
+  it('a won siege leaves the town standing, with its residents on it (THR-1563)', () => {
+    // A siege records the settlement as its "defender army", so the aftermath of an
+    // attacker victory used to disband — i.e. `removeNode` — the town it had taken.
+    graph.addNode({ id: 'resident', type: 'actor', name: 'Resident', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e_resident_loc', source: 'resident', target: 'town1', type: 'located_at', properties: {} });
+    const bs = graph.getNode(siegeId)?.properties.battleState as BattleState;
+    graph.updateNode(siegeId, {
+      properties: {
+        ...graph.getNode(siegeId)!.properties,
+        battleState: { ...bs, momentum: SIEGE_RESOLUTION_THRESHOLD * 2 },
+      },
+    });
+
+    for (let t = 1; t <= 20; t++) {
+      if (!graph.getNode(siegeId)) break;
+      tickSiege(makeState(t, graph), siegeId);
+    }
+
+    expect(graph.getNode(siegeId)).toBeUndefined();
+    expect(graph.getNode('town1')).toBeDefined();
+    expect(graph.getNode('army1')).toBeDefined();
+    expect(graph.getOutgoingEdges('resident', 'located_at').map(e => e.target)).toEqual(['town1']);
+  });
 });
 
 // ─── THR-18: Attention Tier Classification ────────────────────────────────

@@ -427,6 +427,88 @@ describe('applyAftermath', () => {
     expect(graph.getIncomingEdges('settlement1', 'controls')).toHaveLength(1);
   });
 
+  // ── Real siege shape (THR-1563) ──
+  //
+  // Every siege test above uses `defenderArmyId: 'army_d'`, which no real siege writes:
+  // `siegeResolution` stores the besieged settlement's own id there ("Settlement acts as
+  // 'defender army'"). With that shape the loser of a won siege IS the settlement, and
+  // the aftermath's `disbandArmy` used to `removeNode` the town it had just conquered —
+  // residents, conquest edge, routes and Places with it. Falsified by restoring the
+  // unconditional `if (loserNode) disbandArmy(...)`.
+  describe('real siege shape — the settlement is the defender (THR-1563)', () => {
+    function setupRealSiege(graph: WorldGraph): void {
+      setupSettlementBattle(graph, { addSublocations: 2, addControlEdge: true, addCommander: false });
+      graph.addNode({ id: 'hex_town', type: 'location', name: 'Town Hex', properties: { terrain: 'plains' } });
+      graph.addEdge({ id: 'e_town_loc', source: 'settlement1', target: 'hex_town', type: 'located_at', properties: {} });
+      // Places carry the canonical sublocation shape: type 'location' + parentLocationId.
+      for (const subId of ['sub_0', 'sub_1']) {
+        graph.updateNode(subId, { properties: { parentLocationId: 'settlement1' } });
+      }
+      graph.addNode({ id: 'resident', type: 'actor', name: 'Resident', properties: { actorType: 'individual' } });
+      graph.addEdge({ id: 'e_resident_loc', source: 'resident', target: 'settlement1', type: 'located_at', properties: {} });
+      graph.addNode({ id: 'tavern_goer', type: 'actor', name: 'Tavern Goer', properties: { actorType: 'individual' } });
+      graph.addEdge({ id: 'e_goer_loc', source: 'tavern_goer', target: 'sub_0', type: 'located_at', properties: {} });
+    }
+
+    it('a won siege leaves the settlement, its conquest edge and its residents in place', () => {
+      const graph = new WorldGraph();
+      setupRealSiege(graph);
+      const state = makeState(10, graph);
+      const bs = makeBattleState({ defenderArmyId: 'settlement1', momentum: TOTAL_DESTRUCTION_THRESHOLD });
+
+      applyAftermath(state, bs, 'attacker_victory');
+
+      expect(graph.getNode('settlement1')).toBeDefined();
+      expect(graph.getNode('settlement1')?.properties.locationSubtype).toBe('ruins');
+      const held = graph.getIncomingEdges('settlement1', 'controls');
+      expect(held).toHaveLength(1);
+      expect(held[0].source).toBe('f_atk');
+      expect(graph.getOutgoingEdges('resident', 'located_at').map(e => e.target)).toEqual(['settlement1']);
+      // The victor is not the loser: its army stands.
+      expect(graph.getNode('army_a')).toBeDefined();
+    });
+
+    it('moves a mortal standing in a destroyed Place up to the parent Location', () => {
+      const graph = new WorldGraph();
+      setupRealSiege(graph);
+      const state = makeState(10, graph);
+      const bs = makeBattleState({ defenderArmyId: 'settlement1', momentum: TOTAL_DESTRUCTION_THRESHOLD });
+
+      applyAftermath(state, bs, 'attacker_victory');
+
+      // Total destruction takes every Place…
+      expect(graph.getNode('sub_0')).toBeUndefined();
+      // …but nobody is left with no position.
+      expect(graph.getOutgoingEdges('tavern_goer', 'located_at').map(e => e.target)).toEqual(['settlement1']);
+    });
+
+    it('a defender-won siege still disbands the attacking army and keeps the town', () => {
+      const graph = new WorldGraph();
+      setupRealSiege(graph);
+      const state = makeState(10, graph);
+      const bs = makeBattleState({ defenderArmyId: 'settlement1', momentum: -TOTAL_DESTRUCTION_THRESHOLD });
+
+      applyAftermath(state, bs, 'defender_victory');
+
+      expect(graph.getNode('army_a')).toBeUndefined();
+      expect(graph.getNode('settlement1')).toBeDefined();
+      expect(graph.getNode('sub_0')).toBeDefined();
+      expect(graph.getOutgoingEdges('tavern_goer', 'located_at').map(e => e.target)).toEqual(['sub_0']);
+    });
+
+    it('a field battle still disbands the losing army', () => {
+      const graph = new WorldGraph();
+      setupSettlementBattle(graph);
+      const state = makeState(10, graph);
+      const bs = makeBattleState({ battleType: 'field_battle', settlementId: undefined, momentum: 4 });
+
+      applyAftermath(state, bs, 'attacker_victory');
+
+      expect(graph.getNode('army_d')).toBeUndefined();
+      expect(graph.getNode('army_a')).toBeDefined();
+    });
+  });
+
   it('generates refugee encounters at neighbors on major defeat', () => {
     const graph = new WorldGraph();
     setupSettlementBattle(graph, { loserQ: 5, addNeighborSettlement: true });
