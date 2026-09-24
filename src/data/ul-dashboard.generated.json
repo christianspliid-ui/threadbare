@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 52,
+      "termCount": 54,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -4279,6 +4279,82 @@
       "contentAdjacent": true
     },
     {
+      "shardId": "encounters",
+      "slug": "fight-clock",
+      "name": "Fight Clock",
+      "aliases": [
+        "clock (fight)",
+        "the clock",
+        "`clockFilled`",
+        "`fightState.clockNow`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1538, delegated seating 2026-09-11",
+      "oneLiner": "an opponent's wear in segments; a full clock falls to the next landing blow; a monster's persists on its node; not the Doom Clock (THR-1538)",
+      "body": "An opponent's wear in a fight, in segments. Each landing clash fills it (`FIGHT_CLOCK_BY_BAND`: a critical +2, a hit, a traded blow or a hit at cost +1, a miss 0). **A full clock is won by a blow, not by itself:** the fight is overcome on the clash that lands while the clock is full and the opponent lives. A full clock with no blow this exchange waits for the next landing blow; none by the last clash, and the fight breaks off.\n\nTwo stores, one writer (`advanceFightClock`). A **monster's** clock lives on its node (`monsterState.clockFilled`) and persists across fights, so several mortals' blows add up on one beast; it recovers one segment per `FIGHT_CLOCK_RECOVERY_TICKS`, read lazily. A **mortal opponent's** clock lives on the fight (`fightState.clockNow`) and dies with it.\n\n**Not the Doom Clock**, the world's campaign timer. The two never share a surface.\n\nCode anchors: `src/engine/fights/fightClock.ts`, `src/engine/fights/fightState.ts` (`applyFightStepResult`), `src/data/fight-constants.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Fight",
+          "termName": "Fight",
+          "resolvedSlug": "encounters#fight"
+        },
+        {
+          "raw": "Opponent Card",
+          "termName": "Opponent Card",
+          "resolvedSlug": "encounters#opponent-card"
+        },
+        {
+          "raw": "Clash Step",
+          "termName": "Clash Step",
+          "resolvedSlug": "encounters#clash-step"
+        },
+        {
+          "raw": "Fight Result",
+          "termName": "Fight Result",
+          "resolvedSlug": "encounters#fight-result"
+        },
+        {
+          "raw": "Doom Clock",
+          "termName": "Doom Clock",
+          "resolvedSlug": null
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#fight-clock",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "fight-result",
+      "name": "Fight Result",
+      "aliases": [
+        "`FightResult`",
+        "`fight:<result>`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by THR-1538, delegated seating 2026-09-11",
+      "oneLiner": "how a fight ended (overcome … struck down); ends the encounter at once and sets its outcome; recorded as `fight:<result>`",
+      "body": "How a fight ended: *overcome*, *driven off*, *bargained*, *yielded*, *broke off*, *routed* (broke on the nerve step) or *struck down* (a clash's critical failure). A set result ends the encounter at once; later steps never run. The encounter's outcome is **read from the result** (`FIGHT_RESULT_ACTION_OUTCOME`), never aggregated from the steps, so a yield after a wound reads as a failure to \"after the fight\" items and to the aftermath.\n\nA **broke off** fight can end without a roll: when its opponent never appeared, died, or no longer shares the fighter's hex (`endReason`: `no_opponent` / `opponent_gone` / `separated`). It still reaches its aftermath.\n\nThe result is written as one choice memory (`fight:<result>`) at `fightResultIndex(steps)`, an index no step owns, so aftermath variants key on it without disturbing the cards the god played.\n\nCode anchors: `src/engine/fights/fightState.ts`, `src/engine/fights/fightOutcome.ts` (`onFightEnded`), `src/types/fight.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Fight",
+          "termName": "Fight",
+          "resolvedSlug": "encounters#fight"
+        },
+        {
+          "raw": "Fight Clock",
+          "termName": "Fight Clock",
+          "resolvedSlug": "encounters#fight-clock"
+        },
+        {
+          "raw": "Aftermath",
+          "termName": "Aftermath",
+          "resolvedSlug": "encounters#aftermath"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#fight-result",
+      "contentAdjacent": true
+    },
+    {
       "shardId": "traits",
       "slug": "trait",
       "name": "Trait",
@@ -6843,6 +6919,12 @@
       "kind": "unresolved_see_also",
       "shardId": "encounters",
       "termSlug": "omen",
+      "detail": "See-Also \"Doom Clock\" did not resolve to a known term."
+    },
+    {
+      "kind": "unresolved_see_also",
+      "shardId": "encounters",
+      "termSlug": "fight-clock",
       "detail": "See-Also \"Doom Clock\" did not resolve to a known term."
     },
     {
