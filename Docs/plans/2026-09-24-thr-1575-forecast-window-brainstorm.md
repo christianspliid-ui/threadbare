@@ -67,7 +67,7 @@ A design that raises failure on purpose has to rule both out *by construction*, 
 - **Retry loops:** every resolved outcome gets the same short completion cooldown (as low as 2 ticks), and the window keeps a failed challenge at the same even odds. Without a guard, a failed mortal comes straight back. Hence the failure cooldown multiplier.
 - **Stuck on a failure streak:** even without skill loss, a mortal can fail several in-window challenges in a row by the dice alone. Hence the setback shift: after consecutive failures the window moves easier, capped, and resets on the next win. It reads as a mortal licking its wounds and taking on something it can finish. That is thematic, and it cannot run away because it is capped and self-resetting.
 - **Considered and rejected:** a failure-count retirement (retire a template after N failures). The existing `MAX_COMPLETIONS_PER_TEMPLATE` already retires after 5 completions of any outcome, and the cooldown multiplier spreads attempts out. A third mechanism would make the failure path harder to reason about for little gain.
-- **Found in passing, out of scope:** mentorship-granted mastery traits decay every 48 ticks and nothing reinforces them since THR-1503. That is time-based loss, not failure-based, so it is reported separately.
+- **Found in passing, out of scope (corrected by measurement):** mentorship-granted mastery traits carry a 48-tick decay rule, but it never fires. The grant omits `lastReinforcedTick`, so the check compares against `NaN`. They are also rare and worth +0.1 raw per level. So there is no skill loss here; the finding is that mastery is nearly meaningless. It is filed as THR-1584.
 
 ## Tensions surfaced
 
