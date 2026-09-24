@@ -78,6 +78,8 @@ import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
+import { recordBoardDecision, recordIdleDecision, stampEngagementCommit, demandedDifficultyOf } from './kpi/engagementKpi';
+import { computeCapability } from './domainCapability';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
@@ -1150,6 +1152,10 @@ export function phaseAgentDecision(
         }
       }
 
+      // THR-1578: the idle-rate gauge's denominator — one row per decision that got
+      // this far. The numerator is counted where the mortal actually idles, below.
+      if (runtime) recordBoardDecision(runtime.engagementLedger);
+
       // ── Compulsion Check ──────────────────────────────────────────
       // Before committing, check if this agent is eligible for a Compulsion
       // premonition. If so, emit the event to the queue. The agent's decision
@@ -1195,6 +1201,9 @@ export function phaseAgentDecision(
       // If the player previously chose a compulsion target, override the selection.
       const compulsionTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
       const compulsionTick = (actor.properties?.compulsionTick as number | undefined) ?? 0;
+      // THR-1578: a god's compulsion is not the mortal's free choice — the
+      // engagement gauge keeps it out of the per-band success invariant.
+      let compulsionOverrode = false;
       if (decision.selected && compulsionTargetId && (state.tick - compulsionTick) <= 3) {
         // Find the compulsion target in candidates
         const compulsionCandidate = decision.topCandidates.find(
@@ -1202,6 +1211,7 @@ export function phaseAgentDecision(
         );
         if (compulsionCandidate) {
           decision.selected = compulsionCandidate;
+          compulsionOverrode = true;
         }
         // Clear the compulsion target — direct property write, not spread.
         const freshForClear = graph.getNode(agentId);
@@ -1461,6 +1471,25 @@ export function phaseAgentDecision(
                 effectiveTier: uaEffectiveTier,
               };
               newUnifiedActions.push(action);
+              // THR-1578: stamp what the mortal knew at commit — its proficiency on
+              // the primary reach, the difficulty the steps demand after the scale
+              // offset, and the planner's forecast — for the engagement gauge.
+              if (runtime) {
+                try {
+                  const attemptedDifficulty = demandedDifficultyOf(unifiedTemplate.steps ?? [], unifiedTemplate.scale);
+                  stampEngagementCommit(runtime.engagementLedger, action.actionId, {
+                    agentId,
+                    templateId: unifiedTemplate.id,
+                    committedTick: state.tick,
+                    proficiency: computeCapability(graph, agentId, sel.entry.reachPrimary),
+                    attemptedDifficulty,
+                    forecast: sel.completionProb,
+                    freeChoice: !compulsionOverrode,
+                  });
+                } catch {
+                  // Fail-soft: the gauge never blocks a decision; the action resolves as band `unknown`.
+                }
+              }
             } else if (template) {
               const firstStepDuration = template.steps[0]?.duration ?? 1;
 
@@ -1805,6 +1834,8 @@ export function phaseAgentDecision(
           idleReason = 'below_score_threshold';
         }
 
+        // THR-1578: the idle-rate gauge's numerator.
+        if (runtime) recordIdleDecision(runtime.engagementLedger);
         const localEntries = encounterCache.getEntriesForLocation(locationId);
         const idle = resolveIdleBehavior(
           agentId,

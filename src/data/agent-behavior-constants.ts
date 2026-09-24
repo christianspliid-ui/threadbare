@@ -1162,3 +1162,15 @@ export const NOVELTY_GLOBAL_SHARE_MIN_SAMPLES = 30;
  * any competitor score even when global novelty has fully decayed.
  * @range 4–12 */
 export const NOVELTY_GLOBAL_SHARE_EXPONENT = 8;
+
+// ─── THR-1575: the forecast window ─────────────────────────────────
+/**
+ * The forecast a mortal deems acceptable to actively engage a challenge — the
+ * director ruling of 2026-09-24 (THR-1575): *"the 50–65% success rate is what a
+ * mortal would deem acceptable as forecast in order to actually actively engage
+ * with the challenge."* S1 (THR-1578) reads these only to measure the in-window
+ * share; S4 (THR-1582) makes the choice rule seek the window.
+ * @range 0.40–0.60 */
+export const ENGAGE_WINDOW_LOW = 0.50;
+/** Upper edge of the engagement window (see `ENGAGE_WINDOW_LOW`). @range 0.55–0.75 */
+export const ENGAGE_WINDOW_HIGH = 0.65;

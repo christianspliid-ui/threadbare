@@ -67,7 +67,7 @@ function initState(seed: number) {
   const archetypes = generateArchetypes(4, seed);
   const cosmology = createBalancedCosmology();
   const preset = MAP_SIZE_PRESETS[MAP];
-  const { state } = initializeGameState(
+  let { state } = initializeGameState(
     archetypes[0],
     'MeasureBot',
     cosmology,
@@ -76,7 +76,10 @@ function initState(seed: number) {
     preset.rows,
   );
   const runtime = createSimulationRuntime();
-  for (let i = 0; i < TICKS; i++) runTick(state, runtime);
+  // THR-1578: `runTick(state, interventions, runtime)` returns the next state. The old
+  // `runTick(state, runtime)` passed the runtime as the interventions list and dropped the
+  // result, so every tick after tick 0 crashed and the tick-mode numbers were never real.
+  for (let i = 0; i < TICKS; i++) state = runTick(state, [], runtime);
   return state;
 }
 

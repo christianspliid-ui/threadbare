@@ -5343,6 +5343,12 @@ export interface ResolutionInputTrace extends TraceBase {
   actorId: string;
   templateId: string;
   scale: ActionScale;
+  /**
+   * THR-1578: the reach the step rolled on (a fight step's card reach when it moved
+   * the clash). Absent only for a step with no reach. Lets a measurement read the
+   * roller's raw score directly instead of inverting the capability sigmoid.
+   */
+  reach?: ReachDomain;
   capability: number;
   /** Post-normalization, post-scale-offset difficulty fed to the resolver. */
   difficulty: number;

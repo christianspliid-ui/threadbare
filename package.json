@@ -88,6 +88,7 @@
     "sweep:rank-reach": "esbuild scripts/rank-reach-sweep.ts --bundle --platform=node --format=esm --outfile=.cache/rank-reach-sweep.mjs --external:fs --external:path && node .cache/rank-reach-sweep.mjs",
     "measure:tick-cost": "esbuild scripts/measure-tick-cost.ts --bundle --platform=node --format=esm --outfile=.cache/measure-tick-cost.mjs --external:fs --external:path && node .cache/measure-tick-cost.mjs",
     "measure:nudge-headroom": "esbuild scripts/measure-nudge-headroom.ts --bundle --platform=node --format=esm --outfile=.cache/measure-nudge-headroom.mjs --external:fs --external:path && node .cache/measure-nudge-headroom.mjs",
+    "measure:roll-spread": "esbuild scripts/measure-roll-spread.ts --bundle --platform=node --format=esm --outfile=.cache/measure-roll-spread.mjs --external:fs --external:path && node .cache/measure-roll-spread.mjs",
     "audit:nudge-batch": "esbuild scripts/audit-nudge-batch.ts --bundle --platform=node --format=esm --outfile=.cache/audit-nudge-batch.mjs --external:fs --external:path && node .cache/audit-nudge-batch.mjs",
     "balance:smoke": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-smoke.mjs --external:fs --external:path && node .cache/balance-eval-smoke.mjs --profile smoke",
     "balance:cadence": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-cadence.mjs --external:fs --external:path && node .cache/balance-eval-cadence.mjs --profile cadence",

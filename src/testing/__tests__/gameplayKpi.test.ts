@@ -11,6 +11,11 @@ import {
 } from '../../engine/kpi/gameplayKpi';
 import type { GameState } from '../../types/gameState';
 import {
+  createEngagementLedger,
+  stampEngagementCommit,
+  recordEngagementResolution,
+} from '../../engine/kpi/engagementKpi';
+import {
   KPI_FAILURE_RATE_MAX,
   KPI_CLEAN_SUCCESS_MIN,
   KPI_TEMPLATE_TOP_SHARE_MAX,
@@ -289,5 +294,23 @@ describe('createEligibilityFunnelCounters', () => {
     expect(funnel.byTemplate).toEqual({});
     expect(funnel.sinceTick).toBe(5);
     expect(funnel.truncated).toBe(false);
+  });
+});
+
+describe('THR-1578 engagement gauge in the report', () => {
+  it('is null with no engagement ledger, and adds advisory rows (never gating) when present', () => {
+    expect(computeGameplayKpiReport(makeState()).engagement).toBeNull();
+    const ledger = createEngagementLedger();
+    stampEngagementCommit(ledger, 'x', {
+      agentId: 'a', templateId: 't', committedTick: 0, proficiency: 0.5,
+      attemptedDifficulty: 0.3, forecast: 0.9, freeChoice: true,
+    });
+    recordEngagementResolution(ledger, 'x', 'failure', 2);
+    const report = computeGameplayKpiReport(makeState(), { eligibilityFunnel: null, engagementLedger: ledger });
+    expect(report.engagement?.bands.find(b => b.band === 'journeyman')?.engagements).toBe(1);
+    const rows = report.thresholds.filter(t =>
+      ['retry_after_failure_rate', 'max_failure_streak_p95', 'in_window_share'].includes(t.metric));
+    expect(rows).toHaveLength(3);
+    expect(rows.every(r => r.advisory === true)).toBe(true);
   });
 });

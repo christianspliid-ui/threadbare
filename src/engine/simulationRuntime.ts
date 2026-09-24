@@ -49,6 +49,8 @@ import type { ForeshadowingResult } from '../types/foreshadowing';
 import type { DetailPage } from '../types/detailPage';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import { createEligibilityFunnelCounters } from './kpi/gameplayKpi';
+import { createEngagementLedger } from './kpi/engagementKpi';
+import type { EngagementLedger } from './kpi/engagementKpi';
 import { createIncidentRecorder } from './incidentRecorder';
 import type { IncidentRecorder } from './incidentRecorder';
 
@@ -142,6 +144,18 @@ export interface SimulationRuntime {
    * full-tick-denominator undercount THR-470 fixed for branching fires.
    */
   threadedBeatsTotal: number;
+
+  // ── Engagement ledger (THR-1578, forecast-window gauge) ──
+  /**
+   * Commit stamps (proficiency, attempted difficulty, forecast) keyed by action id,
+   * plus lifetime per-proficiency-band totals, a bounded resolved-engagement log and
+   * the board-decision idle counters. Stamped in the agent-decision phase when a
+   * mortal commits to a unified encounter; folded in at the orchestrator's
+   * newly-resolved transition, BEFORE `unifiedActions` is pruned — the same
+   * lifetime-counter pattern as branchingFiresTotal (THR-470). Keeps `UnifiedAction`
+   * free of a KPI-only field. Read by `computeEngagementKpiReport`.
+   */
+  engagementLedger: EngagementLedger;
 
   // ── Foreshadowing cache (THR-389) ──
   /**
@@ -345,6 +359,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     cleanSuccessTotal: 0,
     critSuccessTotal: 0,
     threadedBeatsTotal: 0,
+    engagementLedger: createEngagementLedger(),
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),
     outcomeBandPhraseHistory: new Map(),

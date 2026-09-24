@@ -183,11 +183,24 @@ function printReport(report: GameplayKpiReport, ascendant?: ReachDomain): void {
   console.log(`    top_share:${pct(tc.topShare)}  entropy:${fix2(tc.entropy)}  templates:${tc.byTemplate.length}`);
   console.log(`    branching_fires:${report.branchingFire.totalFires}  per30t:${fix2(report.branchingFire.firesPerChunk)}`);
 
+  // THR-1578: the forecast-window gauge (baseline for THR-1575's slices).
+  const e = report.engagement;
+  if (e) {
+    console.log(`    ${BOLD}Engagement gauge${RESET}  ${DIM}(bands are KPI-internal; * = below KPI_BAND_MIN_ENGAGEMENTS)${RESET}`);
+    for (const b of e.bands) {
+      const mark = b.band === 'unknown' ? ' ' : b.covered ? ' ' : '*';
+      console.log(`      ${mark}${b.band.padEnd(11)} n=${String(b.engagements).padStart(5)}  success:${pct(b.successRate).padStart(6)}  mean_attempted_difficulty:${fix2(b.meanAttemptedDifficulty)}`);
+    }
+    const trend = e.attemptedDifficultyTrend === null ? 'n/a' : e.attemptedDifficultyTrend.toExponential(2);
+    console.log(`      in_window:${pct(e.inWindowShare)} (of ${e.freeChoiceCommits})  idle_rate:${pct(e.idleRate)} (of ${e.boardDecisions})`);
+    console.log(`      retry_after_failure_rate:${pct(e.retryAfterFailureRate)} (of ${e.failedFreeChoice})  max_failure_streak_p95:${e.maxFailureStreakP95}  attempted_difficulty_trend:${trend} (${e.trendMortals} mortals)`);
+  }
+
   console.log(`    ${BOLD}Thresholds${RESET}`);
   for (const t of report.thresholds) {
     const col = statusColor(t.status);
     const mark = t.status === 'green' ? '✓' : t.status === 'red' ? '✗' : '~';
-    console.log(`      ${col}${mark}${RESET} ${t.metric.padEnd(30)} ${fix2(t.value).padStart(6)}`);
+    console.log(`      ${col}${mark}${RESET} ${t.metric.padEnd(30)} ${fix2(t.value).padStart(6)}${t.advisory ? `  ${DIM}(advisory)${RESET}` : ''}`);
   }
 }
 
