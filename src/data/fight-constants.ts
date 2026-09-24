@@ -122,6 +122,13 @@ export const FIGHT_CLOCK_BY_BAND: Readonly<Record<StepOutcome, number>> = {
 export const FIGHT_WOUNDING_BANDS: readonly StepOutcome[] = ['success_at_cost', 'failure', 'critical_failure'];
 
 /**
+ * Clash bands where blows were traded (plan doc §9, THR-1541): the clash landed on
+ * the opponent *and* the fighter was struck back, so both sides raise `attacked`.
+ * Every other landing band raises it on the opponent alone.
+ */
+export const FIGHT_TRADED_BLOW_BANDS: readonly StepOutcome[] = ['near_miss', 'success_at_cost'];
+
+/**
  * The action's final outcome for each fight result (plan doc §6). This, not
  * `computeFinalActionOutcome`, is what the rest of the game reads: that function
  * reads any failure in the history as `success_at_cost`, so a yield would read

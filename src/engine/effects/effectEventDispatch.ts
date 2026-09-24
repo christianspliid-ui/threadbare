@@ -43,6 +43,7 @@ import { instantiateReward } from '../rewardPool';
 import { emitTrace } from '../traceBuffer';
 import { processEffectEvent, applyEffectEventResult, type EffectEvent } from './effectEvents';
 import { applyExecutionOverlays } from './effectOverlayStore';
+import { buildPredicateContext } from './effectPredicates';
 
 /** Where a raise came from — carried on the trace so the producer is one grep away. */
 export type EffectEventSite =
@@ -58,8 +59,17 @@ export type EffectEventSite =
   | 'condition_inflicted'
   | 'condition_lifted'
   | 'doom_threshold'
-  // THR-1538 — a fight's end (`combat_ended`). FB5 (THR-1541) adds the other fight raises.
-  | 'fight_end';
+  // THR-1538 — a fight's end (`combat_ended`).
+  | 'fight_end'
+  // THR-1541 (fight block FB5, plan doc §9) — the other fight raises, one tag per
+  // moment so the trace names which part of the exchange raised it:
+  // `combat_started` at the handler's first run; each fight step's
+  // `encounter_outcome`; a landing clash's `attacked` and `damaged`; the win's
+  // `opponent_overcome`.
+  | 'fight_start'
+  | 'fight_step'
+  | 'fight_clash'
+  | 'fight_overcome';
 
 export interface RaiseEffectEventOptions {
   /** Production site tag, recorded on the `effect.event_raised` trace. */
@@ -67,10 +77,20 @@ export interface RaiseEffectEventOptions {
   /** Seeded RNG from the calling phase (NFP #3) — never `Math.random`. */
   rng: () => number;
   /**
-   * The other agent in the event, when one exists. Only `resource_manipulate`
-   * with `target: 'other_agent'` reads it; absent means that effect skips.
+   * The other agent in the event, when one exists. A one-shot
+   * `resource_manipulate` with `target: 'other_agent'` reads it (absent means that
+   * effect skips), and every reactive execution receives it as
+   * `ExecutionContext.targetId` (THR-1541, plan doc §9 — THR-1530 §4a), so a beast's
+   * roar can dispel the charm of the fighter who provoked it.
    */
   counterpartId?: string;
+  /**
+   * The encounter type the event happened in (THR-1541). When set, reactive
+   * executions get a predicate context carrying it, so an `in_combat` gate on a
+   * `choice_set` option reads "is a fight exchange" whatever the step's reach.
+   * Fight raises pass `FIGHT_ENCOUNTER_TYPE`; every other site omits it.
+   */
+  encounterType?: string;
   /**
    * Runtime states to read and update, for a caller threading its own map
    * across a loop instead of using `state.effectStates` (the orchestrator's
@@ -204,6 +224,10 @@ export function raiseEffectEvent(
           casterId: fired.agentId,
           tick: state.tick,
           graph: state.graph,
+          ...(opts.counterpartId ? { targetId: opts.counterpartId } : {}),
+          ...(opts.encounterType
+            ? { predicateContext: buildPredicateContext(state.graph, fired.agentId, undefined, opts.encounterType) }
+            : {}),
         });
         applyExecutionResult(state, exec, state.tick);
         for (const trace of exec.traces) emitLegacyEffectTrace(trace);

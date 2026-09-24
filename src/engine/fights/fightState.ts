@@ -17,8 +17,10 @@
  *    step owns (`fightResultIndex`), so aftermath variants key on `fight:<result>`
  *    without shadowing a card record the hand wrote by step index.
  *
- * Deterministic: the only draw is the forks' coin (`fightForks.ts`, FB4), from the
- * step's own rng and only inside the neutral band.
+ * Deterministic: the draws are the forks' coin (`fightForks.ts`, FB4), from the
+ * step's own rng and only inside the neutral band, and — before it, in raise
+ * order — whatever the step's fight events (`fightEvents.ts`, FB5) trigger on the
+ * same stream (a `transform`'s probability roll).
  */
 
 import type { GameState } from '../../types/gameState';
@@ -51,6 +53,13 @@ import {
   drainFightClockMailbox,
 } from './fightClock';
 import { runFightForks } from './fightForks';
+import {
+  raiseFightClashLanded,
+  raiseFightOvercome,
+  raiseFightStarted,
+  raiseFightStepOutcome,
+} from './fightEvents';
+import type { ReachDomain } from '../../types/traits';
 
 /**
  * The index the fight's result memory is written at: past the terminal block, an
@@ -182,7 +191,10 @@ export function applyFightStepResult(
 ): UnifiedAction {
   const role = fightRoleOf(step);
   if (!role) return action;
-  const landed = landFightBand(state, action, step, outcome, tick);
+  const landed = landFightBand(state, action, step, outcome, tick, {
+    reach: opts.reach ?? step.reach,
+    rng: opts.rng ?? standFirmCoin,
+  });
   const fight = landed.fightState;
   if (!fight) return landed;
 
@@ -234,6 +246,11 @@ export function applyFightStepResult(
 export interface FightStepResultOptions {
   /** The step's resolved difficulty (plan doc §3c); harm reads it. */
   readonly difficulty?: number;
+  /**
+   * The step's resolved reach (plan doc §3c) — the reach the fighter's
+   * `encounter_outcome` is raised on (FB5, §9). Defaults to the authored reach.
+   */
+  readonly reach?: ReachDomain;
   /** The step's seeded resolution rng — the forks' coin, drawn only inside the neutral band. */
   readonly rng?: () => number;
   /** The resolved (dealt) step's cards, for the hand's lean on a fork's axis. */
@@ -262,15 +279,17 @@ function standFirmCoin(): number {
  * `broke_off`.
  */
 function landFightBand(
-  state: Pick<GameState, 'graph'>,
+  state: GameState,
   action: UnifiedAction,
   step: ActionStep,
   outcome: StepOutcome,
   tick: number,
+  events: { readonly reach: ReachDomain; readonly rng: () => number },
 ): UnifiedAction {
   const role = fightRoleOf(step);
   if (!role) return action;
   const graph = state.graph;
+  const fighterId = action.actorId;
 
   let fight: FightState;
   if (!action.fightState) {
@@ -281,6 +300,10 @@ function landFightBand(
     const card = boundId ? readOpponentCard(graph, boundId, tick) : defaultOpponentCard(null);
     if (boundId && !card.persistent) clearStaleFightClockMailbox(graph, boundId, tick, action.actionId);
     fight = createFightState(card);
+    // THR-1541 (plan doc §9) — the handler's first run: the fight has started, for
+    // both sides, before this step's outcome is raised. A reactive on it (a roar)
+    // therefore moves the first clash, never the nerve roll it follows.
+    raiseFightStarted(state, fighterId, fight.opponentId, events.rng);
   } else {
     fight = action.fightState;
     if (fight.opponentId && fight.persistent) {
@@ -296,6 +319,7 @@ function landFightBand(
   }
 
   if (role === 'nerve') {
+    raiseFightStepOutcome(state, fighterId, fight.opponentId, events.reach, outcome, events.rng);
     if (outcome === 'critical_failure') fight = { ...fight, result: 'routed' };
     return { ...action, fightState: fight };
   }
@@ -307,6 +331,7 @@ function landFightBand(
     wounds: fight.wounds + (FIGHT_WOUNDING_BANDS.includes(outcome) ? 1 : 0),
   };
   if (outcome === 'critical_failure') {
+    raiseFightStepOutcome(state, fighterId, fight.opponentId, events.reach, outcome, events.rng);
     return { ...action, fightState: { ...fight, result: 'struck_down' } };
   }
 
@@ -321,7 +346,11 @@ function landFightBand(
       fight = applyPerFightClockDelta(fight, delta, 'clash', tick, action.actionId).fightState;
     }
   }
-  // (2) the step's effect events — FB5 (THR-1541) raises them here.
+  // (2) the step's effect events (THR-1541, plan doc §9): the fighter's outcome,
+  // then — if the clash landed — `attacked` and `damaged`. Their reactives and
+  // items may write the clock; a per-fight write lands in the mailbox drained next.
+  raiseFightStepOutcome(state, fighterId, fight.opponentId, events.reach, outcome, events.rng);
+  raiseFightClashLanded(state, fighterId, fight.opponentId, outcome, delta, events.rng);
   // (3) the mailbox drain: this step's own effect-path writes count as a blow.
   if (!fight.persistent && fight.opponentId) {
     const drained = drainFightClockMailbox(graph, fight.opponentId);
@@ -340,6 +369,8 @@ function landFightBand(
   const opponentAlive = fight.opponentId === null || !isAgentGone(graph.getNode(fight.opponentId));
   if (fight.clockNow >= fight.clockSize && opponentAlive && blowLanded) {
     fight = { ...fight, result: 'overcome' };
+    // THR-1541 — the win: stack `on_kill` on the fighter.
+    raiseFightOvercome(state, fighterId, fight.opponentId, events.rng);
   }
   return { ...action, fightState: fight };
 }
