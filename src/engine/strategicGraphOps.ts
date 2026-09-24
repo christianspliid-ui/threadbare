@@ -44,7 +44,7 @@ import {
   RING_REACH_HEXES,
   RING_RECRUIT_SHADOW_MIN,
 } from '../data/strategic-action-constants';
-import { computeCapability } from './domainCapability';
+import { computeCapabilityPreRefit } from './domainCapability';
 import { seedFactionFromDefinition } from './factionSeeding';
 import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
@@ -1264,7 +1264,8 @@ export function foundRing(
         }
       }
       try {
-        if (computeCapability(graph, n.id, 'shadow') >= RING_RECRUIT_SHADOW_MIN) return 1;
+        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+        if (computeCapabilityPreRefit(graph, n.id, 'shadow') >= RING_RECRUIT_SHADOW_MIN) return 1;
       } catch {
         // Fail-soft: an unreadable capability is simply not a preference.
       }

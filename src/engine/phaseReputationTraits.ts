@@ -42,7 +42,7 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { REACH_DOMAINS } from '../types/traits';
 import { REACH_VALUE_PAIR } from '../types/agent';
 import { assignTrait, removeTrait, reinforceTrait, getTraitsForNode } from './traits';
-import { computeCapability, computeTier } from './domainCapability';
+import { computeCapabilityPreRefit, computeTier } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { CRUD_TO_ENCOUNTER_TYPE } from './encounterCache';
@@ -265,7 +265,8 @@ export function phaseReputationTraits(state: GameState): Partial<GameState> {
     let maxTier = 0;
     for (const reach of REACH_DOMAINS) {
       try {
-        const cap = computeCapability(graph, actorId, reach);
+        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+        const cap = computeCapabilityPreRefit(graph, actorId, reach);
         const tier = computeTier(cap);
         if (tier > maxTier) maxTier = tier;
       } catch {

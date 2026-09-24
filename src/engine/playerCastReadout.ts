@@ -13,7 +13,7 @@
  *
  * This module owns the one number a card is allowed to differentiate on:
  * `effectiveCastDifficulty` — the difficulty that survives the offset and the floor
- * and actually reaches `P = capability + sphereFactor - difficulty + mods`.
+ * and actually reaches `computeResolutionThreshold` (the one odds formula, THR-1581).
  *
  * **The invariant, and why it is truthful by construction.** The card's line is a
  * function of `effectiveCastDifficulty` alone. Two casts with equal odds therefore
@@ -41,7 +41,7 @@
  */
 
 import { applyScaleDifficultyAdjust, MIN_PROBABILITY_BY_SCALE } from './resolutionScaleAdjust';
-import { PROBABILITY_FLOOR, PROBABILITY_CEILING } from './resolutionService';
+import { PROBABILITY_FLOOR, computeResolutionThreshold } from './resolutionService';
 import { computeCapabilityWithRawBonus } from './domainCapability';
 import { getAscendantDomainAffinities } from './ascendant';
 import { ascendantCastRawBonus } from '../data/player-cast-constants';
@@ -49,6 +49,9 @@ import { REACH_DOMAINS } from '../types/traits';
 import type { ReachDomain } from '../types/traits';
 import type { ActionScale } from '../types/unifiedAction';
 import type { WorldGraph } from './graph';
+
+/** Telemetry label: `computeResolutionThreshold` never reads the graph with it. */
+const CARD_READOUT_ACTOR_LABEL = 'cast-readout';
 
 /**
  * Sphere factor for a player cast, pre-roll.
@@ -158,7 +161,7 @@ export function castCapabilityByReach(
  * encounter stage's test panel uses — and this is the quantity that word
  * classifies. It runs the resolver's arithmetic in the resolver's own order:
  * `applyScaleDifficultyAdjust` first (offset, then the per-scale cap that
- * enforces the floor), then `P = capability + sphereFactor - difficulty + mods`,
+ * enforces the floor), then `computeResolutionThreshold` (THR-1581),
  * then the floor itself. Nothing here re-derives a formula the resolver owns, so
  * the word on the card and the number in the roll cannot drift — THR-998's
  * invariant, restated for a tier word instead of a risk sentence: *the card's
@@ -234,14 +237,18 @@ export function castForecastProbability(
     CARD_READOUT_MODS,
     scale,
   );
-  const difficulty = Math.max(0, Math.min(1, adjustedDifficulty));
-  const raw = capability + CARD_READOUT_SPHERE_FACTOR - difficulty + CARD_READOUT_MODS;
-  if (!Number.isFinite(raw)) return floor;
+  if (!Number.isFinite(adjustedDifficulty)) return floor;
 
-  // The resolver's own clamp, not a [0, 1] bound: `computeResolutionThreshold`
-  // returns inside [PROBABILITY_FLOOR, PROBABILITY_CEILING], so a readout clamped
-  // any wider would disagree with the roll at the extremes.
-  const threshold = Math.min(PROBABILITY_CEILING, Math.max(PROBABILITY_FLOOR, raw));
+  // THR-1581: the resolver's own formula and clamp, called rather than restated, so
+  // the card cannot drift from the roll when the odds formula moves.
+  const threshold = computeResolutionThreshold({
+    actorId: CARD_READOUT_ACTOR_LABEL,
+    domain: REACH_DOMAINS[0],
+    capability,
+    difficulty: adjustedDifficulty,
+    sphereFactor: CARD_READOUT_SPHERE_FACTOR,
+    actionModifiers: CARD_READOUT_MODS,
+  });
 
   // Correction 1 — the scale floor, applied exactly as `stepResolutionCore` does.
   //

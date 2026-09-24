@@ -21,6 +21,7 @@ import type { ReachDomain } from '../types/traits';
 import type { TickEvent } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import { computeCapability } from './domainCapability';
+import { computeResolutionThreshold } from './resolutionService';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -193,8 +194,15 @@ export function resolveContestation(
   const reach = getContestReach(effect, contestType);
   const capability = reach ? computeCapability(graph, contestantId, reach) : 0.5;
 
-  // Probability: capability - difficulty, clamped [0.05, 0.95]
-  const probability = Math.max(0.05, Math.min(0.95, capability - difficulty));
+  // Probability through the one formula (THR-1581), clamped [0.05, 0.95].
+  const probability = computeResolutionThreshold({
+    actorId: contestantId,
+    domain: reach ?? 'iron',
+    capability,
+    difficulty,
+    sphereFactor: 0,
+    actionModifiers: 0,
+  });
 
   // Roll
   const roll = rng();

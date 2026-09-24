@@ -29,7 +29,7 @@ import type { AscendantProperties } from '../types/influence';
 import type { PendingBeat } from '../types/ascendantBeat';
 import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
-import { computeCapability, computeTier } from './domainCapability';
+import { computeCapabilityPreRefit, computeTier } from './domainCapability';
 import { difficultyScaling } from './capabilityGrowth';
 import { emitTrace } from './traceBuffer';
 import {
@@ -92,7 +92,8 @@ export function accruePlayerReachPractice(
   const rank = ranked.indexOf(reach);
   if (rank < 0) return null; // off-domain: no accrual (plan §3.1)
 
-  const currentCap = computeCapability(graph, ascendantId, reach);
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const currentCap = computeCapabilityPreRefit(graph, ascendantId, reach);
   const diffScale = difficultyScaling(stepDifficulty0to1 * 100);
   const diminishing = Math.max(1 - currentCap * PLAYER_DIMINISHING_RETURNS_FACTOR, 0.1);
   const secondaryMult = rank >= 1 ? SECONDARY_REACH_PRACTICE_MULT : 1;
@@ -150,7 +151,8 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   const primarySphere: SphereName = props.sphereAlignment?.primary ?? 'order';
 
   for (const reach of reaches) {
-    const cap = computeCapability(graph, ascId, reach);
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    const cap = computeCapabilityPreRefit(graph, ascId, reach);
     const tier = computeTier(cap);
     const prev = snapshot[reach];
 
@@ -482,7 +484,8 @@ export function getAscendantProgress(state: GameState): {
   const practice = props.reachPractice ?? {};
   const pendingBeatId = state.ascendantBeats?.pending?.beatId ?? null;
   const reaches: AscendantReachProgress[] = ranked.map((reach, i) => {
-    const capability = computeCapability(graph, state.ascendantId, reach);
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    const capability = computeCapabilityPreRefit(graph, state.ascendantId, reach);
     return {
       reach,
       isPrimary: i === 0,

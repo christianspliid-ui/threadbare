@@ -56,7 +56,7 @@ import { FACTION_ENCOUNTER_TEMPLATES } from '../data/faction-encounter-content';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { getTrust } from './trustMechanics';
-import { computeCapability } from './domainCapability';
+import { computeCapabilityPreRefit } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import { TAVERN_SUBLOCATION_TYPE_ID } from './sublocation';
 import { isMonster } from './monsters/isMonster';
@@ -529,7 +529,8 @@ export function computeBondModifier(
 
   // No significant bond → stranger
   if (trust === 0) {
-    const eyeCap = computeCapability(graph, agentId, 'eye');
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    const eyeCap = computeCapabilityPreRefit(graph, agentId, 'eye');
     const curiosityBonus = eyeCap > STRANGER_CURIOSITY_THRESHOLD ? STRANGER_CURIOSITY_BONUS : 0;
     return STRANGER_MODIFIER + curiosityBonus + reputationShift;
   }

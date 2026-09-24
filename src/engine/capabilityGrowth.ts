@@ -34,7 +34,7 @@
 import type { WorldGraph } from './graph';
 import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { ReachDomain, DomainContributions } from '../types/traits';
-import { computeCapability, computeTier } from './domainCapability';
+import { computeCapabilityPreRefit, computeTier } from './domainCapability';
 import { experienceTraitId, legacyExperienceTraitId, findExistingTraitEdge } from './traitShape';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -162,7 +162,8 @@ export function applyEncounterGrowth(
   // Compute current state
   let previousCapability: number;
   try {
-    previousCapability = computeCapability(graph, agentId, domain);
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    previousCapability = computeCapabilityPreRefit(graph, agentId, domain);
   } catch {
     return zeroResult;
   }
@@ -259,7 +260,8 @@ export function applyEncounterGrowth(
   // Recompute capability after growth
   let newCapability: number;
   try {
-    newCapability = computeCapability(graph, agentId, domain);
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    newCapability = computeCapabilityPreRefit(graph, agentId, domain);
   } catch {
     newCapability = previousCapability;
   }

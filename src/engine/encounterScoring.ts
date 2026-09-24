@@ -52,7 +52,7 @@ import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import type { FundamentState } from '../types/worldSoul';
-import { computeCapability, computeTier } from './domainCapability';
+import { computeCapability, computeCapabilityPreRefit, computeTier } from './domainCapability';
 // Distance matrix removed — hex distance used for travel cost estimation
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
@@ -446,14 +446,16 @@ export function computeAnomalyDiscoveryBonus(
   let eyeCap: number;
   let veilCap: number;
   try {
-    eyeCap = computeCapability(graph, agentId, 'eye');
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    eyeCap = computeCapabilityPreRefit(graph, agentId, 'eye');
   } catch {
     eyeCap = 0;
   }
   if (eyeCap < ANOMALY_EYE_THRESHOLD) return 0;
 
   try {
-    veilCap = computeCapability(graph, agentId, 'veil');
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    veilCap = computeCapabilityPreRefit(graph, agentId, 'veil');
   } catch {
     veilCap = 0;
   }

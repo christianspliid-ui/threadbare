@@ -42,7 +42,7 @@ import { getFactionMembershipEdges } from './graphQueries';
 import { getDerivedMembershipRank } from './factionReputation';
 import type { LeverageHistoryEntry } from '../types/encounter';
 import { getTrust } from './trustMechanics';
-import { computeCapability } from './domainCapability';
+import { computeCapabilityPreRefit } from './domainCapability';
 import { reputationLeverageTerm } from './reputation';
 import { STRONG_BOND_THRESHOLD, FACTION_RANK_MAX } from '../data/agent-behavior-constants';
 import {
@@ -176,8 +176,10 @@ export function computeInitialLeverage(
   }
 
   // ─── Wealth advantage ────────────────────────────────────────────
-  const actorGold = computeCapability(graph, actorId, 'gold');
-  const targetGold = computeCapability(graph, targetId, 'gold');
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const actorGold = computeCapabilityPreRefit(graph, actorId, 'gold');
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const targetGold = computeCapabilityPreRefit(graph, targetId, 'gold');
   if (targetGold > 0 && actorGold > targetGold * LEVERAGE_WEALTH_RATIO) {
     leverage += LEVERAGE_WEALTH_BONUS;
     history.push({ stepIndex: -1, delta: LEVERAGE_WEALTH_BONUS, source: 'wealth_bonus' });
@@ -187,8 +189,10 @@ export function computeInitialLeverage(
   }
 
   // ─── Power advantage ─────────────────────────────────────────────
-  const actorIron = computeCapability(graph, actorId, 'iron');
-  const targetIron = computeCapability(graph, targetId, 'iron');
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const actorIron = computeCapabilityPreRefit(graph, actorId, 'iron');
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const targetIron = computeCapabilityPreRefit(graph, targetId, 'iron');
   if (actorIron > targetIron + LEVERAGE_POWER_GAP) {
     leverage += LEVERAGE_POWER_BONUS;
     history.push({ stepIndex: -1, delta: LEVERAGE_POWER_BONUS, source: 'power_bonus' });

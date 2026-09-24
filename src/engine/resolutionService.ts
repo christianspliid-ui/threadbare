@@ -72,14 +72,34 @@ export const PROBABILITY_CEILING = 0.95;
 /** Margin within which an outcome is classified as a near miss */
 export const NEAR_MISS_MARGIN = 5;
 
+/**
+ * Success chance when capability equals difficulty (THR-1581). `difficulty` reads
+ * "the proficiency this step demands", on capability's own 0–1 scale, so a mortal
+ * exactly as able as the step demands rolls this — *uncertain*: the player hesitates.
+ */
+export const ODDS_AT_PAR = 0.55;
+
+/**
+ * Points of chance per point of capability gap (THR-1581). Applies to
+ * `capability − difficulty` only; sphere, modifiers and nudges stay outside it, so a
+ * nudge card's +0.10 still means +10 points and every authored magnitude keeps its
+ * meaning.
+ */
+export const ODDS_GAIN = 1.25;
+
 // ─── Core Threshold Computation ────────────────────────────────────
 
 /**
  * Compute the resolution threshold from inputs.
  * This is the single source of truth for probability math.
  *
- * P = capability + sphereFactor - difficulty + modifiers + influenceNudge
+ * P = ODDS_AT_PAR + ODDS_GAIN × (capability − difficulty)
+ *     + sphereFactor + modifiers + influenceNudge
  * Clamped to [PROBABILITY_FLOOR, PROBABILITY_CEILING]
+ *
+ * THR-1581 (forecast window S3): the old `capability − difficulty` read 0% at par
+ * and only worked because the capability curve was saturated. Modifiers stay
+ * outside the gain.
  *
  * The clamp applies to the *sum*, never to the individual terms: an
  * `actionModifiers` of 0.8 is passed through as 0.8 (THR-827). Callers that want
@@ -94,7 +114,7 @@ export function computeResolutionThreshold(inputs: ResolutionInput): number {
   const mods = inputs.actionModifiers ?? 0;
   const nudge = inputs.influenceNudge ?? 0;
 
-  const raw = cap + sphere - diff + mods + nudge;
+  const raw = ODDS_AT_PAR + ODDS_GAIN * (cap - diff) + sphere + mods + nudge;
 
   // Fail-soft: NaN check
   if (Number.isNaN(raw)) return PROBABILITY_FLOOR;

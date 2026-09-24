@@ -22,6 +22,7 @@ import type {
 import type { GameState } from '../types/gameState';
 import { computeCapability } from './domainCapability';
 import { resolveContestedAction } from './resolution';
+import { computeResolutionThreshold } from './resolutionService';
 import { getGroupOf } from './groups/groupQueries';
 import { resolveGroupStep } from './groups/groupResolution';
 
@@ -239,13 +240,24 @@ export function resolveContestationPair(
     state.graph, defenderGroup?.actingMemberId ?? defender.actorId, defenderReach,
   );
 
-  // Compute probabilities (clamped 0.05-0.95)
-  const attackerProb = Math.min(0.95, Math.max(0.05,
-    attackerCap + (attackerGroup?.totalBonus ?? 0) - attackerStep.difficulty,
-  ));
-  const defenderProb = Math.min(0.95, Math.max(0.05,
-    defenderCap + (defenderGroup?.totalBonus ?? 0) - defenderStep.difficulty,
-  ));
+  // Compute probabilities through the one formula (THR-1581): the company assist
+  // is a modifier, so it stays outside the odds gain.
+  const attackerProb = computeResolutionThreshold({
+    actorId: attacker.actorId,
+    domain: attackerReach,
+    capability: attackerCap,
+    difficulty: attackerStep.difficulty,
+    sphereFactor: 0,
+    actionModifiers: attackerGroup?.totalBonus ?? 0,
+  });
+  const defenderProb = computeResolutionThreshold({
+    actorId: defender.actorId,
+    domain: defenderReach,
+    capability: defenderCap,
+    difficulty: defenderStep.difficulty,
+    sphereFactor: 0,
+    actionModifiers: defenderGroup?.totalBonus ?? 0,
+  });
 
   // Dual independent rolls
   const attackerRoll = Math.floor(rng() * 100) + 1;
