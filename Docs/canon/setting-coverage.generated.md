@@ -31,7 +31,7 @@ be dealt?", not "how many templates exist".
 
 | setting | iron | gold | shadow | veil | heart | eye | stone | star | **total** |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `rural` | 29 | 22 | 11 | 5 | 21 | 14 | 14 | 7 | **123** |
+| `rural` | 29 | 22 | 11 | 5 | 22 | 14 | 14 | 7 | **124** |
 | `urban` | 49 | 51 | 43 | 17 | 43 | 48 | 25 | 24 | **300** |
 | `stronghold` | 27 | 8 | 9 | 5 | 14 | 17 | 8 | 5 | **93** |
 | `sacred` | 7 | 9 | 4 | 17 | 12 | 8 | 6 | 24 | **87** |

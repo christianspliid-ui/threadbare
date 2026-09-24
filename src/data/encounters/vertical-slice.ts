@@ -2894,6 +2894,16 @@ const FAMILY_FORK: ActionStepBranch = {
   fallback: FAMILY_PASS_STEP,
 };
 
+/**
+ * The Swindled Family's cast (THR-1526): the wayside and rural defaults composed, as
+ * {@link CROSSROADS_SUPPORT_BUNDLE} composes its own. Keys are disjoint across the two
+ * classes; every spec is pre-seeded, so the bundle adds no one to the world.
+ */
+const FAMILY_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside,
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.rural,
+];
+
 export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.family,
   rarityTier: 2,
@@ -2919,6 +2929,10 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
   locationSubtypes: expandSettings(['wayside', 'rural']),
   // THR-1526: a seed target (it re-seeds itself) whose opening stands alone.
   drawable: true,
+  // THR-1526: the widened envelope spans two classes, so the setting-keyed default
+  // resolves to one of them (rural) and a wayside meeting lost its wayside cast. Both
+  // classes' defaults, composed — bind-only, so each binds only who is present.
+  supportBundle: FAMILY_SUPPORT_BUNDLE,
   traitVariants: [
     {
       // Warmth does not need persuading to stop.

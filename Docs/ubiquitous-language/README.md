@@ -109,6 +109,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[BOON](./Encounters.md#boon)** — consequence category: what they earned *and why*; absorbs PRIZE + growth chips
 - **[PATH](./Encounters.md#path)** — consequence category: a way that has opened; absorbs SEED; the one category with no magnitude
 - **[Encounter Seed](./Encounters.md#encounter-seed)** — a `PendingEncounterSeed` that matures into an encounter at a future tick
+- **[Drawable](./Encounters.md#drawable)** — whether the decision board may offer a template unprompted; `drawable: false` marks a seed-only sequel only its planter starts (THR-1526)
 - **[Hidden Mark](./Encounters.md#hidden-mark)** — a concealed seed attached to an agent; invisible until triggered
 - **[Encounter Awareness](./Encounters.md#encounter-awareness)** — hex-granular visibility; agent sees all encounters on hexes within awareness range
 - **[Court Position](./Encounters.md#court-position)** — the role an agent plays in an encounter's framing; affects scoring and prose

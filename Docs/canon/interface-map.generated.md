@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 113 |
+| 🟢 LIVE | 114 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 25 |
-| **Total** | **146** |
+| **Total** | **147** |
 
 ## Contracts by producing subsystem
 
@@ -179,6 +179,7 @@ remediation ticket or the build fails.
 | `requires-hold-gates-town-keeper-content` | A template carrying `requiresHold: { ofRealm: true }` is offered only to a mortal whose hold standing names the Realm whose ground the encounter sits on (THR-1448). Read in the filter beside `requiredReputationWith` with the same fail-open convention: an unresolvable template or an absent reader passes, because a gate that can only hide content must never empty a pool on a lookup miss. | module-export: `requiresHold`, `filterByPrerequisites`, `standingFor`, `groundRealmOf` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags`, `toContentQuery` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
+| `seed-only-sequels-never-drawn` | A sequel whose opening assumes its parent — a promise made, a family met, a word broken — is marked `drawable: false` on its template, and the decision board never offers it: only its planter (a seed, an appointment's kept or missed branch, a trigger, a debug spawn) starts it (THR-1526). The encounter cache build skips it at all four appends (`isDrawable`), the divine-vision delivery beats refuse it (`isDeliverableBranchingEncounter`), and the deprecated array-scored path carries the same one-line gate. Seed resolution never reads the flag, so a named sequel still resolves, and the template keeps its catalog membership and its envelope because the seed query and `eligibleAt` read both. Before this contract the Full Moon Reckoning fired from the board and told mortals who had given no word that they had broken it (THR-1524's firing census: the Reckoning 1 and the Swindler Found 16 board firings on seed 42 over 200 ticks, their parents 0). | function: `isDrawable`, `isDeliverableBranchingEncounter`, `drawable` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
 | `wheel-slot-card-face` | A `WheelSlot` is read as a `CardFaceModel` by `actionCardModel`, so the action card and the nudge card render the same primitive (THR-1002). Law 28: the registry row's rendering *is* this face. The slot carries the words — `crudType`, `reach`, `scaleWord`, `upkeepWord`, `forecastTier`, `templateId` — and the adapter chooses vocabulary for them; it never computes a fact of its own. Every numeral the retired card printed (cost badge, `{n} hex`, `{X}% risk`, the per-tick rate) now lives behind the designer-view line. | function: `actionCardModel`, `CardFaceModel` | Essence & Divine Economy | 🟢 LIVE | — |
@@ -819,10 +820,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Content Query*, *Content Object*, *Content Tag*
 - **Module:** `src/engine/contentQuery.ts`
-- **Production hits:** 11 total — 2 write, 4 read, 5 unclassified
+- **Production hits:** 12 total — 2 write, 4 read, 6 unclassified
 - **Write sites:** `src/engine/contentCatalogView.ts`, `src/engine/contentQuery.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/rewardPool.ts`
-- **Other hits:** `src/data/content-eval/undertakingContract.ts`, `src/engine/contentQueryBearer.ts`, `src/engine/encounterSeeding.ts`, `src/types/contentQuery.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/content-eval/undertakingContract.ts`, `src/engine/contentQueryBearer.ts`, `src/engine/encounterSeeding.ts`, `src/engine/seedOnlySequels.ts`, `src/types/contentQuery.ts` +1 more
 - **Verdict:** Verified 2026-09-13: THR-1487 slice 3. The shared-path test (src/engine/__tests__/contentQuerySharedPath.test.ts) runs the resolver and a frozen copy of the pre-change predicate over every shipped RewardPoolRecipe and asserts identical candidate sets - 14 arms green, and falsified by swapping the ALL-of tag rule for ANY-of, which reddens the corpus sweep with named divergences (encounter.forbidden_tome possession: legacy 5 vs resolver 32). The frozen predicate is a deliberate duplicate: getCandidateNodes now calls the resolver, so importing it would compare the resolver to itself. The condition pool is compared the same way at both tier caps and both tags. Coverage finding, recorded because it is the reason the gate needed generalising at all: the old sweep walked only the reward_draw effect, which is 1 recipe in the corpus, while the step route carries 481 - and widening to both surfaced 16 step-route recipes that promise a prize and draw nothing, grandfathered in CONTENT_QUERY_RETROFIT_PENDING with a ratchet that fails in both directions. THR-1496 repaired all 16, emptied the ratchet and deleted it together with the grandfathered report arm, so the gate is now simply fatal on both routes; it also added a direct assertion that every categoryWeights key is a real AttachmentCategory, a defect shape the empty-pool question cannot see (9 shipped sites, only 4 of them visible to the pool gate). Traces content.query_resolved / content.query_empty fire at reward_draw, step_reward_pool and condition_pool; window.__DEBUG.queryContent and the CLI query command answer the plan's worked example against a live world.
 
 ### `content-ref-opens-codex-overlay` — 🟢 LIVE
@@ -975,10 +976,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Content Query*, *Content Tag*, *Encounter*
 - **Module:** `src/engine/encounterSeeding.ts`
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
 - **Write sites:** `src/engine/encounterSeeding.ts`
 - **Read sites:** `src/engine/nudgeGrantLiveness.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-tags.ts`, `src/engine/contentQuery.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-tags.ts`, `src/engine/contentQuery.ts`, `src/engine/seedOnlySequels.ts` +1 more
 - **Verdict:** Verified 2026-09-12: THR-1488 slice 4. Seventeen family tags seated and applied to 78 templates by prefix, so every aliased family names exactly the set its prefix named (asserted as a superset-both-ways guard in encounterSeedLiveness.test.ts — the tag may be wider, as #delve became when encounter.delve_into_depths joined a family its id spelling could never reach, but never narrower). ENCOUNTER_FAMILY_TAGS rewrites the prefix form for one release; a prefix with no row falls through to the pre-change scan, so the 41 dead families behave exactly as before while being counted. The gate validateEncounterSeedRefs is fatal on a dead templateId and an empty query and advisory on a dead prefix; wired into check:encounter (which sweeps encounter.* only) and into a corpus-wide vitest over all 744 templates, because every one of the seven fatal findings lived OUTSIDE the encounter. prefix and the runner alone reported the corpus clean. Both fatal arms falsified on encounter.slice.bargain_at_crossroads and each failed by name in both the runner and the vitest, then reverted. The seven dead references were repaired onto family queries in the same pass: the Court's tip to the watch, its two district inquiries, and the courtier's off-books commission can now arrive for the first time.
 
 ### `encounter-timeline-to-incident-bundle` — 🟢 LIVE
@@ -1614,6 +1615,18 @@ exit
 - **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/data/action-technical-effects.ts`, `src/data/actionEffectsProse.ts`
 - **Verdict:** Verified 2026-07-23: THR-724: `beat.pool.invest.the_unveiled_eye` grants both ids; `__DEBUG.listUnreachableActions()` no longer lists them. Link 3 verified rather than assumed — `plant_secret` writes a `knows_secret_of` edge via the existing graph-executor case, and `reveal_secret` now routes through the resolution intercept so it applies real consequences instead of only flipping the `revealed` flag.
 
+### `seed-only-sequels-never-drawn` — 🟢 LIVE
+
+- **Intent:** A sequel whose opening assumes its parent — a promise made, a family met, a word broken — is marked `drawable: false` on its template, and the decision board never offers it: only its planter (a seed, an appointment's kept or missed branch, a trigger, a debug spawn) starts it (THR-1526). The encounter cache build skips it at all four appends (`isDrawable`), the divine-vision delivery beats refuse it (`isDeliverableBranchingEncounter`), and the deprecated array-scored path carries the same one-line gate. Seed resolution never reads the flag, so a named sequel still resolves, and the template keeps its catalog membership and its envelope because the seed query and `eligibleAt` read both. Before this contract the Full Moon Reckoning fired from the board and told mortals who had given no word that they had broken it (THR-1524's firing census: the Reckoning 1 and the Swindler Found 16 board firings on seed 42 over 200 ticks, their parents 0).
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Drawable*, *Encounter Seed*, *Appointment*
+- **Module:** `src/engine/encounterCache.ts`
+- **Production hits:** 17 total — 1 write, 3 read, 13 unclassified
+- **Write sites:** `src/data/encounters/vertical-slice.ts`
+- **Read sites:** `src/engine/deliveryBeatAdapter.ts`, `src/engine/encounterCache.ts`, `src/engine/unifiedCandidates.ts`
+- **Other hits:** `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts`, `src/data/encounter-content.ts` +8 more
+- **Verdict:** Verified 2026-09-24: THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.
+
 ### `seeded-opponent-survives-to-spawn` — 🟢 LIVE
 
 - **Intent:** A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse.
@@ -1749,10 +1762,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
 - **UL terms:** *Content Query*, *Undertaking*, *Encounter*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 14 total — 9 write, 2 read, 3 unclassified
+- **Production hits:** 15 total — 9 write, 2 read, 4 unclassified
 - **Write sites:** `src/data/strategic-packs/builderStrategicPack.ts`, `src/data/strategic-packs/courtStrategicPack.ts`, `src/data/strategic-packs/merchantStrategicPack.ts`, `src/data/strategic-packs/scholarStrategicPack.ts`, `src/data/strategic-packs/wandererStrategicPack.ts` +4 more
 - **Read sites:** `src/data/content-eval/undertakingContract.ts`, `src/engine/strategicActionLifecycle.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/content-eval/undertakingPackage.ts`, `src/data/strategic-action-constants.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/content-eval/undertakingPackage.ts`, `src/data/strategic-action-constants.ts`, `src/engine/seedOnlySequels.ts`
 - **Verdict:** Verified 2026-09-16: THR-1488 slice 4. All 35 catalyst sites across the seven packs migrated from literal lists to catalystQuery, each pack taking the family whose errands the work disturbs (builder → #fellowship_errand, court → #court_errand, merchant → #consortium_errand, scholar → #covenant_errand, wanderer → #delve, warlord → #company_errand, zealot → #temple_errand); zero catalystEncounterIds literals remain in the packs. undertakingWriteSet records the query as a catalyst entry, which was load-bearing rather than cosmetic: for several pack templates the catalyst list is the only write they declare, so migrating without recording would have flipped them to 'a work whose only product is prose' and reported a regression the migration did not cause. The new catalysts block is fatal on both operands. Falsified twice: restoring encounter_ruin_trap on strategic_chart_the_wilds produces the violation but the template is ratcheted, so the exit code stays 0 — which is the ratchet working and only half a proof; breaking the query on strategic_mount_expedition, which passes, turns check:undertaking -- --all from exit 0 to exit 1 with `catalysts: catalystQuery matches no content`. Both reverted; --all is green at 116 checked, 0 unlisted failures. RE-VERIFIED 2026-09-13 (THR-1489 slice 5): the contract stays LIVE — the path is wired and the gate is fatal on both operands — but the census measures the site UNREACHED on the live board. check:content-model-census at seed 42 / 200 ticks / medium reports undertaking_catalyst with 0 resolved and 0 empty, because UNDERTAKING_MODEL is 'cells' and a profile's templateIds are not walked under it: all 35 catalystQuery carriers are legacy-arm pack templates and zero of the 60 cell templates carry the field (THR-1497). So LIVE here means the wiring arrives, not that a player ever meets it. The catalyst_seeded live-proof claim is deliberately gated on the write set rather than asserted against a pack reached by a review lever, which would be a green check on an uncovered condition. RE-VERIFIED 2026-09-16 (THR-1497): the player meets it now. The catalyst sits on the cell — UNDERTAKING_CELL_CATALYSTS in undertaking-cells.ts, eleven cells the live board walks, each family chosen for what the work disturbs — and two defects in this contract's consumer were fixed with it: resolveSeedByQuery traced every seed at encounter_seed (undertaking_catalyst was in CONTENT_QUERY_SITES and emitted by nothing; now derived from the seed's sourceReactionId), and it read a Place's absent subtype instead of its Location's (now seedTargetSubtype). Measured on seed 42 / medium / 200 ticks with a durable per-tick probe: 14 catalyst seeds planted, 6 spawned an errand (tg.quest.pocket_run ×2, tg.quest.warehouse_raid, bf.quest.lay_foundation, bf.quest.repair_wall, mc.quest.siege_work); check:undertaking-live cell.create.network --seed 3 passes catalyst_seeded (tg.quest.fence_goods). The census row can still read 0/0 at 200 ticks because the 2000-entry ring evicts mid-run firings — the spawned action's spawnedFromSeedId, now stamped on every seed spawn, is the record that survives.
 
 ### `undertaking-checkpoint-events` — 🟢 LIVE

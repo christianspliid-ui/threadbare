@@ -150,6 +150,16 @@ An `[[Encounter Seed]]` bound to a **place** and a **due tick**, kept by the mor
 
 ---
 
+### Drawable
+
+**Aliases:** Board-drawable, Seed-only (for `drawable: false`)
+**Also see:** `[[Encounter Seed]]`, `[[Appointment]]`, `[[UnifiedActionTemplate]]`
+**Status:** canonical
+
+Whether **the decision board** may offer a template to a mortal unprompted — `UnifiedActionTemplate.drawable` (THR-1526). Absent or `true` is the default: the encounter cache registers the template wherever its envelope matches. `false` marks a **seed-only sequel**, one whose opening assumes its parent (a promise made, a family met, a word broken): it starts only when something *names* it — an [[Encounter Seed]] (by `templateId` or `query`), an [[Appointment]]'s kept or missed branch, a trigger, or a debug spawn. The cache build and the divine-vision delivery beats skip it; seed resolution does not. A seed-only sequel keeps its catalog membership and its envelope, because the seed query and `eligibleAt` read both. Unrelated to *Draw Together* (`Agents.md`) and to the reward and consequence draws — "draw" here means the board's unprompted offer.
+
+---
+
 ### Hidden Mark
 
 **Aliases:** Concealed Seed, Mark
