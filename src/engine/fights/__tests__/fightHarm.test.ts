@@ -510,9 +510,17 @@ describe('courage on the nerve step and momentum between steps, as named terms',
     expect(a.fightState!.momentum).toBe(FIGHT_CLASH_MOMENTUM.success);
     expect(momentumOn(a)).toBeCloseTo(FIGHT_CLASH_MOMENTUM.success!, 10);
 
+    // THR-1543 (FB7): a failing exchange draws a mid-fight event, and one that moves
+    // momentum (the footing gives, mud and blood) adds to the band's carry. The chain
+    // is the band's table plus whatever that event wrote — read off the event itself.
+    const complicationsBefore = a.stepComplications?.length ?? 0;
     a = runStep(state, a, tpl, 'failure');                           // clash 2
-    expect(a.fightState!.momentum).toBe(FIGHT_CLASH_MOMENTUM.failure);
-    expect(momentumOn(a)).toBeCloseTo(FIGHT_CLASH_MOMENTUM.failure!, 10);
+    const drawn = (a.stepComplications?.length ?? 0) > complicationsBefore ? a.stepComplications!.at(-1) : undefined;
+    const eventMomentum = (drawn?.effects ?? []).reduce(
+      (sum, e) => sum + (e.type === 'fight_momentum' ? e.delta : 0), 0,
+    );
+    expect(a.fightState!.momentum).toBeCloseTo(FIGHT_CLASH_MOMENTUM.failure! + eventMomentum, 10);
+    expect(momentumOn(a)).toBeCloseTo(FIGHT_CLASH_MOMENTUM.failure! + eventMomentum, 10);
 
     a = runStep(state, a, tpl, 'near_miss');                         // clash 3 (last)
     expect(a.fightState!.momentum).toBe(0);

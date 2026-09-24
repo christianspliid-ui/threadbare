@@ -16,11 +16,22 @@ import { getUnifiedTemplateById } from '../unified-action-templates';
 import { ADVENTURING_GUILD_DEFINITION } from '../faction-definitions';
 import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/contentInvariants';
 
+/**
+ * The five hunt templates THR-103 migrated. The shape checks below are theirs:
+ * THR-1543 added `fight.lair.confront` to this catalog, and a fight block
+ * deliberately differs (its steps continue weakened, its prize is its result, its
+ * ending chips are plan doc 4's), so it is held to the fight block's own rules —
+ * `fightBlock.test.ts`, `fightBlockFB7.test.ts` and the catalog-wide invariants —
+ * and to the structural and registry checks here.
+ */
+const MIGRATED_HUNT_TEMPLATES = MONSTER_ENCOUNTER_TEMPLATES.filter(t => !t.id.startsWith('fight.'));
+
 describe('monster-encounter-content (THR-103 migration)', () => {
   describe('MONSTER_ENCOUNTER_TEMPLATES', () => {
-    it('has the five expected templates', () => {
+    it('has the five migrated hunt templates, plus the standalone fight (THR-1543)', () => {
       const ids = MONSTER_ENCOUNTER_TEMPLATES.map(t => t.id).sort();
       expect(ids).toEqual([
+        'fight.lair.confront',
         'monster.encounter.ambush',
         'monster.encounter.horde_raid',
         'monster.encounter.lair_defense',
@@ -35,7 +46,7 @@ describe('monster-encounter-content (THR-103 migration)', () => {
     });
 
     it('every template has duration {min,max} and difficulty 0..1 on every step', () => {
-      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+      for (const t of MIGRATED_HUNT_TEMPLATES) {
         for (const step of t.steps) {
           expect(step.duration, `${t.id} step duration`).toMatchObject({
             min: expect.any(Number),
@@ -48,14 +59,14 @@ describe('monster-encounter-content (THR-103 migration)', () => {
     });
 
     it('every template final step has failBehavior fail_action', () => {
-      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+      for (const t of MIGRATED_HUNT_TEMPLATES) {
         const lastStep = t.steps[t.steps.length - 1];
         expect(lastStep.failBehavior, `${t.id} final step failBehavior`).toBe('fail_action');
       }
     });
 
     it('every template has aftermathConfig with a fallback', () => {
-      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+      for (const t of MIGRATED_HUNT_TEMPLATES) {
         expect(t.aftermathConfig, `${t.id} aftermathConfig`).toBeDefined();
         expect(t.aftermathConfig?.fallback, `${t.id} aftermathConfig.fallback`).toBeDefined();
       }
@@ -63,7 +74,7 @@ describe('monster-encounter-content (THR-103 migration)', () => {
 
     it('every template authors at least one aftermath reaction with a typed effect', () => {
       // Hard requirement: contextual aftermath, not just generic reward pools.
-      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+      for (const t of MIGRATED_HUNT_TEMPLATES) {
         const reactions = t.aftermathConfig?.fallback.reactions ?? [];
         expect(reactions.length, `${t.id} should author at least one aftermath reaction`).toBeGreaterThan(0);
         const hasTypedEffect = reactions.some(r =>
@@ -80,7 +91,7 @@ describe('monster-encounter-content (THR-103 migration)', () => {
     });
 
     it('every step has narrativeTemplate prose at least 40 chars (no placeholder stubs)', () => {
-      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+      for (const t of MIGRATED_HUNT_TEMPLATES) {
         for (const step of t.steps) {
           expect(step.narrativeTemplate?.length ?? 0, `${t.id} step narrativeTemplate`).toBeGreaterThan(40);
         }
@@ -88,7 +99,7 @@ describe('monster-encounter-content (THR-103 migration)', () => {
     });
 
     it('every step has authored success and failure afterimages', () => {
-      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+      for (const t of MIGRATED_HUNT_TEMPLATES) {
         for (const step of t.steps) {
           expect(step.successAfterimage?.length ?? 0, `${t.id} step successAfterimage`).toBeGreaterThan(20);
           expect(step.failureAfterimage?.length ?? 0, `${t.id} step failureAfterimage`).toBeGreaterThan(20);
@@ -97,7 +108,7 @@ describe('monster-encounter-content (THR-103 migration)', () => {
     });
 
     it('every narrative field uses {name} enrichment placeholder', () => {
-      for (const t of MONSTER_ENCOUNTER_TEMPLATES) {
+      for (const t of MIGRATED_HUNT_TEMPLATES) {
         for (const step of t.steps) {
           const fields = [step.narrativeTemplate, step.successAfterimage, step.failureAfterimage].filter(
             (s): s is string => typeof s === 'string',
