@@ -4418,3 +4418,35 @@ Inspect: `__DEBUG.spawnFight(target, { clockFilled?, outcome?, fighterRaw?, figh
 `getFightState(actionId)`, `inspectOpponentCard(id)`, `getFightForecastCheck(actionId, cardIds?)`;
 CLI `spawn fight <agent|@hero> --target <actor>`; `npm run calibrate:fights` (400 fights against
 THR-1531's Major elite row).
+
+**Duels: when both sides are mortals, both roll (Duels E1, THR-1556).** Plan doc
+`Docs/plans/2026-09-23-mortal-duels.md` §1–4. What an author can now do:
+
+- **Write a duel with `fightBlock({ mode: 'agent' })`.** The helper stamps `fightMode: 'agent'`
+  on every step and uses the duel afterimages (`FIGHT_DUEL_AFTERIMAGES`: *they trade cuts*, *gets
+  inside the guard*). The default `'npc'` stamps nothing, so every existing block is unchanged.
+  Against a monster (a node carrying `monsterState`) an agent-mode block still fights the card in
+  NPC mode, so a beast's persistent clock is never split.
+- **The opponent side is engine logic, never authored.** On each duel step the opponent rolls too:
+  `rollOpponentSide` (`src/engine/fights/opposedRoll.ts`) resolves a transient step with the
+  opponent as actor, priced from the *fighter's* derived card, on its own seeded stream
+  (`DUEL_OPPONENT_STREAM_SALT`). Everything a fighter brings works for the opponent: its standing
+  modifiers (an `in_combat` charm), its courage on the nerve step, its momentum, its advantages
+  (an old wound against the fighter, a secret, a favour, its company), its harm (with The First's
+  floor), its band conditions and its effect events (the opponent's items react with the fighter as
+  the counterpart). A `fight_clock` effect *against the fighter* lands in the fighter's node
+  mailbox and is drained into `fightState.fighterClockNow`. The god's hand leans only on the fighter.
+- **Key the aftermath on `fight:<result>`, read from the actor's side.** `overcome` covers every
+  way the opponent lost; `fightState.opponentLoss` (`clock` / `struck_down` / `yielded` /
+  `routed`) says which. A duel never reaches `bargained` or `driven_off` (temper is NPC-mode
+  only). The faces (spared, slain, mauled) come with E2 through plan doc 1's writers.
+- **The first duel template, `fight.duel.grudge`** ("Old Blood",
+  `src/data/encounters/fight-duel-grudge.ts`), registered in the new `FIGHT_ENCOUNTER_TEMPLATES`
+  (`src/data/fights/fight-templates.ts`), spread into `UNIFIED_ACTION_TEMPLATES` and searched by
+  `getAnyEncounterById` — so a duel is archived as a chapter. Spawn-only until the grudge trigger (E3).
+
+Inspect: `__DEBUG.spawnDuel(a, b, { courtPosition? })` (moves `b` to `a`, stages the duel open),
+`getFightState(actionId)` (`fightMode`, `fighterClockSize` / `fighterClockNow`, `opponentBands`,
+`opponentLoss`, both sides' forks with `side`); CLI `spawn duel <a> --with <b>`; traces `fight.step`
+(`opponentBand`, `opponentProbability`), `fight.fork` (`side`), `fight.end` (`opponentLoss`);
+`npm run calibrate:duels` (400 duels against THR-1264's row).
