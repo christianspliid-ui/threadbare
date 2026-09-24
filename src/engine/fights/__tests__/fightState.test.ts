@@ -549,7 +549,8 @@ describe('the result memory sits at fightResultIndex — no step owns it', () =>
     a = runStep(state, a, tpl, 'success_at_cost'); // lands one, takes one: wounding
     a = runStep(state, a, tpl, 'success');
     expect(a.fightState).toMatchObject({ result: 'overcome', wounds: 1 });
-    const records = a.stepProseHistory ?? [];
+    // `stepProseHistory` is typed `readonly unknown[]` on the action; the records carry index + choiceId.
+    const records = (a.stepProseHistory ?? []) as ReadonlyArray<{ index?: number; choiceId?: string }>;
     expect(records.find((r) => r.index === 0)?.choiceId).toBe('steady_hand');
     expect(records.find((r) => r.index === 1)?.choiceId).toBe('press_on');
     expect(a.choiceHistory!.map((m) => m.choiceId)).toEqual(['steady_hand', 'press_on', 'fight:overcome']);

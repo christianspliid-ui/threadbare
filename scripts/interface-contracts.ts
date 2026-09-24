@@ -4129,6 +4129,47 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.",
     },
   },
+
+  // ── Physical Conflict — the fight block (THR-1538, plan 2026-09-23-fight-block §4–6) ──
+  // Two rows the plan's Interface impact table assigns to FB2. No `verifiedLive`:
+  // no shipped template carries a fight block until FB7, so the evidence today is
+  // `src/engine/fights/__tests__/fightState.test.ts` alone — UNVERIFIED-OK is honest.
+  {
+    id: 'fight-writes-opponent-clock',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "Every blow a fighter lands fills the opponent's clock, and the next fight reads where it was left — a monster worn down by one hero is closer to falling for the next, recovering only with time.",
+    ulTerms: ['Fight Clock'],
+    // A monster's clock is persistent (`monsterState` on its node, minted by plan doc 3's M1);
+    // a mortal's is per-fight and crosses between fights only through the mailbox prop.
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['advanceFightClock', 'monsterState', 'FIGHT_CLOCK_MAILBOX_PROP'],
+      module: 'src/engine/fights/fightClock.ts',
+    },
+    writeSites: ['src/engine/fights/fightClock.ts'],
+    readSites: ['src/engine/fights/opponentCard.ts', 'src/engine/unifiedActionResolution.ts'],
+  },
+  {
+    id: 'fight-result-keys-aftermath-variants',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'How a fight ended — overcome, routed, struck down, broke off — picks the ending the player reads, through the same choice memory an authored fork uses, without any step owning the slot.',
+    ulTerms: ['Fight Result'],
+    // The result memory sits at `fightResultIndex(steps)` (one past the last step), so no
+    // `branchOnStep` fixture on a real step can collide with it.
+    mechanism: {
+      kind: 'function',
+      symbols: ['withFightResultMemory', 'fightResultIndex'],
+      module: 'src/engine/fights/fightState.ts',
+    },
+    // The read is `finalizeFightEnd` (fightOutcome.ts), which stamps the memory before
+    // `resolveAftermathVariant` reads `choiceHistory` in unifiedActionResolution.ts.
+    writeSites: ['src/engine/fights/fightState.ts'],
+    readSites: ['src/engine/fights/fightOutcome.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
