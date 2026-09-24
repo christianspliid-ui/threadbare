@@ -26,6 +26,13 @@ import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/
  */
 const MIGRATED_HUNT_TEMPLATES = MONSTER_ENCOUNTER_TEMPLATES.filter(t => !t.id.startsWith('fight.'));
 
+/**
+ * THR-1545 rewrote `monster.hunt.named_elite` so its climax is a fight block. Its
+ * fight steps follow the block's rules (terminal, continue weakened, default band
+ * afterimages), so the legacy step-shape checks below apply to its other steps only.
+ */
+const isFightStep = (step: { fightRole?: unknown }): boolean => step.fightRole !== undefined;
+
 describe('monster-encounter-content (THR-103 migration)', () => {
   describe('MONSTER_ENCOUNTER_TEMPLATES', () => {
     it('has the five migrated hunt templates, plus the standalone fight (THR-1543)', () => {
@@ -61,6 +68,7 @@ describe('monster-encounter-content (THR-103 migration)', () => {
     it('every template final step has failBehavior fail_action', () => {
       for (const t of MIGRATED_HUNT_TEMPLATES) {
         const lastStep = t.steps[t.steps.length - 1];
+        if (isFightStep(lastStep)) continue; // the fight block is terminal and continues weakened
         expect(lastStep.failBehavior, `${t.id} final step failBehavior`).toBe('fail_action');
       }
     });
@@ -101,6 +109,7 @@ describe('monster-encounter-content (THR-103 migration)', () => {
     it('every step has authored success and failure afterimages', () => {
       for (const t of MIGRATED_HUNT_TEMPLATES) {
         for (const step of t.steps) {
+          if (isFightStep(step)) continue; // fight steps carry the block's default band lines
           expect(step.successAfterimage?.length ?? 0, `${t.id} step successAfterimage`).toBeGreaterThan(20);
           expect(step.failureAfterimage?.length ?? 0, `${t.id} step failureAfterimage`).toBeGreaterThan(20);
         }

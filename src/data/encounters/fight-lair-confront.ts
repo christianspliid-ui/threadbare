@@ -30,9 +30,12 @@ const STEPS = fightBlock({
   // own cards into every exchange, scored for a scene of strength and danger.
   deal: { count: 4, tags: ['might', 'peril'] },
   nerve: {
+    // THR-1545: the family-keyed opening. `{target:family}` names what kind of creature
+    // waits inside (the family's card line), and the whole sentence drops out for a
+    // target that is not a monster.
     narrativeTemplate:
       '{name} stands at the mouth of the den near {location}. Inside, {target} has heard them, '
-      + 'and is waiting.',
+      + 'and is waiting.{?target_has_family} It is {target:family}.{/target_has_family}',
     purposeLine: 'Stand your ground',
   },
   clashes: [

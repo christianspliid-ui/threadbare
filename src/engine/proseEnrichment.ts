@@ -11,6 +11,8 @@
  *   {ally:strongest}    → strongest ally name, or fallback
  *   {them}/{they}/{s}   → gendered pronouns (default: they/them)
  *   {location}          → current location name
+ *   {target:family}     → a monster target's family card line (THR-1545); strips
+ *                         for any other target
  *   {target:place}      → the place the scene is about (seeded: the inherited
  *                         target; organic: the place the scene stands in), or
  *                         the current location when the target is not a place
@@ -38,6 +40,8 @@ import type { ContextFragmentSet } from '../types/unifiedAction';
 import { resolveFragment, type BoundFragmentAxes } from './fragmentResolution';
 import { settingClassForSubtype } from '../data/settingClasses';
 import { locationTypeFromProperties } from './encounterCache';
+import { MONSTER_FAMILIES } from '../data/monster-families';
+import type { MonsterFamilyId } from '../types/monster';
 import { ALLY_SENTIMENT_THRESHOLD, ENEMY_SENTIMENT_THRESHOLD } from '../data/effect-constants';
 import { FACTION_RANK_SENIOR } from '../data/agent-behavior-constants';
 import {
@@ -146,6 +150,11 @@ export interface SceneTargetContext {
   factionName?: string;
   /** Actor→target relation from the outgoing `relates_to` sentiment; agent-kind only. */
   relation?: 'ally' | 'rival' | 'stranger';
+  /**
+   * THR-1545 — a monster target's family card line (`MONSTER_FAMILIES[family].cardLine`),
+   * read by `{target:family}`. Agent-kind targets carrying a `monsterState` only.
+   */
+  family?: string;
 }
 
 /**
@@ -389,7 +398,14 @@ export function resolveSceneTargetContext(
     else if (bond.sentiment <= ENEMY_SENTIMENT_THRESHOLD) relation = 'rival';
   }
 
-  return { id: targetId, kind, name: node.name ?? 'the other party', pronouns, factionName, relation };
+  // THR-1545: a lair's monster carries its family card line for `{target:family}`.
+  const familyId = (node.properties?.monsterState as { family?: string } | undefined)?.family;
+  const family = familyId ? MONSTER_FAMILIES[familyId as MonsterFamilyId]?.cardLine : undefined;
+
+  return {
+    id: targetId, kind, name: node.name ?? 'the other party', pronouns, factionName, relation,
+    ...(family ? { family } : {}),
+  };
 }
 
 /**
@@ -757,6 +773,10 @@ export function enrichProse(
     /\{target:place\}/g,
     tgt?.kind === 'location' ? tgt.name : ctx.currentLocationName,
   );
+  // THR-1545 — `{target:family}` is a monster target's family card line ("a beast of claw
+  // and hunger"). Any other target has none, and the token strips: a sentence using it
+  // must read cleanly without it.
+  result = result.replace(/\{target:family\}/g, tgt?.family ?? '');
   // Residual strip: unknown {target:*} tokens never leak (matches only the colon form).
   result = result.replace(/\{target:[^}]+\}/g, '');
   result = result.replace(/\{target\}/g, tgt?.name ?? 'the other party');
@@ -923,6 +943,9 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     target_is_ally: ctx.target?.relation === 'ally',
     target_is_rival: ctx.target?.relation === 'rival',
     target_is_stranger: ctx.target?.relation === 'stranger',
+    // THR-1545: whether `{target:family}` has a line to say — so a sentence built on it
+    // can drop out whole for a target that is not a monster.
+    target_has_family: ctx.target?.family != null,
   };
 
   // Intelligence conditionals (THR-113) — {?knows_<category>} / {?no_<category>}.

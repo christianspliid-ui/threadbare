@@ -2405,6 +2405,16 @@ export interface UnifiedActionTemplate {
    */
   readonly requiresOpposingBand?: boolean;
   /**
+   * Only drawable where a living lair monster stands (THR-1545, monsters plan doc §4).
+   *
+   * The draw location, resolved to its outer tier, must be a lair whose
+   * `namedEliteId` names a node that `isMonster` and is not deceased. A hunt that
+   * fights a named beast is not offered where there is no beast to fight. Like
+   * `requiresOpposingBand`, the gate can only hide content. Seeds by `templateId`
+   * skip the draw filters; they carry the beast through `inheritContext` instead.
+   */
+  readonly requiresLiveMonster?: boolean;
+  /**
    * A decisive loss in a group contest on this template never kills (THR-731).
    *
    * The casualty roll is otherwise unconditional on a decisive loss, which would

@@ -6,7 +6,8 @@
  *   1. Awareness + Faction — distance-limited visibility + faction network intel
  *   2. Visibility — visibleTo filter (faction/agent/archetype/culture gating)
  *   3. Prerequisites — chains, traits, faction joins, and actor eligibility
- *      (group-exclusive `minGroupMembers`, confrontation `requiresOpposingBand`)
+ *      (group-exclusive `minGroupMembers`, confrontation `requiresOpposingBand`,
+ *      the lair-monster hunt's `requiresLiveMonster`)
  *   4. Threat — courage/capability vs threat-rating tolerance check
  *   5. Performance Cap — cap at MAX_SCORED_CANDIDATES with diversity floor
  *
@@ -49,6 +50,7 @@ import type { ReachDomain, TraitDefinitionProperties } from '../types/traits';
 import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { livingGroupMemberCount } from './groups/groupQueries';
 import { hasOpposingBand } from './groups/bandOpposition';
+import { hasLiveLairMonsterAt } from './monsters/liveMonster';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import type { BearerTraitRefs } from './traitRefIndex';
@@ -341,6 +343,11 @@ export function filterByPrerequisites(
     // Confrontation gate: an encounter about fighting a specific band is not
     // offered when no band is standing here.
     if (template?.requiresOpposingBand && !bandPresent()) continue;
+    // Monster gate (THR-1545): a hunt that fights a lair's named beast is offered
+    // only where a living one stands. Keyed on the entry's location, not the agent,
+    // so it covers the Adventurers' Guild's quest entries too (built at the member's
+    // own location): the Guild's offer is the hunt in front of you.
+    if (template?.requiresLiveMonster && !hasLiveLairMonsterAt(graph, entry.locationId)) continue;
     if (template?.requiredTraits && template.requiredTraits.length > 0) {
       // THR-786: one shared resolver, ANY-match on trait refs (node id, short id,
       // display name, tag). `every()` across the declared predicates is unchanged —
