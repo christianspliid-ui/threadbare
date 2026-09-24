@@ -63,14 +63,22 @@ const TRANSFORM_DEFAULT_PROB = 1.0;
 // ═══════════════════════════════════════════════════════════════════
 
 export type EffectEvent =
-  | { type: 'encounter_outcome'; reach: ReachDomain; success: boolean }
+  // THR-1541 (fight block FB5, plan doc §9) — `combat` marks a fight exchange. Stack
+  // classification never sees the predicate context, so a clash whose reach was
+  // swapped off Iron (a Soulfire-style iron→star exchange) still stacks
+  // `combat_success` / `combat_failure` only because the event says so.
+  | { type: 'encounter_outcome'; reach: ReachDomain; success: boolean; combat?: boolean }
   | { type: 'damaged'; amount: number }
   | { type: 'healed'; amount: number }
   | { type: 'entered_hex'; hex: { col: number; row: number } }
   | { type: 'combat_started' }
   | { type: 'combat_ended' }
   | { type: 'rest' }
-  | { type: 'doom_threshold'; stage: number };
+  | { type: 'doom_threshold'; stage: number }
+  // THR-1541 (FB5) — a fight clash landed on this agent: reactive `attacked`.
+  | { type: 'attacked' }
+  // THR-1541 (FB5) — this agent overcame their fight's opponent: stack `on_kill`.
+  | { type: 'opponent_overcome' };
 
 // ═══════════════════════════════════════════════════════════════════
 // EffectEventResult
@@ -111,11 +119,12 @@ function getStackTriggers(event: EffectEvent): StackTrigger[] {
   switch (event.type) {
     case 'encounter_outcome': {
       const triggers: StackTrigger[] = ['any_encounter'];
+      const combat = event.combat === true || COMBAT_REACHES.has(event.reach);
       if (event.success) {
-        if (COMBAT_REACHES.has(event.reach)) triggers.push('combat_success');
+        if (combat) triggers.push('combat_success');
         if (SOCIAL_REACHES.has(event.reach)) triggers.push('social_success');
       } else {
-        if (COMBAT_REACHES.has(event.reach)) triggers.push('combat_failure');
+        if (combat) triggers.push('combat_failure');
       }
       return triggers;
     }
@@ -123,6 +132,8 @@ function getStackTriggers(event: EffectEvent): StackTrigger[] {
       return ['on_damaged'];
     case 'healed':
       return ['on_heal'];
+    case 'opponent_overcome':
+      return ['on_kill'];
     default:
       return [];
   }
@@ -137,6 +148,7 @@ function getReactiveTrigger(event: EffectEvent): ReactiveTrigger | null {
     case 'healed':        return 'healed';
     case 'entered_hex':   return 'entered_hex';
     case 'combat_started': return 'encounter_started';
+    case 'attacked':      return 'attacked';
     default:              return null;
   }
 }

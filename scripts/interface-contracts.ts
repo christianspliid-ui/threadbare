@@ -4237,6 +4237,28 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/encounterAftermath.ts'],
     readSites: ['src/engine/conditionDecay.ts'],
   },
+  // ── FB5 (THR-1541, plan §9) — the plan's Interface impact row "fight → effect
+  // events" (add). No `verifiedLive`, for the FB2 rows' reason: no shipped template
+  // carries a fight block until FB7; the evidence today is
+  // `src/engine/fights/__tests__/fightEvents.test.ts`.
+  {
+    id: 'fight-raises-effect-events',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Effects & Conditions',
+    intent:
+      'A fight is where gear and powers happen: a thorned hide bites whoever lands a blow on it, a blade grows keener with each exchange won, a trophy charm counts the kills, and a beast\'s roar at the start of a fight changes the first exchange.',
+    ulTerms: ['Fight'],
+    // One raise per moment (combat_started, each step's encounter_outcome with
+    // `combat: true`, a landing clash's attacked + damaged, opponent_overcome,
+    // combat_ended), each with the other side as the reactive's target.
+    mechanism: {
+      kind: 'function',
+      symbols: ['raiseEffectEvent', 'raiseFightStarted', 'raiseFightStepOutcome', 'raiseFightClashLanded', 'raiseFightOvercome', 'raiseFightEnded'],
+      module: 'src/engine/fights/fightEvents.ts',
+    },
+    writeSites: ['src/engine/fights/fightEvents.ts'],
+    readSites: ['src/engine/effects/effectEventDispatch.ts', 'src/engine/effects/effectEvents.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

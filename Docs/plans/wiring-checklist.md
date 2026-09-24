@@ -2628,3 +2628,12 @@ Plan: `Docs/plans/2026-09-23-fight-block.md` §8, §5 (precedence), §12 (quarte
 | `types/traces/fight-traces.ts` (`FightForkTrace`) · `types/trace.ts` (`fight.fork` in the THR-928 trio) · `data/fight-constants.ts` (`FIGHT_TEMPER_CLOCK_FRACTION`, `FIGHT_CONCESSION_BANDS`, `FIGHT_CONCESSION_AXIS`, `FIGHT_BARGAIN_AXIS`, `FIGHT_TEMPER_SHOWN_PROP`) | — | — | — | — | — |
 
 **Declared, not yet reached:** `resolveQuarterOffer` has no production caller until FB7 (THR-1543) wires the `fight_offer_quarter` complication to it. `monsterState.temperShown` is written only on an opponent carrying `monsterState` (plan doc 3's M1). The lair card that reads it is plan doc 4's.
+
+## Fight events — fight block FB5 (THR-1541)
+
+Plan: `Docs/plans/2026-09-23-fight-block.md` §9. A fight raises effect events through the existing `raiseEffectEvent` dispatcher, so reactive, stacking, `until_event` and `transform` effects act in fights. There is no new phase, node type, edge type or component. No shipped template carries `fightRole` until FB7, so every live step is byte-identical. The one road-wide change: reactive executions now receive the raise's `counterpartId` as `ExecutionContext.targetId`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/fights/fightEvents.ts` (new: `raiseFightStarted`, `raiseFightStepOutcome`, `raiseFightClashLanded`, `raiseFightOvercome`, `raiseFightEnded`) | inside the fight handler (`landFightBand`, unified-action progress), at step (2) of the clock-full check; `combat_ended` after `finalizeFightEnd` on both routes | — (plan doc 4) | `effectStates` (stacks, cooldowns, expiries) and the graph (reactive executions) | `effect.event_raised` (sites `fight_start` / `fight_step` / `fight_clash` / `fight_overcome` / `fight_end`) | trace viewer |
+| `engine/effects/effectEvents.ts` (`encounter_outcome.combat`, `attacked`, `opponent_overcome`) · `engine/effects/effectEventDispatch.ts` (fight sites; `counterpartId` → `targetId`; `encounterType`) · `data/fight-constants.ts` (`FIGHT_TRADED_BLOW_BANDS`) | every raise site | — | — | — | — |

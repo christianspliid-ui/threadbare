@@ -201,7 +201,7 @@ import {
   fightStateForNoRollEnd,
 } from './fights/fightState';
 import { finalizeFightEnd } from './fights/fightOutcome';
-import { raiseEffectEvent } from './effects/effectEventDispatch';
+import { raiseFightEnded } from './fights/fightEvents';
 import type { ReachDomain } from '../types/traits';
 import type { FightStepTrace } from '../types/traces/fight-traces';
 import { resolveToParentLocation } from './sublocationShape';
@@ -1882,6 +1882,8 @@ export function executeStepResult(
   let fightAction = fightRoleOf(fightStepDef)
     ? applyFightStepResult(state, action, template, fightStepDef, outcome, tick, {
       difficulty: resolutionStats?.difficulty ?? fightStepDef.difficulty,
+      // THR-1541 — the fight events raise the step's outcome on its resolved reach.
+      reach: resolutionStats?.reach ?? fightStepDef.reach,
       rng,
       handNudges: composeDealtStepFromState(fightStepDef, state).step.nudges,
     })
@@ -2029,6 +2031,9 @@ export function executeStepResult(
     }, true);
     finalAction = ended.action;
     events.push(...ended.events);
+    // THR-1541 (plan doc §9) — a rolled fight always raised `combat_started` at its
+    // first step, so its end is raised for both sides, whatever the result.
+    raiseFightEnded(state, action.actorId, finalAction.fightState?.opponentId ?? null, rng);
   }
 
   // Partial_progress complication: give the next step a head start (THR-119).
@@ -2636,16 +2641,11 @@ function executeFightNoRollEnd(
   finalAction = ended.action;
   events.push(...ended.events);
 
-  // A fight already under way ends for both sides. (Its start is raised by FB5,
-  // THR-1541, which also raises `combat_ended` on the rolled route.)
+  // A fight already under way ends for both sides: its `combat_started` was raised
+  // at its first rolled step (THR-1541). A fight that ends before any roll never
+  // started, so it raises no end either.
   if (midFight) {
-    const opponentId = finalAction.fightState?.opponentId ?? null;
-    for (const [agentId, counterpartId] of [[action.actorId, opponentId], [opponentId, action.actorId]] as const) {
-      if (!agentId) continue;
-      raiseEffectEvent(state, agentId, { type: 'combat_ended' }, {
-        site: 'fight_end', rng, ...(counterpartId ? { counterpartId } : {}),
-      });
-    }
+    raiseFightEnded(state, action.actorId, finalAction.fightState?.opponentId ?? null, rng);
   }
 
   recordResolvedActionTelemetry(action, finalAction, template, tick, runtime);
