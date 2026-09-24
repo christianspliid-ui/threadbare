@@ -1561,6 +1561,28 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
 
+  // ── The forecast is the roll (THR-1579, forecast window S2) ───────────────
+  {
+    id: 'planner-forecast-equals-roll',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A mortal chooses what to attempt by forecasting its odds, and the forecast is the number the dice use. The planner (`estimateStepProbability`, `forecastStepProbabilities`) forecasts every cache-entry step through `forecastActionAtScale` / `scaledStepProbability` at the template\'s `scale` — the same scale offset, difficulty cap and post-roll floor `resolveStepCore` applies — and the cache stores authored difficulty, since the roll never applies the late-game or danger multipliers (`PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false`). Only what a mortal cannot foresee (a god\'s nudges, a company assist, push/resist) sits outside it; standing modifiers join both sides when THR-1535 puts them in the roll.',
+    ulTerms: ['Domain Capability', 'UnifiedActionTemplate', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['forecastActionAtScale', 'scaledStepProbability', 'applyScaleDifficultyAdjust'],
+      module: 'src/engine/scaledForecast.ts',
+    },
+    writeSites: ['src/engine/resolutionScaleAdjust.ts', 'src/engine/stepResolutionCore.ts', 'src/engine/encounterCache.ts'],
+    readSites: ['src/engine/plannerForecast.ts', 'src/engine/encounterScoring.ts'],
+    verifiedLive: {
+      date: '2026-09-24',
+      evidence:
+        'THR-1579: `plannerForecastParity.test.ts` builds real cache entries (`EncounterCacheManager.buildFullCache` over ten location kinds) and, for a novice, a journeyman and a specialist, compares the planner\'s step probability against `previewStepProbability` — the roll\'s own derivation run dry — on 1,470 steps across local, regional and cosmic scale: equal to 9 decimal places on every step (the plan\'s KPI is mean ≤ `KPI_FORECAST_PARITY_MAX` 0.02), and the expected-utility path within one d100 point. Before the fix the plan\'s named case (capability 0.55, local, d 0.45) forecast 0.10 and rolled 0.65. The same file pins the engagement forecast `F` as the exact product of per-step survival (critical failure always ends; plain failure only on `fail_action`), carried on `ScoredCandidate` and the `encounter_scoring` trace.',
+    },
+  },
+
   // ── Target-derived action price (THR-1073) ────────────────────────────────
   {
     id: 'authored-tier-ramp-target-scaled-price',

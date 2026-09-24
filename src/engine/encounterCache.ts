@@ -22,7 +22,7 @@
 
 import type { ReachDomain } from '../types/traits';
 import type { ThreatRating, EncounterType } from '../types/encounter';
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ActionScale, StepFailBehavior, UnifiedActionTemplate } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
 import type { ValuePair, MotivationPoles } from '../types/agent';
 import type { HexTile, SphereName } from '../types/index';
@@ -60,6 +60,7 @@ import {
   EARLY_GAME_THRESHOLD,
   MID_GAME_THRESHOLD,
   DIFFICULTY_TIER_MULTIPLIERS,
+  PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED,
 } from '../data/agent-behavior-constants';
 
 // ─── Difficulty Tier ────────────────────────────────────────────
@@ -136,6 +137,34 @@ export interface EncounterCacheEntry {
   /** Normalized 0..1 difficulty for each step, matching the resolver contract. */
   stepDifficulties: number[];
   stepReaches: ReachDomain[];
+  /**
+   * THR-1579 — the template's scale, so the planner forecasts each step through
+   * the same scale offset and floor the roll applies (`forecastActionAtScale`).
+   * Optional: an entry without it forecasts as `'regional'`, the core's default.
+   */
+  scale?: ActionScale;
+  /**
+   * THR-1579 — each step's `failBehavior`, parallel to `stepDifficulties`. The
+   * engagement forecast `F` reads it: only a `fail_action` failure (or any
+   * critical failure) ends the action. Optional: absent reads every step as
+   * `continue_weakened`, so only a critical failure ends it.
+   */
+  stepFailBehaviors?: StepFailBehavior[];
+}
+
+/** THR-1579 — each step's fail behaviour, reading a branch's fallback like the other step fields. */
+export function stepFailBehaviorsOf(tmpl: UnifiedActionTemplate): StepFailBehavior[] {
+  return tmpl.steps.map(sb => (isActionStepBranch(sb) ? sb.fallback : sb).failBehavior);
+}
+
+/**
+ * THR-1579 — the cache-difficulty multiplier the planner applies, or 1 when
+ * `PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED` is off (the default): the roll never
+ * multiplies authored difficulty, so the planner must not either.
+ */
+function plannerDifficultyMultiplier(tierMultiplier: number, danger: number): number {
+  if (!PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED) return 1.0;
+  return tierMultiplier * (1 + danger * DANGER_DIFFICULTY_SCALE);
 }
 
 // ─── Pure Computation Helpers ───────────────────────────────────
@@ -252,6 +281,8 @@ function buildEntryUnified(
       const s = isActionStepBranch(sb) ? sb.fallback : sb;
       return s.reach;
     }),
+    scale: tmpl.scale,
+    stepFailBehaviors: stepFailBehaviorsOf(tmpl),
   };
 }
 
@@ -475,7 +506,7 @@ export class EncounterCacheManager {
       const locationType = getLocationType(graph, loc.id);
       if (!locationType) continue;
       const danger = locationDangerLevel(graph, loc.id, dangerMap);
-      const multiplier = baseMult * (1 + danger * DANGER_DIFFICULTY_SCALE);
+      const multiplier = plannerDifficultyMultiplier(baseMult, danger);
       const entries = buildEntriesForLocationAndSublocations(graph, loc.id, locationType, multiplier);
       if (entries.length > 0) {
         this.byLocation.set(loc.id, entries);
@@ -536,7 +567,7 @@ export class EncounterCacheManager {
     const locationType = getLocationType(graph, locationId);
     if (!locationType) return;
     const danger = locationDangerLevel(graph, locationId, this.dangerMap);
-    const multiplier = 1.0 * (1 + danger * DANGER_DIFFICULTY_SCALE);
+    const multiplier = plannerDifficultyMultiplier(1.0, danger);
     const entries = buildEntriesForLocationAndSublocations(graph, locationId, locationType, multiplier);
     if (entries.length > 0) {
       this.byLocation.set(locationId, entries);

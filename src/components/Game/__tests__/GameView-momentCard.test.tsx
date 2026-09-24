@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// @vitest-lane heavy — a real world driven up to 96 ticks through the debug bridge; 10–84 s on CI run 33653898091 (THR-1384)
+// @vitest-lane heavy — a real world driven up to 120 ticks through the debug bridge; 10–84 s on CI run 33653898091 (THR-1384)
 //
 // THR-1299 slice 3 — the moment queue has a consumer, and it is wired.
 //
@@ -69,8 +69,12 @@ type TickBridge = (n: number) => { ticksRun?: number; tick?: number };
 type OpenModalsProvider = () => string[];
 type BeatSuppression = (enabled: boolean) => void;
 
-/** Ticks to drive before giving up — enough for several checkpoints on every followed work. */
-const MAX_TICKS = 96;
+/**
+ * Ticks to drive before giving up — enough for several checkpoints on every followed work.
+ * THR-1579 raised it from 96: once the planner forecast the odds the dice use, seed 42's
+ * decisions moved and the first interrupt on the three followed works landed at tick 102.
+ */
+const MAX_TICKS = 120;
 
 describe('GameView moment card consumer (THR-1299 slice 3)', () => {
   let stateProvider: (() => GameState | null) | null = null;

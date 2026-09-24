@@ -18,7 +18,7 @@
 import type { WorldGraph } from './graph';
 import { getFactionMembershipEdges } from './graphQueries';
 import type { EncounterCacheEntry } from './encounterCache';
-import { CRUD_TO_ENCOUNTER_TYPE, RARITY_TO_THREAT } from './encounterCache';
+import { CRUD_TO_ENCOUNTER_TYPE, RARITY_TO_THREAT, stepFailBehaviorsOf } from './encounterCache';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
 import type { FactionDefinition, FactionRankTier } from '../types/faction';
@@ -203,6 +203,9 @@ function buildCacheEntry(
     stepCount: template.steps.length,
     stepDifficulties: template.steps.map(s => isActionStepBranch(s) ? s.fallback.difficulty : s.difficulty), // 0..1 scale per EncounterCacheEntry contract
     stepReaches: template.steps.map(s => isActionStepBranch(s) ? s.fallback.reach : s.reach),
+    // THR-1579 — the planner forecasts through the scale the roll uses.
+    scale: template.scale,
+    stepFailBehaviors: stepFailBehaviorsOf(template),
     ...overrides,
   };
 }

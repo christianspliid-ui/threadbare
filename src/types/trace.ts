@@ -1765,6 +1765,8 @@ export interface ScoringTrace extends TraceBase {
     roleAffinityMultiplier?: number;
     /** Phase 4: Expected utility from 5-tier outcome ladder */
     expectedUtility?: number;
+    /** THR-1579 — the engagement forecast `F`: P(the action ends in the success family). */
+    engagementForecast?: number;
     /** Phase 4: Push benefit estimate (Q spend for better odds) */
     pushBenefit?: number;
     /** Phase 4: Resist benefit estimate (downgrade protection) */

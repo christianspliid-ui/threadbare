@@ -121,8 +121,10 @@ describe('forecastStepExpectedUtility', () => {
   });
 
   it('push modifier increases expected utility', () => {
-    const euWithout = forecastStepExpectedUtility(0.5, 0.5, 1.0);
-    const euWith = forecastStepExpectedUtility(0.5, 0.5, 1.0, 0.10);
+    // Above the regional scale floor, so the push moves the rolled probability
+    // (THR-1579: at 0.5 vs 0.5 both sides sit on the 0.20 floor the core applies).
+    const euWithout = forecastStepExpectedUtility(0.7, 0.4, 1.0);
+    const euWith = forecastStepExpectedUtility(0.7, 0.4, 1.0, 0.10);
     expect(euWith).toBeGreaterThan(euWithout);
   });
 

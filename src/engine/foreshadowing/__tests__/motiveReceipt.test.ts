@@ -39,6 +39,7 @@ function makeCandidate(overrides: Partial<ScoredCandidate> = {}): ScoredCandidat
     expectedUtility: 1,
     pushBenefit: 0,
     resistBenefit: 0,
+    engagementForecast: 0.5,
     travelCost: 0,
     totalCost: 1,
     valuePerTick: 1,

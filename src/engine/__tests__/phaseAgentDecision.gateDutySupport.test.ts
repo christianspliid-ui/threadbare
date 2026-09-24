@@ -30,6 +30,7 @@ vi.mock('../encounterScoring', () => ({
       completionProb: 0.72,
       pushBenefit: 0,
       resistBenefit: 0,
+      engagementForecast: 0.5,
       expectedUtility: 1.1,
       desireMultiplier: 1,
       totalCost: 0,

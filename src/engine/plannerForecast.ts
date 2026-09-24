@@ -38,10 +38,9 @@
  * None — all forecast functions are pure math.
  */
 
-import {
-  computeOutcomeProbabilities,
-  NEAR_MISS_MARGIN,
-} from './resolutionService';
+import { NEAR_MISS_MARGIN } from './resolutionService';
+import { forecastActionAtScale } from './scaledForecast';
+import type { ActionScale, StepFailBehavior } from '../types/unifiedAction';
 import type { ResolutionProbabilitySummary } from '../types/resolution';
 import { computeCapability } from './domainCapability';
 import type { WorldGraph } from './graph';
@@ -123,26 +122,53 @@ export function isResistEligible(templateId: string): boolean {
 // ─── Step-Level Forecast ───────────────────────────────────────────
 
 /**
- * Forecast a single step's outcome probability distribution using the
- * shared resolution service. Returns the full probability summary.
+ * Forecast a single step's outcome probability distribution — the number the
+ * dice use. Returns the full probability summary.
+ *
+ * THR-1579 (forecast window S2): forecasts through `forecastActionAtScale`, so the
+ * step's scale offset, the difficulty cap and the post-roll scale floor apply
+ * exactly as `resolveStepCore` applies them. Before this a `local` step at
+ * difficulty 0.45 forecast 0.55 and rolled 0.65. `scale` undefined reads as
+ * `'regional'`, the core's own default.
  *
  * @param capability - Agent's domain capability (0-1)
  * @param difficulty - Normalized difficulty (0-1) per EncounterCacheEntry contract
  * @param modifiers - Optional action modifiers
+ * @param scale - The template's scale (undefined → 'regional')
  */
 export function forecastStepProbabilities(
   capability: number,
   difficulty: number,
   modifiers?: number,
+  scale?: ActionScale,
 ): ResolutionProbabilitySummary {
-  return computeOutcomeProbabilities({
+  return forecastActionAtScale({
     actorId: '',
     domain: 'iron', // Not used for threshold computation
     capability,
     difficulty,
     sphereFactor: 0,
     actionModifiers: modifiers ?? 0,
-  });
+  }, scale);
+}
+
+/**
+ * THR-1579 — the probability one step does **not** end the action, mirroring the
+ * runtime rule (`advanceUnifiedAction`, `unifiedActionLifecycle.ts`): a critical
+ * failure ends it at any step; a plain failure ends it only on a `fail_action`
+ * step. A `continue_weakened` failure pushes on to `success_at_cost`.
+ *
+ * Fail-soft: an unknown or missing fail behaviour reads as `continue_weakened`,
+ * so only the critical failure counts.
+ */
+export function stepEngagementSurvival(
+  probs: ResolutionProbabilitySummary,
+  failBehavior: StepFailBehavior | undefined,
+): number {
+  const pCritFailure = probs.critFailureProbability;
+  const pPlainFailure = Math.max(0, probs.failureProbability - pCritFailure);
+  const survival = 1 - pCritFailure - (failBehavior === 'fail_action' ? pPlainFailure : 0);
+  return Math.max(0, Math.min(1, survival));
 }
 
 /**
@@ -170,8 +196,9 @@ export function forecastStepExpectedUtility(
   difficulty: number,
   rewardScale: number = 1.0,
   modifiers?: number,
+  scale?: ActionScale,
 ): number {
-  const probs = forecastStepProbabilities(capability, difficulty, modifiers);
+  const probs = forecastStepProbabilities(capability, difficulty, modifiers, scale);
 
   // Fail-soft: NaN check
   if (Number.isNaN(probs.successProbability)) return 0;
@@ -218,6 +245,16 @@ export interface EncounterForecast {
   expectedUtility: number;
   /** Binary completion probability (product of per-step success probs) — kept for backward compat */
   completionProb: number;
+  /**
+   * THR-1579 — the engagement forecast `F`: the probability the action ends in
+   * the success family (critical_success · success · success_at_cost). Mirrors
+   * `computeFinalActionOutcome`: only a critical failure, or a plain failure on
+   * a `fail_action` step, ends the action. Unlike `completionProb`, a
+   * continue-weakened failure is not a loss here — the action ends at cost.
+   * `completionProb` stays for expected utility; `F` is what the forecast
+   * window (S4) reads.
+   */
+  engagementForecast: number;
   /** Per-step probability summaries for debug/trace */
   stepForecasts: ResolutionProbabilitySummary[];
   /** Whether push would be rational (net positive expected utility) */
@@ -253,6 +290,7 @@ export function forecastEncounterExpectedUtility(
   const stepForecasts: ResolutionProbabilitySummary[] = [];
   let totalExpectedUtility = 0;
   let completionProb = 1.0;
+  let engagementForecast = 1.0;
   let reachProbability = 1.0; // P(reaching this step)
 
   for (let i = 0; i < entry.stepCount; i++) {
@@ -263,19 +301,20 @@ export function forecastEncounterExpectedUtility(
       cap = 0.5; // Fail-soft: uncertain capability
     }
 
-    const probs = forecastStepProbabilities(cap, entry.stepDifficulties[i]);
+    const probs = forecastStepProbabilities(cap, entry.stepDifficulties[i], undefined, entry.scale);
     stepForecasts.push(probs);
 
     // Per-step expected utility, weighted by probability of reaching this step
     const stepReward = reward / entry.stepCount; // Distribute reward across steps
     const stepEU = forecastStepExpectedUtility(
-      cap, entry.stepDifficulties[i], stepReward,
+      cap, entry.stepDifficulties[i], stepReward, undefined, entry.scale,
     );
     totalExpectedUtility += reachProbability * stepEU;
 
     // Update reach probability for next step (approximation: only plain success/crit success continue)
     completionProb *= probs.successProbability;
     reachProbability *= probs.successProbability;
+    engagementForecast *= stepEngagementSurvival(probs, entry.stepFailBehaviors?.[i]);
   }
 
   // Push/resist analysis
@@ -285,6 +324,7 @@ export function forecastEncounterExpectedUtility(
   return {
     expectedUtility: totalExpectedUtility,
     completionProb,
+    engagementForecast: Number.isFinite(engagementForecast) ? engagementForecast : 0,
     stepForecasts,
     pushRecommended: pushResult.recommended,
     pushBenefit: pushResult.benefit,
@@ -344,10 +384,10 @@ function estimatePushBenefit(
     const stepReward = rewardScale / entry.stepCount;
 
     if (entry.stepDifficulties[i] >= HARD_STEP_DIFFICULTY_THRESHOLD) {
-      euWithout += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward);
-      euWith += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, PUSH_MODIFIER);
+      euWithout += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, undefined, entry.scale);
+      euWith += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, PUSH_MODIFIER, entry.scale);
     } else {
-      const eu = forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward);
+      const eu = forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, undefined, entry.scale);
       euWithout += eu;
       euWith += eu;
     }
@@ -411,7 +451,7 @@ function estimateResistValue(
       cap = 0.5;
     }
 
-    const probs = forecastStepProbabilities(cap, entry.stepDifficulties[i]);
+    const probs = forecastStepProbabilities(cap, entry.stepDifficulties[i], undefined, entry.scale);
     const stepReward = rewardScale / entry.stepCount;
 
     // Resist downgrades: crit_failure → failure, failure → success_at_cost
