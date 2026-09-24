@@ -4265,3 +4265,40 @@ logic keyed on `fightRole`. Authors write none of it, and must not add step effe
   FB7): if the fighter is behind (`wounds > blowsLanded`), their concession runs now; it lapses on
   the last clash. Otherwise the opponent's temper shows now, and a stubborn or already-shown temper
   refuses.
+
+**Fight events (FB5, THR-1541).** A fight raises effect events, so the reactive / stacking /
+`until_event` / `transform` effects you already author on items, traits and a monster's powers
+**happen in fights** with no fight-specific authoring. The raises live in
+`src/engine/fights/fightEvents.ts`, called from the fight handler:
+
+| Moment | Event | Raised on | Fires |
+|---|---|---|---|
+| the nerve step resolves (the handler's first run) | `combat_started` | fighter and opponent | reactive `encounter_started`, expiry `enter_combat` |
+| every fight step resolves | `encounter_outcome { reach, success, combat: true }` | fighter | stacks `any_encounter`, `combat_success` / `combat_failure`; expiry `encounter_complete`; one-shot `resource_manipulate` |
+| a clash that lands (clock +≥1) | `attacked` | opponent; the fighter too on near miss / at cost (traded blows) | reactive `attacked` |
+| the same clash | `damaged { amount: clock delta }` | opponent | reactive `damaged`, stack `on_damaged`, expiry `take_damage` |
+| the fight is won | `opponent_overcome` | fighter | stack `on_kill` |
+| the fight ends, any result | `combat_ended` | fighter and opponent | expiry `leave_combat` |
+
+What an author can rely on:
+
+- **A reactive's target is the other side.** Every raise passes the opponent (or the fighter) as
+  `counterpartId`, and `raiseEffectEvent` now hands it to every reactive execution as
+  `ExecutionContext.targetId` (this holds on every raise site, not only fights). So a thorned hide's
+  `reactive { trigger: 'attacked', effect: { type: 'dispel', … } }` strips the *striker's* ward.
+- **`combat_success` means "won a fight exchange", whatever its reach.** The event's `combat` field
+  counts as a combat reach for stack classification, so a Soulfire-style blade whose clash was swapped
+  Iron → Star still stacks. The nerve step is an exchange too.
+- **Timing: `combat_started` moves the first clash, never the nerve roll.** It is raised after the
+  nerve roll, when the handler first runs. A roar meant to shake nerve is a complication or a
+  card-time effect, not a `combat_started` reactive.
+- **A stack earned on one exchange moves the next exchange's odds**, through the fighter's standing
+  modifiers (`resolveFightStepInputs`), in the roll and the forecast alike.
+- **A fight that ends before any roll** (the opponent never there, already dead) raises neither
+  `combat_started` nor `combat_ended`. One that ends mid-fight on the no-roll route raises
+  `combat_ended` once.
+- Reactive executions from fight raises carry a predicate context with `encounterType: 'combat'`, so
+  an `in_combat` gate on a `choice_set` option reads true.
+
+Trace: each raise emits `effect.event_raised` with its `site` — `fight_start`, `fight_step`,
+`fight_clash`, `fight_overcome` or `fight_end`.

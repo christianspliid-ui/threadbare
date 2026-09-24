@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 25 |
-| **Total** | **147** |
+| 🔵 UNVERIFIED-OK | 26 |
+| **Total** | **148** |
 
 ## Contracts by producing subsystem
 
@@ -163,6 +163,7 @@ remediation ticket or the build fails.
 | `encounter-timeline-to-incident-bundle` | The mortals the player watches are the ones they will ask about, so each one arrives with the tail of what actually happened to them. | function: `getTimeline`, `getTrackedAgentIds` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 | `fight-band-conditions` | A fight leaves its mark as the ordinary conditions — inspired, shaken, terrified, wounded — so every ward, cure and reader that knows a condition knows a fight's wound. | edge-prop: `has_trait`, `ticksRemaining` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-harm-queues-quintessence` | An exchange that goes badly costs the fighter their quintessence, on the same ledger every other hurt settles on — and a ward turns it aside, while a spell's price is still paid. | function: `queueFightHarm`, `computeFightErosion`, `pendingQuintessenceEvents` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
+| `fight-raises-effect-events` | A fight is where gear and powers happen: a thorned hide bites whoever lands a blow on it, a blade grows keener with each exchange won, a trophy charm counts the kills, and a beast's roar at the start of a fight changes the first exchange. | function: `raiseEffectEvent`, `raiseFightStarted`, `raiseFightStepOutcome`, `raiseFightClashLanded`, `raiseFightOvercome`, `raiseFightEnded` | Effects & Conditions | 🔵 UNVERIFIED-OK | — |
 | `fight-result-keys-aftermath-variants` | How a fight ended — overcome, routed, struck down, broke off — picks the ending the player reads, through the same choice memory an authored fork uses, without any step owning the slot. | function: `withFightResultMemory`, `fightResultIndex` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-writes-opponent-clock` | Every blow a fighter lands fills the opponent's clock, and the next fight reads where it was left — a monster worn down by one hero is closer to falling for the next, recovering only with time. | node-prop: `advanceFightClock`, `monsterState`, `FIGHT_CLOCK_MAILBOX_PROP` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -459,7 +460,7 @@ remediation ticket or the build fails.
 - **Production hits:** 12 total — 6 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/battleResolution.ts`, `src/engine/effects/actionTriggerPayloads.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseDoom.ts` +1 more
 - **Read sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`
-- **Other hits:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/index.ts`, `src/engine/effectTick.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/index.ts`, `src/engine/effectTick.ts`, `src/engine/fights/fightEvents.ts`
 - **Verdict:** Verified 2026-08-26: THR-1244 (stage 6) added the condition producer, closing the last three trigger families that had no source event: the damaged/healed reactive triggers, the on_damaged/on_heal stack triggers, and the take_damage expiry event. They were unreachable BY CONSTRUCTION rather than by omission — the game has no per-agent damage model, so there was no hit-point subtraction to raise from, and the branch sat inert behind an absent number. The proxy reads the shape the game does have: a wound IS a condition with a countdown, so inflicting a harmful condition raises damaged and lifting one EARLY raises healed, from all three aftermath condition writers (apply_condition, condition_attachment, remove_condition) through conditionProxyEvents. condition_attachment is included deliberately and is not redundant: every shipped trait.condition.wounded in the tavern package authors that kind, so wiring only apply_condition would have left the busiest infliction path silent while the stage read as done. Natural expiry raises NOTHING, enforced by where the raise lives rather than by a check — conditionDecay.ts is the one tick-driven expiry path (THR-761) and does not call the module — because a proxy keyed on "a condition went away" would fire every ward in the world on every decay sweep. Harm is the #negative tag, so polarity gates both directions (gaining blessed is not damage, losing it is not a heal); carriers are persons only, since a place under a plague scare and an army carrying a headcount have no body to hurt. Non-vacuous by falsification: each of the four guards was individually disabled and each failed exactly its own test and no others — harm gate 2 failed, person gate 1, the condition_attachment raise 1, the removedCount gate 1 — and adding a raise INTO conditionDecay fails exactly the natural-expiry silence test, which is the assertion the "early" half rests on. Unit coverage: src/engine/effects/__tests__/conditionProxyEvents.test.ts (16 tests, asserting the downstream trigger actually moved — a stack incremented, an attachment destroyed — rather than only that a trace appeared). THR-1257 closed the known gap: actionTriggerPayloads.ts condition_grant/condition_remove was a fourth live writer of the same has_trait edge that raised nothing, and its conditions lived in catalogs tagged topically (#cursed, #curse, #wound, #blessing) with no polarity, so wiring the site alone would have made the raise live and silently misclassifying. Both shipped together: applyActionTriggerPayloads now takes GameState rather than WorldGraph and raises through the same proxy, and 47 conditions across anomaly-reward-catalog.ts, starter-attachments.ts, reward-attachment-catalog.ts and economic-trait-content.ts were normalised onto #negative/#positive, so ONE predicate now classifies every catalog. The reachable set is wider than the grants suggest — condition_remove matches on TAGS, so the single authored tags:[#wound] removal reaches every #wound condition in the repo, reward-attachment-catalog.ts included; normalising only the catalogs the grants name would have left the healing half blind. The orchestrator call site threads its runningEffectStates map and reads the merged map back, because it sits inside the loop whose end-of-tick assignment would otherwise discard the raise: falsified by reverting that call site to the pre-THR-1257 shape, which leaves the damaged trace firing while the downstream stacking write reads 0 instead of 1 — i.e. a raise that looks healthy from the trace stream and has lost its effect. Re-entrancy was checked and is not a risk: checkAndFireActionTriggers has exactly three phase-level callers and neither effectExecutors nor effectEvents calls it, so a raise cannot re-enter the trigger path and no depth guard exists. Coverage: conditionProxyActionTrigger.test.ts (14 tests incl. a control arm for the caller shape and both absences — a boon raises nothing, an army raises nothing) and conditionProxyOrchestrator.test.ts (drives real runTick). The polarity closure is enforced, not remembered: conditionProxyEvents.test.ts pins all 60 condition nodes across all five catalogs and fails on any that ships without a polarity tag. Prior evidence — THR-1239. The consumer half was always live and the producer half was almost entirely missing: outside the single encounter_outcome raise in the orchestrator, no site in the engine ever constructed an EffectEvent, so the whole executor family (teleport, spawn, compel, cascade, ...) was unreachable in normal play while looking wired. Movement arrival now raises entered_hex and battle create/resolve raise combat_started/combat_ended, all four sites through the shared raiseEffectEvent; the orchestrator site was migrated onto it rather than kept as a second copy. Every raise emits effect.event_raised carrying its site and reactive count, so a live-but-unheard producer is distinguishable from an unwired one. Live evidence: seeded medium CLI run, `printf "tick 30
 traces 5000
 exit
@@ -1051,6 +1052,18 @@ exit
 - **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/complicationEffects.ts`, `src/engine/encounter.ts`, `src/engine/encounterAftermath.ts`, `src/engine/fights/fightState.ts` +7 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `fight-raises-effect-events` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A fight is where gear and powers happen: a thorned hide bites whoever lands a blow on it, a blade grows keener with each exchange won, a trophy charm counts the kills, and a beast's roar at the start of a fight changes the first exchange.
+- **Producer → Consumer:** Encounters & Dilemmas → Effects & Conditions
+- **UL terms:** *Fight*
+- **Module:** `src/engine/fights/fightEvents.ts`
+- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
+- **Write sites:** `src/engine/fights/fightEvents.ts`
+- **Read sites:** `src/engine/effects/effectEventDispatch.ts`
+- **Other hits:** `src/engine/battleResolution.ts`, `src/engine/effects/actionTriggerPayloads.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/effects/effectOverlayStore.ts`, `src/engine/fights/fightState.ts` +3 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `fight-result-keys-aftermath-variants` — 🔵 UNVERIFIED-OK
 
 - **Intent:** How a fight ended — overcome, routed, struck down, broke off — picks the ending the player reads, through the same choice memory an authored fork uses, without any step owning the slot.
@@ -1278,10 +1291,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Faction*, *Prerequisite*
 - **Module:** `src/engine/factionMembership.ts`
-- **Production hits:** 21 total — 1 write, 1 read, 19 unclassified
+- **Production hits:** 22 total — 1 write, 1 read, 20 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/fight-constants.ts` +14 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/fight-constants.ts` +15 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mentorship-rides-undertaking-checkpoints` — 🟢 LIVE
@@ -1462,10 +1475,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 295 total — 1 write, 1 read, 293 unclassified
+- **Production hits:** 296 total — 1 write, 1 read, 294 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +288 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +289 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

@@ -210,7 +210,7 @@ describe('a reactive `attacked` trait on an opponent fires once per landing clas
     const state = baseState(graph);
     runBands(state, fightTemplate(3), ['success', 'success']);
     expect(raised('damaged', 'beast')).toHaveLength(1);
-    expect(state.effectStates.get('item.hide')?.stacks).toBe(1);
+    expect(state.effectStates!.get('item.hide')?.stacks).toBe(1);
   });
 
   it('a reactive receives the other side as its target (counterpartId → targetId)', () => {
@@ -241,7 +241,7 @@ describe('`on_kill` stacks on `overcome`', () => {
     const a = runBands(state, fightTemplate(3), ['success', 'success', 'success']);
     expect(a.fightState!.result).toBe('overcome');
     expect(raised('opponent_overcome', 'hero')).toHaveLength(1);
-    expect(state.effectStates.get('item.trophy')?.stacks).toBe(1);
+    expect(state.effectStates!.get('item.trophy')?.stacks).toBe(1);
   });
 
   it('a fight that breaks off adds none', () => {
@@ -251,7 +251,7 @@ describe('`on_kill` stacks on `overcome`', () => {
     const a = runBands(state, fightTemplate(2), ['success', 'failure', 'failure']);
     expect(a.fightState!.result).toBe('broke_off');
     expect(raised('opponent_overcome')).toHaveLength(0);
-    expect(state.effectStates.get('item.trophy')?.stacks ?? 0).toBe(0);
+    expect(state.effectStates!.get('item.trophy')?.stacks ?? 0).toBe(0);
   });
 });
 
@@ -352,9 +352,9 @@ describe('a Soulfire-style reach-swapped exchange still stacks `combat_success`'
     const state = baseState(graph);
     const tpl = fightTemplate(3);
     let a = runStep(state, action(), tpl, 'failure'); // a failed nerve: no stack
-    expect(state.effectStates.get('item.soulfire')?.stacks ?? 0).toBe(0);
+    expect(state.effectStates!.get('item.soulfire')?.stacks ?? 0).toBe(0);
     a = runStep(state, a, tpl, 'success', 'star');
-    expect(state.effectStates.get('item.soulfire')?.stacks).toBe(1);
+    expect(state.effectStates!.get('item.soulfire')?.stacks).toBe(1);
     const outcome = raised('encounter_outcome', 'hero').at(-1)!;
     expect(outcome.site).toBe('fight_step');
   });
