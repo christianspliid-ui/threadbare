@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 10:56 local (08:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 11:55 local (09:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — mid-fight, a fighter now decides whether to yield or fight on** ([THR-1540](https://linear.app/threadbare/issue/THR-1540/fight-block-fb4-the-forks), fight block FB4). Merged 11:34 local via [#2008](https://github.com/christianspliid-ui/threadbare/pull/2008), and live on the site.
 - **2026-09-24 — builders nobody is watching now step back, and the spotlight follows who is building** ([THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), your morning design). Merged 10:43 local via [#2007](https://github.com/christianspliid-ui/threadbare/pull/2007), and live on the site.
 - **2026-09-24 — your three morning designs are handed to the builder**: [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded), [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). The plans merged via [#2002](https://github.com/christianspliid-ui/threadbare/pull/2002), [#2003](https://github.com/christianspliid-ui/threadbare/pull/2003) and [#2004](https://github.com/christianspliid-ui/threadbare/pull/2004).
 - **2026-09-24 — fights now deal harm, conditions and momentum** ([THR-1539](https://linear.app/threadbare/issue/THR-1539/fight-block-fb3-harm-conditions-momentum), fight block FB3). Merged 09:33 local via [#2006](https://github.com/christianspliid-ui/threadbare/pull/2006), and live on the site.
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — a pickup run killed mid-job no longer leaves its work invisible** ([THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push)). Merged 02:18 local via [#1987](https://github.com/christianspliid-ui/threadbare/pull/1987).
 - **2026-09-24 — fight steps now take their opponent into account** ([THR-1537](https://linear.app/threadbare/issue/THR-1537/fight-block-fb1-fight-steps-read-their-opponent), fight block FB1). Merged 01:41 local via [#1998](https://github.com/christianspliid-ui/threadbare/pull/1998), and live on the site.
 - **2026-09-24 — a killing's grief now reaches the victim's family and friends, not the corpse** ([THR-1536](https://linear.app/threadbare/issue/THR-1536/a-killings-grief-reaches-only-the-corpse-the-ambition-phase-walks-the)). Merged 00:35 local via [#1994](https://github.com/christianspliid-ui/threadbare/pull/1994). It is live on the site.
-- **2026-09-23 — two death paths no longer skip the "will not die" ward** ([THR-1534](https://linear.app/threadbare/issue/THR-1534)). Merged via [#1990](https://github.com/christianspliid-ui/threadbare/pull/1990), and live on the site.
 
 ---
 

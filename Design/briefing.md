@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-24 10:56 local (08:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-24 11:55 local (09:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -10,7 +10,7 @@
 
 The one question: **is the integrated encounter experience good enough?** A pass unlocks the next stage, where encounters reach into factions, war, economy and divine actions. Say **"work the map"** in a chat when you are done.
 
-**Why now:** the first of your three morning designs has already shipped. [The spotlight pull](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded) merged at 10:43 via [#2007](https://github.com/christianspliid-ui/threadbare/pull/2007). The other two are queued for the builder. This sitting unblocks the most work after them. These two encounters rarely turn up in normal play ([THR-1567](https://linear.app/threadbare/issue/THR-1567/three-wayside-only-slice-encounters-almost-never-fire-the-unsafe) is fixing that), but the links above open them directly.
+**Why now:** it is still the ask that unblocks the most work. These two encounters rarely turn up in normal play ([THR-1567](https://linear.app/threadbare/issue/THR-1567/three-wayside-only-slice-encounters-almost-never-fire-the-unsafe) is fixing that), but the links above open them directly.
 
 ## Also waiting (5)
 
@@ -22,18 +22,15 @@ The one question: **is the integrated encounter experience good enough?** A pass
 
 ## Queue
 
-**Healthy: nine jobs ready, none in progress, no parked jobs.** The builder's next run is at about 11:11.
-- **Top of the queue is [FB4: the forks](https://linear.app/threadbare/issue/THR-1540/fight-block-fb4-the-forks)** (High). Mid-fight, a fighter decides whether to yield or fight on.
-- New since last hour: [a commander killed in battle is deleted, not marked dead](https://linear.app/threadbare/issue/THR-1566/a-commander-killed-in-battle-is-deleted-not-marked-dead-no-body-no) (Medium). There is no body, no grief and no culprit.
-- Still waiting: two of your morning designs, [sequel-only encounters](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the) and [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location). Also queued: [M1: the monster card](https://linear.app/threadbare/issue/THR-1544/monsters-m1-the-monster-card) and four bug fixes. The fixes cover [item bursts](https://linear.app/threadbare/issue/THR-1568/items-that-promise-a-burst-when-struck-never-give-it-a-reactions-timed), [wards](https://linear.app/threadbare/issue/THR-1569/fear-wards-wound-cures-and-curse-wards-miss-the-real-conditions), [wayside encounters](https://linear.app/threadbare/issue/THR-1567/three-wayside-only-slice-encounters-almost-never-fire-the-unsafe) and [seed targets](https://linear.app/threadbare/issue/THR-1565/three-seed-targets-tell-the-wrong-story-the-healers-grateful-kin-the).
+**Healthy: nine jobs ready, none in progress, no parked jobs.** The builder's next run is at about 12:11.
+- **Shipped since last hour: [FB4: the forks](https://linear.app/threadbare/issue/THR-1540/fight-block-fb4-the-forks)** merged at 11:34 via [#2008](https://github.com/christianspliid-ui/threadbare/pull/2008) and is live. Mid-fight, a fighter now decides whether to yield or fight on.
+- Next up (all Medium): [a commander killed in battle is deleted, not marked dead](https://linear.app/threadbare/issue/THR-1566/a-commander-killed-in-battle-is-deleted-not-marked-dead-no-body-no), [M1: the monster card](https://linear.app/threadbare/issue/THR-1544/monsters-m1-the-monster-card), your morning design on [sequel-only encounters](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), and fixes for [item bursts](https://linear.app/threadbare/issue/THR-1568/items-that-promise-a-burst-when-struck-never-give-it-a-reactions-timed), [wards](https://linear.app/threadbare/issue/THR-1569/fear-wards-wound-cures-and-curse-wards-miss-the-real-conditions) and [wayside encounters](https://linear.app/threadbare/issue/THR-1567/three-wayside-only-slice-encounters-almost-never-fire-the-unsafe).
+- Low: [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location), [seed targets](https://linear.app/threadbare/issue/THR-1565/three-seed-targets-tell-the-wrong-story-the-healers-grateful-kin-the) and [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573/the-follow-button-doesnt-say-it-keeps-a-mortal-in-the-spotlight).
 
 ## Health
 
-- **Heavy simulation tests are still red on main** (FB2, [#2000](https://github.com/christianspliid-ui/threadbare/pull/2000), FB3 [#2006](https://github.com/christianspliid-ui/threadbare/pull/2006)). Last hour's cause was one test running out of time. It took 5.3 s against a 5 s limit, and nothing was actually wrong. Fixing it is the builder's job, and no job has been filed for it yet.
+- **Engine speed jumped: 98 ms/tick, 43% over its weekly median of 69** (last hour 82). Probe: *tick cost 98 ms/tick steady, 43% above the 7-day median (69, 87 rows since da01eb15); top phase agent_decision, 510 agents. Name the merges between da01eb15 and 949ea242: `git log --oneline --merges da01eb15..949ea242`.* This hour's rise lines up with the FB4 fight-forks merge. Chasing it is the builder's job.
+- **Heavy simulation tests are still red on main** (red for 4 hours). Last diagnosed as one test running out of time, not a defect. Fixing it is the builder's job; no job filed yet.
 - **Lane silence:** the worst recent gap was 25 hours, Saturday 19 into Sunday 20. It falls on a weekend, so your 11 September ruling declines it.
-- **Worktree reaper:** 5 worktrees are waiting to be sorted. This is routine.
-- Everything else is green:
-  - Engine speed is 82 ms/tick, 19% over its weekly median of 69. That is inside the normal range, but it has risen three hours running (65 → 75 → 82).
-  - The live site is serving the spotlight-pull merge.
-  - CI is healthy, and no pull requests are waiting.
-  - All nine scheduled lanes are on time.
+- **Worktree reaper:** 5 worktrees are waiting to be sorted. Routine.
+- Everything else is green: the live site serves the FB4 merge, CI is healthy, no pull requests are waiting, and all nine scheduled lanes are on time.
