@@ -293,10 +293,8 @@ describe('phaseAgentDecision forced travel', () => {
     addLocation(graph, 'loc_town', 'Active Town', 'town');
     addAgent(graph, 'agent_active', 'Active Agent', 'loc_town', {
       consecutiveIdleTicks: 7,
-      domainCapability: {
-        eye: 0.9, gold: 0.9, shadow: 0.9, blade: 0.9,
-        forge: 0.9, stone: 0.9, veil: 0.9, star: 0.9,
-      },
+      // THR-1562: the singular `domainCapability` this set was read by nothing — the
+      // decision phase reads `domainCapabilities` through the walk. Dropped.
     });
     buildCacheAndMatrix();
 

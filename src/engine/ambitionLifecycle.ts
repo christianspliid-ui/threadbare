@@ -79,6 +79,10 @@ export function checkAbandonment(
  * to `false`, which is why an ambition evaluated outside an edge walk simply never
  * satisfies them rather than erroring.
  *
+ * `reachShare` is the reach-share reader (THR-1562): production passes
+ * `computeReachShare` so `agent_reach_*` read the effective score on the 0–1 scale the
+ * thresholds are authored on. Omit it and those conditions compute a base-only share.
+ *
  * Note the context is now built whenever *either* input is present, not only when
  * there is a clock: an edge-reading condition must still work in a caller that passes
  * no tick.
@@ -90,9 +94,10 @@ export function evaluateAmbitionProgress(
   agentId: string,
   currentTick?: number,
   pursuesProperties?: Record<string, unknown>,
+  reachShare?: ConditionContext['reachShare'],
 ): AmbitionProgressResult {
   const context: ConditionContext | undefined =
-    currentTick === undefined && pursuesProperties === undefined
+    currentTick === undefined && pursuesProperties === undefined && reachShare === undefined
       ? undefined
       : {
           ...(currentTick !== undefined && {
@@ -100,6 +105,7 @@ export function evaluateAmbitionProgress(
             windowStartTick: active.assignedTick,
           }),
           ...(pursuesProperties !== undefined && { pursuesProperties }),
+          ...(reachShare !== undefined && { reachShare }),
         };
 
   // Abandonment takes priority

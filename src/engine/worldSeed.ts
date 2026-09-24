@@ -76,6 +76,7 @@ import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits } from './effects/effectQueries';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 import { seedLivingWorld, formatLivingWorldSummary } from './seedLivingWorld';
+import { computeReachShares } from './domainCapability';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1726,7 +1727,9 @@ export function seedWorld(
     const actorNode = graph.getNode(indId);
     if (!actorNode) continue;
 
-    const caps = (actorNode.properties.domainCapabilities as Record<ReachDomain, number>) ?? {} as Record<ReachDomain, number>;
+    // THR-1562: initial assignment reads reach *shares* (0–1), the scale ambition
+    // floors are authored on — the same conversion `buildAmbitionAgentSnapshot` does.
+    const caps = computeReachShares(graph, indId);
     // Include node ID, name, and tags so culture traits match by ID as well as name
     const traitEdges = graph.getOutgoingEdges(indId, 'has_trait');
     const traits: string[] = [];

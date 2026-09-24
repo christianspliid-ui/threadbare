@@ -29,6 +29,7 @@ import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/e
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import { conditionTraitId } from './traitShape';
 import type { ReachDomain } from '../types/traits';
+import { computeReachShare } from './domainCapability';
 import type {
   SpellTemplate,
   SpellCost,
@@ -102,11 +103,12 @@ export function checkPrerequisites(
   const prereqs = spell.prerequisites;
 
   // Check minimum reach requirements
+  // THR-1562: read the reach share (0–1, the scale `minReach` is authored on). This
+  // site read `properties.domainCapability` (singular), which nothing writes, so no
+  // shipped spell could ever pass its prerequisites.
   if (prereqs.minReach) {
-    const domainCapability = agentNode.properties.domainCapability as
-      Partial<Record<ReachDomain, number>> | undefined;
     for (const [reach, minVal] of Object.entries(prereqs.minReach)) {
-      const agentVal = domainCapability?.[reach as ReachDomain] ?? 0;
+      const agentVal = computeReachShare(graph, agentId, reach as ReachDomain);
       if (agentVal < minVal) {
         return { met: false, reason: `${reach} too low: ${agentVal} < ${minVal}` };
       }
@@ -170,10 +172,10 @@ export function canPayCosts(
   for (const cost of costArray) {
     switch (cost.type) {
       case 'reach_drain': {
-        const agentNode = graph.getNode(agentId);
-        const dc = agentNode?.properties.domainCapability as
-          Partial<Record<ReachDomain, number>> | undefined;
-        const current = dc?.[cost.reach] ?? 0;
+        // THR-1562: affordability reads the reach share. The *payment* (below) still
+        // writes the dead singular property — what a spell's price should do is the
+        // power runtime's design (THR-1571), deliberately not this fix.
+        const current = computeReachShare(graph, agentId, cost.reach);
         if (current < cost.amount) {
           return { canPay: false, reason: `Insufficient ${cost.reach}: ${current} < ${cost.amount}` };
         }

@@ -62,6 +62,7 @@ import { UNDERTAKING_MODEL, UNDERTAKING_DEFAULT_TIER, UNDERTAKING_MAX_CANDIDATES
 import { deriveDivisionCells, rotateForTick } from './divisionRule';
 import type { AmbitionStrategicProfile as StrategicProfileForCells } from '../types/strategicAction';
 import { evaluateMotiveGate } from './undertakingMotive';
+import { computeReachShare } from './domainCapability';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -264,7 +265,7 @@ export function generateStrategicCandidates(
 
       // Check resource affordability
       if (template.resourceHint?.reachFloor) {
-        const unmet = checkReachFloors(actor, template.resourceHint.reachFloor);
+        const unmet = checkReachFloors(graph, actor, template.resourceHint.reachFloor);
         if (unmet) {
           rejections.push({ templateId, reason: `reach_floor_unmet:${unmet}` });
           continue;
@@ -821,15 +822,18 @@ function computeRoleFit(actor: GraphNode, template: StrategicActionTemplate): nu
   return fitCount > 0 ? Math.min(1, fitSum / fitCount) : 0.3;
 }
 
+/**
+ * THR-1562: reach floors read the reach share (0–1), the scale they are authored on —
+ * not the raw stored capability, against which every floor always passed. Dormant
+ * while `UNDERTAKING_MODEL = 'cells'`; kept consistent with every other requirement.
+ */
 function checkReachFloors(
+  graph: WorldGraph,
   actor: GraphNode,
   floors: Partial<Record<ReachDomain, number>>,
 ): string | null {
-  const domains = actor.properties.domainCapabilities as Record<string, number> | undefined;
-  if (!domains) return Object.keys(floors)[0] ?? null;
-
   for (const [reach, min] of Object.entries(floors)) {
-    if ((domains[reach] ?? 0) < (min as number)) return reach;
+    if (computeReachShare(graph, actor.id, reach as ReachDomain) < (min as number)) return reach;
   }
   return null;
 }

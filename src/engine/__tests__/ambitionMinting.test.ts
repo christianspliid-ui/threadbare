@@ -45,7 +45,7 @@ function seedViolenceGraph(relation: 'victim' | 'witness'): WorldGraph {
   const graph = new WorldGraph();
   graph.addNode({
     id: ACTOR, type: 'actor', name: 'Bereaved',
-    properties: { actorType: 'individual', domainCapabilities: { iron: 0.3, shadow: 0.3, heart: 0.2 } },
+    properties: { actorType: 'individual', domainCapabilities: { iron: 12, shadow: 12, heart: 8 } },
   });
   graph.addNode({ id: LOC, type: 'location', name: 'Thornhaven', properties: {} });
   graph.addNode({
@@ -103,7 +103,7 @@ describe('mintAmbitionsFromEvents', () => {
     const graph = new WorldGraph();
     graph.addNode({
       id: ACTOR, type: 'actor', name: 'Idle',
-      properties: { actorType: 'individual', domainCapabilities: { iron: 0.3 } },
+      properties: { actorType: 'individual', domainCapabilities: { iron: 12 } },
     });
     const snapshot = buildAmbitionAgentSnapshot(graph, ACTOR);
     for (let s = 0; s < 20; s++) {

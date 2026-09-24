@@ -12,6 +12,7 @@ import type { SphereName } from '../types/index';
 import type { AxiologicalProfile } from '../types/agent';
 import type { WorldGraph } from './graph';
 import { evaluateAmbitionProgress } from './ambitionLifecycle';
+import { computeReachShare, computeReachShares } from './domainCapability';
 import { assignInitialAmbitions, assignAmbitionToActor, spentSpotlightPull, MAX_ACTIVE_AMBITIONS } from './ambitionAssignment';
 import { collectBusyActorIds, flushSpotlightPullTrace } from './spotlightPull';
 import {
@@ -146,8 +147,11 @@ export function buildAmbitionAgentSnapshot(
   actorId: string,
 ): AmbitionAgentSnapshot {
   const actor = graph.getNode(actorId);
-  const caps = (actor?.properties.domainCapabilities as Record<ReachDomain, number>)
-    ?? ({} as Record<ReachDomain, number>);
+  // THR-1562: the snapshot carries reach *shares* (0–1, the scale ambition floors and
+  // reach affinities are authored on), not the raw stored capability (10–40+), so
+  // `passesEligibility` and `scoreDesirability` read shares with no edit of their own.
+  // The share reads the effective score — traits, items and companions count.
+  const caps = computeReachShares(graph, actorId);
 
   // Traits (THR-786): every ref form of every trait held — canonical node id, short
   // id, display name, tags — so culture-trait ids match too. Item-granted traits
@@ -617,6 +621,9 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
   // omitted option fails closed.
   const followedAgentIds = state.followedAgentIds ?? [];
   const strategicProjects = state.strategicState?.projects ?? [];
+  // THR-1562: milestones and abandonment triggers read the effective reach share.
+  const reachShareReader = (agentId: string, reach: ReachDomain): number =>
+    computeReachShare(graph, agentId, reach);
 
   // World-minted ambition accumulators — ONE aggregate trace per tick (THR-726).
   let mintedCount = 0;
@@ -723,7 +730,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
       // `grievance_culprit_eliminated` reads the `culpritAgentId` written at mint time
       // (THR-1298 slice 6). This walk is the only place both are in scope at once.
       const result = evaluateAmbitionProgress(
-        template, active, graph, actor.id, tick, edge.properties,
+        template, active, graph, actor.id, tick, edge.properties, reachShareReader,
       );
 
       // ── Status changed: completion or abandonment ──

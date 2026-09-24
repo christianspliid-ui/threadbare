@@ -11,6 +11,8 @@
 import type { WorldGraph } from '../graph';
 import { getFactionMembershipEdges } from '../graphQueries';
 import type { ReachDomain } from '../../types/traits';
+import { REACH_DOMAINS } from '../../types/traits';
+import { computeReachShare } from '../domainCapability';
 import type { EffectPredicate, PredicateContext } from '../../types/effects';
 import type { HiddenMark, IntelligenceRecord } from '../../types/unifiedAction';
 import {
@@ -274,13 +276,15 @@ export function buildPredicateContext(
   // (`effectQueries` already imports this file for `evaluateOptionalCondition`).
   const agentTraits = new Set<string>(collectBearerTraitRefs(graph, agentId).keys());
 
-  // Reach values
+  // Reach values (THR-1562): the reach share (0–1), the scale `reach_above:` is
+  // authored on. This site read `properties.domainCapability` (singular), which
+  // nothing writes, so `reach_above:` was always false. The import of
+  // `domainCapability` closes a function-body-only cycle through `effectQueries`,
+  // which is safe under ESM (no top-level evaluation depends on it).
   const reachValues: Partial<Record<ReachDomain, number>> = {};
-  const domainCapability = agentNode?.properties.domainCapability as
-    Partial<Record<ReachDomain, number>> | undefined;
-  if (domainCapability) {
-    for (const [key, val] of Object.entries(domainCapability)) {
-      reachValues[key as ReachDomain] = val;
+  if (agentNode) {
+    for (const reach of REACH_DOMAINS) {
+      reachValues[reach] = computeReachShare(graph, agentId, reach);
     }
   }
 

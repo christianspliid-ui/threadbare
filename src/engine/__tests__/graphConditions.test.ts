@@ -30,69 +30,107 @@ function createMockGraph(nodes: MockNode[], edges: MockEdge[]) {
 
 describe('evaluateGraphCondition', () => {
   // ── agent_reach_above / agent_reach_below ────────────────────
+  // THR-1562: thresholds are reach shares (0–1). Without a `reachShare` reader in the
+  // context the condition computes a base-only share: raw ÷ REACH_SHARE_FULL_RAW (40).
   describe('agent_reach_above', () => {
-    it('returns true when reach meets threshold', () => {
+    it('returns true when the share meets the threshold (raw 20 → 0.5)', () => {
       const graph = createMockGraph(
-        [{ id: 'a1', properties: { domainCapabilities: { iron: 5 } } }],
+        [{ id: 'a1', properties: { domainCapabilities: { iron: 20 } } }],
         [],
       );
-      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
     });
 
-    it('returns true when reach exceeds threshold', () => {
+    it('returns true when the share exceeds the threshold', () => {
       const graph = createMockGraph(
-        [{ id: 'a1', properties: { domainCapabilities: { iron: 8 } } }],
+        [{ id: 'a1', properties: { domainCapabilities: { iron: 32 } } }],
         [],
       );
-      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
     });
 
-    it('returns false when reach is below threshold', () => {
+    it('returns false when the share is below the threshold', () => {
       const graph = createMockGraph(
-        [{ id: 'a1', properties: { domainCapabilities: { iron: 3 } } }],
+        [{ id: 'a1', properties: { domainCapabilities: { iron: 12 } } }],
         [],
       );
-      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('a raw base of 10+ no longer clears a 0–1 threshold on its own (the THR-1562 defect)', () => {
+      // Before THR-1562 the raw value 10 was compared against 0.7 and always passed.
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: { domainCapabilities: { iron: 10 } } }],
+        [],
+      );
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.7 };
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('an un-migrated fixture storing a 0–1 value fails closed', () => {
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: { domainCapabilities: { iron: 0.9 } } }],
+        [],
+      );
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 };
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('the context reader wins over the base: a share below the threshold fails', () => {
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: { domainCapabilities: { iron: 40 } } }],
+        [],
+      );
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 };
+      expect(evaluateGraphCondition(cond, graph, 'a1', { reachShare: () => 0.3 })).toBe(false);
+      expect(evaluateGraphCondition(cond, graph, 'a1', { reachShare: () => 0.6 })).toBe(true);
     });
 
     it('returns false when agent node is missing', () => {
       const graph = createMockGraph([], []);
-      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
 
-    it('returns false when domainCapabilities is missing', () => {
+    it('returns false when domainCapabilities is missing (share 0)', () => {
       const graph = createMockGraph([{ id: 'a1', properties: {} }], []);
-      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
   });
 
   describe('agent_reach_below', () => {
-    it('returns true when reach is below threshold', () => {
+    it('returns true when the share is below the threshold', () => {
       const graph = createMockGraph(
-        [{ id: 'a1', properties: { domainCapabilities: { gold: 2 } } }],
+        [{ id: 'a1', properties: { domainCapabilities: { gold: 4 } } }],
         [],
       );
-      const cond: GraphCondition = { type: 'agent_reach_below', reach: 'gold', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_below', reach: 'gold', threshold: 0.2 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
     });
 
-    it('returns false when reach meets threshold', () => {
+    it('returns false when the share meets the threshold', () => {
       const graph = createMockGraph(
-        [{ id: 'a1', properties: { domainCapabilities: { gold: 5 } } }],
+        [{ id: 'a1', properties: { domainCapabilities: { gold: 8 } } }],
         [],
       );
-      const cond: GraphCondition = { type: 'agent_reach_below', reach: 'gold', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_below', reach: 'gold', threshold: 0.2 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('reads the context reader when supplied', () => {
+      const graph = createMockGraph([{ id: 'a1', properties: {} }], []);
+      const cond: GraphCondition = { type: 'agent_reach_below', reach: 'gold', threshold: 0.2 };
+      expect(evaluateGraphCondition(cond, graph, 'a1', { reachShare: () => 0.5 })).toBe(false);
+      expect(evaluateGraphCondition(cond, graph, 'a1', { reachShare: () => 0.1 })).toBe(true);
     });
 
     it('returns false when agent is missing (fail-soft)', () => {
       const graph = createMockGraph([], []);
-      const cond: GraphCondition = { type: 'agent_reach_below', reach: 'gold', threshold: 5 };
+      const cond: GraphCondition = { type: 'agent_reach_below', reach: 'gold', threshold: 0.2 };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
   });

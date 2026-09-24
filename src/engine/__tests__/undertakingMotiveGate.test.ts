@@ -44,8 +44,8 @@ function world(): WorldGraph {
     properties: {
       actorType: 'individual', spotlightTier: 'spotlight',
       domainCapabilities: {
-        iron: 0.9, shadow: 0.9, eye: 0.9, heart: 0.9,
-        gold: 0.9, stone: 0.9, star: 0.9, veil: 0.9,
+        iron: 36, shadow: 36, eye: 36, heart: 36,
+        gold: 36, stone: 36, star: 36, veil: 36,
       },
     },
   });

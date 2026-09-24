@@ -113,7 +113,9 @@ export const ARCANE_CIRCLE_DEFINITION: FactionDefinition = {
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },
   ],
-  joinPrerequisites: { veil: 25 },
+  // THR-1562: reach shares (0–1); raw ÷ REACH_SHARE_FULL_RAW (40), so the old raw
+  // requirement is kept exactly and becomes reachable.
+  joinPrerequisites: { veil: 0.625 },
   reputationAlignment: {
     veil: 'positive',
     eye: 'positive',

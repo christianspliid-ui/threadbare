@@ -29,6 +29,7 @@ import type { SphereName } from '../types';
 import type { AxiologicalProfile } from '../types/agent';
 import type { WorldGraph, GraphNode } from './graph';
 import { getThreadedAgents, getAgentAmbitions } from './graphQueries';
+import { computeReachShare } from './domainCapability';
 import {
   WHISPER_ESSENCE_COST_BASE,
   WHISPER_ESSENCE_COST_AMBITION_DRIFT,
@@ -158,14 +159,15 @@ function getThreadTier(graph: WorldGraph, ascendantId: string, agentId: string):
 
 // ─── Nudge Derivation ───────────────────────────────────────────
 
-interface NudgeCandidate {
+export interface NudgeCandidate {
   category: WhisperNudgeCategory;
   relevance: number;
   targetReach?: ReachDomain;
   targetSphere?: SphereName;
 }
 
-function deriveNudgeCandidates(
+/** Exported for tests (THR-1562: the reach-bias window reads the reach share). */
+export function deriveNudgeCandidates(
   agent: GraphNode,
   graph: WorldGraph,
   state: GameState,
@@ -173,7 +175,6 @@ function deriveNudgeCandidates(
   const candidates: NudgeCandidate[] = [];
   const profile = (agent.properties?.axiologicalProfile as AxiologicalProfile | undefined);
   const quintessence = (agent.properties?.quintessence as number | undefined) ?? 1.0;
-  const capabilities = (agent.properties?.domainCapabilities as Record<string, number> | undefined) ?? {};
 
   // 1. Gather strength — low quintessence
   if (quintessence < GATHER_STRENGTH_QUINTESSENCE_THRESHOLD) {
@@ -203,8 +204,10 @@ function deriveNudgeCandidates(
   }
 
   // 4. Reach biases — pick reaches where the agent has some capability but isn't saturated
+  // THR-1562: the reach share (0–1), so the 0.1–0.8 window can actually be entered —
+  // against the raw stored capability (10–40+) it never was.
   for (const reach of ALL_REACHES) {
-    const cap = capabilities[reach] ?? 0;
+    const cap = computeReachShare(graph, agent.id, reach);
     if (cap > 0.1 && cap < 0.8) {
       // Mid-range capability = good growth opportunity
       const relevance = 0.3 + (0.5 - Math.abs(cap - 0.4));

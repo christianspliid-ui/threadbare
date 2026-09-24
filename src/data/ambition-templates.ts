@@ -3,6 +3,16 @@
 // Starter ambition content library — 10 standard templates, 3 grievance templates,
 // and 7 event-minted templates.
 //
+// ─── THR-1562 — every reach number here is a reach share (0–1) ─────────────────
+//
+// `reachFloors`, `reachAffinity` and `agent_reach_above/below` thresholds are read on
+// the reach share (`computeReachShare`: effective raw ÷ REACH_SHARE_FULL_RAW, capped at
+// 1). The 25 `agent_reach_above` milestone thresholds were multiplied once by
+// AMBITION_MILESTONE_RESCALE (1.25, capped at 1.0) when they moved onto the share, so
+// milestones are paced by growth rather than met on first check. Floors and
+// abandonment triggers kept their values. `ambitionTemplatesReachScale.test.ts` pins
+// that no raw-scale number can be authored here again.
+//
 // ─── THR-813 — retired selection keys, and why ────────────────────────────────
 //
 // This file was the sole home of all 21 trait refs that survived THR-800/THR-808's
@@ -156,7 +166,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'trade_gold_mastery',
-        condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.875 },
         prose: ['Coin flows where she wills it.'],
       },
     ],
@@ -266,7 +276,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'conquer_iron',
-        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.875 },
         prose: ['His blade arm speaks for him in every hall.'],
       },
     ],
@@ -347,17 +357,17 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // THR-1348: `rare_ore_secured` was a dead trait (no resource model produces
         // it — `traitRefReconciliation.test.ts`). Stone is the finding reach: the
         // right metal, found at last.
-        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.3 },
+        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.375 },
         prose: ['The metal sang when struck. Not iron. Something older.'],
       },
       {
         id: 'forge_veil',
-        condition: { type: 'agent_reach_above', reach: 'veil', threshold: 0.6 },
+        condition: { type: 'agent_reach_above', reach: 'veil', threshold: 0.75 },
         prose: ['The runes came unbidden, etching themselves into the blank.'],
       },
       {
         id: 'forge_iron',
-        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.875 },
         prose: ['Ten thousand hammer-falls, and the shape of it finally true.'],
       },
     ],
@@ -433,7 +443,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'arcane_veil_high',
-        condition: { type: 'agent_reach_above', reach: 'veil', threshold: 0.8 },
+        condition: { type: 'agent_reach_above', reach: 'veil', threshold: 1 },
         prose: ['The world thinned. She could see through its seams.'],
       },
       {
@@ -612,7 +622,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'escape_endurance',
-        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.5 },
+        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.625 },
         prose: ['The body held. Barely, but it held.'],
       },
       {
@@ -727,7 +737,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'secrets_eye',
-        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.875 },
         prose: ['Patterns emerged from the noise. Connections, old and deliberate.'],
       },
       {
@@ -828,7 +838,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'faith_star',
-        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.875 },
         prose: ['The divine light pours through him like water through cloth.'],
       },
     ],
@@ -908,7 +918,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'work_stone',
-        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.875 },
         prose: ['He reads the grain of stone the way others read faces.'],
       },
     ],
@@ -958,7 +968,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'healer_flesh',
-        condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.875 },
         prose: ['She reads the body like a map — every vein a road, every bruise a story.'],
       },
       {
@@ -1105,12 +1115,12 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'revenge_track',
-        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.5 },
+        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.625 },
         prose: ['The betrayer has a trail. Every trail has an end.'],
       },
       {
         id: 'revenge_shadow',
-        condition: { type: 'agent_reach_above', reach: 'shadow', threshold: 0.6 },
+        condition: { type: 'agent_reach_above', reach: 'shadow', threshold: 0.75 },
         prose: ['Patience. The knife sharpens in the dark.'],
       },
       {
@@ -1120,7 +1130,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // pool uses (see the EVENT_MINTED note below): the reach to actually strike.
         // The prose keeps the beat but no longer asserts a death the engine can't see.
         id: 'revenge_target',
-        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.6 },
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.75 },
         prose: ['Strong enough now. The debt comes due in the only coin that matters.'],
       },
       {
@@ -1212,7 +1222,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'reclaim_strength',
-        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.6 },
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.75 },
         prose: ['Strong enough now. The return can begin.'],
       },
       {
@@ -1278,7 +1288,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'avenge_culprit',
-        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.4 },
+        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.5 },
         prose: ['The killer has a name now.'],
       },
       {
@@ -1286,7 +1296,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // `$`-ref. This template is `requires: 2, of: 2`, so the auto-complete was
         // half its completion bar — the ambition finished the moment it was checked.
         id: 'avenge_strike',
-        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.55 },
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.6875 },
         prose: ['The arm is ready. For the one who can no longer strike.'],
       },
       {
@@ -1352,7 +1362,7 @@ const DESTINY_AMBITION_TEMPLATE: AmbitionTemplate = {
     milestones: [
       {
         id: 'destiny_understanding',
-        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.6 },
+        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.75 },
         prose: ['The shape of the destiny clarified. Terrible and precise.'],
       },
       {
@@ -1431,12 +1441,12 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'avenge_resolve',
-        condition: { type: 'agent_reach_above', reach: 'shadow', threshold: 0.45 },
+        condition: { type: 'agent_reach_above', reach: 'shadow', threshold: 0.5625 },
         prose: ['The grief hardened into something with an edge.'],
       },
       {
         id: 'avenge_strength',
-        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.55 },
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.6875 },
         prose: ['Strong enough now to answer what was done.'],
       },
       {
@@ -1499,7 +1509,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'protect_iron',
-        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 },
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.625 },
         prose: ['They will not be caught unarmed a second time.'],
       },
     ],
@@ -1557,7 +1567,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'flee_endurance',
-        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.45 },
+        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.5625 },
         prose: ['The body has learned to keep going past where it wanted to stop.'],
       },
       {
@@ -1623,7 +1633,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'rebuild_craft',
-        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.5 },
+        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.625 },
         prose: ['They read the ruined stone and know how it wants to stand.'],
       },
     ],
@@ -1752,12 +1762,12 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestones: [
       {
         id: 'wonder_sight',
-        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.5 },
+        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.625 },
         prose: ['They have learned to look until the world gives up its seams.'],
       },
       {
         id: 'wonder_veil',
-        condition: { type: 'agent_reach_above', reach: 'veil', threshold: 0.45 },
+        condition: { type: 'agent_reach_above', reach: 'veil', threshold: 0.5625 },
         prose: ['The thing they saw has taught their hands its grammar.'],
       },
       {

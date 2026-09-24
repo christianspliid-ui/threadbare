@@ -140,7 +140,10 @@ export interface FactionDefinition {
   socialTemplateIds: string[];
   /** What happens when reputation hits 0 */
   expulsionConsequences: ExpulsionConsequence[];
-  /** Minimum domain capability to attempt joining (gates join encounter availability) */
+  /**
+   * Minimum reach share (0–1, `computeReachShare`, THR-1562) to attempt joining —
+   * gates join encounter availability. Never a raw capability number.
+   */
   joinPrerequisites?: Partial<Record<ReachDomain, number>>;
   /** Which reach reputation polarities this faction values — aligned traits boost standing, misaligned hurt it */
   reputationAlignment?: Partial<Record<ReachDomain, ReputationPolarity>>;

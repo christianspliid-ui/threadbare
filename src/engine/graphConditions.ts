@@ -5,6 +5,8 @@
 import type { GraphCondition } from '../types/ambition';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import { readResidence, dwellTicks, isAwayFromOrigin } from './agentResidence';
+import type { ReachDomain } from '../types/traits';
+import { rawToReachShare } from '../data/reach-share-constants';
 
 /**
  * Minimal graph interface — keeps this module testable without the full WorldGraph.
@@ -162,6 +164,35 @@ export interface ConditionContext {
    * fails soft to `false` there.
    */
   readonly pursuesProperties?: Record<string, unknown>;
+  /**
+   * The reach-share reader (THR-1562). Production passes `computeReachShare`, which
+   * reads the *effective* score (traits, items, companions). A caller or test mock that
+   * omits it gets a base-only share computed from the node's own
+   * `domainCapabilities` — on the same 0–1 scale, so an un-migrated fixture storing
+   * 0.5 reads share 0.0125 and fails **closed** rather than passing by accident.
+   */
+  readonly reachShare?: (agentId: string, reach: ReachDomain) => number;
+}
+
+/**
+ * Resolve an agent's reach share for a condition. `undefined` means "no agent" (the
+ * condition fails soft to false either way).
+ */
+function readReachShare(
+  graph: ConditionGraph,
+  agentId: string,
+  reach: ReachDomain,
+  context: ConditionContext | undefined,
+): number | undefined {
+  const agent = graph.getNode(agentId);
+  if (!agent) return undefined;
+  if (context?.reachShare) {
+    const share = context.reachShare(agentId, reach);
+    return Number.isFinite(share) ? share : 0;
+  }
+  const caps = agent.properties.domainCapabilities as Record<string, number> | undefined;
+  const raw = caps?.[reach];
+  return rawToReachShare(typeof raw === 'number' ? raw : 0);
 }
 
 /**
@@ -179,22 +210,17 @@ export function evaluateGraphCondition(
   context?: ConditionContext,
 ): boolean {
   switch (condition.type) {
+    // THR-1562: both read the reach share (0–1), the scale the thresholds are authored
+    // on — never the raw stored capability (10–40+), which made every milestone pass on
+    // first check and every abandonment trigger dead.
     case 'agent_reach_above': {
-      const agent = graph.getNode(agentId);
-      if (!agent) return false;
-      const caps = agent.properties.domainCapabilities as Record<string, number> | undefined;
-      if (!caps) return false;
-      const value = caps[condition.reach];
-      return typeof value === 'number' && value >= condition.threshold;
+      const share = readReachShare(graph, agentId, condition.reach, context);
+      return share !== undefined && share >= condition.threshold;
     }
 
     case 'agent_reach_below': {
-      const agent = graph.getNode(agentId);
-      if (!agent) return false;
-      const caps = agent.properties.domainCapabilities as Record<string, number> | undefined;
-      if (!caps) return false;
-      const value = caps[condition.reach];
-      return typeof value === 'number' && value < condition.threshold;
+      const share = readReachShare(graph, agentId, condition.reach, context);
+      return share !== undefined && share < condition.threshold;
     }
 
     // THR-786: both cases route through the one shared trait resolver. The

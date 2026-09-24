@@ -80,8 +80,8 @@ function addMerchant(graph: WorldGraph) {
       actorType: 'individual',
       spotlightTier: 'spotlight',
       domainCapabilities: {
-        gold: 0.6, eye: 0.4, heart: 0.3, shadow: 0.1,
-        iron: 0.2, stone: 0.2, star: 0.1, veil: 0.1,
+        gold: 24, eye: 16, heart: 12, shadow: 4,
+        iron: 8, stone: 8, star: 4, veil: 4,
       },
     },
   });

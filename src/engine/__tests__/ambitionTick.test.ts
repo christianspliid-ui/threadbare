@@ -100,7 +100,7 @@ describe('phaseAmbitionProgress', () => {
   });
 
   it('skips non-interval ticks', () => {
-    addActor(graph, 'actor_1', 'Kael', { gold: 0.8, eye: 0.5 });
+    addActor(graph, 'actor_1', 'Kael', { gold: 36, eye: 20 });
     addActiveAmbition(graph, 'actor_1', 'ambition_dominate_trade');
 
     // Tick 7 is not a multiple of MILESTONE_CHECK_INTERVAL (15)
@@ -112,8 +112,9 @@ describe('phaseAmbitionProgress', () => {
   });
 
   it('detects milestone completion when agent meets reach threshold', () => {
-    // ambition_dominate_trade milestone 'trade_gold_mastery' requires gold >= 0.7
-    addActor(graph, 'actor_1', 'Kael', { gold: 0.8, eye: 0.5 });
+    // ambition_dominate_trade milestone 'trade_gold_mastery' requires gold share >= 0.875
+    // (THR-1562: raw 36 → share 0.9)
+    addActor(graph, 'actor_1', 'Kael', { gold: 36, eye: 20 });
     addActiveAmbition(graph, 'actor_1', 'ambition_dominate_trade');
 
     const state = makeState(graph, MILESTONE_CHECK_INTERVAL);
@@ -132,8 +133,8 @@ describe('phaseAmbitionProgress', () => {
 
   it('detects ambition completion when enough milestones are met', () => {
     // ambition_dominate_trade requires 2 of 3 milestones
-    // Give the agent gold >= 0.7 (trade_gold_mastery) and pre-complete trade_bonds
-    addActor(graph, 'actor_1', 'Kael', { gold: 0.8, eye: 0.5 });
+    // Give the agent gold share >= 0.875 (trade_gold_mastery) and pre-complete trade_bonds
+    addActor(graph, 'actor_1', 'Kael', { gold: 36, eye: 20 });
     addActiveAmbition(graph, 'actor_1', 'ambition_dominate_trade', {
       completedMilestones: ['trade_bonds'], // already completed one
     });
@@ -156,8 +157,8 @@ describe('phaseAmbitionProgress', () => {
   });
 
   it('detects ambition abandonment when trigger condition met', () => {
-    // ambition_dominate_trade abandons when gold <= 0.2
-    addActor(graph, 'actor_1', 'Kael', { gold: 0.1, eye: 0.5 });
+    // ambition_dominate_trade abandons when gold share < 0.2 (raw 4 → 0.1)
+    addActor(graph, 'actor_1', 'Kael', { gold: 4, eye: 20 });
     addActiveAmbition(graph, 'actor_1', 'ambition_dominate_trade');
 
     const state = makeState(graph, MILESTONE_CHECK_INTERVAL);
@@ -183,14 +184,14 @@ describe('phaseAmbitionProgress', () => {
 
     // Actor with no ambitions and capabilities that match at least one template
     addActor(graph, 'actor_1', 'Kael', {
-      gold: 0.6,
-      eye: 0.5,
-      iron: 0.5,
-      shadow: 0.3,
-      veil: 0.3,
-      heart: 0.3,
-      stone: 0.3,
-      star: 0.3,
+      gold: 24,
+      eye: 20,
+      iron: 20,
+      shadow: 12,
+      veil: 12,
+      heart: 12,
+      stone: 12,
+      star: 12,
     });
 
     // Add a location node so the actor can be located somewhere
@@ -223,7 +224,7 @@ describe('phaseAmbitionProgress', () => {
     const lcmTick = lcm(MILESTONE_CHECK_INTERVAL, AMBITION_REEVAL_INTERVAL);
 
     // Actor with high capabilities so milestones don't auto-complete
-    addActor(graph, 'actor_1', 'Kael', { gold: 0.5, eye: 0.4 });
+    addActor(graph, 'actor_1', 'Kael', { gold: 20, eye: 16 });
 
     // Give them 2 active ambitions
     addActiveAmbition(graph, 'actor_1', 'ambition_dominate_trade');
