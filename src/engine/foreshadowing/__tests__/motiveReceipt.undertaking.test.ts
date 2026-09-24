@@ -21,7 +21,7 @@ function makeEntry(): EncounterCacheEntry {
 
 function makeCandidate(overrides: Partial<ScoredCandidate> = {}): ScoredCandidate {
   return {
-    entry: makeEntry(), completionProb: 0.5, expectedReward: 1, expectedUtility: 1, pushBenefit: 0, resistBenefit: 0,
+    entry: makeEntry(), completionProb: 0.5, expectedReward: 1, expectedUtility: 1, pushBenefit: 0, resistBenefit: 0, engagementForecast: 0.5,
     travelCost: 0, totalCost: 1, valuePerTick: 1, axiologicalScore: 0, personalityBias: 0, ambitionBoost: 0,
     desireMultiplier: 1, familiarityPenalty: 0, explorationBonus: 0, chainBonus: 0, resonance: 0, globalResonance: 0,
     ruinsBonus: 0, attractionBonus: 0, hunchBonus: 0, rarityMultiplier: 1, roleAffinityMultiplier: 1, markRevealBonus: 0,

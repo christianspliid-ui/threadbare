@@ -53,7 +53,6 @@ import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import type { FundamentState } from '../types/worldSoul';
 import { computeCapability, computeTier } from './domainCapability';
-import { computeResolutionThreshold } from './resolutionService';
 // Distance matrix removed — hex distance used for travel cost estimation
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
@@ -62,7 +61,8 @@ import { getScoringBoost } from './factionRankBonus';
 import { getTraitsForNode } from './traits';
 import type { TraitDefinitionProperties, ReputationEffects } from '../types/traits';
 import { REPUTATION_SCORING_WEIGHT, MARK_REVEAL_SCORING_BONUS, MARK_REVEAL_SCORING_CAP, INTEL_SCORING_BONUS } from '../data/agent-behavior-constants';
-import type { HiddenMark, IntelligenceRecord } from '../types/unifiedAction';
+import type { ActionScale, HiddenMark, IntelligenceRecord } from '../types/unifiedAction';
+import { scaledStepProbability } from './scaledForecast';
 import { evaluateMarkReveals } from './hiddenMarks';
 import { findActionableIntelligence, emitIntelligenceReferenced } from './intelligence';
 import { getChainProgress, computeChainBonus } from './encounterChains';
@@ -548,6 +548,12 @@ export interface ScoredCandidate {
   expectedReward: number;
   /** Phase 4: Expected utility from 5-tier outcome ladder (replaces binary completionProb * reward) */
   expectedUtility: number;
+  /**
+   * THR-1579 — the engagement forecast `F`: P(the action ends in the success
+   * family), from `forecastEncounterExpectedUtility`. Read by the forecast window
+   * (S4); carried and traced now so the number is inspectable before it gates.
+   */
+  engagementForecast: number;
   /** Phase 4: Estimated benefit of pushing (Q spend for better odds), 0 if not applicable */
   pushBenefit: number;
   /** Phase 4: Estimated benefit of resist option, 0 if not applicable */
@@ -783,22 +789,52 @@ export function computeGlobalShareMultiplier(
  * Legacy encounter difficulty (0–100) is normalized at this boundary.
  *
  * - capability is 0–1 (from computeCapability)
- * - difficulty is 0–100 (from encounter step — normalized here)
+ * - difficulty is 0–1 (the EncounterCacheEntry contract)
  * - Clamped to [0.05, 0.95] — never guaranteed success or failure
+ *
+ * THR-1579 (forecast window S2): forecasts at the template's `scale` — the scale
+ * offset, the difficulty cap and the post-roll floor `resolveStepCore` applies —
+ * so the number a mortal plans with is the number the dice use. `scale`
+ * undefined reads as `'regional'`, the core's own default.
  */
 export function estimateStepProbability(
   capability: number,
   difficulty: number,
   modifierTotal?: number,
+  scale?: ActionScale,
 ): number {
-  return computeResolutionThreshold({
+  return scaledStepProbability({
     actorId: '', // not needed for threshold computation
     domain: 'iron', // not needed for threshold computation
     capability,
     difficulty,
     sphereFactor: 0,
     actionModifiers: modifierTotal ?? 0,
-  });
+  }, scale);
+}
+
+// ─── Growth Value ───────────────────────────────────────────────
+
+/**
+ * How much tier progress an encounter offers a mortal at `currentCap` on its
+ * primary reach — the growth term `scoreAndSelect` adds to the reward scale.
+ *
+ * THR-1579 — `difficultyScaling` bands a 0–100 difficulty (`< 20`, `< 40`, …);
+ * cache difficulties are 0–1, so passed unscaled they all fell in the bottom band
+ * and growth credit was the same for every encounter. Scaled here, as
+ * `phaseAscendantProgression` scales it.
+ */
+export function estimateEncounterGrowthValue(entry: EncounterCacheEntry, currentCap: number): number {
+  const avgDifficulty = entry.stepDifficulties.reduce((s, d) => s + d, 0) / Math.max(entry.stepCount, 1);
+  const hasPromotionStep = false; // Encounter cache doesn't track per-step promotion eligibility
+  const estimatedGrowth = BASE_ENCOUNTER_GROWTH * difficultyScaling(avgDifficulty * 100) *
+    (hasPromotionStep ? PROMOTION_ELIGIBLE_MULTIPLIER : 1.0);
+  const currentTier = computeTier(currentCap);
+  const nextTierBoundary = currentTier / 10;
+  const distanceToNext = nextTierBoundary - currentCap;
+  const tierWidth = 0.1;
+  const proximityToNextTier = Math.max(0, 1.0 - (distanceToNext / tierWidth));
+  return estimatedGrowth * proximityToNextTier * GROWTH_REWARD_WEIGHT;
 }
 
 // ─── Completion Probability ─────────────────────────────────────
@@ -820,7 +856,7 @@ export function estimateCompletionProb(
     } catch {
       cap = 0.5; // Fail-soft: uncertain capability
     }
-    prob *= estimateStepProbability(cap, entry.stepDifficulties[i]);
+    prob *= estimateStepProbability(cap, entry.stepDifficulties[i], undefined, entry.scale);
   }
   return prob;
 }
@@ -1146,22 +1182,13 @@ export function scoreAndSelect(
     }
 
     // 2. Growth value — estimate how much tier progress this encounter offers
-    const avgDifficulty = entry.stepDifficulties.reduce((s, d) => s + d, 0) / Math.max(entry.stepCount, 1);
-    const hasPromotionStep = false; // Encounter cache doesn't track per-step promotion eligibility
-    const estimatedGrowth = BASE_ENCOUNTER_GROWTH * difficultyScaling(avgDifficulty) *
-      (hasPromotionStep ? PROMOTION_ELIGIBLE_MULTIPLIER : 1.0);
     let currentCap: number;
     try {
       currentCap = computeCapability(graph, agentId, entry.reachPrimary);
     } catch {
       currentCap = 0.5;
     }
-    const currentTier = computeTier(currentCap);
-    const nextTierBoundary = currentTier / 10;
-    const distanceToNext = nextTierBoundary - currentCap;
-    const tierWidth = 0.1;
-    const proximityToNextTier = Math.max(0, 1.0 - (distanceToNext / tierWidth));
-    const growthValue = estimatedGrowth * proximityToNextTier * GROWTH_REWARD_WEIGHT;
+    const growthValue = estimateEncounterGrowthValue(entry, currentCap);
 
     // 3. Phase 4: Expected utility from 5-tier outcome ladder (replaces binary model).
     // Uses the same math as live resolution via forecastEncounterExpectedUtility.
@@ -1169,6 +1196,7 @@ export function scoreAndSelect(
     const rewardWithGrowth = entry.successRewardEstimate + growthValue;
     const forecast = forecastEncounterExpectedUtility(entry, agentId, graph, rewardWithGrowth);
     const expectedUtility = forecast.expectedUtility;
+    const engagementForecast = forecast.engagementForecast;
     const pushBenefit = forecast.pushBenefit;
     const resistBenefit = forecast.resistBenefit;
 
@@ -1413,6 +1441,7 @@ export function scoreAndSelect(
       completionProb,
       expectedReward,
       expectedUtility,
+      engagementForecast,
       pushBenefit,
       resistBenefit,
       travelCost,
@@ -1523,6 +1552,7 @@ function buildTrace(
       surfaceKey: c.surfaceKey,
       // Phase 4: rich forecast fields
       expectedUtility: c.expectedUtility,
+      engagementForecast: c.engagementForecast,
       pushBenefit: c.pushBenefit,
       resistBenefit: c.resistBenefit,
       identityBiasBonus: c.identityBiasBonus,

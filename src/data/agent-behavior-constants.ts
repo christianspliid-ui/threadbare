@@ -549,6 +549,15 @@ export const OUTGROWTH_CAP_THRESHOLD = 55;
  * @range boolean */
 export const OUTGROWTH_FILTER_ENABLED = true;
 
+/** THR-1579 (forecast window S2) — whether the encounter cache multiplies a step's
+ * authored difficulty by the late-game tier multiplier (×1.3) and the hex danger
+ * multiplier (×(1 + 0.5·danger)). The roll never applies either, so with them on the
+ * planner forecast odds the dice do not use. Off: the cache stores authored
+ * difficulty, as the roll does. The code is retained (NFP #6); if danger should
+ * deter, a later ticket adds it as a named cost term, never a false probability.
+ * @range boolean */
+export const PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false;
+
 // ═══════════════════════════════════════════════════════════════════
 // COOLDOWN SCALING — Dynamic cooldowns based on pool size (phaseAgentDecision.ts)
 // ═══════════════════════════════════════════════════════════════════

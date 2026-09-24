@@ -60,3 +60,21 @@ export function forecastActionAtScale(input: ResolutionInput, scale: ActionScale
   });
   return { ...floored, adjustedDifficulty, scaleFloorRaised: true };
 }
+
+/**
+ * THR-1579 — the continuous probability `resolveStepCore` rolls `input` against at
+ * `scale`: the scale-adjusted threshold, raised to the scale's floor when it sits
+ * under it. The same two steps as `forecastActionAtScale`, without the d100
+ * quantisation of the summary — the planner's `estimateStepProbability` reads it.
+ */
+export function scaledStepProbability(input: ResolutionInput, scale: ActionScale | undefined): number {
+  const { adjustedDifficulty } = applyScaleDifficultyAdjust(
+    input.difficulty,
+    input.capability,
+    input.sphereFactor ?? 0,
+    input.actionModifiers ?? 0,
+    scale,
+  );
+  const p = computeResolutionThreshold({ ...input, difficulty: adjustedDifficulty });
+  return Math.max(p, MIN_PROBABILITY_BY_SCALE[scale ?? 'regional']);
+}
