@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-24 07:45 local (05:45 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-24 07:54 local (05:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,16 +24,16 @@ Your rule from 6 August says the planning lane stages design work but never writ
 ## Queue
 
 **Thin: one job ready, one in progress, no parked jobs.**
-- **In progress:** [FB2: the fight clock and how fights end](https://linear.app/threadbare/issue/THR-1538/fight-block-fb2-fightstate-the-clock-early-end) (High). The first run stopped at about 03:27 with its work unsaved. A resume run found it and pushed it to [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1538-fb2-fight-clock) at 07:41, so nothing was lost. This is the first live rescue by the [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) fix. No pull request yet.
+- **In progress:** [FB2: the fight clock and how fights end](https://linear.app/threadbare/issue/THR-1538/fight-block-fb2-fightstate-the-clock-early-end) (High). The first run stopped at about 03:27 with its work unsaved. A resume run found it and pushed it to [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1538-fb2-fight-clock) at 07:41, so nothing was lost. This is the first live rescue by the [THR-1529](https://linear.app/threadbare/issue/THR-1529/a-pickup-run-killed-mid-slice-leaves-its-work-invisible-no-wip-push) fix. Its pull request, [#1999](https://github.com/christianspliid-ui/threadbare/pull/1999), is now open and will merge by itself once its checks pass.
 - **Ready:** [M1: the monster card](https://linear.app/threadbare/issue/THR-1544/monsters-m1-the-monster-card) (Medium). It is picked up once FB2 lands.
 
 ## Health
 
-- **Overnight quiet:** no lane published between about 03:00 and 07:40, and the worktree reaper last ran at 02:40. This looks like the computer sleeping overnight. Everything resumed at 07:40.
 - **Lane silence:** the worst recent gap (25 hours, Saturday into Sunday) falls on a weekend, so your 11 September ruling declines it.
 - **Worktree reaper:** 5 worktrees are waiting to be sorted. This is routine.
 - Everything else is green:
-  - Engine speed is 80 ms/tick, 17% over its weekly median. That is inside the 25% band.
+  - Engine speed is 79 ms/tick, 16% over its weekly median. That is inside the 25% band.
   - The live site is current. Only docs have merged since the last publish.
-  - CI is healthy and no PRs are waiting to merge.
+  - CI is healthy. The one open pull request (FB2) is waiting on its checks and will merge on green.
+  - The worktree reaper ran again at 07:45 after the overnight sleep.
   - All nine scheduled lanes are on time.
