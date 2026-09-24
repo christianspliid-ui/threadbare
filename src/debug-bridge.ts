@@ -2313,7 +2313,7 @@ if (import.meta.env.DEV) {
     // nodes: who was pulled into the spotlight, whom they displaced, who was refused.
     getSpotlightLedger: async () => {
       const state = _gameStateProvider?.();
-      if (!state) return { pulled: [], overflow: 0, overflowAllowance: 0, refused: [] };
+      if (!state) return { pulled: [], overflow: 0, overflowAllowance: 0, refused: [], unwatchedDemotions: [] };
       const { readSpotlightLedger } = await import('./engine/spotlightPull');
       return readSpotlightLedger(state.graph);
     },

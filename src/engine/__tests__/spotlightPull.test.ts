@@ -151,7 +151,7 @@ describe('pullHolderIntoSpotlight — the swap', () => {
     flushSpotlightPullTrace();
     const traces = getTraces().filter(t => t.category === 'spotlight_pull') as unknown as SpotlightPullTrace[];
     expect(traces).toHaveLength(1);
-    expect(traces[0].pulled).toEqual([{ agentId: 'h', templateId: STRATEGIC, fromTier: 'ambient', demotedId: 's3' }]);
+    expect(traces[0].pulled).toEqual([{ agentId: 'h', templateId: STRATEGIC, fromTier: 'ambient', demotedId: 's3', demotedReason: 'no_strategic_want' }]);
     expect(traces[0].refused).toEqual([]);
     expect(traces[0].autonomousAfter).toBe(3);
   });

@@ -16,7 +16,7 @@ import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture
 import { pickCulturalName } from '../data/culture-name-pools';
 import { assignCooperationStrategy } from './disposition';
 import { generateAxiologicalProfile } from './agentGeneration';
-import { assignInitialAmbitions, assignAmbitionToActor } from './ambitionAssignment';
+import { assignInitialAmbitions, assignAmbitionToActor, spentSpotlightPull } from './ambitionAssignment';
 import { collectBusyActorIds } from './spotlightPull';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { validateAgentIntegrity } from './agentValidation';
@@ -580,14 +580,24 @@ export function phaseAgentLifecycle(
         // births that follow it and the world is byte-identical to the pre-pull world
         // except for what the pull itself did (NFP #3 — and what makes a before/after
         // census attributable to the pull rather than to a moved stream).
+        //
+        // THR-1523: one pull per newborn — the first strategic want spends it, and a
+        // refusal is recorded once, not once per want. The follow list and the
+        // projects let an unwatched builder step back for the newborn (`?? []`: an
+        // absent field is an empty list, never an omitted option, which fails closed).
         const bornBusy = collectBusyActorIds(state);
+        let bornPullSpent = false;
         for (const assignment of ambitionAssignments) {
           const born = assignAmbitionToActor(graph, newId, assignment.templateId, state.tick, {
             priority: assignment.priority,
             seed: state.seed,
             busyActorIds: bornBusy,
+            followedAgentIds: state.followedAgentIds ?? [],
+            projects: state.strategicState?.projects ?? [],
+            skipSpotlightPull: bornPullSpent,
           });
           if (born.pull?.pulled) events.push(born.pull.event);
+          if (spentSpotlightPull(born)) bornPullSpent = true;
         }
 
         // Validate newborn agent integrity.

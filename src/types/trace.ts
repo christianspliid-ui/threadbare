@@ -2367,6 +2367,10 @@ export interface SpotlightPullTrace extends TraceBase {
     fromTier: 'ambient' | 'notable';
     /** The spotlight mortal that stepped back, or null for a net-additive overflow pull. */
     demotedId: string | null;
+    /** Which candidate class stepped back (THR-1523); absent for a net-additive pull. */
+    demotedReason?: 'no_strategic_want' | 'unwatched_builder';
+    /** For an unwatched builder: ticks since their last activity when they stepped back. */
+    demotedUnwatchedTicks?: number;
   }>;
   refused: ReadonlyArray<{ agentId: string; templateId: string; reason: SpotlightPullRefusal }>;
   /** The deciding population (`isAutonomousDecisionActor`) after this tick's pulls. */

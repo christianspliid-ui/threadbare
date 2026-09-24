@@ -168,7 +168,22 @@ export function assignAmbitionToActor(
         rng: options.rng,
         seed: options.seed,
         busyActorIds: options.busyActorIds,
+        followedAgentIds: options.followedAgentIds,
+        projects: options.projects,
+        unwatchedBuildersEnabled: options.unwatchedBuildersEnabled,
       });
 
   return { assigned: true, priority, ambitionNodeId, pull };
+}
+
+/**
+ * Did this assignment spend the holder's one pull for the batch (THR-1523 §5)? True
+ * once the pull ran at all — pulled or refused. A batch (a newborn's two wants, one
+ * re-evaluation pass) passes `skipSpotlightPull` to every later assignment after this
+ * reads true, so a refused holder is refused once, not once per want, and the census
+ * counts mortals rather than wants.
+ */
+export function spentSpotlightPull(result: AmbitionAssignmentResult): boolean {
+  if (!result.assigned || !result.pull) return false;
+  return result.pull.pulled || result.pull.reason !== 'not_applicable';
 }

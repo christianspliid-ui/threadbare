@@ -33,6 +33,16 @@
  * (`SPOTLIGHT_AMBITION_PULL_OVERFLOW_SHARE` of the deciding population, capped by
  * `SPOTLIGHT_AMBITION_PULL_MAX`); past that it is refused with reason `budget`.
  *
+ * **Unwatched builders step back (THR-1523).** Every standard ambition template is
+ * strategic, so the class above was empty from tick 0 and the pull froze after the
+ * first overflow. A second class follows it: a builder nobody has watched and whose
+ * work has not advanced for `SPOTLIGHT_UNWATCHED_BUILDER_TICKS` (floored at tick 0 or
+ * their own pull), never travelling, never followed — at most
+ * `SPOTLIGHT_UNWATCHED_SWAPS_PER_WINDOW` per window. Behind
+ * `SPOTLIGHT_UNWATCHED_BUILDERS_ENABLED`; the follow list and the projects arrive as
+ * pull options and an omitted one fails closed. The retained dead hold no slot in any
+ * mode.
+ *
  * Every refusal is a reason on the node and in the trace, never a throw (NFP #4).
  */
 import type { WorldGraph } from './graph';
@@ -40,6 +50,7 @@ import type { GraphNode } from '../types/graph';
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SpotlightTier } from '../types/npc';
 import type { SpotlightPullRefusal, SpotlightPullTrace } from '../types/trace';
+import type { StrategicProjectRuntime } from '../types/strategicAction';
 import { hydrateToTier, demoteToTier } from './npcGraduation';
 // From the leaf module, not `strategicKindReachability`: that module imports the
 // candidate generator, and this one sits inside the lifecycle import chain — the
@@ -55,6 +66,10 @@ import {
   SPOTLIGHT_AMBITION_PULL_OVERFLOW_SHARE,
   SPOTLIGHT_WITNESS_WINDOW_TICKS,
   SPOTLIGHT_PULL_EVENT_SIGNIFICANCE,
+  SPOTLIGHT_UNWATCHED_BUILDERS_ENABLED,
+  SPOTLIGHT_UNWATCHED_BUILDER_TICKS,
+  SPOTLIGHT_UNWATCHED_SWAPS_PER_WINDOW,
+  SPOTLIGHT_UNWATCHED_SWAP_WINDOW_TICKS,
 } from '../data/agent-behavior-constants';
 
 // ─── Node properties (the ledger) ─────────────────────────────────
@@ -75,6 +90,13 @@ export const SPOTLIGHT_PULL_REFUSED_TICK_KEY = 'spotlightPullRefusedTick';
  * demotion: the ruling's order made reachable, not a fail-soft default.
  */
 export const LAST_WITNESSED_TICK_KEY = 'lastWitnessedTick';
+/**
+ * Tick a builder stepped back unwatched (THR-1523). The per-window cap counts these,
+ * and the ledger reads them. Written on the *demoted* mortal.
+ */
+export const SPOTLIGHT_UNWATCHED_DEMOTED_TICK_KEY = 'spotlightUnwatchedDemotedTick';
+/** How long they had gone unwatched when they stepped back — the ledger's evidence. */
+export const SPOTLIGHT_UNWATCHED_DEMOTED_TICKS_KEY = 'spotlightUnwatchedDemotedTicks';
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -95,6 +117,37 @@ export interface SpotlightPullOptions {
    * additive direction for callers that predate the pull.
    */
   readonly busyActorIds?: ReadonlySet<string>;
+  /**
+   * The mortals the player follows (`state.followedAgentIds ?? []`, THR-1523). A
+   * followed mortal is never an unwatched builder. **Omitted ⇒ the unwatched class is
+   * empty** (fail closed): an absent option must never read as "follows nobody" by
+   * accident, so callers pass `?? []` rather than the raw optional field.
+   */
+  readonly followedAgentIds?: ReadonlyArray<string>;
+  /**
+   * The undertakings (`state.strategicState?.projects ?? []`, THR-1523) — a builder
+   * whose work advanced inside the threshold is not unwatched. Omitted ⇒ the unwatched
+   * class is empty, as with the follow list.
+   */
+  readonly projects?: ReadonlyArray<SpotlightProjectActivity>;
+  /**
+   * Override `SPOTLIGHT_UNWATCHED_BUILDERS_ENABLED` — tests pin the lever-off set with
+   * it. Production callers omit it.
+   */
+  readonly unwatchedBuildersEnabled?: boolean;
+}
+
+/** The two project fields the unwatched rule reads — `StrategicProjectRuntime` satisfies it. */
+export type SpotlightProjectActivity = Pick<StrategicProjectRuntime, 'actorId' | 'lastProgressTick'>;
+
+/** Why a candidate may step back (THR-1523): the trace and the ledger name the class. */
+export type SpotlightDemotionReason = 'no_strategic_want' | 'unwatched_builder';
+
+export interface SpotlightDemotionCandidate {
+  readonly node: GraphNode;
+  readonly reason: SpotlightDemotionReason;
+  /** For an unwatched builder: ticks since their last activity. */
+  readonly unwatchedTicks?: number;
 }
 
 export type SpotlightPullResult =
@@ -122,6 +175,8 @@ export interface SpotlightLedger {
   /** How many net-additive pulls this world may hold at once — the share of its deciding population, capped. */
   readonly overflowAllowance: number;
   readonly refused: ReadonlyArray<{ id: string; reason: SpotlightPullRefusal; tick: number }>;
+  /** Builders who stepped back unwatched (THR-1523) — the census's kill-criterion input. */
+  readonly unwatchedDemotions: ReadonlyArray<{ agentId: string; tick: number; unwatchedTicks: number }>;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -232,36 +287,154 @@ export function compareDemotionCandidates(a: GraphNode, b: GraphNode, tick: numb
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
+/** A retained death keeps the node (`deceased: true`); the dead hold no slot (THR-1523 §5). */
+function isDeceased(node: GraphNode): boolean {
+  return node.properties.deceased === true;
+}
+
+/** A deciding mortal who is alive — the population the budget and both classes count. */
+function isLivingDecider(node: GraphNode): boolean {
+  return isAutonomousDecisionActor(node) && !isDeceased(node);
+}
+
 /**
- * The spotlight mortals that may step back, best candidate first. Pure — reads the
- * graph, writes nothing.
+ * On the road: a non-empty movement queue. Only spotlight mortals move
+ * (`phaseMovement`), so a demoted traveller would freeze mid-route. A malformed
+ * `movementState` reads as travelling — a stuck mover is left alone (fail-soft).
  */
-export function demotionCandidates(
+function isTravelling(node: GraphNode): boolean {
+  const ms = node.properties.movementState as { movementQueue?: unknown } | undefined | null;
+  if (ms === undefined || ms === null) return false;
+  if (typeof ms !== 'object' || !Array.isArray(ms.movementQueue)) return true;
+  return ms.movementQueue.length > 0;
+}
+
+/**
+ * The last tick this builder was active (THR-1523): the latest of their witness, their
+ * own pull, their undertakings' progress — and tick 0. The floor is guard 1: THR-1348's
+ * order reads never-witnessed as infinitely stale, which is right for the ambition-less
+ * but would step the whole worldgen cast back on day one.
+ */
+export function lastActiveTick(
+  node: GraphNode,
+  projects: ReadonlyArray<SpotlightProjectActivity>,
+): number {
+  let last = 0;
+  const witnessed = node.properties[LAST_WITNESSED_TICK_KEY];
+  if (typeof witnessed === 'number' && witnessed > last) last = witnessed;
+  const pulledTick = node.properties[SPOTLIGHT_PULLED_TICK_KEY];
+  if (typeof pulledTick === 'number' && pulledTick > last) last = pulledTick;
+  for (const p of projects) {
+    if (p.actorId !== node.id) continue;
+    if (typeof p.lastProgressTick === 'number' && p.lastProgressTick > last) last = p.lastProgressTick;
+  }
+  return last;
+}
+
+/**
+ * Unwatched builders who stepped back inside the window ending at `tick` — guard 5's
+ * count. A malformed value is ignored (never counts, never demotes twice by accident).
+ */
+export function countUnwatchedDemotionsInWindow(graph: WorldGraph, tick: number): number {
+  let n = 0;
+  for (const node of graph.getNodesByType('actor')) {
+    const t = node.properties[SPOTLIGHT_UNWATCHED_DEMOTED_TICK_KEY];
+    if (typeof t !== 'number' || !Number.isFinite(t)) continue;
+    if (t <= tick && tick - t < SPOTLIGHT_UNWATCHED_SWAP_WINDOW_TICKS) n++;
+  }
+  return n;
+}
+
+export interface DemotionCandidateOptions {
+  readonly busyActorIds?: ReadonlySet<string>;
+  readonly exclude?: ReadonlySet<string>;
+  /** See `SpotlightPullOptions.followedAgentIds` — omitted ⇒ no unwatched builder is offered. */
+  readonly followedAgentIds?: ReadonlyArray<string>;
+  /** See `SpotlightPullOptions.projects` — omitted ⇒ no unwatched builder is offered. */
+  readonly projects?: ReadonlyArray<SpotlightProjectActivity>;
+  readonly unwatchedBuildersEnabled?: boolean;
+}
+
+/**
+ * The spotlight mortals that may step back, best candidate first, each with the class
+ * that admitted them. Pure — reads the graph, writes nothing.
+ *
+ * **Two classes (THR-1523).** First, THR-1348's: a mortal with no strategic ambition,
+ * never pulled, in the ruling's witness order. After them, and only with the lever on,
+ * **unwatched builders**: a strategic-ambition holder (pulled or not) who is not
+ * travelling, not followed, and has gone `SPOTLIGHT_UNWATCHED_BUILDER_TICKS` since
+ * their last activity — longest-unwatched first, then `importance`, then id. At most
+ * `SPOTLIGHT_UNWATCHED_SWAPS_PER_WINDOW` builders step back per window. A pulled mortal
+ * with no active strategic want sits in neither class on purpose: the pull must not
+ * demote its own newcomer the moment their first work finishes.
+ *
+ * Both classes share every guard: alive, deciding, not busy, not the avatar, not
+ * threaded, commanding no army, holding no seat.
+ */
+export function rankedDemotionCandidates(
   graph: WorldGraph,
   tick: number,
-  options: { readonly busyActorIds?: ReadonlySet<string>; readonly exclude?: ReadonlySet<string> } = {},
-): GraphNode[] {
-  const out: GraphNode[] = [];
+  options: DemotionCandidateOptions = {},
+): SpotlightDemotionCandidate[] {
+  const followed = options.followedAgentIds ? new Set(options.followedAgentIds) : null;
+  const projects = options.projects ?? null;
+  const unwatchedOn =
+    (options.unwatchedBuildersEnabled ?? SPOTLIGHT_UNWATCHED_BUILDERS_ENABLED) &&
+    followed !== null &&
+    projects !== null &&
+    countUnwatchedDemotionsInWindow(graph, tick) < SPOTLIGHT_UNWATCHED_SWAPS_PER_WINDOW;
+
+  const ambitionless: GraphNode[] = [];
+  const builders: Array<{ node: GraphNode; unwatchedTicks: number }> = [];
   for (const node of graph.getNodesByType('actor')) {
-    if (!isAutonomousDecisionActor(node)) continue;
+    if (!isLivingDecider(node)) continue;
     if (options.exclude?.has(node.id)) continue;
-    if (typeof node.properties[SPOTLIGHT_PULLED_TICK_KEY] === 'number') continue;
     if (options.busyActorIds?.has(node.id)) continue;
     if (isAvatar(graph, node.id)) continue;
     if (isThreaded(graph, node.id)) continue;
     if (commandsArmy(graph, node.id)) continue;
     if (holdsSeat(graph, node.id)) continue;
-    if (holdsStrategicAmbition(graph, node.id)) continue;
-    out.push(node);
+    const pulled = typeof node.properties[SPOTLIGHT_PULLED_TICK_KEY] === 'number';
+    if (!holdsStrategicAmbition(graph, node.id)) {
+      if (!pulled) ambitionless.push(node);
+      continue;
+    }
+    if (!unwatchedOn) continue;
+    if (followed!.has(node.id)) continue;
+    if (isTravelling(node)) continue;
+    const unwatchedTicks = tick - lastActiveTick(node, projects!);
+    if (unwatchedTicks < SPOTLIGHT_UNWATCHED_BUILDER_TICKS) continue;
+    builders.push({ node, unwatchedTicks });
   }
-  return out.sort((a, b) => compareDemotionCandidates(a, b, tick));
+  ambitionless.sort((a, b) => compareDemotionCandidates(a, b, tick));
+  builders.sort((a, b) => {
+    if (a.unwatchedTicks !== b.unwatchedTicks) return b.unwatchedTicks - a.unwatchedTicks;
+    const impA = (a.node.properties.importance as number | undefined) ?? 0;
+    const impB = (b.node.properties.importance as number | undefined) ?? 0;
+    if (impA !== impB) return impA - impB;
+    return a.node.id < b.node.id ? -1 : a.node.id > b.node.id ? 1 : 0;
+  });
+  return [
+    ...ambitionless.map(node => ({ node, reason: 'no_strategic_want' as const })),
+    ...builders.map(b => ({ node: b.node, reason: 'unwatched_builder' as const, unwatchedTicks: b.unwatchedTicks })),
+  ];
 }
 
-/** Pulled mortals still in the spotlight who displaced nobody — the overflow `budget` counts. */
+/** The candidate nodes alone, best first — `rankedDemotionCandidates` without the class. */
+export function demotionCandidates(
+  graph: WorldGraph,
+  tick: number,
+  options: DemotionCandidateOptions = {},
+): GraphNode[] {
+  return rankedDemotionCandidates(graph, tick, options).map(c => c.node);
+}
+
+/** Pulled mortals still in the spotlight, alive, who displaced nobody — the overflow `budget` counts. */
 export function countOverflowPulls(graph: WorldGraph): number {
   let n = 0;
   for (const node of graph.getNodesByType('actor')) {
     if (typeof node.properties[SPOTLIGHT_PULLED_TICK_KEY] !== 'number') continue;
+    if (isDeceased(node)) continue;
     if (node.properties[SPOTLIGHT_PULL_DEMOTED_ID_KEY] !== null) continue;
     if (((node.properties.spotlightTier as SpotlightTier | undefined) ?? 'spotlight') !== 'spotlight') continue;
     n++;
@@ -277,7 +450,7 @@ export function countOverflowPulls(graph: WorldGraph): number {
  * world two.
  */
 export function overflowAllowance(graph: WorldGraph): number {
-  const deciding = graph.getNodesByType('actor').filter(isAutonomousDecisionActor).length;
+  const deciding = graph.getNodesByType('actor').filter(isLivingDecider).length;
   const base = Math.max(0, deciding - countOverflowPulls(graph));
   return Math.max(0, Math.min(SPOTLIGHT_AMBITION_PULL_MAX, Math.floor(base * SPOTLIGHT_AMBITION_PULL_OVERFLOW_SHARE)));
 }
@@ -372,11 +545,15 @@ export function pullHolderIntoSpotlight(
     return refuse(graph, actorId, templateId, tick, 'already_pulled');
   }
 
-  const candidates = demotionCandidates(graph, tick, {
+  const candidates = rankedDemotionCandidates(graph, tick, {
     busyActorIds: options.busyActorIds,
     exclude: new Set([actorId]),
+    followedAgentIds: options.followedAgentIds,
+    projects: options.projects,
+    unwatchedBuildersEnabled: options.unwatchedBuildersEnabled,
   });
-  const demotedId = candidates[0]?.id ?? null;
+  const chosen = candidates[0];
+  const demotedId = chosen?.node.id ?? null;
   if (demotedId === null && countOverflowPulls(graph) >= overflowAllowance(graph)) {
     return refuse(graph, actorId, templateId, tick, 'budget');
   }
@@ -409,7 +586,19 @@ export function pullHolderIntoSpotlight(
     return refuse(graph, actorId, templateId, tick, 'no_capability_path');
   }
 
-  if (demotedId !== null) demoteToTier(graph, demotedId, 'notable');
+  if (demotedId !== null) {
+    demoteToTier(graph, demotedId, 'notable');
+    // Guard 5's count and the ledger's evidence. The builder keeps their ambition —
+    // nothing is deleted — and no chronicle line is written: nobody was watching.
+    if (chosen?.reason === 'unwatched_builder') {
+      graph.updateNode(demotedId, {
+        properties: {
+          [SPOTLIGHT_UNWATCHED_DEMOTED_TICK_KEY]: tick,
+          [SPOTLIGHT_UNWATCHED_DEMOTED_TICKS_KEY]: chosen.unwatchedTicks ?? 0,
+        },
+      });
+    }
+  }
 
   const name = graph.getNode(actorId)?.name ?? actorId;
   const ambitionName = template.displayName ?? templateId;
@@ -422,7 +611,16 @@ export function pullHolderIntoSpotlight(
     actorId,
   };
 
-  record(graph, tick, p => p.pulled.push({ agentId: actorId, templateId, fromTier, demotedId }));
+  record(graph, tick, p =>
+    p.pulled.push({
+      agentId: actorId,
+      templateId,
+      fromTier,
+      demotedId,
+      ...(chosen ? { demotedReason: chosen.reason } : {}),
+      ...(chosen?.reason === 'unwatched_builder' ? { demotedUnwatchedTicks: chosen.unwatchedTicks } : {}),
+    }),
+  );
   return { pulled: true, fromTier, demotedId, event };
 }
 
@@ -451,7 +649,13 @@ export function markWitnessed(graph: WorldGraph, tick: number, ids: Iterable<str
 export function readSpotlightLedger(graph: WorldGraph): SpotlightLedger {
   const pulled: Array<{ id: string; templateId: string; tick: number; demotedId: string | null }> = [];
   const refused: Array<{ id: string; reason: SpotlightPullRefusal; tick: number }> = [];
+  const unwatchedDemotions: Array<{ agentId: string; tick: number; unwatchedTicks: number }> = [];
   for (const node of graph.getNodesByType('actor')) {
+    const unwatchedTick = node.properties[SPOTLIGHT_UNWATCHED_DEMOTED_TICK_KEY];
+    if (typeof unwatchedTick === 'number') {
+      const ticks = node.properties[SPOTLIGHT_UNWATCHED_DEMOTED_TICKS_KEY];
+      unwatchedDemotions.push({ agentId: node.id, tick: unwatchedTick, unwatchedTicks: typeof ticks === 'number' ? ticks : 0 });
+    }
     const pulledTick = node.properties[SPOTLIGHT_PULLED_TICK_KEY];
     if (typeof pulledTick === 'number') {
       pulled.push({
@@ -477,5 +681,8 @@ export function readSpotlightLedger(graph: WorldGraph): SpotlightLedger {
     overflow: countOverflowPulls(graph),
     overflowAllowance: overflowAllowance(graph),
     refused: refused.sort(byTickThenId),
+    unwatchedDemotions: unwatchedDemotions.sort(
+      (a, b) => a.tick - b.tick || (a.agentId < b.agentId ? -1 : a.agentId > b.agentId ? 1 : 0),
+    ),
   };
 }

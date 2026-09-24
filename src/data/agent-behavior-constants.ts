@@ -634,6 +634,33 @@ export const SPOTLIGHT_WITNESS_WINDOW_TICKS = 36;
  * @range 0.2–0.5 */
 export const SPOTLIGHT_PULL_EVENT_SIGNIFICANCE = 0.3;
 
+/** The lever for *unwatched builders step back* (THR-1523). When true, a spotlight
+ * mortal who holds a strategic ambition may step back for a pull once they have gone
+ * `SPOTLIGHT_UNWATCHED_BUILDER_TICKS` with no witnessed scene and no progress on any
+ * undertaking — after every ambition-less candidate, at most
+ * `SPOTLIGHT_UNWATCHED_SWAPS_PER_WINDOW` per window. When false the candidate set is
+ * THR-1348's, less the retained dead (that correction is not gated: a corpse holding a
+ * slot is a defect in any mode).
+ * @range boolean */
+export const SPOTLIGHT_UNWATCHED_BUILDERS_ENABLED = true;
+
+/** Ticks without a witnessed encounter or any undertaking progress before a builder may
+ * step back — six days, three times the census's typical gap between one mortal's
+ * encounter starts. Floored at tick 0 (or the mortal's own pull), so the worldgen cast
+ * is never unwatched on day one. The kill criterion (more than 30 % of worldgen
+ * protagonists stepped back by tick 150) raises this first.
+ * @range 36–240 */
+export const SPOTLIGHT_UNWATCHED_BUILDER_TICKS = 72;
+
+/** Most unwatched-builder demotions per window — bounded turnover of the cast. Past it
+ * the pull behaves as THR-1348 shipped: overflow, then refusal `budget`.
+ * @range 0–3 */
+export const SPOTLIGHT_UNWATCHED_SWAPS_PER_WINDOW = 1;
+
+/** The window the unwatched-demotion cap counts over — one day.
+ * @range 6–48 */
+export const SPOTLIGHT_UNWATCHED_SWAP_WINDOW_TICKS = 12;
+
 // ═══════════════════════════════════════════════════════════════════
 // BORN-LATER SPAWN — Prefer content-rich locations (agentLifecycle.ts)
 // ═══════════════════════════════════════════════════════════════════

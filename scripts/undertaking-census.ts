@@ -48,6 +48,7 @@ import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
 import { buildBalanceRunSummary } from '../src/engine/balanceSummary';
 import { enableTracing, disableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
 import { isAutonomousDecisionActor } from '../src/engine/strategicKindReachability';
+import { holdsStrategicAmbition, readSpotlightLedger } from '../src/engine/spotlightPull';
 import {
   BOARD_UNDERTAKING_SHARE_RANGE,
   BOARD_ENCOUNTER_SHARE_FLOOR,
@@ -166,7 +167,19 @@ interface Composition {
    * `meanAutonomousMortals` because a net-additive pull moves that denominator, and
    * the swap is what keeps the per-mortal throughput gate honest.
    */
-  spotlight: { pulls: number; demotions: number; refused: Record<string, number> };
+  spotlight: {
+    pulls: number;
+    demotions: number;
+    refused: Record<string, number>;
+    /** Swaps by the class that stepped back (THR-1523): `no_strategic_want` / `unwatched_builder`. */
+    demotionsByReason: Record<string, number>;
+    /** Distinct mortals refused at least once — refusals per mortal, not per want (THR-1523 §5). */
+    refusedMortals: number;
+    /** Worldgen protagonists (a spotlight mortal holding a strategic want at tick 0) — the kill criterion's denominator. */
+    protagonists: number;
+    /** Of those, how many stepped back unwatched by run end (THR-1523 kill criterion: ≤ 30 %). */
+    protagonistsSteppedBack: number;
+  };
 }
 
 interface SeedCensus {
@@ -263,6 +276,8 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
   let spotlightPulls = 0;
   let spotlightDemotions = 0;
   const pullsRefused: Record<string, number> = {};
+  const demotionsByReason: Record<string, number> = {};
+  const refusedMortalIds = new Set<string>();
 
   try {
     const runtime = createSimulationRuntime();
@@ -270,6 +285,12 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
     const archetype = generateArchetypes(4, seed)[0];
     let { state } = initializeGameState(
       archetype, 'Census', createBalancedCosmology(), seed, preset.cols, preset.rows,
+    );
+    // THR-1523 kill criterion's denominator: the worldgen cast of builders.
+    const protagonistIds = new Set(
+      state.graph.getNodesByType('actor')
+        .filter(n => isAutonomousDecisionActor(n) && holdsStrategicAmbition(state.graph, n.id))
+        .map(n => n.id),
     );
 
     for (let i = 0; i < ticks; i++) {
@@ -300,11 +321,19 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
         }
 
         if (a.category === 'spotlight_pull') {
-          const pulled = (a.pulled as ReadonlyArray<{ demotedId: string | null }> | undefined) ?? [];
-          const refused = (a.refused as ReadonlyArray<{ reason: string }> | undefined) ?? [];
+          const pulled = (a.pulled as ReadonlyArray<{ demotedId: string | null; demotedReason?: string }> | undefined) ?? [];
+          const refused = (a.refused as ReadonlyArray<{ agentId: string; reason: string }> | undefined) ?? [];
           spotlightPulls += pulled.length;
           spotlightDemotions += pulled.filter(p => p.demotedId !== null).length;
-          for (const r of refused) pullsRefused[r.reason] = (pullsRefused[r.reason] ?? 0) + 1;
+          for (const p of pulled) {
+            if (p.demotedId === null) continue;
+            const why = p.demotedReason ?? 'no_strategic_want';
+            demotionsByReason[why] = (demotionsByReason[why] ?? 0) + 1;
+          }
+          for (const r of refused) {
+            pullsRefused[r.reason] = (pullsRefused[r.reason] ?? 0) + 1;
+            refusedMortalIds.add(r.agentId);
+          }
           continue;
         }
 
@@ -362,7 +391,16 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
           chainDepths,
         };
       })(),
-      spotlight: { pulls: spotlightPulls, demotions: spotlightDemotions, refused: pullsRefused },
+      spotlight: {
+        pulls: spotlightPulls,
+        demotions: spotlightDemotions,
+        refused: pullsRefused,
+        demotionsByReason,
+        refusedMortals: refusedMortalIds.size,
+        protagonists: protagonistIds.size,
+        protagonistsSteppedBack: readSpotlightLedger(state.graph).unwatchedDemotions
+          .filter(u => protagonistIds.has(u.agentId)).length,
+      },
     };
 
     const summary = buildBalanceRunSummary(runtime, state.tick);
@@ -542,7 +580,10 @@ function report(all: SeedCensus[]): boolean {
       : '—'}`);
     console.log(`  per mortal: ${comp.startsPerMortalPer100Ticks.toFixed(1)} starts per 100 ticks over ${comp.meanAutonomousMortals.toFixed(1)} autonomous mortals`);
     const refusedEntries = Object.entries(comp.spotlight.refused);
-    console.log(`  spotlight pulls (THR-1348): ${comp.spotlight.pulls} pulled, ${comp.spotlight.demotions} swapped out, ${comp.spotlight.pulls - comp.spotlight.demotions} net-additive; refused: ${refusedEntries.length > 0 ? refusedEntries.map(([r, n]) => `${r} ×${n}`).join(', ') : 'none'}`);
+    const byReason = Object.entries(comp.spotlight.demotionsByReason);
+    console.log(`  spotlight pulls (THR-1348): ${comp.spotlight.pulls} pulled, ${comp.spotlight.demotions} swapped out${byReason.length > 0 ? ` (${byReason.map(([r, n]) => `${r} ×${n}`).join(', ')})` : ''}, ${comp.spotlight.pulls - comp.spotlight.demotions} net-additive; refused: ${refusedEntries.length > 0 ? refusedEntries.map(([r, n]) => `${r} ×${n}`).join(', ') : 'none'} across ${comp.spotlight.refusedMortals} mortals`);
+    const sp = comp.spotlight;
+    console.log(`  unwatched builders stepped back (THR-1523): ${sp.protagonistsSteppedBack} of ${sp.protagonists} worldgen protagonists (${sp.protagonists > 0 ? ((100 * sp.protagonistsSteppedBack) / sp.protagonists).toFixed(1) : '0.0'}%; kill criterion > 30%)`);
     console.log(`  concurrency (cap ${CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING}, THR-1387): max ${comp.concurrency.maxAtEnd} active at run end, busiest [${comp.concurrency.topAtEnd.join(', ')}], mean ${comp.concurrency.meanActive.toFixed(1)} active per tick`);
 
     console.log('\nGates');
