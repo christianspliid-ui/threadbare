@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-24 15:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-24 16:56 local (14:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -54,6 +54,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-24 — skill floors on ambitions, milestones and spells now actually gate** ([THR-1562](https://linear.app/threadbare/issue/THR-1562/ambition-reach-floors-and-reach-milestones-compare-raw-capability-10), reach on one scale). Before, every mortal qualified for everything. Merged 16:22 local via [#2013](https://github.com/christianspliid-ui/threadbare/pull/2013), and live on the site.
 - **2026-09-24 — an item or spell can now push a fight clock forward or back, or inflict a condition mid-fight** ([THR-1542](https://linear.app/threadbare/issue/THR-1542/fight-block-fb6-effect-vocabulary-for-fights), fight block FB6). Merged 15:49 local via [#2014](https://github.com/christianspliid-ui/threadbare/pull/2014), and live on the site.
 - **2026-09-24 — traits and items can now react when a fighter is struck, lands a blow or wins** ([THR-1541](https://linear.app/threadbare/issue/THR-1541/fight-block-fb5-fight-events), fight block FB5). Merged 13:38 local via [#2012](https://github.com/christianspliid-ui/threadbare/pull/2012), and live on the site.
 - **2026-09-24 — sequel-only encounters no longer turn up on the open board** ([THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), your morning design). Merged 12:43 local via [#2011](https://github.com/christianspliid-ui/threadbare/pull/2011), and live on the site.
@@ -63,7 +64,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — fights now deal harm, conditions and momentum** ([THR-1539](https://linear.app/threadbare/issue/THR-1539/fight-block-fb3-harm-conditions-momentum), fight block FB3). Merged 09:33 local via [#2006](https://github.com/christianspliid-ui/threadbare/pull/2006), and live on the site.
 - **2026-09-24 — the "design session wanted for THR-1526" ask is closed.** You are designing [THR-1526](https://linear.app/threadbare/issue/THR-1526/sequel-only-encounter-templates-are-reachable-from-the-live-board-the), [THR-1523](https://linear.app/threadbare/issue/THR-1523/spotlight-pull-the-swap-pool-is-the-handful-of-ambition-less-seeded) and [THR-1528](https://linear.app/threadbare/issue/THR-1528/battle-history-record-the-substrate-blood-soaked-needs-a-per-location) this morning.
 - **2026-09-24 — a won siege now keeps the town it took** ([THR-1563](https://linear.app/threadbare/issue/THR-1563)). Merged 08:31 local via [#2000](https://github.com/christianspliid-ui/threadbare/pull/2000).
-- **2026-09-24 — fights now run on a clock and can end early** ([THR-1538](https://linear.app/threadbare/issue/THR-1538/fight-block-fb2-fightstate-the-clock-early-end), fight block FB2). Merged 07:59 local via [#1999](https://github.com/christianspliid-ui/threadbare/pull/1999).
 
 ---
 
