@@ -33,7 +33,12 @@ import {
   KPI_CRIT_TAIL_MIN,
   KPI_CRIT_SUCCESS_MIN,
   KPI_FAILURE_STORY_MIN,
+  KPI_RETRY_AFTER_FAILURE_MAX,
+  KPI_FAILURE_STREAK_P95_MAX,
+  KPI_IN_WINDOW_MIN,
 } from './kpiConstants';
+import { computeEngagementKpiReport } from './engagementKpi';
+import type { EngagementLedger, EngagementKpiReport } from './engagementKpi';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -151,6 +156,12 @@ export interface GameplayKpiReport {
   threadedBeats: ThreadedBeatStats;
   eligibilityFunnel: EligibilityFunnelSummary;
   resolutionGap: ResolutionGapStats;
+  /**
+   * THR-1578: the forecast-window gauge — per-proficiency-band success and attempted
+   * difficulty, in-window share, idle rate and the two historical-trap KPIs. Null when
+   * the runtime carries no engagement ledger (pure-state tests / pre-THR-1578 builds).
+   */
+  engagement: EngagementKpiReport | null;
   thresholds: KpiThresholdEvaluation[];
 }
 
@@ -179,6 +190,8 @@ export interface KpiRuntimeView {
   cleanSuccessTotal?: number;
   /** THR-571 U1 re-band: cumulative critical-success count. Numerator for lifetime crit_success_rate. */
   critSuccessTotal?: number;
+  /** THR-1578: the engagement ledger (commit stamps, band totals, resolved log). Absent → `engagement` is null. */
+  engagementLedger?: EngagementLedger;
 }
 
 /** Create a fresh set of funnel counters for a new session. */
@@ -478,6 +491,7 @@ function buildThresholds(
   concentration: TemplateConcentration,
   branching: BranchingFireStats,
   threaded: ThreadedBeatStats,
+  engagement: EngagementKpiReport | null = null,
 ): KpiThresholdEvaluation[] {
   const rows: KpiThresholdEvaluation[] = [
     evalThreshold('failure_rate', 'Failure Rate', outcomes.failureRate, KPI_FAILURE_RATE_MAX, 'above_is_bad'),
@@ -501,6 +515,14 @@ function buildThresholds(
   // failure_story_rate is skipped (not falsely red) until the C1 counters exist.
   if (outcomes.failureStoryRate !== null) {
     rows.push(evalThreshold('failure_story_rate', 'Failure→Story Rate', outcomes.failureStoryRate, KPI_FAILURE_STORY_MIN, 'below_is_bad'));
+  }
+  // THR-1578: the forecast-window gauge rows are ADVISORY until the design lands —
+  // S1 records today's baseline and changes no behaviour, so these must not flip a
+  // run's verdict. THR-1582 (S4) is where they start to bind.
+  if (engagement) {
+    rows.push(evalThreshold('retry_after_failure_rate', 'Retry After Failure (advisory)', engagement.retryAfterFailureRate, KPI_RETRY_AFTER_FAILURE_MAX, 'above_is_bad', true));
+    rows.push(evalThreshold('max_failure_streak_p95', 'Failure Streak p95 (advisory)', engagement.maxFailureStreakP95, KPI_FAILURE_STREAK_P95_MAX, 'above_is_bad', true));
+    rows.push(evalThreshold('in_window_share', 'In-Window Share (advisory)', engagement.inWindowShare, KPI_IN_WINDOW_MIN, 'below_is_bad', true));
   }
   return rows;
 }
@@ -526,7 +548,8 @@ export function computeGameplayKpiReport(
   const threadedBeats = buildThreadedBeats(actions, tick, runtime?.threadedBeatsTotal);
   const eligibilityFunnel = buildFunnelSummary(funnel);
   const resolutionGap = buildResolutionGap(actions);
-  const thresholds = buildThresholds(outcomes, concentration, branchingFire, threadedBeats);
+  const engagement = runtime?.engagementLedger ? computeEngagementKpiReport(runtime.engagementLedger) : null;
+  const thresholds = buildThresholds(outcomes, concentration, branchingFire, threadedBeats, engagement);
 
   return {
     tick,
@@ -537,6 +560,7 @@ export function computeGameplayKpiReport(
     threadedBeats,
     eligibilityFunnel,
     resolutionGap,
+    engagement,
     thresholds,
   };
 }

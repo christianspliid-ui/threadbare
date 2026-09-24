@@ -96,3 +96,40 @@ export const KPI_REPORT_SEEDS: number[] = [42, 99, 7];
 export const KPI_REPORT_TICKS = 120;
 /** relative band around red threshold rendered amber (e.g. 0.15 = ±15% of threshold) */
 export const KPI_AMBER_BAND = 0.15;
+
+// ─── THR-1578: forecast-window gauge (plan 2026-09-24-thr-1575-forecast-window § Constants) ───
+/**
+ * Proficiency band edges on the 0–1 capability scale: novice < 0.35 ≤ journeyman
+ * < 0.65 ≤ expert < 0.85 ≤ master. KPI-internal bucket labels — never rendered to a
+ * player, and not the Domain Capability tier words in `domain-words.ts`.
+ */
+export const PROFICIENCY_BAND_EDGES: readonly [number, number, number] = [0.35, 0.65, 0.85];
+/** Level-success invariant: each covered band's success must sit inside [MIN − tol, MAX + tol]. */
+export const KPI_BAND_SUCCESS_MIN = 0.50;
+export const KPI_BAND_SUCCESS_MAX = 0.65;
+/** Sampling slack on the level-success invariant. */
+export const KPI_BAND_TOLERANCE = 0.05;
+/** A band is asserted only with this many resolved free-choice engagements; below it is a coverage gap. */
+export const KPI_BAND_MIN_ENGAGEMENTS = 30;
+/** Look-ahead (ticks after a failure resolves) for the retry-after-failure KPI. */
+export const RETRY_WINDOW_TICKS = 24;
+/** Max share of failures followed by the same mortal re-engaging the same template within the look-ahead. */
+export const KPI_RETRY_AFTER_FAILURE_MAX = 0.10;
+/** Max p95 run of consecutive failed free-choice engagements per mortal. */
+export const KPI_FAILURE_STREAK_P95_MAX = 4;
+/** Min engagements for a mortal to count in the attempted-difficulty trend. */
+export const KPI_TREND_MIN_ENGAGEMENTS = 5;
+/** Max share of rolls sitting exactly on a scale floor (measured by `measure:roll-spread`). */
+export const KPI_FLOOR_PINNED_MAX = 0.05;
+/** Min share of free-choice engagements whose forecast was in the engagement window. */
+export const KPI_IN_WINDOW_MIN = 0.60;
+/** Max rise in idle-decision rate against the pre-change baseline (checked by S3/S4). */
+export const KPI_IDLE_RATE_DELTA_MAX = 0.05;
+/** Max mean |planner step P − resolver step P| on the parity sample (S2). */
+export const KPI_FORECAST_PARITY_MAX = 0.02;
+/**
+ * Memory bound on the runtime's resolved-engagement log. A 300-tick medium world
+ * resolves a few thousand; the band totals stay lifetime past the bound, only the
+ * streak/retry/trend views window.
+ */
+export const ENGAGEMENT_LOG_MAX = 20000;

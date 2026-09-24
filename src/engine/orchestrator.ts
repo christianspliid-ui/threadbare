@@ -216,6 +216,7 @@ import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
 import { isBranchingTemplate, isRichTemplate } from './kpi/gameplayKpi';
+import { recordEngagementResolution } from './kpi/engagementKpi';
 import { guaranteeFailureStoryArtifact } from './failureStoryArtifact';
 import type { UnifiedAction, IntelligenceRecord } from '../types/unifiedAction';
 import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
@@ -3873,6 +3874,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
           runtime.resolvedActionsTotal++;
           if (a.outcome === 'success') runtime.cleanSuccessTotal++;
           else if (a.outcome === 'critical_success') runtime.critSuccessTotal++;
+          // THR-1578: fold the commit stamp (proficiency band, attempted difficulty,
+          // forecast) into the engagement ledger. Encounters only — an unstamped one
+          // counts as band `unknown` and stays out of the level-success invariant.
+          if (isEncounterAction(a.templateId)) {
+            recordEngagementResolution(runtime.engagementLedger, a.id, a.outcome, s.tick);
+          }
         }
         const stampedAction = { ...a, completedAtTick: s.tick };
         if (isEncounterAction(a.templateId)) {

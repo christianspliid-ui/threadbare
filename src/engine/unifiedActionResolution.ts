@@ -672,6 +672,8 @@ export function resolveUncontestedStep(
     actorId: action.actorId,
     templateId: action.templateId,
     scale: stepScale ?? 'regional',
+    // THR-1578: additive — the reach the step rolled on.
+    ...(rollInputs.stepReach ? { reach: rollInputs.stepReach } : {}),
     capability: trace.capability,
     difficulty: trace.difficulty,
     rawDifficulty: trace.rawDifficulty,
