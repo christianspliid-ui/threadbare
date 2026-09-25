@@ -4263,6 +4263,38 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1551 F2. Review route `?view=game&seeded&size=medium`, `tick(60)`, `spawnFight('Ryx')` (major lair, blight family): `getOpponentHeaderModel('ua_116').name === 'Ryx'`, sentence \"A walking rot that spreads where it goes. Fearsome to face, a fair match.\", clock 4 square pips at 14px, word \"untouched\", no threat whisper, hand unscrolled at 1920×1080 (`Docs/evidence/thr-1551/`). Non-vacuous by `src/components/Game/encounter-stage/__tests__/opponentHeaderF2.test.tsx`: the nerve step's word equals the first exchange's after a real `executeStepResult` with a pending recovery (a raw read would say \"failing\"), and the word tracks `fightState.clockNow` once the fight exists.",
     },
   },
+  // ── The fight on screen F4 (THR-1552, plan 2026-09-23-fight-on-screen § Interface impact) ──
+  // "monster card → sidebar": the lair card reads the monster's card, its recovered clock,
+  // `temperShown`, and — for a slain beast — the retained elite's `lairId` and the sheet's
+  // own death reading. It writes nothing.
+  {
+    id: 'monster-card-shows-on-lair',
+    producerSystem: RUINS,
+    consumerSystem: NARRATIVE,
+    intent:
+      "A lair tells the player what lives there and how close it is to falling — a sentence, square pips and a word — and once the beast is felled it says so, naming the slayer only when the beast's own sheet does.",
+    ulTerms: ['Opponent Card', 'Fight Clock', 'Temper'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildLairMonsterCardModel', 'readOpponentCard', 'monsterState', 'getAgentInfoCard'],
+      module: 'src/components/Game/lair/buildLairMonsterCardModel.ts',
+    },
+    writeSites: [
+      'src/engine/monsters/monsterCard.ts',
+      'src/engine/fights/fightClock.ts',
+      'src/engine/agentLifecycle.ts',
+    ],
+    readSites: [
+      'src/components/Game/lair/buildLairMonsterCardModel.ts',
+      'src/components/Game/lair/LairMonsterCard.tsx',
+      'src/components/Game/HexSidebar.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        "THR-1552 F4. Review route `?view=game&seeded&size=medium&nofog`, `tick(60)`: lair_0's card reads \"Ryx — A walking rot that spreads where it goes. Fearsome to face, a fair match.\" with 4 square pips at 14px and \"untouched\"; stored clock 2/4 reads \"half-broken\"; `spawnFight('Ryx', { clockFilled: 3, outcome: 'critical_success' })` played through the veil fells Ryx, lair_0 becomes a cleared lair, and the Cleared Lair Section reads \"slain by Vara\". At tick 100, `spawnFight('elite_lair_10_50', …)` fells Druja at the legendary lair_10, whose `namedEliteId` is then gone: the lair block finds her by reverse lookup on `lairId` and reads \"slain by Vara\" (`Docs/evidence/thr-1552/`). `getLairMonsterCard` matched `listMonsters` on every field it shares. Non-vacuous by `src/components/Game/lair/__tests__/lairMonsterF4.test.tsx`: the temper clause is absent before a fight and present after one; \"slain by\" renders when `getAgentInfoCard(...).death.by` is set and not when it is absent.",
+    },
+  },
   {
     id: 'fight-result-keys-aftermath-variants',
     producerSystem: ENCOUNTERS,

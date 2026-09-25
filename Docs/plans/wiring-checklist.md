@@ -2730,6 +2730,16 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block
 
 **Wired and asserted:** `lairMonsterF1.test.tsx` renders `HexSidebar` from a real `buildLairMonsterCardModel` output, and the live check read the link text off the running sidebar (seed 42 medium, tick 60: "Ryx").
 
+## Fight on screen F4 — the lair card (THR-1552)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `components/Game/lair/buildLairMonsterCardModel.ts` (extended: the card sentence, the recovered clock, `temperShown`, the slain reading by reverse lookup on `lairId`, `slainBy` through `getAgentInfoCard(...).death.by`) | — (render-time; `GameView` memoizes it on `worldVersion` for the focused hex's lairs **and cleared lairs**, passing `ascendantId`) | `HexSidebar` Monster Lair block and Cleared Lair Section | reads `monsterState` (card, clock, `temperShown`), the `trait.temper.*` edge, `deceased` / `deceasedTick` / `slainBy` on the retained elite | none (plan: Tracing N/A) | `__DEBUG.getLairMonsterCard(lairIdOrName)` |
+| `components/Game/lair/LairMonsterCard.tsx` (new) | — | rendered by `HexSidebar` in both lair sections; the monster and killer names open the agent sheet through `onMonsterClick` | — | none | — |
+| `encounter-stage/adapters/buildOpponentHeaderModel.ts` (`buildSentence`, `clockModel`, `familyLineFor` exported) | — | shared with the lair card, so the header and the sidebar say the same sentence | — | none | `getOpponentHeaderModel` |
+
+**Wired and asserted:** `lairMonsterF4.test.tsx` (14 tests) renders `HexSidebar` from real model output for a living, a legendary-slain and a cleared-lair-slain monster. The live check drove two real fights through the veil on seed 42 medium: Ryx at a major lair (tick 60, Cleared Lair Section) and Druja at a legendary lair (tick 100, lair block by reverse lookup). Both read "slain by Vara".
+
 ## Fight on screen F2 — the opponent header (THR-1551)
 
 | Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |

@@ -116,7 +116,8 @@ function capitalize(text: string): string {
   return text.length > 0 ? text.charAt(0).toUpperCase() + text.slice(1) : text;
 }
 
-function clockModel(filled: number, size: number, deceased = false): OpponentHeaderClockModel {
+/** One clock row's model. Exported for the lair card (THR-1552), which draws the same row. */
+export function clockModel(filled: number, size: number, deceased = false): OpponentHeaderClockModel {
   const total = Number.isFinite(size) && size >= 1 ? Math.floor(size) : 1;
   const fill = Number.isFinite(filled) ? Math.max(0, Math.min(total, Math.floor(filled))) : 0;
   const word = clockStateWord(fill, total, deceased);
@@ -153,14 +154,18 @@ export function fightStepLabel(
   return FIGHT_STEP_LABELS[position] ?? FIGHT_STEP_LABEL_OVERFLOW;
 }
 
-function familyLineFor(bag: Record<string, unknown> | undefined, monster: boolean): string {
+/** The family line (monsters) or the mortal line. Exported for the lair card (THR-1552). */
+export function familyLineFor(bag: Record<string, unknown> | undefined, monster: boolean): string {
   if (!monster) return MORTAL_OPPONENT_LINE;
   const family = typeof bag?.family === 'string' ? MONSTER_FAMILIES[bag.family as MonsterFamilyId] : undefined;
   return capitalize(family?.cardLine ?? MONSTER_FAMILIES.beast.cardLine);
 }
 
-/** The card sentence: family line, Dread and Might phrases, the temper clause once shown. */
-function buildSentence(
+/**
+ * The card sentence: family line, Dread and Might phrases, the temper clause once shown.
+ * Exported so the lair card (THR-1552) says the same sentence the header does.
+ */
+export function buildSentence(
   familyLine: string,
   dread: FightRatingWord,
   might: FightRatingWord,

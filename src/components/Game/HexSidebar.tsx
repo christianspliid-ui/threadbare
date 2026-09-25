@@ -23,8 +23,8 @@ import { SphereIcon } from '../shared/SphereIcon';
 import { Tooltip } from '../shared/Tooltip';
 import { clampRarityTier } from '../../types/rarity';
 import { DANGER_ZONE_LABELS } from '../../types/monster';
-import { EntityVisual } from '../shared/EntityVisual';
 import type { LairMonsterCardModel } from './lair/buildLairMonsterCardModel';
+import { LairMonsterCard } from './lair/LairMonsterCard';
 
 /**
  * Collapsed-rail sphere glyph sizing (THR-1009). The rail shipped 8px
@@ -531,41 +531,11 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 >
                   {DANGER_ZONE_LABELS[dangerZone] ?? 'Unknown Zone'}
                 </div>
-                {/* The lair's monster, by name, as a link (THR-1550 — this row
-                    printed the raw `namedEliteId` until F1, a Law 14/21 defect).
-                    No resolvable monster ⇒ no row: a raw id never renders. */}
-                {monster && (
-                  <div
-                    data-testid="lair-monster-row"
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <EntityVisual
-                      size="chip"
-                      entity={{ id: monster.id, kind: 'monster', name: monster.name }}
-                      onClick={props.onMonsterClick ? () => props.onMonsterClick?.(monster.id) : undefined}
-                    />
-                    <Tooltip id="ui.lair_monster">
-                      <button
-                        type="button"
-                        data-testid="lair-monster-link"
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--accent-gold)',
-                          cursor: props.onMonsterClick ? 'pointer' : 'default',
-                          fontFamily: 'var(--font-display)',
-                          fontSize: 'var(--text-xs)',
-                          textAlign: 'left',
-                          padding: '2px 0',
-                          minHeight: '24px',
-                        }}
-                        onClick={() => props.onMonsterClick?.(monster.id)}
-                      >
-                        {monster.name}
-                      </button>
-                    </Tooltip>
-                  </div>
-                )}
+                {/* The lair's monster card (THR-1550 named it — this row printed
+                    the raw `namedEliteId` until F1, a Law 14/21 defect; THR-1552 adds
+                    the sentence, the clock, and the slain reading for a legendary
+                    lair that lost its beast). No resolvable monster ⇒ no card. */}
+                {monster && <LairMonsterCard monster={monster} onSelect={props.onMonsterClick} />}
               </div>
             );
           })}
@@ -612,6 +582,14 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               >
                 Cleared — site may be claimed or will remain vulnerable to reinfestation.
               </div>
+              {/* The beast that held it, slain (THR-1552): found by reverse lookup
+                  on the retained elite's `lairId`; no monster resolves ⇒ no card. */}
+              {props.lairMonsterCards?.[loc.id]?.monster && (
+                <LairMonsterCard
+                  monster={props.lairMonsterCards[loc.id]!.monster!}
+                  onSelect={props.onMonsterClick}
+                />
+              )}
             </div>
           ))}
         </>

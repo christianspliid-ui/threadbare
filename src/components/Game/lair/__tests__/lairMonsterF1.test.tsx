@@ -62,10 +62,11 @@ afterEach(() => cleanup());
 describe('buildLairMonsterCardModel (F1 — the name)', () => {
   it('names the living monster that holds the lair', () => {
     const card = buildLairMonsterCardModel(graphWith(lairNode(), eliteNode()), LAIR_ID, 60);
-    expect(card).toEqual({
+    // F4 (THR-1552) widened the row with the sentence and the clock; F1 pins the name.
+    expect(card).toMatchObject({
       lairId: LAIR_ID,
       lairName: 'The Ashen Hollow',
-      monster: { id: ELITE_ID, name: 'Grothmaw the Hollow' },
+      monster: { id: ELITE_ID, name: 'Grothmaw the Hollow', deceased: false },
     });
   });
 
@@ -74,9 +75,9 @@ describe('buildLairMonsterCardModel (F1 — the name)', () => {
     expect(card?.monster).toBeNull();
   });
 
-  it('omits the row for a slain elite (F4 draws the slain reading)', () => {
+  it('reads a slain elite as slain, not as a living row (F4, THR-1552)', () => {
     const card = buildLairMonsterCardModel(graphWith(lairNode(), eliteNode({ deceased: true })), LAIR_ID);
-    expect(card?.monster).toBeNull();
+    expect(card?.monster).toMatchObject({ id: ELITE_ID, deceased: true, clock: { word: 'slain' } });
   });
 
   it('omits the row when the node carries no name of its own', () => {
