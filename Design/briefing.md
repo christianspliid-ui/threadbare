@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-25 22:54 local (20:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-25 23:54 local (21:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,17 +27,16 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 jobs are ready and one is being built. None are parked.** Most are bug tickets from today's research and the cold playtest, not a stall.
+**Backed up: 21 jobs are ready and nothing is being built right now. None are parked.** Most are bug tickets from today's research and the cold playtest; the pickup lane takes the next one at its next hourly slot.
 
-- **Being built now:** [the hunt itself](https://linear.app/threadbare/issue/THR-1560) (fight system, claimed 22:12 local). Fight system is still not ready for your review: after the hunt, [chips for a duel's loser](https://linear.app/threadbare/issue/THR-1561) (now queued) is the last piece.
-- New: [place pages and mortal cards never describe culture](https://linear.app/threadbare/issue/THR-1623), because both describers read a field no culture has.
+- **Fight system: nearly level, not yet a review ask.** [The hunt](https://linear.app/threadbare/issue/THR-1560) merged via [#2054](https://github.com/christianspliid-ui/threadbare/pull/2054) and [chips for a duel's loser](https://linear.app/threadbare/issue/THR-1561) via [#2055](https://github.com/christianspliid-ui/threadbare/pull/2055); both are live. Still missing: [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554) (queued).
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620). It still has no priority set.
-- Also queued: [culture names show raw map words](https://linear.app/threadbare/issue/THR-1622), [five small interface faults](https://linear.app/threadbare/issue/THR-1604), [the cast receipt with no subject](https://linear.app/threadbare/issue/THR-1603), [hex lore repeats one sentence](https://linear.app/threadbare/issue/THR-1621), [chronicle headline id](https://linear.app/threadbare/issue/THR-1585), [dead trade route still claimable](https://linear.app/threadbare/issue/THR-1615), [non-casters try to learn spells](https://linear.app/threadbare/issue/THR-1617), [Builder's Legacy complete at start](https://linear.app/threadbare/issue/THR-1618), [route-building aims at home](https://linear.app/threadbare/issue/THR-1619), [waypoint clutter](https://linear.app/threadbare/issue/THR-1616), [commander deleted, not marked dead](https://linear.app/threadbare/issue/THR-1566), [item bursts](https://linear.app/threadbare/issue/THR-1568), [wards](https://linear.app/threadbare/issue/THR-1569), [wayside encounters](https://linear.app/threadbare/issue/THR-1567), [monster portraits](https://linear.app/threadbare/issue/THR-1554), [colocation chance](https://linear.app/threadbare/issue/THR-1576), [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528), [seed targets](https://linear.app/threadbare/issue/THR-1565), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573).
+- Also queued: [place pages and mortal cards never describe culture](https://linear.app/threadbare/issue/THR-1623), [culture names show raw map words](https://linear.app/threadbare/issue/THR-1622), [five small interface faults](https://linear.app/threadbare/issue/THR-1604), [the cast receipt with no subject](https://linear.app/threadbare/issue/THR-1603), [hex lore repeats one sentence](https://linear.app/threadbare/issue/THR-1621), [chronicle headline id](https://linear.app/threadbare/issue/THR-1585), [dead trade route still claimable](https://linear.app/threadbare/issue/THR-1615), [non-casters try to learn spells](https://linear.app/threadbare/issue/THR-1617), [Builder's Legacy complete at start](https://linear.app/threadbare/issue/THR-1618), [route-building aims at home](https://linear.app/threadbare/issue/THR-1619), [waypoint clutter](https://linear.app/threadbare/issue/THR-1616), [commander deleted, not marked dead](https://linear.app/threadbare/issue/THR-1566), [item bursts](https://linear.app/threadbare/issue/THR-1568), [wards](https://linear.app/threadbare/issue/THR-1569), [wayside encounters](https://linear.app/threadbare/issue/THR-1567), [colocation chance](https://linear.app/threadbare/issue/THR-1576), [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528), [seed targets](https://linear.app/threadbare/issue/THR-1565), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573).
 
 ## Health
 
-- **Tick cost is above the alarm line and rose again this hour (builder's job, not yours):** tick cost 108 ms/tick steady, 58% above the 7-day median (68, 107 rows since 38edc797); top phase agent_decision, 498 agents. Name the merges between 38edc797 and 3e27003a: `git log --oneline --merges 38edc797..3e27003a`. No code merged since the last reading (87), so part of that jump is run-to-run noise.
-- **Heavy simulation tests are still red on main (builder's job, not yours):** the slow tests hit their 5-second limit, which matches the slower ticks above. This check does not block merges.
+- **Heavy simulation tests are still red on main (builder's job, not yours):** the slow tests hit their time limit. This check does not block merges.
+- **Tick cost is back under the alarm line:** 83 ms/tick steady, 22% above the 7-day median of 68 (the alarm is at 25%). Last hour's 108 reading was mostly run-to-run noise.
 - **Lane silence:** the worst recent gap was 25 hours, from Saturday 19 into Sunday 20. It falls on a weekend, so your 11 September ruling declines it.
-- **Worktree reaper:** 5 worktrees are waiting to be sorted. That is routine.
-- **Everything else is green.** The live site is serving the latest build (3e27003a). All ten scheduled lanes are on time. No pull requests are waiting. The home tree is on `main` and current.
+- **Worktree reaper:** ran 23:40 local; 5 worktrees are waiting to be sorted. That is routine.
+- **Everything else is green.** The live site is serving the latest build (ad4e940b). All ten scheduled lanes are on time. No pull requests are waiting. The home tree is on `main` and current.
