@@ -13,6 +13,7 @@ import {
   MAX_SCORED_CANDIDATES,
   MIN_DIVERSITY_SLOTS,
   PERSONAL_OFFER_CAP_RESERVE,
+  SOCIAL_OFFER_CAP_RESERVE,
 } from '../encounterFilterPipeline';
 import { MAX_COMPLETIONS_PER_TEMPLATE } from '../../data/agent-behavior-constants';
 
@@ -333,6 +334,64 @@ describe('capWithDiversity', () => {
     const result = capWithDiversity(entries, 'agent-1', graph);
     expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
     expect(result.some(e => e.personallyOffered)).toBe(false);
+  });
+
+  // ── Social-offer reserve (THR-1614) ───────────────────────────
+  //
+  // The same positional cut, on the social generator's entries. They sit in the
+  // dynamic tail *ahead of* faction quests, so the load-bearing assertion is that
+  // both reserves hold at once — a pooled reserve would let social starve guilds.
+
+  it('reserves slots for social entries buried at the tail', () => {
+    const graph = new WorldGraph();
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, encounterType: 'assist' })),
+      ...Array.from({ length: 20 }, (_, i) =>
+        makeEntry({ templateId: `social-${i}`, encounterType: 'assist', socialOffer: true })),
+    ];
+
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.filter(e => e.socialOffer)).toHaveLength(SOCIAL_OFFER_CAP_RESERVE);
+  });
+
+  it('holds the faction reserve when social entries precede faction quests in the tail', () => {
+    const graph = new WorldGraph();
+    // Real merge order: cache head, then social, then faction quests.
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, encounterType: 'explore' })),
+      ...Array.from({ length: 30 }, (_, i) =>
+        makeEntry({ templateId: `social-${i}`, encounterType: 'explore', socialOffer: true })),
+      ...Array.from({ length: 10 }, (_, i) =>
+        makeEntry({ templateId: `faction-${i}`, encounterType: 'explore', personallyOffered: true })),
+    ];
+
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.filter(e => e.personallyOffered)).toHaveLength(PERSONAL_OFFER_CAP_RESERVE);
+    expect(result.filter(e => e.socialOffer)).toHaveLength(SOCIAL_OFFER_CAP_RESERVE);
+    expect(result.filter(e => !e.socialOffer && !e.personallyOffered).length).toBe(
+      MAX_SCORED_CANDIDATES - PERSONAL_OFFER_CAP_RESERVE - SOCIAL_OFFER_CAP_RESERVE,
+    );
+  });
+
+  it('spreads the social reserve across distinct templates before repeating one', () => {
+    const graph = new WorldGraph();
+    // One crowd: the same scene offered at many locations, then a few other scenes.
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, encounterType: 'explore' })),
+      ...Array.from({ length: 20 }, (_, i) =>
+        makeEntry({ templateId: 'social-gossip', locationId: `loc-${i}`, encounterType: 'explore', socialOffer: true })),
+      ...Array.from({ length: 3 }, (_, i) =>
+        makeEntry({ templateId: `social-other-${i}`, encounterType: 'explore', socialOffer: true })),
+    ];
+
+    const social = capWithDiversity(entries, 'agent-1', graph).filter(e => e.socialOffer);
+    expect(social).toHaveLength(SOCIAL_OFFER_CAP_RESERVE);
+    expect(new Set(social.map(e => e.templateId)).size).toBe(4);
   });
 });
 

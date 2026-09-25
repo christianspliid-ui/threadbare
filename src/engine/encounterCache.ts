@@ -130,6 +130,13 @@ export interface EncounterCacheEntry {
    * only a generator that opts in claims a reserved slot.
    */
   personallyOffered?: boolean;
+  /**
+   * True for agent-to-agent entries built by `generateSocialCandidates` (THR-1614).
+   * Claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap stage — a sibling of
+   * `personallyOffered`, kept separate so the social pool cannot crowd faction
+   * quests out of their reserve. Optional and falsy by default.
+   */
+  socialOffer?: boolean;
   // Pre-computed for scoring:
   totalTickCost: number;
   successRewardEstimate: number;
