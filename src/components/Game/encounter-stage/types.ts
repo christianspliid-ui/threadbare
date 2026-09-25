@@ -391,6 +391,11 @@ export interface EncounterStageConsequenceDeltaModel {
    * the secondary one, and every glyph row states its reading in words.
    */
   label: string;
+  /**
+   * THR-1553 — a PATH marker's own word, drawn visibly beside the ◆ ("slain",
+   * "cleared", "half-broken"). Absent, the marker draws alone as it always has.
+   */
+  word?: string;
 }
 
 export interface EncounterStageConsequenceChipModel {

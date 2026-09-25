@@ -254,6 +254,17 @@ export function deltaClusterFor(
   if (!change.direction) return undefined;
 
   if (change.direction === 'opens') {
+    // THR-1553 — a PATH chip may name its own marker word (a slain beast, a
+    // cleared den). The default label stays for every chip that declares none.
+    const word = change.deltaLabel?.trim();
+    if (word) {
+      return {
+        direction: 'opens',
+        count: 1,
+        label: nounText ? `${nounText} — ${word}` : word,
+        word,
+      };
+    }
     return {
       direction: 'opens',
       count: 1,

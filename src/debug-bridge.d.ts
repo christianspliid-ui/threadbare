@@ -1927,6 +1927,19 @@ export interface DebugBridge {
     | { readonly error: string }
   >;
 
+  /** THR-1553 (fight on screen F3) — the fight consequence chips the aftermath renders
+   *  for this action, built through the veil's own adapter and filtered to the chips
+   *  minted from `fightState` (id prefix `consequence-fight-chip-`). Each chip carries
+   *  `category` (`scar` / `bond` / `boon` / `path`), `nounLabel`, `nounEntityId` (the
+   *  anchor), `sentenceText`, and `delta` (`{ direction, count, label, word? }` — a PATH
+   *  chip's `word` is the one drawn beside ◆: the clock word, `slain`, `cleared`).
+   *  `{ chips: [], reason }` before the fight has ended or off a fight; `{ error }` for
+   *  an unknown action. **Async.** */
+  getFightChips: (actionId: string) => Promise<
+    | { readonly chips: readonly import('./components/Game/encounter-stage/types').EncounterStageConsequenceChipModel[]; readonly reason?: string }
+    | { readonly error: string }
+  >;
+
   /** The opponent card a fight against this actor would read right now: Dread, Might,
    *  the card's reach overrides, clock (after lazy recovery), temper, persistence and
    *  where it was read from (`monsterState` / `derived` / `default`). Matches by id,

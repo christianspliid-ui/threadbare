@@ -2615,6 +2615,57 @@ if (import.meta.env.DEV) {
       return header ?? { header: null, currentStep: action.currentStep };
     },
 
+    /**
+     * THR-1553 (fight on screen F3) — the fight chips the aftermath renders for this
+     * action: built through the same adapter the veil uses (`buildUnifiedEncounterStageModel`),
+     * then filtered to the chips `buildFightChanges` minted from `fightState`.
+     */
+    getFightChips: async (actionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const action = (state.unifiedActions ?? []).find(a => a.actionId === actionId);
+      if (!action) return { error: `no unified action ${actionId}` };
+      const [{ getUnifiedTemplateById }, { buildUnifiedEncounterStageModel }, { FIGHT_CHANGE_ID_PREFIX }] = await Promise.all([
+        import('./data/unified-action-templates'),
+        import('./components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel'),
+        import('./components/Game/encounter-stage/adapters/buildFightChanges'),
+      ]);
+      const template = getUnifiedTemplateById(action.templateId);
+      if (!template) return { error: `no template ${action.templateId}` };
+      if (!action.fightState) return { chips: [], reason: 'no fightState on this action' };
+      if (!action.aftermathSummary) return { chips: [], reason: 'no aftermath yet (the fight has not ended)' };
+      const agentName = state.graph.getNode(action.actorId)?.name ?? action.actorId;
+      const node = state.graph.getNode(action.actorId);
+      const model = buildUnifiedEncounterStageModel({
+        template,
+        activeAction: action,
+        notification: {
+          id: `debug-${actionId}`,
+          agentId: action.actorId,
+          agentName,
+          courtPosition: null,
+          encounterId: action.templateId,
+          encounterName: template.name,
+          actionId,
+          prose: '',
+          choices: [],
+          createdTick: state.tick,
+          autoResolveTick: null,
+          hexCol: (node?.properties?.hexCol as number | undefined) ?? 0,
+          hexRow: (node?.properties?.hexRow as number | undefined) ?? 0,
+        } as unknown as import('./types/encounterVisibility').EncounterNotification,
+        agentName,
+        threadTier: 'strong',
+        graph: state.graph,
+        essence: 0,
+        gameState: state,
+        tick: state.tick,
+      });
+      const chipPrefix = `consequence-${FIGHT_CHANGE_ID_PREFIX}-`;
+      const chips = (model.aftermath?.consequences ?? []).filter(c => c.id.startsWith(chipPrefix));
+      return { chips };
+    },
+
     /** The opponent card a fight against this actor would read right now (lazy clock recovery included). */
     inspectOpponentCard: async (idOrName: string) => {
       const state = _gameStateProvider?.();

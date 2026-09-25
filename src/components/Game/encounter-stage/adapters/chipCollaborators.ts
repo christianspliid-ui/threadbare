@@ -23,6 +23,7 @@ import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { isMonster } from '../../../../engine/monsters/isMonster';
 import type { ChipIconResolver } from './buildAftermathConsequences';
+import type { FightChipWorld } from './buildFightChanges';
 
 /**
  * The UI Law's image half (THR-1004). Resolved in the adapter layer because
@@ -102,4 +103,25 @@ export function buildChipAnchorResolver(
       // binder takes, so a standing chip links the Realm the map draws.
       realmProjection,
     });
+}
+
+/**
+ * THR-1553 — the graph-holding half of the fight chips (`buildFightChanges` is
+ * pure). A node that does not exist has no name, which drops its chip: an
+ * anchor that resolves to nothing never renders (Law 56, NFP #4).
+ */
+export function buildFightChipWorld(graph: WorldGraph): FightChipWorld {
+  return {
+    nameOf: (id) => graph.getNode(id)?.name || undefined,
+    visualKindOf: (id) => {
+      const type = graph.getNode(id)?.type;
+      if (type === 'location' || type === 'sublocation') return 'location';
+      if (type === 'faction') return 'faction';
+      return 'agent';
+    },
+    conditionTagsOf: (id) => {
+      const tags = graph.getNode(id)?.properties?.tags;
+      return Array.isArray(tags) ? (tags as string[]) : [];
+    },
+  };
 }

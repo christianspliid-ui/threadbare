@@ -17,7 +17,8 @@ import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
-import { buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
+import { buildChipAnchorResolver, buildChipIconResolver, buildFightChipWorld } from './chipCollaborators';
+import { buildFightChanges, mergeFightChanges } from './buildFightChanges';
 import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
@@ -784,8 +785,15 @@ function buildAftermath(
   // plants (reachable only through the reaction effects). The stage renders
   // these instead of highlights/changes; both are kept on the model so a
   // consumer that has not adopted chips still gets the old shape.
+  //
+  // THR-1553 — a fight's chips come from its `fightState`, the one record the
+  // fight's writers leave on the action (Law 56). Appended to the chip input
+  // only: the highlights above stay the authored/derived set they always were.
   const consequences = buildAftermathConsequences({
-    changes: displayChanges,
+    changes: mergeFightChanges(
+      displayChanges,
+      buildFightChanges(activeAction.fightState, activeAction.actorId, buildFightChipWorld(graph)),
+    ),
     reactions: displayReactions,
     enrich: (text) => enrichProse(text, ctx),
     link: (id, text) => autoLinkNarrative(id, text, aftermathLinkEntries),
