@@ -4007,6 +4007,12 @@ one for two content reasons, and both are rules for the next appointment you aut
   registers at rural + ruin + wayside with one opening per class. Only the parent needed the wider
   envelope: the kept sequel is a literal id, which `evaluateEncounterSeeds` does not subtype-gate,
   and the missed sequel already registers at every class.
+  THR-1567 (2026-09-26) settled the other wayside-only slice scenes the same way: the Unsafe
+  Bridge and Riders Behind the Caravan widen to wayside + rural (one rural opening each, both
+  classes' default casts composed), and Snow on the Pass **stays wayside-only on purpose** — a
+  class is all-or-nothing, and no class is honest about high ground. A scene that needs a
+  landscape feature (a river, a mountain) cannot be widened by setting class; that needs a
+  terrain axis on the registration path, which is design work, not content.
 - **Selection must reach the planting arm's mortals — superseded as a content rule by THR-1525.**
   When THR-1524 measured this, `computeDesireScore` summed the **signed** profile value over
   `motivations`, so naming the fork axis drew only its positive pole. The Crossroads plants on
