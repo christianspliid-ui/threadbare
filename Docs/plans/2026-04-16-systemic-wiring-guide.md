@@ -1074,6 +1074,10 @@ aftermathConfig: {
 
 ---
 
+#### A PATH chip may name its own marker word — `deltaLabel` (THR-1553)
+
+A change with `category: 'path'` and `direction: 'opens'` draws the single ◆ marker, labelled "— a way opens". That reads wrong when the change is a **world object changed** rather than a way opened (a beast slain, a den cleared, a gate burned). Set `deltaLabel` to the word that says what happened, and the ◆ is drawn with that word beside it: `{ category: 'path', direction: 'opens', deltaLabel: 'cleared', stateNoun: { text: 'the Mire Den', entityId: '$here', visualKind: 'location' } }`. One lower-case word, and a sheet word where one exists (Law 56). It is ignored on `gain` / `loss`. The fight chips (`buildFightChanges.ts`) are the first users: *slain*, *cleared*, and the clock word.
+
 ### Capability 19: Army Supply Anomalies — Hunger as a Scene Producer (THR-626)
 
 **What it is:** an army's provisions are a stock fed along the trade web, and the three states of *not being fed* each plant an encounter seed. You do not author the hunger; you author what happens when it arrives.

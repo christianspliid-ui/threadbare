@@ -2750,6 +2750,17 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block
 
 **Wired and asserted:** `opponentHeaderF2.test.tsx` renders `EncounterVeil` from real `buildUnifiedEncounterStageModel` and `buildSimpleEncounterStageModel` outputs. The live check read the header off the running veil (seed 42 medium, tick 60, `spawnFight('Ryx')`).
 
+## Fight on screen F3 — the fight chips (THR-1553)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `encounter-stage/adapters/buildFightChanges.ts` (new: `buildFightChanges`, `mergeFightChanges`, `fillFightChipSlots`) | — (render-time, inside `buildUnifiedEncounterStageModel`'s aftermath) | `EncounterVeil` consequence-chip block (`model.aftermath.consequences`) | reads the resolved action's `fightState`: `ending` (scar, face, reward, reputation, humiliation, grudge), `lairOutcome`, `conditionsApplied`, `storiedClimbs`, the persistent clock | none (plan: Tracing N/A) | `__DEBUG.getFightChips(actionId)` |
+| `chipCollaborators.buildFightChipWorld` | — | same | graph names, node kinds, condition tags | none | same accessor |
+| `EncounterAftermathChange.deltaLabel` → `deltaClusterFor` → `DeltaCluster word` | — | the ◆ marker's own word ("slain", "cleared", the clock word) | — | none | `getFightChips(...).chips[].delta.word`; styleguide sample |
+| `fight-screen-content.ts` chip copy + `fight.chip.*` tooltips | — | chip nouns' hover tier | — | none | the registry's conformance tests |
+
+**Wired and asserted:** `buildFightChanges.test.ts` (28 tests) runs the chips through the real `buildAftermathConsequences` and `buildUnifiedEncounterStageModel`. The live check drove a real fight through the veil on seed 42 medium (Krenn, a major lair): the aftermath drew slain and cleared as PATH with their words, and every `getFightChips` sentence was in the DOM.
+
 ## Fight endings D1 — the defeat faces and the death gate (THR-1548)
 
 Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3. A new first branch in the post-fight dispatcher; no new phase, node type or edge type, no component edit. Every write goes through an existing writer.

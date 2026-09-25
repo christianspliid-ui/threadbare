@@ -385,6 +385,14 @@ export interface EncounterAftermathChange {
    * wanderer — Jorun walks with her now"). Enriched like `detail`.
    */
   readonly causeClause?: string;
+  /**
+   * THR-1553 — an `opens` change's own word, drawn beside the ◆ marker in place
+   * of the default "a way opens". A slain beast is a changed world object, not
+   * a way opening, so the fight's PATH chips say *slain*, *cleared* or the
+   * clock word instead. Ignored on `gain` / `loss`; absent, every existing PATH
+   * chip keeps its label (NFP #6).
+   */
+  readonly deltaLabel?: string;
 }
 
 // ─── World-shaping aftermath supporting types (THR-115) ─────────────────────

@@ -83,6 +83,12 @@ export interface DeltaClusterProps {
   color?: string;
   /** Glyph size in px. Defaults to the Law 11 floor; never set below it. */
   size?: number;
+  /**
+   * THR-1553 — a PATH marker's own word, drawn beside the ◆ ("slain",
+   * "cleared"). UL PATH draws a single scale-less marker; the word says what
+   * changed where "a way opens" would read wrong. Only drawn for `opens`.
+   */
+  word?: string;
 }
 
 function defaultColorFor(direction: DeltaClusterProps['direction']): string {
@@ -96,7 +102,9 @@ export const DeltaCluster = memo(function DeltaCluster({
   label,
   color,
   size = DELTA_CLUSTER_GLYPH_SIZE_PX,
+  word,
 }: DeltaClusterProps) {
+  const markerWord = direction === 'opens' ? word?.trim() : undefined;
   // A change that happened draws at least one mark. Zero marks would say
   // "nothing changed" on a chip whose entire reason for existing is that
   // something did — the fail-soft floor, not a defensive nicety.
@@ -130,6 +138,22 @@ export const DeltaCluster = memo(function DeltaCluster({
       {Array.from({ length: drawn }, (_, i) => (
         <span key={i} aria-hidden="true">{glyph}</span>
       ))}
+      {markerWord && (
+        // The word is already the row's reading (`aria-label` carries it), so it
+        // is hidden from assistive tech here rather than announced twice.
+        <span
+          aria-hidden="true"
+          data-testid="delta-cluster-word"
+          style={{
+            marginLeft: 4,
+            fontSize: 'var(--text-2xs)',
+            letterSpacing: '0.08em',
+            fontStyle: 'italic',
+          }}
+        >
+          {markerWord}
+        </span>
+      )}
     </span>
   );
 });

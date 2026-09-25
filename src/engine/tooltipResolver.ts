@@ -22,7 +22,8 @@
  * - mandate.* → mandate-content.ts templates
  * - tag.* → content-tags.ts, the closed content-tag vocabulary (THR-1486)
  * - fight.* → fight-screen-content.ts, the fight on screen: Dread, Might, Temper,
- *             the fight clock and each clock-state word (THR-1551)
+ *             the fight clock and each clock-state word (THR-1551), and each
+ *             fight consequence-chip kind, fight.chip.* (THR-1553)
  *
  * This table and Law 17's copy of it are the same list; amend both when adding a
  * prefix (THR-1094 — the law's copy sat four prefixes stale long enough for a
@@ -366,8 +367,9 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
   }
 
   // ─── Fight concepts (THR-1551, fight on screen F2) ─────────────
-  // Dread, Might, Temper, the fight clock and each clock-state word. The ids are
-  // literals in `FIGHT_TOOLTIP_IDS`, so the concept-id corpus sweep sees them.
+  // Dread, Might, Temper, the fight clock, each clock-state word and (THR-1553)
+  // each fight chip kind (`fight.chip.*`). The ids are
+  // literals in `FIGHT_TOOLTIP_IDS` and `FIGHT_CHIP_TOOLTIP_IDS`, so the concept-id corpus sweep sees them.
   if (prefix === 'fight') {
     const entry = FIGHT_TOOLTIP_COPY[suffix];
     return entry ? { label: entry.label, desc: entry.desc } : null;

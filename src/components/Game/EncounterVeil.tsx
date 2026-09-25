@@ -1140,6 +1140,7 @@ export function EncounterVeil({
                         : chip.delta.label}
                       color={consequenceToneColor(chip.tone)}
                       size={CONSEQUENCE_DELTA_PX}
+                      word={chip.delta.word}
                     />
                   )}
                 </div>
