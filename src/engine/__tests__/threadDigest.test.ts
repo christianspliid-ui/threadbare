@@ -224,6 +224,22 @@ describe('composeThreadStory', () => {
     expect(result.beatLines).toHaveLength(1); // empty state line
   });
 
+  // THR-1600: the empty-thread line reached "Story so far" with a raw `{name}`.
+  it('fills the agent name into the empty-thread line and leaves no placeholder', () => {
+    const graph = makeGraph();
+    const lines = new Set<string>();
+    for (let tick = 0; tick < 120; tick++) {
+      const result = composeThreadStory(graph, 'agent-1', [], tick);
+      expect(result.isEmpty).toBe(true);
+      const text = result.beatLines.join(' ');
+      expect(text).not.toMatch(/\{[a-z_:]+\}/);
+      lines.add(text);
+    }
+    // Every pool variant is reached, and the name-bearing ones carry the name.
+    expect(lines.size).toBe(3);
+    expect([...lines].filter(l => l.includes('Test Agent'))).toHaveLength(2);
+  });
+
   it('returns composition with agentName from graph', () => {
     const graph = makeGraph();
     const result = composeThreadStory(graph, 'agent-1', [], 100);

@@ -215,6 +215,14 @@ function buildTensionLine(tension: CurrentTension, agentName: string, tick: numb
   return line;
 }
 
+// THR-1600: the empty-thread pool carries `{name}` like the tension pool, so it
+// needs the same substitution — returning the pick verbatim leaked a raw
+// `{name}` into "Story so far" for every mortal whose story had not started.
+function buildEmptyLine(agentId: string, agentName: string, tick: number): string {
+  const variant = seededPickFromPool([...EMPTY_THREAD_LINES], agentId, tick);
+  return variant.replace(/\{name\}/g, agentName);
+}
+
 function buildBeatLine(beat: SelectedBeat, agentName: string, graph: WorldGraph): string {
   const reach = beat.entry.reachPrimary ?? 'iron';
   const outcome = beat.entry.success ? 'success' : 'failure';
@@ -261,8 +269,7 @@ export function composeThreadStory(
   let isEmpty = false;
 
   if (beats.length < STORY_DIGEST_MIN_BEATS) {
-    const emptyLine = seededPickFromPool([...EMPTY_THREAD_LINES], agentId, currentTick);
-    beatLines = [emptyLine];
+    beatLines = [buildEmptyLine(agentId, agentName, currentTick)];
     isEmpty = true;
   } else {
     beatLines = beats.map((beat, i) => {
