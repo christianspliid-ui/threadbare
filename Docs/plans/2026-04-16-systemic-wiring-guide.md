@@ -4341,11 +4341,11 @@ What an author can rely on:
   licenses the plot against the victor, the Old-wound fight advantage fires, and the sheet reads
   *"one of them drew the other's blood"*. A mauling on top of `old_quarrel` or `covets` upgrades
   the edge to `blood_drawn`.
-- **Only `struck_down` kills, and only a monster victor**, at `FIGHT_KILL_CHANCE_BY_TEMPER[temper]`
+- **Only `struck_down` kills, and only a monster victor** (or, since THR-1557, a duel's ruthless victor), at `FIGHT_KILL_CHANCE_BY_TEMPER[temper]`
   (berserk 0.15, stubborn 0.05, skittish and bargainer 0), drawn once after two guards: **The
   First and the god's avatar are never killed in a fight**. A `death_prevented` ward is the
-  funnel's own and holds here. A duel victor's mercy is plan doc 5's E2 (THR-1557), which calls the
-  exported `fightDeathGuard` and `killStruckDownFighter` in the same order.
+  funnel's own and holds here. A duel victor's mercy (THR-1557) calls the exported
+  `fightDeathGuard` and `killStruckDownFighter` in the same order — see *Duels: the victor decides*.
 - **A fight death reads as any killing.** `createUndertakingOutcomeNode` gained an optional
   `source: { kind: 'fight', actorId, actionId, templateId, targetNodeId?, siteId? }` in place of a
   `project`; the node is `evt_und_fight_<actionId>_<tick>`, carries `source: 'fight'`, and every
@@ -4504,7 +4504,29 @@ THR-1531's Major elite row).
 - **Key the aftermath on `fight:<result>`, read from the actor's side.** `overcome` covers every
   way the opponent lost; `fightState.opponentLoss` (`clock` / `struck_down` / `yielded` /
   `routed`) says which. A duel never reaches `bargained` or `driven_off` (temper is NPC-mode
-  only). The faces (spared, slain, mauled) come with E2 through plan doc 1's writers.
+  only). The faces (spared, slain, mauled) are E2's — see below.
+
+**Duels: the victor decides (Duels E2, THR-1557).** Plan doc `Docs/plans/2026-09-23-mortal-duels.md` §5.
+What an author can rely on — nothing here is authored, it is engine logic behind every duel's end:
+
+- **A beaten loser faces the victor's mercy; a yielded or fled one never does.** Beaten = the
+  loser's clock filled or they were struck down, on either side (`fightState.result === 'struck_down'`
+  for the actor, `opponentLoss` `clock` / `struck_down` for the opponent). `decideBeatenDuellist`
+  (`src/engine/fights/fightEnding.ts`) reads the victor's live `mercy_ruthlessness`
+  (`FIGHT_MERCY_AXIS`) through `decideBranchPole` — the hand's lean counts only when the victor is
+  the action's actor (`FightEndContext.handNudges`). Mercy → **spared** (Scarred + `blood_drawn`
+  grudge, victor drifts toward mercy). Ruthlessness → D1's guards, then one kill draw at
+  `FIGHT_DUEL_KILL_CHANCE_RUTHLESS` (0.25) → **slain** through the funnel, else **mauled**.
+- **`fightState.opponentEnding` is always filled on a duel**, whichever side lost: `spared` /
+  `mauled` / `slain`, `yielded_to_mortal` (humiliated at their own home), `routed`, `broke_off`, or
+  `overcome_mortal` when the opponent won (standing toward the actor's faction ?? home, drift toward
+  courage). The loser's record carries `mercy` (victor, pole, leans, decider) — the chip source.
+- **The chronicle tells the loser's story.** A duel the actor won emits one `fight_ended` event with
+  the opponent's face and the opponent as `actorId` (id suffix `_opponent`); a double knockout
+  emits both. `fight.ending` carries the fork: `victorPole`, `victorProfileLean`, `victorCardLean`,
+  `mercyDecidedBy`, `opponentFace`, `bothStruckDown`, `opponentKillRoll`, `opponentGuard`.
+- **Key an aftermath on the result, not the face.** The `fight:<result>` memory is written before
+  the mercy decision; the faces reach the player through the chronicle and the chips.
 - **The first duel template, `fight.duel.grudge`** ("Old Blood",
   `src/data/encounters/fight-duel-grudge.ts`), registered in the new `FIGHT_ENCOUNTER_TEMPLATES`
   (`src/data/fights/fight-templates.ts`), spread into `UNIFIED_ACTION_TEMPLATES` and searched by
