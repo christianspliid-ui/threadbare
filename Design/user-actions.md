@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 18:57 local (16:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-25 19:55 local (17:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-25 — in a duel, the winner now decides the loser's fate** ([THR-1557](https://linear.app/threadbare/issue/THR-1557), duels E2). Merged 19:39 local via [#2051](https://github.com/christianspliid-ui/threadbare/pull/2051), and live on the site. Not a review ask yet: loser chips ([THR-1561](https://linear.app/threadbare/issue/THR-1561)), grudge duels ([THR-1558](https://linear.app/threadbare/issue/THR-1558)) and the hunts are still to come.
 - **2026-09-25 — a fight now shows its state as chips on screen** ([THR-1553](https://linear.app/threadbare/issue/THR-1553), fight F3). Merged 18:40 local via [#2050](https://github.com/christianspliid-ui/threadbare/pull/2050), and live on the site. Not a review ask yet: the duel winner’s choice ([THR-1557](https://linear.app/threadbare/issue/THR-1557)) is still to come.
 - **2026-09-25 — the cold playtest loop runs** ([THR-1610](https://linear.app/threadbare/issue/THR-1610)): fresh testers play the game daily through a harness and report back. Merged 17:39 local via [#2049](https://github.com/christianspliid-ui/threadbare/pull/2049), and live on the site.
 - **2026-09-25 — social, tavern and secret encounters fire again** ([THR-1614](https://linear.app/threadbare/issue/THR-1614)). Merged 16:30 local via [#2047](https://github.com/christianspliid-ui/threadbare/pull/2047), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-25 — the title menu no longer shows developer screens** ([THR-1601](https://linear.app/threadbare/issue/THR-1601), from the cold playtest). Merged via [#2043](https://github.com/christianspliid-ui/threadbare/pull/2043), and live on the site.
 - **2026-09-25 — "Story so far" no longer shows a raw `{name}` where a thread's name belongs** ([THR-1600](https://linear.app/threadbare/issue/THR-1600), from the cold playtest). Merged via [#2039](https://github.com/christianspliid-ui/threadbare/pull/2039).
 - **2026-09-25 — living-world seeding drift fixed**: freeholds with no Realm nearby now attach to the nearest settlement ([THR-1588](https://linear.app/threadbare/issue/THR-1588)). Merged 10:46 local via [#2037](https://github.com/christianspliid-ui/threadbare/pull/2037), and live on the site.
-- **2026-09-25 — “May a lane draft a design doc on its own?” answered: yes, within agreed work.** You ruled it in chat, and the design lane now runs four times a day ([THR-1611](https://linear.app/threadbare/issue/THR-1611)). Its decisions reach you as “Decided for you” lines you can veto. The ask is closed.
 
 ---
 
