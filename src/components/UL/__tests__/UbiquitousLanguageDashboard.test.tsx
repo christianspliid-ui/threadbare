@@ -16,6 +16,13 @@ describe('UbiquitousLanguageDashboard', () => {
     expect(screen.getByTestId('ul-shard-all')).toBeTruthy();
   });
 
+  it('links back to the title screen, never the dev quick-start world (THR-1601)', () => {
+    render(<UbiquitousLanguageDashboard />);
+    const back = screen.getByRole('link', { name: /back to title/i });
+    expect(back.getAttribute('href')).toBe('/');
+    expect(screen.queryByRole('link', { name: /back to game/i })).toBeNull();
+  });
+
   it('renders one row per shard tab + All', () => {
     render(<UbiquitousLanguageDashboard />);
     for (const shard of SHARDS) {
