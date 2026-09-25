@@ -2591,6 +2591,8 @@ if (import.meta.env.DEV) {
         opponentLoss: action.fightState?.opponentLoss ?? null,
         // THR-1548 — the fighter-side ending record (face, guards, kill draw, writes).
         ending: action.fightState?.ending ?? null,
+        // THR-1557 — a duel's other side: the opponent's face, and the mercy fork they lived or died by.
+        opponentEnding: action.fightState?.opponentEnding ?? null,
       };
     },
 
