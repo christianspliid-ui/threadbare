@@ -5,7 +5,7 @@
  *
  * **Spawn-only.** No `locationSubtypes` and no cache registration, so the draw
  * pipeline never offers it. It arrives through plan doc 3's lair trigger, plan doc
- * 6's hunt (by query: `actorAffinities` is declared because `eligibleAt` drops a
+ * 6's hunt (by query — the `#lair_confront` tag, THR-1560: `actorAffinities` is declared because `eligibleAt` drops a
  * template without it), and the `spawnFight` debug lever.
  *
  * The opponent is the action's target (the block carries no `opponentRef`). The
@@ -71,6 +71,9 @@ export const FIGHT_LAIR_CONFRONT: UnifiedActionTemplate = {
   scale: 'regional',
   apCost: 1,
   actorAffinities: ['individual'],
+  // THR-1560 — the hunt's kept branch finds the confront by this tag, and this is its
+  // one bearer (the runtime-reader rule: `cell.destroy.monster`'s meeting query reads it).
+  tags: ['#lair_confront'],
   sphereAffinity: 'matter',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
   steps: STEPS,

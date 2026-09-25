@@ -2683,7 +2683,8 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!state) return [];
       const { listMonsters } = await import('./engine/monsters/listMonsters');
-      return listMonsters(state.graph);
+      // THR-1560: the active hunt projects fill each row's `huntedBy`.
+      return listMonsters(state.graph, state.strategicState?.projects ?? []);
     },
 
     /**

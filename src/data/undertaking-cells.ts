@@ -47,6 +47,8 @@ import {
   HARM_ON_LOWER,
   UNDERTAKING_PROGRESS_PER_ADVANCE,
   UNDERTAKING_DEFAULT_TIER,
+  HUNT_APPOINTMENT_DELAY_TICKS,
+  HUNT_APPOINTMENT_PULL_MULT,
 } from './strategic-action-constants';
 
 /** `cell.<variant>.<type>` — the variant with its colon folded to an underscore so the id stays a plain token. */
@@ -78,6 +80,9 @@ export const CELL_FAMILY_BY_TYPE: Readonly<Record<UndertakingObjectTypeId, Behav
   route: 'merchant-expansion',
   // The plot is the underworld's work, not a courtier's (THR-1430).
   mortal: 'underworld-network',
+  // THR-1560 — the martial family that already works companies and armies. It governs
+  // tracking only: the hunt itself is `destroy`, where `COUNTER_PLAY_FAMILY` wins.
+  monster: 'warlord-expansion',
   faction: 'court-political',
   company: 'warlord-expansion',
   army: 'warlord-expansion',
@@ -130,6 +135,8 @@ export const CREATE_SITE_RULE: Readonly<Record<UndertakingObjectTypeId, Strategi
   // A mortal is never *made* by an undertaking — the kind has one cell and it is
   // `destroy`. `self` keeps the table total without claiming a create cell exists.
   mortal: { type: 'self' },
+  // Nor is a beast (THR-1560): the class has observe and destroy, no create.
+  monster: { type: 'self' },
   faction: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
   company: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort'] },
   army: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort', 'castle'] },
@@ -237,6 +244,24 @@ export const UNDERTAKING_CELL_APPOINTMENTS: Readonly<Record<string, UndertakingA
       seedLabel: 'The one who was not met sends someone who does not ask.',
     },
   },
+  // THR-1560 — the hunt's payoff is the confront, planted at the den and judged there.
+  // The kept branch is the one template tagged `#lair_confront` (`fight.lair.confront`),
+  // aimed at the beast (`inheritSiteAsTarget`); the missed branch is the one tagged
+  // `#hunt_trail_cold`, fired wherever the hunter stands. The confront never fires
+  // placeless (`requirePlace`), and the travel budget is the hunt's own: far beasts are
+  // exactly the case the monster scan cap exists for.
+  'cell.destroy.monster': {
+    delayTicks: HUNT_APPOINTMENT_DELAY_TICKS,
+    meeting: { kind: 'encounter_template', tags: ['#lair_confront'] },
+    seedLabel: 'A beast to face, at its den.',
+    missed: {
+      query: { kind: 'encounter_template', tags: ['#hunt_trail_cold'] },
+      seedLabel: 'The trail went cold.',
+    },
+    inheritSiteAsTarget: true,
+    pullMult: HUNT_APPOINTMENT_PULL_MULT,
+    requirePlace: true,
+  },
 };
 
 /** "an attachment", "a room" — the display name is a player word (UI Law 14). */
@@ -288,6 +313,9 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
       : { type: 'object', objectTypeId: type.id, ownership: type.ownershipOverride?.[variant] ?? OWNERSHIP_BY_VERB[variant] },
     motiveGate: gated ? [...MOTIVE_GATE_KINDS] : undefined,
     harmClass: variant === 'destroy' ? HARM_ON_DESTROY[type.id] : variant === 'control:seize' ? HARM_ON_SEIZE : variant === 'change:lower' ? HARM_ON_LOWER : undefined,
+    // THR-1560: the harm lands later (a hunt only plants the confront), so completion
+    // writes no outcome node and satisfies no grievance.
+    ...(type.deferredPayoffVerbs?.includes(variant) ? { deferredPayoff: true } : {}),
     // THR-1497: the family this cell's completion stirs, when the table names one.
     catalystQuery: UNDERTAKING_CELL_CATALYSTS[cellTemplateId(variant, type.id)],
     // THR-1519: the meeting this cell's completion arranges, when the table names one.

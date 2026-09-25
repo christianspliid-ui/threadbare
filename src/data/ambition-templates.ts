@@ -1087,6 +1087,12 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // `PLOT_MOTIVES` admits only a grudge or a war, so an avenger with nothing
         // but a rivalry is still refused at proposal.
         'cell.destroy.mortal',
+        // The hunt (THR-1560) — the vendetta against a beast, beside the plot against a
+        // person. Tracking first earns the secret; hunting plants the confront at the den.
+        // Both are admitted only through the monster type's own doors (a scar, a
+        // grievance, a den near home), recorded on the board as `gate_exempt:<reason>`.
+        'cell.destroy.monster',
+        'cell.observe.monster',
       ],
       templateIds: [
         'strategic_expose_mark',
@@ -1310,6 +1316,23 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
     ],
     completion: { requires: 2, of: 3 },
+    // THR-1560 — the avenger's first profile. Without one the board skipped this
+    // ambition entirely, so a grieving heir (THR-1536) pursued nothing. Under `cells`
+    // the profile also gives every avenger the vengeance family's cells over the kinds
+    // of their two leading reaches (the division rule) — **never the plot**: the rule
+    // derives no `cell.destroy.mortal`, and the hand list is the two hunt cells only.
+    // Decided under the 2026-09-11 delegation; measured by H2's avenger census, bounded
+    // by its kill criterion, and the veto is invited on THR-1533.
+    strategicProfile: {
+      behaviorFamily: 'warlord-expansion',
+      preferredVerbs: ['destroy', 'gather_info'],
+      cells: [
+        'cell.destroy.monster',
+        'cell.observe.monster',
+      ],
+      templateIds: [],
+      reachEmphasis: { iron: 0.7, shadow: 0.5, heart: 0.3 },
+    },
     abandonmentTriggers: [
       {
         condition: { type: 'agent_has_trait', trait: 'trait.core.core_hope.virtue' },

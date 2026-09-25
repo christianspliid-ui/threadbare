@@ -55,6 +55,7 @@ import {
   disbandGroup,
   pressTheMark,
   mintLeverageMark,
+  recordHuntTracking,
   recordIntelligence,
   createRelationEdge,
   foundFaction,
@@ -109,6 +110,7 @@ import { getFactionLeaderId } from '../engine/factionNetwork';
 import { REWARD_POSSESSIONS } from './reward-attachment-catalog';
 import { ANOMALY_SIGNATURE_ARTIFACTS } from './anomaly-reward-catalog';
 import { isMonster } from '../engine/monsters/isMonster';
+import { isLiveMonster, huntReason, monsterLairId, liveHuntFavourAt } from '../engine/monsters/hunts';
 import {
   ROUTE_IDENTITY_SUBTYPE,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
@@ -171,6 +173,8 @@ import {
   PLOT_WITNESS_MAGNITUDE,
   // Yield and leverage (THR-1439)
   YIELD_DRAW_COOLDOWN_TICKS,
+  // Hunts (THR-1560)
+  HUNT_TIER_BY_LAIR,
 } from './strategic-action-constants';
 
 // ─── Shapes ─────────────────────────────────────────────────────────
@@ -305,6 +309,23 @@ export interface UndertakingObjectType {
   readonly verbs: Partial<Record<UndertakingVerbVariant, ObjectVerbEntry>>;
   readonly lexicon: WorkLexiconId;
   readonly harmOnDestroy: UndertakingHarmClass;
+  /**
+   * The world-object kind this type is a **class** of (THR-1560). Absent on every type
+   * that is itself a kind. `monster` is a class of `mortal` (THR-1268): the codex and
+   * the grid show it as a sub-row of the Mortal kind, never as a kind of its own.
+   */
+  readonly classOf?: UndertakingObjectTypeId;
+  /**
+   * What the codex's "Needs a reason" row says for this type's gated verbs, when the
+   * type's own doors — not the social motives — are what admit them (THR-1560).
+   */
+  readonly reasonWords?: string;
+  /**
+   * Verbs whose harm lands later than completion (THR-1560). Carried onto the
+   * synthesised cell as `deferredPayoff: true`, which makes completion skip the
+   * outcome node and the grievance satisfaction — a hunt only plants the confront.
+   */
+  readonly deferredPayoffVerbs?: readonly UndertakingVerbVariant[];
 }
 
 // ─── Helpers shared by the types ────────────────────────────────────
@@ -2013,6 +2034,98 @@ const MORTAL: UndertakingObjectType = {
   },
 };
 
+// ─── Monster — a class of Mortal (THR-1560, plan doc `2026-09-23-hunts.md`) ─────
+
+/** A beast's tier for the grid tables: its lair's (major 2, legendary 3). */
+function monsterTier(graph: WorldGraph, handle: UndertakingObjectHandle): UndertakingObjectTier | null {
+  const nodeId = nodeIdOf(handle);
+  if (!nodeId) return null;
+  const lairId = monsterLairId(graph, nodeId);
+  if (!lairId) return null;
+  return graph.getNode(lairId)?.properties.lairTier === 'legendary' ? HUNT_TIER_BY_LAIR.legendary : HUNT_TIER_BY_LAIR.major;
+}
+
+/**
+ * `observe × Monster` — tracking a beast: the milestone work of learning how it moves.
+ * One writer, `recordHuntTracking`: a `hidden_weakness` mark on the beast (plan doc 2's
+ * "Their secret") and its temper revealed on the card.
+ */
+function trackMonster(ctx: ObjectVerbContext): GraphOpResult {
+  const monsterId = nodeIdOf(ctx.handle);
+  if (!monsterId) return fail('record_hunt_tracking', 'no_node');
+  if (!isLiveMonster(ctx.graph.getNode(monsterId))) return fail('record_hunt_tracking', 'not_a_live_monster');
+  return recordHuntTracking(ctx.graph, ctx.actorId, monsterId, ctx.tick);
+}
+
+/**
+ * `destroy × Monster` — the hunt. Completing it harms nobody yet: the work only makes
+ * the hunter **ready to go in**, and the cell's appointment payoff plants the confront
+ * at the den (`UNDERTAKING_CELL_APPOINTMENTS['cell.destroy.monster']`), judged at the
+ * place like every appointment. So this op writes nothing — the payoff is deferred
+ * (`deferredPayoffVerbs`), and the beast's death, if it comes, is the fight's.
+ */
+function prepareHunt(ctx: ObjectVerbContext): GraphOpResult {
+  const monsterId = nodeIdOf(ctx.handle);
+  if (!monsterId) return fail('prepare_hunt', 'no_node');
+  // Read through the registry's own shape test, so the op stays inline — it writes
+  // nothing and reaches no engine module (the grid's op join has no home to attribute).
+  if (!isObjectOfType(ctx.graph, MONSTER, ctx.handle)) return fail('prepare_hunt', 'not_a_live_monster');
+  return { success: true, op: 'prepare_hunt' };
+}
+
+/** Both verbs: a dead hunter pursues nothing (the decision phase reads no `deceased`). */
+function hunterGone(graph: WorldGraph, actorId: string): boolean {
+  const actor = graph.getNode(actorId);
+  return !actor || isAgentGone(actor);
+}
+
+const MONSTER: UndertakingObjectType = {
+  id: 'monster',
+  displayName: 'Monster',
+  // A class of the Mortal kind (THR-1268): the dead are never a hunt's object.
+  classOf: 'mortal',
+  shape: { nodeType: 'actor', discriminator: isLiveMonster },
+  // Nobody holds a beast. The gate asks about the beast itself, as the plot's does —
+  // so `destroy`'s `other` rule reads it as held rather than refusing it unowned.
+  ownedVia: [],
+  selfOwned: true,
+  tierOf: monsterTier,
+  lexicon: 'iron',
+  harmOnDestroy: 'named_death',
+  deferredPayoffVerbs: ['destroy'],
+  reasonWords: 'Only with a scar, a grievance, or a den near home',
+  gateExemption: {
+    destroy: (graph, actorId, handle) => {
+      const monsterId = nodeIdOf(handle);
+      return monsterId ? huntReason(graph, actorId, monsterId) : null;
+    },
+  },
+  eligibility: {
+    observe: (graph, actorId, handle) => {
+      if (hunterGone(graph, actorId)) return 'hunter_gone';
+      const monsterId = nodeIdOf(handle);
+      if (!monsterId) return 'monster_gone';
+      // One secret per hunter per beast: the mint refuses a second even once the first
+      // was revealed and spent, so the work is refused before it starts.
+      if (graph.getOutgoingEdges(actorId, 'knows_secret_of').some(e => e.target === monsterId)) return 'already_tracked';
+      return null;
+    },
+    destroy: (graph, actorId, handle) => {
+      if (hunterGone(graph, actorId)) return 'hunter_gone';
+      const monsterId = nodeIdOf(handle);
+      if (!monsterId) return 'monster_gone';
+      // One confront per beast per hunter: refused while the promise to be at its den
+      // stands (the planter always writes it; kept removes it, missed breaks it).
+      if (liveHuntFavourAt(graph, actorId, monsterLairId(graph, monsterId))) return 'hunt_confront_pending';
+      return null;
+    },
+  },
+  verbs: {
+    observe: trackMonster,
+    destroy: prepareHunt,
+  },
+};
+
 const COMPANION: UndertakingObjectType = {
   id: 'companion',
   displayName: 'Companion',
@@ -2450,6 +2563,9 @@ const AGREEMENT: UndertakingObjectType = {
       const edge = edgeOf(graph, handle);
       if (!edge) return 'agreement_gone';
       if (edge.type === 'owes_favor') return edge.target === actorId ? null : 'not_owed_to_actor';
+      // THR-1560 — a tracked beast's ways are an advantage in its den, never a debt:
+      // pressing the mark would make a monster owe a favour.
+      if (isMonster(graph.getNode(edge.target))) return 'no_favour_from_beasts';
       return edge.source === actorId ? null : 'not_the_holder';
     },
     // Ending it: a mark is exposed by its holder, a favour forgiven by its creditor.
@@ -2593,7 +2709,7 @@ const STANDING: UndertakingObjectType = {
 
 export const UNDERTAKING_OBJECT_TYPES: readonly UndertakingObjectType[] = [
   AREA, LOCATION, PLACE, ROUTE,
-  MORTAL,
+  MORTAL, MONSTER,
   FACTION, COMPANY, ARMY, NETWORK, COMPANION,
   ITEM, POWER, CONDITION, AGREEMENT, STANDING,
 ];

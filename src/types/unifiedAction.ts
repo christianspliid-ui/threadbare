@@ -1474,6 +1474,18 @@ export interface PlantedAppointment {
   readonly missed: AppointmentBlock['missed'];
   /** The `owes_favor` edge that is the promise; removed on kept, marked `broken` on missed. */
   readonly favourEdgeId?: string;
+  /**
+   * The payoff's flags, carried from `UndertakingAppointmentPayoff` at plant time
+   * (THR-1560), because the seed's later readers — the window-closed rewrite and
+   * `computeAppointmentPull` — see this block, not the payoff. All optional; absent
+   * reads as today's behaviour.
+   */
+  /** The kept branch's inherited target belongs to it alone; the missed rewrite drops it. */
+  readonly inheritSiteAsTarget?: boolean;
+  /** Multiplies the travel pull. Absent reads as 1. */
+  readonly pullMult?: number;
+  /** A seed whose place is lost is dropped (after its favour is released), never fired placeless. */
+  readonly requirePlace?: boolean;
 }
 
 export interface EncounterAftermathReaction {

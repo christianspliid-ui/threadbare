@@ -209,6 +209,21 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
   },
 };
 
+/**
+ * What each LIVE **class** cell does (THR-1560) — keyed by object type id, not by kind,
+ * because a class of a kind is not a row of the catalogue and `mortal × destroy` is
+ * already the plot's slot. The grid renders these as sub-rows under their kind
+ * (`monster` under Mortal, labelled *(monster)*); the codex reads the same table, so
+ * both agree. Required for every semantic a class type declares, exactly like
+ * `LIVE_CELL_NOTES`, and the generator fails by name on a gap or a stale entry.
+ */
+export const LIVE_CLASS_CELL_NOTES: Readonly<Record<string, Partial<Record<UndertakingVerbVariant, LiveCellNote>>>> = {
+  monster: {
+    observe: { op: 'record_hunt_tracking', note: 'Tracking a beast (THR-1560): the milestone work of learning how it moves. One writer, `recordHuntTracking`, mints a `hidden_weakness` mark on the beast through `mintLeverageMark` and reveals its temper (`monsterState.temperShown`). One secret per hunter per beast — refused `already_tracked` once any mark on it is held, spent or not. Not motive-gated. Offered to survival and discovery mortals leaning Iron, and to every Eye mortal through the observe-anything rider.', readBy: 'Plan doc 2\'s advantage reader turns the live mark into "Their secret" on the first clash where the hunter is behind; the lair card and the fight header read `temperShown` to reveal the temper. Pressing the mark is refused (`no_favour_from_beasts`): a beast owes nobody a favour.' },
+    destroy: { op: 'prepare_hunt', note: 'The hunt (THR-1560): the long work of going to kill a beast, never the plot (monsters are excluded from `isPlottableMortal`). Admitted through three doors, recorded on the board as `gate_exempt:<reason>` — a scar (`blood_drawn` toward the beast), a grievance whose culprit is the beast, or its den within `HUNT_THREAT_RADIUS_HEXES` of the hunter\'s home. **The payoff is deferred:** completion writes no outcome node and satisfies no grievance; it plants the confront as an appointment at the den (`#lair_confront`, aimed at the beast), with a missed branch (`#hunt_trail_cold`) and no placeless fallback. One confront per beast per hunter (`hunt_confront_pending`); a dead hunter is refused (`hunter_gone`).', readBy: 'The appointment layer: the decision phase pulls the hunter to the den (`pullMult`), `evaluateEncounterSeeds` keeps the meeting and fires `fight.lair.confront` against the beast, or misses it and fires `hunt.trail_cold` where the hunter stands; M4\'s lair trigger skips a hunter keeping the appointment (`hunt_appointment`), and the named-elite encounter hunt is hidden from them. The beast\'s death closes a grievance through `grievance_culprit_eliminated`.' },
+  },
+};
+
 // ─── The reader column of the subsystem × verb view (THR-1427) ──────────────
 
 /** One subsystem that consumes what another's live cells leave behind, and the sites that do it. */

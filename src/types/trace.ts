@@ -31,6 +31,7 @@ import type {
   MonsterFelledTrace,
   MonsterHardenedTrace,
   MonsterMintedTrace,
+  HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
@@ -540,7 +541,10 @@ export type TraceCategory =
   | 'monster.driven_off'
   // Fights — the lair-arrival trigger, spawned or skipped (THR-1547).
   // Interface in `src/types/traces/monster-traces.ts`.
-  | 'fight.trigger';
+  | 'fight.trigger'
+  // Hunts — a hunter finished tracking a beast (THR-1560).
+  // Interface in `src/types/traces/monster-traces.ts`.
+  | 'hunt.tracked';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -815,6 +819,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'monster.driven_off',
   // Fights — the lair-arrival trigger (THR-1547)
   'fight.trigger',
+  // Hunts — tracking finished (THR-1560)
+  'hunt.tracked',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -2253,6 +2259,11 @@ export interface StrategicProjectProgressTrace extends TraceBase {
    * Never present on an instant completion — those pay nothing, deliberately.
    */
   capabilityGrowth?: { reach: ReachDomain; delta: number };
+  /**
+   * THR-1560 — the completed template defers its payoff (`deferredPayoff`): no outcome
+   * node was written and no grievance was satisfied, on purpose. Present only then.
+   */
+  payoffDeferred?: boolean;
 }
 
 /**
@@ -3306,6 +3317,11 @@ export interface AppointmentPlantedTrace extends TraceBase {
   source?: 'encounter' | 'undertaking';
   /** Present when the plant fell back to a placeless seed. */
   refused?: 'over_max' | 'place_unresolved';
+  /**
+   * THR-1560 — the payoff said the meeting must have a place (`requirePlace`), so the
+   * refusal pushed no seed at all rather than a placeless one.
+   */
+  seedWithheld?: boolean;
 }
 
 /** Regime of a mortal's nearest-due appointment (THR-1479). */
@@ -3342,6 +3358,11 @@ export interface AppointmentMissedTrace extends TraceBase {
   reason: 'absent' | 'unreachable' | 'chose_to_miss' | 'place_lost';
   missedTemplateId?: string;
   missedQuery?: string;
+  /**
+   * THR-1560 — a `place_lost` seed whose appointment carried `requirePlace` was
+   * dropped (its favour released first) instead of firing its kept branch placeless.
+   */
+  dropped?: boolean;
 }
 
 /** Trace: a family-only encounter seed resolved to a concrete template (THR-697, Slice D). */
@@ -4115,6 +4136,7 @@ export type TraceEntry =
   | MonsterFelledTrace
   | MonsterDrivenOffTrace
   | FightTriggerTrace
+  | HuntTrackCompletedTrace
   // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
   | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)

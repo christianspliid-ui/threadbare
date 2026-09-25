@@ -35,7 +35,10 @@ export const VERBS_BY_CATEGORY: Readonly<Record<AmbitionCategory, readonly Under
 /** The kinds a Reach can touch. */
 export const KINDS_BY_REACH: Readonly<Record<ReachDomain, readonly UndertakingObjectTypeId[]>> = {
   gold: ['item', 'route', 'place', 'location'],
-  iron: ['army', 'company', 'location'],
+  // THR-1560: a beast is Iron's to hunt — a vengeance, devotion or survival mortal whose
+  // two leading reaches include Iron derives `destroy × Monster` (and survival or
+  // discovery, `observe × Monster`). Monster is a class of Mortal, not a kind.
+  iron: ['army', 'company', 'location', 'monster'],
   shadow: ['agreement', 'network', 'standing'],
   heart: ['standing', 'faction', 'company', 'companion'],
   eye: ['agreement', 'area'],
@@ -44,10 +47,15 @@ export const KINDS_BY_REACH: Readonly<Record<ReachDomain, readonly UndertakingOb
   stone: ['place', 'location', 'route', 'item'],
 };
 
-/** Every kind, for the Eye's observe-anything rider. */
+/**
+ * Every object type, for the Eye's observe-anything rider — the kinds, plus the
+ * `monster` class (THR-1560), so any Eye-reach mortal may track a beast. `mortal` is
+ * deliberately absent: the Mortal kind has no observe cell, and the division rule never
+ * derives the plot.
+ */
 export const ALL_UNDERTAKING_KINDS: readonly UndertakingObjectTypeId[] = [
   'area', 'location', 'place', 'route', 'faction', 'company', 'army', 'network', 'companion',
-  'item', 'power', 'condition', 'agreement', 'standing',
+  'item', 'power', 'condition', 'agreement', 'standing', 'monster',
 ];
 
 /**

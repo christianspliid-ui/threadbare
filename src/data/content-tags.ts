@@ -280,6 +280,10 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   // one bearer because it has a runtime reader (the Crossroads bargain's missed branch
   // names it by query), which is the seating rule's other clause.
   T('#crossroads_debt', 'family', 'What comes to collect on a promise made at a crossroads and not kept.', ['encounter_template']),
+  // THR-1560 — the hunt's two branches. One bearer each, seated on their runtime
+  // reader: `cell.destroy.monster`'s appointment payoff names both by query.
+  T('#lair_confront', 'family', 'The beast\'s den, entered on purpose.', ['encounter_template']),
+  T('#hunt_trail_cold', 'family', 'A hunt that was never taken to the den.', ['encounter_template']),
   // The thirteen faction quest families — the body that sets the errand, in its word.
   T('#guild_errand', 'family', 'Work set by the Adventurers\' Guild — a posting taken off the board.', ['encounter_template']),
   T('#circle_errand', 'family', 'Work set by the Arcane Circle — study, survey, and the reagents study needs.', ['encounter_template']),

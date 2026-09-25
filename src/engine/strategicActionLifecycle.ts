@@ -80,6 +80,9 @@ import {
 import { resolveDurableActorLocation, mintRouteIdentity } from './tradeRouteOps';
 import { resolveUndertakingCompletion } from './undertakingResolver';
 import { catalystAnchorLocationId } from './undertakingCatalystAnchor';
+import { isAgentGone } from './groups/groupQueries';
+import { isMonster } from './monsters/isMonster';
+import { monsterLairId } from './monsters/hunts';
 import { plantAppointmentPromise } from './appointments';
 import { cellCompletionProse } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
@@ -95,6 +98,7 @@ import { growCapabilityOnCompletion } from './undertakingCapabilityGrowth';
 import {
   findGrievanceForAmbitionTemplate,
   satisfyGrievance,
+  grievanceClosesOnCompletion,
 } from './grievance/grievanceLifecycle';
 import {
   resolveUndertakingCheckpoint,
@@ -1063,9 +1067,15 @@ export function advanceStrategicProjects(
       // burning the culprit's charts rather than their hall has still answered the
       // grievance, and demanding the harm land on the original target would close only
       // the vendettas that happened to pick the symmetrical verb.
-      const grievanceAnswered = findGrievanceForAmbitionTemplate(
+      // THR-1560: a work whose harm lands later (a hunt only plants the confront)
+      // writes no outcome node and satisfies no grievance — the beast's death, if it
+      // comes, closes the account through its own milestone. And a grievance against a
+      // beast is never closed by some other project's completion.
+      const payoffDeferred = getStrategicTemplate(project.templateId)?.deferredPayoff === true;
+      const grievanceMatched = payoffDeferred ? undefined : findGrievanceForAmbitionTemplate(
         graph, checked.actorId, checked.ambitionId,
       );
+      const grievanceAnswered = grievanceClosesOnCompletion(graph, grievanceMatched) ? grievanceMatched : undefined;
       const answeredMagnitude = grievanceAnswered
         ? (grievanceAnswered.properties.harmMagnitude as number | undefined)
         : undefined;
@@ -1082,7 +1092,7 @@ export function advanceStrategicProjects(
       // and that overrides the template's. Every other cell sets neither field and is
       // untouched — the template's authored class still wins by default.
       const signedHarm = ops.find(o => o.success && o.harmClass);
-      const harmClass = signedHarm?.harmClass ?? completedTemplate?.harmClass;
+      const harmClass = payoffDeferred ? undefined : signedHarm?.harmClass ?? completedTemplate?.harmClass;
       // The victim normally rides the motive gate that licensed the verb. An ungated
       // cell — the curse rides `create` — has no gate to read one off, so the op names
       // the mortal it acted on.
@@ -1134,7 +1144,7 @@ export function advanceStrategicProjects(
         graph, project.actorId, completedTemplate, project.objectTier,
       );
 
-      newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded, deed, capabilityGrowth));
+      newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded, deed, capabilityGrowth, payoffDeferred));
 
       // A finished work is a deed the calling reads (THR-1299 slice 5) — the
       // second of its three event sites.
@@ -1225,6 +1235,7 @@ export function advanceStrategicProjects(
         // The rider rides the completion trace that already fires, for the same reason
         // the christened name does — no new category, no extra emission per tick.
         capabilityGrowth,
+        ...(payoffDeferred ? { payoffDeferred: true } : {}),
         summary: christened
           ? `Project ${project.templateId} completed — christened "${christened.name}"`
           : `Project ${project.templateId} completed`,
@@ -2255,9 +2266,19 @@ export function maybePlantAppointmentPayoff(
   if (!payoff) return false;
 
   const seedId = `appointment_${candidate.templateId}_${candidate.actorId}_${tick}`;
-  const placeId = catalystAnchorLocationId(state.graph, candidate, ops);
   const site = candidate.targetNodeId ? state.graph.getNode(candidate.targetNodeId) : undefined;
-  const counterpartyId = site && site.type === 'actor' && site.properties.actorType !== 'faction' && site.id !== candidate.actorId
+  // THR-1560: a meeting aimed at its site needs a site to aim at. A beast that died
+  // while the hunt was prepared is no one's to face — no promise, no seed.
+  if (payoff.inheritSiteAsTarget && (!site || isAgentGone(site))) return false;
+  // A beast's meeting is at its den (the lair it belongs to), the place the one-confront
+  // refusal and the draw gate both read; every other site is where the work stands.
+  const siteIsMonster = isMonster(site);
+  const placeId = (siteIsMonster && site ? monsterLairId(state.graph, site.id) : undefined)
+    ?? catalystAnchorLocationId(state.graph, candidate, ops);
+  // The creditor: a non-faction mortal site other than the actor — never a monster
+  // (THR-1560), so a hunter owes the lair, not the beast, their word.
+  const counterpartyId = site && site.type === 'actor' && site.properties.actorType !== 'faction'
+    && site.id !== candidate.actorId && !siteIsMonster
     ? site.id
     : undefined;
   const dueTick = tick + (payoff.delayTicks ?? UNDERTAKING_APPOINTMENT_DELAY_TICKS);
@@ -2277,7 +2298,14 @@ export function maybePlantAppointmentPayoff(
     templateId: candidate.templateId,
     authoredPlaceRef: candidate.targetNodeId,
     source: 'undertaking',
+    inheritSiteAsTarget: payoff.inheritSiteAsTarget,
+    pullMult: payoff.pullMult,
+    requirePlace: payoff.requirePlace,
   });
+
+  // THR-1560: a meeting that must have a place is never planted placeless — a refused
+  // promise pushes no seed (the planter traced the refusal with `seedWithheld`).
+  if (payoff.requirePlace && !result.planted) return false;
 
   const seed: PendingEncounterSeed = {
     seedId,
@@ -2291,6 +2319,9 @@ export function maybePlantAppointmentPayoff(
     seedLabel: payoff.seedLabel,
     plantedTick: tick,
     ...(result.planted ? { appointment: result.planted } : {}),
+    // The kept branch is aimed at the site (THR-1560): the confront fights the beast.
+    // The missed rewrite drops it, because the planted appointment carries the flag.
+    ...(payoff.inheritSiteAsTarget && site ? { inheritedTargetId: site.id } : {}),
   };
   state.pendingEncounterSeeds = [...(state.pendingEncounterSeeds ?? []), seed];
   return true;
@@ -2305,6 +2336,7 @@ function createHistoryEntry(
   catalystSeeded: boolean,
   deed?: UndertakingDeed,
   capabilityGrowth?: UndertakingCapabilityGrowth,
+  payoffDeferred = false,
 ): StrategicHistoryEntry {
   return {
     tick,
@@ -2320,6 +2352,7 @@ function createHistoryEntry(
     catalystSeeded,
     ...(deed ? { deed } : {}),
     ...(capabilityGrowth ? { capabilityGrowth } : {}),
+    ...(payoffDeferred ? { payoffDeferred: true } : {}),
   };
 }
 

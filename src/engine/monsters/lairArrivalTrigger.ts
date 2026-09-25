@@ -17,6 +17,8 @@
  * - a mortal who walked here *to hunt* the beast (`arriving_for_hunt`): the hunt is
  *   the deliberate entrance and brings its own fight, so a confront on arrival would
  *   make them fight twice back to back;
+ * - a hunter keeping a hunt appointment at this den (`hunt_appointment`, THR-1560):
+ *   the appointment's kept branch is their confront;
  * - a busy mortal (`busy`) — one unresolved action at a time;
  * - a pair still on cooldown (`cooldown`);
  * - a dead or missing monster (`monster_dead`).
@@ -43,6 +45,7 @@ import { isAgentGone } from '../groups/groupQueries';
 import { createUnifiedAction, isUnifiedAgentIdle } from '../unifiedActionLifecycle';
 import { emitTrace } from '../traceBuffer';
 import { isMonster } from './isMonster';
+import { liveHuntFavourAt } from './hunts';
 
 /** The one key rule for every fight trigger: the two ids, sorted, joined with `|`. */
 export function fightPairKey(a: string, b: string): string {
@@ -146,6 +149,12 @@ export function checkLairArrival(
   if (ctx.targetEncounterId && getUnifiedTemplateById(ctx.targetEncounterId)?.requiresLiveMonster) {
     trace('arriving_for_hunt');
     return { skipped: 'arriving_for_hunt' };
+  }
+  // THR-1560: a hunter keeping a hunt appointment here arrives holding the seed, whose
+  // kept branch is the confront — a second one on arrival would be a double spawn.
+  if (liveHuntFavourAt(graph, mortalId, lair.id)) {
+    trace('hunt_appointment');
+    return { skipped: 'hunt_appointment' };
   }
   if (!isUnifiedAgentIdle(ctx.actions, mortalId)) {
     trace('busy');
