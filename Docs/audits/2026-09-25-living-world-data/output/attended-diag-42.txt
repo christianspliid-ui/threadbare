@@ -1,0 +1,58 @@
+seed 42, 150 ticks — The First (ind_dev_the_first) state changes:
+  t0: Sacred Grove [shrine] | move - | action -
+  t1: Sacred Grove [shrine] | move ?→"loc_4" | action -
+  t3: Wilderness (15, 12) [wilderness] | move ?→"loc_4" | action -
+  t6: Wilderness (14, 13) [wilderness] | move ?→"loc_4" | action -
+  t9: Wilderness (14, 14) [wilderness] | move ?→"loc_4" | action -
+  t12: Wilderness (14, 15) [wilderness] | move ?→"loc_4" | action -
+  t17: Wraithwood [capital] | move ?→"loc_4" | action -
+  t18: Wraithwood [capital] | move ?→"loc_10" | action -
+  t20: Wilderness (15, 16) [wilderness] | move ?→"loc_10" | action -
+  t23: Wilderness (16, 17) [wilderness] | move ?→"loc_10" | action -
+  t26: Wilderness (17, 17) [wilderness] | move ?→"loc_10" | action -
+  t29: Wilderness (18, 18) [wilderness] | move ?→"loc_10" | action -
+  t33: Inn [location] | move ?→"loc_10" | action -
+  t34: Inn [location] | move ?→"loc_4" | action -
+  t35: Wilderness (18, 18) [wilderness] | move ?→"loc_4" | action -
+  t38: Wilderness (17, 17) [wilderness] | move ?→"loc_4" | action -
+  t41: Wilderness (16, 17) [wilderness] | move ?→"loc_4" | action -
+  t44: Wilderness (15, 16) [wilderness] | move ?→"loc_4" | action -
+  t46: Wilderness (15, 16) [wilderness] | move ?→"loc_5" | action -
+  t49: Wraithwood [capital] | move ?→"loc_5" | action -
+  t54: Silverborough [city] | move ?→"loc_5" | action -
+  t59: The Forge of Sorrow [hamlet] | move ?→"loc_5" | action -
+  t60: The Forge of Sorrow [hamlet] | move ?→"loc_11" | action -
+  t63: Wilderness (7, 18) [wilderness] | move ?→"loc_11" | action -
+  t67: Wilderness (6, 18) [wilderness] | move ?→"loc_11" | action -
+  t69: Battlefield Ruin [elder_ruin] | move ?→"loc_11" | action -
+  t71: Wilderness (4, 19) [wilderness] | move ?→"loc_11" | action -
+  t72: Wilderness (4, 19) [wilderness] | move ?→"loc_22" | action -
+  t74: Meadowcity [city] | move ?→"loc_22" | action -
+  t79: Dustham [hamlet] | move ?→"loc_22" | action -
+  t80: Dustham [hamlet] | move ?→"loc_11" | action -
+  t84: Meadowcity [city] | move ?→"loc_22" | action -
+  t89: Dustham [hamlet] | move ?→"loc_22" | action -
+  t90: Dustham [hamlet] | move ?→"loc_22" | action reputation.eye.the_oracle_consulted
+  t94: Dustham [hamlet] | move ?→"loc.transient.6.18" | action -
+  t95: Wilderness (1, 16) [wilderness] | move ?→"loc.transient.6.18" | action -
+  t97: Wilderness (2, 17) [wilderness] | move ?→"loc.transient.6.18" | action -
+  t99: Wilderness (3, 17) [wilderness] | move ?→"loc.transient.6.18" | action -
+  t101: Wilderness (4, 18) [wilderness] | move ?→"loc.transient.6.18" | action -
+  t103: Battlefield Ruin [elder_ruin] | move ?→"loc.transient.6.18" | action -
+  t105: Wilderness (6, 18) [wilderness] | move ?→"loc.transient.6.18" | action -
+  t106: Wilderness (6, 18) [wilderness] | move ?→"loc_5" | action -
+  t109: Wilderness (7, 18) [wilderness] | move ?→"loc_5" | action -
+  t110: Wilderness (7, 18) [wilderness] | move ?→"loc_4" | action -
+  t113: The Forge of Sorrow [hamlet] | move ?→"loc_4" | action -
+  t118: Silverborough [city] | move ?→"loc_4" | action -
+  t123: Wraithwood [capital] | move ?→"loc_4" | action -
+  t124: Wraithwood [capital] | move ?→"loc_4" | action encounter.weave_political_alliance
+  t127: Wraithwood [capital] | move ?→"loc_4" | action encounter.arcane_resonance_study
+  t131: Wraithwood [capital] | move ?→"loc_4" | action crafting.quest.flawed_steel
+  t138: Wraithwood [capital] | move ?→"loc_4" | action encounter.political_intrigue
+  t143: Wraithwood [capital] | move ?→"loc_4" | action veil.truth.page_beneath_saint
+  t148: Wraithwood [capital] | move ?→"loc_4" | action encounter.weave_political_alliance
+
+social generator: {"agentDecisions":331,"withVisibleAgents":331,"withCandidates":312,"candidates":3744,"atTavern":0}
+social-pool template ids named in any other trace: [["faction_bonus:ag.quest.monster_hunt",6],["faction_bonus:ag.quest.ruin_delve",4],["faction_bonus:ag.senior.map_uncharted",3],["faction_bonus:ag.quest.recover_artifact",3],["ruins.quest_hook_issued:ag.quest.ruin_delve",1],["faction_bonus:ag.quest.wilderness_survey",1],["faction_bonus:ag.senior.deep_expedition",1],["faction_bonus:ag.senior.bounty_hunt",1],["ruins.quest_hook_issued:ag.senior.deep_expedition",1]]
+trace categories (top 40): [["prosperity_tick",5747],["divine_proximity_accumulation",3000],["effect.event_raised",2407],["chronicle.aggregated",2251],["faction_reputation_trait",1229],["faction_reputation",1226],["movement",1165],["faction_ambition",1163],["faction_action",906],["reputation_trait",779],["consequence_applied",719],["encounter_step_prose_recorded",719],["action_execution",719],["encounter_resolution",719],["dilemma_resolution",719],["resolution.input",657],["effect_tick",634],["encounter_filter",607],["encounter_scoring",607],["decision_board_comparison",607],["strategic_candidate_board",556],["faction_member_work",400],["intelligence_decayed",358],["social_encounter_generation",331],["faction_bonus",324],["encounter.chapter_archived",308],["road_hex_transition",293],["unrest_tick",277],["composition.phase_activated",235],["effect.rule_override_consumed",235],["content.query_resolved",230],["complication_selection",215],["context_harvest",204],["encounter_aftermath_effect",194],["aftermath_target_resolved",191],["siege_regional_seeded",184],["personality_trait_emerged",173],["attention_pool",150],["group_phase",150],["familiarity_change",150]]
