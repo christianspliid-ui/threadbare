@@ -26,7 +26,8 @@ import type { KnowledgeLevel } from '../../types/familiarity';
 import { KNOWLEDGE_LEVELS } from '../../types/familiarity';
 import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../../engine/hexZoom';
-import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
+import { getAgentPortraitUrlFromProperties, getPortraitUrl } from '../../data/portrait-assets';
+import { isMonster } from '../../engine/monsters/isMonster';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { getFactionSigilUrlFromProperties } from '../../data/faction-sigil-assets';
 import { getAttachmentArtUrl } from '../../data/artifact-category-art';
@@ -109,6 +110,9 @@ function deriveKind(node: GraphNode | null): EntityVisualKind {
       const actorType = node.properties?.actorType;
       if (actorType === 'god' || actorType === 'ascendant') return 'avatar';
       if (actorType === 'faction' || actorType === 'culture') return 'faction';
+      // THR-1550 — a lair's monster is an `individual`, but its tile is the
+      // monster portrait, not the knowledge-gated person silhouette.
+      if (isMonster(node)) return 'monster';
       return 'agent';
     }
     case 'location': {
@@ -153,6 +157,10 @@ function resolveSource(
       // A template may ship a portrait; most do not, and the initials tile is
       // the designed result rather than a gap (THR-1096).
       return getAgentPortraitUrlFromProperties(node?.properties);
+    case 'monster':
+      // v1: one shared portrait for every family (THR-1550). The eight family
+      // portraits (THR-1554) slot in here, keyed by `monsterState.family`.
+      return getPortraitUrl('monster');
     case 'avatar': {
       const props = node?.properties ?? {};
       const bespoke = getAgentPortraitUrlFromProperties(props);

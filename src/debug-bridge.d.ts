@@ -1925,6 +1925,19 @@ export interface DebugBridge {
    *  game. **Async.** The row shape is pinned: plan docs 4 and 6 build on it. */
   listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
 
+  /** The lair card the hex sidebar renders for one lair (THR-1550, plan doc 4 slice F1):
+   *  `{ lairId, lairName, monster: { id, name } | null }`. `monster` is the living
+   *  monster that holds the lair, by name — `null` when none resolves (a dangling or
+   *  slain elite), and then the sidebar shows no row rather than a raw id. F4 (THR-1552)
+   *  extends the same model with the card sentence, the clock and the slain reading.
+   *  Matches a lair (or cleared lair) node id exactly, else by name, case-insensitive:
+   *  exact first, then substring, lowest id wins. Resolves `{ error }` with no live game
+   *  or no match. **Async.** */
+  getLairMonsterCard: (lairIdOrName: string) => Promise<
+    | import('./components/Game/lair/buildLairMonsterCardModel').LairMonsterCardModel
+    | { readonly error: string }
+  >;
+
   /** The fight review lever. Moves `@hero` to the target's location, then stages
    *  `fight.lair.confront` on `@hero` against the named target — open, as The First.
    *  Use this rather than `?spawn=fight.lair.confront`, which stages the template with

@@ -23,6 +23,8 @@ import { SphereIcon } from '../shared/SphereIcon';
 import { Tooltip } from '../shared/Tooltip';
 import { clampRarityTier } from '../../types/rarity';
 import { DANGER_ZONE_LABELS } from '../../types/monster';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { LairMonsterCardModel } from './lair/buildLairMonsterCardModel';
 
 /**
  * Collapsed-rail sphere glyph sizing (THR-1009). The rail shipped 8px
@@ -50,6 +52,14 @@ export interface HexSidebarProps {
   dangerLevel?: number;
   /** Called when a location entry is clicked; opens LocationProfileModal for that location. */
   onLocationClick?: (locationId: string) => void;
+  /**
+   * The lair card for each lair on this hex, keyed by lair id (THR-1550).
+   * Built by `buildLairMonsterCardModel` where the graph is held; a lair with
+   * no entry renders no monster row.
+   */
+  lairMonsterCards?: Readonly<Record<string, LairMonsterCardModel | null>>;
+  /** Opens the lair monster's sheet (Law 21). */
+  onMonsterClick?: (monsterId: string) => void;
 }
 
 /**
@@ -429,7 +439,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
             const lairTier = (p.lairTier as string | undefined) ?? 'minor';
             const dominantSphere = (p.dominantSphere as string | undefined) ?? '';
             const dangerZone = (p.dangerZone as keyof typeof DANGER_ZONE_LABELS | undefined) ?? 'wilderness';
-            const namedEliteId = p.namedEliteId as string | undefined;
+            const monster = props.lairMonsterCards?.[loc.id]?.monster ?? null;
             const sphereColor = dominantSphere ? getSphereColor(dominantSphere as SphereName) : 'var(--text-tertiary)';
             const isLegendary = lairTier === 'legendary';
 
@@ -521,16 +531,39 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 >
                   {DANGER_ZONE_LABELS[dangerZone] ?? 'Unknown Zone'}
                 </div>
-                {/* Named elite (if present) */}
-                {namedEliteId && (
+                {/* The lair's monster, by name, as a link (THR-1550 — this row
+                    printed the raw `namedEliteId` until F1, a Law 14/21 defect).
+                    No resolvable monster ⇒ no row: a raw id never renders. */}
+                {monster && (
                   <div
-                    style={{
-                      fontSize: 'var(--text-xs)',
-                      color: 'var(--text-secondary)',
-                    }}
+                    data-testid="lair-monster-row"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
-                    <span style={{ color: 'var(--text-tertiary)' }}>Elite: </span>
-                    <span style={{ fontFamily: 'var(--font-display)' }}>{namedEliteId}</span>
+                    <EntityVisual
+                      size="chip"
+                      entity={{ id: monster.id, kind: 'monster', name: monster.name }}
+                      onClick={props.onMonsterClick ? () => props.onMonsterClick?.(monster.id) : undefined}
+                    />
+                    <Tooltip id="ui.lair_monster">
+                      <button
+                        type="button"
+                        data-testid="lair-monster-link"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--accent-gold)',
+                          cursor: props.onMonsterClick ? 'pointer' : 'default',
+                          fontFamily: 'var(--font-display)',
+                          fontSize: 'var(--text-xs)',
+                          textAlign: 'left',
+                          padding: '2px 0',
+                          minHeight: '24px',
+                        }}
+                        onClick={() => props.onMonsterClick?.(monster.id)}
+                      >
+                        {monster.name}
+                      </button>
+                    </Tooltip>
                   </div>
                 )}
               </div>

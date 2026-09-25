@@ -7,6 +7,7 @@ import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
 import type { ActiveOmen } from '../../types/omen';
 import { SectionHeading } from '../shared/SectionHeading';
+import { countLivingMortals } from './worldPulseCount';
 
 function OmenLine({ omen, isPrimary }: { omen: ActiveOmen; isPrimary: boolean }) {
   const template = getOmenTemplateById(omen.templateId);
@@ -50,8 +51,6 @@ interface WorldPulseProps {
   onSpeedChange: (speed: number) => void;
 }
 
-
-
 /**
  * WorldPulse — a minimal summary panel shown when no agent is selected.
  * Displays tick number, active agent count, culture count, and a mood-driven summary.
@@ -60,8 +59,7 @@ export const WorldPulse = React.memo(function WorldPulse({
   gameState, season, year, speed, onSpeedChange,
 }: WorldPulseProps) {
   // Count active agents
-  const activeAgents = gameState.graph.getNodesByType('actor')
-    .filter(node => node.properties?.actorType === 'individual').length;
+  const activeAgents = countLivingMortals(gameState.graph);
 
   // Count cultures (stored as actor nodes with actorType 'culture')
   const cultures = gameState.graph.getNodesByType('actor')

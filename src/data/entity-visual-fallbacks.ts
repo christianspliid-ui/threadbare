@@ -29,6 +29,13 @@ export type EntityVisualKind =
   | 'army'
   | 'npc-role'
   | 'companion'
+  /**
+   * A lair's monster (THR-1550). An `individual` actor, but never a person tile:
+   * its look is public like its lair, so it is not knowledge-gated (Law 8), and a
+   * beast has no initial to draw. v1 art is the shared `monster` portrait; the
+   * eight family portraits are THR-1554.
+   */
+  | 'monster'
   | 'unknown';
 
 /** Person-like kinds render an initial (or silhouette) rather than a category glyph. */
@@ -112,6 +119,7 @@ const CATEGORY_GLYPHS: Partial<Record<EntityVisualKind, string>> = {
   faction: '⚜',     // ⚜ fleur-de-lis — a banner / sigil
   artifact: '◆',    // ◆ filled diamond — a made thing
   army: '⚔',        // ⚔ crossed swords — a force in the field (THR-1023)
+  monster: '☠',     // ☠ skull — a lair's beast (THR-1550)
   unknown: '◇',     // ◇ white diamond
 };
 

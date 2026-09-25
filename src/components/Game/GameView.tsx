@@ -116,6 +116,7 @@ import { ScryProvider } from './contexts/ScryContext';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
 import { HexSidebar } from './HexSidebar';
+import { buildLairMonsterCardModel, type LairMonsterCardModel } from './lair/buildLairMonsterCardModel';
 import { HexChronicle } from './HexChronicle';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
@@ -1836,6 +1837,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     fogDisabled,
     worldVersion: runtime.worldVersion,
   });
+
+  // ── Lair monster cards for the focused hex's lairs (THR-1550) ──
+  // Keyed on worldVersion, not graph identity (the graph mutates in place).
+  const hexLairMonsterCards = useMemo(() => {
+    const cards: Record<string, LairMonsterCardModel | null> = {};
+    for (const loc of hexLocations) {
+      const subtype = loc.properties?.locationSubtype ?? loc.properties?.locationType;
+      if (subtype !== 'lair') continue;
+      cards[loc.id] = buildLairMonsterCardModel(gameState.graph, loc.id, gameState.tick);
+    }
+    return cards;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hexLocations, gameState.graph, runtime.worldVersion]);
 
   // ── Survey people-layer prose — most-recent survey_completed event for the focused hex (THR-439) ──
   const surveyPeopleEvent = useMemo(() => {
@@ -4869,6 +4883,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       factions={hexFactions}
                       dangerLevel={hexDangerLevel}
                       onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
+                      lairMonsterCards={hexLairMonsterCards}
+                      onMonsterClick={(monsterId) => handleThreadNodeSelect(monsterId, 'agent')}
                     />
 
                     {/* Main: Narrative chronicle */}

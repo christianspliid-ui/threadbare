@@ -1354,6 +1354,8 @@ function EntityVisualDemo() {
   const portraitFallback = mkVisual({ tier: 'fallback', glyph: 'S', gradientIndex: 3, alt: 'Serafina', kind: 'agent' });
   const chipArt = mkVisual({ tier: 'art', src: '/portraits/oathkeeper.png', glyph: 'V', gradientIndex: 5, alt: 'Veiren', kind: 'agent' });
   const chipFaction = mkVisual({ tier: 'fallback', glyph: '⚜', gradientIndex: 0, alt: 'The Covenant', kind: 'faction' });
+  const monsterArt = mkVisual({ tier: 'art', src: '/portraits/monster.png', glyph: '☠', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
+  const monsterFallback = mkVisual({ tier: 'fallback', glyph: '☠', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -1392,6 +1394,20 @@ function EntityVisualDemo() {
           <EntityVisual size="chip" descriptor={chipArt} />
           <EntityVisual size="chip" descriptor={portraitFallback} />
           <EntityVisual size="chip" descriptor={chipFaction} />
+        </Row>
+      </div>
+
+      <div>
+        <Label>
+          monster (THR-1550) — portrait · chip · fallback. A lair&apos;s beast is never a
+          person tile and is not knowledge-gated: its look is public, like its lair.
+        </Label>
+        <Row>
+          <div style={{ width: 120 }}>
+            <EntityVisual size="portrait" descriptor={monsterArt} />
+          </div>
+          <EntityVisual size="chip" descriptor={monsterArt} />
+          <EntityVisual size="chip" descriptor={monsterFallback} />
         </Row>
       </div>
 

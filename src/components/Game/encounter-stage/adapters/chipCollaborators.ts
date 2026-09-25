@@ -21,6 +21,7 @@ import type { UnifiedAction } from '../../../../types/unifiedAction';
 import { resolveAnchorDeclaration } from '../../../../data/content-eval/chipAnchorDeclarations';
 import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
+import { isMonster } from '../../../../engine/monsters/isMonster';
 import type { ChipIconResolver } from './buildAftermathConsequences';
 
 /**
@@ -46,8 +47,14 @@ export function buildChipIconResolver(graph: WorldGraph): ChipIconResolver {
     if (kind === 'area') return undefined;
     const entityId = concept.entityId ?? concept.visualName ?? concept.text;
     const name = concept.visualName ?? concept.text;
-    const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);
-    return { entityId, kind, name, src: descriptor.src };
+    // THR-1550 — chips pass their kind explicitly, so the resolver's own
+    // `deriveKind` never sees the node. A chip anchored to a lair's monster is
+    // authored as a plain `agent`; refine it here, where the graph is held, so
+    // it draws the monster portrait rather than an initial-letter tile. The
+    // link still routes by `concept.visualKind` — a monster opens its sheet.
+    const tileKind = kind === 'agent' && isMonster(graph.getNode(entityId)) ? 'monster' : kind;
+    const descriptor = resolveEntityVisual({ id: entityId, kind: tileKind, name }, graph);
+    return { entityId, kind: tileKind, name, src: descriptor.src };
   };
 }
 
