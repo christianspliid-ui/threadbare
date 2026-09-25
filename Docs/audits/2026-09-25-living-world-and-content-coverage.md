@@ -12,6 +12,8 @@ This picks up where [THR-1435](https://linear.app/threadbare/issue/THR-1435) (th
 1. Every run is **unattended** — no player, no First, mortals acting alone for 150–200 ticks. It measures what the world deals, not what an attended player reads at the story-beat tier.
 2. `census:firings` harvests `state.unifiedActions` only. Social, tavern, npc and borderland encounters come from `socialEncounterGeneration.ts` on a separate path and read as **zero** there — that is the census not seeing them, not evidence they never fire.
 
+*Update (THR-1590, §2.4):* both blind spots are now measured. The attended view barely differs from the unattended one, and The First reads 7 encounters per 150 ticks. The social path also measures **zero** once both of its landing places are counted: its candidates are generated, then cut by position at the filter's cap stage, so it never fires.
+
 ---
 
 ## Part 1 — the world at game start
@@ -150,6 +152,30 @@ Freeholds on 42: W4 requires a leading Reach of gold, stone or heart; 4 protagon
 | D2 | Off-settlement places never visited | shrine 61, tower 85, fort 81 templates ≈ 0 firings | mortals who live, travel or have business beyond settlements |
 | D3 | Location traits change nothing | 434 of 518 encounters untagged; the `#welcoming` bonus tags got 0 hits; `#haunted`, `#veil_thin` never on a place | tag every fired template with family and form |
 
+### 2.4 The attended view (THR-1590)
+
+**Method.** `readers/attended.ts` builds `?view=game&seeded&size=medium` worlds headlessly with the same three calls `useSimulation` makes: `initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, seed, derived cosmology, 'medium')`, `devSeedTheFirst` (Kael Thornweaver on a `the_first` thread) and `devSeedAscendantTestPackage`. It ticks with plain `runTick`, which is what `window.__DEBUG.tick(n)` does: an attended world where the player does not click. Seeds 42 · 99, 150 ticks. An unattended arm of the same length runs beside it. Every firing is read from **both** `state.unifiedActions` and `state.encounterProgress`, and each one is tagged with the social generator's pools. Raw data: `output/attended-medium.{txt,json}`, `attended-diag-{42,99}.txt`, `social-cap.txt`.
+
+**What the player reads.** Across both seeds, **14 of 772** firings touch a threaded mortal: **13 at the shaping tier and 1 story beat**. Every one is The First's own action. No retinue forms in 150 ticks without player clicks, and every other firing is `invisible` to the player (656) or a system spawn (102). The First's first encounter lands at **t90** on seed 42 and t19 on seed 99. Before it, the First travels and changes destination on arrival (seed 42: shrine → capital → inn → back to the capital, t1–t89). Seed 99 has a Thornhaven ↔ Sunken Library loop from t54 to t89. The First's 14 firings: 11 distinct templates; 6 of the 14 are `reputation.*` templates (pilgrim, oracle, jury); **0 carry a nudge hand**; **0 author at-cost prose**.
+
+**The social path.** Zero firings on both seeds, attended and unattended, on both `unifiedActions` and `encounterProgress` (the latter is empty all run). This is a real zero, not blindness. The generator runs for 64 of 81 deciders at t30 on seed 42, offering 1,038 entries. In the engine's order (thousands of location-cache entries first, social entries appended), **0** survive `runFilterPipeline`'s 40-slot cap. On their own, **52–86%** survive every stage. This is the THR-814 positional cut: faction quests got a `personallyOffered` reserve, and social entries do not set it. Social, social-scene, tavern and secret content is authored but unreachable.
+
+**§2 restated** (encounter-kind firings; the audit's 200-tick figures in the last column):
+
+| Measure | Attended, 150 t | Unattended, 150 t | Audit (unattended, 200 t) |
+|---|---|---|---|
+| Firings (both seeds) | 772 (338 · 434) | 726 (307 · 419) | 918 |
+| …of which the social path | **0** | **0** | not measured |
+| …of which the player sees (story-beat · shaping) | **1 · 13** | 0 | not measured |
+| Top-10 share | 47.4% | 48.1% | 49.7% |
+| Distinct drawable templates fired (of 514) | 95 | 89 | 101 |
+| At-cost / resolutions | 267 / 745 (35.8%) | 238 / 703 (33.9%) | 305 / 892 (34%) |
+| Nudge-hand templates, share of firings | 4.8% | 4.5% | 3.8% |
+| Longest same template → same mortal run | 4× (`army.supply.siege_lifted`) | 5× (same) | not measured |
+| The First: firings · distinct · nudge hand | 14 · 11 · 0 | — | — |
+
+The top of the list barely moves. `confront_the_unknown`, `master_local_craft`, `plague_outbreak`, `arcane_resonance_study` and `weave_political_alliance` lead both arms. Being attended adds the First's 7 firings per seed and otherwise leaves the world's dice where they were. The seeded world is a different world (hunger-derived cosmology and identity), so the attended and unattended columns agree in shape, not firing by firing.
+
 ---
 
 ## Part 3 — what the two halves say together
@@ -159,7 +185,7 @@ Freeholds on 42: W4 requires a leading Reach of gold, stone or heart; 4 protagon
 3. **A past pays twice.** A worldgen history gives the chronicle and the 100 ruins something to say, feeds the holder-less ambitions (`reclaim_homeland`, `seek_revenge`, `chase_the_wonder`), and is the natural home for the ruin content that does not exist (C5).
 4. **Content is short in shape and reach, not raw count.** 518 encounters, 414 never fire; the 101 that do lack at-cost prose, band endings and cards. **Author where the dice land** — rank completion work by firings, not by kind.
 5. **Half of "thin content" is reachability.** ~300 existing templates (faction lines, shrine/tower/fort) wait for mortals who go there or belong there. Seeding decisions (where people live, whom they serve) and content decisions are one question.
-6. **Measure the attended view before sizing a content program.** What the First and retinue meet at the story-beat tier, and the social/tavern path, are both unmeasured.
+6. **Measure the attended view before sizing a content program.** What the First and retinue meet at the story-beat tier, and the social/tavern path, are both unmeasured. *Measured in §2.4 (THR-1590).* The First meets 7 encounters per 150 ticks, almost all at the shaping tier, and none of them carries a hand. The social path is authored but cut before scoring. The attended player's content is short in reach before it is short in words.
 
 ## Part 4 — proposed next steps
 

@@ -2,7 +2,7 @@
 
 The measurements behind `Docs/audits/2026-09-25-living-world-and-content-coverage.md`. They are kept so a later session can check any number in that audit, or re-run the reader and compare, instead of re-deriving the baseline. The audit is the summary. This folder is the evidence.
 
-Measured on `main` @ `d6ff4070`. Seeds 42 and 99, medium map unless a file name says `small` or `large`. All runs are unattended: no player and no First.
+Measured on `main` @ `d6ff4070`. Seeds 42 and 99, medium map unless a file name says `small` or `large`. All runs are unattended (no player and no First) except the `attended-*` and `social-cap` files, which THR-1590 added on `main` @ `4aacaafc`.
 
 ## `output/` — what each file is
 
@@ -26,6 +26,9 @@ Measured on `main` @ `d6ff4070`. Seeds 42 and 99, medium map unless a file name 
 | `rewards.json` | `readers/rewards.ts` | Reward repetition (`starter_revelation` ≈ 10%) |
 | `reach-gates.json` | `readers/reach.ts 42,99 200` (THR-1597, `main` @ `32d974ca`) | Per drawable encounter template, the first gate it fails per seed (supply → travel → funnel stage → cooldown → outscored → spawn), off the engine's own `runtime.eligibilityFunnel`; faction membership split by deciding (spotlight) members; subtype occupancy; every withered seed with its reason |
 | `reach-prereq.json` | `readers/prereq.ts 42,99 200` (THR-1597) | The funnel's "prerequisites" bucket split into core prerequisites / reputation-trait gate / outgrowth, per template, for deciders every 20 ticks; decider capability quantiles |
+| `attended-medium.{txt,json}` | `readers/attended.ts 42,99 150 --json …` (THR-1590) | The attended view: `?view=game&seeded&size=medium` worlds (identity + First bonded + test package), 150 ticks, next to an unattended arm of the same length. Every firing from **both** `state.unifiedActions` and `state.encounterProgress`, tagged by court position, effective attention tier, content pool (board vs the social generator's pools), band; top-10 share; longest same-template run per mortal; §2 numbers restated. The JSON carries every firing row |
+| `attended-diag-{42,99}.txt` | `readers/attended-diag.ts <seed> 150` (THR-1590) | Where The First is and what it is doing, tick by tick; social-generator candidate counts off the engine's own trace |
+| `social-cap.txt` | `readers/social-cap.ts 42,99 150 30` (THR-1590) | A/B on `runFilterPipeline`: social entries surviving the cap in the engine's order (cache first, social appended) vs alone. 0 vs 52–86% — the positional cap cut |
 
 ## `readers/` — the throwaway scripts
 
@@ -35,6 +38,6 @@ Kept as written. Imports are rewritten relative to the repo root. They are not p
 npx esbuild Docs/audits/2026-09-25-living-world-data/readers/alive.ts --bundle --platform=node --format=esm --outfile=.cache/alive.mjs --external:fs --external:path && node .cache/alive.mjs
 ```
 
-`join.ts` takes the firing JSON as its argument. `spot.ts` finds where protagonists live and their leading reaches; it found the freehold cause in THR-1588. `unk.ts` finds the subtype-less wilderness Locations minted in play.
+`join.ts` takes the firing JSON as its argument. `attended.ts` takes `<seeds> <ticks> [--json <path>] [--modes attended,unattended]`; it reproduces `?seeded` with the same three calls `useSimulation` makes (`initializeGameStateFromIdentity` + `devSeedTheFirst` + `devSeedAscendantTestPackage`) and ticks with plain `runTick`, which is what `window.__DEBUG.tick(n)` does. `spot.ts` finds where protagonists live and their leading reaches; it found the freehold cause in THR-1588. `unk.ts` finds the subtype-less wilderness Locations minted in play.
 
 If a reader is worth keeping, promote it to `scripts/` with a `package.json` entry. The seeded-world census was promoted that way from the THR-1435 prototypes.

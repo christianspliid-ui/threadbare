@@ -1,0 +1,187 @@
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 4 · possessions 9 · quarrels 8 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +108 settlement-authored NPCs
+[WorldGen] Living world: realm edges dropped at guild halls 4 · routes 6 · freeholds 7 · possessions 9 · quarrels 11 · marks 3 · garrisons 3
+[WorldGen] Genome NPC top-up: +143 settlement-authored NPCs
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 4 · possessions 9 · quarrels 2 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +106 settlement-authored NPCs
+[WorldGen] Living world: realm edges dropped at guild halls 4 · routes 6 · freeholds 3 · possessions 12 · quarrels 7 · marks 2 · garrisons 3
+[WorldGen] Genome NPC top-up: +144 settlement-authored NPCs
+attended-view firing census — medium, 150 ticks, seeds 42,99
+
+════════ ATTENDED ════════
+seed 42: 338 firings (unifiedActions + encounterProgress), 14280 ms; unresolved UA at end 11; encounterProgress at end 0
+  threads at t150: Kael Thornweaver (the_first)
+  court positions ever held (agent-ticks): the_first 1 agent(s)
+seed 99: 434 firings (unifiedActions + encounterProgress), 19395 ms; unresolved UA at end 14; encounterProgress at end 0
+  threads at t150: Kael Thornweaver (the_first)
+  court positions ever held (agent-ticks): the_first 1 agent(s)
+
+Firings by court position (highest of actor/target) / effective attention tier × path  [UA = state.unifiedActions, EP = state.encounterProgress; social = social-generator pools]
+                               UA:board    total
+  the_first/shaping                  13       13
+  the_first/story_beat                1        1
+  unthreaded/(unset)                102      102
+  unthreaded/invisible              656      656
+  total                             772      772
+
+Firings by content pool × seed  [board = cache/registry path; tavern/secret/faction_social/social_scene/social = socialEncounterGeneration pools; borderland/npc named separately]
+                                  42              99    total
+  board                          338             434      772
+  total                          338             434      772
+
+Bands × (threaded? : tier)
+                    threaded:attended-tierunthreaded:(unset)unthreaded:invisible    total
+  (unresolved)                     1               1              25       27
+  contested_lost                   0               0               6        6
+  contested_won                    0               0               7        7
+  critical_failure                 1               5              29       35
+  critical_success                 3               4              43       50
+  failure                          1              15             136      152
+  success                          5              25             198      228
+  success_at_cost                  3              52             212      267
+  total                           14             102             656      772
+
+Encounter firings by template intrinsic tier × seed
+                                  42              99    total
+  background                     266             340      606
+  shaping                         43              66      109
+  story_beat                      29              28       57
+  total                          338             434      772
+
+§2 restated (encounter-kind firings, both seeds): firings 772; top-10 47.4%; distinct fired 95; drawable fired 95 of 514 (audit denominator 514); at-cost 267 of 745 resolutions (35.8%); nudge-hand 37 (4.8%); at-cost prose authored on 4.8% of firings
+  seed 42: firings 338; top-10 42.9%; distinct fired 79; drawable fired 79 of 514 (audit denominator 514); at-cost 120 of 326 resolutions (36.8%); nudge-hand 18 (5.3%); at-cost prose authored on 5.3% of firings
+  seed 99: firings 434; top-10 52.3%; distinct fired 74; drawable fired 74 of 514 (audit denominator 514); at-cost 147 of 419 resolutions (35.1%); nudge-hand 19 (4.4%); at-cost prose authored on 4.4% of firings
+  First + retinue only: firings 14; top-10 92.9%; distinct fired 11; drawable fired 11 of 514 (audit denominator 514); at-cost 3 of 13 resolutions (23.1%); nudge-hand 0 (0.0%); at-cost prose authored on 0.0% of firings
+
+Top 20 encounter templates (both seeds) — top-10 share 65.7%
+    55  encounter.confront_the_unknown
+    50  encounter.master_local_craft
+    42  encounter.plague_outbreak
+    41  encounter.arcane_resonance_study
+    39  encounter.weave_political_alliance
+    37  encounter.master_craftsman_challenge
+    34  encounter.rally_the_locals
+    27  encounter.trace_ley_lines
+    21  encounter.shadow_in_the_night
+    20  encounter.commune_with_stars
+    20  army.supply.siege_lifted
+    18  crafting.quest.flawed_steel
+    15  reputation.star.the_star_pilgrim
+    14  encounter.political_intrigue
+    14  army.supply.forage
+    13  encounter.festival_of_spheres
+    13  star.turning.comet_omen
+    12  encounter.hedge_remedy
+    11  encounter.grand_tournament
+    11  reputation.eye.the_oracle_consulted
+
+The First + retinue: 14 firings, 11 distinct templates, top-10 share 100.0%; bands {"success":5,"critical_failure":1,"success_at_cost":3,"critical_success":3,"(unresolved)":1,"failure":1}
+     2  reputation.eye.the_oracle_consulted
+     2  encounter.weave_political_alliance
+     2  reputation.star.the_star_pilgrim
+     1  encounter.arcane_resonance_study
+     1  crafting.quest.flawed_steel
+     1  encounter.political_intrigue
+     1  veil.truth.page_beneath_saint
+     1  reputation.stone.the_jury_of_the_ruined
+     1  reputation.heart.pilgrims_offering
+     1  encounter.plague_outbreak
+     1  encounter.confront_the_unknown
+
+All threaded (any court position): 14 firings, 11 distinct
+
+Longest run of the same template to the same mortal (consecutive firings by that actor):
+  seed 42  4×  army.supply.siege_lifted  actor ind_10  t74–t86  (of 25 firings by that actor)
+  seed 42  4×  army.supply.siege_lifted  actor npc_94  t74–t118  (of 8 firings by that actor)
+  seed 99  3×  mct.quest.negotiate_contract  actor ind_0  t71–t111  (of 15 firings by that actor)
+  seed 99  3×  army.supply.siege_lifted  actor npc_24  t38–t78  (of 8 firings by that actor)
+  seed 42  2×  encounter.commune_with_stars  actor agent_garrison_culture_0  t1–t34  (of 24 firings by that actor)
+  seed 42  2×  army.threshold.mutiny  actor ind_0  t122–t130  (of 4 firings by that actor)
+  seed 42  2×  encounter.forage_the_land  actor born_lc_1  t24–t72  (of 18 firings by that actor)
+  seed 99  2×  encounter.shadow_in_the_night  actor born_lc_1  t60–t113  (of 20 firings by that actor)
+  seed 99  2×  encounter.decipher_old_markings  actor born_lc_2  t10–t39  (of 15 firings by that actor)
+  seed 99  2×  encounter.master_craftsman_challenge  actor ind_10  t60–t107  (of 16 firings by that actor)
+  The First (seed 42): 1×  reputation.eye.the_oracle_consulted  t90–t90  (of 7)
+  The First (seed 99): 1×  reputation.star.the_star_pilgrim  t19–t19  (of 7)
+
+════════ UNATTENDED ════════
+seed 42: 307 firings (unifiedActions + encounterProgress), 13633 ms; unresolved UA at end 11; encounterProgress at end 0
+  threads at t150: (none)
+  court positions ever held (agent-ticks): (none)
+seed 99: 419 firings (unifiedActions + encounterProgress), 19834 ms; unresolved UA at end 11; encounterProgress at end 0
+  threads at t150: (none)
+  court positions ever held (agent-ticks): (none)
+
+Firings by court position (highest of actor/target) / effective attention tier × path  [UA = state.unifiedActions, EP = state.encounterProgress; social = social-generator pools]
+                               UA:board    total
+  unthreaded/(unset)                103      103
+  unthreaded/invisible              623      623
+  total                             726      726
+
+Firings by content pool × seed  [board = cache/registry path; tavern/secret/faction_social/social_scene/social = socialEncounterGeneration pools; borderland/npc named separately]
+                                  42              99    total
+  board                          307             419      726
+  total                          307             419      726
+
+Bands × (threaded? : tier)
+                    unthreaded:(unset)unthreaded:invisible    total
+  (unresolved)                     4              19       23
+  contested_lost                   0               2        2
+  contested_won                    1               5        6
+  critical_failure                 7              33       40
+  critical_success                 2              41       43
+  failure                         25             138      163
+  success                         24             187      211
+  success_at_cost                 40             198      238
+  total                          103             623      726
+
+Encounter firings by template intrinsic tier × seed
+                                  42              99    total
+  (none)                           0               1        1
+  background                     249             334      583
+  shaping                         35              59       94
+  story_beat                      23              25       48
+  total                          307             419      726
+
+§2 restated (encounter-kind firings, both seeds): firings 726; top-10 48.1%; distinct fired 89; drawable fired 89 of 514 (audit denominator 514); at-cost 238 of 703 resolutions (33.9%); nudge-hand 33 (4.5%); at-cost prose authored on 4.5% of firings
+  seed 42: firings 307; top-10 50.2%; distinct fired 68; drawable fired 68 of 514 (audit denominator 514); at-cost 113 of 295 resolutions (38.3%); nudge-hand 13 (4.2%); at-cost prose authored on 4.2% of firings
+  seed 99: firings 419; top-10 48.7%; distinct fired 78; drawable fired 78 of 514 (audit denominator 514); at-cost 125 of 408 resolutions (30.6%); nudge-hand 20 (4.8%); at-cost prose authored on 4.8% of firings
+  First + retinue only: firings 0; top-10 —; distinct fired 0; drawable fired 0 of 514 (audit denominator 514); at-cost 0 of 0 resolutions (—); nudge-hand 0 (—); at-cost prose authored on — of firings
+
+Top 20 encounter templates (both seeds) — top-10 share 66.9%
+    61  encounter.confront_the_unknown
+    45  encounter.master_local_craft
+    43  encounter.arcane_resonance_study
+    41  encounter.rally_the_locals
+    35  encounter.master_craftsman_challenge
+    32  encounter.trace_ley_lines
+    30  encounter.plague_outbreak
+    24  encounter.weave_political_alliance
+    20  crafting.quest.flawed_steel
+    18  encounter.shadow_in_the_night
+    18  encounter.grand_tournament
+    18  army.supply.siege_lifted
+    16  encounter.political_intrigue
+    15  encounter.festival_of_spheres
+    15  encounter.commune_with_stars
+    12  army.supply.forage
+    12  stone.permanence.mason_lord_wall
+    12  encounter.investigate_anomaly
+    10  reputation.star.the_star_pilgrim
+     9  encounter.barter_with_travelers
+
+The First + retinue: 0 firings, 0 distinct templates, top-10 share —; bands {}
+
+All threaded (any court position): 0 firings, 0 distinct
+
+Longest run of the same template to the same mortal (consecutive firings by that actor):
+  seed 42  5×  army.supply.siege_lifted  actor npc_93  t50–t118  (of 11 firings by that actor)
+  seed 42  4×  army.supply.siege_lifted  actor ind_10  t74–t86  (of 24 firings by that actor)
+  seed 99  4×  crafting.quest.flawed_steel  actor ind_16  t70–t97  (of 15 firings by that actor)
+  seed 42  2×  encounter.shadow_in_the_night  actor ind_1  t6–t32  (of 12 firings by that actor)
+  seed 42  2×  encounter.arcane_resonance_study  actor ind_0  t47–t73  (of 19 firings by that actor)
+  seed 42  2×  encounter.barter_with_travelers  actor ind_8  t42–t72  (of 6 firings by that actor)
+  seed 42  2×  army.threshold.mutiny  actor ind_6  t122–t130  (of 10 firings by that actor)
+  seed 42  2×  crafting.quest.flawed_steel  actor ind_13  t78–t117  (of 18 firings by that actor)
+  seed 42  2×  encounter.local_tales  actor born_lc_2  t36–t66  (of 21 firings by that actor)
+  seed 99  2×  encounter.slice.bargain_at_crossroads  actor ind_5  t40–t81  (of 13 firings by that actor)
