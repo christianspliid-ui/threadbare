@@ -24,6 +24,9 @@ import { touchStructure } from './simulationRuntime';
 import type { SimulationRuntime } from './simulationRuntime';
 import { REALM_CONQUEST_SEVERITY } from '../data/realm-content';
 import { reportWar } from './armyNotifications';
+import { markMortalDead } from './agentLifecycle';
+import type { RuleOverrideContext } from './effects/ruleOverrideConsumers';
+import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -62,6 +65,12 @@ export const COMMANDER_CAPTURE_DURATION = 10;
 
 /** Probability of commander death on total defeat */
 export const COMMANDER_DEATH_CHANCE_TOTAL = 0.30;
+
+/**
+ * The harm a commander's death in battle registers as (THR-1566) — the plot's and the
+ * fight's class, so the victim's warmest living bonds grieve it (THR-1536).
+ */
+export const BATTLE_DEATH_HARM_CLASS = 'named_death' as const;
 
 /** Refugee encounters at neighbors on major defeat */
 export const REFUGEE_GENERATION_MAJOR = 1;
@@ -481,6 +490,8 @@ export function applyAftermath(
   battleState: BattleState,
   resolutionType: BattleResolutionType,
   runtime?: SimulationRuntime,
+  /** The battle node, for the id of a slain commander's harm record (THR-1566). */
+  battleNodeId?: string,
 ): void {
   const graph = state.graph;
 
@@ -652,12 +663,24 @@ export function applyAftermath(
   // commanded_by goes army → commander, so check outgoing from army
   const loserCmdEdges = loserNode ? graph.getOutgoingEdges(loserArmyId, 'commanded_by') : [];
   const commanderId = loserCmdEdges[0]?.target;
+  let slainByCommanderId: string | undefined;
+  let commanderHarmNodeId: string | undefined;
 
   if (commanderId) {
     commanderFate = determineCommanderFate(severity, rng);
 
     if (commanderFate === 'killed') {
-      try { graph.removeNode(commanderId); } catch { /* already gone */ }
+      const killed = killCommanderInBattle(
+        state, commanderId, victorArmyId, battleState, battleNodeId, battleHexId, runtime,
+      );
+      if (killed.died) {
+        slainByCommanderId = killed.slainByCommanderId;
+        commanderHarmNodeId = killed.outcomeNodeId;
+      } else {
+        // A ward held (THR-1241): the blow that should have killed them did not. They
+        // live, and walk off the field with their broken army.
+        commanderFate = 'retreated';
+      }
     } else if (commanderFate === 'captured') {
       // Mark commander as captured — out of play for N ticks
       const cmdNode = graph.getNode(commanderId);
@@ -701,12 +724,96 @@ export function applyAftermath(
     prosperityAfter,
     commanderFate,
     commanderId,
+    ...(slainByCommanderId && { slainByCommanderId }),
+    ...(commanderHarmNodeId && { commanderHarmNodeId }),
     refugeeCount: refugeeIds.length,
     spherePressureCount: spherePressureEvents.length,
   });
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────
+
+/**
+ * Kill a losing commander through the one death funnel (THR-1566).
+ *
+ * This used to be a bare `removeNode`: no body, no grief, no culprit, and every
+ * `relates_to`, `member_of` and `pursues` edge on them gone without a word. Now the
+ * commander is retained as deceased (`cause: 'battle'`), with the victor's commander —
+ * when the winning side has a living one — recorded as `slainBy`. That culprit is also
+ * what lets the death register as a harm, so the dead commander's warmest living bonds
+ * grieve it (THR-1536), exactly as a fight's killing does.
+ *
+ * A siege won by the town itself has no commander on the winning side: the commander is
+ * still retained and chronicled, but a harm with no culprit grieves nobody (the routing
+ * rule THR-1536 set), so no outcome node is written.
+ *
+ * `died: false` means a `death_prevented` ward held; the caller treats them as living.
+ */
+function killCommanderInBattle(
+  state: GameState,
+  commanderId: string,
+  victorArmyId: string,
+  battleState: BattleState,
+  battleNodeId: string | undefined,
+  battleHexId: string | undefined,
+  runtime: SimulationRuntime | undefined,
+): { died: boolean; slainByCommanderId?: string; outcomeNodeId?: string } {
+  const graph = state.graph;
+
+  const victorCommanderId = graph.getOutgoingEdges(victorArmyId, 'commanded_by')[0]?.target;
+  const victorCommander = victorCommanderId ? graph.getNode(victorCommanderId) : undefined;
+  const slainByCommanderId = victorCommander
+    && victorCommander.properties.actorType === 'individual'
+    && victorCommander.properties.deceased !== true
+    && victorCommanderId !== commanderId
+    ? victorCommanderId
+    : undefined;
+
+  // Where they fell, captured before the funnel runs.
+  const siteId = graph.getOutgoingEdges(commanderId, 'located_at')[0]?.target ?? battleHexId;
+
+  const overrideCtx: RuleOverrideContext = {
+    graph,
+    effectStates: state.effectStates,
+    persisted: state,
+    tick: state.tick,
+  };
+  const death = markMortalDead(
+    graph, commanderId, state.tick,
+    { cause: 'battle', ...(slainByCommanderId ? { byActorId: slainByCommanderId } : {}), mode: 'retain' },
+    runtime, overrideCtx,
+  );
+  if (death.outcome === 'warded') return { died: false };
+  if (death.outcome === 'not_a_mortal') {
+    // Not an individual (or already dead). The pre-THR-1566 removal stands for a
+    // non-mortal commander; an already-dead one is left exactly as it lies.
+    const node = graph.getNode(commanderId);
+    if (node && node.properties.deceased !== true) {
+      try { graph.removeNode(commanderId); } catch { /* already gone */ }
+    }
+    return { died: true };
+  }
+
+  if (!slainByCommanderId) return { died: true };
+
+  const outcomeNodeId = createUndertakingOutcomeNode({
+    graph,
+    source: {
+      kind: 'battle',
+      actorId: slainByCommanderId,
+      actionId: battleNodeId ?? `battle_${battleState.attackerArmyId}_${battleState.startedTick}`,
+      templateId: 'battle',
+      targetNodeId: commanderId,
+      ...(siteId && graph.getNode(siteId) ? { siteId } : {}),
+    },
+    harmClass: BATTLE_DEATH_HARM_CLASS,
+    tick: state.tick,
+    culpritAgentId: slainByCommanderId,
+    victimAgentId: commanderId,
+    ascendantId: state.ascendantId,
+  });
+  return { died: true, slainByCommanderId, ...(outcomeNodeId ? { outcomeNodeId } : {}) };
+}
 
 function downgradeSettlement(currentSubtype: string, severity: DestructionSeverity): string {
   if (severity === 'total') return 'ruins';

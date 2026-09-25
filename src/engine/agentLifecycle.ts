@@ -168,7 +168,10 @@ function drainMintValve(
 export type MortalDeathCause = 'plot' | 'band' | 'lifecycle' | 'commission'
   // THR-1538 — a fight's killing blow. Declared here, once, so plan docs 1 and 3
   // (the defeat faces and the monster writes) share one member.
-  | 'fight';
+  | 'fight'
+  // THR-1566 — a commander killed in a battle's aftermath. A battle is a public deed,
+  // so the sheet names the victor's commander the way it names a fight's victor.
+  | 'battle';
 
 /**
  * What `markMortalDead` did. `warded` and `echo` are outcomes, not failures — a caller
