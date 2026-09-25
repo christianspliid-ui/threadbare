@@ -81,6 +81,9 @@ forgotten, it was never authorised. Full interrogation record:
   Once that context is clear, **expanding agreed designs and patterns, and fixing bugs, is
   agent-owned**: *"when that context is clear i am not interested in second guessing."* Agreement
   means ready for **design and implementation**, so authoring the design sits downstream of it.
+- **Authoring runs unattended too (2026-09-25, THR-1611).** The design lane (`tb-design-lane`) turns
+  agreed work into decisions and plan docs between chats — Christian keeps charting, reserved tickets and
+  forks with no agreed outcome, and vetoes the rest by chat (`Docs/canon/process.md` rule 4).
 - **There is deliberately no `agreed` flag.** No label, no state gate. A marker Christian must
   remember to apply is friction at the moment he is most done with the conversation, and it fails
   silently when forgotten. The weight sits on the agent **asking well when genuinely unsure** —

@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. (Replaced the Cowork design role, retired 2026-07-21, THR-654.) For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-08-06
+last_validated_against: 2026-09-25
 ---
 
 # design-session
@@ -41,6 +41,11 @@ game systems whose interactions are undecided — stop drafting and recommend ch
 (`wayfinder` skill): *"This looks bigger than one session — want me to chart it as a wayfinder map instead of
 forcing one plan doc?"* Christian decides; **never auto-chart**. A cleared map later feeds one design-session
 per plan doc, each citing the map's decisions as settled input.
+
+**Attended or unattended — same skill (THR-1611).** The `design-lane` skill (`tb-design-lane`, four runs a day)
+runs this skill end to end with no one present. Where a step below says "surface to the user", the lane decides
+or reserves per its own § The boundary; it never skips a gate. An attended session that finds a ticket carrying a
+`design-lane claim` comment is looking at the lane's work in flight — coordinate on the ticket, do not re-claim.
 
 **Resolving a wayfinder ticket is NOT a full design session.** When the session's task is one decision ticket
 off a map, follow the `wayfinder` skill's work-the-map flow (claim → resolve → resolution comment → close →

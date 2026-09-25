@@ -36,6 +36,7 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 | **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
 | **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | `0 9 1 * *` | ~1st 09:00 | one Linear findings issue (or nothing) — registered 2026-07-22 by THR-704 after the THR-417 phantom-Done |
+| **02/08/14/20 :14** | 4× daily | `tb-design-lane` (unattended design — decides unreserved wayfinder tickets, closes cleared maps, authors + hands off one plan doc per run; `design-lane` skill) — registered 2026-09-25 by THR-1611 | `14 2,8,14,20 * * *` | ~:14–:25 (first fires unmeasured) | `Docs/ops/design-lane-<date>.md` + Linear decisions / `Ready for Dev` handoffs + `docs/plan-*` PRs |
 
 ## CC automation lane — registered but not Threadbare work
 
@@ -135,6 +136,8 @@ CC cannot read or disable these: they live in Cowork app state, are invisible to
 
 Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `tb-orchestrator` at ~:26:16, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09).
 
+**`tb-design-lane` (THR-1611) takes `:14` four times a day**: after the pickup's jittered fire (up to ~`:11`), clear of the orchestrator's `~:26`, the reaper's `:40` and autosync's `:50`. Its runs are long (a governed plan doc spawns the intent judge and three auditors), so a six-hour gap is deliberate — a hung or overrunning run eats only its own next slot (THR-837), never a sibling's.
+
 The three hourly Linear tasks now form an ordered cycle within the hour: **promote (:26) → execute (:00:53 next hour) → report (:53:13)**. `tb-orchestrator` was slotted at `:25` rather than late in the hour on purpose — a promotion landing after the briefing would sit unreported for an hour, and one landing after the executor's pickup would wait a full hour to be claimed. Firing mid-hour means a promoted issue is both claimable by the next pickup and visible to the same hour's brief. **When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time in this file in the same commit.**
 
 Collision-check against **both** lanes, not just the CC one: the host lane holds `:40` (reaper) and `:50` (autosync) with no jitter, so the free stretches in an hour are roughly `:02–:39` and `:54–:59`. The `:50` autosync run matters most for anything that reads home-tree git state — a probe landing inside that window can observe the tree mid-fast-forward.
@@ -190,7 +193,7 @@ Any content is valid — free text (its first line becomes the reason), JSON `{ 
 |---|---|---|
 | `C:/Users/chris/Dev/Projects/clean-stale-git.sh` | host script | [`clean-stale-git.sh.md`](clean-stale-git.sh.md) |
 | `C:\Users\chris\bin\threadbare-autosync.ps1` | host script | [`threadbare-autosync.ps1.md`](threadbare-autosync.ps1.md), plus its test harness [`threadbare-autosync.test.ps1`](threadbare-autosync.test.ps1) |
-| `…\scheduled-tasks\<id>\SKILL.md` — the 9 registered CC tasks | CC prompt | [`scheduled-task-prompts/<id>.md`](scheduled-task-prompts/) |
+| `…\scheduled-tasks\<id>\SKILL.md` — the 10 registered CC tasks | CC prompt | [`scheduled-task-prompts/<id>.md`](scheduled-task-prompts/) |
 | `…\scheduled-tasks\website-code-work\SKILL.md` | CC prompt | **None, by design** — personal site, out of scope; see its row above and `scheduled-task-prompts/README.md` § *Deliberately unmirrored* |
 | `C:\Users\chris\bin\threadbare-autosync.log` | host output | **None, by design** — a run log, not a source. It carries no logic and is rewritten every hour; the *newest line* is the operational signal, not the file's history |
 | `C:\Users\chris\.claude\threadbare-pause.json` | host marker | **None, by design** — its *presence* is the declaration (THR-1001). A tracked copy would carry no information, and committing one would assert a pause that is not in effect |
