@@ -952,10 +952,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Struck down*, *Scarred*, *Grudge*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 86 total — 1 write, 1 read, 84 unclassified
+- **Production hits:** 87 total — 1 write, 1 read, 85 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/encounters/branchDecision.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts` +79 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts` +80 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `economy-context-scene-scoring` — 🟢 LIVE
@@ -1161,7 +1161,7 @@ exit
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/fights/fightState.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts` +17 more
-- **Verdict:** Verified 2026-09-25: THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with "Let fate decide": the aftermath rendered PATH · KRENN "Krenn was slain." ◆ slain and PATH · THE KINDLED WARREN "The Kindled Warren is cleared." ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`.
+- **Verdict:** Verified 2026-09-25: THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with "Let fate decide": the aftermath rendered PATH · KRENN "Krenn was slain." ◆ slain and PATH · THE KINDLED WARREN "The Kindled Warren is cleared." ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`. THR-1561 (a duel's loser): `?view=game&seeded&size=medium&forceencounters`, tick 10, `spawnDuel('Corran', …, { courtPosition: 'the_first' })` → `ua_31`, where `opponentEnding` was spared with `grudgeWritten`; the aftermath drew BOND · NESRIN "Nesrin holds a grudge against Corran." ▼ (`Docs/evidence/thr-1561/`).
 
 ### `fight-fells-monster-clears-lair` — 🔵 UNVERIFIED-OK
 
