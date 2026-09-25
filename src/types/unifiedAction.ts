@@ -1486,6 +1486,8 @@ export interface PlantedAppointment {
   readonly pullMult?: number;
   /** A seed whose place is lost is dropped (after its favour is released), never fired placeless. */
   readonly requirePlace?: boolean;
+  /** Price the slack by hex distance when the road graph has no path (an off-graph place). */
+  readonly pricedByHex?: boolean;
 }
 
 export interface EncounterAftermathReaction {

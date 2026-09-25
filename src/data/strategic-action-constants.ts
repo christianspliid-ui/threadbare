@@ -1005,8 +1005,12 @@ export const HUNT_APPOINTMENT_PULL_MULT = 1.0;
  * the pull is zero — and far beasts are the case the scan cap exists for.
  */
 export const HUNT_APPOINTMENT_DELAY_TICKS = 48;
-/** `STRATEGIC_TARGET_SCAN_CAPS.monster`: at least the living-monster count on every preset. */
-export const HUNT_TARGET_SCAN_CAP = 64;
+/**
+ * `STRATEGIC_TARGET_SCAN_CAPS.monster`: at least the living-monster count on every preset.
+ * Measured at 300 ticks on seed 42 (THR-1560): medium 34, large 95, epic 120 — so the
+ * plan's 64 was raised to 128 to keep the epic preset whole.
+ */
+export const HUNT_TARGET_SCAN_CAP = 128;
 
 /**
  * How many targets each graph-scanning target rule returns, after proximity ordering.

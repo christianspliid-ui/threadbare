@@ -2,7 +2,7 @@
 
 # Undertakings × world objects — the grid
 
-> Every world-object kind × every undertaking verb. **60 live cells** (the registry declares a semantic; 0 of them still owe a decided consequence nothing reads, 30 have theirs), **2 wanted cells** (decided yes, the operation named, not yet built), **7 later cells** (decided, waiting on a named precondition), **0 open cells** (the model admits it, nobody has decided), the rest not an object of undertakings with the reason. 15 of 34 kinds carry a cell. Verbs: create · change · use · control · destroy · observe; change and control split into raise | lower and claim | seize. Regenerate: `npm run generate-undertaking-grid`; the generator fails by name on a live cell without a note, a non-live cell without a disposition, a verdict without its decider, or a stale disposition.
+> Every world-object kind × every undertaking verb. **62 live cells** (the registry declares a semantic; 0 of them still owe a decided consequence nothing reads, 32 have theirs), **2 wanted cells** (decided yes, the operation named, not yet built), **7 later cells** (decided, waiting on a named precondition), **0 open cells** (the model admits it, nobody has decided), the rest not an object of undertakings with the reason. 15 of 34 kinds carry a cell. Verbs: create · change · use · control · destroy · observe; change and control split into raise | lower and claim | seize. Regenerate: `npm run generate-undertaking-grid`; the generator fails by name on a live cell without a note, a non-live cell without a disposition, a verdict without its decider, or a stale disposition.
 
 ## The grid
 
@@ -14,6 +14,7 @@
 | **Place** `place` | 🟢 `create_sublocation` | ⏳ later | ⏳ later | · | 🟢 `grant_holding` | 🟢 `transfer_holding` | 🟢 `raze_holding` | 🟢 `record_intelligence` |
 | **Route** `route` | 🟢 `create_trade_route` | 🟢 `raise_route_volume` | 🟢 `blockade_route` | 🟢 `conduct_trade` | 🟢 `grant_holding` | 🟢 `transfer_holding + tax_trade_route` | · | 🟢 `record_intelligence` |
 | **Mortal** `mortal` | · | · | · | · | · | · | 🟢 `plot_death` | · |
+| ↳ _(monster)_ `monster` | · | · | · | · | · | · | 🟢 `prepare_hunt` | 🟢 `record_hunt_tracking` |
 | **Ascendant** `ascendant` | · | · | · | · | · | · | · | · |
 | **God / Spirit** `god` | · | · | · | · | · | · | · | · |
 | **Faction** `faction` | 🟢 `found_faction` | · | · | · | 🟢 `nominate_successor` | 🟢 `force_succession` | 🟢 `plant_schism` | 🟢 `record_intelligence` |
@@ -73,7 +74,7 @@
 | **Reputation & Influence** | `standing` | · | 🟢 live | 🟢 live | 🟢 live | · | · | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Encounters & Dilemmas · Ambitions & Undertakings · Secrets & Favors · Mortal Economy & Prosperity · Attention, Chronicle & Narrative |
 | **Secrets & Favors** | `agreement` | 🟢 live | · | · | 🟢 live | · | 🟢 live | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Secrets & Favors · Encounters & Dilemmas · Intelligence, Knowledge & Familiarity · Ruins, Clues & Delves · Attention, Chronicle & Narrative |
 | **Effects & Conditions** | `condition` | 🟢 live | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Effects & Conditions · Encounters & Dilemmas |
-| **Agent Lifecycle** | `mortal` | · | · | · | · | · | · | 🟢 live | · | LIVE-TOUCHED | Omens & Atmospheric Pressure · Agent Lifecycle · Companies & Group Travel · Factions & Succession · Ambitions & Undertakings · Attention, Chronicle & Narrative |
+| **Agent Lifecycle** | `mortal` | · | · | · | · | · | · | 🟢 live | 🟢 live | LIVE-TOUCHED | Omens & Atmospheric Pressure · Agent Lifecycle · Companies & Group Travel · Factions & Succession · Ambitions & Undertakings · Attention, Chronicle & Narrative |
 | **Intelligence, Knowledge & Familiarity** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Spheres & Quintessence** | `sphere`, `reach`, `cosmology_node` | · | · | · | · | · | · | · | · | READS | — |
 | **World Generation, Terrain & Places** | `area`, `hex`, `location`, `place`, `sublocation_node` | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | LIVE-TOUCHED | Omens & Atmospheric Pressure · Mortal Economy & Prosperity · Strategic Projects & Control · Movement & Colocation · War, Armies & Battles · Factions & Succession · Mandate · Doom Clock & Journey · Attachments, Items & Possessions · Encounters & Dilemmas |
@@ -180,6 +181,7 @@
   - _the op_ `mint_leverage_mark` (Create × agreement) — `strategicGraphOps.ts`
   - _the op_ `press_the_mark / redeem_favor` (Use × agreement) — `leverageOps.ts`, `strategicGraphOps.ts`
   - _the op_ `create_relation_edge hostile_to` (Destroy × standing) — `reputation.ts`, `strategicGraphOps.ts`
+  - _the op_ `record_hunt_tracking` (Observe × monster) — `monsters/hunts.ts`, `strategicGraphOps.ts`
   - _reads_ **Companies & Group Travel** — `strategicActionCandidates.ts`
   - _reads_ **War, Armies & Battles** — `strategicActionCandidates.ts`
   - _reads_ **World Generation, Terrain & Places** — `phaseStrategicProjects.ts` (degradation, neglect), `strategicTelemetry.ts`, `strategicPresentation.ts`, `HexMapV2/scene/StrategicMarkerMesh.ts` — the `controls` edge claim × Location writes
@@ -300,6 +302,8 @@ _Rules that bind every cell rather than one._
 - **Lower × standing** — `apply_reputation_with_delta (−)` — Smearing another's standing — the same op, signed — motive-gated. Targets the same ordered-pair objects as raise (THR-1436).
 - **Use × standing** — `mint_favor` — Calling in a favour (THR-1439): standing spent to put somebody in your debt — the favour class of Agreement's beginning. Gated at Respected (`FAVOR_STANDING_MIN`), because `Accepted` is the neutral default every stranger carries and a stranger owes nobody anything; refused on a Location (`ineligible:not_a_person`) and on an outstanding debt. Until this cell the only way to mint a favour was to press a mark, which made every debt in the world a threat. **Read by:** The agreements layer: `owes_favor` is read by the favour-calling encounters, the binder (`remoteAnchor`, `binder`), the secrets phase and the sheet's Agreements rows — and by the two Agreement cells that spend and forgive it. (THR-1439.)
 - **Destroy × standing** — `create_relation_edge hostile_to` — A quarrel: the standing broken and a hostile_to edge standing in its place — motive-gated. The seed of a duel, which is an encounter, never a work. `hostile_to` is what this cell writes, never a Standing object (THR-1436).
+- **Destroy × monster** — `prepare_hunt` — The hunt (THR-1560): the long work of going to kill a beast, never the plot (monsters are excluded from `isPlottableMortal`). Admitted through three doors, recorded on the board as `gate_exempt:<reason>` — a scar (`blood_drawn` toward the beast), a grievance whose culprit is the beast, or its den within `HUNT_THREAT_RADIUS_HEXES` of the hunter's home. **The payoff is deferred:** completion writes no outcome node and satisfies no grievance; it plants the confront as an appointment at the den (`#lair_confront`, aimed at the beast), with a missed branch (`#hunt_trail_cold`) and no placeless fallback. One confront per beast per hunter (`hunt_confront_pending`); a dead hunter is refused (`hunter_gone`). **Read by:** The appointment layer: the decision phase pulls the hunter to the den (`pullMult`), `evaluateEncounterSeeds` keeps the meeting and fires `fight.lair.confront` against the beast, or misses it and fires `hunt.trail_cold` where the hunter stands; M4's lair trigger skips a hunter keeping the appointment (`hunt_appointment`), and the named-elite encounter hunt is hidden from them. The beast's death closes a grievance through `grievance_culprit_eliminated`.
+- **Observe × monster** — `record_hunt_tracking` — Tracking a beast (THR-1560): the milestone work of learning how it moves. One writer, `recordHuntTracking`, mints a `hidden_weakness` mark on the beast through `mintLeverageMark` and reveals its temper (`monsterState.temperShown`). One secret per hunter per beast — refused `already_tracked` once any mark on it is held, spent or not. Not motive-gated. Offered to survival and discovery mortals leaning Iron, and to every Eye mortal through the observe-anything rider. **Read by:** Plan doc 2's advantage reader turns the live mark into "Their secret" on the first clash where the hunter is behind; the lair card and the fight header read `temperShown` to reveal the temper. Pressing the mark is refused (`no_favour_from_beasts`): a beast owes nobody a favour.
 
 ## Wanted cells — decided yes, not yet built
 

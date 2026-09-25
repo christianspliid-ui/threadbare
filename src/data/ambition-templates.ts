@@ -237,6 +237,14 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.change_raise.company',
         'cell.destroy.company',
         'cell.control_seize.place',
+        // THR-1560 — a conqueror clears the land they hold of the beast that dens near it.
+        // Measured on seed 42 at 300 ticks: no deciding mortal held a vengeance or devotion
+        // ambition, and the plan's routes founded zero hunts; this is the commonest Iron-led
+        // deciding ambition. The monster type's own doors still gate it (a scar, a
+        // grievance, a den near home), so a conqueror hunts only a beast they have a
+        // reason to. Decided under the 2026-09-11 delegation; veto invited on THR-1533.
+        'cell.destroy.monster',
+        'cell.observe.monster',
       ],
       templateIds: [
         'strategic_scout_defenses',

@@ -2301,6 +2301,7 @@ export function maybePlantAppointmentPayoff(
     inheritSiteAsTarget: payoff.inheritSiteAsTarget,
     pullMult: payoff.pullMult,
     requirePlace: payoff.requirePlace,
+    pricedByHex: payoff.pricedByHex,
   });
 
   // THR-1560: a meeting that must have a place is never planted placeless — a refused

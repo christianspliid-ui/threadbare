@@ -261,6 +261,8 @@ export const UNDERTAKING_CELL_APPOINTMENTS: Readonly<Record<string, UndertakingA
     inheritSiteAsTarget: true,
     pullMult: HUNT_APPOINTMENT_PULL_MULT,
     requirePlace: true,
+    // A lair sits off the road graph; the hunter walks there by hex, so price it so.
+    pricedByHex: true,
   },
 };
 

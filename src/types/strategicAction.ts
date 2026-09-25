@@ -151,6 +151,13 @@ export interface UndertakingAppointmentPayoff {
    * fired wherever the mortal stands.
    */
   readonly requirePlace?: boolean;
+  /**
+   * The place is off the road graph (THR-1560 — a lair has no `adjacent`, `road` or
+   * `contains` edge), so the slack is priced by hex distance × `APPOINTMENT_HEX_TICKS_PER_HEX`
+   * when the graph has no path, the way the journey queuer's hex fallback walks it.
+   * Without it such a meeting reads `unreachable` and is never travelled to.
+   */
+  readonly pricedByHex?: boolean;
 }
 
 export interface StrategicActionTemplate {

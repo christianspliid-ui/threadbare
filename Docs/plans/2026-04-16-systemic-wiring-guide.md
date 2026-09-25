@@ -4081,6 +4081,58 @@ cells in the bounded table `UNDERTAKING_CELL_APPOINTMENTS` (`src/data/undertakin
 - **Declined:** `use × Agreement:appointment`. Keeping an appointment is a journey the decision
   phase makes, not a work at a site with checkpoints.
 
+### The hunt — a class of a kind, a deferred payoff, and four payoff flags (THR-1560)
+
+**What you can now author, and what now exists for you to build on:**
+
+- **A class of a kind as an object type.** `UndertakingObjectType.classOf` names the world-object
+  kind a type belongs to (`monster` → `mortal`, THR-1268): `UndertakingObjectTypeId` admits the
+  class, the grid renders it as a sub-row under its kind, and the codex's kind row reads
+  *Mortal (monster)*. A class's live cells are noted in `LIVE_CLASS_CELL_NOTES`
+  (`scripts/undertaking-grid-dispositions.ts`, keyed by type id — `LIVE_CELL_NOTES` is keyed by
+  kind, and `mortal × destroy` is the plot's slot). The generator fails by name on a live class
+  cell with no note and on a stale one.
+- **`reasonWords`** — the codex's "Needs a reason" line for a type whose own doors
+  (`gateExemption`) admit its gated verbs: the monster reads *a scar, a grievance, or a den near
+  home* instead of the social motives.
+- **`deferredPayoffVerbs` → `deferredPayoff`.** A verb whose harm lands later than completion.
+  Carried onto the synthesised cell; completion then writes **no outcome node** and **satisfies no
+  grievance**, and records `payoffDeferred: true` on the history entry and the completion trace.
+  The hunt only plants the confront; the beast's death (the fight's) closes the grievance through
+  `grievance_culprit_eliminated`. Separately, **a grievance whose culprit is a monster is never
+  closed by any project's completion** (`grievanceClosesOnCompletion`).
+- **Four optional `UndertakingAppointmentPayoff` flags**, carried onto `PlantedAppointment`
+  because the seed's later readers see the appointment, not the payoff:
+  - `inheritSiteAsTarget` — the kept branch's seed gets `inheritedTargetId = targetNodeId` (the
+    confront fights the beast); the missed rewrite drops it.
+  - `pullMult` — multiplies `computeAppointmentPull`.
+  - `requirePlace` — a refused plant pushes **no seed** (the trace says `seedWithheld`), and a
+    seed whose place is lost is **dropped** after its favour is released (`dropped: true`),
+    never fired placeless.
+  - `pricedByHex` — the place is off the road graph (a lair has no `adjacent` / `road` /
+    `contains` edge), so when the graph has no path the slack is priced as
+    `hexDistance × APPOINTMENT_HEX_TICKS_PER_HEX` (3), the way `queueAppointmentJourney`'s hex A*
+    fallback walks it. Without it every lair reads `unreachable` and no hunter ever sets out.
+  - A **monster site is never the creditor**: the promise is owed to the lair.
+- **The row:** `UNDERTAKING_CELL_APPOINTMENTS['cell.destroy.monster']` — meeting
+  `#lair_confront` (its one bearer, `fight.lair.confront`), missed `#hunt_trail_cold` (its one
+  bearer, the seed-only `hunt.trail_cold`), `delayTicks: HUNT_APPOINTMENT_DELAY_TICKS` (48).
+- **Readers you can key on:** `liveHuntFavourAt(graph, hunterId, lairId)` — the live promise
+  that refuses a second hunt (`hunt_confront_pending`), hides `monster.hunt.named_elite` from a
+  waiting hunter on both draw paths, and makes M4 skip the arrival (`hunt_appointment`);
+  `huntReason(graph, hunterId, monsterId)` — `blood_drawn` / `grievance` / `threat_radius`;
+  `recordHuntTracking` — the one writer of a tracked beast (a `hidden_weakness` mark +
+  `temperShown`), for a future divination spell to call.
+- **Offering:** `monster` sits in `KINDS_BY_REACH.iron` and `ALL_UNDERTAKING_KINDS` (Eye's
+  rider); the hunt cells are hand-listed on `ambition_seek_revenge`, `ambition_avenge_fallen`
+  (its first profile) and `ambition_conquer_territory`. The object scan reads a per-type cap,
+  `STRATEGIC_TARGET_SCAN_CAPS[objectTypeId] ?? .object` (`monster: HUNT_TARGET_SCAN_CAP` = 128 — at least the 120 living monsters an epic map holds at 300 ticks).
+
+Inspect: `__DEBUG.listMonsters()` → each row's `huntedBy[]` (hunter, `work`, `reason`); CLI
+`hunts` (founded, tracked, planted / kept / missed with reasons, travel ticks, out-of-scan
+reason-holders); `npm run census:hunts -- --seeds 42,99 --ticks 300` (runs past the CLI's
+twilight stop); trace `hunt.tracked`.
+
 ## Capability 32: A place earns traits from its own fortunes, and the pool reads them (THR-790)
 
 A town that has been prosperous for three days is *Welcoming*. One that has been restless that

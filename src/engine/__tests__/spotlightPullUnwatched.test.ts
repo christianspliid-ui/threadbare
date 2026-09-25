@@ -40,7 +40,8 @@ import type { SpotlightTier } from '../../types/npc';
 
 const STRATEGIC = 'ambition_dominate_trade';
 const STRATEGIC_2 = AMBITION_TEMPLATES.find(t => t.strategicProfile && t.id !== STRATEGIC)!.id;
-const PLAIN = 'ambition_avenge_fallen';
+// THR-1560: `ambition_avenge_fallen` gained a profile (the hunt); its event-minted sibling is still plain.
+const PLAIN = 'ambition_avenge_the_wrong';
 const T = SPOTLIGHT_UNWATCHED_BUILDER_TICKS;
 const CAPS = { domainCapabilities: { iron: 40 } };
 const OPEN = { followedAgentIds: [] as string[], projects: [] as SpotlightProjectActivity[] };

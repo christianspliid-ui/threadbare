@@ -51,7 +51,7 @@ export const HUNT_TRAIL_COLD: UnifiedActionTemplate = {
       purposeLine: 'Let the trail go',
       narrativeTemplate: '{name} never reached the den, and now the trail has gone cold.',
       successAfterimage: 'The beast is still out there. {name} knows where to begin again.',
-      failureAfterimage: 'The beast is still out there, and the chance to face it has gone for now.',
+      failureAfterimage: 'The beast is still out there, and {name}\'s chance to face it has gone for now.',
     },
   ],
   narrativeTemplates: {

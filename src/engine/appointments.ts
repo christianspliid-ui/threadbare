@@ -59,6 +59,7 @@ import { getAgentLocationId } from './graphQueries';
 import {
   APPOINTMENT_AMBITION_MARGIN_TICKS,
   APPOINTMENT_FAVOUR_MAGNITUDE,
+  APPOINTMENT_HEX_TICKS_PER_HEX,
   APPOINTMENT_LEAVE_MARGIN_TICKS,
   APPOINTMENT_MAX_PER_MORTAL,
   APPOINTMENT_PRUDENCE_MARGIN_TICKS,
@@ -167,6 +168,13 @@ export function computeAppointmentSlack(
   const fromId = appointmentPlaceLocationId(graph, hereId) ?? hereId;
   const path = findShortestPath(graph, agentId, fromId, destinationId);
   if (!path || !Number.isFinite(path.totalCost)) {
+    // THR-1560: an off-graph place (a lair) is walked by the journey queuer's hex
+    // fallback, so an appointment that says so is priced the same way. Every other
+    // appointment keeps THR-1479's rule: no road is unreachable.
+    if (appointment.pricedByHex) {
+      const travelTicks = hexDistance(hereHex, placeHex) * APPOINTMENT_HEX_TICKS_PER_HEX;
+      return { slack: appointment.dueTick - tick - travelTicks, travelTicks, atPlace: false, placeHex };
+    }
     return { slack: -Infinity, travelTicks: Infinity, atPlace: false, placeHex };
   }
   const travelTicks = Math.max(0, path.totalCost);
@@ -291,6 +299,7 @@ export interface PlantAppointmentInput {
   readonly inheritSiteAsTarget?: boolean;
   readonly pullMult?: number;
   readonly requirePlace?: boolean;
+  readonly pricedByHex?: boolean;
 }
 
 export type PlantAppointmentResult =
@@ -349,6 +358,7 @@ export function plantAppointmentPromise(input: PlantAppointmentInput): PlantAppo
       ...(input.inheritSiteAsTarget ? { inheritSiteAsTarget: true } : {}),
       ...(input.pullMult !== undefined ? { pullMult: input.pullMult } : {}),
       ...(input.requirePlace ? { requirePlace: true } : {}),
+      ...(input.pricedByHex ? { pricedByHex: true } : {}),
     };
   }
 

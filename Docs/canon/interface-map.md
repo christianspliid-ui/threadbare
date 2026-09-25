@@ -340,7 +340,17 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-09-24 by Claude Code (THR-1564 — war news from state). **Added** `war-news-reaches-chronicle`,
+2026-09-25 by Claude Code (THR-1560 — Hunts H2). **Added** three 🔵 UNVERIFIED-OK rows:
+`hunt-payoff-plants-confront` (a finished hunt plants the confront at the den, aimed at the beast,
+with a missed branch and no placeless fallback — the four optional appointment-payoff flags),
+`grievance-opens-hunt-door` (a scar, a grievance or a den near home admits a hunt, recorded as
+`gate_exempt:<reason>`) and `hunt-completion-defers-grievance` (a hunt's completion writes no
+outcome and closes no grievance; a beast's grievance closes only on its death). Evidence:
+`hunts.test.ts` and the census in `Docs/status/2026-09-25-thr-1560.md`; not flipped LIVE because
+the confront was kept on one seed of four in 300 ticks — a seeded run shows it happens, not that it
+is common. `appointment-pulls-agent-movement` **extended** (preserved): an appointment may now
+carry `pricedByHex`, so an off-graph place is priced by hex distance instead of reading unreachable.
+Earlier: 2026-09-24 by Claude Code (THR-1564 — war news from state). **Added** `war-news-reaches-chronicle`,
 🟢 LIVE: each war writer reports its line through `reportWar` into `state.tickEvents`, and
 `phaseNarrative` promotes it; the trace-reading `phaseArmyNotifications` is retired. Verified
 by `warNews.test.ts` with tracing off and a 150-tick seed-42 headless run (11 endings in the

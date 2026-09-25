@@ -30,11 +30,12 @@ import {
 } from '../strategic-action-constants';
 import { UNDERTAKING_TIER_PAYOFF_BANDS } from '../content-eval/undertakingConstants';
 import { WORLD_OBJECT_KINDS } from '../world-objects';
+import type { UndertakingObjectTypeId } from '../../types/strategicAction';
 
 const KIND_IDS = ['area', 'location', 'place', 'route', 'mortal', 'faction', 'company', 'army', 'network', 'companion', 'item', 'power', 'condition', 'agreement', 'standing'] as const;
 /** THR-1560 — classes of a kind (THR-1268: a monster is a class of Mortal), each with its kind. */
 const CLASS_OF: Readonly<Record<string, string>> = { monster: 'mortal' };
-const TYPE_IDS = [...KIND_IDS, ...Object.keys(CLASS_OF)];
+const TYPE_IDS: readonly UndertakingObjectTypeId[] = [...KIND_IDS, 'monster'];
 
 describe('the object-type registry', () => {
   it('registers the fifteen catalogue kinds once each, with a shape, a lexicon and a harm class', () => {
