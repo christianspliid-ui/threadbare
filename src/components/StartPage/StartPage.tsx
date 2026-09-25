@@ -92,9 +92,13 @@ export function StartPage({ onNewWorld, onAdvancedNewWorld }: StartPageProps) {
             <button className="start-page__menu-item" onClick={() => { window.location.search = '?view=codex'; }}>
               Codex
             </button>
-            <button className="start-page__menu-item" onClick={() => { window.location.search = '?view=ul'; }}>
-              Ubiquitous Language
-            </button>
+            {/* THR-1601: the UL glossary is a dev/director surface — dev builds
+                only. `?view=ul` stays reachable by URL in every build. */}
+            {import.meta.env.DEV && (
+              <button className="start-page__menu-item" onClick={() => { window.location.search = '?view=ul'; }}>
+                Ubiquitous Language
+              </button>
+            )}
             <button className="start-page__menu-item" onClick={() => setSettingsOpen(true)}>
               Settings
             </button>
