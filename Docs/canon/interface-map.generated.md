@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 36 |
-| **Total** | **168** |
+| 🔵 UNVERIFIED-OK | 37 |
+| **Total** | **169** |
 
 ## Contracts by producing subsystem
 
@@ -234,6 +234,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `duel-victor-mercy-decides-loser-fate` | When one mortal beats another in a duel, the victor's own mercy or ruthlessness decides whether the loser walks away scarred or is finished — the god's hand weighs in only when the victor is the god's own mortal, and a loser who yielded or fled is never killed. | function: `decideBeatenDuellist`, `readLiveAxisLean`, `mercy_ruthlessness`, `opponentEnding` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `location-traits-shift-encounter-pool` | A place earns a trait from what the world already measures about it — long prosperity, long unrest, lingering magic, the dead — and the encounters that gather there follow the trait, so a marked town tells different stories from an unmarked one without anyone authoring the town. | function: `phaseLocationTraits`, `describeLocationTraits`, `computeLocationTraitBonus`, `LOCATION_TRAIT_ENCOUNTER_BONUS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `trait-predicate-resolution` | A trait gate anywhere in the engine means the same thing: the world reacts to who someone is, by the same rules whichever system is asking. | function: `resolveTraitPredicate`, `collectBearerTraitRefs`, `bearerMatchesPredicate` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `trait-ref-authoring-vocabulary` | An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet. | function: `validateTraitRefs`, `buildTraitRefIndex`, `resolveTraitRefs` | Ambitions & Undertakings | 🔴 LEAKED | THR-800 |
@@ -708,10 +709,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
 - **UL terms:** *Archetype Drift*, *Nudge*
 - **Module:** `src/engine/encounters/branchDecision.ts`
-- **Production hits:** 6 total — 1 write, 0 read, 5 unclassified
+- **Production hits:** 7 total — 1 write, 0 read, 6 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** —
-- **Other hits:** `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/standing-the-line.ts`, `src/engine/encounters/branchDecision.ts`, `src/engine/fights/fightForks.ts`, `src/testing/contentInvariants.ts`
+- **Other hits:** `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/standing-the-line.ts`, `src/engine/encounters/branchDecision.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/fights/fightForks.ts` +1 more
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'applyAgentDecidedBranches' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `calling-derivation` — 🟢 LIVE
@@ -931,6 +932,18 @@ exit
 - **Write sites:** `src/engine/graphOpExecutor.ts`
 - **Read sites:** `src/engine/groups/groupFormation.ts`
 - **Verdict:** Verified 2026-08-06: src/engine/__tests__/graphOpExecutor.drawTogether.test.ts § "stamps the caster's primary sphere on every mortal it pulls" asserts the written key; src/engine/groups/__tests__/groupFormationCause.test.ts § convergencePullSphere asserts the read, including that an expired pull is ignored. The read end is falsified independently by src/data/__tests__/group-name-content.test.ts, which requires the sphere pool to change generated output — a dead key leaves it byte-identical, which is exactly the state THR-770 found.
+
+### `duel-victor-mercy-decides-loser-fate` — 🔵 UNVERIFIED-OK
+
+- **Intent:** When one mortal beats another in a duel, the victor's own mercy or ruthlessness decides whether the loser walks away scarred or is finished — the god's hand weighs in only when the victor is the god's own mortal, and a loser who yielded or fled is never killed.
+- **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
+- **UL terms:** *Struck down*, *Scarred*, *Grudge*
+- **Module:** `src/engine/fights/fightEnding.ts`
+- **Production hits:** 85 total — 1 write, 1 read, 83 unclassified
+- **Write sites:** `src/engine/fights/fightEnding.ts`
+- **Read sites:** `src/engine/encounters/branchDecision.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts` +78 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `economy-context-scene-scoring` — 🟢 LIVE
 
