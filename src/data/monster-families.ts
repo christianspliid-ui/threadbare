@@ -17,6 +17,8 @@
  * | MONSTER_CLOCK_BY_TIER         | { major: 4, legendary: 5 } | clock size at mint, and after legendary hardening   |
  * | MONSTER_LEGENDARY_DREAD_STEP  | 1                         | words Dread rises at legendary (capped at severe)    |
  * | MONSTER_FAMILY_FALLBACK       | 'beast'                   | family for a foundation-sphere (or sphere-less) lair |
+ * | MONSTER_FELLED_CLEARING_PRESSURE | 0.5                    | × legendary resistance added when a legendary lair's monster falls (THR-1546) |
+ * | MONSTER_DRIVEN_OFF_CLEARING_PROGRESS | 1                  | clearing progress from driving the monster off (THR-1546) |
  */
 
 import type { FightTemper, FightRatingWord } from '../types/fight';
@@ -48,6 +50,18 @@ export const MONSTER_LEGENDARY_DREAD_STEP = 1;
 
 /** The family a lair without a creation sphere mints. */
 export const MONSTER_FAMILY_FALLBACK: MonsterFamilyId = 'beast';
+
+/**
+ * Felling a **legendary** lair's monster adds this fraction of
+ * `LAIR_CLEARING_RESISTANCE.legendary` to the lair's `clearingProgress` (THR-1546).
+ * The den does not fall with its beast: its monster faction remains (THR-767's raider
+ * question). Kill criterion: if a lone fight plus one presence pass clears a legendary
+ * lair, halve this.
+ */
+export const MONSTER_FELLED_CLEARING_PRESSURE = 0.5;
+
+/** Clearing progress a fighter earns by driving a lair's monster off (THR-1546). */
+export const MONSTER_DRIVEN_OFF_CLEARING_PROGRESS = 1;
 
 /** The eight families, keyed by id. */
 export const MONSTER_FAMILIES: Readonly<Record<MonsterFamilyId, MonsterFamily>> = {

@@ -20,7 +20,7 @@ import { applyExecutionResult } from '../../effects/effectEventDispatch';
 import { buildPredicateContext, evaluatePredicate } from '../../effects/effectPredicates';
 import { tickEffects } from '../../effectTick';
 import { fightResultIndex } from '../fightState';
-import { FIGHT_END_BRANCHES } from '../fightOutcome';
+import { FIGHT_END_BRANCHES, resetFightEndBranches } from '../fightOutcome';
 import {
   FIGHT_CLOCK_MAILBOX_PROP,
   FIGHT_CLOCK_RECOVERY_TICKS,
@@ -170,7 +170,7 @@ function hasCondition(graph: WorldGraph, agentId: string, conditionId: string): 
 }
 
 beforeEach(() => { clearTraces(); enableTracing(); });
-afterEach(() => { clearTraces(); disableTracing(); FIGHT_END_BRANCHES.length = 0; });
+afterEach(() => { clearTraces(); disableTracing(); resetFightEndBranches(); });
 
 // ─── The mailbox at a new fight's start ─────────────────────────
 

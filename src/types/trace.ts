@@ -25,7 +25,12 @@ import type { ValuePair } from './agent';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces';
 import type { FightClockTrace, FightEndTrace, FightForkTrace, FightStepTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
-import type { MonsterHardenedTrace, MonsterMintedTrace } from './traces/monster-traces';
+import type {
+  MonsterDrivenOffTrace,
+  MonsterFelledTrace,
+  MonsterHardenedTrace,
+  MonsterMintedTrace,
+} from './traces/monster-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -526,7 +531,10 @@ export type TraceCategory =
   // Monsters — the card at mint and at legendary hardening (THR-1544).
   // Interfaces in `src/types/traces/monster-traces.ts`.
   | 'monster.minted'
-  | 'monster.hardened';
+  | 'monster.hardened'
+  // Monsters — what felling or driving one off did to its lair (THR-1546).
+  | 'monster.felled'
+  | 'monster.driven_off';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -794,6 +802,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Monsters — the card at mint and at legendary hardening (THR-1544)
   'monster.minted',
   'monster.hardened',
+  // Monsters — felled / driven off (THR-1546)
+  'monster.felled',
+  'monster.driven_off',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -4090,6 +4101,8 @@ export type TraceEntry =
   // Monsters (THR-1544)
   | MonsterMintedTrace
   | MonsterHardenedTrace
+  | MonsterFelledTrace
+  | MonsterDrivenOffTrace
   // Story-so-far digest (THR-455)
   | ThreadStoryComposedTrace
   // Event feed hygiene (THR-456)
