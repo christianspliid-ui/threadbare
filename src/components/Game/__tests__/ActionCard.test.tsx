@@ -21,7 +21,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ActionCard } from '../ActionCard';
 import { ACTION_BLOCKED_OUT_OF_RANGE, ACTION_BLOCKED_TIER, ACTION_BLOCKED_GENERIC } from '../../../data/action-card-display';
-import { CARD_CHIP_ROW_GAP_PX } from '../../shared/CardFace';
+import { CARD_CHIP_ROW_GAP_PX, CARD_DIMMED_FILTER } from '../../shared/CardFace';
 import type { WheelSlot } from '../../../engine/wheel';
 
 const baseSlot: WheelSlot = {
@@ -358,5 +358,12 @@ describe('ActionCard — the face is a surface, not a window (THR-1587)', () => 
     const armed = screen.getByTestId(testId).getAttribute('style') ?? '';
     expect(armed).toContain('var(--bg-surface)');
     expect(armed).toContain('--veil-gold-rgb');
+  });
+
+  it('dims a blocked card by darkening it, never by making it see-through', () => {
+    render(<ActionCard slot={slot({ available: false, lockedReason: 'Out of range' })} onClick={vi.fn()} />);
+    const card = screen.getByTestId('action-card-target_action_action.imbue');
+    expect(card.style.filter).toBe(CARD_DIMMED_FILTER);
+    expect(card.style.opacity).toBe('');
   });
 });
