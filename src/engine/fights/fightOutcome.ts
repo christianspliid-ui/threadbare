@@ -3,7 +3,7 @@
  * `Docs/plans/2026-09-23-fight-block.md` §6, "The post-fight dispatcher").
  *
  * `onFightEnded` is **the single place** a fight's result turns into world writes.
- * It ships with no branches: plan doc 1 adds the defeat faces and victory yields,
+ * FB2 shipped it with no branches; plan doc 1 adds the defeat faces and victory yields,
  * plan doc 3 the monster and lair writes, plan doc 5 a duel's other side — each as
  * one entry in `FIGHT_END_BRANCHES`, so no later slice invents its own hook.
  *
@@ -27,6 +27,7 @@ import type { SimulationRuntime } from '../simulationRuntime';
 import type { RuleOverrideContext } from '../effects/ruleOverrideConsumers';
 import { emitTrace } from '../traceBuffer';
 import { withFightResultMemory } from './fightState';
+import { monsterLairBranch } from '../monsters/monsterFelling';
 
 /** What a dispatcher branch is handed (plan doc §6). */
 export interface FightEndContext {
@@ -56,10 +57,20 @@ export interface FightEndedResult {
 }
 
 /**
- * The dispatcher's branches, run in order. Empty in FB2 by design; plan docs 1, 3
- * and 5 add theirs here (THR-1548, THR-1546, THR-1557 and siblings).
+ * The branches that ship with the engine, in run order. Plan docs 1, 3 and 5 add
+ * theirs here (THR-1548, THR-1546, THR-1557 and siblings).
+ *
+ * - `monsterLairBranch` (THR-1546): felling or driving off a lair's monster.
  */
-export const FIGHT_END_BRANCHES: FightEndBranch[] = [];
+export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [monsterLairBranch];
+
+/** The live branch list `onFightEnded` runs by default. Tests may push onto it. */
+export const FIGHT_END_BRANCHES: FightEndBranch[] = [...DEFAULT_FIGHT_END_BRANCHES];
+
+/** Restore `FIGHT_END_BRANCHES` to the shipped defaults (test hygiene). */
+export function resetFightEndBranches(): void {
+  FIGHT_END_BRANCHES.splice(0, FIGHT_END_BRANCHES.length, ...DEFAULT_FIGHT_END_BRANCHES);
+}
 
 /**
  * Turn a fight's result into world writes. Runs every branch in order and merges

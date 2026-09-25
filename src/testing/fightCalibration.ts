@@ -155,8 +155,10 @@ function fixtureState(graph: WorldGraph): GameState {
 
 /**
  * Between fights: heal the fighter's conditions, restore their stamped capability
- * (a fight grows its fighter), empty the harm queue, reset the clock, and move the
- * tick on — event nodes are keyed by tick, and every fight is a fresh one.
+ * (a fight grows its fighter), empty the harm queue, reset the clock, raise the
+ * opponent if the last fight felled it (THR-1546's monster branch retains a felled
+ * monster as deceased, and a dead opponent ends every later fight `opponent_gone`),
+ * and move the tick on — event nodes are keyed by tick, and every fight is a fresh one.
  */
 function resetBetweenFights(state: GameState, fightIndex: number, raw: Readonly<Record<string, number>>): void {
   const graph = state.graph;
@@ -168,7 +170,9 @@ function resetBetweenFights(state: GameState, fightIndex: number, raw: Readonly<
   state.pendingQuintessenceEvents = [];
   state.tickEvents = [];
   state.recentEvents = [];
-  const bag = graph.getNode(OPPONENT)!.properties.monsterState as Record<string, unknown>;
+  const opponent = graph.getNode(OPPONENT)!.properties as Record<string, unknown>;
+  for (const key of ['deceased', 'deceasedTick', 'deathCause', 'slainBy']) delete opponent[key];
+  const bag = opponent.monsterState as Record<string, unknown>;
   bag.clockFilled = 0;
   bag.clockUpdatedTick = state.tick;
 }

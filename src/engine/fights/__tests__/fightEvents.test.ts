@@ -14,7 +14,7 @@ import { clearTraces, disableTracing, enableTracing, getTraces } from '../../tra
 import { processEffectEvent } from '../../effects/effectEvents';
 import { resolveFightStepInputs } from '../fightStepInputs';
 import { fightResultIndex } from '../fightState';
-import { FIGHT_END_BRANCHES } from '../fightOutcome';
+import { resetFightEndBranches } from '../fightOutcome';
 import { markMortalDead } from '../../agentLifecycle';
 import { FIGHT_STANDING_MODIFIER_NAME } from '../../../data/fight-constants';
 import type { GameState } from '../../../types/gameState';
@@ -171,7 +171,7 @@ const inertReactive = (trigger: string): AttachmentEffect => ({
 } as unknown as AttachmentEffect);
 
 beforeEach(() => { clearTraces(); enableTracing(); });
-afterEach(() => { clearTraces(); disableTracing(); FIGHT_END_BRANCHES.length = 0; });
+afterEach(() => { clearTraces(); disableTracing(); resetFightEndBranches(); });
 
 // ─── attacked ───────────────────────────────────────────────────
 

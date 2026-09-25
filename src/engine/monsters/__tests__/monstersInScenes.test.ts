@@ -22,7 +22,7 @@ import { createSimulationRuntime } from '../../simulationRuntime';
 import { resetUnifiedActionCounter } from '../../unifiedActionLifecycle';
 import { createBindingIndex } from '../../binding/bindingRegistry';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../../traceBuffer';
-import { FIGHT_END_BRANCHES } from '../../fights/fightOutcome';
+import { resetFightEndBranches } from '../../fights/fightOutcome';
 import { MONSTER_HUNT_NAMED_ELITE } from '../../../data/monster-encounter-content';
 import { FIGHT_LAIR_CONFRONT } from '../../../data/encounters/fight-lair-confront';
 import { MONSTER_FAMILIES } from '../../../data/monster-families';
@@ -156,7 +156,7 @@ const tracesOf = (category: string) =>
   getTraces().filter((t) => t.category === category) as unknown as Array<Record<string, any>>;
 
 beforeEach(() => { clearTraces(); enableTracing(); resetUnifiedActionCounter(); });
-afterEach(() => { clearTraces(); disableTracing(); FIGHT_END_BRANCHES.length = 0; });
+afterEach(() => { clearTraces(); disableTracing(); resetFightEndBranches(); });
 
 // ─── Cast binding ───────────────────────────────────────────────
 
