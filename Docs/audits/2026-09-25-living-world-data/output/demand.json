@@ -1,0 +1,933 @@
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 0 · possessions 12 · quarrels 2 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +106 settlement-authored NPCs
+[WorldGen] Living world: realm edges dropped at guild halls 4 · routes 6 · freeholds 2 · possessions 13 · quarrels 7 · marks 2 · garrisons 3
+[WorldGen] Genome NPC top-up: +144 settlement-authored NPCs
+{
+ "42": {
+  "locSub": {
+   "capital": 4,
+   "city": 8,
+   "town": 9,
+   "hamlet": 17,
+   "mining": 1,
+   "camp": 8,
+   "unexplored_poi": 6,
+   "tower": 3,
+   "ruins": 7,
+   "temple": 2,
+   "farmland": 1,
+   "fort": 1,
+   "master_forge": 1,
+   "sacrifice_site": 1,
+   "crystal_cavern": 5,
+   "ancient_road": 4,
+   "cavern": 2,
+   "monument": 9,
+   "hot_spring": 5,
+   "grove": 4,
+   "iron_seep": 2,
+   "herb_garden": 3,
+   "fossil_bed": 4,
+   "golden_grove": 1,
+   "gem_deposit": 4,
+   "trade_route": 6,
+   "lair": 13,
+   "elder_ruin": 103,
+   "shrine": 1
+  },
+  "placeSubTop": {
+   "?": 739
+  },
+  "cultures": [
+   "hist_culture_0",
+   "hist_culture_1",
+   "hist_culture_2",
+   "culture_0",
+   "culture_1",
+   "culture_2"
+  ],
+  "facDefs": {
+   "realm.culture_0": 1,
+   "realm.culture_1": 1,
+   "realm.culture_2": 1,
+   "undefined": 34,
+   "adventuring_guild": 1,
+   "mercenary_company": 2,
+   "thieves_guild": 1,
+   "merchant_consortium": 1,
+   "temple_of_spheres": 1,
+   "arcane_circle": 1,
+   "rangers_brotherhood": 1,
+   "civic_guard": 1,
+   "underking_court": 1,
+   "holy_order_dawn": 1,
+   "builders_fellowship": 1,
+   "lorekeepers_covenant": 1
+  },
+  "agentCulture": {
+   "(none)": 315,
+   "culture_0": 100,
+   "culture_2": 74,
+   "culture_1": 91
+  },
+  "fireSub": {
+   "capital": 142,
+   "town": 29,
+   "city": 74,
+   "(none)": 7,
+   "hamlet": 71,
+   "herb_garden": 2,
+   "crystal_cavern": 1,
+   "camp": 1,
+   "ruins": 11
+  },
+  "fireSetting": {
+   "urban": 245,
+   "unmapped:(none)": 7,
+   "rural": 71,
+   "unmapped:herb_garden": 2,
+   "unmapped:crystal_cavern": 1,
+   "wayside": 1,
+   "ruin": 11
+  },
+  "fireCulture": {
+   "culture_0": 27,
+   "(none)": 267,
+   "culture_2": 44
+  },
+  "fireTier": {
+   "background": 250,
+   "shaping": 49,
+   "story_beat": 39
+  },
+  "fireOutcome": {
+   "success_at_cost": 128,
+   "failure": 60,
+   "critical_failure": 16,
+   "success": 101,
+   "critical_success": 18,
+   "contested_lost": 3,
+   "contested_won": 2
+  },
+  "firings": 338,
+  "byTemplateOutcome": {
+   "encounter.trace_ley_lines": {
+    "success_at_cost": 6,
+    "success": 6,
+    "critical_failure": 1,
+    "contested_lost": 1
+   },
+   "encounter.confront_the_unknown": {
+    "success_at_cost": 6,
+    "critical_success": 3,
+    "success": 11,
+    "failure": 6,
+    "critical_failure": 2
+   },
+   "encounter.festival_of_spheres": {
+    "failure": 3,
+    "success": 3,
+    "success_at_cost": 4,
+    "critical_success": 1
+   },
+   "encounter.starborn_vigil": {
+    "critical_failure": 1,
+    "failure": 3,
+    "success_at_cost": 1
+   },
+   "encounter.master_local_craft": {
+    "success_at_cost": 7,
+    "success": 8,
+    "critical_failure": 2,
+    "failure": 4
+   },
+   "encounter.political_intrigue": {
+    "success_at_cost": 4
+   },
+   "encounter.shadow_in_the_night": {
+    "success_at_cost": 3,
+    "success": 1,
+    "contested_lost": 1
+   },
+   "encounter.commune_with_stars": {
+    "success_at_cost": 6,
+    "failure": 2,
+    "critical_failure": 2
+   },
+   "encounter.rally_the_locals": {
+    "success_at_cost": 3,
+    "failure": 4,
+    "success": 5,
+    "contested_lost": 1
+   },
+   "encounter.master_craftsman_challenge": {
+    "failure": 6,
+    "success": 4,
+    "critical_failure": 1,
+    "success_at_cost": 3,
+    "critical_success": 2
+   },
+   "encounter.arcane_resonance_study": {
+    "failure": 5,
+    "critical_success": 3,
+    "success_at_cost": 10,
+    "success": 4
+   },
+   "encounter.barter_with_travelers": {
+    "success": 1,
+    "success_at_cost": 1,
+    "failure": 1
+   },
+   "encounter.plague_outbreak": {
+    "success": 4,
+    "success_at_cost": 5,
+    "failure": 3
+   },
+   "army.supply.forage": {
+    "success_at_cost": 4,
+    "success": 3,
+    "critical_failure": 1
+   },
+   "veil.truth.page_beneath_saint": {
+    "success": 4,
+    "success_at_cost": 4,
+    "critical_failure": 1
+   },
+   "mct.quest.market_survey": {
+    "critical_failure": 1,
+    "success_at_cost": 2
+   },
+   "stone.permanence.mason_lord_wall": {
+    "success_at_cost": 3,
+    "success": 3,
+    "critical_success": 1
+   },
+   "encounter.weave_political_alliance": {
+    "success": 3,
+    "critical_success": 2,
+    "success_at_cost": 4
+   },
+   "mct.quest.caravan_escort": {
+    "success": 1
+   },
+   "encounter.grand_tournament": {
+    "critical_failure": 1,
+    "failure": 4,
+    "success": 4,
+    "success_at_cost": 2
+   },
+   "encounter.local_tales": {
+    "success_at_cost": 2,
+    "success": 3
+   },
+   "crafting.quest.flawed_steel": {
+    "failure": 3,
+    "success": 7,
+    "success_at_cost": 1,
+    "critical_failure": 2
+   },
+   "cg.quest.break_up_brawl": {
+    "success_at_cost": 3
+   },
+   "bf.quest.lay_foundation": {
+    "failure": 1,
+    "success": 1,
+    "contested_won": 1
+   },
+   "encounter.forage_the_land": {
+    "success_at_cost": 1,
+    "failure": 1
+   },
+   "encounter.shore_up_shelter": {
+    "success_at_cost": 3
+   },
+   "encounter.mend_equipment": {
+    "success_at_cost": 1,
+    "success": 2
+   },
+   "army.supply.siege_lifted": {
+    "success_at_cost": 9,
+    "failure": 4
+   },
+   "encounter_route_embargo": {
+    "success_at_cost": 2,
+    "failure": 1
+   },
+   "encounter.rally_faithful": {
+    "failure": 1
+   },
+   "reputation.eye.the_oracle_consulted": {
+    "success": 1
+   },
+   "encounter.decipher_old_markings": {
+    "success": 1
+   },
+   "encounter.investigate_anomaly": {
+    "success": 1,
+    "success_at_cost": 1
+   },
+   "encounter.local_gossip": {
+    "success_at_cost": 4
+   },
+   "encounter.tend_the_weary": {
+    "critical_success": 1,
+    "success_at_cost": 3
+   },
+   "encounter.patrol_perimeter": {
+    "success_at_cost": 1,
+    "success": 2
+   },
+   "reputation.heart.pilgrims_offering": {
+    "success_at_cost": 1
+   },
+   "encounter.trade_caravan_escort": {
+    "success_at_cost": 1,
+    "failure": 1
+   },
+   "encounter.rest_and_recover": {
+    "failure": 1,
+    "success_at_cost": 2,
+    "critical_success": 1
+   },
+   "encounter.blessing_of_passage": {
+    "success_at_cost": 1
+   },
+   "encounter.guild_initiation_trial": {
+    "success_at_cost": 1
+   },
+   "encounter.defend_against_predators": {
+    "success_at_cost": 1
+   },
+   "encounter.assess_holdings": {
+    "success_at_cost": 1,
+    "critical_success": 1
+   },
+   "encounter.spar_with_a_stranger": {
+    "success": 1
+   },
+   "encounter.barter_supplies": {
+    "critical_failure": 1,
+    "success": 1,
+    "contested_won": 1
+   },
+   "reputation.star.the_star_pilgrim": {
+    "success": 1
+   },
+   "encounter.debt_collection": {
+    "success_at_cost": 2
+   },
+   "encounter.black_market_deal": {
+    "success_at_cost": 2
+   },
+   "encounter.pickpocket": {
+    "success_at_cost": 1
+   },
+   "eye.reckoning.verdict_that_burns": {
+    "success": 4
+   },
+   "encounter.labor_dispute": {
+    "success_at_cost": 2
+   },
+   "encounter.aid_refugees": {
+    "failure": 1
+   },
+   "army.threshold.mutiny": {
+    "critical_success": 1,
+    "success": 1,
+    "success_at_cost": 2
+   },
+   "bf.quest.craft_commission": {
+    "success": 2
+   },
+   "encounter.tribute_exchange": {
+    "failure": 1
+   },
+   "encounter.court_noble": {
+    "success": 1
+   },
+   "encounter.negotiate_dispute": {
+    "failure": 1
+   },
+   "encounter.merchants_gambit": {
+    "failure": 1
+   },
+   "star.turning.comet_omen": {
+    "critical_success": 2
+   },
+   "encounter.compose_saga": {
+    "failure": 1
+   },
+   "tg.quest.fence_goods": {
+    "failure": 1
+   },
+   "reputation.stone.the_stones_judgement": {
+    "success_at_cost": 1
+   },
+   "reputation.gold.the_unmarked_crossing": {
+    "success": 1
+   },
+   "reputation.iron.the_executioners_commission": {
+    "success": 1
+   },
+   "reputation.shadow.the_infiltrators_approach": {
+    "success_at_cost": 1
+   },
+   "reputation.eye.the_blinded_oracle": {
+    "success": 1
+   },
+   "encounter.listen_for_rumors": {
+    "success": 1
+   },
+   "reputation.gold.the_merchants_favor": {
+    "success": 1
+   },
+   "encounter.hollow_watch": {
+    "success": 1
+   },
+   "encounter.case_the_joint": {
+    "success": 1
+   }
+  }
+ },
+ "99": {
+  "locSub": {
+   "hamlet": 28,
+   "city": 7,
+   "town": 16,
+   "capital": 3,
+   "shrine": 10,
+   "mining": 5,
+   "temple": 1,
+   "camp": 12,
+   "ruins": 10,
+   "tower": 3,
+   "fort": 2,
+   "farmland": 1,
+   "unexplored_poi": 6,
+   "sacrifice_site": 1,
+   "shadow_hollow": 1,
+   "cavern": 3,
+   "grove": 2,
+   "hot_spring": 2,
+   "herb_garden": 2,
+   "gem_deposit": 4,
+   "iron_seep": 3,
+   "glowcap_hollow": 4,
+   "crystal_cavern": 3,
+   "golden_grove": 1,
+   "trade_route": 6,
+   "lair": 14,
+   "elder_ruin": 88
+  },
+  "placeSubTop": {
+   "?": 923
+  },
+  "cultures": [
+   "hist_culture_0",
+   "hist_culture_1",
+   "culture_0",
+   "culture_1",
+   "culture_2"
+  ],
+  "facDefs": {
+   "realm.culture_0": 1,
+   "realm.culture_1": 1,
+   "realm.culture_2": 1,
+   "undefined": 41,
+   "adventuring_guild": 1,
+   "mercenary_company": 2,
+   "thieves_guild": 1,
+   "merchant_consortium": 1,
+   "temple_of_spheres": 1,
+   "arcane_circle": 1,
+   "rangers_brotherhood": 1,
+   "civic_guard": 1,
+   "underking_court": 1,
+   "holy_order_dawn": 1,
+   "builders_fellowship": 1,
+   "lorekeepers_covenant": 1
+  },
+  "agentCulture": {
+   "(none)": 399,
+   "culture_0": 166,
+   "culture_2": 149,
+   "culture_1": 88
+  },
+  "fireSub": {
+   "hamlet": 271,
+   "capital": 28,
+   "camp": 3,
+   "town": 60,
+   "city": 192,
+   "herb_garden": 1,
+   "ruins": 20,
+   "(none)": 4,
+   "fort": 1
+  },
+  "fireSetting": {
+   "rural": 271,
+   "urban": 280,
+   "wayside": 3,
+   "unmapped:herb_garden": 1,
+   "ruin": 20,
+   "unmapped:(none)": 4,
+   "stronghold": 1
+  },
+  "fireCulture": {
+   "culture_0": 114,
+   "(none)": 390,
+   "culture_2": 50,
+   "culture_1": 26
+  },
+  "fireTier": {
+   "background": 452,
+   "story_beat": 47,
+   "shaping": 81
+  },
+  "fireOutcome": {
+   "success": 195,
+   "success_at_cost": 177,
+   "failure": 110,
+   "critical_success": 38,
+   "critical_failure": 33,
+   "contested_won": 8,
+   "contested_lost": 3
+  },
+  "firings": 580,
+  "byTemplateOutcome": {
+   "encounter.offer_small_prayer": {
+    "success": 2
+   },
+   "encounter.trace_ley_lines": {
+    "success_at_cost": 9,
+    "success": 4,
+    "critical_success": 2
+   },
+   "encounter.border.one_body_short": {
+    "success": 1
+   },
+   "encounter.border.the_unclaimed_relic": {
+    "success_at_cost": 1
+   },
+   "encounter.master_local_craft": {
+    "failure": 16,
+    "success": 12,
+    "success_at_cost": 10,
+    "critical_failure": 2,
+    "critical_success": 1
+   },
+   "encounter.rally_the_locals": {
+    "success_at_cost": 5,
+    "critical_success": 2,
+    "success": 9,
+    "failure": 4,
+    "critical_failure": 1
+   },
+   "encounter.shadow_in_the_night": {
+    "critical_success": 1,
+    "success": 2,
+    "failure": 4,
+    "contested_won": 1,
+    "success_at_cost": 3
+   },
+   "encounter.slice.bargain_at_crossroads": {
+    "success_at_cost": 2,
+    "success": 5
+   },
+   "encounter.plague_outbreak": {
+    "critical_failure": 3,
+    "failure": 8,
+    "success_at_cost": 9,
+    "success": 18,
+    "critical_success": 1
+   },
+   "encounter.weave_political_alliance": {
+    "critical_success": 4,
+    "success_at_cost": 15,
+    "success": 6,
+    "critical_failure": 3,
+    "failure": 6
+   },
+   "encounter.arcane_resonance_study": {
+    "failure": 10,
+    "success": 14,
+    "success_at_cost": 4,
+    "critical_failure": 4,
+    "critical_success": 4
+   },
+   "reputation.star.the_star_pilgrim": {
+    "success": 9
+   },
+   "encounter.trade_caravan_escort": {
+    "failure": 2,
+    "success": 5,
+    "success_at_cost": 1
+   },
+   "reputation.heart.pilgrims_offering": {
+    "success_at_cost": 3,
+    "success": 6
+   },
+   "encounter.investigate_anomaly": {
+    "failure": 2,
+    "success_at_cost": 3,
+    "critical_success": 2,
+    "success": 3
+   },
+   "encounter.confront_the_unknown": {
+    "success_at_cost": 13,
+    "success": 15,
+    "failure": 10,
+    "critical_failure": 4,
+    "critical_success": 1
+   },
+   "encounter.master_craftsman_challenge": {
+    "critical_failure": 2,
+    "failure": 10,
+    "success_at_cost": 8,
+    "success": 8,
+    "critical_success": 2
+   },
+   "encounter.grand_tournament": {
+    "failure": 5,
+    "success_at_cost": 7,
+    "contested_lost": 1,
+    "success": 1
+   },
+   "encounter.barter_with_travelers": {
+    "success_at_cost": 3,
+    "critical_failure": 1,
+    "failure": 1,
+    "success": 1
+   },
+   "encounter.realm.tithe_demanded": {
+    "success_at_cost": 1,
+    "failure": 2
+   },
+   "encounter.commune_with_stars": {
+    "success_at_cost": 5,
+    "success": 1,
+    "critical_failure": 1,
+    "critical_success": 1
+   },
+   "encounter.political_intrigue": {
+    "success": 3,
+    "failure": 3,
+    "success_at_cost": 5,
+    "contested_lost": 1
+   },
+   "encounter.forage_the_land": {
+    "success": 1,
+    "success_at_cost": 2,
+    "contested_won": 1
+   },
+   "encounter.tend_the_weary": {
+    "success": 1,
+    "critical_failure": 1
+   },
+   "encounter.blessing_of_passage": {
+    "success_at_cost": 3,
+    "critical_failure": 1,
+    "success": 1,
+    "failure": 1
+   },
+   "mct.quest.market_survey": {
+    "success_at_cost": 4
+   },
+   "mct.quest.settle_dispute": {
+    "success_at_cost": 1,
+    "critical_failure": 1
+   },
+   "army.supply.forage": {
+    "success_at_cost": 5,
+    "success": 2,
+    "critical_success": 1,
+    "critical_failure": 1
+   },
+   "encounter.festival_of_spheres": {
+    "critical_success": 1,
+    "success_at_cost": 3,
+    "success": 4,
+    "failure": 2
+   },
+   "reputation.eye.the_oracle_consulted": {
+    "success": 6
+   },
+   "encounter.barter_supplies": {
+    "success_at_cost": 1
+   },
+   "stone.permanence.mason_lord_wall": {
+    "success": 7,
+    "critical_success": 2,
+    "success_at_cost": 4
+   },
+   "encounter.slice.swindled_family": {
+    "success_at_cost": 6,
+    "success": 2,
+    "critical_success": 1
+   },
+   "encounter.merchants_gambit": {
+    "success_at_cost": 1
+   },
+   "reputation.stone.the_jury_of_the_ruined": {
+    "success": 6,
+    "success_at_cost": 1,
+    "critical_success": 1
+   },
+   "encounter.assess_holdings": {
+    "critical_failure": 1
+   },
+   "encounter.decipher_old_markings": {
+    "contested_won": 1,
+    "success_at_cost": 1
+   },
+   "army.threshold.mutiny": {
+    "failure": 1,
+    "critical_success": 1,
+    "success_at_cost": 1
+   },
+   "cg.quest.investigate_disturbance": {
+    "success_at_cost": 1,
+    "failure": 1
+   },
+   "encounter.hedge_remedy": {
+    "failure": 2,
+    "success_at_cost": 2,
+    "critical_success": 2
+   },
+   "encounter.scout_the_perimeter": {
+    "success_at_cost": 1,
+    "critical_success": 1
+   },
+   "star.turning.comet_omen": {
+    "success": 4,
+    "success_at_cost": 6,
+    "critical_failure": 2
+   },
+   "cg.quest.break_up_brawl": {
+    "success_at_cost": 1,
+    "contested_lost": 1
+   },
+   "encounter.negotiate_dispute": {
+    "contested_won": 1,
+    "failure": 1,
+    "success_at_cost": 2,
+    "critical_success": 1,
+    "critical_failure": 1,
+    "success": 1
+   },
+   "crafting.quest.flawed_steel": {
+    "success_at_cost": 1,
+    "success": 10,
+    "failure": 2,
+    "critical_success": 2
+   },
+   "encounter.study_surroundings": {
+    "success_at_cost": 2
+   },
+   "encounter_route_embargo": {
+    "failure": 2,
+    "success_at_cost": 2
+   },
+   "encounter.spar_with_a_stranger": {
+    "critical_success": 1,
+    "contested_won": 1,
+    "failure": 2
+   },
+   "encounter.ward_the_camp": {
+    "success": 1
+   },
+   "encounter.delve.the_unfinished_rite": {
+    "success": 2
+   },
+   "encounter.dig_a_well": {
+    "contested_won": 1
+   },
+   "encounter.starborn_vigil": {
+    "success": 1,
+    "success_at_cost": 1,
+    "critical_failure": 1
+   },
+   "encounter.defend_against_predators": {
+    "critical_failure": 1,
+    "success": 1
+   },
+   "encounter.caravan_deal": {
+    "success": 1
+   },
+   "encounter.hunt.the_beast_in_the_granary": {
+    "success_at_cost": 1,
+    "success": 1
+   },
+   "encounter.realm.border_levy": {
+    "success": 1,
+    "failure": 2
+   },
+   "encounter.guild_initiation_trial": {
+    "success_at_cost": 1
+   },
+   "army.supply.siege_lifted": {
+    "failure": 2,
+    "critical_success": 1,
+    "success": 2,
+    "success_at_cost": 1
+   },
+   "eye.reckoning.verdict_that_burns": {
+    "success": 3,
+    "success_at_cost": 1
+   },
+   "enc.brink_rescue": {
+    "success": 1
+   },
+   "veil.truth.page_beneath_saint": {
+    "success_at_cost": 2,
+    "success": 2
+   },
+   "encounter.local_tales": {
+    "success_at_cost": 1
+   },
+   "encounter.labor_dispute": {
+    "critical_failure": 1,
+    "success_at_cost": 1
+   },
+   "encounter.black_market_deal": {
+    "success_at_cost": 1
+   },
+   "encounter.debt_collection": {
+    "failure": 1
+   },
+   "bf.quest.lay_foundation": {
+    "success_at_cost": 2
+   },
+   "encounter.aid_refugees": {
+    "critical_failure": 1,
+    "success_at_cost": 2,
+    "success": 1
+   },
+   "encounter.court_noble": {
+    "contested_won": 1
+   },
+   "encounter.mend_equipment": {
+    "contested_won": 1
+   },
+   "bf.quest.craft_commission": {
+    "critical_success": 1,
+    "success": 1
+   },
+   "enc.courtyard_duel": {
+    "failure": 1
+   },
+   "encounter.listen_for_rumors": {
+    "success_at_cost": 2
+   },
+   "tg.quest.fence_goods": {
+    "failure": 1
+   },
+   "mct.quest.appraise_goods": {
+    "success": 1
+   },
+   "encounter.dead_drop": {
+    "failure": 3
+   },
+   "encounter.harbor_construction": {
+    "success_at_cost": 1
+   },
+   "encounter.slice.swindler_found": {
+    "success": 1,
+    "failure": 1
+   },
+   "encounter.smuggle_goods": {
+    "failure": 1,
+    "success": 1
+   },
+   "encounter.case_the_joint": {
+    "failure": 1
+   },
+   "encounter.forage_provisions": {
+    "success_at_cost": 1,
+    "success": 1
+   },
+   "encounter.pickpocket": {
+    "success": 1
+   },
+   "tg.quest.blackmail_ledger": {
+    "success": 1
+   },
+   "encounter.negotiate_passage": {
+    "success_at_cost": 1
+   },
+   "encounter.recruit_militia": {
+    "critical_success": 1
+   },
+   "mct.quest.negotiate_contract": {
+    "success": 1
+   }
+  }
+ },
+ "supplyBySubtype": {
+  "ruins": 94,
+  "ruined_tower": 54,
+  "ruined_city": 56,
+  "mining": 59,
+  "unexplored_poi": 55,
+  "sublocation-type.dungeon": 6,
+  "fort": 81,
+  "camp": 103,
+  "sublocation-type.temple-quarter": 3,
+  "sublocation-type.barracks": 4,
+  "shrine": 61,
+  "temple": 83,
+  "town": 213,
+  "city": 271,
+  "capital": 268,
+  "oasis": 68,
+  "ruined_village": 59,
+  "tower": 85,
+  "castle": 72,
+  "battleground": 49,
+  "sublocation-type.throne-room": 1,
+  "sublocation-type.market-district": 3,
+  "sublocation-type.library": 1,
+  "farmland": 65,
+  "hamlet": 96,
+  "wilderness": 95,
+  "sublocation-type.mine": 2,
+  "sublocation-type.harbor": 2,
+  "sublocation-type.counting-house": 2,
+  "sublocation-type.smugglers-den": 2,
+  "sublocation-type.caravan-rest": 2,
+  "cavern": 2,
+  "sublocation-type.guild-hall": 4,
+  "ancient_road": 3,
+  "village": 7,
+  "border_crossing": 1,
+  "crossroads": 1,
+  "fortress": 13,
+  "battlefield": 1,
+  "dungeon": 5,
+  "barracks": 4,
+  "tavern": 1,
+  "library": 1,
+  "observatory": 1,
+  "gem_deposit": 1,
+  "crystal_cavern": 1,
+  "golden_grove": 1,
+  "herb_garden": 1,
+  "ancient_vault": 1,
+  "sunken_treasury": 1,
+  "fossil_bed": 1,
+  "iron_seep": 1,
+  "pearl_shoal": 1,
+  "glowcap_hollow": 1,
+  "lair": 3,
+  "sublocation-type.tavern": 10,
+  "living_archive": 1,
+  "keep": 1,
+  "docks": 1,
+  "mine": 1,
+  "guildhall": 1,
+  "palace": 1,
+  "road": 3,
+  "academy": 1,
+  "ruin": 3
+ }
+}

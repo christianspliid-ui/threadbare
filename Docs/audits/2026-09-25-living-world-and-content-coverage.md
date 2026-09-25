@@ -6,6 +6,8 @@ This picks up where [THR-1435](https://linear.app/threadbare/issue/THR-1435) (th
 
 **Method.** Measured on `main` @ `d6ff4070`, seeds **42 · 99**, medium map unless stated, numbers written *seed 42 · seed 99*. Censuses run: `census:seeded-world` (t0 / t150), `census:ownership`, `census:reachability`, `census:cells`, `census:firings --all` (200 ticks), `census:undertakings`, `census:location-traits`, `check:content-model-census`, `content-census`, `generate-setting-coverage:check`. Five throwaway readers (never merged): an alive-ness reader (settlement story, social ties, events t1–20, pre-history, map coverage at small/medium/large, a clean timing run), a corpus slicer, a firing-vs-place demand join, a firing-weighted authoring-coverage join, and a reward-repetition reader.
 
+**Raw data:** every census output and all five readers are kept in `Docs/audits/2026-09-25-living-world-data/` (README lists which command produced which file), so any number below can be checked or re-run rather than re-derived.
+
 **Two blind spots, stated first.**
 1. Every run is **unattended** — no player, no First, mortals acting alone for 150–200 ticks. It measures what the world deals, not what an attended player reads at the story-beat tier.
 2. `census:firings` harvests `state.unifiedActions` only. Social, tavern, npc and borderland encounters come from `socialEncounterGeneration.ts` on a separate path and read as **zero** there — that is the census not seeing them, not evidence they never fire.

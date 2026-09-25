@@ -1,0 +1,9 @@
+[WorldGen] Validation errors: [
+  'Ocean fraction too low: 4.7%',
+  'Drainage guarantee violated: some land hexes have no downhill path to the sea'
+]
+[WorldGen] Living world: realm edges dropped at guild halls 6 · routes 4 · freeholds 3 · possessions 6 · quarrels 3 · marks 2 · garrisons 2
+[WorldGen] Genome NPC top-up: +78 settlement-authored NPCs
+{"seed":42,"map":"small","initMs":67,"tickMsAvg1_20":55.3,"tickMsAvg21_150":0,"distinct":25,"total":894}
+wrote C:/Users/chris/AppData/Local/Temp/claude/C--Users-chris-Dev-Projects-TheFantasyWorldSimulator/7bd37cbd-1beb-4c64-9513-59377229a0f0/scratchpad/alive-small.json
+exit 0

@@ -1,0 +1,49 @@
+
+> app@0.0.0 check:content-model-census
+> esbuild scripts/content-model-census.ts --bundle --platform=node --format=esm --outfile=.cache/content-model-census.mjs --external:fs --external:path --external:process --external:url && node .cache/content-model-census.mjs --seed 42
+
+
+  .cache\content-model-census.mjs  8.7mb
+
+Done in 155ms
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 7.4%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 0 · possessions 12 · quarrels 2 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +106 settlement-authored NPCs
+## Content model census
+
+Seed 42, 200 ticks. 156 live tag(s), 1 DEAD.
+
+### DEAD tags
+
+A tag no entry carries. An author who writes it into a query gets an empty pool and no error, so the retro either finds it a bearer or deletes it.
+
+- `#light`
+
+### Query sites
+
+| Site | Resolved | Empty | Source | Verdict |
+|---|---|---|---|---|
+| `reward_draw` | 0 | 0 | ring | ⚠️ no hits |
+| `step_reward_pool` | 210 | 2 | ring | live |
+| `encounter_seed` | 13 | 3 | state (ring saw 30 / 3) | live |
+| `undertaking_catalyst` | 12 | 2 | state (ring saw 25 / 2) | live |
+| `undertaking_appointment` | 0 | 0 | ring | ⚠️ no hits |
+| `condition_pool` | 0 | 0 | ring | ⚠️ no hits |
+| `fight_trophy` | 0 | 0 | ring | ⚠️ no hits |
+| `debug` | 0 | 0 | ring | ⚠️ no hits |
+
+`state` rows count **seeds** off `state.tickEvents` — one per seed that spawned (resolved) or withered (empty) — and are exact. `ring` rows count traces harvested from the 2000-entry ring after every tick and are a **floor**: a burst inside one tick can evict its own early traces, so a `ring` zero is "not seen", never "did not fire". Where a `state` row shows what the ring saw beside it, the gap is the eviction. This run harvested 44961 trace(s) and 0 more were emitted and evicted before any tick-end read.
+
+### Seed consumption (state)
+
+102 seed(s) observed pending: 62 spawned, 24 withered (family/query resolved empty), 0 expired, 2 orphaned, 14 still pending at the end.
+
+### Appointments (state)
+
+1 template(s) author an appointment; their parents fired 0 time(s) on this run, 0 planted, 0 kept, 0 missed.
+> ⚠️ **Reachability: UNREACHED** — 1 template(s) author an appointment and none was planted. The parent never fired on this seed (an eligibility or selection question, not a planting one); re-run at another seed before reading it as dead.
+Authored by: `encounter.slice.bargain_at_crossroads`.
+Counted off state: `planted` is every pending seed seen carrying an `appointment` block, `kept` / `missed` are the Event nodes the seeding phase writes. Exact, never a ring floor.
+
+> ⚠️ 4 site(s) produced no hits: `reward_draw`, `undertaking_appointment`, `condition_pool`, `fight_trophy`. A site is silent because it is unreachable from the live board or because nothing authors a query there — those want opposite fixes, so check reachability before reading it as a content gap. A `state`-sourced silence is exact; a `ring`-sourced one is bounded by the 2000-entry ring and can hide a site that fired inside a busy tick — re-run with a lower `--ticks` to tell them apart.
+

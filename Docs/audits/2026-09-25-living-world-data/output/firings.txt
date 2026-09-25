@@ -1,0 +1,193 @@
+
+> app@0.0.0 census:firings
+> esbuild scripts/firing-census.ts --bundle --platform=node --format=esm --outfile=.cache/firing-census.mjs --external:fs --external:path && node .cache/firing-census.mjs --all
+
+
+  .cache\firing-census.mjs  8.6mb
+
+Done in 146ms
+
+firing-census — map medium, 200 ticks, seeds 42,99
+non-drawable templates: encounter.slice.full_moon_collection, encounter.slice.full_moon_reckoning, encounter.slice.grateful_kin, encounter.slice.swindler_found
+
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 7.4%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 0 · possessions 12 · quarrels 2 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +106 settlement-authored NPCs
+── seed 42 ── (72 templates fired)
+  army.supply.forage                           seeded   8   board   0
+  army.supply.siege_lifted                     seeded  13   board   0
+  army.threshold.mutiny                        seeded   4   board   0
+  bf.quest.craft_commission                    seeded   2   board   0
+  bf.quest.lay_foundation                      seeded   3   board   0
+  cg.quest.break_up_brawl                      seeded   4   board   0
+  crafting.quest.flawed_steel                  seeded  11   board   2  board routes: agent×2
+  encounter.aid_refugees                       seeded   1   board   0
+  encounter.arcane_resonance_study             seeded   0   board  22  board routes: agent×22
+  encounter.assess_holdings                    seeded   0   board   3  board routes: agent×3
+  encounter.barter_supplies                    seeded   0   board   3  board routes: agent×3
+  encounter.barter_with_travelers              seeded   0   board   3  board routes: agent×3
+  encounter.black_market_deal                  seeded   2   board   0
+  encounter.blessing_of_passage                seeded   0   board   1  board routes: agent×1
+  encounter.case_the_joint                     seeded   0   board   1  board routes: agent×1
+  encounter.commune_with_stars                 seeded   0   board  10  board routes: agent×10
+  encounter.compose_saga                       seeded   0   board   1  board routes: agent×1
+  encounter.confront_the_unknown               seeded   0   board  28  board routes: agent×28
+  encounter.court_noble                        seeded   0   board   2  board routes: agent×2
+  encounter.debt_collection                    seeded   2   board   0
+  encounter.decipher_old_markings              seeded   0   board   1  board routes: agent×1
+  encounter.defend_against_predators           seeded   0   board   1  board routes: agent×1
+  encounter.festival_of_spheres                seeded   0   board  12  board routes: agent×12
+  encounter.forage_the_land                    seeded   0   board   2  board routes: agent×2
+  encounter.grand_tournament                   seeded   0   board  12  board routes: agent×12
+  encounter.guild_initiation_trial             seeded   0   board   1  board routes: agent×1
+  encounter.hollow_watch                       seeded   0   board   1  board routes: agent×1
+  encounter.honor_duel                         seeded   0   board   1  board routes: agent×1
+  encounter.investigate_anomaly                seeded   0   board   2  board routes: agent×2
+  encounter.labor_dispute                      seeded   2   board   0
+  encounter.listen_for_rumors                  seeded   0   board   1  board routes: agent×1
+  encounter.local_gossip                       seeded   0   board   4  board routes: agent×4
+  encounter.local_tales                        seeded   0   board   5  board routes: agent×5
+  encounter.master_craftsman_challenge         seeded   0   board  17  board routes: agent×17
+  encounter.master_local_craft                 seeded   0   board  21  board routes: agent×21
+  encounter.mend_equipment                     seeded   0   board   3  board routes: agent×3
+  encounter.merchants_gambit                   seeded   0   board   1  board routes: agent×1
+  encounter.negotiate_dispute                  seeded   0   board   1  board routes: agent×1
+  encounter.patrol_perimeter                   seeded   0   board   3  board routes: agent×3
+  encounter.pickpocket                         seeded   1   board   0
+  encounter.plague_outbreak                    seeded   0   board  12  board routes: agent×12
+  encounter.political_intrigue                 seeded   0   board   5  board routes: agent×5
+  encounter.rally_faithful                     seeded   0   board   1  board routes: agent×1
+  encounter.rally_the_locals                   seeded   0   board  13  board routes: agent×13
+  encounter.rest_and_recover                   seeded   0   board   4  board routes: agent×4
+  encounter.shadow_in_the_night                seeded   0   board   5  board routes: agent×5
+  encounter.shore_up_shelter                   seeded   0   board   3  board routes: agent×3
+  encounter.slice.bargain_at_crossroads        seeded   0   board   0
+  encounter.slice.full_moon_collection         seeded   0   board   0 [seed-only]
+  encounter.slice.full_moon_reckoning          seeded   0   board   0 [seed-only]
+  encounter.slice.grateful_kin                 seeded   0   board   0 [seed-only]
+  encounter.slice.swindled_family              seeded   0   board   0
+  encounter.slice.swindler_found               seeded   0   board   0 [seed-only]
+  encounter.slice.the_table_that_holds         seeded   0   board   0
+  encounter.spar_with_a_stranger               seeded   0   board   1  board routes: agent×1
+  encounter.starborn_vigil                     seeded   0   board   5  board routes: agent×5
+  encounter.tend_the_weary                     seeded   0   board   4  board routes: agent×4
+  encounter.trace_ley_lines                    seeded   0   board  14  board routes: agent×14
+  encounter.trade_caravan_escort               seeded   0   board   2  board routes: agent×2
+  encounter.tribute_exchange                   seeded   0   board   1  board routes: agent×1
+  encounter.weave_political_alliance           seeded   0   board   9  board routes: agent×9
+  encounter_route_embargo                      seeded   3   board   0
+  eye.reckoning.verdict_that_burns             seeded   0   board   4  board routes: agent×4
+  mct.quest.caravan_escort                     seeded   1   board   0
+  mct.quest.market_survey                      seeded   4   board   0
+  reputation.eye.the_blinded_oracle            seeded   0   board   1  board routes: agent×1
+  reputation.eye.the_oracle_consulted          seeded   0   board   1  board routes: agent×1
+  reputation.gold.the_merchants_favor          seeded   0   board   1  board routes: agent×1
+  reputation.gold.the_unmarked_crossing        seeded   0   board   1  board routes: agent×1
+  reputation.heart.pilgrims_offering           seeded   0   board   1  board routes: agent×1
+  reputation.iron.the_executioners_commission  seeded   0   board   1  board routes: agent×1
+  reputation.shadow.the_infiltrators_approach  seeded   0   board   1  board routes: agent×1
+  reputation.star.the_star_pilgrim             seeded   0   board   1  board routes: agent×1
+  reputation.stone.the_jury_of_the_ruined      seeded   0   board   1  board routes: agent×1
+  reputation.stone.the_stones_judgement        seeded   0   board   1  board routes: agent×1
+  star.turning.comet_omen                      seeded   0   board   2  board routes: agent×2
+  stone.permanence.mason_lord_wall             seeded   0   board   7  board routes: agent×7
+  tg.quest.fence_goods                         seeded   1   board   0
+  veil.truth.page_beneath_saint                seeded   0   board   9  board routes: agent×9
+
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 6.6%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 4 · routes 6 · freeholds 2 · possessions 13 · quarrels 7 · marks 2 · garrisons 3
+[WorldGen] Genome NPC top-up: +144 settlement-authored NPCs
+── seed 99 ── (86 templates fired)
+  army.supply.forage                           seeded   9   board   0
+  army.supply.siege_lifted                     seeded   6   board   0
+  army.threshold.mutiny                        seeded   3   board   0
+  bf.quest.craft_commission                    seeded   2   board   0
+  bf.quest.lay_foundation                      seeded   2   board   0
+  cg.quest.break_up_brawl                      seeded   2   board   0
+  cg.quest.investigate_disturbance             seeded   2   board   0
+  crafting.quest.flawed_steel                  seeded  10   board   5  board routes: agent×5
+  enc.brink_rescue                             seeded   0   board   1  board routes: agent×1
+  enc.courtyard_duel                           seeded   0   board   1  board routes: agent×1
+  encounter.aid_refugees                       seeded   3   board   1  board routes: agent×1
+  encounter.arcane_resonance_study             seeded   0   board  37  board routes: agent×37
+  encounter.assess_holdings                    seeded   0   board   1  board routes: agent×1
+  encounter.barter_supplies                    seeded   0   board   1  board routes: agent×1
+  encounter.barter_with_travelers              seeded   0   board   6  board routes: agent×6
+  encounter.black_market_deal                  seeded   1   board   0
+  encounter.blessing_of_passage                seeded   0   board   6  board routes: agent×6
+  encounter.border.one_body_short              seeded   0   board   1  board routes: agent×1
+  encounter.border.the_unclaimed_relic         seeded   0   board   1  board routes: agent×1
+  encounter.caravan_deal                       seeded   0   board   1  board routes: agent×1
+  encounter.case_the_joint                     seeded   0   board   1  board routes: agent×1
+  encounter.commune_with_stars                 seeded   0   board   8  board routes: agent×8
+  encounter.confront_the_unknown               seeded   0   board  43  board routes: agent×43
+  encounter.court_noble                        seeded   0   board   1  board routes: agent×1
+  encounter.dead_drop                          seeded   0   board   3  board routes: agent×3
+  encounter.debt_collection                    seeded   1   board   0
+  encounter.decipher_old_markings              seeded   0   board   3  board routes: agent×3
+  encounter.defend_against_predators           seeded   0   board   2  board routes: agent×2
+  encounter.delve.the_unfinished_rite          seeded   0   board   2  board routes: agent×2
+  encounter.dig_a_well                         seeded   0   board   1  board routes: agent×1
+  encounter.festival_of_spheres                seeded   0   board  10  board routes: agent×10
+  encounter.forage_provisions                  seeded   0   board   2  board routes: agent×2
+  encounter.forage_the_land                    seeded   0   board   4  board routes: agent×4
+  encounter.grand_tournament                   seeded   0   board  15  board routes: agent×15
+  encounter.guild_initiation_trial             seeded   0   board   1  board routes: agent×1
+  encounter.harbor_construction                seeded   0   board   1  board routes: agent×1
+  encounter.hedge_remedy                       seeded   0   board   7  board routes: agent×7
+  encounter.hunt.the_beast_in_the_granary      seeded   0   board   2  board routes: agent×2
+  encounter.investigate_anomaly                seeded   0   board  10  board routes: agent×10
+  encounter.labor_dispute                      seeded   2   board   0
+  encounter.listen_for_rumors                  seeded   0   board   2  board routes: agent×2
+  encounter.local_tales                        seeded   0   board   1  board routes: agent×1
+  encounter.master_craftsman_challenge         seeded   0   board  31  board routes: agent×31
+  encounter.master_local_craft                 seeded   0   board  43  board routes: agent×43
+  encounter.mend_equipment                     seeded   0   board   1  board routes: agent×1
+  encounter.merchants_gambit                   seeded   0   board   1  board routes: agent×1
+  encounter.negotiate_dispute                  seeded   0   board   7  board routes: agent×7
+  encounter.negotiate_passage                  seeded   0   board   1  board routes: agent×1
+  encounter.offer_small_prayer                 seeded   0   board   2  board routes: agent×2
+  encounter.pickpocket                         seeded   0   board   2  board routes: agent×2
+  encounter.plague_outbreak                    seeded   1   board  40  board routes: agent×40
+  encounter.political_intrigue                 seeded   0   board  12  board routes: agent×12
+  encounter.rally_the_locals                   seeded   0   board  21  board routes: agent×21
+  encounter.realm.border_levy                  seeded   0   board   3  board routes: agent×3
+  encounter.realm.tithe_demanded               seeded   0   board   3  board routes: agent×3
+  encounter.recruit_militia                    seeded   0   board   1  board routes: agent×1
+  encounter.scout_the_perimeter                seeded   0   board   2  board routes: agent×2
+  encounter.shadow_in_the_night                seeded   0   board  11  board routes: agent×11
+  encounter.shore_up_shelter                   seeded   0   board   1  board routes: agent×1
+  encounter.slice.bargain_at_crossroads        seeded   0   board   7  board routes: agent×7
+  encounter.slice.full_moon_collection         seeded   0   board   0 [seed-only]
+  encounter.slice.full_moon_reckoning          seeded   0   board   0 [seed-only]
+  encounter.slice.grateful_kin                 seeded   0   board   0 [seed-only]
+  encounter.slice.swindled_family              seeded   1   board   8  board routes: agent×8
+  encounter.slice.swindler_found               seeded   2   board   0 [seed-only]
+  encounter.slice.the_table_that_holds         seeded   0   board   0
+  encounter.smuggle_goods                      seeded   0   board   2  board routes: agent×2
+  encounter.spar_with_a_stranger               seeded   0   board   4  board routes: agent×4
+  encounter.starborn_vigil                     seeded   0   board   3  board routes: agent×3
+  encounter.study_surroundings                 seeded   0   board   2  board routes: agent×2
+  encounter.tend_the_weary                     seeded   0   board   2  board routes: agent×2
+  encounter.trace_ley_lines                    seeded   0   board  15  board routes: agent×15
+  encounter.trade_caravan_escort               seeded   0   board   8  board routes: agent×8
+  encounter.ward_the_camp                      seeded   0   board   1  board routes: agent×1
+  encounter.weave_political_alliance           seeded   0   board  34  board routes: agent×34
+  encounter_route_embargo                      seeded   4   board   0
+  eye.reckoning.verdict_that_burns             seeded   0   board   5  board routes: agent×5
+  mct.quest.appraise_goods                     seeded   1   board   0
+  mct.quest.market_survey                      seeded   4   board   0
+  mct.quest.negotiate_contract                 seeded   1   board   0
+  mct.quest.settle_dispute                     seeded   2   board   0
+  reputation.eye.the_oracle_consulted          seeded   0   board   6  board routes: agent×6
+  reputation.heart.pilgrims_offering           seeded   0   board  10  board routes: agent×10
+  reputation.star.the_star_pilgrim             seeded   0   board   9  board routes: agent×9
+  reputation.stone.the_jury_of_the_ruined      seeded   0   board   8  board routes: agent×8
+  star.turning.comet_omen                      seeded   0   board  13  board routes: agent×13
+  stone.permanence.mason_lord_wall             seeded   0   board  15  board routes: agent×15
+  tg.quest.blackmail_ledger                    seeded   1   board   0
+  tg.quest.fence_goods                         seeded   1   board   0
+  veil.truth.page_beneath_saint                seeded   0   board   4  board routes: agent×4
+
+verdict: PASS — 0 seed-only board firing(s); Swindled Family fired
+exit 0
