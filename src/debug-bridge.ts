@@ -2635,7 +2635,7 @@ if (import.meta.env.DEV) {
 
     /**
      * The lair card the sidebar renders for one lair (THR-1550, F1: the monster's
-     * name). Matches a lair node id exactly, else a lair whose name matches
+     * name; THR-1552, F4: the sentence, the clock, and the slain reading). Matches a lair node id exactly, else a lair whose name matches
      * case-insensitively (exact first, then substring; lowest id wins).
      */
     getLairMonsterCard: async (lairIdOrName: string) => {
@@ -2656,7 +2656,7 @@ if (import.meta.env.DEV) {
       }
       if (!lair) return { error: `no lair matched "${lairIdOrName}"` };
       const { buildLairMonsterCardModel } = await import('./components/Game/lair/buildLairMonsterCardModel');
-      return buildLairMonsterCardModel(state.graph, lair.id, state.tick) ?? { error: `lair "${lair.id}" has no node` };
+      return buildLairMonsterCardModel(state.graph, lair.id, state.tick, state.ascendantId) ?? { error: `lair "${lair.id}" has no node` };
     },
 
     /**

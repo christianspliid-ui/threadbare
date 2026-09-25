@@ -1844,18 +1844,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     worldVersion: runtime.worldVersion,
   });
 
-  // ── Lair monster cards for the focused hex's lairs (THR-1550) ──
-  // Keyed on worldVersion, not graph identity (the graph mutates in place).
+  // ── Lair monster cards for the focused hex's lairs (THR-1550, THR-1552) ──
+  // Keyed on worldVersion, not graph identity (the graph mutates in place). A
+  // cleared lair gets a card too: it shows the beast that held it, slain.
   const hexLairMonsterCards = useMemo(() => {
     const cards: Record<string, LairMonsterCardModel | null> = {};
     for (const loc of hexLocations) {
       const subtype = loc.properties?.locationSubtype ?? loc.properties?.locationType;
-      if (subtype !== 'lair') continue;
-      cards[loc.id] = buildLairMonsterCardModel(gameState.graph, loc.id, gameState.tick);
+      if (subtype !== 'lair' && subtype !== 'cleared_lair') continue;
+      cards[loc.id] = buildLairMonsterCardModel(gameState.graph, loc.id, gameState.tick, gameState.ascendantId);
     }
     return cards;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hexLocations, gameState.graph, runtime.worldVersion]);
+  }, [hexLocations, gameState.graph, gameState.ascendantId, runtime.worldVersion]);
 
   // ── Survey people-layer prose — most-recent survey_completed event for the focused hex (THR-439) ──
   const surveyPeopleEvent = useMemo(() => {

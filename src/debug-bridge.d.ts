@@ -1945,11 +1945,15 @@ export interface DebugBridge {
    *  game. **Async.** The row shape is pinned: plan docs 4 and 6 build on it. */
   listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
 
-  /** The lair card the hex sidebar renders for one lair (THR-1550, plan doc 4 slice F1):
-   *  `{ lairId, lairName, monster: { id, name } | null }`. `monster` is the living
-   *  monster that holds the lair, by name — `null` when none resolves (a dangling or
-   *  slain elite), and then the sidebar shows no row rather than a raw id. F4 (THR-1552)
-   *  extends the same model with the card sentence, the clock and the slain reading.
+  /** The lair card the hex sidebar renders for one lair (plan doc 4, F1 THR-1550 + F4
+   *  THR-1552): `{ lairId, lairName, monster: LairMonsterRow | null }`. `monster` is the
+   *  living monster that holds the lair, else the lair's slain monster (the retained
+   *  deceased elite whose `lairId` names it, latest death first) — `null` when neither
+   *  resolves, and then the sidebar shows no card rather than a raw id. The row carries
+   *  `name`, `deceased`, the card `sentence`/`sentenceText` (temper clause only once
+   *  `temperShown`), the `clock` (`size`, `filled` — recovered at the current tick —
+   *  `word`; a slain monster reads full and "slain"), and `slainBy`/`slainById` only when
+   *  the monster's own sheet names the killer (`getAgentInfoCard(...).death.by`).
    *  Matches a lair (or cleared lair) node id exactly, else by name, case-insensitive:
    *  exact first, then substring, lowest id wins. Resolves `{ error }` with no live game
    *  or no match. **Async.** */
