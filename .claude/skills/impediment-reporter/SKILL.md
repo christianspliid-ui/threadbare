@@ -1,7 +1,7 @@
 ---
 name: impediment-reporter
 description: Loaded by ALL agents on EVERY task. When an agent encounters a blocker, workaround, or unexpected friction, it MUST log the impediment to Docs/impediments.md before continuing. This is part of Definition of Done — work is not complete unless all impediments encountered during the session are logged.
-last_validated_against: 2026-08-08
+last_validated_against: 2026-09-25
 ---
 
 # Impediment Reporter
@@ -71,7 +71,7 @@ The allocator never blocks — it exits 0 with no git and no network, because a 
 | **Category** | One of: `tool-failure`, `api-quirk`, `permission`, `environment`, `skill-gap`, `process-friction`, `dependency`, `unclear-requirements`, `flaky-test`, `other` |
 | **Description** | What happened. Be specific: include the tool/API name, the error or unexpected behavior, what you were trying to do. |
 | **Consequence** | What was the downstream effect? (e.g., "had to rewrite component differently", "lost context switching approaches", "user had to intervene") |
-| **Impact** | Effort/opportunity lost: `S` (<2 min), `M` (2-15 min), `L` (15+ min), `Blocked` (could not complete task at all) |
+| **Impact** | Effort/opportunity lost: `S` (<2 min), `M` (2-15 min), `L` (15+ min), `Blocked` (could not complete task at all). **`L` means *Large*, not *Low*** — rate by the time your Consequence column states: a row whose consequence reads "~3 min" is `M`, not `L` (2026-09-25 retro: 13 of 21 rows that cycle were tagged `L` on sub-15-minute costs, inflating the retro's time-lost estimate ~2.5×). |
 | **Workaround Found?** | `Yes` or `No` |
 | **Workaround Description** | If yes, what did you do instead? Keep the best known workaround here — update if a later agent finds a better one. If no, leave blank. |
 | **Session Context** | Brief note on what task/phase you were working on (updated to most recent occurrence) |
