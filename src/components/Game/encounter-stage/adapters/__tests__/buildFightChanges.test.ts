@@ -347,3 +347,155 @@ describe('the unified adapter renders the fight chips (THR-1553)', () => {
     expect(byId('slain_opponent')?.icon?.kind).toBe('monster');
   });
 });
+
+describe('a duel loser\'s chips (THR-1561)', () => {
+  const RIVAL = 'agent.orrin';
+
+  function duelGraph(): WorldGraph {
+    const graph = buildGraph();
+    graph.addNode({ id: RIVAL, type: 'actor', name: 'Orrin Vale', properties: { actorType: 'individual' } });
+    return graph;
+  }
+
+  /** An agent-mode fight the fighter won, with the loser's record on `opponentEnding`. */
+  function duel(opponentEnding: FightState['opponentEnding']): FightState {
+    return fight({
+      opponentId: RIVAL,
+      persistent: false,
+      clockAtStart: 0,
+      clockNow: 4,
+      fightMode: 'agent',
+      fighterClockSize: 4,
+      fighterClockNow: 1,
+      opponentLoss: 'clock',
+      result: 'overcome',
+      ending: { face: 'overcome_mortal', scarWritten: false, grudgeWritten: false },
+      ...(opponentEnding ? { opponentEnding } : {}),
+    });
+  }
+
+  const SLAIN: NonNullable<FightState['opponentEnding']> = { face: 'slain', scarWritten: false, grudgeWritten: false };
+  const SPARED_WITH_GRUDGE: NonNullable<FightState['opponentEnding']> = {
+    face: 'mauled',
+    scarWritten: true,
+    grudgeWritten: true,
+    humiliation: { counterpartyId: TOWN, delta: -0.1 },
+  };
+
+  it('a fighter who kills the loser gets slain, anchored to the deceased opponent', () => {
+    const graph = duelGraph();
+    graph.getNode(RIVAL)!.properties.deceased = true;
+    const slain = chipsFor(duel(SLAIN), graph).find(c => c.id.includes('-slain_opponent-'))!;
+    expect(slain).toBeDefined();
+    expect(slain.category).toBe('path');
+    expect(slain.direction).toBe('opens');
+    expect(slain.stateNoun?.entityId).toBe(RIVAL);
+    expect(slain.detail).toBe('Orrin Vale was slain.');
+    expect(slain.deltaLabel).toBe('slain');
+  });
+
+  it('a fighter who spares a loser who now holds a grudge gets the grudge chip: BOND ▼, anchored to the opponent', () => {
+    const grudge = chipsFor(duel(SPARED_WITH_GRUDGE), duelGraph())
+      .find(c => c.id.includes('-grudge_against_fighter-'))!;
+    expect(grudge).toBeDefined();
+    expect(grudge.category).toBe('bond');
+    expect(grudge.direction).toBe('loss');
+    expect(grudge.stateNoun?.entityId).toBe(RIVAL);
+    expect(grudge.stateNoun?.text).toBe('Orrin Vale');
+    expect(grudge.stateNoun?.tooltipId).toBe('fight.chip.grudge_against_fighter');
+    expect(grudge.detail).toBe('Orrin Vale holds a grudge against Bryn Ashford.');
+  });
+
+  it('the loser\'s scar and humiliation never render in the fighter\'s aftermath', () => {
+    const changes = chipsFor(duel(SPARED_WITH_GRUDGE), duelGraph());
+    const kinds = kindsOf(changes);
+    for (const absent of ['scarred', 'slain_fighter', 'grudge', 'standing', 'clock']) {
+      expect(kinds, absent).not.toContain(absent);
+    }
+    // Nothing anchors to the loser's home, where the humiliation was written.
+    expect(changes.some(c => c.stateNoun?.entityId === TOWN)).toBe(false);
+  });
+
+  describe('each new chip is absent when its field is absent', () => {
+    it('slain_opponent', () => {
+      expect(kindsOf(chipsFor(duel(SLAIN), duelGraph()))).toContain('slain_opponent');
+      expect(kindsOf(chipsFor(duel({ face: 'spared', scarWritten: false, grudgeWritten: false }), duelGraph())))
+        .not.toContain('slain_opponent');
+      expect(kindsOf(chipsFor(duel(undefined), duelGraph()))).not.toContain('slain_opponent');
+    });
+    it('grudge_against_fighter', () => {
+      expect(kindsOf(chipsFor(duel(SPARED_WITH_GRUDGE), duelGraph()))).toContain('grudge_against_fighter');
+      expect(kindsOf(chipsFor(duel({ ...SPARED_WITH_GRUDGE, grudgeWritten: false }), duelGraph())))
+        .not.toContain('grudge_against_fighter');
+      expect(kindsOf(chipsFor(duel(undefined), duelGraph()))).not.toContain('grudge_against_fighter');
+    });
+    it('neither renders when the opponent node is gone', () => {
+      const graph = duelGraph();
+      graph.removeNode(RIVAL);
+      const kinds = kindsOf([...chipsFor(duel(SLAIN), graph), ...chipsFor(duel(SPARED_WITH_GRUDGE), graph)]);
+      expect(kinds).not.toContain('slain_opponent');
+      expect(kinds).not.toContain('grudge_against_fighter');
+    });
+  });
+
+  it('no raw `{` renders in either new chip', () => {
+    const chips = render([
+      ...chipsFor(duel(SLAIN), duelGraph()),
+      ...chipsFor(duel(SPARED_WITH_GRUDGE), duelGraph()),
+    ]);
+    expect(chips.length).toBeGreaterThanOrEqual(2);
+    for (const chip of chips) {
+      expect(chip.sentenceText, chip.id).not.toContain('{');
+      expect(chip.nounLabel ?? '', chip.id).not.toContain('{');
+      expect(chip.delta?.label ?? '', chip.id).not.toContain('{');
+    }
+  });
+
+  it('the unified adapter (which getFightChips reads) renders both', () => {
+    const template = {
+      id: 'test.duel', rarityTier: 1, intrinsicTier: 'story_beat', name: 'A Matter of Honour', reach: 'iron',
+      crudType: 'delete', scale: 'local',
+      steps: [{
+        reach: 'iron', duration: { min: 1, max: 1 }, difficulty: 0.5, onSuccess: [], onFailure: [],
+        failBehavior: 'continue_weakened', narrativeTemplate: 'Steel met steel.',
+      }],
+      apCost: 1, actorAffinities: ['individual'], motivations: ['courage_prudence'],
+      narrativeTemplates: { initiation: 'A challenge.', success: 'It was won.', failure: 'It was lost.' },
+    } as UnifiedActionTemplate;
+    const notification = {
+      id: 'n', agentId: FIGHTER, agentName: 'Bryn Ashford', courtPosition: null,
+      encounterId: template.id, encounterName: template.name, prose: '', choices: [],
+      createdTick: 60, autoResolveTick: null, viewed: false, resolved: false,
+    } as unknown as EncounterNotification;
+    const renderFor = (opponentEnding: FightState['opponentEnding']) => {
+      const action: UnifiedAction = {
+        actionId: 'ua_duel', actorId: FIGHTER, templateId: template.id, targetId: RIVAL,
+        scale: 'local', source: 'agent', startTick: 60, currentStep: 0, stepProgress: 0, stepDuration: 1,
+        resolved: true, outcome: 'success', stepOutcomes: ['success'],
+        fightState: duel(opponentEnding),
+        aftermathSummary: {
+          encounterId: template.id, outcome: 'success', overview: 'The duel is done.',
+          changes: [], reactionPrompt: '', reactions: [],
+        },
+      };
+      return buildUnifiedEncounterStageModel({
+        template, activeAction: action, notification, agentName: 'Bryn Ashford',
+        threadTier: 'strong', graph: duelGraph(), essence: 0,
+      }).aftermath?.consequences ?? [];
+    };
+
+    const slain = renderFor(SLAIN).find(c => c.id.includes('slain_opponent'))!;
+    expect(slain.category).toBe('path');
+    expect(slain.nounEntityId).toBe(RIVAL);
+    expect(slain.delta?.word).toBe('slain');
+
+    const spared = renderFor(SPARED_WITH_GRUDGE);
+    const grudge = spared.find(c => c.id.includes('grudge_against_fighter'))!;
+    expect(grudge.category).toBe('bond');
+    expect(grudge.nounEntityId).toBe(RIVAL);
+    expect(grudge.nounTooltipId).toBe('fight.chip.grudge_against_fighter');
+    expect(grudge.sentenceText).toBe('Orrin Vale holds a grudge against Bryn Ashford.');
+    // The loser's scar and humiliation stay on the loser's sheet.
+    expect(spared.some(c => c.id.includes('-scarred-') || c.id.includes('-standing-'))).toBe(false);
+  });
+});

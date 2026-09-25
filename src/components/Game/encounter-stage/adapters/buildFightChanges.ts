@@ -20,7 +20,10 @@
  *
  * The fighter-anchored chips (scarred, slain (fighter), standing, grudge) read
  * `fightState.ending`, which is always **the fighter's own** record. A duel's
- * loser is written to `opponentEnding`, which no chip reads in v1 (THR-1561).
+ * other side is written to `opponentEnding` (THR-1557), and only the parts of it
+ * that change the fighter's world get a chip (THR-1561): the opponent slain, and
+ * the opponent's grudge against the fighter. The loser's own scar and lost
+ * standing are the loser's costs, shown on the loser's sheet, never here.
  *
  * Pure: no graph, no React. The caller hands in a `FightChipWorld` over the
  * graph, so the table is cheap to test with fixtures.
@@ -249,10 +252,16 @@ export function buildFightChanges(
   if (ending?.grudgeWritten && fighterName && victorId && victorName) {
     push('grudge', victorId, { wireKind: 'reputation', direction: 'loss', visualKind: 'agent' });
   }
+  // THR-1561 — a duel's beaten loser, spared, now holds a grudge against the fighter.
+  const opponentEnding = fight.opponentEnding;
+  if (opponentEnding?.grudgeWritten && fighterName && opponentId && opponentName) {
+    push('grudge_against_fighter', opponentId, { wireKind: 'reputation', direction: 'loss', visualKind: 'agent' });
+  }
 
   // ─── What the fight did to the world (PATH) — slain suppresses the clock ──
   const lair = fight.lairOutcome;
-  const opponentSlain = !!(lair?.felled && opponentId && opponentName);
+  // Two sources: a beast felled at its lair, or a duel's loser the fighter killed (THR-1561).
+  const opponentSlain = !!((lair?.felled || opponentEnding?.face === 'slain') && opponentId && opponentName);
   if (opponentSlain) {
     push('slain_opponent', opponentId!, { wireKind: 'shell_state', direction: 'opens', visualKind: 'agent' });
   } else if (

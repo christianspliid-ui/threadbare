@@ -153,7 +153,8 @@ export type FightChipKind =
   | 'storied'
   | 'trophy'
   | 'standing'
-  | 'grudge';
+  | 'grudge'
+  | 'grudge_against_fighter';
 
 /**
  * Chip kind → one of the four existing story categories. No fifth category:
@@ -173,6 +174,7 @@ export const FIGHT_CHIP_CATEGORY: Readonly<Record<Exclude<FightChipKind, 'condit
   trophy: 'boon',
   standing: 'bond',
   grudge: 'bond',
+  grudge_against_fighter: 'bond',
 };
 
 /**
@@ -191,6 +193,7 @@ export const FIGHT_CHIP_TOOLTIP_IDS: Readonly<Record<Exclude<FightChipKind, 'con
   trophy: { tooltipId: 'fight.chip.trophy' },
   standing: { tooltipId: 'fight.chip.standing' },
   grudge: { tooltipId: 'fight.chip.grudge' },
+  grudge_against_fighter: { tooltipId: 'fight.chip.grudge_against_fighter' },
 };
 
 /**
@@ -215,6 +218,8 @@ export const FIGHT_CHIP_COPY: Readonly<Record<Exclude<FightChipKind, 'condition'
   trophy: { noun: '{item}', sentence: '{fighter} took {item} from the den.' },
   standing: { noun: '{settlement}', sentence: '{settlement} will remember this.' },
   grudge: { noun: '{victor}', sentence: '{fighter} holds a grudge against {victor}.' },
+  // THR-1561 — a duel's loser, spared, holds a grudge against the fighter (`opponentEnding`).
+  grudge_against_fighter: { noun: '{opponent}', sentence: '{opponent} holds a grudge against {fighter}.' },
 };
 
 /** The standing chip's loss sentence (humiliation): the place hears of the yield. */
@@ -330,5 +335,9 @@ export const FIGHT_TOOLTIP_COPY: Readonly<Record<string, { label: string; desc: 
   'chip.grudge': {
     label: 'Grudge',
     desc: 'The fighter will not forget who beat them. The grudge sits in their blood, and it sharpens their next fight against the same foe.',
+  },
+  'chip.grudge_against_fighter': {
+    label: 'Grudge',
+    desc: 'The beaten foe lived, and will not forget who beat them. The grudge sits in their blood, and one day it may bring them back for another fight.',
   },
 };
