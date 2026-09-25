@@ -165,4 +165,10 @@ export interface FightEndingTrace extends TraceBase {
   drift?: { axis: ValuePair; pole: 'positive' | 'negative' };
   /** Set once D2 lands the chronicle tiers; D1 registers the category without it. */
   eventSignificance?: number;
+  /** THR-1549 — the victor's standing on a yield to a mortal. */
+  victorStanding?: { victorId: string; counterpartyId: string; delta: number };
+  /** THR-1549 — why no trophy was drawn on an overcome/bargained ending. */
+  rewardSkipped?: 'no_lair' | 'minor_lair' | 'empty_pool';
+  /** THR-1549 — the trophy draw flipped to the harmful table. */
+  rewardBadOutcome?: boolean;
 }

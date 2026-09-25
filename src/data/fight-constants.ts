@@ -8,7 +8,7 @@
  */
 
 import type { ActionScale, StepOutcome, UnifiedActionOutcome } from '../types/unifiedAction';
-import type { FightRatingWord, FightResult, FightTemper } from '../types/fight';
+import type { FightEndingFace, FightRatingWord, FightResult, FightTemper } from '../types/fight';
 import type { ReachDomain } from '../types/traits';
 import { BRANCH_DECISION_DRIFT_MAGNITUDE } from './nudge-constants';
 
@@ -425,3 +425,60 @@ export const FIGHT_SCARRED_INTENSITY = 1;
 
 /** The reactive loop's harm class for a death in a fight — the plot's own class. */
 export const FIGHT_DEATH_HARM_CLASS = 'named_death' as const;
+
+// ─── Fight endings: victory yields and the chronicle (THR-1549, plan doc ───
+// `Docs/plans/2026-09-23-defeat-and-victory.md` §4–5, slice D2) ─────────────────
+
+/** Settlement gratitude for felling a monster (a `reputation_with` write, within the 0.15 cap). */
+export const FIGHT_VICTORY_REPUTATION_OVERCOME = 0.10;
+
+/** Settlement gratitude for driving a monster off. */
+export const FIGHT_VICTORY_REPUTATION_DRIVEN_OFF = 0.03;
+
+/**
+ * Standing gained for beating a mortal, or for being yielded to by one — written toward
+ * the loser's faction, failing that the loser's home settlement. *Standing* is a
+ * `reputation_with` write (UL Reputation), never world renown (`reputationScore`).
+ */
+export const FIGHT_VICTORY_REPUTATION_DUEL = 0.05;
+
+/** The `cause` each victory reputation write carries. */
+export const FIGHT_GRATITUDE_CAUSE = 'fight_gratitude';
+export const FIGHT_STANDING_CAUSE = 'fight_standing';
+
+/**
+ * How far a lair's grateful settlement may be, in hexes. The nearest settlement-class
+ * location within this radius takes the gratitude; ties break by node id.
+ */
+export const FIGHT_GRATITUDE_RADIUS_HEXES = 3;
+
+/** Which endings reach the chronicle. */
+export type FightEventTier = 'notable' | 'routine';
+
+/**
+ * A `fight_ended` event's significance by tier. Notable endings clear `phaseNarrative`'s
+ * 0.8 chronicle threshold; routine ones reach the event log and the digest only.
+ */
+export const FIGHT_EVENT_SIGNIFICANCE: Readonly<Record<FightEventTier, number>> = {
+  notable: 0.85,
+  routine: 0.4,
+};
+
+/**
+ * Which faces reach the chronicle. Kill criterion (plan doc): if fight lines flood the
+ * chronicle (more than one per 10 ticks on a medium map), move faces to `routine`,
+ * keeping felled, slain and spared.
+ */
+export const FIGHT_EVENT_TIER_BY_FACE: Readonly<Record<FightEndingFace, FightEventTier>> = {
+  overcome_monster: 'notable',
+  overcome_mortal: 'notable',
+  driven_off: 'notable',
+  bargained: 'notable',
+  yielded_to_mortal: 'notable',
+  mauled: 'notable',
+  spared: 'notable',
+  slain: 'notable',
+  yielded_to_monster: 'routine',
+  routed: 'routine',
+  broke_off: 'routine',
+};

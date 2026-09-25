@@ -15,7 +15,14 @@
  * | `yielded` to a **mortal** | drift toward prudence, and **humiliation**: face lost at home |
  * | `routed` | drift toward prudence |
  * | `struck_down` | the death gate: guards, then one kill draw (monster victors only); **mauled** (Scarred + a `blood_drawn` grudge) or **slain** (the funnel + the reactive loop) |
- * | `overcome` / `driven_off` / `bargained` | the face only — the victory yields are D2 |
+ * | `overcome` a **monster** | (D2) the trophy through `drawSeededReward` (site `fight_trophy`), gratitude from the nearest settlement |
+ * | `overcome` a **mortal** | (D2) standing with the loser's faction ?? home, drift toward courage |
+ * | `driven_off` | (D2) a little gratitude from the nearest settlement |
+ * | `bargained` | (D2) the hoard (one trophy draw), drift toward mercy |
+ *
+ * D2 (THR-1549) also gives the victor of a yield-to-a-mortal their standing, and turns
+ * every ending into one `fight_ended` tick event whose message is the face's chronicle
+ * line; notable faces clear `phaseNarrative`'s threshold and become chronicle rows.
  *
  * Whatever the face, the branch records what it wrote as `fightState.ending` (the
  * `FightEndingRecord`), returned as its patch, so plan doc 4's chips read state and
@@ -32,7 +39,8 @@
  *
  * NFP #1: every number is in `data/fight-constants.ts`.
  * NFP #2: one `fight.ending` trace per fight; `fightState.ending` on the action.
- * NFP #3: one seeded draw (`ctx.rng`), only on `struck_down`, only after the guards.
+ * NFP #3: one seeded draw (`ctx.rng`), only on `struck_down`, only after the guards;
+ * the trophy draws on `drawSeededReward`'s own keyed stream.
  * NFP #4: each writer's refusal degrades to "mauled" or "skip"; nothing here throws on
  * missing data, and a throw is caught by `finalizeFightEnd`.
  */
@@ -46,15 +54,33 @@ import type { FightEndingFace, FightEndingRecord, FightState } from '../../types
 import type { FightEndingTrace } from '../../types/traces/fight-traces';
 import type { FightEndBranch, FightEndContext } from './fightOutcome';
 import {
+  FIGHT_BARGAIN_AXIS,
   FIGHT_CONCESSION_AXIS,
   FIGHT_DEATH_HARM_CLASS,
   FIGHT_ENDING_DRIFT,
+  FIGHT_EVENT_SIGNIFICANCE,
+  FIGHT_EVENT_TIER_BY_FACE,
+  FIGHT_GRATITUDE_CAUSE,
+  FIGHT_GRATITUDE_RADIUS_HEXES,
   FIGHT_HUMILIATION_CAUSE,
   FIGHT_HUMILIATION_REPUTATION,
   FIGHT_KILL_CHANCE_BY_TEMPER,
   FIGHT_SCARRED_INTENSITY,
   FIGHT_SCARRED_TRAIT_ID,
+  FIGHT_STANDING_CAUSE,
+  FIGHT_VICTORY_REPUTATION_DRIVEN_OFF,
+  FIGHT_VICTORY_REPUTATION_DUEL,
+  FIGHT_VICTORY_REPUTATION_OVERCOME,
 } from '../../data/fight-constants';
+import {
+  FIGHT_CHRONICLE_LINES,
+  FIGHT_CHRONICLE_LINES_PLAIN,
+  FIGHT_CHRONICLE_NAMELESS_FOE,
+  FIGHT_CHRONICLE_NAMELESS_PLACE,
+  FIGHT_TROPHY_OUTCOME,
+  FIGHT_TROPHY_RECIPE,
+  type FightTrophyLairTier,
+} from '../../data/fight-ending-content';
 import { LOCATION_CLASSES } from '../../data/world-objects';
 import { markMortalDead } from '../agentLifecycle';
 import { readResidence } from '../agentResidence';
@@ -64,8 +90,12 @@ import { writeGrudge } from '../grievance/grudgeEdge';
 import { createUndertakingOutcomeNode } from '../grievance/undertakingOutcomeNode';
 import { isMonster } from '../monsters/isMonster';
 import { applyReputationWithDelta } from '../reputation';
+import { drawSeededReward } from '../rewardPool';
+import { hexDistance } from '../delivery';
+import { getAgentFaction } from '../graphQueries';
+import { resolveHeldLair } from '../monsters/monsterFelling';
 import { touchWorld } from '../simulationRuntime';
-import { resolveToParentLocation } from '../sublocationShape';
+import { getLocationNodes, resolveToParentLocation } from '../sublocationShape';
 import { emitTrace } from '../traceBuffer';
 import { readOpponentCard } from './opponentCard';
 
@@ -296,6 +326,243 @@ function humiliate(
   return written.applied ? { counterpartyId: home.id, delta } : undefined;
 }
 
+// ─── Victory yields (THR-1549, slice D2, plan doc §4) ─────────────────────────
+
+/** A location node's hex, climbing from a place to its location first. */
+function hexOfLocation(graph: WorldGraph, id: string | undefined): { col: number; row: number } | undefined {
+  if (!id) return undefined;
+  const loc = resolveToParentLocation(graph, graph.getNode(id));
+  const col = loc?.properties.hexCol;
+  const row = loc?.properties.hexRow;
+  return typeof col === 'number' && typeof row === 'number' ? { col, row } : undefined;
+}
+
+/**
+ * The settlement grateful for a victory at `hex` (§4): the nearest settlement-class
+ * location within `FIGHT_GRATITUDE_RADIUS_HEXES` — one on the same hex wins at distance
+ * 0 — with ties broken by node id so the answer is deterministic. A lair is never a
+ * settlement, so it never qualifies. Undefined when none is in reach.
+ */
+export function nearestGratefulSettlement(
+  graph: WorldGraph,
+  hex: { col: number; row: number } | undefined,
+): GraphNode | undefined {
+  if (!hex) return undefined;
+  let best: GraphNode | undefined;
+  let bestDist = Infinity;
+  for (const loc of getLocationNodes(graph)) {
+    if (!SETTLEMENT_SUBTYPES.has(loc.properties.locationSubtype as string)) continue;
+    const col = loc.properties.hexCol;
+    const row = loc.properties.hexRow;
+    if (typeof col !== 'number' || typeof row !== 'number') continue;
+    const dist = hexDistance(hex, { col, row });
+    if (dist > FIGHT_GRATITUDE_RADIUS_HEXES) continue;
+    if (dist < bestDist || (dist === bestDist && best && loc.id < best.id)) {
+      best = loc;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
+
+/**
+ * Who a mortal's standing is written toward (§4, one rule for both sides): the loser's
+ * faction, failing that the loser's home settlement.
+ */
+function standingCounterparty(graph: WorldGraph, loserId: string): GraphNode | undefined {
+  return getAgentFaction(graph, loserId)?.faction ?? fighterHomeSettlement(graph, loserId);
+}
+
+/** A `reputation_with` write toward a counterparty; undefined when it did not land. */
+function writeStanding(
+  state: GameState,
+  fromId: string,
+  counterparty: GraphNode | undefined,
+  delta: number,
+  tick: number,
+  cause: string,
+): { counterpartyId: string; delta: number } | undefined {
+  if (!counterparty) return undefined;
+  const written = applyReputationWithDelta(state.graph, fromId, counterparty.id, delta, tick, cause);
+  return written.applied ? { counterpartyId: written.effectiveTargetId ?? counterparty.id, delta } : undefined;
+}
+
+/** The lair a fight's trophy comes from: the opponent monster's held den, when it is one. */
+function trophyLair(state: GameState, fight: FightState): GraphNode | undefined {
+  const opponent = opponentNode(state.graph, fight);
+  return opponent && isMonster(opponent) ? resolveHeldLair(state, opponent) : undefined;
+}
+
+/** What a trophy draw did. */
+interface TrophyDraw {
+  readonly reward?: NonNullable<FightEndingRecord['reward']>;
+  readonly skipped?: 'no_lair' | 'minor_lair' | 'empty_pool';
+  readonly badOutcome?: boolean;
+}
+
+/**
+ * The trophy (§4): one draw through `drawSeededReward` — the single draw path, so a
+ * `reward_tier_bonus` on the fighter shifts the curve — at the result's band for the
+ * lair's tier. A minor lair, or none, holds nothing. The draw is traced by the pool's
+ * own content query under site `fight_trophy`.
+ */
+function drawTrophy(
+  state: GameState,
+  action: UnifiedAction,
+  lair: GraphNode | undefined,
+  result: 'overcome' | 'bargained',
+  ctx: FightEndContext,
+): TrophyDraw {
+  if (!lair) return { skipped: 'no_lair' };
+  const tier = lair.properties.lairTier as string | undefined;
+  if (tier !== 'major' && tier !== 'legendary') return { skipped: 'minor_lair' };
+  const draw = drawSeededReward(state.graph, {
+    recipe: FIGHT_TROPHY_RECIPE,
+    outcomeType: FIGHT_TROPHY_OUTCOME[result][tier as FightTrophyLairTier],
+    seed: state.seed,
+    tick: ctx.tick,
+    actorId: action.actorId,
+    templateId: action.templateId,
+    overrideCtx: ctx.overrideCtx,
+    site: 'fight_trophy',
+  });
+  if (!draw.instantiation || !draw.drawnTemplateId) {
+    return { skipped: 'empty_pool', ...(draw.isBadOutcome ? { badOutcome: true } : {}) };
+  }
+  return {
+    reward: { templateId: draw.drawnTemplateId, instanceId: draw.instantiation.instanceId, tier: draw.tier ?? 1 },
+    ...(draw.isBadOutcome ? { badOutcome: true } : {}),
+  };
+}
+
+/** What the victory writes did (§4). */
+interface VictoryWrites {
+  reputation?: FightEndingRecord['reputation'];
+  reward?: FightEndingRecord['reward'];
+  drift?: FightEndingRecord['drift'];
+  rewardSkipped?: TrophyDraw['skipped'];
+  rewardBadOutcome?: boolean;
+}
+
+/**
+ * The victory yields for `overcome` / `driven_off` / `bargained` (§4). No new reward
+ * system: the trophy is the reward pool's, gratitude and standing are `reputation_with`
+ * writes, and the drift is the shared value writer's.
+ */
+function applyVictory(
+  state: GameState,
+  action: UnifiedAction,
+  fight: FightState,
+  face: FightEndingFace,
+  ctx: FightEndContext,
+): VictoryWrites {
+  const graph = state.graph;
+  const fighterId = action.actorId;
+  const out: VictoryWrites = {};
+  const lair = trophyLair(state, fight);
+  // Gratitude is anchored on the lair's hex, failing that on where the fight happened.
+  const siteHex = hexOfLocation(graph, lair?.id) ?? hexOfLocation(graph, fighterPositionId(graph, fighterId));
+
+  const takeTrophy = (result: 'overcome' | 'bargained'): void => {
+    const trophy = drawTrophy(state, action, lair, result, ctx);
+    if (trophy.reward) out.reward = trophy.reward;
+    if (trophy.skipped) out.rewardSkipped = trophy.skipped;
+    if (trophy.badOutcome) out.rewardBadOutcome = true;
+  };
+
+  switch (face) {
+    case 'overcome_monster': {
+      takeTrophy('overcome');
+      out.reputation = writeStanding(
+        state, fighterId, nearestGratefulSettlement(graph, siteHex),
+        FIGHT_VICTORY_REPUTATION_OVERCOME, ctx.tick, FIGHT_GRATITUDE_CAUSE,
+      );
+      break;
+    }
+    case 'overcome_mortal': {
+      const loserId = fight.opponentId;
+      if (loserId) {
+        out.reputation = writeStanding(
+          state, fighterId, standingCounterparty(graph, loserId),
+          FIGHT_VICTORY_REPUTATION_DUEL, ctx.tick, FIGHT_STANDING_CAUSE,
+        );
+      }
+      out.drift = drift(state, fighterId, FIGHT_CONCESSION_AXIS, 'positive', ctx.tick);
+      break;
+    }
+    case 'driven_off':
+      out.reputation = writeStanding(
+        state, fighterId, nearestGratefulSettlement(graph, siteHex),
+        FIGHT_VICTORY_REPUTATION_DRIVEN_OFF, ctx.tick, FIGHT_GRATITUDE_CAUSE,
+      );
+      break;
+    case 'bargained':
+      takeTrophy('bargained');
+      out.drift = drift(state, fighterId, FIGHT_BARGAIN_AXIS, 'positive', ctx.tick);
+      break;
+    default:
+      break;
+  }
+  if (!out.reputation) delete out.reputation;
+  return out;
+}
+
+// ─── The chronicle (THR-1549, slice D2, plan doc §5) ──────────────────────────
+
+/** Fill a chronicle line's three slots from names the branch already holds. */
+function fillLine(line: string, names: { fighter: string; opponent: string; place: string }): string {
+  return line
+    .replace(/\{fighter\}/g, names.fighter)
+    .replace(/\{opponent\}/g, names.opponent)
+    .replace(/\{place\}/g, names.place);
+}
+
+/**
+ * The chronicle line for an ending: the face's line, or its plain variant when the
+ * write it names was skipped (a bargain with no prize, a mauling with no new scar).
+ */
+export function fightChronicleLine(
+  face: FightEndingFace,
+  ending: Pick<FightEndingRecord, 'reward' | 'scarWritten'>,
+  names: { fighter: string; opponent: string; place: string },
+): string {
+  const plain = (face === 'bargained' && !ending.reward) || (face === 'mauled' && !ending.scarWritten);
+  const line = (plain ? FIGHT_CHRONICLE_LINES_PLAIN[face] : undefined) ?? FIGHT_CHRONICLE_LINES[face];
+  return fillLine(line, names);
+}
+
+/**
+ * The one `fight_ended` tick event per fight (§5). Notable faces clear
+ * `phaseNarrative`'s chronicle threshold; routine ones reach the event log only.
+ */
+function fightEndedEvent(
+  state: GameState,
+  action: UnifiedAction,
+  fight: FightState,
+  ending: FightEndingRecord,
+  siteId: string | undefined,
+  ctx: FightEndContext,
+): TickEvent {
+  const graph = state.graph;
+  const fighterId = action.actorId;
+  const place = siteId ? resolveToParentLocation(graph, graph.getNode(siteId)) : undefined;
+  const message = fightChronicleLine(ending.face, ending, {
+    fighter: graph.getNode(fighterId)?.name ?? fighterId,
+    opponent: opponentNode(graph, fight)?.name ?? FIGHT_CHRONICLE_NAMELESS_FOE,
+    place: place?.name ?? FIGHT_CHRONICLE_NAMELESS_PLACE,
+  });
+  const hexCoords = hexOfLocation(graph, siteId);
+  return {
+    id: `fight_ended_${action.actionId}_${ctx.tick}`,
+    tick: ctx.tick,
+    type: 'fight_ended',
+    message,
+    significance: ending.eventSignificance ?? FIGHT_EVENT_SIGNIFICANCE[FIGHT_EVENT_TIER_BY_FACE[ending.face]],
+    actorId: fighterId,
+    ...(hexCoords ? { hexCoords } : {}),
+  };
+}
+
 /** Who won the fight, from the fighter's side (the trace's `victorId`). */
 function victorOf(action: UnifiedAction, fight: FightState): string | null {
   switch (fight.result) {
@@ -326,12 +593,28 @@ export function applyFightEndingForFighter(
   let outcomeNodeId: string | undefined;
   let humiliation: FightEndingRecord['humiliation'];
   let driftRec: FightEndingRecord['drift'];
+  let victorStanding: FightEndingRecord['victorStanding'];
+  let victory: VictoryWrites = {};
+  // Where the fight happened, read before any write (a death may move nothing, but
+  // the chronicle line and the event's hex must not depend on it).
+  const siteId = fighterPositionId(graph, fighterId);
 
   switch (face) {
-    case 'yielded_to_mortal':
+    case 'yielded_to_mortal': {
       driftRec = drift(state, fighterId, FIGHT_CONCESSION_AXIS, 'negative', ctx.tick);
       humiliation = humiliate(state, fighterId, ctx.tick);
+      // The other side of humiliation (§4): the victor gains standing with the
+      // yielder's faction ?? the yielder's home settlement.
+      const victorId = fight.opponentId;
+      if (victorId) {
+        const standing = writeStanding(
+          state, victorId, standingCounterparty(graph, fighterId),
+          FIGHT_VICTORY_REPUTATION_DUEL, ctx.tick, FIGHT_STANDING_CAUSE,
+        );
+        if (standing) victorStanding = { victorId, ...standing };
+      }
       break;
+    }
     case 'routed':
       driftRec = drift(state, fighterId, FIGHT_CONCESSION_AXIS, 'negative', ctx.tick);
       break;
@@ -350,22 +633,35 @@ export function applyFightEndingForFighter(
       }
       break;
     }
+    case 'overcome_monster':
+    case 'overcome_mortal':
+    case 'driven_off':
+    case 'bargained':
+      victory = applyVictory(state, action, fight, face, ctx);
+      driftRec = victory.drift;
+      break;
     default:
       // broke_off, yielded_to_monster: nothing beyond the exchanges' own writes.
-      // overcome / driven_off / bargained: the victory yields are D2's.
       break;
   }
 
-  if (ctx.runtime && (scarWritten || grudgeWritten || humiliation || driftRec)) touchWorld(ctx.runtime);
+  const wroteWorld = scarWritten || grudgeWritten || humiliation || driftRec || victorStanding
+    || victory.reputation || victory.reward;
+  if (ctx.runtime && wroteWorld) touchWorld(ctx.runtime);
 
+  const eventSignificance = FIGHT_EVENT_SIGNIFICANCE[FIGHT_EVENT_TIER_BY_FACE[face]];
   const ending: FightEndingRecord = {
     face,
     scarWritten,
     grudgeWritten,
     ...(humiliation ? { humiliation } : {}),
+    ...(victory.reputation ? { reputation: victory.reputation } : {}),
+    ...(victory.reward ? { reward: victory.reward } : {}),
     ...(killRoll ? { killRoll } : {}),
     ...(guard ? { guard } : {}),
     ...(driftRec ? { drift: driftRec } : {}),
+    ...(victorStanding ? { victorStanding } : {}),
+    eventSignificance,
   };
 
   const victorId = victorOf(action, fight);
@@ -386,16 +682,27 @@ export function applyFightEndingForFighter(
     ...(outcomeNodeId ? { outcomeNodeId } : {}),
     ...(humiliation ? { humiliation } : {}),
     ...(driftRec ? { drift: driftRec } : {}),
+    ...(victory.reputation ? { reputation: victory.reputation } : {}),
+    ...(victory.reward ? { reward: victory.reward } : {}),
+    ...(victory.rewardSkipped ? { rewardSkipped: victory.rewardSkipped } : {}),
+    ...(victory.rewardBadOutcome ? { rewardBadOutcome: true } : {}),
+    ...(victorStanding ? { victorStanding } : {}),
+    eventSignificance,
     summary: `fight.ending: ${fighterId} ${fight.result} → ${face}`
       + (victorId && victorId !== fighterId ? ` (by ${victorId})` : '')
       + (guard ? ` [guard ${guard}]` : '')
       + (killRoll ? ` kill ${killRoll.roll.toFixed(3)}<${killRoll.chance}` : '')
       + (scarWritten ? ' scarred' : scarSkipped ? ` scar skipped (${scarSkipped})` : '')
       + (grudgeWritten ? ' grudge' : '')
-      + (humiliation ? ` humiliated at ${humiliation.counterpartyId}` : ''),
+      + (humiliation ? ` humiliated at ${humiliation.counterpartyId}` : '')
+      + (victory.reward ? ` trophy ${victory.reward.templateId} (tier ${victory.reward.tier})` : '')
+      + (victory.rewardSkipped ? ` no trophy (${victory.rewardSkipped})` : '')
+      + (victory.reputation ? ` +${victory.reputation.delta} with ${victory.reputation.counterpartyId}` : '')
+      + (victorStanding ? ` victor +${victorStanding.delta} with ${victorStanding.counterpartyId}` : '')
+      + ` [sig ${eventSignificance}]`,
   } as FightEndingTrace);
 
-  return { ending, events: [] };
+  return { ending, events: [fightEndedEvent(state, action, fight, ending, siteId, ctx)] };
 }
 
 /** The dispatcher branch (registered first in `FIGHT_END_BRANCHES`). */

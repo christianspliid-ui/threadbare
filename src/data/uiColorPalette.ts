@@ -170,6 +170,7 @@ export const TICK_EVENT_COLORS: Record<TickEvent['type'], string> = {
   siege_established: '#fb923c',    // orange-400 — siege (matches SIEGE_COLOR from BattleIndicatorLayer)
   siege_breach: '#f87171',         // red-400 — walls broken; the modifier-stripping headline beat (THR-628)
   army_attrition: '#a8a29e',       // warm gray — degradation, low emphasis
+  fight_ended: '#b91c1c',          // red-700 — a fight ended (THR-1549); darker than a battle
 };
 
 // ============================================================================
