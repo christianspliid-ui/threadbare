@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 57,
+      "termCount": 58,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -668,6 +668,49 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#realm",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "monster",
+      "name": "Monster",
+      "aliases": [
+        "lair beast",
+        "named elite",
+        "`isMonsterElite`"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "a lair's beast: a class of Mortal, not a kind; an individual actor with `isMonsterElite` or a `monsterState` card, read through `isMonster`; the plot never targets one, the hunt does (THR-1559)",
+      "body": "A **lair's beast: a class of `[[Agent]]` (Mortal), not a kind of its own.** An individual actor (`actorType: 'individual'`) carrying `isMonsterElite` — the flag `createNamedElite` writes when a lair escalates — or a `monsterState` fighting card. Either marker is enough; every reader asks through the one predicate, `isMonster` (`src/engine/monsters/isMonster.ts`), never the raw flag. Each Monster is minted with a fighting card and a `[[Temper]]`, and its fight clock persists on its node, so several mortals' blows add up on one beast.\n\n**A class, not a kind** (THR-1268). A Monster is a Mortal in the graph's shape — it has a position, it can be fought, scarred, slain and retained dead — so it takes no world-object registry row, no node type and no actorType. The class exists because systems meant for people must leave it out: the plot never targets one, it never graduates to an NPC, lair clearing's challenger scan and social visibility skip it, and no favour is ever owed to a beast. What *does* act on it is the hunt — `destroy × monster`, a mortal's long work of going after a beast from afar for a reason (a scar, a grievance, a den near home).\n\n**Not a Company, Army or Faction.** A monster family's faction definitions name the lair's allegiance; the Monster itself is one creature.\n\nSeated by delegation 2026-09-25 (THR-1559; `Docs/canon/process.md` § User review interface, rule 4).",
+      "seeAlso": [
+        {
+          "raw": "Agent",
+          "termName": "Agent",
+          "resolvedSlug": "agents#agent"
+        },
+        {
+          "raw": "Temper",
+          "termName": "Temper",
+          "resolvedSlug": "traits#temper"
+        },
+        {
+          "raw": "Opponent Card",
+          "termName": "Opponent Card",
+          "resolvedSlug": "encounters#opponent-card"
+        },
+        {
+          "raw": "Grudge",
+          "termName": "Grudge",
+          "resolvedSlug": "agents#grudge"
+        },
+        {
+          "raw": "World Object",
+          "termName": "World Object",
+          "resolvedSlug": "graph#world-object"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#monster",
       "contentAdjacent": true
     },
     {
