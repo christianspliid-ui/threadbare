@@ -24,6 +24,8 @@ Measured on `main` @ `d6ff4070`. Seeds 42 and 99, medium map unless a file name 
 | `corpus.json` | `readers/corpus.ts` | Encounter corpus sliced by reach, sphere, culture, tier, faction, outcome bands authored |
 | `demand.json` (`demand.err` = its stderr) | `readers/demand.ts 42,99 200` | Place counts in the world against supply and against firings, per subtype, setting, culture, tier and outcome |
 | `rewards.json` | `readers/rewards.ts` | Reward repetition (`starter_revelation` ≈ 10%) |
+| `reach-gates.json` | `readers/reach.ts 42,99 200` (THR-1597, `main` @ `32d974ca`) | Per drawable encounter template, the first gate it fails per seed (supply → travel → funnel stage → cooldown → outscored → spawn), off the engine's own `runtime.eligibilityFunnel`; faction membership split by deciding (spotlight) members; subtype occupancy; every withered seed with its reason |
+| `reach-prereq.json` | `readers/prereq.ts 42,99 200` (THR-1597) | The funnel's "prerequisites" bucket split into core prerequisites / reputation-trait gate / outgrowth, per template, for deciders every 20 ticks; decider capability quantiles |
 
 ## `readers/` — the throwaway scripts
 
