@@ -591,12 +591,21 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
           // the mortal, so the favour is released rather than broken.
           redeemAppointmentFavour(state.graph, appointment.favourEdgeId);
           if (runtime) touchWorld(runtime);
+          // THR-1560: a meeting that must have its place (a hunt's confront) is dropped
+          // rather than fired wherever the mortal stands. The favour is released first,
+          // above — a drop before it would leave the promise live, and the hunt's
+          // one-confront refusal would read that lair as pending for good.
+          const drop = appointment.requirePlace === true;
           emitTrace({
             tick, category: 'appointment_missed', agentId: seed.targetAgentId,
             seedId: seed.seedId, locationId: appointment.locationId, dueTick: appointment.dueTick,
             reason: 'place_lost',
-            summary: `Appointment place lost: ${seed.targetAgentId} — "${seed.seedLabel}" fires placeless`,
+            ...(drop ? { dropped: true } : {}),
+            summary: drop
+              ? `Appointment place lost: ${seed.targetAgentId} — "${seed.seedLabel}" dropped (the meeting needs its place)`
+              : `Appointment place lost: ${seed.targetAgentId} — "${seed.seedLabel}" fires placeless`,
           });
+          if (drop) continue;
           seed = { ...seed, appointment: undefined };
         } else if (windowOpen && slack.atPlace) {
           keptAppointment = appointment;
@@ -623,6 +632,9 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
             resolutionLocationId: undefined,
             eligibleAfterTick: tick + (missed.delayTicks ?? APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS),
             seedLabel: missed.seedLabel,
+            // THR-1560: the inherited target belongs to the kept branch alone — the
+            // missed sequel fires wherever the mortal is, aimed at no beast.
+            ...(appointment.inheritSiteAsTarget ? { inheritedTargetId: undefined } : {}),
             appointment: undefined,
             missedAppointment: { locationId: appointment.locationId, dueTick: appointment.dueTick, reason },
           };

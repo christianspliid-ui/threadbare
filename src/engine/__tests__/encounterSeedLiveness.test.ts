@@ -261,6 +261,8 @@ const SHIPPED_SEED_ONLY_SEQUELS = [
 const DECLARED_QUERY_PLANTERS: Readonly<Record<string, readonly string[]>> = {
   // The Crossroads' missed branch: `#crossroads_debt`.
   'encounter.slice.full_moon_reckoning': ['encounter.slice.bargain_at_crossroads'],
+  // THR-1560 — the hunt appointment's missed branch: `#hunt_trail_cold`, one bearer.
+  'hunt.trail_cold': ['cell.destroy.monster'],
 };
 
 const NON_DRAWABLE = CORPUS.filter(t => t.drawable === false);

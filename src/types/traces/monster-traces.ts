@@ -86,3 +86,17 @@ export interface FightTriggerTrace extends TraceBase {
   skipped?: FightTriggerSkip;
   actionId?: string;
 }
+
+/**
+ * Emitted when a hunter finishes tracking a beast (THR-1560, plan doc
+ * `Docs/plans/2026-09-23-hunts.md` § Tracing): `recordHuntTracking` minted the
+ * `hidden_weakness` mark (`markEdgeId`, `''` when the mint was refused) and revealed the
+ * beast's temper on its card (`temperRevealed`).
+ */
+export interface HuntTrackCompletedTrace extends TraceBase {
+  category: 'hunt.tracked';
+  hunterId: string;
+  monsterId: string;
+  markEdgeId: string;
+  temperRevealed: boolean;
+}

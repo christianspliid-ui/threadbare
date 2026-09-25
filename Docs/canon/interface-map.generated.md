@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 37 |
-| **Total** | **170** |
+| 🔵 UNVERIFIED-OK | 40 |
+| **Total** | **173** |
 
 ## Contracts by producing subsystem
 
@@ -50,8 +50,11 @@ remediation ticket or the build fails.
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `factory-pack-registry` | A template the undertaking factory compiles reaches the one decision board the same way a hand-written one does — through the template registry — without an author ever editing a pack array. The compiler writes `strategic-packs/factory/<slug>.ts` and registers the export in the factory aggregate, the id in its kind row and in each ambition profile it names; the registry joins the aggregate last so factory output can never shadow an authored id. A template registered in two of the three places is unreachable by luck, which is the defect the compiler exists to make impossible. | function: `FACTORY_STRATEGIC_TEMPLATES`, `ALL_PACKS`, `registerInFactoryIndex` | Strategic Projects & Control | 🔵 UNVERIFIED-OK | THR-1300 |
 | `freehold-income-pays-mortal-holders` | What a mortal holds yields to them: a seized route tolls, a freehold pays, a controlled Location tithes — so taking something that produces is worth taking, and the wealth it moves is visible to the player as a word. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🟢 LIVE | — |
+| `grievance-opens-hunt-door` | A mortal hunts a beast only for a reason the world gave them — a scar it left, a grievance whose culprit it is, or its den near home — and the board records which, so every hunt can say why it formed. | function: `huntReason`, `gateExemption`, `culpritAgentId` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `grievance-reaches-the-mortal-sheet` | A vendetta says on the character sheet whose it is and how hot it burns — "burning · against Oswen, after the razing of Thornhall" — so a drive the world minted from a harm is legible as such rather than as an ordinary want. | edge-prop: `grievance`, `culpritAgentId`, `heat`, `heatWord` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `holdings-single-writer-owns-edge` | What a mortal owns is written in exactly one place. The `owns` edge is the authority; the bearer-side attachment is its face, and both are minted, moved and retired by `holdings.ts` alone. | edge-prop: `owns` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `hunt-completion-defers-grievance` | Finishing a hunt harms nobody yet, so it writes no outcome and closes no grievance; a grievance against a beast closes only when the beast dies — never because the hunt, or any other project, finished — so a hunter whose fight breaks off can go back. | function: `deferredPayoff`, `payoffDeferred`, `grievanceClosesOnCompletion` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
+| `hunt-payoff-plants-confront` | A finished hunt is a promise to be at the beast's den: the appointment it plants is judged at the lair, and its kept branch is the fight against that very beast — the missed one tells the hunter the trail went cold wherever they stand. Without it a hunt would end in nothing, or the confront would fire wherever the hunter happened to be. | function: `inheritSiteAsTarget`, `requirePlace`, `pricedByHex`, `maybePlantAppointmentPayoff`, `liveHuntFavourAt` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 | `mortal-inflicts-a-condition` | A mortal can now put something on another mortal, and every system that already read conditions reads these unchanged. `create × Condition` (`inflict_condition`) and `destroy × Power` (`seal_power`) mint through the catalog's own `instantiateReward`, so an inflicted blessing or curse is the same shape an encounter reward has always produced — with two additions on the bearer's edge that make it legible as somebody's doing: `sign` (blessing | curse | seal) and `inflictedBy`. The **sign is the gate**: self or an ally is a blessing, un-gated; a mortal the actor holds a motive against is a curse; a stranger is refused, and there is no neutral third outcome. A curse or a seal registers the `afflicted` harm class, which crosses into the grievance funnel; a blessing registers none, and that asymmetry is decided per completion rather than per template, so the op carries the harm class the completion site reads (THR-1429). | function: `inflictCondition`, `resolveConditionSign`, `instantiateReward`, `isSpellSuppressedFor`, `afflicted` | Effects & Conditions | 🟢 LIVE | — |
 | `mortal-learns-a-spell` | A mortal who studies a working comes to hold it, and the systems that ask "what can this person do?" get their answer from the graph rather than from the study. `create × Power` (`learn_spell`) is the first writer of `knows_spell`, and the Power kind now has a node shape: one shared `spell`-subcategory trait definition per template, minted at seeding, with per-bearer state on the edge (THR-1395). The two edges mean different things and both cross this boundary — `knows_spell` is the biography and is unlimited, `has_trait` is what the mortal carries now and is held to `SLOT_CAPS.spell` by the attachment system's own slot pass. Learning past the cap writes the knowledge and not the carry, which is a state the sheet reports rather than a refusal (THR-1429). | edge: `knows_spell`, `has_trait`, `spellDefinitionNode`, `SLOT_CAPS` | Attachments, Items & Possessions | 🟢 LIVE | — |
@@ -325,10 +328,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Agent*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 60 total — 2 write, 3 read, 55 unclassified
+- **Production hits:** 61 total — 2 write, 3 read, 56 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
 - **Read sites:** `src/components/Game/tabs/BondsTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +50 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +51 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
 ### `ambition-acquisition` — 🟢 LIVE
@@ -397,10 +400,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Movement & Colocation
 - **UL terms:** *Appointment*, *Encounter Seed*
 - **Module:** `src/engine/appointments.ts`
-- **Production hits:** 7 total — 2 write, 2 read, 3 unclassified
+- **Production hits:** 9 total — 2 write, 2 read, 5 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/engine/appointments.ts`, `src/engine/encounterSeeding.ts`, `src/types/strategicAction.ts`
+- **Other hits:** `src/engine/appointments.ts`, `src/engine/encounterSeeding.ts`, `src/engine/monsters/huntReport.ts`, `src/types/strategicAction.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-09-22: THR-1524 — the census HIT. Shipped by THR-1479 with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain); THR-1518 proved the mechanics on a seeded world through `check:encounter-live` (present → kept at tick 136, the Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the promise broken) and then MEASURED the reachability row UNREACHED on every seed — the Crossroads fired once in 1000 ticks and the mortal refused. Two content defects on the parent, both fixed in vertical-slice.ts: (1) `settings: [wayside]` alone is camp | oasis | wilderness, 8 of 974 locations on seed 42 / medium and 5.5% of mortal-ticks (urban 50%, rural 37%, ruin 2.3%, sampled every 10 ticks over 200) — none of the four wayside-only slice encounters fired in 200 ticks; the Crossroads now registers at rural + ruin + wayside with an opening per class. (2) `motivations: [tradition_novelty]` named the fork axis, and `computeDesireScore` sums the SIGNED profile value, so the board handed the scene to Archivists (positive pole, who refuse) and floored Heretics (negative pole, the planting arm) at MINIMUM_DESIRE — 34 of 65 profiled mortals lean novelty and none ever met him; selection moved to the Eye axis (`revelation_discretion`, the scene's own reach) and the fork stays on tradition. `npm run check:content-model-census -- --ticks 200 --seed 42 --map medium` now prints `Reachability: HIT` — parents fired 3, 2 planted, 0 kept, 0 missed; seed 99 / 200 ticks: 11 firings, 7 planted, one kept (the Full Moon Collection fired from the kept arm, `spawnedFromSeedId` set); seed 7 / 200 ticks: see the THR-1524 status fragment. Pinned by vertical-slice.test.ts (THR-1524 block): a slice fork whose planting arm is the negative pole may not name that axis in `motivations` — restoring the old axis fails it (falsified 2026-09-22) — and the Crossroads registers past wayside. Not a gate that reads the code: the census counts the seed off `pendingEncounterSeeds` per tick.
 
 ### `area-partition-to-map` — 🟢 LIVE
@@ -641,10 +644,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 194 total — 1 write, 3 read, 190 unclassified
+- **Production hits:** 195 total — 1 write, 3 read, 191 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +185 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +186 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -1193,10 +1196,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Grudge*, *Struck down*, *Scarred*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 29 total — 2 write, 3 read, 24 unclassified
+- **Production hits:** 31 total — 2 write, 3 read, 26 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/data/grievance-prose.ts`, `src/engine/agentDetail.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +19 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +21 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-raises-effect-events` — 🔵 UNVERIFIED-OK
@@ -1229,10 +1232,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Secrets & Favors
 - **UL terms:** *Fight Advantage*
 - **Module:** `src/engine/fights/fightAdvantages.ts`
-- **Production hits:** 47 total — 1 write, 2 read, 44 unclassified
+- **Production hits:** 48 total — 1 write, 2 read, 45 unclassified
 - **Write sites:** `src/engine/fights/fightAdvantages.ts`
 - **Read sites:** `src/engine/leverageOps.ts`, `src/engine/phaseSecretsFavors.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts`, `src/data/ascendant-beat-content.ts` +39 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts`, `src/data/ascendant-beat-content.ts` +40 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-state-shows-on-veil` — 🟢 LIVE
@@ -1277,10 +1280,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 28 total — 1 write, 1 read, 26 unclassified
+- **Production hits:** 29 total — 1 write, 1 read, 27 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +21 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +22 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-yield-humiliates-at-home` — 🔵 UNVERIFIED-OK
@@ -1317,16 +1320,28 @@ exit
 - **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/tabs/ChronicleTab.tsx`, `src/components/Game/tabs/JourneyTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts` +1 more
 - **Verdict:** Verified 2026-09-07: THR-1433. `canReadIntention` is the one predicate: familiarity at `INTENTION_KNOWLEDGE_TIER` (skipped for a secret cell), a followed mortal’s unrevealed `knows_secret_of` mark, a followed network’s living member within `NETWORK_READ_REACH_HEXES`. The hook stamps the live answer on the card (`intentionRead`) and builds the intention line; the Overview tab renders it with the door in the tooltip; the Journey and Chronicle ambition gates and the thread-card foreshadowing tooltip call the same rule. Non-vacuous by `src/engine/__tests__/intentionReading.test.ts` (each door falsified at its owning layer — out of reach, unfollowed leader, revealed mark, the plot at `transparent`), `src/components/Game/tabs/__tests__/OverviewTabIntention.test.tsx` (the line renders through each door and not at all when closed) and the browser proof on the closing PR (`__DEBUG.followAgent` + `__DEBUG.spawnMark` on a stranger, `__DEBUG.canReadIntention`).
 
+### `grievance-opens-hunt-door` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A mortal hunts a beast only for a reason the world gave them — a scar it left, a grievance whose culprit it is, or its den near home — and the board records which, so every hunt can say why it formed.
+- **Producer → Consumer:** Ambitions & Undertakings → Ambitions & Undertakings
+- **UL terms:** *Grievance*, *Undertaking*
+- **Module:** `src/engine/monsters/hunts.ts`
+- **Production hits:** 16 total — 2 write, 2 read, 12 unclassified
+- **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/grievanceLifecycle.ts`
+- **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingMotive.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/ambitionTick.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/undertakingOutcomeNode.ts` +7 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `grievance-reaches-the-mortal-sheet` — 🟢 LIVE
 
 - **Intent:** A vendetta says on the character sheet whose it is and how hot it burns — "burning · against Oswen, after the razing of Thornhall" — so a drive the world minted from a harm is legible as such rather than as an ordinary want.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 90 total — 2 write, 3 read, 85 unclassified
+- **Production hits:** 93 total — 2 write, 3 read, 88 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +80 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +83 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-command-changes-through-one-writer` — 🟢 LIVE
@@ -1347,10 +1362,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 70 total — 1 write, 2 read, 67 unclassified
+- **Production hits:** 71 total — 1 write, 2 read, 68 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +62 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +63 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -1424,6 +1439,30 @@ exit
 - **Read sites:** `src/components/MeetTheFirst/MeetTheFirstFlow.tsx`
 - **Verdict:** Verified 2026-08-28: src/engine/__tests__/hungerResonanceGate.test.ts runs the shipped 167-dilemma library through the live `selectDilemmas` for all 12 hungers, guarding population-non-empty first so the sweep cannot pass vacuously, and asserts at least one hunger deals differently from the no-lens deal at the same seed — AND fewer than all 12 do, which is what distinguishes resonance from PRNG stream drift (the draw count is lens-independent by construction). Its coverage assertion is **blocking** as of the slice-4 content pass: every hunger must resonate with at least HUNGER_RESONANCE_MIN_COVERAGE=6 dilemmas. Measured after the pass — all 167 dilemmas carry a register, coverage gather=59, witness=58, reclaim=26, reshape=40, preserve=65, kindle=20, sever=8, bind=26, wander=32, consume=18, haunt=37, illuminate=50; 4 of 12 hungers (gather, reclaim, bind, illuminate) deal differently from the no-lens baseline at seed 42. Falsified both ways rather than asserted: drifting one hunger's dilemmaResonanceTags out of the dilemma vocabulary turns the gate red naming that hunger (haunt=0), and reverting the library to its pre-pass state turns it red at 11/12 below the floor. Reader pinned at the surface too: src/components/MeetTheFirst/__tests__/hungerShapesTheDeal.test.tsx renders the real TestingBeat on the real deal and asserts two identities differing only in `hungerId` put different authored prose in the DOM.
 
+### `hunt-completion-defers-grievance` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Finishing a hunt harms nobody yet, so it writes no outcome and closes no grievance; a grievance against a beast closes only when the beast dies — never because the hunt, or any other project, finished — so a hunter whose fight breaks off can go back.
+- **Producer → Consumer:** Ambitions & Undertakings → Ambitions & Undertakings
+- **UL terms:** *Grievance*
+- **Module:** `src/engine/grievance/grievanceLifecycle.ts`
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Write sites:** `src/data/undertaking-cells.ts`
+- **Read sites:** `src/engine/strategicActionLifecycle.ts`
+- **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `hunt-payoff-plants-confront` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A finished hunt is a promise to be at the beast's den: the appointment it plants is judged at the lair, and its kept branch is the fight against that very beast — the missed one tells the hunter the trail went cold wherever they stand. Without it a hunt would end in nothing, or the confront would fire wherever the hunter happened to be.
+- **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
+- **UL terms:** *Undertaking*, *Appointment*, *Fight*
+- **Module:** `src/engine/monsters/hunts.ts`
+- **Production hits:** 11 total — 2 write, 2 read, 7 unclassified
+- **Write sites:** `src/engine/appointments.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/encounterSeeding.ts`, `src/engine/monsters/lairArrivalTrigger.ts`
+- **Other hits:** `src/data/movement-content.ts`, `src/data/undertaking-cells.ts`, `src/data/undertaking-objects.ts`, `src/engine/monsters/hunts.ts`, `src/types/strategicAction.ts` +2 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `incident-bundle-to-download` — 🟢 LIVE
 
 - **Intent:** The point of the whole chain: one button on the deployed build turns everything above into a file small enough to attach to a message.
@@ -1452,10 +1491,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Encounters & Dilemmas
 - **UL terms:** *Opponent Card*
 - **Module:** `src/engine/monsters/lairArrivalTrigger.ts`
-- **Production hits:** 13 total — 1 write, 2 read, 10 unclassified
+- **Production hits:** 15 total — 1 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/phaseMovement.ts`
 - **Read sites:** `src/data/encounters/fight-lair-confront.ts`, `src/engine/monsters/lairArrivalTrigger.ts`
-- **Other hits:** `src/data/content-objects.ts`, `src/data/fight-constants.ts`, `src/data/monster-encounter-content.ts`, `src/debug-bridge.ts`, `src/engine/debugEncounterTools.ts` +5 more
+- **Other hits:** `src/data/content-objects.ts`, `src/data/encounters/hunt-trail-cold.ts`, `src/data/fight-constants.ts`, `src/data/monster-encounter-content.ts`, `src/data/undertaking-cells.ts` +7 more
 - **Verdict:** Verified 2026-09-25: THR-1547 M4. Seed 42 medium, tick 100, an idle mortal (ind_0) sent to end a journey at the legendary lair_0: the arrival traces `fight.trigger` spawned (`ua_167` vs `elite_lair_0_50`), writes `fightCooldowns["elite_lair_0_50|ind_0"] = 126`, and the fight runs — three `fight.step` traces against `elite_lair_0_50`, then `fight.end … broke_off`. Natural play spawns none in 200 ticks on seeds 42 and 99: lairs have no `adjacent` / `road` edges, so no path ends at one; mortals only cross lair nodes as road waypoints, which by design do not trigger. Non-vacuous by `src/engine/monsters/__tests__/lairArrivalTrigger.test.ts` (17): arrival at the lair and at a place inside it spawns, hex co-presence and mid-road steps do not, and each skip reason (cooldown, busy, monster_dead, avatar, arriving_for_hunt) is asserted through the real `phaseMovement`.
 
 ### `lair-escalation-mints-monster-card` — 🟢 LIVE
@@ -1464,10 +1503,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Encounters & Dilemmas
 - **UL terms:** *Opponent Card*, *Temper*
 - **Module:** `src/engine/monsters/monsterCard.ts`
-- **Production hits:** 24 total — 2 write, 2 read, 20 unclassified
+- **Production hits:** 25 total — 2 write, 2 read, 21 unclassified
 - **Write sites:** `src/engine/lairEscalation.ts`, `src/engine/monsters/monsterCard.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`, `src/engine/monsters/listMonsters.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +15 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +16 more
 - **Verdict:** Verified 2026-09-24: THR-1544 M1. Seed 42 medium, 120 ticks, CLI `monsters`: 14 monsters listed, every one carrying a card (14/14) — blight, stormkin, behemoth and golem families, all legendary by then, so every card also shows the hardening (clock 5, Dread one word up). Non-vacuous by `src/engine/monsters/__tests__/monsterCard.test.ts`: each of the eight families is minted and then read back through `readOpponentCard` with `source: 'monsterState'` and the family's temper from the `trait.temper.*` edge; the real `phaseLairEscalation` both mints and hardens; a foundation-sphere lair falls back to the Force family; a graph with no temper definitions mints the card and skips the edge.
 
 ### `lair-monster-gates-the-hunt` — 🟢 LIVE
@@ -1592,10 +1631,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Attention, Chronicle & Narrative
 - **UL terms:** *Opponent Card*, *Fight Clock*, *Temper*
 - **Module:** `src/components/Game/lair/buildLairMonsterCardModel.ts`
-- **Production hits:** 30 total — 2 write, 3 read, 25 unclassified
+- **Production hits:** 31 total — 2 write, 3 read, 26 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/monsters/monsterCard.ts`
 - **Read sites:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +20 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +21 more
 - **Verdict:** Verified 2026-09-25: THR-1552 F4. Review route `?view=game&seeded&size=medium&nofog`, `tick(60)`: lair_0's card reads "Ryx — A walking rot that spreads where it goes. Fearsome to face, a fair match." with 4 square pips at 14px and "untouched"; stored clock 2/4 reads "half-broken"; `spawnFight('Ryx', { clockFilled: 3, outcome: 'critical_success' })` played through the veil fells Ryx, lair_0 becomes a cleared lair, and the Cleared Lair Section reads "slain by Vara". At tick 100, `spawnFight('elite_lair_10_50', …)` fells Druja at the legendary lair_10, whose `namedEliteId` is then gone: the lair block finds her by reverse lookup on `lairId` and reads "slain by Vara" (`Docs/evidence/thr-1552/`). `getLairMonsterCard` matched `listMonsters` on every field it shares. Non-vacuous by `src/components/Game/lair/__tests__/lairMonsterF4.test.tsx`: the temper clause is absent before a fight and present after one; "slain by" renders when `getAgentInfoCard(...).death.by` is set and not when it is absent.
 
 ### `mortal-dies-through-one-funnel` — 🔵 UNVERIFIED-OK
@@ -1859,10 +1898,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 110 total — 1 write, 1 read, 108 unclassified
+- **Production hits:** 111 total — 1 write, 1 read, 109 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +103 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +104 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -1914,10 +1953,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Drawable*, *Encounter Seed*, *Appointment*
 - **Module:** `src/engine/encounterCache.ts`
-- **Production hits:** 17 total — 1 write, 3 read, 13 unclassified
+- **Production hits:** 19 total — 1 write, 3 read, 15 unclassified
 - **Write sites:** `src/data/encounters/vertical-slice.ts`
 - **Read sites:** `src/engine/deliveryBeatAdapter.ts`, `src/engine/encounterCache.ts`, `src/engine/unifiedCandidates.ts`
-- **Other hits:** `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts`, `src/data/encounter-content.ts` +8 more
+- **Other hits:** `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts`, `src/data/encounter-content.ts` +10 more
 - **Verdict:** Verified 2026-09-24: THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.
 
 ### `seeded-opponent-survives-to-spawn` — 🟢 LIVE
@@ -1937,10 +1976,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 373 total — 1 write, 1 read, 371 unclassified
+- **Production hits:** 376 total — 1 write, 1 read, 374 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +366 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +369 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -1985,10 +2024,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 106 total — 2 write, 4 read, 100 unclassified
+- **Production hits:** 107 total — 2 write, 4 read, 101 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts` +95 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/action-technical-effects.ts` +96 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -2122,10 +2161,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 65 total — 3 write, 4 read, 58 unclassified
+- **Production hits:** 66 total — 3 write, 4 read, 59 unclassified
 - **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +53 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +54 more
 - **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
@@ -2226,10 +2265,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 260 total — 2 write, 6 read, 252 unclassified
+- **Production hits:** 261 total — 2 write, 6 read, 253 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +247 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +248 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `yield-is-a-verb` — 🟢 LIVE

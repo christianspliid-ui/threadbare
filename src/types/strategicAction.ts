@@ -54,11 +54,13 @@ export type UndertakingVerbVariant =
 /**
  * The object types an undertaking may act on — the world-object catalogue's kinds
  * (`src/data/world-objects.ts`, THR-1394), in the catalogue's words. Every id here
- * is a `WorldObjectKindId`; the contract test pins it.
+ * is a `WorldObjectKindId` **or a class of one**: `monster` (THR-1560) is a class of
+ * the Mortal kind (THR-1268), and its type names the kind it belongs to through
+ * `classOf`. The contract test pins both halves — the kinds, and each class's kind.
  */
 export type UndertakingObjectTypeId =
   | 'area' | 'location' | 'place' | 'route'
-  | 'mortal'
+  | 'mortal' | 'monster'
   | 'faction' | 'company' | 'army' | 'network' | 'companion'
   | 'item' | 'power' | 'condition' | 'agreement' | 'standing';
 
@@ -134,6 +136,28 @@ export interface UndertakingAppointmentPayoff {
     /** Ticks after the window closes before the missed sequel is eligible. Default `APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS`. */
     readonly delayTicks?: number;
   };
+  /**
+   * The kept branch is aimed at the work's site (THR-1560): the planter stamps the
+   * seed's `inheritedTargetId` with the candidate's `targetNodeId`, so the meeting's
+   * encounter targets the object the work was about — a hunt's confront fights the
+   * beast. The missed branch drops it: the sequel fires wherever the mortal is.
+   */
+  readonly inheritSiteAsTarget?: boolean;
+  /** Multiplies the appointment's travel pull (`computeAppointmentPull`). Default 1. */
+  readonly pullMult?: number;
+  /**
+   * The meeting never fires placeless (THR-1560): a refused plant pushes no seed, and
+   * a seed whose place is lost is dropped after its favour is released rather than
+   * fired wherever the mortal stands.
+   */
+  readonly requirePlace?: boolean;
+  /**
+   * The place is off the road graph (THR-1560 — a lair has no `adjacent`, `road` or
+   * `contains` edge), so the slack is priced by hex distance × `APPOINTMENT_HEX_TICKS_PER_HEX`
+   * when the graph has no path, the way the journey queuer's hex fallback walks it.
+   * Without it such a meeting reads `unreachable` and is never travelled to.
+   */
+  readonly pricedByHex?: boolean;
 }
 
 export interface StrategicActionTemplate {
@@ -349,6 +373,14 @@ export interface StrategicActionTemplate {
    * field, because the victim there is the displaced owner rather than the target's.
    */
   readonly harmClass?: UndertakingHarmClass;
+  /**
+   * The harm lands later, not at completion (THR-1560). Carried from the object type's
+   * `deferredPayoffVerbs` onto the synthesised cell: completing a hunt only plants the
+   * confront, so completion writes **no outcome node** and **satisfies no grievance** —
+   * the beast's death, if it comes, closes the grievance through its own milestone.
+   * The completion history and trace record `payoffDeferred: true`.
+   */
+  readonly deferredPayoff?: boolean;
 }
 
 // ─── Harm classes (THR-1298) ────────────────────────────────────────
@@ -1084,6 +1116,11 @@ export interface StrategicHistoryEntry {
    * whose actor carries `domainCapabilities` and whose leaning Reach was under the cap.
    */
   readonly capabilityGrowth?: UndertakingCapabilityGrowth;
+  /**
+   * The completion deferred its harm and grievance writes (THR-1560, `deferredPayoff`):
+   * no outcome node was written and no grievance was satisfied, on purpose.
+   */
+  readonly payoffDeferred?: boolean;
 }
 
 // ─── Ambition Strategic Profile ─────────────────────────────────────

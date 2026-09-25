@@ -30,6 +30,7 @@ import type { ActionStep, AftermathVariant, UnifiedActionTemplate } from '../typ
 import type { FightResult } from '../types/fight';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import { FIGHT_LAIR_CONFRONT } from './encounters/fight-lair-confront';
+import { HUNT_TRAIL_COLD } from './encounters/hunt-trail-cold';
 import { fightBlock, fightResultIndex } from './fights/fightBlock';
 import { FIGHT_RESULT_CHOICE_PREFIX } from './fight-constants';
 
@@ -987,6 +988,11 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // THR-1543 — the first standalone fight template: spawn-only (no location
   // subtypes), found by `getAnyEncounterById` through this catalog.
   FIGHT_LAIR_CONFRONT,
+
+  // ── hunt.trail_cold ───────────────────────────────────────────────────────
+  // THR-1560 — the hunt's missed sequel: seed-only (`drawable: false`), fired by the
+  // hunt appointment's missed branch (`#hunt_trail_cold`) wherever the hunter stands.
+  HUNT_TRAIL_COLD,
 ];
 
 // ─── Lookup ─────────────────────────────────────────────────────────────────

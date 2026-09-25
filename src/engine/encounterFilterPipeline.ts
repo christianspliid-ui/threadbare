@@ -51,6 +51,7 @@ import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { livingGroupMemberCount } from './groups/groupQueries';
 import { hasOpposingBand } from './groups/bandOpposition';
 import { hasLiveLairMonsterAt } from './monsters/liveMonster';
+import { liveHuntFavourAtLocation } from './monsters/hunts';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import type { BearerTraitRefs } from './traitRefIndex';
@@ -350,6 +351,9 @@ export function filterByPrerequisites(
     // so it covers the Adventurers' Guild's quest entries too (built at the member's
     // own location): the Guild's offer is the hunt in front of you.
     if (template?.requiresLiveMonster && !hasLiveLairMonsterAt(graph, entry.locationId)) continue;
+    // THR-1560: nor to a hunter waiting at the den with a live hunt appointment — the
+    // appointment's confront is the fight they came for, and it is the only one.
+    if (template?.requiresLiveMonster && liveHuntFavourAtLocation(graph, agentId, entry.locationId)) continue;
     if (template?.requiredTraits && template.requiredTraits.length > 0) {
       // THR-786: one shared resolver, ANY-match on trait refs (node id, short id,
       // display name, tag). `every()` across the declared predicates is unchanged —

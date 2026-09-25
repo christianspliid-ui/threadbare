@@ -41,7 +41,8 @@ import type { SpotlightTier } from '../../types/npc';
 // A strategic-profiled ambition and a plain one, both live content — asserted below
 // so a content edit that flips either fails here by name rather than vacuously.
 const STRATEGIC = 'ambition_dominate_trade';
-const PLAIN = 'ambition_avenge_fallen';
+// THR-1560: `ambition_avenge_fallen` gained a profile (the hunt); its event-minted sibling is still plain.
+const PLAIN = 'ambition_avenge_the_wrong';
 
 function addMortal(
   g: WorldGraph,

@@ -31,6 +31,7 @@ import { emitTrace } from '../traceBuffer';
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { isBrokenMortal } from '../brokenState';
 import { writeGrudge, hasGrudge } from './grudgeEdge';
+import { isMonster } from '../monsters/isMonster';
 import {
   GRIEVANCE_CHAIN_DEPTH_MAX,
   GRIEVANCE_COOL_THRESHOLD,
@@ -477,6 +478,24 @@ export function findGrievanceForAmbitionTemplate(
   if (!edge) return undefined;
   const node = graph.getNode(edge.target);
   return node?.properties.templateId === ambitionTemplateId ? edge : undefined;
+}
+
+/**
+ * Whether completing some *other* undertaking may close this grievance (THR-1560).
+ *
+ * Completion finds the grievance to satisfy by ambition template alone, so an avenger
+ * whose culprit is a beast, finishing any other vengeance project first, would close
+ * the account — and with it the hunt's `grievance` reason — while the beast still
+ * lives. A grievance whose culprit is a monster is therefore satisfied **only by the
+ * culprit's death** (its `grievance_culprit_eliminated` milestone), never by a
+ * project's completion. Before the fight endings no grievance could name a monster,
+ * so no existing grievance changes. Fail-soft: an unreadable culprit closes as before.
+ */
+export function grievanceClosesOnCompletion(graph: WorldGraph, edge: GraphEdge | undefined): boolean {
+  if (!edge) return false;
+  const culpritId = edge.properties.culpritAgentId;
+  if (typeof culpritId !== 'string') return true;
+  return !isMonster(graph.getNode(culpritId));
 }
 
 /**

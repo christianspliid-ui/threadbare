@@ -166,6 +166,9 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       // THR-1543 — the standalone fight templates (`fight.lair.confront`). Claimed for the
       // encounter kind, so a `{ kind: 'encounter_template' }` query can find them.
       'fight.',
+      // THR-1560 — the hunt's missed sequel (`hunt.trail_cold`). Without the prefix the
+      // kind narrows it out of `{ kind: 'encounter_template' }`, and a missed hunt fires nothing.
+      'hunt.',
       // The faction quest families, two-letter by convention (THR-1481 names these
       // `encounterFamily` prefixes as the literal-id rot slice 4 replaces with tags).
       'ag.', 'mc.', 'tg.', 'ac.', 'bf.', 'cg.', 'hod.', 'uk.', 'rb.', 'mct.', 'lk.', 'ts.', 'fa.',

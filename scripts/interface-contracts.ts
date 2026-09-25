@@ -4773,6 +4773,57 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1578. Seeded worlds 42/99/7 x 120 ticks (`npm run gameplay-report`): 144-281 stamped engagements per seed folded into bands, 23-29 unstamped (band `unknown` - seeded, forced and legacy paths, deliberately outside the invariant). The first wiring keyed stamps on `action.id`, a field `UnifiedAction` does not have, so every stamp collided on `undefined` and half the resolutions read `unknown`; the heavy wiring test `src/engine/__tests__/engagementWindow.invariant.test.ts` (stamped > unknown on seed 42 x 30) caught it and passes on `actionId`. Arithmetic pinned by `src/engine/kpi/__tests__/engagementKpi.test.ts`.",
     },
   },
+  // ── Hunts H2 (THR-1560, plan 2026-09-23-hunts § Interface impact) — the rows "hunt
+  // payoff → appointment → fight (target inherited on the kept branch only)", "grievance
+  // (pursues naming a monster) → hunt reason" and "hunt completion → grievance
+  // satisfaction (deferred)". No `verifiedLive`: the evidence is
+  // src/engine/monsters/__tests__/hunts.test.ts plus the census recorded in
+  // Docs/status/2026-09-25-thr-1560.md.
+  {
+    id: 'hunt-payoff-plants-confront',
+    producerSystem: AMBITIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A finished hunt is a promise to be at the beast\'s den: the appointment it plants is judged at the lair, and its kept branch is the fight against that very beast — the missed one tells the hunter the trail went cold wherever they stand. Without it a hunt would end in nothing, or the confront would fire wherever the hunter happened to be.',
+    ulTerms: ['Undertaking', 'Appointment', 'Fight'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['inheritSiteAsTarget', 'requirePlace', 'pricedByHex', 'maybePlantAppointmentPayoff', 'liveHuntFavourAt'],
+      module: 'src/engine/monsters/hunts.ts',
+    },
+    writeSites: ['src/engine/strategicActionLifecycle.ts', 'src/engine/appointments.ts'],
+    readSites: ['src/engine/encounterSeeding.ts', 'src/engine/monsters/lairArrivalTrigger.ts', 'src/engine/encounterFilterPipeline.ts', 'src/engine/unifiedCandidates.ts'],
+  },
+  {
+    id: 'grievance-opens-hunt-door',
+    producerSystem: AMBITIONS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal hunts a beast only for a reason the world gave them — a scar it left, a grievance whose culprit it is, or its den near home — and the board records which, so every hunt can say why it formed.',
+    ulTerms: ['Grievance', 'Undertaking'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['huntReason', 'gateExemption', 'culpritAgentId'],
+      module: 'src/engine/monsters/hunts.ts',
+    },
+    writeSites: ['src/engine/grievance/grievanceLifecycle.ts', 'src/engine/fights/fightEnding.ts'],
+    readSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingMotive.ts'],
+  },
+  {
+    id: 'hunt-completion-defers-grievance',
+    producerSystem: AMBITIONS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'Finishing a hunt harms nobody yet, so it writes no outcome and closes no grievance; a grievance against a beast closes only when the beast dies — never because the hunt, or any other project, finished — so a hunter whose fight breaks off can go back.',
+    ulTerms: ['Grievance'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['deferredPayoff', 'payoffDeferred', 'grievanceClosesOnCompletion'],
+      module: 'src/engine/grievance/grievanceLifecycle.ts',
+    },
+    writeSites: ['src/data/undertaking-cells.ts'],
+    readSites: ['src/engine/strategicActionLifecycle.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

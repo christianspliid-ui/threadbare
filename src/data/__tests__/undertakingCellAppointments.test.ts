@@ -19,7 +19,7 @@ import { profileWorkIds } from '../../engine/strategicActionCandidates';
 import { contentQueryHasCandidates, describeContentQuery, resolveContentQuery } from '../../engine/contentQuery';
 import { staticContentCatalogs } from '../../engine/contentCatalogView';
 import { getUnifiedTemplateById } from '../unified-action-templates';
-import { ENCOUNTER_FAMILY_TAGS } from '../../engine/encounterSeeding';
+import { contentTagsOnAxis } from '../content-tags';
 import { buildUndertakingContractContext, checkUndertakingContract, failedBlocks, undertakingWriteSet } from '../content-eval/undertakingContract';
 
 /** The tiers a mortal can be standing at when the meeting is judged there. */
@@ -45,7 +45,9 @@ describe('the cell appointment table (THR-1519)', () => {
   });
 
   it('both branches are queries over seated family tags that resolve against the static catalogs', () => {
-    const seated = new Set<string>(Object.values(ENCOUNTER_FAMILY_TAGS));
+    // THR-1560: the seated family axis of the closed tag vocabulary — not the one-release
+    // map of old id prefixes (`ENCOUNTER_FAMILY_TAGS`), which neither hunt tag belongs in.
+    const seated = new Set<string>(contentTagsOnAxis('family').map(t => t.tag));
     const catalogs = staticContentCatalogs();
     for (const [cellId, payoff] of Object.entries(UNDERTAKING_CELL_APPOINTMENTS)) {
       for (const [arm, query] of [['meeting', payoff.meeting], ['missed', payoff.missed.query]] as const) {

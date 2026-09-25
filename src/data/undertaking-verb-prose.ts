@@ -194,6 +194,9 @@ export const UNDERTAKING_CELL_DEEDS: Readonly<Record<string, string>> = {
   'cell.create.condition': 'Laid',
   'cell.destroy.condition': 'Cured',
   'cell.destroy.mortal': 'Slew',
+  // THR-1560 — a hunt is not a breaking: the ledger reads *Hunted the Mire Ox*.
+  'cell.observe.monster': 'Tracked',
+  'cell.destroy.monster': 'Hunted',
   'cell.create.company': 'Raised',
   'cell.create.army': 'Raised',
   'cell.create.network': 'Founded',
@@ -253,6 +256,9 @@ export const UNDERTAKING_CELL_PHRASES: Readonly<Record<string, string>> = {
   'cell.use.standing': 'Call in a favour',
   'cell.use.agreement': 'Press what you hold',
   'cell.change_raise.route': 'Widen a trade lane',
+  // THR-1560 — the two hunt cells, in the words the card should use.
+  'cell.observe.monster': 'Track a monster',
+  'cell.destroy.monster': 'Hunt a monster',
 };
 
 // ─── Per-cell line sets (THR-1429) ──────────────────────────────────
@@ -386,6 +392,39 @@ export const UNDERTAKING_CELL_PROSE: Readonly<Record<string, UndertakingVerbLine
       '{Actor} is caught at it. {Object} is still breathing.',
     ],
     narration: '{Actor} meant {object} dead.',
+  },
+
+  // ─── Hunts (THR-1560) ────────────────────────────────────────────
+  //
+  // Tracking learns how a beast moves; hunting makes the hunter ready to go in. The
+  // hunt's completion only plants the confront at the den — the fight comes after —
+  // so these lines never say the beast fell. Without them the generic destroy line
+  // would print *"{Object} is undone"* at a completion that has harmed nobody yet.
+  'cell.observe.monster': {
+    activity: [
+      '{Actor} is reading the ground around the den of {object}, and learning what it leaves behind.',
+      '{Actor} has been following the signs of {object} from a careful distance.',
+      '{Actor} is learning when {object} hunts and when it sleeps.',
+    ],
+    completion: [
+      '{Actor} knows the ways of {object} now: where it walks, and where it is weak.',
+      '{Actor} has learned how {object} moves. The beast does not know it has been watched.',
+      '{Actor} has tracked {object} long enough to know its temper.',
+    ],
+    narration: '{Actor} has learned the ways of {object}.',
+  },
+  'cell.destroy.monster': {
+    activity: [
+      '{Actor} is getting ready to face {object}, and does not hide it.',
+      '{Actor} is sharpening what needs sharpening, with {object} in mind.',
+      '{Actor} has been learning the way to the den of {object}, one road at a time.',
+    ],
+    completion: [
+      '{Actor} has learned the ways to {object}\'s den.',
+      '{Actor} is ready to go in after {object}. The den is waiting.',
+      '{Actor} has made ready, and the den of {object} is the next road.',
+    ],
+    narration: '{Actor} means to face {object} in its den.',
   },
 
   // ─── The ownership of people-things (THR-1438) ───────────────────
