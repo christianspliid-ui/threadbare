@@ -14,7 +14,7 @@ import { clearTraces, disableTracing, enableTracing, getTraces } from '../../tra
 import { processEffectEvent } from '../../effects/effectEvents';
 import { resolveFightStepInputs } from '../fightStepInputs';
 import { fightResultIndex } from '../fightState';
-import { FIGHT_END_BRANCHES, resetFightEndBranches } from '../fightOutcome';
+import { resetFightEndBranches } from '../fightOutcome';
 import { markMortalDead } from '../../agentLifecycle';
 import { FIGHT_STANDING_MODIFIER_NAME } from '../../../data/fight-constants';
 import type { GameState } from '../../../types/gameState';

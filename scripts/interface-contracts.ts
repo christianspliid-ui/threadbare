@@ -4307,6 +4307,25 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.',
     },
   },
+  // ── Monsters M3 (THR-1546, plan 2026-09-23-monsters-as-opponents §5) — the plan's
+  // Interface impact row "fight → lair clearing": a second writer to `clearingProgress`
+  // / `clearLair`, beside THR-1319's presence press. The existing readers of both
+  // (the presence pass, reinfestation, army attrition, the sidebar) read what it writes.
+  {
+    id: 'fight-fells-monster-clears-lair',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: RUINS,
+    intent:
+      "Felling a lair's monster in a fight is what takes the den: at major the lair falls to the victor's faction; at legendary the den outlives its beast but is worn halfway down; driving the beast off wears it a little. A warded or already-dead beast credits nothing.",
+    ulTerms: ['Opponent Card'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['monsterLairBranch', 'clearLair', 'clearingProgress', 'lairOutcome'],
+      module: 'src/engine/monsters/monsterFelling.ts',
+    },
+    writeSites: ['src/engine/monsters/monsterFelling.ts'],
+    readSites: ['src/engine/lairClearing.ts', 'src/engine/lairEscalation.ts'],
+  },
   // ── FB3 (THR-1539, plan §7) — the plan's Interface impact rows "encounter step →
   // quintessence queue" (extend with `fight_harm`) and "encounter step → conditions
   // applier" (extend with fight bands). No `verifiedLive`, for the FB2 rows' reason:

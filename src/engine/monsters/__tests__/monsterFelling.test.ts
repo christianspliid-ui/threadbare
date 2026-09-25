@@ -55,7 +55,7 @@ function lairWorld(tier: LairTier = 'major', opts: { heroFaction?: boolean; prog
       ...(opts.progress !== undefined ? { clearingProgress: opts.progress } : {}),
     },
   });
-  graph.addNode({ id: 'faction.wardens', type: 'faction', name: 'Wardens', properties: {} });
+  graph.addNode({ id: 'faction.wardens', type: 'actor', name: 'Wardens', properties: { actorType: 'faction' } });
   graph.addNode({ id: 'hero', type: 'actor', name: 'Hero', properties: { actorType: 'individual' } });
   graph.addEdge({ id: 'e.hero.at', source: 'hero', target: 'lair-1', type: 'located_at', properties: {} });
   if (opts.heroFaction !== false) {

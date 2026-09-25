@@ -22,7 +22,7 @@ import { createSimulationRuntime } from '../../simulationRuntime';
 import { resetUnifiedActionCounter } from '../../unifiedActionLifecycle';
 import { createBindingIndex } from '../../binding/bindingRegistry';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../../traceBuffer';
-import { FIGHT_END_BRANCHES, resetFightEndBranches } from '../../fights/fightOutcome';
+import { resetFightEndBranches } from '../../fights/fightOutcome';
 import { MONSTER_HUNT_NAMED_ELITE } from '../../../data/monster-encounter-content';
 import { FIGHT_LAIR_CONFRONT } from '../../../data/encounters/fight-lair-confront';
 import { MONSTER_FAMILIES } from '../../../data/monster-families';
