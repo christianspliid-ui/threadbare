@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 122 |
+| 🟢 LIVE | 123 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 36 |
-| **Total** | **166** |
+| **Total** | **167** |
 
 ## Contracts by producing subsystem
 
@@ -289,6 +289,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
+| `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ## Evidence
@@ -775,10 +776,10 @@ exit
 - **Intent:** A company travels as one — members share a destination instead of wandering off separately.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/groups/groupMovement.ts`
 - **Read sites:** `src/engine/phaseMovement.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts` +8 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts` +9 more
 - **Verdict:** Verified 2026-07-24: phaseGroups writes members' MovementState and phaseMovement (next phase in runTick) executes it. 72-tick CLI smoke, seed 42 medium: "The Watch of the Nameless Road" members Nareth and Hestia both at Wolfton; "The Steadfast Sparrows" both at Shadow-shade.
 
 ### `company-gates-exclusive-content-reachability` — 🟢 LIVE
@@ -1406,6 +1407,18 @@ exit
 - **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/incidentRecorder.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. `recordTick` is called once per tick from the tick-end site beside `validateTickOutput` with `runtime` already in scope, and both rings are read by `incidentBundle`'s `events` and `census` sections plus `__DEBUG.getIncidentRecorderStats()`. Owned on `SimulationRuntime` rather than at module scope, per the load-bearing decision, so a second playthrough cannot inherit the first one's events. Non-vacuous by `src/engine/__tests__/incidentRecorder.test.ts` (wrap behaviour asserted past `INCIDENT_EVENT_RING_SIZE`, oldest-first order across the wrap, and a throwing census that increments `misses`, leaves the tick untouched, and still records the *next* tick — the last clause falsifies the guard rather than confirming it) and by `incidentBundle.test.ts`'s census/recorder assertion.
 
+### `lair-arrival-spawns-confront` — 🟢 LIVE
+
+- **Intent:** A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it.
+- **Producer → Consumer:** World Generation, Terrain & Places → Encounters & Dilemmas
+- **UL terms:** *Opponent Card*
+- **Module:** `src/engine/monsters/lairArrivalTrigger.ts`
+- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
+- **Write sites:** `src/engine/phaseMovement.ts`
+- **Read sites:** `src/data/encounters/fight-lair-confront.ts`, `src/engine/monsters/lairArrivalTrigger.ts`
+- **Other hits:** `src/data/content-objects.ts`, `src/data/fight-constants.ts`, `src/data/monster-encounter-content.ts`, `src/debug-bridge.ts`, `src/engine/debugEncounterTools.ts` +3 more
+- **Verdict:** Verified 2026-09-25: THR-1547 M4. Seed 42 medium, tick 100, an idle mortal (ind_0) sent to end a journey at the legendary lair_0: the arrival traces `fight.trigger` spawned (`ua_167` vs `elite_lair_0_50`), writes `fightCooldowns["elite_lair_0_50|ind_0"] = 126`, and the fight runs — three `fight.step` traces against `elite_lair_0_50`, then `fight.end … broke_off`. Natural play spawns none in 200 ticks on seeds 42 and 99: lairs have no `adjacent` / `road` edges, so no path ends at one; mortals only cross lair nodes as road waypoints, which by design do not trigger. Non-vacuous by `src/engine/monsters/__tests__/lairArrivalTrigger.test.ts` (17): arrival at the lair and at a place inside it spawns, hex co-presence and mid-road steps do not, and each skip reason (cooldown, busy, monster_dead, avatar, arriving_for_hunt) is asserted through the real `phaseMovement`.
+
 ### `lair-escalation-mints-monster-card` — 🟢 LIVE
 
 - **Intent:** A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made.
@@ -1424,10 +1437,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Encounters & Dilemmas
 - **UL terms:** *Opponent Card*
 - **Module:** `src/engine/monsters/liveMonster.ts`
-- **Production hits:** 14 total — 1 write, 4 read, 9 unclassified
+- **Production hits:** 15 total — 1 write, 4 read, 10 unclassified
 - **Write sites:** `src/engine/lairEscalation.ts`
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/monsters/liveMonster.ts`, `src/engine/unifiedCandidates.ts`
-- **Other hits:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/data/monster-encounter-content.ts`, `src/engine/lairClearing.ts`, `src/engine/monsters/monsterCard.ts` +4 more
+- **Other hits:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/data/monster-encounter-content.ts`, `src/engine/lairClearing.ts`, `src/engine/monsters/lairArrivalTrigger.ts` +5 more
 - **Verdict:** Verified 2026-09-25: THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.
 
 ### `location-condition-taxes-movement-and-gates-templates` — 🔵 UNVERIFIED-OK
@@ -1807,10 +1820,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 109 total — 1 write, 1 read, 107 unclassified
+- **Production hits:** 110 total — 1 write, 1 read, 108 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +102 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +103 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE

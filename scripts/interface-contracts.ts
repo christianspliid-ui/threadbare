@@ -4384,6 +4384,30 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/monsters/monsterFelling.ts'],
     readSites: ['src/engine/lairClearing.ts', 'src/engine/lairEscalation.ts'],
   },
+  // ── Monsters M4 (THR-1547, plan 2026-09-23-monsters-as-opponents §6) — the plan's
+  // Interface impact row "movement arrival → fight spawn". The arrival branch reads the
+  // lair's elite and spawns the confront into the unified-action pipeline, which runs it.
+  {
+    id: 'lair-arrival-spawns-confront',
+    producerSystem: WORLDGEN,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it.",
+    ulTerms: ['Opponent Card'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['checkLairArrival', 'fightCooldowns', 'fightPairKey', 'fight.lair.confront'],
+      module: 'src/engine/monsters/lairArrivalTrigger.ts',
+    },
+    writeSites: ['src/engine/phaseMovement.ts'],
+    // The confront the spawn runs, and the trigger's own cooldown read on the next arrival.
+    readSites: ['src/data/encounters/fight-lair-confront.ts', 'src/engine/monsters/lairArrivalTrigger.ts'],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        'THR-1547 M4. Seed 42 medium, tick 100, an idle mortal (ind_0) sent to end a journey at the legendary lair_0: the arrival traces `fight.trigger` spawned (`ua_167` vs `elite_lair_0_50`), writes `fightCooldowns["elite_lair_0_50|ind_0"] = 126`, and the fight runs — three `fight.step` traces against `elite_lair_0_50`, then `fight.end … broke_off`. Natural play spawns none in 200 ticks on seeds 42 and 99: lairs have no `adjacent` / `road` edges, so no path ends at one; mortals only cross lair nodes as road waypoints, which by design do not trigger. Non-vacuous by `src/engine/monsters/__tests__/lairArrivalTrigger.test.ts` (17): arrival at the lair and at a place inside it spawns, hex co-presence and mid-road steps do not, and each skip reason (cooldown, busy, monster_dead, avatar, arriving_for_hunt) is asserted through the real `phaseMovement`.',
+    },
+  },
   // ── Fight endings D1 (THR-1548, plan 2026-09-23-defeat-and-victory §1–3) — the plan's
   // Interface impact rows "fight → grudges" (extend with `blood_drawn`), "fight → reactive
   // loop" (add: a non-undertaking source) and "fight → reputation" (humiliation). The

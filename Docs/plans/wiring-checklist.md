@@ -2772,3 +2772,14 @@ Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §4–5. Extends D1's `fight
 | `data/fight-ending-content.ts` (new: `FIGHT_TROPHY_RECIPE`, `FIGHT_TROPHY_OUTCOME`, `FIGHT_CHRONICLE_LINES`, `_PLAIN`) · `data/fight-constants.ts` (victory reputation, radius, significance, tier-by-face) · `data/uiColorPalette.ts` (`fight_ended`) · `types/gameState.ts` (`fight_ended`) · `types/contentQuery.ts` (`fight_trophy`) | — | — | — | — | — |
 
 **Wired and asserted:** `fightEndingD2.test.ts` runs every victory face through the real dispatcher and feeds the returned events to the real `phaseNarrative`. Live CLI (seed 42 medium, 30 `spawn fight` confronts): 5 notable `fight.ending` traces, 5 new `fight_ended_*` chronicle rows.
+
+## Walking into the lair — Monsters M4 (THR-1547)
+
+Plan: `Docs/plans/2026-09-23-monsters-as-opponents.md` §6. A mortal whose journey ends at a lair (or a place inside one) whose beast lives is confronted on arrival. No new phase, node type or edge type; no component edit.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/monsters/lairArrivalTrigger.ts` (new: `checkLairArrival`, `fightPairKey`, `isFightPairOnCooldown`, `writeFightCooldown`) → `engine/phaseMovement.ts` (arrival branch, after the place-entry block; returns `unifiedActions` + `fightCooldowns` only when a confront fired) | `agent_movement` (Phase 2.35) | existing encounter veil (`fight.lair.confront`) | `unifiedActions[]`, `fightCooldowns` (new, optional, expiry ticks) | `fight.trigger` (new, registered in the trace trio): spawned with `actionId`, or `skipped` ∈ avatar / arriving_for_hunt / busy / cooldown / monster_dead | CLI `traces`; `eval state.fightCooldowns` |
+| `data/fight-constants.ts` (`FIGHT_TRIGGER_COOLDOWN_TICKS` = 25) · `types/gameState.ts` (`fightCooldowns?`) · `types/traces/monster-traces.ts` (`FightTriggerTrace`, `FightTriggerSkip`) · `types/trace.ts` | — | — | — | — | — |
+
+**Wired and asserted:** `lairArrivalTrigger.test.ts` drives the real `phaseMovement` for every spawn and skip case. Live (seed 42 medium, tick 100): a mortal sent to end a journey at lair_0 was confronted and fought three exchanges. Natural play spawns none in 200 ticks on seeds 42 and 99, because lairs carry no `adjacent` / `road` edges and no path ends at one.
