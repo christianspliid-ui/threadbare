@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 30 |
-| **Total** | **158** |
+| 🔵 UNVERIFIED-OK | 33 |
+| **Total** | **161** |
 
 ## Contracts by producing subsystem
 
@@ -164,12 +164,15 @@ remediation ticket or the build fails.
 | `encounter-timeline-to-incident-bundle` | The mortals the player watches are the ones they will ask about, so each one arrives with the tail of what actually happened to them. | function: `getTimeline`, `getTrackedAgentIds` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 | `fight-band-conditions` | A fight leaves its mark as the ordinary conditions — inspired, shaken, terrified, wounded — so every ward, cure and reader that knows a condition knows a fight's wound. | edge-prop: `has_trait`, `ticksRemaining` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-complications-scoped` | When an exchange goes badly, the fight draws from its own events — the footing gives, it roars, quarter is offered — and those events move the fight itself: its odds, its clock, a fighter's nerve. | function: `fightComplicationScope`, `inFight`, `fight_momentum`, `fight_clock`, `fight_offer_quarter`, `fight_condition` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `fight-death-feeds-reactive-loop` | A mortal killed in a fight is a killing with a culprit, written into the reactive loop in exactly the plot's shape — the dead's bonds take it up, the omen agenda can portend it, and the receipt credits it — never a death nobody answers. | function: `killStruckDownFighter`, `createUndertakingOutcomeNode`, `named_death`, `undertaking_outcome` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `fight-fells-monster-clears-lair` | Felling a lair's monster in a fight is what takes the den: at major the lair falls to the victor's faction; at legendary the den outlives its beast but is worn halfway down; driving the beast off wears it a little. A warded or already-dead beast credits nothing. | node-prop: `monsterLairBranch`, `clearLair`, `clearingProgress`, `lairOutcome` | Ruins, Clues & Delves | 🔵 UNVERIFIED-OK | — |
 | `fight-harm-queues-quintessence` | An exchange that goes badly costs the fighter their quintessence, on the same ledger every other hurt settles on — and a ward turns it aside, while a spell's price is still paid. | function: `queueFightHarm`, `computeFightErosion`, `pendingQuintessenceEvents` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
+| `fight-mauling-writes-blood-drawn-grudge` | A mortal struck down in a fight who lives carries Scarred and a grudge against whoever did it, beast or mortal — an injury, so the motive gate reads it as a grudge and the scarred may one day plot back. | edge-prop: `hostile_to`, `blood_drawn`, `GRUDGE_PROVENANCE`, `writeMauled` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `fight-raises-effect-events` | A fight is where gear and powers happen: a thorned hide bites whoever lands a blow on it, a blade grows keener with each exchange won, a trophy charm counts the kills, and a beast's roar at the start of a fight changes the first exchange. | function: `raiseEffectEvent`, `raiseFightStarted`, `raiseFightStepOutcome`, `raiseFightClashLanded`, `raiseFightOvercome`, `raiseFightEnded` | Effects & Conditions | 🔵 UNVERIFIED-OK | — |
 | `fight-result-keys-aftermath-variants` | How a fight ended — overcome, routed, struck down, broke off — picks the ending the player reads, through the same choice memory an authored fork uses, without any step owning the slot. | function: `withFightResultMemory`, `fightResultIndex` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-spends-favour-and-secret` | A mortal who is owed a favour can call it in when a fight comes, and one who knows the opponent's secret can throw it in their face when losing — the debt is paid and the secret is out, remembered on the same edges the rest of the world reads. | edge-prop: `owes_favor`, `knows_secret_of`, `redeemFavor`, `applySecretRevelationConsequences` | Secrets & Favors | 🔵 UNVERIFIED-OK | — |
 | `fight-writes-opponent-clock` | Every blow a fighter lands fills the opponent's clock, and the next fight reads where it was left — a monster worn down by one hero is closer to falling for the next, recovering only with time. | node-prop: `advanceFightClock`, `monsterState`, `FIGHT_CLOCK_MAILBOX_PROP` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `fight-yield-humiliates-at-home` | Yielding to another person costs a mortal face with their home settlement; yielding to a beast costs nothing, because there is nobody to tell. | edge-prop: `reputation_with`, `applyReputationWithDelta`, `fight_humiliation` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -313,10 +316,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Agent*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 58 total — 2 write, 3 read, 53 unclassified
+- **Production hits:** 59 total — 2 write, 3 read, 54 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
 - **Read sites:** `src/components/Game/tabs/BondsTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +48 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +49 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
 ### `ambition-acquisition` — 🟢 LIVE
@@ -1073,10 +1076,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 111 total — 1 write, 1 read, 109 unclassified
+- **Production hits:** 113 total — 1 write, 1 read, 111 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +104 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +106 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1089,6 +1092,18 @@ exit
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/fights/fightState.ts`
 - **Other hits:** `src/data/complication-templates.ts`, `src/engine/complicationEffects.ts`, `src/engine/complicationSelection.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts` +8 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `fight-death-feeds-reactive-loop` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A mortal killed in a fight is a killing with a culprit, written into the reactive loop in exactly the plot's shape — the dead's bonds take it up, the omen agenda can portend it, and the receipt credits it — never a death nobody answers.
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
+- **UL terms:** *Struck down*, *Grievance*
+- **Module:** `src/engine/fights/fightEnding.ts`
+- **Production hits:** 15 total — 2 write, 2 read, 11 unclassified
+- **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
+- **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/phaseOmenAgenda.ts`
+- **Other hits:** `src/data/ambition-minting-rules.ts`, `src/data/ambition-templates.ts`, `src/data/fight-constants.ts`, `src/data/game-config.ts`, `src/data/omenTemplates.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-fells-monster-clears-lair` — 🔵 UNVERIFIED-OK
@@ -1113,6 +1128,18 @@ exit
 - **Write sites:** `src/engine/fights/fightHarm.ts`
 - **Read sites:** `src/engine/phaseQuintessence.ts`
 - **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/complicationEffects.ts`, `src/engine/encounter.ts`, `src/engine/encounterAftermath.ts`, `src/engine/fights/fightState.ts` +9 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `fight-mauling-writes-blood-drawn-grudge` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A mortal struck down in a fight who lives carries Scarred and a grudge against whoever did it, beast or mortal — an injury, so the motive gate reads it as a grudge and the scarred may one day plot back.
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
+- **UL terms:** *Grudge*, *Struck down*, *Scarred*
+- **Module:** `src/engine/fights/fightEnding.ts`
+- **Production hits:** 27 total — 2 write, 3 read, 22 unclassified
+- **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/grudgeEdge.ts`
+- **Read sites:** `src/data/grievance-prose.ts`, `src/engine/agentDetail.ts`, `src/engine/undertakingMotive.ts`
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +17 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-raises-effect-events` — 🔵 UNVERIFIED-OK
@@ -1163,6 +1190,18 @@ exit
 - **Other hits:** `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/debug-bridge.ts`, `src/engine/effectExecutors.ts` +18 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `fight-yield-humiliates-at-home` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Yielding to another person costs a mortal face with their home settlement; yielding to a beast costs nothing, because there is nobody to tell.
+- **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
+- **UL terms:** *Struck down*
+- **Module:** `src/engine/fights/fightEnding.ts`
+- **Production hits:** 34 total — 1 write, 1 read, 32 unclassified
+- **Write sites:** `src/engine/fights/fightEnding.ts`
+- **Read sites:** `src/engine/reputation.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +27 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
 
 - **Intent:** What a mortal holds yields to them: a seized route tolls, a freehold pays, a controlled Location tithes — so taking something that produces is worth taking, and the wealth it moves is visible to the player as a word.
@@ -1191,10 +1230,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 89 total — 2 write, 3 read, 84 unclassified
+- **Production hits:** 90 total — 2 write, 3 read, 85 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +79 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +80 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-command-changes-through-one-writer` — 🟢 LIVE
@@ -1215,10 +1254,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 68 total — 1 write, 2 read, 65 unclassified
+- **Production hits:** 69 total — 1 write, 2 read, 66 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +60 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +61 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -1447,10 +1486,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 36 total — 4 write, 3 read, 29 unclassified
+- **Production hits:** 38 total — 4 write, 3 read, 31 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/worldPulseCount.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts` +24 more
+- **Other hits:** `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/worldPulseCount.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/binding/bindingRegistry.ts` +26 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -1471,10 +1510,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 87 total — 2 write, 3 read, 82 unclassified
+- **Production hits:** 89 total — 2 write, 3 read, 84 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +77 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +79 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1623,10 +1662,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
 - **UL terms:** *Reputation*
 - **Module:** `src/engine/reputation.ts`
-- **Production hits:** 17 total — 2 write, 6 read, 9 unclassified
+- **Production hits:** 18 total — 2 write, 6 read, 10 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/reputation.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/encounterFilterPipeline.ts`, `src/engine/secretGeneration.ts`, `src/engine/socialLeverage.ts` +1 more
-- **Other hits:** `src/data/encounters/the-garrisons-price.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/factionSuccessionOps.ts` +4 more
+- **Other hits:** `src/data/encounters/the-garrisons-price.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/factionSuccessionOps.ts` +5 more
 - **Verdict:** Verified 2026-08-23: THR-1206, director ruling. Six mechanisms wore the word `reputation` and disagreed; a seventh (`trait.condition.location.standing_welcome`) did reputation's job under a bespoke noun the director vetoed on player surfaces. This is a READ unification plus one new store, deliberately NOT a store migration (strangler ruling in the plan): `getReputationWith` dispatches membership (`member_of.reputation`) → edge (`reputation_with`) → bond (`relates_to.trust`, remapped [-1,1]→[0,1]) → default, and every leg's band word comes from the single `getReputationWord` vocabulary, which is what makes the stores one concept on every surface. The new `reputation_with` edge family (actor → actor|location, required `score`+`lastChangedTick`) fills the two pairs no store covered: agent↔location, and agent↔faction WITHOUT membership — `applyFactionReputationGain` no-ops with `not_a_member`, so a non-member could never earn standing with a community at all. Sparse by construction: minted on first write, decayed toward neutral in phase 6.6 and DELETED once inside `REPUTATION_WITH_PRUNE_EPSILON`, so the sweep is O(edges that exist) and there is no N×M scan. Every consumer ships in the same change, so this is not a write nobody reads (the THR-1154 flaw): the `requiredReputationWith` eligibility gate at both filter sites, the signed opening-leverage term in `computeInitialLeverage` (signed, unlike its bonus-only siblings — standing that has soured is as real as standing earned), and two profile surfaces. Non-vacuous by `src/engine/__tests__/reputation.test.ts` (22 tests: all four dispatch legs in BOTH polarities, priority order between legs, directionality, the cap/clamp/mint/sublocation-resolve write behaviour, decay from both sides, and the prune) — falsified 2-of-22 red with the sublocation resolve reverted — plus `src/components/Game/__tests__/reputationSurfaces.test.tsx` (8 render assertions on the real components, falsified 2-of-8 red with the FactionSheet banding reverted). The first migrated content is the Grateful Kin gratitude beat, whose three bands replaced `apply_condition → standing_welcome` with `reputation_with` deltas and whose four chips now state 'reputation with {target}' — pinned by the corpus and veil suites, which were red on the old noun until updated.
 
 ### `requires-hold-gates-town-keeper-content` — 🟢 LIVE
@@ -1703,10 +1742,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 108 total — 1 write, 1 read, 106 unclassified
+- **Production hits:** 109 total — 1 write, 1 read, 107 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +101 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +102 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -1988,10 +2027,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 29 total — 5 write, 5 read, 19 unclassified
+- **Production hits:** 30 total — 5 write, 5 read, 20 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
 - **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/tabs/JourneyTab.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentArc.ts`
-- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts`, `src/data/encounters/vertical-slice.ts`, `src/data/foreshadowing-content.ts` +14 more
+- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts`, `src/data/encounters/vertical-slice.ts`, `src/data/foreshadowing-content.ts` +15 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
@@ -2000,10 +2039,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
 - **UL terms:** *Archetype Drift*, *Nudge*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 5 total — 1 write, 0 read, 4 unclassified
+- **Production hits:** 6 total — 1 write, 0 read, 5 unclassified
 - **Write sites:** `src/engine/encounters/branchDecision.ts`
 - **Read sites:** —
-- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`, `src/engine/unifiedActionResolution.ts`
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'dispatchNudgeCommitments' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `war-news-reaches-chronicle` — 🟢 LIVE
@@ -2070,10 +2109,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 258 total — 2 write, 6 read, 250 unclassified
+- **Production hits:** 259 total — 2 write, 6 read, 251 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +245 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +246 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `yield-is-a-verb` — 🟢 LIVE

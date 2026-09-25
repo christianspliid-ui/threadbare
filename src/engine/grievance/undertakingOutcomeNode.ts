@@ -40,9 +40,35 @@ export function isUndertakingOutcomeEventId(id: string | undefined | null): bool
   return typeof id === 'string' && id.startsWith(UNDERTAKING_EVENT_NODE_ID_PREFIX);
 }
 
+/**
+ * A harm that did not come from an undertaking (THR-1548). Today one kind: a death in
+ * a fight. It supplies exactly what the writer reads from `project` — an id, the
+ * template, the thing the harm was done *to* (the victim, so the omen deed reads "the
+ * killing of <victim>" as the plot's does) and where it happened — and nothing else,
+ * so every consumer of the reactive loop reads a fight death as the harm it is.
+ */
+export interface OutcomeNonUndertakingSource {
+  readonly kind: 'fight';
+  /** The fight's actor (the fighter). The site fallback walks their `located_at`. */
+  readonly actorId: string;
+  /** The fight action's id — the node's `projectId` and part of its id. */
+  readonly actionId: string;
+  readonly templateId: string;
+  /** What the harm was done to — the victim. Written as the node's `targetNodeId`. */
+  readonly targetNodeId?: string;
+  /** Where it happened, when the caller captured it; else the actor's position. */
+  readonly siteId?: string;
+}
+
 export interface CreateUndertakingOutcomeParams {
   readonly graph: WorldGraph;
-  readonly project: StrategicProjectRuntime;
+  /**
+   * The undertaking that did the harm. Optional only when `source` is given
+   * (THR-1548): a harm with neither writes nothing.
+   */
+  readonly project?: StrategicProjectRuntime;
+  /** A non-undertaking source (THR-1548). Ignored when `project` is present. */
+  readonly source?: OutcomeNonUndertakingSource;
   readonly harmClass: UndertakingHarmClass;
   readonly tick: number;
   /**
@@ -75,6 +101,11 @@ export interface CreateUndertakingOutcomeParams {
    */
   readonly selfFacing?: boolean;
 }
+
+/** The project fields the writer reads — a project, or a normalised non-undertaking source. */
+type OutcomeProjectFields = Pick<
+  StrategicProjectRuntime, 'projectId' | 'actorId' | 'templateId' | 'targetNodeId' | 'originLocationId'
+> & { readonly verb: string };
 
 /** What `resolveOutcomeSite` decided, carried into the trace verbatim. */
 export interface ResolvedOutcomeSite {
@@ -134,9 +165,23 @@ export function createUndertakingOutcomeNode(
   params: CreateUndertakingOutcomeParams,
 ): string | undefined {
   const {
-    graph, project, harmClass, tick, victimAgentId, ascendantId,
+    graph, harmClass, tick, victimAgentId, ascendantId,
     chainDepth = 0, answersGrievance, answeredMagnitude, selfFacing,
   } = params;
+
+  // THR-1548: a non-undertaking source is normalised into the fields the writer reads
+  // off a project, so everything below is one path. Its node id carries the source kind
+  // (`evt_und_fight_<actionId>_<tick>`) under the same prefix every reader keys on.
+  const source = params.project ? undefined : params.source;
+  const project: OutcomeProjectFields | undefined = params.project ?? (source && {
+    projectId: source.actionId,
+    actorId: source.actorId,
+    templateId: source.templateId,
+    verb: source.kind,
+    targetNodeId: source.targetNodeId,
+    originLocationId: source.siteId,
+  });
+  if (!project) return undefined;
 
   // A self-facing outcome has no culprit at all — not "the actor as their own culprit".
   const culpritAgentId = selfFacing ? undefined : (params.culpritAgentId ?? project.actorId);
@@ -151,7 +196,9 @@ export function createUndertakingOutcomeNode(
   const harmMagnitude = HARM_MAGNITUDE_BY_CLASS[harmClass];
   if (harmMagnitude === undefined) return undefined;
 
-  const eventNodeId = `${UNDERTAKING_EVENT_NODE_ID_PREFIX}${project.projectId}_${tick}`;
+  const eventNodeId = source
+    ? `${UNDERTAKING_EVENT_NODE_ID_PREFIX}${source.kind}_${project.projectId}_${tick}`
+    : `${UNDERTAKING_EVENT_NODE_ID_PREFIX}${project.projectId}_${tick}`;
 
   try {
     graph.addNode({
@@ -171,6 +218,8 @@ export function createUndertakingOutcomeNode(
         ...(project.targetNodeId && { targetNodeId: project.targetNodeId }),
         ...(answersGrievance && { answersGrievance }),
         ...(answeredMagnitude !== undefined && { answeredMagnitude }),
+        // For inspection only: every consumer reads a fight death as an undertaking harm.
+        ...(source && { source: source.kind }),
       },
     });
   } catch (err) {

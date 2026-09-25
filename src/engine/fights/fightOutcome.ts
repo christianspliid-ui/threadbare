@@ -28,6 +28,7 @@ import type { RuleOverrideContext } from '../effects/ruleOverrideConsumers';
 import { emitTrace } from '../traceBuffer';
 import { withFightResultMemory } from './fightState';
 import { monsterLairBranch } from '../monsters/monsterFelling';
+import { fighterEndingBranch } from './fightEnding';
 
 /** What a dispatcher branch is handed (plan doc §6). */
 export interface FightEndContext {
@@ -60,9 +61,12 @@ export interface FightEndedResult {
  * The branches that ship with the engine, in run order. Plan docs 1, 3 and 5 add
  * theirs here (THR-1548, THR-1546, THR-1557 and siblings).
  *
+ * - `fighterEndingBranch` (THR-1548): what the ending leaves on the fighter — the
+ *   defeat faces, the death gate, Scarred, the grudge, humiliation. First, so the
+ *   fighter's record is written before any opponent-side branch reads the action.
  * - `monsterLairBranch` (THR-1546): felling or driving off a lair's monster.
  */
-export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [monsterLairBranch];
+export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [fighterEndingBranch, monsterLairBranch];
 
 /** The live branch list `onFightEnded` runs by default. Tests may push onto it. */
 export const FIGHT_END_BRANCHES: FightEndBranch[] = [...DEFAULT_FIGHT_END_BRANCHES];

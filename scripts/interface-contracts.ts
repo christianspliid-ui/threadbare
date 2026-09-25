@@ -4326,6 +4326,56 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/monsters/monsterFelling.ts'],
     readSites: ['src/engine/lairClearing.ts', 'src/engine/lairEscalation.ts'],
   },
+  // ── Fight endings D1 (THR-1548, plan 2026-09-23-defeat-and-victory §1–3) — the plan's
+  // Interface impact rows "fight → grudges" (extend with `blood_drawn`), "fight → reactive
+  // loop" (add: a non-undertaking source) and "fight → reputation" (humiliation). The
+  // death funnel row is the funnel's own; D1 is one more caller of it. No `verifiedLive`:
+  // the evidence today is `src/engine/fights/__tests__/fightEndingD1.test.ts`.
+  {
+    id: 'fight-mauling-writes-blood-drawn-grudge',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal struck down in a fight who lives carries Scarred and a grudge against whoever did it, beast or mortal — an injury, so the motive gate reads it as a grudge and the scarred may one day plot back.',
+    ulTerms: ['Grudge', 'Struck down', 'Scarred'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['hostile_to', 'blood_drawn', 'GRUDGE_PROVENANCE', 'writeMauled'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts', 'src/engine/grievance/grudgeEdge.ts'],
+    readSites: ['src/engine/undertakingMotive.ts', 'src/engine/agentDetail.ts', 'src/data/grievance-prose.ts'],
+  },
+  {
+    id: 'fight-death-feeds-reactive-loop',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal killed in a fight is a killing with a culprit, written into the reactive loop in exactly the plot\'s shape — the dead\'s bonds take it up, the omen agenda can portend it, and the receipt credits it — never a death nobody answers.',
+    ulTerms: ['Struck down', 'Grievance'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['killStruckDownFighter', 'createUndertakingOutcomeNode', 'named_death', 'undertaking_outcome'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts', 'src/engine/grievance/undertakingOutcomeNode.ts'],
+    readSites: ['src/engine/ambitionTick.ts', 'src/engine/phaseOmenAgenda.ts'],
+  },
+  {
+    id: 'fight-yield-humiliates-at-home',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      'Yielding to another person costs a mortal face with their home settlement; yielding to a beast costs nothing, because there is nobody to tell.',
+    ulTerms: ['Struck down'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['reputation_with', 'applyReputationWithDelta', 'fight_humiliation'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/reputation.ts'],
+  },
   // ── FB3 (THR-1539, plan §7) — the plan's Interface impact rows "encounter step →
   // quintessence queue" (extend with `fight_harm`) and "encounter step → conditions
   // applier" (extend with fight bands). No `verifiedLive`, for the FB2 rows' reason:

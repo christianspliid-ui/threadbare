@@ -2589,6 +2589,8 @@ if (import.meta.env.DEV) {
         fighterClockNow: action.fightState?.fighterClockNow ?? null,
         opponentBands: action.fightState?.opponentBands ? [...action.fightState.opponentBands] : null,
         opponentLoss: action.fightState?.opponentLoss ?? null,
+        // THR-1548 — the fighter-side ending record (face, guards, kill draw, writes).
+        ending: action.fightState?.ending ?? null,
       };
     },
 
