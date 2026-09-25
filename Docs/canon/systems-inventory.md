@@ -333,7 +333,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `mentorship` (2) | `mentorshipOutcomes.ts`, `mentorshipUndertaking.ts` | `THR-1292`, `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
-| `monsters` (5) | `monsters/isMonster.ts`, `monsters/listMonsters.ts`, `monsters/liveMonster.ts`, `monsters/monsterCard.ts`, `monsters/monsterFelling.ts` | `M1`, `M3`, `THR-1319`, `THR-1544`, `THR-1545`, `THR-1546` |
+| `monsters` (6) | `monsters/isMonster.ts`, `monsters/lairArrivalTrigger.ts`, `monsters/listMonsters.ts`, `monsters/liveMonster.ts`, `monsters/monsterCard.ts`, `monsters/monsterFelling.ts` | `M1`, `M3`, `THR-1267`, `THR-1319`, `THR-1544`, `THR-1545`, `THR-1546`, `THR-1547` |
 | `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | `THR-1143` |
 | `naming` (2) | `naming/lairNames.ts`, `naming/workNames.ts` | `THR-1291`, `THR-1297`, `THR-1312` |
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
@@ -424,4 +424,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 196 engine domains · 588 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 196 engine domains · 589 modules._
