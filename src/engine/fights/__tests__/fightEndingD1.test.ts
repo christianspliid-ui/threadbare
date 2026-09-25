@@ -129,6 +129,14 @@ function hostile(graph: WorldGraph, a: string, b: string) {
   return graph.getOutgoingEdges(a, 'hostile_to').find(e => e.target === b);
 }
 
+/** The D1 record without D2's chronicle significance (THR-1549 adds it to every ending). */
+function withoutSignificance(ending: FightState['ending']) {
+  if (!ending) return ending;
+  const { eventSignificance: _sig, ...rest } = ending;
+  void _sig;
+  return rest;
+}
+
 beforeEach(() => { clearTraces(); enableTracing(); });
 afterEach(() => { clearTraces(); disableTracing(); resetFightEndBranches(); });
 
@@ -152,7 +160,7 @@ describe('THR-1548 — struck down by a monster: mauled', () => {
     expect(hostile(state.graph, 'beast', 'hero')?.properties).toMatchObject({ cause: 'blood_drawn' });
     expect(state.graph.getNode('hero')!.properties.deceased).toBeUndefined();
 
-    expect(out.fightState.ending).toEqual({
+    expect(withoutSignificance(out.fightState.ending)).toEqual({
       face: 'mauled', scarWritten: true, grudgeWritten: true,
       killRoll: { chance: FIGHT_KILL_CHANCE_BY_TEMPER.berserk, roll: 0.99 },
     });
@@ -278,7 +286,7 @@ describe('THR-1548 — slain: the funnel and the reactive loop', () => {
     const graph = state.graph;
 
     expect(graph.getNode('hero')!.properties).toMatchObject({ deceased: true, deathCause: 'fight', slainBy: 'beast' });
-    expect(out.fightState.ending).toEqual({
+    expect(withoutSignificance(out.fightState.ending)).toEqual({
       face: 'slain', scarWritten: false, grudgeWritten: false,
       killRoll: { chance: FIGHT_KILL_CHANCE_BY_TEMPER.berserk, roll: 0.01 },
     });
@@ -370,7 +378,7 @@ describe('THR-1548 — yields, routs and break-offs', () => {
     const before = getReputationWith(state.graph, 'hero', 'town-1').score;
     const out = onFightEnded(state, fightAction('yielded'), ctxFor(state, countingRng(0.5).rng));
     expect(getReputationWith(state.graph, 'hero', 'town-1').score).toBe(before);
-    expect(out.fightState.ending).toEqual({ face: 'yielded_to_monster', scarWritten: false, grudgeWritten: false });
+    expect(withoutSignificance(out.fightState.ending)).toEqual({ face: 'yielded_to_monster', scarWritten: false, grudgeWritten: false });
     expect(state.archetypeDrift).toEqual([]);
   });
 
@@ -383,7 +391,7 @@ describe('THR-1548 — yields, routs and break-offs', () => {
   it('a rout drifts toward prudence and humiliates nobody', () => {
     const state = baseState(world());
     const out = onFightEnded(state, fightAction('routed', 'rival'), ctxFor(state, countingRng(0.5).rng));
-    expect(out.fightState.ending).toEqual({
+    expect(withoutSignificance(out.fightState.ending)).toEqual({
       face: 'routed', scarWritten: false, grudgeWritten: false,
       drift: { axis: 'courage_prudence', pole: 'negative' },
     });
@@ -393,7 +401,7 @@ describe('THR-1548 — yields, routs and break-offs', () => {
     const state = baseState(world());
     const edgesBefore = state.graph.getAllEdges().length;
     const out = onFightEnded(state, fightAction('broke_off'), ctxFor(state, countingRng(0.5).rng));
-    expect(out.fightState.ending).toEqual({ face: 'broke_off', scarWritten: false, grudgeWritten: false });
+    expect(withoutSignificance(out.fightState.ending)).toEqual({ face: 'broke_off', scarWritten: false, grudgeWritten: false });
     expect(state.graph.getAllEdges().length).toBe(edgesBefore);
   });
 

@@ -189,6 +189,11 @@ export interface FightEndingRecord {
   readonly guard?: 'the_first' | 'avatar' | 'warded';
   readonly drift?: { axis: import('./agent').ValuePair; pole: 'positive' | 'negative' };
   readonly eventSignificance?: number;
+  /**
+   * The victor's standing when the fighter yielded to a mortal (THR-1549, the other side
+   * of humiliation): the victor's `reputation_with` the yielder's faction ?? home settlement.
+   */
+  readonly victorStanding?: { victorId: string; counterpartyId: string; delta: number };
 }
 
 /** What a fight did to a monster's lair. Declared by FB2; written by plan doc 3. */

@@ -138,7 +138,9 @@ export interface TickEvent {
   // Reunite window closing unanswered (THR-732). The *successful* reunion rides
   // 'group_formed', because a reunion is a formation — only the failure needs a type
   // of its own, since nothing else is created for it to ride on.
-    | 'group_reunion_lapsed';
+    | 'group_reunion_lapsed'
+  // A fight ended — its face, told as a chronicle line when notable (THR-1549)
+    | 'fight_ended';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

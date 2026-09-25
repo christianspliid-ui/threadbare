@@ -2751,3 +2751,14 @@ Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3. A new first branch 
 | `engine/grievance/grudgeEdge.ts` · `engine/undertakingMotive.ts` · `data/grievance-prose.ts` (`blood_drawn`) · `data/condition-trait-content.ts` (`trait.scar.scarred`) · `data/fight-constants.ts` (kill chances, drift, humiliation) · `types/traces/fight-traces.ts` + `types/trace.ts` (`fight.ending` in the THR-928 trio) · `debug-bridge.ts` / `.d.ts` (`getFightState().ending`) | — | — | — | — | — |
 
 **Wired and asserted:** `fightEndingD1.test.ts` drives every face through the real dispatcher, compares a fight death's outcome node with a plot death's in the same test, and reads the omen deed through `castUndertakingPortent`. **Declared, not yet reached:** the duel victor's mercy (plan doc 5, E2) and the victory yields + the `fight_ended` chronicle event (D2, THR-1549).
+
+## Fight endings D2 — victory yields and the chronicle (THR-1549)
+
+Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §4–5. Extends D1's `fighterEndingBranch`; no new phase, node type, edge type or component. One additive `TickEvent.type` (`fight_ended`) and one additive content-query site (`fight_trophy`).
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/fights/fightEnding.ts` (new: `applyVictory`, `drawTrophy`, `nearestGratefulSettlement`, `fightChronicleLine`, `fightEndedEvent`) | step resolution (`finalizeFightEnd` → `onFightEnded`) → `phaseNarrative` | `ChroniclePanel` (existing, notable rows), `NarrativeFeed` colour, sheet possessions + reputation | `unifiedActions[].fightState.ending` (`reward`, `reputation`, `victorStanding`, `eventSignificance`); `tickEvents` → `chronicleEntries`; `archetypeDrift` | `fight.ending` (+`reward`, `rewardSkipped`, `reputation`, `victorStanding`, `eventSignificance`); `content.query_*` site `fight_trophy` | `getFightState(actionId).ending` |
+| `data/fight-ending-content.ts` (new: `FIGHT_TROPHY_RECIPE`, `FIGHT_TROPHY_OUTCOME`, `FIGHT_CHRONICLE_LINES`, `_PLAIN`) · `data/fight-constants.ts` (victory reputation, radius, significance, tier-by-face) · `data/uiColorPalette.ts` (`fight_ended`) · `types/gameState.ts` (`fight_ended`) · `types/contentQuery.ts` (`fight_trophy`) | — | — | — | — | — |
+
+**Wired and asserted:** `fightEndingD2.test.ts` runs every victory face through the real dispatcher and feeds the returned events to the real `phaseNarrative`. Live CLI (seed 42 medium, 30 `spawn fight` confronts): 5 notable `fight.ending` traces, 5 new `fight_ended_*` chronicle rows.

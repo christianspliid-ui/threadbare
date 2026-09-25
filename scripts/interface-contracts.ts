@@ -4402,6 +4402,56 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/fights/fightEnding.ts'],
     readSites: ['src/engine/reputation.ts'],
   },
+  // ── Fight endings D2 (THR-1549, plan 2026-09-23-defeat-and-victory §4–5) — the plan's
+  // Interface impact rows "fight → reward pool" (a new caller of drawSeededReward),
+  // "fight → reputation" (gratitude, standing) and "fight → chronicle" (the fight_ended
+  // tick event). No `verifiedLive`: the evidence is fightEndingD2.test.ts plus the CLI run
+  // recorded in Docs/status/2026-09-25-thr-1549.md.
+  {
+    id: 'fight-victory-draws-trophy',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ATTACHMENTS,
+    intent:
+      'Felling a lair\x27s beast, or bargaining with it, hands the victor a trophy from the den through the one reward draw every prize runs through — so a blessing on the victor\x27s luck improves the trophy, and nothing invents a second loot system.',
+    ulTerms: ['Reward Pool'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['drawSeededReward', 'FIGHT_TROPHY_RECIPE', 'FIGHT_TROPHY_OUTCOME', 'fight_trophy'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/rewardPool.ts', 'src/types/contentQuery.ts'],
+  },
+  {
+    id: 'fight-victory-earns-gratitude-and-standing',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      'Felling or driving off a beast earns the nearest settlement\x27s gratitude; beating a person, or being yielded to, earns standing with the loser\x27s faction or home — reputation with a party, never world renown.',
+    ulTerms: ['Reputation'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['reputation_with', 'applyReputationWithDelta', 'fight_gratitude', 'fight_standing'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/reputation.ts'],
+  },
+  {
+    id: 'fight-ending-reaches-chronicle',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Every fight ends in one line of the world\x27s story: a notable ending (a beast felled, a person beaten, a mauling, a death) becomes a chronicle entry; a routine one reaches only the event log.',
+    ulTerms: ['Narrative Event'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['fight_ended', 'FIGHT_CHRONICLE_LINES', 'FIGHT_EVENT_TIER_BY_FACE', 'phaseNarrative'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/orchestrator.ts'],
+  },
   // ── FB3 (THR-1539, plan §7) — the plan's Interface impact rows "encounter step →
   // quintessence queue" (extend with `fight_harm`) and "encounter step → conditions
   // applier" (extend with fight bands). No `verifiedLive`, for the FB2 rows' reason:
