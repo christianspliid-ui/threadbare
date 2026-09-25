@@ -251,6 +251,18 @@ describe('buildFightChanges (THR-1553)', () => {
     for (const chip of slain) expect(chip.sentenceText).not.toContain('{');
   });
 
+  it('a sentence opening on a lowercase name opens on a capital; the ◆ word stays lowercase (THR-1561)', () => {
+    const graph = buildGraph();
+    graph.addNode({ id: 'faction.ink', type: 'actor', name: 'sovereignty of Open Ink', properties: { actorType: 'faction' } });
+    const standing = chipsFor(fight({ ending: { face: 'overcome_monster', scarWritten: false, grudgeWritten: false, reputation: { counterpartyId: 'faction.ink', delta: 0.1 } } }), graph)
+      .find(c => c.id.includes('-standing-'))!;
+    expect(standing.detail).toBe('Sovereignty of Open Ink will remember this.');
+    expect(standing.stateNoun?.text).toBe('sovereignty of Open Ink');
+    const slain = chipsFor(fight({ lairOutcome: { lairId: LAIR, felled: true, lairCleared: false } }))
+      .find(c => c.id.includes('-slain_opponent-'))!;
+    expect(slain.deltaLabel).toBe('slain');
+  });
+
   it('fillFightChipSlots removes an unfilled slot rather than rendering it', () => {
     expect(fillFightChipSlots('{fighter} took {item}.', { fighter: 'Bryn' })).toBe('Bryn took .');
   });

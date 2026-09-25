@@ -68,6 +68,15 @@ export function fillFightChipSlots(template: string, slots: Readonly<Record<stri
     .trim();
 }
 
+/**
+ * A chip sentence opens on a capital, whatever the name in its first slot is cased
+ * ("sovereignty of Open Ink" is a faction's own name, but "Sovereignty of Open Ink will
+ * remember this." at a sentence start). Only the sentence — the ◆ word stays lowercase.
+ */
+function sentenceCase(sentence: string): string {
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+}
+
 interface ChipSpec {
   readonly kind: FightChipKind;
   readonly anchorId: string;
@@ -99,7 +108,7 @@ function toChange(spec: ChipSpec): EncounterAftermathChange {
     id: `${FIGHT_CHANGE_ID_PREFIX}-${spec.kind}-${spec.anchorId}`,
     kind: spec.wireKind,
     title: spec.noun,
-    detail: spec.sentence,
+    detail: sentenceCase(spec.sentence),
     polarity: polarityFor(spec.direction),
     category: spec.category,
     stateNoun: noun,

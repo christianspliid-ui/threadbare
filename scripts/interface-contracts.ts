@@ -4266,7 +4266,8 @@ export const CONTRACTS: readonly Contract[] = [
   // ── The fight on screen F3 (THR-1553, plan 2026-09-23-fight-on-screen § Interface impact) ──
   // "fight endings → consequence chips": the aftermath's chip block reads the resolved
   // action's `fightState` (ending, lairOutcome, conditionsApplied, storiedClimbs, the
-  // clock). It writes nothing.
+  // clock) and, since THR-1561, a duel's `opponentEnding` (the loser slain, or spared with a
+  // grudge against the fighter). It writes nothing.
   {
     id: 'fight-endings-show-as-chips',
     producerSystem: ENCOUNTERS,
@@ -4291,7 +4292,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-09-25',
       evidence:
-        "THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with \"Let fate decide\": the aftermath rendered PATH · KRENN \"Krenn was slain.\" ◆ slain and PATH · THE KINDLED WARREN \"The Kindled Warren is cleared.\" ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`.",
+        "THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with \"Let fate decide\": the aftermath rendered PATH · KRENN \"Krenn was slain.\" ◆ slain and PATH · THE KINDLED WARREN \"The Kindled Warren is cleared.\" ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`. THR-1561 (a duel's loser): `?view=game&seeded&size=medium&forceencounters`, tick 10, `spawnDuel('Corran', …, { courtPosition: 'the_first' })` → `ua_31`, where `opponentEnding` was spared with `grudgeWritten`; the aftermath drew BOND · NESRIN \"Nesrin holds a grudge against Corran.\" ▼ (`Docs/evidence/thr-1561/`).",
     },
   },
   // ── The fight on screen F4 (THR-1552, plan 2026-09-23-fight-on-screen § Interface impact) ──
