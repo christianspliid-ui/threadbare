@@ -165,8 +165,18 @@ function resetBetweenFights(state: GameState, fightIndex: number, raw: Readonly<
   state.tick = TICK + fightIndex * TICKS_PER_FIGHT;
   graph.getNode(FIGHTER)!.properties.domainCapabilities = { ...raw };
   for (const edge of graph.getOutgoingEdges(FIGHTER, 'has_trait')) {
-    if (edge.target.startsWith('trait.condition.')) graph.removeEdge(edge.id);
+    // THR-1548: the fight ending's Scarred is permanent by design; the row measures a fresh guard.
+    if (edge.target.startsWith('trait.condition.') || edge.target.startsWith('trait.scar.')) graph.removeEdge(edge.id);
   }
+  // THR-1548 — the fight ending's other persistent writes: a slain guard, the
+  // `blood_drawn` grudge (which would lend every later fight the Old-wound advantage)
+  // and the value drift a yield or rout leaves. The row is a fresh bold guard each time.
+  const fighter = graph.getNode(FIGHTER)!.properties as Record<string, unknown>;
+  for (const key of ['deceased', 'deceasedTick', 'deathCause', 'slainBy']) delete fighter[key];
+  for (const id of [FIGHTER, OPPONENT]) {
+    for (const edge of graph.getOutgoingEdges(id, 'hostile_to')) graph.removeEdge(edge.id);
+  }
+  state.archetypeDrift = [];
   state.pendingQuintessenceEvents = [];
   state.tickEvents = [];
   state.recentEvents = [];

@@ -751,6 +751,20 @@ Code anchors: `src/engine/fights/fightState.ts`, `src/engine/fights/fightOutcome
 
 ---
 
+### Struck down
+
+**Aliases:** `struck_down`, mauled, slain (its two faces)
+**Also see:** `[[Fight Result]]`, `[[Clash Step]]`, `[[Scarred]]`, `[[Grudge]]`
+**Status:** canonical — seated by delegation 2026-09-25 (THR-1548)
+
+A fight's clash critical failure; **the one ending that can kill.** Every other `[[Fight Result]]` leaves the fighter alive. What happens next is the victor's: a lair's monster kills at a chance set by its temper (`FIGHT_KILL_CHANCE_BY_TEMPER` — berserk 0.15, stubborn 0.05, skittish and bargainer never), drawn once and only after two guards — **The First is never killed in a fight, and neither is the god's avatar** — have passed; a named mortal on a derived card never kills (a duel victor's mercy is the duels plan's). A kill goes through the one death funnel, so a `death_prevented` ward still saves the mortal.
+
+Two faces. **Mauled** — survived: `[[Scarred]]`, and a `blood_drawn` `[[Grudge]]` toward the victor, monster or mortal. **Slain** — died: retained with `deathCause: 'fight'` and the victor as `slainBy`, and a `named_death` harm written into the reactive loop in exactly the plot's shape, so the dead's bonds take it up and the omen agenda can portend it.
+
+Code anchors: `src/engine/fights/fightEnding.ts` (`fightDeathGuard`, `killStruckDownFighter`, `applyFightEndingForFighter`), `src/data/fight-constants.ts`.
+
+---
+
 ### Fight Advantage
 
 **Aliases:** advantage (fight), `FightAdvantage`, edges from the world (THR-1532)

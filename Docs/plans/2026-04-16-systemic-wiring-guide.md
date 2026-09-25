@@ -4310,6 +4310,41 @@ What an author can rely on:
 Trace: each raise emits `effect.event_raised` with its `site` — `fight_start`, `fight_step`,
 `fight_clash`, `fight_overcome` or `fight_end`.
 
+### How a fight ends — what it leaves on the fighter (THR-1548, Fight endings D1)
+
+Every fight's result is turned into world writes by the post-fight dispatcher
+(`onFightEnded`, `src/engine/fights/fightOutcome.ts`). Its first branch, `fighterEndingBranch`
+(`src/engine/fights/fightEnding.ts`), writes what the ending leaves on the **fighter**, through
+writers that already exist. Content authors do not call it; they author against what it writes:
+
+| Face (`fightState.ending.face`) | What the world now holds |
+|---|---|
+| `yielded_to_mortal` | Humiliation: `reputation_with` toward the fighter's home settlement drops by `FIGHT_HUMILIATION_REPUTATION` (cause `fight_humiliation`); `courage_prudence` drifts toward prudence by `FIGHT_ENDING_DRIFT` |
+| `routed` | The same drift toward prudence |
+| `yielded_to_monster`, `broke_off` | Nothing |
+| `mauled` (struck down, lived) | `trait.scar.scarred` (**Scarred**, a `scar`-class condition, permanent, once per mortal, victor as `inflictedBy` on the edge) and a `hostile_to` pair with `cause: 'blood_drawn'` toward the victor, monster or mortal |
+| `slain` (struck down, died) | The death funnel, `cause: 'fight'` (retained, `slainBy` the victor), and a `named_death` reactive-loop node in the plot's shape |
+| `overcome_*`, `driven_off`, `bargained` | The face only; the victory yields are D2 |
+
+What an author can rely on:
+
+- **`blood_drawn` is a grudge, not a rivalry.** It is in `GRUDGE_PROVENANCE`, so the motive gate
+  licenses the plot against the victor, the Old-wound fight advantage fires, and the sheet reads
+  *"one of them drew the other's blood"*. A mauling on top of `old_quarrel` or `covets` upgrades
+  the edge to `blood_drawn`.
+- **Only `struck_down` kills, and only a monster victor**, at `FIGHT_KILL_CHANCE_BY_TEMPER[temper]`
+  (berserk 0.15, stubborn 0.05, skittish and bargainer 0), drawn once after two guards: **The
+  First and the god's avatar are never killed in a fight**. A `death_prevented` ward is the
+  funnel's own and holds here. A duel victor's mercy is plan doc 5's E2 (THR-1557), which calls the
+  exported `fightDeathGuard` and `killStruckDownFighter` in the same order.
+- **A fight death reads as any killing.** `createUndertakingOutcomeNode` gained an optional
+  `source: { kind: 'fight', actorId, actionId, templateId, targetNodeId?, siteId? }` in place of a
+  `project`; the node is `evt_und_fight_<actionId>_<tick>`, carries `source: 'fight'`, and every
+  consumer (the mint lane, the omen portent, the receipt) reads it as an undertaking harm.
+- **Tag immunity to `#scar`** refuses Scarred like any condition; the grudge is still written.
+- `getFightState(actionId).ending` (debug bridge) is the whole audit trail; the `fight.ending`
+  trace carries the same fields plus `scarSkipped` and `outcomeNodeId`.
+
 ## Capability requirements are reach shares (THR-1562)
 
 Every number an author writes as a **capability requirement** is a **reach share** (0–1), never a raw

@@ -2729,3 +2729,15 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block
 | `entityVisualResolver.ts` / `entity-visual-fallbacks.ts` (`monster` kind) · `chipCollaborators.buildChipIconResolver` | — | `EntityVisual` in the lair block, the hex drawer's rows, consequence chips; styleguide sample | — | none | `__DEBUG.resolveEntityVisual` |
 
 **Wired and asserted:** `lairMonsterF1.test.tsx` renders `HexSidebar` from a real `buildLairMonsterCardModel` output, and the live check read the link text off the running sidebar (seed 42 medium, tick 60: "Ryx").
+
+## Fight endings D1 — the defeat faces and the death gate (THR-1548)
+
+Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3. A new first branch in the post-fight dispatcher; no new phase, node type or edge type, no component edit. Every write goes through an existing writer.
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/fights/fightEnding.ts` (new: `fighterEndingBranch`, `applyFightEndingForFighter`, `fightEndingFace`, `fightDeathGuard`, `killStruckDownFighter`, `writeMauled`, `fighterHomeSettlement`) | step resolution (`finalizeFightEnd` → `onFightEnded`, first in `FIGHT_END_BRANCHES`) | existing sheet: Scarred in Traits, the grudge clause in Blood, reputation; plan doc 4 adds chips | `unifiedActions[].fightState.ending`; `archetypeDrift`; graph (`has_trait` scar, `hostile_to`, `reputation_with`, `deceased`) | `fight.ending` | `getFightState(actionId).ending` |
+| `engine/grievance/undertakingOutcomeNode.ts` (optional `source: { kind: 'fight' }` in place of `project`) | same → the mint lane, the omen agenda | existing Blood section, ambitions, omens | outcome event node `evt_und_fight_<actionId>_<tick>` | existing `undertaking_outcome_event` | existing |
+| `engine/grievance/grudgeEdge.ts` · `engine/undertakingMotive.ts` · `data/grievance-prose.ts` (`blood_drawn`) · `data/condition-trait-content.ts` (`trait.scar.scarred`) · `data/fight-constants.ts` (kill chances, drift, humiliation) · `types/traces/fight-traces.ts` + `types/trace.ts` (`fight.ending` in the THR-928 trio) · `debug-bridge.ts` / `.d.ts` (`getFightState().ending`) | — | — | — | — | — |
+
+**Wired and asserted:** `fightEndingD1.test.ts` drives every face through the real dispatcher, compares a fight death's outcome node with a plot death's in the same test, and reads the omen deed through `castUndertakingPortent`. **Declared, not yet reached:** the duel victor's mercy (plan doc 5, E2) and the victory yields + the `fight_ended` chronicle event (D2, THR-1549).

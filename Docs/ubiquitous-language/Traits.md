@@ -74,9 +74,9 @@ The player-facing word is the definition's display name; *artifact trait* is the
 
 One of twelve classes on a trait definition, stored as the `subcategory` property (the field is named `subcategory`, not `category` — code reading `properties.category` reads `undefined`). The twelve (`TraitCategory`, `src/types/traits.ts`) are: `innate`, `cultural`, `personality`, `mastery`, `reputation`, `condition`, `scar`, `bestowed`, `destiny`, `core`, `spell` (THR-1429, the Power kind's learned class) and `temper` (THR-1544, see `[[Temper]]`). *(Corrected 2026-09-24, THR-1544: this entry said "ten" after `spell` had already made eleven.)*
 
-**A category is a lifecycle contract, not a label.** It defines how traits in it are acquired, how they are removed, and when they trigger — every trait in a category obeys its category's rules, and the individual definition only supplies flavor. In contract terms: `innate` is worldgen-minted and permanent; `cultural` is inherited from a culture and permanent; `personality` is threshold-minted from the axiological axes and drifts as those axes drift; `mastery` is earned through encounters and promotion and decays when not reinforced; `reputation` is minted by the reputation phase and fades with standing; `condition` is inflicted and expires on its countdown or is mended; `scar` is minted by aftermath and overflow and is permanent save rare rites; `bestowed` is granted by a god or an item and is revocable by its grantor; `destiny` is a world-minted promise; `core` is reserved for run-defining identity such as The First bond; `spell` is learned from a tradition and held until forgotten; and `temper` is minted at `createNamedElite`, permanent, changed only by `trait_grant` or removal, and read at the fight's temper checkpoint.
+**A category is a lifecycle contract, not a label.** It defines how traits in it are acquired, how they are removed, and when they trigger — every trait in a category obeys its category's rules, and the individual definition only supplies flavor. In contract terms: `innate` is worldgen-minted and permanent; `cultural` is inherited from a culture and permanent; `personality` is threshold-minted from the axiological axes and drifts as those axes drift; `mastery` is earned through encounters and promotion and decays when not reinforced; `reputation` is minted by the reputation phase and fades with standing; `condition` is inflicted and expires on its countdown or is mended; `scar` is minted by aftermath, overflow and a fight's ending (THR-1548: `[[Scarred]]`, written when a mortal is struck down and lives) and is permanent save rare rites; `bestowed` is granted by a god or an item and is revocable by its grantor; `destiny` is a world-minted promise; `core` is reserved for run-defining identity such as The First bond; `spell` is learned from a tradition and held until forgotten; and `temper` is minted at `createNamedElite`, permanent, changed only by `trait_grant` or removal, and read at the fight's temper checkpoint.
 
-Shipped static coverage is uneven by design and worth knowing before authoring against a category: reputation (19), personality (16), core (10), mastery (9), condition (7), scar (2), cultural (1). `innate` and `bestowed` have no static definitions — they are minted at runtime. `destiny` has none of either.
+Shipped static coverage is uneven by design and worth knowing before authoring against a category: reputation (19), personality (16), core (10), mastery (9), condition (7), scar (3 — Scarred joined the two economic scars, THR-1548), cultural (1). `innate` and `bestowed` have no static definitions — they are minted at runtime. `destiny` has none of either.
 
 ---
 
@@ -253,6 +253,20 @@ How a creature breaks when a fight turns. One of four trait definitions: *stubbo
 Temper is a **trait**, not a property, so later spells, items and cards can calm or enrage a creature through `trait_grant` with no new writer. Its class is `temper` (`subcategory: 'temper'`), its class word the `#temper` tag, and it contributes no capability. The definitions live in `src/data/temper-trait-content.ts` and belong to the Trait content kind.
 
 **Not an `[[Innate Power]]`** (something a creature can *do*) **and not the `innate` class** (a worldgen-minted mark). The fight's own type for it is `FightTemper` (`src/types/fight.ts`).
+
+---
+
+### Scarred
+
+**Aliases:** `trait.scar.scarred`, the fight scar
+**Also see:** `[[SCAR]]`, `[[Struck down]]`, `[[Trait Category]]`, `[[Grudge]]`
+**Status:** canonical — seated by delegation 2026-09-25 (THR-1548)
+
+The one fight wound that never heals: a `scar`-class condition written on a mortal who was **struck down** in a fight and lived (the *mauled* ending). Written through the one condition writer (`applyConditionToActor`), so tag immunity refuses it like any other condition; the instance edge carries the victor as `inflictedBy` and the tick as `scarredTick`, and it has no duration, so it never expires. It moves no capability — it is a narrative mark. A mortal is scarred once: a second mauling adds no second scar (the first scar is the story, and `inflictedBy` keeps the first victor), though the grudge toward the new victor is still written.
+
+*The SCAR chip names what an encounter cost; Scarred is the one fight wound that never heals, and the chip that reports it is a SCAR.* The word "mark" is not used for it: the UL gives that word to `[[Hidden Mark]]`.
+
+Code anchors: `src/data/condition-trait-content.ts` (the definition), `src/engine/fights/fightEnding.ts` (`writeMauled`), `src/data/fight-constants.ts` (`FIGHT_SCARRED_TRAIT_ID`).
 
 ---
 
