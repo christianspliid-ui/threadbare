@@ -1905,6 +1905,11 @@ export interface DebugBridge {
       readonly opponentBands: readonly string[] | null;
       /** THR-1556 — how the opponent lost (`clock` / `struck_down` / `yielded` / `routed`), or null. */
       readonly opponentLoss: import('./types/fight').FightOpponentLoss | null;
+      /** THR-1548 — what the ending left on the fighter: `face`, `scarWritten`,
+       *  `grudgeWritten`, `humiliation?`, `killRoll?` (present exactly when a kill draw
+       *  was taken), `guard?` (`the_first` / `avatar` / `warded`), `drift?`. Null until
+       *  the fight has ended. The whole audit trail of an ending. */
+      readonly ending: import('./types/fight').FightEndingRecord | null;
     };
 
   /** The opponent card a fight against this actor would read right now: Dread, Might,

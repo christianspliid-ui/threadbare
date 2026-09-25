@@ -39,7 +39,11 @@ export type GrudgeCause =
   // being reached for by someone who wanted your seat are things that happened *to*
   // you, with a name attached, so they license the plot the way any other injury does.
   | 'command_seized'
-  | 'usurpation_failed';
+  | 'usurpation_failed'
+  // THR-1548 — a fight that struck one of them down and left them alive (the mauled
+  // face). An injury with a name on it, like the ownership band's two: it licenses
+  // the plot in return, so the scarred may one day plot back.
+  | 'blood_drawn';
 
 export interface WriteGrudgeOptions {
   /** The event node the grudge traces back to, when one exists. */
@@ -70,7 +74,7 @@ export interface WriteGrudgeOptions {
  * (`mentorship_break`, `attempted_killing`) that never pass through here.
  */
 const INJURY_CAUSES: ReadonlySet<string> = new Set<GrudgeCause>([
-  'group_engagement', 'grievance_cooled', 'command_seized', 'usurpation_failed',
+  'group_engagement', 'grievance_cooled', 'command_seized', 'usurpation_failed', 'blood_drawn',
 ]);
 
 /**

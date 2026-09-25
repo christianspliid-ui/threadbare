@@ -10,6 +10,7 @@
 import type { ActionScale, StepOutcome, UnifiedActionOutcome } from '../types/unifiedAction';
 import type { FightRatingWord, FightResult, FightTemper } from '../types/fight';
 import type { ReachDomain } from '../types/traits';
+import { BRANCH_DECISION_DRIFT_MAGNITUDE } from './nudge-constants';
 
 /**
  * Card word → step difficulty. Each sits inside its `DIFFICULTY_WORD_BANDS` word
@@ -375,3 +376,52 @@ export const FIGHT_OPPONENT_PLACEHOLDER = '{opponent}';
  * or collides with, the step stream the fighter rolls on.
  */
 export const DUEL_OPPONENT_STREAM_SALT = 6271;
+
+// ─── Fight endings: the defeat faces and the death gate (THR-1548, plan doc ───
+// `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3, slice D1) ─────────────────
+
+/**
+ * The chance a **monster** victor kills a mortal it struck down, by its temper
+ * (THR-1266). Only `struck_down` can kill, and only after both guards (The First,
+ * the god's avatar) have passed. Berserk 0.15 against a bold guard is about 2% per
+ * visit (THR-1531). Kill criterion: if more than 4% of 200+ monster fights end
+ * `slain`, halve these.
+ */
+export const FIGHT_KILL_CHANCE_BY_TEMPER: Readonly<Record<FightTemper, number>> = {
+  berserk: 0.15,
+  stubborn: 0.05,
+  skittish: 0,
+  bargainer: 0,
+};
+
+/**
+ * The chance a ruthless mortal victor kills in a duel (agent mode). Declared here so
+ * the ending's numbers live together; the mercy decision that reads it is plan doc
+ * 5's E2 (THR-1557), not D1.
+ */
+export const FIGHT_DUEL_KILL_CHANCE_RUTHLESS = 0.25;
+
+/**
+ * How far an ending drifts the fighter's values: toward prudence on a yield or a
+ * rout (D1); toward mercy on a bargain, toward courage on a won duel (D2). The
+ * branch-decision magnitude, so a fight moves a person as far as a hard choice does.
+ */
+export const FIGHT_ENDING_DRIFT = BRANCH_DECISION_DRIFT_MAGNITUDE;
+
+/**
+ * Face lost at home by yielding to another person (§2b). A reputation write toward
+ * the fighter's home settlement; yielding to a monster costs nothing.
+ */
+export const FIGHT_HUMILIATION_REPUTATION = 0.05;
+
+/** The `cause` the humiliation's reputation write carries. */
+export const FIGHT_HUMILIATION_CAUSE = 'fight_humiliation';
+
+/** Scarred — the one fight wound that never heals (a `scar`-class condition). */
+export const FIGHT_SCARRED_TRAIT_ID = 'trait.scar.scarred';
+
+/** The scar's intensity on its `has_trait` edge. A narrative mark: it moves no capability. */
+export const FIGHT_SCARRED_INTENSITY = 1;
+
+/** The reactive loop's harm class for a death in a fight — the plot's own class. */
+export const FIGHT_DEATH_HARM_CLASS = 'named_death' as const;

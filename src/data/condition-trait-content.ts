@@ -657,6 +657,28 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+  // THR-1548 — Scarred: the one fight wound that never heals (plan doc
+  // `2026-09-23-defeat-and-victory.md` § Content). Written by the fight ending's
+  // mauled face through `applyConditionToActor`, with the victor as the edge's
+  // `inflictedBy` and a `scarredTick`; no duration, so it never expires. A
+  // narrative mark: it moves no capability. `#scar` is its family, `#negative` its
+  // polarity (so the applier's `damaged` proxy fires — a mauling is damage).
+  {
+    id: 'trait.scar.scarred',
+    type: 'trait',
+    name: 'Scarred',
+    properties: {
+      subcategory: 'scar',
+      description: 'Struck down in a fight and lived. The wound closed; the mark did not.',
+      importance: 0.6,
+      maxLevel: 1,
+      visibility: 'public',
+      domainContributions: {},
+      tags: ['#scar', '#combat', '#negative'],
+      flavorText: 'An old wound, healed badly. They do not say who gave it.',
+      censusTag: { scale: 'personal' },
+    } satisfies TraitDefinitionProperties,
+  },
 ];
 
 /** Map of condition trait IDs to their default durations */

@@ -49,6 +49,10 @@ const GRUDGE_PROVENANCE = new Set([
   // point of a mutiny is that the deposed commander now has a reason.
   'command_seized',
   'usurpation_failed',
+  // THR-1548: a fight that drew blood (the mauled face). Without it here the gate
+  // would read the edge as a rivalry and the one who was struck down would hold no
+  // licence to answer it.
+  'blood_drawn',
 ]);
 
 const HOSTILE_PROVENANCE_KEYS = ['cause', 'reason', 'basis'] as const;

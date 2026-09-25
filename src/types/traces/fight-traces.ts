@@ -135,3 +135,34 @@ export interface FightEndTrace extends TraceBase {
   opponentLoss?: import('../fight').FightOpponentLoss;
   fighterClockNow?: number;
 }
+
+/**
+ * Emitted once per fight by the fighter-side ending branch (THR-1548, plan doc
+ * `2026-09-23-defeat-and-victory.md` § Tracing). Carries every decision the ending
+ * took: the face, the guards, the kill draw, and each write it made or skipped.
+ * `fightState.ending` mirrors `face`, `scarWritten`, `grudgeWritten`, `killRoll` and
+ * `guard`, so a chip reads state even when tracing is off.
+ */
+export interface FightEndingTrace extends TraceBase {
+  category: 'fight.ending';
+  actionId: string;
+  fighterId: string;
+  /** Who won: the opponent on a defeat, the fighter on a victory, null on a break-off. */
+  victorId: string | null;
+  result: FightResult;
+  face: import('../fight').FightEndingFace;
+  /** Present exactly when a kill draw was taken. */
+  killRoll?: { chance: number; roll: number };
+  guard?: 'the_first' | 'avatar' | 'warded';
+  scarWritten: boolean;
+  scarSkipped?: 'already_scarred' | 'definition_missing' | 'immune';
+  grudgeWritten: boolean;
+  /** The reactive-loop node a fight death wrote. */
+  outcomeNodeId?: string;
+  humiliation?: { counterpartyId: string; delta: number };
+  reputation?: { counterpartyId: string; delta: number };
+  reward?: { templateId: string; instanceId: string; tier: number };
+  drift?: { axis: ValuePair; pole: 'positive' | 'negative' };
+  /** Set once D2 lands the chronicle tiers; D1 registers the category without it. */
+  eventSignificance?: number;
+}

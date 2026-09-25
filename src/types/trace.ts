@@ -23,7 +23,7 @@ import type {
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces';
-import type { FightClockTrace, FightEndTrace, FightForkTrace, FightStepTrace } from './traces/fight-traces';
+import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
 import type {
   MonsterDrivenOffTrace,
@@ -526,6 +526,8 @@ export type TraceCategory =
   | 'fight.end'
   // Fights — one per runtime fork decision (THR-1540).
   | 'fight.fork'
+  // Fights — the fighter-side ending, once per fight (THR-1548).
+  | 'fight.ending'
   // War news — one per reportWar call (THR-1564). Interface in `src/types/traces/war-traces.ts`.
   | 'war.reported'
   // Monsters — the card at mint and at legendary hardening (THR-1544).
@@ -797,6 +799,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'fight.end',
   // Fights — one per runtime fork decision (THR-1540)
   'fight.fork',
+  // Fights — the fighter-side ending (THR-1548)
+  'fight.ending',
   // War news — one per reportWar call (THR-1564)
   'war.reported',
   // Monsters — the card at mint and at legendary hardening (THR-1544)
@@ -4097,6 +4101,7 @@ export type TraceEntry =
   | FightClockTrace
   | FightEndTrace
   | FightForkTrace
+  | FightEndingTrace
   | WarReportedTrace
   // Monsters (THR-1544)
   | MonsterMintedTrace
