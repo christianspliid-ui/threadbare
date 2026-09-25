@@ -1,0 +1,54 @@
+seed 99, 150 ticks — The First (ind_dev_the_first) state changes:
+  t0: Sacred Grove [shrine] | move - | action -
+  t1: Sacred Grove [shrine] | move ?→"loc_0" | action -
+  t4: Wilderness (16, 13) [wilderness] | move ?→"loc_0" | action -
+  t8: Ardenmor Keep [hamlet] | move ?→"loc_0" | action -
+  t9: Ardenmor Keep [hamlet] | move ?→"loc_5" | action -
+  t13: The Forge of Sorrow [town] | move ?→"loc_0" | action -
+  t18: Ardenmor Keep [hamlet] | move ?→"loc_0" | action -
+  t19: Ardenmor Keep [hamlet] | move ?→"loc_0" | action reputation.star.the_star_pilgrim
+  t24: Ardenmor Keep [hamlet] | move ?→"loc_0" | action reputation.eye.the_oracle_consulted
+  t27: Ardenmor Keep [hamlet] | move ?→"loc_0" | action reputation.stone.the_jury_of_the_ruined
+  t31: Ardenmor Keep [hamlet] | move ?→"loc_0" | action reputation.heart.pilgrims_offering
+  t34: Ardenmor Keep [hamlet] | move ?→"loc_2" | action -
+  t36: Wilderness (17, 13) [wilderness] | move ?→"loc_2" | action -
+  t38: Wilderness (17, 12) [wilderness] | move ?→"loc_2" | action -
+  t40: Wilderness (17, 11) [wilderness] | move ?→"loc_2" | action -
+  t43: Vault Ruin [elder_ruin] | move ?→"loc_2" | action -
+  t48: Wilderness (15, 10) [wilderness] | move ?→"loc_2" | action -
+  t50: Wilderness (15, 10) [wilderness] | move ?→"loc_3" | action -
+  t54: Thornhaven [town] | move ?→"loc_3" | action -
+  t59: The Sunken Library [city] | move ?→"loc_3" | action -
+  t60: The Sunken Library [city] | move ?→"loc_2" | action -
+  t64: Thornhaven [town] | move ?→"loc_3" | action -
+  t69: The Sunken Library [city] | move ?→"loc_3" | action -
+  t70: The Sunken Library [city] | move ?→"loc_2" | action -
+  t74: Thornhaven [town] | move ?→"loc_3" | action -
+  t79: The Sunken Library [city] | move ?→"loc_3" | action -
+  t80: The Sunken Library [city] | move ?→"loc_2" | action -
+  t84: Thornhaven [town] | move ?→"loc_3" | action -
+  t89: The Sunken Library [city] | move ?→"loc_3" | action -
+  t90: The Sunken Library [city] | move ?→"loc_3" | action encounter.plague_outbreak
+  t95: The Sunken Library [city] | move ?→"loc_3" | action encounter.confront_the_unknown
+  t98: The Sunken Library [city] | move ?→"loc_2" | action -
+  t102: Thornhaven [town] | move ?→"loc_2" | action -
+  t103: Thornhaven [town] | move ?→"loc_0" | action -
+  t107: Wilderness (15, 10) [wilderness] | move ?→"loc_0" | action -
+  t112: Vault Ruin [elder_ruin] | move ?→"loc_0" | action -
+  t115: Wilderness (17, 11) [wilderness] | move ?→"loc_0" | action -
+  t117: Wilderness (17, 12) [wilderness] | move ?→"loc_0" | action -
+  t119: Wilderness (17, 13) [wilderness] | move ?→"loc_0" | action -
+  t122: Ardenmor Keep [hamlet] | move ?→"loc_0" | action -
+  t123: Ardenmor Keep [hamlet] | move ?→"loc_0" | action reputation.star.the_star_pilgrim
+  t126: Ardenmor Keep [hamlet] | move ?→"loc_2" | action -
+  t128: Wilderness (17, 13) [wilderness] | move ?→"loc_2" | action -
+  t130: Wilderness (17, 12) [wilderness] | move ?→"loc_2" | action -
+  t132: Wilderness (17, 11) [wilderness] | move ?→"loc_2" | action -
+  t135: Vault Ruin [elder_ruin] | move ?→"loc_2" | action -
+  t140: Wilderness (15, 10) [wilderness] | move ?→"loc_2" | action -
+  t146: Thornhaven [ruins] | move ?→"loc_2" | action -
+  t147: Thornhaven [ruins] | move ?→"loc_0" | action -
+
+social generator: {"agentDecisions":470,"withVisibleAgents":470,"withCandidates":446,"candidates":7038,"atTavern":0}
+social-pool template ids named in any other trace: [["encounter_scoring:ag.join",11],["decision_board_comparison:ag.join",8],["faction_bonus:ag.senior.map_uncharted",5],["faction_bonus:ag.quest.escort_caravan",5],["faction_bonus:ag.quest.wilderness_survey",5],["faction_bonus:ag.senior.deep_expedition",4],["faction_bonus:ag.quest.recover_artifact",4],["faction_bonus:ag.senior.bounty_hunt",3],["ruins.quest_hook_issued:ag.quest.ruin_delve",2],["ruins.quest_hook_issued:ag.senior.deep_expedition",2],["faction_bonus:ag.elite.lost_city",2],["faction_bonus:ag.elite.dragon_lair",2],["faction_bonus:ag.quest.monster_hunt",1],["faction_bonus:ag.quest.ruin_delve",1]]
+trace categories (top 40): [["prosperity_tick",8084],["effect.event_raised",3186],["divine_proximity_accumulation",3000],["chronicle.aggregated",2694],["faction_reputation",1494],["faction_reputation_trait",1458],["movement",1420],["faction_ambition",1155],["reputation_trait",1050],["faction_action",1032],["effect_tick",983],["consequence_applied",927],["encounter_step_prose_recorded",927],["action_execution",927],["encounter_resolution",927],["dilemma_resolution",927],["resolution.input",828],["encounter_filter",641],["encounter_scoring",641],["decision_board_comparison",641],["strategic_candidate_board",585],["road_hex_transition",583],["social_encounter_generation",470],["intelligence_decayed",466],["faction_member_work",400],["encounter.chapter_archived",396],["faction_bonus",374],["content.query_resolved",293],["context_harvest",286],["complication_selection",276],["encounter_aftermath_effect",270],["aftermath_target_resolved",265],["personality_trait_emerged",264],["unrest_tick",259],["siege_regional_seeded",210],["composition.phase_activated",194],["effect.rule_override_consumed",177],["attention_pool",150],["group_phase",150],["familiarity_change",150]]
