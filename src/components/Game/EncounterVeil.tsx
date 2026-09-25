@@ -960,7 +960,7 @@ export function EncounterVeil({
                       data-testid={`consequence-chip-icon-${chip.kind}`}
                       aria-label={chip.icon.name}
                       title={chip.icon.name}
-                      onClick={openEntity(chip.icon.entityId, chip.icon.kind)}
+                      onClick={openEntity(chip.icon.entityId, chip.icon.kind === 'monster' ? 'agent' : chip.icon.kind)}
                     />
                   ) : consequenceReach(chip.reachDomain) ? (
                     <span

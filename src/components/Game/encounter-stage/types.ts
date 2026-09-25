@@ -501,8 +501,12 @@ export interface EncounterStageConsequenceIconModel {
    * on its own template node and `AttachmentDetailView` draws it, so it takes the
    * link tier and no tile. The resolver's `attachment` guard is what keeps that
    * true, and the union is what makes removing the guard a type error.
+   *
+   * THR-1550 — `monster` is a *tile* refinement of `agent`: the adapter draws a
+   * lair's beast with the monster portrait, but it is still an actor with a sheet,
+   * so the veil routes its link as an agent.
    */
-  kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'location';
+  kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'location' | 'monster';
   name: string;
   /** Art the adapter resolved, when any exists. Absent ⇒ the designed fallback tile. */
   src?: string;

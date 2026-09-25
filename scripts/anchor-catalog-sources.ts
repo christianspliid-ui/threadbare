@@ -1023,6 +1023,10 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
       'npc-role':
         'A render-time refinement — an unnamed role-holder (*the smith*) drawn from a role ' +
         'tile. Nothing can reference one, because it has no node of its own.',
+      monster:
+        'A render-time refinement of `agent` (THR-1550) — a lair\'s beast, drawn with the ' +
+        'monster portrait and never knowledge-gated. A reference names the agent; the resolver ' +
+        '(or the chip icon resolver, for an explicit `agent`) decides it is a monster.',
       unknown:
         'The resolver\'s fallback tile, not a kind anything can name. Reaching it means ' +
         'resolution failed — which is the drop `__DEBUG.getWorldRefDrops()` records.',

@@ -383,6 +383,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Standing',
     desc: 'How the world reads a mortal — the sum of what they have been seen to do. Standing opens doors and closes them: it gates who will bargain, who will follow, and who remembers a grudge.',
   },
+  // THR-1550 — the lair block names the beast that holds the den.
+  'ui.lair_monster': {
+    label: 'The Lair\'s Monster',
+    desc: 'The beast that holds this den. Its look and its name are known to everyone nearby, like the lair itself. While it lives the lair stands; a mortal who fells it can clear the den.',
+  },
   'ui.agreement': {
     label: 'An Agreement',
     desc: 'A claim standing between two parties — a debt, a favour, an oath, a bargain. Unlike a wound it sits on nobody alone: someone is always on the other end, and it holds until honoured, lapsed, or broken.',

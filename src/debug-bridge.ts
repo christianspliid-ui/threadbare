@@ -2611,6 +2611,32 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * The lair card the sidebar renders for one lair (THR-1550, F1: the monster's
+     * name). Matches a lair node id exactly, else a lair whose name matches
+     * case-insensitively (exact first, then substring; lowest id wins).
+     */
+    getLairMonsterCard: async (lairIdOrName: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const isLairNode = (n: { properties?: Record<string, unknown> } | undefined) => {
+        const sub = n?.properties?.locationSubtype ?? n?.properties?.locationType;
+        return sub === 'lair' || sub === 'cleared_lair';
+      };
+      let lair = state.graph.getNode(lairIdOrName);
+      if (!lair || !isLairNode(lair)) {
+        const needle = lairIdOrName.trim().toLowerCase();
+        const lairs = [...state.graph.getNodesByType('location')]
+          .filter(isLairNode)
+          .sort((a, b) => a.id.localeCompare(b.id));
+        lair = lairs.find(n => (n.name ?? '').toLowerCase() === needle)
+          ?? lairs.find(n => (n.name ?? '').toLowerCase().includes(needle));
+      }
+      if (!lair) return { error: `no lair matched "${lairIdOrName}"` };
+      const { buildLairMonsterCardModel } = await import('./components/Game/lair/buildLairMonsterCardModel');
+      return buildLairMonsterCardModel(state.graph, lair.id, state.tick) ?? { error: `lair "${lair.id}" has no node` };
+    },
+
+    /**
      * The review lever for a fight: moves `@hero` to the target's location (a fight
      * whose sides no longer share a hex ends `separated`), then stages
      * `fight.lair.confront` on `@hero` against the named target, open, as The First.
