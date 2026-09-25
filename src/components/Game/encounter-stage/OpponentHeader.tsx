@@ -110,11 +110,16 @@ export function OpponentHeader({ model, onSelectOpponent, compact, hideArt }: Op
       data-testid="opponent-header"
       data-fight-role={model.role}
       style={{
+        // Law 33 (measured 2026-09-25 at 1920×1080): a stacked block cost ~125px
+        // and pushed the hand under the footer, so the header is one wrapping row
+        // — label, name, sentence, clock — about one line of height at 1920.
         display: 'flex',
-        gap: 12,
-        alignItems: 'flex-start',
-        padding: '10px 12px',
-        marginBottom: 16,
+        alignItems: 'center',
+        columnGap: 10,
+        rowGap: 4,
+        flexWrap: 'wrap',
+        padding: '4px 10px',
+        marginBottom: 12,
         borderLeft: '2px solid rgb(var(--veil-gold-rgb) / 0.35)',
         background: 'rgb(var(--veil-gold-rgb) / 0.04)',
       }}
@@ -124,89 +129,84 @@ export function OpponentHeader({ model, onSelectOpponent, compact, hideArt }: Op
           size={OPPONENT_HEADER_ART_SIZE}
           shape="circle"
           entity={{
-            id: model.opponentId ?? `unknown-foe`,
+            id: model.opponentId ?? 'unknown-foe',
             kind: model.visualKind,
             name: model.name,
           }}
           onClick={canOpen ? () => onSelectOpponent!(model.opponentId!) : undefined}
-          style={{ width: 40, height: 40, flexShrink: 0 }}
+          style={{ width: 28, height: 28, flexShrink: 0 }}
         />
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-          <span
-            data-testid="opponent-step-label"
-            style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: TEXT_GHOST,
-            }}
-          >
-            {model.stepLabel}
-          </span>
-          {canOpen ? (
-            <button
-              type="button"
-              className="focus-ring"
-              data-testid="opponent-name"
-              onClick={() => onSelectOpponent!(model.opponentId!)}
-              aria-label={`View ${model.name}`}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                fontFamily: FONT_DISPLAY,
-                fontSize: 'var(--text-sm)',
-                letterSpacing: '0.04em',
-                color: TEXT_WARM,
-                textDecoration: 'underline',
-                textUnderlineOffset: 3,
-              }}
-            >
-              {model.name}
-            </button>
-          ) : (
-            <span
-              data-testid="opponent-name"
-              style={{
-                fontFamily: FONT_DISPLAY,
-                fontSize: 'var(--text-sm)',
-                letterSpacing: '0.04em',
-                color: TEXT_WARM,
-              }}
-            >
-              {model.name}
-            </span>
-          )}
-        </div>
-        <div
-          data-testid="opponent-sentence"
+      <span
+        data-testid="opponent-step-label"
+        style={{
+          fontFamily: FONT_DISPLAY,
+          fontSize: 'var(--text-xs)',
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          color: TEXT_GHOST,
+        }}
+      >
+        {model.stepLabel}
+      </span>
+      {canOpen ? (
+        <button
+          type="button"
+          className="focus-ring"
+          data-testid="opponent-name"
+          onClick={() => onSelectOpponent!(model.opponentId!)}
+          aria-label={`View ${model.name}`}
           style={{
-            fontFamily: FONT_PROSE,
-            fontStyle: 'italic',
-            fontSize: 'var(--text-xs)',
-            color: TEXT_WHISPER,
-            lineHeight: 1.5,
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            fontFamily: FONT_DISPLAY,
+            fontSize: 'var(--text-sm)',
+            letterSpacing: '0.04em',
+            color: TEXT_WARM,
+            textDecoration: 'underline',
+            textUnderlineOffset: 3,
           }}
         >
-          {segments.map((segment, i) =>
-            segment.tooltipId ? (
-              <Tooltip key={i} id={segment.tooltipId}>
-                <span style={CONCEPT_WORD_STYLE}>{segment.text}</span>
-              </Tooltip>
-            ) : (
-              <span key={i}>{segment.text}</span>
-            ),
-          )}
-        </div>
-        <ClockRow clock={model.clock} lead={model.fighterClock ? model.name : undefined} />
-        {model.fighterClock && (
-          <ClockRow clock={model.fighterClock} lead={model.fighterClock.name} />
+          {model.name}
+        </button>
+      ) : (
+        <span
+          data-testid="opponent-name"
+          style={{
+            fontFamily: FONT_DISPLAY,
+            fontSize: 'var(--text-sm)',
+            letterSpacing: '0.04em',
+            color: TEXT_WARM,
+          }}
+        >
+          {model.name}
+        </span>
+      )}
+      <span
+        data-testid="opponent-sentence"
+        style={{
+          fontFamily: FONT_PROSE,
+          fontStyle: 'italic',
+          fontSize: 'var(--text-xs)',
+          color: TEXT_WHISPER,
+        }}
+      >
+        {segments.map((segment, i) =>
+          segment.tooltipId ? (
+            <Tooltip key={i} id={segment.tooltipId}>
+              <span style={CONCEPT_WORD_STYLE}>{segment.text}</span>
+            </Tooltip>
+          ) : (
+            <span key={i}>{segment.text}</span>
+          ),
         )}
-      </div>
+      </span>
+      <ClockRow clock={model.clock} lead={model.fighterClock ? model.name : undefined} />
+      {model.fighterClock && (
+        <ClockRow clock={model.fighterClock} lead={model.fighterClock.name} />
+      )}
     </div>
   );
 }

@@ -4237,6 +4237,32 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/fights/fightClock.ts'],
     readSites: ['src/engine/fights/opponentCard.ts', 'src/engine/unifiedActionResolution.ts'],
   },
+  // ── The fight on screen F2 (THR-1551, plan 2026-09-23-fight-on-screen § Interface impact) ──
+  // "fight state → veil": the opponent header reads the fight's own state and the
+  // opponent's card; it writes nothing.
+  {
+    id: 'fight-state-shows-on-veil',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      "A fight the player watches shows who the mortal is facing and how close it is to falling: the veil reads the fight's clock and the opponent's card, so the pips and the word on screen are the clock the next blow will fill.",
+    ulTerms: ['Fight Clock', 'Opponent Card'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildOpponentHeaderModel', 'readOpponentCard', 'fightState'],
+      module: 'src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts',
+    },
+    writeSites: ['src/engine/fights/fightState.ts', 'src/engine/fights/fightClock.ts'],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts',
+      'src/components/Game/encounter-stage/OpponentHeader.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        "THR-1551 F2. Review route `?view=game&seeded&size=medium`, `tick(60)`, `spawnFight('Ryx')` (major lair, blight family): `getOpponentHeaderModel('ua_116').name === 'Ryx'`, sentence \"A walking rot that spreads where it goes. Fearsome to face, a fair match.\", clock 4 square pips at 14px, word \"untouched\", no threat whisper, hand unscrolled at 1920×1080 (`Docs/evidence/thr-1551/`). Non-vacuous by `src/components/Game/encounter-stage/__tests__/opponentHeaderF2.test.tsx`: the nerve step's word equals the first exchange's after a real `executeStepResult` with a pending recovery (a raw read would say \"failing\"), and the word tracks `fightState.clockNow` once the fight exists.",
+    },
+  },
   {
     id: 'fight-result-keys-aftermath-variants',
     producerSystem: ENCOUNTERS,

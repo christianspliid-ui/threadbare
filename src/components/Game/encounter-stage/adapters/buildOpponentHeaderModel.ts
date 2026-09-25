@@ -36,7 +36,7 @@ import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle
 import { fightRoleOf, resolveFightOpponent } from '../../../../engine/fights/fightStepInputs';
 import { readOpponentCard } from '../../../../engine/fights/opponentCard';
 import { isMonster } from '../../../../engine/monsters/isMonster';
-import { FIGHT_MORTAL_CLOCK, FIGHT_TEMPER_TRAIT_PREFIX } from '../../../../data/fight-constants';
+import { FIGHT_MORTAL_CLOCK } from '../../../../data/fight-constants';
 import { MONSTER_FAMILIES } from '../../../../data/monster-families';
 import {
   DREAD_PHRASES,
@@ -178,9 +178,11 @@ function buildSentence(
   if (temperShown) {
     segments.push(
       { text: ' ', role: 'joiner' },
-      // The temper traits already carry derived `attachment.trait.temper.*` ids,
-      // so the clause explains the one concept once (plan § Tooltip copy).
-      { text: TEMPER_CLAUSES[temper], tooltipId: `attachment.${FIGHT_TEMPER_TRAIT_PREFIX}${temper}`, role: 'temper' },
+      // The clause carries the Temper concept. The plan expected the temper traits'
+      // derived `attachment.trait.temper.*` ids to explain each word, but the
+      // registry does not resolve them (a temper is not an attachment subcategory),
+      // and a dead id draws a link that explains nothing (Law 21). THR-1551.
+      { text: TEMPER_CLAUSES[temper], tooltipId: FIGHT_TOOLTIP_IDS.temper.tooltipId, role: 'temper' },
     );
   }
   return segments;
