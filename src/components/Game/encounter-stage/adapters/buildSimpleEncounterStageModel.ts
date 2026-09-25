@@ -8,7 +8,7 @@
  * Prose enrichment logic ported from TieredEncounterModal lines 699-722.
  */
 
-import type { ActionStep, UnifiedActionTemplate } from '../../../../types/unifiedAction';
+import type { ActionStep, UnifiedAction, UnifiedActionTemplate } from '../../../../types/unifiedAction';
 import { isActionStepBranch, isStepSuccess } from '../../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
@@ -34,6 +34,8 @@ import { getAgentPortraitUrlFromProperties } from '../../../../data/portrait-ass
 import type { RarityTier } from '../../../../types/rarity';
 import { formatEssenceLabel } from '../../../shared/formatEssence';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
+import { fightRoleOf } from '../../../../engine/fights/fightStepInputs';
+import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -52,6 +54,13 @@ export interface BuildSimpleEncounterStageModelArgs {
   gameState?: GameState;
   /** Effective rarity tier after Focus buff was applied (THR-416). */
   effectiveRarityTier?: RarityTier;
+  /**
+   * THR-1551 (fight on screen F2) — the live unified action behind this
+   * encounter, when one exists. The watched tier routes here, never through the
+   * unified adapter (`GameView` tier routing), so on a fight step this is what
+   * the one opponent line reads. Absent → no opponent line (fail-soft).
+   */
+  activeAction?: UnifiedAction;
 }
 
 // ── Prose depth ──────────────────────────────────────────
@@ -226,9 +235,12 @@ function buildHistory(
       : i === currentIndex ? (isEncounterFinished ? 'resolved' as const : 'current' as const)
       : 'future' as const;
 
+    // THR-1551 — a fight step names itself ("Facing it", "First exchange" …).
+    const stepTitle = fightStepLabel(template, i);
     const entry: EncounterStageHistoryModel = {
       stepId: snapshotByIndex.get(i)?.stepId ?? `step-${i}`,
-      stepLabel: snapshotByIndex.get(i)?.stepName || `Step ${i + 1}`,
+      stepLabel: stepTitle ?? (snapshotByIndex.get(i)?.stepName || `Step ${i + 1}`),
+      ...(stepTitle ? { stepTitle } : {}),
       status,
     };
     if (status !== 'resolved') return entry;
@@ -341,11 +353,36 @@ export function buildSimpleEncounterStageModel(
   const currentStep = stepAt(template, currentIndex);
   const focalName = args.agentName || notification.agentName;
 
+  // THR-1551 — the watched view on a fight step: no threat word (the rarity's
+  // word would be a second magnitude language beside the fight's own, Law 10),
+  // and one opponent line in its place, read from the live action. Fail-soft: no
+  // action or no game state → no line; a throw → no line.
+  const onFightStep = !isEncounterFinished && !!fightRoleOf(currentStep);
+  let opponentLine: EncounterStageModel['header']['opponentLine'];
+  if (onFightStep && args.activeAction && args.gameState && !args.activeAction.resolved) {
+    try {
+      const opponent = buildOpponentHeaderModel(args.gameState, args.activeAction, template);
+      if (opponent) {
+        opponentLine = {
+          text: opponent.line,
+          name: opponent.name,
+          opponentId: opponent.linkable ? opponent.opponentId : null,
+          clockWord: opponent.clock.word,
+        };
+      }
+    } catch {
+      opponentLine = undefined;
+    }
+  }
+
   return {
     header: {
       title: template.name,
       locationLabel: resolveAgentLocationLabel(graph, agentId),
-      threatLabel: RARITY_TO_THREAT[effectiveRarityTier ?? template.rarityTier] ?? 'moderate',
+      ...(onFightStep
+        ? {}
+        : { threatLabel: RARITY_TO_THREAT[effectiveRarityTier ?? template.rarityTier] ?? 'moderate' }),
+      ...(opponentLine ? { opponentLine } : {}),
       threadTier,
       agentName: focalName,
       familyLabel: focalName,
