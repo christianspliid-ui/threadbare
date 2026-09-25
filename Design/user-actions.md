@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 02:57 local (00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-25 03:55 local (01:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -40,6 +40,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-25 — felling a lair’s beast in a fight now takes the den** ([THR-1546](https://linear.app/threadbare/issue/THR-1546/monsters-m3-what-felling-it-does), monsters M3). Merged 03:36 local via [#2026](https://github.com/christianspliid-ui/threadbare/pull/2026), and live on the site. Not a review ask yet: fight endings and the opponent header are still to come.
 - **2026-09-25 — monsters are now named and counted right on the fight screen** ([THR-1550](https://linear.app/threadbare/issue/THR-1550/fight-on-screen-f1-monsters-named-and-counted-right), fight on screen F1). Merged 02:36 local via [#2025](https://github.com/christianspliid-ui/threadbare/pull/2025), and live on the site. Not a review ask yet: fight endings and felling a monster are still to come.
 - **2026-09-25 — the named-beast hunt now fights the lair's own monster** ([THR-1545](https://linear.app/threadbare/issue/THR-1545/monsters-m2-monsters-in-scenes), monsters M2). Merged 01:43 local via [#2024](https://github.com/christianspliid-ui/threadbare/pull/2024), and live on the site. Not a review ask yet: the fight screen is still to come.
 - **2026-09-25 — the odds shown are now the odds rolled**: the dice honour items, conditions and standing ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)). Merged 00:44 local via [#2023](https://github.com/christianspliid-ui/threadbare/pull/2023), and live on the site.
@@ -49,7 +50,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-24 — you answered "yes to THR-1535"**: the dice will now honour items, conditions and standing ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)). It is in the build queue.
 - **2026-09-24 — you ruled on how much who a mortal is should weigh** ([THR-1575](https://linear.app/threadbare/issue/THR-1575/the-dice-read-every-protagonist-as-a-master-capabilitys-curve)): mortals take on tasks at 50–65% odds, skill decides which ones. The plan merged via [#2018](https://github.com/christianspliid-ui/threadbare/pull/2018) and [#2020](https://github.com/christianspliid-ui/threadbare/pull/2020); the first two slices ([S1](https://linear.app/threadbare/issue/THR-1578), [S2](https://linear.app/threadbare/issue/THR-1579)) are in the build queue.
 - **2026-09-24 — every lair beast now has a fighting card and a temper** ([THR-1544](https://linear.app/threadbare/issue/THR-1544/monsters-m1-the-monster-card), monsters M1). Merged 19:40 local via [#2017](https://github.com/christianspliid-ui/threadbare/pull/2017), and live on the site.
-- **2026-09-24 — war news now reaches the chronicle in normal play** ([THR-1564](https://linear.app/threadbare/issue/THR-1564/war-news-never-reaches-the-player-in-normal-play-armies-battles-and)). Merged 18:34 local via [#2016](https://github.com/christianspliid-ui/threadbare/pull/2016), and live on the site.
 
 ---
 
