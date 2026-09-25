@@ -248,6 +248,7 @@ import { resetOpCounter } from './graphOpExecutor';
 import { _resetNpcCounter } from './npcSeeding';
 import { resetConditionCounter } from './spellActivation';
 import { resetPremonitionCounter } from './premonitionActions';
+import { fixIndefiniteArticles, withIndefiniteArticle } from '../lib/indefiniteArticle';
 
 // ─── Legacy Decision Cache (backward-compat shim for tests) ───────
 //
@@ -1472,6 +1473,7 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
         .replace(/{adj}/g, adjPool[adjIndex])
         .replace(/{noun}/g, nounPool[nounIndex])
         .replace(/{verb}/g, verbPool[verbIndex]);
+      message = fixIndefiniteArticles(message);
     }
 
     // Emit dilemma_resolved event
@@ -1746,6 +1748,16 @@ function readSchemeNum(worldFlags: Record<string, unknown>, key: string): number
   return typeof v === 'number' ? v : 0;
 }
 
+/**
+ * The name a player reads for a node (THR-1602): `node.name`, then a legacy
+ * `properties.name`, and the raw id only when the node carries neither.
+ */
+function displayNameOf(node: { id: string; name?: string; properties: Record<string, unknown> }): string {
+  if (typeof node.name === 'string' && node.name) return node.name;
+  const legacy = node.properties.name;
+  return (typeof legacy === 'string' && legacy) || node.id;
+}
+
 /** Pick a top-level location to target with a scheme (fail-soft: undefined if none). */
 function selectSchemeTarget(
   state: GameState,
@@ -1759,9 +1771,9 @@ function selectSchemeTarget(
   });
   if (locations.length === 0) return undefined;
   const pick = locations[Math.floor(rng() * locations.length)];
-  const name =
-    (typeof pick.properties.name === 'string' && pick.properties.name) || pick.id;
-  return { id: pick.id, name };
+  // THR-1602: a location keeps its name on `node.name`; `properties.name` is
+  // empty on every seeded location, so reading it first put `loc_36` in prose.
+  return { id: pick.id, name: displayNameOf(pick) };
 }
 
 /**
@@ -2062,9 +2074,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
       const compId = active.compositionId;
       const targetId = active.resolvedNodes.target;
       const targetNode = targetId ? state.graph.getNode(targetId) : undefined;
-      const targetName = targetNode
-        ? ((targetNode.properties.name as string | undefined) ?? targetId)
-        : undefined;
+      const targetName = targetNode ? displayNameOf(targetNode) : undefined;
       const pressureTarget = targetNode && targetId ? targetId : rival.id;
 
       // 1a. Execute the concrete move for each activated-but-not-yet-moved phase.
@@ -2434,7 +2444,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
           Object.assign(worldFlags, plan.worldFlagUpdates);
           rivalState = { ...plan.updatedRivalState, interventionCount: rivalState.interventionCount + 1 };
           if (target) alreadyTargeted.add(target.id);
-          const launchMsg = `${rival.name} sets a ${family.label.toLowerCase()} in motion${target ? ` against ${target.name}` : ''}.`;
+          const launchMsg = `${rival.name} sets ${withIndefiniteArticle(family.label.toLowerCase())} in motion${target ? ` against ${target.name}` : ''}.`;
           events.push({
             id: nextEventId(),
             tick: state.tick,

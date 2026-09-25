@@ -66,6 +66,17 @@ export const ZERO_STATE_RULES: Record<string, string> = {
   default: 'removal',
 } as const;
 
+/**
+ * Player-facing sentence for each zero-state rule (THR-1602). The rule key is
+ * an engine word; the chronicle printed it raw (`Rule: death_or_transformation`).
+ */
+export const ZERO_STATE_RULE_PROSE: Record<string, string> = {
+  death_or_transformation: 'What remains will die, or become something else.',
+  ruins_or_void: 'What stood there is ruin now, or nothing at all.',
+  dissolution: 'Its bonds come apart.',
+  removal: 'It passes out of the world.',
+};
+
 // ─── Helper Functions ─────────────────────────────────────────────────
 
 /**
