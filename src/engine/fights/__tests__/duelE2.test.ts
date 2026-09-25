@@ -191,7 +191,9 @@ describe('the victor finishes a beaten loser (ruthlessness pole)', () => {
     }
     const rate = kills / N;
     expect(Math.abs(rate - FIGHT_DUEL_KILL_CHANCE_RUTHLESS)).toBeLessThanOrEqual(0.01);
-  });
+    // ~0.9 s locally, but it timed out at vitest's 5 s default on a CI runner
+    // (PR #2052, 2026-09-25, impediment #1076). A 10k-world loop needs headroom.
+  }, 20_000);
 });
 
 describe('a loser who yielded or fled is never finished, whichever side', () => {
