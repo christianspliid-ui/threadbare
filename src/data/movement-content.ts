@@ -299,6 +299,15 @@ export const APPOINTMENT_AMBITION_MARGIN_TICKS = 12;
  */
 export const APPOINTMENT_JOURNEY_PULL = 1.0;
 
+/**
+ * Ticks per hex when an appointment is priced by hex distance (THR-1560,
+ * `pricedByHex`): a place off the road graph — a lair has no `adjacent`, `road` or
+ * `contains` edge — is walked by the journey queuer's hex fallback, so its slack is
+ * priced the same way rather than read as unreachable. Two edge traversals per hex
+ * (`2 × BASE_EDGE_TRAVERSAL_COST`) plus an average terrain tax.
+ */
+export const APPOINTMENT_HEX_TICKS_PER_HEX = 3;
+
 /** Ticks after the window closes before the missed sequel is eligible. */
 export const APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS = 12;
 

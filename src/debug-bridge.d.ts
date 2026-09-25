@@ -1960,7 +1960,11 @@ export interface DebugBridge {
    *  `trait.temper.*` edge; stubborn when none), `temperShown`, and `deceased` — slain
    *  monsters are listed too. `cardMissing: true` flags a monster node with no
    *  `monsterState` (the M1 kill criterion). Ordered by id. Resolves `[]` with no live
-   *  game. **Async.** The row shape is pinned: plan docs 4 and 6 build on it. */
+   *  game. **Async.** The row shape is pinned: plan docs 4 and 6 build on it.
+   *  `huntedBy[]` (THR-1560, plan doc 6): the mortals with an active hunt
+   *  (`cell.destroy.monster`, `work: 'hunt'`) or tracking (`cell.observe.monster`,
+   *  `work: 'track'`) project on the monster, each with the door that admits them today —
+   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does. */
   listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
 
   /** The lair card the hex sidebar renders for one lair (plan doc 4, F1 THR-1550 + F4

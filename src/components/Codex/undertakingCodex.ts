@@ -27,7 +27,7 @@ import { UNDERTAKING_CELL_TEMPLATES, cellTemplateId, getCellTemplate } from '../
 import { getUndertakingObjectType, UNDERTAKING_OBJECT_TYPES } from '../../data/undertaking-objects';
 import { UNDERTAKING_VERB_WORDS, cellLineSet } from '../../data/undertaking-verb-prose';
 import { MOTIVE_GATED_VERBS } from '../../data/strategic-action-constants';
-import { LIVE_CELL_NOTES } from '../../../scripts/undertaking-grid-dispositions';
+import { LIVE_CELL_NOTES, LIVE_CLASS_CELL_NOTES } from '../../../scripts/undertaking-grid-dispositions';
 import { callingsForCell } from '../../data/division-rule-tables';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from '../../types/rarity';
 
@@ -48,6 +48,9 @@ export const UNDERTAKING_KIND_GLYPHS: Readonly<Record<UndertakingObjectTypeId, s
   agreement: '☍',   // ☍ a bond of words
   standing: '⚖',    // ⚖ how one is held
   mortal: '♙',      // ♙ a person — the plot's object (THR-1430)
+  // A beast — the lair's own (THR-1560). The map's lair icon is an SVG, so the codex
+  // takes the nearest text glyph: a creature, not a person.
+  monster: '♞',
 };
 
 /** The cell that undoes a verb on the same kind, when the grid has one. */
@@ -64,6 +67,26 @@ export const COUNTER_PLAY_OF: Readonly<Record<UndertakingVerbVariant, Undertakin
 
 /** The reason a gated verb needs, in words. */
 export const MOTIVE_GATE_WORDS = 'Only with a grievance, a rivalry, a contested want or a war';
+
+/**
+ * The kind word a card shows (THR-1560): a class of a kind reads as its kind with the
+ * class in brackets — *Mortal (monster)* — because a monster is a class of Mortal, not
+ * a kind of its own (THR-1268). Every other type reads its own display name.
+ */
+export function codexKindWord(typeId: UndertakingObjectTypeId): string {
+  const type = getUndertakingObjectType(typeId);
+  if (!type) return typeId;
+  const kind = type.classOf ? getUndertakingObjectType(type.classOf) : undefined;
+  return kind ? `${kind.displayName} (${type.displayName.toLowerCase()})` : type.displayName;
+}
+
+/** The curated note behind a live cell — the class table for a class, the kind table otherwise. */
+function liveNoteFor(typeId: UndertakingObjectTypeId, variant: UndertakingVerbVariant): unknown {
+  const type = getUndertakingObjectType(typeId);
+  return type?.classOf
+    ? LIVE_CLASS_CELL_NOTES[typeId]?.[variant]
+    : LIVE_CELL_NOTES[typeId as never]?.[variant];
+}
 
 const GENERIC_SLOTS: Readonly<Record<string, string>> = {
   Actor: 'A mortal', actor: 'a mortal',
@@ -100,7 +123,7 @@ export function validateUndertakingCodex(templates: readonly StrategicActionTemp
     if (!t.displayName || t.displayName.includes('cell.')) problems.push({ cellId: t.id, problem: 'no plain phrase' });
     if (!UNDERTAKING_KIND_GLYPHS[typeId]) problems.push({ cellId: t.id, problem: `no glyph for kind '${typeId}'` });
     if (!cellLineSet(variant, typeId).narration) problems.push({ cellId: t.id, problem: 'no lexicon line' });
-    if (!LIVE_CELL_NOTES[typeId as never]?.[variant]) problems.push({ cellId: t.id, problem: 'no disposition note' });
+    if (!liveNoteFor(typeId, variant)) problems.push({ cellId: t.id, problem: 'no disposition note' });
   }
   return problems;
 }
@@ -121,7 +144,10 @@ export function buildUndertakingCodexEntries(): CodexEntry[] {
     const variant = t.cellVariant!;
     const typeId = t.objectTypeId!;
     const type = getUndertakingObjectType(typeId)!;
+    // The object's own word for the GM line ("the monster"); the kind row reads the
+    // classed word ("Mortal (monster)") so the codex agrees with the grid.
     const kindWord = type.displayName;
+    const kindRowWord = codexKindWord(typeId);
     const verbWord = UNDERTAKING_VERB_WORDS[variant];
     const callings = callingsForCell(t.id);
     const counterVariant = COUNTER_PLAY_OF[variant];
@@ -138,11 +164,11 @@ export function buildUndertakingCodexEntries(): CodexEntry[] {
       tierColor: RARITY_TIER_COLORS[gated ? 2 : 1],
       category: 'undertakings',
       subcategory: variant,
-      subtitle: `${kindWord} · ${verbWord}`,
+      subtitle: `${kindRowWord} · ${verbWord}`,
       summary: genericCellLine(variant, typeId, kindWord),
-      tags: [verbWord, kindWord, ...(gated ? ['Needs a reason'] : [])],
+      tags: [verbWord, kindRowWord, ...(gated ? ['Needs a reason'] : [])],
       details: [
-        { label: 'The kind of thing', value: kindWord, tooltipId: 'ui.undertaking_kind' },
+        { label: 'The kind of thing', value: kindRowWord, tooltipId: 'ui.undertaking_kind' },
         { label: 'The verb', value: verbWord, tooltipId: `ui.verb.${variant}` },
         {
           label: 'Who tends to do it',
@@ -150,7 +176,9 @@ export function buildUndertakingCodexEntries(): CodexEntry[] {
           tooltipId: 'ui.calling',
         },
         { label: 'Counter-play', value: counter ? counter.displayName : 'None the grid has' },
-        { label: 'Needs a reason', value: gated ? MOTIVE_GATE_WORDS : 'No' },
+        // A type with its own doors says what they are (a monster: a scar, a grievance,
+        // a den near home) rather than the social motives it does not read.
+        { label: 'Needs a reason', value: gated ? (type.reasonWords ?? MOTIVE_GATE_WORDS) : 'No' },
       ],
     });
   }

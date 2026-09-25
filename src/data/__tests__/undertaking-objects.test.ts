@@ -29,12 +29,28 @@ import {
   ROUTE_IDENTITY_SUBTYPE,
 } from '../strategic-action-constants';
 import { UNDERTAKING_TIER_PAYOFF_BANDS } from '../content-eval/undertakingConstants';
+import { WORLD_OBJECT_KINDS } from '../world-objects';
+import type { UndertakingObjectTypeId } from '../../types/strategicAction';
 
-const TYPE_IDS = ['area', 'location', 'place', 'route', 'mortal', 'faction', 'company', 'army', 'network', 'companion', 'item', 'power', 'condition', 'agreement', 'standing'] as const;
+const KIND_IDS = ['area', 'location', 'place', 'route', 'mortal', 'faction', 'company', 'army', 'network', 'companion', 'item', 'power', 'condition', 'agreement', 'standing'] as const;
+/** THR-1560 — classes of a kind (THR-1268: a monster is a class of Mortal), each with its kind. */
+const CLASS_OF: Readonly<Record<string, string>> = { monster: 'mortal' };
+const TYPE_IDS: readonly UndertakingObjectTypeId[] = [...KIND_IDS, 'monster'];
 
 describe('the object-type registry', () => {
   it('registers the fifteen catalogue kinds once each, with a shape, a lexicon and a harm class', () => {
     expect(UNDERTAKING_OBJECT_TYPES.map(t => t.id).sort()).toEqual([...TYPE_IDS].sort());
+    // THR-1560: every id is a catalogue kind, or a class naming the kind it belongs to.
+    const kinds = new Set<string>(WORLD_OBJECT_KINDS.map(k => k.id));
+    for (const t of UNDERTAKING_OBJECT_TYPES) {
+      if (t.classOf) {
+        expect(CLASS_OF[t.id], `${t.id} is a class the contract names`).toBe(t.classOf);
+        expect(kinds.has(t.classOf), `${t.id} is a class of a catalogue kind`).toBe(true);
+        expect(kinds.has(t.id), `${t.id} is a class, not a kind`).toBe(false);
+      } else {
+        expect(kinds.has(t.id), `${t.id} is a catalogue kind`).toBe(true);
+      }
+    }
     for (const t of UNDERTAKING_OBJECT_TYPES) {
       const isEdge = !!t.shape.edgeType || !!t.shape.edgeTypes;
       expect(!!t.shape.nodeType !== isEdge, `${t.id} is a node or an edge object, not both`).toBe(true);

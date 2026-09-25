@@ -22,9 +22,11 @@ import { assertNoDuplicateIds, assertValidUnifiedTemplate } from '../../testing/
  * deliberately differs (its steps continue weakened, its prize is its result, its
  * ending chips are plan doc 4's), so it is held to the fight block's own rules —
  * `fightBlock.test.ts`, `fightBlockFB7.test.ts` and the catalog-wide invariants —
- * and to the structural and registry checks here.
+ * and to the structural and registry checks here. THR-1560 added `hunt.trail_cold`,
+ * the hunt appointment's missed sequel — a one-step telling that writes nothing beyond
+ * what every missed appointment writes, held to `hunts.test.ts` and the invariants here.
  */
-const MIGRATED_HUNT_TEMPLATES = MONSTER_ENCOUNTER_TEMPLATES.filter(t => !t.id.startsWith('fight.'));
+const MIGRATED_HUNT_TEMPLATES = MONSTER_ENCOUNTER_TEMPLATES.filter(t => !t.id.startsWith('fight.') && !t.id.startsWith('hunt.'));
 
 /**
  * THR-1545 rewrote `monster.hunt.named_elite` so its climax is a fight block. Its
@@ -35,10 +37,11 @@ const isFightStep = (step: unknown): boolean => (step as { fightRole?: unknown }
 
 describe('monster-encounter-content (THR-103 migration)', () => {
   describe('MONSTER_ENCOUNTER_TEMPLATES', () => {
-    it('has the five migrated hunt templates, plus the standalone fight (THR-1543)', () => {
+    it('has the five migrated hunt templates, plus the standalone fight (THR-1543) and the missed-hunt sequel (THR-1560)', () => {
       const ids = MONSTER_ENCOUNTER_TEMPLATES.map(t => t.id).sort();
       expect(ids).toEqual([
         'fight.lair.confront',
+        'hunt.trail_cold',
         'monster.encounter.ambush',
         'monster.encounter.horde_raid',
         'monster.encounter.lair_defense',
