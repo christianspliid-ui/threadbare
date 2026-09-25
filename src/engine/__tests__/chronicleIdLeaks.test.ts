@@ -40,7 +40,7 @@ function rivalDef(id: string, behavior: RivalDefinition['behavior']): RivalDefin
     secondarySphere: 'mind',
     powerLevel: 5,
     actionFrequency: 5,
-  } as RivalDefinition;
+  } as unknown as RivalDefinition;
 }
 
 function rivalState(id: string): RivalState {
