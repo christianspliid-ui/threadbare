@@ -348,7 +348,7 @@ const HAMMER_WITHHELD_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'eye.kept_record',
+          query: { kind: 'encounter_template', tags: ['#covenant_errand'] },
           delayTicks: 18,
           priority: 1.1,
           seedLabel: 'The record of the fords becomes the region\'s conscience',

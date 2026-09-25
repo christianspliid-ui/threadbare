@@ -235,7 +235,7 @@ const OLDER_CLAIM_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'stone.legacy',
+          query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
           delayTicks: 50,
           priority: 1.2,
           seedLabel: 'The losing party returns — a generation has passed and the deed is being contested again by different hands',
@@ -260,7 +260,7 @@ const OLDER_CLAIM_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'stone.legacy',
+          query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
           delayTicks: 50,
           priority: 1.0,
           seedLabel: 'The losing party returns — a generation has passed and the deed is being contested again by different hands',
@@ -334,7 +334,7 @@ const TRANSFORMING_CLAIM_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'stone.legacy',
+          query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
           delayTicks: 50,
           priority: 1.2,
           seedLabel: 'The older party returns — a generation has passed and the deed is being contested again by different hands, with better instruments',
@@ -364,7 +364,7 @@ const TRANSFORMING_CLAIM_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'stone.legacy',
+          query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
           delayTicks: 50,
           priority: 1.0,
           seedLabel: 'The older party returns — a generation has passed and the deed is being contested again by different hands, with better instruments',
