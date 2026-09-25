@@ -1,0 +1,112 @@
+
+> app@0.0.0 census:reachability
+> esbuild scripts/kind-reachability.ts --bundle --platform=node --format=esm --outfile=.cache/kind-reachability.mjs --external:fs --external:path && node .cache/kind-reachability.mjs --seeds 42,99 --ticks 40 --map medium
+
+
+  .cache\kind-reachability.mjs  8.6mb
+
+Done in 127ms
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 7.4%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 0 · possessions 12 · quarrels 2 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +106 settlement-authored NPCs
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 6.6%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 4 · routes 6 · freeholds 2 · possessions 13 · quarrels 7 · marks 2 · garrisons 3
+[WorldGen] Genome NPC top-up: +144 settlement-authored NPCs
+
+─── seed 42 · 40 ticks · medium ───────────────────
+autonomous (spotlight) actors: 21
+
+  OK           ambition_dominate_trade        merchant-expansion  holders 2 autonomous / 0 silenced
+  OK           ambition_conquer_territory     warlord-expansion   holders 5 autonomous / 0 silenced
+  OK           ambition_forge_legend          builder-civic       holders 1 autonomous / 0 silenced
+  OK           ambition_arcane_enlightenment  scholar-seeker      holders 3 autonomous / 4 silenced
+  OK           ambition_found_dynasty         court-political     holders 2 autonomous / 1 silenced
+  OK           ambition_escape_cursed_land    wanderer-explorer   holders 2 autonomous / 2 silenced
+  OK           ambition_uncover_secrets       scholar-seeker      holders 7 autonomous / 3 silenced
+  UNREACHABLE  ambition_spread_faith          zealot-mission      holders 0 autonomous / 1 silenced
+  OK           ambition_great_work            builder-civic       holders 4 autonomous / 0 silenced
+  UNREACHABLE  ambition_chase_the_wonder      wanderer-explorer   holders 0 autonomous / 0 silenced
+  UNREACHABLE  ambition_seek_revenge          court-political     holders 0 autonomous / 0 silenced
+  UNREACHABLE  ambition_reclaim_homeland      wanderer-explorer   holders 0 autonomous / 0 silenced
+
+  SILENCED — wanted here, but only by actors with no agency path:
+    zealot-mission
+
+  8 strategic templates unreachable this seed:
+    cell.create.condition
+    cell.change_lower.standing
+    cell.destroy.standing
+    cell.destroy.companion
+    cell.destroy.item
+    cell.destroy.place
+    cell.destroy.power
+    cell.destroy.mortal
+
+  spotlight pulls: 2 (0 swapped, 2 net-additive; 2 of 2 overflow outstanding), 6 refused
+    tick    2  born_lc_1  ← ambition_escape_cursed_land  (net-additive)
+    tick    3  born_lc_2  ← ambition_conquer_territory  (net-additive)
+    tick   11  born_lc_3  refused: budget
+    tick   19  born_lc_4  refused: budget
+    tick   26  born_lc_5  refused: budget
+    tick   32  born_lc_6  refused: budget
+    tick   35  born_lc_7  refused: budget
+    tick   40  born_lc_8  refused: budget
+
+─── seed 99 · 40 ticks · medium ───────────────────
+autonomous (spotlight) actors: 24
+
+  OK           ambition_dominate_trade        merchant-expansion  holders 2 autonomous / 0 silenced
+  OK           ambition_conquer_territory     warlord-expansion   holders 7 autonomous / 6 silenced
+  UNREACHABLE  ambition_forge_legend          builder-civic       holders 0 autonomous / 5 silenced
+  OK           ambition_arcane_enlightenment  scholar-seeker      holders 6 autonomous / 3 silenced
+  OK           ambition_found_dynasty         court-political     holders 3 autonomous / 8 silenced
+  OK           ambition_escape_cursed_land    wanderer-explorer   holders 5 autonomous / 2 silenced
+  OK           ambition_uncover_secrets       scholar-seeker      holders 6 autonomous / 2 silenced
+  UNREACHABLE  ambition_spread_faith          zealot-mission      holders 0 autonomous / 3 silenced
+  OK           ambition_great_work            builder-civic       holders 1 autonomous / 2 silenced
+  UNREACHABLE  ambition_chase_the_wonder      wanderer-explorer   holders 0 autonomous / 0 silenced
+  UNREACHABLE  ambition_seek_revenge          court-political     holders 0 autonomous / 0 silenced
+  UNREACHABLE  ambition_reclaim_homeland      wanderer-explorer   holders 0 autonomous / 0 silenced
+
+  SILENCED — wanted here, but only by actors with no agency path:
+    zealot-mission
+
+  9 strategic templates unreachable this seed:
+    cell.create.companion
+    cell.create.condition
+    cell.change_lower.standing
+    cell.destroy.standing
+    cell.destroy.companion
+    cell.destroy.item
+    cell.destroy.place
+    cell.destroy.power
+    cell.destroy.mortal
+
+  spotlight pulls: 2 (0 swapped, 2 net-additive; 2 of 2 overflow outstanding), 20 refused
+    tick    1  born_lc_9  ← ambition_found_dynasty  (net-additive)
+    tick    3  born_lc_10  ← ambition_dominate_trade  (net-additive)
+    tick    5  born_lc_11  refused: budget
+    tick    6  born_lc_12  refused: budget
+    tick    7  born_lc_13  refused: budget
+    tick   11  born_lc_14  refused: budget
+    tick   12  born_lc_15  refused: budget
+    tick   13  born_lc_16  refused: budget
+    tick   14  born_lc_17  refused: budget
+    tick   16  born_lc_18  refused: budget
+    tick   18  born_lc_19  refused: budget
+    tick   19  born_lc_20  refused: budget
+    tick   23  born_lc_21  refused: budget
+    tick   24  born_lc_22  refused: budget
+    tick   25  born_lc_23  refused: budget
+    tick   26  born_lc_24  refused: budget
+    tick   31  born_lc_25  refused: budget
+    tick   33  born_lc_26  refused: budget
+    tick   34  born_lc_27  refused: budget
+    tick   36  born_lc_28  refused: budget
+    tick   38  born_lc_29  refused: budget
+    tick   39  born_lc_30  refused: budget
+
+═══ reachability summary ═══
+  seed    42  6/7 families reachable, 8/12 ambitions reachable, 8 templates unreachable, 1 silenced, 2 pulled
+  seed    99  6/7 families reachable, 7/12 ambitions reachable, 9 templates unreachable, 1 silenced, 2 pulled
+exit 0

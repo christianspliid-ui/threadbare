@@ -1,0 +1,9 @@
+
+> app@0.0.0 generate-setting-coverage:check
+> esbuild scripts/generate-setting-coverage.ts --bundle --platform=node --format=esm --outfile=.cache/generate-setting-coverage.mjs --external:fs --external:path --external:url && node .cache/generate-setting-coverage.mjs --check
+
+
+  .cache\generate-setting-coverage.mjs  4.3mb
+
+Done in 61ms
+[generate-setting-coverage] --check: up to date.

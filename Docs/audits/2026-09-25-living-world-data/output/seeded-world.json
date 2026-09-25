@@ -1,0 +1,744 @@
+[
+  {
+    "seed": 42,
+    "ticks": 150,
+    "t0": {
+      "tick": 0,
+      "deciding": 20,
+      "individuals": 480,
+      "rows": {
+        "area": {
+          "objects": 12,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "location": {
+          "objects": 229,
+          "owned": 46,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": [
+            "faction"
+          ]
+        },
+        "place": {
+          "objects": 739,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "route": {
+          "objects": 6,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "mortal": {
+          "objects": 480,
+          "owned": 480,
+          "ownedByDeciding": 20,
+          "ownedByIndividual": 480,
+          "sampleOwners": [
+            "agent",
+            "avatar",
+            "ind",
+            "npc"
+          ]
+        },
+        "faction": {
+          "objects": 50,
+          "owned": 16,
+          "ownedByDeciding": 5,
+          "ownedByIndividual": 16,
+          "sampleOwners": [
+            "agent",
+            "npc"
+          ]
+        },
+        "company": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "army": {
+          "objects": 5,
+          "owned": 5,
+          "ownedByDeciding": 5,
+          "ownedByIndividual": 5,
+          "sampleOwners": [
+            "agent"
+          ]
+        },
+        "network": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "companion": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "item": {
+          "objects": 20,
+          "owned": 19,
+          "ownedByDeciding": 19,
+          "ownedByIndividual": 19,
+          "sampleOwners": [
+            "agent",
+            "ind"
+          ]
+        },
+        "power": {
+          "objects": 25,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "condition": {
+          "objects": 4,
+          "owned": 4,
+          "ownedByDeciding": 4,
+          "ownedByIndividual": 4,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "agreement": {
+          "objects": 1,
+          "owned": 1,
+          "ownedByDeciding": 1,
+          "ownedByIndividual": 1,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "standing": {
+          "objects": 60,
+          "owned": 60,
+          "ownedByDeciding": 29,
+          "ownedByIndividual": 29,
+          "sampleOwners": [
+            "faction",
+            "ind"
+          ]
+        }
+      },
+      "nodeTypes": {
+        "trait": 118,
+        "region": 12,
+        "actor": 542,
+        "location": 974,
+        "ambition": 14,
+        "artifact": 141,
+        "artifact_legendary": 1,
+        "action_template": 43
+      },
+      "spotlightMortals": 19,
+      "routeIdentityNodes": 6,
+      "armies": 5,
+      "edgeCounts": {
+        "owns": 0,
+        "possesses": 19,
+        "hostile_to": 4,
+        "knows_secret_of": 1,
+        "trades_with": 6,
+        "commanded_by": 5
+      },
+      "realmCensus": {
+        "domains": 3,
+        "realms": 3,
+        "realmsWithDomain": 3,
+        "locationsInDomain": 40,
+        "heldByTheirRealm": 33,
+        "cededToDefinitionFaction": 7,
+        "unheld": 0,
+        "heldPerRealm": {
+          "faction_0": 17,
+          "faction_1": 10,
+          "faction_2": 6
+        }
+      }
+    },
+    "tN": {
+      "tick": 150,
+      "deciding": 20,
+      "individuals": 553,
+      "rows": {
+        "area": {
+          "objects": 12,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "location": {
+          "objects": 323,
+          "owned": 66,
+          "ownedByDeciding": 1,
+          "ownedByIndividual": 1,
+          "sampleOwners": [
+            "monster",
+            "faction",
+            "ind"
+          ]
+        },
+        "place": {
+          "objects": 794,
+          "owned": 1,
+          "ownedByDeciding": 1,
+          "ownedByIndividual": 1,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "route": {
+          "objects": 6,
+          "owned": 2,
+          "ownedByDeciding": 2,
+          "ownedByIndividual": 2,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "mortal": {
+          "objects": 531,
+          "owned": 531,
+          "ownedByDeciding": 20,
+          "ownedByIndividual": 531,
+          "sampleOwners": [
+            "agent",
+            "avatar",
+            "born",
+            "enc",
+            "ind",
+            "npc"
+          ]
+        },
+        "faction": {
+          "objects": 69,
+          "owned": 16,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 16,
+          "sampleOwners": [
+            "npc"
+          ]
+        },
+        "company": {
+          "objects": 18,
+          "owned": 18,
+          "ownedByDeciding": 5,
+          "ownedByIndividual": 18,
+          "sampleOwners": [
+            "npc",
+            "ind",
+            "agent"
+          ]
+        },
+        "army": {
+          "objects": 3,
+          "owned": 3,
+          "ownedByDeciding": 1,
+          "ownedByIndividual": 3,
+          "sampleOwners": [
+            "agent",
+            "npc"
+          ]
+        },
+        "network": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "companion": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "item": {
+          "objects": 87,
+          "owned": 78,
+          "ownedByDeciding": 65,
+          "ownedByIndividual": 78,
+          "sampleOwners": [
+            "ind",
+            "agent",
+            "born",
+            "npc"
+          ]
+        },
+        "power": {
+          "objects": 58,
+          "owned": 31,
+          "ownedByDeciding": 27,
+          "ownedByIndividual": 31,
+          "sampleOwners": [
+            "agent",
+            "born",
+            "ind",
+            "npc"
+          ]
+        },
+        "condition": {
+          "objects": 15,
+          "owned": 15,
+          "ownedByDeciding": 8,
+          "ownedByIndividual": 9,
+          "sampleOwners": [
+            "artifact",
+            "loc",
+            "born",
+            "agent",
+            "ind"
+          ]
+        },
+        "agreement": {
+          "objects": 8,
+          "owned": 8,
+          "ownedByDeciding": 8,
+          "ownedByIndividual": 8,
+          "sampleOwners": [
+            "born",
+            "ind"
+          ]
+        },
+        "standing": {
+          "objects": 71,
+          "owned": 71,
+          "ownedByDeciding": 27,
+          "ownedByIndividual": 30,
+          "sampleOwners": [
+            "faction",
+            "ind",
+            "born",
+            "npc"
+          ]
+        }
+      },
+      "nodeTypes": {
+        "trait": 284,
+        "region": 12,
+        "actor": 653,
+        "location": 1123,
+        "ambition": 38,
+        "artifact": 211,
+        "artifact_legendary": 1,
+        "action_template": 43,
+        "event": 516
+      },
+      "spotlightMortals": 19,
+      "routeIdentityNodes": 6,
+      "armies": 3,
+      "edgeCounts": {
+        "owns": 3,
+        "possesses": 81,
+        "hostile_to": 107,
+        "knows_secret_of": 13,
+        "trades_with": 0,
+        "commanded_by": 22
+      },
+      "realmCensus": {
+        "domains": 3,
+        "realms": 3,
+        "realmsWithDomain": 3,
+        "locationsInDomain": 40,
+        "heldByTheirRealm": 33,
+        "cededToDefinitionFaction": 7,
+        "unheld": 0,
+        "heldPerRealm": {
+          "faction_0": 17,
+          "faction_1": 10,
+          "faction_2": 6
+        }
+      }
+    }
+  },
+  {
+    "seed": 99,
+    "ticks": 150,
+    "t0": {
+      "tick": 0,
+      "deciding": 23,
+      "individuals": 623,
+      "rows": {
+        "area": {
+          "objects": 7,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "location": {
+          "objects": 232,
+          "owned": 66,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": [
+            "faction"
+          ]
+        },
+        "place": {
+          "objects": 923,
+          "owned": 2,
+          "ownedByDeciding": 2,
+          "ownedByIndividual": 2,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "route": {
+          "objects": 6,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "mortal": {
+          "objects": 623,
+          "owned": 623,
+          "ownedByDeciding": 23,
+          "ownedByIndividual": 623,
+          "sampleOwners": [
+            "agent",
+            "avatar",
+            "ind",
+            "npc"
+          ]
+        },
+        "faction": {
+          "objects": 57,
+          "owned": 16,
+          "ownedByDeciding": 5,
+          "ownedByIndividual": 16,
+          "sampleOwners": [
+            "agent",
+            "npc"
+          ]
+        },
+        "company": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "army": {
+          "objects": 5,
+          "owned": 5,
+          "ownedByDeciding": 5,
+          "ownedByIndividual": 5,
+          "sampleOwners": [
+            "agent"
+          ]
+        },
+        "network": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "companion": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "item": {
+          "objects": 22,
+          "owned": 20,
+          "ownedByDeciding": 20,
+          "ownedByIndividual": 20,
+          "sampleOwners": [
+            "agent",
+            "ind"
+          ]
+        },
+        "power": {
+          "objects": 25,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "condition": {
+          "objects": 4,
+          "owned": 4,
+          "ownedByDeciding": 4,
+          "ownedByIndividual": 4,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "agreement": {
+          "objects": 2,
+          "owned": 2,
+          "ownedByDeciding": 2,
+          "ownedByIndividual": 2,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "standing": {
+          "objects": 66,
+          "owned": 66,
+          "ownedByDeciding": 35,
+          "ownedByIndividual": 35,
+          "sampleOwners": [
+            "faction",
+            "ind"
+          ]
+        }
+      },
+      "nodeTypes": {
+        "trait": 126,
+        "region": 7,
+        "actor": 691,
+        "location": 1161,
+        "ambition": 14,
+        "artifact": 145,
+        "artifact_legendary": 1,
+        "action_template": 43
+      },
+      "spotlightMortals": 22,
+      "routeIdentityNodes": 6,
+      "armies": 5,
+      "edgeCounts": {
+        "owns": 2,
+        "possesses": 22,
+        "hostile_to": 14,
+        "knows_secret_of": 2,
+        "trades_with": 6,
+        "commanded_by": 5
+      },
+      "realmCensus": {
+        "domains": 3,
+        "realms": 3,
+        "realmsWithDomain": 3,
+        "locationsInDomain": 60,
+        "heldByTheirRealm": 56,
+        "cededToDefinitionFaction": 4,
+        "unheld": 0,
+        "heldPerRealm": {
+          "faction_0": 19,
+          "faction_1": 11,
+          "faction_2": 26
+        }
+      }
+    },
+    "tN": {
+      "tick": 150,
+      "deciding": 26,
+      "individuals": 766,
+      "rows": {
+        "area": {
+          "objects": 7,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "location": {
+          "objects": 334,
+          "owned": 88,
+          "ownedByDeciding": 5,
+          "ownedByIndividual": 5,
+          "sampleOwners": [
+            "ind",
+            "monster",
+            "faction",
+            "born"
+          ]
+        },
+        "place": {
+          "objects": 945,
+          "owned": 2,
+          "ownedByDeciding": 2,
+          "ownedByIndividual": 2,
+          "sampleOwners": [
+            "ind"
+          ]
+        },
+        "route": {
+          "objects": 9,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "mortal": {
+          "objects": 741,
+          "owned": 741,
+          "ownedByDeciding": 26,
+          "ownedByIndividual": 741,
+          "sampleOwners": [
+            "agent",
+            "avatar",
+            "born",
+            "enc",
+            "ind",
+            "npc"
+          ]
+        },
+        "faction": {
+          "objects": 75,
+          "owned": 16,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 16,
+          "sampleOwners": [
+            "npc"
+          ]
+        },
+        "company": {
+          "objects": 17,
+          "owned": 17,
+          "ownedByDeciding": 5,
+          "ownedByIndividual": 17,
+          "sampleOwners": [
+            "ind",
+            "npc",
+            "born"
+          ]
+        },
+        "army": {
+          "objects": 2,
+          "owned": 2,
+          "ownedByDeciding": 1,
+          "ownedByIndividual": 2,
+          "sampleOwners": [
+            "npc",
+            "ind"
+          ]
+        },
+        "network": {
+          "objects": 1,
+          "owned": 1,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 1,
+          "sampleOwners": [
+            "npc"
+          ]
+        },
+        "companion": {
+          "objects": 0,
+          "owned": 0,
+          "ownedByDeciding": 0,
+          "ownedByIndividual": 0,
+          "sampleOwners": []
+        },
+        "item": {
+          "objects": 139,
+          "owned": 121,
+          "ownedByDeciding": 111,
+          "ownedByIndividual": 121,
+          "sampleOwners": [
+            "agent",
+            "ind",
+            "born",
+            "npc"
+          ]
+        },
+        "power": {
+          "objects": 86,
+          "owned": 58,
+          "ownedByDeciding": 54,
+          "ownedByIndividual": 58,
+          "sampleOwners": [
+            "agent",
+            "ind",
+            "born"
+          ]
+        },
+        "condition": {
+          "objects": 23,
+          "owned": 23,
+          "ownedByDeciding": 12,
+          "ownedByIndividual": 12,
+          "sampleOwners": [
+            "artifact",
+            "loc",
+            "agent",
+            "born",
+            "ind"
+          ]
+        },
+        "agreement": {
+          "objects": 14,
+          "owned": 14,
+          "ownedByDeciding": 14,
+          "ownedByIndividual": 14,
+          "sampleOwners": [
+            "ind",
+            "agent",
+            "born"
+          ]
+        },
+        "standing": {
+          "objects": 97,
+          "owned": 97,
+          "ownedByDeciding": 48,
+          "ownedByIndividual": 56,
+          "sampleOwners": [
+            "faction",
+            "ind",
+            "born",
+            "npc",
+            "agent"
+          ]
+        }
+      },
+      "nodeTypes": {
+        "trait": 385,
+        "region": 7,
+        "actor": 872,
+        "location": 1288,
+        "ambition": 36,
+        "artifact": 264,
+        "artifact_legendary": 1,
+        "action_template": 43,
+        "event": 1064
+      },
+      "spotlightMortals": 25,
+      "routeIdentityNodes": 9,
+      "armies": 2,
+      "edgeCounts": {
+        "owns": 3,
+        "possesses": 124,
+        "hostile_to": 127,
+        "knows_secret_of": 30,
+        "trades_with": 2,
+        "commanded_by": 24
+      },
+      "realmCensus": {
+        "domains": 3,
+        "realms": 3,
+        "realmsWithDomain": 3,
+        "locationsInDomain": 60,
+        "heldByTheirRealm": 54,
+        "cededToDefinitionFaction": 6,
+        "unheld": 0,
+        "heldPerRealm": {
+          "faction_0": 19,
+          "faction_1": 13,
+          "faction_2": 24
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,48 @@
+
+> app@0.0.0 census:location-traits
+> esbuild scripts/location-trait-census.ts --bundle --platform=node --format=esm --outfile=.cache/location-trait-census.mjs --external:fs --external:path && node .cache/location-trait-census.mjs
+
+
+  .cache\location-trait-census.mjs  8.6mb
+
+Done in 153ms
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 7.4%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 0 · possessions 12 · quarrels 2 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +106 settlement-authored NPCs
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 6.6%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 4 · routes 6 · freeholds 2 · possessions 13 · quarrels 7 · marks 2 · garrisons 3
+[WorldGen] Genome NPC top-up: +144 settlement-authored NPCs
+
+─── seed 42 · 150 ticks · medium ───────────────────
+resolved encounters: 227  (at unmarked places 219, unplaced 0)
+location conditions seen on any place: lawless, welcoming
+
+  UNDERSAMPLED #welcoming  places now 1 · peak 1 · mints 1 · releases 0 · first at t36  |  encounters at marked places: 8
+
+  UNDERSAMPLED #lawless  places now 1 · peak 1 · mints 1 · releases 0 · first at t147  |  encounters at marked places: 0
+
+  UNMINTED     #veil_thin  places now 0 · peak 0 · mints 0 · releases 0  |  encounters at marked places: 0
+
+  UNMINTED     #haunted  places now 0 · peak 0 · mints 0 · releases 0  |  encounters at marked places: 0
+
+─── seed 99 · 150 ticks · medium ───────────────────
+resolved encounters: 451  (at unmarked places 344, unplaced 0)
+location conditions seen on any place: harvest_blight, lawless, under_watch, welcoming
+
+  FLAT         #welcoming  places now 4 · peak 5 · mints 5 · releases 1 · first at t36  |  encounters at marked places: 107
+               tag              bonus   marked   unmarked   (n at marked)
+               #gold             0.08    5.6%    6.4%  ▼  (6)
+               #heart            0.08   10.3%   14.8%  ▼  (11)
+               #social           0.10    0.0%    0.0%  =  (0)
+               #trade            0.10    0.0%    0.0%  =  (0)
+               #commercial       0.08    0.0%    0.0%  =  (0)
+               #tavern_night     0.10    0.0%    0.0%  =  (0)
+
+  UNDERSAMPLED #lawless  places now 1 · peak 1 · mints 1 · releases 0 · first at t107  |  encounters at marked places: 0
+
+  UNMINTED     #veil_thin  places now 0 · peak 0 · mints 0 · releases 0  |  encounters at marked places: 0
+
+  UNMINTED     #haunted  places now 0 · peak 0 · mints 0 · releases 0  |  encounters at marked places: 0
+
+Verdicts: UNMINTED — no place carried the trait (thresholds vs the world's scalars); UNDERSAMPLED — under 20 encounters resolved at marked places; MOVES — a row tag's share at marked places exceeds unmarked by ≥ 5 points on ≥ 3 hits; FLAT — it did not (rows too small, or the corpus lacks the tags).
+exit 0
