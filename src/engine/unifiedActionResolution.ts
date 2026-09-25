@@ -2182,6 +2182,8 @@ export function executeStepResult(
       rng,
       runtime,
       overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
+      // THR-1557 — a duel's mercy fork weighs the ending step's dealt hand.
+      ...(fightRoleOf(fightStepDef) ? { handNudges: composeDealtStepFromState(fightStepDef, state).step.nudges } : {}),
     }, true);
     finalAction = ended.action;
     events.push(...ended.events);

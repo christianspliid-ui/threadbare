@@ -20,7 +20,7 @@
  */
 
 import type { GameState, TickEvent } from '../../types/gameState';
-import type { UnifiedAction, UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { StepNudge, UnifiedAction, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { FightState } from '../../types/fight';
 import type { FightEndTrace } from '../../types/traces/fight-traces';
 import type { SimulationRuntime } from '../simulationRuntime';
@@ -39,6 +39,11 @@ export interface FightEndContext {
   readonly runtime?: SimulationRuntime;
   /** For `markMortalDead`'s `death_prevented` ward. */
   readonly overrideCtx: RuleOverrideContext;
+  /**
+   * THR-1557 — the ending step's dealt cards, so a duel's mercy fork can weigh the
+   * god's hand when the victor is the god's own mortal. Absent on the no-roll end.
+   */
+  readonly handNudges?: readonly StepNudge[];
 }
 
 /** The records a branch may write onto the resolved fight (FB2 declares them all). */
@@ -65,6 +70,10 @@ export interface FightEndedResult {
  *   defeat faces, the death gate, Scarred, the grudge, humiliation. First, so the
  *   fighter's record is written before any opponent-side branch reads the action.
  * - `monsterLairBranch` (THR-1546): felling or driving off a lair's monster.
+ *
+ * A duel's other side (THR-1557) is not a branch of its own: the victor's mercy fork
+ * and the opponent's face are decided inside `fighterEndingBranch`, which returns both
+ * `ending` and `opponentEnding`, so one `fight.ending` trace carries the whole fork.
  */
 export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [fighterEndingBranch, monsterLairBranch];
 

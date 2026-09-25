@@ -402,6 +402,13 @@ export const FIGHT_KILL_CHANCE_BY_TEMPER: Readonly<Record<FightTemper, number>> 
 export const FIGHT_DUEL_KILL_CHANCE_RUTHLESS = 0.25;
 
 /**
+ * The axis a duel's victor decides a beaten loser's fate on (THR-1557, duels plan doc
+ * §5): the positive pole (mercy) spares, the negative (ruthlessness) tries to finish.
+ * The same axis a bargainer's offer is weighed on.
+ */
+export const FIGHT_MERCY_AXIS = FIGHT_BARGAIN_AXIS;
+
+/**
  * How far an ending drifts the fighter's values: toward prudence on a yield or a
  * rout (D1); toward mercy on a bargain, toward courage on a won duel (D2). The
  * branch-decision magnitude, so a fight moves a person as far as a hard choice does.

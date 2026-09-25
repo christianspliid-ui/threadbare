@@ -4489,6 +4489,25 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/fights/fightEnding.ts'],
     readSites: ['src/engine/reputation.ts'],
   },
+  // ── Duels E2 (THR-1557, plan 2026-09-23-mortal-duels §5) — the plan's Interface impact
+  // row "fight → endings (victor mercy, opponent-side faces)": an extension of D1/D2's
+  // writers, not a new writer. The victor's personality decides a beaten loser's fate.
+  // No `verifiedLive`: the evidence is src/engine/fights/__tests__/duelE2.test.ts.
+  {
+    id: 'duel-victor-mercy-decides-loser-fate',
+    producerSystem: TRAITS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'When one mortal beats another in a duel, the victor\'s own mercy or ruthlessness decides whether the loser walks away scarred or is finished — the god\'s hand weighs in only when the victor is the god\'s own mortal, and a loser who yielded or fled is never killed.',
+    ulTerms: ['Struck down', 'Scarred', 'Grudge'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['decideBeatenDuellist', 'readLiveAxisLean', 'mercy_ruthlessness', 'opponentEnding'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/encounters/branchDecision.ts', 'src/engine/fights/fightEnding.ts'],
+  },
   // ── Fight endings D2 (THR-1549, plan 2026-09-23-defeat-and-victory §4–5) — the plan's
   // Interface impact rows "fight → reward pool" (a new caller of drawSeededReward),
   // "fight → reputation" (gratitude, standing) and "fight → chronicle" (the fight_ended

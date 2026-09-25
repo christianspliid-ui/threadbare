@@ -1910,6 +1910,11 @@ export interface DebugBridge {
        *  was taken), `guard?` (`the_first` / `avatar` / `warded`), `drift?`. Null until
        *  the fight has ended. The whole audit trail of an ending. */
       readonly ending: import('./types/fight').FightEndingRecord | null;
+      /** THR-1557 — a duel's other side (null on an NPC-mode fight or before the end):
+       *  the opponent's `face` (`spared` / `mauled` / `slain` when beaten, `yielded_to_mortal`,
+       *  `routed`, `overcome_mortal` when they won), and `mercy` — the victor's fork
+       *  (`pole`, `profileLean`, `cardLean`, `decidedBy`) — on whichever side was beaten. */
+      readonly opponentEnding: import('./types/fight').FightEndingRecord | null;
     };
 
   /** THR-1551 (fight on screen F2) — the opponent header the veil renders for this

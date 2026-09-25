@@ -171,4 +171,25 @@ export interface FightEndingTrace extends TraceBase {
   rewardSkipped?: 'no_lair' | 'minor_lair' | 'empty_pool';
   /** THR-1549 — the trophy draw flipped to the harmful table. */
   rewardBadOutcome?: boolean;
+
+  // ─── THR-1557 (duels E2): the mercy fork and the opponent's side, on a duel only ───
+  /** How the opponent lost, when they did. */
+  opponentLoss?: 'clock' | 'struck_down' | 'yielded' | 'routed';
+  /** Both sides were beaten in one exchange; each side's fate was decided in turn. */
+  bothStruckDown?: boolean;
+  /** The mercy fork over the beaten loser (over the fighter, on a double). */
+  victorPole?: 'positive' | 'negative';
+  victorProfileLean?: number;
+  /** The hand's lean; non-zero only when the victor is the god's own mortal (the actor). */
+  victorCardLean?: number;
+  mercyDecidedBy?: 'conviction' | 'coin';
+  /** The opponent's face (`fightState.opponentEnding.face`). */
+  opponentFace?: import('../fight').FightEndingFace;
+  /** On a double: the fighter's mercy fork over the opponent. */
+  opponentVictorPole?: 'positive' | 'negative';
+  opponentMercyDecidedBy?: 'conviction' | 'coin';
+  /** The opponent side's death gate, when the fighter tried to finish them. */
+  opponentKillRoll?: { chance: number; roll: number };
+  opponentGuard?: 'the_first' | 'avatar' | 'warded';
+  opponentOutcomeNodeId?: string;
 }

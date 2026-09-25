@@ -2720,6 +2720,17 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block
 | `data/fights/fightBlock.ts` (`mode`, `FIGHT_DUEL_AFTERIMAGES`, `FIGHT_DUEL_OPPONENT_LINES`) · `data/encounters/fight-duel-grudge.ts` (new) · `data/fights/fight-templates.ts` (new: `FIGHT_ENCOUNTER_TEMPLATES`) · `data/unified-action-templates.ts` · `data/encounter-content.ts` (`getAnyEncounterById`) · `data/fight-constants.ts` (`DUEL_OPPONENT_STREAM_SALT`) · `types/fight.ts` · `types/unifiedAction.ts` (`fightMode`) · `types/traces/fight-traces.ts` | spawn-only (E3's grudge trigger; the debug lever) | existing encounter veil | `unifiedActions[]` | the fight traces | `spawnDuel`; CLI `spawn duel` |
 | `debug-bridge.ts` / `.d.ts` (`spawnDuel`; `getFightState` duel fields) · `scripts/cli.ts` (`spawn duel`) · `scripts/calibrate-duels.ts` + `testing/duelCalibration.ts` (`npm run calibrate:duels`) | — | DebugPanel / console | — | — | as named |
 
+## The victor decides — Duels E2 (THR-1557)
+
+Plan: `Docs/plans/2026-09-23-mortal-duels.md` §5. No new phase, node type, edge type or dispatcher branch: the duel's other side is decided inside `fighterEndingBranch`, so one `fight.ending` trace carries the whole fork.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/fights/fightEnding.ts` (`decideBeatenDuellist`, `applyDuelOpponentSide`; `killStruckDownFighter` takes a `loserId`; `fightEndedEvent` tells the opponent's side) · `data/fight-constants.ts` (`FIGHT_MERCY_AXIS`) · `types/fight.ts` (`FightMercyRecord`, `FightEndingRecord.mercy`) · `types/traces/fight-traces.ts` (the mercy fields on `fight.ending`) | `onFightEnded`, called by `finalizeFightEnd` at a fight's end | chronicle (the `fight_ended` event); chips read `ending` (plan doc 4; `opponentEnding` unread by chips in v1, THR-1561) | `fightState.ending`, `fightState.opponentEnding`; graph writes (Scarred, `blood_drawn`, death, `reputation_with`, `archetypeDrift`) | `fight.ending` (`victorPole`, `victorProfileLean`, `victorCardLean`, `mercyDecidedBy`, `opponentFace`, `opponentLoss`, `bothStruckDown`, `opponentKillRoll`, `opponentGuard`, `opponentOutcomeNodeId`) | `getFightState(actionId).ending` / `.opponentEnding` |
+| `engine/fights/fightOutcome.ts` (`FightEndContext.handNudges`) · `engine/unifiedActionResolution.ts` (the rolled route passes the ending step's dealt hand) | step resolution | — | — | — | — |
+
+**Wired and asserted:** `src/engine/fights/__tests__/duelE2.test.ts` runs every case through the shipped `onFightEnded`.
+
 ## Fight on screen F1 — monsters named and counted right (THR-1550)
 
 | Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |

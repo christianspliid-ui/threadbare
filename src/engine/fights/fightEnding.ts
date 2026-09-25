@@ -33,9 +33,12 @@
  * single kill draw, so `killRoll` is present exactly when a draw happened. The ward
  * (`death_prevented`) is the funnel's own and surfaces here as `guard: 'warded'`.
  *
- * **Who can kill.** Only a monster victor, in v1: a named mortal victor on a derived
- * card mauls; a duel victor's mercy is plan doc 5's E2 (THR-1557), which calls this
- * module's `fightDeathGuard` and `killStruckDownFighter` in the same order.
+ * **Who can kill.** A monster victor, and a duel's victor (THR-1557): a named mortal
+ * victor on a derived card (NPC mode) mauls. In a duel (agent mode) the victor decides
+ * over a *beaten* loser on `mercy_ruthlessness` — spared, or finished through the same
+ * guards and then one kill draw (`decideBeatenDuellist`) — whichever side lost; a loser
+ * who yielded or fled is never finished. The opponent's side is recorded as
+ * `fightState.opponentEnding`, and the one `fight.ending` trace carries the mercy fork.
  *
  * NFP #1: every number is in `data/fight-constants.ts`.
  * NFP #2: one `fight.ending` trace per fight; `fightState.ending` on the action.
@@ -50,13 +53,14 @@ import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ValuePair } from '../../types/agent';
-import type { FightEndingFace, FightEndingRecord, FightState } from '../../types/fight';
+import type { FightEndingFace, FightEndingRecord, FightMercyRecord, FightState } from '../../types/fight';
 import type { FightEndingTrace } from '../../types/traces/fight-traces';
 import type { FightEndBranch, FightEndContext } from './fightOutcome';
 import {
   FIGHT_BARGAIN_AXIS,
   FIGHT_CONCESSION_AXIS,
   FIGHT_DEATH_HARM_CLASS,
+  FIGHT_DUEL_KILL_CHANCE_RUTHLESS,
   FIGHT_ENDING_DRIFT,
   FIGHT_EVENT_SIGNIFICANCE,
   FIGHT_EVENT_TIER_BY_FACE,
@@ -65,6 +69,7 @@ import {
   FIGHT_HUMILIATION_CAUSE,
   FIGHT_HUMILIATION_REPUTATION,
   FIGHT_KILL_CHANCE_BY_TEMPER,
+  FIGHT_MERCY_AXIS,
   FIGHT_SCARRED_INTENSITY,
   FIGHT_SCARRED_TRAIT_ID,
   FIGHT_STANDING_CAUSE,
@@ -85,7 +90,8 @@ import { LOCATION_CLASSES } from '../../data/world-objects';
 import { markMortalDead } from '../agentLifecycle';
 import { readResidence } from '../agentResidence';
 import { applyConditionToActor } from '../effects/conditionApplier';
-import { driftTowardPole } from '../encounters/branchDecision';
+import { decideBranchPole, driftTowardPole, readLiveAxisLean } from '../encounters/branchDecision';
+import { sumHandLean } from '../encounters/poleLean';
 import { writeGrudge } from '../grievance/grudgeEdge';
 import { createUndertakingOutcomeNode } from '../grievance/undertakingOutcomeNode';
 import { isMonster } from '../monsters/isMonster';
@@ -251,8 +257,10 @@ export function killStruckDownFighter(
   action: UnifiedAction,
   victorId: string,
   ctx: FightEndContext,
+  /** THR-1557 — who dies; the fighter by default, the opponent when a duel's fighter finishes them. */
+  loserId: string = action.actorId,
 ): { died: boolean; outcomeNodeId?: string } {
-  const fighterId = action.actorId;
+  const fighterId = loserId;
   const siteId = fighterPositionId(state.graph, fighterId);
   const death = markMortalDead(
     state.graph, fighterId, ctx.tick,
@@ -268,7 +276,7 @@ export function killStruckDownFighter(
     graph: state.graph,
     source: {
       kind: 'fight',
-      actorId: fighterId,
+      actorId: action.actorId,
       actionId: action.actionId,
       templateId: action.templateId,
       targetNodeId: fighterId,
@@ -324,6 +332,200 @@ function humiliate(
   const delta = -FIGHT_HUMILIATION_REPUTATION;
   const written = applyReputationWithDelta(state.graph, fighterId, home.id, delta, tick, FIGHT_HUMILIATION_CAUSE);
   return written.applied ? { counterpartyId: home.id, delta } : undefined;
+}
+
+// ─── Duels: the victor decides (THR-1557, duels plan doc §5, slice E2) ────────
+
+/** A duel — both sides are mortals who roll (agent mode). */
+function isDuel(fight: FightState): boolean {
+  return fight.fightMode === 'agent';
+}
+
+/**
+ * The victor's mercy fork (§5): their live `mercy_ruthlessness` lean, plus the god's
+ * hand only when the victor is the action's actor — the god's own mortal, the one side
+ * the god's cards ever touch (duels plan doc §2, §6). The coin (the step rng) is drawn
+ * only inside the neutral band.
+ */
+function decideVictorMercy(
+  state: GameState,
+  action: UnifiedAction,
+  victorId: string,
+  ctx: FightEndContext,
+): Omit<FightMercyRecord, 'drift'> {
+  const profileLean = readLiveAxisLean(state, victorId, FIGHT_MERCY_AXIS);
+  const cardLean = victorId === action.actorId
+    ? sumHandLean(ctx.handNudges, action.activeNudges, FIGHT_MERCY_AXIS)
+    : 0;
+  const decision = decideBranchPole(profileLean, cardLean, ctx.rng);
+  return {
+    victorId,
+    pole: decision.pole,
+    profileLean: decision.profileLean,
+    cardLean: decision.cardLean,
+    decidedBy: decision.decidedBy,
+  };
+}
+
+/** What the victor's decision over a beaten loser did. */
+interface BeatenLoserFate {
+  readonly face: 'spared' | 'mauled' | 'slain';
+  readonly mercy: FightMercyRecord;
+  readonly guard?: FightEndingRecord['guard'];
+  readonly killRoll?: { chance: number; roll: number };
+  readonly outcomeNodeId?: string;
+  readonly scarWritten: boolean;
+  readonly scarSkipped?: FightEndingTrace['scarSkipped'];
+  readonly grudgeWritten: boolean;
+}
+
+/**
+ * A beaten duellist's fate (§5) — only a loser whose clock filled or who was struck
+ * down reaches here; one who yielded or fled is never finished. The victor's pole:
+ *
+ * - **spared** (mercy): plan doc 1's scar and `blood_drawn` grudge, and the victor
+ *   drifts toward mercy;
+ * - **finished** (ruthlessness): plan doc 1's guards first (The First, the avatar), then
+ *   one kill draw at `FIGHT_DUEL_KILL_CHANCE_RUTHLESS`, taken only when both guards pass,
+ *   so `killRoll` means what it means in D1; a kill goes through the one funnel. A missed
+ *   draw, a guard or the ward leaves the loser **mauled** (scar and grudge).
+ */
+export function decideBeatenDuellist(
+  state: GameState,
+  action: UnifiedAction,
+  loserId: string,
+  victorId: string,
+  ctx: FightEndContext,
+): BeatenLoserFate {
+  const decision = decideVictorMercy(state, action, victorId, ctx);
+  let face: BeatenLoserFate['face'] = 'mauled';
+  let guard: FightEndingRecord['guard'];
+  let killRoll: BeatenLoserFate['killRoll'];
+  let outcomeNodeId: string | undefined;
+  let mercyDrift: FightMercyRecord['drift'];
+
+  if (decision.pole === 'positive') {
+    face = 'spared';
+    mercyDrift = drift(state, victorId, FIGHT_MERCY_AXIS, 'positive', ctx.tick);
+  } else {
+    guard = fightDeathGuard(state.graph, loserId);
+    if (!guard) {
+      const chance = FIGHT_DUEL_KILL_CHANCE_RUTHLESS;
+      const roll = ctx.rng();
+      killRoll = { chance, roll };
+      if (roll < chance) {
+        const killed = killStruckDownFighter(state, action, victorId, ctx, loserId);
+        if (killed.died) {
+          face = 'slain';
+          outcomeNodeId = killed.outcomeNodeId;
+        } else {
+          guard = 'warded';
+        }
+      }
+    }
+  }
+
+  const mauled = face === 'slain'
+    ? { scarWritten: false, grudgeWritten: false }
+    : writeMauled(state, loserId, victorId, ctx.tick);
+  return {
+    face,
+    mercy: { ...decision, ...(mercyDrift ? { drift: mercyDrift } : {}) },
+    ...(guard ? { guard } : {}),
+    ...(killRoll ? { killRoll } : {}),
+    ...(outcomeNodeId ? { outcomeNodeId } : {}),
+    scarWritten: mauled.scarWritten,
+    ...('scarSkipped' in mauled && mauled.scarSkipped ? { scarSkipped: mauled.scarSkipped } : {}),
+    grudgeWritten: mauled.grudgeWritten,
+  };
+}
+
+/** What the opponent's side of a duel came to (§5), and what the trace needs of it. */
+interface DuelOpponentSide {
+  readonly ending: FightEndingRecord;
+  /** True when the opponent lost, so the chronicle tells their story. */
+  readonly opponentLost: boolean;
+  readonly fate?: BeatenLoserFate;
+  readonly wroteWorld: boolean;
+}
+
+/**
+ * The opponent's side of a duel's ending (§5), filled into `fightState.opponentEnding`
+ * whichever side lost. Runs after the fighter's own ending, so a double knockout decides
+ * the fighter's fate first and the opponent's second, each by its own victor (the fail-soft
+ * table's "each side's victor decision runs independently").
+ *
+ * | The opponent… | Writes |
+ * |---|---|
+ * | was beaten (`opponentLoss` `clock` / `struck_down`) | the fighter's mercy fork: spared / mauled / slain |
+ * | yielded to the fighter | humiliation at home, drift toward prudence |
+ * | routed | drift toward prudence (`terrified` came with the band) |
+ * | yielded in a double yield | nothing: nobody won, so nobody is humiliated |
+ * | beat the fighter (struck down, yielded to, fled from) | standing with the fighter's faction ?? home, drift toward courage |
+ */
+function applyDuelOpponentSide(
+  state: GameState,
+  action: UnifiedAction,
+  fight: FightState,
+  fighterEnding: Pick<FightEndingRecord, 'victorStanding'>,
+  ctx: FightEndContext,
+): DuelOpponentSide | undefined {
+  const graph = state.graph;
+  const fighterId = action.actorId;
+  const opponent = opponentNode(graph, fight);
+  if (!opponent || !isMortalOpponent(opponent)) return undefined;
+  const opponentId = opponent.id;
+
+  let face: FightEndingFace = 'broke_off';
+  let fate: BeatenLoserFate | undefined;
+  let humiliation: FightEndingRecord['humiliation'];
+  let reputation: FightEndingRecord['reputation'];
+  let driftRec: FightEndingRecord['drift'];
+
+  const loss = fight.opponentLoss;
+  if (loss === 'clock' || loss === 'struck_down') {
+    fate = decideBeatenDuellist(state, action, opponentId, fighterId, ctx);
+    face = fate.face;
+  } else if (loss === 'yielded') {
+    if (fight.result === 'overcome') {
+      face = 'yielded_to_mortal';
+      driftRec = drift(state, opponentId, FIGHT_CONCESSION_AXIS, 'negative', ctx.tick);
+      humiliation = humiliate(state, opponentId, ctx.tick);
+    }
+    // A double yield is `broke_off`: nobody won, nobody is humiliated.
+  } else if (loss === 'routed') {
+    face = 'routed';
+    driftRec = drift(state, opponentId, FIGHT_CONCESSION_AXIS, 'negative', ctx.tick);
+  } else if (fight.result === 'struck_down' || fight.result === 'yielded' || fight.result === 'routed') {
+    // The opponent won. A yield already wrote their standing (D2's victorStanding);
+    // a struck-down or fled fighter's victor gains it here, by the same rule.
+    face = 'overcome_mortal';
+    if (fighterEnding.victorStanding) {
+      const { counterpartyId, delta } = fighterEnding.victorStanding;
+      reputation = { counterpartyId, delta };
+    } else {
+      reputation = writeStanding(
+        state, opponentId, standingCounterparty(graph, fighterId),
+        FIGHT_VICTORY_REPUTATION_DUEL, ctx.tick, FIGHT_STANDING_CAUSE,
+      );
+    }
+    driftRec = drift(state, opponentId, FIGHT_CONCESSION_AXIS, 'positive', ctx.tick);
+  }
+
+  const ending: FightEndingRecord = {
+    face,
+    scarWritten: fate?.scarWritten ?? false,
+    grudgeWritten: fate?.grudgeWritten ?? false,
+    ...(humiliation ? { humiliation } : {}),
+    ...(reputation ? { reputation } : {}),
+    ...(fate?.killRoll ? { killRoll: fate.killRoll } : {}),
+    ...(fate?.guard ? { guard: fate.guard } : {}),
+    ...(driftRec ? { drift: driftRec } : {}),
+    ...(fate ? { mercy: fate.mercy } : {}),
+    eventSignificance: FIGHT_EVENT_SIGNIFICANCE[FIGHT_EVENT_TIER_BY_FACE[face]],
+  };
+  const wroteWorld = !!(fate || humiliation || reputation || driftRec);
+  return { ending, opponentLost: loss !== undefined, ...(fate ? { fate } : {}), wroteWorld };
 }
 
 // ─── Victory yields (THR-1549, slice D2, plan doc §4) ─────────────────────────
@@ -542,18 +744,27 @@ function fightEndedEvent(
   ending: FightEndingRecord,
   siteId: string | undefined,
   ctx: FightEndContext,
+  /**
+   * THR-1557 — tell the opponent's side of a duel instead: a line's {fighter} slot is
+   * whoever the face is about, so the opponent takes it and the fighter becomes {opponent}.
+   */
+  opponentSide = false,
 ): TickEvent {
   const graph = state.graph;
-  const fighterId = action.actorId;
+  const opponentId = opponentNode(graph, fight)?.id;
+  const fighterId = opponentSide && opponentId ? opponentId : action.actorId;
+  const otherName = opponentSide
+    ? graph.getNode(action.actorId)?.name ?? action.actorId
+    : opponentNode(graph, fight)?.name ?? FIGHT_CHRONICLE_NAMELESS_FOE;
   const place = siteId ? resolveToParentLocation(graph, graph.getNode(siteId)) : undefined;
   const message = fightChronicleLine(ending.face, ending, {
     fighter: graph.getNode(fighterId)?.name ?? fighterId,
-    opponent: opponentNode(graph, fight)?.name ?? FIGHT_CHRONICLE_NAMELESS_FOE,
+    opponent: otherName,
     place: place?.name ?? FIGHT_CHRONICLE_NAMELESS_PLACE,
   });
   const hexCoords = hexOfLocation(graph, siteId);
   return {
-    id: `fight_ended_${action.actionId}_${ctx.tick}`,
+    id: `fight_ended_${action.actionId}_${ctx.tick}${opponentSide ? '_opponent' : ''}`,
     tick: ctx.tick,
     type: 'fight_ended',
     message,
@@ -581,10 +792,12 @@ export function applyFightEndingForFighter(
   action: UnifiedAction,
   fight: FightState,
   ctx: FightEndContext,
-): { ending: FightEndingRecord; events: TickEvent[] } {
+): { ending: FightEndingRecord; opponentEnding?: FightEndingRecord; events: TickEvent[] } {
   const graph = state.graph;
   const fighterId = action.actorId;
   let face = fightEndingFace(graph, fight);
+  // THR-1557 — the victor's mercy fork over a beaten fighter, in a duel.
+  let fighterFate: BeatenLoserFate | undefined;
   let scarWritten = false;
   let scarSkipped: FightEndingTrace['scarSkipped'];
   let grudgeWritten = false;
@@ -619,6 +832,20 @@ export function applyFightEndingForFighter(
       driftRec = drift(state, fighterId, FIGHT_CONCESSION_AXIS, 'negative', ctx.tick);
       break;
     case 'mauled': {
+      // A duel's struck-down fighter faces their victor's mercy (THR-1557, §5): the
+      // opponent is a mortal who decides, where D1's derived-card victor only mauls.
+      const duelVictor = isDuel(fight) ? opponentNode(graph, fight) : undefined;
+      if (duelVictor && isMortalOpponent(duelVictor)) {
+        fighterFate = decideBeatenDuellist(state, action, fighterId, duelVictor.id, ctx);
+        face = fighterFate.face;
+        guard = fighterFate.guard;
+        killRoll = fighterFate.killRoll;
+        outcomeNodeId = fighterFate.outcomeNodeId;
+        scarWritten = fighterFate.scarWritten;
+        scarSkipped = fighterFate.scarSkipped;
+        grudgeWritten = fighterFate.grudgeWritten;
+        break;
+      }
       const gate = struckDown(state, action, fight, ctx);
       face = gate.face;
       guard = gate.guard;
@@ -645,8 +872,14 @@ export function applyFightEndingForFighter(
       break;
   }
 
+  // THR-1557 — a duel's other side, decided after the fighter's own (a double
+  // knockout decides the fighter's fate first, then the opponent's).
+  const opponentSide = isDuel(fight)
+    ? applyDuelOpponentSide(state, action, fight, { ...(victorStanding ? { victorStanding } : {}) }, ctx)
+    : undefined;
+
   const wroteWorld = scarWritten || grudgeWritten || humiliation || driftRec || victorStanding
-    || victory.reputation || victory.reward;
+    || victory.reputation || victory.reward || fighterFate || opponentSide?.wroteWorld;
   if (ctx.runtime && wroteWorld) touchWorld(ctx.runtime);
 
   const eventSignificance = FIGHT_EVENT_SIGNIFICANCE[FIGHT_EVENT_TIER_BY_FACE[face]];
@@ -661,8 +894,15 @@ export function applyFightEndingForFighter(
     ...(guard ? { guard } : {}),
     ...(driftRec ? { drift: driftRec } : {}),
     ...(victorStanding ? { victorStanding } : {}),
+    ...(fighterFate ? { mercy: fighterFate.mercy } : {}),
     eventSignificance,
   };
+  const opponentEnding = opponentSide?.ending;
+  // The mercy fork the trace names: over the beaten loser — the fighter when they were
+  // beaten (including a double), else the opponent.
+  const mercy = fighterFate?.mercy ?? opponentSide?.fate?.mercy;
+  const opponentFate = opponentSide?.fate;
+  const bothStruckDown = !!fighterFate && !!opponentFate;
 
   const victorId = victorOf(action, fight);
   emitTrace({
@@ -687,6 +927,22 @@ export function applyFightEndingForFighter(
     ...(victory.rewardSkipped ? { rewardSkipped: victory.rewardSkipped } : {}),
     ...(victory.rewardBadOutcome ? { rewardBadOutcome: true } : {}),
     ...(victorStanding ? { victorStanding } : {}),
+    ...(isDuel(fight) && fight.opponentLoss ? { opponentLoss: fight.opponentLoss } : {}),
+    ...(bothStruckDown ? { bothStruckDown: true } : {}),
+    ...(mercy ? {
+      victorPole: mercy.pole,
+      victorProfileLean: mercy.profileLean,
+      victorCardLean: mercy.cardLean,
+      mercyDecidedBy: mercy.decidedBy,
+    } : {}),
+    ...(opponentEnding ? { opponentFace: opponentEnding.face } : {}),
+    ...(bothStruckDown && opponentFate ? {
+      opponentVictorPole: opponentFate.mercy.pole,
+      opponentMercyDecidedBy: opponentFate.mercy.decidedBy,
+    } : {}),
+    ...(opponentFate?.killRoll ? { opponentKillRoll: opponentFate.killRoll } : {}),
+    ...(opponentFate?.guard ? { opponentGuard: opponentFate.guard } : {}),
+    ...(opponentFate?.outcomeNodeId ? { opponentOutcomeNodeId: opponentFate.outcomeNodeId } : {}),
     eventSignificance,
     summary: `fight.ending: ${fighterId} ${fight.result} → ${face}`
       + (victorId && victorId !== fighterId ? ` (by ${victorId})` : '')
@@ -699,16 +955,30 @@ export function applyFightEndingForFighter(
       + (victory.rewardSkipped ? ` no trophy (${victory.rewardSkipped})` : '')
       + (victory.reputation ? ` +${victory.reputation.delta} with ${victory.reputation.counterpartyId}` : '')
       + (victorStanding ? ` victor +${victorStanding.delta} with ${victorStanding.counterpartyId}` : '')
+      + (mercy ? ` mercy ${mercy.pole} by ${mercy.decidedBy}` : '')
+      + (opponentEnding ? ` | opponent → ${opponentEnding.face}` : '')
+      + (opponentFate?.killRoll ? ` kill ${opponentFate.killRoll.roll.toFixed(3)}<${opponentFate.killRoll.chance}` : '')
+      + (opponentFate?.guard ? ` [opponent guard ${opponentFate.guard}]` : '')
       + ` [sig ${eventSignificance}]`,
   } as FightEndingTrace);
 
-  return { ending, events: [fightEndedEvent(state, action, fight, ending, siteId, ctx)] };
+  // One chronicle event per loser (§5): a duel the fighter won tells the opponent's
+  // story (spared, slain, yielded…), a double tells both, a double yield only the break-off.
+  const events: TickEvent[] = [];
+  const tellOpponent = !!opponentSide?.opponentLost && fight.result !== 'broke_off';
+  if (!(tellOpponent && fight.result === 'overcome')) {
+    events.push(fightEndedEvent(state, action, fight, ending, siteId, ctx));
+  }
+  if (tellOpponent && opponentEnding) {
+    events.push(fightEndedEvent(state, action, fight, opponentEnding, siteId, ctx, true));
+  }
+  return { ending, ...(opponentEnding ? { opponentEnding } : {}), events };
 }
 
 /** The dispatcher branch (registered first in `FIGHT_END_BRANCHES`). */
 export const fighterEndingBranch: FightEndBranch = (state, action, ctx) => {
   const fight = action.fightState;
   if (!fight?.result) return;
-  const { ending, events } = applyFightEndingForFighter(state, action, fight, ctx);
-  return { patch: { ending }, events };
+  const { ending, opponentEnding, events } = applyFightEndingForFighter(state, action, fight, ctx);
+  return { patch: { ending, ...(opponentEnding ? { opponentEnding } : {}) }, events };
 };
