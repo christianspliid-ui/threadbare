@@ -301,6 +301,11 @@ function MaybeTooltip({ id, children }: { id?: string; children: React.ReactNode
  * card is focused, and a card that cannot be played is `disabled` rather than
  * merely unresponsive.
  */
+/** The face's selection tint — laid over the opaque surface, never on its own. */
+function cardTint(selected: boolean): string {
+  return selected ? 'rgb(var(--veil-gold-rgb) / 0.12)' : 'rgba(255, 255, 255, 0.02)';
+}
+
 export function CardFace({
   model,
   designerView,
@@ -334,9 +339,12 @@ export function CardFace({
         textAlign: 'left',
         borderRadius: 10,
         overflow: 'hidden',
-        background: model.selected
-          ? 'rgb(var(--veil-gold-rgb) / 0.12)'
-          : 'rgba(255, 255, 255, 0.02)',
+        // THR-1587 — the tint sits on an opaque `--bg-surface` floor. A bare tint
+        // was a window, not a surface: the ActionDrawer floats with no backdrop of
+        // its own, so the location page painted straight through every card body.
+        // The gradient does not interpolate, so the selection tint snaps rather
+        // than fades; the gold border and glow still carry the transition.
+        background: `linear-gradient(${cardTint(model.selected)}, ${cardTint(model.selected)}), var(--bg-surface)`,
         border: `1px solid ${model.selected ? GOLD : 'rgb(var(--veil-gold-rgb) / 0.18)'}`,
         boxShadow: model.selected ? `0 0 12px rgb(var(--veil-gold-rgb) / 0.22)` : undefined,
         opacity: dimmed ? 0.45 : 1,

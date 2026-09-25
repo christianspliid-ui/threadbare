@@ -346,3 +346,17 @@ describe('ActionCard — THR-1464: the chip row wraps instead of overlapping', (
     expect(row.style.gap).toContain(`${CARD_CHIP_ROW_GAP_PX}px`);
   });
 });
+
+describe('ActionCard — the face is a surface, not a window (THR-1587)', () => {
+  // The drawer floats over the map and the location page with no backdrop of its
+  // own, so a tint-only background let the page paint straight through the card.
+  it('lays its tint over an opaque surface, armed or not', () => {
+    const testId = 'action-card-target_action_action.imbue';
+    const { rerender } = render(<ActionCard slot={slot()} onClick={vi.fn()} />);
+    expect(screen.getByTestId(testId).getAttribute('style')).toContain('var(--bg-surface)');
+    rerender(<ActionCard slot={slot()} onClick={vi.fn()} selected />);
+    const armed = screen.getByTestId(testId).getAttribute('style') ?? '';
+    expect(armed).toContain('var(--bg-surface)');
+    expect(armed).toContain('--veil-gold-rgb');
+  });
+});
