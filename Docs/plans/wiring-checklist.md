@@ -2772,6 +2772,8 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §5. No new phase, node type, edge
 
 **Wired and asserted:** `buildFightChanges.test.ts` (28 tests) runs the chips through the real `buildAftermathConsequences` and `buildUnifiedEncounterStageModel`. The live check drove a real fight through the veil on seed 42 medium (Krenn, a major lair): the aftermath drew slain and cleared as PATH with their words, and every `getFightChips` sentence was in the DOM.
 
+**THR-1561 (a duel's loser):** the same builder now also reads `fightState.opponentEnding`. Its `face: 'slain'` is a second source for *slain (opponent)*, and its `grudgeWritten` feeds a new BOND chip `grudge_against_fighter` anchored to the opponent. No new module, phase or accessor. The chip is asserted in `buildFightChanges.test.ts` (37 tests) and drawn live on a seeded duel's aftermath (`Docs/evidence/thr-1561/`).
+
 ## Fight endings D1 — the defeat faces and the death gate (THR-1548)
 
 Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3. A new first branch in the post-fight dispatcher; no new phase, node type or edge type, no component edit. Every write goes through an existing writer.
