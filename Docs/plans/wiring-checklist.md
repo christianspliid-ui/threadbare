@@ -2719,3 +2719,13 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block
 | `engine/fights/fightForks.ts` (`runDuelForks`, `resolveDuelQuarterOffer`, `isDuelOpponentBehind`) | `executeStepResult` | — | `fightState.forks` (each with `side`) | `fight.fork` (`side`) | `getFightState` |
 | `data/fights/fightBlock.ts` (`mode`, `FIGHT_DUEL_AFTERIMAGES`, `FIGHT_DUEL_OPPONENT_LINES`) · `data/encounters/fight-duel-grudge.ts` (new) · `data/fights/fight-templates.ts` (new: `FIGHT_ENCOUNTER_TEMPLATES`) · `data/unified-action-templates.ts` · `data/encounter-content.ts` (`getAnyEncounterById`) · `data/fight-constants.ts` (`DUEL_OPPONENT_STREAM_SALT`) · `types/fight.ts` · `types/unifiedAction.ts` (`fightMode`) · `types/traces/fight-traces.ts` | spawn-only (E3's grudge trigger; the debug lever) | existing encounter veil | `unifiedActions[]` | the fight traces | `spawnDuel`; CLI `spawn duel` |
 | `debug-bridge.ts` / `.d.ts` (`spawnDuel`; `getFightState` duel fields) · `scripts/cli.ts` (`spawn duel`) · `scripts/calibrate-duels.ts` + `testing/duelCalibration.ts` (`npm run calibrate:duels`) | — | DebugPanel / console | — | — | as named |
+
+## Fight on screen F1 — monsters named and counted right (THR-1550)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `components/Game/lair/buildLairMonsterCardModel.ts` (new) | — (render-time, memoized on `worldVersion` in `GameView`) | `HexSidebar` Monster Lair block (`lairMonsterCards` prop, `onMonsterClick` → `handleThreadNodeSelect(id, 'agent')`) | reads the lair's `namedEliteId` and the monster node | none (plan: Tracing N/A) | `__DEBUG.getLairMonsterCard(lairIdOrName)` |
+| `components/Game/worldPulseCount.ts` (new: `countLivingMortals`) | — | `WorldPulse` "Active Agents" | graph actors (`isMonster`, `deceased`) | none | — |
+| `entityVisualResolver.ts` / `entity-visual-fallbacks.ts` (`monster` kind) · `chipCollaborators.buildChipIconResolver` | — | `EntityVisual` in the lair block, the hex drawer's rows, consequence chips; styleguide sample | — | none | `__DEBUG.resolveEntityVisual` |
+
+**Wired and asserted:** `lairMonsterF1.test.tsx` renders `HexSidebar` from a real `buildLairMonsterCardModel` output, and the live check read the link text off the running sidebar (seed 42 medium, tick 60: "Ryx").

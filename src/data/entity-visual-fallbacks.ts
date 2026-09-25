@@ -29,12 +29,11 @@ export type EntityVisualKind =
   | 'army'
   | 'npc-role'
   | 'companion'
-  /**
-   * A lair's monster (THR-1550). An `individual` actor, but never a person tile:
-   * its look is public like its lair, so it is not knowledge-gated (Law 8), and a
-   * beast has no initial to draw. v1 art is the shared `monster` portrait; the
-   * eight family portraits are THR-1554.
-   */
+  // THR-1550 — the monster of a lair. An individual actor, but never a person
+  // tile: its look is public like its lair, so it is not knowledge-gated (Law 8),
+  // and a beast has no initial to draw. v1 art is the shared monster portrait;
+  // the eight family portraits are THR-1554. (No quote marks in this comment:
+  // scripts/anchor-catalog-sources.ts reads the members as quoted words.)
   | 'monster'
   | 'unknown';
 

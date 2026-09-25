@@ -173,6 +173,13 @@ describe('the monster EntityVisual kind (F1)', () => {
     expect(d.src).toBe(MONSTER_PORTRAIT);
   });
 
+  it('refines an explicit agent kind on a monster node (the hex drawer rows)', () => {
+    const d = resolveEntityVisual({ id: ELITE_ID, kind: 'agent' }, graphWith(eliteNode()));
+    expect(d.kind).toBe('monster');
+    expect(d.src).toBe(MONSTER_PORTRAIT);
+    expect(d.glyph).not.toBe('G');
+  });
+
   it('an ordinary mortal stays an agent', () => {
     const mortal = node({ id: 'a1', type: 'actor', name: 'Tam', properties: { actorType: 'individual' } });
     expect(resolveEntityVisual({ id: 'a1' }, graphWith(mortal)).kind).toBe('agent');

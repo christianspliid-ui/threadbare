@@ -215,7 +215,11 @@ export function resolveEntityVisual(
   opts: ResolveEntityVisualOpts = {},
 ): EntityVisualDescriptor {
   const node = graph?.getNode(ref.id) ?? null;
-  const kind = ref.kind ?? deriveKind(node);
+  // THR-1550 — an explicit `agent` on a lair's monster is refined to `monster`
+  // (the hex drawer's rows and the chips pass `agent` for every actor). Needs
+  // the node, so a graph-free caller (the agent sheet, v1) is unaffected.
+  const requested = ref.kind ?? deriveKind(node);
+  const kind: EntityVisualKind = requested === 'agent' && isMonster(node) ? 'monster' : requested;
   const name = ref.name ?? node?.name ?? ref.id;
   const gradientIndex = gradientIndexForId(ref.id);
   const glyph = fallbackGlyphFor(kind, name);
