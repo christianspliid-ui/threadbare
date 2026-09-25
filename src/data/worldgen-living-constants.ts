@@ -40,6 +40,15 @@ export const WORLDGEN_FREEHOLD_PLACE_CLASSES: readonly SublocationTag[] = ['comm
  */
 export const WORLDGEN_FREEHOLD_LEADING_REACHES: readonly ReachDomain[] = ['gold', 'stone', 'heart'];
 
+/**
+ * How far a freeholder living outside a settlement looks for a Place to hold, in hexes
+ * (THR-1588). Protagonists are placed over every Location — towers, roads, ruins — and
+ * only settlements carry commerce or authority Places, so the fallback is the nearest
+ * settlement that has one. The trade-lane reach, so a stake is never farther from home
+ * than a lane would run.
+ */
+export const WORLDGEN_FREEHOLD_SETTLEMENT_MAX_HEXES = 8;
+
 /** Possessions per protagonist, counting the hand-seeded starters — so `ind_0`…`ind_6` are untouched. */
 export const WORLDGEN_POSSESSIONS_PER_SPOTLIGHT = 1;
 
@@ -80,6 +89,7 @@ export interface LivingWorldConstants {
   WORLDGEN_FREEHOLDS_PER_SPOTLIGHT: number;
   WORLDGEN_FREEHOLD_PLACE_CLASSES: readonly SublocationTag[];
   WORLDGEN_FREEHOLD_LEADING_REACHES: readonly ReachDomain[];
+  WORLDGEN_FREEHOLD_SETTLEMENT_MAX_HEXES: number;
   WORLDGEN_POSSESSIONS_PER_SPOTLIGHT: number;
   WORLDGEN_QUARREL_SENTIMENT_MAX: number;
   WORLDGEN_SEEDED_MARKS_PER_CULTURE: number;
@@ -96,6 +106,7 @@ export const LIVING_WORLD_DEFAULTS: LivingWorldConstants = {
   WORLDGEN_FREEHOLDS_PER_SPOTLIGHT,
   WORLDGEN_FREEHOLD_PLACE_CLASSES,
   WORLDGEN_FREEHOLD_LEADING_REACHES,
+  WORLDGEN_FREEHOLD_SETTLEMENT_MAX_HEXES,
   WORLDGEN_POSSESSIONS_PER_SPOTLIGHT,
   WORLDGEN_QUARREL_SENTIMENT_MAX,
   WORLDGEN_SEEDED_MARKS_PER_CULTURE,

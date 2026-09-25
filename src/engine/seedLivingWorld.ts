@@ -329,11 +329,22 @@ export function seedTradeRoutes(
 // ─── W4 — freeholds ────────────────────────────────────────────────────────
 
 /**
- * A gold-, stone- or heart-leaning protagonist holds a Place at home.
+ * A gold-, stone- or heart-leaning protagonist holds a Place at home — or, when home
+ * has none to hold, in the nearest settlement that does.
  *
  * Through `grantHolding` with `via: 'creation'`, so the holding face artifact the
  * sheet reads is minted exactly as it is for a claimed freehold — the seeded holder
  * is not a special case anywhere downstream.
+ *
+ * **Why the settlement fallback (THR-1588).** Protagonists are placed by a uniform draw
+ * over *every* Location, and only settlements carry commerce or authority Places. So a
+ * protagonist living at a tower, an ancient road or a point of interest had nothing to
+ * hold, and whether seed 42 minted any freehold at all came down to where four draws
+ * happened to land: 8 at the THR-1437 closeout, 0 once THR-1155's Realm mint shifted the
+ * worldgen stream. A mortal who lives out by the old road and keeps a stall in the
+ * nearest town is ordinary; a merchant with no stake anywhere because of where the dice
+ * put their bed is not. The reach gate is untouched — it says *who* holds property, and
+ * that was never what drifted.
  */
 export function seedFreeholds(
   graph: WorldGraph,
@@ -344,27 +355,62 @@ export function seedFreeholds(
 
   const wantedClasses = new Set<string>(k.WORLDGEN_FREEHOLD_PLACE_CLASSES);
   const wantedReaches = new Set<string>(k.WORLDGEN_FREEHOLD_LEADING_REACHES);
-  let granted = 0;
 
+  // Eligible Places by parent Location, sorted by id — built once, read per mortal.
+  const placesByParent = new Map<string, GraphNode[]>();
+  for (const n of graph.getNodesByType('location')) {
+    const parent = n.properties.parentLocationId;
+    if (typeof parent !== 'string') continue;
+    if (!wantedClasses.has(placeClassOf(n.properties.sublocationTypeId as string | undefined) ?? '')) continue;
+    const list = placesByParent.get(parent) ?? [];
+    list.push(n);
+    placesByParent.set(parent, list);
+  }
+  for (const list of placesByParent.values()) list.sort(byId);
+
+  // Settlements that carry at least one eligible Place — the fallback's candidates.
+  const settlements = graph.getNodesByType('location')
+    .filter(n => SETTLEMENT_SUBTYPES.has(subtypeOf(n)) && placesByParent.has(n.id))
+    .sort(byId);
+
+  const unheld = (place: GraphNode): boolean => graph.getIncomingEdges(place.id, 'owns').length === 0;
+
+  /** Home first; then settlements within reach, nearest first, id tie-break. */
+  const candidateLocations = (homeId: string): string[] => {
+    const out = [homeId];
+    const homeHex = hexOf(graph, homeId);
+    if (!homeHex) return out;
+    const near: Array<{ id: string; distance: number }> = [];
+    for (const s of settlements) {
+      if (s.id === homeId) continue;
+      const hex = hexOf(graph, s.id);
+      if (!hex) continue;
+      const distance = hexDistance(homeHex, hex);
+      if (distance > k.WORLDGEN_FREEHOLD_SETTLEMENT_MAX_HEXES) continue;
+      near.push({ id: s.id, distance });
+    }
+    near.sort((a, b) => a.distance - b.distance || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    return [...out, ...near.map(n => n.id)];
+  };
+
+  let granted = 0;
   for (const mortal of collectSpotlightMortals(graph, ctx.individualIds)) {
     const reach = leadingReach(mortal);
     if (!reach || !wantedReaches.has(reach)) continue;
     const homeId = homeLocationOf(graph, mortal.id);
     if (!homeId) continue;
 
-    const places = graph.getNodesByType('location')
-      .filter(n =>
-        n.properties.parentLocationId === homeId
-        && wantedClasses.has(placeClassOf(n.properties.sublocationTypeId as string | undefined) ?? '')
-        && graph.getIncomingEdges(n.id, 'owns').length === 0)
-      .sort(byId);
-
-    for (const place of places.slice(0, k.WORLDGEN_FREEHOLDS_PER_SPOTLIGHT)) {
-      try {
-        const result = grantHolding(graph, mortal.id, place.id, { tick: 0 }, 'creation');
-        if (result.success) granted++;
-      } catch {
-        // Per-item fail-soft: one unheld Place costs a stake, never the world.
+    let held = 0;
+    for (const locId of candidateLocations(homeId)) {
+      if (held >= k.WORLDGEN_FREEHOLDS_PER_SPOTLIGHT) break;
+      for (const place of (placesByParent.get(locId) ?? []).filter(unheld)) {
+        if (held >= k.WORLDGEN_FREEHOLDS_PER_SPOTLIGHT) break;
+        try {
+          const result = grantHolding(graph, mortal.id, place.id, { tick: 0 }, 'creation');
+          if (result.success) { granted++; held++; }
+        } catch {
+          // Per-item fail-soft: one unheld Place costs a stake, never the world.
+        }
       }
     }
   }
