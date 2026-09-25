@@ -1,0 +1,15 @@
+{
+  "startUrl": "https://threadbearer.co/",
+  "personas": ["story", "veteran", "skimmer"],
+  "actionBudget": 70,
+  "testerModel": "opus",
+  "playwrightMcpVersion": "0.0.82",
+  "viewport": "1920,1080",
+  "playerTimeoutMinutes": 45,
+  "briefVersion": 1,
+  "minDaysBetweenRounds": 7,
+  "deploySettleMinutes": 60,
+  "staleRoundDays": 21,
+  "minUsablePersonas": 2,
+  "keepRoundsWithScreenshots": 3
+}

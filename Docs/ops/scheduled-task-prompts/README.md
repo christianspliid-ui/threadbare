@@ -38,6 +38,7 @@ Three reasons, all learned the hard way:
 | `weekly-memory-grooming.md` | `weekly-memory-grooming` | Sun ~16:10 | Live |
 | `monthly-rulebook-review.md` | `monthly-rulebook-review` | 1st ~09:00 | Live — registered 2026-07-22 (THR-704) |
 | `tb-design-lane.md` | `tb-design-lane` | 02/08/14/20 ~:14 | Live — registered 2026-09-25 (THR-1611) |
+| `tb-cold-playtest.md` | `tb-cold-playtest` | Daily 10:37 (cron `37 10 * * *`) | **Mirror only — awaiting attended registration** (THR-1610). An attended session creates the task from this mirror and records its observed fire time |
 
 That is every registered task except one, named below.
 

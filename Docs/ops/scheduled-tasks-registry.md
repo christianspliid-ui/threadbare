@@ -37,6 +37,7 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 | **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | `0 9 1 * *` | ~1st 09:00 | one Linear findings issue (or nothing) — registered 2026-07-22 by THR-704 after the THR-417 phantom-Done |
 | **02/08/14/20 :14** | 4× daily | `tb-design-lane` (unattended design — decides unreserved wayfinder tickets, closes cleared maps, authors + hands off one plan doc per run; `design-lane` skill) — registered 2026-09-25 by THR-1611 | `14 2,8,14,20 * * *` | ~:17:39 (jitter 219 s at registration) | `Docs/ops/design-lane-<date>.md` + Linear decisions / `Ready for Dev` handoffs + `docs/plan-*` PRs |
+| **10:37** | Daily | `tb-cold-playtest` (cold playtest loop — runs the next no-knowledge round only when the last round's milestone is closed and deployed; `cold-playtest` skill, prompt mirror `scheduled-task-prompts/tb-cold-playtest.md`) — row added 2026-09-25 by THR-1610; **awaiting attended registration** (the pickup lane does not create scheduler config) | `37 10 * * *` | not yet registered — record the observed fire time at registration | `Docs/ops/cold-playtest-round-<N>.md` + `Docs/ops/cold-playtest-scorecard.tsv` on `ops` + Linear round milestone and findings |
 
 ## CC automation lane — registered but not Threadbare work
 
