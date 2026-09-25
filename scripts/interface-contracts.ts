@@ -3766,6 +3766,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/groups/bandOpposition.ts',
       'src/engine/graphOpExecutor.ts',
       'src/data/undertaking-objects.ts',
+      // THR-1566: a commander killed in a battle's aftermath (`cause: 'battle'`, retained).
+      'src/engine/battleAftermath.ts',
     ],
     // THR-1545 (monsters M2, "death funnel → cast binding"): the encounter cast reads
     // the mark too — no actor spec binds a deceased node — and so does the lair-monster

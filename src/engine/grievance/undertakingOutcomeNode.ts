@@ -41,17 +41,20 @@ export function isUndertakingOutcomeEventId(id: string | undefined | null): bool
 }
 
 /**
- * A harm that did not come from an undertaking (THR-1548). Today one kind: a death in
- * a fight. It supplies exactly what the writer reads from `project` — an id, the
+ * A harm that did not come from an undertaking (THR-1548). Two kinds: a death in a
+ * fight, and a commander killed in a battle's aftermath (THR-1566). It supplies exactly what the writer reads from `project` — an id, the
  * template, the thing the harm was done *to* (the victim, so the omen deed reads "the
  * killing of <victim>" as the plot's does) and where it happened — and nothing else,
  * so every consumer of the reactive loop reads a fight death as the harm it is.
  */
 export interface OutcomeNonUndertakingSource {
-  readonly kind: 'fight';
-  /** The fight's actor (the fighter). The site fallback walks their `located_at`. */
+  readonly kind: 'fight' | 'battle';
+  /**
+   * The fight's actor (the fighter), or the victorious commander for a battle. The
+   * site fallback walks their `located_at`.
+   */
   readonly actorId: string;
-  /** The fight action's id — the node's `projectId` and part of its id. */
+  /** The fight action's id, or the battle node's id — the node's `projectId` and part of its id. */
   readonly actionId: string;
   readonly templateId: string;
   /** What the harm was done to — the victim. Written as the node's `targetNodeId`. */

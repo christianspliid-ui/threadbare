@@ -499,7 +499,8 @@ export function resolveBattle(
   // Effect event: combat_ended (THR-1239).
   //
   // BEFORE applyAftermath, deliberately. Aftermath decides commander fate and a
-  // 'killed' verdict removes the commander node outright — raise after it and the
+  // 'killed' verdict marks the commander deceased (THR-1566; it used to remove the
+  // node outright) — raise after it and the
   // loser's `leave_combat` expiries and combat reactives would silently never
   // fire, because the raise fail-softs on a missing agent. The battle ends first;
   // the aftermath falls on them second.
@@ -512,7 +513,7 @@ export function resolveBattle(
   const newsCapture = captureBattleForNews(state, battleNodeId);
 
   // Apply aftermath consequences (destruction, commander fate, etc.)
-  applyAftermath(state, bs, resolutionType, runtime);
+  applyAftermath(state, bs, resolutionType, runtime, battleNodeId);
 
   if (newsCapture) {
     reportWar(state, { kind: 'battle_ended', battleId: battleNodeId, capture: newsCapture, resolution: resolutionType });
