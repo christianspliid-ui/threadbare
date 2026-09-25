@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 20:54 local (18:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-25 21:54 local (19:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -12,6 +12,16 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 The one question: **is the integrated encounter experience at an acceptable state?** A pass unlocks the next stage: encounters reaching into factions, war, economy and divine actions. Say **"work the map"** in a chat when done.
+
+### How much history should a new world start with? ([THR-1591](https://linear.app/threadbare/issue/THR-1591))
+
+Samples to react to: [seed 42](https://github.com/christianspliid-ui/threadbare/blob/proto/thr-1591-world-with-a-past/Docs/audits/2026-09-25-living-world-data/proto-thr-1591/sample-seed-42.md) and [seed 99](https://github.com/christianspliid-ui/threadbare/blob/proto/thr-1591-world-with-a-past/Docs/audits/2026-09-25-living-world-data/proto-thr-1591/sample-seed-99.md) — each has a "Before you woke" chronicle page, two place-sheet lines and the dead.
+
+- **A (recommended), explain the map.** The world already hides three dead empires and 103 ruins that nothing explains. Every town gets a founding; add one ancient war, 2–3 recent wars, 5–10 named dead.
+- **B,** flavor text only. **C,** a deep simulated history.
+- Two smaller calls: past shown on the first screen or found by visiting? (Lean: outline shown, details found.) Did the rival gods have a hand in it? (Lean: no.)
+
+[Faith and politics at game start](https://linear.app/threadbare/issue/THR-1596) is also yours on [the living-world map](https://linear.app/threadbare/issue/THR-1589); nothing new on it. *— from tb-design-lane*
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -31,16 +41,16 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-09-25 — in a duel, the winner now decides the loser's fate** ([THR-1557](https://linear.app/threadbare/issue/THR-1557), duels E2). Merged 19:39 local via [#2051](https://github.com/christianspliid-ui/threadbare/pull/2051), and live on the site. Not a review ask yet: loser chips ([THR-1561](https://linear.app/threadbare/issue/THR-1561)), grudge duels ([THR-1558](https://linear.app/threadbare/issue/THR-1558)) and the hunts are still to come.
-- **2026-09-25 — a fight now shows its state as chips on screen** ([THR-1553](https://linear.app/threadbare/issue/THR-1553), fight F3). Merged 18:40 local via [#2050](https://github.com/christianspliid-ui/threadbare/pull/2050), and live on the site. Not a review ask yet: the duel winner’s choice ([THR-1557](https://linear.app/threadbare/issue/THR-1557)) is still to come.
+- **2026-09-25 — grudges now boil over into duels** ([THR-1558](https://linear.app/threadbare/issue/THR-1558), duels E3). Merged 21:43 local via [#2053](https://github.com/christianspliid-ui/threadbare/pull/2053), and live on the site. Not a review ask yet: the hunt ([THR-1560](https://linear.app/threadbare/issue/THR-1560)) and loser chips ([THR-1561](https://linear.app/threadbare/issue/THR-1561)) are still to come.
+- **2026-09-25 — monsters are now a kind of world object** ([THR-1559](https://linear.app/threadbare/issue/THR-1559), hunts H1). Merged 21:22 local via [#2052](https://github.com/christianspliid-ui/threadbare/pull/2052), and live on the site.
+- **2026-09-25 — in a duel, the winner now decides the loser's fate** ([THR-1557](https://linear.app/threadbare/issue/THR-1557), duels E2). Merged 19:39 local via [#2051](https://github.com/christianspliid-ui/threadbare/pull/2051), and live on the site.
+- **2026-09-25 — a fight now shows its state as chips on screen** ([THR-1553](https://linear.app/threadbare/issue/THR-1553), fight F3). Merged 18:40 local via [#2050](https://github.com/christianspliid-ui/threadbare/pull/2050), and live on the site.
 - **2026-09-25 — the cold playtest loop runs** ([THR-1610](https://linear.app/threadbare/issue/THR-1610)): fresh testers play the game daily through a harness and report back. Merged 17:39 local via [#2049](https://github.com/christianspliid-ui/threadbare/pull/2049), and live on the site.
 - **2026-09-25 — social, tavern and secret encounters fire again** ([THR-1614](https://linear.app/threadbare/issue/THR-1614)). Merged 16:30 local via [#2047](https://github.com/christianspliid-ui/threadbare/pull/2047), and live on the site.
 - **2026-09-25 — six kinds of planted seed no longer wither the moment they are planted** ([THR-1613](https://linear.app/threadbare/issue/THR-1613)). Merged 15:32 local via [#2046](https://github.com/christianspliid-ui/threadbare/pull/2046), and live on the site.
 - **2026-09-25 — Mercenary Company encounters can now be drawn** ([THR-1612](https://linear.app/threadbare/issue/THR-1612)). Merged 14:32 local via [#2045](https://github.com/christianspliid-ui/threadbare/pull/2045), and live on the site.
 - **2026-09-25 — internal ids no longer reach the chronicle** ([THR-1602](https://linear.app/threadbare/issue/THR-1602), from the cold playtest). Merged via [#2044](https://github.com/christianspliid-ui/threadbare/pull/2044), and live on the site.
 - **2026-09-25 — the title menu no longer shows developer screens** ([THR-1601](https://linear.app/threadbare/issue/THR-1601), from the cold playtest). Merged via [#2043](https://github.com/christianspliid-ui/threadbare/pull/2043), and live on the site.
-- **2026-09-25 — "Story so far" no longer shows a raw `{name}` where a thread's name belongs** ([THR-1600](https://linear.app/threadbare/issue/THR-1600), from the cold playtest). Merged via [#2039](https://github.com/christianspliid-ui/threadbare/pull/2039).
-- **2026-09-25 — living-world seeding drift fixed**: freeholds with no Realm nearby now attach to the nearest settlement ([THR-1588](https://linear.app/threadbare/issue/THR-1588)). Merged 10:46 local via [#2037](https://github.com/christianspliid-ui/threadbare/pull/2037), and live on the site.
 
 ---
 
