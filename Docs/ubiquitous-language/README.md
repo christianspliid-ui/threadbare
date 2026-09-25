@@ -88,6 +88,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Follow](./Agents.md#follow)** — the attention the player confers on a mortal, upgrading that mortal's Moments from badge to interrupt; mute is its negative
 - **[Grievance](./Agents.md#grievance)** — a drive minted from a harm, naming its culprit; a `grievance` block on a `pursues` edge, one slot per agent, per-instance not per-ambition
 - **[Grudge](./Agents.md#grudge)** — standing blood as a bidirectional `hostile_to` edge with an *injury* provenance; relationship colour, never a driver — one edge, band and grievance senses reconciled
+- **[Duel](./Agents.md#duel)** — a fight in which both sides are mortals who roll (agent mode); *Old Blood* is the systemic one, spawned when a grudge boils over — not the single-roller `duel` encounters
 - **[Rivalry](./Agents.md#rivalry)** — the non-injury reading of the same `hostile_to`: two in each other's way, neither wronged; licenses a motive-gated destroy but can never mint a vendetta
 - **[Covet Rivalry](./Agents.md#covet-rivalry)** — the rivalry the world writes from frustrated wanting: refused a destroy against the same owner enough boards running, a mortal comes to hate them
 - **[Heat](./Agents.md#heat)** — a grievance's decaying urgency on the one decision board; player-facing only as *burning · hot · cooling*, never a number

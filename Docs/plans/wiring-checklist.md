@@ -2805,3 +2805,15 @@ Plan: `Docs/plans/2026-09-23-monsters-as-opponents.md` §6. A mortal whose journ
 | `data/fight-constants.ts` (`FIGHT_TRIGGER_COOLDOWN_TICKS` = 25) · `types/gameState.ts` (`fightCooldowns?`) · `types/traces/monster-traces.ts` (`FightTriggerTrace`, `FightTriggerSkip`) · `types/trace.ts` | — | — | — | — | — |
 
 **Wired and asserted:** `lairArrivalTrigger.test.ts` drives the real `phaseMovement` for every spawn and skip case. Live (seed 42 medium, tick 100): a mortal sent to end a journey at lair_0 was confronted and fought three exchanges. Natural play spawns none in 200 ticks on seeds 42 and 99, because lairs carry no `adjacent` / `road` edges and no path ends at one.
+
+## Grudges boil over — Duels E3 (THR-1558)
+
+Plan: `Docs/plans/2026-09-23-mortal-duels.md` §6. Two co-located mortals who share an injury-class grudge may duel: the colocation phase rolls on the pair's own stream and spawns `fight.duel.grudge`. One live fight per mortal: both duellists are busy from the spawn, and a duellist's company holds. No new phase, node type or edge type; no component edit.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/fights/grudgeDuelTrigger.ts` (new: `runGrudgeDuels`, `pickDuelActor`, `grudgeEscalationChance`, `grudgeEscalationRng`, `injuryGrudgeCause`) → `engine/phaseColocationDetection.ts` (after detection, on its own sub-stream; returns `unifiedActions` + `fightCooldowns` only when a duel spawned; `{ grudgeDuels: false }` switches it off) | `colocation_detection` (Phase 2.36) | existing encounter veil (`fight.duel.grudge`, for the threaded) | `unifiedActions[]`, `fightCooldowns` (expiry ticks) | `fight.trigger` (`source: 'grudge'`; skips bounded to once per pair per window) | trace viewer; `npm run check:grudge-duels` |
+| `engine/fights/fightParticipants.ts` (new: `fightParticipantIds`, `anyInFight`, keyed `fightState?.opponentId ?? targetId`) → `engine/phaseAgentDecision.ts` (busy set) · `engine/groups/groupMovement.ts` (`runGroupMovement` holds the company) | `agent_decision`, `groups` | — | — | — | — |
+| `data/fight-constants.ts` (`GRUDGE_ESCALATION_BASE` 0.05, `GRUDGE_ESCALATION_MAX` 0.10, `GRUDGE_ESCALATION_STREAM_SALT` 6263, `GRUDGE_DUEL_COOLDOWN_TICKS` 80, `GRUDGE_DUEL_REPEAT_CEILING` 3) · `types/traces/fight-traces.ts` (`FightTriggerGrudgeTrace`) · `types/trace.ts` (union member) | — | — | — | — | — |
+
+**Wired and asserted:** `grudgeDuelTrigger.test.ts` (21) drives the real `phaseColocationDetection` and `runGroupMovement`. Live: `npm run check:grudge-duels -- --inject 40` (seed 42 medium, 200 ticks) spawned 67 duels across 33 pairs, all ending through `fight.end`, none `separated`, the most-duelled pair at the ceiling of 3. Natural play spawns none on seeds 42 and 99 in 200 ticks, because neither world writes an injury-class grudge between two individuals by then (supply, not wiring).
