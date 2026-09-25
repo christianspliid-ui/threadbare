@@ -2730,6 +2730,16 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block
 
 **Wired and asserted:** `lairMonsterF1.test.tsx` renders `HexSidebar` from a real `buildLairMonsterCardModel` output, and the live check read the link text off the running sidebar (seed 42 medium, tick 60: "Ryx").
 
+## Fight on screen F2 — the opponent header (THR-1551)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `encounter-stage/adapters/buildOpponentHeaderModel.ts` (new: `buildOpponentHeaderModel`, `fightStepLabel`) | — (render-time, inside the stage adapters) | `EncounterVeil` → new `OpponentHeader`, under `ContextStrip` (live fight steps only; `model.opponentHeader`) | reads `unifiedActions[].fightState`, the opponent card (`readOpponentCard`), `monsterState.temperShown` | none (plan: Tracing N/A) | `__DEBUG.getOpponentHeaderModel(actionId)` |
+| `buildSimpleEncounterStageModel` fight branch (`activeAction` arg; `header.opponentLine`) | — | the watched view's tier line (`watched-opponent-line`) | same, from the live action `GameView` passes in | none | same accessor |
+| `src/data/fight-screen-content.ts` (new) + `tooltipResolver` `fight.*` route | — | the header's concept words, the clock pips and word | — | none | the registry's conformance tests |
+
+**Wired and asserted:** `opponentHeaderF2.test.tsx` renders `EncounterVeil` from real `buildUnifiedEncounterStageModel` and `buildSimpleEncounterStageModel` outputs. The live check read the header off the running veil (seed 42 medium, tick 60, `spawnFight('Ryx')`).
+
 ## Fight endings D1 — the defeat faces and the death gate (THR-1548)
 
 Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3. A new first branch in the post-fight dispatcher; no new phase, node type or edge type, no component edit. Every write goes through an existing writer.

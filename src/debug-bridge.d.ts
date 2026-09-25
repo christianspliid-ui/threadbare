@@ -1912,6 +1912,21 @@ export interface DebugBridge {
       readonly ending: import('./types/fight').FightEndingRecord | null;
     };
 
+  /** THR-1551 (fight on screen F2) — the opponent header the veil renders for this
+   *  action's current fight step: `name` (never "an unknown foe" on a review route),
+   *  `opponentId`, `linkable`, `visualKind` (`monster` / `agent`), `stepLabel`
+   *  ("Facing it", "First exchange" …), the card `sentence` / `sentenceText` (Law 16),
+   *  `clock` (`{ size, filled, word, wordTooltipId, ariaLabel }` — the word matches
+   *  `getFightState`'s `clockNow` once the fight exists, else the card's recovered
+   *  clock), `fighterClock` on a duel, and `line` (the watched view's compact form).
+   *  Resolves `{ header: null, currentStep }` off a fight step and `{ error }` for an
+   *  unknown action. **Async.** */
+  getOpponentHeaderModel: (actionId: string) => Promise<
+    | import('./components/Game/encounter-stage/adapters/buildOpponentHeaderModel').OpponentHeaderModel
+    | { readonly header: null; readonly currentStep: number }
+    | { readonly error: string }
+  >;
+
   /** The opponent card a fight against this actor would read right now: Dread, Might,
    *  the card's reach overrides, clock (after lazy recovery), temper, persistence and
    *  where it was read from (`monsterState` / `derived` / `default`). Matches by id,

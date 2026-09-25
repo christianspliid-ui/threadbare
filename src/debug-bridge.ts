@@ -2594,6 +2594,27 @@ if (import.meta.env.DEV) {
       };
     },
 
+    /**
+     * THR-1551 (fight on screen F2) — the opponent header the veil renders for this
+     * action's current step: name, card sentence, clock (pips + word), a duel's
+     * second clock, the step title and the watched view's one line. `{ header: null }`
+     * off a fight step (the header renders only on `fightRole` steps).
+     */
+    getOpponentHeaderModel: async (actionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const action = (state.unifiedActions ?? []).find(a => a.actionId === actionId);
+      if (!action) return { error: `no unified action ${actionId}` };
+      const [{ getUnifiedTemplateById }, { buildOpponentHeaderModel }] = await Promise.all([
+        import('./data/unified-action-templates'),
+        import('./components/Game/encounter-stage/adapters/buildOpponentHeaderModel'),
+      ]);
+      const template = getUnifiedTemplateById(action.templateId);
+      if (!template) return { error: `no template ${action.templateId}` };
+      const header = buildOpponentHeaderModel(state, action, template);
+      return header ?? { header: null, currentStep: action.currentStep };
+    },
+
     /** The opponent card a fight against this actor would read right now (lazy clock recovery included). */
     inspectOpponentCard: async (idOrName: string) => {
       const state = _gameStateProvider?.();

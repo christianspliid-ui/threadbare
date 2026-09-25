@@ -1503,6 +1503,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
       tick: gameState.tick,
       gameState,
+      // THR-1551 (fight on screen F2) — the watched view's one opponent line on a
+      // fight step reads the live unified action, found the way the unified path
+      // finds it: by id, else the snapshot the notification runtime carried.
+      activeAction: (tieredEncounterState.activeActionId
+        ? gameState.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId)
+        : undefined) ?? tieredEncounterState.activeActionSnapshot ?? undefined,
     });
   }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick]);
 

@@ -21,6 +21,8 @@
  * - knowledge.* → the five familiarity tiers
  * - mandate.* → mandate-content.ts templates
  * - tag.* → content-tags.ts, the closed content-tag vocabulary (THR-1486)
+ * - fight.* → fight-screen-content.ts, the fight on screen: Dread, Might, Temper,
+ *             the fight clock and each clock-state word (THR-1551)
  *
  * This table and Law 17's copy of it are the same list; amend both when adding a
  * prefix (THR-1094 — the law's copy sat four prefixes stale long enough for a
@@ -44,6 +46,7 @@ import { resolveAttachmentTemplateTooltip } from './attachmentTemplateIndex';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { contentTagFromTooltipSuffix } from '../data/content-tags';
 import type { FactionDefinition } from '../types/faction';
+import { FIGHT_TOOLTIP_COPY } from '../data/fight-screen-content';
 
 /**
  * A faction definition's name template with its generated slots stripped —
@@ -360,6 +363,14 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
       return { label: def.tag, desc: def.description };
     }
     return null;
+  }
+
+  // ─── Fight concepts (THR-1551, fight on screen F2) ─────────────
+  // Dread, Might, Temper, the fight clock and each clock-state word. The ids are
+  // literals in `FIGHT_TOOLTIP_IDS`, so the concept-id corpus sweep sees them.
+  if (prefix === 'fight') {
+    const entry = FIGHT_TOOLTIP_COPY[suffix];
+    return entry ? { label: entry.label, desc: entry.desc } : null;
   }
 
   // ─── Mandate tooltips ──────────────────────────────────────────

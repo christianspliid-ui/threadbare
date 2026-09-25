@@ -21,6 +21,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { Dropdown } from '../shared/Dropdown';
 import { ProgressBar } from '../shared/ProgressBar';
 import { StepDots } from '../shared/StepDots';
+import { FIGHT_CLOCK_PIP_SIZE } from '../../data/fight-screen-content';
 import { RarityBadge } from '../shared/RarityBadge';
 import { RarityBorderBox } from '../shared/RarityBorderBox';
 import { SphereIcon } from '../shared/SphereIcon';
@@ -913,6 +914,21 @@ export default function StyleGuide() {
                   <StepDots totalSteps={3} currentStepIndex={1} size={8} />
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>size=8, 3 steps</span>
                 </div>
+                {/* THR-1551 — the fight clock: square magnitude pips at the glyph floor,
+                    always followed by its word, so it never reads as step dots (Law 10). */}
+                {([[0, 'untouched'], [1, 'bloodied'], [2, 'half-broken'], [3, 'failing']] as const).map(([filled, word]) => (
+                  <div key={word} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <StepDots
+                      totalSteps={4}
+                      currentStepIndex={filled}
+                      variant="magnitude"
+                      shape="square"
+                      size={FIGHT_CLOCK_PIP_SIZE}
+                      ariaLabel={word}
+                    />
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>shape=square, magnitude — the fight clock, {word}</span>
+                  </div>
+                ))}
               </GameErrorBoundary>
             </div>
           </section>
