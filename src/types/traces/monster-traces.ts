@@ -62,3 +62,27 @@ export interface MonsterDrivenOffTrace extends TraceBase {
   byActorId: string;
   clearingProgressAfter: number;
 }
+
+/** Why a fight trigger did not spawn (THR-1547). */
+export type FightTriggerSkip =
+  | 'cooldown'
+  | 'busy'
+  | 'monster_dead'
+  | 'arriving_for_hunt'
+  | 'hunt_appointment'
+  | 'avatar';
+
+/**
+ * Emitted when an arrival lands a mortal at a lair (or a place inside one) — once per
+ * arrival, spawned or skipped (THR-1547). Absent `skipped` means `fight.lair.confront`
+ * was spawned; `actionId` names it.
+ */
+export interface FightTriggerTrace extends TraceBase {
+  category: 'fight.trigger';
+  source: 'lair_arrival';
+  mortalId: string;
+  monsterId: string;
+  lairId: string;
+  skipped?: FightTriggerSkip;
+  actionId?: string;
+}

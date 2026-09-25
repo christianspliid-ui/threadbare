@@ -26,6 +26,7 @@ import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces'
 import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
 import type {
+  FightTriggerTrace,
   MonsterDrivenOffTrace,
   MonsterFelledTrace,
   MonsterHardenedTrace,
@@ -536,7 +537,10 @@ export type TraceCategory =
   | 'monster.hardened'
   // Monsters — what felling or driving one off did to its lair (THR-1546).
   | 'monster.felled'
-  | 'monster.driven_off';
+  | 'monster.driven_off'
+  // Fights — the lair-arrival trigger, spawned or skipped (THR-1547).
+  // Interface in `src/types/traces/monster-traces.ts`.
+  | 'fight.trigger';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -809,6 +813,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Monsters — felled / driven off (THR-1546)
   'monster.felled',
   'monster.driven_off',
+  // Fights — the lair-arrival trigger (THR-1547)
+  'fight.trigger',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -4108,6 +4114,7 @@ export type TraceEntry =
   | MonsterHardenedTrace
   | MonsterFelledTrace
   | MonsterDrivenOffTrace
+  | FightTriggerTrace
   // Story-so-far digest (THR-455)
   | ThreadStoryComposedTrace
   // Event feed hygiene (THR-456)

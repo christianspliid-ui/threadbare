@@ -482,3 +482,11 @@ export const FIGHT_EVENT_TIER_BY_FACE: Readonly<Record<FightEndingFace, FightEve
   routed: 'routine',
   broke_off: 'routine',
 };
+
+/**
+ * Cooldown per fighter pair after a fight trigger fires (THR-1547, plan doc
+ * `2026-09-23-monsters-as-opponents.md` § Constants). The lair-arrival trigger stores
+ * `tick + FIGHT_TRIGGER_COOLDOWN_TICKS` as the pair's expiry in `fightCooldowns`;
+ * other triggers (grudge duels) store their own length in the same map.
+ */
+export const FIGHT_TRIGGER_COOLDOWN_TICKS = 25;
