@@ -262,7 +262,7 @@ const BLESS_AFTERMATH = {
         { kind: 'reputation_tally' as const, key: 'heart.positive', delta: 1 },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'star.referred_pilgrim',
+          query: { kind: 'encounter_template', tags: ['#temple_errand'] },
           delayTicks: 25,
           priority: 0.7,
           seedLabel: 'The father\'s journey continues with a different quality',

@@ -710,7 +710,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               },
               {
                 kind: 'encounter_seed',
-                encounterFamily: 'investigation',
+                query: { kind: 'encounter_template', tags: ['#circle_errand'] },
                 delayTicks: 20,
                 priority: 0.9,
                 seedLabel: 'The disturbance in the old vault at {location} has begun to draw interest from those who track such things',
@@ -849,7 +849,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             effects: [
               {
                 kind: 'encounter_seed',
-                encounterFamily: 'investigation',
+                query: { kind: 'encounter_template', tags: ['#thieves_errand'] },
                 delayTicks: 12,
                 priority: 0.7,
                 seedLabel: 'The salvage dive near {location} was seen by someone with an interest in sunken holdings',
@@ -1115,7 +1115,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             effects: [
               {
                 kind: 'encounter_seed',
-                encounterFamily: 'investigation',
+                query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
                 delayTicks: 18,
                 priority: 0.75,
                 seedLabel: 'The partial excavation at the star-metal crater has drawn the attention of forge-masters and collectors',
@@ -1378,7 +1378,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               { kind: 'reputation_tally', key: 'veil.positive', delta: 1 },
               {
                 kind: 'encounter_seed',
-                encounterFamily: 'investigation',
+                query: { kind: 'encounter_template', tags: ['#circle_errand'] },
                 delayTicks: 24,
                 priority: 0.6,
                 seedLabel: 'The glowcap hollow harvest has reached the notice of those who trade in rare alchemical reagents',
@@ -1412,7 +1412,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               },
               {
                 kind: 'encounter_seed',
-                encounterFamily: 'investigation',
+                query: { kind: 'encounter_template', tags: ['#circle_errand'] },
                 delayTicks: 15,
                 priority: 0.85,
                 seedLabel: 'The dreams from the spore exposure are bleeding into {name}\'s waking hours â€” and they contain something real',

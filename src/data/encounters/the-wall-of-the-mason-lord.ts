@@ -220,7 +220,7 @@ const WALL_RAISED_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'stone.legacy',
+          query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
           delayTicks: 18,
           priority: 1.1,
           seedLabel: 'The wall becomes a founding legend',
@@ -328,7 +328,7 @@ const WALL_UNFINISHED_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'stone.legacy',
+          query: { kind: 'encounter_template', tags: ['#fellowship_errand'] },
           delayTicks: 16,
           priority: 1.05,
           seedLabel: 'The valley that shared its grain',

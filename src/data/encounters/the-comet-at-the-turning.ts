@@ -243,7 +243,7 @@ const TURNING_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'star.referred_pilgrim',
+          query: { kind: 'encounter_template', tags: ['#temple_errand'] },
           delayTicks: 12,
           priority: 1.1,
           seedLabel: 'A casualty of the turning seeks the god',
@@ -319,7 +319,7 @@ const ANCHORED_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'star.referred_pilgrim',
+          query: { kind: 'encounter_template', tags: ['#temple_errand'] },
           delayTicks: 16,
           priority: 1.1,
           seedLabel: 'A keeper of the anchored age seeks the god',

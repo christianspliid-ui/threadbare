@@ -253,7 +253,7 @@ export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
           effects: [
             {
               kind: 'encounter_seed',
-              encounterFamily: 'investigation',
+              query: { kind: 'encounter_template', tags: ['#company_errand'] },
               delayTicks: 12,
               priority: 0.75,
               seedLabel: 'The army raised at {location} has been observed on the march — interested parties are calculating.',
@@ -717,7 +717,7 @@ export const ARMY_THRESHOLD_MUTINY_TEMPLATE: UnifiedActionTemplate = {
           effects: [
             {
               kind: 'encounter_seed',
-              encounterFamily: 'investigation',
+              query: { kind: 'encounter_template', tags: ['#company_errand'] },
               delayTicks: 18,
               priority: 0.7,
               seedLabel: 'News of {name}\'s mutiny is spreading through the houses — alliances are being recalculated.',
@@ -1027,7 +1027,7 @@ export const REFUGEE_AFTERMATH_TEMPLATE: UnifiedActionTemplate = {
             },
             {
               kind: 'encounter_seed',
-              encounterFamily: 'investigation',
+              query: { kind: 'encounter_template', tags: ['#watch_errand'] },
               delayTicks: 16,
               priority: 0.65,
               seedLabel: 'The refugees turned from {location}\'s gates have surfaced elsewhere — and they are telling the story.',
