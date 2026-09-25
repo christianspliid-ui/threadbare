@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 23:54 local (21:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -41,6 +41,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26 — a commander killed in battle now dies properly** ([THR-1566](https://linear.app/threadbare/issue/THR-1566)) through the game's normal death path, instead of being deleted from the world. Merged 00:36 local via [#2056](https://github.com/christianspliid-ui/threadbare/pull/2056), and live on the site.
 - **2026-09-25 — a duel's loser now shows as chips on screen** ([THR-1561](https://linear.app/threadbare/issue/THR-1561)): a "slain" chip or a grudge chip. Merged 23:32 local via [#2055](https://github.com/christianspliid-ui/threadbare/pull/2055), and live on the site.
 - **2026-09-25 — a mortal can now hunt a beast** ([THR-1560](https://linear.app/threadbare/issue/THR-1560), hunts H2). Merged via [#2054](https://github.com/christianspliid-ui/threadbare/pull/2054), and live on the site. The fight system is not a review ask yet: [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554) are still to come.
 - **2026-09-25 — grudges now boil over into duels** ([THR-1558](https://linear.app/threadbare/issue/THR-1558), duels E3). Merged 21:43 local via [#2053](https://github.com/christianspliid-ui/threadbare/pull/2053), and live on the site. Not a review ask yet: the hunt ([THR-1560](https://linear.app/threadbare/issue/THR-1560)) and loser chips ([THR-1561](https://linear.app/threadbare/issue/THR-1561)) are still to come.
@@ -50,7 +51,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-25 — the cold playtest loop runs** ([THR-1610](https://linear.app/threadbare/issue/THR-1610)): fresh testers play the game daily through a harness and report back. Merged 17:39 local via [#2049](https://github.com/christianspliid-ui/threadbare/pull/2049), and live on the site.
 - **2026-09-25 — social, tavern and secret encounters fire again** ([THR-1614](https://linear.app/threadbare/issue/THR-1614)). Merged 16:30 local via [#2047](https://github.com/christianspliid-ui/threadbare/pull/2047), and live on the site.
 - **2026-09-25 — six kinds of planted seed no longer wither the moment they are planted** ([THR-1613](https://linear.app/threadbare/issue/THR-1613)). Merged 15:32 local via [#2046](https://github.com/christianspliid-ui/threadbare/pull/2046), and live on the site.
-- **2026-09-25 — Mercenary Company encounters can now be drawn** ([THR-1612](https://linear.app/threadbare/issue/THR-1612)). Merged 14:32 local via [#2045](https://github.com/christianspliid-ui/threadbare/pull/2045), and live on the site.
 
 ---
 
