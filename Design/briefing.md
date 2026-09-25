@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-25 19:55 local (17:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-25 20:54 local (18:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,17 +20,19 @@ The one question: **are the encounters good enough together?** A pass unlocks th
 
 ## Queue
 
-**Backed up: 20 jobs are ready and none are in progress. None are parked.** Most are bug tickets from this morning's research and the cold playtest, not a stall. The builder picks up hourly; its next run is about 20:11 local.
+**Backed up: 20 jobs are ready and 1 is in progress. None are parked.** Most are bug tickets from this morning's research and the cold playtest, not a stall. Nothing has merged since the last brief.
 
-- Merged since the last brief: **in a duel, the winner decides the loser's fate** ([THR-1557](https://linear.app/threadbare/issue/THR-1557), [#2051](https://github.com/christianspliid-ui/threadbare/pull/2051)). It is live on the site.
-- Fight system: still not ready for your review. Pieces still to come: [chips for a duel's loser](https://linear.app/threadbare/issue/THR-1561), [grudges boiling over into duels](https://linear.app/threadbare/issue/THR-1558), and the hunts ([Monster as a world object](https://linear.app/threadbare/issue/THR-1559), [the hunt itself](https://linear.app/threadbare/issue/THR-1560)).
+- In progress: **Monster as a world object** ([THR-1559](https://linear.app/threadbare/issue/THR-1559/hunts-h1-monster-in-the-world-objects-registry), [#2052](https://github.com/christianspliid-ui/threadbare/pull/2052)). The pull request is open, but its required check fails, so it will not merge yet (see Health). The work is pushed; nothing is sitting uncommitted.
+- Fight system: still not ready for your review. Pieces still to come: [chips for a duel's loser](https://linear.app/threadbare/issue/THR-1561), [grudges boiling over into duels](https://linear.app/threadbare/issue/THR-1558) (now queued for building), and the hunts ([Monster as a world object](https://linear.app/threadbare/issue/THR-1559), [the hunt itself](https://linear.app/threadbare/issue/THR-1560)).
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620). It still has no priority set.
 - Cold-playtest fixes still queued: [five small interface faults](https://linear.app/threadbare/issue/THR-1604), [the cast receipt with no subject](https://linear.app/threadbare/issue/THR-1603), [hex lore repeats one sentence](https://linear.app/threadbare/issue/THR-1621).
 - Also queued: [chronicle headline id](https://linear.app/threadbare/issue/THR-1585), [dead trade route still claimable](https://linear.app/threadbare/issue/THR-1615), [non-casters try to learn spells](https://linear.app/threadbare/issue/THR-1617), [Builder's Legacy complete at start](https://linear.app/threadbare/issue/THR-1618), [route-building aims at home](https://linear.app/threadbare/issue/THR-1619), [waypoint clutter](https://linear.app/threadbare/issue/THR-1616), [commander deleted, not marked dead](https://linear.app/threadbare/issue/THR-1566), [item bursts](https://linear.app/threadbare/issue/THR-1568), [wards](https://linear.app/threadbare/issue/THR-1569), [wayside encounters](https://linear.app/threadbare/issue/THR-1567), [monster portraits](https://linear.app/threadbare/issue/THR-1554), [colocation chance](https://linear.app/threadbare/issue/THR-1576), [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528), [seed targets](https://linear.app/threadbare/issue/THR-1565), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573).
 
 ## Health
 
-- **Heavy simulation tests (builder's job, not yours):** [red on the latest main](https://github.com/christianspliid-ui/threadbare/actions/runs/36168453463). Four world-simulation tests in `peopleThingsCells` and `yieldBandCells` run just past their 5-second limit. The same tests failed at 15:39 UTC and passed at 16:40 UTC, so the limit is too tight rather than the game being broken. This check does not block merges.
+- **A pull request is stuck on a failing check (builder's job, not yours):** [#2052](https://github.com/christianspliid-ui/threadbare/pull/2052) (Monster as a world object) fails "Test · Typecheck · Build". Auto-merge stays armed but will not fire until a session pushes a fix. The builder's next hourly run is about 21:11 local.
+- **Heavy simulation tests (builder's job, not yours):** [red on the latest main](https://github.com/christianspliid-ui/threadbare/actions/runs/36168453463). The same tests failed at 15:39 UTC and passed at 16:40 UTC, so the time limit is too tight rather than the game being broken. This check does not block merges.
+- **Tick cost:** 85 ms/tick, 25% over the weekly median of 68 — right at the alarm line, still reading healthy. Last hour it was 83. Worth watching.
 - **Lane silence:** the worst recent gap was 25 hours, from Saturday 19 into Sunday 20. It falls on a weekend, so your 11 September ruling declines it.
 - **Worktree reaper:** 5 worktrees are waiting to be sorted. That is routine.
-- **Everything else is green.** The live site is serving the latest build (74b4461e). No pull requests are waiting. All ten scheduled lanes are on time. The design lane has left no report today. Tick cost is 83 ms/tick, 21% over the weekly median of 68. That is still inside the 25% alarm line. The home tree is on `main` and current.
+- **Everything else is green.** The live site is serving the latest build (74b4461e). All ten scheduled lanes are on time. The design lane has left no report today. The home tree is on `main` and current.
