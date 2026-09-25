@@ -24,7 +24,7 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 167 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 182 |  |
 | `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 119 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 121 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 118 |  |
