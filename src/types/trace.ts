@@ -23,7 +23,7 @@ import type {
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces';
-import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace } from './traces/fight-traces';
+import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace, FightTriggerGrudgeTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
 import type {
   FightTriggerTrace,
@@ -4115,6 +4115,8 @@ export type TraceEntry =
   | MonsterFelledTrace
   | MonsterDrivenOffTrace
   | FightTriggerTrace
+  // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
+  | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)
   | ThreadStoryComposedTrace
   // Event feed hygiene (THR-456)

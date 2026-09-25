@@ -4439,6 +4439,33 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1547 M4. Seed 42 medium, tick 100, an idle mortal (ind_0) sent to end a journey at the legendary lair_0: the arrival traces `fight.trigger` spawned (`ua_167` vs `elite_lair_0_50`), writes `fightCooldowns["elite_lair_0_50|ind_0"] = 126`, and the fight runs — three `fight.step` traces against `elite_lair_0_50`, then `fight.end … broke_off`. Natural play spawns none in 200 ticks on seeds 42 and 99: lairs have no `adjacent` / `road` edges, so no path ends at one; mortals only cross lair nodes as road waypoints, which by design do not trigger. Non-vacuous by `src/engine/monsters/__tests__/lairArrivalTrigger.test.ts` (17): arrival at the lair and at a place inside it spawns, hex co-presence and mid-road steps do not, and each skip reason (cooldown, busy, monster_dead, avatar, arriving_for_hunt) is asserted through the real `phaseMovement`.',
     },
   },
+  // ── Duels E3 (THR-1558, plan 2026-09-23-mortal-duels §6) — the plan's Interface impact
+  // row "colocation → fight spawn (grudge)". The colocation phase reads injury-class
+  // `hostile_to` edges between co-located mortals and spawns the duel into the
+  // unified-action pipeline, which runs it. Natural play on seeds 42 and 99 writes no
+  // injury-class grudge between two individuals in 200 ticks, so the live evidence is
+  // an injected run — recorded as such.
+  {
+    id: 'colocated-grudge-spawns-duel',
+    producerSystem: AMBITIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "Two mortals who share a grudge born of a real injury, standing in the same place and neither busy, may come to blows: the colocation phase rolls for it on the pair's own stream and spawns Old Blood between them. An old quarrel never does, the god's avatar never duels, a threaded mortal is always the actor, and a pair waits `GRUDGE_DUEL_COOLDOWN_TICKS` between duels.",
+    ulTerms: ['Grudge', 'Duel'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['runGrudgeDuels', 'isInjuryProvenance', 'fightCooldowns', 'fight.duel.grudge'],
+      module: 'src/engine/fights/grudgeDuelTrigger.ts',
+    },
+    writeSites: ['src/engine/phaseColocationDetection.ts'],
+    // The duel the spawn runs, and the busy set that holds both duellists from the spawn.
+    readSites: ['src/data/encounters/fight-duel-grudge.ts', 'src/engine/fights/fightParticipants.ts'],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        'THR-1558 E3. `npm run check:grudge-duels -- --inject 40` (seed 42 medium, 200 ticks, 40 `blood_drawn` pairs written at tick 0 through the real `writeGrudge`): the colocation phase traces `fight.trigger` source `grudge` spawned from tick 2 (`npc_198 → npc_200`, chance 0.050, roll 0.014, `ua_6`); 67 spawned duels across 33 pairs all ran to a `fight.end` (overcome 25, broke_off 19, yielded 14, struck_down 5, routed 4, separated 0); the most-duelled pair duelled 3 times, at `GRUDGE_DUEL_REPEAT_CEILING`. Natural play without injection spawns none: seeds 42 and 99 write no injury-class grudge between two individuals in 200 ticks (their `hostile_to` edges are excommunication, old quarrels, covet rivalries and group engagements). Non-vacuous by `src/engine/fights/__tests__/grudgeDuelTrigger.test.ts` (21).',
+    },
+  },
   // ── Fight endings D1 (THR-1548, plan 2026-09-23-defeat-and-victory §1–3) — the plan's
   // Interface impact rows "fight → grudges" (extend with `blood_drawn`), "fight → reactive
   // loop" (add: a non-undertaking source) and "fight → reputation" (humiliation). The

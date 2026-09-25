@@ -4,6 +4,11 @@
  * Every tick, for each pair of agents sharing a location tier,
  * roll for discovery. Successful detection emits agent_encounter events.
  * Uses seeded PRNG for determinism.
+ *
+ * THR-1558: the same grouping also feeds the grudge-duel trigger
+ * (`fights/grudgeDuelTrigger.ts`), which runs after detection on its own seeded
+ * sub-stream — so no detection roll changes whether the trigger is on or off. The
+ * phase therefore returns `unifiedActions` and `fightCooldowns` as well as events.
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
@@ -17,6 +22,7 @@ import {
   DETECTION_CHANCE_CEILING,
   COLOCATION_EVENT_SIGNIFICANCE,
 } from '../data/colocation-content';
+import { runGrudgeDuels } from './fights/grudgeDuelTrigger';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 function mulberry32(seed: number): () => number {
@@ -51,7 +57,15 @@ function getBaseChance(locationType: string | undefined): number {
 
 // ─── Phase Function ───────────────────────────────────────────────
 
-export function phaseColocationDetection(state: GameState): Partial<GameState> {
+export interface ColocationDetectionOptions {
+  /** Run the grudge-duel trigger (THR-1558). Default on; tests switch it off to prove detection is untouched. */
+  readonly grudgeDuels?: boolean;
+}
+
+export function phaseColocationDetection(
+  state: GameState,
+  options: ColocationDetectionOptions = {},
+): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 97);
   const events: TickEvent[] = [];
   const graph = state.graph;
@@ -114,5 +128,21 @@ export function phaseColocationDetection(state: GameState): Partial<GameState> {
     }
   }
 
-  return { tickEvents: [...state.tickEvents, ...events] };
+  const tickEvents = [...state.tickEvents, ...events];
+  if (options.grudgeDuels === false) return { tickEvents };
+
+  // Grudges boil over (THR-1558). Fail-soft: a throw here must never cost the
+  // detection events above, so the trigger is dropped for the tick instead.
+  try {
+    const duels = runGrudgeDuels(state, locationAgents);
+    if (duels.spawned.length === 0) return { tickEvents };
+    return {
+      tickEvents,
+      unifiedActions: [...duels.unifiedActions],
+      fightCooldowns: duels.fightCooldowns ? { ...duels.fightCooldowns } : undefined,
+    };
+  } catch (err) {
+    console.warn('[colocation] grudge-duel trigger failed; skipped this tick', err);
+    return { tickEvents };
+  }
 }

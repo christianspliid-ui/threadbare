@@ -709,7 +709,7 @@ Code anchors: `src/engine/grievance/grievanceLifecycle.ts` (`GrievanceSeed`, `re
 **Also see:** `[[Rivalry]]`, `[[Covet Rivalry]]`, `[[Grievance]]`, `[[Heat]]`, `[[Falling Out]]`, `[[Company]]`, `[[Group]]`
 **Status:** canonical
 
-The standing hostility between two actors *where one has wronged the other*: a **bidirectional** `hostile_to` edge stamped with the tick it began and an injury `cause`. Relationship colour, **not a driver** — a grudge never puts anything on the decision board. Bidirectional because a grudge is a state of the relationship rather than of one party: having razed someone's home puts you at odds with them whether or not you feel wronged in return.
+The standing hostility between two actors *where one has wronged the other*: a **bidirectional** `hostile_to` edge stamped with the tick it began and an injury `cause`. Relationship colour, **not a driver** — a grudge never puts anything on the decision board by itself, with one exception: **two grudge-holders standing in the same place can boil over into a `[[Duel]]`** (THR-1558 — the colocation phase rolls for it, on the pair's own stream; `old_quarrel`, a rivalry, never does). Bidirectional because a grudge is a state of the relationship rather than of one party: having razed someone's home puts you at odds with them whether or not you feel wronged in return. *(Amended 2026-09-25, THR-1558: "bidirectional" is the writer's rule, not an invariant of the edge. A failed plot writes a **one-way** `attempted_killing` hostility on the survivor, and skips the write when an edge already exists; a `faction_war`-licensed plot can therefore leave a grudge only the survivor holds. Readers must accept either direction — the duel trigger does.)*
 
 **Not every `hostile_to` is a grudge (THR-1391).** The edge carries two readings and the motive gate names both. A provenance in `GRUDGE_PROVENANCE` — `group_engagement`, `mentorship_break`, `grievance_cooled`, `attempted_killing` (THR-1430), `command_seized` and `usurpation_failed` (THR-1438), and `blood_drawn` (THR-1548: a fight that struck one of them down and left them alive, toward a monster as readily as a mortal) — reads as a **grudge**: one wronged the other. *(Corrected 2026-09-25, THR-1548: the list here had stopped at three while the gate's set grew to seven.)* *Any other* provenance, and **no provenance at all**, reads as a `[[Rivalry]]`: the two are merely in each other's way. Grudge is the more specific reading of the same edge, so a caller that accepts both is told `grudge` when an injury is on it and `rivalry` when none is. The carve-out is load-bearing rather than tidy: the re-ignition rule and the vendetta lane key on the *injury* reading, so a rivalry cannot mint a vendetta by itself — only the harm it licenses can.
 
@@ -722,6 +722,20 @@ The standing hostility between two actors *where one has wronged the other*: a *
 **Provenance is a closed set, and its key diverges by writer.** `GrudgeCause` is an enum rather than a free string because motive gates classify it to decide whether a destroy verb is licensed, and a typo in a free-form cause would silently read as "no grudge" — a gate that fails open on a misspelling is worse than one that fails closed on an unknown enum. Three older writers stamp provenance under three *different* keys (band opposition `cause`, excommunication `reason`, mentorship severance `basis`); the grievance writer joined the `cause` camp rather than widening a documented divergence, and readers must still handle all three. A feud declared by a notable writes the edge with no provenance key at all, which the prose reports honestly as *"something neither of them speaks of"* rather than guessing. **`covets` is a closed set of its own, deliberately beside this one:** the covet writer types its provenance as `CovetCause`, *not* as a fourth `GrudgeCause`, and `GRUDGE_PROVENANCE` was left unextended on purpose — that omission is the whole mechanism by which a `[[Covet Rivalry]]` stays a rivalry.
 
 Code anchors: `src/engine/grievance/grudgeEdge.ts` (`writeGrudge`, `hasGrudge`, `GrudgeCause`), `src/engine/groups/bandOpposition.ts`, `src/data/grievance-prose.ts` (`GRUDGE_CAUSE_CLAUSES`, `getGrudgeCauseClause`), `src/engine/undertakingMotive.ts` (`GRUDGE_PROVENANCE`, `isInjuryProvenance`).
+
+---
+
+### Duel
+
+**Aliases:** agent-mode fight, *Old Blood* (`fight.duel.grudge`)
+**Also see:** `[[Grudge]]`, `[[Rivalry]]`
+**Status:** canonical (seated by delegation 2026-09-25, THR-1558)
+
+A **fight in which both sides are mortals who roll**: a fight block written with `mode: 'agent'`, whose opponent's roll is synthesized every exchange on its own stream and whose opponent carries a per-fight clock, harm, conditions and forks of its own (THR-1556). Two blows decide it; the victor's nature decides mercy over a beaten loser, and a loser who yielded or fled is never killed (THR-1557). The first systemic duel is **Old Blood**, which the colocation phase spawns when a `[[Grudge]]` between two co-located mortals boils over (THR-1558); a mortal fights one duel at a time, and both duellists are busy from the spawn.
+
+**Not the older senses of the word.** `encounterType: 'duel'` and the `duel` reveal family name authored, **single-roller** encounters (`social.challenge_duel`, `encounter.honor_duel`, `encounter.arcane_duel`, and the two god-choice duels): the opponent's side there is prose. They stay as they are in v1. Say *duel* for the agent-mode fight; say the encounter's own name for the others.
+
+Code anchors: `src/data/fights/fightBlock.ts` (`mode`), `src/engine/fights/opposedRoll.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/engine/fights/grudgeDuelTrigger.ts`, `src/engine/fights/fightParticipants.ts`.
 
 ---
 
