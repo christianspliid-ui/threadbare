@@ -1136,10 +1136,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Struck down*, *Grievance*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 15 total — 2 write, 2 read, 11 unclassified
+- **Production hits:** 16 total — 2 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/phaseOmenAgenda.ts`
-- **Other hits:** `src/data/ambition-minting-rules.ts`, `src/data/ambition-templates.ts`, `src/data/fight-constants.ts`, `src/data/game-config.ts`, `src/data/omenTemplates.ts` +6 more
+- **Other hits:** `src/data/ambition-minting-rules.ts`, `src/data/ambition-templates.ts`, `src/data/fight-constants.ts`, `src/data/game-config.ts`, `src/data/omenTemplates.ts` +7 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-ending-reaches-chronicle` — 🔵 UNVERIFIED-OK
@@ -1326,10 +1326,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ambitions & Undertakings
 - **UL terms:** *Grievance*, *Undertaking*
 - **Module:** `src/engine/monsters/hunts.ts`
-- **Production hits:** 16 total — 2 write, 2 read, 12 unclassified
+- **Production hits:** 17 total — 2 write, 2 read, 13 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/ambitionTick.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/undertakingOutcomeNode.ts` +7 more
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/ambitionTick.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphConditions.ts` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `grievance-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1338,10 +1338,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 93 total — 2 write, 3 read, 88 unclassified
+- **Production hits:** 94 total — 2 write, 3 read, 89 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +83 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +84 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-command-changes-through-one-writer` — 🟢 LIVE
@@ -1642,10 +1642,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 42 total — 4 write, 3 read, 35 unclassified
-- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
+- **Production hits:** 44 total — 5 write, 3 read, 36 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +30 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +31 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -2183,10 +2183,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 30 total — 5 write, 5 read, 20 unclassified
+- **Production hits:** 31 total — 5 write, 5 read, 21 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
 - **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/tabs/JourneyTab.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentArc.ts`
-- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts`, `src/data/encounters/vertical-slice.ts`, `src/data/foreshadowing-content.ts` +15 more
+- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts`, `src/data/encounters/vertical-slice.ts`, `src/data/foreshadowing-content.ts` +16 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

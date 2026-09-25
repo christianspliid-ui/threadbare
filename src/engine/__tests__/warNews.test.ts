@@ -280,7 +280,9 @@ describe('visibility is judged before the aftermath (THR-1564)', () => {
       const reported = getTraces().filter(t => t.category === 'war.reported') as unknown as Array<Record<string, unknown>>;
       disableTracing();
 
-      if (w.graph.getNode('cmd_a')) continue; // commander survived — not the case under test
+      // Commander survived — not the case under test. A killed commander is retained as
+      // deceased since THR-1566, so death reads off the mark, not off node absence.
+      if (w.graph.getNode('cmd_a')?.properties.deceased !== true) continue;
       found = true;
       const ended = reported.filter(t => t.kind === 'battle_ended');
       expect(ended).toHaveLength(1);
