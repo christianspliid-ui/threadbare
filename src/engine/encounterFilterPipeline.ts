@@ -75,6 +75,7 @@ export {
   OUTGROWTH_CAP_THRESHOLD,
   OUTGROWTH_FILTER_ENABLED,
   PERSONAL_OFFER_CAP_RESERVE,
+  SOCIAL_OFFER_CAP_RESERVE,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -84,6 +85,7 @@ import {
   OUTGROWTH_CAP_THRESHOLD,
   OUTGROWTH_FILTER_ENABLED,
   PERSONAL_OFFER_CAP_RESERVE,
+  SOCIAL_OFFER_CAP_RESERVE,
 } from '../data/agent-behavior-constants';
 
 /** Ordered threat tiers for index-based comparison */
@@ -744,6 +746,37 @@ export function capWithDiversity(
         reservedKeys.add(key);
         added++;
         if (added >= needed) break;
+      }
+    }
+  }
+
+  // Phase 1d: preserve up to SOCIAL_OFFER_CAP_RESERVE social-path entries (THR-1614).
+  //
+  // The same positional cut Phase 1c closed for faction quests: `generateSocialCandidates`
+  // entries also ride the dynamic tail, and measured on seeds 42 and 99 / medium 0 of
+  // ~1,000 offered social entries survived this stage — the whole social, tavern, scene and
+  // secret pool was unreachable. A sibling reserve rather than a share of Phase 1c: social
+  // entries are merged ahead of faction quests and run ~16 per decider, so one pooled
+  // reserve would hand the guild slots to whoever talked first.
+  //
+  // Ordered after 1a–1c so none of their guarantees is weakened. The first pass takes
+  // distinct templates so one talkative crowd cannot fill every slot with the same scene.
+  const socialReserved = reserved.filter(e => e.socialOffer).length;
+  if (socialReserved < SOCIAL_OFFER_CAP_RESERVE) {
+    const needed = SOCIAL_OFFER_CAP_RESERVE - socialReserved;
+    const seenTemplates = new Set(reserved.filter(e => e.socialOffer).map(e => e.templateId));
+    let added = 0;
+    for (const distinctOnly of [true, false]) {
+      for (const entry of entries) {
+        if (added >= needed) break;
+        if (!entry.socialOffer) continue;
+        if (distinctOnly && seenTemplates.has(entry.templateId)) continue;
+        const key = `${entry.templateId}:${entry.locationId}`;
+        if (reservedKeys.has(key)) continue;
+        reserved.push(entry);
+        reservedKeys.add(key);
+        seenTemplates.add(entry.templateId);
+        added++;
       }
     }
   }
