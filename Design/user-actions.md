@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 08:56 local (06:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-25 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -40,6 +40,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-25 — mortals who walk into a lair now have to fight its monster** ([THR-1547](https://linear.app/threadbare/issue/THR-1547/monsters-m4-walking-into-the-lair), monsters M4). Merged 09:39 local via [#2033](https://github.com/christianspliid-ui/threadbare/pull/2033), and live on the site. Not a review ask yet: the fight chips and the duel winner’s choice are still to come.
 - **2026-09-25 — the action drawer’s cards now have a solid face, so the page no longer shows through them** ([THR-1587](https://linear.app/threadbare/issue/THR-1587)). Merged 08:28 local via [#2031](https://github.com/christianspliid-ui/threadbare/pull/2031), and live on the site.
 - **2026-09-25 — a monster’s lair now shows its beast in a sentence, a clock, and a “slain” reading once it falls** ([THR-1552](https://linear.app/threadbare/issue/THR-1552/fight-on-screen-f4-the-lair-card), fight on screen F4). Merged 07:37 local via [#2030](https://github.com/christianspliid-ui/threadbare/pull/2030), and live on the site. Not a review ask yet: the fight chips and the duel winner’s choice are still to come.
 - **2026-09-25 — winning a fight now pays out, and notable fights get a chronicle line** ([THR-1549](https://linear.app/threadbare/issue/THR-1549/fight-endings-d2-victory-yields-and-the-chronicle), fight endings D2). Merged 06:35 local via [#2029](https://github.com/christianspliid-ui/threadbare/pull/2029), and live on the site. Not a review ask yet: the lair card is still to come.
@@ -49,7 +50,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-25 — monsters are now named and counted right on the fight screen** ([THR-1550](https://linear.app/threadbare/issue/THR-1550/fight-on-screen-f1-monsters-named-and-counted-right), fight on screen F1). Merged 02:36 local via [#2025](https://github.com/christianspliid-ui/threadbare/pull/2025), and live on the site. Not a review ask yet: fight endings and felling a monster are still to come.
 - **2026-09-25 — the named-beast hunt now fights the lair's own monster** ([THR-1545](https://linear.app/threadbare/issue/THR-1545/monsters-m2-monsters-in-scenes), monsters M2). Merged 01:43 local via [#2024](https://github.com/christianspliid-ui/threadbare/pull/2024), and live on the site. Not a review ask yet: the fight screen is still to come.
 - **2026-09-25 — the odds shown are now the odds rolled**: the dice honour items, conditions and standing ([THR-1535](https://linear.app/threadbare/issue/THR-1535/the-odds-shown-are-not-the-odds-rolled-the-unified-road-never-reads-a)). Merged 00:44 local via [#2023](https://github.com/christianspliid-ui/threadbare/pull/2023), and live on the site.
-- **2026-09-24 — mortals now plan with the same odds the dice use** ([THR-1579](https://linear.app/threadbare/issue/THR-1579/forecast-window-s2-the-forecast-is-the-roll-mortals-plan-with-the-odds), forecast window S2). Merged 22:49 local via [#2022](https://github.com/christianspliid-ui/threadbare/pull/2022), and live on the site. S3 is next in the build queue.
 
 ---
 
