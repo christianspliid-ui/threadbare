@@ -247,6 +247,12 @@ export interface Phase {
   effects?: Effect[];
   storyBeat?: PhaseStoryBeatSpec;
   rationale?: string;
+  /**
+   * Player-facing Chronicle title for a phase with no story beat (THR-1602).
+   * Omitted → the runner humanizes the phase id; composition ids never reach
+   * the title either way.
+   */
+  title?: string;
 }
 
 export interface Composition {
@@ -473,6 +479,7 @@ const phaseSchema: z.ZodType<Phase> = z.object({
   effects: z.array(effectSchema).optional(),
   storyBeat: phaseStoryBeatSpecSchema.optional(),
   rationale: nonEmptyStringSchema.optional(),
+  title: nonEmptyStringSchema.optional(),
 });
 
 export const compositionSchema: z.ZodType<Composition> = z.object({

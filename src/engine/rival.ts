@@ -29,6 +29,7 @@ import {
   RIVAL_SCHEME_STOCK_SCAN_CAP,
 } from '../data/rival-scheme-config';
 import { readResources } from './resourceEconomy';
+import { humanizePhaseId } from './phaseComposition';
 import {
   eligibleSchemeFamilies,
   type RivalSchemeFamily,
@@ -404,6 +405,8 @@ export function buildRivalScheme(
       },
       activates: [],
       rationale: substituteSchemeProse(chosen, rival.name, targetName),
+      // THR-1602: a player-facing title, so the Chronicle never falls back to ids.
+      title: `${rival.name}'s ${family.label.toLowerCase()}: ${humanizePhaseId(beat.phaseId).toLowerCase()}`,
     };
   });
 

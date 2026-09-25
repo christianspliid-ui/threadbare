@@ -82,7 +82,12 @@ export function findContestableSources(
     const weight = (BASE_SOURCE_INCOME[src.kind] ?? 0) * sourceTierMultiplier(src.tier);
     if (weight <= 0) continue; // nothing to bleed
 
-    const name = (typeof host.properties.name === 'string' && host.properties.name) || host.id;
+    // THR-1602: a node keeps its name on `node.name` — reading `properties.name`
+    // first put the raw id in the scheme prose.
+    const name =
+      (typeof host.name === 'string' && host.name) ||
+      (typeof host.properties.name === 'string' && host.properties.name) ||
+      host.id;
     out.push({ hostId: host.id, name, weight });
   }
   return out;

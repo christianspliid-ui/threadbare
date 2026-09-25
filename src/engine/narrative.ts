@@ -29,6 +29,7 @@ import { emitTrace } from './traceBuffer';
 import { getCulturalFlavorWords, pickCulturalWord } from './culturalProse';
 import { gatherNarrativeContext, enrichProse } from './proseEnrichment';
 import { DEFAULT_SHAPE_WEIGHTS, SHAPE_REROLL_LIMIT } from './narrative-constants';
+import { fixIndefiniteArticles } from '../lib/indefiniteArticle';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -245,10 +246,13 @@ export function generateRoutineProse(
   }
 
   // Sphere-word substitution always applied first
-  let text = shaped.template
-    .replace(/\{adj\}/g, adj)
-    .replace(/\{verb\}/g, verb)
-    .replace(/\{noun\}/g, noun);
+  // THR-1602: the pool word decides the article ("an ancient", not "a ancient").
+  let text = fixIndefiniteArticles(
+    shaped.template
+      .replace(/\{adj\}/g, adj)
+      .replace(/\{verb\}/g, verb)
+      .replace(/\{noun\}/g, noun),
+  );
 
   // Enrichment path vs safe fallback
   const placeholdersResolved: string[] = [];
@@ -339,13 +343,16 @@ export function generateNotableProse(
     }
   }
 
-  const text = template
-    .replace(/\{actor\}/g, context.actorName ?? 'the figure')
-    .replace(/\{target\}/g, context.targetName ?? context.locationName ?? 'the world')
-    .replace(/\{adj\}/g, adj)
-    .replace(/\{verb\}/g, verb)
-    .replace(/\{noun\}/g, noun)
-    .replace(/\{personality\}/g, personality);
+  // THR-1602: the pool word decides the article ("an ancient", not "a ancient").
+  const text = fixIndefiniteArticles(
+    template
+      .replace(/\{actor\}/g, context.actorName ?? 'the figure')
+      .replace(/\{target\}/g, context.targetName ?? context.locationName ?? 'the world')
+      .replace(/\{adj\}/g, adj)
+      .replace(/\{verb\}/g, verb)
+      .replace(/\{noun\}/g, noun)
+      .replace(/\{personality\}/g, personality),
+  );
 
   emitTrace({
     tick: 0,
