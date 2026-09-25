@@ -46,6 +46,7 @@ import {
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../condition-trait-content';
 import { expandSettings, validateSettingEnvelope } from '../../settingClasses';
+import { DEFAULT_SETTING_SUPPORT_BUNDLES } from '../../default-support-bundles';
 import { checkNudgeHand, nudgeBearingSteps } from '../../content-eval/nudgeHandChecklist';
 import {
   EVASIVE_VAGUENESS_TERMS,
@@ -291,6 +292,23 @@ describe('vertical slice — a planting arm is never starved by a pole pin (THR-
     expect(family.settings).toEqual(['wayside', 'rural']);
     expect(family.openings?.rural).toBe('{name} catches up with a handcart on the lane out of {location}.');
     expect(family.drawable).toBe(true);
+  });
+
+  it('the Unsafe Bridge and Riders Behind the Caravan register past wayside; Snow on the Pass stays rare on purpose (THR-1567)', () => {
+    const byId = new Map(VERTICAL_SLICE_TEMPLATES.map((t) => [t.id, t]));
+    for (const id of [SLICE_TEMPLATE_IDS.bridge, SLICE_TEMPLATE_IDS.caravan]) {
+      const template = byId.get(id)!;
+      expect(template.settings, id).toEqual(['wayside', 'rural']);
+      // One authored opening per class, and both classes' default casts composed so a
+      // rural spawn keeps its rural bind-only cast (the THR-1526 Family lesson).
+      expect(template.openings?.rural, id).toBeTruthy();
+      const keys = new Set((template.supportBundle ?? []).map((spec) => spec.key));
+      for (const spec of [...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside, ...DEFAULT_SETTING_SUPPORT_BUNDLES.rural]) {
+        expect(keys.has(spec.key), `${id}: default cast ${spec.key} not composed`).toBe(true);
+      }
+    }
+    // No honest second class for a snowbound pass: widening it needs a terrain axis.
+    expect(byId.get(SLICE_TEMPLATE_IDS.pass)!.settings).toEqual(['wayside']);
   });
 
   it('the four sequels that assume their parent are seed-only; the parents stay drawable (THR-1526)', () => {
