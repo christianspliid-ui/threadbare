@@ -193,3 +193,27 @@ export interface FightEndingTrace extends TraceBase {
   opponentGuard?: 'the_first' | 'avatar' | 'warded';
   opponentOutcomeNodeId?: string;
 }
+
+/** Why a grudge pair did not duel this tick (THR-1558). */
+export type FightTriggerGrudgeSkip = 'cooldown' | 'busy' | 'no_template' | 'grudge_gone';
+
+/**
+ * The grudge boil-over trigger (THR-1558, plan doc `2026-09-23-mortal-duels.md` §6):
+ * `fight.trigger` with `source: 'grudge'`. Absent `skipped` means `fight.duel.grudge`
+ * was spawned and `actionId` names it. Skips are bounded to once per pair per
+ * `GRUDGE_DUEL_COOLDOWN_TICKS` window, so a co-located feud never floods the buffer;
+ * a roll that misses is not traced at all.
+ */
+export interface FightTriggerGrudgeTrace extends TraceBase {
+  category: 'fight.trigger';
+  source: 'grudge';
+  /** The duel's actor (the side the actor rule picked). */
+  aggressorId: string;
+  targetId: string;
+  /** The provenance value that licensed the duel (`attempted_killing`, `blood_drawn`, …). */
+  grudgeCause: string;
+  chance: number;
+  roll: number;
+  skipped?: FightTriggerGrudgeSkip;
+  actionId?: string;
+}

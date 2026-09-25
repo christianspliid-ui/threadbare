@@ -497,3 +497,37 @@ export const FIGHT_EVENT_TIER_BY_FACE: Readonly<Record<FightEndingFace, FightEve
  * other triggers (grudge duels) store their own length in the same map.
  */
 export const FIGHT_TRIGGER_COOLDOWN_TICKS = 25;
+
+// ─── Grudges boil over (THR-1558, plan doc `2026-09-23-mortal-duels.md` §6) ──────────
+
+/**
+ * Chance per co-located tick that an injury-class grudge pair duels, before courage
+ * scaling. The roll is `min(GRUDGE_ESCALATION_MAX, BASE × (1 + pairCourage))`, where
+ * `pairCourage` is the higher live `courage_prudence` lean of the two (THR-1267).
+ * Kill criterion: halve this if grudge duels kill more than one mortal per 100 ticks
+ * on a medium map.
+ */
+export const GRUDGE_ESCALATION_BASE = 0.05;
+
+/** The one clamp on the scaled escalation chance (= 2 × base at full courage). */
+export const GRUDGE_ESCALATION_MAX = 0.10;
+
+/**
+ * Salt for the escalation sub-stream, `mulberry32(seed + tick × salt + hash(pairKey))`.
+ * Keeps the grudge roll off the colocation detection stream, so every existing
+ * detection roll is identical whether the trigger is on or off. Unused elsewhere.
+ */
+export const GRUDGE_ESCALATION_STREAM_SALT = 6263;
+
+/**
+ * Ticks a grudge pair waits between duels. Its own constant, not the lair's
+ * `FIGHT_TRIGGER_COOLDOWN_TICKS`, so tuning lair re-fights never changes how often a
+ * feud flares (NFP #1). Stored as an expiry tick in `GameState.fightCooldowns`.
+ */
+export const GRUDGE_DUEL_COOLDOWN_TICKS = 80;
+
+/**
+ * Kill-criterion ceiling: grudge duels per pair in a 200-tick run. More means the
+ * cooldown or the eligibility is leaking. Read by the CLI check, never by the engine.
+ */
+export const GRUDGE_DUEL_REPEAT_CEILING = 3;
