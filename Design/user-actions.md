@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 14:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-25 15:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-25 — six kinds of planted seed no longer wither the moment they are planted** ([THR-1613](https://linear.app/threadbare/issue/THR-1613)). Merged 15:32 local via [#2046](https://github.com/christianspliid-ui/threadbare/pull/2046), and live on the site.
 - **2026-09-25 — Mercenary Company encounters can now be drawn** ([THR-1612](https://linear.app/threadbare/issue/THR-1612)). Merged 14:32 local via [#2045](https://github.com/christianspliid-ui/threadbare/pull/2045), and live on the site.
 - **2026-09-25 — internal ids no longer reach the chronicle** ([THR-1602](https://linear.app/threadbare/issue/THR-1602), from the cold playtest). Merged via [#2044](https://github.com/christianspliid-ui/threadbare/pull/2044), and live on the site.
 - **2026-09-25 — the title menu no longer shows developer screens** ([THR-1601](https://linear.app/threadbare/issue/THR-1601), from the cold playtest). Merged via [#2043](https://github.com/christianspliid-ui/threadbare/pull/2043), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-25 — mortals who walk into a lair now have to fight its monster** ([THR-1547](https://linear.app/threadbare/issue/THR-1547/monsters-m4-walking-into-the-lair), monsters M4). Merged 09:39 local via [#2033](https://github.com/christianspliid-ui/threadbare/pull/2033), and live on the site. Not a review ask yet: the fight chips and the duel winner’s choice are still to come.
 - **2026-09-25 — the action drawer’s cards now have a solid face, so the page no longer shows through them** ([THR-1587](https://linear.app/threadbare/issue/THR-1587)). Merged 08:28 local via [#2031](https://github.com/christianspliid-ui/threadbare/pull/2031), and live on the site.
 - **2026-09-25 — a monster’s lair now shows its beast in a sentence, a clock, and a “slain” reading once it falls** ([THR-1552](https://linear.app/threadbare/issue/THR-1552/fight-on-screen-f4-the-lair-card), fight on screen F4). Merged 07:37 local via [#2030](https://github.com/christianspliid-ui/threadbare/pull/2030), and live on the site. Not a review ask yet: the fight chips and the duel winner’s choice are still to come.
-- **2026-09-25 — winning a fight now pays out, and notable fights get a chronicle line** ([THR-1549](https://linear.app/threadbare/issue/THR-1549/fight-endings-d2-victory-yields-and-the-chronicle), fight endings D2). Merged 06:35 local via [#2029](https://github.com/christianspliid-ui/threadbare/pull/2029), and live on the site. Not a review ask yet: the lair card is still to come.
 
 ---
 
