@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-25 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-25 18:57 local (16:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-25 — a fight now shows its state as chips on screen** ([THR-1553](https://linear.app/threadbare/issue/THR-1553), fight F3). Merged 18:40 local via [#2050](https://github.com/christianspliid-ui/threadbare/pull/2050), and live on the site. Not a review ask yet: the duel winner’s choice ([THR-1557](https://linear.app/threadbare/issue/THR-1557)) is still to come.
 - **2026-09-25 — the cold playtest loop runs** ([THR-1610](https://linear.app/threadbare/issue/THR-1610)): fresh testers play the game daily through a harness and report back. Merged 17:39 local via [#2049](https://github.com/christianspliid-ui/threadbare/pull/2049), and live on the site.
 - **2026-09-25 — social, tavern and secret encounters fire again** ([THR-1614](https://linear.app/threadbare/issue/THR-1614)). Merged 16:30 local via [#2047](https://github.com/christianspliid-ui/threadbare/pull/2047), and live on the site.
 - **2026-09-25 — six kinds of planted seed no longer wither the moment they are planted** ([THR-1613](https://linear.app/threadbare/issue/THR-1613)). Merged 15:32 local via [#2046](https://github.com/christianspliid-ui/threadbare/pull/2046), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-25 — "Story so far" no longer shows a raw `{name}` where a thread's name belongs** ([THR-1600](https://linear.app/threadbare/issue/THR-1600), from the cold playtest). Merged via [#2039](https://github.com/christianspliid-ui/threadbare/pull/2039).
 - **2026-09-25 — living-world seeding drift fixed**: freeholds with no Realm nearby now attach to the nearest settlement ([THR-1588](https://linear.app/threadbare/issue/THR-1588)). Merged 10:46 local via [#2037](https://github.com/christianspliid-ui/threadbare/pull/2037), and live on the site.
 - **2026-09-25 — “May a lane draft a design doc on its own?” answered: yes, within agreed work.** You ruled it in chat, and the design lane now runs four times a day ([THR-1611](https://linear.app/threadbare/issue/THR-1611)). Its decisions reach you as “Decided for you” lines you can veto. The ask is closed.
-- **2026-09-25 — mortals who walk into a lair now have to fight its monster** ([THR-1547](https://linear.app/threadbare/issue/THR-1547/monsters-m4-walking-into-the-lair), monsters M4). Merged 09:39 local via [#2033](https://github.com/christianspliid-ui/threadbare/pull/2033), and live on the site. Not a review ask yet: the fight chips and the duel winner’s choice are still to come.
 
 ---
 
