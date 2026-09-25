@@ -231,8 +231,12 @@ Only after the plan doc is merged to `main`:
    One command settles it:
 
    ```bash
+   git fetch origin main --quiet
    npm run check:plan-doc-liveness -- Docs/plans/YYYY-MM-DD-topic.md
    ```
+
+   Fetch first: the script reads the local `origin/main` ref and never fetches, so right after a merge
+   it reports a false `STRANDED` until something refreshes the ref (impediment #1064).
 
    `LIVE` → proceed. `STRANDED` → the Step 4 PR has not merged yet; wait for it (CI-gated and auto-merged,
    so minutes) and re-run. Do not hand off in the meantime: every executor worktree is cut from

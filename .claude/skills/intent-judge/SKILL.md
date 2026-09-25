@@ -10,7 +10,7 @@ description: >
   by the design session after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-08-28
+last_validated_against: 2026-09-25
 ---
 
 # Intent Judge
@@ -197,7 +197,15 @@ context, prompts, or assumptions. Four rules enforce separation:
   any author session (authors run Opus or Fable). Cold context and separate
   persona carry the anti-correlation weight, not model diversity; a judge
   weaker than its author inverts the manager/worker framing. Frontier
-  unavailable → judge declines and surfaces Escalate.
+  unavailable → judge declines and surfaces Escalate. **Exception — frontier
+  rate-limited (HTTP 429 on `fable`), not absent:** spawn the judge on `opus`
+  rather than parking the handoff, tell it the limit is exhausted, and have it
+  record `Anti-correlation guard slipped: partial — fable rate-limited, judged on
+  opus`; copy that slip into the plan tail's intent-judge section and into the
+  metrics row's `Anti-corr slipped` column. The fallback does **not** waive the
+  metrics row — every fallback verdict is still one row (2026-09-25 retro:
+  impediment #1060, 24 fallback verdicts on 2026-09-23 wrote zero rows to
+  `Docs/judge-metrics/`, so the week's aggregate saw one judgment of twenty-five).
 - **Cold context.** Spawned via Agent tool; sees only what the prompt names.
 - **Different persona.** This skill is the persona. The judge does not draft.
 - **Reversed reading order.** Author writes intent → scope → design. Judge

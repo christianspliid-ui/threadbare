@@ -233,6 +233,13 @@ Two modes. Either way, never resolve more than one HITL ticket per session.
 When no open tickets remain and no fog is left, the way is clear. Closing is a
 deliberate compression step, not just a state change:
 
+**Order trap — post the carve-up before you resolve the last child ticket.**
+Linear's sub-issue automation moves the map to `Done` about 20 seconds after its
+last open child closes (impediment #1061: THR-1258, 2026-09-23). If you resolve the
+last decision first, the map reads Done with no route summary. So when one
+decision ticket is left, write step 1's comment on the map first, then close that
+ticket, and expect step 2 to have happened on its own.
+
 1. **Propose the carve-up in the closing comment**: how the map's decisions divide
    into plan docs (how many, which decisions each draws on). The map→plan-docs
    compression is itself a decision, so it gets recorded like one — on the map,
