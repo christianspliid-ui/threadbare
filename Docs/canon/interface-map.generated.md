@@ -1277,10 +1277,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 27 total — 1 write, 1 read, 25 unclassified
+- **Production hits:** 28 total — 1 write, 1 read, 26 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +20 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +21 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-yield-humiliates-at-home` — 🔵 UNVERIFIED-OK
@@ -1464,10 +1464,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Encounters & Dilemmas
 - **UL terms:** *Opponent Card*, *Temper*
 - **Module:** `src/engine/monsters/monsterCard.ts`
-- **Production hits:** 23 total — 2 write, 2 read, 19 unclassified
+- **Production hits:** 24 total — 2 write, 2 read, 20 unclassified
 - **Write sites:** `src/engine/lairEscalation.ts`, `src/engine/monsters/monsterCard.ts`
 - **Read sites:** `src/engine/fights/opponentCard.ts`, `src/engine/monsters/listMonsters.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +14 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts` +15 more
 - **Verdict:** Verified 2026-09-24: THR-1544 M1. Seed 42 medium, 120 ticks, CLI `monsters`: 14 monsters listed, every one carrying a card (14/14) — blight, stormkin, behemoth and golem families, all legendary by then, so every card also shows the hardening (clock 5, Dread one word up). Non-vacuous by `src/engine/monsters/__tests__/monsterCard.test.ts`: each of the eight families is minted and then read back through `readOpponentCard` with `source: 'monsterState'` and the family's temper from the `trait.temper.*` edge; the real `phaseLairEscalation` both mints and hardens; a foundation-sphere lair falls back to the Force family; a graph with no temper definitions mints the card and skips the edge.
 
 ### `lair-monster-gates-the-hunt` — 🟢 LIVE
@@ -1592,10 +1592,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Attention, Chronicle & Narrative
 - **UL terms:** *Opponent Card*, *Fight Clock*, *Temper*
 - **Module:** `src/components/Game/lair/buildLairMonsterCardModel.ts`
-- **Production hits:** 29 total — 2 write, 3 read, 24 unclassified
+- **Production hits:** 30 total — 2 write, 3 read, 25 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/monsters/monsterCard.ts`
 - **Read sites:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +19 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +20 more
 - **Verdict:** Verified 2026-09-25: THR-1552 F4. Review route `?view=game&seeded&size=medium&nofog`, `tick(60)`: lair_0's card reads "Ryx — A walking rot that spreads where it goes. Fearsome to face, a fair match." with 4 square pips at 14px and "untouched"; stored clock 2/4 reads "half-broken"; `spawnFight('Ryx', { clockFilled: 3, outcome: 'critical_success' })` played through the veil fells Ryx, lair_0 becomes a cleared lair, and the Cleared Lair Section reads "slain by Vara". At tick 100, `spawnFight('elite_lair_10_50', …)` fells Druja at the legendary lair_10, whose `namedEliteId` is then gone: the lair block finds her by reverse lookup on `lairId` and reads "slain by Vara" (`Docs/evidence/thr-1552/`). `getLairMonsterCard` matched `listMonsters` on every field it shares. Non-vacuous by `src/components/Game/lair/__tests__/lairMonsterF4.test.tsx`: the temper clause is absent before a fight and present after one; "slain by" renders when `getAgentInfoCard(...).death.by` is set and not when it is absent.
 
 ### `mortal-dies-through-one-funnel` — 🔵 UNVERIFIED-OK

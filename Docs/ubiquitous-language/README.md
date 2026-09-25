@@ -13,7 +13,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 | Shard | Content | Content-adjacent |
 |---|---|---|
 | [Cosmology.md](./Cosmology.md) | Reaches, Spheres, Foundation/Creation, domain capability, prerequisites | ✅ |
-| [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Faction, Realm, Rival, Thread, Avatar | ✅ |
+| [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Faction, Realm, Monster, Rival, Thread, Avatar | ✅ |
 | [Encounters.md](./Encounters.md) | Encounter, Template, UAT, Aftermath, Reaction, Seed, Hidden Mark, Awareness | ✅ |
 | [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility — plus the attachment layer: Attachment, Effect, Power, Spell, Bestowal, Innate Power, Temper | ✅ |
 | [Prose.md](./Prose.md) | IPK, Enrichment Placeholder, Resolver, Strata, Narrative Lexicon, Chronicle | ✅ |
@@ -48,6 +48,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Retinue](./Agents.md#retinue)** — the mortals an Ascendant holds close (`CourtPosition: 'retinue'`); arbitrated 2026-08-13 to the divine-court sense only, never a mortal's companions
 - **[Faction](./Agents.md#faction)** — structured social entity; `actorType: 'faction'`; agents join via `member_of` edges
 - **[Realm](./Agents.md#realm)** — *(alias: nation)* a Faction of class `realm`: a culture's landed polity, seated at a capital, holding towns through `controls`; the map's red border is a projection of them, never a stored stamp
+- **[Monster](./Agents.md#monster)** — a lair's beast: a class of Mortal, not a kind; an individual actor with `isMonsterElite` or a `monsterState` card, read through `isMonster`; the plot never targets one, the hunt does (THR-1559)
 - **[Reputation](./Agents.md#reputation)** — the social score that modifies interactions between a and b; directional, band-worded, four legs behind one `getReputationWith`
 - **[Reputation Tally](./Agents.md#reputation-tally)** — what a mortal is becoming known *for*, on a `<reach>.<polarity>` key; not reputation with anyone
 - **[Reputation Score](./Agents.md#reputation-score)** — one-sided world renown ("how the world at large regards X"); shares the band vocabulary, not the concept

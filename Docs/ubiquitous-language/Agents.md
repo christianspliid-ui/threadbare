@@ -130,6 +130,22 @@ Approved by Christian in attended chat, 2026-09-11 (THR-1453), shipped with THR-
 
 ---
 
+### Monster
+
+**Aliases:** lair beast, named elite, `isMonsterElite`
+**Also see:** `[[Agent]]`, `[[Temper]]`, `[[Opponent Card]]`, `[[Grudge]]`, `[[World Object]]`
+**Status:** canonical
+
+A **lair's beast: a class of `[[Agent]]` (Mortal), not a kind of its own.** An individual actor (`actorType: 'individual'`) carrying `isMonsterElite` — the flag `createNamedElite` writes when a lair escalates — or a `monsterState` fighting card. Either marker is enough; every reader asks through the one predicate, `isMonster` (`src/engine/monsters/isMonster.ts`), never the raw flag. Each Monster is minted with a fighting card and a `[[Temper]]`, and its fight clock persists on its node, so several mortals' blows add up on one beast.
+
+**A class, not a kind** (THR-1268). A Monster is a Mortal in the graph's shape — it has a position, it can be fought, scarred, slain and retained dead — so it takes no world-object registry row, no node type and no actorType. The class exists because systems meant for people must leave it out: the plot never targets one, it never graduates to an NPC, lair clearing's challenger scan and social visibility skip it, and no favour is ever owed to a beast. What *does* act on it is the hunt — `destroy × monster`, a mortal's long work of going after a beast from afar for a reason (a scar, a grievance, a den near home).
+
+**Not a Company, Army or Faction.** A monster family's faction definitions name the lair's allegiance; the Monster itself is one creature.
+
+Seated by delegation 2026-09-25 (THR-1559; `Docs/canon/process.md` § User review interface, rule 4).
+
+---
+
 ### Reputation
 
 **Aliases:** Standing, Reputation With
