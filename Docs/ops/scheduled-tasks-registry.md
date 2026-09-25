@@ -36,7 +36,7 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 | **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
 | **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | `0 9 1 * *` | ~1st 09:00 | one Linear findings issue (or nothing) — registered 2026-07-22 by THR-704 after the THR-417 phantom-Done |
-| **02/08/14/20 :14** | 4× daily | `tb-design-lane` (unattended design — decides unreserved wayfinder tickets, closes cleared maps, authors + hands off one plan doc per run; `design-lane` skill) — registered 2026-09-25 by THR-1611 | `14 2,8,14,20 * * *` | ~:14–:25 (first fires unmeasured) | `Docs/ops/design-lane-<date>.md` + Linear decisions / `Ready for Dev` handoffs + `docs/plan-*` PRs |
+| **02/08/14/20 :14** | 4× daily | `tb-design-lane` (unattended design — decides unreserved wayfinder tickets, closes cleared maps, authors + hands off one plan doc per run; `design-lane` skill) — registered 2026-09-25 by THR-1611 | `14 2,8,14,20 * * *` | ~:17:39 (jitter 219 s at registration) | `Docs/ops/design-lane-<date>.md` + Linear decisions / `Ready for Dev` handoffs + `docs/plan-*` PRs |
 
 ## CC automation lane — registered but not Threadbare work
 
