@@ -114,9 +114,9 @@ export function buildFightChipWorld(graph: WorldGraph): FightChipWorld {
   return {
     nameOf: (id) => graph.getNode(id)?.name || undefined,
     visualKindOf: (id) => {
-      const type = graph.getNode(id)?.type;
-      if (type === 'location' || type === 'sublocation') return 'location';
-      if (type === 'faction') return 'faction';
+      const node = graph.getNode(id);
+      if (node?.type === 'location' || node?.type === 'sublocation') return 'location';
+      if (node?.properties?.actorType === 'faction') return 'faction';
       return 'agent';
     },
     conditionTagsOf: (id) => {

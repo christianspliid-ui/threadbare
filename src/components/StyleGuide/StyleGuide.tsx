@@ -1070,6 +1070,12 @@ export default function StyleGuide() {
                 <Row>
                   <DeltaCluster direction="opens" count={1} label="A way opens" />
                 </Row>
+                <Label>PATH with its own word (THR-1553) — a changed world object, not a way opening</Label>
+                <Row>
+                  <DeltaCluster direction="opens" count={1} label="the Mire Ox — slain" word="slain" />
+                  <DeltaCluster direction="opens" count={1} label="the Mire Den — cleared" word="cleared" />
+                  <DeltaCluster direction="opens" count={1} label="the Mire Ox's clock — half-broken" word="half-broken" />
+                </Row>
               </GameErrorBoundary>
             </div>
           </section>

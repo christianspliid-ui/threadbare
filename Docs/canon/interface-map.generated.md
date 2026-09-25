@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 123 |
+| 🟢 LIVE | 124 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 36 |
-| **Total** | **167** |
+| **Total** | **168** |
 
 ## Contracts by producing subsystem
 
@@ -166,6 +166,7 @@ remediation ticket or the build fails.
 | `fight-complications-scoped` | When an exchange goes badly, the fight draws from its own events — the footing gives, it roars, quarter is offered — and those events move the fight itself: its odds, its clock, a fighter's nerve. | function: `fightComplicationScope`, `inFight`, `fight_momentum`, `fight_clock`, `fight_offer_quarter`, `fight_condition` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-death-feeds-reactive-loop` | A mortal killed in a fight is a killing with a culprit, written into the reactive loop in exactly the plot's shape — the dead's bonds take it up, the omen agenda can portend it, and the receipt credits it — never a death nobody answers. | function: `killStruckDownFighter`, `createUndertakingOutcomeNode`, `named_death`, `undertaking_outcome` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `fight-ending-reaches-chronicle` | Every fight ends in one line of the world's story: a notable ending (a beast felled, a person beaten, a mauling, a death) becomes a chronicle entry; a routine one reaches only the event log. | function: `fight_ended`, `FIGHT_CHRONICLE_LINES`, `FIGHT_EVENT_TIER_BY_FACE`, `phaseNarrative` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `fight-endings-show-as-chips` | A fight's ending says what it did in the game's own chips — a beast slain or worn down, a den cleared, a scar, a trophy, a grudge, a town's gratitude — each drawn only from what the fight's writers recorded, so a chip on screen is a mark the world really carries. | function: `buildFightChanges`, `fightState` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `fight-fells-monster-clears-lair` | Felling a lair's monster in a fight is what takes the den: at major the lair falls to the victor's faction; at legendary the den outlives its beast but is worn halfway down; driving the beast off wears it a little. A warded or already-dead beast credits nothing. | node-prop: `monsterLairBranch`, `clearLair`, `clearingProgress`, `lairOutcome` | Ruins, Clues & Delves | 🔵 UNVERIFIED-OK | — |
 | `fight-harm-queues-quintessence` | An exchange that goes badly costs the fighter their quintessence, on the same ledger every other hurt settles on — and a ward turns it aside, while a spell's price is still paid. | function: `queueFightHarm`, `computeFightErosion`, `pendingQuintessenceEvents` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `fight-mauling-writes-blood-drawn-grudge` | A mortal struck down in a fight who lives carries Scarred and a grudge against whoever did it, beast or mortal — an injury, so the motive gate reads it as a grudge and the scarred may one day plot back. | edge-prop: `hostile_to`, `blood_drawn`, `GRUDGE_PROVENANCE`, `writeMauled` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
@@ -1124,16 +1125,28 @@ exit
 - **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/uiColorPalette.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `fight-endings-show-as-chips` — 🟢 LIVE
+
+- **Intent:** A fight's ending says what it did in the game's own chips — a beast slain or worn down, a den cleared, a scar, a trophy, a grudge, a town's gratitude — each drawn only from what the fight's writers recorded, so a chip on screen is a mark the world really carries.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Fight Clock*, *SCAR*, *BOND*, *BOON*, *PATH*
+- **Module:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`
+- **Production hits:** 25 total — 3 write, 2 read, 20 unclassified
+- **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/fights/fightState.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts` +15 more
+- **Verdict:** Verified 2026-09-25: THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with "Let fate decide": the aftermath rendered PATH · KRENN "Krenn was slain." ◆ slain and PATH · THE KINDLED WARREN "The Kindled Warren is cleared." ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`.
+
 ### `fight-fells-monster-clears-lair` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Felling a lair's monster in a fight is what takes the den: at major the lair falls to the victor's faction; at legendary the den outlives its beast but is worn halfway down; driving the beast off wears it a little. A warded or already-dead beast credits nothing.
 - **Producer → Consumer:** Encounters & Dilemmas → Ruins, Clues & Delves
 - **UL terms:** *Opponent Card*
 - **Module:** `src/engine/monsters/monsterFelling.ts`
-- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/monsters/monsterFelling.ts`
 - **Read sites:** `src/engine/lairClearing.ts`, `src/engine/lairEscalation.ts`
-- **Other hits:** `src/data/monster-families.ts`, `src/engine/fights/fightOutcome.ts`, `src/types/fight.ts`, `src/types/monster.ts`, `src/types/traces/monster-traces.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/monster-families.ts`, `src/engine/fights/fightOutcome.ts`, `src/types/fight.ts`, `src/types/monster.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-harm-queues-quintessence` — 🔵 UNVERIFIED-OK
@@ -1202,10 +1215,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Fight Clock*, *Opponent Card*
 - **Module:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`
-- **Production hits:** 29 total — 2 write, 2 read, 25 unclassified
+- **Production hits:** 31 total — 2 write, 2 read, 27 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/fights/fightState.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/OpponentHeader.tsx`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/data/encounters/fight-duel-grudge.ts` +20 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts` +22 more
 - **Verdict:** Verified 2026-09-25: THR-1551 F2. Review route `?view=game&seeded&size=medium`, `tick(60)`, `spawnFight('Ryx')` (major lair, blight family): `getOpponentHeaderModel('ua_116').name === 'Ryx'`, sentence "A walking rot that spreads where it goes. Fearsome to face, a fair match.", clock 4 square pips at 14px, word "untouched", no threat whisper, hand unscrolled at 1920×1080 (`Docs/evidence/thr-1551/`). Non-vacuous by `src/components/Game/encounter-stage/__tests__/opponentHeaderF2.test.tsx`: the nerve step's word equals the first exchange's after a real `executeStepResult` with a pending recovery (a raw read would say "failing"), and the word tracks `fightState.clockNow` once the fight exists.
 
 ### `fight-victory-draws-trophy` — 🔵 UNVERIFIED-OK
@@ -1660,10 +1673,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/playerReceipts.ts`
-- **Production hits:** 19 total — 1 write, 2 read, 16 unclassified
+- **Production hits:** 20 total — 1 write, 2 read, 17 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/data/receipt-content.ts`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +11 more
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +12 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK
@@ -1704,10 +1717,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 305 total — 1 write, 1 read, 303 unclassified
+- **Production hits:** 306 total — 1 write, 1 read, 304 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +298 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +299 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

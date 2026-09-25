@@ -4263,6 +4263,37 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1551 F2. Review route `?view=game&seeded&size=medium`, `tick(60)`, `spawnFight('Ryx')` (major lair, blight family): `getOpponentHeaderModel('ua_116').name === 'Ryx'`, sentence \"A walking rot that spreads where it goes. Fearsome to face, a fair match.\", clock 4 square pips at 14px, word \"untouched\", no threat whisper, hand unscrolled at 1920×1080 (`Docs/evidence/thr-1551/`). Non-vacuous by `src/components/Game/encounter-stage/__tests__/opponentHeaderF2.test.tsx`: the nerve step's word equals the first exchange's after a real `executeStepResult` with a pending recovery (a raw read would say \"failing\"), and the word tracks `fightState.clockNow` once the fight exists.",
     },
   },
+  // ── The fight on screen F3 (THR-1553, plan 2026-09-23-fight-on-screen § Interface impact) ──
+  // "fight endings → consequence chips": the aftermath's chip block reads the resolved
+  // action's `fightState` (ending, lairOutcome, conditionsApplied, storiedClimbs, the
+  // clock). It writes nothing.
+  {
+    id: 'fight-endings-show-as-chips',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      "A fight's ending says what it did in the game's own chips — a beast slain or worn down, a den cleared, a scar, a trophy, a grudge, a town's gratitude — each drawn only from what the fight's writers recorded, so a chip on screen is a mark the world really carries.",
+    ulTerms: ['Fight Clock', 'SCAR', 'BOND', 'BOON', 'PATH'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildFightChanges', 'fightState'],
+      module: 'src/components/Game/encounter-stage/adapters/buildFightChanges.ts',
+    },
+    writeSites: [
+      'src/engine/fights/fightState.ts',
+      'src/engine/fights/fightEnding.ts',
+      'src/engine/unifiedActionResolution.ts',
+    ],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildFightChanges.ts',
+      'src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        "THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with \"Let fate decide\": the aftermath rendered PATH · KRENN \"Krenn was slain.\" ◆ slain and PATH · THE KINDLED WARREN \"The Kindled Warren is cleared.\" ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`.",
+    },
+  },
   // ── The fight on screen F4 (THR-1552, plan 2026-09-23-fight-on-screen § Interface impact) ──
   // "monster card → sidebar": the lair card reads the monster's card, its recovered clock,
   // `temperShown`, and — for a slain beast — the retained elite's `lairId` and the sheet's
