@@ -118,7 +118,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#fate` | It touches what is coming rather than what is here. | item 3 · condition 1 · power 1 | 5 |  |
 | `#vision` | It shows what is not in front of the eye. | condition 1 · item 1 · power 1 | 3 |  |
 | `#temporal` | It works on time — delaying, hastening, or remembering. | item 4 · condition 2 | 6 |  |
-| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 13 · power 2 · trait 1 | 46 |  |
+| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 14 · power 2 · trait 1 | 47 |  |
 | `#knowledge` | Of learning — what is written, taught, or worked out. | item 9 · trait 2 · condition 1 | 12 |  |
 | `#craft` | Of making — the trades, and the hands that keep them. | item 8 · power 1 | 9 |  |
 | `#healing` | Of mending people. | item 8 · power 4 · condition 3 | 15 |  |
@@ -167,7 +167,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#cultural` | A formative mark a culture or a guild stamps on its own. | trait 1 | 1 |  |
 | `#temper` | How a creature breaks when a fight turns. | trait 4 | 4 |  |
 | `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 21 | 21 |  |
-| `#scar` | A scar — a condition that does not heal; what a loss left behind. | condition 2 | 2 |  |
+| `#scar` | A scar — a condition that does not heal; what a loss left behind. | condition 3 | 3 |  |
 | `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 10 | 10 |  |
 | `#virtue` | The virtue pole of a continuum or axis — the bearer leans toward the better end. | trait 13 | 13 |  |
 | `#vice` | The vice pole — the bearer leans toward the worse end, and it shows. | trait 13 | 13 |  |
@@ -216,7 +216,7 @@ Whether the thing is good or ill to carry. The two words the condition proxy-eve
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
 | `#positive` | A good thing to carry — it helps the one who holds it. | condition 26 · trait 8 | 34 |  |
-| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 43 · trait 8 | 51 |  |
+| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 44 · trait 8 | 52 |  |
 
 ## Kinds and their required axes
 
