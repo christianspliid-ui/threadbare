@@ -139,6 +139,7 @@ Delete the local copies after a successful publish. Neither file belongs on `mai
 | Safeguard refusal (`failure: safeguard`) | void for that persona; quote the refusal in the report. Do not reword the brief in the run |
 | Fewer than `minUsablePersonas` usable | round void; no tickets, no milestone |
 | A finding will not verify | `unverified`, listed, not filed |
+| `run-round.ps1` dies after the testers finished (no `round.json`, but each persona dir has a `transcript.jsonl`) | `run-round.ps1 -Round N [-Label …] -SummarizeOnly` re-extracts and writes `round.json` without re-running (re-paying for) the testers |
 | `ops-publish.sh` fails | leave the report in the working tree and say so in the run output (a lingering ops report means a failed publish) |
 
 This is a probe under the six-week sunset rule (CLAUDE.md § Process-work throttle). The weekly retro renews it by citing the findings a round filed.
