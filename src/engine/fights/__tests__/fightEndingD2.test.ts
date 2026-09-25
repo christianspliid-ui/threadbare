@@ -31,7 +31,7 @@ import { FIGHT_CHRONICLE_LINES, FIGHT_TROPHY_RECIPE } from '../../../data/fight-
 import type { GameState, TickEvent } from '../../../types/gameState';
 import type { UnifiedAction } from '../../../types/unifiedAction';
 import type { FightResult, FightState } from '../../../types/fight';
-import type { AttachmentEffect } from '../../../types/attachments';
+import type { AttachmentEffect } from '../../../types/effects';
 import type { RuleOverrideContext } from '../../effects/ruleOverrideConsumers';
 
 const TICK = 120;
@@ -88,7 +88,7 @@ function world(opts: WorldOpts = {}): WorldGraph {
   graph.addNode({ id: 'rival', type: 'actor', name: 'Hesk', properties: { actorType: 'individual', originLocationId: 'town-1' } });
   graph.addEdge({ id: 'e.rival.at', source: 'rival', target: 'lair-1', type: 'located_at', properties: {} });
   if (opts.rivalFaction || opts.heroFaction) {
-    graph.addNode({ id: 'fac-1', type: 'faction', name: 'The Ash Guild', properties: { factionDefId: 'guild.ash' } });
+    graph.addNode({ id: 'fac-1', type: 'actor', name: 'The Ash Guild', properties: { actorType: 'faction', actorStatus: 'active', factionDefId: 'guild.ash' } });
   }
   if (opts.rivalFaction) {
     graph.addEdge({ id: 'e.rival.mem', source: 'rival', target: 'fac-1', type: 'member_of', properties: { factionDefId: 'guild.ash', rank: 0.3 } });

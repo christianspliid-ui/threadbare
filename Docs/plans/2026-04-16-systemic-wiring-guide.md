@@ -4310,7 +4310,7 @@ What an author can rely on:
 Trace: each raise emits `effect.event_raised` with its `site` — `fight_start`, `fight_step`,
 `fight_clash`, `fight_overcome` or `fight_end`.
 
-### How a fight ends — what it leaves on the fighter (THR-1548, Fight endings D1)
+### How a fight ends — what it leaves on the fighter (THR-1548 D1, THR-1549 D2)
 
 Every fight's result is turned into world writes by the post-fight dispatcher
 (`onFightEnded`, `src/engine/fights/fightOutcome.ts`). Its first branch, `fighterEndingBranch`
@@ -4324,7 +4324,10 @@ writers that already exist. Content authors do not call it; they author against 
 | `yielded_to_monster`, `broke_off` | Nothing |
 | `mauled` (struck down, lived) | `trait.scar.scarred` (**Scarred**, a `scar`-class condition, permanent, once per mortal, victor as `inflictedBy` on the edge) and a `hostile_to` pair with `cause: 'blood_drawn'` toward the victor, monster or mortal |
 | `slain` (struck down, died) | The death funnel, `cause: 'fight'` (retained, `slainBy` the victor), and a `named_death` reactive-loop node in the plot's shape |
-| `overcome_*`, `driven_off`, `bargained` | The face only; the victory yields are D2 |
+| `overcome_monster` | (D2) The **trophy**: one `drawSeededReward` draw (recipe `FIGHT_TROPHY_RECIPE`, band `FIGHT_TROPHY_OUTCOME.overcome[lairTier]`, site `fight_trophy`) from the opponent's held major/legendary lair; **gratitude**: `reputation_with` the nearest settlement within `FIGHT_GRATITUDE_RADIUS_HEXES` of the lair +`FIGHT_VICTORY_REPUTATION_OVERCOME` (cause `fight_gratitude`) |
+| `overcome_mortal` | (D2) **Standing**: `reputation_with` the loser's faction ?? home settlement +`FIGHT_VICTORY_REPUTATION_DUEL` (cause `fight_standing`); `courage_prudence` drifts toward courage |
+| `driven_off` | (D2) Gratitude +`FIGHT_VICTORY_REPUTATION_DRIVEN_OFF` from the nearest settlement |
+| `bargained` | (D2) The hoard: one trophy draw at `FIGHT_TROPHY_OUTCOME.bargained[lairTier]`; `mercy_ruthlessness` drifts toward mercy |
 
 What an author can rely on:
 
@@ -4342,6 +4345,19 @@ What an author can rely on:
   `project`; the node is `evt_und_fight_<actionId>_<tick>`, carries `source: 'fight'`, and every
   consumer (the mint lane, the omen portent, the receipt) reads it as an undertaking harm.
 - **Tag immunity to `#scar`** refuses Scarred like any condition; the grudge is still written.
+- **The victor of a yield gains standing (D2).** On `yielded_to_mortal` the opponent's `reputation_with`
+  the yielder's faction ?? home settlement rises by `FIGHT_VICTORY_REPUTATION_DUEL`, recorded as
+  `ending.victorStanding`.
+- **Every ending is one `fight_ended` tick event (D2)** — id `fight_ended_<actionId>_<tick>`, message
+  from `FIGHT_CHRONICLE_LINES[face]` (`src/data/fight-ending-content.ts`; `{fighter}`, `{opponent}`,
+  `{place}` are the branch's own slots, not enrichment tokens), significance
+  `FIGHT_EVENT_SIGNIFICANCE[FIGHT_EVENT_TIER_BY_FACE[face]]`. Notable faces (0.85) become
+  `chronicleEntries` rows through `phaseNarrative`; routine ones (0.4) reach the event log only. A
+  bargain with no prize and a mauling with no new scar use `FIGHT_CHRONICLE_LINES_PLAIN`. To make a
+  face quieter, move it to `routine` in the constant — no code change.
+- **Trophies obey the reward pool.** Because the draw is `drawSeededReward`, a `reward_tier_bonus`
+  on the fighter shifts the trophy curve, and a success-band draw can flip to the harmful table (5%).
+  No pool entry is retagged for trophies; there is no trophy catalog.
 - `getFightState(actionId).ending` (debug bridge) is the whole audit trail; the `fight.ending`
   trace carries the same fields plus `scarSkipped` and `outcomeNodeId`.
 
