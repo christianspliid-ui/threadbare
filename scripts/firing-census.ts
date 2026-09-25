@@ -42,6 +42,10 @@ const WATCHED: readonly string[] = [
   'encounter.slice.swindler_found',
   'encounter.slice.grateful_kin',
   'encounter.slice.the_table_that_holds',
+  // THR-1567 — the three wayside-only slice encounters the THR-1524 census found dry.
+  'encounter.slice.unsafe_bridge',
+  'encounter.slice.snow_on_the_pass',
+  'encounter.slice.riders_behind_caravan',
 ];
 const FAMILY_ID = 'encounter.slice.swindled_family';
 
