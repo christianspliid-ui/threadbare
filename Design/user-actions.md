@@ -1,8 +1,14 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 14:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 15:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
+
+### Faith and politics at game start — the living-world map's last question ([THR-1596](https://linear.app/threadbare/issue/THR-1596))
+
+What the world believes and who rules it on day one. The proposal: one religious order per world, rare holy places, many towns that answer to no one, and monster-lair bands counted as factions. Three options, (a) to (c), are in the ticket.
+
+Every other ticket on [the living-world map](https://linear.app/threadbare/issue/THR-1589) is decided. Once this one is answered, the design lane turns the map into build work. Say "work the map" in a chat when ready. *— from tb-design-lane and tb-orchestrator*
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -11,17 +17,7 @@ You stopped after four feedback batches on Saturday 12 September with *"more bat
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-The one question: **is the integrated encounter experience at an acceptable state?** A pass unlocks the next stage: encounters reaching into factions, war, economy and divine actions. Say **"work the map"** in a chat when done.
-
-### How much history should a new world start with? ([THR-1591](https://linear.app/threadbare/issue/THR-1591))
-
-Samples to react to: [seed 42](https://github.com/christianspliid-ui/threadbare/blob/proto/thr-1591-world-with-a-past/Docs/audits/2026-09-25-living-world-data/proto-thr-1591/sample-seed-42.md) and [seed 99](https://github.com/christianspliid-ui/threadbare/blob/proto/thr-1591-world-with-a-past/Docs/audits/2026-09-25-living-world-data/proto-thr-1591/sample-seed-99.md) — each has a "Before you woke" chronicle page, two place-sheet lines and the dead.
-
-- **A (recommended), explain the map.** The world already hides three dead empires and 103 ruins that nothing explains. Every town gets a founding; add one ancient war, 2–3 recent wars, 5–10 named dead.
-- **B,** flavor text only. **C,** a deep simulated history.
-- Two smaller calls: past shown on the first screen or found by visiting? (Lean: outline shown, details found.) Did the rival gods have a hand in it? (Lean: no.)
-
-[Faith and politics at game start](https://linear.app/threadbare/issue/THR-1596) is also yours on [the living-world map](https://linear.app/threadbare/issue/THR-1589). The orchestrator reports it is the map's last open question: one religious order per world, rare holy places, many towns answering to no one, and monster-lair bands counted as factions. Three options, (a) to (c), are in the ticket. Say "work the map" when ready. *— from tb-design-lane and tb-orchestrator*
+The one question: **is the integrated encounter experience at an acceptable state?** A pass unlocks the next stage: encounters reaching into factions, war, economy and divine actions.
 
 ### Turn off Linear's auto-complete for sub-issues — it closes unbuilt work
 
@@ -41,16 +37,16 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-25 — you answered how much history a new world starts with: A, "explain the map"** ([THR-1591](https://linear.app/threadbare/issue/THR-1591)). Your words: *"a is fine"*. The two smaller calls were decided by delegation, and you can veto either: the outline is shown from minute one while the specifics are found by visiting, and the past stays mortal, with no rival god in it. The briefs until 15:00 today kept listing it as open; that was a stale read, corrected this run.
 - **2026-09-26 — culture and Realm names never show a raw terrain code** ([THR-1622](https://linear.app/threadbare/issue/THR-1622)). Merged via [#2070](https://github.com/christianspliid-ui/threadbare/pull/2070), and live on the site.
 - **2026-09-26 — a new trade route never ends at the town it starts from** ([THR-1619](https://linear.app/threadbare/issue/THR-1619)). Merged via [#2069](https://github.com/christianspliid-ui/threadbare/pull/2069), and live on the site.
-- **2026-09-26 — you answered the dice question: "1 in 6 is fine"** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). Your words: *"follow the newer decisions, we learn and grow and evolve. 1 in 6 is fine."* and *"it doesnt have to be a rule, it is a constant we tweak as we search for a good game."* I recorded the ruling on the ticket. The builder resumed, then hit the plan's last safety check, and the change went back to the design lane at 10:30 local. That call is the lane's, not yours.
-- **2026-09-26 — The Builder's Legacy now counts only what was built after the mandate began** ([THR-1618](https://linear.app/threadbare/issue/THR-1618)), not every road and building the world started with. Merged 11:30 local via [#2068](https://github.com/christianspliid-ui/threadbare/pull/2068), and live on the site.
+- **2026-09-26 — you answered the dice question: "1 in 6 is fine"** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). Your words: *"follow the newer decisions, we learn and grow and evolve. 1 in 6 is fine."* and *"it doesnt have to be a rule, it is a constant we tweak as we search for a good game."* The design lane then decided to ship the dice now, and a builder is working on it again.
+- **2026-09-26 — The Builder's Legacy now counts only what was built after the mandate began** ([THR-1618](https://linear.app/threadbare/issue/THR-1618)). Merged via [#2068](https://github.com/christianspliid-ui/threadbare/pull/2068), and live on the site.
 - **2026-09-26 — non-casters are no longer offered "create a power"** ([THR-1617](https://linear.app/threadbare/issue/THR-1617)). Merged via [#2066](https://github.com/christianspliid-ui/threadbare/pull/2066), and live on the site.
-- **2026-09-26 — a dissolved trade route now removes its road and its shock lands** ([THR-1615](https://linear.app/threadbare/issue/THR-1615)), instead of staying claimable. Merged via [#2064](https://github.com/christianspliid-ui/threadbare/pull/2064), and live on the site.
+- **2026-09-26 — a dissolved trade route now removes its road and its shock lands** ([THR-1615](https://linear.app/threadbare/issue/THR-1615)). Merged via [#2064](https://github.com/christianspliid-ui/threadbare/pull/2064), and live on the site.
 - **2026-09-26 — five small interface faults found by the cold playtest are fixed** ([THR-1604](https://linear.app/threadbare/issue/THR-1604)). Merged via [#2063](https://github.com/christianspliid-ui/threadbare/pull/2063), and live on the site.
 - **2026-09-26 — a notable's agenda phase now carries a chronicle title** ([THR-1585](https://linear.app/threadbare/issue/THR-1585)) instead of an internal id. Merged via [#2061](https://github.com/christianspliid-ui/threadbare/pull/2061), and live on the site.
-- **2026-09-26 — wards and cures now reach Terrified, Wounded and Cursed** ([THR-1569](https://linear.app/threadbare/issue/THR-1569)). Merged 04:33 local via [#2060](https://github.com/christianspliid-ui/threadbare/pull/2060), and live on the site.
-- **2026-09-26 — items that promise a burst when struck now give it** ([THR-1568](https://linear.app/threadbare/issue/THR-1568)): before, a "when attacked, +Iron for a few turns" item fired and gave nothing. Merged 02:33 local via [#2058](https://github.com/christianspliid-ui/threadbare/pull/2058), and live on the site.
+- **2026-09-26 — wards and cures now reach Terrified, Wounded and Cursed** ([THR-1569](https://linear.app/threadbare/issue/THR-1569)). Merged via [#2060](https://github.com/christianspliid-ui/threadbare/pull/2060), and live on the site.
 
 ---
 
