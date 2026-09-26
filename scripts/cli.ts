@@ -22,6 +22,8 @@
  *   encounters     — list active encounters / unified actions
  *   factions       — list factions
  *   monsters       — list lair monsters with their cards (THR-1544)
+ *   hunts          — the hunt ledger: founded, tracked, planted / kept / missed confronts,
+ *                    travel ticks, miss reasons, reason-holders outside the scan (THR-1560)
  *   groups         — list companies (the group layer): members, cohesion, destination
  *   spawn band <faction> [--role raider|defender] — force a faction to field an NPC band
  *   genome <name>  — inspect settlement genome result (sublocations, NPCs, archetype)
@@ -38,6 +40,7 @@ import * as readline from 'readline';
 import { getStrategicTemplate } from '../src/engine/strategicActionCandidates';
 import { objectDisplayName } from '../src/engine/undertakingProse';
 import { listMonsters } from '../src/engine/monsters/listMonsters';
+import { createHuntLedger, recordHuntTick, describeHunts } from '../src/engine/monsters/huntReport';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -194,6 +197,17 @@ function significanceColor(sig: number): string {
 
 let state: GameState;
 let runtime: SimulationRuntime;
+/** THR-1560 — the hunt ledger, harvested after every tick so a 300-tick run keeps its evidence. */
+const huntLedger = createHuntLedger();
+
+/** Fold the tick just run into the hunt ledger (its traces, filtered to this tick). */
+function harvestHunts(): void {
+  try {
+    recordHuntTick(huntLedger, state, getTraces().filter(t => t.tick === state.tick));
+  } catch {
+    // Fail-soft: a readout ledger never stops the run.
+  }
+}
 let autoRunTimer: ReturnType<typeof setInterval> | null = null;
 let autoRunSpeed = 2; // ticks per second
 let autoAftermathDefault = false;
@@ -247,6 +261,7 @@ function printProfileTable(): void {
 function doTick(n: number = 1): void {
   for (let i = 0; i < n; i++) {
     state = runTick(state, [], runtime);
+    harvestHunts();
     if (state.phase === 'twilight' || state.phase === 'harvest') {
       console.log(`${YELLOW}⚠ Phase changed to '${state.phase}' at tick ${state.tick}. Stopping.${RESET}`);
       return;
@@ -730,6 +745,29 @@ function printMonsters(): void {
   console.log(lacking === 0
     ? `  Every monster carries a card (${rows.length}/${rows.length}).`
     : `  ${lacking} of ${rows.length} monsters carry NO card.`);
+}
+
+/**
+ * The hunt ledger (THR-1560): what the undertaking hunt did over the run so far —
+ * hunts founded, beasts tracked, confronts planted / kept / missed (with the miss
+ * reasons, the kill criterion's lever), the travel ticks at plant time, the living
+ * monsters, and the reason-holders whose beast lies outside the monster scan
+ * (expected 0), then each monster's current hunters.
+ */
+function printHunts(): void {
+  const r = describeHunts(state, huntLedger);
+  console.log(header(`Hunts — ${r.founded} founded (${r.activeHunts} active) · ${r.livingMonsters} living monsters`));
+  console.log(`  tracked: ${r.tracked}   confronts planted: ${r.planted}   kept: ${r.kept}   missed: ${r.missed}`);
+  const reasons = Object.entries(r.missReasons).map(([k, v]) => `${k} ${v}`).join(', ');
+  console.log(`  miss reasons: ${reasons || 'none'}`);
+  console.log(`  travel ticks at plant: ${r.travelTicks ? `min ${r.travelTicks.min} · median ${r.travelTicks.median} · max ${r.travelTicks.max}` : 'none priced'}`);
+  console.log(`  reason-holders outside the scan: ${r.outOfScan.length}`);
+  for (const o of r.outOfScan.slice(0, 10)) console.log(dim(`    ${o.hunterId} → ${o.monsterId} (${o.reason}, rank ${o.rank})`));
+  for (const m of listMonsters(state.graph, state.strategicState?.projects ?? [])) {
+    if (m.huntedBy.length === 0) continue;
+    const who = m.huntedBy.map(h => `${h.hunterName} (${h.work}, ${h.reason})`).join('; ');
+    console.log(`  ${BOLD}${m.name}${RESET} ${dim(m.id)}  hunted by ${who}`);
+  }
 }
 
 /**
@@ -1406,6 +1444,7 @@ function startAutoRun(speed?: number, autoAftermath = autoAftermathDefault): voi
 
   autoRunTimer = setInterval(() => {
     state = runTick(state, [], runtime);
+    harvestHunts();
     if (autoAftermathEnabledForRun) {
       applyAutoAftermathForTick();
     }
@@ -1452,6 +1491,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}traits${RESET} [location]  Location traits — what each place carries and since when (THR-790); with a place named, its sustain counters too. Then the artifact traits (THR-1521): Storied / Cursed on things, with the presence count Storied climbs on`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}monsters${RESET}         List lair monsters with their cards (family, Dread/Might, clock, temper)`);
+  console.log(`  ${BOLD}hunts${RESET}            The hunt ledger: founded, tracked, confronts planted/kept/missed, miss reasons, travel, out-of-scan holders`);
   console.log(`  ${BOLD}spotlight${RESET}        Spotlight-pull ledger (THR-1348): who was pulled into the deciding tier, whom they displaced, who was refused`);
   console.log(`  ${BOLD}groups${RESET}           List companies (members, cohesion, destination)`);
   console.log(`  ${BOLD}genome${RESET} <name>    Inspect settlement genome result (sublocations, NPCs, archetype)`);
@@ -2536,6 +2576,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'monsters':
       printMonsters();
+      break;
+    case 'hunts':
+      printHunts();
       break;
     case 'groups':
     case 'companies':

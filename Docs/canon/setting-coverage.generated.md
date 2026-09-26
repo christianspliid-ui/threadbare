@@ -13,7 +13,7 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 705 |
+| templates in the pool | 706 |
 | drawable at ≥1 location subtype | 470 |
 | drawable but at no *authorable* subtype | 22 |
 | declaring a setting envelope | 37 |
@@ -31,8 +31,8 @@ be dealt?", not "how many templates exist".
 
 | setting | iron | gold | shadow | veil | heart | eye | stone | star | **total** |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `rural` | 29 | 22 | 11 | 5 | 22 | 14 | 14 | 7 | **124** |
-| `urban` | 49 | 51 | 43 | 17 | 43 | 48 | 25 | 24 | **300** |
+| `rural` | 30 | 22 | 11 | 5 | 22 | 15 | 15 | 7 | **127** |
+| `urban` | 64 | 51 | 43 | 17 | 43 | 48 | 25 | 24 | **315** |
 | `stronghold` | 27 | 8 | 9 | 5 | 14 | 17 | 8 | 5 | **93** |
 | `sacred` | 7 | 9 | 4 | 17 | 12 | 8 | 6 | 24 | **87** |
 | `arcane` | 5 | 5 | 7 | 20 | 7 | 26 | 5 | 11 | **86** |

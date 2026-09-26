@@ -2589,7 +2589,83 @@ if (import.meta.env.DEV) {
         fighterClockNow: action.fightState?.fighterClockNow ?? null,
         opponentBands: action.fightState?.opponentBands ? [...action.fightState.opponentBands] : null,
         opponentLoss: action.fightState?.opponentLoss ?? null,
+        // THR-1548 — the fighter-side ending record (face, guards, kill draw, writes).
+        ending: action.fightState?.ending ?? null,
+        // THR-1557 — a duel's other side: the opponent's face, and the mercy fork they lived or died by.
+        opponentEnding: action.fightState?.opponentEnding ?? null,
       };
+    },
+
+    /**
+     * THR-1551 (fight on screen F2) — the opponent header the veil renders for this
+     * action's current step: name, card sentence, clock (pips + word), a duel's
+     * second clock, the step title and the watched view's one line. `{ header: null }`
+     * off a fight step (the header renders only on `fightRole` steps).
+     */
+    getOpponentHeaderModel: async (actionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const action = (state.unifiedActions ?? []).find(a => a.actionId === actionId);
+      if (!action) return { error: `no unified action ${actionId}` };
+      const [{ getUnifiedTemplateById }, { buildOpponentHeaderModel }] = await Promise.all([
+        import('./data/unified-action-templates'),
+        import('./components/Game/encounter-stage/adapters/buildOpponentHeaderModel'),
+      ]);
+      const template = getUnifiedTemplateById(action.templateId);
+      if (!template) return { error: `no template ${action.templateId}` };
+      const header = buildOpponentHeaderModel(state, action, template);
+      return header ?? { header: null, currentStep: action.currentStep };
+    },
+
+    /**
+     * THR-1553 (fight on screen F3) — the fight chips the aftermath renders for this
+     * action: built through the same adapter the veil uses (`buildUnifiedEncounterStageModel`),
+     * then filtered to the chips `buildFightChanges` minted from `fightState`.
+     */
+    getFightChips: async (actionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const action = (state.unifiedActions ?? []).find(a => a.actionId === actionId);
+      if (!action) return { error: `no unified action ${actionId}` };
+      const [{ getUnifiedTemplateById }, { buildUnifiedEncounterStageModel }, { FIGHT_CHANGE_ID_PREFIX }] = await Promise.all([
+        import('./data/unified-action-templates'),
+        import('./components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel'),
+        import('./components/Game/encounter-stage/adapters/buildFightChanges'),
+      ]);
+      const template = getUnifiedTemplateById(action.templateId);
+      if (!template) return { error: `no template ${action.templateId}` };
+      if (!action.fightState) return { chips: [], reason: 'no fightState on this action' };
+      if (!action.aftermathSummary) return { chips: [], reason: 'no aftermath yet (the fight has not ended)' };
+      const agentName = state.graph.getNode(action.actorId)?.name ?? action.actorId;
+      const node = state.graph.getNode(action.actorId);
+      const model = buildUnifiedEncounterStageModel({
+        template,
+        activeAction: action,
+        notification: {
+          id: `debug-${actionId}`,
+          agentId: action.actorId,
+          agentName,
+          courtPosition: null,
+          encounterId: action.templateId,
+          encounterName: template.name,
+          actionId,
+          prose: '',
+          choices: [],
+          createdTick: state.tick,
+          autoResolveTick: null,
+          hexCol: (node?.properties?.hexCol as number | undefined) ?? 0,
+          hexRow: (node?.properties?.hexRow as number | undefined) ?? 0,
+        } as unknown as import('./types/encounterVisibility').EncounterNotification,
+        agentName,
+        threadTier: 'strong',
+        graph: state.graph,
+        essence: 0,
+        gameState: state,
+        tick: state.tick,
+      });
+      const chipPrefix = `consequence-${FIGHT_CHANGE_ID_PREFIX}-`;
+      const chips = (model.aftermath?.consequences ?? []).filter(c => c.id.startsWith(chipPrefix));
+      return { chips };
     },
 
     /** The opponent card a fight against this actor would read right now (lazy clock recovery included). */
@@ -2607,7 +2683,34 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!state) return [];
       const { listMonsters } = await import('./engine/monsters/listMonsters');
-      return listMonsters(state.graph);
+      // THR-1560: the active hunt projects fill each row's `huntedBy`.
+      return listMonsters(state.graph, state.strategicState?.projects ?? []);
+    },
+
+    /**
+     * The lair card the sidebar renders for one lair (THR-1550, F1: the monster's
+     * name; THR-1552, F4: the sentence, the clock, and the slain reading). Matches a lair node id exactly, else a lair whose name matches
+     * case-insensitively (exact first, then substring; lowest id wins).
+     */
+    getLairMonsterCard: async (lairIdOrName: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const isLairNode = (n: { properties?: Record<string, unknown> } | undefined) => {
+        const sub = n?.properties?.locationSubtype ?? n?.properties?.locationType;
+        return sub === 'lair' || sub === 'cleared_lair';
+      };
+      let lair = state.graph.getNode(lairIdOrName);
+      if (!lair || !isLairNode(lair)) {
+        const needle = lairIdOrName.trim().toLowerCase();
+        const lairs = [...state.graph.getNodesByType('location')]
+          .filter(isLairNode)
+          .sort((a, b) => a.id.localeCompare(b.id));
+        lair = lairs.find(n => (n.name ?? '').toLowerCase() === needle)
+          ?? lairs.find(n => (n.name ?? '').toLowerCase().includes(needle));
+      }
+      if (!lair) return { error: `no lair matched "${lairIdOrName}"` };
+      const { buildLairMonsterCardModel } = await import('./components/Game/lair/buildLairMonsterCardModel');
+      return buildLairMonsterCardModel(state.graph, lair.id, state.tick, state.ascendantId) ?? { error: `lair "${lair.id}" has no node` };
     },
 
     /**

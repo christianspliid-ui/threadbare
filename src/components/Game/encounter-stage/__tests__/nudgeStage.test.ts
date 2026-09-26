@@ -496,9 +496,13 @@ describe('forecastWithNudges', () => {
     // is the engine being honest, not the hand being inert — so this pins the
     // behaviour that matters at a capability where the word can actually move.
     const phase = buildPhase()!;
+    // THR-1535 — the fixture template is `local`, and the phase now carries its
+    // scale, so the forecast shows the 0.65 local floor a mortal really rolls at.
+    // This test is about the unfloored band, so it forecasts at `regional`.
     const capable = {
       ...phase,
       forecastInput: { ...phase.forecastInput, capability: 0.75, difficulty: 0.5 },
+      forecastScale: 'regional' as const,
     };
     const before = forecastWithNudges(capable, []);
     const after = forecastWithNudges(capable, ['steady_hand', 'force_surge']);

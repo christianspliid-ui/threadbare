@@ -138,7 +138,9 @@ export interface TickEvent {
   // Reunite window closing unanswered (THR-732). The *successful* reunion rides
   // 'group_formed', because a reunion is a formation — only the failure needs a type
   // of its own, since nothing else is created for it to ride on.
-    | 'group_reunion_lapsed';
+    | 'group_reunion_lapsed'
+  // A fight ended — its face, told as a chronicle line when notable (THR-1549)
+    | 'fight_ended';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -538,6 +540,17 @@ export interface GameState {
 
   // Template novelty pressure — global recency/quota tracking to prevent template monopoly (THR-453)
   encounterNoveltyRecord?: EncounterNoveltyRecord;
+
+  /**
+   * Fight-trigger cooldowns (THR-1547, plan doc `2026-09-23-monsters-as-opponents.md`
+   * § Engine 6). Key: `fightPairKey(a, b)` (the two ids sorted, joined with `|`);
+   * value: the **expiry tick**, `tick + that trigger's own cooldown`. A pair is on
+   * cooldown while `tick < expiry`. One map serves every fight trigger (lair arrivals
+   * here, grudge duels later), each writing its own cooldown length. Transient
+   * bookkeeping, not a relationship; pruned of expired entries on every write.
+   * Missing reads as empty.
+   */
+  fightCooldowns?: Record<string, number>;
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;

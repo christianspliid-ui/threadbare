@@ -43,7 +43,18 @@ export interface EncounterStageHeaderModel {
   subtitle?: string;
   locationLabel: string;
   urgencyLabel?: string;
-  threatLabel: string;
+  /**
+   * The step whisper's threat word. THR-1551: optional — a fight step omits it,
+   * because the opponent header's card sentence is the fight's one statement of
+   * how hard it is (Law 10: one magnitude language per quantity). Both render
+   * sites print the whisper only when it is present.
+   */
+  threatLabel?: string;
+  /**
+   * THR-1551 — the watched view's one opponent line on a fight step
+   * (`Facing {name} — {clockWord}`), in place of the threat word.
+   */
+  opponentLine?: { readonly text: string; readonly name: string; readonly opponentId: string | null; readonly clockWord: string };
   threadTier: ThreadTier;
   familyLabel?: string;
   // ─── Context strip (THR-636) — additive, all optional ───
@@ -239,6 +250,11 @@ export interface EncounterStageResolutionReadoutModel {
 export interface EncounterStageHistoryModel {
   stepId: string;
   stepLabel: string;
+  /**
+   * THR-1551 — a fight step's own title ("Facing it", "First exchange" …). The
+   * step navigator names the dot with it in place of the generic "Step N".
+   */
+  stepTitle?: string;
   status: 'resolved' | 'current' | 'future';
   afterimage?: string;
   /** Complication prose and metadata for failure-tier steps (THR-20) */
@@ -375,6 +391,11 @@ export interface EncounterStageConsequenceDeltaModel {
    * the secondary one, and every glyph row states its reading in words.
    */
   label: string;
+  /**
+   * THR-1553 — a PATH marker's own word, drawn visibly beside the ◆ ("slain",
+   * "cleared", "half-broken"). Absent, the marker draws alone as it always has.
+   */
+  word?: string;
 }
 
 export interface EncounterStageConsequenceChipModel {
@@ -501,8 +522,12 @@ export interface EncounterStageConsequenceIconModel {
    * on its own template node and `AttachmentDetailView` draws it, so it takes the
    * link tier and no tile. The resolver's `attachment` guard is what keeps that
    * true, and the union is what makes removing the guard a type error.
+   *
+   * THR-1550 — `monster` is a *tile* refinement of `agent`: the adapter draws a
+   * lair's beast with the monster portrait, but it is still an actor with a sheet,
+   * so the veil routes its link as an agent.
    */
-  kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'location';
+  kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'location' | 'monster';
   name: string;
   /** Art the adapter resolved, when any exists. Absent ⇒ the designed fallback tile. */
   src?: string;
@@ -806,6 +831,12 @@ export interface EncounterStageModel {
   };
   resolutionReadout?: EncounterStageResolutionReadoutModel;
   aftermath?: EncounterStageAftermathModel;
+  /**
+   * THR-1551 (fight on screen F2) — the opponent header, present only on a fight
+   * step (`fightRole`) of a live action. Absent on every other step and on the
+   * aftermath, so no other screen changes.
+   */
+  opponentHeader?: import('./adapters/buildOpponentHeaderModel').OpponentHeaderModel;
   /**
    * THR-775 — present when the current step carries an authored nudge hand.
    * The stage branches on its presence: absent ⇒ the `authoredChoices` screen

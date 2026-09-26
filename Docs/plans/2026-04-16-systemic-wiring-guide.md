@@ -78,6 +78,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{target:they\|them\|their\|s}` (+ capitalized) | Target's pronouns; neutral fallback | "she/her/her/s" |
 | `{target:faction}` | Target's faction name; falls back to "their people" | "The Iron Wardens" |
 | `{target:place}` | **The place the scene is *about*** (THR-1493). On the organic draw that is the place the scene stands in, so it equals `{location}`; on a seed planted with `inheritContext: true` it is the *parent beat's* target, which `{location}` cannot name because a seed fires wherever the agent has drifted to. Falls back to the current location whenever the target is not a place (dead inherited target, or an agent-kind target) — a place token degrades to a place, never to "the other party". **Use this, not `{location}`, in any prose a seeded encounter may render** | "Ardenmor Keep" |
+| `{target:family}` | **What kind of creature a monster target is** (THR-1545): the family card line of a target carrying a `monsterState` (`MONSTER_FAMILIES[family].cardLine`). **Strips to nothing for any other target**, so pair it with `{?target_has_family}…{/target_has_family}` and the whole sentence drops out: `Inside, {target} is waiting.{?target_has_family} It is {target:family}.{/target_has_family}` | "a beast of claw and hunger" |
 | `{cast:<key>}` | Scene cast — a `supportBundle` member by spec key (THR-696). Renders the *bound* entity's live name | "Captain Merrow" |
 | `{econ_adj}` | Economic mood adjective (THR-725) — boom/bust coloration of the settlement the scene plays out in. Strips silently in the neutral prosperity band | "grain-heavy" (boom) / "shuttered" (bust) |
 | `{econ_noun}` | Economic mood noun phrase | "wagons queued past the gate" / "shuttered stalls" |
@@ -114,6 +115,10 @@ Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, 
 **Hex-level prose uses a separate composer — not `enrichProse`:** As of THR-415, the `hex.survey` divine action emits a `survey_completed` TickEvent whose message is built by `composeSurveyPeopleProse` in `src/engine/surveyProseComposer.ts`. This is a hex-scoped prose composer (averaging location unrest, listing controlling factions) that operates on the graph directly and does not go through `proseEnrichment.ts`. If you add other hex-scoped revelation events (e.g. a HexChronicle people-layer), write a new composer in the same pattern rather than routing through `enrichProse`.
 
 **Economic In-Prose Keywords (THR-615):** any prose rendered through `renderProseWithIPK` (`src/components/ProseKeyword.tsx`) now recognises four economic keywords in `**bold**` markers — `**Famine**`, `**Glut**`, `**Monopoly**`, `**Embargo**` — rendering them as gold, tooltip'd terms (tooltips in `ECONOMY_KEYWORD_TOOLTIPS`, `src/data/resource-classes.ts`) alongside the existing sphere keywords. Use them in location/economy prose to give scarcity and surplus mechanical weight. Separately, the mortal-economy phase auto-narrates staple stock crossings into the Great Chronicle via the `resource_scarcity` / `resource_glut` chronicle triggers (`economicChronicle.ts`) — these fire from the engine, not per-encounter; you don't invoke them, but be aware the world already speaks about famines and gluts, so don't hardcode duplicate "the harvest failed" lines in encounter prose.
+
+**Composition phase titles and articles (THR-1602):** a composition `Phase` with no `storyBeat` becomes a Chronicle entry titled by its optional `title` field, else by its humanized id (`sour-mines` → "Sour mines") — never by the composition id. Set `title` when the phase has a subject the player should see (rival schemes set "{rival}'s {family}: {beat}"). Word-pool prose that writes `a {adj}` gets its article repaired from the word that lands (`fixIndefiniteArticles`, `src/lib/indefiniteArticle.ts`); a new substitution site that writes an article before a pool slot should call it too. Name a location in prose from `node.name` — seeded locations leave `properties.name` empty.
+
+**Casting a creature the world already has: `matchProperty` (THR-1545).** An actor spec may declare `matchProperty: { key, value }` — bind the *living* actor at the placement whose property matches. `monster.hunt.named_elite` casts the lair's monster this way: `{ kind: 'actor', key: 'beast', delivery: 'pre-seeded', persistence: 'scene-only', supportRole: 'beast', spawnNpcRole: 'beast', spawnName: 'the beast', matchProperty: { key: 'isMonsterElite', value: true } }`. It is checked before any role match, **never materializes** (an unmatched key stays unbound), and always takes the legacy route even on a `useScoredBinder` template. Pair it with a fight block's `opponentRef` and an unbound key ends the fight `no_opponent` rather than fighting the target. Since THR-1545 no actor spec binds a **deceased** node. A declared key reads `{?has_cast:<key>}` true whether or not it bound, so write a `spawnName` that is still true when nothing bound ("the beast").
 
 **Family default support bundles (THR-698):** every linear template in the `tavern`, `social`, and ten guild families (`tg`, `ac`, `bf`, `cg`, `hod`, `uk`, `rb`, `mct`, `lk`, `ts`) automatically carries a small default cast even when it declares no `supportBundle` — merged at registry assembly from `DEFAULT_FAMILY_SUPPORT_BUNDLES` (`src/data/default-support-bundles.ts`, cap `DEFAULT_BUNDLE_MAX_SPECS` = 3). What authors get for free: prose in those families can reference the family's cast keys (e.g. tavern → `{cast:keeper}` / `{cast:performer}` / `{cast:regular}`; cg → `{cast:officer}` / `{cast:watch_guard}` — see the data file for every family's keys) and the scene binds the world's *existing* NPC in that role when one is present at the anchor. Defaults are **bind-only**: every spec is `pre-seeded` with `reuseNpcRoles`, so an unmatched key stays unresolved and falls back to the spec's `spawnName` in prose — they never spawn anyone (zero world population). **To override:** declare a `supportBundle` on the template — a template-declared bundle wins outright (no per-key merge). Borderland has no default cast by design (wilderness has no settlement roster to bind).
 
@@ -1069,6 +1074,10 @@ aftermathConfig: {
 
 ---
 
+#### A PATH chip may name its own marker word — `deltaLabel` (THR-1553)
+
+A change with `category: 'path'` and `direction: 'opens'` draws the single ◆ marker, labelled "— a way opens". That reads wrong when the change is a **world object changed** rather than a way opened (a beast slain, a den cleared, a gate burned). Set `deltaLabel` to the word that says what happened, and the ◆ is drawn with that word beside it: `{ category: 'path', direction: 'opens', deltaLabel: 'cleared', stateNoun: { text: 'the Mire Den', entityId: '$here', visualKind: 'location' } }`. One lower-case word, and a sheet word where one exists (Law 56). It is ignored on `gain` / `loss`. The fight chips (`buildFightChanges.ts`) are the first users: *slain*, *cleared*, and the clock word.
+
 ### Capability 19: Army Supply Anomalies — Hunger as a Scene Producer (THR-626)
 
 **What it is:** an army's provisions are a stock fed along the trade web, and the three states of *not being fed* each plant an encounter seed. You do not author the hunger; you author what happens when it arrives.
@@ -1223,6 +1232,15 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 2. **Combat events reach commanders only.** An army is a headcount, not a roster of people, so the only agent in a battle is the commander on each side. Gear on a foot soldier does not exist to notice anything, because the foot soldier does not exist as a node.
 3. **`damaged` is a condition, not a hit point — and `healed` means *rescued*, not *recovered*.** This game has no health bar; being hurt is carrying a harmful condition, and getting better is that condition's countdown reaching zero. So `damaged` fires the moment a wound, curse or terror lands, and `healed` fires **only when something lifts one early**. A condition that simply times out raises nothing at all — deliberately, because a ward that fired every time any bruise anywhere wore off would be firing constantly and meaning nothing. Author the fiction accordingly: *"answers when its bearer is hurt"* and *"answers when someone pulls its bearer back"*, never *"answers when its bearer gets better"*. Polarity is read off the condition's `#negative` tag, so gaining `blessed` is not damage and losing it is not a heal; and only **people** raise these — a besieged town or an army is not a body. The event's `amount` is the condition's intensity, not a damage figure.
 4. **A one-shot is spent even when it cannot land.** `target: 'other_agent'` resolves to the encounter counterpart; in a solo encounter there is nobody, and the shot is spent anyway rather than waiting for a later encounter that has one. Author it as *a thing that happens once*, not *a thing that waits for the right moment*.
+5. **A reaction that nests a modifier opens a window (THR-1568).** When a `reactive`'s nested effect is a reach modifier — `duration`, `passive`, `permanent` or `decay` — firing it does not "run" anything: it opens a **window** on the item's runtime state, and the bearer's rolls read the nested value while the window is open. Before THR-1568 every such burst was handed to the executor, which does nothing with a modifier, so *"when struck, Iron +0.03 for six ticks"* never landed on any item. How long the window lasts:
+
+   | Nested effect | Window |
+   |---|---|
+   | `duration` | its `ticks` (its `destroyOnExpiry` is **ignored** — the burst ends, the item stays) |
+   | `decay` | until it reaches `limitValue`, fading from `startValue` by `changePerTick` each tick |
+   | `passive` / `permanent` | the reaction's own `duration` field if you author one, else **until the cooldown ends** (`REACTIVE_UNTIMED_WINDOW_COOLDOWN_FRACTION` = 1.0 × cooldown) |
+
+   The reaction's `cooldown` still gates re-firing: a second hit inside the cooldown opens no new window. If you author a cooldown shorter than the window, a re-fire **restarts** the window — a refresh, never a stacked second copy. Reactions nesting anything else (`spawn`, `dispel`, `cascade`, `resource_manipulate` `fight_clock`, `inflict_condition`, …) execute exactly as before. **`blessed` and `cursed` are valid triggers with no producer yet** — no event raises them, so a reaction keyed on either sits idle until one does; prefer `damaged` / `healed` for now. Implementation: `src/engine/effects/reactiveWindow.ts`.
 
 **Charges now deplete.** A `consumable_charge` attachment spends one charge each time its bearer completes an encounter step in the charge's own `onUse.reach`, and an item that empties its last charge with `destroyOnEmpty` is gone. Before this, nothing decremented the counter anywhere, the destroy-at-0 branch was unreachable, and **every "3 charges" item in the catalogs was unlimited**. If you authored a charge count as flavour, it is now load-bearing: write the number you actually mean.
 
@@ -1257,6 +1275,10 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 **The player is told.** An aura that moves a roll draws its own factor line on the test panel, naming *the agent whose presence did it* — "Having Kael Thornweaver near steadies her" — never the item they carry, which the acting mortal does not own and cannot see. So an aura is a visible cause, not a hidden hand: author values you are content to have named out loud.
 
 **Where to find the implementation:** `collectAuraEffectsNear` / `selectAuraEmitters` / `resolveAuraModifiers` in `src/engine/effectAura.ts`, called from `collectAuraContributions` in `src/engine/resolutionModifiers.ts`. It is resolved **lazily, at the moment a step resolves** — never as a per-tick proximity sweep — so an aura costs nothing until somebody near it actually rolls.
+
+### Note: `passive` and `conditional` effects now move every unified-road roll (THR-1535)
+
+Before 2026-09-25 an item's `passive` / `conditional` reach bonus showed up in the attended forecast but **never reached the dice** on the unified road — only fight steps (THR-1537) and the legacy road read it. Now `resolveUncontestedStep` adds `computeStandingModifierTotal` (`src/engine/resolutionModifiers.ts`) for whoever rolls: items and their effects, traits, terrain, the place's conditions, sphere alignment, divine attention, auras and altered rules, on the step's authored reach with live effect states. The mortal planner adds the same total, so a mortal reaches for work their gear helps with. **For authors:** a +0.05 passive on Heart is now +5 points on every Heart step the bearer rolls, attended or not — price items with that in mind. The `resolution.input` trace names the share as `standingModifiers`; `UNIFIED_ROLL_READS_STANDING_MODIFIERS` (`src/data/standing-modifier-constants.ts`) reverts it in one flag.
 
 ### Capability 25: One Capability, One Spelling — the Consolidated Effect Vocabulary (THR-1242)
 
@@ -1591,6 +1613,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `sphereAffinity` | `SphereName` | Resonance scoring with hex sphere and world-soul |
 | `intrinsicTier` | `AttentionTier` | `'background'` / `'shaping'` / `'story_beat'` attention tier |
 | `reputationPolarity` | `'positive' \| 'negative'` | Optional explicit override; if omitted, derived from `crudType` |
+| `requiresLiveMonster` | `boolean` | **Monster gate (THR-1545).** Drawn only where the draw location (resolved to its outer tier) is a lair whose `namedEliteId` names a living monster. Checked on both draw paths, and on the Adventurers' Guild's offer. Like `requiresOpposingBand`, it can only hide content. A `templateId` seed skips the draw filters, so a return seed carries the beast with `inheritContext: true` instead |
 
 ### Step-Level Fields
 
@@ -3993,6 +4016,12 @@ one for two content reasons, and both are rules for the next appointment you aut
   registers at rural + ruin + wayside with one opening per class. Only the parent needed the wider
   envelope: the kept sequel is a literal id, which `evaluateEncounterSeeds` does not subtype-gate,
   and the missed sequel already registers at every class.
+  THR-1567 (2026-09-26) settled the other wayside-only slice scenes the same way: the Unsafe
+  Bridge and Riders Behind the Caravan widen to wayside + rural (one rural opening each, both
+  classes' default casts composed), and Snow on the Pass **stays wayside-only on purpose** — a
+  class is all-or-nothing, and no class is honest about high ground. A scene that needs a
+  landscape feature (a river, a mountain) cannot be widened by setting class; that needs a
+  terrain axis on the registration path, which is design work, not content.
 - **Selection must reach the planting arm's mortals — superseded as a content rule by THR-1525.**
   When THR-1524 measured this, `computeDesireScore` summed the **signed** profile value over
   `motivations`, so naming the fork axis drew only its positive pole. The Crossroads plants on
@@ -4066,6 +4095,58 @@ cells in the bounded table `UNDERTAKING_CELL_APPOINTMENTS` (`src/data/undertakin
   first — the probe table: no shipped family has a location-ungated member that reads as a meeting.
 - **Declined:** `use × Agreement:appointment`. Keeping an appointment is a journey the decision
   phase makes, not a work at a site with checkpoints.
+
+### The hunt — a class of a kind, a deferred payoff, and four payoff flags (THR-1560)
+
+**What you can now author, and what now exists for you to build on:**
+
+- **A class of a kind as an object type.** `UndertakingObjectType.classOf` names the world-object
+  kind a type belongs to (`monster` → `mortal`, THR-1268): `UndertakingObjectTypeId` admits the
+  class, the grid renders it as a sub-row under its kind, and the codex's kind row reads
+  *Mortal (monster)*. A class's live cells are noted in `LIVE_CLASS_CELL_NOTES`
+  (`scripts/undertaking-grid-dispositions.ts`, keyed by type id — `LIVE_CELL_NOTES` is keyed by
+  kind, and `mortal × destroy` is the plot's slot). The generator fails by name on a live class
+  cell with no note and on a stale one.
+- **`reasonWords`** — the codex's "Needs a reason" line for a type whose own doors
+  (`gateExemption`) admit its gated verbs: the monster reads *a scar, a grievance, or a den near
+  home* instead of the social motives.
+- **`deferredPayoffVerbs` → `deferredPayoff`.** A verb whose harm lands later than completion.
+  Carried onto the synthesised cell; completion then writes **no outcome node** and **satisfies no
+  grievance**, and records `payoffDeferred: true` on the history entry and the completion trace.
+  The hunt only plants the confront; the beast's death (the fight's) closes the grievance through
+  `grievance_culprit_eliminated`. Separately, **a grievance whose culprit is a monster is never
+  closed by any project's completion** (`grievanceClosesOnCompletion`).
+- **Four optional `UndertakingAppointmentPayoff` flags**, carried onto `PlantedAppointment`
+  because the seed's later readers see the appointment, not the payoff:
+  - `inheritSiteAsTarget` — the kept branch's seed gets `inheritedTargetId = targetNodeId` (the
+    confront fights the beast); the missed rewrite drops it.
+  - `pullMult` — multiplies `computeAppointmentPull`.
+  - `requirePlace` — a refused plant pushes **no seed** (the trace says `seedWithheld`), and a
+    seed whose place is lost is **dropped** after its favour is released (`dropped: true`),
+    never fired placeless.
+  - `pricedByHex` — the place is off the road graph (a lair has no `adjacent` / `road` /
+    `contains` edge), so when the graph has no path the slack is priced as
+    `hexDistance × APPOINTMENT_HEX_TICKS_PER_HEX` (3), the way `queueAppointmentJourney`'s hex A*
+    fallback walks it. Without it every lair reads `unreachable` and no hunter ever sets out.
+  - A **monster site is never the creditor**: the promise is owed to the lair.
+- **The row:** `UNDERTAKING_CELL_APPOINTMENTS['cell.destroy.monster']` — meeting
+  `#lair_confront` (its one bearer, `fight.lair.confront`), missed `#hunt_trail_cold` (its one
+  bearer, the seed-only `hunt.trail_cold`), `delayTicks: HUNT_APPOINTMENT_DELAY_TICKS` (48).
+- **Readers you can key on:** `liveHuntFavourAt(graph, hunterId, lairId)` — the live promise
+  that refuses a second hunt (`hunt_confront_pending`), hides `monster.hunt.named_elite` from a
+  waiting hunter on both draw paths, and makes M4 skip the arrival (`hunt_appointment`);
+  `huntReason(graph, hunterId, monsterId)` — `blood_drawn` / `grievance` / `threat_radius`;
+  `recordHuntTracking` — the one writer of a tracked beast (a `hidden_weakness` mark +
+  `temperShown`), for a future divination spell to call.
+- **Offering:** `monster` sits in `KINDS_BY_REACH.iron` and `ALL_UNDERTAKING_KINDS` (Eye's
+  rider); the hunt cells are hand-listed on `ambition_seek_revenge`, `ambition_avenge_fallen`
+  (its first profile) and `ambition_conquer_territory`. The object scan reads a per-type cap,
+  `STRATEGIC_TARGET_SCAN_CAPS[objectTypeId] ?? .object` (`monster: HUNT_TARGET_SCAN_CAP` = 128 — at least the 120 living monsters an epic map holds at 300 ticks).
+
+Inspect: `__DEBUG.listMonsters()` → each row's `huntedBy[]` (hunter, `work`, `reason`); CLI
+`hunts` (founded, tracked, planted / kept / missed with reasons, travel ticks, out-of-scan
+reason-holders); `npm run census:hunts -- --seeds 42,99 --ticks 300` (runs past the CLI's
+twilight stop); trace `hunt.tracked`.
 
 ## Capability 32: A place earns traits from its own fortunes, and the pool reads them (THR-790)
 
@@ -4302,6 +4383,57 @@ What an author can rely on:
 Trace: each raise emits `effect.event_raised` with its `site` — `fight_start`, `fight_step`,
 `fight_clash`, `fight_overcome` or `fight_end`.
 
+### How a fight ends — what it leaves on the fighter (THR-1548 D1, THR-1549 D2)
+
+Every fight's result is turned into world writes by the post-fight dispatcher
+(`onFightEnded`, `src/engine/fights/fightOutcome.ts`). Its first branch, `fighterEndingBranch`
+(`src/engine/fights/fightEnding.ts`), writes what the ending leaves on the **fighter**, through
+writers that already exist. Content authors do not call it; they author against what it writes:
+
+| Face (`fightState.ending.face`) | What the world now holds |
+|---|---|
+| `yielded_to_mortal` | Humiliation: `reputation_with` toward the fighter's home settlement drops by `FIGHT_HUMILIATION_REPUTATION` (cause `fight_humiliation`); `courage_prudence` drifts toward prudence by `FIGHT_ENDING_DRIFT` |
+| `routed` | The same drift toward prudence |
+| `yielded_to_monster`, `broke_off` | Nothing |
+| `mauled` (struck down, lived) | `trait.scar.scarred` (**Scarred**, a `scar`-class condition, permanent, once per mortal, victor as `inflictedBy` on the edge) and a `hostile_to` pair with `cause: 'blood_drawn'` toward the victor, monster or mortal |
+| `slain` (struck down, died) | The death funnel, `cause: 'fight'` (retained, `slainBy` the victor), and a `named_death` reactive-loop node in the plot's shape |
+| `overcome_monster` | (D2) The **trophy**: one `drawSeededReward` draw (recipe `FIGHT_TROPHY_RECIPE`, band `FIGHT_TROPHY_OUTCOME.overcome[lairTier]`, site `fight_trophy`) from the opponent's held major/legendary lair; **gratitude**: `reputation_with` the nearest settlement within `FIGHT_GRATITUDE_RADIUS_HEXES` of the lair +`FIGHT_VICTORY_REPUTATION_OVERCOME` (cause `fight_gratitude`) |
+| `overcome_mortal` | (D2) **Standing**: `reputation_with` the loser's faction ?? home settlement +`FIGHT_VICTORY_REPUTATION_DUEL` (cause `fight_standing`); `courage_prudence` drifts toward courage |
+| `driven_off` | (D2) Gratitude +`FIGHT_VICTORY_REPUTATION_DRIVEN_OFF` from the nearest settlement |
+| `bargained` | (D2) The hoard: one trophy draw at `FIGHT_TROPHY_OUTCOME.bargained[lairTier]`; `mercy_ruthlessness` drifts toward mercy |
+
+What an author can rely on:
+
+- **`blood_drawn` is a grudge, not a rivalry.** It is in `GRUDGE_PROVENANCE`, so the motive gate
+  licenses the plot against the victor, the Old-wound fight advantage fires, and the sheet reads
+  *"one of them drew the other's blood"*. A mauling on top of `old_quarrel` or `covets` upgrades
+  the edge to `blood_drawn`.
+- **Only `struck_down` kills, and only a monster victor** (or, since THR-1557, a duel's ruthless victor), at `FIGHT_KILL_CHANCE_BY_TEMPER[temper]`
+  (berserk 0.15, stubborn 0.05, skittish and bargainer 0), drawn once after two guards: **The
+  First and the god's avatar are never killed in a fight**. A `death_prevented` ward is the
+  funnel's own and holds here. A duel victor's mercy (THR-1557) calls the exported
+  `fightDeathGuard` and `killStruckDownFighter` in the same order — see *Duels: the victor decides*.
+- **A fight death reads as any killing.** `createUndertakingOutcomeNode` gained an optional
+  `source: { kind: 'fight', actorId, actionId, templateId, targetNodeId?, siteId? }` in place of a
+  `project`; the node is `evt_und_fight_<actionId>_<tick>`, carries `source: 'fight'`, and every
+  consumer (the mint lane, the omen portent, the receipt) reads it as an undertaking harm.
+- **Tag immunity to `#scar`** refuses Scarred like any condition; the grudge is still written.
+- **The victor of a yield gains standing (D2).** On `yielded_to_mortal` the opponent's `reputation_with`
+  the yielder's faction ?? home settlement rises by `FIGHT_VICTORY_REPUTATION_DUEL`, recorded as
+  `ending.victorStanding`.
+- **Every ending is one `fight_ended` tick event (D2)** — id `fight_ended_<actionId>_<tick>`, message
+  from `FIGHT_CHRONICLE_LINES[face]` (`src/data/fight-ending-content.ts`; `{fighter}`, `{opponent}`,
+  `{place}` are the branch's own slots, not enrichment tokens), significance
+  `FIGHT_EVENT_SIGNIFICANCE[FIGHT_EVENT_TIER_BY_FACE[face]]`. Notable faces (0.85) become
+  `chronicleEntries` rows through `phaseNarrative`; routine ones (0.4) reach the event log only. A
+  bargain with no prize and a mauling with no new scar use `FIGHT_CHRONICLE_LINES_PLAIN`. To make a
+  face quieter, move it to `routine` in the constant — no code change.
+- **Trophies obey the reward pool.** Because the draw is `drawSeededReward`, a `reward_tier_bonus`
+  on the fighter shifts the trophy curve, and a success-band draw can flip to the harmful table (5%).
+  No pool entry is retagged for trophies; there is no trophy catalog.
+- `getFightState(actionId).ending` (debug bridge) is the whole audit trail; the `fight.ending`
+  trace carries the same fields plus `scarSkipped` and `outcomeNodeId`.
+
 ## Capability requirements are reach shares (THR-1562)
 
 Every number an author writes as a **capability requirement** is a **reach share** (0–1), never a raw
@@ -4439,7 +4571,29 @@ THR-1531's Major elite row).
 - **Key the aftermath on `fight:<result>`, read from the actor's side.** `overcome` covers every
   way the opponent lost; `fightState.opponentLoss` (`clock` / `struck_down` / `yielded` /
   `routed`) says which. A duel never reaches `bargained` or `driven_off` (temper is NPC-mode
-  only). The faces (spared, slain, mauled) come with E2 through plan doc 1's writers.
+  only). The faces (spared, slain, mauled) are E2's — see below.
+
+**Duels: the victor decides (Duels E2, THR-1557).** Plan doc `Docs/plans/2026-09-23-mortal-duels.md` §5.
+What an author can rely on — nothing here is authored, it is engine logic behind every duel's end:
+
+- **A beaten loser faces the victor's mercy; a yielded or fled one never does.** Beaten = the
+  loser's clock filled or they were struck down, on either side (`fightState.result === 'struck_down'`
+  for the actor, `opponentLoss` `clock` / `struck_down` for the opponent). `decideBeatenDuellist`
+  (`src/engine/fights/fightEnding.ts`) reads the victor's live `mercy_ruthlessness`
+  (`FIGHT_MERCY_AXIS`) through `decideBranchPole` — the hand's lean counts only when the victor is
+  the action's actor (`FightEndContext.handNudges`). Mercy → **spared** (Scarred + `blood_drawn`
+  grudge, victor drifts toward mercy). Ruthlessness → D1's guards, then one kill draw at
+  `FIGHT_DUEL_KILL_CHANCE_RUTHLESS` (0.25) → **slain** through the funnel, else **mauled**.
+- **`fightState.opponentEnding` is always filled on a duel**, whichever side lost: `spared` /
+  `mauled` / `slain`, `yielded_to_mortal` (humiliated at their own home), `routed`, `broke_off`, or
+  `overcome_mortal` when the opponent won (standing toward the actor's faction ?? home, drift toward
+  courage). The loser's record carries `mercy` (victor, pole, leans, decider) — the chip source.
+- **The chronicle tells the loser's story.** A duel the actor won emits one `fight_ended` event with
+  the opponent's face and the opponent as `actorId` (id suffix `_opponent`); a double knockout
+  emits both. `fight.ending` carries the fork: `victorPole`, `victorProfileLean`, `victorCardLean`,
+  `mercyDecidedBy`, `opponentFace`, `bothStruckDown`, `opponentKillRoll`, `opponentGuard`.
+- **Key an aftermath on the result, not the face.** The `fight:<result>` memory is written before
+  the mercy decision; the faces reach the player through the chronicle and the chips.
 - **The first duel template, `fight.duel.grudge`** ("Old Blood",
   `src/data/encounters/fight-duel-grudge.ts`), registered in the new `FIGHT_ENCOUNTER_TEMPLATES`
   (`src/data/fights/fight-templates.ts`), spread into `UNIFIED_ACTION_TEMPLATES` and searched by

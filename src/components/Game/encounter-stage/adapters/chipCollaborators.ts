@@ -21,7 +21,9 @@ import type { UnifiedAction } from '../../../../types/unifiedAction';
 import { resolveAnchorDeclaration } from '../../../../data/content-eval/chipAnchorDeclarations';
 import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
+import { isMonster } from '../../../../engine/monsters/isMonster';
 import type { ChipIconResolver } from './buildAftermathConsequences';
+import type { FightChipWorld } from './buildFightChanges';
 
 /**
  * The UI Law's image half (THR-1004). Resolved in the adapter layer because
@@ -46,8 +48,14 @@ export function buildChipIconResolver(graph: WorldGraph): ChipIconResolver {
     if (kind === 'area') return undefined;
     const entityId = concept.entityId ?? concept.visualName ?? concept.text;
     const name = concept.visualName ?? concept.text;
-    const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);
-    return { entityId, kind, name, src: descriptor.src };
+    // THR-1550 — chips pass their kind explicitly, so the resolver's own
+    // `deriveKind` never sees the node. A chip anchored to a lair's monster is
+    // authored as a plain `agent`; refine it here, where the graph is held, so
+    // it draws the monster portrait rather than an initial-letter tile. The
+    // link still routes by `concept.visualKind` — a monster opens its sheet.
+    const tileKind = kind === 'agent' && isMonster(graph.getNode(entityId)) ? 'monster' : kind;
+    const descriptor = resolveEntityVisual({ id: entityId, kind: tileKind, name }, graph);
+    return { entityId, kind: tileKind, name, src: descriptor.src };
   };
 }
 
@@ -95,4 +103,25 @@ export function buildChipAnchorResolver(
       // binder takes, so a standing chip links the Realm the map draws.
       realmProjection,
     });
+}
+
+/**
+ * THR-1553 — the graph-holding half of the fight chips (`buildFightChanges` is
+ * pure). A node that does not exist has no name, which drops its chip: an
+ * anchor that resolves to nothing never renders (Law 56, NFP #4).
+ */
+export function buildFightChipWorld(graph: WorldGraph): FightChipWorld {
+  return {
+    nameOf: (id) => graph.getNode(id)?.name || undefined,
+    visualKindOf: (id) => {
+      const node = graph.getNode(id);
+      if (node?.type === 'location' || node?.type === 'sublocation') return 'location';
+      if (node?.properties?.actorType === 'faction') return 'faction';
+      return 'agent';
+    },
+    conditionTagsOf: (id) => {
+      const tags = graph.getNode(id)?.properties?.tags;
+      return Array.isArray(tags) ? (tags as string[]) : [];
+    },
+  };
 }

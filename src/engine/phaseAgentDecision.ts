@@ -110,6 +110,7 @@ import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
 import { getLocationType } from './encounterCache';
 import { settingClassForSubtype } from '../data/settingClasses';
+import { fightParticipantIds } from './fights/fightParticipants';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -427,6 +428,10 @@ export function phaseAgentDecision(
   for (const a of state.unifiedActions) {
     if (!a.resolved) busyAgentIds.add(a.actorId);
   }
+  // THR-1558 — one live fight per mortal. The *opponent* of an unresolved fight is
+  // busy too, keyed `fightState?.opponentId ?? targetId` so a freshly spawned duel
+  // holds its opponent before `fightState` exists (plan doc 2026-09-23-mortal-duels §6).
+  for (const id of fightParticipantIds(state.unifiedActions)) busyAgentIds.add(id);
 
   for (const actor of actors) {
     const agentId = actor.id;

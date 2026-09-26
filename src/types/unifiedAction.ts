@@ -385,6 +385,14 @@ export interface EncounterAftermathChange {
    * wanderer — Jorun walks with her now"). Enriched like `detail`.
    */
   readonly causeClause?: string;
+  /**
+   * THR-1553 — an `opens` change's own word, drawn beside the ◆ marker in place
+   * of the default "a way opens". A slain beast is a changed world object, not
+   * a way opening, so the fight's PATH chips say *slain*, *cleared* or the
+   * clock word instead. Ignored on `gain` / `loss`; absent, every existing PATH
+   * chip keeps its label (NFP #6).
+   */
+  readonly deltaLabel?: string;
 }
 
 // ─── World-shaping aftermath supporting types (THR-115) ─────────────────────
@@ -1466,6 +1474,20 @@ export interface PlantedAppointment {
   readonly missed: AppointmentBlock['missed'];
   /** The `owes_favor` edge that is the promise; removed on kept, marked `broken` on missed. */
   readonly favourEdgeId?: string;
+  /**
+   * The payoff's flags, carried from `UndertakingAppointmentPayoff` at plant time
+   * (THR-1560), because the seed's later readers — the window-closed rewrite and
+   * `computeAppointmentPull` — see this block, not the payoff. All optional; absent
+   * reads as today's behaviour.
+   */
+  /** The kept branch's inherited target belongs to it alone; the missed rewrite drops it. */
+  readonly inheritSiteAsTarget?: boolean;
+  /** Multiplies the travel pull. Absent reads as 1. */
+  readonly pullMult?: number;
+  /** A seed whose place is lost is dropped (after its favour is released), never fired placeless. */
+  readonly requirePlace?: boolean;
+  /** Price the slack by hex distance when the road graph has no path (an off-graph place). */
+  readonly pricedByHex?: boolean;
 }
 
 export interface EncounterAftermathReaction {
@@ -2404,6 +2426,16 @@ export interface UnifiedActionTemplate {
    * confrontation opts in by declaring it, not by being added to a set that rots.
    */
   readonly requiresOpposingBand?: boolean;
+  /**
+   * Only drawable where a living lair monster stands (THR-1545, monsters plan doc §4).
+   *
+   * The draw location, resolved to its outer tier, must be a lair whose
+   * `namedEliteId` names a node that `isMonster` and is not deceased. A hunt that
+   * fights a named beast is not offered where there is no beast to fight. Like
+   * `requiresOpposingBand`, the gate can only hide content. Seeds by `templateId`
+   * skip the draw filters; they carry the beast through `inheritContext` instead.
+   */
+  readonly requiresLiveMonster?: boolean;
   /**
    * A decisive loss in a group contest on this template never kills (THR-731).
    *

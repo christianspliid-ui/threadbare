@@ -50,7 +50,7 @@ interface CodexProps {
    * the sidebar agrees is selected rather than on a card filtered out of view.
    */
   initialEntryId?: string | null;
-  /** Rendered inside the game as an overlay: swaps "Back to Game" for a Close button. */
+  /** Rendered inside the game as an overlay: swaps "Back to Title" for a Close button. */
   embedded?: boolean;
   onClose?: () => void;
 }
@@ -236,14 +236,14 @@ export default function Codex({
           </button>
         ) : (
           <a
-            href="?view=game"
+            href="/" /* THR-1601: back to the title screen, never the dev quick-start world */
             style={{
               fontSize: 'var(--text-xs)',
               color: 'var(--accent-gold-dim)',
               textDecoration: 'none',
             }}
           >
-            Back to Game
+            Back to Title
           </a>
         )}
       </header>

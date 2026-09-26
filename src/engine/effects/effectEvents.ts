@@ -48,6 +48,7 @@ import { collectAttachmentEffects } from './effectWalker';
 import { addEventStack } from '../effectTick';
 import { advanceFightClock } from '../fights/fightClock';
 import { STACKING_GLOBAL_CAP } from '../../data/effect-constants';
+import { isReactiveWindowEffect, openReactiveWindow, reactiveWindowTicks } from './reactiveWindow';
 
 // ═══════════════════════════════════════════════════════════════════
 // Constants
@@ -98,6 +99,16 @@ export interface EffectEventResult {
     attachmentName: string;
     agentId: string;
     nestedEffect: import('../../types/effects').AttachmentEffect;
+    /**
+     * THR-1568 — how the reaction landed. 'window': the nested effect is a
+     * reach modifier and this raise opened a timed window on the attachment's
+     * runtime state, which the resolver reads — there is nothing to execute.
+     * 'execute': hand `nestedEffect` to `executeEffect` (every raise site
+     * checks this via `shouldExecuteReactive`).
+     */
+    mode: 'window' | 'execute';
+    /** Window length in ticks, when `mode` is 'window'. */
+    windowTicks?: number;
   }>;
   /** Trace entries for inspectability */
   traces: EffectTickTrace[];
@@ -265,13 +276,24 @@ export function processEffectEvent(
 
         // Update last-triggered tick
         const currentState = updatedStates.get(attachmentId) ?? {};
-        updatedStates.set(attachmentId, { ...currentState, reactiveLastTriggeredTick: tick });
+        const firedState = { ...currentState, reactiveLastTriggeredTick: tick };
+
+        // THR-1568: a modifier-shaped nested effect opens a window the resolver
+        // reads; handing it to executeEffect would no-op, which is the defect.
+        const windowed = isReactiveWindowEffect(effect.effect);
+        const windowTicks = windowed ? reactiveWindowTicks(effect, cooldown) : undefined;
+        updatedStates.set(
+          attachmentId,
+          windowTicks !== undefined ? openReactiveWindow(firedState, windowTicks) : firedState,
+        );
 
         reactivesFired.push({
           attachmentId,
           attachmentName,
           agentId,
           nestedEffect: effect.effect,
+          mode: windowed ? 'window' : 'execute',
+          ...(windowTicks !== undefined ? { windowTicks } : {}),
         });
 
         traces.push({
@@ -285,6 +307,7 @@ export function processEffectEvent(
             reactiveTrigger: effect.trigger,
             nestedEffect: effect.effect.type,
             cooldownRemaining: 0,
+            ...(windowTicks !== undefined ? { windowOpened: true, windowTicks } : {}),
           },
         });
         break;
@@ -483,4 +506,17 @@ export function applyEffectEventResult(
   }
 
   return result.updatedStates;
+}
+
+/**
+ * THR-1568 — whether a fired reaction still needs `executeEffect`. A window
+ * reaction already did its work inside `processEffectEvent` (it opened the
+ * window the resolver reads); routing its nested modifier to the executor
+ * could only no-op. Every raise site filters through this one predicate so a
+ * new site cannot forget the distinction.
+ */
+export function shouldExecuteReactive(
+  fired: EffectEventResult['reactivesFired'][number],
+): boolean {
+  return fired.mode !== 'window';
 }

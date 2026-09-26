@@ -298,6 +298,7 @@ export function generateSocialCandidates(
         sphereAffinity: tmpl.sphereAffinity,
         questPriority: questPriorityMultiplier,
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
+        socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -334,6 +335,7 @@ export function generateSocialCandidates(
         sphereAffinity: undefined,
         questPriority: questPriorityMultiplier,
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
+        socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -369,6 +371,7 @@ export function generateSocialCandidates(
         sphereAffinity: tmpl.sphereAffinity,
         questPriority: questPriorityMultiplier,
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
+        socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -404,6 +407,7 @@ export function generateSocialCandidates(
         sphereAffinity: undefined,
         questPriority: questPriorityMultiplier,
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
+        socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
@@ -439,6 +443,7 @@ export function generateSocialCandidates(
         sphereAffinity: tmpl.sphereAffinity,
         questPriority: questPriorityMultiplier,
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
+        socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,

@@ -155,20 +155,34 @@ function fixtureState(graph: WorldGraph): GameState {
 
 /**
  * Between fights: heal the fighter's conditions, restore their stamped capability
- * (a fight grows its fighter), empty the harm queue, reset the clock, and move the
- * tick on — event nodes are keyed by tick, and every fight is a fresh one.
+ * (a fight grows its fighter), empty the harm queue, reset the clock, raise the
+ * opponent if the last fight felled it (THR-1546's monster branch retains a felled
+ * monster as deceased, and a dead opponent ends every later fight `opponent_gone`),
+ * and move the tick on — event nodes are keyed by tick, and every fight is a fresh one.
  */
 function resetBetweenFights(state: GameState, fightIndex: number, raw: Readonly<Record<string, number>>): void {
   const graph = state.graph;
   state.tick = TICK + fightIndex * TICKS_PER_FIGHT;
   graph.getNode(FIGHTER)!.properties.domainCapabilities = { ...raw };
   for (const edge of graph.getOutgoingEdges(FIGHTER, 'has_trait')) {
-    if (edge.target.startsWith('trait.condition.')) graph.removeEdge(edge.id);
+    // THR-1548: the fight ending's Scarred is permanent by design; the row measures a fresh guard.
+    if (edge.target.startsWith('trait.condition.') || edge.target.startsWith('trait.scar.')) graph.removeEdge(edge.id);
   }
+  // THR-1548 — the fight ending's other persistent writes: a slain guard, the
+  // `blood_drawn` grudge (which would lend every later fight the Old-wound advantage)
+  // and the value drift a yield or rout leaves. The row is a fresh bold guard each time.
+  const fighter = graph.getNode(FIGHTER)!.properties as Record<string, unknown>;
+  for (const key of ['deceased', 'deceasedTick', 'deathCause', 'slainBy']) delete fighter[key];
+  for (const id of [FIGHTER, OPPONENT]) {
+    for (const edge of graph.getOutgoingEdges(id, 'hostile_to')) graph.removeEdge(edge.id);
+  }
+  state.archetypeDrift = [];
   state.pendingQuintessenceEvents = [];
   state.tickEvents = [];
   state.recentEvents = [];
-  const bag = graph.getNode(OPPONENT)!.properties.monsterState as Record<string, unknown>;
+  const opponent = graph.getNode(OPPONENT)!.properties as Record<string, unknown>;
+  for (const key of ['deceased', 'deceasedTick', 'deathCause', 'slainBy']) delete opponent[key];
+  const bag = opponent.monsterState as Record<string, unknown>;
   bag.clockFilled = 0;
   bag.clockUpdatedTick = state.tick;
 }

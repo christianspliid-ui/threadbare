@@ -686,6 +686,9 @@ export function buildNudgePhaseModel(
       locationId,
       step.reach,
       template.sphereAffinity,
+      // THR-1535 — the live effect states, as the roll reads them, so a timed
+      // effect moves the shown odds exactly as it moves the dice.
+      gameState?.effectStates,
     );
   // THR-892 — the carryover line the prior step's band earned, if the author wrote
   // one. It contributes to the floor exactly as a trait variant does, so the hand
@@ -723,7 +726,13 @@ export function buildNudgePhaseModel(
 
   // THR-1543 — a fight step resolves at `FIGHT_STEP_SCALE`, so its forecast takes
   // the core's scale step and post-roll floor (`forecastActionAtScale`).
-  const forecastScale = fightInputs?.scale;
+  //
+  // THR-1535 (addendum) — an ordinary step does too. The roll has always applied
+  // its template's scale offset and floor (a `local` step never rolls below 0.65);
+  // the plain `forecastAction` ignored both, so the shown odds sat under the rolled
+  // ones on every floored step. `undefined` resolves as `'regional'` in the core,
+  // so it is spelled out here and the phase always carries the scale it rolls at.
+  const forecastScale = fightInputs?.scale ?? template.scale ?? 'regional';
   const baseSummary = forecastScale ? forecastActionAtScale(forecastInput, forecastScale) : forecastAction(forecastInput);
   const baseForecast = forecastModelFrom(
     baseSummary.forecastTier,

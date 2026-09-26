@@ -35,6 +35,7 @@ import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { NudgeBalance, NudgeReadingMarks } from './encounter-stage/shells/NudgeStageHeader';
 import { useNudgeHand } from './encounter-stage/useNudgeHand';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
+import { OpponentHeader } from './encounter-stage/OpponentHeader';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
 import { NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
@@ -960,7 +961,7 @@ export function EncounterVeil({
                       data-testid={`consequence-chip-icon-${chip.kind}`}
                       aria-label={chip.icon.name}
                       title={chip.icon.name}
-                      onClick={openEntity(chip.icon.entityId, chip.icon.kind)}
+                      onClick={openEntity(chip.icon.entityId, chip.icon.kind === 'monster' ? 'agent' : chip.icon.kind)}
                     />
                   ) : consequenceReach(chip.reachDomain) ? (
                     <span
@@ -1139,6 +1140,7 @@ export function EncounterVeil({
                         : chip.delta.label}
                       color={consequenceToneColor(chip.tone)}
                       size={CONSEQUENCE_DELTA_PX}
+                      word={chip.delta.word}
                     />
                   )}
                 </div>
@@ -1553,18 +1555,63 @@ export function EncounterVeil({
           >
             {tierModeLabel}
           </div>
-          <div
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_GHOST,
-              marginTop: 4,
-              letterSpacing: '0.05em',
-            }}
-          >
-            {model.header.threatLabel} threat
-          </div>
+          {/* THR-1551 — on a fight step the threat word gives way to one
+              opponent line (name as a link, and the clock word); a step with
+              neither prints nothing rather than a bare " threat". */}
+          {model.header.opponentLine ? (
+            <div
+              data-testid="watched-opponent-line"
+              style={{
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: 'var(--text-xs)',
+                color: TEXT_WHISPER,
+                marginTop: 4,
+                letterSpacing: '0.05em',
+              }}
+            >
+              Facing{' '}
+              {model.header.opponentLine.opponentId && onSelectAgent ? (
+                <button
+                  type="button"
+                  className="focus-ring"
+                  onClick={() => onSelectAgent(model.header.opponentLine!.opponentId!)}
+                  aria-label={`View ${model.header.opponentLine.name}`}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    font: 'inherit',
+                    color: TEXT_WARM,
+                    textDecoration: 'underline',
+                    textUnderlineOffset: 3,
+                  }}
+                >
+                  {model.header.opponentLine.name}
+                </button>
+              ) : (
+                <span style={{ color: TEXT_WARM }}>{model.header.opponentLine.name}</span>
+              )}
+              {' — '}
+              <Tooltip id={`fight.clock.${model.header.opponentLine.clockWord}`}>
+                <span>{model.header.opponentLine.clockWord}</span>
+              </Tooltip>
+            </div>
+          ) : model.header.threatLabel ? (
+            <div
+              style={{
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: 'var(--text-xs)',
+                color: TEXT_GHOST,
+                marginTop: 4,
+                letterSpacing: '0.05em',
+              }}
+            >
+              {model.header.threatLabel} threat
+            </div>
+          ) : null}
         </div>
 
         {/* ── Peek gate (before peek) ─────────────────────── */}
@@ -2025,18 +2072,23 @@ export function EncounterVeil({
         >
           {TIER_LABELS[threadTier]} &middot; {TIER_MODE_SUFFIX[threadTier]}
         </div>
-        <div
-          style={{
-            fontFamily: FONT_PROSE,
-            fontStyle: 'italic',
-            fontSize: 'var(--text-xs)',
-            color: TEXT_GHOST,
-            marginTop: 4,
-            letterSpacing: '0.05em',
-          }}
-        >
-          {model.header.threatLabel} threat
-        </div>
+        {/* THR-1551 — absent on a fight step: the opponent header's card
+            sentence is the fight's one statement of how hard it is (Law 10). */}
+        {model.header.threatLabel && (
+          <div
+            data-testid="veil-threat-whisper"
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: 'var(--text-xs)',
+              color: TEXT_GHOST,
+              marginTop: 4,
+              letterSpacing: '0.05em',
+            }}
+          >
+            {model.header.threatLabel} threat
+          </div>
+        )}
       </div>
 
       {/* ── Content zone (reading area) ───────────────────── */}
@@ -2144,6 +2196,16 @@ export function EncounterVeil({
             ) : undefined}
           />
         </div>
+
+        {/* ── The opponent header (THR-1551) ──────────────────────
+            Fight steps only. Not a second header: ContextStrip above carries the
+            scene (place, mortal, step); this carries who the mortal is facing
+            and how close it is to falling, and repeats none of its fields. */}
+        {model.opponentHeader && !replayEntry && (
+          <div style={entranceStyle(ENTRANCE_DELAYS.agentLine, 0.8)}>
+            <OpponentHeader model={model.opponentHeader} onSelectOpponent={onSelectAgent} />
+          </div>
+        )}
 
         {/* Encounter description subtitle */}
         {model.header.subtitle && (
@@ -3271,11 +3333,13 @@ function StepNavigator({
             ? (step.outcome ? (OUTCOME_DOT_COLOR[step.outcome] ?? OUTCOME_DOT_FALLBACK) : OUTCOME_DOT_FALLBACK)
             : TEXT_GHOST;
         const size = isCurrent || isReplaying ? 9 : 7;
+        // THR-1551 — a fight step names itself ("First exchange"), not "Step N".
+        const name = step.stepTitle ?? `Step ${i + 1}`;
         const title = isResolved
-          ? `Step ${i + 1} — ${step.outcomeWord ?? 'resolved'}`
+          ? `${name} — ${step.outcomeWord ?? 'resolved'}`
           : isCurrent
-            ? `Step ${i + 1} — in progress`
-            : `Step ${i + 1}`;
+            ? `${name} — in progress`
+            : name;
         return (
           <button
             className="focus-ring"

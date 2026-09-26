@@ -202,7 +202,7 @@ const VERDICT_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'stone.accused_vengeance',
+          query: { kind: 'encounter_template', anyTags: ['#court_errand', '#thieves_errand'] },
           delayTicks: 30,
           priority: 0.75,
           seedLabel: 'One of the accused finds allies who remember the circle\'s sentence',

@@ -35,6 +35,7 @@ import { generateMovementCandidates } from '../movementCandidates';
 import { findShortestPath } from '../pathfinding';
 import { getAgentLocationId } from '../graphQueries';
 import { getGroupLeader, getGroupMembers, isGroupBlessed } from './groupQueries';
+import { anyInFight } from '../fights/fightParticipants';
 import {
   GROUP_LEADER_VOTE_WEIGHT,
   GROUP_FACTION_OBJECTIVE_WEIGHT,
@@ -88,6 +89,16 @@ export function runGroupMovement(state: GameState, group: GraphNode): GroupMoveR
   const graph = state.graph;
   const members = getGroupMembers(graph, group.id);
   if (members.length === 0) return { moved: false, dissenters: [] };
+
+  // THR-1558 — the company holds for a duel. While any member is the actor or the
+  // opponent of an unresolved fight, write no route for anyone: `writeMemberRoute`
+  // checks nothing, so a march decided now would walk the duellist off the hex and
+  // end the fight `separated`. Holding the company for the fight's few ticks keeps
+  // it together rather than splitting off the duellist (plan doc
+  // 2026-09-23-mortal-duels §6). No state is written, so the hold lifts by itself.
+  if (anyInFight(state.unifiedActions, new Set(members.map((m) => m.id)))) {
+    return { moved: false, dissenters: [] };
+  }
 
   const leader = getGroupLeader(graph, group.id);
   const props = group.properties as Record<string, unknown>;

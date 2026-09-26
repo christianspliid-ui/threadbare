@@ -210,7 +210,7 @@ const TRUTH_BURIED_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'veil.quiet_devotion',
+          query: { kind: 'encounter_template', tags: ['#temple_errand'] },
           delayTicks: 18,
           priority: 1.1,
           seedLabel: 'The faith becomes true by its fruit',
@@ -320,7 +320,7 @@ const TRUTH_SURFACED_AFTERMATH = {
         },
         {
           kind: 'encounter_seed' as const,
-          encounterFamily: 'veil.quiet_devotion',
+          query: { kind: 'encounter_template', tags: ['#temple_errand'] },
           delayTicks: 16,
           priority: 1.05,
           seedLabel: 'The faithful who lost the river',

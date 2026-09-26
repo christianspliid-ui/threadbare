@@ -116,6 +116,7 @@ import { ScryProvider } from './contexts/ScryContext';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
 import { HexSidebar } from './HexSidebar';
+import { buildLairMonsterCardModel, type LairMonsterCardModel } from './lair/buildLairMonsterCardModel';
 import { HexChronicle } from './HexChronicle';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
@@ -1502,6 +1503,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
       tick: gameState.tick,
       gameState,
+      // THR-1551 (fight on screen F2) — the watched view's one opponent line on a
+      // fight step reads the live unified action, found the way the unified path
+      // finds it: by id, else the snapshot the notification runtime carried.
+      activeAction: (tieredEncounterState.activeActionId
+        ? gameState.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId)
+        : undefined) ?? tieredEncounterState.activeActionSnapshot ?? undefined,
     });
   }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick]);
 
@@ -1836,6 +1843,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     fogDisabled,
     worldVersion: runtime.worldVersion,
   });
+
+  // ── Lair monster cards for the focused hex's lairs (THR-1550, THR-1552) ──
+  // Keyed on worldVersion, not graph identity (the graph mutates in place). A
+  // cleared lair gets a card too: it shows the beast that held it, slain.
+  const hexLairMonsterCards = useMemo(() => {
+    const cards: Record<string, LairMonsterCardModel | null> = {};
+    for (const loc of hexLocations) {
+      const subtype = loc.properties?.locationSubtype ?? loc.properties?.locationType;
+      if (subtype !== 'lair' && subtype !== 'cleared_lair') continue;
+      cards[loc.id] = buildLairMonsterCardModel(gameState.graph, loc.id, gameState.tick, gameState.ascendantId);
+    }
+    return cards;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hexLocations, gameState.graph, gameState.ascendantId, runtime.worldVersion]);
 
   // ── Survey people-layer prose — most-recent survey_completed event for the focused hex (THR-439) ──
   const surveyPeopleEvent = useMemo(() => {
@@ -4869,6 +4890,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       factions={hexFactions}
                       dangerLevel={hexDangerLevel}
                       onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
+                      lairMonsterCards={hexLairMonsterCards}
+                      onMonsterClick={(monsterId) => handleThreadNodeSelect(monsterId, 'agent')}
                     />
 
                     {/* Main: Narrative chronicle */}

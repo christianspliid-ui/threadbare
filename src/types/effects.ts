@@ -994,6 +994,17 @@ export interface EffectRuntimeState {
   chargesRemaining?: number;
   /** Reactive cooldown: tick when last triggered */
   reactiveLastTriggeredTick?: number;
+  /**
+   * THR-1568 — ticks left on the window a fired reaction opened for its nested
+   * modifier (`duration` / `passive` / `permanent` / `decay`). The resolver reads
+   * the nested value only while this is > 0; `effectTick` counts it down.
+   * Deliberately its own field rather than `ticksRemaining`: an attachment may
+   * carry a top-level `duration` effect beside the reaction, and one shared
+   * countdown would let either one end the other.
+   */
+  reactiveWindowTicksRemaining?: number;
+  /** THR-1568 — the full length of the open reaction window (a `decay` burst reads elapsed ticks from it). */
+  reactiveWindowTicks?: number;
   /** Spell cooldown: tick when last cast */
   spellLastCastTick?: number;
   /** Whether the effect is suppressed */

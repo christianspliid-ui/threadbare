@@ -5,7 +5,7 @@
  *
  * **Spawn-only.** No `locationSubtypes` and no cache registration, so the draw
  * pipeline never offers it. It arrives through plan doc 3's lair trigger, plan doc
- * 6's hunt (by query: `actorAffinities` is declared because `eligibleAt` drops a
+ * 6's hunt (by query — the `#lair_confront` tag, THR-1560: `actorAffinities` is declared because `eligibleAt` drops a
  * template without it), and the `spawnFight` debug lever.
  *
  * The opponent is the action's target (the block carries no `opponentRef`). The
@@ -30,9 +30,12 @@ const STEPS = fightBlock({
   // own cards into every exchange, scored for a scene of strength and danger.
   deal: { count: 4, tags: ['might', 'peril'] },
   nerve: {
+    // THR-1545: the family-keyed opening. `{target:family}` names what kind of creature
+    // waits inside (the family's card line), and the whole sentence drops out for a
+    // target that is not a monster.
     narrativeTemplate:
       '{name} stands at the mouth of the den near {location}. Inside, {target} has heard them, '
-      + 'and is waiting.',
+      + 'and is waiting.{?target_has_family} It is {target:family}.{/target_has_family}',
     purposeLine: 'Stand your ground',
   },
   clashes: [
@@ -68,6 +71,9 @@ export const FIGHT_LAIR_CONFRONT: UnifiedActionTemplate = {
   scale: 'regional',
   apCost: 1,
   actorAffinities: ['individual'],
+  // THR-1560 — the hunt's kept branch finds the confront by this tag, and this is its
+  // one bearer (the runtime-reader rule: `cell.destroy.monster`'s meeting query reads it).
+  tags: ['#lair_confront'],
   sphereAffinity: 'matter',
   motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
   steps: STEPS,

@@ -14,6 +14,8 @@ import {
   SUBORNED_WARBAND_DISSOLUTION_REASON,
   WARBAND_INITIAL_COHESION,
   WARBAND_TARGET_MEMBER_COUNT,
+  HUNT_TRACK_SECRET_TYPE,
+  HUNT_TRACK_MARK_MAGNITUDE,
 } from '../data/strategic-action-constants';
 import { getAgentLocationId, getAgentsAtLocation, getFactionMembershipEdges } from './graphQueries';
 import { assignArtifactTrait } from './artifactTraits';
@@ -710,6 +712,55 @@ export function mintLeverageMark(
   } catch (e) {
     return { success: false, op: 'mint_leverage_mark', error: String(e) };
   }
+}
+
+/**
+ * Tracking a beast (THR-1560, plan doc `Docs/plans/2026-09-23-hunts.md` § Engine 1) —
+ * the **one writer** of what learning a monster's ways leaves behind, so a later
+ * divination spell has a single op to call:
+ *
+ * - a `hidden_weakness` mark on the beast, through {@link mintLeverageMark} — plan doc
+ *   2's advantage reader turns a live one into "Their secret" on the first clash;
+ * - `monsterState.temperShown = true`, so the lair card and the fight header reveal
+ *   the beast's temper.
+ *
+ * One secret per hunter per beast: a mark already held is refused by the mint
+ * (`mark_already_held`) and the temper write still lands, idempotently. Emits
+ * `hunt.tracked` either way. Fail-soft: a missing card reveals nothing.
+ */
+export function recordHuntTracking(
+  graph: WorldGraph,
+  hunterId: string,
+  monsterId: string,
+  tick: number,
+): GraphOpResult {
+  const mark = mintLeverageMark(graph, hunterId, monsterId, HUNT_TRACK_SECRET_TYPE, HUNT_TRACK_MARK_MAGNITUDE, tick);
+  let temperRevealed = false;
+  try {
+    const monster = graph.getNode(monsterId);
+    const card = monster?.properties.monsterState as Record<string, unknown> | undefined;
+    if (monster && card && typeof card === 'object') {
+      if (card.temperShown !== true) {
+        graph.updateNode(monsterId, { properties: { ...monster.properties, monsterState: { ...card, temperShown: true } } });
+      }
+      temperRevealed = true;
+    }
+  } catch {
+    // Fail-soft: the temper stays hidden; the mark (if minted) still stands.
+  }
+  const hunterName = graph.getNode(hunterId)?.name ?? hunterId;
+  const monsterName = graph.getNode(monsterId)?.name ?? monsterId;
+  emitTrace({
+    category: 'hunt.tracked',
+    tick,
+    hunterId,
+    monsterId,
+    markEdgeId: mark.createdId ?? '',
+    temperRevealed,
+    summary: `${hunterName} has learned the ways of ${monsterName}${mark.success ? '' : ` (no new mark: ${mark.error})`}`,
+  } as TraceEntry);
+  if (!mark.success && !temperRevealed) return { success: false, op: 'record_hunt_tracking', error: mark.error ?? 'nothing_learned' };
+  return { success: true, op: 'record_hunt_tracking', createdId: mark.createdId };
 }
 
 /**

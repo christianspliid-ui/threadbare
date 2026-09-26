@@ -4,12 +4,12 @@
  *
  * Each is registered in the THR-928 trio (`TraceCategory`, `TRACE_CATEGORIES`,
  * `TraceEntry`) in the slice that first emits it: `monster.minted` and
- * `monster.hardened` in M1.
+ * `monster.hardened` in M1; `monster.felled` and `monster.driven_off` in M3 (THR-1546).
  */
 
 import type { TraceBase } from '../trace';
 import type { FightRatingWord } from '../fight';
-import type { MonsterFamilyId } from '../monster';
+import type { LairTier, MonsterFamilyId } from '../monster';
 
 /** Emitted once when `createNamedElite` writes a monster's card. */
 export interface MonsterMintedTrace extends TraceBase {
@@ -33,4 +33,70 @@ export interface MonsterHardenedTrace extends TraceBase {
   lairId: string;
   clockSize: number;
   dread: FightRatingWord;
+}
+
+/**
+ * Emitted when a fight ends `overcome` against a monster (THR-1546). `funnel` is what
+ * the death funnel returned; only `died` writes to the lair. `lairTier` is `'none'`
+ * when the monster's lair could not be resolved (missing, already cleared, or naming
+ * a different elite).
+ */
+export interface MonsterFelledTrace extends TraceBase {
+  category: 'monster.felled';
+  monsterId: string;
+  lairId: string;
+  byActorId: string;
+  lairTier: LairTier | 'none';
+  funnel: 'died' | 'warded' | 'echo' | 'not_a_mortal';
+  lairCleared: boolean;
+  clearingProgressAfter: number;
+  /** Set when `clearLair` threw; the lair was not credited. */
+  clearError?: string;
+}
+
+/** Emitted when a fight ends `driven_off` against a monster (THR-1546). */
+export interface MonsterDrivenOffTrace extends TraceBase {
+  category: 'monster.driven_off';
+  monsterId: string;
+  lairId: string;
+  byActorId: string;
+  clearingProgressAfter: number;
+}
+
+/** Why a fight trigger did not spawn (THR-1547). */
+export type FightTriggerSkip =
+  | 'cooldown'
+  | 'busy'
+  | 'monster_dead'
+  | 'arriving_for_hunt'
+  | 'hunt_appointment'
+  | 'avatar';
+
+/**
+ * Emitted when an arrival lands a mortal at a lair (or a place inside one) — once per
+ * arrival, spawned or skipped (THR-1547). Absent `skipped` means `fight.lair.confront`
+ * was spawned; `actionId` names it.
+ */
+export interface FightTriggerTrace extends TraceBase {
+  category: 'fight.trigger';
+  source: 'lair_arrival';
+  mortalId: string;
+  monsterId: string;
+  lairId: string;
+  skipped?: FightTriggerSkip;
+  actionId?: string;
+}
+
+/**
+ * Emitted when a hunter finishes tracking a beast (THR-1560, plan doc
+ * `Docs/plans/2026-09-23-hunts.md` § Tracing): `recordHuntTracking` minted the
+ * `hidden_weakness` mark (`markEdgeId`, `''` when the mint was refused) and revealed the
+ * beast's temper on its card (`temperRevealed`).
+ */
+export interface HuntTrackCompletedTrace extends TraceBase {
+  category: 'hunt.tracked';
+  hunterId: string;
+  monsterId: string;
+  markEdgeId: string;
+  temperRevealed: boolean;
 }

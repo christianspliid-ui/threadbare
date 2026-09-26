@@ -6,7 +6,8 @@
  *   1. Awareness + Faction — distance-limited visibility + faction network intel
  *   2. Visibility — visibleTo filter (faction/agent/archetype/culture gating)
  *   3. Prerequisites — chains, traits, faction joins, and actor eligibility
- *      (group-exclusive `minGroupMembers`, confrontation `requiresOpposingBand`)
+ *      (group-exclusive `minGroupMembers`, confrontation `requiresOpposingBand`,
+ *      the lair-monster hunt's `requiresLiveMonster`)
  *   4. Threat — courage/capability vs threat-rating tolerance check
  *   5. Performance Cap — cap at MAX_SCORED_CANDIDATES with diversity floor
  *
@@ -49,6 +50,8 @@ import type { ReachDomain, TraitDefinitionProperties } from '../types/traits';
 import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { livingGroupMemberCount } from './groups/groupQueries';
 import { hasOpposingBand } from './groups/bandOpposition';
+import { hasLiveLairMonsterAt } from './monsters/liveMonster';
+import { liveHuntFavourAtLocation } from './monsters/hunts';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import type { BearerTraitRefs } from './traitRefIndex';
@@ -73,6 +76,7 @@ export {
   OUTGROWTH_CAP_THRESHOLD,
   OUTGROWTH_FILTER_ENABLED,
   PERSONAL_OFFER_CAP_RESERVE,
+  SOCIAL_OFFER_CAP_RESERVE,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -82,6 +86,7 @@ import {
   OUTGROWTH_CAP_THRESHOLD,
   OUTGROWTH_FILTER_ENABLED,
   PERSONAL_OFFER_CAP_RESERVE,
+  SOCIAL_OFFER_CAP_RESERVE,
 } from '../data/agent-behavior-constants';
 
 /** Ordered threat tiers for index-based comparison */
@@ -341,6 +346,14 @@ export function filterByPrerequisites(
     // Confrontation gate: an encounter about fighting a specific band is not
     // offered when no band is standing here.
     if (template?.requiresOpposingBand && !bandPresent()) continue;
+    // Monster gate (THR-1545): a hunt that fights a lair's named beast is offered
+    // only where a living one stands. Keyed on the entry's location, not the agent,
+    // so it covers the Adventurers' Guild's quest entries too (built at the member's
+    // own location): the Guild's offer is the hunt in front of you.
+    if (template?.requiresLiveMonster && !hasLiveLairMonsterAt(graph, entry.locationId)) continue;
+    // THR-1560: nor to a hunter waiting at the den with a live hunt appointment — the
+    // appointment's confront is the fight they came for, and it is the only one.
+    if (template?.requiresLiveMonster && liveHuntFavourAtLocation(graph, agentId, entry.locationId)) continue;
     if (template?.requiredTraits && template.requiredTraits.length > 0) {
       // THR-786: one shared resolver, ANY-match on trait refs (node id, short id,
       // display name, tag). `every()` across the declared predicates is unchanged —
@@ -737,6 +750,37 @@ export function capWithDiversity(
         reservedKeys.add(key);
         added++;
         if (added >= needed) break;
+      }
+    }
+  }
+
+  // Phase 1d: preserve up to SOCIAL_OFFER_CAP_RESERVE social-path entries (THR-1614).
+  //
+  // The same positional cut Phase 1c closed for faction quests: `generateSocialCandidates`
+  // entries also ride the dynamic tail, and measured on seeds 42 and 99 / medium 0 of
+  // ~1,000 offered social entries survived this stage — the whole social, tavern, scene and
+  // secret pool was unreachable. A sibling reserve rather than a share of Phase 1c: social
+  // entries are merged ahead of faction quests and run ~16 per decider, so one pooled
+  // reserve would hand the guild slots to whoever talked first.
+  //
+  // Ordered after 1a–1c so none of their guarantees is weakened. The first pass takes
+  // distinct templates so one talkative crowd cannot fill every slot with the same scene.
+  const socialReserved = reserved.filter(e => e.socialOffer).length;
+  if (socialReserved < SOCIAL_OFFER_CAP_RESERVE) {
+    const needed = SOCIAL_OFFER_CAP_RESERVE - socialReserved;
+    const seenTemplates = new Set(reserved.filter(e => e.socialOffer).map(e => e.templateId));
+    let added = 0;
+    for (const distinctOnly of [true, false]) {
+      for (const entry of entries) {
+        if (added >= needed) break;
+        if (!entry.socialOffer) continue;
+        if (distinctOnly && seenTemplates.has(entry.templateId)) continue;
+        const key = `${entry.templateId}:${entry.locationId}`;
+        if (reservedKeys.has(key)) continue;
+        reserved.push(entry);
+        reservedKeys.add(key);
+        seenTemplates.add(entry.templateId);
+        added++;
       }
     }
   }

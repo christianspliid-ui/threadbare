@@ -22,6 +22,8 @@ import type { EffectRuntimeState } from '../types/effects';
 import { getActionGates } from './effects/effectQueries';
 import { livingGroupMemberCount } from './groups/groupQueries';
 import { hasOpposingBand } from './groups/bandOpposition';
+import { hasLiveLairMonsterAt } from './monsters/liveMonster';
+import { liveHuntFavourAtLocation } from './monsters/hunts';
 import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -154,6 +156,15 @@ export function generateUnifiedCandidates(
     // is only reachable while that enemy is standing here. Checked after the cheap
     // string filters above so the group scan runs on the fewest templates possible.
     if (template.requiresOpposingBand && !opposingBandPresent()) {
+      continue;
+    }
+    // Monster gate (THR-1545): the named-beast hunt needs a living beast in this lair.
+    if (template.requiresLiveMonster && !hasLiveLairMonsterAt(graph, locationId)) {
+      continue;
+    }
+    // THR-1560: a hunter holding a live hunt appointment at this den waits for its
+    // confront; the encounter hunt is not offered on top of it.
+    if (template.requiresLiveMonster && liveHuntFavourAtLocation(graph, actorId, locationId)) {
       continue;
     }
 

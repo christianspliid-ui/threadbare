@@ -15,6 +15,7 @@ import {
   QUINTESSENCE_MAX_DEFAULT,
   QUINTESSENCE_THRESHOLDS,
   ZERO_STATE_RULES,
+  ZERO_STATE_RULE_PROSE,
   getQuintessenceThresholdState,
 } from '../types/quintessence';
 import type { QuintessenceThresholdState } from '../types/resolution';
@@ -206,7 +207,9 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
       }
 
       // Dissolution check (after regen — regen does not rescue entities already at 0)
-      if (q <= QUINTESSENCE_THRESHOLDS.DISSOLUTION) {
+      // THR-1602: once only — a node stays at 0 after dissolving, and without
+      // this guard every later tick re-announced it (the doubled chronicle line).
+      if (q <= QUINTESSENCE_THRESHOLDS.DISSOLUTION && node.properties.dissolved !== true) {
         // Re-read from graph after potential regen update
         const updatedNode = graph.getNode(node.id)!;
         const finalQ = updatedNode.properties.quintessence as number;
@@ -218,7 +221,7 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
             id: `dissolution_${node.id}_t${state.tick}`,
             type: 'dissolution_event',
             tick: state.tick,
-            message: `${nodeName} has dissolved. Rule: ${rule}`,
+            message: `${nodeName} has dissolved. ${ZERO_STATE_RULE_PROSE[rule] ?? ZERO_STATE_RULE_PROSE.removal}`,
             significance: 1.0,
           });
           // Mark as dissolved — do not remove from graph (fail-soft: let downstream handle)

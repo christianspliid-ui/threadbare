@@ -45,6 +45,10 @@ import type { ResolutionProbabilitySummary } from '../types/resolution';
 import { computeCapability } from './domainCapability';
 import type { WorldGraph } from './graph';
 import type { EncounterCacheEntry } from './encounterCache';
+import { computeStandingModifierTotal } from './resolutionModifiers';
+import type { ReachDomain } from '../types/traits';
+import type { SphereName } from '../types/index';
+import type { EffectRuntimeState } from '../types/effects';
 import {
   PUSH_COST_BASE,
   PUSH_MODIFIER,
@@ -117,6 +121,46 @@ export function isPushEligible(templateId: string): boolean {
 /** Check if a template is eligible for resist in the runtime. */
 export function isResistEligible(templateId: string): boolean {
   return RESIST_ELIGIBLE_PREFIXES.some(p => templateId.startsWith(p));
+}
+
+// ─── Standing modifiers (THR-1535) ─────────────────────────────────
+
+/**
+ * A mortal's standing-modifier total on a reach, for one decision pass. Built by
+ * `createStandingModifierReader`; the roll adds the same total
+ * (`computeStandingModifierTotal`), so the planner plans with what it will roll.
+ */
+export type StandingModifierReader = (reach: ReachDomain, sphere: SphereName | undefined) => number;
+
+/**
+ * THR-1535 — one reader per agent per decision pass (plan doc
+ * `2026-09-24-thr-1575-forecast-window.md` § Systems design 2): each (reach,
+ * sphere) pair is computed once and memoised, so scoring a hundred candidates
+ * costs at most eight reads per sphere, not one per step.
+ *
+ * Read at the mortal's *current* place. A candidate elsewhere rolls at its own
+ * place, so terrain and place conditions may differ there; items, traits,
+ * effects, sphere alignment and divine attention travel with the mortal.
+ */
+export function createStandingModifierReader(
+  graph: WorldGraph,
+  agentId: string,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): StandingModifierReader {
+  const memo = new Map<string, number>();
+  return (reach, sphere) => {
+    const key = `${reach}|${sphere ?? ''}`;
+    let total = memo.get(key);
+    if (total === undefined) {
+      try {
+        total = computeStandingModifierTotal(graph, agentId, reach, sphere, effectStates);
+      } catch {
+        total = 0; // Fail-soft (NFP #4): an unreadable modifier plans as none.
+      }
+      memo.set(key, total);
+    }
+    return total;
+  };
 }
 
 // ─── Step-Level Forecast ───────────────────────────────────────────
@@ -285,8 +329,14 @@ export function forecastEncounterExpectedUtility(
   agentId: string,
   graph: WorldGraph,
   rewardScale?: number,
+  /**
+   * THR-1535 — the agent's standing modifiers for this decision pass. Absent → a
+   * fresh reader with no live effect states (tests, one-off callers).
+   */
+  standing?: StandingModifierReader,
 ): EncounterForecast {
   const reward = rewardScale ?? entry.successRewardEstimate;
+  const standingOf = standing ?? createStandingModifierReader(graph, agentId);
   const stepForecasts: ResolutionProbabilitySummary[] = [];
   let totalExpectedUtility = 0;
   let completionProb = 1.0;
@@ -301,13 +351,14 @@ export function forecastEncounterExpectedUtility(
       cap = 0.5; // Fail-soft: uncertain capability
     }
 
-    const probs = forecastStepProbabilities(cap, entry.stepDifficulties[i], undefined, entry.scale);
+    const mod = standingOf(entry.stepReaches[i], entry.sphereAffinity);
+    const probs = forecastStepProbabilities(cap, entry.stepDifficulties[i], mod, entry.scale);
     stepForecasts.push(probs);
 
     // Per-step expected utility, weighted by probability of reaching this step
     const stepReward = reward / entry.stepCount; // Distribute reward across steps
     const stepEU = forecastStepExpectedUtility(
-      cap, entry.stepDifficulties[i], stepReward, undefined, entry.scale,
+      cap, entry.stepDifficulties[i], stepReward, mod, entry.scale,
     );
     totalExpectedUtility += reachProbability * stepEU;
 
@@ -318,8 +369,8 @@ export function forecastEncounterExpectedUtility(
   }
 
   // Push/resist analysis
-  const pushResult = estimatePushBenefit(entry, agentId, graph, reward);
-  const resistResult = estimateResistValue(entry, agentId, graph, reward);
+  const pushResult = estimatePushBenefit(entry, agentId, graph, reward, standingOf);
+  const resistResult = estimateResistValue(entry, agentId, graph, reward, standingOf);
 
   return {
     expectedUtility: totalExpectedUtility,
@@ -355,6 +406,7 @@ function estimatePushBenefit(
   agentId: string,
   graph: WorldGraph,
   rewardScale: number,
+  standingOf: StandingModifierReader,
 ): PushAnalysis {
   const noResult: PushAnalysis = { recommended: false, benefit: 0 };
 
@@ -382,12 +434,13 @@ function estimatePushBenefit(
       cap = 0.5;
     }
     const stepReward = rewardScale / entry.stepCount;
+    const mod = standingOf(entry.stepReaches[i], entry.sphereAffinity);
 
     if (entry.stepDifficulties[i] >= HARD_STEP_DIFFICULTY_THRESHOLD) {
-      euWithout += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, undefined, entry.scale);
-      euWith += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, PUSH_MODIFIER, entry.scale);
+      euWithout += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, mod, entry.scale);
+      euWith += forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, mod + PUSH_MODIFIER, entry.scale);
     } else {
-      const eu = forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, undefined, entry.scale);
+      const eu = forecastStepExpectedUtility(cap, entry.stepDifficulties[i], stepReward, mod, entry.scale);
       euWithout += eu;
       euWith += eu;
     }
@@ -426,6 +479,7 @@ function estimateResistValue(
   agentId: string,
   graph: WorldGraph,
   rewardScale: number,
+  standingOf: StandingModifierReader,
 ): ResistAnalysis {
   const noResult: ResistAnalysis = { valuable: false, benefit: 0 };
 
@@ -451,7 +505,9 @@ function estimateResistValue(
       cap = 0.5;
     }
 
-    const probs = forecastStepProbabilities(cap, entry.stepDifficulties[i], undefined, entry.scale);
+    const probs = forecastStepProbabilities(
+      cap, entry.stepDifficulties[i], standingOf(entry.stepReaches[i], entry.sphereAffinity), entry.scale,
+    );
     const stepReward = rewardScale / entry.stepCount;
 
     // Resist downgrades: crit_failure → failure, failure → success_at_cost

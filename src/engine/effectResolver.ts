@@ -54,6 +54,7 @@ import {
   EFFECT_PER_ITEM_CAP,
 } from '../data/effect-constants';
 import { collectAttachmentEffects, hasEffectsFormat as _hasEffectsFormat } from './effects/effectWalker';
+import { reactiveWindowValue } from './effects/reactiveWindow';
 import {
   evaluatePredicate as _evaluatePredicate,
   evaluateOptionalCondition as _evaluateOptionalCondition,
@@ -137,11 +138,17 @@ export function getEffectModifierValue(
       return 0;
     }
 
+    case 'reactive': {
+      // THR-1568: a fired reaction whose nested effect is a modifier opens a
+      // window on runtime state; its value counts only while that is open.
+      // Reactions nesting an executor effect always read 0 here.
+      return reactiveWindowValue(effect, reach, runtimeState);
+    }
+
     // Non-modifier effect types — return 0
     case 'trait_grant':
     case 'transform':
     case 'aura':
-    case 'reactive':
     case 'teleport':
     case 'forced_move':
     case 'reveal':

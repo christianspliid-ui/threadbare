@@ -7,7 +7,7 @@ description: >
   Explicitly invoked (/wayfinder); design sessions may SUGGEST charting a map but
   never auto-chart. Adapted for Threadbare from mattpocock/skills `wayfinder`
   (THR-900). Plans, never builds — cleared maps hand off to design-session plan docs.
-last_validated_against: 2026-08-06
+last_validated_against: 2026-09-25
 ---
 
 # Wayfinder
@@ -31,8 +31,9 @@ content and building projects with it).
 ```
 loose big idea ──/wayfinder chart──▶ map + decision tickets
                                          │  (grilling / prototype / research / task)
-        attended chat sessions ──────────┤  resolve one HITL ticket per session
-        orchestrator (hourly) ───────────┤  burns down AFK tickets, surfaces HITL frontier
+        attended chat sessions ──────────┤  chart; reserved tickets; any ticket Christian names
+        design lane (4×/day) ────────────┤  decides unreserved tickets by delegation, closes maps
+        orchestrator (hourly) ───────────┤  burns down research tickets, surfaces reserved ones
                                          ▼
                           way is clear: map closes
                                          │
@@ -59,10 +60,18 @@ is the signal you've reached the edge of the map — hand off to design-session 
   else.
 - **Never write `Fixes` / `Closes` / `Resolves` before any issue id** in map bodies,
   ticket bodies, or resolution comments — bare `THR-XXX` only (THR-738 hazard class).
-- **HITL means Christian, live, in chat** (THR-608 — he is chat-only,
-  plain-language-only). A grilling or prototype ticket only resolves through that
-  exchange; an agent that answers its own questions has broken the ticket. AFK
-  tickets (research, agent-doable tasks) may run unattended.
+- **HITL means a judgement call with a veto owner, not a live conversation** (amended
+  2026-09-25, THR-1611). Since process.md rule 4's 2026-09-11 case, a grilling or
+  prototype ticket is **decided by the session that works it** — attended, or the
+  unattended `design-lane` — and recorded on the ticket as *decided by delegation*
+  with its outputs attached, so a veto has something to look at. Christian keeps
+  three things: **charting** (naming the destination), tickets listed under the map's
+  `## Reserved for Christian`, and **forks with no agreed outcome** (rule 4's
+  escalation test). A session that hits one of those reserves the ticket — adds it to
+  the Reserved section with the options it built — rather than deciding it. The
+  original rule ("an agent that answers its own questions has broken the ticket")
+  predates both rulings and is retired; what survives of it is: never decide what
+  the evidence cannot decide.
 - **One HITL ticket per session.** Research tickets excepted — they run as background
   subagents and several may burn down in parallel.
 - **Refer by name.** In everything Christian reads — chat, briefing lines, the map's
@@ -90,6 +99,13 @@ One or two lines; every session orients to it before choosing a ticket.>
 standing preferences Christian has stated. **Any effort whose destination touches a
 player-facing surface lists `Docs/design-system/laws.md` here** — the UI Laws bind
 prototype tickets, verdict sessions, and the plan docs the map produces (THR-1007)>
+
+## Reserved for Christian
+
+<tickets Christian wants to decide himself — asked at charting ("any of these yours
+alone?"), or added later by a session that hit a fork with no agreed outcome, with a
+one-line reason. Every ticket NOT listed here may be decided by delegation. Empty is
+normal. The design lane never works a ticket listed here.>
 
 ## Decisions so far
 
@@ -132,9 +148,12 @@ AFK) — plus nothing that would attract other lanes.
 
 ## Ticket types
 
-- **Grilling** (HITL): conversation with Christian via the `grill-me` skill,
-  one question at a time, agent recommends and interrogates, Christian decides.
-  The default **only when there is nothing concrete to react to**.
+- **Grilling** (HITL): attended, a conversation with Christian via the `grill-me`
+  skill, one question at a time, agent recommends and interrogates, Christian decides.
+  Unattended (`design-lane`), the same question tree run against evidence — canon,
+  Vision, prior verdicts, measured substrate — decided where the evidence decides,
+  reserved where it cannot. The default **only when there is nothing concrete to
+  react to**.
   Terminology disagreements route through `ubiquitous-language` (UL wins).
 - **Prototype** (HITL): raise the fidelity of the discussion with a cheap concrete
   artifact Christian can react to — an outline, a mock screen (`?view=styleguide`
@@ -185,7 +204,10 @@ Two modes. Either way, never resolve more than one HITL ticket per session.
    fog** — the way is already clear, the whole journey fits one session — you don't
    need a map. Stop and say so; a normal design-session is cheaper.
 3. **Create the map** (label `wayfinder:map`, in its project): Destination + Notes
-   filled, Decisions-so-far empty, fog sketched into Not yet specified.
+   filled, Decisions-so-far empty, fog sketched into Not yet specified. **Ask Christian
+   one question before leaving: "Are any of these yours alone?"** — his answer fills
+   `## Reserved for Christian`. Everything else on the map will be worked by the
+   design lane between chats (THR-1611), so this is the moment his reservations count.
 4. **Create the specifiable tickets** as children — then wire `blockedBy` relations
    in a **second pass** (issues need ids before they can reference each other).
 5. **Fire the research subagents** for any `wayfinder:research` tickets now on the
@@ -211,6 +233,13 @@ Two modes. Either way, never resolve more than one HITL ticket per session.
 When no open tickets remain and no fog is left, the way is clear. Closing is a
 deliberate compression step, not just a state change:
 
+**Order trap — post the carve-up before you resolve the last child ticket.**
+Linear's sub-issue automation moves the map to `Done` about 20 seconds after its
+last open child closes (impediment #1061: THR-1258, 2026-09-23). If you resolve the
+last decision first, the map reads Done with no route summary. So when one
+decision ticket is left, write step 1's comment on the map first, then close that
+ticket, and expect step 2 to have happened on its own.
+
 1. **Propose the carve-up in the closing comment**: how the map's decisions divide
    into plan docs (how many, which decisions each draws on). The map→plan-docs
    compression is itself a decision, so it gets recorded like one — on the map,
@@ -234,8 +263,9 @@ is a **fresh effort with a fresh map**, which may cite the old one as input.
 
 | Lane | Does |
 |---|---|
-| **Attended chat session** (Christian present) | Charting; HITL tickets (grilling/prototype/HITL-task); closing the map |
-| **Orchestrator** (hourly, § wayfinder sweep in its skill) | Burns down frontier AFK tickets via subagents; surfaces the HITL frontier under `## Needs Christian` → hourly briefing (Christian's decision, 2026-07-31: auto-resolve AFK, briefing for HITL) |
+| **Attended chat session** (Christian present) | Charting (the only lane that may); reserved tickets; any ticket Christian names; closing the map |
+| **Design lane** (`tb-design-lane`, four runs a day — `design-lane` skill, THR-1611) | Decides unreserved grilling/prototype/task tickets by delegation with outputs attached; closes cleared maps with their carve-up; authors the carve-up's plan docs through `design-session`. Its decisions reach Christian as a veto line in the briefing, never as an ask |
+| **Orchestrator** (hourly, § wayfinder sweep in its skill) | Burns down frontier research tickets via subagents; surfaces only **reserved** tickets under `## Needs Christian` (amended 2026-09-25 — the 2026-07-31 "briefing for HITL" routing was superseded by rule 4's 2026-09-11 case) |
 | **Executor / pull-work** | Nothing. Wayfinder issues never reach its queue |
 
 Concurrent sessions are expected — the claim discipline (assignee-before-work,

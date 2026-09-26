@@ -1337,7 +1337,7 @@ const CHAPTERS = [
         table: {
           headers: ['Guard', 'Live behavior'],
           rows: [
-            ['<strong>Occupied actors</strong>', 'Actors already in an active encounter or unresolved unified action are skipped entirely.'],
+            ['<strong>Occupied actors</strong>', 'Actors already in an active encounter or unresolved unified action are skipped entirely. Since THR-1558 so is the <em>opponent</em> of an unresolved fight (<code>fightParticipantIds</code>, keyed <code>fightState?.opponentId ?? targetId</code>), from the moment the duel spawns — one live fight per mortal.'],
             ['<strong>Moving actors</strong>', 'Traveling actors do not run the full chooser every tick; they only reevaluate on cadence or when a dramatically better heading appears.'],
             ['<strong>Idle score threshold</strong>', 'If the best final score stays below <span class="num">0.0001</span>, the actor idles instead of forcing a weak pick.'],
             ['<strong>Cooldowns</strong>', 'Abandoned encounters cool down for 6 ticks, completed ones for 20 ticks before they can be reattempted.'],

@@ -468,9 +468,14 @@ const BRIDGE_KEEPER_SPEC: EncounterSupportActorSpec = {
   spawnName: 'Halda Brenn',
 };
 
-/** Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. */
+/**
+ * Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. THR-1567:
+ * the envelope spans wayside + rural, so both classes' defaults are composed, as
+ * {@link FAMILY_SUPPORT_BUNDLE} does — bind-only, so each binds only who is present.
+ */
 const BRIDGE_SUPPORT_BUNDLE: EncounterSupportBundle = [
   ...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside,
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.rural,
   BRIDGE_KEEPER_SPEC,
 ];
 
@@ -486,12 +491,18 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
   apCost: 1,
   actorAffinities: ['individual'],
   motivations: ['courage_prudence'],
-  settings: ['wayside'],
+  // THR-1567 — widened to rural (as THR-1524 widened the Crossroads). A toll bridge
+  // is a road-and-lane thing: the farm lanes out of a hamlet cross rivers far more
+  // often than a camp does, and `wayside` alone (8 of 974 places, seed 42 / medium)
+  // fired it zero times in 200 ticks. The spine holds in both: an old bridge, a
+  // keeper taking coppers, a ford upstream.
+  settings: ['wayside', 'rural'],
   // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (BRIDGE_STEP).
   openings: {
     wayside: '{name} reaches the river crossing near {location}.',
+    rural: '{name} reaches the toll bridge on the lane out of {location}.',
   },
-  locationSubtypes: expandSettings(['wayside']),
+  locationSubtypes: expandSettings(['wayside', 'rural']),
   // THR-1165 — casts the toll keeper, so the mark on her lands on her.
   supportBundle: BRIDGE_SUPPORT_BUNDLE,
   traitVariants: [
@@ -516,8 +527,9 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
       // resolvable in the live world the player is in, and the prose must name
       // that particular object. This chip's referents — "the river crossing",
       // "the ford upstream" — are landscape fiction. The template registers at
-      // `wayside`, which expands to `camp | oasis | wilderness`, so it spawns on
-      // hexes that in all likelihood carry no river at all.
+      // `wayside` + `rural` (THR-1567), which expand to `camp | oasis | wilderness`
+      // and `hamlet | farmland | mining`, so it spawns on hexes that in all
+      // likelihood carry no river at all.
       //
       // The ruling allowed one alternative: bind the spawn envelope to hexes
       // that really carry the feature. Measured, that is not cheap. `hasRiver`
@@ -975,6 +987,13 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
   apCost: 1,
   actorAffinities: ['individual'],
   motivations: ['courage_prudence'],
+  // THR-1567 — deliberately rare: stays wayside-only. A snowbound pass needs high
+  // ground, and no second setting class is honest about that. `rural` is mostly
+  // hamlets and farmland (only `mining` sits in the hills), `stronghold` is castles
+  // as well as pass-forts, and a class is all-or-nothing. Honest reach here would
+  // need a terrain/elevation axis on the registration path — the same finding as
+  // the Unsafe Bridge's river (THR-1153), a design change and not a content one.
+  // The scene is a mountain storm, and a mountain storm is allowed to be rare.
   settings: ['wayside'],
   // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (PASS_CLIMB_STEP).
   openings: {
@@ -1471,9 +1490,13 @@ const CARAVAN_MASTER_SPEC: EncounterSupportActorSpec = {
   spawnName: 'Ferrin Oake',
 };
 
-/** Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. */
+/**
+ * Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. THR-1567:
+ * wayside + rural defaults both composed, as {@link BRIDGE_SUPPORT_BUNDLE} does.
+ */
 const CARAVAN_SUPPORT_BUNDLE: EncounterSupportBundle = [
   ...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside,
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.rural,
   CARAVAN_MASTER_SPEC,
 ];
 
@@ -1489,12 +1512,18 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
   apCost: 1,
   actorAffinities: ['individual'],
   motivations: ['revelation_discretion', 'sacrifice_survival'],
-  settings: ['wayside'],
+  // THR-1567 — widened to rural. A caravan needs a road, and the road to a walled
+  // town runs through hamlets and farmland, not only past camps; `wayside` alone
+  // fired it zero times in 200 ticks. The rural opening has the traveler fall in
+  // as the column passes through, which is what makes them the spine's "last to
+  // join, a stranger to every face". Not `urban`: the gates are four days on.
+  settings: ['wayside', 'rural'],
   // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (CARAVAN_FIND_STEP).
   openings: {
     wayside: '{name} walks with a caravan on the road to {location}.',
+    rural: '{name} falls in with a caravan as it passes through {location}.',
   },
-  locationSubtypes: expandSettings(['wayside']),
+  locationSubtypes: expandSettings(['wayside', 'rural']),
   // THR-1165 — casts the caravan master, so the bond the ending describes binds
   // the man who asked rather than the wayside default's ambient hermit.
   supportBundle: CARAVAN_SUPPORT_BUNDLE,

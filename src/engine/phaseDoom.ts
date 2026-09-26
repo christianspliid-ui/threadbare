@@ -10,7 +10,7 @@ import { DOOM_PRESSURE_PER_TIER } from '../types/sphereAffinity';
 import type { HexMutation } from '../types/hexMutation';
 import { advanceDoomClock } from './doomClock';
 import { evaluateIdentityMilestones } from './doomIdentityMilestones';
-import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
+import { processEffectEvent, applyEffectEventResult, shouldExecuteReactive } from './effects/effectEvents';
 import { applyExecutionResult } from './effects/effectEventDispatch';
 import { executeEffect } from './effectExecutors';
 import { instantiateReward } from './rewardPool';
@@ -260,6 +260,8 @@ function fireDoomThresholdEffects(
     }
 
     for (const fired of eventResult.reactivesFired) {
+      // THR-1568: window reactions landed inside processEffectEvent.
+      if (!shouldExecuteReactive(fired)) continue;
       const execResult = executeEffect(fired.nestedEffect, {
         casterId: fired.agentId,
         tick: state.tick,

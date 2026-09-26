@@ -61,18 +61,19 @@
 | `journey` | · | · | · | · | · | ✓ | · |
 | `receipt` | · | · | · | · | · | ✓ | · |
 
-**Totals.** 49 union members across 7 vocabularies are `WorldRefKind`s; 3 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
+**Totals.** 49 union members across 7 vocabularies are `WorldRefKind`s; 4 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
 
 #### `EntityVisualKind`
 
 What the entity-visual resolver can draw a tile for. — `src/data/entity-visual-fallbacks.ts`
 
-Members: `agent`, `avatar`, `location`, `sublocation`, `encounter`, `faction`, `artifact`, `army`, `npc-role`, `companion`, `unknown`
+Members: `agent`, `avatar`, `location`, `sublocation`, `encounter`, `faction`, `artifact`, `army`, `npc-role`, `companion`, `monster`, `unknown`
 
 *Not referenceable kinds:*
 
 - **`avatar`** — A render-time refinement of `agent` — the player's own vessel, drawn with its own tile. A reference names the agent; the resolver decides it is the avatar.
 - **`npc-role`** — A render-time refinement — an unnamed role-holder (*the smith*) drawn from a role tile. Nothing can reference one, because it has no node of its own.
+- **`monster`** — A render-time refinement of `agent` (THR-1550) — a lair's beast, drawn with the monster portrait and never knowledge-gated. A reference names the agent; the resolver (or the chip icon resolver, for an explicit `agent`) decides it is a monster.
 - **`unknown`** — The resolver's fallback tile, not a kind anything can name. Reaching it means resolution failed — which is the drop `__DEBUG.getWorldRefDrops()` records.
 
 *Deliberately absent:*

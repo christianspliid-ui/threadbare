@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 57,
+      "termCount": 59,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 56,
+      "termCount": 57,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -30,7 +30,7 @@
       "filename": "Traits.md",
       "title": "Traits",
       "contentAdjacent": true,
-      "termCount": 19,
+      "termCount": 20,
       "blurb": "Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the twelve category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not."
     },
     {
@@ -668,6 +668,49 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#realm",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "monster",
+      "name": "Monster",
+      "aliases": [
+        "lair beast",
+        "named elite",
+        "`isMonsterElite`"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "a lair's beast: a class of Mortal, not a kind; an individual actor with `isMonsterElite` or a `monsterState` card, read through `isMonster`; the plot never targets one, the hunt does (THR-1559)",
+      "body": "A **lair's beast: a class of `[[Agent]]` (Mortal), not a kind of its own.** An individual actor (`actorType: 'individual'`) carrying `isMonsterElite` — the flag `createNamedElite` writes when a lair escalates — or a `monsterState` fighting card. Either marker is enough; every reader asks through the one predicate, `isMonster` (`src/engine/monsters/isMonster.ts`), never the raw flag. Each Monster is minted with a fighting card and a `[[Temper]]`, and its fight clock persists on its node, so several mortals' blows add up on one beast.\n\n**A class, not a kind** (THR-1268). A Monster is a Mortal in the graph's shape — it has a position, it can be fought, scarred, slain and retained dead — so it takes no world-object registry row, no node type and no actorType. The class exists because systems meant for people must leave it out: the plot never targets one, it never graduates to an NPC, lair clearing's challenger scan and social visibility skip it, and no favour is ever owed to a beast. What *does* act on it is the hunt — `destroy × monster`, a mortal's long work of going after a beast from afar for a reason (a scar, a grievance, a den near home).\n\n**Not a Company, Army or Faction.** A monster family's faction definitions name the lair's allegiance; the Monster itself is one creature.\n\nSeated by delegation 2026-09-25 (THR-1559; `Docs/canon/process.md` § User review interface, rule 4).",
+      "seeAlso": [
+        {
+          "raw": "Agent",
+          "termName": "Agent",
+          "resolvedSlug": "agents#agent"
+        },
+        {
+          "raw": "Temper",
+          "termName": "Temper",
+          "resolvedSlug": "traits#temper"
+        },
+        {
+          "raw": "Opponent Card",
+          "termName": "Opponent Card",
+          "resolvedSlug": "encounters#opponent-card"
+        },
+        {
+          "raw": "Grudge",
+          "termName": "Grudge",
+          "resolvedSlug": "agents#grudge"
+        },
+        {
+          "raw": "World Object",
+          "termName": "World Object",
+          "resolvedSlug": "graph#world-object"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#monster",
       "contentAdjacent": true
     },
     {
@@ -2102,7 +2145,7 @@
       "status": "canonical",
       "statusNote": null,
       "oneLiner": "standing blood as a bidirectional `hostile_to` edge with an *injury* provenance; relationship colour, never a driver — one edge, band and grievance senses reconciled",
-      "body": "The standing hostility between two actors *where one has wronged the other*: a **bidirectional** `hostile_to` edge stamped with the tick it began and an injury `cause`. Relationship colour, **not a driver** — a grudge never puts anything on the decision board. Bidirectional because a grudge is a state of the relationship rather than of one party: having razed someone's home puts you at odds with them whether or not you feel wronged in return.\n\n**Not every `hostile_to` is a grudge (THR-1391).** The edge carries two readings and the motive gate names both. A provenance in `GRUDGE_PROVENANCE` — `group_engagement`, `mentorship_break`, `grievance_cooled` — reads as a **grudge**: one wronged the other. *Any other* provenance, and **no provenance at all**, reads as a `[[Rivalry]]`: the two are merely in each other's way. Grudge is the more specific reading of the same edge, so a caller that accepts both is told `grudge` when an injury is on it and `rivalry` when none is. The carve-out is load-bearing rather than tidy: the re-ignition rule and the vendetta lane key on the *injury* reading, so a rivalry cannot mint a vendetta by itself — only the harm it licenses can.\n\n**One edge with a provenance field, not two senses.** The word already appeared in canon prose for band contests — *\"There is blood between them and …\"* — before the reactive loop existed, and the two uses are the same mechanism, not a collision. Band opposition has written this edge since THR-731 with `cause: 'group_engagement'`; a cooled grievance writes the *same* edge with `cause: 'grievance_cooled'`, through the *same* single writer. The mortal sheet renders both through one clause map, so the sentence a player reads is identical in shape and differs only in why. Reconciled, not forked (THR-1379).\n\n**Actors of any kind.** Bands write grudges between `[[Group]]` nodes; grievances write them between individuals. The edge does not care which.\n\n**It never fades, and it makes the next harm worse.** A fresh harm from a culprit who already holds a grudge edge with the victim opens hotter (`GRIEVANCE_REIGNITION_BOOST`) — this is what makes the second betrayal worse than the first. Writing is idempotent and leaves an existing edge exactly as it is: refreshing `since` on every pass would make an old grudge indistinguishable from a fresh one, and the re-ignition rule reads the edge's *existence*, not its age. **The permanence is the edge's, not the grudge's** — nothing anywhere in the engine removes a `hostile_to`, so \"never fades\" is true of every reading of it, `[[Rivalry]]` included. That is a property of the substrate rather than a designed decay curve: any future forgetting is a removal sweep somebody has to write, with its own phase and trace.\n\n**Provenance is a closed set, and its key diverges by writer.** `GrudgeCause` is an enum rather than a free string because motive gates classify it to decide whether a destroy verb is licensed, and a typo in a free-form cause would silently read as \"no grudge\" — a gate that fails open on a misspelling is worse than one that fails closed on an unknown enum. Three older writers stamp provenance under three *different* keys (band opposition `cause`, excommunication `reason`, mentorship severance `basis`); the grievance writer joined the `cause` camp rather than widening a documented divergence, and readers must still handle all three. A feud declared by a notable writes the edge with no provenance key at all, which the prose reports honestly as *\"something neither of them speaks of\"* rather than guessing. **`covets` is a closed set of its own, deliberately beside this one:** the covet writer types its provenance as `CovetCause`, *not* as a fourth `GrudgeCause`, and `GRUDGE_PROVENANCE` was left unextended on purpose — that omission is the whole mechanism by which a `[[Covet Rivalry]]` stays a rivalry.\n\nCode anchors: `src/engine/grievance/grudgeEdge.ts` (`writeGrudge`, `hasGrudge`, `GrudgeCause`), `src/engine/groups/bandOpposition.ts`, `src/data/grievance-prose.ts` (`GRUDGE_CAUSE_CLAUSES`, `getGrudgeCauseClause`), `src/engine/undertakingMotive.ts` (`GRUDGE_PROVENANCE`, `isInjuryProvenance`).",
+      "body": "The standing hostility between two actors *where one has wronged the other*: a **bidirectional** `hostile_to` edge stamped with the tick it began and an injury `cause`. Relationship colour, **not a driver** — a grudge never puts anything on the decision board by itself, with one exception: **two grudge-holders standing in the same place can boil over into a `[[Duel]]`** (THR-1558 — the colocation phase rolls for it, on the pair's own stream; `old_quarrel`, a rivalry, never does). Bidirectional because a grudge is a state of the relationship rather than of one party: having razed someone's home puts you at odds with them whether or not you feel wronged in return. *(Amended 2026-09-25, THR-1558: \"bidirectional\" is the writer's rule, not an invariant of the edge. A failed plot writes a **one-way** `attempted_killing` hostility on the survivor, and skips the write when an edge already exists; a `faction_war`-licensed plot can therefore leave a grudge only the survivor holds. Readers must accept either direction — the duel trigger does.)*\n\n**Not every `hostile_to` is a grudge (THR-1391).** The edge carries two readings and the motive gate names both. A provenance in `GRUDGE_PROVENANCE` — `group_engagement`, `mentorship_break`, `grievance_cooled`, `attempted_killing` (THR-1430), `command_seized` and `usurpation_failed` (THR-1438), and `blood_drawn` (THR-1548: a fight that struck one of them down and left them alive, toward a monster as readily as a mortal) — reads as a **grudge**: one wronged the other. *(Corrected 2026-09-25, THR-1548: the list here had stopped at three while the gate's set grew to seven.)* *Any other* provenance, and **no provenance at all**, reads as a `[[Rivalry]]`: the two are merely in each other's way. Grudge is the more specific reading of the same edge, so a caller that accepts both is told `grudge` when an injury is on it and `rivalry` when none is. The carve-out is load-bearing rather than tidy: the re-ignition rule and the vendetta lane key on the *injury* reading, so a rivalry cannot mint a vendetta by itself — only the harm it licenses can.\n\n**One edge with a provenance field, not two senses.** The word already appeared in canon prose for band contests — *\"There is blood between them and …\"* — before the reactive loop existed, and the two uses are the same mechanism, not a collision. Band opposition has written this edge since THR-731 with `cause: 'group_engagement'`; a cooled grievance writes the *same* edge with `cause: 'grievance_cooled'`, through the *same* single writer. The mortal sheet renders both through one clause map, so the sentence a player reads is identical in shape and differs only in why. Reconciled, not forked (THR-1379).\n\n**Actors of any kind.** Bands write grudges between `[[Group]]` nodes; grievances write them between individuals. The edge does not care which.\n\n**It never fades, and it makes the next harm worse.** A fresh harm from a culprit who already holds a grudge edge with the victim opens hotter (`GRIEVANCE_REIGNITION_BOOST`) — this is what makes the second betrayal worse than the first. Writing is idempotent and leaves an existing edge exactly as it is: refreshing `since` on every pass would make an old grudge indistinguishable from a fresh one, and the re-ignition rule reads the edge's *existence*, not its age. **The permanence is the edge's, not the grudge's** — nothing anywhere in the engine removes a `hostile_to`, so \"never fades\" is true of every reading of it, `[[Rivalry]]` included. That is a property of the substrate rather than a designed decay curve: any future forgetting is a removal sweep somebody has to write, with its own phase and trace.\n\n**Provenance is a closed set, and its key diverges by writer.** `GrudgeCause` is an enum rather than a free string because motive gates classify it to decide whether a destroy verb is licensed, and a typo in a free-form cause would silently read as \"no grudge\" — a gate that fails open on a misspelling is worse than one that fails closed on an unknown enum. Three older writers stamp provenance under three *different* keys (band opposition `cause`, excommunication `reason`, mentorship severance `basis`); the grievance writer joined the `cause` camp rather than widening a documented divergence, and readers must still handle all three. A feud declared by a notable writes the edge with no provenance key at all, which the prose reports honestly as *\"something neither of them speaks of\"* rather than guessing. **`covets` is a closed set of its own, deliberately beside this one:** the covet writer types its provenance as `CovetCause`, *not* as a fourth `GrudgeCause`, and `GRUDGE_PROVENANCE` was left unextended on purpose — that omission is the whole mechanism by which a `[[Covet Rivalry]]` stays a rivalry.\n\nCode anchors: `src/engine/grievance/grudgeEdge.ts` (`writeGrudge`, `hasGrudge`, `GrudgeCause`), `src/engine/groups/bandOpposition.ts`, `src/data/grievance-prose.ts` (`GRUDGE_CAUSE_CLAUSES`, `getGrudgeCauseClause`), `src/engine/undertakingMotive.ts` (`GRUDGE_PROVENANCE`, `isInjuryProvenance`).",
       "seeAlso": [
         {
           "raw": "Rivalry",
@@ -2141,6 +2184,33 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#grudge",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "duel",
+      "name": "Duel",
+      "aliases": [
+        "agent-mode fight",
+        "*Old Blood* (`fight.duel.grudge`)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by delegation 2026-09-25, THR-1558",
+      "oneLiner": "a fight in which both sides are mortals who roll (agent mode); *Old Blood* is the systemic one, spawned when a grudge boils over — not the single-roller `duel` encounters",
+      "body": "A **fight in which both sides are mortals who roll**: a fight block written with `mode: 'agent'`, whose opponent's roll is synthesized every exchange on its own stream and whose opponent carries a per-fight clock, harm, conditions and forks of its own (THR-1556). Two blows decide it; the victor's nature decides mercy over a beaten loser, and a loser who yielded or fled is never killed (THR-1557). The first systemic duel is **Old Blood**, which the colocation phase spawns when a `[[Grudge]]` between two co-located mortals boils over (THR-1558); a mortal fights one duel at a time, and both duellists are busy from the spawn.\n\n**Not the older senses of the word.** `encounterType: 'duel'` and the `duel` reveal family name authored, **single-roller** encounters (`social.challenge_duel`, `encounter.honor_duel`, `encounter.arcane_duel`, and the two god-choice duels): the opponent's side there is prose. They stay as they are in v1. Say *duel* for the agent-mode fight; say the encounter's own name for the others.\n\nCode anchors: `src/data/fights/fightBlock.ts` (`mode`), `src/engine/fights/opposedRoll.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/engine/fights/grudgeDuelTrigger.ts`, `src/engine/fights/fightParticipants.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Grudge",
+          "termName": "Grudge",
+          "resolvedSlug": "agents#grudge"
+        },
+        {
+          "raw": "Rivalry",
+          "termName": "Rivalry",
+          "resolvedSlug": "agents#rivalry"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#duel",
       "contentAdjacent": true
     },
     {
@@ -4388,6 +4458,44 @@
     },
     {
       "shardId": "encounters",
+      "slug": "struck-down",
+      "name": "Struck down",
+      "aliases": [
+        "`struck_down`",
+        "mauled",
+        "slain (its two faces)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by delegation 2026-09-25 (THR-1548)",
+      "oneLiner": "A fight's clash critical failure; **the one ending that can kill.** Every other `[[Fight Result]]` leaves the fighter alive.",
+      "body": "A fight's clash critical failure; **the one ending that can kill.** Every other `[[Fight Result]]` leaves the fighter alive. What happens next is the victor's: a lair's monster kills at a chance set by its temper (`FIGHT_KILL_CHANCE_BY_TEMPER` — berserk 0.15, stubborn 0.05, skittish and bargainer never), drawn once and only after two guards — **The First is never killed in a fight, and neither is the god's avatar** — have passed; a named mortal on a derived card never kills (a duel victor's mercy is the duels plan's). A kill goes through the one death funnel, so a `death_prevented` ward still saves the mortal.\n\nTwo faces. **Mauled** — survived: `[[Scarred]]`, and a `blood_drawn` `[[Grudge]]` toward the victor, monster or mortal. **Slain** — died: retained with `deathCause: 'fight'` and the victor as `slainBy`, and a `named_death` harm written into the reactive loop in exactly the plot's shape, so the dead's bonds take it up and the omen agenda can portend it.\n\nCode anchors: `src/engine/fights/fightEnding.ts` (`fightDeathGuard`, `killStruckDownFighter`, `applyFightEndingForFighter`), `src/data/fight-constants.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Fight Result",
+          "termName": "Fight Result",
+          "resolvedSlug": "encounters#fight-result"
+        },
+        {
+          "raw": "Clash Step",
+          "termName": "Clash Step",
+          "resolvedSlug": "encounters#clash-step"
+        },
+        {
+          "raw": "Scarred",
+          "termName": "Scarred",
+          "resolvedSlug": "traits#scarred"
+        },
+        {
+          "raw": "Grudge",
+          "termName": "Grudge",
+          "resolvedSlug": "agents#grudge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#struck-down",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
       "slug": "fight-advantage",
       "name": "Fight Advantage",
       "aliases": [
@@ -4592,7 +4700,7 @@
       "status": "canonical",
       "statusNote": null,
       "oneLiner": "one of twelve classes stored as `subcategory`; a lifecycle contract (acquisition, removal, trigger), not a label",
-      "body": "One of twelve classes on a trait definition, stored as the `subcategory` property (the field is named `subcategory`, not `category` — code reading `properties.category` reads `undefined`). The twelve (`TraitCategory`, `src/types/traits.ts`) are: `innate`, `cultural`, `personality`, `mastery`, `reputation`, `condition`, `scar`, `bestowed`, `destiny`, `core`, `spell` (THR-1429, the Power kind's learned class) and `temper` (THR-1544, see `[[Temper]]`). *(Corrected 2026-09-24, THR-1544: this entry said \"ten\" after `spell` had already made eleven.)*\n\n**A category is a lifecycle contract, not a label.** It defines how traits in it are acquired, how they are removed, and when they trigger — every trait in a category obeys its category's rules, and the individual definition only supplies flavor. In contract terms: `innate` is worldgen-minted and permanent; `cultural` is inherited from a culture and permanent; `personality` is threshold-minted from the axiological axes and drifts as those axes drift; `mastery` is earned through encounters and promotion and decays when not reinforced; `reputation` is minted by the reputation phase and fades with standing; `condition` is inflicted and expires on its countdown or is mended; `scar` is minted by aftermath and overflow and is permanent save rare rites; `bestowed` is granted by a god or an item and is revocable by its grantor; `destiny` is a world-minted promise; `core` is reserved for run-defining identity such as The First bond; `spell` is learned from a tradition and held until forgotten; and `temper` is minted at `createNamedElite`, permanent, changed only by `trait_grant` or removal, and read at the fight's temper checkpoint.\n\nShipped static coverage is uneven by design and worth knowing before authoring against a category: reputation (19), personality (16), core (10), mastery (9), condition (7), scar (2), cultural (1). `innate` and `bestowed` have no static definitions — they are minted at runtime. `destiny` has none of either.",
+      "body": "One of twelve classes on a trait definition, stored as the `subcategory` property (the field is named `subcategory`, not `category` — code reading `properties.category` reads `undefined`). The twelve (`TraitCategory`, `src/types/traits.ts`) are: `innate`, `cultural`, `personality`, `mastery`, `reputation`, `condition`, `scar`, `bestowed`, `destiny`, `core`, `spell` (THR-1429, the Power kind's learned class) and `temper` (THR-1544, see `[[Temper]]`). *(Corrected 2026-09-24, THR-1544: this entry said \"ten\" after `spell` had already made eleven.)*\n\n**A category is a lifecycle contract, not a label.** It defines how traits in it are acquired, how they are removed, and when they trigger — every trait in a category obeys its category's rules, and the individual definition only supplies flavor. In contract terms: `innate` is worldgen-minted and permanent; `cultural` is inherited from a culture and permanent; `personality` is threshold-minted from the axiological axes and drifts as those axes drift; `mastery` is earned through encounters and promotion and decays when not reinforced; `reputation` is minted by the reputation phase and fades with standing; `condition` is inflicted and expires on its countdown or is mended; `scar` is minted by aftermath, overflow and a fight's ending (THR-1548: `[[Scarred]]`, written when a mortal is struck down and lives) and is permanent save rare rites; `bestowed` is granted by a god or an item and is revocable by its grantor; `destiny` is a world-minted promise; `core` is reserved for run-defining identity such as The First bond; `spell` is learned from a tradition and held until forgotten; and `temper` is minted at `createNamedElite`, permanent, changed only by `trait_grant` or removal, and read at the fight's temper checkpoint.\n\nShipped static coverage is uneven by design and worth knowing before authoring against a category: reputation (19), personality (16), core (10), mastery (9), condition (7), scar (3 — Scarred joined the two economic scars, THR-1548), cultural (1). `innate` and `bestowed` have no static definitions — they are minted at runtime. `destiny` has none of either.",
       "seeAlso": [
         {
           "raw": "Trait",
@@ -5064,6 +5172,43 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Traits.md#temper",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "scarred",
+      "name": "Scarred",
+      "aliases": [
+        "`trait.scar.scarred`",
+        "the fight scar"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by delegation 2026-09-25 (THR-1548)",
+      "oneLiner": "The one fight wound that never heals: a `scar`-class condition written on a mortal who was **struck down** in a fight and lived (the *mauled* ending).",
+      "body": "The one fight wound that never heals: a `scar`-class condition written on a mortal who was **struck down** in a fight and lived (the *mauled* ending). Written through the one condition writer (`applyConditionToActor`), so tag immunity refuses it like any other condition; the instance edge carries the victor as `inflictedBy` and the tick as `scarredTick`, and it has no duration, so it never expires. It moves no capability — it is a narrative mark. A mortal is scarred once: a second mauling adds no second scar (the first scar is the story, and `inflictedBy` keeps the first victor), though the grudge toward the new victor is still written.\n\n*The SCAR chip names what an encounter cost; Scarred is the one fight wound that never heals, and the chip that reports it is a SCAR.* The word \"mark\" is not used for it: the UL gives that word to `[[Hidden Mark]]`.\n\nCode anchors: `src/data/condition-trait-content.ts` (the definition), `src/engine/fights/fightEnding.ts` (`writeMauled`), `src/data/fight-constants.ts` (`FIGHT_SCARRED_TRAIT_ID`).",
+      "seeAlso": [
+        {
+          "raw": "SCAR",
+          "termName": "SCAR",
+          "resolvedSlug": "encounters#scar"
+        },
+        {
+          "raw": "Struck down",
+          "termName": "Struck down",
+          "resolvedSlug": "encounters#struck-down"
+        },
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        },
+        {
+          "raw": "Grudge",
+          "termName": "Grudge",
+          "resolvedSlug": "agents#grudge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#scarred",
       "contentAdjacent": true
     },
     {

@@ -109,8 +109,12 @@ function isChallenger(node: GraphNode): boolean {
   return true;
 }
 
-/** Faction this actor belongs to, if any — used only to credit the clearing. */
-function factionOf(graph: WorldGraph, agentId: string): string | undefined {
+/**
+ * Faction this actor belongs to, if any — used only to credit the clearing: the
+ * actor's first `member_of`. Exported (THR-1546) so a fight that fells a lair's
+ * monster credits its clearing by the same rule as a presence press.
+ */
+export function clearingCreditFactionOf(graph: WorldGraph, agentId: string): string | undefined {
   return graph.getOutgoingEdges(agentId, 'member_of')[0]?.target;
 }
 
@@ -137,8 +141,8 @@ function indexChallengersByHex(state: GameState): Map<string, Challenger[]> {
 
     const key = `${hex.col},${hex.row}`;
     const bucket = byHex.get(key);
-    if (bucket) bucket.push({ node: actor, factionId: factionOf(graph, actor.id) });
-    else byHex.set(key, [{ node: actor, factionId: factionOf(graph, actor.id) }]);
+    if (bucket) bucket.push({ node: actor, factionId: clearingCreditFactionOf(graph, actor.id) });
+    else byHex.set(key, [{ node: actor, factionId: clearingCreditFactionOf(graph, actor.id) }]);
   }
 
   return byHex;

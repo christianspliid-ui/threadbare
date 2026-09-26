@@ -251,6 +251,12 @@ function enqueuePhaseStoryBeat(
 
 // ─── Chronicle entry ──────────────────────────────────────────────
 
+/** `"sour-mines"` → `"Sour mines"` — the readable fallback title (THR-1602). */
+export function humanizePhaseId(phaseId: string): string {
+  const words = phaseId.split(/[-_]+/).filter(Boolean).join(' ');
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : 'A turn of events';
+}
+
 function makePhaseChronicleEntry(
   phase: Phase,
   compositionId: string,
@@ -274,7 +280,9 @@ function makePhaseChronicleEntry(
     return {
       id: `composition_phase_${compositionId}_${phase.id}_${tick}`,
       tier: 'chronicle',
-      title: `${compositionId} — ${phase.id}`,
+      // THR-1602: never the composition id — the chronicle uppercases this
+      // and the player read `RIVAL-SCHEME-ACTOR_RIVAL_2-… — MATERIALIZE`.
+      title: phase.title ?? humanizePhaseId(phase.id),
       prose: phase.rationale ?? `Phase ${phase.id} activated`,
       promptContext: {
         actors: [],

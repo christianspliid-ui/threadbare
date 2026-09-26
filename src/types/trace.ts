@@ -23,9 +23,16 @@ import type {
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { UiRefOpenedTrace, UiRefUnroutableTrace } from './traces/ui-traces';
-import type { FightClockTrace, FightEndTrace, FightForkTrace, FightStepTrace } from './traces/fight-traces';
+import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace, FightTriggerGrudgeTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
-import type { MonsterHardenedTrace, MonsterMintedTrace } from './traces/monster-traces';
+import type {
+  FightTriggerTrace,
+  MonsterDrivenOffTrace,
+  MonsterFelledTrace,
+  MonsterHardenedTrace,
+  MonsterMintedTrace,
+  HuntTrackCompletedTrace,
+} from './traces/monster-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -521,12 +528,23 @@ export type TraceCategory =
   | 'fight.end'
   // Fights — one per runtime fork decision (THR-1540).
   | 'fight.fork'
+  // Fights — the fighter-side ending, once per fight (THR-1548).
+  | 'fight.ending'
   // War news — one per reportWar call (THR-1564). Interface in `src/types/traces/war-traces.ts`.
   | 'war.reported'
   // Monsters — the card at mint and at legendary hardening (THR-1544).
   // Interfaces in `src/types/traces/monster-traces.ts`.
   | 'monster.minted'
-  | 'monster.hardened';
+  | 'monster.hardened'
+  // Monsters — what felling or driving one off did to its lair (THR-1546).
+  | 'monster.felled'
+  | 'monster.driven_off'
+  // Fights — the lair-arrival trigger, spawned or skipped (THR-1547).
+  // Interface in `src/types/traces/monster-traces.ts`.
+  | 'fight.trigger'
+  // Hunts — a hunter finished tracking a beast (THR-1560).
+  // Interface in `src/types/traces/monster-traces.ts`.
+  | 'hunt.tracked';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -789,11 +807,20 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'fight.end',
   // Fights — one per runtime fork decision (THR-1540)
   'fight.fork',
+  // Fights — the fighter-side ending (THR-1548)
+  'fight.ending',
   // War news — one per reportWar call (THR-1564)
   'war.reported',
   // Monsters — the card at mint and at legendary hardening (THR-1544)
   'monster.minted',
   'monster.hardened',
+  // Monsters — felled / driven off (THR-1546)
+  'monster.felled',
+  'monster.driven_off',
+  // Fights — the lair-arrival trigger (THR-1547)
+  'fight.trigger',
+  // Hunts — tracking finished (THR-1560)
+  'hunt.tracked',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -2232,6 +2259,11 @@ export interface StrategicProjectProgressTrace extends TraceBase {
    * Never present on an instant completion — those pay nothing, deliberately.
    */
   capabilityGrowth?: { reach: ReachDomain; delta: number };
+  /**
+   * THR-1560 — the completed template defers its payoff (`deferredPayoff`): no outcome
+   * node was written and no grievance was satisfied, on purpose. Present only then.
+   */
+  payoffDeferred?: boolean;
 }
 
 /**
@@ -3285,6 +3317,11 @@ export interface AppointmentPlantedTrace extends TraceBase {
   source?: 'encounter' | 'undertaking';
   /** Present when the plant fell back to a placeless seed. */
   refused?: 'over_max' | 'place_unresolved';
+  /**
+   * THR-1560 — the payoff said the meeting must have a place (`requirePlace`), so the
+   * refusal pushed no seed at all rather than a placeless one.
+   */
+  seedWithheld?: boolean;
 }
 
 /** Regime of a mortal's nearest-due appointment (THR-1479). */
@@ -3321,6 +3358,11 @@ export interface AppointmentMissedTrace extends TraceBase {
   reason: 'absent' | 'unreachable' | 'chose_to_miss' | 'place_lost';
   missedTemplateId?: string;
   missedQuery?: string;
+  /**
+   * THR-1560 — a `place_lost` seed whose appointment carried `requirePlace` was
+   * dropped (its favour released first) instead of firing its kept branch placeless.
+   */
+  dropped?: boolean;
 }
 
 /** Trace: a family-only encounter seed resolved to a concrete template (THR-697, Slice D). */
@@ -4086,10 +4128,17 @@ export type TraceEntry =
   | FightClockTrace
   | FightEndTrace
   | FightForkTrace
+  | FightEndingTrace
   | WarReportedTrace
   // Monsters (THR-1544)
   | MonsterMintedTrace
   | MonsterHardenedTrace
+  | MonsterFelledTrace
+  | MonsterDrivenOffTrace
+  | FightTriggerTrace
+  | HuntTrackCompletedTrace
+  // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
+  | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)
   | ThreadStoryComposedTrace
   // Event feed hygiene (THR-456)
@@ -5360,6 +5409,12 @@ export interface ResolutionInputTrace extends TraceBase {
   scaleOffsetApplied: number;
   sphereFactor: number;
   actionModifiers: number;
+  /**
+   * THR-1535: the standing-modifier share of `actionModifiers` (items, conditions,
+   * the effect family, terrain, place conditions, sphere alignment). Absent when 0,
+   * and on a fight step, whose standing rides its fight named terms instead.
+   */
+  standingModifiers?: number;
   influenceNudge: number;
   /** Effective probability after all floor adjustments. */
   probability: number;

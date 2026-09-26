@@ -189,6 +189,33 @@ export interface FightEndingRecord {
   readonly guard?: 'the_first' | 'avatar' | 'warded';
   readonly drift?: { axis: import('./agent').ValuePair; pole: 'positive' | 'negative' };
   readonly eventSignificance?: number;
+  /**
+   * The victor's standing when the fighter yielded to a mortal (THR-1549, the other side
+   * of humiliation): the victor's `reputation_with` the yielder's faction ?? home settlement.
+   */
+  readonly victorStanding?: { victorId: string; counterpartyId: string; delta: number };
+  /**
+   * THR-1557 (duels E2) — the victor's mercy fork over this side, when this side was
+   * beaten in a duel (clock filled or struck down). On the *loser's* record: it is the
+   * decision this side lived or died by.
+   */
+  readonly mercy?: FightMercyRecord;
+}
+
+/**
+ * The mercy fork a duel's victor takes over a beaten loser (THR-1557, duels plan doc §5):
+ * the victor's `mercy_ruthlessness` lean, plus the god's hand only when the victor is the
+ * god's own mortal. `positive` spares; `negative` tries to finish, through the guards and
+ * one kill draw.
+ */
+export interface FightMercyRecord {
+  readonly victorId: string;
+  readonly pole: 'positive' | 'negative';
+  readonly profileLean: number;
+  readonly cardLean: number;
+  readonly decidedBy: 'conviction' | 'coin';
+  /** The victor's drift toward mercy, written when they spared. */
+  readonly drift?: { axis: import('./agent').ValuePair; pole: 'positive' | 'negative' };
 }
 
 /** What a fight did to a monster's lair. Declared by FB2; written by plan doc 3. */

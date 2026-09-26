@@ -1,0 +1,196 @@
+[
+  {
+    "seed": 42,
+    "map": "medium",
+    "ticks": 0,
+    "rows": [
+      {
+        "objectTypeId": "area",
+        "objects": 12,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "location",
+        "objects": 229,
+        "owned": 46,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "place",
+        "objects": 739,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "route",
+        "objects": 6,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "mortal",
+        "objects": 480,
+        "owned": 480,
+        "ownedByDeciding": 20
+      },
+      {
+        "objectTypeId": "faction",
+        "objects": 50,
+        "owned": 16,
+        "ownedByDeciding": 5
+      },
+      {
+        "objectTypeId": "company",
+        "objects": 0,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "army",
+        "objects": 5,
+        "owned": 5,
+        "ownedByDeciding": 5
+      },
+      {
+        "objectTypeId": "network",
+        "objects": 0,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "companion",
+        "objects": 0,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "item",
+        "objects": 20,
+        "owned": 19,
+        "ownedByDeciding": 19
+      },
+      {
+        "objectTypeId": "power",
+        "objects": 25,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "condition",
+        "objects": 4,
+        "owned": 4,
+        "ownedByDeciding": 4
+      },
+      {
+        "objectTypeId": "agreement",
+        "objects": 1,
+        "owned": 1,
+        "ownedByDeciding": 1
+      },
+      {
+        "objectTypeId": "standing",
+        "objects": 60,
+        "owned": 60,
+        "ownedByDeciding": 29
+      }
+    ]
+  },
+  {
+    "seed": 99,
+    "map": "medium",
+    "ticks": 0,
+    "rows": [
+      {
+        "objectTypeId": "area",
+        "objects": 7,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "location",
+        "objects": 232,
+        "owned": 66,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "place",
+        "objects": 923,
+        "owned": 2,
+        "ownedByDeciding": 2
+      },
+      {
+        "objectTypeId": "route",
+        "objects": 6,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "mortal",
+        "objects": 623,
+        "owned": 623,
+        "ownedByDeciding": 23
+      },
+      {
+        "objectTypeId": "faction",
+        "objects": 57,
+        "owned": 16,
+        "ownedByDeciding": 5
+      },
+      {
+        "objectTypeId": "company",
+        "objects": 0,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "army",
+        "objects": 5,
+        "owned": 5,
+        "ownedByDeciding": 5
+      },
+      {
+        "objectTypeId": "network",
+        "objects": 0,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "companion",
+        "objects": 0,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "item",
+        "objects": 22,
+        "owned": 20,
+        "ownedByDeciding": 20
+      },
+      {
+        "objectTypeId": "power",
+        "objects": 25,
+        "owned": 0,
+        "ownedByDeciding": 0
+      },
+      {
+        "objectTypeId": "condition",
+        "objects": 4,
+        "owned": 4,
+        "ownedByDeciding": 4
+      },
+      {
+        "objectTypeId": "agreement",
+        "objects": 2,
+        "owned": 2,
+        "ownedByDeciding": 2
+      },
+      {
+        "objectTypeId": "standing",
+        "objects": 66,
+        "owned": 66,
+        "ownedByDeciding": 35
+      }
+    ]
+  }
+]

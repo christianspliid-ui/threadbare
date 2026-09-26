@@ -23,6 +23,8 @@ import { SphereIcon } from '../shared/SphereIcon';
 import { Tooltip } from '../shared/Tooltip';
 import { clampRarityTier } from '../../types/rarity';
 import { DANGER_ZONE_LABELS } from '../../types/monster';
+import type { LairMonsterCardModel } from './lair/buildLairMonsterCardModel';
+import { LairMonsterCard } from './lair/LairMonsterCard';
 
 /**
  * Collapsed-rail sphere glyph sizing (THR-1009). The rail shipped 8px
@@ -50,6 +52,14 @@ export interface HexSidebarProps {
   dangerLevel?: number;
   /** Called when a location entry is clicked; opens LocationProfileModal for that location. */
   onLocationClick?: (locationId: string) => void;
+  /**
+   * The lair card for each lair on this hex, keyed by lair id (THR-1550).
+   * Built by `buildLairMonsterCardModel` where the graph is held; a lair with
+   * no entry renders no monster row.
+   */
+  lairMonsterCards?: Readonly<Record<string, LairMonsterCardModel | null>>;
+  /** Opens the lair monster's sheet (Law 21). */
+  onMonsterClick?: (monsterId: string) => void;
 }
 
 /**
@@ -429,7 +439,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
             const lairTier = (p.lairTier as string | undefined) ?? 'minor';
             const dominantSphere = (p.dominantSphere as string | undefined) ?? '';
             const dangerZone = (p.dangerZone as keyof typeof DANGER_ZONE_LABELS | undefined) ?? 'wilderness';
-            const namedEliteId = p.namedEliteId as string | undefined;
+            const monster = props.lairMonsterCards?.[loc.id]?.monster ?? null;
             const sphereColor = dominantSphere ? getSphereColor(dominantSphere as SphereName) : 'var(--text-tertiary)';
             const isLegendary = lairTier === 'legendary';
 
@@ -521,18 +531,11 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 >
                   {DANGER_ZONE_LABELS[dangerZone] ?? 'Unknown Zone'}
                 </div>
-                {/* Named elite (if present) */}
-                {namedEliteId && (
-                  <div
-                    style={{
-                      fontSize: 'var(--text-xs)',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    <span style={{ color: 'var(--text-tertiary)' }}>Elite: </span>
-                    <span style={{ fontFamily: 'var(--font-display)' }}>{namedEliteId}</span>
-                  </div>
-                )}
+                {/* The lair's monster card (THR-1550 named it — this row printed
+                    the raw `namedEliteId` until F1, a Law 14/21 defect; THR-1552 adds
+                    the sentence, the clock, and the slain reading for a legendary
+                    lair that lost its beast). No resolvable monster ⇒ no card. */}
+                {monster && <LairMonsterCard monster={monster} onSelect={props.onMonsterClick} />}
               </div>
             );
           })}
@@ -579,6 +582,14 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               >
                 Cleared — site may be claimed or will remain vulnerable to reinfestation.
               </div>
+              {/* The beast that held it, slain (THR-1552): found by reverse lookup
+                  on the retained elite's `lairId`; no monster resolves ⇒ no card. */}
+              {props.lairMonsterCards?.[loc.id]?.monster && (
+                <LairMonsterCard
+                  monster={props.lairMonsterCards[loc.id]!.monster!}
+                  onSelect={props.onMonsterClick}
+                />
+              )}
             </div>
           ))}
         </>

@@ -22,6 +22,12 @@
  * deliberately pay nothing (see the rider's own note at the instant terminal). The
  * floors below sit well under those so ordinary drift does not redden them; a rider
  * that stopped being paid would fall to zero.
+ *
+ * Re-measured 2026-09-25 (THR-1535, when the roll began reading standing modifiers
+ * and the seeded world drifted): completions / growth-carrying — seed 42 20 / 7,
+ * seed 99 16 / 9, seed 7 24 / 11; with the change flagged off, 34 / 14, 16 / 11,
+ * 9 / 7. The rider is paid on every seed either way; seed 42 alone fell under the
+ * old growth floor of 10, so that floor is now 4 — still well clear of zero.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -82,7 +88,7 @@ describe('the capability rider is paid in the live simulation', () => {
     // A subset of completions by design: only checkpointed work pays, so the instant
     // cells in this population are expected to carry nothing.
     const grown = completed.filter(h => h.capabilityGrowth);
-    expect(grown.length, 'completions happened and none paid the rider').toBeGreaterThan(10);
+    expect(grown.length, 'completions happened and none paid the rider').toBeGreaterThan(4);
     expect(grown.length, 'every completion paid — the instant terminal is paying again')
       .toBeLessThan(completed.length);
     for (const h of grown) {

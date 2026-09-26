@@ -89,4 +89,20 @@ describe('DeltaCluster', () => {
       unmount();
     }
   });
+
+  it('THR-1553: a PATH marker draws its own word beside the ◆; without one it draws the marker alone', () => {
+    const { unmount } = render(<DeltaCluster direction="opens" count={1} label="the Mire Ox — slain" word="slain" />);
+    expect(glyphText()).toBe('◆slain');
+    expect(screen.getByTestId('delta-cluster-word').textContent).toBe('slain');
+    expect(screen.getByTestId('delta-cluster')).toHaveAttribute('aria-label', 'the Mire Ox — slain');
+    unmount();
+    render(<DeltaCluster direction="opens" count={1} label="A way opens" />);
+    expect(glyphText()).toBe('◆');
+    expect(screen.queryByTestId('delta-cluster-word')).toBeNull();
+  });
+
+  it('THR-1553: the word is drawn only for a PATH marker, never beside triangles', () => {
+    render(<DeltaCluster direction="gain" count={2} label="rose" word="slain" />);
+    expect(screen.queryByTestId('delta-cluster-word')).toBeNull();
+  });
 });

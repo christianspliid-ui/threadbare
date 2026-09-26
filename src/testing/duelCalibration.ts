@@ -167,7 +167,11 @@ function resetBetweenDuels(
       if (edge.type === 'located_at') continue;
       graph.removeEdge(edge.id);
     }
+    // THR-1548 — a fight ending can leave a duellist dead (retained).
+    for (const key of ['deceased', 'deceasedTick', 'deathCause', 'slainBy']) delete node.properties[key];
   }
+  // THR-1548 — the value drift a yield or a rout leaves would make bold duellists cautious.
+  state.archetypeDrift = [];
   state.pendingQuintessenceEvents = [];
   state.tickEvents = [];
   state.recentEvents = [];

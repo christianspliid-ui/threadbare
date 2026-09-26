@@ -20,6 +20,8 @@ import { holdsMotive } from '../undertakingMotive';
 import { writeGrudge } from '../grievance/grudgeEdge';
 import { _resetNpcCounter } from '../npcSeeding';
 import {
+  collectSpotlightMortals,
+  leadingReach,
   retargetTerritoryByProvince,
   type LivingWorldContext,
 } from '../seedLivingWorld';
@@ -103,6 +105,24 @@ describe('seedLivingWorld — counts on a generated small world (THR-1437)', () 
       const target = graph.getNode(edge.target);
       expect(typeof target?.properties.parentLocationId).toBe('string');
     }
+  });
+
+  it('finds a freehold for every qualifying protagonist, wherever they live (W4, THR-1588)', () => {
+    // Protagonists are placed over every Location, and only settlements carry the
+    // commerce and authority Places a freehold may be. Before THR-1588 a qualifier who
+    // lived at a tower or on an old road held nothing, so the count rode on where the
+    // placement draws landed — 8 on seed 42 medium, then 0 once THR-1155 shifted the
+    // stream. The invariant is per qualifier, so it survives any future stream shift.
+    const wanted = new Set<string>(LIVING_WORLD_DEFAULTS.WORLDGEN_FREEHOLD_LEADING_REACHES);
+    const qualifiers = collectSpotlightMortals(graph, ctx.individualIds)
+      .filter(m => wanted.has(leadingReach(m) ?? ''));
+    const without = qualifiers
+      .filter(m => graph.getOutgoingEdges(m.id, 'owns').length === 0)
+      .map(m => `${m.id}@${graph.getNode(m.id)?.properties.locationId as string}`);
+    console.log(`[THR-1588] freehold qualifiers ${qualifiers.length} · without a holding ${without.length}`);
+    expect(qualifiers.length).toBeGreaterThan(0);
+    expect(without).toEqual([]);
+    expect(graph.getEdgesByType('owns').length).toBeGreaterThan(0);
   });
 
   it('gives every seeded protagonist something to carry (W5)', () => {

@@ -140,7 +140,8 @@ describe('the re-evaluation writer reaches the spotlight pull', () => {
     // The swap candidate holds two plain wants: full, so the re-evaluation does not
     // hand it a strategic one and pull it straight back (which is correct behaviour,
     // and what this fixture is deliberately not measuring).
-    for (const plain of ['ambition_avenge_fallen', 'ambition_fulfill_destiny']) {
+    // THR-1560: `ambition_avenge_fallen` gained a profile; its event-minted sibling is still plain.
+    for (const plain of ['ambition_avenge_the_wrong', 'ambition_fulfill_destiny']) {
       expect(findAmbitionTemplateById(plain)?.strategicProfile).toBeUndefined();
       g.addNode({ id: `ambition.${plain}`, type: 'ambition', name: plain, properties: { [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE, templateId: plain } });
       g.addEdge({ id: `pursues_s_ambition.${plain}`, source: 's', target: `ambition.${plain}`, type: 'pursues', properties: { status: 'active', priority: 'primary', assignedTick: 0, completedMilestones: [] } });

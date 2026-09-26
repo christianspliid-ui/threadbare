@@ -17,7 +17,8 @@ import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
-import { buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
+import { buildChipAnchorResolver, buildChipIconResolver, buildFightChipWorld } from './chipCollaborators';
+import { buildFightChanges, mergeFightChanges } from './buildFightChanges';
 import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
@@ -26,6 +27,7 @@ import { isDefaultSupportSpec } from '../../../../data/default-support-bundles';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveFightStepInputs } from '../../../../engine/fights/fightStepInputs';
+import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import {
   getAgentPortraitUrlFromProperties,
@@ -228,7 +230,10 @@ function buildHeader(
     title: template.name,
     subtitle: enrichProse(rawSubtitle, ctx),
     locationLabel: resolveLocationLabel(graph, activeAction.targetId),
-    threatLabel: difficultyToThreatLabel(headerDifficulty),
+    // THR-1551 (fight on screen F2) — a fight step states how hard it is once, in
+    // the opponent header's card sentence; a threat word beside it would be a
+    // second magnitude language on the same quantity (Law 10).
+    ...(currentStep.fightRole ? {} : { threatLabel: difficultyToThreatLabel(headerDifficulty) }),
     threadTier,
     familyLabel: agentName,
     agentName,
@@ -454,7 +459,11 @@ function buildHistory(
 
     // Derive a label from the step definition
     let stepLabel: string;
-    if (isActionStepBranch(step)) {
+    // THR-1551 — a fight step names itself: "Facing it", "First exchange" …
+    const stepTitle = fightStepLabel(template, index);
+    if (stepTitle) {
+      stepLabel = stepTitle;
+    } else if (isActionStepBranch(step)) {
       stepLabel = `Step ${index + 1} (branching)`;
     } else {
       stepLabel = step.narrativeTemplate
@@ -518,6 +527,7 @@ function buildHistory(
     return {
       stepId: `step-${index}`,
       stepLabel,
+      ...(stepTitle ? { stepTitle } : {}),
       status: isResolved ? 'resolved' as const : isCurrent ? 'current' as const : 'future' as const,
       afterimage,
       complication,
@@ -775,8 +785,15 @@ function buildAftermath(
   // plants (reachable only through the reaction effects). The stage renders
   // these instead of highlights/changes; both are kept on the model so a
   // consumer that has not adopted chips still gets the old shape.
+  //
+  // THR-1553 — a fight's chips come from its `fightState`, the one record the
+  // fight's writers leave on the action (Law 56). Appended to the chip input
+  // only: the highlights above stay the authored/derived set they always were.
   const consequences = buildAftermathConsequences({
-    changes: displayChanges,
+    changes: mergeFightChanges(
+      displayChanges,
+      buildFightChanges(activeAction.fightState, activeAction.actorId, buildFightChipWorld(graph)),
+    ),
     reactions: displayReactions,
     enrich: (text) => enrichProse(text, ctx),
     link: (id, text) => autoLinkNarrative(id, text, aftermathLinkEntries),
@@ -913,6 +930,17 @@ export function buildUnifiedEncounterStageModel(
         runtime: args.runtime,
       });
 
+  // THR-1551 — the opponent header, on a live fight step only. Fail-soft: a throw
+  // omits the block rather than the stage.
+  let opponentHeader: ReturnType<typeof buildOpponentHeaderModel> = null;
+  if (!isAftermath && args.gameState) {
+    try {
+      opponentHeader = buildOpponentHeaderModel(args.gameState, activeAction, args.template);
+    } catch {
+      opponentHeader = null;
+    }
+  }
+
   return {
     header: buildHeader(args, ctx),
     illustration,
@@ -926,5 +954,6 @@ export function buildUnifiedEncounterStageModel(
     history: buildHistory(args, ctx),
     aftermath: buildAftermath(args, ctx),
     nudgePhase,
+    ...(opponentHeader ? { opponentHeader } : {}),
   };
 }

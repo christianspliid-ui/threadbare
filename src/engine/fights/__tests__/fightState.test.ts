@@ -21,7 +21,7 @@ import { recordUnifiedActionNudgeMemory } from '../../encounterChoiceMemory';
 import { markMortalDead } from '../../agentLifecycle';
 import { getAgentInfoCard } from '../../agentDetail';
 import { advanceFightClock, drainFightClockMailbox } from '../fightClock';
-import { FIGHT_END_BRANCHES, onFightEnded, type FightEndBranch, type FightEndContext } from '../fightOutcome';
+import { FIGHT_END_BRANCHES, resetFightEndBranches, onFightEnded, type FightEndBranch, type FightEndContext } from '../fightOutcome';
 import { fightResultIndex } from '../fightState';
 import { readOpponentCard } from '../opponentCard';
 import {
@@ -183,7 +183,7 @@ const tracesOf = (category: string) =>
   getTraces().filter((t) => t.category === category) as unknown as Array<Record<string, any>>;
 
 beforeEach(() => { clearTraces(); enableTracing(); });
-afterEach(() => { clearTraces(); disableTracing(); FIGHT_END_BRANCHES.length = 0; });
+afterEach(() => { clearTraces(); disableTracing(); resetFightEndBranches(); });
 
 // ─── The clock ──────────────────────────────────────────────────
 

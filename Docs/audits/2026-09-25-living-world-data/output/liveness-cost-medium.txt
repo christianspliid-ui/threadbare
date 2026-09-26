@@ -1,0 +1,16 @@
+baseline    | 42 | n=5 | 1-20 79.5 | 21-200 107.8 (sd 14.4) | Δ 0ms 0% | Δwarm 0% | dec 20→23 | ev 12722 | agent_decision:0 delve_admission:0 economic_traits:0 faction_actions:0
+baseline    | 99 | n=5 | 1-20 98 | 21-200 159.4 (sd 16.9) | Δ 0ms 0% | Δwarm 0% | dec 23→24 | ev 17856 | agent_decision:0 economic_traits:0 delve_admission:0 reputation_traits:0
+notables1   | 42 | n=3 | 1-20 84.3 | 21-200 117.1 (sd 6.4) | Δ 9.4ms 8.7% | Δwarm 5.9% | dec 20→17 | ev 13980 | agent_decision:-2.87 economic_traits:2.67 delve_admission:2.65 unified_action_progress:1.33
+notables1   | 99 | n=3 | 1-20 104.9 | 21-200 180.3 (sd 16.5) | Δ 20.9ms 13.1% | Δwarm 7.1% | dec 23→23 | ev 19493 | economic_traits:4.83 agent_decision:4.5 delve_admission:4.48 effect_tick:1.06
+notables2   | 42 | n=3 | 1-20 86.1 | 21-200 121.8 (sd 4.3) | Δ 14ms 13% | Δwarm 8.3% | dec 20→24 | ev 15131 | economic_traits:4.67 delve_admission:4.2 agent_decision:-1.07 reputation_traits:0.97
+notables2   | 99 | n=3 | 1-20 112 | 21-200 187.3 (sd 14.8) | Δ 28ms 17.6% | Δwarm 14.4% | dec 23→24 | ev 20187 | delve_admission:7.94 economic_traits:7.61 agent_decision:3.28 effect_tick:1.45
+ties3x      | 42 | n=3 | 1-20 77.5 | 21-200 107.3 (sd 6.5) | Δ -0.4ms -0.4% | Δwarm -2.6% | dec 20→24 | ev 12723 | economic_traits:-0.33 delve_admission:-0.17 faction_actions:0.07 reputation_traits:-0.06
+ties3x      | 99 | n=3 | 1-20 98.1 | 21-200 165.6 (sd 27.1) | Δ 6.3ms 3.9% | Δwarm 0.1% | dec 23→24 | ev 17819 | agent_decision:2.12 economic_traits:1.41 faction_succession:0.18 faction_actions:0.18
+ties-dense  | 42 | n=5 | 1-20 81.9 | 21-200 231.8 (sd 20.2) | Δ 124.1ms 115.1% | Δwarm 2.9% | dec 20→89 | ev 23772 | agent_decision:79.53 unified_action_progress:11.4 economic_traits:9.2 effect_tick:4.57
+ties-dense  | 99 | n=5 | 1-20 103.7 | 21-200 297.7 (sd 7.8) | Δ 138.3ms 86.8% | Δwarm 5.8% | dec 23→50 | ev 24645 | agent_decision:90.26 economic_traits:10.86 unified_action_progress:9.2 delve_admission:5.87
+history     | 42 | n=3 | 1-20 78.1 | 21-200 109.6 (sd 1.3) | Δ 1.9ms 1.7% | Δwarm -1.8% | dec 20→25 | ev 13220 | economic_traits:1.14 agent_decision:-1.11 unified_action_progress:0.6 groups:0.34
+history     | 99 | n=3 | 1-20 103.4 | 21-200 165.9 (sd 1.6) | Δ 6.6ms 4.1% | Δwarm 5.6% | dec 23→24 | ev 17924 | delve_admission:2.07 agent_decision:1.34 economic_traits:1.31 faction_actions:0.27
+all         | 42 | n=5 | 1-20 88.5 | 21-200 117 (sd 20.6) | Δ 9.3ms 8.6% | Δwarm 11.3% | dec 20→20 | ev 15178 | agent_decision:-6.86 economic_traits:5.54 delve_admission:4.09 unified_action_progress:1.03
+all         | 99 | n=5 | 1-20 114.9 | 21-200 192.7 (sd 23.6) | Δ 33.3ms 20.9% | Δwarm 17.3% | dec 23→22 | ev 21481 | economic_traits:9.56 delve_admission:6.6 agent_decision:6.2 effect_tick:1.85
+placebo     | 42 | n=2 | 1-20 76.1 | 21-200 105 (sd 0.6) | Δ -2.8ms -2.6% | Δwarm -4.4% | dec 20→23 | ev 12722 | agent_decision:-1.17 delve_admission:-0.56 economic_traits:-0.34 sphere_pressure:-0.17
+placebo     | 99 | n=2 | 1-20 96.9 | 21-200 159.7 (sd 0.2) | Δ 0.4ms 0.2% | Δwarm -1.1% | dec 23→24 | ev 17856 | delve_admission:-0.32 sphere_pressure:-0.29 economic_traits:-0.27 agent_decision:0.15

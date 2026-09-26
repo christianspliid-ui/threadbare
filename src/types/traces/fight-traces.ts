@@ -135,3 +135,85 @@ export interface FightEndTrace extends TraceBase {
   opponentLoss?: import('../fight').FightOpponentLoss;
   fighterClockNow?: number;
 }
+
+/**
+ * Emitted once per fight by the fighter-side ending branch (THR-1548, plan doc
+ * `2026-09-23-defeat-and-victory.md` § Tracing). Carries every decision the ending
+ * took: the face, the guards, the kill draw, and each write it made or skipped.
+ * `fightState.ending` mirrors `face`, `scarWritten`, `grudgeWritten`, `killRoll` and
+ * `guard`, so a chip reads state even when tracing is off.
+ */
+export interface FightEndingTrace extends TraceBase {
+  category: 'fight.ending';
+  actionId: string;
+  fighterId: string;
+  /** Who won: the opponent on a defeat, the fighter on a victory, null on a break-off. */
+  victorId: string | null;
+  result: FightResult;
+  face: import('../fight').FightEndingFace;
+  /** Present exactly when a kill draw was taken. */
+  killRoll?: { chance: number; roll: number };
+  guard?: 'the_first' | 'avatar' | 'warded';
+  scarWritten: boolean;
+  scarSkipped?: 'already_scarred' | 'definition_missing' | 'immune';
+  grudgeWritten: boolean;
+  /** The reactive-loop node a fight death wrote. */
+  outcomeNodeId?: string;
+  humiliation?: { counterpartyId: string; delta: number };
+  reputation?: { counterpartyId: string; delta: number };
+  reward?: { templateId: string; instanceId: string; tier: number };
+  drift?: { axis: ValuePair; pole: 'positive' | 'negative' };
+  /** Set once D2 lands the chronicle tiers; D1 registers the category without it. */
+  eventSignificance?: number;
+  /** THR-1549 — the victor's standing on a yield to a mortal. */
+  victorStanding?: { victorId: string; counterpartyId: string; delta: number };
+  /** THR-1549 — why no trophy was drawn on an overcome/bargained ending. */
+  rewardSkipped?: 'no_lair' | 'minor_lair' | 'empty_pool';
+  /** THR-1549 — the trophy draw flipped to the harmful table. */
+  rewardBadOutcome?: boolean;
+
+  // ─── THR-1557 (duels E2): the mercy fork and the opponent's side, on a duel only ───
+  /** How the opponent lost, when they did. */
+  opponentLoss?: 'clock' | 'struck_down' | 'yielded' | 'routed';
+  /** Both sides were beaten in one exchange; each side's fate was decided in turn. */
+  bothStruckDown?: boolean;
+  /** The mercy fork over the beaten loser (over the fighter, on a double). */
+  victorPole?: 'positive' | 'negative';
+  victorProfileLean?: number;
+  /** The hand's lean; non-zero only when the victor is the god's own mortal (the actor). */
+  victorCardLean?: number;
+  mercyDecidedBy?: 'conviction' | 'coin';
+  /** The opponent's face (`fightState.opponentEnding.face`). */
+  opponentFace?: import('../fight').FightEndingFace;
+  /** On a double: the fighter's mercy fork over the opponent. */
+  opponentVictorPole?: 'positive' | 'negative';
+  opponentMercyDecidedBy?: 'conviction' | 'coin';
+  /** The opponent side's death gate, when the fighter tried to finish them. */
+  opponentKillRoll?: { chance: number; roll: number };
+  opponentGuard?: 'the_first' | 'avatar' | 'warded';
+  opponentOutcomeNodeId?: string;
+}
+
+/** Why a grudge pair did not duel this tick (THR-1558). */
+export type FightTriggerGrudgeSkip = 'cooldown' | 'busy' | 'no_template' | 'grudge_gone';
+
+/**
+ * The grudge boil-over trigger (THR-1558, plan doc `2026-09-23-mortal-duels.md` §6):
+ * `fight.trigger` with `source: 'grudge'`. Absent `skipped` means `fight.duel.grudge`
+ * was spawned and `actionId` names it. Skips are bounded to once per pair per
+ * `GRUDGE_DUEL_COOLDOWN_TICKS` window, so a co-located feud never floods the buffer;
+ * a roll that misses is not traced at all.
+ */
+export interface FightTriggerGrudgeTrace extends TraceBase {
+  category: 'fight.trigger';
+  source: 'grudge';
+  /** The duel's actor (the side the actor rule picked). */
+  aggressorId: string;
+  targetId: string;
+  /** The provenance value that licensed the duel (`attempted_killing`, `blood_drawn`, …). */
+  grudgeCause: string;
+  chance: number;
+  roll: number;
+  skipped?: FightTriggerGrudgeSkip;
+  actionId?: string;
+}

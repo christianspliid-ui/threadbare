@@ -29,6 +29,8 @@ import { hexDistance } from '../lib/hexMath';
 import { mulberry32 } from '../lib/prng';
 import { hashString } from './factionAmbitions';
 import type { EffectRuntimeState } from '../types/effects';
+import type { UnifiedAction } from '../types/unifiedAction';
+import { checkLairArrival } from './monsters/lairArrivalTrigger';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -59,6 +61,9 @@ export function resetMovementEventCounter(): void {
  */
 export function phaseMovement(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
+  // THR-1547: lair-arrival confronts spawned this phase, and the cooldown map they write.
+  const spawnedActions: UnifiedAction[] = [];
+  let fightCooldowns = state.fightCooldowns;
 
   // Get all individual spotlight agents (includes avatar — avatar player-initiated movement must still tick).
   // Ambient/notable NPCs are excluded from the movement phase.
@@ -360,6 +365,26 @@ export function phaseMovement(state: GameState): Partial<GameState> {
         result.updatedState.targetSublocationId = undefined;
       }
 
+      // --- Walking into the lair (THR-1547) ---
+      //
+      // After the final tier (location or place) is known. Location-granular by
+      // design: only the resolved position counts, never hex co-presence. Reads
+      // `targetEncounterId` so a mortal who came here to hunt gets the hunt's own
+      // fight instead of a confront on the doorstep. The avatar is traced and skipped
+      // inside the check. NFP #3: the same seeded stream the arrival branch uses above.
+      if (result.arrivedAtDestination) {
+        const lair = checkLairArrival(state, actorId, {
+          actions: spawnedActions.length > 0 ? [...(state.unifiedActions ?? []), ...spawnedActions] : (state.unifiedActions ?? []),
+          fightCooldowns,
+          rng: mulberry32(state.seed + state.tick * 47 + hashString(actorId)),
+          targetEncounterId: result.updatedState.targetEncounterId,
+        });
+        if (lair.action) {
+          spawnedActions.push(lair.action);
+          fightCooldowns = lair.fightCooldowns;
+        }
+      }
+
       // --- Mid-path re-evaluation (skip for avatar — player controls destination) ---
       if (!isAvatar &&
           result.updatedState.movementQueue.length > 0 &&
@@ -494,5 +519,8 @@ export function phaseMovement(state: GameState): Partial<GameState> {
 
   return {
     tickEvents: [...state.tickEvents, ...events],
+    ...(spawnedActions.length > 0
+      ? { unifiedActions: [...(state.unifiedActions ?? []), ...spawnedActions], fightCooldowns }
+      : {}),
   };
 }

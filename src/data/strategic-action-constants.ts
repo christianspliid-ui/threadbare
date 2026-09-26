@@ -987,10 +987,38 @@ export const STRATEGIC_BOARD_TRACE_REFUSAL_CAP = 8;
 // sweep re-points *which* targets survive, never *how many*, so the golden comparison
 // has one variable in it.
 
+// ─── Hunts (THR-1560, plan doc `Docs/plans/2026-09-23-hunts.md`) ─────────────────
+
+/** A lair this close (hexes) to a mortal's settlement home is a reason to hunt its beast (THR-1533). */
+export const HUNT_THREAT_RADIUS_HEXES = 2;
+/** The monster object's tier for the grid tables, by its lair's tier. */
+export const HUNT_TIER_BY_LAIR: Readonly<Record<'major' | 'legendary', 1 | 2 | 3>> = { major: 2, legendary: 3 };
+/** The secret type tracking a beast mints (an existing `SecretType`). */
+export const HUNT_TRACK_SECRET_TYPE = 'hidden_weakness';
+/** The tracking mark's magnitude — sets its tier, revelation risk and decay. */
+export const HUNT_TRACK_MARK_MAGNITUDE = 0.5;
+/** The hunt payoff's `pullMult`; the lever when hunters are near but outvoted on the road. */
+export const HUNT_APPOINTMENT_PULL_MULT = 1.0;
+/**
+ * The hunt row's `delayTicks`: time to travel from wherever the hunt was prepared to the
+ * den. The default appointment delay (18) puts a far hunter in the `lost` regime, where
+ * the pull is zero — and far beasts are the case the scan cap exists for.
+ */
+export const HUNT_APPOINTMENT_DELAY_TICKS = 48;
+/**
+ * `STRATEGIC_TARGET_SCAN_CAPS.monster`: at least the living-monster count on every preset.
+ * Measured at 300 ticks on seed 42 (THR-1560): medium 34, large 95, epic 120 — so the
+ * plan's 64 was raised to 128 to keep the epic preset whole.
+ */
+export const HUNT_TARGET_SCAN_CAP = 128;
+
 /**
  * How many targets each graph-scanning target rule returns, after proximity ordering.
  *
- * Keyed by `StrategicTargetRule['type']`. Only rules that scan the whole graph appear —
+ * Keyed by `StrategicTargetRule['type']` — and, for the `object` rule, optionally by an
+ * object type id (THR-1560): `findValidTargets` reads `caps[rule.objectTypeId] ?? caps.object`,
+ * so a type whose objects are few but far (a monster) keeps its own cap. Only rules that
+ * scan the whole graph appear —
  * `self`, `faction`, `trade_route` and `hex_region` are bounded by graph structure and
  * need no cap. `colocated_actor` is listed because it carries a cap, but it is already
  * proximity-bounded by construction (it reads one location's `located_at` edges), so it
@@ -1006,8 +1034,12 @@ export const STRATEGIC_TARGET_SCAN_CAPS: Readonly<Record<string, number>> = {
   // holds very few bands, and a rival only needs the nearest few to have a real choice.
   group_node: 5,
   // THR-1392: every object of a type in the world, nearest first. Eight, so a cell
-  // sees a real choice without pricing the whole map.
+  // see a real choice without pricing the whole map.
   object: 8,
+  // THR-1560: the monster type's own scan. A scarred mortal's beast is rarely among
+  // their eight nearest, and the cut runs before any gate, so the reasoned beast would
+  // never be seen. Bounded by the living-monster count, not the map.
+  monster: HUNT_TARGET_SCAN_CAP,
 };
 
 /**

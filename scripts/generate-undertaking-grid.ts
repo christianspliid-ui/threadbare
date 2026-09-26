@@ -37,7 +37,7 @@ import { UNDERTAKING_OBJECT_TYPES } from '../src/data/undertaking-objects';
 import { UNDERTAKING_VERB_VARIANTS, UNDERTAKING_VERBS } from '../src/data/strategic-action-constants';
 import { UNDERTAKING_VERB_WORDS } from '../src/data/undertaking-verb-prose';
 import type { UndertakingVerbVariant } from '../src/types/strategicAction';
-import { NOT_AN_OBJECT, LIVE_CELL_NOTES, CELL_DISPOSITIONS, STANDING_RIDERS, SUBSYSTEM_READERS, UNTOUCHED_BY_DESIGN, type CellDisposition, type LiveCellNote, type SubsystemReader } from './undertaking-grid-dispositions.ts';
+import { NOT_AN_OBJECT, LIVE_CELL_NOTES, LIVE_CLASS_CELL_NOTES, CELL_DISPOSITIONS, STANDING_RIDERS, SUBSYSTEM_READERS, UNTOUCHED_BY_DESIGN, type CellDisposition, type LiveCellNote, type SubsystemReader } from './undertaking-grid-dispositions.ts';
 import { readManifest, buildNav } from './design-wiki-nav.ts';
 import { SUBSYSTEMS, SUBSYSTEM_NAMES, subsystemForModule } from './subsystems-registry.ts';
 
@@ -57,6 +57,22 @@ export interface Cell {
   /** What reads this cell's product (THR-1428) — `readBy` on a live cell, `reader` on a wanted one. */
   readonly readBy?: string;
   readonly decided?: string;
+  /**
+   * Present on a **class** cell (THR-1560): the object type id of a class of `kind`
+   * (`monster` of `mortal`). A class cell is a sub-row under its kind, never a row of
+   * its own, and its note comes from `LIVE_CLASS_CELL_NOTES`.
+   */
+  readonly classOf?: string;
+}
+
+/** The grid key a cell answers to: the class type id for a class cell, else the kind. */
+function cellKey(c: Cell): string {
+  return c.classOf ?? c.kind;
+}
+
+/** The class types of a kind, in registry order — each renders as a sub-row under it. */
+function classTypesOf(kindId: string): { id: string; displayName: string }[] {
+  return UNDERTAKING_OBJECT_TYPES.filter(t => t.classOf === kindId).map(t => ({ id: t.id, displayName: t.displayName }));
 }
 
 export function buildGrid(): { cells: Cell[]; problems: string[] } {
@@ -98,6 +114,28 @@ export function buildGrid(): { cells: Cell[]; problems: string[] } {
       if (disp.status === 'wanted' && !disp.reader?.trim()) problems.push(`${kind.id} × ${v}: 'wanted' without a 'reader' — name what will read this cell's product, or it is not built`);
       cells.push({ kind: kind.id, variant: v, status: disp.status, note: disp.note, decided: disp.decided, readBy: disp.reader });
     }
+  }
+  // THR-1560 — class cells: a type that is a class of a kind (`classOf`) renders as a
+  // sub-row under that kind. Only its live cells are on the map (a class has no
+  // dispositions of its own — the kind's row carries those), held to the same totality
+  // as a kind's: a live class cell without a note fails, and so does a stale note.
+  for (const t of UNDERTAKING_OBJECT_TYPES) {
+    if (!t.classOf) continue;
+    const kindId = t.classOf as WorldObjectKindId;
+    if (!WORLD_OBJECT_KINDS.some(k => k.id === kindId)) { problems.push(`${t.id}: a class of '${t.classOf}', which the catalogue does not have as a kind`); continue; }
+    const notes = LIVE_CLASS_CELL_NOTES[t.id] ?? {};
+    for (const v of UNDERTAKING_VERB_VARIANTS) {
+      const note = notes[v];
+      if (t.verbs[v] === undefined) {
+        if (note) problems.push(`${t.id} (class of ${kindId}) × ${v}: has a LIVE_CLASS_CELL_NOTES entry but the registry declares no semantic`);
+        continue;
+      }
+      if (!note) problems.push(`${t.id} (class of ${kindId}) × ${v}: LIVE in the registry but has no LIVE_CLASS_CELL_NOTES entry — name it on the map`);
+      cells.push({ kind: kindId, classOf: t.id, variant: v, status: 'live', note: note?.note ?? '', op: note?.op, retires: note?.retires, owes: note?.owes, readBy: note?.readBy });
+    }
+  }
+  for (const classId of Object.keys(LIVE_CLASS_CELL_NOTES)) {
+    if (!UNDERTAKING_OBJECT_TYPES.some(t => t.id === classId && t.classOf)) problems.push(`${classId}: live class-cell notes for a type that is not a class of a kind`);
   }
   for (const [kindId] of Object.entries(CELL_DISPOSITIONS)) if (!WORLD_OBJECT_KINDS.some(k => k.id === kindId)) problems.push(`${kindId}: dispositions for a kind the catalogue does not have`);
   for (const [kindId] of Object.entries(LIVE_CELL_NOTES)) if (!WORLD_OBJECT_KINDS.some(k => k.id === kindId)) problems.push(`${kindId}: live-cell notes for a kind the catalogue does not have`);
@@ -293,9 +331,9 @@ export function buildOpReach(repoRoot: string, cells: readonly Cell[]): { reache
 
   for (const c of cells) {
     if (c.status !== 'live') continue;
-    const label = `${c.kind} × ${c.variant}`;
-    const block = blocks.get(c.kind);
-    if (block === undefined) { problems.push(`${label}: LIVE but the registry source has no \`verbs\` block for '${c.kind}' — the op-module join cannot see it`); continue; }
+    const label = `${cellKey(c)} × ${c.variant}`;
+    const block = blocks.get(cellKey(c));
+    if (block === undefined) { problems.push(`${label}: LIVE but the registry source has no \`verbs\` block for '${cellKey(c)}' — the op-module join cannot see it`); continue; }
     const entry = topLevelEntries(block).find(e => e.key.replace(/^['"]|['"]$/g, '') === c.variant);
     if (entry === undefined) { problems.push(`${label}: LIVE but the registry's \`verbs\` block declares no entry for it — the op-module join cannot see it`); continue; }
     const mode = /\bmode:\s*'([^']+)'/.exec(entry.value)?.[1];
@@ -313,7 +351,7 @@ export function buildOpReach(repoRoot: string, cells: readonly Cell[]): { reache
       problems.push(`${label} (\`${c.op ?? mode ?? '?'}\`): its operation lives in ${modules.join(', ')}, which ${modules.length === 1 ? 'resolves' : 'resolve'} to no registry subsystem — cross-cutting or unhomed. House the module under a subsystem in \`scripts/subsystems-registry.ts\`.`);
       continue;
     }
-    reaches.push({ cell: `${UNDERTAKING_VERB_WORDS[c.variant]} × ${c.kind}`, op: c.op ?? mode ?? '', modules, subsystems });
+    reaches.push({ cell: `${UNDERTAKING_VERB_WORDS[c.variant]} × ${cellKey(c)}`, op: c.op ?? mode ?? '', modules, subsystems });
   }
   return { reaches, problems };
 }
@@ -446,8 +484,16 @@ function renderMarkdown(cells: Cell[], rows: readonly SubsystemRow[]): string {
   L.push(`| Kind | ${UNDERTAKING_VERB_VARIANTS.map(v => UNDERTAKING_VERB_WORDS[v]).join(' | ')} |`);
   L.push(`|---|${UNDERTAKING_VERB_VARIANTS.map(() => '---').join('|')}|`);
   for (const kind of WORLD_OBJECT_KINDS) {
-    const row = UNDERTAKING_VERB_VARIANTS.map(v => cellLabelMd(cells.find(x => x.kind === kind.id && x.variant === v)!));
+    const row = UNDERTAKING_VERB_VARIANTS.map(v => cellLabelMd(cells.find(x => x.kind === kind.id && !x.classOf && x.variant === v)!));
     L.push(`| **${kind.gameWord}** \`${kind.id}\` | ${row.join(' | ')} |`);
+    // THR-1560 — a class of this kind, as a sub-row (only its live cells exist).
+    for (const cls of classTypesOf(kind.id)) {
+      const sub = UNDERTAKING_VERB_VARIANTS.map(v => {
+        const c = cells.find(x => x.classOf === cls.id && x.variant === v);
+        return c ? cellLabelMd(c) : BADGE.no;
+      });
+      L.push(`| ↳ _(${cls.displayName.toLowerCase()})_ \`${cls.id}\` | ${sub.join(' | ')} |`);
+    }
   }
   L.push('', '## Subsystems × verbs', '');
   const touched = rows.filter(r => r.status === 'live-touched'), byOp = rows.filter(r => r.status === 'reached-by-op'), reading = rows.filter(r => r.status === 'reads'), openOnly = rows.filter(r => r.status === 'open-only'), untouched = rows.filter(r => r.status === 'untouched');
@@ -479,7 +525,7 @@ function renderMarkdown(cells: Cell[], rows: readonly SubsystemRow[]): string {
   L.push('', '## Standing riders', '', '_Rules that bind every cell rather than one._', '');
   for (const r of STANDING_RIDERS) L.push(`- ${r}`);
   L.push('', '## Live cells', '');
-  for (const c of live) L.push(`- **${UNDERTAKING_VERB_WORDS[c.variant]} × ${c.kind}** — \`${c.op}\` — ${c.note}${c.retires?.length ? ` _(absorbs: ${c.retires.join(', ')})_` : ''}${c.owes ? ` **Owes:** ${c.owes}` : ''}${c.readBy ? ` **Read by:** ${c.readBy}` : ''}`);
+  for (const c of live) L.push(`- **${UNDERTAKING_VERB_WORDS[c.variant]} × ${cellKey(c)}** — \`${c.op}\` — ${c.note}${c.retires?.length ? ` _(absorbs: ${c.retires.join(', ')})_` : ''}${c.owes ? ` **Owes:** ${c.owes}` : ''}${c.readBy ? ` **Read by:** ${c.readBy}` : ''}`);
   L.push('', '## Wanted cells — decided yes, not yet built', '');
   for (const c of wanted) L.push(`- **${UNDERTAKING_VERB_WORDS[c.variant]} × ${c.kind}** — ${c.note}${c.readBy ? ` **Reader:** ${c.readBy}` : ''} _(${c.decided})_`);
   L.push('', '## Later — decided, waiting on a precondition', '');
@@ -511,18 +557,32 @@ function renderHtml(cells: Cell[], subsystemRows: readonly SubsystemRow[]): stri
   const head = UNDERTAKING_VERB_VARIANTS.map(v => `<th class="verb">${esc(UNDERTAKING_VERB_WORDS[v])}<span class="grp">${esc(v.split(':')[0].toUpperCase())}</span></th>`).join('');
   const rows = WORLD_OBJECT_KINDS.map(kind => {
     const tds = UNDERTAKING_VERB_VARIANTS.map(v => {
-      const c = cells.find(x => x.kind === kind.id && x.variant === v)!;
+      const c = cells.find(x => x.kind === kind.id && !x.classOf && x.variant === v)!;
       const label = c.status === 'live' ? esc(UNDERTAKING_VERB_WORDS[v].toLowerCase()) : c.status === 'no' ? '—' : c.status;
       const owes = c.status === 'live' && c.owes ? ' owes' : '';
       return `<td><button class="cell ${c.status}${owes}" data-k="${kind.id}" data-v="${v}" title="${esc(c.note)}">${label}${c.op ? `<span class="op">${esc(c.op)}</span>` : ''}</button></td>`;
     }).join('');
     const noobj = NOT_AN_OBJECT[kind.id] ? ' class="noobj"' : '';
-    return `<tr${noobj}><td class="kind"><b>${esc(kind.gameWord)}</b><small>${esc(kind.id)}</small></td>${tds}</tr>`;
+    // THR-1560 — a class of this kind, as a sub-row under it (only its live cells exist).
+    const subRows = classTypesOf(kind.id).map(cls => {
+      const subTds = UNDERTAKING_VERB_VARIANTS.map(v => {
+        const c = cells.find(x => x.classOf === cls.id && x.variant === v);
+        if (!c) return '<td><button class="cell no" disabled>—</button></td>';
+        const owes = c.owes ? ' owes' : '';
+        return `<td><button class="cell live${owes}" data-k="${cls.id}" data-v="${v}" title="${esc(c.note)}">${esc(UNDERTAKING_VERB_WORDS[v].toLowerCase())}${c.op ? `<span class="op">${esc(c.op)}</span>` : ''}</button></td>`;
+      }).join('');
+      return `<tr class="classrow"><td class="kind"><b>↳ (${esc(cls.displayName.toLowerCase())})</b><small>${esc(cls.id)}</small></td>${subTds}</tr>`;
+    });
+    return [`<tr${noobj}><td class="kind"><b>${esc(kind.gameWord)}</b><small>${esc(kind.id)}</small></td>${tds}</tr>`, ...subRows].join('\n');
   }).join('\n');
-  const data = JSON.stringify(cells.map(c => ({ k: c.kind, v: c.variant, s: c.status, n: c.note, o: c.op ?? null, r: c.retires ?? [], w: c.owes ?? null, rb: c.readBy ?? null, d: c.decided ?? null })));
+  const data = JSON.stringify(cells.map(c => ({ k: cellKey(c), v: c.variant, s: c.status, n: c.note, o: c.op ?? null, r: c.retires ?? [], w: c.owes ?? null, rb: c.readBy ?? null, d: c.decided ?? null })));
   const listItem = (c: Cell) => `<li><b>${esc(UNDERTAKING_VERB_WORDS[c.variant])} × ${esc(c.kind)}</b> — ${esc(c.note)}${c.decided ? ` <small>(${esc(c.decided)})</small>` : ''}</li>`;
   const words = JSON.stringify(UNDERTAKING_VERB_WORDS);
-  const names = JSON.stringify(Object.fromEntries(WORLD_OBJECT_KINDS.map(k => [k.id, k.gameWord])));
+  const names = JSON.stringify(Object.fromEntries([
+    ...WORLD_OBJECT_KINDS.map(k => [k.id, k.gameWord]),
+    // Class types (THR-1560) name themselves in the detail pane: "Monster".
+    ...UNDERTAKING_OBJECT_TYPES.filter(t => t.classOf).map(t => [t.id, t.displayName]),
+  ]));
   return `<!-- GENERATED by npm run generate-undertaking-grid — do not hand-edit. Live cells: src/data/undertaking-objects.ts; dispositions: scripts/undertaking-grid-dispositions.ts -->
 <!doctype html>
 <html lang="en">

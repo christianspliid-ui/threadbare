@@ -47,6 +47,8 @@ export const GRUDGE_CAUSE_CLAUSES: Readonly<Record<string, string>> = {
   excommunicated: 'a name struck from the rolls',
   // THR-1388 — a rivalry, not a grudge: the owner is a chip beside the line, so the clause does not name them.
   covets: 'a holding one of them kept reaching for',
+  // THR-1548 — a fight that struck one of them down (the mauled face).
+  blood_drawn: 'one of them drew the other\'s blood',
 };
 
 /**

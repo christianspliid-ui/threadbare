@@ -125,6 +125,22 @@ export const MIN_DIVERSITY_SLOTS = 1;
  */
 export const PERSONAL_OFFER_CAP_RESERVE = 6;
 
+/**
+ * Slots reserved at the cap stage for social-path entries — the agent-to-agent
+ * candidates `generateSocialCandidates` builds per decider (social, social-scene,
+ * tavern, secret-discovery, faction-social) (THR-1614).
+ *
+ * Same positional cut as PERSONAL_OFFER_CAP_RESERVE and a sibling of it, not a
+ * share of it: social entries are merged ahead of faction quests in the dynamic
+ * tail and run ~16 per decider, so pooling them under one reserve would let them
+ * starve the guild guarantee THR-814 bought. Measured before the fix on seeds 42
+ * and 99 / medium: 0 of ~1,000 offered social entries survived this stage, so the
+ * whole social pool never fired.
+ *
+ * @range 0–12 (0 disables the reserve; higher = people crowd out places)
+ */
+export const SOCIAL_OFFER_CAP_RESERVE = 6;
+
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */
 export const THREAT_FLOOR_FILTER = false;

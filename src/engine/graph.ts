@@ -22,8 +22,9 @@ export class WorldGraph {
    * `removeNode` is the sole funnel all ~25 deleting call sites already pass
    * through, and it was entirely silent — so a reaper could take a node an
    * undertaking had bound as must-persist and nothing would ever notice. One seam
-   * covers every reaper, including the two that bypass the lifecycle entirely
-   * (`battleAftermath` commander kill and sublocation destruction) and any reaper
+   * covers every reaper, including those that bypass the lifecycle entirely
+   * (`battleAftermath` sublocation destruction — its commander kill has gone through
+   * the death funnel since THR-1566) and any reaper
    * not yet written; per-reaper enforcement would have been routed around by the
    * unguarded generic `remove_node` GraphOp.
    *

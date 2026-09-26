@@ -609,7 +609,12 @@ function findValidTargets(
         nodes.push(node);
         objectHandles?.set(node.id, handle);
       }
-      return orderTargetsByProximity(graph, nodes, actorHex, STRATEGIC_TARGET_SCAN_CAPS.object);
+      // THR-1560: a type may keep its own cap (the monster scan), else the object one.
+      // The cut runs before every gate, so a far, reasoned object needs the headroom.
+      return orderTargetsByProximity(
+        graph, nodes, actorHex,
+        STRATEGIC_TARGET_SCAN_CAPS[rule.objectTypeId] ?? STRATEGIC_TARGET_SCAN_CAPS.object,
+      );
     }
 
     case 'self':

@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-09-23
+last_validated_against: 2026-09-25
 ---
 
 # Keep Work Flowing (CC)
@@ -71,7 +71,9 @@ npm run check:tick-cost --silent -- --input .cache/tick-cost.json --write Docs/o
 
 Standing declines: nightly-shaped **and weekend-shaped** `recovered` gaps in lane-silence are declined per Christian's 2026-08-08 ruling ("overnight quiet is normal") and its 2026-09-11 extension to weekends (`Docs/canon/process.md` § User review interface, rule 4) with one visibility line — a `recovered` verdict is an ask only on a weekday gap with no pause marker. Do not carry a `UL-proposal`, an image-credit spend inside a ticket's stated batch, or a `wayfinder:*` decision ticket as a standing ask — all three are delegated by the same rule. Freshness special cases: never report a behind-count off a detached HEAD; detached-with-unique-commits → surface the SHAs, offer no repair command.
 
-**Sibling fold:** newest `orchestrator-*` / `backlog-grooming-*` / `weekly-hygiene-*` report **per producing task** from `origin/ops` (`git ls-tree -r --name-only origin/ops -- Docs/ops/`; the working-tree copies are a frozen pre-cutover archive), ≤36 h old. Fold each `## Needs Christian` section in **verbatim with attribution** (`— from daily-backlog-grooming`), dedupe against your own items, skip empty states. A gap in a sibling's reports is not a fault — no-op runs write no file.
+**Sibling fold:** newest `orchestrator-*` / `backlog-grooming-*` / `weekly-hygiene-*` / `design-lane-*` / `cold-playtest-round-*` report **per producing task** from `origin/ops` (`git ls-tree -r --name-only origin/ops -- Docs/ops/`; the working-tree copies are a frozen pre-cutover archive), ≤36 h old. Fold each `## Needs Christian` section in **verbatim with attribution** (`— from daily-backlog-grooming`), dedupe against your own items, skip empty states. A gap in a sibling's reports is not a fault — no-op runs write no file.
+
+**Veto fold (THR-1611).** `design-lane-*` reports also carry `## Decided for you` — decisions the unattended design lane made under process.md rule 4. Collect those lines from **every** design-lane report ≤ `DESIGN_LANE_VETO_WINDOW_HOURS` (24 h) old (not only the newest) into the briefing's `## Decided for you` section, verbatim with their links. **They are not asks:** they never enter the lead, never count in *Also waiting*, never get an ask key, and never ring the Discord doorbell (step 7). They exist so a veto is one chat message away — a decision older than the window has had its day and drops off.
 
 ### 4. Compose `Design/briefing.md` (overwrite whole)
 
@@ -86,6 +88,7 @@ If nothing needs him: "Nothing needs you right now — the queue is draining on 
 ## Also waiting (N)
 <one line per remaining ask — link plus one clause. No elaboration; detail lives in user-actions.md.>
 
+## Decided for you    ← only when the veto fold found lines; one line each: "[<title>](url) — <decision>", then "Say 'veto <title>' to reverse any of these."
 ## From Christian      ← only when step 1 had new messages; omit the heading otherwise
 ## Queue               ← one line (starved/healthy/backed-up + count), then flagged items one line each
 ## Health              ← "All green." or one line per non-healthy signal

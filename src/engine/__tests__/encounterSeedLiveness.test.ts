@@ -29,9 +29,9 @@ import {
   LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
   getUnifiedTemplateById,
 } from '../../data/unified-action-templates';
-import { validateEncounterSeedRefs } from '../nudgeGrantLiveness';
+import { validateEncounterSeedRefs, allTemplateEffects } from '../nudgeGrantLiveness';
 import { ENCOUNTER_FAMILY_TAGS, seedContentQuery } from '../encounterSeeding';
-import { contentQueryHasCandidates } from '../contentQuery';
+import { contentQueryHasCandidates, resolveContentQuery } from '../contentQuery';
 import { staticContentCatalogs } from '../contentCatalogView';
 import {
   buildSeedPlanterIndex,
@@ -55,8 +55,11 @@ const CORPUS = [...UNIFIED_ACTION_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEM
  * Lower this number when families are migrated; never raise it. The repair is one of two
  * things per family: an `ENCOUNTER_FAMILY_TAGS` row plus the tag on its members, or
  * `query` authored directly on the seed.
+ *
+ * THR-1613 drained the six families that actually wither in a live run (50 sites) —
+ * 168 → 118.
  */
-const DEAD_FAMILY_SITE_CEILING = 168;
+const DEAD_FAMILY_SITE_CEILING = 118;
 
 describe('encounter seeds name something that can arrive', () => {
   it('the corpus is large and seed-bearing, so the sweeps below are not vacuous', () => {
@@ -176,6 +179,65 @@ describe('the repaired sequels can now actually arrive', () => {
   });
 });
 
+// ─── The six withering families (THR-1613) ──────────────────────────────────
+//
+// A live ledger (seeds 42 · 99, medium, 200 ticks) found 60 of 70 withered seeds were
+// planted under six families with no alias row and no prefix member — dead by
+// construction, and planted by some of the most-fired templates in the corpus. Each
+// planter now authors a `query` naming an errand family whose story fits its seedLabel.
+
+/** The families THR-1613 retired; no planter may name one again. */
+const THR_1613_RETIRED_FAMILIES = [
+  'stone.legacy', 'star.referred_pilgrim', 'veil.quiet_devotion',
+  'eye.kept_record', 'stone.accused_vengeance', 'investigation',
+] as const;
+
+/** Every template that planted one of them on the day it was fixed. */
+const THR_1613_PLANTERS = [
+  'stone.permanence.mason_lord_wall', 'reputation.stone.the_stones_judgement',
+  'star.turning.comet_omen', 'reputation.star.the_star_pilgrim',
+  'veil.truth.page_beneath_saint', 'eye.reckoning.verdict_that_burns',
+  'reputation.stone.the_jury_of_the_ruined',
+  'encounter.anomaly.sealed_chamber', 'encounter.anomaly.drowned_hoard',
+  'encounter.anomaly.fallen_star', 'encounter.anomaly.dreaming_light',
+  'mc.army.raise', 'army.threshold.mutiny', 'army.aftermath.refugees',
+] as const;
+
+describe('the six withering seed families resolve to live content (THR-1613)', () => {
+  it('no seed plants a retired family any more', () => {
+    const planted = validateEncounterSeedRefs(CORPUS).deadFamilies
+      .filter(d => (THR_1613_RETIRED_FAMILIES as readonly string[]).includes(d.ref))
+      .map(d => `${d.templateId} ${d.site} → ${d.ref}`);
+    expect(planted, `a retired family was planted again:\n  ${planted.join('\n  ')}`).toEqual([]);
+  });
+
+  it('every repointed seed resolves to at least one template a mortal can perform', () => {
+    // The runtime's own eligibility floor (`eligibleAt` in encounterSeeding.ts): a hit
+    // must be individual-performable, or the seed withers exactly as before with a
+    // different reason on the trace. Subtype is judged at spawn time, so it is not.
+    // The planters' *other* seeds still name dead families the ceiling above counts;
+    // this pin covers the query-bearing ones this ticket authored.
+    const catalogs = staticContentCatalogs();
+    let seeds = 0;
+    const hungry: string[] = [];
+    for (const id of THR_1613_PLANTERS) {
+      const template = CORPUS.find(t => t.id === id);
+      expect(template, `${id} is no longer in the corpus — update this pin`).toBeDefined();
+      for (const { effect, site } of allTemplateEffects(template!)) {
+        if (effect.kind !== 'encounter_seed' || !effect.query) continue;
+        seeds++;
+        const performable = resolveContentQuery(effect.query, catalogs)
+          .map(h => getUnifiedTemplateById(h.id))
+          .filter(t => t?.actorAffinities?.includes('individual') && t.drawable !== false);
+        if (performable.length === 0) hungry.push(`${id} ${site} ("${effect.seedLabel}")`);
+      }
+    }
+    // 21 authored sites; aftermath fallbacks re-walk some reactions, so the walk sees more.
+    expect(seeds, 'no repointed seeds found on the planters — the sweep would pass over nothing').toBeGreaterThanOrEqual(21);
+    expect(hungry, `planted seeds with nothing a mortal can perform:\n  ${hungry.join('\n  ')}`).toEqual([]);
+  });
+});
+
 // ─── Seed-only sequels (THR-1526) ───────────────────────────────────────────
 //
 // Plan: `Docs/plans/2026-09-24-thr-1526-seed-only-encounters.md` § Content gates.
@@ -199,6 +261,8 @@ const SHIPPED_SEED_ONLY_SEQUELS = [
 const DECLARED_QUERY_PLANTERS: Readonly<Record<string, readonly string[]>> = {
   // The Crossroads' missed branch: `#crossroads_debt`.
   'encounter.slice.full_moon_reckoning': ['encounter.slice.bargain_at_crossroads'],
+  // THR-1560 — the hunt appointment's missed branch: `#hunt_trail_cold`, one bearer.
+  'hunt.trail_cold': ['cell.destroy.monster'],
 };
 
 const NON_DRAWABLE = CORPUS.filter(t => t.drawable === false);

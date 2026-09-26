@@ -1567,7 +1567,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: ENCOUNTERS,
     intent:
-      'A mortal chooses what to attempt by forecasting its odds, and the forecast is the number the dice use. The planner (`estimateStepProbability`, `forecastStepProbabilities`) forecasts every cache-entry step through `forecastActionAtScale` / `scaledStepProbability` at the template\'s `scale` — the same scale offset, difficulty cap and post-roll floor `resolveStepCore` applies — and the cache stores authored difficulty, since the roll never applies the late-game or danger multipliers (`PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false`). Only what a mortal cannot foresee (a god\'s nudges, a company assist, push/resist) sits outside it; standing modifiers join both sides when THR-1535 puts them in the roll.',
+      'A mortal chooses what to attempt by forecasting its odds, and the forecast is the number the dice use. The planner (`estimateStepProbability`, `forecastStepProbabilities`) forecasts every cache-entry step through `forecastActionAtScale` / `scaledStepProbability` at the template\'s `scale` — the same scale offset, difficulty cap and post-roll floor `resolveStepCore` applies — and the cache stores authored difficulty, since the roll never applies the late-game or danger multipliers (`PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false`). Only what a mortal cannot foresee (a god\'s nudges, a company assist, push/resist) sits outside it. Standing modifiers (items, conditions, the effect family, terrain, place conditions, sphere alignment) sit on both sides since THR-1535: the roll adds `computeStandingModifierTotal`, and the planner adds the same per-reach total through a `createStandingModifierReader` built once per decision pass.',
     ulTerms: ['Domain Capability', 'UnifiedActionTemplate', 'Encounter'],
     mechanism: {
       kind: 'function',
@@ -1579,7 +1579,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-09-24',
       evidence:
-        'THR-1579: `plannerForecastParity.test.ts` builds real cache entries (`EncounterCacheManager.buildFullCache` over ten location kinds) and, for a novice, a journeyman and a specialist, compares the planner\'s step probability against `previewStepProbability` — the roll\'s own derivation run dry — on 1,470 steps across local, regional and cosmic scale: equal to 9 decimal places on every step (the plan\'s KPI is mean ≤ `KPI_FORECAST_PARITY_MAX` 0.02), and the expected-utility path within one d100 point. Before the fix the plan\'s named case (capability 0.55, local, d 0.45) forecast 0.10 and rolled 0.65. The same file pins the engagement forecast `F` as the exact product of per-step survival (critical failure always ends; plain failure only on `fail_action`), carried on `ScoredCandidate` and the `encounter_scoring` trace.',
+        'THR-1579: `plannerForecastParity.test.ts` builds real cache entries (`EncounterCacheManager.buildFullCache` over ten location kinds) and, for a novice, a journeyman and a specialist, compares the planner\'s step probability against `previewStepProbability` — the roll\'s own derivation run dry — on 1,470 steps across local, regional and cosmic scale: equal to 9 decimal places on every step (the plan\'s KPI is mean ≤ `KPI_FORECAST_PARITY_MAX` 0.02), and the expected-utility path within one d100 point. Before the fix the plan\'s named case (capability 0.55, local, d 0.45) forecast 0.10 and rolled 0.65. The same file pins the engagement forecast `F` as the exact product of per-step survival (critical failure always ends; plain failure only on `fail_action`), carried on `ScoredCandidate` and the `encounter_scoring` trace. THR-1535 (2026-09-25): the same file re-runs all 1,470 steps with the mortal carrying a passive +0.05 charm on three reaches and standing on a mountain — the gear and ground move 149 of them, and planner equals resolver to 9 decimals on every one.',
     },
   },
 
@@ -3766,11 +3766,18 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/groups/bandOpposition.ts',
       'src/engine/graphOpExecutor.ts',
       'src/data/undertaking-objects.ts',
+      // THR-1566: a commander killed in a battle's aftermath (`cause: 'battle'`, retained).
+      'src/engine/battleAftermath.ts',
     ],
+    // THR-1545 (monsters M2, "death funnel → cast binding"): the encounter cast reads
+    // the mark too — no actor spec binds a deceased node — and so does the lair-monster
+    // draw gate, through `isAgentGone`.
     readSites: [
       'src/engine/groups/groupQueries.ts',
       'src/engine/factionNetwork.ts',
       'src/engine/agentDetail.ts',
+      'src/engine/encounterSupportBundle.ts',
+      'src/engine/monsters/liveMonster.ts',
     ],
   },
   {
@@ -4232,6 +4239,96 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/fights/fightClock.ts'],
     readSites: ['src/engine/fights/opponentCard.ts', 'src/engine/unifiedActionResolution.ts'],
   },
+  // ── The fight on screen F2 (THR-1551, plan 2026-09-23-fight-on-screen § Interface impact) ──
+  // "fight state → veil": the opponent header reads the fight's own state and the
+  // opponent's card; it writes nothing.
+  {
+    id: 'fight-state-shows-on-veil',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      "A fight the player watches shows who the mortal is facing and how close it is to falling: the veil reads the fight's clock and the opponent's card, so the pips and the word on screen are the clock the next blow will fill.",
+    ulTerms: ['Fight Clock', 'Opponent Card'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildOpponentHeaderModel', 'readOpponentCard', 'fightState'],
+      module: 'src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts',
+    },
+    writeSites: ['src/engine/fights/fightState.ts', 'src/engine/fights/fightClock.ts'],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts',
+      'src/components/Game/encounter-stage/OpponentHeader.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        "THR-1551 F2. Review route `?view=game&seeded&size=medium`, `tick(60)`, `spawnFight('Ryx')` (major lair, blight family): `getOpponentHeaderModel('ua_116').name === 'Ryx'`, sentence \"A walking rot that spreads where it goes. Fearsome to face, a fair match.\", clock 4 square pips at 14px, word \"untouched\", no threat whisper, hand unscrolled at 1920×1080 (`Docs/evidence/thr-1551/`). Non-vacuous by `src/components/Game/encounter-stage/__tests__/opponentHeaderF2.test.tsx`: the nerve step's word equals the first exchange's after a real `executeStepResult` with a pending recovery (a raw read would say \"failing\"), and the word tracks `fightState.clockNow` once the fight exists.",
+    },
+  },
+  // ── The fight on screen F3 (THR-1553, plan 2026-09-23-fight-on-screen § Interface impact) ──
+  // "fight endings → consequence chips": the aftermath's chip block reads the resolved
+  // action's `fightState` (ending, lairOutcome, conditionsApplied, storiedClimbs, the
+  // clock) and, since THR-1561, a duel's `opponentEnding` (the loser slain, or spared with a
+  // grudge against the fighter). It writes nothing.
+  {
+    id: 'fight-endings-show-as-chips',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      "A fight's ending says what it did in the game's own chips — a beast slain or worn down, a den cleared, a scar, a trophy, a grudge, a town's gratitude — each drawn only from what the fight's writers recorded, so a chip on screen is a mark the world really carries.",
+    ulTerms: ['Fight Clock', 'SCAR', 'BOND', 'BOON', 'PATH'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildFightChanges', 'fightState'],
+      module: 'src/components/Game/encounter-stage/adapters/buildFightChanges.ts',
+    },
+    writeSites: [
+      'src/engine/fights/fightState.ts',
+      'src/engine/fights/fightEnding.ts',
+      'src/engine/unifiedActionResolution.ts',
+    ],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildFightChanges.ts',
+      'src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        "THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with \"Let fate decide\": the aftermath rendered PATH · KRENN \"Krenn was slain.\" ◆ slain and PATH · THE KINDLED WARREN \"The Kindled Warren is cleared.\" ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`. THR-1561 (a duel's loser): `?view=game&seeded&size=medium&forceencounters`, tick 10, `spawnDuel('Corran', …, { courtPosition: 'the_first' })` → `ua_31`, where `opponentEnding` was spared with `grudgeWritten`; the aftermath drew BOND · NESRIN \"Nesrin holds a grudge against Corran.\" ▼ (`Docs/evidence/thr-1561/`).",
+    },
+  },
+  // ── The fight on screen F4 (THR-1552, plan 2026-09-23-fight-on-screen § Interface impact) ──
+  // "monster card → sidebar": the lair card reads the monster's card, its recovered clock,
+  // `temperShown`, and — for a slain beast — the retained elite's `lairId` and the sheet's
+  // own death reading. It writes nothing.
+  {
+    id: 'monster-card-shows-on-lair',
+    producerSystem: RUINS,
+    consumerSystem: NARRATIVE,
+    intent:
+      "A lair tells the player what lives there and how close it is to falling — a sentence, square pips and a word — and once the beast is felled it says so, naming the slayer only when the beast's own sheet does.",
+    ulTerms: ['Opponent Card', 'Fight Clock', 'Temper'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildLairMonsterCardModel', 'readOpponentCard', 'monsterState', 'getAgentInfoCard'],
+      module: 'src/components/Game/lair/buildLairMonsterCardModel.ts',
+    },
+    writeSites: [
+      'src/engine/monsters/monsterCard.ts',
+      'src/engine/fights/fightClock.ts',
+      'src/engine/agentLifecycle.ts',
+    ],
+    readSites: [
+      'src/components/Game/lair/buildLairMonsterCardModel.ts',
+      'src/components/Game/lair/LairMonsterCard.tsx',
+      'src/components/Game/HexSidebar.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        "THR-1552 F4. Review route `?view=game&seeded&size=medium&nofog`, `tick(60)`: lair_0's card reads \"Ryx — A walking rot that spreads where it goes. Fearsome to face, a fair match.\" with 4 square pips at 14px and \"untouched\"; stored clock 2/4 reads \"half-broken\"; `spawnFight('Ryx', { clockFilled: 3, outcome: 'critical_success' })` played through the veil fells Ryx, lair_0 becomes a cleared lair, and the Cleared Lair Section reads \"slain by Vara\". At tick 100, `spawnFight('elite_lair_10_50', …)` fells Druja at the legendary lair_10, whose `namedEliteId` is then gone: the lair block finds her by reverse lookup on `lairId` and reads \"slain by Vara\" (`Docs/evidence/thr-1552/`). `getLairMonsterCard` matched `listMonsters` on every field it shares. Non-vacuous by `src/components/Game/lair/__tests__/lairMonsterF4.test.tsx`: the temper clause is absent before a fight and present after one; \"slain by\" renders when `getAgentInfoCard(...).death.by` is set and not when it is absent.",
+    },
+  },
   {
     id: 'fight-result-keys-aftermath-variants',
     producerSystem: ENCOUNTERS,
@@ -4273,6 +4370,223 @@ export const CONTRACTS: readonly Contract[] = [
       evidence:
         'THR-1544 M1. Seed 42 medium, 120 ticks, CLI `monsters`: 14 monsters listed, every one carrying a card (14/14) — blight, stormkin, behemoth and golem families, all legendary by then, so every card also shows the hardening (clock 5, Dread one word up). Non-vacuous by `src/engine/monsters/__tests__/monsterCard.test.ts`: each of the eight families is minted and then read back through `readOpponentCard` with `source: \'monsterState\'` and the family\'s temper from the `trait.temper.*` edge; the real `phaseLairEscalation` both mints and hardens; a foundation-sphere lair falls back to the Force family; a graph with no temper definitions mints the card and skips the edge.',
     },
+  },
+  // ── Monsters M2 (THR-1545, plan 2026-09-23-monsters-as-opponents §4) — the plan's
+  // Interface impact row "lair + monster → encounter draw". The lair's escalation names
+  // its elite; the draw gate and the hunt's cast read the name and the living body.
+  {
+    id: 'lair-monster-gates-the-hunt',
+    producerSystem: RUINS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part.",
+    ulTerms: ['Opponent Card'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['namedEliteId', 'liveLairMonsterAt', 'requiresLiveMonster', 'matchProperty'],
+      module: 'src/engine/monsters/liveMonster.ts',
+    },
+    writeSites: ['src/engine/lairEscalation.ts'],
+    readSites: [
+      'src/engine/monsters/liveMonster.ts',
+      'src/engine/encounterFilterPipeline.ts',
+      'src/engine/unifiedCandidates.ts',
+      'src/engine/encounterSupportBundle.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        'THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.',
+    },
+  },
+  // ── Monsters M3 (THR-1546, plan 2026-09-23-monsters-as-opponents §5) — the plan's
+  // Interface impact row "fight → lair clearing": a second writer to `clearingProgress`
+  // / `clearLair`, beside THR-1319's presence press. The existing readers of both
+  // (the presence pass, reinfestation, army attrition, the sidebar) read what it writes.
+  {
+    id: 'fight-fells-monster-clears-lair',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: RUINS,
+    intent:
+      "Felling a lair's monster in a fight is what takes the den: at major the lair falls to the victor's faction; at legendary the den outlives its beast but is worn halfway down; driving the beast off wears it a little. A warded or already-dead beast credits nothing.",
+    ulTerms: ['Opponent Card'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['monsterLairBranch', 'clearLair', 'clearingProgress', 'lairOutcome'],
+      module: 'src/engine/monsters/monsterFelling.ts',
+    },
+    writeSites: ['src/engine/monsters/monsterFelling.ts'],
+    readSites: ['src/engine/lairClearing.ts', 'src/engine/lairEscalation.ts'],
+  },
+  // ── Monsters M4 (THR-1547, plan 2026-09-23-monsters-as-opponents §6) — the plan's
+  // Interface impact row "movement arrival → fight spawn". The arrival branch reads the
+  // lair's elite and spawns the confront into the unified-action pipeline, which runs it.
+  {
+    id: 'lair-arrival-spawns-confront',
+    producerSystem: WORLDGEN,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it.",
+    ulTerms: ['Opponent Card'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['checkLairArrival', 'fightCooldowns', 'fightPairKey', 'fight.lair.confront'],
+      module: 'src/engine/monsters/lairArrivalTrigger.ts',
+    },
+    writeSites: ['src/engine/phaseMovement.ts'],
+    // The confront the spawn runs, and the trigger's own cooldown read on the next arrival.
+    readSites: ['src/data/encounters/fight-lair-confront.ts', 'src/engine/monsters/lairArrivalTrigger.ts'],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        'THR-1547 M4. Seed 42 medium, tick 100, an idle mortal (ind_0) sent to end a journey at the legendary lair_0: the arrival traces `fight.trigger` spawned (`ua_167` vs `elite_lair_0_50`), writes `fightCooldowns["elite_lair_0_50|ind_0"] = 126`, and the fight runs — three `fight.step` traces against `elite_lair_0_50`, then `fight.end … broke_off`. Natural play spawns none in 200 ticks on seeds 42 and 99: lairs have no `adjacent` / `road` edges, so no path ends at one; mortals only cross lair nodes as road waypoints, which by design do not trigger. Non-vacuous by `src/engine/monsters/__tests__/lairArrivalTrigger.test.ts` (17): arrival at the lair and at a place inside it spawns, hex co-presence and mid-road steps do not, and each skip reason (cooldown, busy, monster_dead, avatar, arriving_for_hunt) is asserted through the real `phaseMovement`.',
+    },
+  },
+  // ── Duels E3 (THR-1558, plan 2026-09-23-mortal-duels §6) — the plan's Interface impact
+  // row "colocation → fight spawn (grudge)". The colocation phase reads injury-class
+  // `hostile_to` edges between co-located mortals and spawns the duel into the
+  // unified-action pipeline, which runs it. Natural play on seeds 42 and 99 writes no
+  // injury-class grudge between two individuals in 200 ticks, so the live evidence is
+  // an injected run — recorded as such.
+  {
+    id: 'colocated-grudge-spawns-duel',
+    producerSystem: AMBITIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "Two mortals who share a grudge born of a real injury, standing in the same place and neither busy, may come to blows: the colocation phase rolls for it on the pair's own stream and spawns Old Blood between them. An old quarrel never does, the god's avatar never duels, a threaded mortal is always the actor, and a pair waits `GRUDGE_DUEL_COOLDOWN_TICKS` between duels.",
+    ulTerms: ['Grudge', 'Duel'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['runGrudgeDuels', 'isInjuryProvenance', 'fightCooldowns', 'fight.duel.grudge'],
+      module: 'src/engine/fights/grudgeDuelTrigger.ts',
+    },
+    writeSites: ['src/engine/phaseColocationDetection.ts'],
+    // The duel the spawn runs, and the busy set that holds both duellists from the spawn.
+    readSites: ['src/data/encounters/fight-duel-grudge.ts', 'src/engine/fights/fightParticipants.ts'],
+    verifiedLive: {
+      date: '2026-09-25',
+      evidence:
+        'THR-1558 E3. `npm run check:grudge-duels -- --inject 40` (seed 42 medium, 200 ticks, 40 `blood_drawn` pairs written at tick 0 through the real `writeGrudge`): the colocation phase traces `fight.trigger` source `grudge` spawned from tick 2 (`npc_198 → npc_200`, chance 0.050, roll 0.014, `ua_6`); 67 spawned duels across 33 pairs all ran to a `fight.end` (overcome 25, broke_off 19, yielded 14, struck_down 5, routed 4, separated 0); the most-duelled pair duelled 3 times, at `GRUDGE_DUEL_REPEAT_CEILING`. Natural play without injection spawns none: seeds 42 and 99 write no injury-class grudge between two individuals in 200 ticks (their `hostile_to` edges are excommunication, old quarrels, covet rivalries and group engagements). Non-vacuous by `src/engine/fights/__tests__/grudgeDuelTrigger.test.ts` (21).',
+    },
+  },
+  // ── Fight endings D1 (THR-1548, plan 2026-09-23-defeat-and-victory §1–3) — the plan's
+  // Interface impact rows "fight → grudges" (extend with `blood_drawn`), "fight → reactive
+  // loop" (add: a non-undertaking source) and "fight → reputation" (humiliation). The
+  // death funnel row is the funnel's own; D1 is one more caller of it. No `verifiedLive`:
+  // the evidence today is `src/engine/fights/__tests__/fightEndingD1.test.ts`.
+  {
+    id: 'fight-mauling-writes-blood-drawn-grudge',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal struck down in a fight who lives carries Scarred and a grudge against whoever did it, beast or mortal — an injury, so the motive gate reads it as a grudge and the scarred may one day plot back.',
+    ulTerms: ['Grudge', 'Struck down', 'Scarred'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['hostile_to', 'blood_drawn', 'GRUDGE_PROVENANCE', 'writeMauled'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts', 'src/engine/grievance/grudgeEdge.ts'],
+    readSites: ['src/engine/undertakingMotive.ts', 'src/engine/agentDetail.ts', 'src/data/grievance-prose.ts'],
+  },
+  {
+    id: 'fight-death-feeds-reactive-loop',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal killed in a fight is a killing with a culprit, written into the reactive loop in exactly the plot\'s shape — the dead\'s bonds take it up, the omen agenda can portend it, and the receipt credits it — never a death nobody answers.',
+    ulTerms: ['Struck down', 'Grievance'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['killStruckDownFighter', 'createUndertakingOutcomeNode', 'named_death', 'undertaking_outcome'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts', 'src/engine/grievance/undertakingOutcomeNode.ts'],
+    readSites: ['src/engine/ambitionTick.ts', 'src/engine/phaseOmenAgenda.ts'],
+  },
+  {
+    id: 'fight-yield-humiliates-at-home',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      'Yielding to another person costs a mortal face with their home settlement; yielding to a beast costs nothing, because there is nobody to tell.',
+    ulTerms: ['Struck down'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['reputation_with', 'applyReputationWithDelta', 'fight_humiliation'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/reputation.ts'],
+  },
+  // ── Duels E2 (THR-1557, plan 2026-09-23-mortal-duels §5) — the plan's Interface impact
+  // row "fight → endings (victor mercy, opponent-side faces)": an extension of D1/D2's
+  // writers, not a new writer. The victor's personality decides a beaten loser's fate.
+  // No `verifiedLive`: the evidence is src/engine/fights/__tests__/duelE2.test.ts.
+  {
+    id: 'duel-victor-mercy-decides-loser-fate',
+    producerSystem: TRAITS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'When one mortal beats another in a duel, the victor\'s own mercy or ruthlessness decides whether the loser walks away scarred or is finished — the god\'s hand weighs in only when the victor is the god\'s own mortal, and a loser who yielded or fled is never killed.',
+    ulTerms: ['Struck down', 'Scarred', 'Grudge'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['decideBeatenDuellist', 'readLiveAxisLean', 'mercy_ruthlessness', 'opponentEnding'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/encounters/branchDecision.ts', 'src/engine/fights/fightEnding.ts'],
+  },
+  // ── Fight endings D2 (THR-1549, plan 2026-09-23-defeat-and-victory §4–5) — the plan's
+  // Interface impact rows "fight → reward pool" (a new caller of drawSeededReward),
+  // "fight → reputation" (gratitude, standing) and "fight → chronicle" (the fight_ended
+  // tick event). No `verifiedLive`: the evidence is fightEndingD2.test.ts plus the CLI run
+  // recorded in Docs/status/2026-09-25-thr-1549.md.
+  {
+    id: 'fight-victory-draws-trophy',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ATTACHMENTS,
+    intent:
+      'Felling a lair\x27s beast, or bargaining with it, hands the victor a trophy from the den through the one reward draw every prize runs through — so a blessing on the victor\x27s luck improves the trophy, and nothing invents a second loot system.',
+    ulTerms: ['Reward Pool'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['drawSeededReward', 'FIGHT_TROPHY_RECIPE', 'FIGHT_TROPHY_OUTCOME', 'fight_trophy'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/rewardPool.ts', 'src/types/contentQuery.ts'],
+  },
+  {
+    id: 'fight-victory-earns-gratitude-and-standing',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      'Felling or driving off a beast earns the nearest settlement\x27s gratitude; beating a person, or being yielded to, earns standing with the loser\x27s faction or home — reputation with a party, never world renown.',
+    ulTerms: ['Reputation'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['reputation_with', 'applyReputationWithDelta', 'fight_gratitude', 'fight_standing'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/reputation.ts'],
+  },
+  {
+    id: 'fight-ending-reaches-chronicle',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Every fight ends in one line of the world\x27s story: a notable ending (a beast felled, a person beaten, a mauling, a death) becomes a chronicle entry; a routine one reaches only the event log.',
+    ulTerms: ['Narrative Event'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['fight_ended', 'FIGHT_CHRONICLE_LINES', 'FIGHT_EVENT_TIER_BY_FACE', 'phaseNarrative'],
+      module: 'src/engine/fights/fightEnding.ts',
+    },
+    writeSites: ['src/engine/fights/fightEnding.ts'],
+    readSites: ['src/engine/orchestrator.ts'],
   },
   // ── FB3 (THR-1539, plan §7) — the plan's Interface impact rows "encounter step →
   // quintessence queue" (extend with `fight_harm`) and "encounter step → conditions
@@ -4460,6 +4774,57 @@ export const CONTRACTS: readonly Contract[] = [
       evidence:
         "THR-1578. Seeded worlds 42/99/7 x 120 ticks (`npm run gameplay-report`): 144-281 stamped engagements per seed folded into bands, 23-29 unstamped (band `unknown` - seeded, forced and legacy paths, deliberately outside the invariant). The first wiring keyed stamps on `action.id`, a field `UnifiedAction` does not have, so every stamp collided on `undefined` and half the resolutions read `unknown`; the heavy wiring test `src/engine/__tests__/engagementWindow.invariant.test.ts` (stamped > unknown on seed 42 x 30) caught it and passes on `actionId`. Arithmetic pinned by `src/engine/kpi/__tests__/engagementKpi.test.ts`.",
     },
+  },
+  // ── Hunts H2 (THR-1560, plan 2026-09-23-hunts § Interface impact) — the rows "hunt
+  // payoff → appointment → fight (target inherited on the kept branch only)", "grievance
+  // (pursues naming a monster) → hunt reason" and "hunt completion → grievance
+  // satisfaction (deferred)". No `verifiedLive`: the evidence is
+  // src/engine/monsters/__tests__/hunts.test.ts plus the census recorded in
+  // Docs/status/2026-09-25-thr-1560.md.
+  {
+    id: 'hunt-payoff-plants-confront',
+    producerSystem: AMBITIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A finished hunt is a promise to be at the beast\'s den: the appointment it plants is judged at the lair, and its kept branch is the fight against that very beast — the missed one tells the hunter the trail went cold wherever they stand. Without it a hunt would end in nothing, or the confront would fire wherever the hunter happened to be.',
+    ulTerms: ['Undertaking', 'Appointment', 'Fight'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['inheritSiteAsTarget', 'requirePlace', 'pricedByHex', 'maybePlantAppointmentPayoff', 'liveHuntFavourAt'],
+      module: 'src/engine/monsters/hunts.ts',
+    },
+    writeSites: ['src/engine/strategicActionLifecycle.ts', 'src/engine/appointments.ts'],
+    readSites: ['src/engine/encounterSeeding.ts', 'src/engine/monsters/lairArrivalTrigger.ts', 'src/engine/encounterFilterPipeline.ts', 'src/engine/unifiedCandidates.ts'],
+  },
+  {
+    id: 'grievance-opens-hunt-door',
+    producerSystem: AMBITIONS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal hunts a beast only for a reason the world gave them — a scar it left, a grievance whose culprit it is, or its den near home — and the board records which, so every hunt can say why it formed.',
+    ulTerms: ['Grievance', 'Undertaking'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['huntReason', 'gateExemption', 'culpritAgentId'],
+      module: 'src/engine/monsters/hunts.ts',
+    },
+    writeSites: ['src/engine/grievance/grievanceLifecycle.ts', 'src/engine/fights/fightEnding.ts'],
+    readSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingMotive.ts'],
+  },
+  {
+    id: 'hunt-completion-defers-grievance',
+    producerSystem: AMBITIONS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'Finishing a hunt harms nobody yet, so it writes no outcome and closes no grievance; a grievance against a beast closes only when the beast dies — never because the hunt, or any other project, finished — so a hunter whose fight breaks off can go back.',
+    ulTerms: ['Grievance'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['deferredPayoff', 'payoffDeferred', 'grievanceClosesOnCompletion'],
+      module: 'src/engine/grievance/grievanceLifecycle.ts',
+    },
+    writeSites: ['src/data/undertaking-cells.ts'],
+    readSites: ['src/engine/strategicActionLifecycle.ts'],
   },
 ];
 

@@ -1,7 +1,7 @@
 ---
 name: orchestrator
-description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), stages design requests when the program shelf runs thin (T2; Sonnet lane by Christian's ruling 2026-08-06 — never authors plan docs), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-09-02
+description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), stages design requests for the design lane when the program shelf runs thin (T2 — stages, never authors; `tb-design-lane` authors, THR-1611), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
+last_validated_against: 2026-09-25
 ---
 
 # Orchestrator
@@ -15,8 +15,8 @@ This skill is the decider. Three tiers, cheapest first:
 | Tier | Cadence | What it does |
 |------|---------|--------------|
 | **T1** unblock sweep | every run | Reads `Blocked by`, resolves against issue states, promotes unblocked work to `Ready for Dev` |
-| **T1.5** wayfinder sweep | every run, only when an open map exists | Burns down frontier AFK decision tickets via subagents; surfaces the HITL frontier to Christian (THR-900) |
-| **T2** design staging | when the program shelf is thin | Stages agreed-but-undesigned work for an attended design session — comment + `In Design` + `## Needs Christian` line. **Never authors plan docs**: this lane runs Sonnet deliberately (Christian, 2026-08-06); authoring is Opus-session work |
+| **T1.5** wayfinder sweep | every run, only when an open map exists | Burns down frontier research tickets via subagents; surfaces only **reserved** tickets to Christian (THR-900, amended THR-1611) |
+| **T2** design staging | when the program shelf is thin | Stages agreed-but-undesigned work for the **design lane** (`tb-design-lane`) — comment + `In Design`, unassigned. **Never authors plan docs** — see § T2 for why the split survives the Sonnet premise |
 | **T3** architecture health | daily, first run after `ORCH_HEALTH_SWEEP_HOUR` | Runs existing detectors, diffs against the last sweep, reports **new** findings. Weekly on `ORCH_TESTHEALTH_DOW` it also runs the test-suite health pass (THR-942) |
 
 **Design doc:** `Docs/plans/2026-07-27-thr-826-orchestrator-lane.md`. **Authority boundary (D1–D7):** `Docs/plans/2026-07-27-orchestrator-lane-grill-me.md`, recorded as a mandate in `Docs/ways-of-working.md` § *Agent initiative — what may begin without being asked*. Read the mandate before acting; it is what authorises this lane to begin work unprompted.
@@ -185,17 +185,20 @@ never reach the executor queue), spawn a research subagent per the wayfinder ski
 ticket-type rules, post the findings as the resolution comment, close (`Done` — the
 wayfinder carve-out), verify, and append the gist line to the map's Decisions-so-far.
 A subagent that fails or times out: unassign, leave open, log — never post a guessed
-resolution. **Never touch grilling/prototype tickets** — resolving one AFK is the
-broken-HITL failure mode the wayfinder skill names.
+resolution. **Leave grilling/prototype tickets to the design lane** (`tb-design-lane`,
+THR-1611) — it decides them by delegation with a judge's full context, which a
+research subagent inside an hourly run does not have.
 
-### 4. Surface the HITL frontier
+### 4. Surface only the reserved frontier
 
-Frontier `wayfinder:grilling` / `wayfinder:prototype` (and HITL-task) tickets go under
+Frontier tickets listed under the map's `## Reserved for Christian` go under
 `## Needs Christian` in this run's report, **by name, in plain language, framed in game
-terms** — e.g. *"The Dynamic Economy map has two questions waiting for you: [Should
-trade routes decay without caravan encounters?](url) and [React to the unrest mock-up](url).
-Open a chat and say 'work the map' when ready."* The existing briefing link
-(`keep-work-flowing-cc` step 2.6) carries it from there; no new plumbing.
+terms** — e.g. *"The Dynamic Economy map has a question you kept for yourself: [Should
+trade routes decay without caravan encounters?](url). Open a chat and say 'work the map'
+when ready."* **Unreserved grilling/prototype tickets are not asks** (process.md rule 4,
+2026-09-11 case): list them in the T1.5 report section as "left for the design lane",
+never under `## Needs Christian`. The existing briefing link (`keep-work-flowing-cc`
+step 2.6) carries the reserved ones from there; no new plumbing.
 
 ### 5. Trace
 
@@ -227,7 +230,9 @@ The two stale arms are deliberately asymmetric. Excluding an *unassigned* dead i
 
 **The executable copy of this predicate is `classifyInDesignItem` in `scripts/stale-claim-sweep/index.ts`**, which the twice-daily sweep runs against the live board and reports as `in-design-classified` trace lines with a `countsAgainstBound` field. When this prose and that function disagree, the function is what actually ran — reconcile rather than re-deriving the count by hand.
 
-**Procedure (amended 2026-08-06 — Christian keeps this lane on Sonnet deliberately, so it stages rather than authors):** take the top agreed-but-undesigned item and post a design-request comment (why now, shelf depth, what makes it agreed, the canon/Step-0 loads the design session will need), move it to `In Design`, and surface `design session wanted: <title>` under `## Needs Christian` in the run report — the briefing carries it to an attended Opus session, which runs `design-session` proper (plan doc via `docs/plan-*` PR, path in description + handoff comment, coordination block). An item still unpicked after 48h is re-surfaced, not re-staged; `ORCH_MAX_IN_DESIGN` counts staged items that are still live by the predicate above.
+**Procedure (amended 2026-09-25, THR-1611):** take the top agreed-but-undesigned item and post a design-request comment (why now, shelf depth, what makes it agreed, the canon/Step-0 loads the design session will need), and move it to `In Design`, **unassigned**. The design lane (`tb-design-lane`, `design-lane` skill) picks staged items up as plan-doc candidates and runs `design-session` proper (plan doc via `docs/plan-*` PR, path in description + handoff comment, coordination block). **Do not put `design session wanted` under `## Needs Christian`** — authoring agreed work is no longer his to start. Surface it there only when the design lane has released the item as a reserved fork. An item still unpicked after 48h is re-surfaced in the report (a sign the lane is stalled or paused), not re-staged; `ORCH_MAX_IN_DESIGN` counts staged items that are still live by the predicate above.
+
+**Why this lane still stages rather than authors.** The 2026-08-06 reason — *this lane runs Sonnet* — died when measurement showed no lane is pinned to a model (registry, 2026-09-23). The split survives on its own terms: an hourly run that also promotes, sweeps maps and runs T3 has neither the time budget nor the context for a governed plan doc (intent-judge + three auditors + a CI-gated PR), and a long run here would eat later hourly slots (THR-837). Authoring lives in the design lane, which runs four times a day with nothing else to do.
 
 **What counts as agreed** (D2, verbatim): *"expanding on already agreed designs and patterns and fixing bugs is within the remit... we create the vision, the patterns, the overarching architecture, the prototypes, the game systems together, but when that context is clear i am not interested in second guessing."*
 

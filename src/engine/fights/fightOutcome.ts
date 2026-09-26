@@ -3,7 +3,7 @@
  * `Docs/plans/2026-09-23-fight-block.md` §6, "The post-fight dispatcher").
  *
  * `onFightEnded` is **the single place** a fight's result turns into world writes.
- * It ships with no branches: plan doc 1 adds the defeat faces and victory yields,
+ * FB2 shipped it with no branches; plan doc 1 adds the defeat faces and victory yields,
  * plan doc 3 the monster and lair writes, plan doc 5 a duel's other side — each as
  * one entry in `FIGHT_END_BRANCHES`, so no later slice invents its own hook.
  *
@@ -20,13 +20,15 @@
  */
 
 import type { GameState, TickEvent } from '../../types/gameState';
-import type { UnifiedAction, UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { StepNudge, UnifiedAction, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { FightState } from '../../types/fight';
 import type { FightEndTrace } from '../../types/traces/fight-traces';
 import type { SimulationRuntime } from '../simulationRuntime';
 import type { RuleOverrideContext } from '../effects/ruleOverrideConsumers';
 import { emitTrace } from '../traceBuffer';
 import { withFightResultMemory } from './fightState';
+import { monsterLairBranch } from '../monsters/monsterFelling';
+import { fighterEndingBranch } from './fightEnding';
 
 /** What a dispatcher branch is handed (plan doc §6). */
 export interface FightEndContext {
@@ -37,6 +39,11 @@ export interface FightEndContext {
   readonly runtime?: SimulationRuntime;
   /** For `markMortalDead`'s `death_prevented` ward. */
   readonly overrideCtx: RuleOverrideContext;
+  /**
+   * THR-1557 — the ending step's dealt cards, so a duel's mercy fork can weigh the
+   * god's hand when the victor is the god's own mortal. Absent on the no-roll end.
+   */
+  readonly handNudges?: readonly StepNudge[];
 }
 
 /** The records a branch may write onto the resolved fight (FB2 declares them all). */
@@ -56,10 +63,27 @@ export interface FightEndedResult {
 }
 
 /**
- * The dispatcher's branches, run in order. Empty in FB2 by design; plan docs 1, 3
- * and 5 add theirs here (THR-1548, THR-1546, THR-1557 and siblings).
+ * The branches that ship with the engine, in run order. Plan docs 1, 3 and 5 add
+ * theirs here (THR-1548, THR-1546, THR-1557 and siblings).
+ *
+ * - `fighterEndingBranch` (THR-1548): what the ending leaves on the fighter — the
+ *   defeat faces, the death gate, Scarred, the grudge, humiliation. First, so the
+ *   fighter's record is written before any opponent-side branch reads the action.
+ * - `monsterLairBranch` (THR-1546): felling or driving off a lair's monster.
+ *
+ * A duel's other side (THR-1557) is not a branch of its own: the victor's mercy fork
+ * and the opponent's face are decided inside `fighterEndingBranch`, which returns both
+ * `ending` and `opponentEnding`, so one `fight.ending` trace carries the whole fork.
  */
-export const FIGHT_END_BRANCHES: FightEndBranch[] = [];
+export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [fighterEndingBranch, monsterLairBranch];
+
+/** The live branch list `onFightEnded` runs by default. Tests may push onto it. */
+export const FIGHT_END_BRANCHES: FightEndBranch[] = [...DEFAULT_FIGHT_END_BRANCHES];
+
+/** Restore `FIGHT_END_BRANCHES` to the shipped defaults (test hygiene). */
+export function resetFightEndBranches(): void {
+  FIGHT_END_BRANCHES.splice(0, FIGHT_END_BRANCHES.length, ...DEFAULT_FIGHT_END_BRANCHES);
+}
 
 /**
  * Turn a fight's result into world writes. Runs every branch in order and merges

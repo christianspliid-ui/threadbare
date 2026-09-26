@@ -634,3 +634,112 @@ describe('generateRefugeeEncounters', () => {
     expect(result).toHaveLength(0);
   });
 });
+
+// ─── A commander killed in battle (THR-1566) ──────────────────────────────
+//
+// The kill used to be a bare `removeNode`. It now goes through the death funnel:
+// retained as deceased, cause `battle`, the victor's commander as `slainBy`, and a
+// `named_death` harm whose grief reaches the dead commander's living bonds.
+
+describe('commander killed in battle (THR-1566)', () => {
+  type Fate = 'killed' | 'captured' | 'retreated';
+
+  /** A field battle with a commander on both sides and a friend bonded to the loser's. */
+  function setupCommanderBattle(graph: WorldGraph, opts?: { victorCommander?: boolean }): void {
+    setupSettlementBattle(graph, { loserQ: 1, loserQMax: 30 });
+    graph.addEdge({ id: 'e_cmd_d_loc', source: 'commander_d', target: 'hex_battle', type: 'located_at', properties: {} });
+    if (opts?.victorCommander !== false) {
+      graph.addNode({ id: 'commander_a', type: 'actor', name: 'Attacker Commander', properties: { actorType: 'individual' } });
+      graph.addEdge({ id: 'e_cmd_a', source: 'army_a', target: 'commander_a', type: 'commanded_by', properties: {} });
+    }
+    graph.addNode({ id: 'friend', type: 'actor', name: 'Old Friend', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e_bond', source: 'friend', target: 'commander_d', type: 'relates_to', properties: { sentiment: 0.9 } });
+    graph.addEdge({ id: 'e_member_cmd', source: 'commander_d', target: 'f_def', type: 'member_of', properties: { role: 'member', rank: 0.5, joinedTick: 0 } });
+  }
+
+  function fateOf(graph: WorldGraph): Fate {
+    const cmd = graph.getNode('commander_d');
+    if (cmd?.properties.deceased === true || !cmd) return 'killed';
+    if (typeof cmd.properties.capturedUntilTick === 'number') return 'captured';
+    return 'retreated';
+  }
+
+  /** Resolve one battle at `tick`; the fate roll is seeded by the tick, so this is deterministic. */
+  function resolveAt(tick: number, momentum: number, opts?: { victorCommander?: boolean }) {
+    const graph = new WorldGraph();
+    setupCommanderBattle(graph, opts);
+    const bs = makeBattleState({ battleType: 'field_battle', settlementId: undefined, momentum });
+    applyAftermath(makeState(tick, graph), bs, 'attacker_victory', undefined, 'battle_test');
+    return { graph, fate: fateOf(graph) };
+  }
+
+  /** The first tick whose seeded roll gives `want` — a search, not a hard-coded seed. */
+  function firstTickWith(want: Fate, momentum: number, opts?: { victorCommander?: boolean }) {
+    for (let tick = 1; tick <= 500; tick++) {
+      const run = resolveAt(tick, momentum, opts);
+      if (run.fate === want) return { tick, ...run };
+    }
+    throw new Error(`no tick in 1..500 rolled ${want}`);
+  }
+
+  it('retains a killed commander as deceased, cause battle, with the victor commander as killer', () => {
+    const { tick, graph } = firstTickWith('killed', TOTAL_DESTRUCTION_THRESHOLD + 2);
+    const cmd = graph.getNode('commander_d');
+    expect(cmd).toBeDefined();
+    expect(cmd!.properties.deceased).toBe(true);
+    expect(cmd!.properties.deceasedTick).toBe(tick);
+    expect(cmd!.properties.deathCause).toBe('battle');
+    expect(cmd!.properties.slainBy).toBe('commander_a');
+    // The dead keep their history: bonds and membership survive the death.
+    expect(graph.getIncomingEdges('commander_d', 'relates_to')).toHaveLength(1);
+    expect(graph.getOutgoingEdges('commander_d', 'member_of')).toHaveLength(1);
+    // The broken army is still disbanded.
+    expect(graph.getNode('army_d')).toBeUndefined();
+  });
+
+  it("routes the killing's grief to the dead commander's living bonds (THR-1536)", () => {
+    const { tick, graph } = firstTickWith('killed', TOTAL_DESTRUCTION_THRESHOLD + 2);
+    const eventId = `evt_und_battle_battle_test_${tick}`;
+    const event = graph.getNode(eventId);
+    expect(event).toBeDefined();
+    expect(event!.properties.harmClass).toBe('named_death');
+
+    const grief = graph.getOutgoingEdges('friend', 'participated_in').filter(e => e.target === eventId);
+    expect(grief).toHaveLength(1);
+    expect(grief[0].properties.role).toBe('target');
+    expect(grief[0].properties.viaBondOf).toBe('commander_d');
+
+    // The victor's commander stands in the primary role — the culprit the grief points at.
+    const culprit = graph.getOutgoingEdges('commander_a', 'participated_in').filter(e => e.target === eventId);
+    expect(culprit).toHaveLength(1);
+    expect(culprit[0].properties.role).not.toBe('target');
+  });
+
+  it('with no living commander on the winning side, the death is retained but names nobody and grieves nobody', () => {
+    const { graph } = firstTickWith('killed', TOTAL_DESTRUCTION_THRESHOLD + 2, { victorCommander: false });
+    const cmd = graph.getNode('commander_d');
+    expect(cmd?.properties.deceased).toBe(true);
+    expect(cmd?.properties.deathCause).toBe('battle');
+    expect(cmd?.properties.slainBy).toBeUndefined();
+    expect(graph.getOutgoingEdges('friend', 'participated_in')).toHaveLength(0);
+  });
+
+  it('a captured commander is unchanged: alive, captured, no death fields', () => {
+    const { tick, graph } = firstTickWith('captured', TOTAL_DESTRUCTION_THRESHOLD + 2);
+    const cmd = graph.getNode('commander_d');
+    expect(cmd?.properties.deceased).toBeUndefined();
+    expect(cmd?.properties.deathCause).toBeUndefined();
+    expect(cmd?.properties.capturedUntilTick).toBe(tick + COMMANDER_CAPTURE_DURATION);
+    expect(cmd?.properties.capturedBy).toBe('army_a');
+    expect(graph.getOutgoingEdges('friend', 'participated_in')).toHaveLength(0);
+  });
+
+  it('a retreated commander is unchanged: alive, uncaptured, no death fields', () => {
+    const { graph } = firstTickWith('retreated', MAJOR_DESTRUCTION_THRESHOLD + 1);
+    const cmd = graph.getNode('commander_d');
+    expect(cmd?.properties.deceased).toBeUndefined();
+    expect(cmd?.properties.deathCause).toBeUndefined();
+    expect(cmd?.properties.capturedUntilTick).toBeUndefined();
+    expect(graph.getOutgoingEdges('friend', 'participated_in')).toHaveLength(0);
+  });
+});

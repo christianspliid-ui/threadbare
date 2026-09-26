@@ -271,11 +271,14 @@ describe('kind vocabulary — the hub-and-spoke falsification test', () => {
     expect(mapped).toBeGreaterThan(extra * 5);
   });
 
-  it('pins the only three unmappable members, which are all render-time refinements', () => {
+  it('pins the only four unmappable members, which are all render-time refinements', () => {
     // If this list grows, the design question the plan named is live again and
     // belongs in a Linear comment — not in an extra disposition row added quietly.
+    // `monster` (THR-1550) was decided in plan doc
+    // `Docs/plans/2026-09-23-fight-on-screen.md` (the `EntityVisual` monster-kind
+    // row): a tile refinement of `agent`, recorded on THR-1550.
     const extras = liveCoverages.flatMap((c) => c.extra).sort();
-    expect(extras).toEqual(['avatar', 'npc-role', 'unknown']);
+    expect(extras).toEqual(['avatar', 'monster', 'npc-role', 'unknown']);
   });
 
   it('has no `codex` left to disposition — the kind left the spine (THR-1315)', () => {

@@ -2697,6 +2697,17 @@ Plan: `Docs/plans/2026-09-23-monsters-as-opponents.md` §1–3. A lair's named e
 | `engine/monsters/isMonster.ts` (new) → `data/undertaking-objects.ts` (`isPlottableMortal`) · `engine/npcGraduation.ts` (`phaseNpcGraduation`) · `engine/lairClearing.ts` (`isChallenger`) · `engine/socialEncounterGeneration.ts` (`findVisibleAgents`) | each call site's phase | — (`WorldPulse` count is plan doc 4's F1) | — | — | unit tests |
 | `engine/monsters/listMonsters.ts` (new) · `debug-bridge.ts` / `.d.ts` (`listMonsters`) · `scripts/cli.ts` (`monsters`) · `types/traces/monster-traces.ts` (new) · `types/trace.ts` (THR-928 trio) | — | — | — | — | `__DEBUG.listMonsters`, CLI `monsters` |
 
+## Monsters in scenes — Monsters M2 (THR-1545)
+
+Plan: `Docs/plans/2026-09-23-monsters-as-opponents.md` §4 + § Encounter templates. A hunt casts the lair's own monster, is drawn only where it lives, and fights it. No new phase, node type, edge type or trace (the fight traces carry the opponent); no component edit.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/encounterSupportBundle.ts` (`findExistingActorSupport`: the liveness filter on every actor spec, `matchProperty` before role matching, role branches skip monsters; `resolveActorSupport`: a `matchProperty` spec never materializes; a `matchProperty` spec skips the scored binder) · `types/encounter.ts` (`EncounterSupportActorSpec.matchProperty`) | encounter creation (`phaseAgentDecision`), seeds, debug spawns | existing veil (`{cast:beast}`) | `unifiedActions[].supportBindings` | existing (`seed_context_inherited`, `binding_severed`) | CLI `spawn encounter` → `eval` the action's `supportBindings` |
+| `engine/monsters/liveMonster.ts` (new: `liveLairMonsterAt`, `hasLiveLairMonsterAt`) → `engine/encounterFilterPipeline.ts` (`filterByPrerequisites`) · `engine/unifiedCandidates.ts` (`generateUnifiedCandidates`) · `types/unifiedAction.ts` (`requiresLiveMonster`) | encounter draw (both paths; the Guild's quest entries ride the filter pipeline) | — | — | existing filter path | unit tests |
+| `engine/proseEnrichment.ts` (`{target:family}`, `SceneTargetContext.family`, `{?target_has_family}`) · `data/encounters/fight-lair-confront.ts` (the family opening) | prose enrichment | existing veil | — | — | wiring guide |
+| `data/monster-encounter-content.ts` (`MONSTER_HUNT_NAMED_ELITE`: a tracking step, then a fight block against `beast`; `requiresLiveMonster`; `fight:<result>` aftermath; the return seed with `inheritContext`, planted only where the beast lived) | drawn at `lair` (cache + array paths); the Guild's quest offer; its own return seed | existing encounter veil | `unifiedActions[]`, `pendingEncounterSeeds[]` | the fight traces (`fight.step` names the monster) | CLI `spawn encounter @hero monster.hunt.named_elite` |
+
 ## Opposed exchanges — Duels E1 (THR-1556)
 
 Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block against a mortal is a duel: the opponent's roll is synthesized on its own stream, both sides carry a per-fight clock, and both sides take the concession fork. No new phase, node type or edge type; no component edit (the duel's header is plan doc 4's F2).
@@ -2708,3 +2719,122 @@ Plan: `Docs/plans/2026-09-23-mortal-duels.md` §1–4. An agent-mode fight block
 | `engine/fights/fightForks.ts` (`runDuelForks`, `resolveDuelQuarterOffer`, `isDuelOpponentBehind`) | `executeStepResult` | — | `fightState.forks` (each with `side`) | `fight.fork` (`side`) | `getFightState` |
 | `data/fights/fightBlock.ts` (`mode`, `FIGHT_DUEL_AFTERIMAGES`, `FIGHT_DUEL_OPPONENT_LINES`) · `data/encounters/fight-duel-grudge.ts` (new) · `data/fights/fight-templates.ts` (new: `FIGHT_ENCOUNTER_TEMPLATES`) · `data/unified-action-templates.ts` · `data/encounter-content.ts` (`getAnyEncounterById`) · `data/fight-constants.ts` (`DUEL_OPPONENT_STREAM_SALT`) · `types/fight.ts` · `types/unifiedAction.ts` (`fightMode`) · `types/traces/fight-traces.ts` | spawn-only (E3's grudge trigger; the debug lever) | existing encounter veil | `unifiedActions[]` | the fight traces | `spawnDuel`; CLI `spawn duel` |
 | `debug-bridge.ts` / `.d.ts` (`spawnDuel`; `getFightState` duel fields) · `scripts/cli.ts` (`spawn duel`) · `scripts/calibrate-duels.ts` + `testing/duelCalibration.ts` (`npm run calibrate:duels`) | — | DebugPanel / console | — | — | as named |
+
+## The victor decides — Duels E2 (THR-1557)
+
+Plan: `Docs/plans/2026-09-23-mortal-duels.md` §5. No new phase, node type, edge type or dispatcher branch: the duel's other side is decided inside `fighterEndingBranch`, so one `fight.ending` trace carries the whole fork.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/fights/fightEnding.ts` (`decideBeatenDuellist`, `applyDuelOpponentSide`; `killStruckDownFighter` takes a `loserId`; `fightEndedEvent` tells the opponent's side) · `data/fight-constants.ts` (`FIGHT_MERCY_AXIS`) · `types/fight.ts` (`FightMercyRecord`, `FightEndingRecord.mercy`) · `types/traces/fight-traces.ts` (the mercy fields on `fight.ending`) | `onFightEnded`, called by `finalizeFightEnd` at a fight's end | chronicle (the `fight_ended` event); chips read `ending` (plan doc 4; `opponentEnding` unread by chips in v1, THR-1561) | `fightState.ending`, `fightState.opponentEnding`; graph writes (Scarred, `blood_drawn`, death, `reputation_with`, `archetypeDrift`) | `fight.ending` (`victorPole`, `victorProfileLean`, `victorCardLean`, `mercyDecidedBy`, `opponentFace`, `opponentLoss`, `bothStruckDown`, `opponentKillRoll`, `opponentGuard`, `opponentOutcomeNodeId`) | `getFightState(actionId).ending` / `.opponentEnding` |
+| `engine/fights/fightOutcome.ts` (`FightEndContext.handNudges`) · `engine/unifiedActionResolution.ts` (the rolled route passes the ending step's dealt hand) | step resolution | — | — | — | — |
+
+**Wired and asserted:** `src/engine/fights/__tests__/duelE2.test.ts` runs every case through the shipped `onFightEnded`.
+
+## Fight on screen F1 — monsters named and counted right (THR-1550)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `components/Game/lair/buildLairMonsterCardModel.ts` (new) | — (render-time, memoized on `worldVersion` in `GameView`) | `HexSidebar` Monster Lair block (`lairMonsterCards` prop, `onMonsterClick` → `handleThreadNodeSelect(id, 'agent')`) | reads the lair's `namedEliteId` and the monster node | none (plan: Tracing N/A) | `__DEBUG.getLairMonsterCard(lairIdOrName)` |
+| `components/Game/worldPulseCount.ts` (new: `countLivingMortals`) | — | `WorldPulse` "Active Agents" | graph actors (`isMonster`, `deceased`) | none | — |
+| `entityVisualResolver.ts` / `entity-visual-fallbacks.ts` (`monster` kind) · `chipCollaborators.buildChipIconResolver` | — | `EntityVisual` in the lair block, the hex drawer's rows, consequence chips; styleguide sample | — | none | `__DEBUG.resolveEntityVisual` |
+
+**Wired and asserted:** `lairMonsterF1.test.tsx` renders `HexSidebar` from a real `buildLairMonsterCardModel` output, and the live check read the link text off the running sidebar (seed 42 medium, tick 60: "Ryx").
+
+## Fight on screen F4 — the lair card (THR-1552)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `components/Game/lair/buildLairMonsterCardModel.ts` (extended: the card sentence, the recovered clock, `temperShown`, the slain reading by reverse lookup on `lairId`, `slainBy` through `getAgentInfoCard(...).death.by`) | — (render-time; `GameView` memoizes it on `worldVersion` for the focused hex's lairs **and cleared lairs**, passing `ascendantId`) | `HexSidebar` Monster Lair block and Cleared Lair Section | reads `monsterState` (card, clock, `temperShown`), the `trait.temper.*` edge, `deceased` / `deceasedTick` / `slainBy` on the retained elite | none (plan: Tracing N/A) | `__DEBUG.getLairMonsterCard(lairIdOrName)` |
+| `components/Game/lair/LairMonsterCard.tsx` (new) | — | rendered by `HexSidebar` in both lair sections; the monster and killer names open the agent sheet through `onMonsterClick` | — | none | — |
+| `encounter-stage/adapters/buildOpponentHeaderModel.ts` (`buildSentence`, `clockModel`, `familyLineFor` exported) | — | shared with the lair card, so the header and the sidebar say the same sentence | — | none | `getOpponentHeaderModel` |
+
+**Wired and asserted:** `lairMonsterF4.test.tsx` (14 tests) renders `HexSidebar` from real model output for a living, a legendary-slain and a cleared-lair-slain monster. The live check drove two real fights through the veil on seed 42 medium: Ryx at a major lair (tick 60, Cleared Lair Section) and Druja at a legendary lair (tick 100, lair block by reverse lookup). Both read "slain by Vara".
+
+## Fight on screen F2 — the opponent header (THR-1551)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `encounter-stage/adapters/buildOpponentHeaderModel.ts` (new: `buildOpponentHeaderModel`, `fightStepLabel`) | — (render-time, inside the stage adapters) | `EncounterVeil` → new `OpponentHeader`, under `ContextStrip` (live fight steps only; `model.opponentHeader`) | reads `unifiedActions[].fightState`, the opponent card (`readOpponentCard`), `monsterState.temperShown` | none (plan: Tracing N/A) | `__DEBUG.getOpponentHeaderModel(actionId)` |
+| `buildSimpleEncounterStageModel` fight branch (`activeAction` arg; `header.opponentLine`) | — | the watched view's tier line (`watched-opponent-line`) | same, from the live action `GameView` passes in | none | same accessor |
+| `src/data/fight-screen-content.ts` (new) + `tooltipResolver` `fight.*` route | — | the header's concept words, the clock pips and word | — | none | the registry's conformance tests |
+
+**Wired and asserted:** `opponentHeaderF2.test.tsx` renders `EncounterVeil` from real `buildUnifiedEncounterStageModel` and `buildSimpleEncounterStageModel` outputs. The live check read the header off the running veil (seed 42 medium, tick 60, `spawnFight('Ryx')`).
+
+## Fight on screen F3 — the fight chips (THR-1553)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `encounter-stage/adapters/buildFightChanges.ts` (new: `buildFightChanges`, `mergeFightChanges`, `fillFightChipSlots`) | — (render-time, inside `buildUnifiedEncounterStageModel`'s aftermath) | `EncounterVeil` consequence-chip block (`model.aftermath.consequences`) | reads the resolved action's `fightState`: `ending` (scar, face, reward, reputation, humiliation, grudge), `lairOutcome`, `conditionsApplied`, `storiedClimbs`, the persistent clock | none (plan: Tracing N/A) | `__DEBUG.getFightChips(actionId)` |
+| `chipCollaborators.buildFightChipWorld` | — | same | graph names, node kinds, condition tags | none | same accessor |
+| `EncounterAftermathChange.deltaLabel` → `deltaClusterFor` → `DeltaCluster word` | — | the ◆ marker's own word ("slain", "cleared", the clock word) | — | none | `getFightChips(...).chips[].delta.word`; styleguide sample |
+| `fight-screen-content.ts` chip copy + `fight.chip.*` tooltips | — | chip nouns' hover tier | — | none | the registry's conformance tests |
+
+**Wired and asserted:** `buildFightChanges.test.ts` (28 tests) runs the chips through the real `buildAftermathConsequences` and `buildUnifiedEncounterStageModel`. The live check drove a real fight through the veil on seed 42 medium (Krenn, a major lair): the aftermath drew slain and cleared as PATH with their words, and every `getFightChips` sentence was in the DOM.
+
+**THR-1561 (a duel's loser):** the same builder now also reads `fightState.opponentEnding`. Its `face: 'slain'` is a second source for *slain (opponent)*, and its `grudgeWritten` feeds a new BOND chip `grudge_against_fighter` anchored to the opponent. No new module, phase or accessor. The chip is asserted in `buildFightChanges.test.ts` (37 tests) and drawn live on a seeded duel's aftermath (`Docs/evidence/thr-1561/`).
+
+## Fight endings D1 — the defeat faces and the death gate (THR-1548)
+
+Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3. A new first branch in the post-fight dispatcher; no new phase, node type or edge type, no component edit. Every write goes through an existing writer.
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/fights/fightEnding.ts` (new: `fighterEndingBranch`, `applyFightEndingForFighter`, `fightEndingFace`, `fightDeathGuard`, `killStruckDownFighter`, `writeMauled`, `fighterHomeSettlement`) | step resolution (`finalizeFightEnd` → `onFightEnded`, first in `FIGHT_END_BRANCHES`) | existing sheet: Scarred in Traits, the grudge clause in Blood, reputation; plan doc 4 adds chips | `unifiedActions[].fightState.ending`; `archetypeDrift`; graph (`has_trait` scar, `hostile_to`, `reputation_with`, `deceased`) | `fight.ending` | `getFightState(actionId).ending` |
+| `engine/grievance/undertakingOutcomeNode.ts` (optional `source: { kind: 'fight' }` in place of `project`) | same → the mint lane, the omen agenda | existing Blood section, ambitions, omens | outcome event node `evt_und_fight_<actionId>_<tick>` | existing `undertaking_outcome_event` | existing |
+| `engine/grievance/grudgeEdge.ts` · `engine/undertakingMotive.ts` · `data/grievance-prose.ts` (`blood_drawn`) · `data/condition-trait-content.ts` (`trait.scar.scarred`) · `data/fight-constants.ts` (kill chances, drift, humiliation) · `types/traces/fight-traces.ts` + `types/trace.ts` (`fight.ending` in the THR-928 trio) · `debug-bridge.ts` / `.d.ts` (`getFightState().ending`) | — | — | — | — | — |
+
+**Wired and asserted:** `fightEndingD1.test.ts` drives every face through the real dispatcher, compares a fight death's outcome node with a plot death's in the same test, and reads the omen deed through `castUndertakingPortent`. **Declared, not yet reached:** the duel victor's mercy (plan doc 5, E2) and the victory yields + the `fight_ended` chronicle event (D2, THR-1549).
+
+## Fight endings D2 — victory yields and the chronicle (THR-1549)
+
+Plan: `Docs/plans/2026-09-23-defeat-and-victory.md` §4–5. Extends D1's `fighterEndingBranch`; no new phase, node type, edge type or component. One additive `TickEvent.type` (`fight_ended`) and one additive content-query site (`fight_trophy`).
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/fights/fightEnding.ts` (new: `applyVictory`, `drawTrophy`, `nearestGratefulSettlement`, `fightChronicleLine`, `fightEndedEvent`) | step resolution (`finalizeFightEnd` → `onFightEnded`) → `phaseNarrative` | `ChroniclePanel` (existing, notable rows), `NarrativeFeed` colour, sheet possessions + reputation | `unifiedActions[].fightState.ending` (`reward`, `reputation`, `victorStanding`, `eventSignificance`); `tickEvents` → `chronicleEntries`; `archetypeDrift` | `fight.ending` (+`reward`, `rewardSkipped`, `reputation`, `victorStanding`, `eventSignificance`); `content.query_*` site `fight_trophy` | `getFightState(actionId).ending` |
+| `data/fight-ending-content.ts` (new: `FIGHT_TROPHY_RECIPE`, `FIGHT_TROPHY_OUTCOME`, `FIGHT_CHRONICLE_LINES`, `_PLAIN`) · `data/fight-constants.ts` (victory reputation, radius, significance, tier-by-face) · `data/uiColorPalette.ts` (`fight_ended`) · `types/gameState.ts` (`fight_ended`) · `types/contentQuery.ts` (`fight_trophy`) | — | — | — | — | — |
+
+**Wired and asserted:** `fightEndingD2.test.ts` runs every victory face through the real dispatcher and feeds the returned events to the real `phaseNarrative`. Live CLI (seed 42 medium, 30 `spawn fight` confronts): 5 notable `fight.ending` traces, 5 new `fight_ended_*` chronicle rows.
+
+## Walking into the lair — Monsters M4 (THR-1547)
+
+Plan: `Docs/plans/2026-09-23-monsters-as-opponents.md` §6. A mortal whose journey ends at a lair (or a place inside one) whose beast lives is confronted on arrival. No new phase, node type or edge type; no component edit.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/monsters/lairArrivalTrigger.ts` (new: `checkLairArrival`, `fightPairKey`, `isFightPairOnCooldown`, `writeFightCooldown`) → `engine/phaseMovement.ts` (arrival branch, after the place-entry block; returns `unifiedActions` + `fightCooldowns` only when a confront fired) | `agent_movement` (Phase 2.35) | existing encounter veil (`fight.lair.confront`) | `unifiedActions[]`, `fightCooldowns` (new, optional, expiry ticks) | `fight.trigger` (new, registered in the trace trio): spawned with `actionId`, or `skipped` ∈ avatar / arriving_for_hunt / busy / cooldown / monster_dead | CLI `traces`; `eval state.fightCooldowns` |
+| `data/fight-constants.ts` (`FIGHT_TRIGGER_COOLDOWN_TICKS` = 25) · `types/gameState.ts` (`fightCooldowns?`) · `types/traces/monster-traces.ts` (`FightTriggerTrace`, `FightTriggerSkip`) · `types/trace.ts` | — | — | — | — | — |
+
+**Wired and asserted:** `lairArrivalTrigger.test.ts` drives the real `phaseMovement` for every spawn and skip case. Live (seed 42 medium, tick 100): a mortal sent to end a journey at lair_0 was confronted and fought three exchanges. Natural play spawns none in 200 ticks on seeds 42 and 99, because lairs carry no `adjacent` / `road` edges and no path ends at one.
+
+## Grudges boil over — Duels E3 (THR-1558)
+
+Plan: `Docs/plans/2026-09-23-mortal-duels.md` §6. Two co-located mortals who share an injury-class grudge may duel: the colocation phase rolls on the pair's own stream and spawns `fight.duel.grudge`. One live fight per mortal: both duellists are busy from the spawn, and a duellist's company holds. No new phase, node type or edge type; no component edit.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/fights/grudgeDuelTrigger.ts` (new: `runGrudgeDuels`, `pickDuelActor`, `grudgeEscalationChance`, `grudgeEscalationRng`, `injuryGrudgeCause`) → `engine/phaseColocationDetection.ts` (after detection, on its own sub-stream; returns `unifiedActions` + `fightCooldowns` only when a duel spawned; `{ grudgeDuels: false }` switches it off) | `colocation_detection` (Phase 2.36) | existing encounter veil (`fight.duel.grudge`, for the threaded) | `unifiedActions[]`, `fightCooldowns` (expiry ticks) | `fight.trigger` (`source: 'grudge'`; skips bounded to once per pair per window) | trace viewer; `npm run check:grudge-duels` |
+| `engine/fights/fightParticipants.ts` (new: `fightParticipantIds`, `anyInFight`, keyed `fightState?.opponentId ?? targetId`) → `engine/phaseAgentDecision.ts` (busy set) · `engine/groups/groupMovement.ts` (`runGroupMovement` holds the company) | `agent_decision`, `groups` | — | — | — | — |
+| `data/fight-constants.ts` (`GRUDGE_ESCALATION_BASE` 0.05, `GRUDGE_ESCALATION_MAX` 0.10, `GRUDGE_ESCALATION_STREAM_SALT` 6263, `GRUDGE_DUEL_COOLDOWN_TICKS` 80, `GRUDGE_DUEL_REPEAT_CEILING` 3) · `types/traces/fight-traces.ts` (`FightTriggerGrudgeTrace`) · `types/trace.ts` (union member) | — | — | — | — | — |
+
+**Wired and asserted:** `grudgeDuelTrigger.test.ts` (21) drives the real `phaseColocationDetection` and `runGroupMovement`. Live: `npm run check:grudge-duels -- --inject 40` (seed 42 medium, 200 ticks) spawned 67 duels across 33 pairs, all ending through `fight.end`, none `separated`, the most-duelled pair at the ceiling of 3. Natural play spawns none on seeds 42 and 99 in 200 ticks, because neither world writes an injury-class grudge between two individuals by then (supply, not wiring).
+
+## Hunts H2 — the hunt (THR-1560)
+
+Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal and a mortal may make it their long work: track it (`cell.observe.monster`), then hunt it (`cell.destroy.monster`), whose completion plants the confront at the den as an appointment.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `data/undertaking-objects.ts` (`MONSTER` type: `classOf: 'mortal'`, `selfOwned`, `isLiveMonster` discriminator, `gateExemption.destroy`, `eligibility` observe/destroy, `deferredPayoffVerbs`, `reasonWords`; Agreement `use` refuses `no_favour_from_beasts`) | strategic undertaking phase (existing) | the codex (`?view=codex`, *Mortal (monster)*), the undertaking arc and moments (existing) | `strategicState.projects` | existing undertaking traces; the board's `gate_exempt:<reason>` | `listMonsters().huntedBy`, CLI `hunts` |
+| `engine/monsters/hunts.ts` (new: `isLiveMonster`, `huntReason`, `monsterLairId`, `huntHomeSettlement`, `liveHuntFavourAt`, `liveHuntFavourAtLocation`) | read by candidate generation, the draw gates, M4 | — | graph (`hostile_to`, `pursues`, `owes_favor.appointment`) | — | CLI `hunts` |
+| `engine/strategicGraphOps.ts` (`recordHuntTracking`) | undertaking completion (instant observe) | lair card + fight header read `temperShown` (existing) | graph (`knows_secret_of`, `monsterState.temperShown`) | `hunt.tracked` (new, registered in the trace trio) | `listMonsters().temperShown` |
+| `data/undertaking-cells.ts` (`CELL_FAMILY_BY_TYPE.monster`, `CREATE_SITE_RULE.monster`, the `cell.destroy.monster` appointment row, `deferredPayoff` carried at synthesis) · `data/division-rule-tables.ts` (`KINDS_BY_REACH.iron`, `ALL_UNDERTAKING_KINDS`) · `data/ambition-templates.ts` (hand lists on `ambition_seek_revenge`, `ambition_conquer_territory`; `ambition_avenge_fallen`'s first profile) | candidate generation (existing) | — | — | the candidate board trace | `npm run census:hunts` |
+| `engine/strategicActionLifecycle.ts` (`deferredPayoff` skips the outcome node + grievance satisfaction, `payoffDeferred` on history + trace; `maybePlantAppointmentPayoff`: `inheritSiteAsTarget`, no monster creditor, lair as place, `requirePlace`, dead-site refusal) · `engine/grievance/grievanceLifecycle.ts` (`grievanceClosesOnCompletion`) | undertaking completion | — | `pendingEncounterSeeds`, graph | `strategic_project_progress.payoffDeferred`, `appointment_planted.seedWithheld` | CLI `hunts`, `appointments` |
+| `engine/appointments.ts` (`pullMult`, `pricedByHex` → `APPOINTMENT_HEX_TICKS_PER_HEX`; flags carried onto `PlantedAppointment`) · `engine/encounterSeeding.ts` (missed rewrite drops `inheritedTargetId`; `requirePlace` place-lost drop after the favour is released) | agent decision (slack, pull), seed evaluation | the confront's veil (existing fight) | `pendingEncounterSeeds` | `appointment_missed.dropped` | CLI `appointments` |
+| `engine/encounterFilterPipeline.ts` + `engine/unifiedCandidates.ts` (the named-elite hunt hidden from a hunter with a live hunt favour) · `engine/monsters/lairArrivalTrigger.ts` (`hunt_appointment` skip) | encounter draw; movement arrival | — | — | `fight.trigger` `skipped: 'hunt_appointment'` | CLI `traces` |
+| `data/encounters/hunt-trail-cold.ts` (new, seed-only) + `#lair_confront` on `fight.lair.confront` · `data/content-tags.ts` (two family tags) · `data/content-objects.ts` (`hunt.` prefix) | seed evaluation | the encounter veil (existing) | — | existing seed traces | `resolveContentQuery` |
+| `components/Codex/undertakingCodex.ts` (`codexKindWord`, class notes, `reasonWords`) · `scripts/generate-undertaking-grid.ts` + `scripts/undertaking-grid-dispositions.ts` (`LIVE_CLASS_CELL_NOTES`, class sub-rows) | — | `?view=codex` undertaking cards; the grid page | — | — | `undertakingCodexCensus()` |
+| `engine/monsters/listMonsters.ts` (`huntedBy`) · `engine/monsters/huntReport.ts` (new: the hunt ledger) · `scripts/cli.ts` (`hunts`) · `scripts/hunt-census.ts` (new, `census:hunts`) · `debug-bridge.ts` | — | — | — | — | `__DEBUG.listMonsters()`, CLI `hunts` |
+
+**Wired and asserted:** `src/engine/monsters/__tests__/hunts.test.ts` (27) — the doors, the board walk (division rule, scan cap, dead beast), tracking, the deferred payoff through the real `advanceStrategicProjects`, plant → keep → `evaluateEncounterSeeds` firing `fight.lair.confront` against the beast, the missed branch into `hunt.trail_cold`, the place-lost drop, the refused plant, one confront per beast, the draw gate and M4's skip. Live: `npm run census:hunts` (seed 42 and 99, medium, 300 ticks) — see `Docs/status/2026-09-25-thr-1560.md`.

@@ -1,0 +1,9 @@
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 7.4%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 0 · possessions 12 · quarrels 2 · marks 1 · garrisons 3
+[WorldGen] Genome NPC top-up: +106 settlement-authored NPCs
+{"seed":42,"map":"medium","initMs":139,"tickMsAvg1_20":0,"tickMsAvg21_150":0,"distinct":0,"total":0}
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 6.6%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 4 · routes 6 · freeholds 2 · possessions 13 · quarrels 7 · marks 2 · garrisons 3
+[WorldGen] Genome NPC top-up: +144 settlement-authored NPCs
+{"seed":99,"map":"medium","initMs":92,"tickMsAvg1_20":0,"tickMsAvg21_150":0,"distinct":0,"total":0}
+wrote C:/Users/chris/AppData/Local/Temp/claude/C--Users-chris-Dev-Projects-TheFantasyWorldSimulator/7bd37cbd-1beb-4c64-9513-59377229a0f0/scratchpad/alive-hex-medium.json

@@ -1,0 +1,112 @@
+{
+ "42": {
+  "granted": 222,
+  "distinct": 101,
+  "top10share": 0.30180180180180183,
+  "top": [
+   [
+    "trait:starter_revelation",
+    23
+   ],
+   [
+    "trait:reward_condition_gashed_leg",
+    6
+   ],
+   [
+    "artifact:reward_arms_bone_knife",
+    5
+   ],
+   [
+    "artifact:reward_tools_instruments_iron_tongs",
+    5
+   ],
+   [
+    "artifact:reward_tools_instruments_master_chisel",
+    5
+   ],
+   [
+    "trait:reward_bestowed_bloodward",
+    5
+   ],
+   [
+    "artifact:reward_arms_banner_of_the_lost_company",
+    5
+   ],
+   [
+    "artifact:reward_tools_instruments_alchemists_crucible",
+    5
+   ],
+   [
+    "artifact:reward_arms_grave_robbers_stiletto",
+    4
+   ],
+   [
+    "artifact:reward_tools_instruments_the_astrolabe_of_yven",
+    4
+   ],
+   [
+    "trait:reward_condition_blinded_eye",
+    4
+   ],
+   [
+    "trait:reward_condition_leaden_limbs",
+    4
+   ]
+  ]
+ },
+ "99": {
+  "granted": 344,
+  "distinct": 114,
+  "top10share": 0.2936046511627907,
+  "top": [
+   [
+    "trait:starter_revelation",
+    36
+   ],
+   [
+    "artifact:reward_tools_instruments_iron_tongs",
+    12
+   ],
+   [
+    "trait:reward_condition_fractured_arm",
+    9
+   ],
+   [
+    "artifact:reward_tools_instruments_herbalists_pouch",
+    7
+   ],
+   [
+    "artifact:reward_tools_instruments_alchemists_crucible",
+    7
+   ],
+   [
+    "artifact:reward_tools_instruments_master_chisel",
+    6
+   ],
+   [
+    "trait:reward_condition_deep_stab_wound",
+    6
+   ],
+   [
+    "trait:reward_condition_dawn_kissed",
+    6
+   ],
+   [
+    "trait:reward_condition_healers_touch",
+    6
+   ],
+   [
+    "artifact:reward_tools_instruments_the_astrolabe_of_yven",
+    6
+   ],
+   [
+    "trait:reward_bestowed_bloodward",
+    6
+   ],
+   [
+    "artifact:reward_arms_spotters_marking_bolt",
+    5
+   ]
+  ]
+ }
+}

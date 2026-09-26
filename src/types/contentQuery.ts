@@ -124,6 +124,8 @@ export type ContentQuerySite =
   /** A completed work's appointment — the meeting a `create × Agreement` arranged (THR-1519). */
   | 'undertaking_appointment'
   | 'condition_pool'
+  /** A fight ending's trophy — the den's hoard, drawn through `drawSeededReward` (THR-1549). */
+  | 'fight_trophy'
   | 'debug';
 
 /**
@@ -144,6 +146,7 @@ export const CONTENT_QUERY_SITES: readonly ContentQuerySite[] = [
   'undertaking_catalyst',
   'undertaking_appointment',
   'condition_pool',
+  'fight_trophy',
   'debug',
 ];
 

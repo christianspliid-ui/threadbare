@@ -141,14 +141,14 @@ export default function UbiquitousLanguageDashboard() {
           totalCount={TERMS.length}
         />
         <a
-          href="?view=game"
+          href="/" /* THR-1601: back to the title screen, never the dev quick-start world */
           style={{
             fontSize: 'var(--text-xs)',
             color: 'var(--accent-gold-dim)',
             textDecoration: 'none',
           }}
         >
-          Back to Game
+          Back to Title
         </a>
       </header>
 

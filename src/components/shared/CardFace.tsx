@@ -106,6 +106,12 @@ export const CARD_WIDTH_PX = 210;
 /** Picture band height — "small generic image", not a hero illustration. */
 export const CARD_PICTURE_BAND_PX = 78;
 /**
+ * How a dimmed card recedes (THR-1587). A filter, not `opacity`: opacity made the
+ * whole face see-through, so a dimmed card in the backdrop-less ActionDrawer let
+ * the page beneath paint through its text. Darkening keeps the surface opaque.
+ */
+export const CARD_DIMMED_FILTER = 'brightness(0.5) saturate(0.6)';
+/**
  * Tallest a hand may grow. The viewport contract forbids page scroll, so this
  * caps the row rather than letting a tall card push the commit button below the
  * fold; the row itself scrolls horizontally.
@@ -301,6 +307,11 @@ function MaybeTooltip({ id, children }: { id?: string; children: React.ReactNode
  * card is focused, and a card that cannot be played is `disabled` rather than
  * merely unresponsive.
  */
+/** The face's selection tint — laid over the opaque surface, never on its own. */
+function cardTint(selected: boolean): string {
+  return selected ? 'rgb(var(--veil-gold-rgb) / 0.12)' : 'rgba(255, 255, 255, 0.02)';
+}
+
 export function CardFace({
   model,
   designerView,
@@ -334,14 +345,17 @@ export function CardFace({
         textAlign: 'left',
         borderRadius: 10,
         overflow: 'hidden',
-        background: model.selected
-          ? 'rgb(var(--veil-gold-rgb) / 0.12)'
-          : 'rgba(255, 255, 255, 0.02)',
+        // THR-1587 — the tint sits on an opaque `--bg-surface` floor. A bare tint
+        // was a window, not a surface: the ActionDrawer floats with no backdrop of
+        // its own, so the location page painted straight through every card body.
+        // The gradient does not interpolate, so the selection tint snaps rather
+        // than fades; the gold border and glow still carry the transition.
+        background: `linear-gradient(${cardTint(model.selected)}, ${cardTint(model.selected)}), var(--bg-surface)`,
         border: `1px solid ${model.selected ? GOLD : 'rgb(var(--veil-gold-rgb) / 0.18)'}`,
         boxShadow: model.selected ? `0 0 12px rgb(var(--veil-gold-rgb) / 0.22)` : undefined,
-        opacity: dimmed ? 0.45 : 1,
+        filter: dimmed ? CARD_DIMMED_FILTER : undefined,
         cursor: model.disabled ? 'not-allowed' : 'pointer',
-        transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
+        transition: 'filter 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
       }}
     >
       {/* ── Picture band ──────────────────────────────────────────

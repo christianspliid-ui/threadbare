@@ -1905,7 +1905,45 @@ export interface DebugBridge {
       readonly opponentBands: readonly string[] | null;
       /** THR-1556 — how the opponent lost (`clock` / `struck_down` / `yielded` / `routed`), or null. */
       readonly opponentLoss: import('./types/fight').FightOpponentLoss | null;
+      /** THR-1548 — what the ending left on the fighter: `face`, `scarWritten`,
+       *  `grudgeWritten`, `humiliation?`, `killRoll?` (present exactly when a kill draw
+       *  was taken), `guard?` (`the_first` / `avatar` / `warded`), `drift?`. Null until
+       *  the fight has ended. The whole audit trail of an ending. */
+      readonly ending: import('./types/fight').FightEndingRecord | null;
+      /** THR-1557 — a duel's other side (null on an NPC-mode fight or before the end):
+       *  the opponent's `face` (`spared` / `mauled` / `slain` when beaten, `yielded_to_mortal`,
+       *  `routed`, `overcome_mortal` when they won), and `mercy` — the victor's fork
+       *  (`pole`, `profileLean`, `cardLean`, `decidedBy`) — on whichever side was beaten. */
+      readonly opponentEnding: import('./types/fight').FightEndingRecord | null;
     };
+
+  /** THR-1551 (fight on screen F2) — the opponent header the veil renders for this
+   *  action's current fight step: `name` (never "an unknown foe" on a review route),
+   *  `opponentId`, `linkable`, `visualKind` (`monster` / `agent`), `stepLabel`
+   *  ("Facing it", "First exchange" …), the card `sentence` / `sentenceText` (Law 16),
+   *  `clock` (`{ size, filled, word, wordTooltipId, ariaLabel }` — the word matches
+   *  `getFightState`'s `clockNow` once the fight exists, else the card's recovered
+   *  clock), `fighterClock` on a duel, and `line` (the watched view's compact form).
+   *  Resolves `{ header: null, currentStep }` off a fight step and `{ error }` for an
+   *  unknown action. **Async.** */
+  getOpponentHeaderModel: (actionId: string) => Promise<
+    | import('./components/Game/encounter-stage/adapters/buildOpponentHeaderModel').OpponentHeaderModel
+    | { readonly header: null; readonly currentStep: number }
+    | { readonly error: string }
+  >;
+
+  /** THR-1553 (fight on screen F3) — the fight consequence chips the aftermath renders
+   *  for this action, built through the veil's own adapter and filtered to the chips
+   *  minted from `fightState` (id prefix `consequence-fight-chip-`). Each chip carries
+   *  `category` (`scar` / `bond` / `boon` / `path`), `nounLabel`, `nounEntityId` (the
+   *  anchor), `sentenceText`, and `delta` (`{ direction, count, label, word? }` — a PATH
+   *  chip's `word` is the one drawn beside ◆: the clock word, `slain`, `cleared`).
+   *  `{ chips: [], reason }` before the fight has ended or off a fight; `{ error }` for
+   *  an unknown action. **Async.** */
+  getFightChips: (actionId: string) => Promise<
+    | { readonly chips: readonly import('./components/Game/encounter-stage/types').EncounterStageConsequenceChipModel[]; readonly reason?: string }
+    | { readonly error: string }
+  >;
 
   /** The opponent card a fight against this actor would read right now: Dread, Might,
    *  the card's reach overrides, clock (after lazy recovery), temper, persistence and
@@ -1922,8 +1960,29 @@ export interface DebugBridge {
    *  `trait.temper.*` edge; stubborn when none), `temperShown`, and `deceased` — slain
    *  monsters are listed too. `cardMissing: true` flags a monster node with no
    *  `monsterState` (the M1 kill criterion). Ordered by id. Resolves `[]` with no live
-   *  game. **Async.** The row shape is pinned: plan docs 4 and 6 build on it. */
+   *  game. **Async.** The row shape is pinned: plan docs 4 and 6 build on it.
+   *  `huntedBy[]` (THR-1560, plan doc 6): the mortals with an active hunt
+   *  (`cell.destroy.monster`, `work: 'hunt'`) or tracking (`cell.observe.monster`,
+   *  `work: 'track'`) project on the monster, each with the door that admits them today —
+   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does. */
   listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
+
+  /** The lair card the hex sidebar renders for one lair (plan doc 4, F1 THR-1550 + F4
+   *  THR-1552): `{ lairId, lairName, monster: LairMonsterRow | null }`. `monster` is the
+   *  living monster that holds the lair, else the lair's slain monster (the retained
+   *  deceased elite whose `lairId` names it, latest death first) — `null` when neither
+   *  resolves, and then the sidebar shows no card rather than a raw id. The row carries
+   *  `name`, `deceased`, the card `sentence`/`sentenceText` (temper clause only once
+   *  `temperShown`), the `clock` (`size`, `filled` — recovered at the current tick —
+   *  `word`; a slain monster reads full and "slain"), and `slainBy`/`slainById` only when
+   *  the monster's own sheet names the killer (`getAgentInfoCard(...).death.by`).
+   *  Matches a lair (or cleared lair) node id exactly, else by name, case-insensitive:
+   *  exact first, then substring, lowest id wins. Resolves `{ error }` with no live game
+   *  or no match. **Async.** */
+  getLairMonsterCard: (lairIdOrName: string) => Promise<
+    | import('./components/Game/lair/buildLairMonsterCardModel').LairMonsterCardModel
+    | { readonly error: string }
+  >;
 
   /** The fight review lever. Moves `@hero` to the target's location, then stages
    *  `fight.lair.confront` on `@hero` against the named target — open, as The First.

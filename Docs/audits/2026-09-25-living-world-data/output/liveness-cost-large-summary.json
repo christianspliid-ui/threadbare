@@ -1,0 +1,174 @@
+[
+  {
+    "arm": "baseline",
+    "seed": 42,
+    "reps": 3,
+    "estimator": "median across reps",
+    "ms1_20": 242.4,
+    "ms21_150": 550.9,
+    "ms21_200": 536.8,
+    "meanOfReps21_200": 497,
+    "perRep21_200": [
+      362.1,
+      592.1,
+      536.8
+    ],
+    "perRep1_20": [
+      231.5,
+      242.4,
+      587.1
+    ],
+    "repSd21_200": 98,
+    "repRange21_200": [
+      362.1,
+      592.1
+    ],
+    "deltaSteadyMs": 0,
+    "deltaSteadyPct": 0,
+    "deltaWarmPct": 0,
+    "decidersStartEnd": [
+      37,
+      38
+    ],
+    "aliveMortalsEnd": 1415,
+    "eventsEmitted": 27445,
+    "lever": {},
+    "phasesMoved": [
+      {
+        "phase": "agent_decision",
+        "deltaMs": 0,
+        "armMs": 167.91
+      },
+      {
+        "phase": "delve_admission",
+        "deltaMs": 0,
+        "armMs": 120.08
+      },
+      {
+        "phase": "economic_traits",
+        "deltaMs": 0,
+        "armMs": 113.05
+      },
+      {
+        "phase": "faction_actions",
+        "deltaMs": 0,
+        "armMs": 20
+      },
+      {
+        "phase": "sphere_pressure",
+        "deltaMs": 0,
+        "armMs": 14.8
+      },
+      {
+        "phase": "effect_tick",
+        "deltaMs": 0,
+        "armMs": 12.15
+      },
+      {
+        "phase": "reputation_traits",
+        "deltaMs": 0,
+        "armMs": 13.35
+      },
+      {
+        "phase": "unified_action_progress",
+        "deltaMs": 0,
+        "armMs": 12.94
+      }
+    ]
+  },
+  {
+    "arm": "all",
+    "seed": 42,
+    "reps": 3,
+    "estimator": "median across reps",
+    "ms1_20": 277.6,
+    "ms21_150": 559.2,
+    "ms21_200": 620.2,
+    "meanOfReps21_200": 636.7,
+    "perRep21_200": [
+      613.7,
+      620.2,
+      676.2
+    ],
+    "perRep1_20": [
+      278.9,
+      268.1,
+      277.6
+    ],
+    "repSd21_200": 28.1,
+    "repRange21_200": [
+      613.7,
+      676.2
+    ],
+    "deltaSteadyMs": 83.4,
+    "deltaSteadyPct": 15.5,
+    "deltaWarmPct": 14.5,
+    "decidersStartEnd": [
+      37,
+      77
+    ],
+    "aliveMortalsEnd": 1692,
+    "eventsEmitted": 41144,
+    "lever": {
+      "personTiesBefore": 198,
+      "tiesAdded": 396,
+      "personTiesAfter": 594,
+      "tieKinds": {
+        "friendship": 119,
+        "mentor": 79,
+        "rivalry": 80,
+        "kin": 118
+      },
+      "coResidentMortals": 1118,
+      "notablesMinted": 276,
+      "notableWants": 276,
+      "notablesJoinedFaction": 74,
+      "settlements": 138,
+      "historyEvents": 200,
+      "historyEdges": 320,
+      "deadNotables": 10
+    },
+    "phasesMoved": [
+      {
+        "phase": "agent_decision",
+        "deltaMs": 97.8,
+        "armMs": 265.71
+      },
+      {
+        "phase": "delve_admission",
+        "deltaMs": -25.16,
+        "armMs": 94.92
+      },
+      {
+        "phase": "economic_traits",
+        "deltaMs": 7.45,
+        "armMs": 120.5
+      },
+      {
+        "phase": "effect_tick",
+        "deltaMs": 7.18,
+        "armMs": 19.32
+      },
+      {
+        "phase": "unified_action_progress",
+        "deltaMs": 5.83,
+        "armMs": 18.76
+      },
+      {
+        "phase": "faction_actions",
+        "deltaMs": -3.88,
+        "armMs": 16.12
+      },
+      {
+        "phase": "groups",
+        "deltaMs": 2.48,
+        "armMs": 6.31
+      },
+      {
+        "phase": "faction_succession",
+        "deltaMs": -2.42,
+        "armMs": 7.45
+      }
+    ]
+  }
+]

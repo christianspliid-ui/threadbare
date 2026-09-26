@@ -21,6 +21,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { Dropdown } from '../shared/Dropdown';
 import { ProgressBar } from '../shared/ProgressBar';
 import { StepDots } from '../shared/StepDots';
+import { FIGHT_CLOCK_PIP_SIZE } from '../../data/fight-screen-content';
 import { RarityBadge } from '../shared/RarityBadge';
 import { RarityBorderBox } from '../shared/RarityBorderBox';
 import { SphereIcon } from '../shared/SphereIcon';
@@ -913,6 +914,21 @@ export default function StyleGuide() {
                   <StepDots totalSteps={3} currentStepIndex={1} size={8} />
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>size=8, 3 steps</span>
                 </div>
+                {/* THR-1551 — the fight clock: square magnitude pips at the glyph floor,
+                    always followed by its word, so it never reads as step dots (Law 10). */}
+                {([[0, 'untouched'], [1, 'bloodied'], [2, 'half-broken'], [3, 'failing']] as const).map(([filled, word]) => (
+                  <div key={word} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <StepDots
+                      totalSteps={4}
+                      currentStepIndex={filled}
+                      variant="magnitude"
+                      shape="square"
+                      size={FIGHT_CLOCK_PIP_SIZE}
+                      ariaLabel={word}
+                    />
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>shape=square, magnitude — the fight clock, {word}</span>
+                  </div>
+                ))}
               </GameErrorBoundary>
             </div>
           </section>
@@ -1053,6 +1069,12 @@ export default function StyleGuide() {
                 <Label>PATH — a way opening has no scale, so it never draws a run</Label>
                 <Row>
                   <DeltaCluster direction="opens" count={1} label="A way opens" />
+                </Row>
+                <Label>PATH with its own word (THR-1553) — a changed world object, not a way opening</Label>
+                <Row>
+                  <DeltaCluster direction="opens" count={1} label="the Mire Ox — slain" word="slain" />
+                  <DeltaCluster direction="opens" count={1} label="the Mire Den — cleared" word="cleared" />
+                  <DeltaCluster direction="opens" count={1} label="the Mire Ox's clock — half-broken" word="half-broken" />
                 </Row>
               </GameErrorBoundary>
             </div>
@@ -1354,6 +1376,8 @@ function EntityVisualDemo() {
   const portraitFallback = mkVisual({ tier: 'fallback', glyph: 'S', gradientIndex: 3, alt: 'Serafina', kind: 'agent' });
   const chipArt = mkVisual({ tier: 'art', src: '/portraits/oathkeeper.png', glyph: 'V', gradientIndex: 5, alt: 'Veiren', kind: 'agent' });
   const chipFaction = mkVisual({ tier: 'fallback', glyph: '⚜', gradientIndex: 0, alt: 'The Covenant', kind: 'faction' });
+  const monsterArt = mkVisual({ tier: 'art', src: '/portraits/monster.png', glyph: '☠', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
+  const monsterFallback = mkVisual({ tier: 'fallback', glyph: '☠', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -1392,6 +1416,20 @@ function EntityVisualDemo() {
           <EntityVisual size="chip" descriptor={chipArt} />
           <EntityVisual size="chip" descriptor={portraitFallback} />
           <EntityVisual size="chip" descriptor={chipFaction} />
+        </Row>
+      </div>
+
+      <div>
+        <Label>
+          monster (THR-1550) — portrait · chip · fallback. A lair&apos;s beast is never a
+          person tile and is not knowledge-gated: its look is public, like its lair.
+        </Label>
+        <Row>
+          <div style={{ width: 120 }}>
+            <EntityVisual size="portrait" descriptor={monsterArt} />
+          </div>
+          <EntityVisual size="chip" descriptor={monsterArt} />
+          <EntityVisual size="chip" descriptor={monsterFallback} />
         </Row>
       </div>
 

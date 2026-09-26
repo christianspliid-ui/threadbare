@@ -8,8 +8,9 @@
  */
 
 import type { ActionScale, StepOutcome, UnifiedActionOutcome } from '../types/unifiedAction';
-import type { FightRatingWord, FightResult, FightTemper } from '../types/fight';
+import type { FightEndingFace, FightRatingWord, FightResult, FightTemper } from '../types/fight';
 import type { ReachDomain } from '../types/traits';
+import { BRANCH_DECISION_DRIFT_MAGNITUDE } from './nudge-constants';
 
 /**
  * Card word → step difficulty. Each sits inside its `DIFFICULTY_WORD_BANDS` word
@@ -375,3 +376,158 @@ export const FIGHT_OPPONENT_PLACEHOLDER = '{opponent}';
  * or collides with, the step stream the fighter rolls on.
  */
 export const DUEL_OPPONENT_STREAM_SALT = 6271;
+
+// ─── Fight endings: the defeat faces and the death gate (THR-1548, plan doc ───
+// `Docs/plans/2026-09-23-defeat-and-victory.md` §1–3, slice D1) ─────────────────
+
+/**
+ * The chance a **monster** victor kills a mortal it struck down, by its temper
+ * (THR-1266). Only `struck_down` can kill, and only after both guards (The First,
+ * the god's avatar) have passed. Berserk 0.15 against a bold guard is about 2% per
+ * visit (THR-1531). Kill criterion: if more than 4% of 200+ monster fights end
+ * `slain`, halve these.
+ */
+export const FIGHT_KILL_CHANCE_BY_TEMPER: Readonly<Record<FightTemper, number>> = {
+  berserk: 0.15,
+  stubborn: 0.05,
+  skittish: 0,
+  bargainer: 0,
+};
+
+/**
+ * The chance a ruthless mortal victor kills in a duel (agent mode). Declared here so
+ * the ending's numbers live together; the mercy decision that reads it is plan doc
+ * 5's E2 (THR-1557), not D1.
+ */
+export const FIGHT_DUEL_KILL_CHANCE_RUTHLESS = 0.25;
+
+/**
+ * The axis a duel's victor decides a beaten loser's fate on (THR-1557, duels plan doc
+ * §5): the positive pole (mercy) spares, the negative (ruthlessness) tries to finish.
+ * The same axis a bargainer's offer is weighed on.
+ */
+export const FIGHT_MERCY_AXIS = FIGHT_BARGAIN_AXIS;
+
+/**
+ * How far an ending drifts the fighter's values: toward prudence on a yield or a
+ * rout (D1); toward mercy on a bargain, toward courage on a won duel (D2). The
+ * branch-decision magnitude, so a fight moves a person as far as a hard choice does.
+ */
+export const FIGHT_ENDING_DRIFT = BRANCH_DECISION_DRIFT_MAGNITUDE;
+
+/**
+ * Face lost at home by yielding to another person (§2b). A reputation write toward
+ * the fighter's home settlement; yielding to a monster costs nothing.
+ */
+export const FIGHT_HUMILIATION_REPUTATION = 0.05;
+
+/** The `cause` the humiliation's reputation write carries. */
+export const FIGHT_HUMILIATION_CAUSE = 'fight_humiliation';
+
+/** Scarred — the one fight wound that never heals (a `scar`-class condition). */
+export const FIGHT_SCARRED_TRAIT_ID = 'trait.scar.scarred';
+
+/** The scar's intensity on its `has_trait` edge. A narrative mark: it moves no capability. */
+export const FIGHT_SCARRED_INTENSITY = 1;
+
+/** The reactive loop's harm class for a death in a fight — the plot's own class. */
+export const FIGHT_DEATH_HARM_CLASS = 'named_death' as const;
+
+// ─── Fight endings: victory yields and the chronicle (THR-1549, plan doc ───
+// `Docs/plans/2026-09-23-defeat-and-victory.md` §4–5, slice D2) ─────────────────
+
+/** Settlement gratitude for felling a monster (a `reputation_with` write, within the 0.15 cap). */
+export const FIGHT_VICTORY_REPUTATION_OVERCOME = 0.10;
+
+/** Settlement gratitude for driving a monster off. */
+export const FIGHT_VICTORY_REPUTATION_DRIVEN_OFF = 0.03;
+
+/**
+ * Standing gained for beating a mortal, or for being yielded to by one — written toward
+ * the loser's faction, failing that the loser's home settlement. *Standing* is a
+ * `reputation_with` write (UL Reputation), never world renown (`reputationScore`).
+ */
+export const FIGHT_VICTORY_REPUTATION_DUEL = 0.05;
+
+/** The `cause` each victory reputation write carries. */
+export const FIGHT_GRATITUDE_CAUSE = 'fight_gratitude';
+export const FIGHT_STANDING_CAUSE = 'fight_standing';
+
+/**
+ * How far a lair's grateful settlement may be, in hexes. The nearest settlement-class
+ * location within this radius takes the gratitude; ties break by node id.
+ */
+export const FIGHT_GRATITUDE_RADIUS_HEXES = 3;
+
+/** Which endings reach the chronicle. */
+export type FightEventTier = 'notable' | 'routine';
+
+/**
+ * A `fight_ended` event's significance by tier. Notable endings clear `phaseNarrative`'s
+ * 0.8 chronicle threshold; routine ones reach the event log and the digest only.
+ */
+export const FIGHT_EVENT_SIGNIFICANCE: Readonly<Record<FightEventTier, number>> = {
+  notable: 0.85,
+  routine: 0.4,
+};
+
+/**
+ * Which faces reach the chronicle. Kill criterion (plan doc): if fight lines flood the
+ * chronicle (more than one per 10 ticks on a medium map), move faces to `routine`,
+ * keeping felled, slain and spared.
+ */
+export const FIGHT_EVENT_TIER_BY_FACE: Readonly<Record<FightEndingFace, FightEventTier>> = {
+  overcome_monster: 'notable',
+  overcome_mortal: 'notable',
+  driven_off: 'notable',
+  bargained: 'notable',
+  yielded_to_mortal: 'notable',
+  mauled: 'notable',
+  spared: 'notable',
+  slain: 'notable',
+  yielded_to_monster: 'routine',
+  routed: 'routine',
+  broke_off: 'routine',
+};
+
+/**
+ * Cooldown per fighter pair after a fight trigger fires (THR-1547, plan doc
+ * `2026-09-23-monsters-as-opponents.md` § Constants). The lair-arrival trigger stores
+ * `tick + FIGHT_TRIGGER_COOLDOWN_TICKS` as the pair's expiry in `fightCooldowns`;
+ * other triggers (grudge duels) store their own length in the same map.
+ */
+export const FIGHT_TRIGGER_COOLDOWN_TICKS = 25;
+
+// ─── Grudges boil over (THR-1558, plan doc `2026-09-23-mortal-duels.md` §6) ──────────
+
+/**
+ * Chance per co-located tick that an injury-class grudge pair duels, before courage
+ * scaling. The roll is `min(GRUDGE_ESCALATION_MAX, BASE × (1 + pairCourage))`, where
+ * `pairCourage` is the higher live `courage_prudence` lean of the two (THR-1267).
+ * Kill criterion: halve this if grudge duels kill more than one mortal per 100 ticks
+ * on a medium map.
+ */
+export const GRUDGE_ESCALATION_BASE = 0.05;
+
+/** The one clamp on the scaled escalation chance (= 2 × base at full courage). */
+export const GRUDGE_ESCALATION_MAX = 0.10;
+
+/**
+ * Salt for the escalation sub-stream, `mulberry32(seed + tick × salt + hash(pairKey))`.
+ * Keeps the grudge roll off the colocation detection stream, so every existing
+ * detection roll is identical whether the trigger is on or off. Unused elsewhere.
+ */
+export const GRUDGE_ESCALATION_STREAM_SALT = 6263;
+
+/**
+ * Ticks a grudge pair waits between duels. Its own constant, not the lair's
+ * `FIGHT_TRIGGER_COOLDOWN_TICKS`, so tuning lair re-fights never changes how often a
+ * feud flares (NFP #1). Stored as an expiry tick in `GameState.fightCooldowns`.
+ */
+export const GRUDGE_DUEL_COOLDOWN_TICKS = 80;
+
+/**
+ * Kill-criterion ceiling: grudge duels per pair in a 200-tick run. More means the
+ * cooldown or the eligibility is leaking. Read by the CLI check, never by the engine.
+ */
+export const GRUDGE_DUEL_REPEAT_CEILING = 3;

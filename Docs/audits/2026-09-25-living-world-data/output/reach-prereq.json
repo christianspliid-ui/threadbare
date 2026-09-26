@@ -1,0 +1,900 @@
+{
+ "seeds": [
+  42,
+  99
+ ],
+ "ticks": 200,
+ "every": 20,
+ "deciderCapabilityQuantiles": {
+  "p10": "0.578",
+  "p50": "0.990",
+  "p90": "1.000"
+ },
+ "tally": {
+  "encounter.merchants_gambit": {
+   "outgrowth": 422,
+   "pass": 15
+  },
+  "encounter.knowledge_test": {
+   "outgrowth": 231,
+   "pass": 7
+  },
+  "encounter.forbidden_tome": {
+   "prerequisites_core": 277
+  },
+  "encounter.compose_saga": {
+   "outgrowth": 410,
+   "pass": 27
+  },
+  "encounter.raise_monument": {
+   "outgrowth": 300,
+   "pass": 19
+  },
+  "encounter.court_noble": {
+   "outgrowth": 310,
+   "pass": 19
+  },
+  "encounter.arena_combat": {
+   "prerequisites_core": 323
+  },
+  "encounter.trial_by_combat": {
+   "outgrowth": 227,
+   "pass": 16
+  },
+  "encounter.honor_duel": {
+   "outgrowth": 227,
+   "pass": 16
+  },
+  "encounter.pickpocket": {
+   "outgrowth": 431,
+   "pass": 6
+  },
+  "encounter.vault_heist": {
+   "outgrowth": 237,
+   "pass": 2
+  },
+  "encounter.steal_secrets": {
+   "outgrowth": 237,
+   "pass": 2
+  },
+  "encounter.guild_negotiation": {
+   "prerequisites_core": 436,
+   "outgrowth": 1
+  },
+  "encounter.tribute_exchange": {
+   "outgrowth": 225,
+   "pass": 7
+  },
+  "encounter.guild_aid": {
+   "outgrowth": 422,
+   "pass": 15
+  },
+  "encounter.harbor_construction": {
+   "outgrowth": 403,
+   "pass": 26
+  },
+  "encounter.council_mediation": {
+   "outgrowth": 310,
+   "pass": 19
+  },
+  "encounter.faction_unification": {
+   "outgrowth": 258,
+   "pass": 13
+  },
+  "encounter.master_craftsman_challenge": {
+   "pass": 429
+  },
+  "encounter.political_intrigue": {
+   "pass": 329
+  },
+  "encounter.festival_of_spheres": {
+   "outgrowth": 286,
+   "pass": 143
+  },
+  "encounter.grand_tournament": {
+   "pass": 323
+  },
+  "encounter.patrol_perimeter": {
+   "outgrowth": 418,
+   "pass": 40
+  },
+  "encounter.barter_supplies": {
+   "outgrowth": 425,
+   "pass": 33
+  },
+  "encounter.assess_holdings": {
+   "outgrowth": 425,
+   "pass": 33
+  },
+  "encounter.night_watch": {
+   "outgrowth": 435,
+   "pass": 23
+  },
+  "encounter.listen_for_rumors": {
+   "outgrowth": 435,
+   "pass": 23
+  },
+  "encounter.trace_ley_lines": {
+   "outgrowth": 309,
+   "pass": 149
+  },
+  "encounter.local_tales": {
+   "outgrowth": 423,
+   "pass": 35
+  },
+  "encounter.tend_the_weary": {
+   "outgrowth": 423,
+   "pass": 35
+  },
+  "encounter.study_surroundings": {
+   "outgrowth": 429,
+   "pass": 29
+  },
+  "encounter.decipher_old_markings": {
+   "outgrowth": 429,
+   "pass": 29
+  },
+  "encounter.mend_equipment": {
+   "outgrowth": 410,
+   "pass": 48
+  },
+  "encounter.shore_up_shelter": {
+   "outgrowth": 410,
+   "pass": 48
+  },
+  "encounter.commune_with_stars": {
+   "outgrowth": 382,
+   "pass": 76
+  },
+  "encounter.rest_and_recover": {
+   "outgrowth": 428,
+   "pass": 30
+  },
+  "encounter.forage_provisions": {
+   "outgrowth": 431,
+   "pass": 27
+  },
+  "encounter.forage_the_land": {
+   "outgrowth": 416,
+   "pass": 42
+  },
+  "encounter.local_gossip": {
+   "outgrowth": 428,
+   "pass": 30
+  },
+  "encounter.barter_with_travelers": {
+   "outgrowth": 402,
+   "pass": 56
+  },
+  "encounter.defend_against_predators": {
+   "outgrowth": 398,
+   "pass": 60
+  },
+  "encounter.investigate_anomaly": {
+   "outgrowth": 395,
+   "pass": 63
+  },
+  "encounter.rally_the_locals": {
+   "outgrowth": 295,
+   "pass": 163
+  },
+  "encounter.negotiate_dispute": {
+   "outgrowth": 386,
+   "pass": 72
+  },
+  "encounter.shadow_in_the_night": {
+   "pass": 78,
+   "outgrowth": 380
+  },
+  "encounter.master_local_craft": {
+   "pass": 458
+  },
+  "encounter.confront_the_unknown": {
+   "pass": 458
+  },
+  "encounter.weave_political_alliance": {
+   "pass": 458
+  },
+  "encounter.arcane_resonance_study": {
+   "pass": 458
+  },
+  "encounter.case_the_joint": {
+   "outgrowth": 431,
+   "pass": 6
+  },
+  "encounter.dead_drop": {
+   "outgrowth": 431,
+   "pass": 6
+  },
+  "encounter.trial_of_flame": {
+   "outgrowth": 407,
+   "pass": 28
+  },
+  "encounter.healers_oath": {
+   "outgrowth": 419,
+   "pass": 34
+  },
+  "encounter.starborn_vigil": {
+   "outgrowth": 327,
+   "pass": 104
+  },
+  "encounter.market_haggle": {
+   "outgrowth": 422,
+   "pass": 15
+  },
+  "encounter.the_haggle": {
+   "outgrowth": 422,
+   "pass": 15
+  },
+  "encounter.market_day_festival": {
+   "outgrowth": 424,
+   "pass": 13
+  },
+  "encounter.deep_descent": {
+   "outgrowth": 292,
+   "pass": 16
+  },
+  "encounter.relic_hunt": {
+   "outgrowth": 308,
+   "pass": 10
+  },
+  "encounter.sunken_vault": {
+   "outgrowth": 106,
+   "prerequisites_core": 188,
+   "pass": 14
+  },
+  "encounter.broken_span": {
+   "outgrowth": 104,
+   "prerequisites_core": 184,
+   "pass": 15
+  },
+  "encounter.hollow_watch": {
+   "pass": 141,
+   "prerequisites_core": 196
+  },
+  "encounter.confront_den_assault": {
+   "prerequisites_core": 300,
+   "pass": 8
+  },
+  "encounter.band_defend": {
+   "outgrowth": 158,
+   "prerequisites_core": 284,
+   "pass": 15
+  },
+  "encounter.confront_guild_falls": {
+   "prerequisites_core": 446,
+   "pass": 11
+  },
+  "encounter.the_loan": {
+   "outgrowth": 374,
+   "pass": 6
+  },
+  "encounter.debt_collection": {
+   "outgrowth": 374,
+   "pass": 6
+  },
+  "encounter.slice.the_table_that_holds": {
+   "prerequisites_core": 438
+  },
+  "crafting.quest.flawed_steel": {
+   "pass": 438
+  },
+  "star.turning.comet_omen": {
+   "pass": 435
+  },
+  "veil.truth.page_beneath_saint": {
+   "pass": 329
+  },
+  "eye.reckoning.verdict_that_burns": {
+   "pass": 437
+  },
+  "gold.famine.merchant_granaries": {
+   "pass": 437
+  },
+  "reputation.heart.pilgrims_offering": {
+   "pass": 438
+  },
+  "reputation.stone.the_stones_judgement": {
+   "pass": 429
+  },
+  "reputation.eye.the_oracle_consulted": {
+   "pass": 438
+  },
+  "reputation.star.the_star_pilgrim": {
+   "pass": 436,
+   "reputation_trait_gate": 2
+  },
+  "reputation.veil.the_silent_chamber": {
+   "pass": 438
+  },
+  "reputation.stone.the_jury_of_the_ruined": {
+   "pass": 438
+  },
+  "reputation.eye.the_blinded_oracle": {
+   "pass": 402,
+   "reputation_trait_gate": 36
+  },
+  "encounter.realm.court_summons": {
+   "outgrowth": 320,
+   "pass": 117
+  },
+  "encounter.realm.tithe_demanded": {
+   "outgrowth": 321,
+   "pass": 117
+  },
+  "encounter.realm.keepers_petition": {
+   "pass": 164,
+   "outgrowth": 274
+  },
+  "encounter.realm.crowns_reckoning": {
+   "outgrowth": 361,
+   "pass": 76
+  },
+  "bf.elite.engineer_wonder": {
+   "prerequisites_core": 185
+  },
+  "bf.elite.grand_monument": {
+   "prerequisites_core": 319
+  },
+  "mct.senior.foreign_deal": {
+   "prerequisites_core": 328
+  },
+  "mct.elite.market_domination": {
+   "prerequisites_core": 328
+  },
+  "mct.elite.trade_summit": {
+   "prerequisites_core": 194
+  },
+  "ts.elite.found_cathedral": {
+   "prerequisites_core": 437
+  },
+  "ts.elite.sphere_convergence": {
+   "prerequisites_core": 328
+  },
+  "fa.alliance_ceremony": {
+   "outgrowth": 289,
+   "pass": 40
+  },
+  "fa.bounty_hunt": {
+   "pass": 437
+  },
+  "fa.conclave_debate": {
+   "outgrowth": 266,
+   "pass": 63
+  },
+  "monster.encounter.horde_raid": {
+   "pass": 438
+  },
+  "encounter.harvest_bounty": {
+   "outgrowth": 343,
+   "pass": 3
+  },
+  "encounter.brew_potion": {
+   "outgrowth": 398,
+   "pass": 25
+  },
+  "encounter.recruit_militia": {
+   "outgrowth": 403,
+   "pass": 19
+  },
+  "encounter.tavern_brawl": {
+   "outgrowth": 401,
+   "pass": 24
+  },
+  "encounter.barter_survival": {
+   "outgrowth": 420,
+   "pass": 15
+  },
+  "encounter.aid_refugees": {
+   "outgrowth": 403,
+   "pass": 19
+  },
+  "encounter.guild_initiation_trial": {
+   "outgrowth": 398,
+   "pass": 37
+  },
+  "encounter.trade_caravan_escort": {
+   "outgrowth": 398,
+   "pass": 37
+  },
+  "encounter.plague_outbreak": {
+   "pass": 438
+  },
+  "encounter.sharpen_blades": {
+   "outgrowth": 415,
+   "pass": 20
+  },
+  "encounter.ward_the_camp": {
+   "outgrowth": 307,
+   "pass": 127
+  },
+  "encounter.offer_small_prayer": {
+   "outgrowth": 380,
+   "pass": 74
+  },
+  "encounter.rest_and_reflect": {
+   "outgrowth": 425,
+   "pass": 10
+  },
+  "encounter.tend_to_wounds": {
+   "outgrowth": 428,
+   "pass": 27
+  },
+  "encounter.scout_the_perimeter": {
+   "outgrowth": 425,
+   "pass": 10
+  },
+  "encounter.hedge_remedy": {
+   "outgrowth": 293,
+   "pass": 141
+  },
+  "encounter.blessing_of_passage": {
+   "outgrowth": 291,
+   "pass": 69
+  },
+  "encounter.dig_a_well": {
+   "outgrowth": 345,
+   "pass": 20
+  },
+  "encounter.negotiate_passage": {
+   "outgrowth": 408,
+   "pass": 27
+  },
+  "encounter.mend_fishing_nets": {
+   "outgrowth": 364,
+   "pass": 4
+  },
+  "encounter.confront_standoff": {
+   "prerequisites_core": 424,
+   "pass": 3,
+   "outgrowth": 7
+  },
+  "encounter.black_market_deal": {
+   "outgrowth": 410,
+   "pass": 11
+  },
+  "encounter.the_fence": {
+   "outgrowth": 418,
+   "pass": 5
+  },
+  "encounter.slice.bargain_at_crossroads": {
+   "pass": 435
+  },
+  "encounter.slice.swindled_family": {
+   "pass": 435
+  },
+  "encounter.delve.the_unfinished_rite": {
+   "outgrowth": 217,
+   "pass": 157
+  },
+  "encounter.hunt.the_beast_in_the_granary": {
+   "pass": 435
+  },
+  "encounter.realm.border_levy": {
+   "outgrowth": 359,
+   "pass": 77
+  },
+  "monster.encounter.lair_defense": {
+   "pass": 367
+  },
+  "encounter.rare_material": {
+   "outgrowth": 394,
+   "pass": 31
+  },
+  "encounter.sanctuary_construction": {
+   "outgrowth": 156,
+   "pass": 4
+  },
+  "encounter.frontier_settlement": {
+   "outgrowth": 270,
+   "pass": 16
+  },
+  "encounter.prospecting_expedition": {
+   "outgrowth": 382,
+   "pass": 42
+  },
+  "encounter.mineral_vein_discovery": {
+   "pass": 105
+  },
+  "encounter.shore_up_the_mine": {
+   "outgrowth": 103,
+   "pass": 2
+  },
+  "encounter.map_the_passages": {
+   "outgrowth": 187,
+   "pass": 10
+  },
+  "encounter.prospect_the_seam": {
+   "outgrowth": 418,
+   "pass": 15
+  },
+  "encounter.the_rich_vein": {
+   "outgrowth": 352,
+   "pass": 7
+  },
+  "encounter.labor_dispute": {
+   "outgrowth": 354,
+   "pass": 5
+  },
+  "encounter.spell_bargain": {
+   "outgrowth": 154,
+   "pass": 75
+  },
+  "encounter.inscribe_ward": {
+   "outgrowth": 122,
+   "pass": 33
+  },
+  "encounter.bind_spirit": {
+   "outgrowth": 154,
+   "pass": 75
+  },
+  "encounter.arcane_duel": {
+   "prerequisites_core": 155
+  },
+  "encounter.mystic_trade": {
+   "outgrowth": 245,
+   "pass": 25
+  },
+  "encounter.healer_aid": {
+   "outgrowth": 245,
+   "pass": 25
+  },
+  "encounter.library_expansion": {
+   "outgrowth": 332,
+   "pass": 15
+  },
+  "encounter.read_the_wards": {
+   "outgrowth": 110,
+   "pass": 35
+  },
+  "encounter.minor_cantrip": {
+   "outgrowth": 188,
+   "pass": 77
+  },
+  "encounter.patch_the_walls": {
+   "outgrowth": 147,
+   "pass": 6
+  },
+  "encounter.catalogue_the_tower": {
+   "outgrowth": 88,
+   "pass": 1
+  },
+  "encounter.garrison_gossip": {
+   "outgrowth": 151,
+   "pass": 1
+  },
+  "encounter.delve.the_broken_seal": {
+   "outgrowth": 144,
+   "pass": 157
+  },
+  "encounter.delve.the_drowned_archive": {
+   "pass": 96,
+   "outgrowth": 234
+  },
+  "reputation.veil.the_veiled_consultation": {
+   "pass": 401
+  },
+  "encounter.craft_talisman": {
+   "outgrowth": 287,
+   "pass": 161
+  },
+  "encounter.sway_mercenary": {
+   "outgrowth": 222,
+   "pass": 2
+  },
+  "encounter.hire_guide": {
+   "outgrowth": 319,
+   "pass": 107
+  },
+  "encounter.shadow_ambush": {
+   "outgrowth": 427,
+   "pass": 6
+  },
+  "encounter.caravan_deal": {
+   "prerequisites_core": 370,
+   "pass": 1,
+   "outgrowth": 7
+  },
+  "encounter.smuggler_pact": {
+   "prerequisites_core": 378,
+   "outgrowth": 7
+  },
+  "encounter.warband_training": {
+   "outgrowth": 216,
+   "pass": 7
+  },
+  "encounter.toll_bridge": {
+   "outgrowth": 185,
+   "pass": 2
+  },
+  "encounter.caravan_guard": {
+   "outgrowth": 180,
+   "pass": 6
+  },
+  "encounter.beast_hunt": {
+   "outgrowth": 386,
+   "pass": 39
+  },
+  "encounter.bandit_ambush": {
+   "pass": 425
+  },
+  "encounter.shrine_offering": {
+   "outgrowth": 327,
+   "pass": 127
+  },
+  "encounter.read_the_stars": {
+   "outgrowth": 318,
+   "pass": 107
+  },
+  "encounter.drill_the_watch": {
+   "outgrowth": 358,
+   "pass": 21
+  },
+  "encounter.spar_with_a_stranger": {
+   "outgrowth": 388,
+   "pass": 25
+  },
+  "encounter.gather_firewood": {
+   "outgrowth": 415,
+   "pass": 18
+  },
+  "encounter.band_raid": {
+   "outgrowth": 110,
+   "prerequisites_core": 166
+  },
+  "encounter.confront_ambush": {
+   "prerequisites_core": 271,
+   "outgrowth": 2,
+   "pass": 1
+  },
+  "encounter.slice.unsafe_bridge": {
+   "outgrowth": 350,
+   "pass": 74
+  },
+  "encounter.slice.snow_on_the_pass": {
+   "outgrowth": 350,
+   "pass": 74
+  },
+  "encounter.slice.riders_behind_caravan": {
+   "outgrowth": 258,
+   "pass": 166
+  },
+  "encounter.border.the_unclaimed_relic": {
+   "outgrowth": 323,
+   "pass": 109
+  },
+  "encounter.border.one_body_short": {
+   "outgrowth": 268,
+   "pass": 165
+  },
+  "encounter.border.toll_of_blades": {
+   "outgrowth": 351,
+   "pass": 82
+  },
+  "encounter.border.the_sign_over_the_ruin": {
+   "outgrowth": 235,
+   "pass": 197
+  },
+  "encounter.border.standing_the_line": {
+   "pass": 433
+  },
+  "encounter.border.the_garrisons_price": {
+   "outgrowth": 312,
+   "pass": 121
+  },
+  "rb.senior.ambush_raiders": {
+   "prerequisites_core": 223
+  },
+  "rb.senior.deep_scout": {
+   "prerequisites_core": 223
+  },
+  "rb.senior.map_unknown": {
+   "prerequisites_core": 223
+  },
+  "rb.elite.monster_hunt": {
+   "prerequisites_core": 223
+  },
+  "encounter.shadow_hunt": {
+   "outgrowth": 325
+  },
+  "encounter.grave_robbery": {
+   "outgrowth": 142
+  },
+  "encounter.scholar_aid": {
+   "outgrowth": 142,
+   "pass": 10
+  },
+  "encounter.tower_restoration": {
+   "outgrowth": 129,
+   "pass": 10
+  },
+  "encounter.delve_into_depths": {
+   "outgrowth": 119,
+   "pass": 21
+  },
+  "encounter.decipher_ancient_inscriptions": {
+   "pass": 140
+  },
+  "encounter.restless_spirits": {
+   "pass": 132
+  },
+  "encounter.salvage_operation": {
+   "outgrowth": 125,
+   "pass": 14
+  },
+  "encounter.seal_the_breach": {
+   "pass": 132
+  },
+  "encounter.dragons_challenge": {
+   "pass": 433
+  },
+  "encounter.arcane_cataclysm": {
+   "pass": 136
+  },
+  "encounter.test_the_seal": {
+   "outgrowth": 105,
+   "pass": 27
+  },
+  "encounter.tend_the_dead": {
+   "outgrowth": 118,
+   "pass": 20
+  },
+  "encounter.clear_the_rubble": {
+   "outgrowth": 129,
+   "pass": 10
+  },
+  "encounter.expedition_leadership": {
+   "outgrowth": 401,
+   "pass": 25
+  },
+  "encounter.wildcraft_shelter": {
+   "outgrowth": 394,
+   "pass": 30
+  },
+  "encounter.bridge_engineering": {
+   "outgrowth": 394,
+   "pass": 29
+  },
+  "encounter.hermits_wisdom": {
+   "outgrowth": 394,
+   "pass": 31
+  },
+  "encounter.rally_faithful": {
+   "outgrowth": 257,
+   "pass": 115
+  },
+  "encounter.smuggle_goods": {
+   "outgrowth": 391,
+   "pass": 6
+  },
+  "encounter.forge_construction": {
+   "outgrowth": 335,
+   "pass": 13
+  },
+  "encounter.merchant_caravan": {
+   "outgrowth": 398,
+   "pass": 11
+  },
+  "stone.permanence.mason_lord_wall": {
+   "pass": 392
+  },
+  "enc.courtyard_duel": {
+   "pass": 344
+  },
+  "enc.brink_rescue": {
+   "pass": 336
+  },
+  "enc.letters_of_introduction": {
+   "pass": 365
+  },
+  "reputation.iron.warlords_tribute": {
+   "pass": 396
+  },
+  "reputation.shadow.shadow_court_audience": {
+   "pass": 391,
+   "reputation_trait_gate": 6
+  },
+  "reputation.gold.the_merchants_favor": {
+   "pass": 396
+  },
+  "reputation.shadow.the_infiltrators_approach": {
+   "pass": 397
+  },
+  "reputation.power.the_renowned_duel": {
+   "pass": 396
+  },
+  "reputation.iron.the_executioners_commission": {
+   "pass": 396
+  },
+  "reputation.gold.the_unmarked_crossing": {
+   "pass": 396
+  },
+  "encounter.diplomats_maze": {
+   "outgrowth": 103,
+   "pass": 9
+  },
+  "ac.join": {
+   "outgrowth": 7,
+   "prerequisites_core": 5
+  },
+  "encounter.temple_expansion": {
+   "outgrowth": 309,
+   "pass": 47
+  },
+  "encounter.spirit_walk": {
+   "pass": 70,
+   "outgrowth": 125
+  },
+  "encounter.sacred_offering": {
+   "pass": 70,
+   "outgrowth": 125
+  },
+  "encounter.pilgrimage_trial": {
+   "pass": 79,
+   "outgrowth": 116
+  },
+  "encounter.sacred_text_study": {
+   "pass": 230
+  },
+  "encounter.mystical_vision_quest": {
+   "pass": 195
+  },
+  "encounter.warlords_crucible": {
+   "outgrowth": 92,
+   "pass": 5
+  },
+  "encounter.war_trophy": {
+   "outgrowth": 121,
+   "pass": 7
+  },
+  "encounter.militia_aid": {
+   "outgrowth": 92,
+   "pass": 5
+  },
+  "encounter.siege_defense_planning": {
+   "pass": 97
+  },
+  "encounter.prisoner_interrogation": {
+   "pass": 99
+  },
+  "encounter.fortification_engineering": {
+   "pass": 100
+  },
+  "encounter.inspect_the_armoury": {
+   "outgrowth": 92,
+   "pass": 5
+  },
+  "rb.elite.frontier_defense": {
+   "prerequisites_core": 97
+  },
+  "ts.join": {
+   "outgrowth": 7,
+   "prerequisites_core": 4,
+   "pass": 2
+  },
+  "ag.join": {
+   "outgrowth": 14,
+   "pass": 2
+  },
+  "mct.join": {
+   "outgrowth": 6
+  },
+  "encounter.foreign_trader": {
+   "outgrowth": 6
+  },
+  "encounter.pirate_raid": {
+   "outgrowth": 5,
+   "pass": 1
+  },
+  "rb.join": {
+   "outgrowth": 6
+  },
+  "hod.join": {
+   "outgrowth": 14,
+   "prerequisites_core": 5
+  },
+  "tg.join": {
+   "outgrowth": 1
+  }
+ }
+}

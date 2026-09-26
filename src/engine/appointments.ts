@@ -59,6 +59,7 @@ import { getAgentLocationId } from './graphQueries';
 import {
   APPOINTMENT_AMBITION_MARGIN_TICKS,
   APPOINTMENT_FAVOUR_MAGNITUDE,
+  APPOINTMENT_HEX_TICKS_PER_HEX,
   APPOINTMENT_LEAVE_MARGIN_TICKS,
   APPOINTMENT_MAX_PER_MORTAL,
   APPOINTMENT_PRUDENCE_MARGIN_TICKS,
@@ -167,6 +168,13 @@ export function computeAppointmentSlack(
   const fromId = appointmentPlaceLocationId(graph, hereId) ?? hereId;
   const path = findShortestPath(graph, agentId, fromId, destinationId);
   if (!path || !Number.isFinite(path.totalCost)) {
+    // THR-1560: an off-graph place (a lair) is walked by the journey queuer's hex
+    // fallback, so an appointment that says so is priced the same way. Every other
+    // appointment keeps THR-1479's rule: no road is unreachable.
+    if (appointment.pricedByHex) {
+      const travelTicks = hexDistance(hereHex, placeHex) * APPOINTMENT_HEX_TICKS_PER_HEX;
+      return { slack: appointment.dueTick - tick - travelTicks, travelTicks, atPlace: false, placeHex };
+    }
     return { slack: -Infinity, travelTicks: Infinity, atPlace: false, placeHex };
   }
   const travelTicks = Math.max(0, path.totalCost);
@@ -236,9 +244,11 @@ export function resolveAppointmentContext(
 
 /**
  * Additive pull toward the appointment's place for one candidate hex — the second
- * term on the relocation channel. `W / (1 + hexDistance)`, the same shape and
- * fail-soft contract as `computeRelocationIntentBonus`. `0` outside the leaning and
- * departing regimes, so every pre-THR-1479 score is recovered term for term.
+ * term on the relocation channel. `W × pullMult / (1 + hexDistance)`, the same shape
+ * and fail-soft contract as `computeRelocationIntentBonus`. `0` outside the leaning
+ * and departing regimes, so every pre-THR-1479 score is recovered term for term.
+ * `pullMult` rides the planted appointment (THR-1560, the hunt's lever); an absent or
+ * non-finite one reads as 1, so every other appointment is unchanged.
  */
 export function computeAppointmentPull(
   context: AppointmentContext | null | undefined,
@@ -248,7 +258,9 @@ export function computeAppointmentPull(
   if (!context || entryCol === undefined || entryRow === undefined) return 0;
   if (context.regime !== 'leaning' && context.regime !== 'departing') return 0;
   const dist = hexDistance(context.slack.placeHex, { col: entryCol, row: entryRow });
-  return APPOINTMENT_PULL_WEIGHT / (1 + dist);
+  const mult = context.appointment.pullMult;
+  const pullMult = typeof mult === 'number' && Number.isFinite(mult) && mult >= 0 ? mult : 1;
+  return APPOINTMENT_PULL_WEIGHT * pullMult / (1 + dist);
 }
 
 /** Read the memoised regime off the agent node; `null` when none traced yet. */
@@ -283,6 +295,11 @@ export interface PlantAppointmentInput {
   /** The unresolved ref, for the refused trace — what the author wrote, not what failed to bind. */
   readonly authoredPlaceRef?: string;
   readonly source: NonNullable<AppointmentPlantedTrace['source']>;
+  /** The payoff's flags (THR-1560), carried onto the planted appointment. */
+  readonly inheritSiteAsTarget?: boolean;
+  readonly pullMult?: number;
+  readonly requirePlace?: boolean;
+  readonly pricedByHex?: boolean;
 }
 
 export type PlantAppointmentResult =
@@ -336,7 +353,13 @@ export function plantAppointmentPromise(input: PlantAppointmentInput): PlantAppo
         [APPOINTMENT_FAVOUR_PROP]: { seedId, locationId: placeId, dueTick },
       },
     });
-    planted = { locationId: placeId, dueTick, windowTicks, counterpartyId, missed, favourEdgeId };
+    planted = {
+      locationId: placeId, dueTick, windowTicks, counterpartyId, missed, favourEdgeId,
+      ...(input.inheritSiteAsTarget ? { inheritSiteAsTarget: true } : {}),
+      ...(input.pullMult !== undefined ? { pullMult: input.pullMult } : {}),
+      ...(input.requirePlace ? { requirePlace: true } : {}),
+      ...(input.pricedByHex ? { pricedByHex: true } : {}),
+    };
   }
 
   const placeName = placeId ? graph.getNode(placeId)?.name ?? placeId : input.authoredPlaceRef ?? input.placeId ?? '(unbound)';
@@ -347,8 +370,11 @@ export function plantAppointmentPromise(input: PlantAppointmentInput): PlantAppo
     templateId: input.templateId,
     source,
     refused,
+    ...(refused && input.requirePlace ? { seedWithheld: true } : {}),
     summary: refused
-      ? `Appointment refused (${refused}): "${input.seedLabel}" planted placeless for ${targetAgentId}`
+      ? input.requirePlace
+        ? `Appointment refused (${refused}): "${input.seedLabel}" not planted for ${targetAgentId} — the meeting needs its place`
+        : `Appointment refused (${refused}): "${input.seedLabel}" planted placeless for ${targetAgentId}`
       : `Appointment planted: ${targetAgentId} at ${placeName} by tick ${dueTick} (window ${windowTicks}) — "${input.seedLabel}"`,
   });
 
