@@ -44,6 +44,7 @@ import { isImmuneToAnyTag } from './effects/effectQueries';
 import { raiseConditionLanded, raiseConditionHealed } from './effects/conditionProxyEvents';
 import {
   applyConditionToActor,
+  refuseByConditionGuard,
   CONDITION_DEFAULT_INTENSITY,
   CONDITION_DEFAULT_DURATION_TICKS,
 } from './effects/conditionApplier';
@@ -2307,6 +2308,22 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
+        if (!conditionResult.applied && conditionResult.reason === 'prevent_loss') {
+          // THR-1625: a condition loss-guard refused it.
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition',
+            effectDetail: {
+              targetId: resolvedId, conditionTraitId: effect.conditionTraitId,
+              guardAttachmentId: conditionResult.guardAttachmentId, guardConsumed: conditionResult.guardConsumed,
+            },
+            success: false, failReason: 'prevent_loss',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `apply_condition[${i}] blocked: warded by ${conditionResult.guardAttachmentName}${conditionResult.guardConsumed ? ' (spent)' : ''}`,
+          });
+          break;
+        }
         break;
       }
 
@@ -2542,6 +2559,23 @@ export function applyEncounterAftermathReaction(
             success: false, failReason: 'tag_immunity',
             effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `condition_attachment[${i}] blocked: target immune to ${caImmuneTag}`,
+          });
+          break;
+        }
+        // ── prevent_loss condition guard (THR-1625) ── same gate as the writer's.
+        const caGuard = refuseByConditionGuard(state, resolvedId, effect.templateId);
+        if (caGuard) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment',
+            effectDetail: {
+              targetId: resolvedId, templateId: effect.templateId,
+              guardAttachmentId: caGuard.attachmentId, guardConsumed: caGuard.consumeOnPrevent,
+            },
+            success: false, failReason: 'prevent_loss',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `condition_attachment[${i}] blocked: warded by ${caGuard.attachmentName}${caGuard.consumeOnPrevent ? ' (spent)' : ''}`,
           });
           break;
         }

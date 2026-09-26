@@ -12,8 +12,11 @@
  */
 
 import type { GameState } from '../../types/gameState';
-import { isImmuneToAnyTag } from './effectQueries';
-import { raiseConditionLanded } from './conditionProxyEvents';
+import type { ActivePreventLoss } from '../../types/effects';
+import { isImmuneToAnyTag, normalizeTag } from './effectQueries';
+import { isHarmfulCondition, raiseConditionLanded } from './conditionProxyEvents';
+import { buildPredicateContext, collectPreventLossEffects } from '../effectResolver';
+import { ATTACHMENT_EDGE_TYPES } from './effectWalker';
 
 /** Default intensity on apply_condition when the effect omits it. */
 export const CONDITION_DEFAULT_INTENSITY = 0.5;
@@ -44,15 +47,99 @@ export type ApplyConditionResult =
   | { readonly applied: true; readonly edgeId: string; readonly intensity: number; readonly durationTicks: number }
   | {
     readonly applied: false;
-    readonly reason: 'target_node_missing' | 'condition_template_missing' | 'tag_immunity';
+    readonly reason: 'target_node_missing' | 'condition_template_missing' | 'tag_immunity' | 'prevent_loss';
     readonly immuneTag?: string;
+    /** `prevent_loss` only (THR-1625): the attachment whose guard refused the condition. */
+    readonly guardAttachmentId?: string;
+    readonly guardAttachmentName?: string;
+    /** `prevent_loss` only: the guard was `consumeOnPrevent` and is now spent. */
+    readonly guardConsumed?: boolean;
   };
+
+/**
+ * Pick the condition loss-guard that refuses this condition (THR-1625), or null.
+ *
+ * `prevent_loss` on the `condition` channel had no reader until THR-1625, so every
+ * authored ward against conditions (Sap-Blessed's `#wound` guard, The Silent
+ * Testament's untagged guard) ran no check at all. Rules:
+ *   - Only a **harmful** condition (`#negative`) is guarded. A ward that stopped a
+ *     blessing would be a curse.
+ *   - A guard with tags matches when any of them is on the condition (compared via
+ *     `normalizeTag`, so `'#wound'` and `'wound'` are one tag).
+ *   - A guard with no tags guards every harmful condition.
+ * Guards arrive sorted by `collectPreventLossEffects` (largest amount, then id), so
+ * the choice is deterministic. `amount` has no meaning on this channel: a guard
+ * refuses the whole condition or none of it.
+ */
+function findConditionGuard(
+  state: GameState,
+  targetId: string,
+  conditionTraitId: string,
+  conditionTags: readonly string[],
+): ActivePreventLoss | null {
+  if (!isHarmfulCondition(state.graph, conditionTraitId)) return null;
+  const guards = collectPreventLossEffects(
+    state.graph, targetId, 'condition', buildPredicateContext(state.graph, targetId), state.effectStates,
+  );
+  if (guards.length === 0) return null;
+  const conditionTagSet = new Set(conditionTags.map(normalizeTag));
+  return guards.find(g => !g.tags || g.tags.length === 0 || g.tags.some(t => conditionTagSet.has(normalizeTag(t)))) ?? null;
+}
+
+/**
+ * Spend a `consumeOnPrevent` condition guard (THR-1625). Mirrors
+ * `phaseQuintessence.consumePreventLossAttachment`, with one difference: a trait is
+ * a shared definition node that every bearer's `has_trait` edge points at, so a
+ * spent trait guard removes only **this bearer's** edges to it — removing the node
+ * would strip the power from every bearer in the world. Artifacts and agreement
+ * edges are per-bearer and are removed outright. Fail-soft throughout.
+ */
+function consumeConditionGuard(state: GameState, targetId: string, attachmentId: string): void {
+  try {
+    const node = state.graph.getNode(attachmentId);
+    if (!node) {
+      // Edge-backed agreement: the attachment id is the edge id.
+      if (state.graph.getEdge(attachmentId)) state.graph.removeEdge(attachmentId);
+    } else if (node.type === 'trait') {
+      for (const edgeType of ATTACHMENT_EDGE_TYPES) {
+        for (const edge of state.graph.getOutgoingEdges(targetId, edgeType)) {
+          if (edge.target === attachmentId) state.graph.removeEdge(edge.id);
+        }
+      }
+      return; // the definition's runtime state is shared — leave it
+    } else {
+      state.graph.removeNode(attachmentId);
+    }
+  } catch {
+    // Fail-soft: an already-removed guard is already spent.
+  }
+  state.effectStates?.delete(attachmentId);
+}
+
+/**
+ * The condition loss-guard check as one call (THR-1625): find the guard that
+ * refuses this condition on this carrier, spend it if it is `consumeOnPrevent`, and
+ * return it — or null when the condition may land. `applyConditionToActor` runs it
+ * after tag immunity; the aftermath's `condition_attachment` path, which writes its
+ * own edge, runs it at the same point so both infliction sites honour the same wards.
+ */
+export function refuseByConditionGuard(
+  state: GameState,
+  targetId: string,
+  conditionTraitId: string,
+): ActivePreventLoss | null {
+  const conditionTags = (state.graph.getNode(conditionTraitId)?.properties.tags as string[] | undefined) ?? [];
+  const guard = findConditionGuard(state, targetId, conditionTraitId, conditionTags);
+  if (guard?.consumeOnPrevent) consumeConditionGuard(state, targetId, guard.attachmentId);
+  return guard;
+}
 
 /**
  * The one condition writer (THR-1539, fight-block plan doc §7). Lands a condition
  * trait on a carrier as a `has_trait` edge: refused when the carrier or the
- * condition is missing, or when the carrier is immune to one of the condition's
- * tags (THR-1242); otherwise written with a live `ticksRemaining` counter
+ * condition is missing, when the carrier is immune to one of the condition's
+ * tags (THR-1242), or when a `prevent_loss` condition guard refuses it
+ * (THR-1625, `reason: 'prevent_loss'`); otherwise written with a live `ticksRemaining` counter
  * (THR-761), then the `damaged` proxy is raised (THR-1244).
  *
  * Extracted from the aftermath's `apply_condition` case, which now delegates to
@@ -70,12 +157,22 @@ export function applyConditionToActor(
   if (!state.graph.getNode(targetId)) return { applied: false, reason: 'target_node_missing' };
   const conditionNode = state.graph.getNode(conditionTraitId);
   if (!conditionNode) return { applied: false, reason: 'condition_template_missing' };
-  const immuneTag = isImmuneToAnyTag(
-    state.graph, targetId,
-    (conditionNode.properties.tags as string[] | undefined) ?? [],
-    state.effectStates,
-  );
+  const conditionTags = (conditionNode.properties.tags as string[] | undefined) ?? [];
+  const immuneTag = isImmuneToAnyTag(state.graph, targetId, conditionTags, state.effectStates);
   if (immuneTag !== null) return { applied: false, reason: 'tag_immunity', immuneTag };
+
+  // THR-1625: the `condition` channel of `prevent_loss` — checked after immunity, so
+  // a bearer with both is refused by the immunity and keeps a consuming guard.
+  const guard = refuseByConditionGuard(state, targetId, conditionTraitId);
+  if (guard) {
+    return {
+      applied: false,
+      reason: 'prevent_loss',
+      guardAttachmentId: guard.attachmentId,
+      guardAttachmentName: guard.attachmentName,
+      guardConsumed: guard.consumeOnPrevent,
+    };
+  }
 
   const intensity = opts.intensity ?? CONDITION_DEFAULT_INTENSITY;
   const durationTicks = opts.durationTicks ?? CONDITION_DEFAULT_DURATION_TICKS;

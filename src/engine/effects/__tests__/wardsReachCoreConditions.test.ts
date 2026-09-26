@@ -118,8 +118,8 @@ describe('wound cures lift Wounded (THR-1569)', () => {
   });
 
   it('the Sap-Blessed wound ward now names a tag Wounded carries', () => {
-    // Content half only: the `condition` channel of `prevent_loss` has no reader yet
-    // (only `quintessence` is consumed), so this pins the tag match the reader will need.
+    // Content half: pins the tag match. The reader (THR-1625) is exercised end to
+    // end in `conditionLossGuards.test.ts`.
     const effects = (catalogNode('anomaly_sap_blessed').properties as { effects?: AttachmentEffect[] }).effects ?? [];
     const ward = effects.find(e => e.type === 'prevent_loss' && e.channel === 'condition');
     const woundedTags = (catalogNode(WOUNDED).properties as { tags?: string[] }).tags ?? [];
