@@ -67,7 +67,7 @@ describe('THR-1584 — mastery is permanent', () => {
   it('the decay switch is off and no reach-mastery definition carries a decay period', () => {
     expect(MASTERY_DECAY_ENABLED).toBe(false);
     for (const def of MASTERY_TRAIT_DEFINITIONS) {
-      expect((def.properties as TraitDefinitionProperties).decayPeriod, def.id).toBeUndefined();
+      expect((def.properties as unknown as TraitDefinitionProperties).decayPeriod, def.id).toBeUndefined();
     }
   });
 
