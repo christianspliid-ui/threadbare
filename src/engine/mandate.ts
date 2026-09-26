@@ -39,12 +39,21 @@ export function createMandateStateWith(
   };
 }
 
+/** Runtime context a condition may scope itself by (THR-1618). */
+export interface MandateConditionContext {
+  /** The tick the mandate was assigned — `MandateState.assignedTick`. */
+  assignedTick?: number;
+}
+
 /**
  * Evaluate a single mandate condition against the graph.
  *
  * Supported condition types:
  * - node_count: count nodes with specific edges matching criteria
- * - edge_count: count edges of a type
+ * - edge_count: count edges of a type. With `sinceMandateStart: true` only
+ *   edges stamped `properties.tick >= context.assignedTick` count — an edge with
+ *   no numeric `tick` (every worldgen edge) predates the mandate and is excluded
+ *   (THR-1618). Unscoped conditions keep counting every edge of the type.
  * - sphere_weight: check cosmology sphere dominance (future)
  * - actor_tier: check an actor's influence tier (future)
  * - custom: always false (placeholder for narrative mandates)
@@ -53,6 +62,7 @@ export function evaluateCondition(
   graph: WorldGraph,
   condition: MandateCondition,
   ascendantId: string,
+  context: MandateConditionContext = {},
 ): boolean {
   switch (condition.type) {
     case 'node_count': {
@@ -82,12 +92,20 @@ export function evaluateCondition(
     }
 
     case 'edge_count': {
-      const { edgeType, minCount } = condition.params as {
+      const { edgeType, minCount, sinceMandateStart } = condition.params as {
         edgeType: string;
         minCount: number;
+        sinceMandateStart?: boolean;
       };
-      const allEdges = graph.getAllEdges().filter(e => e.type === edgeType);
-      return allEdges.length >= minCount;
+      let edges = graph.getAllEdges().filter(e => e.type === edgeType);
+      if (sinceMandateStart) {
+        const since = context.assignedTick ?? 0;
+        edges = edges.filter(e => {
+          const t = e.properties.tick;
+          return typeof t === 'number' && t >= since;
+        });
+      }
+      return edges.length >= minCount;
     }
 
     case 'actor_tier': {
@@ -150,7 +168,9 @@ export function evaluateMandate(
     return { ...state, progress: 1.0 };
   }
 
-  const results = stageDef.conditions.map(c => evaluateCondition(graph, c, ascendantId));
+  const results = stageDef.conditions.map(c =>
+    evaluateCondition(graph, c, ascendantId, { assignedTick: state.assignedTick }),
+  );
   const metCount = results.filter(Boolean).length;
   const progress = metCount / stageDef.conditions.length;
 

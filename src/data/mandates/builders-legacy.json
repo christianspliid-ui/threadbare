@@ -14,10 +14,11 @@
       "conditions": [
         {
           "type": "edge_count",
-          "description": "Create at least 2 structures (constructed_by edges)",
+          "description": "Create at least 2 structures since the mandate began (constructed_by edges; worldgen structures do not count)",
           "params": {
             "edgeType": "constructed_by",
-            "minCount": 2
+            "minCount": 2,
+            "sinceMandateStart": true
           }
         }
       ]
@@ -31,7 +32,8 @@
           "description": "Create at least 5 structures",
           "params": {
             "edgeType": "constructed_by",
-            "minCount": 5
+            "minCount": 5,
+            "sinceMandateStart": true
           }
         }
       ]
@@ -45,7 +47,8 @@
           "description": "Create at least 8 structures",
           "params": {
             "edgeType": "constructed_by",
-            "minCount": 8
+            "minCount": 8,
+            "sinceMandateStart": true
           }
         }
       ]
