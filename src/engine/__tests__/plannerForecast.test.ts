@@ -150,13 +150,13 @@ describe('forecastStepExpectedUtility', () => {
   });
 
   it('exact success_at_cost: doubles in near-miss zone are excluded (threshold=44)', () => {
-    // capability=0.60, difficulty=0.15 → P=0.60-0.15=0.44999... (JS float) → threshold=44.
+    // THR-1581: capability=0.60, difficulty=0.567 → P=0.40+1.25×0.033=0.44125 → threshold=44.
     // Near-miss zone [39,44]: only doubles roll is 44 (critical_success), not success_at_cost.
     // So success_at_cost covers rolls {39,40,41,42,43} = 5 rolls, not 6.
-    const probs = forecastStepProbabilities(0.60, 0.15);
-    expect(probs.threshold).toBe(44); // verify precondition (0.60-0.15=0.44999... in JS float)
+    const probs = forecastStepProbabilities(0.60, 0.567);
+    expect(probs.threshold).toBe(44); // verify precondition
 
-    const eu = forecastStepExpectedUtility(0.60, 0.15, 1.0);
+    const eu = forecastStepExpectedUtility(0.60, 0.567, 1.0);
 
     // Hand-computed EU with exact pSuccessAtCost = 5/100:
     // pCritSuccess = 4/100 (doubles 11,22,33,44 ≤ 44)

@@ -5,7 +5,8 @@ import {
   accruePlayerReachPractice,
   getAscendantProgress,
 } from '../phaseAscendantProgression';
-import { computeCapability, computeTier } from '../domainCapability';
+// THR-1581: ascendant tiers read the pre-refit curve (a non-dice reader, TODO(THR-1580)).
+import { computeCapabilityPreRefit as computeCapability, computeTier } from '../domainCapability';
 import { createInitialAscendantBeatState } from '../ascendantBeat';
 import { deepeningBeatIdForReach, MILESTONE_COMPANY_BEAT_ID, MILESTONE_GATHERING_BEAT_ID } from '../../data/player-progression';
 import type { GameState } from '../../types/gameState';

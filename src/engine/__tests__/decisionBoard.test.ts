@@ -223,7 +223,11 @@ describe('forecastAdvanceProbability (contract: the board forecasts what the dic
     // the roll. That is correct behaviour rather than a dead term — but a test
     // written on that range would have reported this forecast as constant and been
     // right about the numbers while wrong about the system.
-    const realistic = [0.80, 0.85, 0.90, 0.95, 1.0];
+    //
+    // THR-1581 inverted that: the re-fitted curve spreads the protagonist range across
+    // ≈ 0.2–0.8 and the scale floors are retired, so 0.8–1.0 against 0.45 now sits on
+    // the 0.95 ceiling and the band that varies is the one real agents occupy today.
+    const realistic = [0.30, 0.40, 0.50, 0.60, 0.70];
     const byCapability = realistic.map(c => forecastAdvanceProbability(c, 0.45));
     expect(new Set(byCapability).size).toBe(realistic.length);
     // Monotone increasing in capability — the direction, not just the spread.
@@ -232,7 +236,7 @@ describe('forecastAdvanceProbability (contract: the board forecasts what the dic
     }
 
     // Difficulty likewise, swept over the authored range plus the escalation delta.
-    const byDifficulty = [0.45, 0.50, 0.55].map(d => forecastAdvanceProbability(0.95, d));
+    const byDifficulty = [0.45, 0.50, 0.55].map(d => forecastAdvanceProbability(0.60, d));
     expect(new Set(byDifficulty).size).toBe(3);
     for (let i = 1; i < byDifficulty.length; i++) {
       expect(byDifficulty[i]).toBeLessThan(byDifficulty[i - 1]);
@@ -243,7 +247,9 @@ describe('forecastAdvanceProbability (contract: the board forecasts what the dic
     // Pins the behaviour the test above documents, so a future change to
     // `MIN_PROBABILITY_BY_SCALE` or `FLOOR_UPGRADE_OUTCOME` surfaces here rather
     // than as a silently different board ranking for incapable actors.
-    const pinned = [0.1, 0.3, 0.5, 0.6].map(c => forecastAdvanceProbability(c, 0.45));
+    // THR-1581: the regional floor is the global PROBABILITY_FLOOR now, so only a
+    // truly incapable actor (P = 0.40 + 1.25 × (cap − 0.45) ≤ 0.05) is pinned.
+    const pinned = [0.0, 0.05, 0.1].map(c => forecastAdvanceProbability(c, 0.45));
     expect(new Set(pinned).size).toBe(1);
   });
 });
@@ -670,8 +676,17 @@ describe('computeBoardVarietyMultiplier', () => {
       scoreComponents: { varietyPenalty },
     }) as never;
 
+    // THR-1582: a capable actor (raw 40 in every reach), so the forecast window does
+    // not refuse both candidates and tie them at 0.
+    const capableActor = {
+      id: 'actor', type: 'actor',
+      properties: { domainCapabilities: Object.fromEntries(REACH_DOMAINS.map(r => [r, 40])) },
+    };
     const board = scoreUnifiedBoard({
-      graph: { getNode: () => null, getOutgoingEdges: () => [] } as never,
+      graph: {
+        getNode: (id: string) => (id === 'actor' ? capableActor : null),
+        getOutgoingEdges: () => [],
+      } as never,
       agentId: 'a',
       tick: 1,
       encounterCandidates: [],

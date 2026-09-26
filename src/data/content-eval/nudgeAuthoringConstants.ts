@@ -146,6 +146,15 @@ export const HAND_COMMON_OPTIONS_MIN = 1;
  *
  * Value is the `steep` band floor from `DIFFICULTY_WORD_BANDS`, so the rule reads
  * in the same vocabulary the author sees: "off-reach steps stay under `steep`".
+ *
+ * **THR-1581 (dice re-fit) re-measure: 0.45 stands.** The formula is now
+ * `p = ODDS_AT_PAR + ODDS_GAIN × (capability − difficulty) + modifiers` (0.40, 1.25).
+ * An unaided off-reach notable (raw 1–5, capability ≈ 0.09–0.12) still sits on the
+ * floor at this ceiling, but the measured 0.20 / 0.37 hands now lift it to
+ * ≈ 0.15–0.36, and a full 0.55 hand to ≈ 0.50 — the hand moves the forecast word at
+ * every typical size, which is the property the ceiling exists to protect. Flooring
+ * the cohort through a full hand would now take difficulty ≈ 0.84, deeper into
+ * `severe` than before, so the direction argument above holds with more margin.
  */
 export const NUDGE_OFF_REACH_MAX_DIFFICULTY = 0.45;
 
