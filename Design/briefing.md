@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-26 18:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-26 19:55 local (17:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,25 +25,21 @@ Everything from your four feedback batches is live. The one question: **are the 
 
 Say "veto <title>" to reverse any of these.
 
-## From Christian
-
-- **16:25 UTC, on faith and politics at game start** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)): *"This should be tunable for different scenarios. To begin let's go with something that allows us to test and see balance and interaction"*. Your words are now [on the ticket](https://linear.app/threadbare/issue/THR-1596). The design lane builds it as a world setting you can tune. It picks the first test setup and shows it under "Decided for you". You don't need to open a session for it. This was the last open question on [the living-world map](https://linear.app/threadbare/issue/THR-1589). Once the setup is picked, the map becomes build work.
-
 ## Queue
 
-**Healthy: 12 jobs are ready, none being built right now.** The builder lane picks the next one up at its next hourly run.
+**Healthy: 11 jobs are ready, none being built right now.** The builder lane picks the next one up at its next hourly run.
 
-- **Shipped this hour:** [a mortal's mastery is now permanent, and a graduate's mastery moves the dice](https://linear.app/threadbare/issue/THR-1584), via [#2076](https://github.com/christianspliid-ui/threadbare/pull/2076). It is live on the site.
+- **Shipped this hour:** [the Follow button now says it keeps a mortal in close view](https://linear.app/threadbare/issue/THR-1573), via [#2077](https://github.com/christianspliid-ui/threadbare/pull/2077). It is live on the site.
 - **Fight system: nearly ready, but not yet ready for you to review.** Everything is live except [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554), which are queued.
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620) and [the item generator build](https://linear.app/threadbare/issue/THR-1570) have no priority set.
 
 ## Health
 
-- **The long simulation tests are red on the latest `main`** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/36255812895)). The failures are three army and company hand-over checks in `peopleThingsCells.test.ts`, after [#2076](https://github.com/christianspliid-ui/threadbare/pull/2076). These checks also went red at 14:58 UTC and then green again, so they may be flaky. This is builder work, not yours.
+- **The long simulation tests are red on `main` for the second merge in a row** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/36259035477), [previous](https://github.com/christianspliid-ui/threadbare/actions/runs/36255812895)). The same three army and company hand-over checks in `peopleThingsCells.test.ts` fail each time, so this looks like a real break, not a flake. It was already red before [#2077](https://github.com/christianspliid-ui/threadbare/pull/2077), which only changed button text. This is builder work, not yours.
 - **Lane silence:** the worst recent gap is still 21 hours, from Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
-  - The live site is serving the latest `main` (with #2076).
-  - Game speed is 76 ms per tick, 3% above the weekly median. That is normal.
+  - The live site is serving the latest `main` (with #2077).
+  - Game speed is 79 ms per tick, 7% above the weekly median. That is normal.
   - All ten scheduled lanes are on time.
-  - The worktree reaper last ran at 18:40 local. 5 worktrees are waiting to be sorted, which is routine.
+  - The worktree reaper last ran at 19:40 local. 5 worktrees are waiting to be sorted, which is routine.
   - No pull requests are waiting to merge. `main` is current.

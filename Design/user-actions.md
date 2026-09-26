@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 19:55 local (17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26: the Follow button now says it keeps a mortal in close view** ([THR-1573](https://linear.app/threadbare/issue/THR-1573)). Merged via [#2077](https://github.com/christianspliid-ui/threadbare/pull/2077), and live on the site.
 - **2026-09-26: you answered faith and politics at game start** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)). Your words: *"This should be tunable for different scenarios. To begin let's go with something that allows us to test and see balance and interaction"*. They are recorded on the ticket. It becomes a world setting you can tune. The design lane picks the first test setup and shows it to you under "Decided for you". This was the last open question on [the living-world map](https://linear.app/threadbare/issue/THR-1589).
 - **2026-09-26: a mortal's mastery is permanent, and a graduate's mastery moves the dice** ([THR-1584](https://linear.app/threadbare/issue/THR-1584)). Merged via [#2076](https://github.com/christianspliid-ui/threadbare/pull/2076), and live on the site.
 - **2026-09-26: the sheet and the skill line now say the same word for a mortal's reach** ([THR-1583](https://linear.app/threadbare/issue/THR-1583)). Merged via [#2075](https://github.com/christianspliid-ui/threadbare/pull/2075), and live on the site. This finishes the [fix for the dice reading every mortal as a master](https://linear.app/threadbare/issue/THR-1575).
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26: culture and Realm names never show a raw terrain code** ([THR-1622](https://linear.app/threadbare/issue/THR-1622)). Merged via [#2070](https://github.com/christianspliid-ui/threadbare/pull/2070), and live on the site.
 - **2026-09-26: a new trade route never ends at the town it starts from** ([THR-1619](https://linear.app/threadbare/issue/THR-1619)). Merged via [#2069](https://github.com/christianspliid-ui/threadbare/pull/2069), and live on the site.
 - **2026-09-26: you answered the dice question: "1 in 6 is fine"** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). Your words: *"follow the newer decisions, we learn and grow and evolve. 1 in 6 is fine."* and *"it doesnt have to be a rule, it is a constant we tweak as we search for a good game."*
-- **2026-09-26: The Builder's Legacy now counts only what was built after the mandate began** ([THR-1618](https://linear.app/threadbare/issue/THR-1618)). Merged via [#2068](https://github.com/christianspliid-ui/threadbare/pull/2068), and live on the site.
 
 ---
 
