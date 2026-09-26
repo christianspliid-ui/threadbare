@@ -2236,6 +2236,12 @@ const POWER: UndertakingObjectType = {
   // Sealing another's art is not property damage — nothing of theirs is rubble; a
   // thing was put *on* them, and the drive that answers it is the affliction's.
   harmOnDestroy: HARM_ON_AFFLICT,
+  eligibility: {
+    // THR-1617: only a caster may study. Refused at proposal, so a non-caster is never
+    // offered the cell; the completion-time check in `create` below stays as the
+    // backstop for a mortal who stops being a caster mid-project.
+    create: (graph, actorId) => (isCaster(graph, actorId) ? null : 'not_a_caster'),
+  },
   verbs: {
     /**
      * `create × Power` — a scholar learns a spell (THR-1429, THR-1397's tier-one work).

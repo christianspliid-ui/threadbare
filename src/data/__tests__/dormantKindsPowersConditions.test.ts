@@ -14,7 +14,10 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../engine/graph';
 import type { GameState } from '../../types/gameState';
+import { generateStrategicCandidates, profiledAmbitionIdsFor } from '../../engine/strategicActionCandidates';
+import { mulberry32 } from '../../lib/prng';
 import {
+  eligibilityRefusal,
   getUndertakingObjectType,
   resolveConditionSign,
   resolveObjectOwners,
@@ -524,6 +527,52 @@ describe('the three cells speak with their own voice', () => {
     const conditionLines = cellLineSet('create', 'condition').completion.join(' ');
     expect(conditionLines).not.toMatch(/stands|founded/);
     expect(conditionLines).toMatch(/\{owner\}/);
+  });
+});
+
+// ─── THR-1617 — refused at proposal, not after the work ─────────────
+
+describe('THR-1617 — a non-caster is refused on the board, not at completion', () => {
+  const CELL = 'cell.create.power';
+  // Scoped to the one cell, so the rotation and the per-actor cap cannot hide it.
+  const review = { templateId: CELL, bypass: new Set<never>(), preferOwnedTarget: false };
+
+  function boardFor(graph: WorldGraph, actorId: string) {
+    graph.addNode({ id: 'town', name: 'town', type: 'location', properties: { locationSubtype: 'town', hexCol: 0, hexRow: 0 } });
+    graph.addEdge({ id: `at_${actorId}`, source: actorId, target: 'town', type: 'located_at', properties: {} });
+    return generateStrategicCandidates(
+      graph, actorId, ['ambition_arcane_enlightenment'], undefined, 1, mulberry32(7), review, 'cells',
+    );
+  }
+
+  it('the premise: the ambition walks the cell', () => {
+    // Without this, both arms below could pass on a walk that never reached the cell.
+    expect(profiledAmbitionIdsFor(CELL, 'cells')).toContain('ambition_arcane_enlightenment');
+  });
+
+  it('refuses a non-caster by name — `ineligible:not_a_caster`', () => {
+    const graph = seededGraph();
+    addMortal(graph, 'farmer', { npcRole: 'brewer' });
+    const board = boardFor(graph, 'farmer');
+    expect(board.candidates.filter(c => c.templateId === CELL)).toHaveLength(0);
+    expect(board.rejections).toContainEqual({ templateId: CELL, reason: 'ineligible:not_a_caster:farmer' });
+  });
+
+  it('offers the cell to a caster', () => {
+    const graph = seededGraph();
+    addCaster(graph, 'scholar');
+    const board = boardFor(graph, 'scholar');
+    expect(board.rejections.filter(r => r.reason.startsWith('ineligible:'))).toHaveLength(0);
+    expect(board.candidates.some(c => c.templateId === CELL)).toBe(true);
+  });
+
+  it('the hook answers exactly what the completion backstop answers', () => {
+    const graph = seededGraph();
+    addMortal(graph, 'farmer', { npcRole: 'brewer' });
+    addCaster(graph, 'scholar');
+    const handle = { kind: 'node', nodeId: 'farmer' } as const;
+    expect(eligibilityRefusal(graph, POWER, 'create', 'farmer', handle)).toBe('not_a_caster');
+    expect(eligibilityRefusal(graph, POWER, 'create', 'scholar', { kind: 'node', nodeId: 'scholar' })).toBeNull();
   });
 });
 
