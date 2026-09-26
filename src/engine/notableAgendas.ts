@@ -32,7 +32,7 @@ import {
   ARMY_SPAWN_GOLD_TIER_MIN,
   MAX_ARMIES_PER_FACTION,
 } from '../types/army';
-import { computeCapability, computeTier } from './domainCapability';
+import { computeCapabilityPreRefit, computeTier } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import type {
   NotableAgendaLaunchedTrace,
@@ -500,13 +500,15 @@ function raiseCampaignArmy(
     if (graph.getNode(edge.source)?.properties.armyState) existingArmyCount++;
   }
   if (existingArmyCount >= MAX_ARMIES_PER_FACTION) return;
-  const goldTier = computeTier(computeCapability(graph, factionId, 'gold'));
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const goldTier = computeTier(computeCapabilityPreRefit(graph, factionId, 'gold'));
   if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return;
 
   // The notable commands in person when iron-capable and not already
   // commanding; otherwise their best marshal leads in their name.
   let commanderId: string | null = null;
-  const notableIronTier = computeTier(computeCapability(graph, notableId, 'iron'));
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const notableIronTier = computeTier(computeCapabilityPreRefit(graph, notableId, 'iron'));
   const alreadyCommanding = graph.getIncomingEdges(notableId, 'commanded_by').length > 0;
   if (notableIronTier >= ARMY_SPAWN_IRON_TIER_MIN && !alreadyCommanding) {
     commanderId = notableId;

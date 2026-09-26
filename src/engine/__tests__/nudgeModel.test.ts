@@ -928,8 +928,12 @@ describe('golden exemplar — authoring checklist (locked THR-883 format)', () =
 // write-up: Docs/audits/2026-07-27-thr-821-nudge-headroom.md.
 
 describe('nudge reachability against the probability floor (THR-821)', () => {
-  const SIGMOID_MIDPOINT = 10;
-  const SIGMOID_K = 0.4;
+  // THR-1581: the re-fitted curve (was midpoint 10 / k 0.4) and the formula
+  // P = 0.40 + 1.25 × (capability − difficulty) + modifiers. Literal here on purpose —
+  // re-deriving from the exported constants would assert only that arithmetic is
+  // arithmetic.
+  const SIGMOID_MIDPOINT = 30;
+  const SIGMOID_K = 0.08;
   const capabilityOf = (raw: number) => 1 / (1 + Math.exp(-SIGMOID_K * (raw - SIGMOID_MIDPOINT)));
 
   /** Raw scores a notable-tier mortal can carry in an off (non-primary/secondary) reach. */
@@ -954,22 +958,27 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
    */
   const FULL_NON_TRAIT_HAND_DELTA = 0.55;
 
-  it('floors an off-reach notable mortal at NUDGE_OFF_REACH_MAX_DIFFICULTY, across a typical playable subset', () => {
+  it('floors an unaided off-reach notable mortal at NUDGE_OFF_REACH_MAX_DIFFICULTY, and any typical hand lifts it', () => {
+    // THR-1581 re-measure: on the old `cap − diff` dice the measured 0.20 / 0.37
+    // subsets stayed floored; with ODDS_GAIN 1.25 and par 0.40 an unaided off-reach
+    // mortal still sits on the floor at the ceiling, but every typical hand now moves
+    // the forecast off it — the hand is never decorative at this ceiling.
     expect(offReachRaws.length).toBeGreaterThan(0);
 
     for (const raw of offReachRaws) {
       const capability = capabilityOf(raw);
-      for (const modifiers of [0, 0.20, MEASURED_SUBSET_DELTA]) {
-        const p = computeResolutionThreshold({
-          capability,
-          difficulty: NUDGE_OFF_REACH_MAX_DIFFICULTY,
-          actionModifiers: modifiers,
-        } as Parameters<typeof computeResolutionThreshold>[0]);
+      const pAt = (modifiers: number) => computeResolutionThreshold({
+        capability,
+        difficulty: NUDGE_OFF_REACH_MAX_DIFFICULTY,
+        actionModifiers: modifiers,
+      } as Parameters<typeof computeResolutionThreshold>[0]);
 
+      expect(pAt(0), `raw=${raw} capability=${capability.toFixed(3)} unaided`).toBe(PROBABILITY_FLOOR);
+      for (const modifiers of [0.20, MEASURED_SUBSET_DELTA]) {
         expect(
-          p,
-          `raw=${raw} capability=${capability.toFixed(3)} mods=${modifiers} → p=${p}`,
-        ).toBe(PROBABILITY_FLOOR);
+          pAt(modifiers),
+          `raw=${raw} capability=${capability.toFixed(3)} mods=${modifiers}`,
+        ).toBeGreaterThan(PROBABILITY_FLOOR);
       }
     }
   });
@@ -986,7 +995,8 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
     // Expected probabilities are literals, not re-derived from the same
     // capability/difficulty expressions under test — a constant used on both
     // sides would assert only that arithmetic is arithmetic.
-    const expected = [0.1266, 0.1392, 0.1573, 0.1832, 0.2192];
+    // THR-1581 re-measure (was 0.1266 … 0.2192 on the old dice).
+    const expected = [0.4994, 0.5078, 0.5168, 0.5263, 0.5365];
     expect(offReachRaws).toEqual([1, 2, 3, 4, 5]);
 
     offReachRaws.forEach((raw, i) => {
@@ -1002,8 +1012,8 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
   });
 
   it('cannot be retuned downward to keep that cohort floored — difficulty sits on the floor\'s side (THR-831)', () => {
-    // The verdict this ticket recorded. `p = capability − difficulty +
-    // modifiers`, so *lowering* the ceiling raises p. "Lower it until 0.55 no
+    // The verdict this ticket recorded. `p = par + gain × (capability − difficulty)
+    // + modifiers` (THR-1581), so *lowering* the ceiling raises p. "Lower it until 0.55 no
     // longer clears" is backwards, and pinning that here is what stops the
     // question being re-filed against the same arithmetic.
     const strongest = capabilityOf(
@@ -1024,8 +1034,9 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
 
     // The only difficulty that would floor it is *above* the ceiling, and above
     // the `severe` band floor (0.60) that open-draw content is kept out of.
-    const requiredToFloor = strongest + FULL_NON_TRAIT_HAND_DELTA - PROBABILITY_FLOOR;
-    expect(requiredToFloor).toBeCloseTo(0.6192, 3);
+    // THR-1581: solve 0.40 + 1.25 × (cap − d) + 0.55 = 0.05 for d (was 0.6192).
+    const requiredToFloor = strongest + (0.40 + FULL_NON_TRAIT_HAND_DELTA - PROBABILITY_FLOOR) / 1.25;
+    expect(requiredToFloor).toBeCloseTo(0.8392, 3);
     expect(requiredToFloor).toBeGreaterThan(NUDGE_OFF_REACH_MAX_DIFFICULTY);
     // `toBeCloseTo`, not `toBe`: this difficulty is the exact crossover, so the
     // clamp lands on the floor to within float residue rather than on it.

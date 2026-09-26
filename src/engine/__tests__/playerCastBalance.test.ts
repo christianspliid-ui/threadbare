@@ -27,6 +27,14 @@
  * statement about this engine and is still worth pinning; what changed is that nothing
  * now reports it to the player as a per-template risk. The card-face contract lives in
  * `playerCastReadout.test.ts`.
+ *
+ * **THR-1581 (dice re-fit, 2026-09-26) re-verdicted this file.** The forecast-window
+ * ruling (THR-1575) retired the scale floors for mortals and gods alike, so the
+ * "difficulty is inert" pin went red exactly as it was written to, and now pins the
+ * opposite property: authored difficulty bites at every scale. The capability and
+ * texture numbers below are re-measured on the re-fitted curve. Finding recorded
+ * for the balance pass, not re-tuned here: a fresh god's raw 6–9 sits in the curve's
+ * flat low tail, so the affinity spread narrows from 0.168 → 0.354 to 0.128 → 0.152.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { resolveUncontestedStep } from '../unifiedActionResolution';
@@ -275,9 +283,10 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
     const secondary = castReadout(0.35, 'local', AFFINITY_SECONDARY).capability;
     const primary = castReadout(0.35, 'local', AFFINITY_PRIMARY).capability;
 
-    expect(offDomain).toBeCloseTo(0.168, 3);
-    expect(secondary).toBeCloseTo(0.231, 3);
-    expect(primary).toBeCloseTo(0.354, 3);
+    // THR-1581: re-measured on the re-fitted curve (was 0.168 / 0.231 / 0.354).
+    expect(offDomain).toBeCloseTo(0.128, 3);
+    expect(secondary).toBeCloseTo(0.137, 3);
+    expect(primary).toBeCloseTo(0.152, 3);
 
     // The reach ordering is the whole reason the affinity term exists.
     expect(primary).toBeGreaterThan(secondary);
@@ -296,8 +305,9 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
     expect(d.share('success_at_cost')).toBeGreaterThan(0.55);
     expect(d.share('success_at_cost')).toBeLessThan(0.75);
 
-    // Measured 0.280 — a clean landing has to stay a real outcome, not a rumour.
-    expect(d.share('success')).toBeGreaterThan(0.20);
+    // Measured 0.280; 0.195 on the re-fitted dice (THR-1581, primary P ≈ 0.28) — a
+    // clean landing has to stay a real outcome, not a rumour.
+    expect(d.share('success')).toBeGreaterThan(0.15);
     expect(d.share('success')).toBeLessThan(0.40);
 
     // Measured 0.030 — a surge is an event, so it stays scarce.
@@ -425,34 +435,23 @@ describe('THR-1002 — the card word equals the roll it forecasts', () => {
 
 // ─── The finding the verdict rests on — deliberately pinned (THR-998) ───────
 
-describe('THR-766 — authored difficulty is inert where players actually cast (THR-998)', () => {
-  it('resolves the same probability across the whole difficulty range at local and personal scale', () => {
-    // `applyScaleDifficultyAdjust` clamps difficulty to
-    //   max(0, capability + sphereFactor + mods - MIN_PROBABILITY_BY_SCALE[scale])
-    // and a fresh god's capability (0.354 at best) is below both the `personal`
-    // floor (0.70) and the `local` floor (0.65) — so that expression is 0 and every
-    // authored difficulty resolves identically. Together these two scales are 85%
-    // of the slot list.
+describe('THR-766 — authored difficulty bites where players actually cast (THR-998, re-verdicted by THR-1581)', () => {
+  it('resolves a strictly worse probability for a dearer price at local and personal scale', () => {
+    // This used to pin the opposite: `applyScaleDifficultyAdjust` capped difficulty
+    // to `capability − MIN_PROBABILITY_BY_SCALE[scale]`, a fresh god sat below the
+    // 0.70 / 0.65 floors, and every authored price resolved identically. It was
+    // written to go red — and be re-verdicted — the day authored difficulty bit at
+    // these scales. THR-1581 is that day: the floors are `PROBABILITY_FLOOR` for
+    // every scale and the cap is switched off, so the price moves the odds until the
+    // global floor.
     //
-    // This asserts a real property of the engine, and THR-998 (shipped 2026-08-12)
-    // deliberately did not change it — see the file header. The defect was never the
-    // flatness; it was the *card* differentiating on a price the flatness had already
-    // discarded. So keep this green and keep it honest: if a future change makes
-    // authored difficulty bite at these scales, this test should go red and be
-    // re-verdicted, because that is a balance change to `MIN_PROBABILITY_BY_SCALE`
-    // (direction 3) reaching mortal resolution as well.
-    //
-    // THR-1000: the probability read is pre-roll, so each cell needs one resolution
-    // rather than 400. The assertion is unchanged — same four difficulties, same two
-    // scales, same set-collapse — but the eight cells cost eight casts instead of
-    // 3200, which is what put this test 13% over the vitest default and blocked PR
-    // #1313. The width of the difficulty range is the point of the property and is
-    // deliberately not narrowed to buy time.
+    // THR-1000: the probability read is pre-roll, so each cell needs one resolution.
     for (const scale of ['local', 'personal'] as ActionScale[]) {
-      const probabilities = [0.06, 0.25, 0.5, 1.0].map(
+      const probabilities = [0.06, 0.25, 0.5].map(
         (d) => castReadout(d, scale, AFFINITY_PRIMARY).probability,
       );
-      expect(new Set(probabilities).size).toBe(1);
+      expect(probabilities[0]).toBeGreaterThan(probabilities[1]);
+      expect(probabilities[1]).toBeGreaterThan(probabilities[2]);
     }
   });
 

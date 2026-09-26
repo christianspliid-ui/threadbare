@@ -17,6 +17,7 @@ import {
   runFightCalibration,
   type FightCalibrationReport,
 } from '../fightCalibration';
+import { ODDS_AT_PAR, ODDS_GAIN } from '../../engine/resolutionService';
 
 describe('fight calibration against THR-1531 (Major elite × bold guard)', () => {
   let report: FightCalibrationReport;
@@ -25,9 +26,11 @@ describe('fight calibration against THR-1531 (Major elite × bold guard)', () =>
     report = runFightCalibration(FIGHT_CALIBRATION_FIGHTS);
   });
 
-  it('stamps the fixture fighter to the row\'s profile', () => {
-    expect(report.fighterCapability.clash).toBeGreaterThan(0.99);
-    expect(report.fighterCapability.nerve).toBeCloseTo(0.89, 2);
+  it('stamps the fixture fighter to the row odds (THR-1581: odds preserved, not capability)', () => {
+    // A steep step (0.50) rolled 0.999 − 0.50 = 0.499 and 0.89 − 0.50 = 0.39 before
+    // modifiers on `main`; the re-stamp rolls the same on the re-fitted dice.
+    expect(ODDS_AT_PAR + ODDS_GAIN * (report.fighterCapability.clash - 0.5)).toBeCloseTo(0.499, 2);
+    expect(ODDS_AT_PAR + ODDS_GAIN * (report.fighterCapability.nerve - 0.5)).toBeCloseTo(0.39, 2);
   });
 
   it.each(FIGHT_CALIBRATION_CLASSES)('%s sits within ±10 points of the row', (cls) => {

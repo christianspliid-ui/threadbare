@@ -160,6 +160,8 @@ export type TraceCategory =
   // The one prioritization board (THR-1292 §4)
   | 'decision_board_comparison'
   | 'decision_board_error'
+  // The forecast window (THR-1582)
+  | 'engagement_decision'
   // Omen agenda traces (THR-19)
   | 'omen_selection'
   | 'omen_beat'
@@ -621,6 +623,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'calling_change',
   'decision_board_comparison',
   'decision_board_error',
+  'engagement_decision',
   'omen_selection',
   'omen_beat',
   // Mortal economy — resource stock tiers (THR-615)
@@ -1796,6 +1799,10 @@ export interface ScoringTrace extends TraceBase {
     expectedUtility?: number;
     /** THR-1579 — the engagement forecast `F`: P(the action ends in the success family). */
     engagementForecast?: number;
+    /** THR-1582 — the forecast window's multiplier on this candidate (already in `finalScore`). */
+    forecastFit?: number;
+    /** THR-1582 — where `engagementForecast` sat against the mortal's window. */
+    forecastZone?: 'refused' | 'below' | 'in' | 'above';
     /** Phase 4: Push benefit estimate (Q spend for better odds) */
     pushBenefit?: number;
     /** Phase 4: Resist benefit estimate (downgrade protection) */
@@ -2713,6 +2720,42 @@ export interface CallingChangeTrace extends TraceBase {
  * all. It is telemetry, never a gate — the cutover criteria are distributional
  * (see `BOARD_UNDERTAKING_SHARE_RANGE` and its siblings).
  */
+/**
+ * Trace: the forecast window's verdict on one agent decision (THR-1582, forecast
+ * window S4). One per decision that reached the board. Names every board candidate's
+ * engagement forecast `F`, the mortal's proficiency on its primary reach, the
+ * difficulty its steps demand, the fit and the zone — so "why did this mortal take
+ * that?" and "why did it idle?" are answerable from the trace alone (NFP #2).
+ * Read by `window.__DEBUG.getEngagementVerdicts`.
+ */
+export interface EngagementDecisionTrace extends TraceBase {
+  category: 'engagement_decision';
+  agentId: string;
+  /** Window edges after the personality and setback shifts. */
+  windowLow: number;
+  windowHigh: number;
+  courageLean: number;
+  consecutiveFailures: number;
+  setbackShift: number;
+  candidates: ReadonlyArray<{
+    kind: 'encounter' | 'undertaking';
+    /** Template id (encounter) or undertaking template id. */
+    id: string;
+    /** `F` — P(the action ends in the success family); per-checkpoint advance for an undertaking. */
+    forecast: number;
+    /** Capability on the primary reach (the dice curve). */
+    proficiency: number;
+    /** Mean demanded proficiency after the scale offset; NaN when unknown. */
+    difficulty: number;
+    fit: number;
+    zone: 'refused' | 'below' | 'in' | 'above';
+    exempt?: 'too_easy';
+  }>;
+  chosenId: string | null;
+  /** `in_window` — the winner's forecast was in the window; `best_available` — it was not; `idle` — nothing chosen. */
+  reason: 'in_window' | 'best_available' | 'idle';
+}
+
 export interface DecisionBoardComparisonTrace extends TraceBase {
   category: 'decision_board_comparison';
   agentId: string;
@@ -2743,6 +2786,10 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
      * than assert it exists.
      */
     heldTownAffinity?: number;
+    /** THR-1582 — the forecast window's multiplier on this entry (already in `score`). */
+    forecastFit?: number;
+    /** THR-1582 — where the entry's forecast sat against the mortal's window. */
+    forecastZone?: 'refused' | 'below' | 'in' | 'above';
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
@@ -3973,6 +4020,7 @@ export type TraceEntry =
   | MomentSurfaceTrace
   | CallingChangeTrace
   | DecisionBoardComparisonTrace
+  | EngagementDecisionTrace
   | DecisionBoardErrorTrace
   | StrategicWorldChangeTrace
   | StrategicControlLifecycleTrace

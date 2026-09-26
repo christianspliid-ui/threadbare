@@ -425,7 +425,12 @@ describe('agent_relocation — the reader, wired into scoreAndSelect', () => {
     const result = scoreAndSelect(entries, 'actor-hero', 'loc-home', state.graph, tick);
     const byId = (id: string) =>
       result.rankedCandidates.find(c => c.entry.templateId === id)?.finalScore ?? 0;
-    return { home: byId('at_home'), destination: byId('at_destination'), selected: result.selected };
+    const fitOf = (id: string) =>
+      result.rankedCandidates.find(c => c.entry.templateId === id)?.engagementFit ?? 1;
+    return {
+      home: byId('at_home'), destination: byId('at_destination'), selected: result.selected,
+      destinationFit: fitOf('at_destination'),
+    };
   };
 
   it('an intent re-ranks the encounter board toward the destination', () => {
@@ -460,7 +465,10 @@ describe('agent_relocation — the reader, wired into scoreAndSelect', () => {
     const withIntent = scoreOf(after, twinCandidates(), 50);
 
     // loc-far IS the destination hex, so the decayed pull is at its peak.
-    expect(withIntent.destination - before.destination).toBeCloseTo(RELOCATION_INTENT_SCORE_WEIGHT, 6);
+    // THR-1582: the forecast window multiplies the whole score, so an additive term lifts
+    // finalScore by term × engagementFit (the fit is the same with and without the term).
+    expect(withIntent.destination - before.destination)
+      .toBeCloseTo(RELOCATION_INTENT_SCORE_WEIGHT * withIntent.destinationFit, 6);
   });
 
   it('an expired intent leaves the board exactly as it was', () => {

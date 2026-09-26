@@ -592,45 +592,51 @@ describe('runFilterPipeline', () => {
 
 describe('filterByOutgrowth', () => {
   /**
-   * computeCapability sigmoid: 1 / (1 + e^(-0.4*(raw - 10)))
-   * raw=20 → cap ≈ 0.982 → scaled = 98.2
-   * raw=10 → cap = 0.5   → scaled = 50
-   * raw=5  → cap ≈ 0.119 → scaled = 11.9
-   * raw=4  → cap ≈ 0.075 → scaled = 7.5
+   * THR-1582 (forecast window S4) retired this filter by switch
+   * (`OUTGROWTH_FILTER_ENABLED = false`): the too-easy side of the engagement fit
+   * replaces it. The code is retained (NFP #6), so these tests drive it with the
+   * explicit `enabledOverride = true` and pin the re-fitted curve (THR-1581:
+   * midpoint 30, k 0.08).
    *
-   * OUTGROWTH_CAP_THRESHOLD = 35
-   * Outgrown when: capScaled - avgDifficulty >= 35
+   * raw=60 → cap ≈ 0.917 → scaled ≈ 92
+   * raw=20 → cap ≈ 0.310 → scaled ≈ 31
+   * raw=5  → cap ≈ 0.119 → scaled ≈ 12
+   *
+   * Outgrown when: capScaled − avgDifficultyScaled >= OUTGROWTH_CAP_THRESHOLD (55)
    */
 
-  it('filters out encounters when agent capability far exceeds difficulty (cap 98, diff 0.2 → gap 78 > 55)', () => {
-    // raw=20 → cap ≈ 0.982 → scaled ≈ 98; diff=0.2 → scaled=20 → gap=78 > 55 → outgrown
-    const graph = buildAgentGraph('agent-1', { iron: 20 });
+  it('is off by default — the engagement fit replaced it (THR-1582)', () => {
+    const graph = buildAgentGraph('agent-1', { iron: 60 });
     const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 })];
-    const result = filterByOutgrowth(entries, 'agent-1', graph);
+    expect(filterByOutgrowth(entries, 'agent-1', graph)).toHaveLength(1);
+  });
+
+  it('filters out encounters when agent capability far exceeds difficulty (cap 92, diff 0.2 → gap 72 > 55)', () => {
+    const graph = buildAgentGraph('agent-1', { iron: 60 });
+    const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 })];
+    const result = filterByOutgrowth(entries, 'agent-1', graph, true);
     expect(result).toHaveLength(0);
   });
 
-  it('does NOT filter encounters when agent capability is only slightly above difficulty (cap 50, diff 0.2 → gap 30 < 55)', () => {
-    // raw=10 → cap = 0.5 → scaled = 50; diff=0.2 → scaled=20 → gap=30 < 55 → not outgrown
-    const graph = buildAgentGraph('agent-1', { iron: 10 });
+  it('does NOT filter encounters when agent capability is only slightly above difficulty (cap 31, diff 0.2 → gap 11 < 55)', () => {
+    const graph = buildAgentGraph('agent-1', { iron: 20 });
     const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 })];
-    const result = filterByOutgrowth(entries, 'agent-1', graph);
+    const result = filterByOutgrowth(entries, 'agent-1', graph, true);
     expect(result).toHaveLength(1);
   });
 
   it('does NOT filter encounters when agent capability is low (cap 12, diff 0.2 → gap negative)', () => {
-    // raw=5 → cap ≈ 0.119 → scaled ≈ 11.9; diff=0.2 → scaled=20 → gap=-8 < 55 → not outgrown
     const graph = buildAgentGraph('agent-1', { iron: 5 });
     const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.2], stepCount: 1 })];
-    const result = filterByOutgrowth(entries, 'agent-1', graph);
+    const result = filterByOutgrowth(entries, 'agent-1', graph, true);
     expect(result).toHaveLength(1);
   });
 
   it('uses average difficulty across multiple steps', () => {
-    // raw=20 → cap ≈ 98; steps [0.6, 0.8] avg=0.7 → scaled=70 → gap=28 < 55 → NOT outgrown
-    const graph = buildAgentGraph('agent-1', { iron: 20 });
+    // raw=60 → cap ≈ 92; steps [0.6, 0.8] avg=0.7 → scaled=70 → gap=22 < 55 → NOT outgrown
+    const graph = buildAgentGraph('agent-1', { iron: 60 });
     const entries = [makeEntry({ reachPrimary: 'iron' as ReachDomain, stepDifficulties: [0.6, 0.8], stepCount: 2 })];
-    const result = filterByOutgrowth(entries, 'agent-1', graph);
+    const result = filterByOutgrowth(entries, 'agent-1', graph, true);
     expect(result).toHaveLength(1);
   });
 

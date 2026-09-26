@@ -21,6 +21,8 @@ import {
   isFailureOutcome,
   PROBABILITY_FLOOR,
   PROBABILITY_CEILING,
+  ODDS_AT_PAR,
+  ODDS_GAIN,
 } from '../resolutionService';
 import type { ResolutionInput } from '../../types/resolution';
 
@@ -41,16 +43,36 @@ function makeInput(overrides: Partial<ResolutionInput> = {}): ResolutionInput {
 // ─── Threshold Computation ──────────────────────────────────────────
 
 describe('computeResolutionThreshold', () => {
-  test('capability == difficulty → P near floor (no other bonuses)', () => {
-    // 0.5 + 0 - 0.5 + 0 + 0 = 0.0 → clamped to floor
+  // THR-1581: P = ODDS_AT_PAR + ODDS_GAIN × (capability − difficulty) + sphere + mods + nudge.
+  test('capability == difficulty → ODDS_AT_PAR (an even match is a gamble)', () => {
     const p = computeResolutionThreshold(makeInput({ capability: 0.5, difficulty: 0.5 }));
-    expect(p).toBeCloseTo(PROBABILITY_FLOOR, 2);
+    expect(p).toBeCloseTo(ODDS_AT_PAR, 5);
+    expect(p).toBeCloseTo(0.40, 5);
+  });
+
+  test('par holds at every level — only the gap moves the odds', () => {
+    for (const level of [0.1, 0.3, 0.7, 0.9]) {
+      expect(computeResolutionThreshold(makeInput({ capability: level, difficulty: level })))
+        .toBeCloseTo(ODDS_AT_PAR, 5);
+    }
   });
 
   test('high capability, low difficulty → high probability', () => {
-    const p = computeResolutionThreshold(makeInput({ capability: 0.8, difficulty: 0.1 }));
-    // 0.8 - 0.1 = 0.7
-    expect(p).toBeCloseTo(0.7, 2);
+    const p = computeResolutionThreshold(makeInput({ capability: 0.6, difficulty: 0.4 }));
+    // 0.40 + 1.25 × 0.2 = 0.65
+    expect(p).toBeCloseTo(0.65, 5);
+  });
+
+  test('skill separates: each point of gap is ODDS_GAIN points of chance', () => {
+    const lo = computeResolutionThreshold(makeInput({ capability: 0.4, difficulty: 0.5 }));
+    const hi = computeResolutionThreshold(makeInput({ capability: 0.6, difficulty: 0.5 }));
+    expect(hi - lo).toBeCloseTo(ODDS_GAIN * 0.2, 5);
+  });
+
+  test('modifiers stay outside the gain: +0.10 is +10 points', () => {
+    const base = computeResolutionThreshold(makeInput({ capability: 0.3, difficulty: 0.5 }));
+    const nudged = computeResolutionThreshold(makeInput({ capability: 0.3, difficulty: 0.5, actionModifiers: 0.1 }));
+    expect(nudged - base).toBeCloseTo(0.1, 5);
   });
 
   test('low capability, high difficulty → floor', () => {
@@ -61,23 +83,23 @@ describe('computeResolutionThreshold', () => {
 
   test('sphere factor and modifiers contribute', () => {
     const p = computeResolutionThreshold(makeInput({
-      capability: 0.5,
-      difficulty: 0.3,
+      capability: 0.3,
+      difficulty: 0.5,
       sphereFactor: 0.1,
       actionModifiers: 0.1,
     }));
-    // 0.5 + 0.1 - 0.3 + 0.1 = 0.4
-    expect(p).toBeCloseTo(0.4, 2);
+    // 0.40 + 1.25 × (0.3 − 0.5) + 0.1 + 0.1 = 0.35
+    expect(p).toBeCloseTo(0.35, 5);
   });
 
   test('influence nudge contributes', () => {
     const p = computeResolutionThreshold(makeInput({
-      capability: 0.6,
-      difficulty: 0.3,
+      capability: 0.3,
+      difficulty: 0.5,
       influenceNudge: 0.1,
     }));
-    // 0.6 - 0.3 + 0.1 = 0.4
-    expect(p).toBeCloseTo(0.4, 2);
+    // 0.40 + 1.25 × (0.3 − 0.5) + 0.1 = 0.25
+    expect(p).toBeCloseTo(0.25, 5);
   });
 
   test('ceiling clamp at 0.95', () => {
@@ -238,9 +260,11 @@ describe('forecast/live parity', () => {
 
 describe('test shapers', () => {
   test('upgrade a near-miss failure by one outcome step', () => {
+    // THR-1581: P = 0.40 + 1.25 × 0.12 − 0.05 = 0.50, so roll 53 misses by 3.
     const input = makeInput({
-      capability: 0.5,
-      difficulty: 0.0,
+      capability: 0.62,
+      difficulty: 0.5,
+      sphereFactor: -0.05,
       testShapers: [
         {
           sourceAttachmentId: 'artifact.duelist_token',
@@ -263,9 +287,11 @@ describe('test shapers', () => {
   });
 
   test('do not apply a shaper when the miss exceeds its max margin', () => {
+    // THR-1581: P = 0.40 + 1.25 × 0.12 − 0.05 = 0.50, so roll 53 misses by 3.
     const input = makeInput({
-      capability: 0.5,
-      difficulty: 0.0,
+      capability: 0.62,
+      difficulty: 0.5,
+      sphereFactor: -0.05,
       testShapers: [
         {
           sourceAttachmentId: 'artifact.duelist_token',
@@ -379,20 +405,20 @@ describe('edge cases', () => {
   // to come here and change the number, which is the point.
   describe('actionModifiers is not clamped (THR-827)', () => {
     test('a modifier far above the retired ±0.20 passes through in full', () => {
-      const base = { capability: 0.5, difficulty: 0.5, sphereFactor: 0 };
-      // 0.5 + 0 - 0.5 + 0.30 = 0.30. A ±0.20 clamp would have yielded 0.20.
-      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.30 }))).toBeCloseTo(0.30, 10);
-      // 0.5 + 0 - 0.5 + 0.80 = 0.80, still inside the ceiling — so the ceiling
+      const base = { capability: 0.1, difficulty: 0.5, sphereFactor: 0 };
+      // THR-1581: 0.40 + 1.25 × (0.1 − 0.5) + 0.30 = 0.20. A ±0.20 clamp would have yielded 0.10.
+      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.30 }))).toBeCloseTo(0.20, 10);
+      // −0.10 + 0.80 = 0.70, still inside the ceiling — so the ceiling
       // is not what is doing the work here.
-      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.80 }))).toBeCloseTo(0.80, 10);
+      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.80 }))).toBeCloseTo(0.70, 10);
     });
 
     test('the negative sign is equally unclamped', () => {
-      // 0.9 + 0 - 0.1 - 0.50 = 0.30. A ±0.20 clamp would have yielded 0.60.
+      // THR-1581: 0.40 + 1.25 × (0.7 − 0.5) − 0.50 = 0.15. A ±0.20 clamp would have yielded 0.45.
       const p = computeResolutionThreshold(
-        makeInput({ capability: 0.9, difficulty: 0.1, sphereFactor: 0, actionModifiers: -0.50 }),
+        makeInput({ capability: 0.7, difficulty: 0.5, sphereFactor: 0, actionModifiers: -0.50 }),
       );
-      expect(p).toBeCloseTo(0.30, 10);
+      expect(p).toBeCloseTo(0.15, 10);
     });
 
     test('only the summed result meets the clamp', () => {

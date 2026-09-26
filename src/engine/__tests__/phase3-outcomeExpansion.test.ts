@@ -351,11 +351,11 @@ describe('near-miss → near_miss step outcome (Phase 6)', () => {
       actorId: 'test',
       domain: 'heart',
       capability: 0.5,
-      difficulty: 0.3,
+      difficulty: 0.659,
       sphereFactor: 0,
       actionModifiers: 0,
     };
-    // threshold = cap + sphere - diff + mods = 0.5 - 0.3 = 0.20, clamped to 0.20
+    // THR-1581: threshold = 0.40 + 1.25 × (0.5 − 0.659) ≈ 0.201 → 20
     // Roll 18 → margin = 18 - 20 = -2 (near-miss, success)
     const result = resolveAction(input, () => 0, 18, 'unified_action');
     expect(result.outcome).toBe('success');

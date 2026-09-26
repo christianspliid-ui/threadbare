@@ -172,8 +172,9 @@ describe('scoreAndSelect — the term is folded into the score (THR-790)', () =>
     expect(after.locationTraitBonus).toBeCloseTo(term, 10);
     expect(term).toBeGreaterThan(0);
     // The term rides baseScore before the multipliers; both multipliers are 1 here
-    // (tier-1 location, no role affinity), so the lift is the term itself.
-    expect(after.finalScore - before.finalScore).toBeCloseTo(term, 6);
+    // (tier-1 location, no role affinity), so the lift is the term itself —
+    // scaled by the forecast window's fit (THR-1582), which the term does not move.
+    expect(after.finalScore - before.finalScore).toBeCloseTo(term * after.engagementFit, 6);
 
     const offBefore = scoreAndSelect([entryFor(OFF_ROW_TEMPLATE.id)], 'agent_1', 'loc_a', unmarked, 1).topCandidates[0];
     const offAfter = scoreAndSelect([entryFor(OFF_ROW_TEMPLATE.id)], 'agent_1', 'loc_a', marked, 1).topCandidates[0];

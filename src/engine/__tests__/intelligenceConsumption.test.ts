@@ -126,7 +126,10 @@ describe('scoreAndSelect — intelligence consumption', () => {
 
     const baseScore = baseline.rankedCandidates[0].finalScore;
     const boostedScore = withIntel.rankedCandidates[0].finalScore;
-    expect(boostedScore - baseScore).toBeCloseTo(INTEL_SCORING_BONUS, 5);
+    // THR-1582: the forecast window multiplies the whole score, so an additive term lifts
+    // finalScore by term × engagementFit (the fit is the same with and without the term).
+    expect(boostedScore - baseScore)
+      .toBeCloseTo(INTEL_SCORING_BONUS * withIntel.rankedCandidates[0].engagementFit, 5);
     expect(withIntel.rankedCandidates[0].intelBonus).toBeCloseTo(INTEL_SCORING_BONUS, 5);
     expect(baseline.rankedCandidates[0].intelBonus).toBe(0);
   });

@@ -425,6 +425,11 @@
         <li>Runtime tracing is deliberately absent for the read path (pure predicates, ring-buffer discipline). Unresolvable refs warn once and evaluate false rather than throwing — the tick loop never crashes on a bad ref.</li>
       </ul>
 
+      <h3>Capability reads after the dice re-fit <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>The reputation-trait tier thresholds (<code>phaseReputationTraits.ts</code>) still reads the pre-refit curve</strong> (THR-1581, 2026-09-26). The forecast-window change re-fitted the capability curve the dice read (<code>SIGMOID_MIDPOINT</code> 10 → 30, <code>SIGMOID_K</code> 0.4 → 0.08) so that who a mortal is moves their odds. Readers that do not feed a d100 — this one included — were repointed at <code>computeCapabilityPreRefit</code> (midpoint 10, k 0.4), so every threshold here reads exactly the number it was tuned against and nothing on this page changed behaviour. Each is re-fitted on its own evidence by <a href="https://linear.app/threadbare/issue/THR-1580">THR-1580</a>.</li>
+      </ul>
+
       <h3>Constants</h3>
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>

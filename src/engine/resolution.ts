@@ -6,10 +6,11 @@
  * determine outcome, and produce structured results with narrative attribution.
  */
 import type { ForecastTier, OutcomeType, ResolutionResult, ContestedResolutionResult, FateForecast } from '../types/resolution';
+import { computeResolutionThreshold } from './resolutionService';
 
 /**
- * Compute final probability from components.
- * P = capability + sphereFactor - difficulty + modifiers, clamped to [0.05, 0.95]
+ * Compute final probability from components — delegates to the one odds formula,
+ * `computeResolutionThreshold` (THR-1581), clamped to [0.05, 0.95].
  */
 export function computeProbability(
   capability: number,
@@ -17,8 +18,14 @@ export function computeProbability(
   difficulty: number,
   modifiers: number,
 ): number {
-  const raw = capability + sphereFactor - difficulty + modifiers;
-  return Math.min(0.95, Math.max(0.05, raw));
+  return computeResolutionThreshold({
+    actorId: 'legacy-probability',
+    domain: 'iron',
+    capability,
+    difficulty,
+    sphereFactor,
+    actionModifiers: modifiers,
+  });
 }
 
 /**

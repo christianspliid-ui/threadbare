@@ -4775,6 +4775,30 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1578. Seeded worlds 42/99/7 x 120 ticks (`npm run gameplay-report`): 144-281 stamped engagements per seed folded into bands, 23-29 unstamped (band `unknown` - seeded, forced and legacy paths, deliberately outside the invariant). The first wiring keyed stamps on `action.id`, a field `UnifiedAction` does not have, so every stamp collided on `undefined` and half the resolutions read `unknown`; the heavy wiring test `src/engine/__tests__/engagementWindow.invariant.test.ts` (stamped > unknown on seed 42 x 30) caught it and passes on `actionId`. Arithmetic pinned by `src/engine/kpi/__tests__/engagementKpi.test.ts`.",
     },
   },
+  // -- The forecast window gates free choice (THR-1581 carrying THR-1582, forecast window S4) --
+  // Replaces `outgrowth-filters-easy-content` (never registered here; retired by
+  // switch: `OUTGROWTH_FILTER_ENABLED = false`) — the too-easy side of the fit now
+  // does what the filter did, without removing a candidate outright.
+  {
+    id: 'engagement-forecast-gates-choice',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A mortal takes on challenges it forecasts winning about half the time: the engagement forecast `F` (the planner\'s whole-encounter survival odds, or an undertaking\'s checkpoint advance probability) is read against a window (`ENGAGE_WINDOW_LOW`–`ENGAGE_WINDOW_HIGH`, shifted by courage and by consecutive failures) and scales every candidate\'s score by the resulting fit — in-window 1, too easy `ENGAGE_TOO_EASY_FIT`, below the window a ramp to `ENGAGE_REFUSE_BELOW` and 0 under it. A multiplier, never a replacement: desire, ambition and variety still decide which in-window challenge wins.',
+    ulTerms: ['Domain Capability', 'Encounter', 'Undertaking'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['computeEngagementFit', 'computeSetbackShift'],
+      module: 'src/engine/engagementWindow.ts',
+    },
+    writeSites: ['src/engine/engagementWindow.ts'],
+    readSites: ['src/engine/encounterScoring.ts', 'src/engine/decisionBoard.ts'],
+    verifiedLive: {
+      date: '2026-09-26',
+      evidence:
+        'THR-1581. `engagementWindow.test.ts` pins the zone edges, the personality and setback shifts and the too-easy exemption; `decisionBoard.test.ts` pins that between two in-window candidates the higher desire wins and that an in-window candidate beats a wanted too-easy one; the additive-term pins in `encounterScoring`, `appointments`, `intelligenceConsumption`, `locationTraitBonus`, `mark-reveal-liveness` and the relocation test now assert `term × engagementFit`, which fails if the fit stops reaching `finalScore`. On real seeded worlds (`engagementWindow.invariant.test.ts`, seeds 42/99 × 120 ticks, heavy lane) the novice band succeeds within the level band; `getEngagementVerdicts` and the `engagement_decision` trace expose F, fit and zone per candidate.',
+    },
+  },
   // ── Hunts H2 (THR-1560, plan 2026-09-23-hunts § Interface impact) — the rows "hunt
   // payoff → appointment → fight (target inherited on the kept branch only)", "grievance
   // (pursues naming a monster) → hunt reason" and "hunt completion → grievance

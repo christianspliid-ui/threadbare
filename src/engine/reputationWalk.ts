@@ -33,7 +33,7 @@
 import type { WorldGraph } from './graph';
 import { getFactionMembershipEdges } from './graphQueries';
 import { findAllPaths } from './graphUtils';
-import { computeCapability } from './domainCapability';
+import { computeCapabilityPreRefit } from './domainCapability';
 import { getDerivedMembershipRank } from './factionReputation';
 import { getAgentFactionBonuses } from './factionRankBonus';
 import { emitTrace } from './traceBuffer';
@@ -124,7 +124,8 @@ export function perceiveReputation(
   let distortion = 0;
 
   for (const intermediaryId of intermediaryIds) {
-    const shadowCap = computeCapability(graph, intermediaryId, 'shadow');
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    const shadowCap = computeCapabilityPreRefit(graph, intermediaryId, 'shadow');
     // Distortion direction: based on intermediary's trust with target
     const intermediaryTargetTrust = getDirectTrust(graph, intermediaryId, targetId) ?? 0;
     const sign = intermediaryTargetTrust >= 0 ? 1 : -1;
@@ -132,7 +133,8 @@ export function perceiveReputation(
   }
 
   // Step 7: Compute source Heart resistance
-  const sourceHeartCap = computeCapability(graph, sourceId, 'heart');
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const sourceHeartCap = computeCapabilityPreRefit(graph, sourceId, 'heart');
   const heartResistance = sourceHeartCap * HEART_TRUST_FACTOR;
   const effectiveDistortion = distortion * (1 - heartResistance);
 

@@ -126,7 +126,9 @@ function harvest(actorId: string, locationId: string): StrategicActionCandidate 
   };
 }
 
-describe('THR-1287 — a worked hold survives on a generated world', () => {
+// Runs a generated world through real ticks; ≈ 4.4 s after THR-1581's decision-phase
+// cost, too close to the 5 s default under heavy-lane load.
+describe('THR-1287 — a worked hold survives on a generated world', { timeout: 30_000 }, () => {
   it('outlives the fixed grace-plus-degradation window, while its unworked twin collapses inside it', () => {
     let state = world();
     const candidates = unheldStanders(state);

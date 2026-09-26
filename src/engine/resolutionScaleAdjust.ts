@@ -9,7 +9,8 @@
  * | Name                              | Default                                        | Purpose                                 |
  * |-----------------------------------|------------------------------------------------|-----------------------------------------|
  * | SCALE_DIFFICULTY_OFFSETS          | {personal:−0.20, local:−0.10, regional:0, cosmic:+0.10} | Per-scale additive difficulty bias |
- * | MIN_PROBABILITY_BY_SCALE          | {personal:0.70, local:0.65, regional:0.20, cosmic:0.05}  | Per-scale soft probability floor   |
+ * | MIN_PROBABILITY_BY_SCALE          | all PROBABILITY_FLOOR (THR-1581; was 0.70/0.65/0.20/0.05) | Per-scale floor, retired by value |
+ * | SCALE_FLOOR_DIFFICULTY_CAP_ENABLED | false (THR-1581)                              | Difficulty cap encoding the old formula — off |
  * | CRIT_FAILURE_SEVERITY_BY_SCALE    | {personal:'minor', local:'minor', regional:'standard', cosmic:'severe'} | Crit-fail consequence tier by scale (THR-571 E2) |
  *
  * ─── Fail-soft ──────────────────────────────────────────────────────
@@ -59,12 +60,31 @@ export const SCALE_DIFFICULTY_OFFSETS: Record<ActionScale, number> = {
  * distribution question), not by the floor value. Values left unchanged; the
  * clean_success / at_cost band calibration is a design decision (see THR-571).
  */
+//
+// THR-1581 (forecast window S3, director ruling 2026-09-24): **retired by value.**
+// The floors pinned 44% of all rolls at exactly 0.65, so neither who a mortal was
+// nor what it faced moved the odds. Every scale now reads PROBABILITY_FLOOR, which
+// no probability can fall below, so the THR-571 floor upgrade in stepResolutionCore
+// goes inert without deleting code. Never restore a floor to hit a KPI — the
+// mortal's choice of challenge (the forecast window) does the matching.
 export const MIN_PROBABILITY_BY_SCALE: Record<ActionScale, number> = {
-  personal: 0.70,
-  local:    0.65,
-  regional: 0.20,
+  personal: PROBABILITY_FLOOR,
+  local:    PROBABILITY_FLOOR,
+  regional: PROBABILITY_FLOOR,
   cosmic:   PROBABILITY_FLOOR,
 };
+
+/**
+ * Switch for the difficulty-cap branch of `applyScaleDifficultyAdjust` (THR-1581).
+ *
+ * **Load-bearing: must stay `false`.** The branch computes
+ * `maxDifficulty = capability + sphere + mods − minFloor`, which is the *old*
+ * formula's arithmetic (`P = cap − diff`). Under the new odds formula
+ * (`ODDS_AT_PAR + ODDS_GAIN × gap`) it would cap difficulty at a gap of about −0.05
+ * — a silent floor near 0.61 — even with every scale floor at `PROBABILITY_FLOOR`.
+ * Kept as a switch rather than deleted (NFP #6).
+ */
+export const SCALE_FLOOR_DIFFICULTY_CAP_ENABLED = false;
 
 /**
  * Consequence tier for a doubles-over-threshold critical_failure, by scale.
@@ -129,7 +149,8 @@ export function applyScaleDifficultyAdjust(
   // Incapable actors (cap < minFloor) are handled by the probability floor post-process
   // in unifiedActionResolution.ts; this step is a no-op for them.
   const maxDifficultyForFloor = Math.max(0, capability + sphereFactor + mods - minFloor);
-  const scaleFloorApplied = adjustedDifficulty > maxDifficultyForFloor;
+  // THR-1581: switched off — see SCALE_FLOOR_DIFFICULTY_CAP_ENABLED.
+  const scaleFloorApplied = SCALE_FLOOR_DIFFICULTY_CAP_ENABLED && adjustedDifficulty > maxDifficultyForFloor;
   if (scaleFloorApplied) {
     adjustedDifficulty = maxDifficultyForFloor;
   }

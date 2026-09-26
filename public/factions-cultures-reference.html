@@ -335,6 +335,11 @@
         <li>Pre-economy: <code>faction_reputation_decay</code> (6.55) → <code>chosen_faction_powers</code> (6.56). Post-economy cluster (registry-ordered): <code>… → faction_ambitions → faction_actions → secrets_favors → schism_resolution → …</code>. Off-screen member work (THR-815) and band spawning (THR-731) are both swept from inside <code>faction_actions</code> on their own interval gates rather than as separate phases; member work runs <em>before</em> that phase's <code>FACTION_ACTION_INTERVAL</code> early return, so it fires on its own cadence regardless. <code>faction_actions</code> consequently returns a <code>Partial&lt;GameState&gt;</code> delta now rather than <code>void</code> — its wrapper must pass it through or promotion events are dropped. Post-narrative: <code>faction_succession</code>. Cultural gravity/tension are helper calls at encounter scoring, not a scheduled phase.</li>
       </ul>
 
+      <h3>Capability reads after the dice re-fit <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Social leverage&rsquo;s Gold comparison (<code>socialLeverage.ts</code>) still reads the pre-refit curve</strong> (THR-1581, 2026-09-26). The forecast-window change re-fitted the capability curve the dice read (<code>SIGMOID_MIDPOINT</code> 10 → 30, <code>SIGMOID_K</code> 0.4 → 0.08) so that who a mortal is moves their odds. Readers that do not feed a d100 — this one included — were repointed at <code>computeCapabilityPreRefit</code> (midpoint 10, k 0.4), so every threshold here reads exactly the number it was tuned against and nothing on this page changed behaviour. Each is re-fitted on its own evidence by <a href="https://linear.app/threadbare/issue/THR-1580">THR-1580</a>.</li>
+      </ul>
+
       <h3>Constants</h3>
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>

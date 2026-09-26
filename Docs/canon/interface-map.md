@@ -340,7 +340,19 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-09-25 by Claude Code (THR-1560 — Hunts H2). **Added** three 🔵 UNVERIFIED-OK rows:
+2026-09-26 by Claude Code (THR-1581 — forecast window S3 + S4, the dice re-fit and the window).
+**Added** 🟢 LIVE `engagement-forecast-gates-choice` (Encounters & Dilemmas → Encounters &
+Dilemmas: the engagement forecast scales every free-choice candidate by its fit to the
+50–65% window, on both the encounter and the undertaking line). **Retired**
+`outgrowth-filters-easy-content` by switch (`OUTGROWTH_FILTER_ENABLED = false`): it was
+never registered as a row, and the fit's too-easy side replaces it. Its tests were repointed at
+the explicit override rather than deleted, because the filter code stays callable. The additive
+scoring-term tests (`appointments`, `intelligenceConsumption`, `locationTraitBonus`,
+`mark-reveal-liveness`, the relocation and type-bias arms) now assert `term × engagementFit`,
+so they fail if the fit stops reaching `finalScore`. `planner-forecast-equals-roll`
+**preserved**: the planner and the roll share the re-fitted formula through the same
+`scaledForecast` path, and the difficulty cap it names is switched off on both sides
+(`SCALE_FLOOR_DIFFICULTY_CAP_ENABLED = false`). Earlier: 2026-09-25 by Claude Code (THR-1560 — Hunts H2). **Added** three 🔵 UNVERIFIED-OK rows:
 `hunt-payoff-plants-confront` (a finished hunt plants the confront at the den, aimed at the beast,
 with a missed branch and no placeless fallback — the four optional appointment-payoff flags),
 `grievance-opens-hunt-door` (a scar, a grievance or a den near home admits a hunt, recorded as

@@ -23,7 +23,7 @@ import {
 } from '../types/army';
 import { requiresMilitaryForce } from '../types/faction';
 import type { FactionAmbitionType } from '../types/faction';
-import { computeCapability, computeTier } from './domainCapability';
+import { computeCapabilityPreRefit, computeTier } from './domainCapability';
 import { findAllShortestPaths } from './pathfinding';
 import { emitTrace } from './traceBuffer';
 import { reportWar, captureArmySide } from './armyNotifications';
@@ -71,7 +71,8 @@ export function isEligibleForArmySpawn(
   if (!commander) return false;
 
   // Check faction Gold capability
-  const goldCap = computeCapability(graph, factionId, 'gold');
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const goldCap = computeCapabilityPreRefit(graph, factionId, 'gold');
   const goldTier = computeTier(goldCap);
   if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return false;
 
@@ -106,7 +107,8 @@ export function selectCommander(
     const commandedByEdges = graph.getIncomingEdges(edge.source, 'commanded_by');
     if (commandedByEdges.length > 0) continue;
 
-    const ironCap = computeCapability(graph, edge.source, 'iron');
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    const ironCap = computeCapabilityPreRefit(graph, edge.source, 'iron');
     const ironTier = computeTier(ironCap);
     if (ironTier >= ARMY_SPAWN_IRON_TIER_MIN && ironTier > bestTier) {
       bestTier = ironTier;
@@ -192,7 +194,8 @@ export function spawnArmy(
   const graph = state.graph;
 
   // Determine size from faction Gold tier
-  const goldCap = computeCapability(graph, factionId, 'gold');
+  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+  const goldCap = computeCapabilityPreRefit(graph, factionId, 'gold');
   const goldTier = computeTier(goldCap);
   const size: ArmySizeCategory = determineSizeCategory(goldTier);
 

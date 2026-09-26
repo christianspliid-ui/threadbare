@@ -39,7 +39,7 @@
 import type { ReachDomain } from '../types/traits';
 import type { WorldGraph } from './graph';
 import type { EncounterCacheEntry } from './encounterCache';
-import { computeCapability } from './domainCapability';
+import { computeCapabilityPreRefit } from './domainCapability';
 import { hexDistance } from '../lib/hexMath';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -204,7 +204,8 @@ export function filterByAwareness(
   const awarenessRangeOf = (reach: ReachDomain): number => {
     let range = rangeCache.get(reach);
     if (range === undefined) {
-      range = computeAwarenessHops(computeCapability(graph, agentId, reach), reach);
+      // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+      range = computeAwarenessHops(computeCapabilityPreRefit(graph, agentId, reach), reach);
       rangeCache.set(reach, range);
     }
     return range;

@@ -19,7 +19,7 @@ import { selectComplication } from '../../complicationSelection';
 import { buildChapterRecord } from '../../chapterArchive';
 import { buildNudgePhaseModel } from '../../../components/Game/encounter-stage/adapters/buildNudgePhaseModel';
 import { forecastWithNudges } from '../../../components/Game/encounter-stage/useNudgeHand';
-import { forecastAction } from '../../resolutionService';
+import { ODDS_AT_PAR, ODDS_GAIN, PROBABILITY_FLOOR } from '../../resolutionService';
 import { MIN_PROBABILITY_BY_SCALE } from '../../resolutionScaleAdjust';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../../data/condition-trait-content';
 import { FIGHT_LAIR_CONFRONT, FIGHT_LAIR_CONFRONT_ID } from '../../../data/encounters/fight-lair-confront';
@@ -382,6 +382,14 @@ function check(state: GameState, tpl: UnifiedActionTemplate, selected: string[] 
   return { phase, shown, rolled };
 }
 
+/** THR-1581: the re-fitted formula before its clamp — what the floor is holding up. */
+function unclampedThreshold(input: {
+  capability: number; difficulty: number; sphereFactor?: number; actionModifiers?: number; influenceNudge?: number;
+}): number {
+  return ODDS_AT_PAR + ODDS_GAIN * (input.capability - input.difficulty)
+    + (input.sphereFactor ?? 0) + (input.actionModifiers ?? 0) + (input.influenceNudge ?? 0);
+}
+
 describe('the forecast equals the resolver for a fight step', () => {
   it('plain', () => {
     const { phase, shown, rolled } = check(stateOf(world({ heroRaw: 8 })), FIGHT_LAIR_CONFRONT);
@@ -400,14 +408,16 @@ describe('the forecast equals the resolver for a fight step', () => {
   });
 
   it('on a step that hits the regional floor', () => {
-    // Severe dread against a middling fighter: capability plus modifiers sits above
-    // the floor, the difficulty does not — the scale step holds the odds at 0.20.
+    // Severe dread against a middling fighter. THR-1581 retired the 0.20 regional
+    // floor (it is `PROBABILITY_FLOOR` for every scale now), so the step sits on the
+    // global floor — and the forecast quotes exactly what the roll clamps to.
     const state = stateOf(world({ heroRaw: 8, monsterCard: { dread: 'severe' } }));
     const { phase, shown, rolled } = check(state, FIGHT_LAIR_CONFRONT);
-    expect(rolled).toBeCloseTo(MIN_PROBABILITY_BY_SCALE.regional, 6);
+    expect(MIN_PROBABILITY_BY_SCALE.regional).toBe(PROBABILITY_FLOOR);
+    expect(rolled).toBeCloseTo(PROBABILITY_FLOOR, 6);
     expect(Math.floor(shown.probability * 100)).toBe(Math.floor(rolled * 100));
-    // Without the scale step the plain forecast would have quoted odds nobody rolls.
-    expect(forecastAction(phase.forecastInput).successProbability).toBeLessThan(MIN_PROBABILITY_BY_SCALE.regional);
+    // Non-vacuity: the unclamped sum really is below the floor, so the clamp is working.
+    expect(unclampedThreshold(phase.forecastInput)).toBeLessThan(PROBABILITY_FLOOR);
   });
 
   it('for a sub-floor fighter (low capability and terrified): the post-roll floor', () => {
@@ -415,10 +425,9 @@ describe('the forecast equals the resolver for a fight step', () => {
     graph.addEdge({ id: 'e.hero.terrified', source: 'hero', target: 'trait.condition.terrified', type: 'has_trait', properties: { intensity: 0.9 } });
     const state = stateOf(graph);
     const { phase, shown, rolled } = check(state, FIGHT_LAIR_CONFRONT);
-    // Capability plus modifiers is under the floor, so the difficulty cap alone cannot
-    // reach it — only the core's post-roll floor does, and the forecast mirrors it.
-    expect(phase.forecastInput.capability + phase.forecastInput.actionModifiers)
-      .toBeLessThan(MIN_PROBABILITY_BY_SCALE.regional);
+    // THR-1581: the difficulty cap is switched off, so only the core's post-roll floor
+    // can hold this step up — and the forecast mirrors it.
+    expect(unclampedThreshold(phase.forecastInput)).toBeLessThan(PROBABILITY_FLOOR);
     expect(rolled).toBeCloseTo(MIN_PROBABILITY_BY_SCALE.regional, 6);
     expect(Math.floor(shown.probability * 100)).toBe(Math.floor(rolled * 100));
   });
