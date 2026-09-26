@@ -421,7 +421,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Structure or sublocation was built by this actor. Source is the thing built; target is the builder. Edge properties: structureType.',
+    description: 'Structure or sublocation was built by this actor. Source is the thing built; target is the builder. Edge properties: structureType (worldgen), tick (runtime builds — read by mandate `edge_count` `sinceMandateStart`, THR-1618).',
   },
 
   // ── Military (TB-073) ──
