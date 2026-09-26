@@ -27,6 +27,18 @@ describe('Rivals / Notables chip labels open their panels (THR-1604)', () => {
     expect(screen.getByText(/No rival gods stir/)).toBeTruthy();
   });
 
+  it('pins the panel with a fixed wrapper outside the animated element', () => {
+    // The enter animation leaves a transform on its element, and a transform
+    // makes that element the containing block for a fixed child. The fixed
+    // position has to live above it, or the panel opens one screen too low.
+    render(<RivalsButton definitions={[]} states={[]} />);
+    fireEvent.click(screen.getByTestId('rivals-chip-label'));
+    const panel = screen.getByTestId('dropdown-panel');
+    expect(panel.style.position).toBe('');
+    const fixedWrapper = panel.parentElement?.parentElement;
+    expect(fixedWrapper?.style.position).toBe('fixed');
+  });
+
   it('opens the Notables panel from the word, not only the icon', () => {
     const gameState = { activeCompositions: [] } as unknown as GameState;
     render(<NotablesButton gameState={gameState} />);
