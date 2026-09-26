@@ -459,6 +459,10 @@ export const CONTRACTS: readonly Contract[] = [
     // edge, `scoreAndSelect` reads it as one additive term keyed trait × content tag,
     // and `npm run census:location-traits` measures the shift per seed.
     //
+    // THR-1528 extends it with a fifth rule, *Blood-soaked*, whose input is not a scalar
+    // but the battle records at the place (`battles-leave-a-record-on-the-ground`), and
+    // a fifth pool row (#combat / #loss / #fear / #iron).
+    //
     // The load-bearing clause is that the four new traits ride the *existing* prefix,
     // subcategory and effect tables, so the three THR-1143 readers (movement tax, step
     // modifier, target gating) and the location page read them with no new code — the
@@ -469,6 +473,46 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-22',
       evidence:
         "THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.",
+    },
+  },
+  {
+    // THR-1528 — the substrate `#blood-soaked` waited for. Before it a battle
+    // overwrote a settlement's prosperity and subtype and minted no record; a field
+    // battle wrote nothing to its ground at all. Now `resolveBattle` writes one
+    // `battle_fought` Event per battle (after the aftermath, before the battle node's
+    // removal) with an `occurred_at` edge to the outer-tier Location and a
+    // `lastBattleTick` stamp; the fifth location-trait rule reads the records in a
+    // window (never `deathCount`) and the place MEMORY tells the latest one. Slice 2
+    // (THR-1574) adds `fight_fought` through the same readers and gets its own row.
+    id: 'battles-leave-a-record-on-the-ground',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: TRAITS,
+    intent:
+      'A battle leaves its history on the ground it was fought over, so the place can say where the war was fought: the word Blood-soaked for ten days, and the battle itself in the place\'s memory for good.',
+    ulTerms: ['Location Trait', 'Trait'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        // Write side — the record writer resolveBattle calls.
+        'recordBattleFought',
+        // Read side — the rule's input, the place memory's lookup, and the readout.
+        'readBloodshed',
+        'latestBloodshedRecord',
+        'describeBattleRecords',
+      ],
+      module: 'src/engine/battleRecord.ts',
+    },
+    writeSites: ['src/engine/battleRecord.ts', 'src/engine/battleResolution.ts'],
+    readSites: [
+      'src/engine/phaseLocationTraits.ts',
+      'src/engine/detailPageResolvers.ts',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-26',
+      evidence:
+        "THR-1528. Unit (src/engine/__tests__/battleRecord.test.ts, 14 arms, driven through the real resolveBattle): each of the four resolutions writes one battle_fought record at its ground with lastBattleTick stamped and the participated_in outcome from the resolution table (mutual destruction: lost on both sides, no victor in the summary); a field battle on a Place is remembered at the outer-tier Location; a siege records at its town even when its node sits elsewhere; a commander removed by the aftermath gets no edge, one kept as deceased does; no place -> record without occurred_at, traced no_place; a failed write is traced and never throws into resolveBattle; a resolved battle mints Blood-soaked on the next traits pass; a sieged town's MEMORY carries the siege inside the window and the ordinary line outside it. The falsifier (phaseLocationTraits.test.ts): twenty deaths and no record never mint it and write no counter. Live: seed 42 medium CLI to tick 182 wrote 13 battle records across 4 places and held Blood-soaked on 3 of them.",
     },
   },
   {
@@ -2229,7 +2273,9 @@ export const CONTRACTS: readonly Contract[] = [
         'collectLocationConditionContributions',
         // THR-790 — the second writer, and the first from the world's own state: the
         // minting phase puts four more definitions under the same prefix and the same
-        // two tables, so every reader above picks them up unchanged.
+        // two tables, so every reader above picks them up unchanged. THR-1528 adds a
+        // fifth, *Blood-soaked*, minted from battle records, with a movement-tax row
+        // (people go around a battlefield) and no step row.
         'phaseLocationTraits',
       ],
       module: 'src/data/condition-trait-content.ts',

@@ -188,7 +188,9 @@ describe('THR-1244 — condition → damaged/healed proxy', () => {
       // four are a place's, so none can land on a mortal and reach the proxy;
       // they are counted here because the polarity rule binds every condition
       // definition, whoever bears it.
-      expect(checked).toBe(65);
+      // 65 → 66 with THR-1528: `trait.condition.location.blood_soaked`
+      // (`#negative`), minted from battle records — a place's too.
+      expect(checked).toBe(66);
     });
 
     it('classifies wounds and curses as harm, boons as not', () => {

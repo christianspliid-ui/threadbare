@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 125 |
+| 🟢 LIVE | 126 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 40 |
-| **Total** | **173** |
+| **Total** | **174** |
 
 ## Contracts by producing subsystem
 
@@ -286,6 +286,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `battles-leave-a-record-on-the-ground` | A battle leaves its history on the ground it was fought over, so the place can say where the war was fought: the word Blood-soaked for ten days, and the battle itself in the place's memory for good. | function: `recordBattleFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `binding-registry-reaper-hook` | A siege that razes an undertaking’s bound stage, or a battle that kills its bound commander, breaks the binding loudly instead of silently — the recon (THR-1289) measured battle destruction as the one confirmed live must-persist violation, since the destruction pool never reads persistence in either flavour and the commander kill bypasses the lifecycle and emits nothing at all. Detection sits on the sole node-removal funnel all ~25 deleting call sites pass through, so the same seam covers every other reaper and any reaper not yet written; housekeeping (sublocation dissolution) instead defers on a bound stage, because a chore waits and a story does not. | function: `onNodeRemoved`, `installBindingRemovalHook`, `makeDissolutionHold`, `binding_severed` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
 | `undertaking-remote-anchor` | A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing. | function: `findRemoteAnchors`, `evaluateRemoteAnchorGate`, `commanded_by`, `no_remote_anchor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
 | `war-news-reaches-chronicle` | The war reports itself (THR-1564). Each war writer — an army raised, broken apart or fraying, a battle joined, a siege laid, a battle or siege ended, a town changing hands — calls `reportWar` where the event happens, which judges visibility before the aftermath, builds one line with no numbers and pushes one `TickEvent` into `state.tickEvents`. `phaseNarrative` promotes the lines at the chronicle threshold into `chronicleEntries`, which the Chronicle panel renders. Nothing on this path reads a trace. | function: `reportWar`, `captureBattleForNews`, `battleOutcomeSentence`, `WAR_NEWS_CHRONICLE_SIGNIFICANCE`, `phaseNarrative` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -674,6 +675,18 @@ exit
 - **Other hits:** `src/engine/encounterSeeding.ts`
 - **Verdict:** Verified 2026-07-25: Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres' Sparrows", which was met by Company of the Inn at t81 and by Flintlock's Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.
 
+### `battles-leave-a-record-on-the-ground` — 🟢 LIVE
+
+- **Intent:** A battle leaves its history on the ground it was fought over, so the place can say where the war was fought: the word Blood-soaked for ten days, and the battle itself in the place's memory for good.
+- **Producer → Consumer:** War, Armies & Battles → Personality & Emergent Traits
+- **UL terms:** *Location Trait*, *Trait*
+- **Module:** `src/engine/battleRecord.ts`
+- **Production hits:** 7 total — 2 write, 3 read, 2 unclassified
+- **Write sites:** `src/engine/battleRecord.ts`, `src/engine/battleResolution.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/phaseLocationTraits.ts`
+- **Other hits:** `src/data/location-trait-constants.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-09-26: THR-1528. Unit (src/engine/__tests__/battleRecord.test.ts, 14 arms, driven through the real resolveBattle): each of the four resolutions writes one battle_fought record at its ground with lastBattleTick stamped and the participated_in outcome from the resolution table (mutual destruction: lost on both sides, no victor in the summary); a field battle on a Place is remembered at the outer-tier Location; a siege records at its town even when its node sits elsewhere; a commander removed by the aftermath gets no edge, one kept as deceased does; no place -> record without occurred_at, traced no_place; a failed write is traced and never throws into resolveBattle; a resolved battle mints Blood-soaked on the next traits pass; a sieged town's MEMORY carries the siege inside the window and the ordinary line outside it. The falsifier (phaseLocationTraits.test.ts): twenty deaths and no record never mint it and write no counter. Live: seed 42 medium CLI to tick 182 wrote 13 battle records across 4 places and held Blood-soaked on 3 of them.
+
 ### `binder-decision-traced` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before.
@@ -999,10 +1012,10 @@ exit
 
 - **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
-- **Production hits:** 77 total — 1 write, 1 read, 75 unclassified
+- **Production hits:** 78 total — 1 write, 1 read, 76 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/economicContext.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +70 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +71 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
 ### `effect-executor-overlay-persistence` — 🟢 LIVE
@@ -1527,10 +1540,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 20 total — 2 write, 5 read, 13 unclassified
+- **Production hits:** 21 total — 2 write, 5 read, 14 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +8 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +9 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `location-traits-shift-encounter-pool` — 🟢 LIVE
@@ -1539,10 +1552,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Location Trait*, *Trait*, *Encounter*
 - **Module:** `src/engine/phaseLocationTraits.ts`
-- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
+- **Production hits:** 9 total — 1 write, 3 read, 5 unclassified
 - **Write sites:** `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterScoring.ts`, `src/engine/locationTraitBonus.ts`
-- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/engine/orchestrator.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/engine/battleRecord.ts`, `src/engine/orchestrator.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-22: THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -1642,10 +1655,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 44 total — 5 write, 3 read, 36 unclassified
+- **Production hits:** 45 total — 5 write, 3 read, 37 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +31 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +32 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -2207,10 +2220,10 @@ exit
 - **Producer → Consumer:** War, Armies & Battles → Attention, Chronicle & Narrative
 - **UL terms:** *Narrative Event*, *Chronicle Entry*
 - **Module:** `src/engine/armyNotifications.ts`
-- **Production hits:** 19 total — 5 write, 1 read, 13 unclassified
+- **Production hits:** 20 total — 5 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/armyAttrition.ts`, `src/engine/armySpawning.ts`, `src/engine/battleAftermath.ts`, `src/engine/battleResolution.ts`, `src/engine/siegeResolution.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts` +8 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts` +9 more
 - **Verdict:** Verified 2026-09-24: THR-1564. `warNews.test.ts` (21) drives the real writers — `spawnArmy`, `disbandArmy`, `phaseArmyAttrition`, `createBattleNode`, `createSiegeNode`, `resolveBattle`, `applyConquestOrVacuum` — with tracing DISABLED and asserts each kind writes its line in the same tick at the loudness table’s significance; a threaded mortal’s losing army whose commander dies in the aftermath still reports threaded (seed searched, not guessed); a siege that takes its town writes the territory line and no battle line; no line carries a digit; tracing on and off write identical lines. Headless, seed 42 medium, 150 ticks, tracing OFF: 80 war lines, 11 battle and siege endings in `chronicleEntries`, 0 digits — byte-identical to the same run with tracing ON. Before this change the tracing-off run wrote 0.
 
 ### `wheel-slot-card-face` — 🟢 LIVE

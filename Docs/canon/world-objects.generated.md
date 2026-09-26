@@ -34,13 +34,13 @@
 | `legendary_artifact` | Legendary artifact | node · `artifact_legendary` | — | Attachments, Items & Possessions | `worldSeed` | live | 2 | 🟢 LIVE |
 | `holding` | Holding | edge · `owns` · identity node `artifact:holding` | — | Attachments, Items & Possessions | `holdings` | live | 13 | 🟢 LIVE |
 | `power` | Power | node · `trait` · `subcategory` ∈ {bestowed, spell} | **spell** (1) · **bestowal** (1) · **innate** (0) | Attachments, Items & Possessions | `spellActivation`, `seedAttachments`, `undertaking-objects` | live | 67 | 🟢 LIVE |
-| `condition` | Condition | node · `trait` · `subcategory` ∈ {condition, scar} | **condition** (1) · **scar** (1) | Effects & Conditions | `gameInit`, `spellActivation`, `rewardPool` | live | 175 | 🟢 LIVE |
+| `condition` | Condition | node · `trait` · `subcategory` ∈ {condition, scar} | **condition** (1) · **scar** (1) | Effects & Conditions | `gameInit`, `spellActivation`, `rewardPool` | live | 177 | 🟢 LIVE |
 | `trait` | Trait | node · `trait` · `subcategory` ∈ {9 values} | — | Personality & Emergent Traits | `gameInit`, `culturalTraits`, `capabilityGrowth`, `encounterChains`, `reputation`, `artifactTraits` | live | 164 | 🟢 LIVE |
 | `agreement` | Agreement | edge · `owes_favor`, `knows_secret_of` | **favor** (1) · **mark** (1) | Secrets & Favors | `secretGeneration`, `strategicGraphOps` | live | 10 | 🟢 LIVE |
 | `standing` | Standing | edge · `reputation_with`, `relates_to`, `hostile_to` | **reputation** (1) · **relationship** (1) · **quarrel** (1) | Reputation & Influence | `reputation`, `factionSeeding`, `grievance/grudgeEdge` | live | 203 | 🟢 LIVE |
 | `ambition` | Ambition | node · `ambition` | — | Ambitions & Undertakings | `ambitionAssignment`, `ambitionTick`, `ambitionShape` | live | 57 | 🟢 LIVE |
 | `undertaking` | Undertaking | state · `GameState.strategicState.projects[]` | — | Ambitions & Undertakings | `strategicActionLifecycle` | live | — | 🟢 LIVE |
-| `event` | Event | node · `event` · `eventType` ∈ {11 values} | — | Attention, Chronicle & Narrative | `encounterEventNode`, `grievance/undertakingOutcomeNode`, `phaseFactionActions`, `unifiedActionResolution` | live | 223 | 🟢 LIVE |
+| `event` | Event | node · `event` · `eventType` ∈ {13 values} | — | Attention, Chronicle & Narrative | `encounterEventNode`, `grievance/undertakingOutcomeNode`, `phaseFactionActions`, `unifiedActionResolution`, `battleRecord` | live | 225 | 🟢 LIVE |
 | `journey` | Journey | state · `GameState.pendingVignettes[] (the First’s doom-clock-scheduled journey beats)` | — | Doom Clock & Journey | `journeyEngine` | live | — | 🟢 LIVE |
 | `divine_receipt` | Divine receipt | state · `GameState.playerActionReceipts[]` | — | Essence & Divine Economy | `playerReceipts` | live | — | 🟢 LIVE |
 | `sphere` | Sphere | state · `GameState.cosmology` | — | Spheres & Quintessence | `cosmology` | live | — | 🟢 LIVE |

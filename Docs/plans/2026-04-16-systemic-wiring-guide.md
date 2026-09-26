@@ -4187,8 +4187,15 @@ release. `window.__DEBUG.getLocationTraits(placeOrName?)` and the CLI `traits [l
 every place's traits with the four sustain counters, so *how close is this town to Welcoming?* is
 answerable before the word appears.
 
-**What is deliberately not here.** No `#blood-soaked` — there is no per-location battle record
-and the death count would call a plague a massacre; the dead enter *Haunted* instead. No new
+**Blood-soaked reads records, not a scalar** (THR-1528). Every resolved battle writes a
+`battle_fought` Event on the ground it was fought over (`battleRecord.recordBattleFought`), and the
+fifth rule mints `trait.condition.location.blood_soaked` from those records inside
+`BLOOD_SOAKED_WINDOW_TICKS`. Its pool row is `#combat` / `#loss` / `#fear` / `#iron`, so a template
+about violence or grief carrying those family tags leans toward a recent battlefield; gate on it
+with `requiredTargetTraits` like any other. The place page's MEMORY tells the battle itself.
+
+**What is deliberately not here.** Nothing is minted from the death count: it would call a
+plague a massacre, so the dead enter *Haunted* as its co-condition instead. No new
 subcategory, field or edge type: the id prefix is the declaration (THR-1143), which is what lets
 the movement tax, the step modifier, the target gate and the page read the four with no new code.
 Merchant routing, prose and the Broken-state bonus are slice 4 (THR-1522); artifact traits are
