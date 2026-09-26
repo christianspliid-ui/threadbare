@@ -106,7 +106,7 @@ import { AttachmentDetailView } from './AttachmentDetailView';
 import { resolveAttachmentTemplateDetail } from '../../engine/attachmentTemplateDetail';
 import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../shared/Modal';
 import { AgentProfileModal } from './AgentProfileModal';
-import { ChapterLedger } from './ChapterLedger';
+import { ChapterLedger, countThreadedChapters } from './ChapterLedger';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
 import { ChoiceSetModal } from './ChoiceSetModal';
@@ -296,6 +296,8 @@ interface GameViewProps {
   seedTestPackage?: boolean;
   /** Dev-only: move the avatar to a settlement so the meeting can auto-trigger (THR-874). */
   placeAvatarForMeeting?: boolean;
+  /** Leave this world for the title screen (THR-1604). Settings offers it only when wired. */
+  onExitToTitle?: () => void;
 }
 
 function formatJourneyPhaseLabel(
@@ -312,7 +314,7 @@ function formatJourneyPhaseLabel(
   }
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -4621,6 +4623,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         includeWorldInSnapshot={incidentCapture.includeWorld}
         handleToggleIncludeWorld={incidentCapture.toggleIncludeWorld}
         handleSaveSnapshot={incidentCapture.captureSnapshot}
+        {...(onExitToTitle ? { onExitToTitle } : {})}
       />
 
       {/* ═══ Main content area ═══ */}
@@ -5138,7 +5141,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 >
                   📖 Chapter Ledger
                   <span style={{ color: 'var(--text-tertiary, #6a6255)', fontSize: 'var(--text-xs)' }}>
-                    {gameState.chapterArchive?.length ?? 0}
+                    {/* THR-1604: counts what the ledger lists by default (threaded
+                        chapters), not every encounter the world has archived. */}
+                    {countThreadedChapters(gameState)}
                   </span>
                 </button>
                 <div style={{ marginTop: 'var(--panel-padding)' }}>

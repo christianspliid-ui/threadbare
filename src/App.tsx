@@ -125,6 +125,16 @@ function App() {
     setGamePhase({ phase: 'playing', archetype, avatarName });
   }, []);
 
+  // THR-1604 — the way back to the title screen. The URL's dev flags
+  // (`?view=game&seeded&spawn=…`) are dropped too, or the next "New world"
+  // would be re-seeded by the quick-start path instead of starting fresh.
+  const handleExitToTitle = useCallback(() => {
+    if (window.location.search) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+    }
+    setGamePhase({ phase: 'start' });
+  }, []);
+
   const hoveredTile = useMemo(() => {
     if (!hoveredHex) return null;
     return tiles.find(t => t.coord.col === hoveredHex.col && t.coord.row === hoveredHex.row) ?? null;
@@ -171,6 +181,7 @@ function App() {
         cosmology={cosmology}
         seed={seed}
         mapSize={mapSize}
+        onExitToTitle={handleExitToTitle}
       />
     );
   }
@@ -218,6 +229,7 @@ function App() {
         seedFirst={devSeedFirst}
         seedTestPackage={isDevQuickStart}
         placeAvatarForMeeting={isDevQuickStart && devFlags.firstUnmet}
+        onExitToTitle={handleExitToTitle}
       />
     );
   }

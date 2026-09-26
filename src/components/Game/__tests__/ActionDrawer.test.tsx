@@ -127,6 +127,18 @@ describe('ActionDrawer — arm, then fire (Law 48)', () => {
     expect(screen.getByTestId('action-cast-hint').textContent).toBe('Choose a card.');
   });
 
+  it('keeps the hint mounted but hidden once armed, so Cast does not slide (THR-1604)', () => {
+    // The footer is a centred row. Unmounting the hint shrank it and moved Cast
+    // out from under the cursor between selecting a card and clicking Cast.
+    renderDrawer();
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    const hint = screen.getByTestId('action-cast-hint');
+    expect(hint.style.visibility).toBe('hidden');
+    expect(hint.getAttribute('aria-hidden')).toBe('true');
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(screen.getByTestId('action-cast-hint').style.visibility).toBe('visible');
+  });
+
   it('disarms when the armed card is clicked again', () => {
     renderDrawer();
     fireEvent.click(screen.getByTestId('action-card-dream'));

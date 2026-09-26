@@ -34,7 +34,18 @@ export function NotablesButton({ gameState }: NotablesButtonProps) {
             aria-label={`${activeCount} active notable agenda${activeCount !== 1 ? 's' : ''}`}
             onClick={() => setOpen(o => !o)}
           />
-          <span className="topbar-section-label topbar-compact-hide">Notables</span>
+          {/* THR-1604: the word is part of the chip. Players click the label, not the
+              icon; a dead label reads as a broken panel. Mouse-only — the icon
+              button already carries the accessible name and keyboard focus. */}
+          <span
+            className="topbar-section-label topbar-compact-hide"
+            data-testid="notables-chip-label"
+            aria-hidden="true"
+            style={{ cursor: 'pointer' }}
+            onClick={() => setOpen(o => !o)}
+          >
+            Notables
+          </span>
         </div>
       }
       open={open}
