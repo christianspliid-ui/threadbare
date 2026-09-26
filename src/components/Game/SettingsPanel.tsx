@@ -45,6 +45,9 @@ interface SettingsPanelProps {
   includeWorldInSnapshot?: boolean;
   onToggleIncludeWorld?: () => void;
   onSaveSnapshot?: () => void;
+  // Leave the game (THR-1604). Optional: the section renders only when wired.
+  /** End this world and return to the title screen. */
+  onExitToTitle?: () => void;
 }
 
 export function SettingsPanel({
@@ -73,9 +76,13 @@ export function SettingsPanel({
   includeWorldInSnapshot,
   onToggleIncludeWorld,
   onSaveSnapshot,
+  onExitToTitle,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [paletteId, setPaletteId] = useState<PaletteThemeId>(getActivePaletteId());
+  // Leaving loses the world (there is no save), so the first press only asks.
+  const [confirmingExit, setConfirmingExit] = useState(false);
+  useEffect(() => { if (!open) setConfirmingExit(false); }, [open]);
 
   // Handle Escape key and click-outside
   useEffect(() => {
@@ -468,6 +475,52 @@ export function SettingsPanel({
               >
                 Save a snapshot
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Game Section — the way back to the title screen (THR-1604).
+            There is no save, so the button asks before it acts and says what
+            is lost. Law 21: the confirm is `secondary`, never gold. */}
+        {onExitToTitle && (
+          <div style={sectionStyle}>
+            <div style={sectionHeaderStyle}>Game</div>
+            <div style={{ padding: '8px 16px' }}>
+              {confirmingExit ? (
+                <div data-testid="exit-to-title-confirm" role="group" aria-label="Confirm return to title">
+                  <div style={{ ...settingLabelStyle, marginBottom: 8 }}>
+                    Return to the title screen? This world will be lost.
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      data-testid="exit-to-title-yes"
+                      onClick={() => { setConfirmingExit(false); onExitToTitle(); }}
+                    >
+                      Return to title
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid="exit-to-title-cancel"
+                      onClick={() => setConfirmingExit(false)}
+                    >
+                      Stay
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  fullWidth
+                  data-testid="exit-to-title"
+                  onClick={() => setConfirmingExit(true)}
+                >
+                  Return to title
+                </Button>
+              )}
             </div>
           </div>
         )}

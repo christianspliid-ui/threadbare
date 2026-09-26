@@ -69,7 +69,6 @@ function DropdownRoot({ trigger, open, onOpenChange, align = 'right', children }
     : trigger;
 
   const panelStyle: React.CSSProperties = {
-    ...position,
     minWidth: '200px',
     maxWidth: '320px',
     background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
@@ -82,12 +81,20 @@ function DropdownRoot({ trigger, open, onOpenChange, align = 'right', children }
   return (
     <>
       {triggerElement}
+      {/* THR-1604: the fixed position sits on a wrapper *outside* the animated
+          element. The enter animation ends on `transform: translateY(0)` with
+          `forwards` fill, and any transform makes its element the containing
+          block for a fixed descendant — so a fixed panel inside it was placed
+          relative to that wrapper at the foot of <body>, one viewport below the
+          screen. Every Rivals / Notables panel opened invisibly. */}
       {createPortal(
-        <AnimateMount show={open} animation="anim-fade-down">
-          <div ref={panelRef} style={panelStyle} data-testid="dropdown-panel">
-            {children}
-          </div>
-        </AnimateMount>,
+        <div style={position}>
+          <AnimateMount show={open} animation="anim-fade-down">
+            <div ref={panelRef} style={panelStyle} data-testid="dropdown-panel">
+              {children}
+            </div>
+          </AnimateMount>
+        </div>,
         document.body,
       )}
     </>

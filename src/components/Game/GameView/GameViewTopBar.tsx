@@ -81,6 +81,9 @@ export interface GameViewTopBarProps {
   includeWorldInSnapshot: boolean;
   handleToggleIncludeWorld: () => void;
   handleSaveSnapshot: () => void;
+
+  // Leave the game for the title screen (THR-1604)
+  onExitToTitle?: () => void;
 }
 
 export function GameViewTopBar({
@@ -123,6 +126,7 @@ export function GameViewTopBar({
   includeWorldInSnapshot,
   handleToggleIncludeWorld,
   handleSaveSnapshot,
+  onExitToTitle,
 }: GameViewTopBarProps) {
   // ═══ Top bar — v7 visual language: solid bg, hairline border, two-tier label/value pattern ═══
   return (
@@ -269,6 +273,7 @@ export function GameViewTopBar({
               includeWorldInSnapshot={includeWorldInSnapshot}
               onToggleIncludeWorld={handleToggleIncludeWorld}
               onSaveSnapshot={handleSaveSnapshot}
+              {...(onExitToTitle ? { onExitToTitle } : {})}
             />
           </div>
         </div>

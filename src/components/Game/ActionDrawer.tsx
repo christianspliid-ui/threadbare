@@ -345,15 +345,21 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           </Button>
           {/* Law 25: a control that cannot fire says why, rather than sitting
               inert. The armed-but-blocked case is already spoken by the card's
-              own blocked reason, so this line only has to name the empty case. */}
-          {!armedSlot && (
-            <span
-              data-testid="action-cast-hint"
-              style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}
-            >
-              Choose a card.
-            </span>
-          )}
+              own blocked reason, so this line only has to name the empty case.
+              The hint stays mounted and only hides once a card is armed: the
+              footer is a centred row, so unmounting it shrank the row and slid
+              Cast sideways under the cursor between select and click (THR-1604). */}
+          <span
+            data-testid="action-cast-hint"
+            aria-hidden={armedSlot ? true : undefined}
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              visibility: armedSlot ? 'hidden' : 'visible',
+            }}
+          >
+            Choose a card.
+          </span>
           {lockedSlots.length > 0 && (
             <Tooltip id="ui.action_locked">
               <Button

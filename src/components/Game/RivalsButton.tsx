@@ -35,7 +35,18 @@ export function RivalsButton({ definitions, states }: RivalsButtonProps) {
             aria-label={`${definitions.length} Rival God${definitions.length !== 1 ? 's' : ''}${maxHostility > 0 ? ` (highest hostility: ${hostilityLabel(maxHostility)})` : ''}`}
             onClick={() => setOpen(o => !o)}
           />
-          <span className="topbar-section-label topbar-compact-hide">Rivals</span>
+          {/* THR-1604: the word is part of the chip. Players click the label, not the
+              icon; a dead label reads as a broken panel. Mouse-only — the icon
+              button already carries the accessible name and keyboard focus. */}
+          <span
+            className="topbar-section-label topbar-compact-hide"
+            data-testid="rivals-chip-label"
+            aria-hidden="true"
+            style={{ cursor: 'pointer' }}
+            onClick={() => setOpen(o => !o)}
+          >
+            Rivals
+          </span>
         </div>
       }
       open={open}
