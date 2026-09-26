@@ -72,7 +72,7 @@ Mandates are the player's win conditions — multi-stage objectives tied to sphe
 | Type | Params | What it checks |
 |------|--------|---------------|
 | `node_count` | `nodeType`, `edgeType`, `minCount` | Count of nodes connected by edge type |
-| `edge_count` | `edgeType`, `minCount` | Count of edges of a given type |
+| `edge_count` | `edgeType`, `minCount`, optional `sinceMandateStart` | Count of edges of a given type. `sinceMandateStart: true` counts only edges stamped `properties.tick` at or after the mandate's `assignedTick` — use it for any edge type worldgen also writes (e.g. `constructed_by`), or the stage is met before the player acts (THR-1618) |
 | `sphere_weight` | `sphere`, `minWeight` | Accumulated influence in a sphere |
 | `actor_tier` | `minTier` | Player's tier level |
 

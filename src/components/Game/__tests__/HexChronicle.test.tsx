@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { HexChronicle } from '../HexChronicle';
 import type { WorldGraph } from '../../../engine/graph';
 import type { SphereName } from '../../../types';
+import { CULTURE_LOCATION_PROSE } from '../../../data/prose-layer-content';
 
 function makeTestProps(overrides: Partial<any> = {}) {
   // Create a minimal mock graph
@@ -312,5 +313,28 @@ describe('HexChronicle — held by (THR-1155)', () => {
     );
 
     expect(screen.queryByTestId('chronicle-held-by')).toBeNull();
+  });
+
+  // THR-1623 — the chronicle keys culture prose through the same derived foundation pair
+  // the location and mortal resolvers use. A Light- or Darkness-foundation culture used
+  // to build `darkness_light` / `light_light`, which no table entry answers, and fell back
+  // to the generic "claim this land" line.
+  const cultureOf = (foundationBias: string, dominantSpheres: SphereName[]) => [{
+    cultureName: 'The Ashen Vigil',
+    cultureId: 'culture_vigil',
+    dominantSpheres,
+    foundationBias,
+    strength: 0.8,
+  }];
+
+  it.each([
+    ['darkness', ['mind'] as SphereName[], 'order_darkness'],
+    ['light', ['chaos', 'life'] as SphereName[], 'chaos_light'],
+    ['order', ['darkness'] as SphereName[], 'order_darkness'],
+  ])('a %s-foundation culture venerating %j reads %s culture prose, not the fallback', (bias, spheres, key) => {
+    const { container } = render(<HexChronicle {...makeTestProps({ cultures: cultureOf(bias, spheres) })} />);
+    const text = container.textContent ?? '';
+    expect(CULTURE_LOCATION_PROSE[key].some(line => text.includes(line))).toBe(true);
+    expect(text).not.toContain('claim this land');
   });
 });

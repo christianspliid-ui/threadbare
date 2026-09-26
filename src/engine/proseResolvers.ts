@@ -10,6 +10,7 @@
 import type { ProseLayer } from '../types/prose';
 import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
+import { getCultureFoundationPairKey, type FoundationPairSource } from './cultureFoundationPair';
 import {
   BIOME_PROSE,
   CULTURE_LOCATION_PROSE,
@@ -148,33 +149,44 @@ export function biomeResolver(nodeId: string, graph: WorldGraph, seed: number): 
 }
 
 /**
+ * The identity of the culture a node belongs to, via its outgoing `belongs_to` edges.
+ * Takes the first edge whose target carries a `cultureIdentity`, preferring a current
+ * affiliation over a `cultureLayer: 'historical'` one. Fail-soft: `undefined` when none.
+ */
+function findCultureIdentity(nodeId: string, graph: WorldGraph): FoundationPairSource | undefined {
+  let historical: FoundationPairSource | undefined;
+  for (const edge of graph.getOutgoingEdges(nodeId, 'belongs_to')) {
+    const identity = graph.getNode(edge.target)?.properties?.cultureIdentity as
+      | FoundationPairSource
+      | undefined;
+    if (!identity) continue;
+    if (edge.properties?.cultureLayer === 'historical') {
+      historical ??= identity;
+      continue;
+    }
+    return identity;
+  }
+  return historical;
+}
+
+/**
  * cultureResolver — culture-affiliated location prose via belongs_to edge.
  * Priority: 80 (character)
  * Category: 'character'
  *
  * Location -> belongs_to -> Culture node
- * Reads cultureIdentity.foundationPair from culture.
+ * Keys CULTURE_LOCATION_PROSE by the culture's derived foundation pair (THR-1623).
  */
 export function cultureResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
   const node = graph.getNode(nodeId);
   if (!node) return [];
 
-  // Find outgoing belongs_to edges
-  const edges = graph.getOutgoingEdges(nodeId, 'belongs_to');
-  if (edges.length === 0) return [];
+  // Derive the foundation-pair key from the culture's identity (THR-1623) —
+  // no culture stores a pair, so reading one directly resolved nothing.
+  const pairKey = getCultureFoundationPairKey(findCultureIdentity(nodeId, graph));
+  if (!pairKey) return [];
 
-  // Get first culture edge (assume one belongs_to per location)
-  const cultureEdge = edges[0];
-  const cultureNode = graph.getNode(cultureEdge.target);
-  if (!cultureNode) return [];
-
-  // Extract foundationPair from cultureIdentity
-  const cultureIdentity = cultureNode.properties?.cultureIdentity as
-    | { foundationPair?: string }
-    | undefined;
-  if (!cultureIdentity?.foundationPair) return [];
-
-  const templates = CULTURE_LOCATION_PROSE[cultureIdentity.foundationPair];
+  const templates = CULTURE_LOCATION_PROSE[pairKey];
   if (!templates) return [];
 
   const template = pickTemplate(templates, seed);
@@ -374,29 +386,19 @@ export function archetypeResolver(nodeId: string, graph: WorldGraph, seed: numbe
  * Category: 'character'
  *
  * Agent -> belongs_to -> Culture node
- * Reads cultureIdentity.foundationPair from culture.
- * Looks up CULTURE_LOCATION_PROSE[foundationPair] and picks template via seeded PRNG.
+ * Keys CULTURE_LOCATION_PROSE by the culture's derived foundation pair (THR-1623)
+ * and picks a template via seeded PRNG.
  */
 export function agentCultureResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
   const node = graph.getNode(nodeId);
   if (!node) return [];
 
-  // Find outgoing belongs_to edges
-  const edges = graph.getOutgoingEdges(nodeId, 'belongs_to');
-  if (edges.length === 0) return [];
+  // Derive the foundation-pair key from the culture's identity (THR-1623) —
+  // no culture stores a pair, so reading one directly resolved nothing.
+  const pairKey = getCultureFoundationPairKey(findCultureIdentity(nodeId, graph));
+  if (!pairKey) return [];
 
-  // Get first culture edge
-  const cultureEdge = edges[0];
-  const cultureNode = graph.getNode(cultureEdge.target);
-  if (!cultureNode) return [];
-
-  // Extract foundationPair from cultureIdentity
-  const cultureIdentity = cultureNode.properties?.cultureIdentity as
-    | { foundationPair?: string }
-    | undefined;
-  if (!cultureIdentity?.foundationPair) return [];
-
-  const templates = CULTURE_LOCATION_PROSE[cultureIdentity.foundationPair];
+  const templates = CULTURE_LOCATION_PROSE[pairKey];
   if (!templates) return [];
 
   const template = pickTemplate(templates, seed);

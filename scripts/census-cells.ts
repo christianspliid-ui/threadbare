@@ -22,7 +22,8 @@ import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
 import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
 import { isAutonomousDecisionActor } from '../src/engine/strategicKindReachability';
 import { deriveCalling, activeAmbitionInput, leadingReachPair } from '../src/engine/calling';
-import { getAgentAmbitions } from '../src/engine/graphQueries';
+import { getAgentAmbitions, getAgentLocationId } from '../src/engine/graphQueries';
+import { resolveDurableActorLocation } from '../src/engine/tradeRouteOps';
 import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
 import { deriveCells, VERBS_BY_CATEGORY } from '../src/data/division-rule-tables';
 import { UNDERTAKING_MODEL } from '../src/data/strategic-action-constants';
@@ -54,6 +55,15 @@ interface SeedResult {
   startsByCell: Record<string, number>;
   completionsByCell: Record<string, number>;
   failuresByCell: Record<string, number>;
+  /**
+   * THR-1619: a completion whose object verb refused (`strategic_world_change` with
+   * `succeeded: false`), keyed `<verb>.<kind>:<error>`. The history ledger records these
+   * as `completed` — the undertaking ran its course — so without this map a verb that
+   * fails every time reads as a healthy cell.
+   */
+  verbFailures: Record<string, number>;
+  /** THR-1619: each refused verb with where its actor stood, so a far-end fault is readable. */
+  verbFailureSamples: { tick: number; actorId: string; objectId: string; reason: string; actorLocationId: string | null; actorDurableLocationId: string | null }[];
   bandsByCell: Record<string, Record<string, number>>;
   progressRequiredByCell: Record<string, Record<string, number>>;
   probByCell: Record<string, { sum: number; n: number }>;
@@ -92,6 +102,8 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedRes
   const seenControls = new Set<string>();
   const controlsByCell: Record<string, number> = {};
   const failuresByCell: Record<string, number> = {};
+  const verbFailures: Record<string, number> = {};
+  const verbFailureSamples: SeedResult['verbFailureSamples'] = [];
   const bandsByCell: Record<string, Record<string, number>> = {};
   const progressRequiredByCell: Record<string, Record<string, number>> = {};
   const probByCell: Record<string, { sum: number; n: number }> = {};
@@ -134,6 +146,17 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedRes
         if (pr > 0) { const s = (progressRequiredByCell[tid] ??= {}); s[String(pr)] = (s[String(pr)] ?? 0) + 1; }
         const prob = a.probability as number | undefined;
         if (typeof prob === 'number') { const p = (probByCell[tid] ??= { sum: 0, n: 0 }); p.sum += prob; p.n += 1; }
+        continue;
+      }
+      if (a.category === 'strategic_world_change' && a.succeeded === false && a.undertakingVerb) {
+        const reason = /failed ((.*))$/.exec(String(a.summary ?? ''))?.[1] ?? '?';
+        bump(verbFailures, `${a.undertakingVerb}.${a.objectTypeId}:${reason}`);
+        const actorId = String(a.actorId ?? '?');
+        verbFailureSamples.push({
+          tick: state.tick, actorId, objectId: String(a.objectId ?? '?'), reason,
+          actorLocationId: getAgentLocationId(state.graph, actorId) ?? null,
+          actorDurableLocationId: resolveDurableActorLocation(state.graph, actorId) ?? null,
+        });
         continue;
       }
       if (a.category === 'undertaking_cell_unreachable') {
@@ -211,7 +234,7 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedRes
 
   return {
     seed, ticks, model: UNDERTAKING_MODEL,
-    startsByCallingCell, completionsByCallingCell, startsByCell, completionsByCell, failuresByCell,
+    startsByCallingCell, completionsByCallingCell, startsByCell, completionsByCell, failuresByCell, verbFailures, verbFailureSamples,
     bandsByCell, progressRequiredByCell, probByCell, controlsByCell,
     endedValues, unreachable, tierDefaultByKind, callingPopulation, ambitionStatuses, refusalsByCell, proposedByCell,
     liveCellIds: UNDERTAKING_CELL_TEMPLATES.map(t => t.id).sort(),
@@ -227,6 +250,7 @@ const results = args.seeds.map(s => {
   const r = censusOneSeed(s, args.ticks, args.map);
   console.log(`seed ${s} [model=${r.model}]: ${args.ticks} ticks in ${((Date.now() - t0) / 1000).toFixed(0)}s — starts ${Object.values(r.startsByCell).reduce((x, y) => x + y, 0)}, completions ${Object.values(r.completionsByCell).reduce((x, y) => x + y, 0)}, cells started ${Object.keys(r.startsByCell).length}/${r.liveCellIds.length}, ended values ${JSON.stringify(r.endedValues)}`);
   console.log(`seed ${s} unreachable: ${JSON.stringify(r.unreachable)}`);
+  console.log(`seed ${s} verb failures: ${JSON.stringify(r.verbFailures)}`);
   console.log(`seed ${s} calibration (multi-tick cells, starts/completions/finishRate):`);
   for (const [cellId, c] of Object.entries(r.calibration).sort()) {
     console.log(`  ${cellId}: ${c.starts}/${c.completions} (${(c.finishRate * 100).toFixed(1)}%)`);

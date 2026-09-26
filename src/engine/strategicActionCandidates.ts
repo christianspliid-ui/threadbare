@@ -43,6 +43,7 @@ import { getAgentLocationId, getFactionMembershipEdges } from './graphQueries';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRoute';
+import { resolveDurableActorLocation } from './tradeRouteOps';
 import { getPlaceNodes } from './sublocationShape';
 import { getGroupKind } from './groupShape';
 import { getGroupPosition } from './groups/groupQueries';
@@ -568,6 +569,35 @@ export function orderTargetsByProximity(
   return withDistance.slice(0, cap).map(entry => entry.node);
 }
 
+/**
+ * Does this template open a route to its target? Both shapes: the legacy
+ * `create_trade_route` hint and the `create × route` cell (and any override compiled
+ * from it, which keeps the cell's verb and kind). THR-1619.
+ */
+export function createsRoute(template: StrategicActionTemplate): boolean {
+  return template.mutationHint?.type === 'create_trade_route'
+    || (template.undertakingVerb === 'create' && template.objectTypeId === 'route');
+}
+
+/**
+ * The settlements a route from this actor would start at — so none of them can be its
+ * far end (THR-1619). Every id either writer may pick as the near end: where the actor
+ * stands, that place's parent Location, and the durable Location (which is also what
+ * the project records as its origin at start).
+ */
+export function actorOwnSettlementIds(
+  graph: WorldGraph,
+  actorId: string,
+  currentLocationId: string,
+): Set<string> {
+  const ids = new Set<string>([currentLocationId]);
+  const parent = graph.getNode(currentLocationId)?.properties.parentLocationId;
+  if (typeof parent === 'string') ids.add(parent);
+  const durable = resolveDurableActorLocation(graph, actorId);
+  if (durable) ids.add(durable);
+  return ids;
+}
+
 function findValidTargets(
   graph: WorldGraph,
   actorId: string,
@@ -639,7 +669,16 @@ function findValidTargets(
 
     case 'location_subtype': {
       const allLocations = graph.getNodesByType('location');
+      // THR-1619: a route's far end is never the actor's own settlement. Proximity
+      // ordering put it first (distance 0), and both route writers then found no near
+      // end distinct from it — the cell failed `no_endpoints` at completion, the legacy
+      // arm silently wrote nothing. Excluded here, before the cap, so it cannot also
+      // spend one of the scan's slots.
+      const ownSettlements = createsRoute(template)
+        ? actorOwnSettlementIds(graph, actorId, currentLocationId)
+        : null;
       const matching = allLocations.filter(loc => {
+        if (ownSettlements?.has(loc.id)) return false;
         const subtype = (loc.properties.locationSubtype ?? loc.properties.locationType) as string | undefined;
         return subtype && rule.subtypes.includes(subtype);
       });

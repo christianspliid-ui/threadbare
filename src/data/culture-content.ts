@@ -1221,6 +1221,12 @@ export const CULTURE_NAME_FRAGMENTS: {
     spirit: ['Ghost', 'Dream', 'Whisper', 'Veil', 'Prayer'],
     time: ['Hour', 'Tide', 'Dust', 'Ruin', 'Memory'],
     entropy: ['Ash', 'Hollow', 'Fade', 'Bone', 'Rust'],
+    // THR-1622: selectSpheres draws from all twelve spheres, so a culture can venerate a
+    // foundation sphere first — these four used to fall through to the raw lowercase id.
+    chaos: ['Tempest', 'Riot', 'Whirl', 'Maelstrom', 'Wildfire'],
+    order: ['Law', 'Oath', 'Seal', 'Ledger', 'Crown'],
+    light: ['Sun', 'Dawn', 'Lantern', 'Halo', 'Beacon'],
+    darkness: ['Night', 'Shade', 'Dusk', 'Eclipse', 'Gloam'],
   },
   biome: {
     desert: ['Sands', 'Dunes', 'Wastes', 'Oasis'],
@@ -1243,6 +1249,30 @@ export const CULTURE_NAME_FRAGMENTS: {
     badlands: ['Badlands', 'Gulch', 'Dry Canyons', 'Cracked Earth'],
     farmland: ['Furrows', 'Tilth', 'Harvest-Lands', 'Homesteads'],
     forested_hills: ['Green Heights', 'Wooded Ridges', 'Forest Slopes', 'Dappled Hills'],
+    // THR-1622: every TerrainType carries fragments, so no culture name can fall back to a
+    // raw biome id ("The Open Earth of the mountain_pass"). Test-enforced in cultureGenerator.test.ts.
+    floodplain: ['Floodlands', 'Silt Fields', 'Riverflats', 'Wet Meadows'],
+    tropical_forest: ['Canopy', 'Rainwood', 'Green Vault', 'Vine-Lands'],
+    evergreen_forest: ['Evergreens', 'Needlewood', 'Pine Halls', 'Green Dark'],
+    light_forest: ['Copses', 'Sunlit Woods', 'Birchlands', 'Open Glades'],
+    dead_forest: ['Deadwood', 'Grey Timber', 'Bare Branches', 'Stillwood'],
+    moor_bog: ['Moors', 'Heath', 'Peat-Moors', 'Mistlands'],
+    high_mountains: ['High Peaks', 'Snowcaps', 'Sky-Roof', 'Sky-Crags'],
+    mountain_pass: ['Pass', 'High Road', 'Saddle', 'Narrows'],
+    great_home_trees: ['Great Trees', 'Elder Boughs', 'Heartwood', 'World-Roots'],
+    oasis: ['Oasis', 'Wellspring', 'Palm-Shade', 'Green Water'],
+    rocky_desert: ['Stone Wastes', 'Hamada', 'Gravel Plains', 'Sunstone'],
+    sand_dunes: ['Dunes', 'Dune Sea', 'Drifting Sands', 'Sand Waves'],
+    arctic: ['Far North', 'White Waste', 'Polar Reach', 'Icebound'],
+    snow_fields: ['Snowfields', 'White Plains', 'Drifts', 'Snowmantle'],
+    coast: ['Coast', 'Strand', 'Shoreline', 'Headlands'],
+    coastal_shallows: ['Shallows', 'Tidewater', 'Sandbars', 'Lagoon'],
+    river: ['River', 'Riverlands', 'Fords', 'Banks'],
+    lake: ['Lake', 'Lakelands', 'Mere', 'Still Waters'],
+    reef: ['Reef', 'Coral', 'Shoals', 'Atoll'],
+    ocean: ['Sea', 'Open Water', 'Deep Blue', 'Wavelands'],
+    deep_ocean: ['Deeps', 'Abyss', 'Dark Water', 'Trench'],
+    tropical_ocean: ['Warm Seas', 'Isles', 'Blue Lagoons', 'Sun Seas'],
   },
   patterns: [
     'The {foundation} {sphere} of the {biome}',
