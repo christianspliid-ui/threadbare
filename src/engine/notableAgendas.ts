@@ -65,6 +65,7 @@ import {
   NOTABLE_AGENDA_CRACK_PRESSURE_MULTIPLIER,
 } from '../data/notable-agenda-config';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
+import { humanizePhaseId } from './phaseComposition';
 
 // ─── World-flag helpers ────────────────────────────────────────────────────
 // Single source of truth for agenda flag names (mirrors rival `schemeFlags`).
@@ -356,6 +357,11 @@ function substituteAgendaProse(
     .replace(/\{target\}/g, targetName);
 }
 
+/** `"Lord Harn's campaign: banners called"` — the Chronicle headline of an agenda phase. */
+export function notableAgendaPhaseTitle(notableName: string, familyLabel: string, phaseId: string): string {
+  return `${notableName}'s ${familyLabel.toLowerCase()}: ${humanizePhaseId(phaseId).toLowerCase()}`;
+}
+
 export interface AgendaLaunchPlan {
   composition: ActiveComposition;
   /** world-flag deltas to merge: phase-1 armed + invest counter + cooldown stamp. */
@@ -393,6 +399,9 @@ export function buildNotableAgenda(
       },
       activates: [],
       rationale: substituteAgendaProse(chosen, notableName, factionName, boundTargetName),
+      // THR-1585: a player-facing title — without it the Chronicle headline
+      // fell back to the phase id (and, before THR-1602, the composition id).
+      title: notableAgendaPhaseTitle(notableName, family.label, beat.phaseId),
     };
   });
 
