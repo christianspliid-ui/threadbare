@@ -160,7 +160,9 @@ describe('remote-anchor gate — wired', () => {
     withRemoteTemplate(GUILD, () => {
       const result = run(farOnlyGraph());
 
-      expect(result.candidates.some(c => c.targetNodeId === 'loc_far_town')).toBe(false);
+      // Scoped to the guild: the (non-remote) route template also reaches the far town
+      // now that it no longer spends its slot on the merchant's own capital (THR-1619).
+      expect(result.candidates.some(c => c.templateId === GUILD && c.targetNodeId === 'loc_far_town')).toBe(false);
       expect(result.rejections).toContainEqual({
         templateId: GUILD, reason: 'no_remote_anchor:loc_far_town',
       });
@@ -191,7 +193,7 @@ describe('remote-anchor gate — wired', () => {
       // Same army, same hex, same edge type — only the commander differs.
       commandArmyAt(graph, FAR, 'actor_rival');
 
-      expect(run(graph).candidates.some(c => c.targetNodeId === 'loc_far_town')).toBe(false);
+      expect(run(graph).candidates.some(c => c.templateId === GUILD && c.targetNodeId === 'loc_far_town')).toBe(false);
     });
   });
 
@@ -200,7 +202,7 @@ describe('remote-anchor gate — wired', () => {
       const graph = farOnlyGraph();
       commandArmyAt(graph, { col: 5, row: 5 }); // beside the merchant, not the town
 
-      expect(run(graph).candidates.some(c => c.targetNodeId === 'loc_far_town')).toBe(false);
+      expect(run(graph).candidates.some(c => c.templateId === GUILD && c.targetNodeId === 'loc_far_town')).toBe(false);
     });
   });
 
