@@ -55,7 +55,7 @@ export function LairMonsterCard({ monster, onSelect }: LairMonsterCardProps) {
       >
         <EntityVisual
           size="chip"
-          entity={{ id: monster.id, kind: 'monster', name: monster.name }}
+          entity={{ id: monster.id, kind: 'monster', name: monster.name, knownSrc: monster.portraitSrc }}
           onClick={onSelect ? () => onSelect(monster.id) : undefined}
         />
         <Tooltip id="ui.lair_monster">

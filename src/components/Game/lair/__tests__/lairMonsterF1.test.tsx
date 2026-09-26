@@ -133,6 +133,14 @@ describe('HexSidebar lair block (F1)', () => {
     expect(container.innerHTML).not.toContain('elite_');
   });
 
+  it('draws the family portrait on the lair card chip, graph-free (THR-1554)', () => {
+    const model = buildLairMonsterCardModel(graphWith(lairNode(), eliteNode()), LAIR_ID);
+    expect(model?.monster?.portraitSrc).toBe(MONSTER_PORTRAIT);
+    const { container } = render(<HexSidebar {...baseProps} lairMonsterCards={{ [LAIR_ID]: model }} />);
+    const img = container.querySelector('[data-testid="lair-monster-card"] img');
+    expect(img?.getAttribute('src')).toBe(MONSTER_PORTRAIT);
+  });
+
   it('renders no monster row, and still no raw id, when the elite does not resolve', () => {
     const graph = graphWith(lairNode());
     const { container } = render(

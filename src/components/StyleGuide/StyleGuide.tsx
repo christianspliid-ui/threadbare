@@ -1442,7 +1442,7 @@ function EntityVisualDemo() {
         </Label>
         <Row>
           {MONSTER_FAMILY_IDS.map((family) => (
-            <div key={family} style={{ width: 100 }} data-testid={`styleguide-monster-family-${family}`}>
+            <div key={family} style={{ width: 100, alignSelf: 'flex-start' }} data-testid={`styleguide-monster-family-${family}`}>
               <EntityVisual
                 size="portrait"
                 descriptor={mkVisual({
@@ -1454,7 +1454,7 @@ function EntityVisualDemo() {
                   kind: 'monster',
                 })}
               />
-              <Label>{family} · {MONSTER_FAMILIES[family].sphere}</Label>
+              <Label>{family}</Label>
             </div>
           ))}
         </Row>
