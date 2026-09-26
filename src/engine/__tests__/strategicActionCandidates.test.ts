@@ -396,3 +396,62 @@ describe('generateStrategicCandidates — route-formation balance bias wiring (T
     expect(Math.max(...routeCandidates.map(c => c.scoreComponents.worldImpact))).toBeGreaterThan(0.8);
   });
 });
+
+describe('generateStrategicCandidates — a route never ends where it starts (THR-1619)', () => {
+  /**
+   * The merchant stands in a town — itself a valid route target subtype, and at
+   * distance 0 the nearest one. Before THR-1619 the proximity ordering offered it as
+   * the far end, and both route writers then found no near end distinct from it.
+   */
+  function buildTownGraph(standAtPlace: boolean) {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'actor_merchant',
+      name: 'Merchant Kael',
+      type: 'actor',
+      properties: {
+        actorType: 'individual',
+        spotlightTier: 'spotlight',
+        domainCapabilities: { gold: 24, eye: 16, heart: 12, shadow: 4, iron: 8, stone: 8, star: 4, veil: 4 },
+      },
+    });
+    graph.addNode({ id: 'loc_home', name: 'Home Town', type: 'location', properties: { locationSubtype: 'town', hexCol: 5, hexRow: 5 } });
+    graph.addNode({ id: 'loc_far', name: 'Millhaven', type: 'location', properties: { locationSubtype: 'town', hexCol: 8, hexRow: 5 } });
+    // A place inside the home town: standing here must exclude its parent too.
+    graph.addNode({ id: 'loc_home_inn', name: 'The Inn', type: 'location', properties: { parentLocationId: 'loc_home', sublocationTypeId: 'inn', hexCol: 5, hexRow: 5 } });
+    graph.addEdge({ id: 'located_merchant', source: 'actor_merchant', target: standAtPlace ? 'loc_home_inn' : 'loc_home', type: 'located_at', properties: {} });
+    graph.addNode({ id: 'ambition_node', name: 'Dominate Regional Trade', type: 'event', properties: { templateId: 'ambition_dominate_trade' } });
+    graph.addEdge({ id: 'pursues_merchant_trade', source: 'actor_merchant', target: 'ambition_node', type: 'pursues', properties: { status: 'active', priority: 'primary', assignedTick: 1 } });
+    return graph;
+  }
+
+  const routeTargets = (graph: WorldGraph, templateId: string, model: 'templates' | 'cells') =>
+    generateStrategicCandidates(
+      graph, 'actor_merchant', ['ambition_dominate_trade'], undefined, 10, mulberry32(42),
+      { templateId, bypass: new Set(), preferOwnedTarget: false }, model,
+    ).candidates.filter(c => c.templateId === templateId).map(c => c.targetNodeId);
+
+  for (const standAtPlace of [false, true]) {
+    const where = standAtPlace ? 'a place inside the settlement' : 'the settlement itself';
+
+    it(`legacy establish-route never offers the actor's own settlement (standing at ${where})`, () => {
+      const targets = routeTargets(buildTownGraph(standAtPlace), 'strategic_establish_trade_route', 'templates');
+      expect(targets).toContain('loc_far');
+      expect(targets).not.toContain('loc_home');
+      expect(targets).not.toContain('loc_home_inn');
+    });
+
+    it(`the create × route cell never offers the actor's own settlement (standing at ${where})`, () => {
+      const targets = routeTargets(buildTownGraph(standAtPlace), 'cell.create.route', 'cells');
+      expect(targets).toContain('loc_far');
+      expect(targets).not.toContain('loc_home');
+      expect(targets).not.toContain('loc_home_inn');
+    });
+  }
+
+  it('leaves non-route location_subtype templates free to target the home settlement', () => {
+    // A place is built *in* a settlement — its own town is a legitimate site.
+    const targets = routeTargets(buildTownGraph(false), 'cell.create.place', 'cells');
+    expect(targets).toContain('loc_home');
+  });
+});
