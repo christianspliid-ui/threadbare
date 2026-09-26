@@ -18,12 +18,34 @@
  * before touching a tunable.
  *
  * Deterministic: one seeded stream per fight (NFP #3), never `Math.random`.
+ *
+ * **THR-1581 (dice re-fit) — the fixture keeps its odds, not its capability
+ * numbers** (forecast-window plan, second amendment, decision 3). The row
+ * describes a *matchup* — a bold guard against a steep elite is a close fight —
+ * and was stamped on the saturated curve, where every protagonist read ≈ 1.0.
+ * On `main`'s dice a step rolled `P = capability − difficulty + modifiers`; on the
+ * re-fitted dice it rolls `P = ODDS_AT_PAR + ODDS_GAIN × (capability − difficulty)
+ * + modifiers`. Modifiers sit outside the gain in both, and the elite's ratings
+ * are authored words, so one capability per reach preserves every step on that
+ * reach: `capability = difficulty + (P_old − ODDS_AT_PAR − modifiers) / ODDS_GAIN`,
+ * with `P_old − modifiers = c_old − difficulty`.
+ *
+ * | Reach | Difficulty (steep) | `main` capability | Re-stamped capability |
+ * |---|---|---|---|
+ * | clash (iron) | 0.50 | 0.999 | 0.5 + (0.999 − 0.5 − 0.40) / 1.25 ≈ 0.579 |
+ * | nerve (heart) | 0.50 | 0.89 | 0.5 + (0.89 − 0.5 − 0.40) / 1.25 = 0.492 |
+ *
+ * `FIGHT_RATING_DIFFICULTY` is unchanged. `fighter: 'master'` runs the same row
+ * with a capability-1.0 fighter — a diagnostic of what a master does to a steep
+ * elite on the new dice, reported and never gated.
  */
 
 import { WorldGraph } from '../engine/graph';
 import { createUnifiedAction } from '../engine/unifiedActionLifecycle';
 import { executeStepResult, resolveUncontestedStep } from '../engine/unifiedActionResolution';
 import { computeCapability } from '../engine/domainCapability';
+import { ODDS_AT_PAR, ODDS_GAIN } from '../engine/resolutionService';
+import { FIGHT_RATING_DIFFICULTY } from '../data/fight-constants';
 import { mulberry32 } from '../lib/prng';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
 import { FIGHT_LAIR_CONFRONT } from '../data/encounters/fight-lair-confront';
@@ -53,13 +75,32 @@ export const FIGHT_CALIBRATION_TOLERANCE = 10;
 /** Fights per calibration run (FB7 Done-when). */
 export const FIGHT_CALIBRATION_FIGHTS = 400;
 
-/** The bold guard's capability targets, and courage. */
-const BOLD_GUARD_CLASH_CAPABILITY = 1.0;
-const BOLD_GUARD_NERVE_CAPABILITY = 0.89;
+/** The bold guard's capability on `main`'s saturated curve (THR-1531's stamp), and courage. */
+const MAIN_BOLD_GUARD_CLASH_CAPABILITY = 0.999;
+const MAIN_BOLD_GUARD_NERVE_CAPABILITY = 0.89;
 const BOLD_GUARD_COURAGE = 0.35;
 
 /** The Major elite's card (THR-1531). */
 const MAJOR_ELITE_CARD = { dread: 'steep', might: 'steep', clockSize: 4, temper: 'stubborn' } as const;
+
+/**
+ * THR-1581: the capability that rolls `main`'s odds on the re-fitted dice, for a step
+ * of `difficulty` a fighter of `mainCapability` faced on `main`. See the file header.
+ */
+export function oddsPreservingCapability(mainCapability: number, difficulty: number): number {
+  return difficulty + (mainCapability - difficulty - ODDS_AT_PAR) / ODDS_GAIN;
+}
+
+/** The re-stamped bold guard (THR-1581): `main`'s odds on the re-fitted dice. */
+export const BOLD_GUARD_CLASH_CAPABILITY = oddsPreservingCapability(
+  MAIN_BOLD_GUARD_CLASH_CAPABILITY, FIGHT_RATING_DIFFICULTY[MAJOR_ELITE_CARD.might],
+);
+export const BOLD_GUARD_NERVE_CAPABILITY = oddsPreservingCapability(
+  MAIN_BOLD_GUARD_NERVE_CAPABILITY, FIGHT_RATING_DIFFICULTY[MAJOR_ELITE_CARD.dread],
+);
+
+/** Which fighter a calibration run stamps. `master` is the ungated diagnostic. */
+export type FightCalibrationFighter = 'bold_guard' | 'master';
 
 const TICK = 1000;
 const FIGHTER = 'calibration.fighter';
@@ -168,7 +209,12 @@ function resetBetweenFights(state: GameState, fightIndex: number, raw: Readonly<
   graph.getNode(FIGHTER)!.properties.domainCapabilities = { ...raw };
   for (const edge of graph.getOutgoingEdges(FIGHTER, 'has_trait')) {
     // THR-1548: the fight ending's Scarred is permanent by design; the row measures a fresh guard.
-    if (edge.target.startsWith('trait.condition.') || edge.target.startsWith('trait.scar.')) graph.removeEdge(edge.id);
+    // THR-1581: so is the experience a fight grows — `trait.experience.<reach>` edges
+    // add raw on every later read. Left in place, 400 fights drifted the guard from
+    // its stamp (nerve 0.89 → 0.994 on `main`, 0.49 → 0.83 on the re-fitted curve);
+    // the saturated old curve hid it, the re-fitted one does not.
+    if (edge.target.startsWith('trait.condition.') || edge.target.startsWith('trait.scar.')
+      || edge.target.startsWith('trait.experience.')) graph.removeEdge(edge.id);
   }
   // THR-1548 — the fight ending's other persistent writes: a slain guard, the
   // `blood_drawn` grudge (which would lend every later fight the Old-wound advantage)
@@ -214,13 +260,19 @@ function fightOnce(state: GameState, rng: () => number): UnifiedAction {
 export function runFightCalibration(
   fights: number = FIGHT_CALIBRATION_FIGHTS,
   seed = 1531,
+  fighter: FightCalibrationFighter = 'bold_guard',
 ): FightCalibrationReport {
   const graph = fixtureWorld();
-  // The sigmoid never quite reaches 1.0; a thousandth under it is the bold guard.
-  const raw = {
-    iron: rawForCapability(graph, 'iron', BOLD_GUARD_CLASH_CAPABILITY - 1e-3),
-    heart: rawForCapability(graph, 'heart', BOLD_GUARD_NERVE_CAPABILITY),
-  };
+  // The sigmoid never quite reaches 1.0; a thousandth under it is the master.
+  const raw = fighter === 'master'
+    ? {
+      iron: rawForCapability(graph, 'iron', 1 - 1e-3),
+      heart: rawForCapability(graph, 'heart', 1 - 1e-3),
+    }
+    : {
+      iron: rawForCapability(graph, 'iron', BOLD_GUARD_CLASH_CAPABILITY),
+      heart: rawForCapability(graph, 'heart', BOLD_GUARD_NERVE_CAPABILITY),
+    };
   // Read before any fight grows the fighter: this is who every fight starts as.
   const fighterCapability = {
     clash: computeCapability(graph, FIGHTER, 'iron'),
