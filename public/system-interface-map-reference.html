@@ -856,6 +856,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; The battle the ground forgot
+      <span class="lead">Audited 2026-09-26 (THR-1528). A battle overwrote a town&rsquo;s prosperity and minted no record, so no place could say a war had passed through it.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">A battle resolved <span class="arrow">&#10230;</span> A <code>battle_fought</code> record on the ground it was fought over; <em>Blood-soaked</em> for ten days and the battle in the place&rsquo;s memory (<code>battles-leave-a-record-on-the-ground</code>)</span>
+        <span class="note"><strong>LIVE since THR-1528 (2026-09-26).</strong> <code>resolveBattle</code> calls <code>recordBattleFought</code> after the aftermath and before it removes the battle node: an <code>event</code> with <code>occurred_at</code> to the outer-tier Location (a siege at its town), <code>participated_in</code> from each surviving commander with the outcome read from the resolution, and a <code>lastBattleTick</code> stamp. The fifth location-trait rule reads the records through <code>readBloodshed</code>, never <code>deathCount</code>; the place MEMORY tells the latest one. Seed 42 medium: 13 records across 4 places by t182.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight &mdash; The record the build could not hand over
       <span class="lead">Audited 2026-09-10 (audit-on-touch, THR-1134). Two producers had been writing every tick, in production, to a consumer that was stripped from the build.</span>
     </h2>
