@@ -1,8 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
+
+### The dice change stopped on your July rule: keep "at a cost" at 3–7 wins in 10, or accept about 1 in 6? ([THR-1581](https://linear.app/threadbare/issue/THR-1581/forecast-window-s3-re-fit-the-dice-skill-separates-an-even-match-is-a))
+
+The new dice and the "win about half the time" choice rule are both built on [branch `thr-1581-dice-refit`](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit). Nothing is merged. Skill now separates mortals, and floor-pinned rolls fell from 44% to 0.2%. But only **about 1 win in 6 comes "at a cost"**, against your July band of 3 to 7 in 10. The builder stopped here, as the plan told it to, instead of quietly retuning.
+
+- **Keep the band.** The design lane needs a new way for wins to carry a cost under the new dice before the change can ship.
+- **Accept about 1 in 6.** The builder finishes the owed tests and ships it.
+
+Full numbers are in [the ticket's latest comment](https://linear.app/threadbare/issue/THR-1581/forecast-window-s3-re-fit-the-dice-skill-separates-an-even-match-is-a). Total success is still a little high (62–74% against 50–65%). That traces to the content being mostly novice-level, which is design-lane work and not your call.
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
