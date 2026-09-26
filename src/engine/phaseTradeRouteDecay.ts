@@ -25,6 +25,40 @@ import {
 import { SHOCK_TRADE_ROUTE_LOST } from './phaseProsperity';
 import { emitTrace } from './traceBuffer';
 import { resolveEconomicChronicle, chronicleSeed } from './economicChronicle';
+import { resolveToParentLocation } from './sublocationShape';
+import { ROUTE_IDENTITY_SUBTYPE } from '../data/strategic-action-constants';
+import type { WorldGraph } from './graph';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+/**
+ * The settlements a dissolving lane's shock lands on (THR-1615).
+ *
+ * `trades_with` runs location → location, so the lane's own ends *are* the
+ * settlements. This used to walk `located_at` out of each end — the actor-era
+ * shape — which a settlement never carries, so `SHOCK_TRADE_ROUTE_LOST` never
+ * fired. A Place end resolves upward to its Location; duplicates collapse, so a
+ * lane between two Places of one settlement shocks it once. Sorted (NFP #3).
+ */
+export function tradeRouteShockTargets(graph: WorldGraph, sourceId: string, targetId: string): string[] {
+  const out = new Set<string>();
+  for (const endId of [sourceId, targetId]) {
+    const settlement = resolveToParentLocation(graph, graph.getNode(endId));
+    if (settlement) out.add(settlement.id);
+  }
+  return [...out].sort();
+}
+
+/**
+ * The Route identity nodes minted for this lane (THR-1615) — matched on the
+ * `routeEdgeId` `mintRouteIdentity` stamps, sorted for determinism. Normally one.
+ */
+export function routeIdentitiesForEdge(graph: WorldGraph, edgeId: string): string[] {
+  return graph.getNodesByType('location')
+    .filter(n => n.properties.locationSubtype === ROUTE_IDENTITY_SUBTYPE && n.properties.routeEdgeId === edgeId)
+    .map(n => n.id)
+    .sort();
+}
 
 // ─── Phase function ───────────────────────────────────────────────────────
 
@@ -101,19 +135,22 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
       const establishedTick = props.established;
       const totalTicksActive = tick - establishedTick;
 
-      // Push prosperity shocks to settlements at both endpoints
-      for (const actorId of [edge.source, edge.target]) {
-        const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
-        for (const locEdge of locEdges) {
-          prosperityShocks.push({
-            locationId: locEdge.target,
-            delta: SHOCK_TRADE_ROUTE_LOST,
-            causeType: 'trade_route_lost',
-            causeId: edge.id,
-            description: `Trade route dissolved: ${sourceNode.name} ↔ ${targetNode.name}`,
-          });
-        }
+      // Push prosperity shocks to the settlements at both ends (THR-1615).
+      for (const locationId of tradeRouteShockTargets(graph, edge.source, edge.target)) {
+        prosperityShocks.push({
+          locationId,
+          delta: SHOCK_TRADE_ROUTE_LOST,
+          causeType: 'trade_route_lost',
+          causeId: edge.id,
+          description: `Trade route dissolved: ${sourceNode.name} ↔ ${targetNode.name}`,
+        });
       }
+
+      // The Route object dies with its lane (THR-1615). Its identity node outlived
+      // the edge before, and stayed claimable: `removeNode` cascades the `owns`
+      // edges a holder took on it, and notifies any undertaking bound to it.
+      const identityNodeIds = routeIdentitiesForEdge(graph, edge.id);
+      for (const identityId of identityNodeIds) graph.removeNode(identityId);
 
       graph.removeEdge(edge.id);
 
@@ -128,6 +165,7 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
         peakVolume: previousVolume,
         totalTicksActive: Math.max(0, totalTicksActive),
         causeOfDeath: 'decay',
+        identityNodeIds,
       });
 
       // Generate chronicle entry for trade route death
