@@ -104,10 +104,10 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#bestowed` | Given by a god rather than found or made. | power 12 | 12 |  |
 | `#anti-magic` | It refuses the unseen, or blunts what draws on it. | item 2 · condition 1 | 3 |  |
 | `#blessing` | A favour that rides along, for as long as it lasts. | condition 11 | 11 |  |
-| `#curse` | A weight laid on someone, and not easily set down. | condition 11 | 11 |  |
+| `#curse` | A weight laid on someone, and not easily set down. | condition 12 | 12 |  |
 | `#cursed` | It carries a curse with it — the harm comes with the having. | item 8 · condition 2 · legendary 2 | 12 |  |
 | `#storied` | It has been where things happened, and the tales about it are told. | condition 1 | 1 |  |
-| `#wound` | Hurt taken, and still healing or still open. | condition 10 | 10 |  |
+| `#wound` | Hurt taken, and still healing or still open. | condition 11 | 11 |  |
 | `#disease` | A sickness in the body, which spreads if it can. | condition 5 | 5 |  |
 | `#physical` | Of the body rather than the mind or the soul. | condition 9 | 9 |  |
 | `#divine` | Of the gods — it answers to worship, not to craft. | item 13 · condition 7 · trait 3 · power 2 | 25 |  |
@@ -187,7 +187,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#construction` | Of things raised — walls, roads, halls, and the patrons who paid for them. | trait 1 | 1 |  |
 | `#perception` | Of noticing — the detail others walk past. | trait 1 | 1 |  |
 | `#stability` | Of holding firm — unmoved when the ground or the crowd shifts. | trait 1 | 1 |  |
-| `#fear` | Of terror — what it does to the one caught in it, and what wards against it. | condition 1 | 1 |  |
+| `#fear` | Of terror — what it does to the one caught in it, and what wards against it. | condition 2 | 2 |  |
 | `#sacred` | Of holy ground — a place kept, tended, and answered to. | condition 1 | 1 |  |
 | `#martial` | Of soldiering — known by the sword, for good or ill. | trait 2 | 2 |  |
 | `#honor` | Known for keeping faith when it cost something. | trait 1 | 1 |  |
