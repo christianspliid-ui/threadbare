@@ -20,6 +20,14 @@
  *
  * The first test below is the Done-when's must-fail-first assertion: it is red against
  * the pre-fix build, where the two lines differ.
+ *
+ * THR-1581 (dice re-fit) retired the scale floors and the difficulty cap that encoded
+ * them (`SCALE_FLOOR_DIFFICULTY_CAP_ENABLED = false`), so the premise above no longer
+ * holds: the roll now reads the authored price at every scale, and two prices far
+ * apart resolve to different odds. The arms below that asserted *equal* odds for
+ * different prices were re-pointed at the property THR-998 actually protected — the
+ * word is a pure function of the probability the roll uses — which is now asserted
+ * with the two prices reading honestly apart.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { resolveUncontestedStep } from '../unifiedActionResolution';
@@ -140,41 +148,32 @@ beforeEach(() => {
 // is a pure function of the probability. These arms are what proves the
 // construction is the one that actually shipped.
 
-describe('THR-998 — the card does not differentiate on a price the roll ignored', () => {
+describe('THR-998 — the card reads the price exactly as the roll does', () => {
   /**
    * Two authored prices far enough apart that the retired card bucketed them into
-   * different risk words. At a floored scale the roll does not distinguish them.
+   * different risk words even when the floor made them resolve identically.
    */
   const EASY_PRICE = 0.20;
   const HARD_PRICE = 0.50;
 
-  it('gives two templates far apart in price the same word at local scale, because they have the same odds', () => {
-    // The premise, asserted rather than assumed: at local scale a fresh god's floor
-    // caps both prices away, so these two cast at the identical probability.
-    expect(castProbability(EASY_PRICE, 'local', AFFINITY_PRIMARY))
-      .toBe(castProbability(HARD_PRICE, 'local', AFFINITY_PRIMARY));
+  it('the roll now reads the price at local scale, and so does the card', () => {
+    // THR-1581: the floor and its difficulty cap are retired, so a dearer working
+    // genuinely resolves worse — asserted against the resolver itself.
+    const easyP = castProbability(EASY_PRICE, 'local', AFFINITY_PRIMARY);
+    const hardP = castProbability(HARD_PRICE, 'local', AFFINITY_PRIMARY);
+    expect(easyP).toBeGreaterThan(hardP);
 
-    // Non-vacuity: the two prices are genuinely distinguishable inputs — given a
-    // god capable enough that the cap (`capability - MIN_PROBABILITY_BY_SCALE`)
-    // clears both, they produce different effective difficulties. Without this the
-    // equality above could hold for the trivial reason that the inputs never
-    // differed. Note a *fresh* god does not clear the cap even at `regional`, which
-    // is why this arm names a capability rather than reading one off the fixture:
-    // measured, the whole 0.20–0.50 band collapses to one number there too.
-    const CAPABLE_ENOUGH = 0.9;
-    expect(effectiveCastDifficulty(EASY_PRICE, CAPABLE_ENOUGH, 'regional'))
-      .not.toBe(effectiveCastDifficulty(HARD_PRICE, CAPABLE_ENOUGH, 'regional'));
-
-    // The Done-when.
-    expect(cardTier(EASY_PRICE, 'local', AFFINITY_PRIMARY))
-      .toBe(cardTier(HARD_PRICE, 'local', AFFINITY_PRIMARY));
+    // The Done-when, restated: each card's word is the resolver's probability's word.
+    expect(cardTier(EASY_PRICE, 'local', AFFINITY_PRIMARY)).toBe(classifyForecastTier(easyP));
+    expect(cardTier(HARD_PRICE, 'local', AFFINITY_PRIMARY)).toBe(classifyForecastTier(hardP));
   });
 
-  it('says the same at personal scale, the other floored tier', () => {
-    expect(castProbability(EASY_PRICE, 'personal', AFFINITY_PRIMARY))
-      .toBe(castProbability(HARD_PRICE, 'personal', AFFINITY_PRIMARY));
-    expect(cardTier(EASY_PRICE, 'personal', AFFINITY_PRIMARY))
-      .toBe(cardTier(HARD_PRICE, 'personal', AFFINITY_PRIMARY));
+  it('says the same at personal scale', () => {
+    const easyP = castProbability(EASY_PRICE, 'personal', AFFINITY_PRIMARY);
+    const hardP = castProbability(HARD_PRICE, 'personal', AFFINITY_PRIMARY);
+    expect(easyP).toBeGreaterThan(hardP);
+    expect(cardTier(EASY_PRICE, 'personal', AFFINITY_PRIMARY)).toBe(classifyForecastTier(easyP));
+    expect(cardTier(HARD_PRICE, 'personal', AFFINITY_PRIMARY)).toBe(classifyForecastTier(hardP));
   });
 
   it('reads the floored tiers as the odds the roll actually delivers', () => {
@@ -231,15 +230,17 @@ describe('THR-998 — the word still moves where difficulty genuinely bites', ()
     }
   });
 
-  it('opens the harder words to a deepened god — the readout is self-maintaining', () => {
-    // The cap is `capability - MIN_PROBABILITY_BY_SCALE[scale]`, so a stronger god
-    // keeps more of the authored price. This is the property that means the card
-    // starts reporting risk exactly when risk becomes real, with no re-tune.
+  it('reads better odds for a deepened god — the readout is self-maintaining', () => {
+    // THR-1581: difficulty is what the step demands, the same for every caster (the
+    // cap that let a stronger god "keep more of the price" is retired). A stronger
+    // god now shows up where it belongs — in the odds — with no re-tune.
     const fresh = castCapabilityByReach(makeState(AFFINITY_PRIMARY).graph, ASCENDANT_ID)[REACH];
     const weak = castCapabilityByReach(makeState(null).graph, ASCENDANT_ID)[REACH];
     expect(fresh).toBeGreaterThan(weak);
     expect(effectiveCastDifficulty(0.5, fresh, 'regional'))
-      .toBeGreaterThan(effectiveCastDifficulty(0.5, weak, 'regional'));
+      .toBe(effectiveCastDifficulty(0.5, weak, 'regional'));
+    expect(castForecastProbability(0.2, fresh, 'regional'))
+      .toBeGreaterThan(castForecastProbability(0.2, weak, 'regional'));
   });
 });
 
@@ -261,8 +262,13 @@ describe('THR-1002 — the odds word is omitted rather than guessed', () => {
   it('is a pure function of the effective odds, whatever the authored price was', () => {
     // The invariant the whole fix rests on, and the reason "equal odds ⇒ equal
     // word" is true by construction: the word depends on the probability alone.
-    expect(cardTier(0.20, 'local', AFFINITY_PRIMARY))
-      .toBe(cardTier(0.90, 'local', AFFINITY_PRIMARY));
+    // (THR-1581: the two prices no longer share odds, so each is checked against
+    // its own probability rather than against each other.)
+    const capability = castCapabilityByReach(makeState(AFFINITY_PRIMARY).graph, ASCENDANT_ID)[REACH];
+    for (const price of [0.20, 0.90]) {
+      expect(cardTier(price, 'local', AFFINITY_PRIMARY))
+        .toBe(classifyForecastTier(castForecastProbability(price, capability, 'local')));
+    }
   });
 
   it('speaks a word from the one forecast ladder, never an internal key (Law 14)', () => {
@@ -390,14 +396,13 @@ describe('castForecastProbability', () => {
     expect(classifyForecastTier(castForecastProbability(0, 0.9, 'personal'))).toBe('fated');
   });
 
-  it('never drops below the scale floor for a god who clears it', () => {
-    // A fresh god's local working has its authored price capped away entirely, so
-    // the floor is what speaks. A card classifying the *unfloored* number would
-    // read perilous on a cast that resolves favorable — THR-998's defect, in the
-    // new vocabulary.
+  it('never drops below the scale floor, and no floor flatters a hard working', () => {
+    // THR-1581: the local floor is the global PROBABILITY_FLOOR now, so a hard
+    // local working reads the honest word for its odds — 0.40 + 1.25 × (0.75 − 0.80)
+    // ≈ 0.34, perilous — where the retired 0.65 floor would have called it favorable.
     const p = castForecastProbability(0.9, 0.75, 'local');
     expect(p).toBeGreaterThanOrEqual(MIN_PROBABILITY_BY_SCALE.local);
-    expect(classifyForecastTier(p)).toBe('favorable');
+    expect(classifyForecastTier(p)).toBe('perilous');
   });
 
   it('returns the scale floor rather than NaN on non-finite input', () => {

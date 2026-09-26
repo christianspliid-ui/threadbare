@@ -47,7 +47,7 @@ describe('computeResolutionThreshold', () => {
   test('capability == difficulty → ODDS_AT_PAR (an even match is a gamble)', () => {
     const p = computeResolutionThreshold(makeInput({ capability: 0.5, difficulty: 0.5 }));
     expect(p).toBeCloseTo(ODDS_AT_PAR, 5);
-    expect(p).toBeCloseTo(0.55, 5);
+    expect(p).toBeCloseTo(0.40, 5);
   });
 
   test('par holds at every level — only the gap moves the odds', () => {
@@ -59,8 +59,8 @@ describe('computeResolutionThreshold', () => {
 
   test('high capability, low difficulty → high probability', () => {
     const p = computeResolutionThreshold(makeInput({ capability: 0.6, difficulty: 0.4 }));
-    // 0.55 + 1.25 × 0.2 = 0.80
-    expect(p).toBeCloseTo(0.8, 5);
+    // 0.40 + 1.25 × 0.2 = 0.65
+    expect(p).toBeCloseTo(0.65, 5);
   });
 
   test('skill separates: each point of gap is ODDS_GAIN points of chance', () => {
@@ -88,8 +88,8 @@ describe('computeResolutionThreshold', () => {
       sphereFactor: 0.1,
       actionModifiers: 0.1,
     }));
-    // 0.55 + 1.25 × (0.3 − 0.5) + 0.1 + 0.1 = 0.50
-    expect(p).toBeCloseTo(0.5, 5);
+    // 0.40 + 1.25 × (0.3 − 0.5) + 0.1 + 0.1 = 0.35
+    expect(p).toBeCloseTo(0.35, 5);
   });
 
   test('influence nudge contributes', () => {
@@ -98,8 +98,8 @@ describe('computeResolutionThreshold', () => {
       difficulty: 0.5,
       influenceNudge: 0.1,
     }));
-    // 0.55 + 1.25 × (0.3 − 0.5) + 0.1 = 0.40
-    expect(p).toBeCloseTo(0.4, 5);
+    // 0.40 + 1.25 × (0.3 − 0.5) + 0.1 = 0.25
+    expect(p).toBeCloseTo(0.25, 5);
   });
 
   test('ceiling clamp at 0.95', () => {
@@ -260,9 +260,9 @@ describe('forecast/live parity', () => {
 
 describe('test shapers', () => {
   test('upgrade a near-miss failure by one outcome step', () => {
-    // THR-1581: P = 0.55 + 1.25 × 0 − 0.05 = 0.50, so roll 53 misses by 3.
+    // THR-1581: P = 0.40 + 1.25 × 0.12 − 0.05 = 0.50, so roll 53 misses by 3.
     const input = makeInput({
-      capability: 0.5,
+      capability: 0.62,
       difficulty: 0.5,
       sphereFactor: -0.05,
       testShapers: [
@@ -287,9 +287,9 @@ describe('test shapers', () => {
   });
 
   test('do not apply a shaper when the miss exceeds its max margin', () => {
-    // THR-1581: P = 0.55 + 1.25 × 0 − 0.05 = 0.50, so roll 53 misses by 3.
+    // THR-1581: P = 0.40 + 1.25 × 0.12 − 0.05 = 0.50, so roll 53 misses by 3.
     const input = makeInput({
-      capability: 0.5,
+      capability: 0.62,
       difficulty: 0.5,
       sphereFactor: -0.05,
       testShapers: [
@@ -406,19 +406,19 @@ describe('edge cases', () => {
   describe('actionModifiers is not clamped (THR-827)', () => {
     test('a modifier far above the retired ±0.20 passes through in full', () => {
       const base = { capability: 0.1, difficulty: 0.5, sphereFactor: 0 };
-      // THR-1581: 0.55 + 1.25 × (0.1 − 0.5) + 0.30 = 0.35. A ±0.20 clamp would have yielded 0.25.
-      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.30 }))).toBeCloseTo(0.35, 10);
-      // 0.05 + 0.80 = 0.85, still inside the ceiling — so the ceiling
+      // THR-1581: 0.40 + 1.25 × (0.1 − 0.5) + 0.30 = 0.20. A ±0.20 clamp would have yielded 0.10.
+      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.30 }))).toBeCloseTo(0.20, 10);
+      // −0.10 + 0.80 = 0.70, still inside the ceiling — so the ceiling
       // is not what is doing the work here.
-      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.80 }))).toBeCloseTo(0.85, 10);
+      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.80 }))).toBeCloseTo(0.70, 10);
     });
 
     test('the negative sign is equally unclamped', () => {
-      // THR-1581: 0.55 + 1.25 × (0.7 − 0.5) − 0.50 = 0.30. A ±0.20 clamp would have yielded 0.60.
+      // THR-1581: 0.40 + 1.25 × (0.7 − 0.5) − 0.50 = 0.15. A ±0.20 clamp would have yielded 0.45.
       const p = computeResolutionThreshold(
         makeInput({ capability: 0.7, difficulty: 0.5, sphereFactor: 0, actionModifiers: -0.50 }),
       );
-      expect(p).toBeCloseTo(0.30, 10);
+      expect(p).toBeCloseTo(0.15, 10);
     });
 
     test('only the summed result meets the clamp', () => {

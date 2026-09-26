@@ -12,6 +12,8 @@ import {
   createUnifiedAction,
   resetUnifiedActionCounter,
 } from '../unifiedActionLifecycle';
+import { ODDS_AT_PAR, ODDS_GAIN } from '../resolutionService';
+import { SIGMOID_K, SIGMOID_MIDPOINT } from '../domainCapability';
 import type { UnifiedActionTemplate, UnifiedAction, IntelligenceRecord } from '../../types/unifiedAction';
 import type { GameState } from '../../types/gameState';
 import { DEFAULT_REPUTATION } from '../../types/disposition';
@@ -434,7 +436,9 @@ describe('unifiedActionResolution', () => {
         scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
       });
 
-      const result = resolveUncontestedStep(action, template, state, () => 0.73);
+      // THR-1581: P = 0.40 + 1.25 × (cap(13) ≈ 0.204 − (0.3 − 0.20 personal)) ≈ 0.53,
+      // so a roll of 58 misses by ~5 — inside the token's 8-point margin.
+      const result = resolveUncontestedStep(action, template, state, () => 0.58);
       expect(result.outcome).toBe('success_at_cost');
       expect(result.opsToExecute).toHaveLength(1);
     });
@@ -463,8 +467,8 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
-        expect(result.probability).toBeCloseTo(capability - 0.4, 6);
+        const capability = 1 / (1 + Math.exp(-SIGMOID_K * (12 - SIGMOID_MIDPOINT)));
+        expect(result.probability).toBeCloseTo(ODDS_AT_PAR + ODDS_GAIN * (capability - 0.4), 6);
 
         const traces = getTraces().filter(t => t.category === 'intelligence_referenced');
         expect(traces).toHaveLength(1);
@@ -495,8 +499,8 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
-        expect(result.probability).toBeCloseTo(capability - 0.45, 6);
+        const capability = 1 / (1 + Math.exp(-SIGMOID_K * (12 - SIGMOID_MIDPOINT)));
+        expect(result.probability).toBeCloseTo(ODDS_AT_PAR + ODDS_GAIN * (capability - 0.45), 6);
 
         const traces = getTraces().filter(t => t.category === 'intelligence_referenced');
         expect(traces).toHaveLength(1);
@@ -527,9 +531,10 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        // Regional floor (0.20) kicks in: difficulty=0.5 exceeds maxDiffForFloor=(cap-0.20).
+        // THR-1581: the regional floor is retired, so P sits at PROBABILITY_FLOOR (0.05):
+        // 0.40 + 1.25 × (cap(12) ≈ 0.19 − 0.5) < 0.05.
         // Intel was not consulted (no trace), confirming dubious reliability gets no bonus.
-        expect(result.probability).toBeCloseTo(0.20, 6);
+        expect(result.probability).toBeCloseTo(0.05, 6);
         expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
         disableTracing();
       });
@@ -560,9 +565,10 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        // Regional floor (0.20) kicks in: difficulty=0.5 exceeds maxDiffForFloor=(cap-0.20).
+        // THR-1581: the regional floor is retired, so P sits at PROBABILITY_FLOOR (0.05):
+        // 0.40 + 1.25 × (cap(12) ≈ 0.19 − 0.5) < 0.05.
         // No matching intel record, so no difficulty reduction was applied.
-        expect(result.probability).toBeCloseTo(0.20, 6);
+        expect(result.probability).toBeCloseTo(0.05, 6);
         expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
         disableTracing();
       });
@@ -590,8 +596,8 @@ describe('unifiedActionResolution', () => {
 
         const result = resolveUncontestedStep(action, template, state, successRng);
         // Step lacks difficultyContext so intel is never consulted (no trace).
-        // Regional floor (0.20) applies: difficulty=0.5 exceeds maxDiffForFloor=(cap-0.20).
-        expect(result.probability).toBeCloseTo(0.20, 6);
+        // THR-1581: regional floor retired; P sits at PROBABILITY_FLOOR (0.05).
+        expect(result.probability).toBeCloseTo(0.05, 6);
         expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(0);
         disableTracing();
       });
@@ -619,8 +625,8 @@ describe('unifiedActionResolution', () => {
         });
 
         const result = resolveUncontestedStep(action, template, state, successRng);
-        const capability = 1 / (1 + Math.exp(-0.4 * (12 - 10)));
-        expect(result.probability).toBeCloseTo(capability, 6);
+        const capability = 1 / (1 + Math.exp(-SIGMOID_K * (12 - SIGMOID_MIDPOINT)));
+        expect(result.probability).toBeCloseTo(ODDS_AT_PAR + ODDS_GAIN * capability, 6);
         expect(getTraces().filter(t => t.category === 'intelligence_referenced')).toHaveLength(1);
         disableTracing();
       });

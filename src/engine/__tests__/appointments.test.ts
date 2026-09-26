@@ -272,8 +272,10 @@ describe('the pull — wired into scoreAndSelect', () => {
       r.rankedCandidates.find(c => c.entry.templateId === id)!;
     expect(scoreOf(withPull, 't-far').appointmentBonus).toBeCloseTo(APPOINTMENT_PULL_WEIGHT);
     expect(scoreOf(withPull, 't-mid').appointmentBonus).toBeCloseTo(APPOINTMENT_PULL_WEIGHT / 4);
+    // THR-1582: the forecast window multiplies the whole score, so an additive term lifts
+    // finalScore by term × engagementFit (the fit is the same with and without the term).
     expect(scoreOf(withPull, 't-far').finalScore - scoreOf(without, 't-far').finalScore)
-      .toBeCloseTo(APPOINTMENT_PULL_WEIGHT, 5);
+      .toBeCloseTo(APPOINTMENT_PULL_WEIGHT * scoreOf(withPull, 't-far').engagementFit, 5);
     expect(scoreOf(without, 't-far').appointmentBonus).toBe(0);
   });
 });

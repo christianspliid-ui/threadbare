@@ -180,19 +180,22 @@ function buildTestGraph(opts: {
 // ─── estimateStepProbability ────────────────────────────────────
 
 describe('estimateStepProbability', () => {
-  it('returns the scale floor when capability matches difficulty (Phase 2: no planner offset)', () => {
+  it('returns ODDS_AT_PAR when capability matches difficulty (Phase 2: no planner offset)', () => {
+    // THR-1581: P = 0.40 + 1.25 × (cap − diff); an even match reads the par odds, and
+    // the retired scale floors no longer lift it.
     // Phase 2: capability=0.5, difficulty=0.5 → 0.5 - 0.5 + 0 = 0.0. THR-1579: the
     // planner forecasts what the core rolls, so an unscaled step reads the regional
     // floor (0.20) and a cosmic one the global floor (0.05) — never the bare clamp.
     // (Old: had +STEP_PROBABILITY_OFFSET → 0.7. That planner-only offset is removed.)
-    expect(estimateStepProbability(0.5, 0.5)).toBe(MIN_PROBABILITY_BY_SCALE.regional);
-    expect(estimateStepProbability(0.5, 0.5, undefined, 'cosmic')).toBe(0.05);
+    expect(estimateStepProbability(0.5, 0.5)).toBeCloseTo(0.40, 10);
+    // Cosmic adds +0.10 demanded proficiency: 0.40 − 1.25 × 0.10 = 0.275.
+    expect(estimateStepProbability(0.5, 0.5, undefined, 'cosmic')).toBeCloseTo(0.275, 10);
   });
 
   it('returns higher probability for high capability vs low difficulty', () => {
-    // Phase 2: 0.9 - 0.2 = 0.7
-    const p = estimateStepProbability(0.9, 0.2);
-    expect(p).toBeCloseTo(0.7, 2);
+    // THR-1581: 0.40 + 1.25 × (0.6 − 0.4) = 0.65
+    const p = estimateStepProbability(0.6, 0.4);
+    expect(p).toBeCloseTo(0.65, 2);
   });
 
   it('returns lower probability for low capability vs high difficulty', () => {
@@ -213,8 +216,8 @@ describe('estimateStepProbability', () => {
 
   it('uses same math as shared resolver (Phase 2 parity)', () => {
     // Verify planner and live use the same formula
-    const p = estimateStepProbability(0.7, 0.3); // 0.7 - 0.3 = 0.4
-    expect(p).toBeCloseTo(0.4, 2);
+    const p = estimateStepProbability(0.7, 0.3); // THR-1581: 0.40 + 1.25 × 0.4 = 0.90
+    expect(p).toBeCloseTo(0.9, 2);
   });
 });
 
@@ -1315,7 +1318,9 @@ describe('encounterTypeBias', () => {
     const noBiasTrade = noBias.rankedCandidates.find(c => c.entry.templateId === 'trade_tmpl')!;
     const withBiasTrade = withBias.rankedCandidates.find(c => c.entry.templateId === 'trade_tmpl')!;
 
-    expect(withBiasDuel.finalScore - noBiasDuel.finalScore).toBeCloseTo(0.3);
+    // THR-1582: the forecast window multiplies the whole score, so an additive term lifts
+    // finalScore by term × engagementFit (the fit is the same with and without the term).
+    expect(withBiasDuel.finalScore - noBiasDuel.finalScore).toBeCloseTo(0.3 * withBiasDuel.engagementFit);
     expect(withBiasDuel.identityBiasBonus).toBe(0.3);
     expect(withBiasTrade.finalScore).toBeCloseTo(noBiasTrade.finalScore);
     expect(withBiasTrade.identityBiasBonus).toBe(0);
