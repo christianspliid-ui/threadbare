@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 19:55 local (17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 20:56 local (18:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,15 +31,15 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26: colocation and role fit now read a mortal's reach share** ([THR-1576](https://linear.app/threadbare/issue/THR-1576)). Merged via [#2078](https://github.com/christianspliid-ui/threadbare/pull/2078), and live on the site.
+- **2026-09-26: faith and politics at game start became world settings** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)). The design lane set the first test setup from your answer: a temple chapter per culture, at least two holy places per culture, about a third of towns unheld. It is in the briefing under "Decided for you" for 24 hours.
 - **2026-09-26: the Follow button now says it keeps a mortal in close view** ([THR-1573](https://linear.app/threadbare/issue/THR-1573)). Merged via [#2077](https://github.com/christianspliid-ui/threadbare/pull/2077), and live on the site.
 - **2026-09-26: you answered faith and politics at game start** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)). Your words: *"This should be tunable for different scenarios. To begin let's go with something that allows us to test and see balance and interaction"*. They are recorded on the ticket. It becomes a world setting you can tune. The design lane picks the first test setup and shows it to you under "Decided for you". This was the last open question on [the living-world map](https://linear.app/threadbare/issue/THR-1589).
 - **2026-09-26: a mortal's mastery is permanent, and a graduate's mastery moves the dice** ([THR-1584](https://linear.app/threadbare/issue/THR-1584)). Merged via [#2076](https://github.com/christianspliid-ui/threadbare/pull/2076), and live on the site.
 - **2026-09-26: the sheet and the skill line now say the same word for a mortal's reach** ([THR-1583](https://linear.app/threadbare/issue/THR-1583)). Merged via [#2075](https://github.com/christianspliid-ui/threadbare/pull/2075), and live on the site. This finishes the [fix for the dice reading every mortal as a master](https://linear.app/threadbare/issue/THR-1575).
 - **2026-09-26: the ground remembers its battles** ([THR-1528](https://linear.app/threadbare/issue/THR-1528)). Merged via [#2074](https://github.com/christianspliid-ui/threadbare/pull/2074), and live on the site.
 - **2026-09-26: the new dice are live** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). The dice re-fit and "mortals take on challenges they can win about half the time" merged together via [#2073](https://github.com/christianspliid-ui/threadbare/pull/2073), and are on the site. Skill now counts when a mortal rolls.
-- **2026-09-25: you answered how much history a new world starts with: A, "explain the map"** ([THR-1591](https://linear.app/threadbare/issue/THR-1591)). Your words: *"a is fine"*. The two smaller calls were decided by delegation, and you can veto either. First, the outline is shown from minute one, while the specifics are found by visiting. Second, the past stays mortal, with no rival god in it.
 - **2026-09-26: culture and Realm names never show a raw terrain code** ([THR-1622](https://linear.app/threadbare/issue/THR-1622)). Merged via [#2070](https://github.com/christianspliid-ui/threadbare/pull/2070), and live on the site.
-- **2026-09-26: a new trade route never ends at the town it starts from** ([THR-1619](https://linear.app/threadbare/issue/THR-1619)). Merged via [#2069](https://github.com/christianspliid-ui/threadbare/pull/2069), and live on the site.
 - **2026-09-26: you answered the dice question: "1 in 6 is fine"** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). Your words: *"follow the newer decisions, we learn and grow and evolve. 1 in 6 is fine."* and *"it doesnt have to be a rule, it is a constant we tweak as we search for a good game."*
 
 ---
