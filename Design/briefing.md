@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-26 12:55 local (10:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-26 13:56 local (11:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,7 +34,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 13 jobs are ready.** Nothing is in progress right now. [A new trade route never ends where it starts](https://linear.app/threadbare/issue/THR-1619) merged via [#2069](https://github.com/christianspliid-ui/threadbare/pull/2069) and is live.
+**Healthy: 12 jobs are ready.** Nothing is in progress right now. [Culture and Realm names never show a raw terrain code](https://linear.app/threadbare/issue/THR-1622) merged via [#2070](https://github.com/christianspliid-ui/threadbare/pull/2070) and is live.
 
 - **The dice change is back with the design lane, and you don't need to decide anything** ([THR-1581](https://linear.app/threadbare/issue/THR-1581), High). The dice work, but the world has almost nothing written for skilled mortals. The builder recommends shipping the dice now and writing that content as its own job. The design lane decides at its next run (about 14:15 local), and you can veto in chat. The work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit).
 - **Fight system: nearly ready, not yet a review ask.** Everything is live except [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554), which are queued.
@@ -42,12 +42,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **The long simulation tests went red with the trade-route fix** ([#2069](https://github.com/christianspliid-ui/threadbare/pull/2069), [failing run](https://github.com/christianspliid-ui/threadbare/actions/runs/36236191804)). Two checks in `yieldBandCells.test.ts` fail: a mortal who holds a town is no longer offered its harvest, and a mortal who holds a lane is no longer offered its widening. The builders own the follow-up fix. The live game is unaffected, and the required checks are green.
+- **The long simulation tests went red with the trade-route fix** ([#2069](https://github.com/christianspliid-ui/threadbare/pull/2069), [failing run](https://github.com/christianspliid-ui/threadbare/actions/runs/36236191804)). Two checks in `yieldBandCells.test.ts` fail: a mortal who holds a town is no longer offered its harvest, and a mortal who holds a lane is no longer offered its widening. They are still red on the newest `main`. No builder has claimed the follow-up fix yet. The live game is unaffected, and the required checks are green.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer asleep for exactly that window, so it is explained and needs nothing from you.
-- **Worktree reaper:** it last ran at 12:40 local. 5 worktrees are waiting to be sorted, which is routine.
+- **Worktree reaper:** it last ran at 13:40 local. 5 worktrees are waiting to be sorted, which is routine.
 - **Everything else is green:**
   - The live site is up to date.
-  - Game speed is 64 ms per tick, 14% under the weekly median.
+  - Game speed is 59 ms per tick, 20% under the weekly median.
   - All ten scheduled lanes are on time.
   - No pull requests are waiting.
   - `main` is current.
