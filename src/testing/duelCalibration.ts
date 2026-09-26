@@ -96,7 +96,8 @@ export interface DuelCalibrationReport {
 function rawForCapability(graph: WorldGraph, nodeId: string, reach: ReachDomain, target: number): number {
   const caps = graph.getNode(nodeId)!.properties.domainCapabilities as Record<string, number>;
   let lo = 0;
-  let hi = 60;
+  // THR-1581: the re-fitted curve reaches 0.999 only near raw 116 (was 60).
+  let hi = 200;
   for (let i = 0; i < 40; i++) {
     const mid = (lo + hi) / 2;
     caps[reach] = mid;

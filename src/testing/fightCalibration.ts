@@ -98,7 +98,9 @@ function rawForCapability(graph: WorldGraph, reach: ReachDomain, target: number)
   const node = graph.getNode(FIGHTER)!;
   const caps = node.properties.domainCapabilities as Record<string, number>;
   let lo = 0;
-  let hi = 60;
+  // THR-1581: the re-fitted curve (midpoint 30, k 0.08) reaches 0.999 only near
+  // raw 116 — the old bound of 60 capped the bold guard at capability 0.92.
+  let hi = 200;
   for (let i = 0; i < 40; i++) {
     const mid = (lo + hi) / 2;
     caps[reach] = mid;

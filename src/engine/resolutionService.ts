@@ -76,8 +76,16 @@ export const NEAR_MISS_MARGIN = 5;
  * Success chance when capability equals difficulty (THR-1581). `difficulty` reads
  * "the proficiency this step demands", on capability's own 0–1 scale, so a mortal
  * exactly as able as the step demands rolls this — *uncertain*: the player hesitates.
+ *
+ * Calibrated 0.55 → 0.40 with the forecast window in place (THR-1581/THR-1582,
+ * `npm run gameplay-report` seeds 42/99/7 × 120): at 0.55 journeymen succeeded
+ * 80–85% because the window has little journeyman-level content to choose; 0.40 is
+ * the one setting measured (0.40 / 0.42 / 0.45 / 0.55) that held total success in
+ * 0.50–0.65 on all three seeds and the novice and journeyman bands level. It is the
+ * bottom edge of the *uncertain* tier (`classifyForecast`), so an even match still
+ * reads uncertain. @range 0.40–0.59 (the uncertain tier)
  */
-export const ODDS_AT_PAR = 0.55;
+export const ODDS_AT_PAR = 0.40;
 
 /**
  * Points of chance per point of capability gap (THR-1581). Applies to

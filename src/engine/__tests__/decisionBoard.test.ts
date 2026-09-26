@@ -575,6 +575,47 @@ describe('scoreUnifiedBoard', () => {
     expect(board.entries[0].varietyMultiplier).toBeUndefined();
     expect(board.entries[0].score).toBeCloseTo(0.4 * 1.25, 10);
   });
+
+  // THR-1582 — variety and theme hold under the window: between two in-window
+  // candidates (equal fit), the one the mortal wants more wins. The window picks
+  // *how hard*; desire still picks *what*.
+  it('between two in-window candidates, the higher desire multiplier wins', () => {
+    const mk = (id: string, desire: number) => ({
+      entry: { templateId: id },
+      valuePerTick: 0.5,
+      desireMultiplier: desire,
+      engagementForecast: 0.58,
+      engagementFit: 1,
+      engagementZone: 'in',
+    }) as never;
+
+    const board = scoreUnifiedBoard({
+      graph: emptyGraph,
+      agentId: 'a',
+      tick: 1,
+      encounterCandidates: [mk('wanted.less', 0.9), mk('wanted.more', 1.4)],
+      strategicCandidates: [],
+    });
+
+    expect(board.entries.every(e => e.forecastZone === 'in' && e.forecastFit === 1)).toBe(true);
+    expect(board.winner?.id).toBe('wanted.more');
+    expect(board.entries[0].score / board.entries[1].score).toBeCloseTo(1.4 / 0.9, 10);
+  });
+
+  it('a too-easy candidate the mortal wants loses to an in-window one it wants less', () => {
+    const board = scoreUnifiedBoard({
+      graph: emptyGraph,
+      agentId: 'a',
+      tick: 1,
+      encounterCandidates: [
+        { entry: { templateId: 'easy.wanted' }, valuePerTick: 0.5, desireMultiplier: 1.4, engagementForecast: 0.93, engagementFit: 0.1, engagementZone: 'too_easy' } as never,
+        { entry: { templateId: 'fair.plain' }, valuePerTick: 0.5, desireMultiplier: 1.0, engagementForecast: 0.58, engagementFit: 1, engagementZone: 'in' } as never,
+      ],
+      strategicCandidates: [],
+    });
+
+    expect(board.winner?.id).toBe('fair.plain');
+  });
 });
 
 /**
