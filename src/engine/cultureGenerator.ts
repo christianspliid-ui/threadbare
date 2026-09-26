@@ -127,7 +127,12 @@ function composeReachPreferences(
 
 /** Convert snake_case terrain to Title Case (e.g. 'boreal_forest' → 'Boreal Forest') */
 function biomeLabel(terrain: TerrainType): string {
-  return terrain.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  return humaniseId(terrain);
+}
+
+/** snake_case id → Title Case words ("mountain_pass" → "Mountain Pass"). */
+function humaniseId(id: string): string {
+  return id.split('_').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 /** Biome collective nouns for archetype labels */
@@ -230,14 +235,16 @@ export function generateCultureName(
   identity: CultureIdentity,
   rng: () => number,
 ): string {
+  // THR-1622: every slot falls back to a humanised word, never the raw id — a missing
+  // fragment entry must degrade to "Mountain Pass", not leak "mountain_pass" into a name.
   const foundFrags = CULTURE_NAME_FRAGMENTS.foundation[identity.foundationBias];
-  const foundFrag = foundFrags ? pick(rng, foundFrags) : identity.foundationBias;
+  const foundFrag = foundFrags ? pick(rng, foundFrags) : humaniseId(identity.foundationBias);
 
   const sphereFrags = CULTURE_NAME_FRAGMENTS.sphere[identity.veneratedSpheres[0]];
-  const sphereFrag = sphereFrags ? pick(rng, sphereFrags) : identity.veneratedSpheres[0];
+  const sphereFrag = sphereFrags ? pick(rng, sphereFrags) : humaniseId(identity.veneratedSpheres[0] ?? '');
 
   const biomeFrags = CULTURE_NAME_FRAGMENTS.biome[identity.primaryBiome];
-  const biomeFrag = biomeFrags ? pick(rng, biomeFrags) : identity.primaryBiome;
+  const biomeFrag = biomeFrags ? pick(rng, biomeFrags) : humaniseId(identity.primaryBiome);
 
   const pattern = pick(rng, CULTURE_NAME_FRAGMENTS.patterns);
 

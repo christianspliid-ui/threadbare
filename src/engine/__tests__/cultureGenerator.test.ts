@@ -10,6 +10,8 @@ import {
   CULTURELESS_PROBABILITY,
 } from '../../types/culture';
 import type { CosmologyProfile, TerrainType } from '../../types/index';
+import { SPHERE_NAMES } from '../../types/index';
+import { BIOME_MODIFIERS, CULTURE_NAME_FRAGMENTS } from '../../data/culture-content';
 import {
   composeCultureIdentity,
   generateCultureName,
@@ -143,7 +145,51 @@ describe('generateCultureName', () => {
     const name = generateCultureName(identity, rng);
     expect(name.length).toBeGreaterThan(0);
   });
+
+  // THR-1622: "The Open Earth of the mountain_pass" — a biome with no fragment entry
+  // leaked its raw id into the culture name and, through it, the Realm name.
+  it('has name fragments for every biome a culture can originate in, and every sphere', () => {
+    const missingBiomes = BIOME_MODIFIERS.map(m => m.terrain)
+      .filter(t => !CULTURE_NAME_FRAGMENTS.biome[t]?.length);
+    const missingSpheres = SPHERE_NAMES.filter(s => !CULTURE_NAME_FRAGMENTS.sphere[s]?.length);
+    expect(missingBiomes).toEqual([]);
+    expect(missingSpheres).toEqual([]);
+  });
+
+  it('never emits a raw id when a fragment is missing — falls back to a humanised word', () => {
+    const rng = () => 0;
+    const identity = composeCultureIdentity('chaos', ['force'], 'not_a_real_biome' as TerrainType);
+    const name = generateCultureName(identity, rng);
+    expect(name).not.toContain('_');
+    expect(name).toContain('Not A Real Biome');
+  });
+
+  it('no culture name across a 200-seed sweep contains "_" or a raw biome id', () => {
+    const rawIds = new Set(BIOME_MODIFIERS.map(m => m.terrain).filter(t => t.includes('_')));
+    const offenders: string[] = [];
+    for (let seed = 1; seed <= 200; seed++) {
+      // All twelve spheres weighted, so foundation-sphere veneration is exercised too.
+      const cosmology = Object.fromEntries(SPHERE_NAMES.map(s => [s, 1 / 12])) as CosmologyProfile;
+      const cultures = generateCultureIdentities(cosmology, seededRng(seed), undefined, 800);
+      for (const c of cultures) {
+        const name = c.name;
+        if (name.includes('_') || [...rawIds].some(id => name.includes(id))) offenders.push(`seed ${seed}: ${name}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
 });
+
+function seededRng(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let z = s;
+    z = Math.imul(z ^ (z >>> 15), z | 1);
+    z ^= z + Math.imul(z ^ (z >>> 7), z | 61);
+    return ((z ^ (z >>> 14)) >>> 0) / 0x100000000;
+  };
+}
 
 // ─── Reusable mock identity ────────────────────────────────────────
 
