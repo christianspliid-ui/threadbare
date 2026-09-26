@@ -29,6 +29,20 @@ describe('describeFollow', () => {
     expect(describeFollow(base, graphWithThread('dormant'), 'kael').byBond).toBe(false);
   });
 
+  it('says that following keeps a mortal in close view (THR-1573)', () => {
+    expect(followToggleCopy({ followed: false, explicit: false, byBond: false, muted: false }).tooltip).toBe(
+      'Follow them and their moments interrupt you — a costly step, trouble, a doubling-down, a finish — and they stay among the mortals the world watches closely.',
+    );
+    expect(followToggleCopy({ followed: true, explicit: true, byBond: false, muted: false }).tooltip).toBe(
+      'Their moments interrupt you — a costly step, trouble, a finish — and they stay among the mortals the world watches closely. Unfollow and they wait on the thread row.',
+    );
+    // No internal word leaks into the copy (UI Law 13).
+    for (const d of [
+      { followed: false, explicit: false, byBond: false, muted: false },
+      { followed: true, explicit: true, byBond: false, muted: false },
+    ]) expect(followToggleCopy(d).tooltip).not.toMatch(/spotlight|tier/i);
+  });
+
   it('names the gesture the press will make', () => {
     expect(followToggleCopy({ followed: false, explicit: false, byBond: false, muted: false }).action).toBe('Follow');
     expect(followToggleCopy({ followed: true, explicit: true, byBond: false, muted: false }).action).toBe('Unfollow');
