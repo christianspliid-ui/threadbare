@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-26 06:58 local (04:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-26 07:57 local (05:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,18 +31,16 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 17 jobs are ready, and nothing is being built right now.** The pickup lane takes the next one at its next hourly slot.
+**Backed up: 16 jobs are ready, and nothing is being built right now.** The pickup lane takes the next one at its next hourly slot.
 
-- **Parked, waiting on you:** [the dice re-fit](https://linear.app/threadbare/issue/THR-1581) (High). Parked for about 3.5 hours. Everything is pushed to [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit), so nothing is at risk.
-- **Shipped this hour:** [a cast now names its card and its target](https://linear.app/threadbare/issue/THR-1603), via [#2062](https://github.com/christianspliid-ui/threadbare/pull/2062), and live on the site.
+- **Parked, waiting on you:** [the dice re-fit](https://linear.app/threadbare/issue/THR-1581) (High). Parked for about 4.5 hours. Everything is pushed to [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit), and its local copy has no unsaved edits, so nothing is at risk.
+- **Shipped this hour:** [five small interface faults from the cold playtest](https://linear.app/threadbare/issue/THR-1604), via [#2063](https://github.com/christianspliid-ui/threadbare/pull/2063), and live on the site.
 - **Fight system: nearly ready, not yet a review ask.** Everything is live except [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554), which are queued.
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620). It still has no priority set.
-- Also queued: [place pages never describe culture](https://linear.app/threadbare/issue/THR-1623), [culture names show raw map words](https://linear.app/threadbare/issue/THR-1622), [five small interface faults](https://linear.app/threadbare/issue/THR-1604), [hex lore repeats one sentence](https://linear.app/threadbare/issue/THR-1621), [dead trade route still claimable](https://linear.app/threadbare/issue/THR-1615), [non-casters try to learn spells](https://linear.app/threadbare/issue/THR-1617), [Builder's Legacy complete at start](https://linear.app/threadbare/issue/THR-1618), [route-building aims at home](https://linear.app/threadbare/issue/THR-1619), [blessing and curse reactions never fire](https://linear.app/threadbare/issue/THR-1624), [condition guards guard nothing](https://linear.app/threadbare/issue/THR-1625), [waypoint clutter](https://linear.app/threadbare/issue/THR-1616), [colocation chance](https://linear.app/threadbare/issue/THR-1576), [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528), [seed targets](https://linear.app/threadbare/issue/THR-1565), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573).
+- Also queued: [place pages never describe culture](https://linear.app/threadbare/issue/THR-1623), [culture names show raw map words](https://linear.app/threadbare/issue/THR-1622), [hex lore repeats one sentence](https://linear.app/threadbare/issue/THR-1621), [dead trade route still claimable](https://linear.app/threadbare/issue/THR-1615), [non-casters try to learn spells](https://linear.app/threadbare/issue/THR-1617), [Builder's Legacy complete at start](https://linear.app/threadbare/issue/THR-1618), [route-building aims at home](https://linear.app/threadbare/issue/THR-1619), [blessing and curse reactions never fire](https://linear.app/threadbare/issue/THR-1624), [condition guards guard nothing](https://linear.app/threadbare/issue/THR-1625), [waypoint clutter](https://linear.app/threadbare/issue/THR-1616), [colocation chance](https://linear.app/threadbare/issue/THR-1576), [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528), [seed targets](https://linear.app/threadbare/issue/THR-1565), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573).
 
 ## Health
 
-- **Heavy simulation tests are red on the latest `main`.** A follow-up fix is owed; executor work, not yours.
-- **Tick cost:** tick cost 106 ms/tick steady, 41% above the 7-day median (75, 106 rows since 3d39f728); top phase agent_decision, 502 agents. Name the merges between 3d39f728 and c9bcc288: git log --oneline --merges 3d39f728..c9bcc288
 - **Lane silence:** the worst recent gap was 25 hours, from Saturday 19 into Sunday 20 September. It fell on a weekend, so your 11 September ruling declines it.
-- **Worktree reaper:** last ran at 06:40 local. 5 worktrees are waiting to be sorted, which is routine.
-- **Everything else is green.** The live site serves the latest build (c9bcc288). All ten scheduled lanes are on time. No pull requests are waiting. The home tree is on `main` and current.
+- **Worktree reaper:** last ran at 07:40 local. 5 worktrees are waiting to be sorted, which is routine.
+- **Everything else is green.** The live site serves the latest build (7f5195c5). The heavy simulation tests are green again on that build. The game's speed is back to normal: 78 ms per tick, 3% above the weekly median. All ten scheduled lanes are on time. No pull requests are waiting. The home tree is on `main` and current.

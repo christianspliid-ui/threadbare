@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 06:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -50,6 +50,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26 — five small interface faults found by the cold playtest are fixed** ([THR-1604](https://linear.app/threadbare/issue/THR-1604)). Merged via [#2063](https://github.com/christianspliid-ui/threadbare/pull/2063), and live on the site.
 - **2026-09-26 — a notable's agenda phase now carries a chronicle title** ([THR-1585](https://linear.app/threadbare/issue/THR-1585)) instead of an internal id. Merged via [#2061](https://github.com/christianspliid-ui/threadbare/pull/2061), and live on the site.
 - **2026-09-26 — wards and cures now reach Terrified, Wounded and Cursed** ([THR-1569](https://linear.app/threadbare/issue/THR-1569)). Merged 04:33 local via [#2060](https://github.com/christianspliid-ui/threadbare/pull/2060), and live on the site.
 - **2026-09-26 — items that promise a burst when struck now give it** ([THR-1568](https://linear.app/threadbare/issue/THR-1568)): before, a "when attacked, +Iron for a few turns" item fired and gave nothing. Merged 02:33 local via [#2058](https://github.com/christianspliid-ui/threadbare/pull/2058), and live on the site.
@@ -59,7 +60,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-25 — a mortal can now hunt a beast** ([THR-1560](https://linear.app/threadbare/issue/THR-1560), hunts H2). Merged via [#2054](https://github.com/christianspliid-ui/threadbare/pull/2054), and live on the site. The fight system is not a review ask yet: [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554) are still to come.
 - **2026-09-25 — grudges now boil over into duels** ([THR-1558](https://linear.app/threadbare/issue/THR-1558), duels E3). Merged 21:43 local via [#2053](https://github.com/christianspliid-ui/threadbare/pull/2053), and live on the site. Not a review ask yet: the hunt ([THR-1560](https://linear.app/threadbare/issue/THR-1560)) and loser chips ([THR-1561](https://linear.app/threadbare/issue/THR-1561)) are still to come.
 - **2026-09-25 — monsters are now a kind of world object** ([THR-1559](https://linear.app/threadbare/issue/THR-1559), hunts H1). Merged 21:22 local via [#2052](https://github.com/christianspliid-ui/threadbare/pull/2052), and live on the site.
-- **2026-09-25 — in a duel, the winner now decides the loser's fate** ([THR-1557](https://linear.app/threadbare/issue/THR-1557), duels E2). Merged 19:39 local via [#2051](https://github.com/christianspliid-ui/threadbare/pull/2051), and live on the site.
 
 ---
 
