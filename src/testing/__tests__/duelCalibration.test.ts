@@ -10,14 +10,15 @@
  * concession fork reading the wrong side's courage) before touching a tunable.
  * `npm run calibrate:duels` prints the same distribution.
  *
- * THR-1581 (dice re-fit): the four named classes are **reported, not gated**, until
- * THR-1628 gives the harness a card-read seam — see `duelCalibration.ts`. Bold
- * duellists never yielding stays gated: it is behaviour, not dice.
+ * THR-1581 / THR-1628 (dice re-fit): each duellist's derived card is pinned at
+ * `main`'s words through the harness-only card seam, and each side's clash and nerve
+ * dice are stamped to `main`'s odds — so the four named classes are gated again.
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import { disableTracing } from '../../engine/traceBuffer';
 import { deriveMightWord } from '../../engine/fights/opponentCard';
 import { ODDS_AT_PAR, ODDS_GAIN } from '../../engine/resolutionService';
+import { FIGHT_RATING_DIFFICULTY } from '../../data/fight-constants';
 import {
   DUEL_CALIBRATION_CLASSES,
   DUEL_CALIBRATION_DUELS,
@@ -44,13 +45,27 @@ describe('duel calibration against THR-1264 (bold strong × bold weak)', () => {
     expect(report.capability.weak.clash).toBeLessThan(report.capability.strong.clash);
   });
 
+  it('pins the cards at main\'s words and keeps both sides\' clash odds (THR-1628)', () => {
+    expect(report.card.strong).toEqual({ might: 'severe', dread: 'steep' });
+    expect(report.card.weak).toEqual({ might: 'fair', dread: 'gentle' });
+    // Main rolled clash capability − Might faced; the re-fitted dice must roll the same.
+    const clashOdds = (capability: number, might: 'severe' | 'fair') =>
+      ODDS_AT_PAR + ODDS_GAIN * (capability - FIGHT_RATING_DIFFICULTY[might]);
+    expect(clashOdds(report.capability.strong.clash, 'fair'))
+      .toBeCloseTo(report.mainClashCapability.strong - FIGHT_RATING_DIFFICULTY.fair, 2);
+    expect(clashOdds(report.capability.weak.clash, 'severe'))
+      .toBeCloseTo(report.mainClashCapability.weak - FIGHT_RATING_DIFFICULTY.severe, 2);
+    // Main's clash capabilities: raw 30 and 15 on the pre-refit curve.
+    expect(report.mainClashCapability.strong).toBeCloseTo(1.0, 3);
+    expect(report.mainClashCapability.weak).toBeCloseTo(0.881, 3);
+  });
+
   it('every duel falls in exactly one class', () => {
     const total = DUEL_CALIBRATION_CLASSES.reduce((sum, cls) => sum + report.counts[cls], 0);
     expect(total).toBe(DUEL_CALIBRATION_DUELS);
   });
 
-  // TODO(THR-1628): re-gate at ±8 once the harness can pin the derived card.
-  it.skip.each(DUEL_CALIBRATION_GATED)('%s sits within ±8 points of the row', (cls) => {
+  it.each(DUEL_CALIBRATION_GATED)('%s sits within ±8 points of the row', (cls) => {
     expect(
       Math.abs(report.deviation[cls]),
       `${cls}: ${report.percent[cls].toFixed(1)}% vs target (Δ ${report.deviation[cls].toFixed(1)})`,

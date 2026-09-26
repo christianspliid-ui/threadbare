@@ -28,22 +28,31 @@
  * Deterministic: one seeded stream per duel for the fighter's steps; the
  * opponent's roll draws its own seeded stream (NFP #3).
  *
- * **THR-1581 (dice re-fit): this row is reported, not gated, until THR-1628.** The
+ * **THR-1581 / THR-1628 (dice re-fit): both sides keep `main`'s odds.** The
  * forecast-window plan's second amendment (decision 3) re-stamps calibration
  * fixtures so each step keeps `main`'s odds on the re-fitted dice. A duellist's raw
  * clash score does two jobs — their own dice, and (through `deriveMightWord`) the
- * card the *other* side faces — and there is no harness-only seam to pin the card,
- * so both sides' clash odds cannot be preserved through raw alone. The clash raw
- * pins stay (30 / 15), so both derived cards read as on `main`. **Nerve** feeds no
- * card, so each side's nerve capability is re-stamped to keep `main`'s nerve odds
- * against the Dread it faces (`oddsPreservingCapability`, the fight fixture's
- * solve). `yielded` stays a hard 0: that is behaviour, not dice.
+ * card the *other* side faces — so raw alone cannot preserve both sides. The harness
+ * splits them (THR-1628):
+ *
+ *  - **the card** — each duellist's derived card is pinned, through the harness-only
+ *    `withCalibrationCardPins` seam, at the words `main` derived from the card raw
+ *    (30 → *severe* / *steep*, 15 → *fair* / *gentle*);
+ *  - **the dice** — each side's clash raw is re-stamped so its capability solves
+ *    `oddsPreservingCapability(main clash capability, the Might it faces)`, where
+ *    `main`'s clash capability is the card raw read on the pre-refit curve
+ *    (≈ 1.000 strong, ≈ 0.881 weak). **Nerve** is solved the same way from
+ *    THR-1531's 0.89 against the Dread each side faces.
+ *
+ * With both preserved the four named classes are gated at ±8 again, and `yielded`
+ * stays a hard 0: that is behaviour, not dice.
  */
 
 import { WorldGraph } from '../engine/graph';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../engine/unifiedActionLifecycle';
 import { executeStepResult, resolveUncontestedStep } from '../engine/unifiedActionResolution';
-import { computeCapability } from '../engine/domainCapability';
+import { computeCapability, computeCapabilityPreRefit } from '../engine/domainCapability';
+import { withCalibrationCardPins, type CalibrationCardPin } from '../engine/fights/calibrationCardPins';
 import { deriveMightWord, shiftRatingWord } from '../engine/fights/opponentCard';
 import { FIGHT_DERIVED_DREAD_OFFSET, FIGHT_RATING_DIFFICULTY } from '../data/fight-constants';
 import { oddsPreservingCapability } from './fightCalibration';
@@ -82,20 +91,31 @@ export const DUEL_CALIBRATION_TOLERANCE = 8;
 /** Duels per calibration run (E1 Done-when). */
 export const DUEL_CALIBRATION_DUELS = 400;
 
-const STRONG_RAW_CLASH = 30;
-const WEAK_RAW_CLASH = 15;
+/**
+ * The clash raw each duellist's **card** derives from — THR-1264's pins, unchanged.
+ * Raw exactly 15: at 14 the weak side's Might reads *gentle*. Since THR-1628 the
+ * dice read a separately solved raw; these fix the card words and `main`'s odds.
+ */
+const STRONG_CARD_RAW_CLASH = 30;
+const WEAK_CARD_RAW_CLASH = 15;
 /** Both duellists' nerve on `main`'s saturated curve (THR-1531's bold-guard nerve). */
 const MAIN_NERVE_CAPABILITY = 0.89;
 
-/** The Dread difficulty a duellist faces: the other side's derived Might, shifted. */
-function dreadFacedFrom(opponentRawClash: number): number {
-  return FIGHT_RATING_DIFFICULTY[shiftRatingWord(deriveMightWord(opponentRawClash), FIGHT_DERIVED_DREAD_OFFSET)];
+/** THR-1628: the card a duellist shows the other side, as `main` derived it. */
+export function duelCardPinFor(cardRawClash: number): CalibrationCardPin {
+  const might = deriveMightWord(cardRawClash);
+  return { might, dread: shiftRatingWord(might, FIGHT_DERIVED_DREAD_OFFSET) };
 }
+
+const CARD_BY_SIDE = {
+  strong: duelCardPinFor(STRONG_CARD_RAW_CLASH),
+  weak: duelCardPinFor(WEAK_CARD_RAW_CLASH),
+} as const;
 
 /** THR-1581: each side's nerve capability, re-stamped to keep `main`'s nerve odds. */
 const NERVE_CAPABILITY_BY_SIDE = {
-  strong: oddsPreservingCapability(MAIN_NERVE_CAPABILITY, dreadFacedFrom(WEAK_RAW_CLASH)),
-  weak: oddsPreservingCapability(MAIN_NERVE_CAPABILITY, dreadFacedFrom(STRONG_RAW_CLASH)),
+  strong: oddsPreservingCapability(MAIN_NERVE_CAPABILITY, FIGHT_RATING_DIFFICULTY[CARD_BY_SIDE.weak.dread]),
+  weak: oddsPreservingCapability(MAIN_NERVE_CAPABILITY, FIGHT_RATING_DIFFICULTY[CARD_BY_SIDE.strong.dread]),
 } as const;
 const BOLD_COURAGE = 0.35;
 
@@ -116,6 +136,10 @@ export interface DuelCalibrationReport {
   /** Routed within ±8 of 11 (diagnostic, not the gate). */
   readonly routedWithinTolerance: boolean;
   readonly capability: Readonly<Record<'strong' | 'weak', Readonly<Record<'clash' | 'nerve', number>>>>;
+  /** THR-1628: the clash capability each side rolled with on `main` (card raw, pre-refit curve). */
+  readonly mainClashCapability: Readonly<Record<'strong' | 'weak', number>>;
+  /** THR-1628: the card each side shows the other, pinned at `main`'s words. */
+  readonly card: Readonly<Record<'strong' | 'weak', CalibrationCardPin>>;
 }
 
 /** The smallest raw score whose capability reaches `target` (the sigmoid is monotone). */
@@ -149,8 +173,8 @@ function fixtureWorld(): WorldGraph {
   const graph = new WorldGraph();
   for (const node of CONDITION_TRAIT_DEFINITIONS) graph.addNode(node);
   graph.addNode({ id: SQUARE, type: 'location', name: 'The Square', properties: { hexCol: 4, hexRow: 4 } });
-  duellist(graph, STRONG, 'The Strong Duellist', STRONG_RAW_CLASH);
-  duellist(graph, WEAK, 'The Weak Duellist', WEAK_RAW_CLASH);
+  duellist(graph, STRONG, 'The Strong Duellist', STRONG_CARD_RAW_CLASH);
+  duellist(graph, WEAK, 'The Weak Duellist', WEAK_CARD_RAW_CLASH);
   return graph;
 }
 
@@ -256,12 +280,22 @@ export function runDuelCalibration(
   // own game, so it resets it too — the same seed then fights the same duels.
   resetUnifiedActionCounter();
   const graph = fixtureWorld();
+  // `main`'s clash capability: the card raw, read on the pre-refit curve.
+  const mainClashCapability = {
+    strong: computeCapabilityPreRefit(graph, STRONG, 'iron'),
+    weak: computeCapabilityPreRefit(graph, WEAK, 'iron'),
+  };
+  // THR-1628: each side's clash dice keep `main`'s odds against the Might it faces.
+  const clashCapabilityBySide = {
+    strong: oddsPreservingCapability(mainClashCapability.strong, FIGHT_RATING_DIFFICULTY[CARD_BY_SIDE.weak.might]),
+    weak: oddsPreservingCapability(mainClashCapability.weak, FIGHT_RATING_DIFFICULTY[CARD_BY_SIDE.strong.might]),
+  };
   const raw: Record<string, Record<string, number>> = {};
   for (const id of [STRONG, WEAK]) {
-    const heart = rawForCapability(
-      graph, id, 'heart', id === STRONG ? NERVE_CAPABILITY_BY_SIDE.strong : NERVE_CAPABILITY_BY_SIDE.weak,
-    );
-    raw[id] = { iron: id === STRONG ? STRONG_RAW_CLASH : WEAK_RAW_CLASH, heart };
+    const side = id === STRONG ? 'strong' : 'weak';
+    const iron = rawForCapability(graph, id, 'iron', clashCapabilityBySide[side]);
+    const heart = rawForCapability(graph, id, 'heart', NERVE_CAPABILITY_BY_SIDE[side]);
+    raw[id] = { iron, heart };
     graph.getNode(id)!.properties.domainCapabilities = { ...raw[id] };
   }
   const capability = {
@@ -273,10 +307,14 @@ export function runDuelCalibration(
   const counts: Record<DuelCalibrationClass, number> = {
     stronger_by_clock: 0, weaker_by_clock: 0, struck_down: 0, broke_off: 0, routed: 0, yielded: 0,
   };
-  for (let i = 0; i < duels; i++) {
-    resetBetweenDuels(state, i, raw);
-    counts[classifyDuel(duelOnce(state, mulberry32((seed * 7919 + i * 104729) >>> 0)))]++;
-  }
+  // The cards stay at `main`'s words whatever raw the dice were stamped to.
+  const pins = new Map<string, CalibrationCardPin>([[STRONG, CARD_BY_SIDE.strong], [WEAK, CARD_BY_SIDE.weak]]);
+  withCalibrationCardPins(pins, () => {
+    for (let i = 0; i < duels; i++) {
+      resetBetweenDuels(state, i, raw);
+      counts[classifyDuel(duelOnce(state, mulberry32((seed * 7919 + i * 104729) >>> 0)))]++;
+    }
+  });
 
   const percent = {} as Record<DuelCalibrationClass, number>;
   const deviation = {} as Record<DuelCalibrationClass, number>;
@@ -294,5 +332,7 @@ export function runDuelCalibration(
     withinTolerance,
     routedWithinTolerance: Math.abs(deviation.routed) <= DUEL_CALIBRATION_TOLERANCE,
     capability,
+    mainClashCapability,
+    card: CARD_BY_SIDE,
   };
 }
