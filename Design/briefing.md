@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-09-26 04:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-26 05:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **The dice change stopped on a rule you set in July. Keep the rule, or let it go?** ([THR-1581](https://linear.app/threadbare/issue/THR-1581/forecast-window-s3-re-fit-the-dice-skill-separates-an-even-match-is-a))
 
-The new dice and the new "take on what you can win about half the time" rule are both built ([branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit)). Nothing is merged. Skill now matters: an even match is a real gamble, and the floor that decided 44% of all rolls is gone.
+The new dice and the new "take on what you can win about half the time" rule are both built ([branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit)). Nothing is merged. With them, skill matters: an even match is a real gamble. The floor that decided 44% of all rolls is gone.
 
 The catch: mortals now either win cleanly or fail. **"Succeeded, but at a cost" happens in about 1 win in 6.** In July you asked for 3 to 7 wins in 10.
 
@@ -25,30 +25,27 @@ Answer with "keep the band" or "1 in 6 is fine". The builder's full numbers are 
 ## Decided for you
 
 - [Culture and spheres showing through](https://linear.app/threadbare/issue/THR-1599): culture and a place's sphere show in an encounter as **one extra sentence stating a local fact that bears on the test**. Samples: [seed 42](https://github.com/christianspliid-ui/threadbare/blob/proto/thr-1599-culture-sphere-layer/Docs/audits/2026-09-25-living-world-data/proto-thr-1599/sample-seed-42.md) · [seed 99](https://github.com/christianspliid-ui/threadbare/blob/proto/thr-1599-culture-sphere-layer/Docs/audits/2026-09-25-living-world-data/proto-thr-1599/sample-seed-99.md). *— from tb-design-lane*
-- [Re-fit the dice](https://linear.app/threadbare/issue/THR-1581) and [mortals take on challenges they can win about half the time](https://linear.app/threadbare/issue/THR-1582) **ship together as one change**. Plan: [forecast window § Amendment 2026-09-26](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-24-thr-1575-forecast-window.md). *— from tb-design-lane.* The at-cost stop it named has now fired; that is the lead ask above.
+- [Re-fit the dice](https://linear.app/threadbare/issue/THR-1581) and [mortals take on challenges they can win about half the time](https://linear.app/threadbare/issue/THR-1582) **ship together as one change**. Plan: [forecast window § Amendment 2026-09-26](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-24-thr-1575-forecast-window.md). *— from tb-design-lane.* The change hit the at-cost stop that decision named; that is the lead ask above.
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 19 jobs are ready, and nothing is being built right now.** The pickup lane takes the next one at its next hourly slot.
+**Backed up: 18 jobs are ready, and nothing is being built right now.** The pickup lane takes the next one at its next hourly slot.
 
-- **Parked, waiting on you:** [the dice re-fit](https://linear.app/threadbare/issue/THR-1581) (High). Parked for about 1.5 hours. Everything is pushed to its branch, so nothing is at risk. Both of its local worktrees are clean.
-- **Shipped this hour:** [wards and cures now reach Terrified, Wounded and Cursed](https://linear.app/threadbare/issue/THR-1569), via [#2060](https://github.com/christianspliid-ui/threadbare/pull/2060), and live on the site.
-- **New this hour:** [guards against losing a condition guard nothing](https://linear.app/threadbare/issue/THR-1625).
+- **Parked, waiting on you:** [the dice re-fit](https://linear.app/threadbare/issue/THR-1581) (High). Parked for about 2.5 hours. Everything is pushed to its branch, so nothing is at risk. Both of its local worktrees are clean.
+- **Shipped this hour:** [a notable's agenda phase now carries a chronicle title](https://linear.app/threadbare/issue/THR-1585) instead of an internal id, via [#2061](https://github.com/christianspliid-ui/threadbare/pull/2061), and live on the site.
 - **Fight system: nearly ready, not yet a review ask.** Everything is live except [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554), which are queued.
-- [Blessing and curse reactions never fire](https://linear.app/threadbare/issue/THR-1624).
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620). It still has no priority set.
-- Also queued: [place pages never describe culture](https://linear.app/threadbare/issue/THR-1623), [culture names show raw map words](https://linear.app/threadbare/issue/THR-1622), [five small interface faults](https://linear.app/threadbare/issue/THR-1604), [the cast receipt with no subject](https://linear.app/threadbare/issue/THR-1603), [hex lore repeats one sentence](https://linear.app/threadbare/issue/THR-1621), [chronicle headline id](https://linear.app/threadbare/issue/THR-1585), [dead trade route still claimable](https://linear.app/threadbare/issue/THR-1615), [non-casters try to learn spells](https://linear.app/threadbare/issue/THR-1617), [Builder's Legacy complete at start](https://linear.app/threadbare/issue/THR-1618), [route-building aims at home](https://linear.app/threadbare/issue/THR-1619), [waypoint clutter](https://linear.app/threadbare/issue/THR-1616), [colocation chance](https://linear.app/threadbare/issue/THR-1576), [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528), [seed targets](https://linear.app/threadbare/issue/THR-1565), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573).
+- Also queued: [place pages never describe culture](https://linear.app/threadbare/issue/THR-1623), [culture names show raw map words](https://linear.app/threadbare/issue/THR-1622), [five small interface faults](https://linear.app/threadbare/issue/THR-1604), [the cast receipt with no subject](https://linear.app/threadbare/issue/THR-1603), [hex lore repeats one sentence](https://linear.app/threadbare/issue/THR-1621), [dead trade route still claimable](https://linear.app/threadbare/issue/THR-1615), [non-casters try to learn spells](https://linear.app/threadbare/issue/THR-1617), [Builder's Legacy complete at start](https://linear.app/threadbare/issue/THR-1618), [route-building aims at home](https://linear.app/threadbare/issue/THR-1619), [blessing and curse reactions never fire](https://linear.app/threadbare/issue/THR-1624), [condition guards guard nothing](https://linear.app/threadbare/issue/THR-1625), [waypoint clutter](https://linear.app/threadbare/issue/THR-1616), [colocation chance](https://linear.app/threadbare/issue/THR-1576), [blood-soaked ground](https://linear.app/threadbare/issue/THR-1528), [seed targets](https://linear.app/threadbare/issue/THR-1565), [the Follow button's wording](https://linear.app/threadbare/issue/THR-1573).
 
 ## Health
 
 - **Lane silence:** the worst recent gap was 25 hours, from Saturday 19 into Sunday 20 September. It fell on a weekend, so your 11 September ruling declines it.
-- **Worktree reaper:** last ran at 04:40 local. 5 worktrees are waiting to be sorted, which is routine.
+- **Worktree reaper:** last ran at 05:40 local. 5 worktrees are waiting to be sorted, which is routine.
 - **Everything else is green.**
-  - The heavy simulation tests are green on main again (they were red until this hour's merge).
-  - The live site is serving the latest build (e7430a1b).
+  - The live site is serving the latest build (00869497).
   - All ten scheduled lanes are on time.
   - No pull requests are waiting.
-  - Tick cost is 78 ms/tick, 5% above the weekly median.
+  - Tick cost is 80 ms/tick, 8% above the weekly median.
   - The home tree is on `main` and current.
