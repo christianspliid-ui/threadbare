@@ -129,6 +129,8 @@ import {
   UNDERTAKING_VERB_DIFFICULTY,
 } from '../data/strategic-action-constants';
 import { heldTownAffinity, type HoldStanding } from './holdStanding';
+import { computeEngagementFit, type EngagementZone } from './engagementWindow';
+import { META_VALUE_PAIR } from '../types/agent';
 
 // ─── Contract ───────────────────────────────────────────────────
 
@@ -192,6 +194,19 @@ export interface BoardEntry {
    * because both rows would print the same id.
    */
   readonly candidateIndex: number;
+  /**
+   * THR-1582 (forecast window S4) — the forecast the window judged: an encounter's
+   * engagement forecast `F`, an undertaking's `advanceProbability`.
+   */
+  readonly forecast?: number;
+  /** THR-1582 — the window's multiplier on this entry, already folded into `score`. */
+  readonly forecastFit?: number;
+  /** THR-1582 — where `forecast` sat against the mortal's window. */
+  readonly forecastZone?: EngagementZone;
+  /** THR-1582 — capability on the entry's primary reach (for the engagement trace). */
+  readonly proficiency?: number;
+  /** THR-1582 — the difficulty the entry demands (for the engagement trace). */
+  readonly difficulty?: number;
 }
 
 export interface BoardResult {
@@ -217,6 +232,11 @@ export interface BoardInput {
    * absent when they hold nothing, which is the overwhelming case and costs nothing.
    */
   readonly holdStanding?: HoldStanding | null;
+  /**
+   * THR-1582 — the mortal's consecutive failed engagements, for the window's setback
+   * shift. Absent → 0.
+   */
+  readonly consecutiveFailures?: number;
 }
 
 // ─── Payoff ─────────────────────────────────────────────────────
@@ -480,6 +500,9 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   const entries: BoardEntry[] = [];
 
   const profile = resolveAxiologicalProfile(graph, agentId, tick, input.fundament);
+  // THR-1582 — the window's per-agent shifts, read once for both families.
+  const courageLean = (profile as Partial<Record<ValuePair, number>>)[META_VALUE_PAIR] ?? 0;
+  const consecutiveFailures = input.consecutiveFailures ?? 0;
 
   // ── Encounters: the baseline family ──
   //
@@ -488,15 +511,23 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // recomputing is what makes this a genuine comparison: if the board and the
   // encounter scorer ever disagree about an encounter's value, the disagreement
   // is in the multipliers, which are visible on the entry.
+  //
+  // THR-1582: the forecast window's fit was computed once by `scoreAndSelect` and
+  // rides on the candidate; applying the same number here keeps the two scorers from
+  // disagreeing about the window. A candidate scored before S4 reads fit 1.
   for (const [index, candidate] of input.encounterCandidates.entries()) {
+    const forecastFit = Number.isFinite(candidate.engagementFit) ? candidate.engagementFit : 1;
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
       evt: candidate.valuePerTick,
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
-      score: candidate.valuePerTick * candidate.desireMultiplier,
+      score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit,
       candidateIndex: index,
+      forecast: candidate.engagementForecast,
+      forecastFit,
+      forecastZone: candidate.engagementZone ?? 'in',
     });
   }
 
@@ -505,12 +536,13 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const template = getStrategicTemplate(candidate.templateId);
     const reach = pickPrimaryReach(template);
 
-    const advanceProbability = forecastAdvanceProbability(
-      safeCapability(graph, candidate.actorId, reach),
-      template?.cellVariant && candidate.objectTier
-        ? UNDERTAKING_VERB_DIFFICULTY[template.cellVariant][candidate.objectTier - 1]
-        : template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY,
-    );
+    const proficiency = safeCapability(graph, candidate.actorId, reach);
+    const checkpointDifficulty = template?.cellVariant && candidate.objectTier
+      ? UNDERTAKING_VERB_DIFFICULTY[template.cellVariant][candidate.objectTier - 1]
+      : template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY;
+    const advanceProbability = forecastAdvanceProbability(proficiency, checkpointDifficulty);
+    // THR-1582 — an undertaking's forecast is its checkpoint advance probability.
+    const engagement = computeEngagementFit(advanceProbability, courageLean, consecutiveFailures);
     const payoff = resolveUndertakingPayoff(template, candidate.objectTier);
 
     // A candidate has not started, so the whole undertaking is remaining.
@@ -559,8 +591,13 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       advanceProbability,
       ambitionBoost,
       heldTownAffinity: affinity,
-      score: evt * desireMultiplier * temperamentWeight * varietyMultiplier,
+      score: evt * desireMultiplier * temperamentWeight * varietyMultiplier * engagement.fit,
       candidateIndex: index,
+      forecast: advanceProbability,
+      forecastFit: engagement.fit,
+      forecastZone: engagement.zone,
+      proficiency,
+      difficulty: checkpointDifficulty,
     });
   }
 
