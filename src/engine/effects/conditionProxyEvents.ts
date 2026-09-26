@@ -70,6 +70,23 @@
  * | HARMFUL_CONDITION_TAG         | #negative | Tag marking a condition as harm |
  * | CONDITION_DAMAGED_PRIME       | 109     | PRNG stream separation (NFP #3)  |
  * | CONDITION_HEALED_PRIME        | 127     | PRNG stream separation (NFP #3)  |
+ * | CONDITION_BLESSED_PRIME       | 131     | PRNG stream separation (NFP #3)  |
+ * | CONDITION_CURSED_PRIME        | 137     | PRNG stream separation (NFP #3)  |
+ *
+ * ─── `blessed` / `cursed` (THR-1624) ──────────────────────────────
+ * The same landing sites also raise `blessed` when the landed condition carries
+ * the `#blessing` family tag and `cursed` when it carries `#curse` — the two
+ * family tags `content-tags.ts` defines and the bless/curse undertakings already
+ * draw their pools by (`CONDITION_BLESSING_TAG` / `CONDITION_CURSE_TAG`). Before
+ * this, `ReactiveTrigger` named both and no event raised either, so every
+ * reaction keyed on them (the Ember Sigil, the Whispering Eye) was a promise with
+ * no producer. Polarity is not consulted: a curse is `#negative` and so also
+ * raises `damaged`, which is correct — being cursed is being hurt, and a ward on
+ * `damaged` and a reaction on `cursed` are two different promises that both
+ * hold. Landing only; lifting a blessing or a curse raises nothing new.
+ *
+ * Call sites use `raiseConditionLanded`, which raises all three in one step so a
+ * new landing site cannot wire `damaged` and forget the family half.
  *
  * ─── Fail-soft (NFP #4) ─────────────────────────────────────────────
  * | Failure case                        | Fallback                          |
@@ -87,6 +104,7 @@ import type { EffectRuntimeState } from '../../types/effects';
 import type { WorldGraph } from '../graph';
 import { mulberry32 } from '../../lib/prng';
 import { raiseEffectEvent } from './effectEventDispatch';
+import { CONDITION_BLESSING_TAG, CONDITION_CURSE_TAG } from '../../data/strategic-action-constants';
 
 /**
  * Options for a caller threading its own runtime-state map instead of letting
@@ -115,6 +133,8 @@ export const HARMFUL_CONDITION_TAG = '#negative';
  */
 const CONDITION_DAMAGED_PRIME = 109;
 const CONDITION_HEALED_PRIME = 127;
+const CONDITION_BLESSED_PRIME = 131;
+const CONDITION_CURSED_PRIME = 137;
 
 /**
  * `actorType` values that can be damaged or healed.
@@ -146,6 +166,24 @@ const PERSON_ACTOR_TYPES: ReadonlySet<string> = new Set(['individual', 'ascendan
 export function isHarmfulCondition(graph: WorldGraph, conditionTraitId: string): boolean {
   const tags = graph.getNode(conditionTraitId)?.properties?.tags;
   return Array.isArray(tags) && tags.includes(HARMFUL_CONDITION_TAG);
+}
+
+/**
+ * Which family events a landing condition raises (THR-1624): `blessed` for the
+ * `#blessing` family tag, `cursed` for `#curse`. Fail-soft: a missing node or
+ * tag list raises nothing. Both are returned if content ever tags a condition
+ * with both — each is a separate promise to a separate reaction.
+ */
+export function conditionFamilyEvents(
+  graph: WorldGraph,
+  conditionTraitId: string,
+): Array<'blessed' | 'cursed'> {
+  const tags = graph.getNode(conditionTraitId)?.properties?.tags;
+  if (!Array.isArray(tags)) return [];
+  const out: Array<'blessed' | 'cursed'> = [];
+  if (tags.includes(CONDITION_BLESSING_TAG)) out.push('blessed');
+  if (tags.includes(CONDITION_CURSE_TAG)) out.push('cursed');
+  return out;
 }
 
 /**
@@ -242,6 +280,65 @@ export function raiseConditionHealed(
   opts?: ConditionProxyOptions,
 ): Map<string, EffectRuntimeState> | undefined {
   return raiseConditionProxy(state, carrierId, conditionTraitId, amount, 'healed', opts);
+}
+
+/**
+ * Raise `blessed` / `cursed` for a family-tagged condition just landed on a
+ * person (THR-1624). Person-gated like the harm raises; not harm-gated, since a
+ * blessing is the point. Returns the threaded map for a threading caller.
+ */
+export function raiseConditionFamily(
+  state: GameState,
+  carrierId: string,
+  conditionTraitId: string,
+  amount: number,
+  opts?: ConditionProxyOptions,
+): Map<string, EffectRuntimeState> | undefined {
+  if (!isPersonCarrier(state.graph, carrierId)) return undefined;
+  let running = opts?.states;
+  let last: Map<string, EffectRuntimeState> | undefined;
+  for (const kind of conditionFamilyEvents(state.graph, conditionTraitId)) {
+    const prime = kind === 'blessed' ? CONDITION_BLESSED_PRIME : CONDITION_CURSED_PRIME;
+    const raised = raiseEffectEvent(
+      state,
+      carrierId,
+      { type: kind, amount },
+      {
+        site: 'condition_inflicted',
+        rng: mulberry32((state.seed + state.tick * prime + hashCarrier(carrierId)) >>> 0),
+        ...(running ? { states: running } : {}),
+      },
+    );
+    if (running) {
+      last = raised.states;
+      running = raised.states;
+    }
+  }
+  return last;
+}
+
+/**
+ * The one hook every condition-landing site calls: `damaged` if the condition is
+ * harmful, then `blessed` / `cursed` if it carries a family tag. Chains threaded
+ * states across the raises so the second sees the first's cooldown writes.
+ *
+ * Returns the threaded map for a threading caller — the input map unchanged when
+ * nothing raised, never `undefined`, so a gated-out landing cannot drop the
+ * caller's states on the floor.
+ */
+export function raiseConditionLanded(
+  state: GameState,
+  carrierId: string,
+  conditionTraitId: string,
+  amount: number,
+  opts?: ConditionProxyOptions,
+): Map<string, EffectRuntimeState> | undefined {
+  let running = opts?.states;
+  const threaded = (): ConditionProxyOptions | undefined => (running ? { states: running } : undefined);
+  running = raiseConditionDamaged(state, carrierId, conditionTraitId, amount, threaded()) ?? running;
+  running = raiseConditionFamily(state, carrierId, conditionTraitId, amount, threaded()) ?? running;
+  if (!opts?.states) return undefined;
+  return running instanceof Map ? running : new Map(running);
 }
 
 /**

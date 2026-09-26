@@ -856,6 +856,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; The two triggers nothing pulled
+      <span class="lead">Audited 2026-09-26 (THR-1624). <code>blessed</code> and <code>cursed</code> were valid reaction triggers that no event raised, so two shipped items promised a burst they could never give.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">A <code>#blessing</code> / <code>#curse</code> condition lands on a person <span class="arrow">&#10230;</span> The bearer&rsquo;s <code>blessed</code> / <code>cursed</code> reactions fire (<code>attachment-effect-event-raises</code>)</span>
+        <span class="note"><strong>LIVE since THR-1624 (2026-09-26).</strong> Every landing site &mdash; <code>applyConditionToActor</code>, the aftermath <code>condition_attachment</code> write, the <code>condition_grant</code> action trigger and the bless/curse undertaking &mdash; calls <code>raiseConditionLanded</code>, which raises <code>damaged</code> for harm and the family event off the tag. The undertaking verb raised nothing before, not even <code>damaged</code> for a curse. Proven by the Ember Sigil (+0.03 Star) and Whispering Eye (&minus;0.03 Heart) reading their burst off the resolver.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight &mdash; The battle the ground forgot
       <span class="lead">Audited 2026-09-26 (THR-1528). A battle overwrote a town&rsquo;s prosperity and minted no record, so no place could say a war had passed through it.</span>
     </h2>

@@ -72,6 +72,11 @@ export type EffectEvent =
   | { type: 'encounter_outcome'; reach: ReachDomain; success: boolean; combat?: boolean }
   | { type: 'damaged'; amount: number }
   | { type: 'healed'; amount: number }
+  // THR-1624 — a `#blessing` / `#curse` family condition landed on this agent
+  // (raised by `raiseConditionFamily` in conditionProxyEvents). `amount` is the
+  // condition's intensity, as for `damaged`.
+  | { type: 'blessed'; amount: number }
+  | { type: 'cursed'; amount: number }
   | { type: 'entered_hex'; hex: { col: number; row: number } }
   | { type: 'combat_started' }
   | { type: 'combat_ended' }
@@ -158,6 +163,8 @@ function getReactiveTrigger(event: EffectEvent): ReactiveTrigger | null {
   switch (event.type) {
     case 'damaged':       return 'damaged';
     case 'healed':        return 'healed';
+    case 'blessed':       return 'blessed';
+    case 'cursed':        return 'cursed';
     case 'entered_hex':   return 'entered_hex';
     case 'combat_started': return 'encounter_started';
     case 'attacked':      return 'attacked';

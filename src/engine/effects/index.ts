@@ -101,6 +101,9 @@ export {
 export {
   raiseConditionDamaged,
   raiseConditionHealed,
+  raiseConditionLanded,
+  raiseConditionFamily,
+  conditionFamilyEvents,
   isHarmfulCondition,
   isPersonCarrier,
   HARMFUL_CONDITION_TAG,

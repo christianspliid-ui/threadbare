@@ -13,7 +13,7 @@
 
 import type { GameState } from '../../types/gameState';
 import { isImmuneToAnyTag } from './effectQueries';
-import { raiseConditionDamaged } from './conditionProxyEvents';
+import { raiseConditionLanded } from './conditionProxyEvents';
 
 /** Default intensity on apply_condition when the effect omits it. */
 export const CONDITION_DEFAULT_INTENSITY = 0.5;
@@ -102,7 +102,8 @@ export function applyConditionToActor(
   opts.onApplied?.({ edgeId, intensity, durationTicks });
   // THR-1244: raised after the edge is written, so a reactive inspecting the
   // bearer sees the condition it is firing on. Self-gating on harm + person
-  // carrier — see `conditionProxyEvents`.
-  raiseConditionDamaged(state, targetId, conditionTraitId, intensity);
+  // carrier — see `conditionProxyEvents`. THR-1624: the landed hook also raises
+  // `blessed` / `cursed` for a family-tagged condition.
+  raiseConditionLanded(state, targetId, conditionTraitId, intensity);
   return { applied: true, edgeId, intensity, durationTicks };
 }

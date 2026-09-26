@@ -41,7 +41,7 @@ import { collectBusyActorIds } from './spotlightPull';
 import type { TraceEntry } from '../types/trace';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
 import { isImmuneToAnyTag } from './effects/effectQueries';
-import { raiseConditionDamaged, raiseConditionHealed } from './effects/conditionProxyEvents';
+import { raiseConditionLanded, raiseConditionHealed } from './effects/conditionProxyEvents';
 import {
   applyConditionToActor,
   CONDITION_DEFAULT_INTENSITY,
@@ -2634,8 +2634,9 @@ export function applyEncounterAftermathReaction(
         // infliction path silent while the stage read as done. One raise per
         // infliction, not per stack: `amount` carries the stack count instead, so a
         // three-stack wound is one heavier event rather than three identical ones
-        // (and cannot trip a reactive's cooldown against itself).
-        raiseConditionDamaged(
+        // (and cannot trip a reactive's cooldown against itself). THR-1624: the
+        // landed hook also raises `blessed` / `cursed` for a family-tagged condition.
+        raiseConditionLanded(
           state, resolvedId, effect.templateId, CONDITION_DEFAULT_INTENSITY * caStackCount,
         );
         break;

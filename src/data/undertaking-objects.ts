@@ -98,6 +98,7 @@ import { removeTrait } from '../engine/traits';
 import { activateSpell } from '../engine/spellActivation';
 import { holdsMotive } from '../engine/undertakingMotive';
 import { instantiateReward } from '../engine/rewardPool';
+import { raiseConditionLanded } from '../engine/effects/conditionProxyEvents';
 import { isSpellSuppressedFor } from '../engine/effects/effectSuppression';
 import { getSpellTemplate } from './spell-templates';
 import { SLOT_CAPS } from './attachment-slot-constants';
@@ -1146,6 +1147,11 @@ function inflictCondition(
         ...(ticksRemaining !== null ? { ticksRemaining, totalTicks: ticksRemaining } : {}),
       },
     });
+    // THR-1624: the bless/curse verb is a condition landing like any other — raise
+    // `damaged` (a curse is `#negative`) and `blessed` / `cursed` off the family tag,
+    // after the edge carries its final state, so the bearer's reactions fire.
+    const intensity = typeof edge.properties?.intensity === 'number' ? edge.properties.intensity : 1;
+    if (ctx.state?.graph) raiseConditionLanded(ctx.state, targetId, edge.target, intensity);
   }
 
   emitKindTrace({
