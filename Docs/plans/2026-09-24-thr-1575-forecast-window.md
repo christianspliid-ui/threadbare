@@ -8,6 +8,57 @@
 
 *A mortal engages a challenge when its own forecast says it can win about half the time. Who the mortal is decides which challenges those are — so success stays level across the world while what a mortal attempts grows with them.*
 
+> **Amended 2026-09-26 (design lane, delegated *how*):** S3 and S4 now land as **one change**, judged with the window in place. See § Amendment 2026-09-26 below. Where it disagrees with an older section, the amendment wins.
+
+## Amendment 2026-09-26 — S3 and S4 land as one change
+
+**Why.** S3 was built on branch `thr-1581-dice-refit` and stopped by its own kill criterion on 2026-09-24 (executor report on THR-1581, ~21:50Z). The dice did what S3 promised: floor-pinned rolls fell from 59.4% to 0.2%, success by raw band spread 52% → 95%, and by difficulty 92% → 46%. But total success rose instead of levelling:
+
+| KPI (seeds 42 / 99 / 7 × 120 ticks) | pre-S3 baseline | S3 alone | limit |
+|---|---|---|---|
+| total success | 0.73 / 0.68 / 0.57 | 0.87 / 0.79 / 0.83 | 0.45–0.72 ✗ |
+| at-cost share (reported only) | 0.45 / 0.32 / 0.29 | 0.16 / 0.20 / 0.19 | 0.30–0.70 ✗ |
+| branching fires per 30 ticks | 6.75 / 9.50 / 6.50 | 0.75 / 1.25 / 1.75 | `KPI_BRANCHING_FIRE_MIN_PER_30T` = 1 (seed 42 ✗) |
+
+*(Numbers quoted from the executor's report; baseline was `origin/main` @ `2242c7ff`.)*
+
+**The cause is the slice order, not the dice.** Once the dice separate skill, S2's planner (which ranks by forecast) sees easy content forecast far better than hard content and moves onto it: 48.6% of rolls sat at the 0.95 ceiling, and mean attempted difficulty in the novice and journeyman bands fell to 0.01–0.05. The only thing designed to push mortals back up to even odds is S4's window. So S3's criterion — "with choices still as after S2" — **fails by construction**. The plan's ~57% model held choices fixed, and that assumption is what broke. Retuning `ODDS_*` or `SIGMOID_*` to hit the number would make an even match read *perilous*, or every protagonist read as a novice. That is tuning toward the number, which § Notes for the executor forbids.
+
+**Decision.**
+
+1. **One change, one branch, one PR.** THR-1581 carries S3 **and** S4. The executor continues on `thr-1581-dice-refit` (it is 135 commits behind `main` at amendment time — merge `origin/main` first) and adds S4's full scope (§ Systems design 3; THR-1582's scope list) on top. THR-1582 stays open, blocked by THR-1581, and **is closed by the same PR**: its PR body and closing commit body carry a close line for each of the two tickets, one per line. Nothing is cancelled.
+2. **S3's interim success gate is retired; its mechanical checks stay.** The combined change is judged on § Done when S4 (the per-band invariant, total success 0.50–0.65, the two traps, variety and theme), **plus** these S3 checks, which do not depend on choice: the golden test's `roll` column unchanged; floor-pinned ≤ `KPI_FLOOR_PINNED_MAX`; success spread by raw band ≥ 30 points and by difficulty ≥ 15 points on `measure:roll-spread`; `crit_failure_rate` ≤ 0.15; `failure_story_rate` ≥ 0.90; idle rate within `KPI_IDLE_RATE_DELTA_MAX` of the pre-change baseline; the fight calibration re-run; the headroom and meeting constants.
+3. **The S3-alone numbers are recorded, not gated.** The PR body carries a three-column KPI table: pre-change `main`, dice only, dice + window. The middle column is diagnostic. It shows the window is doing the levelling.
+4. **Re-baseline on today's `main`.** Two things changed the roll since the branch's baseline:
+   - THR-1535 put standing modifiers into the roll (merged 2026-09-24 22:44Z).
+   - The fight block and duel slices all merged.
+
+   The "pre-change" column is measured on `origin/main` at the moment the executor merges it into the branch, not on `2242c7ff`. The PR body records that SHA. The `check:tick-cost` "before" figure is taken on the same SHA. The parity test already includes standing modifiers (`plannerForecastParity.test.ts`, THR-1535 block). The executor re-runs it on the re-fitted dice and reports the mean delta.
+
+**Two findings carried into the combined review.**
+
+- **Branching quests.** Branching-quest fires fell about 80% under the dice alone, and seed 42 fell below the existing floor `KPI_BRANCHING_FIRE_MIN_PER_30T` (1 per 30 ticks). Branching quests are the only authored multi-choice content. They already skip the outgrowth filter (`BRANCHING_QUEST_SKIP_OUTGROWTH`, `encounter/branchingConstants.ts:50`) and keep the too-easy exemption under the fit (`exemptTooEasy`), so the window should draw mortals back to them. **Gate:** with the window in place, branching fires must meet `KPI_BRANCHING_FIRE_MIN_PER_30T` on all three seeds, and the PR body reports them against the pre-change baseline. If a seed stays below the floor, stop and report on the ticket with the `engagement_decision` traces for the branching candidates. Do not add a branching-specific bonus to the fit; that is a design change.
+- **At-cost texture.** The at-cost share fell to 0.16–0.20 under the dice alone, below the 0.30–0.70 band from Christian's July ruling. The window should move it back, because an even match lands in `success_at_cost` far more often than a 0.95 one. The rule is unchanged: **if the combined change leaves at-cost outside 0.30–0.70 on any seed, the executor stops and takes the finding to Christian**, with no retune. This is the most likely stop, and the executor should expect it.
+
+**Size and checkpointing.** The combined change is large. The executor may land it across several sessions on the one branch, with a checkpoint comment on THR-1581 after each. Nothing merges until the whole Done-when holds. The branch already carries:
+
+- the curve, the formula and the floors retired;
+- the difficulty-cap switch;
+- `computeCapabilityPreRefit`, with 25 call sites repointed;
+- three local `cap − diff` formulas moved onto `computeResolutionThreshold`;
+- `MEETING_TEST_CAPABILITY` set to 0.3;
+- the headroom re-measure (`NUDGE_OFF_REACH_MAX_DIFFICULTY` 0.45 stands);
+- the golden test re-pinned, with the `roll` column unchanged.
+
+Still owed on the branch:
+
+- the ~20 test files pinned to old-formula numbers;
+- the fight calibration re-run;
+- the Deferral issue for the `TODO(THR-1580)` markers — it exists: [THR-1580](https://linear.app/threadbare/issue/THR-1580);
+- all of S4.
+
+**The whole-design kill criterion is unchanged** (§ Done when S4). If the novice or journeyman band needs a floor, or difficulty scaled to the actor, to hold level success, the ticket returns to design.
+
 ## Why this is load-bearing
 
 **Director ruling (Christian, chat, 2026-09-24; recorded on the ticket):** *"we will aim for agents aiming for the same general success rate … who a mortal is should count a lot. The scaling should allow more proficient mortals to tackle higher difficulty challenges … less proficient mortals would shy away from higher difficulty encounters … the 50–65% success rate is what a mortal would deem acceptable as forecast in order to actually actively engage with the challenge."* And: *"lets get the right long term design back on, and then we can always create more higher difficulty encounter, monster and undertaking content."*
@@ -364,9 +415,9 @@ Encounters & Dilemmas (core) is ⚪ UNAUDITED in `Docs/canon/interface-map.md`, 
 |---|---|---|---|
 | **S1** Gauge | `measure:roll-spread`, band counters + KPIs in `gameplayKpi`/`kpiConstants`, heavy invariant test (skipped until S4 via `it.skip` with a `TODO(S4-ticket)`), `resolution.input.reach`, headroom-script fix, authoring-guide paragraph | — | none |
 | **S2** Forecast parity | scaled forecast in planner, cache `scale`/`stepFailBehaviors`, multipliers switch, `F`, growth-units fix, parity test, `planner-forecast-equals-roll` row | — | small (planner only) |
-| **S3** Dice re-fit | curve, formula, floors, difficulty-cap switch, pre-refit reader + call-site split, meeting capability, headroom constraint re-measure, fight calibration re-run | S1 | large (odds) |
-| **S4** Forecast window | `engagementWindow.ts` (incl. setback shift), fit in `scoreAndSelect` + board, failure cooldown, outgrowth retired, `engagement_decision` trace + debug accessor, un-skip the invariant | S2, S3 | large (choice) |
-| **S5** Words | sheet reads `computeCapability`; sheet/skill-line agreement test; browser capture | S3 | UI |
+| **S3** Dice re-fit | curve, formula, floors, difficulty-cap switch, pre-refit reader + call-site split, meeting capability, headroom constraint re-measure, fight calibration re-run | S1 | large (odds) — **ships with S4 in one PR (Amendment 2026-09-26)** |
+| **S4** Forecast window | `engagementWindow.ts` (incl. setback shift), fit in `scoreAndSelect` + board, failure cooldown, outgrowth retired, `engagement_decision` trace + debug accessor, un-skip the invariant | S2, S3 | large (choice) — **built on S3's branch, same PR** |
+| **S5** Words | sheet reads `computeCapability`; sheet/skill-line agreement test; browser capture | S3 (so, after the combined S3+S4 PR) | UI |
 
 Plus two tickets that are **not** Ready for Dev: a Deferral to re-fit the pre-refit readers one by one on their own evidence, and the content follow-up from the coverage report (Todo, after S4).
 
@@ -418,7 +469,7 @@ S2:
 S3:
 - [ ] `stepResolutionGolden.test.ts` updated deliberately: the `probability` column changes and the **`roll` column is unchanged**. The PR body records the before/after band distribution.
 - [ ] `measure:roll-spread`: floor-pinned ≤ `KPI_FLOOR_PINNED_MAX`. Success spread by raw band ≥ 30 points (weakest band vs specialist) and by difficulty ≥ 15 points.
-- [ ] KPI report, with choices still S2's: total success within 0.45–0.72, `crit_failure_rate` ≤ 0.15, `failure_story_rate` ≥ 0.90, idle rate within `KPI_IDLE_RATE_DELTA_MAX` of baseline. **Kill criterion:** outside these, stop and report. Do not tune toward them by moving the floors back.
+- [ ] ~~KPI report, with choices still S2's: total success within 0.45–0.72~~ **Retired by the 2026-09-26 amendment** — it fails by construction without the window. The total-success gate is S4's 0.50–0.65, measured with the window in place; the dice-only numbers are reported as a diagnostic column. Still gated on the combined change: `crit_failure_rate` ≤ 0.15, `failure_story_rate` ≥ 0.90, idle rate within `KPI_IDLE_RATE_DELTA_MAX` of the pre-change baseline. Outside these, stop and report. Do not tune toward them by moving the floors back.
 - [ ] Fight calibration (`fightCalibration.ts`) re-run against `Docs/plans/2026-09-23-fight-block.md:590`. Within tolerance, or the fight difficulty constants are re-set with the run recorded.
 - [ ] Headroom script re-run; `NUDGE_OFF_REACH_MAX_DIFFICULTY` confirmed or re-set with the measurement recorded. `MEETING_TEST_CAPABILITY` re-set so the meeting's mid-difficulty step reads *uncertain*.
 - [ ] Every pre-refit call site carries `// TODO(THR-<deferral>)`; the Deferral issue exists before the first reference (never predict its number).
@@ -428,6 +479,8 @@ S4:
 - [ ] **The invariant (heavy lane, `src/engine/__tests__/engagementWindow.invariant.test.ts`, `// @vitest-lane heavy`):** seeds 42/99 × 120 ticks. Every proficiency band with ≥ `KPI_BAND_MIN_ENGAGEMENTS` resolved free-choice engagements has success within `[KPI_BAND_SUCCESS_MIN − tol, KPI_BAND_SUCCESS_MAX + tol]`. Mean attempted difficulty rises strictly across those bands. In-window share ≥ `KPI_IN_WINDOW_MIN`.
 - [ ] **If the invariant fails for a covered band:** calibrate only `ENGAGE_*`, `ODDS_*` and `SIGMOID_*` within the ranges the gauge supports. If it still fails, stop and post the gauge output on the ticket. **Whole-design kill criterion:** if the invariant cannot be met for the novice or journeyman band without restoring a scale floor or scaling difficulty to the actor, the premise ("enough content exists at lower levels") is wrong. The ticket returns to design, and the slice does not merge.
 - [ ] KPI total success within 0.50–0.65 on seeds 42/99/7. The at-cost share is reported; **if it leaves 0.30–0.70, the executor stops and a finding goes to Christian** (his July ruling), with no retune.
+- [ ] *(Amendment 2026-09-26.)* Branching fires meet `KPI_BRANCHING_FIRE_MIN_PER_30T` on seeds 42/99/7, reported against the pre-change baseline. If a seed stays below the floor, stop and report with the branching candidates' `engagement_decision` traces.
+- [ ] *(Amendment 2026-09-26.)* The PR body carries the three-column KPI table (pre-change `main` · dice only · dice + window) and the S3 mechanical checks listed in § Amendment.
 - [ ] Unit tests for `computeEngagementFit`: zone edges, personality shift both ways, setback shift growth and cap, refuse, too-easy, `exemptTooEasy`.
 - [ ] **The two historical traps (Christian, 2026-09-24):** on seeds 42/99/7 × 120 ticks, `retry_after_failure_rate` ≤ `KPI_RETRY_AFTER_FAILURE_MAX`, `max_failure_streak` p95 ≤ `KPI_FAILURE_STREAK_P95_MAX`, and `attempted_difficulty_trend` > 0. A unit test shows a failed resolution never decreases `computeRawScore` on the step's reach. A fixture shows a failed template's cooldown is `FAILED_TEMPLATE_COOLDOWN_MULT` × a succeeded one's.
 - [ ] **Variety and theme hold:** `template_top_share` and `template_entropy` are within their KPI thresholds on the same seeds, before and after. A `scoreUnifiedBoard` unit test shows that between two in-window candidates the higher desire multiplier wins.
@@ -448,6 +501,8 @@ Every slice:
 **Suggested model:** opus — the dice change moves every roll; calibration against a KPI with a kill criterion needs judgment, not transcription.
 
 **Parallel-safe with:** THR-1565, THR-1566, THR-1567, THR-1568, THR-1569, THR-1573 (seed targets, battle deaths, wayside draw, item reactions, condition tags, follow button — none edit resolution, scoring, capability or the decision board). THR-1528 (battle-history record, `battleAftermath` only).
+
+*Amendment 2026-09-26:* THR-1535 and every fight-block and duel slice have merged, so their mutex lines below are historical. The combined S3+S4 change is mutex with THR-1576 (a reach-weighted probability reader the call-site split must classify) and with THR-1584 (mastery rescale, which assumes the re-fitted curve).
 
 **Mutex with:**
 - THR-1535 — both edit the roll's input sum in `unifiedActionResolution.ts` and move success rates. Land one, re-baseline, then the other. THR-1535 first is preferred: it is smaller, and its 10-point kill criterion is only meaningful on today's dice.
@@ -521,3 +576,18 @@ PILLAR AUDIT: PASS
 No contradictions found. North star: directly implements the hesitation mechanism. Core loop preserved. Non-negotiables respected. Tensions: legibility stays debug-side. Taste profile respected.
 
 VISION AUDIT: PASS-with-notes — the failure-rate increase and internal legibility push are both self-flagged and guarded; no Vision edit required.
+
+## Amendment 2026-09-26 — gate verdicts
+
+*Proposal: `Docs/plans/.intent-proposals/2026-09-26-thr-1575-forecast-window-amendment.md`. Decided by the design lane under `Docs/canon/process.md` rule 4 (the *how* and gate calibration of an agreed design); Christian may veto in chat.*
+
+**Intent-judge: Allow.** The parent's sign-off stands for the behaviour. The judge rated the amendment's own impact class External, because it re-routes executor coordination. It raised two gaps, both closed:
+
+- The standing-modifier parity line was stale. The parity test already covers it, so the line now says re-run and report.
+- The ticket description still carried S3's old kill criterion. It is superseded by the handoff, and THR-1582 stays Todo until the combined PR closes it.
+
+**NFP audit: PASS-with-notes.** Every gate reuses an existing KPI constant. The notes asked to pin the pre-change `main` SHA and re-baseline `check:tick-cost` on it; both are added to § Amendment, item 4.
+
+**Three-pillar audit: PASS-with-notes.** Engine and content are substantive. The UI side is inherited from S4's scope (the `engagement_decision` trace and `getEngagementVerdicts`). S5 now follows the combined PR; § Slices is updated.
+
+**Vision audit: PASS.** Landing S3 and S4 together prevents an interim live build where 48.6% of rolls sit at the 0.95 ceiling and nothing makes the player hesitate. Both creative forks stay closed to the executor: the at-cost band stays Christian's, and a branching bonus would be a design change.
