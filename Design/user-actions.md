@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 01:56 local (23:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -41,6 +41,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26 — items that promise a burst when struck now give it** ([THR-1568](https://linear.app/threadbare/issue/THR-1568)): before, a "when attacked, +Iron for a few turns" item fired and gave nothing. Merged 02:33 local via [#2058](https://github.com/christianspliid-ui/threadbare/pull/2058), and live on the site.
 - **2026-09-26 — the Unsafe Bridge and Riders Behind the Caravan now also happen in the countryside** ([THR-1567](https://linear.app/threadbare/issue/THR-1567)), not only near towns; Snow on the Pass stays rare on purpose. Merged 01:34 local via [#2057](https://github.com/christianspliid-ui/threadbare/pull/2057), and live on the site.
 - **2026-09-26 — a commander killed in battle now dies properly** ([THR-1566](https://linear.app/threadbare/issue/THR-1566)) through the game's normal death path, instead of being deleted from the world. Merged 00:36 local via [#2056](https://github.com/christianspliid-ui/threadbare/pull/2056), and live on the site.
 - **2026-09-25 — a duel's loser now shows as chips on screen** ([THR-1561](https://linear.app/threadbare/issue/THR-1561)): a "slain" chip or a grudge chip. Merged 23:32 local via [#2055](https://github.com/christianspliid-ui/threadbare/pull/2055), and live on the site.
@@ -50,7 +51,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-25 — in a duel, the winner now decides the loser's fate** ([THR-1557](https://linear.app/threadbare/issue/THR-1557), duels E2). Merged 19:39 local via [#2051](https://github.com/christianspliid-ui/threadbare/pull/2051), and live on the site.
 - **2026-09-25 — a fight now shows its state as chips on screen** ([THR-1553](https://linear.app/threadbare/issue/THR-1553), fight F3). Merged 18:40 local via [#2050](https://github.com/christianspliid-ui/threadbare/pull/2050), and live on the site.
 - **2026-09-25 — the cold playtest loop runs** ([THR-1610](https://linear.app/threadbare/issue/THR-1610)): fresh testers play the game daily through a harness and report back. Merged 17:39 local via [#2049](https://github.com/christianspliid-ui/threadbare/pull/2049), and live on the site.
-- **2026-09-25 — social, tavern and secret encounters fire again** ([THR-1614](https://linear.app/threadbare/issue/THR-1614)). Merged 16:30 local via [#2047](https://github.com/christianspliid-ui/threadbare/pull/2047), and live on the site.
 
 ---
 
