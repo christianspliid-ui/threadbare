@@ -17,11 +17,12 @@ import { HexSidebar } from '../../HexSidebar';
 import { countLivingMortals } from '../../worldPulseCount';
 import { buildChipIconResolver } from '../../encounter-stage/adapters/chipCollaborators';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
-import { getPortraitUrl } from '../../../../data/portrait-assets';
+import { getMonsterPortraitUrl } from '../../../../data/portrait-assets';
 
 const ELITE_ID = 'elite_lair_ashen_hollow_1';
 const LAIR_ID = 'loc.lair.ashen_hollow';
-const MONSTER_PORTRAIT = getPortraitUrl('monster');
+// THR-1554 — the fixture elite is a beast, so it draws the beast family portrait.
+const MONSTER_PORTRAIT = getMonsterPortraitUrl('beast');
 
 function node(partial: Partial<GraphNode> & Pick<GraphNode, 'id' | 'type'>): GraphNode {
   return { name: partial.id, properties: {}, ...partial };

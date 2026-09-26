@@ -41,7 +41,9 @@ import { SectionHeading } from '../shared/SectionHeading';
 import { AnimateMount } from '../shared/AnimateMount';
 import { EntityVisual } from '../shared/EntityVisual';
 import type { EntityVisualDescriptor } from '../shared/entityVisualResolver';
-import { ENTITY_GRADIENT_COUNT } from '../../data/entity-visual-fallbacks';
+import { ENTITY_GRADIENT_COUNT, gradientIndexForId } from '../../data/entity-visual-fallbacks';
+import { getMonsterPortraitUrl } from '../../data/portrait-assets';
+import { MONSTER_FAMILIES, MONSTER_FAMILY_IDS } from '../../data/monster-families';
 import { DomainCard } from '../shared/DomainCard';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import type { RarityTier } from '../../types/rarity';
@@ -1430,6 +1432,31 @@ function EntityVisualDemo() {
           </div>
           <EntityVisual size="chip" descriptor={monsterArt} />
           <EntityVisual size="chip" descriptor={monsterFallback} />
+        </Row>
+      </div>
+
+      <div>
+        <Label>
+          monster families (THR-1554) — one pre-baked portrait per family, shared by
+          every elite of that family; a family without art falls back to the portrait above.
+        </Label>
+        <Row>
+          {MONSTER_FAMILY_IDS.map((family) => (
+            <div key={family} style={{ width: 100 }} data-testid={`styleguide-monster-family-${family}`}>
+              <EntityVisual
+                size="portrait"
+                descriptor={mkVisual({
+                  tier: 'art',
+                  src: getMonsterPortraitUrl(family) ?? undefined,
+                  glyph: '☠',
+                  gradientIndex: gradientIndexForId(family),
+                  alt: MONSTER_FAMILIES[family].cardLine,
+                  kind: 'monster',
+                })}
+              />
+              <Label>{family} · {MONSTER_FAMILIES[family].sphere}</Label>
+            </div>
+          ))}
         </Row>
       </div>
 

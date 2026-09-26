@@ -11,6 +11,8 @@ import {
   fallbackGlyphFor,
 } from '../../../data/entity-visual-fallbacks';
 import { SUBLOCATION_CATEGORY_ART } from '../../../data/sublocation-category-art';
+import { MONSTER_FAMILY_PORTRAITS, getMonsterPortraitUrl, getPortraitUrl } from '../../../data/portrait-assets';
+import { MONSTER_FAMILY_IDS } from '../../../data/monster-families';
 
 function node(partial: Partial<GraphNode> & Pick<GraphNode, 'id' | 'type'>): GraphNode {
   return { name: partial.id, properties: {}, ...partial };
@@ -273,6 +275,54 @@ describe('gradient selection — deterministic', () => {
       const idx = gradientIndexForId(id);
       expect(idx).toBeGreaterThanOrEqual(0);
       expect(idx).toBeLessThan(ENTITY_GRADIENT_COUNT);
+    }
+  });
+});
+
+// THR-1554 — each monster family draws its own pre-baked portrait; a family
+// without art (or a malformed card) falls back to the generic monster portrait.
+describe('resolveEntityVisual — monster family portraits (THR-1554)', () => {
+  const GENERIC = getPortraitUrl('monster');
+
+  function eliteWith(monsterState: Record<string, unknown> | undefined): WorldGraph {
+    return graphWith(
+      node({
+        id: 'elite_1',
+        type: 'actor',
+        name: 'Grothmaw',
+        properties: monsterState === undefined
+          ? { actorType: 'individual', isMonsterElite: true }
+          : { actorType: 'individual', monsterState },
+      }),
+    );
+  }
+
+  it('resolves every family to its own portrait', () => {
+    const seen = new Set<string>();
+    for (const family of MONSTER_FAMILY_IDS) {
+      const d = resolveEntityVisual({ id: 'elite_1' }, eliteWith({ family }));
+      expect(d.kind).toBe('monster');
+      expect(d.tier).toBe('art');
+      expect(d.src).toBe(MONSTER_FAMILY_PORTRAITS[family]);
+      expect(d.src).not.toBe(GENERIC);
+      seen.add(d.src!);
+    }
+    expect(seen.size).toBe(MONSTER_FAMILY_IDS.length);
+  });
+
+  it('falls back to the generic portrait for an unknown or missing family', () => {
+    expect(resolveEntityVisual({ id: 'elite_1' }, eliteWith({ family: 'kraken' })).src).toBe(GENERIC);
+    expect(resolveEntityVisual({ id: 'elite_1' }, eliteWith(undefined)).src).toBe(GENERIC);
+  });
+
+  it('falls back to the generic portrait when a family has no art', () => {
+    expect(getMonsterPortraitUrl('beast')).toBe(MONSTER_FAMILY_PORTRAITS.beast);
+    const saved = MONSTER_FAMILY_PORTRAITS.golem;
+    (MONSTER_FAMILY_PORTRAITS as Record<string, string | null>).golem = null;
+    try {
+      expect(getMonsterPortraitUrl('golem')).toBe(GENERIC);
+    } finally {
+      (MONSTER_FAMILY_PORTRAITS as Record<string, string | null>).golem = saved;
     }
   });
 });
