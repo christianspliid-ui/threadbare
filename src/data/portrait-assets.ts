@@ -6,6 +6,8 @@
  * fall back to null (components render the gradient silhouette).
  */
 
+import type { MonsterFamilyId } from '../types/monster';
+
 /** All 19 archetype IDs for reference */
 export type ArchetypeId =
   | 'tragic_hero' | 'trickster' | 'coming_of_age'
@@ -40,6 +42,36 @@ export const ARCHETYPE_PORTRAITS: Record<ArchetypeId, string | null> = {
   maker: '/portraits/maker.png',
   noble_savage: '/portraits/noble-savage.png',
 };
+
+/**
+ * THR-1554 — one pre-baked portrait per monster family, keyed by
+ * `monsterState.family`, so every elite of a family shares its look.
+ * A family with no entry (or null) falls back to the generic `monster`
+ * archetype portrait — missing art never blanks a card.
+ */
+export const MONSTER_FAMILY_PORTRAITS: Readonly<Record<MonsterFamilyId, string | null>> = {
+  beast: '/portraits/monster-beast.jpg',
+  golem: '/portraits/monster-golem.jpg',
+  stormkin: '/portraits/monster-stormkin.jpg',
+  behemoth: '/portraits/monster-behemoth.jpg',
+  mindthing: '/portraits/monster-mindthing.jpg',
+  wraith: '/portraits/monster-wraith.jpg',
+  echo: '/portraits/monster-echo.jpg',
+  blight: '/portraits/monster-blight.jpg',
+};
+
+/**
+ * The portrait for a monster of this family: the family's own art when one
+ * exists, else the generic monster portrait. Fail-soft on a missing or
+ * malformed family value.
+ */
+export function getMonsterPortraitUrl(family: unknown): string | null {
+  if (typeof family === 'string' && Object.hasOwn(MONSTER_FAMILY_PORTRAITS, family)) {
+    const url = MONSTER_FAMILY_PORTRAITS[family as MonsterFamilyId];
+    if (url) return url;
+  }
+  return getPortraitUrl('monster');
+}
 
 /**
  * Get the portrait URL for an agent, or null if none available.

@@ -34,6 +34,7 @@ import { getAgentInfoCard } from '../../../engine/agentDetail';
 import {
   buildSentence,
   clockModel,
+  portraitSrcFor,
   familyLineFor,
   type OpponentHeaderClockModel,
   type OpponentSentenceSegment,
@@ -54,6 +55,8 @@ export interface LairMonsterRow {
   readonly name: string;
   /** True when the monster is dead: the card reads "slain". */
   readonly deceased: boolean;
+  /** THR-1554 — the family portrait; the card's chip renders graph-free, so it passes this as `knownSrc`. */
+  readonly portraitSrc?: string;
   /** The card sentence as clauses, each carrying its tooltip (Law 16/17). */
   readonly sentence: readonly OpponentSentenceSegment[];
   /** The whole sentence as plain text (tests, debug). */
@@ -178,6 +181,7 @@ function buildRow(graph: WorldGraph, node: GraphNode, tick: number, ascendantId:
     id: node.id,
     name: nameOf(node) ?? '',
     deceased,
+    ...portraitSrcFor(bag),
     sentence,
     sentenceText: sentence.map((s) => s.text).join(''),
     temperShown,

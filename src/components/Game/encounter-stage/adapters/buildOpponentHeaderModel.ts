@@ -36,6 +36,7 @@ import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle
 import { fightRoleOf, resolveFightOpponent } from '../../../../engine/fights/fightStepInputs';
 import { readOpponentCard } from '../../../../engine/fights/opponentCard';
 import { isMonster } from '../../../../engine/monsters/isMonster';
+import { getMonsterPortraitUrl } from '../../../../data/portrait-assets';
 import { FIGHT_MORTAL_CLOCK } from '../../../../data/fight-constants';
 import { MONSTER_FAMILIES } from '../../../../data/monster-families';
 import {
@@ -90,6 +91,12 @@ export interface OpponentHeaderModel {
   /** `EntityVisual` kind for the art tile. */
   readonly visualKind: 'monster' | 'agent';
   readonly isMonster: boolean;
+  /**
+   * THR-1554 — the monster's family portrait, resolved here where the graph is
+   * held; the header's art tile renders graph-free, so it passes this as
+   * `knownSrc`. Absent for a mortal opponent.
+   */
+  readonly portraitSrc?: string;
   /** The card sentence as clauses, each carrying its tooltip (Law 16/17). */
   readonly sentence: readonly OpponentSentenceSegment[];
   /** The whole sentence as plain text (tests, debug). */
@@ -117,6 +124,12 @@ function capitalize(text: string): string {
 }
 
 /** One clock row's model. Exported for the lair card (THR-1552), which draws the same row. */
+/** THR-1554 — `{ portraitSrc }` for a monster's card bag, or `{}` when none resolves. */
+export function portraitSrcFor(bag: Record<string, unknown> | undefined): { portraitSrc?: string } {
+  const src = getMonsterPortraitUrl(bag?.family);
+  return src ? { portraitSrc: src } : {};
+}
+
 export function clockModel(filled: number, size: number, deceased = false): OpponentHeaderClockModel {
   const total = Number.isFinite(size) && size >= 1 ? Math.floor(size) : 1;
   const fill = Number.isFinite(filled) ? Math.max(0, Math.min(total, Math.floor(filled))) : 0;
@@ -267,6 +280,7 @@ export function buildOpponentHeaderModel(
     linkable: resolved,
     visualKind: monster ? 'monster' : 'agent',
     isMonster: monster,
+    ...(monster ? portraitSrcFor(bag) : {}),
     sentence,
     sentenceText: sentence.map((s) => s.text).join(''),
     temperShown,

@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { MONSTER_FAMILY_PORTRAITS } from '../../../../data/portrait-assets';
 import { cleanup, render, screen } from '@testing-library/react';
 import { EncounterVeil } from '../../EncounterVeil';
 import { OpponentHeader } from '../OpponentHeader';
@@ -247,6 +248,8 @@ describe('the header names the opponent', () => {
     expect(header.linkable).toBe(true);
     expect(header.visualKind).toBe('monster');
     expect(header.sentenceText).toBe('A beast of claw and hunger. Fearsome to face, dangerous to fight.');
+    // THR-1554 — the header's art tile is graph-free; the model carries the family portrait.
+    expect(header.portraitSrc).toBe(MONSTER_FAMILY_PORTRAITS.beast);
 
     // A non-fight step of any template builds no header.
     const plain = { ...FIGHT_LAIR_CONFRONT, steps: [{ ...(FIGHT_LAIR_CONFRONT.steps[0] as object), fightRole: undefined }] } as unknown as UnifiedActionTemplate;
@@ -351,6 +354,7 @@ describe('the clock', () => {
       state, fightAction({ currentStep: nerveIndex(FIGHT_LAIR_CONFRONT) + 1, fightState }), FIGHT_LAIR_CONFRONT,
     )!;
     expect(header.visualKind).toBe('agent');
+    expect(header.portraitSrc).toBeUndefined();
     expect(header.clock.word).toBe('failing');
     expect(header.fighterClock).toMatchObject({ size: 2, filled: 0, word: 'untouched', name: 'Kael Thornweaver' });
 

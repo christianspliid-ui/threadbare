@@ -26,7 +26,7 @@ import type { KnowledgeLevel } from '../../types/familiarity';
 import { KNOWLEDGE_LEVELS } from '../../types/familiarity';
 import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../../engine/hexZoom';
-import { getAgentPortraitUrlFromProperties, getPortraitUrl } from '../../data/portrait-assets';
+import { getAgentPortraitUrlFromProperties, getMonsterPortraitUrl } from '../../data/portrait-assets';
 import { isMonster } from '../../engine/monsters/isMonster';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { getFactionSigilUrlFromProperties } from '../../data/faction-sigil-assets';
@@ -158,9 +158,11 @@ function resolveSource(
       // the designed result rather than a gap (THR-1096).
       return getAgentPortraitUrlFromProperties(node?.properties);
     case 'monster':
-      // v1: one shared portrait for every family (THR-1550). The eight family
-      // portraits (THR-1554) slot in here, keyed by `monsterState.family`.
-      return getPortraitUrl('monster');
+      // THR-1554 — the family's own portrait, keyed by `monsterState.family`;
+      // the generic monster portrait (THR-1550) when the family has no art.
+      return getMonsterPortraitUrl(
+        (node?.properties?.monsterState as { family?: unknown } | undefined)?.family,
+      );
     case 'avatar': {
       const props = node?.properties ?? {};
       const bespoke = getAgentPortraitUrlFromProperties(props);

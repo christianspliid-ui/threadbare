@@ -132,6 +132,7 @@ export function OpponentHeader({ model, onSelectOpponent, compact, hideArt }: Op
             id: model.opponentId ?? 'unknown-foe',
             kind: model.visualKind,
             name: model.name,
+            knownSrc: model.portraitSrc,
           }}
           onClick={canOpen ? () => onSelectOpponent!(model.opponentId!) : undefined}
           style={{ width: 28, height: 28, flexShrink: 0 }}

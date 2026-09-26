@@ -17,11 +17,12 @@ import { HexSidebar } from '../../HexSidebar';
 import { countLivingMortals } from '../../worldPulseCount';
 import { buildChipIconResolver } from '../../encounter-stage/adapters/chipCollaborators';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
-import { getPortraitUrl } from '../../../../data/portrait-assets';
+import { getMonsterPortraitUrl } from '../../../../data/portrait-assets';
 
 const ELITE_ID = 'elite_lair_ashen_hollow_1';
 const LAIR_ID = 'loc.lair.ashen_hollow';
-const MONSTER_PORTRAIT = getPortraitUrl('monster');
+// THR-1554 — the fixture elite is a beast, so it draws the beast family portrait.
+const MONSTER_PORTRAIT = getMonsterPortraitUrl('beast');
 
 function node(partial: Partial<GraphNode> & Pick<GraphNode, 'id' | 'type'>): GraphNode {
   return { name: partial.id, properties: {}, ...partial };
@@ -130,6 +131,14 @@ describe('HexSidebar lair block (F1)', () => {
     fireEvent.click(link);
     expect(onMonsterClick).toHaveBeenCalledWith(ELITE_ID);
     expect(container.innerHTML).not.toContain('elite_');
+  });
+
+  it('draws the family portrait on the lair card chip, graph-free (THR-1554)', () => {
+    const model = buildLairMonsterCardModel(graphWith(lairNode(), eliteNode()), LAIR_ID);
+    expect(model?.monster?.portraitSrc).toBe(MONSTER_PORTRAIT);
+    const { container } = render(<HexSidebar {...baseProps} lairMonsterCards={{ [LAIR_ID]: model }} />);
+    const img = container.querySelector('[data-testid="lair-monster-card"] img');
+    expect(img?.getAttribute('src')).toBe(MONSTER_PORTRAIT);
   });
 
   it('renders no monster row, and still no raw id, when the elite does not resolve', () => {
