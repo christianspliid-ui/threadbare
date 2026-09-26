@@ -227,7 +227,9 @@ export function writeMauled(
       edgeProperties: { ...(victorId ? { inflictedBy: victorId } : {}), scarredTick: tick },
     });
     if (applied.applied) scarWritten = true;
-    else scarSkipped = applied.reason === 'tag_immunity' ? 'immune' : 'definition_missing';
+    else scarSkipped = applied.reason === 'tag_immunity' ? 'immune'
+      : applied.reason === 'prevent_loss' ? 'warded' // THR-1625: a condition guard refused the scar
+      : 'definition_missing';
   }
 
   const grudgeWritten = victorId

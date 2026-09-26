@@ -155,7 +155,7 @@ export interface FightEndingTrace extends TraceBase {
   killRoll?: { chance: number; roll: number };
   guard?: 'the_first' | 'avatar' | 'warded';
   scarWritten: boolean;
-  scarSkipped?: 'already_scarred' | 'definition_missing' | 'immune';
+  scarSkipped?: 'already_scarred' | 'definition_missing' | 'immune' | 'warded';
   grudgeWritten: boolean;
   /** The reactive-loop node a fight death wrote. */
   outcomeNodeId?: string;
