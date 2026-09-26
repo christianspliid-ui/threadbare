@@ -20,18 +20,9 @@ import {
 import type { GameState } from '../../types/gameState';
 import { clearTraces, getTraces, enableTracing } from '../traceBuffer';
 
+/** Only the fields the phase reads; the rest of GameState is irrelevant here. */
 function makeState(graph: WorldGraph, tick: number): GameState {
-  return {
-    tick, cycle: 0, seed: 42, graph, phase: 'playing',
-    cosmology: { reachDomains: [], spheres: [] }, tiles: [],
-    clock: { dayOfCycle: 0, ticksOfDay: 0 }, ascendantId: 'asc_1', essencePool: {},
-    mandateDefinition: null, mandateState: null, rivalDefinitions: [], rivalStates: [],
-    doomDefinition: {} as GameState['doomDefinition'], doomClock: {} as GameState['doomClock'],
-    tickEvents: [], recentEvents: [], chronicleEntries: [], stealthExposure: 0,
-    visibilityMap: new Map(), familiarityMap: new Map(), culturalInsightMap: new Map(),
-    encounterProgress: [], actionsInProgress: [], worldSoul: {} as GameState['worldSoul'],
-    echoDefinitions: [], echoStates: [], chronicle: { cycles: [], totalEntries: 0 },
-  };
+  return { tick, seed: 42, graph, tickEvents: [], chronicleEntries: [], prosperityShocks: [] } as unknown as GameState;
 }
 
 /** Two settlements joined by a lane about to die, its identity node, and a holder who owns it. */
