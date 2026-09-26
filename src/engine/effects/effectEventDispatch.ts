@@ -41,7 +41,7 @@ import type { ExecutionResult } from '../effectExecutors';
 import { executeEffect } from '../effectExecutors';
 import { instantiateReward } from '../rewardPool';
 import { emitTrace } from '../traceBuffer';
-import { processEffectEvent, applyEffectEventResult, type EffectEvent } from './effectEvents';
+import { processEffectEvent, applyEffectEventResult, shouldExecuteReactive, type EffectEvent } from './effectEvents';
 import { applyExecutionOverlays } from './effectOverlayStore';
 import { buildPredicateContext } from './effectPredicates';
 import { applyConditionToActor } from './conditionApplier';
@@ -266,6 +266,9 @@ export function raiseEffectEvent(
     }
 
     for (const fired of result.reactivesFired) {
+      // THR-1568: a window reaction already landed (processEffectEvent opened
+      // the window the resolver reads) — the executor would only no-op it.
+      if (!shouldExecuteReactive(fired)) continue;
       try {
         const exec = executeEffect(fired.nestedEffect, {
           casterId: fired.agentId,

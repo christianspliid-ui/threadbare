@@ -511,8 +511,8 @@ exit
 
 - **Intent:** Effects tick, decay, stack and expire on their host agent.
 - **Producer → Consumer:** Attachments, Items & Possessions → Effects & Conditions
-- **Production hits:** 13 total — 3 write, 1 read, 9 unclassified
-- **Write sites:** `src/engine/effects/effectEvents.ts`, `src/engine/effects/index.ts`, `src/engine/effectShellRuntime.ts`
+- **Production hits:** 14 total — 4 write, 1 read, 9 unclassified
+- **Write sites:** `src/engine/effects/effectEvents.ts`, `src/engine/effects/index.ts`, `src/engine/effects/reactiveWindow.ts`, `src/engine/effectShellRuntime.ts`
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/effect-shell-proof-templates.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts` +4 more
 - **Verdict:** Verified 2026-07-23: Orchestrator phase 2a.4 runs effectTick. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
@@ -1032,10 +1032,10 @@ exit
 - **Producer → Consumer:** Effects & Conditions → Encounters & Dilemmas
 - **UL terms:** *Fight Clock*
 - **Module:** `src/engine/fights/fightClock.ts`
-- **Production hits:** 13 total — 3 write, 1 read, 9 unclassified
+- **Production hits:** 14 total — 3 write, 1 read, 10 unclassified
 - **Write sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effectTick.ts`
 - **Read sites:** `src/engine/fights/fightState.ts`
-- **Other hits:** `src/data/complication-templates.ts`, `src/debug-bridge.ts`, `src/engine/complicationEffects.ts`, `src/engine/effectExecutors.ts`, `src/engine/fights/fightClock.ts` +4 more
+- **Other hits:** `src/data/complication-templates.ts`, `src/debug-bridge.ts`, `src/engine/complicationEffects.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/reactiveWindow.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
@@ -1124,10 +1124,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*
 - **Module:** `src/engine/complicationSelection.ts`
-- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/fights/fightState.ts`
-- **Other hits:** `src/data/complication-templates.ts`, `src/engine/complicationEffects.ts`, `src/engine/complicationSelection.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts` +8 more
+- **Other hits:** `src/data/complication-templates.ts`, `src/engine/complicationEffects.ts`, `src/engine/complicationSelection.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/effectEventDispatch.ts` +9 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-death-feeds-reactive-loop` — 🔵 UNVERIFIED-OK
