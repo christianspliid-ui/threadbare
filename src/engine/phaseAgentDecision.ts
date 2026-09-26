@@ -21,6 +21,7 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { EncounterProgress } from '../types/encounter';
 import type { UnifiedAction } from '../types/unifiedAction';
+import type { ChapterRecord } from '../types/chapterRecord';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import {
@@ -139,14 +140,24 @@ function getEffectiveCooldown(baseCooldown: number, availableTemplateCount: numb
  * cooldown. Under the window a failed mortal still sees the same even odds, so
  * without this it would come straight back to the same challenge. Success-family
  * outcomes keep today's cooldown; an unknown outcome gets today's cooldown too.
+ *
+ * THR-1581: a resolved `UnifiedAction` is pruned after
+ * `RESOLVED_ACTION_RETENTION_TICKS` (20), which is shorter than a failed template's
+ * cooldown at any multiplier above ~3 — so reading failures from `unifiedActions`
+ * alone silently cut every failure cooldown to 20 ticks, and mortals came back to the
+ * challenge they had just failed at 21–24 ticks, inside the retry trap's window. The
+ * failure is therefore also read from `chapterArchive`, which outlives the prune.
+ * The archive is appended in resolution order, so the scan walks back from its tail
+ * and stops at the first record older than the failed window.
  */
-function filterByCooldown(
+export function filterByCooldown(
   candidates: EncounterCacheEntry[],
   agentId: string,
   encounterProgress: readonly EncounterProgress[],
   unifiedActions: readonly UnifiedAction[],
   tick: number,
   availableTemplateCount: number,
+  chapterArchive: readonly ChapterRecord[] = [],
 ): EncounterCacheEntry[] {
   const effectiveAbandon = getEffectiveCooldown(ENCOUNTER_ABANDON_COOLDOWN, availableTemplateCount);
   const effectiveComplete = getEffectiveCooldown(ENCOUNTER_COMPLETION_COOLDOWN, availableTemplateCount);
@@ -175,6 +186,14 @@ function filterByCooldown(
     // must not shorten an earlier failure's cooldown, nor the reverse).
     const prior = cooldownEnd.get(action.templateId);
     cooldownEnd.set(action.templateId, prior !== undefined && prior > end ? prior : end);
+  }
+  for (let i = chapterArchive.length - 1; i >= 0; i--) {
+    const record = chapterArchive[i];
+    if (tick - record.resolvedTick > effectiveFailed) break;
+    if (record.actorId !== agentId || !isFailedOutcome(record.outcome)) continue;
+    const end = record.resolvedTick + effectiveFailed;
+    const prior = cooldownEnd.get(record.templateId);
+    cooldownEnd.set(record.templateId, prior !== undefined && prior > end ? prior : end);
   }
 
   if (cooldownEnd.size === 0) return candidates;
@@ -855,6 +874,7 @@ export function phaseAgentDecision(
         state.unifiedActions,
         state.tick,
         rawCandidates.length,
+        state.chapterArchive,
       );
 
       // C.1: Max completions retirement — permanently exclude templates the agent has exhausted
