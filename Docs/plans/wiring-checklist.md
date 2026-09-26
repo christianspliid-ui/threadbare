@@ -2838,3 +2838,12 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `engine/monsters/listMonsters.ts` (`huntedBy`) · `engine/monsters/huntReport.ts` (new: the hunt ledger) · `scripts/cli.ts` (`hunts`) · `scripts/hunt-census.ts` (new, `census:hunts`) · `debug-bridge.ts` | — | — | — | — | `__DEBUG.listMonsters()`, CLI `hunts` |
 
 **Wired and asserted:** `src/engine/monsters/__tests__/hunts.test.ts` (27) — the doors, the board walk (division rule, scan cap, dead beast), tracking, the deferred payoff through the real `advanceStrategicProjects`, plant → keep → `evaluateEncounterSeeds` firing `fight.lair.confront` against the beast, the missed branch into `hunt.trail_cold`, the place-lost drop, the refused plant, one confront per beast, the draw gate and M4's skip. Live: `npm run census:hunts` (seed 42 and 99, medium, 300 ticks) — see `Docs/status/2026-09-25-thr-1560.md`.
+
+## Monster family portraits (THR-1554)
+
+| Module | Orchestrator phase | UI consumer | GameState field | Trace | Debug visibility |
+|---|---|---|---|---|---|
+| `data/portrait-assets.ts` (`MONSTER_FAMILY_PORTRAITS`, `getMonsterPortraitUrl`) · `public/portraits/monster-<family>.jpg` (eight) | — | `entityVisualResolver` `monster` kind (graph-holding callers: hex drawer rows, consequence chips) | reads `monsterState.family` | none | `__DEBUG.resolveEntityVisual` |
+| `buildLairMonsterCardModel` / `buildOpponentHeaderModel` (`portraitSrc`, via `portraitSrcFor`) | — (render-time) | `LairMonsterCard` chip and `OpponentHeader` art tile — both graph-free, so they pass it as `knownSrc` | reads `monsterState.family` | none | `__DEBUG.getLairMonsterCard(...).monster.portraitSrc`, `getOpponentHeaderModel(...).portraitSrc` |
+
+**Wired and asserted:** `entityVisualResolver.test.ts` (every family → its own art; unknown / missing / art-less family → the generic portrait), `lairMonsterF1.test.tsx` (the rendered lair card `<img>` is the family portrait), `opponentHeaderF2.test.tsx` (monster header carries it, mortal header does not). Live: seed `?view=game&seeded&size=medium`, tick 100, lair_2 "Fecund Roost" → Turvane's chip loads `/portraits/monster-behemoth.jpg` (`Docs/evidence/thr-1554/`). Before this, the lair card's graph-free chip could not see the family and drew the generic portrait — caught only by the live capture.
