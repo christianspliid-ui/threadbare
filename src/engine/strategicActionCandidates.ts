@@ -476,7 +476,7 @@ export function generateStrategicCandidates(
             worldImpact: Math.min(1, computeWorldImpact(template)
               + computeRouteFormationBias(template, sourceLocationNode, target)),
             catalystValue: template.catalystEncounterIds?.length ? 0.5 : 0,
-            roleFit: computeRoleFit(actor, template),
+            roleFit: computeRoleFit(graph, actor, template),
             travelPenalty: Math.min(1, travelDist / 10),
             varietyPenalty: 0, // Computed in scoring phase with board context
           },
@@ -860,19 +860,35 @@ function computeWorldImpact(template: StrategicActionTemplate): number {
   return STRATEGIC_VERB_IMPACT[template.verb] ?? STRATEGIC_VERB_IMPACT_DEFAULT;
 }
 
-function computeRoleFit(actor: GraphNode, template: StrategicActionTemplate): number {
-  const domains = actor.properties.domainCapabilities as Record<string, number> | undefined;
-  if (!domains) return 0.3;
+/** Role fit for an actor with no capability bag or a template with no reach profile. */
+export const ROLE_FIT_UNKNOWN = 0.3;
+
+/**
+ * How well the actor's reaches fit a template's `reachProfile` ∈ [0, 1] (THR-1576).
+ *
+ * The weighted mean of the actor's **reach shares** (`computeReachShare`, 0–1) over
+ * the profile's weights. It used to multiply the raw stored capability (≈ 10–40) by
+ * the weights, so `min(1, …)` saturated at 1 for every capable mortal and the term
+ * ranked nobody. Dividing by the weight sum (not the reach count) keeps a full-share
+ * specialist at 1 whatever the profile's shape. An actor with no capability bag, or
+ * an empty profile, reads ROLE_FIT_UNKNOWN. Dormant while `UNDERTAKING_MODEL = 'cells'`.
+ */
+export function computeRoleFit(
+  graph: WorldGraph,
+  actor: GraphNode,
+  template: Pick<StrategicActionTemplate, 'reachProfile'>,
+): number {
+  if (!actor.properties.domainCapabilities) return ROLE_FIT_UNKNOWN;
 
   let fitSum = 0;
-  let fitCount = 0;
+  let weightSum = 0;
   for (const [reach, weight] of Object.entries(template.reachProfile)) {
-    const capability = domains[reach] ?? 0;
-    fitSum += capability * (weight as number);
-    fitCount++;
+    if (typeof weight !== 'number' || weight <= 0) continue;
+    fitSum += computeReachShare(graph, actor.id, reach as ReachDomain) * weight;
+    weightSum += weight;
   }
 
-  return fitCount > 0 ? Math.min(1, fitSum / fitCount) : 0.3;
+  return weightSum > 0 ? Math.min(1, fitSum / weightSum) : ROLE_FIT_UNKNOWN;
 }
 
 /**

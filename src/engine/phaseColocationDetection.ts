@@ -23,6 +23,8 @@ import {
   COLOCATION_EVENT_SIGNIFICANCE,
 } from '../data/colocation-content';
 import { runGrudgeDuels } from './fights/grudgeDuelTrigger';
+import { computeReachShare } from './domainCapability';
+import type { WorldGraph } from './graph';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 function mulberry32(seed: number): () => number {
@@ -46,13 +48,38 @@ export function resetColocationEventCounter(): void {
 
 // ─── Location Tier Detection ──────────────────────────────────────
 
-function getBaseChance(locationType: string | undefined): number {
+export function getBaseChance(locationType: string | undefined): number {
   switch (locationType) {
     case 'sublocation': return ENCOUNTER_BASE_CHANCE_SUBLOCATION;
     case 'location': return ENCOUNTER_BASE_CHANCE_LOCATION;
     case 'hex_center':
     default: return ENCOUNTER_BASE_CHANCE_HEX;
   }
+}
+
+/**
+ * The chance that `observerId` notices `targetId` this tick (THR-1576).
+ *
+ * Reads the observer's Eye and the target's Shadow as **reach shares** (0–1,
+ * `computeReachShare`) — the scale the weights are authored on. It used to read the
+ * raw stored capability (≈ 10–40 for a protagonist), which multiplied by a 0–1 weight
+ * pinned every pair's chance to the floor or the ceiling, so capability decided
+ * nothing in between. Pure and fail-soft: a failed share walk reads 0.
+ */
+export function detectionChance(
+  graph: WorldGraph,
+  observerId: string,
+  targetId: string,
+  baseChance: number,
+): number {
+  const observerEye = computeReachShare(graph, observerId, 'eye');
+  const targetShadow = computeReachShare(graph, targetId, 'shadow');
+  return Math.max(
+    DETECTION_CHANCE_FLOOR,
+    Math.min(DETECTION_CHANCE_CEILING,
+      baseChance + observerEye * EYE_PERCEPTION_WEIGHT - targetShadow * SHADOW_STEALTH_WEIGHT,
+    ),
+  );
 }
 
 // ─── Phase Function ───────────────────────────────────────────────
@@ -101,15 +128,7 @@ export function phaseColocationDetection(
         const target = graph.getNode(targetId);
         if (!observer || !target) continue;
 
-        const observerEye = ((observer.properties?.domainCapabilities as Record<string, number>)?.eye ?? 0);
-        const targetShadow = ((target.properties?.domainCapabilities as Record<string, number>)?.shadow ?? 0);
-
-        const chance = Math.max(
-          DETECTION_CHANCE_FLOOR,
-          Math.min(DETECTION_CHANCE_CEILING,
-            baseChance + observerEye * EYE_PERCEPTION_WEIGHT - targetShadow * SHADOW_STEALTH_WEIGHT
-          )
-        );
+        const chance = detectionChance(graph, observerId, targetId, baseChance);
 
         if (rng() < chance) {
           events.push({
