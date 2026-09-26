@@ -8,7 +8,7 @@
  * (phaseEncounterTraits) was dead — called only from the empty legacy
  * encounterProgress loop — and was deleted by THR-1503.
  *
- * Mastery traits decay without reinforcement (decayPeriod in ticks).
+ * Mastery is permanent: decay is retired behind `MASTERY_DECAY_ENABLED` (THR-1584).
  *
  * ─── Constants ──────────────────────────────────────────────────
  * | Name                              | Default | Purpose                               |
@@ -20,7 +20,10 @@
  * | MASTERY_EYE_MIN_SUCCESSES         | 4       | Perception successes needed for level 1|
  * | MASTERY_STONE_MIN_SUCCESSES       | 4       | Stability successes needed for level 1|
  * | MASTERY_STAR_MIN_SUCCESSES        | 5       | Divine successes needed for level 1   |
- * | MASTERY_DECAY_PERIOD              | 48      | Ticks before level loss (4 game days) |
+ * | MASTERY_DECAY_ENABLED             | false   | Mastery decay switch — retired (THR-1584) |
+ * | MASTERY_DECAY_PERIOD              | 48      | Retired: ticks before level loss      |
+ * | MASTERY_RAW_PER_LEVEL             | 5       | Raw reach score per mastery level     |
+ * | MASTERY_STAR_RAW_PER_LEVEL        | 6       | Raw star score per Anointed level     |
  */
 
 import type { GraphNode } from '../types/graph';
@@ -49,8 +52,39 @@ export const MASTERY_STONE_MIN_SUCCESSES = 4;
 /** Minimum divine/star encounter successes for anointed */
 export const MASTERY_STAR_MIN_SUCCESSES = 5;
 
-/** Ticks between decay checks for all mastery traits (4 game days) */
+/**
+ * Mastery is permanent (THR-1584). The decay this period once drove never fired:
+ * `mentorshipOutcomes.grantMasteryTrait` — the only minter — writes `appliedAt`, not
+ * `lastReinforcedTick`, so `processTraitDecay` computed `tick − undefined = NaN` and
+ * skipped every trait. It stays off on purpose: "fixing" the timestamp would make
+ * mortals lose skill with time, which the forecast-window ruling rules out ("failure
+ * never costs skill", THR-1575). Flip to `true` only with a new ruling.
+ * Scope: the seven reach-mastery definitions below. The economic mastery traits
+ * (`economic-trait-content.ts`) are status marks re-judged each tick and keep their own
+ * `decayPeriod`.
+ */
+export const MASTERY_DECAY_ENABLED = false;
+
+/** Retired period (4 game days) — read only when `MASTERY_DECAY_ENABLED` is true. */
 export const MASTERY_DECAY_PERIOD = 48;
+
+/** What each definition carries as `decayPeriod`: undefined while decay is retired,
+ *  which `processTraitDecay` reads as "never decays". */
+const MASTERY_DECAY_PERIOD_IF_ENABLED: number | undefined =
+  MASTERY_DECAY_ENABLED ? MASTERY_DECAY_PERIOD : undefined;
+
+/**
+ * Raw reach score each mastery level adds (THR-1584). A graduate
+ * (`GRADUATION_TRAIT_LEVEL` 2) gains +10 raw on the trained reach: on the THR-1581
+ * dice curve (midpoint 30, k 0.08) that is 0.50 → 0.69 at the midpoint and
+ * 0.17 → 0.31 at raw 10 — a visible step that moves which challenges the mortal takes
+ * on. The old 0.10 per level added +0.2 raw, under half a percentage point.
+ */
+export const MASTERY_RAW_PER_LEVEL = 5;
+
+/** Anointed (star) keeps its old 1.2× premium over the other reaches (0.12 vs 0.10);
+ *  star mastery was the hardest to earn (`MASTERY_STAR_MIN_SUCCESSES`). */
+export const MASTERY_STAR_RAW_PER_LEVEL = 6;
 
 // ─── Trait Definition Nodes ─────────────────────────────────────────────────
 
@@ -65,8 +99,8 @@ export const MASTERY_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.8,
       maxLevel: 3,
       visibility: 'public',
-      domainContributions: { iron: 0.10 },
-      decayPeriod: MASTERY_DECAY_PERIOD,
+      domainContributions: { iron: MASTERY_RAW_PER_LEVEL },
+      decayPeriod: MASTERY_DECAY_PERIOD_IF_ENABLED,
       tags: ['#iron', '#combat', '#mastery'],
       flavorText: 'Every scar is a lesson written in flesh.',
     } as TraitDefinitionProperties,
@@ -81,8 +115,8 @@ export const MASTERY_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.8,
       maxLevel: 3,
       visibility: 'public',
-      domainContributions: { heart: 0.10 },
-      decayPeriod: MASTERY_DECAY_PERIOD,
+      domainContributions: { heart: MASTERY_RAW_PER_LEVEL },
+      decayPeriod: MASTERY_DECAY_PERIOD_IF_ENABLED,
       tags: ['#heart', '#social', '#mastery'],
       flavorText: 'They could talk a dragon into lending its hoard.',
     } as TraitDefinitionProperties,
@@ -97,8 +131,8 @@ export const MASTERY_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.8,
       maxLevel: 3,
       visibility: 'discoverable',
-      domainContributions: { shadow: 0.10 },
-      decayPeriod: MASTERY_DECAY_PERIOD,
+      domainContributions: { shadow: MASTERY_RAW_PER_LEVEL },
+      decayPeriod: MASTERY_DECAY_PERIOD_IF_ENABLED,
       tags: ['#shadow', '#stealth', '#mastery'],
       flavorText: 'Even their footsteps forget where they walked.',
     } as TraitDefinitionProperties,
@@ -113,8 +147,8 @@ export const MASTERY_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.8,
       maxLevel: 3,
       visibility: 'public',
-      domainContributions: { veil: 0.10 },
-      decayPeriod: MASTERY_DECAY_PERIOD,
+      domainContributions: { veil: MASTERY_RAW_PER_LEVEL },
+      decayPeriod: MASTERY_DECAY_PERIOD_IF_ENABLED,
       tags: ['#veil', '#mystical', '#mastery'],
       flavorText: 'Magic clings to them like morning dew.',
     } as TraitDefinitionProperties,
@@ -129,8 +163,8 @@ export const MASTERY_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.7,
       maxLevel: 3,
       visibility: 'public',
-      domainContributions: { eye: 0.10 },
-      decayPeriod: MASTERY_DECAY_PERIOD,
+      domainContributions: { eye: MASTERY_RAW_PER_LEVEL },
+      decayPeriod: MASTERY_DECAY_PERIOD_IF_ENABLED,
       tags: ['#eye', '#perception', '#mastery'],
       flavorText: 'They see the threads that bind cause to consequence.',
     } as TraitDefinitionProperties,
@@ -145,8 +179,8 @@ export const MASTERY_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.7,
       maxLevel: 3,
       visibility: 'public',
-      domainContributions: { stone: 0.10 },
-      decayPeriod: MASTERY_DECAY_PERIOD,
+      domainContributions: { stone: MASTERY_RAW_PER_LEVEL },
+      decayPeriod: MASTERY_DECAY_PERIOD_IF_ENABLED,
       tags: ['#stone', '#stability', '#mastery'],
       flavorText: 'The mountain does not flinch when the wind howls.',
     } as TraitDefinitionProperties,
@@ -161,8 +195,8 @@ export const MASTERY_TRAIT_DEFINITIONS: GraphNode[] = [
       importance: 0.9,
       maxLevel: 3,
       visibility: 'public',
-      domainContributions: { star: 0.12 },
-      decayPeriod: MASTERY_DECAY_PERIOD,
+      domainContributions: { star: MASTERY_STAR_RAW_PER_LEVEL },
+      decayPeriod: MASTERY_DECAY_PERIOD_IF_ENABLED,
       tags: ['#star', '#divine', '#mastery'],
       flavorText: 'The light remembers those who serve it.',
     } as TraitDefinitionProperties,
