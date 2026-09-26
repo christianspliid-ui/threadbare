@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 11:00 local (09:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 11:55 local (09:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 ## Resolved this period
 
 - **2026-09-26 — you answered the dice question: "1 in 6 is fine"** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). Your words: *"follow the newer decisions, we learn and grow and evolve. 1 in 6 is fine."* and *"it doesnt have to be a rule, it is a constant we tweak as we search for a good game."* I recorded the ruling on the ticket. The builder resumed, then hit the plan's last safety check, and the change went back to the design lane at 10:30 local. That call is the lane's, not yours.
+- **2026-09-26 — The Builder's Legacy now counts only what was built after the mandate began** ([THR-1618](https://linear.app/threadbare/issue/THR-1618)), not every road and building the world started with. Merged 11:30 local via [#2068](https://github.com/christianspliid-ui/threadbare/pull/2068), and live on the site.
 - **2026-09-26 — non-casters are no longer offered "create a power"** ([THR-1617](https://linear.app/threadbare/issue/THR-1617)). Merged via [#2066](https://github.com/christianspliid-ui/threadbare/pull/2066), and live on the site.
 - **2026-09-26 — a dissolved trade route now removes its road and its shock lands** ([THR-1615](https://linear.app/threadbare/issue/THR-1615)), instead of staying claimable. Merged via [#2064](https://github.com/christianspliid-ui/threadbare/pull/2064), and live on the site.
 - **2026-09-26 — five small interface faults found by the cold playtest are fixed** ([THR-1604](https://linear.app/threadbare/issue/THR-1604)). Merged via [#2063](https://github.com/christianspliid-ui/threadbare/pull/2063), and live on the site.
@@ -50,7 +51,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26 — items that promise a burst when struck now give it** ([THR-1568](https://linear.app/threadbare/issue/THR-1568)): before, a "when attacked, +Iron for a few turns" item fired and gave nothing. Merged 02:33 local via [#2058](https://github.com/christianspliid-ui/threadbare/pull/2058), and live on the site.
 - **2026-09-26 — the Unsafe Bridge and Riders Behind the Caravan now also happen in the countryside** ([THR-1567](https://linear.app/threadbare/issue/THR-1567)), not only near towns; Snow on the Pass stays rare on purpose. Merged 01:34 local via [#2057](https://github.com/christianspliid-ui/threadbare/pull/2057), and live on the site.
 - **2026-09-26 — a commander killed in battle now dies properly** ([THR-1566](https://linear.app/threadbare/issue/THR-1566)) through the game's normal death path, instead of being deleted from the world. Merged 00:36 local via [#2056](https://github.com/christianspliid-ui/threadbare/pull/2056), and live on the site.
-- **2026-09-25 — a duel's loser now shows as chips on screen** ([THR-1561](https://linear.app/threadbare/issue/THR-1561)): a "slain" chip or a grudge chip. Merged 23:32 local via [#2055](https://github.com/christianspliid-ui/threadbare/pull/2055), and live on the site.
 
 ---
 

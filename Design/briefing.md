@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-26 11:00 local (09:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-26 11:55 local (09:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,7 +34,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 15 jobs are ready.** Nothing is in progress right now.
+**Healthy: 14 jobs are ready.** Nothing is in progress right now. [The Builder's Legacy fix](https://linear.app/threadbare/issue/THR-1618) merged at 11:30 local and is live.
 
 - **The dice change went back to design, and you don't need to decide anything** ([THR-1581](https://linear.app/threadbare/issue/THR-1581), High).
   - What happened: after your "1 in 6 is fine" answer, the builder resumed. It then hit the plan's last safety check: mid-skill mortals never take on harder challenges.
@@ -46,8 +46,8 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **Lane silence:** the worst recent gap was 25 hours, from Saturday 19 into Sunday 20 September. It fell on a weekend, so your 11 September ruling declines it.
-- **Worktree reaper:** it last ran at 10:40 local. 5 worktrees are waiting to be sorted, which is routine.
+- **Lane silence:** the worst recent gap is now 21 hours, Sunday 20 evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer asleep for exactly that window, so it is explained and needs nothing from you.
+- **Worktree reaper:** it last ran at 11:40 local. 5 worktrees are waiting to be sorted, which is routine.
 - **Everything else is green:**
   - The live site is up to date.
   - Game speed is 63 ms per tick, 16% under the weekly median.
