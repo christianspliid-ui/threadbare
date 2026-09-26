@@ -65,6 +65,30 @@ export function getDomainWord(domain: ReachDomain, value: number): string {
 }
 
 /**
+ * Capability (`computeCapability`, 0–1 — the dice curve, traits and items
+ * included) onto the 0–10 scale the word tiers are indexed off — THR-1583.
+ */
+export const CAPABILITY_TO_DOMAIN_SCALE = 10;
+
+/**
+ * The reach tier (0–4) for a capability — THR-1583. Every player-facing reach
+ * word reads through here, so the sheet, the tooltip and the encounter skill
+ * line say the same word for the same mortal and reach. Raw seeded
+ * `domainCapabilities` (10–40+) must never go to `getDomainTier` directly: they
+ * clamp to 10 and read the top word in every reach. Non-finite reads tier 0.
+ */
+export function getCapabilityTier(capability: number): number {
+  const safe = Number.isFinite(capability) ? capability : 0;
+  return getDomainTier(safe * CAPABILITY_TO_DOMAIN_SCALE);
+}
+
+/** The reach word for a capability (0–1) — THR-1583. */
+export function getCapabilityWord(domain: ReachDomain, capability: number): string {
+  const scale = DOMAIN_WORD_SCALES[domain];
+  return scale?.[getCapabilityTier(capability)] ?? scale?.[0] ?? '';
+}
+
+/**
  * Word class of every tier word above — THR-1494.
  *
  * The scales mix adjectives ("formidable", "shrewd") with nouns ("oracle",

@@ -35,7 +35,7 @@ import type { FamiliarityMap } from '../types/familiarity';
 import { getUITooltip } from '../data/ui-content';
 import { getArchetype } from '../data/archetype-content';
 import { ARCHETYPE_STAGE_NAMES } from '../data/doom-content';
-import { getDomainWord } from '../data/domain-words';
+import { getCapabilityWord } from '../data/domain-words';
 import { getFamiliarity, getKnowledgeLevel } from './familiarity';
 import { getAgentDetail } from './agentDetail';
 import type { WorldGraph } from './graph';
@@ -252,13 +252,14 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
 
     // Known+: top domain word
     // Find the highest domain capability
-    const domains = Object.entries(detail.domainCapabilities)
+    // THR-1583: the dice curve, the same read as the sheet and the skill line.
+    const domains = Object.entries(detail.reachCapabilities)
       .map(([domain, value]) => ({ domain, value }))
       .sort((a, b) => b.value - a.value);
 
     if (domains.length > 0) {
       const topDomain = domains[0].domain as any;
-      const domainWord = getDomainWord(topDomain, domains[0].value);
+      const domainWord = getCapabilityWord(topDomain, domains[0].value);
       const archetypeName = detail.archetype?.name ?? 'Unknown';
       return {
         label: agentName,
