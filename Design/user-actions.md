@@ -1,17 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
-
-### The dice change stopped on your July rule: keep "at a cost" at 3–7 wins in 10, or accept about 1 in 6? ([THR-1581](https://linear.app/threadbare/issue/THR-1581/forecast-window-s3-re-fit-the-dice-skill-separates-an-even-match-is-a))
-
-The new dice and the "win about half the time" choice rule are both built on [branch `thr-1581-dice-refit`](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit). Nothing is merged. Skill now separates mortals, and floor-pinned rolls fell from 44% to 0.2%. But only **about 1 win in 6 comes "at a cost"**, against your July band of 3 to 7 in 10. The builder stopped here, as the plan told it to, instead of quietly retuning.
-
-- **Keep the band.** The design lane needs a new way for wins to carry a cost under the new dice before the change can ship.
-- **Accept about 1 in 6.** The builder finishes the owed tests and ships it.
-
-Full numbers are in [the ticket's latest comment](https://linear.app/threadbare/issue/THR-1581/forecast-window-s3-re-fit-the-dice-skill-separates-an-even-match-is-a). Total success is still a little high (62–74% against 50–65%). That traces to the content being mostly novice-level, which is design-lane work and not your call.
 
 ### Finish the sitting — two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
 
@@ -50,6 +41,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26 — you answered the dice question: "1 in 6 is fine"** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). Your words: *"follow the newer decisions, we learn and grow and evolve. 1 in 6 is fine."* and *"it doesnt have to be a rule, it is a constant we tweak as we search for a good game."* I recorded the ruling on the ticket, and the builder now finishes and ships the change.
+- **2026-09-26 — non-casters are no longer offered "create a power"** ([THR-1617](https://linear.app/threadbare/issue/THR-1617)). Merged via [#2066](https://github.com/christianspliid-ui/threadbare/pull/2066), and live on the site.
 - **2026-09-26 — a dissolved trade route now removes its road and its shock lands** ([THR-1615](https://linear.app/threadbare/issue/THR-1615)), instead of staying claimable. Merged via [#2064](https://github.com/christianspliid-ui/threadbare/pull/2064), and live on the site.
 - **2026-09-26 — five small interface faults found by the cold playtest are fixed** ([THR-1604](https://linear.app/threadbare/issue/THR-1604)). Merged via [#2063](https://github.com/christianspliid-ui/threadbare/pull/2063), and live on the site.
 - **2026-09-26 — a notable's agenda phase now carries a chronicle title** ([THR-1585](https://linear.app/threadbare/issue/THR-1585)) instead of an internal id. Merged via [#2061](https://github.com/christianspliid-ui/threadbare/pull/2061), and live on the site.
@@ -58,8 +51,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26 — the Unsafe Bridge and Riders Behind the Caravan now also happen in the countryside** ([THR-1567](https://linear.app/threadbare/issue/THR-1567)), not only near towns; Snow on the Pass stays rare on purpose. Merged 01:34 local via [#2057](https://github.com/christianspliid-ui/threadbare/pull/2057), and live on the site.
 - **2026-09-26 — a commander killed in battle now dies properly** ([THR-1566](https://linear.app/threadbare/issue/THR-1566)) through the game's normal death path, instead of being deleted from the world. Merged 00:36 local via [#2056](https://github.com/christianspliid-ui/threadbare/pull/2056), and live on the site.
 - **2026-09-25 — a duel's loser now shows as chips on screen** ([THR-1561](https://linear.app/threadbare/issue/THR-1561)): a "slain" chip or a grudge chip. Merged 23:32 local via [#2055](https://github.com/christianspliid-ui/threadbare/pull/2055), and live on the site.
-- **2026-09-25 — a mortal can now hunt a beast** ([THR-1560](https://linear.app/threadbare/issue/THR-1560), hunts H2). Merged via [#2054](https://github.com/christianspliid-ui/threadbare/pull/2054), and live on the site. The fight system is not a review ask yet: [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554) are still to come.
-- **2026-09-25 — grudges now boil over into duels** ([THR-1558](https://linear.app/threadbare/issue/THR-1558), duels E3). Merged 21:43 local via [#2053](https://github.com/christianspliid-ui/threadbare/pull/2053), and live on the site. Not a review ask yet: the hunt ([THR-1560](https://linear.app/threadbare/issue/THR-1560)) and loser chips ([THR-1561](https://linear.app/threadbare/issue/THR-1561)) are still to come.
 
 ---
 
