@@ -57,6 +57,7 @@ import { readReachOverride } from '../effects/ruleOverrideConsumers';
 import { resolveStepDefinition } from '../unifiedActionLifecycle';
 import { readLiveAxisLean } from '../encounters/branchDecision';
 import { defaultOpponentCard, readOpponentCard } from './opponentCard';
+import { applyCalibrationCardPin } from './calibrationCardPins';
 import { fightAdvantageModifiers, readFightAdvantages } from './fightAdvantages';
 
 /**
@@ -155,9 +156,10 @@ export function resolveFightStepInputs(
   const graph = state.graph;
 
   const { opponentId, status } = resolveFightOpponent(state, action, step);
-  const card = status === 'bound'
+  // THR-1628: identity in play; the duel calibration alone pins a derived card here.
+  const card = applyCalibrationCardPin(status === 'bound'
     ? readOpponentCard(graph, opponentId, state.tick)
-    : defaultOpponentCard(null);
+    : defaultOpponentCard(null));
 
   // Reach: authored → card → the fighter's own swap, read before capability.
   const authoredReach = step.reach;

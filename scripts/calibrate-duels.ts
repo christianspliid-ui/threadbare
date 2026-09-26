@@ -2,9 +2,10 @@
  * `calibrate:duels` — the duel calibration evidence (THR-1556, Duels E1).
  *
  * Runs 400 seeded duels of `fight.duel.grudge` through the real unified road
- * between two bold fixture mortals (strong raw clash 30 as the actor, weak raw
- * clash exactly 15, both with Heart ≈ 0.89, complications off, everything reset
- * between duels) and prints THR-1264's six classes beside its row. Exit 1 when a
+ * between two bold fixture mortals (strong card raw 30 as the actor, weak card raw
+ * exactly 15, each side's dice stamped to `main`'s clash and nerve odds — THR-1628,
+ * complications off, everything reset between duels) and prints THR-1264's six
+ * classes beside its row. Exit 1 when a
  * named class misses by more than ±8 points or any duel yields — the plan doc's
  * kill criterion: diagnose before touching a tunable. Routed is diagnostic.
  *
@@ -44,6 +45,11 @@ console.log(
 console.log(
   `weak:           clash ${cap(report.capability.weak.clash)}, nerve ${cap(report.capability.weak.nerve)}, courage +0.35`,
 );
+console.log(
+  `cards (pinned, THR-1628): strong ${report.card.strong.might}/${report.card.strong.dread}, `
+  + `weak ${report.card.weak.might}/${report.card.weak.dread}; `
+  + `main clash capability strong ${cap(report.mainClashCapability.strong)}, weak ${cap(report.mainClashCapability.weak)}`,
+);
 console.log('complications: off');
 console.log('');
 console.log(`${pad('class', 20)}${pad('count', 8)}${pad('   %', 8)}${pad('target', 8)}${pad('  Δ', 8)}`);
@@ -66,10 +72,6 @@ console.log(
 if (!report.routedWithinTolerance) {
   console.log('note: routed misses 11 by more than 8 — record this breakdown on THR-1264 (the remainder was not routs).');
 }
-// THR-1581: the four named classes are reported, not gated, until THR-1628 gives the
-// harness a card-read seam (see `src/testing/duelCalibration.ts`). A yield still fails:
-// bold duellists never yield, whatever the dice.
-if (!report.withinTolerance && report.counts.yielded === 0) {
-  console.log('REPORTED — the named classes are not gated on the re-fitted dice until THR-1628.');
-}
-process.exit(report.counts.yielded === 0 ? 0 : 1);
+// THR-1628: the harness pins each derived card at `main`'s words and stamps the dice
+// to `main`'s odds, so the four named classes are gated again.
+process.exit(report.withinTolerance ? 0 : 1);
