@@ -154,7 +154,9 @@ export function reinforceTrait(
 
 /**
  * Process trait decay for a single actor/node.
- * Only mastery traits decay (based on decayPeriod).
+ * Only mastery traits that carry a decayPeriod decay. The seven reach-mastery
+ * definitions carry none while `MASTERY_DECAY_ENABLED` is off (THR-1584: mastery is
+ * permanent); the economic mastery marks keep theirs.
  * Reduces level by 1 for each decay period elapsed since lastReinforcedTick.
  * Removes the trait if level reaches 0.
  */
