@@ -40,7 +40,13 @@ export function describeFollow(
   return { followed: !muted && (explicit || byBond), explicit, byBond, muted };
 }
 
-/** What the button says and what pressing it does, per state. */
+/**
+ * What the button says and what pressing it does, per state. The follow clause
+ * 'stay among the mortals the world watches closely' is THR-1573: a followed
+ * mortal never steps back out of the spotlight when unwatched (THR-1523), so
+ * Follow is the player's lever for keeping a mortal in view (UI Law 13: no tier
+ * name, no number).
+ */
 export function followToggleCopy(d: FollowDescriptor): { label: string; action: string; tooltip: string } {
   if (d.muted) {
     return {
@@ -60,13 +66,13 @@ export function followToggleCopy(d: FollowDescriptor): { label: string; action: 
     return {
       label: 'Following',
       action: 'Unfollow',
-      tooltip: 'Their moments interrupt you — a costly step, trouble, a finish. Unfollow and they wait on the thread row.',
+      tooltip: 'Their moments interrupt you — a costly step, trouble, a finish — and they stay among the mortals the world watches closely. Unfollow and they wait on the thread row.',
     };
   }
   return {
     label: 'Not following',
     action: 'Follow',
-    tooltip: 'Follow them and their moments interrupt you — a costly step, trouble, a doubling-down, a finish.',
+    tooltip: 'Follow them and their moments interrupt you — a costly step, trouble, a doubling-down, a finish — and they stay among the mortals the world watches closely.',
   };
 }
 
