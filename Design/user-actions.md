@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 21:57 local (19:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 22:54 local (20:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26: reactions to a mortal becoming blessed or cursed now fire** ([THR-1624](https://linear.app/threadbare/issue/THR-1624)). Merged via [#2080](https://github.com/christianspliid-ui/threadbare/pull/2080), and live on the site.
 - **2026-09-26: a hex's lore now says "not fully explored" once, not once per ruin** ([THR-1621](https://linear.app/threadbare/issue/THR-1621)). Merged via [#2079](https://github.com/christianspliid-ui/threadbare/pull/2079), and live on the site.
 - **2026-09-26: colocation and role fit now read a mortal's reach share** ([THR-1576](https://linear.app/threadbare/issue/THR-1576)). Merged via [#2078](https://github.com/christianspliid-ui/threadbare/pull/2078), and live on the site.
 - **2026-09-26: faith and politics at game start became world settings** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)). The design lane set the first test setup from your answer: a temple chapter per culture, at least two holy places per culture, about a third of towns unheld. It is in the briefing under "Decided for you" for 24 hours.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26: the sheet and the skill line now say the same word for a mortal's reach** ([THR-1583](https://linear.app/threadbare/issue/THR-1583)). Merged via [#2075](https://github.com/christianspliid-ui/threadbare/pull/2075), and live on the site. This finishes the [fix for the dice reading every mortal as a master](https://linear.app/threadbare/issue/THR-1575).
 - **2026-09-26: the ground remembers its battles** ([THR-1528](https://linear.app/threadbare/issue/THR-1528)). Merged via [#2074](https://github.com/christianspliid-ui/threadbare/pull/2074), and live on the site.
 - **2026-09-26: the new dice are live** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). The dice re-fit and "mortals take on challenges they can win about half the time" merged together via [#2073](https://github.com/christianspliid-ui/threadbare/pull/2073), and are on the site. Skill now counts when a mortal rolls.
-- **2026-09-26: culture and Realm names never show a raw terrain code** ([THR-1622](https://linear.app/threadbare/issue/THR-1622)). Merged via [#2070](https://github.com/christianspliid-ui/threadbare/pull/2070), and live on the site.
 
 ---
 
