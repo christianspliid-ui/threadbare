@@ -73,13 +73,17 @@ function buildGraph(): WorldGraph {
     id: 'actor_1', name: 'Kael', type: 'actor',
     properties: {
       actorType: 'individual',
-      domainCapabilities: { gold: 0.6, eye: 0.4 },
+      // Raw scores (THR-1581): 35 / 25 read capability ≈ 0.60 / 0.40 on the re-fitted
+      // curve — the values these fixtures were written to mean. The old literals 0.6 /
+      // 0.4 were raw too, and only ever advanced because the retired local floor held
+      // every roll at 0.65.
+      domainCapabilities: { gold: 35, eye: 25 },
       axiologicalProfile: { courage_prudence: 0.5 },
     },
   });
   graph.addNode({
     id: 'actor_2', name: 'Bram', type: 'actor',
-    properties: { actorType: 'individual', domainCapabilities: { gold: 0.6 } },
+    properties: { actorType: 'individual', domainCapabilities: { gold: 35 } },
   });
   graph.addNode({
     id: 'loc_market', name: 'Market Square', type: 'location',

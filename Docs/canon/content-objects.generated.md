@@ -8,7 +8,7 @@ generator: npm run generate-content-objects
 
 > **GENERATED — do not hand-edit.** Rendered by `npm run generate-content-objects` from the registry (`src/data/content-objects.ts`) and a static census of the catalogs it names. The hand page — what the kinds mean and how to add one — is [`content-objects.md`](content-objects.md).
 
-13 kinds · 1232 claimed entries across 40 catalogs.
+13 kinds · 1233 claimed entries across 40 catalogs.
 
 ## Drift
 
@@ -30,7 +30,7 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 | `undertaking_template` | Undertaking | 118 | `MERCHANT_STRATEGIC_TEMPLATES` (6/6)<br>`BUILDER_STRATEGIC_TEMPLATES` (9/9)<br>`SCHOLAR_STRATEGIC_TEMPLATES` (7/7)<br>`ZEALOT_STRATEGIC_TEMPLATES` (6/6)<br>`COURT_STRATEGIC_TEMPLATES` (15/15)<br>`WARLORD_STRATEGIC_TEMPLATES` (9/9)<br>`WANDERER_STRATEGIC_TEMPLATES` (4/4)<br>`FACTORY_STRATEGIC_TEMPLATES` (0/0)<br>`UNDERTAKING_CELL_TEMPLATES` (62/62) | `undertaking` | card → codex | `npm run check:undertaking` | Ambitions & Undertakings | 🟢 LIVE |
 | `item_template` | Item | 134 | `REWARD_POSSESSIONS` (111/111)<br>`TREASURE_MAPS` (5/5)<br>`STARTER_POSSESSIONS` (8/8)<br>`ANOMALY_SIGNATURE_ARTIFACTS` (10/10) | `item` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `legendary_template` | Legendary artifact | 3 | `ARTIFACT_TEMPLATES` (3/3) | `legendary_artifact` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `condition_template` | Condition | 70 | `REWARD_CONDITIONS` (35/35)<br>`STARTER_CONDITIONS` (5/5)<br>`ANOMALY_CONDITIONS` (6/6)<br>`CONDITION_TRAIT_DEFINITIONS` (19/19)<br>`ARTIFACT_TRAIT_DEFINITIONS` (2/2)<br>`ECONOMIC_TRAIT_DEFINITIONS` (3/8) | `condition` | card → codex | `npm run check:attachment` | Effects & Conditions | 🟢 LIVE |
+| `condition_template` | Condition | 71 | `REWARD_CONDITIONS` (35/35)<br>`STARTER_CONDITIONS` (5/5)<br>`ANOMALY_CONDITIONS` (6/6)<br>`CONDITION_TRAIT_DEFINITIONS` (20/20)<br>`ARTIFACT_TRAIT_DEFINITIONS` (2/2)<br>`ECONOMIC_TRAIT_DEFINITIONS` (3/8) | `condition` | card → codex | `npm run check:attachment` | Effects & Conditions | 🟢 LIVE |
 | `power_template` | Power | 25 | `REWARD_BESTOWED_POWERS` (12/12)<br>`ANOMALY_BESTOWED_POWERS` (8/8)<br>`SPELL_TEMPLATES` (5/5) | `power` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `trait_template` | Trait | 59 | `CORE_TRAIT_DEFINITIONS` (10/10)<br>`PERSONALITY_TRAIT_DEFINITIONS` (16/16)<br>`MASTERY_TRAIT_DEFINITIONS` (7/7)<br>`REPUTATION_TRAIT_DEFINITIONS` (17/17)<br>`ECONOMIC_TRAIT_DEFINITIONS` (5/8)<br>`TEMPER_TRAIT_DEFINITIONS` (4/4) | `trait` | card only | `npm run check:attachment` | Personality & Emergent Traits | 🟢 LIVE |
 | `agreement_template` | Agreement | 7 | `AGREEMENT_REWARD_TEMPLATES` (7/7) | `agreement` | card → codex | `npm run check:attachment` | Secrets & Favors | 🟢 LIVE |

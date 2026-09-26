@@ -21,6 +21,7 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { EncounterProgress } from '../types/encounter';
 import type { UnifiedAction } from '../types/unifiedAction';
+import type { ChapterRecord } from '../types/chapterRecord';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import {
@@ -41,7 +42,12 @@ import { initMovementState } from './movementExecution';
 import { buildHexMovementPath } from './hexMovementPath';
 import { findShortestPath } from './pathfinding';
 import { computeEdgeCost } from './movementCost';
-import { emitTrace, emitPhaseTiming, isProfilingEnabled } from './traceBuffer';
+import { emitTrace, emitPhaseTiming, isProfilingEnabled, isTracingEnabled } from './traceBuffer';
+import { countConsecutiveFailures, isFailedOutcome, computeSetbackShift } from './engagementWindow';
+import { isEncounterAction } from './chapterArchive';
+import { FAILED_TEMPLATE_COOLDOWN_MULT, ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH, ENGAGE_PERSONALITY_SHIFT } from '../data/agent-behavior-constants';
+import { META_VALUE_PAIR } from '../types/agent';
+import type { EngagementDecisionTrace } from '../types/trace';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
 import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import {
@@ -104,7 +110,7 @@ import { enqueueUndertakingMoments } from './undertakingMoments';
 import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '../types/trace';
 import type { DecisionFamily, UndertakingMomentRecord } from '../types/strategicAction';
 import type { BalanceEvent } from '../types/balanceEval';
-import { scoreUnifiedBoard } from './decisionBoard';
+import { scoreUnifiedBoard, type BoardEntry } from './decisionBoard';
 import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
 import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
@@ -128,14 +134,30 @@ function getEffectiveCooldown(baseCooldown: number, availableTemplateCount: numb
  * An encounter is on cooldown if the agent has an abandoned or completed progress
  * record whose last history tick is within the cooldown window.
  * Cooldown duration scales with the available template pool size.
+ *
+ * THR-1582 (forecast window S4, trap 1 — retry loops): a template the agent
+ * *failed* stays on cooldown `FAILED_TEMPLATE_COOLDOWN_MULT` × the completion
+ * cooldown. Under the window a failed mortal still sees the same even odds, so
+ * without this it would come straight back to the same challenge. Success-family
+ * outcomes keep today's cooldown; an unknown outcome gets today's cooldown too.
+ *
+ * THR-1581: a resolved `UnifiedAction` is pruned after
+ * `RESOLVED_ACTION_RETENTION_TICKS` (20), which is shorter than a failed template's
+ * cooldown at any multiplier above ~3 — so reading failures from `unifiedActions`
+ * alone silently cut every failure cooldown to 20 ticks, and mortals came back to the
+ * challenge they had just failed at 21–24 ticks, inside the retry trap's window. The
+ * failure is therefore also read from `chapterArchive`, which outlives the prune.
+ * The archive is appended in resolution order, so the scan walks back from its tail
+ * and stops at the first record older than the failed window.
  */
-function filterByCooldown(
+export function filterByCooldown(
   candidates: EncounterCacheEntry[],
   agentId: string,
   encounterProgress: readonly EncounterProgress[],
   unifiedActions: readonly UnifiedAction[],
   tick: number,
   availableTemplateCount: number,
+  chapterArchive: readonly ChapterRecord[] = [],
 ): EncounterCacheEntry[] {
   const effectiveAbandon = getEffectiveCooldown(ENCOUNTER_ABANDON_COOLDOWN, availableTemplateCount);
   const effectiveComplete = getEffectiveCooldown(ENCOUNTER_COMPLETION_COOLDOWN, availableTemplateCount);
@@ -155,10 +177,23 @@ function filterByCooldown(
     }
   }
 
+  const effectiveFailed = effectiveComplete * FAILED_TEMPLATE_COOLDOWN_MULT;
   for (const action of unifiedActions) {
     if (action.actorId !== agentId || !action.resolved) continue;
     const completedAt = action.completedAtTick ?? action.startTick;
-    cooldownEnd.set(action.templateId, completedAt + effectiveComplete);
+    const end = completedAt + (isFailedOutcome(action.outcome) ? effectiveFailed : effectiveComplete);
+    // Keep the latest end when a template appears more than once (a later success
+    // must not shorten an earlier failure's cooldown, nor the reverse).
+    const prior = cooldownEnd.get(action.templateId);
+    cooldownEnd.set(action.templateId, prior !== undefined && prior > end ? prior : end);
+  }
+  for (let i = chapterArchive.length - 1; i >= 0; i--) {
+    const record = chapterArchive[i];
+    if (tick - record.resolvedTick > effectiveFailed) break;
+    if (record.actorId !== agentId || !isFailedOutcome(record.outcome)) continue;
+    const end = record.resolvedTick + effectiveFailed;
+    const prior = cooldownEnd.get(record.templateId);
+    cooldownEnd.set(record.templateId, prior !== undefined && prior > end ? prior : end);
   }
 
   if (cooldownEnd.size === 0) return candidates;
@@ -167,6 +202,71 @@ function filterByCooldown(
     const end = cooldownEnd.get(c.templateId);
     return end === undefined || tick > end;
   });
+}
+
+/**
+ * THR-1582 — assemble the `engagement_decision` trace from the board's top entries.
+ * Pure over its inputs apart from the capability read for encounter entries.
+ */
+function buildEngagementDecisionTrace(
+  graph: GameState['graph'],
+  agentId: string,
+  tick: number,
+  consecutiveFailures: number,
+  top: readonly BoardEntry[],
+  encounterCandidates: readonly ScoredCandidate[],
+  winner: BoardEntry | null,
+): EngagementDecisionTrace {
+  const profile = graph.getNode(agentId)?.properties?.axiologicalProfile as Partial<Record<string, number>> | undefined;
+  const rawLean = profile?.[META_VALUE_PAIR];
+  const courageLean = typeof rawLean === 'number' && Number.isFinite(rawLean) ? Math.max(-1, Math.min(1, rawLean)) : 0;
+  const setbackShift = computeSetbackShift(consecutiveFailures);
+  const shift = -ENGAGE_PERSONALITY_SHIFT * courageLean + setbackShift;
+  const candidates = top.map(e => {
+    let proficiency = e.proficiency ?? NaN;
+    let difficulty = e.difficulty ?? NaN;
+    let exempt: 'too_easy' | undefined;
+    if (e.family === 'encounter') {
+      const c = encounterCandidates[e.candidateIndex];
+      if (c) {
+        try { proficiency = computeCapability(graph, agentId, c.entry.reachPrimary); } catch { /* fail-soft: NaN */ }
+        const diffs = c.entry.stepDifficulties;
+        difficulty = diffs.length > 0 ? diffs.reduce((sum, d) => sum + d, 0) / diffs.length : NaN;
+        if (c.entry.isQuestEncounter && e.forecastZone === 'above') exempt = 'too_easy';
+      }
+    }
+    return {
+      kind: e.family === 'encounter' ? 'encounter' as const : 'undertaking' as const,
+      id: e.id,
+      forecast: e.forecast ?? NaN,
+      proficiency,
+      difficulty,
+      fit: e.forecastFit ?? 1,
+      zone: e.forecastZone ?? 'in',
+      ...(exempt ? { exempt } : {}),
+    };
+  });
+  const reason: EngagementDecisionTrace['reason'] = !winner
+    ? 'idle'
+    : winner.forecastZone === 'in' ? 'in_window' : 'best_available';
+  return {
+    id: 0,
+    tick,
+    timestamp: tick,
+    category: 'engagement_decision',
+    agentId,
+    windowLow: ENGAGE_WINDOW_LOW + shift,
+    windowHigh: ENGAGE_WINDOW_HIGH + shift,
+    courageLean,
+    consecutiveFailures,
+    setbackShift,
+    candidates,
+    chosenId: winner?.id ?? null,
+    reason,
+    summary: winner
+      ? `${agentId} took ${winner.id} at forecast ${(winner.forecast ?? NaN).toFixed(2)} (${winner.forecastZone ?? 'in'}, fit ${(winner.forecastFit ?? 1).toFixed(2)})`
+      : `${agentId} idles — no candidate worth engaging`,
+  } as EngagementDecisionTrace;
 }
 
 function getDecisionLocationSubtype(
@@ -774,6 +874,7 @@ export function phaseAgentDecision(
         state.unifiedActions,
         state.tick,
         rawCandidates.length,
+        state.chapterArchive,
       );
 
       // C.1: Max completions retirement — permanently exclude templates the agent has exhausted
@@ -815,6 +916,9 @@ export function phaseAgentDecision(
       // Score and select (hex-distance travel cost, no distance matrix)
       const agentHiddenMarks = (state.hiddenMarks ?? []).filter(m => m.targetAgentId === agentId);
       const agentIntelligence = (state.intelligenceRecords ?? []).filter(r => r.agentId === agentId);
+      // THR-1582 — the window's setback shift reads the mortal's run of failed
+      // engagements since its last success (trap 2 — the stuck spiral).
+      const consecutiveFailures = countConsecutiveFailures(state.unifiedActions, agentId, isEncounterAction);
       const decision = scoreAndSelect(
         candidates,
         agentId,
@@ -830,6 +934,7 @@ export function phaseAgentDecision(
         runtime,
         noveltyRecord,
         appointmentCtx,
+        { consecutiveFailures },
       );
 
       // Emit scoring trace
@@ -1011,6 +1116,7 @@ export function phaseAgentDecision(
             strategicCandidates: scoredStrategic,
             fundament: state.worldSoul?.fundament,
             holdStanding: holdReader.standingFor(agentId),
+            consecutiveFailures,
           });
 
           // An empty board is a real verdict, not a missing one: it is what the
@@ -1084,6 +1190,8 @@ export function phaseAgentDecision(
               ...(e.heldTownAffinity !== undefined
                 ? { heldTownAffinity: e.heldTownAffinity }
                 : {}),
+              ...(e.forecastFit !== undefined ? { forecastFit: e.forecastFit } : {}),
+              ...(e.forecastZone !== undefined ? { forecastZone: e.forecastZone } : {}),
             })),
             agreement,
             boardFamily,
@@ -1138,6 +1246,16 @@ export function phaseAgentDecision(
                 decision.selected = chosen;
               }
             }
+          }
+
+          // THR-1582 — the forecast window's verdict on this decision (NFP #2).
+          // Built only while tracing is on: proficiency costs a capability walk per
+          // encounter entry, which the untraced tick loop should not pay (NFP #7).
+          if (isTracingEnabled()) {
+            emitTrace(buildEngagementDecisionTrace(
+              graph, agentId, state.tick, consecutiveFailures, board.top, decision.topCandidates,
+              UNIFIED_DECISION_BOARD_MODE === 'live' ? boardWinner : board.winner,
+            ));
           }
         } catch (err) {
           // Deliberately NOT the empty catch the legacy path above degrades
@@ -1488,7 +1606,9 @@ export function phaseAgentDecision(
                     committedTick: state.tick,
                     proficiency: computeCapability(graph, agentId, sel.entry.reachPrimary),
                     attemptedDifficulty,
-                    forecast: sel.completionProb,
+                    // THR-1582: the window judges the engagement forecast `F`, so the
+                    // in-window share is measured against the same number.
+                    forecast: sel.engagementForecast,
                     freeChoice: !compulsionOverrode,
                   });
                 } catch {

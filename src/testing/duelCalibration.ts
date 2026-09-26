@@ -27,12 +27,26 @@
  *
  * Deterministic: one seeded stream per duel for the fighter's steps; the
  * opponent's roll draws its own seeded stream (NFP #3).
+ *
+ * **THR-1581 (dice re-fit): this row is reported, not gated, until THR-1628.** The
+ * forecast-window plan's second amendment (decision 3) re-stamps calibration
+ * fixtures so each step keeps `main`'s odds on the re-fitted dice. A duellist's raw
+ * clash score does two jobs — their own dice, and (through `deriveMightWord`) the
+ * card the *other* side faces — and there is no harness-only seam to pin the card,
+ * so both sides' clash odds cannot be preserved through raw alone. The clash raw
+ * pins stay (30 / 15), so both derived cards read as on `main`. **Nerve** feeds no
+ * card, so each side's nerve capability is re-stamped to keep `main`'s nerve odds
+ * against the Dread it faces (`oddsPreservingCapability`, the fight fixture's
+ * solve). `yielded` stays a hard 0: that is behaviour, not dice.
  */
 
 import { WorldGraph } from '../engine/graph';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../engine/unifiedActionLifecycle';
 import { executeStepResult, resolveUncontestedStep } from '../engine/unifiedActionResolution';
 import { computeCapability } from '../engine/domainCapability';
+import { deriveMightWord, shiftRatingWord } from '../engine/fights/opponentCard';
+import { FIGHT_DERIVED_DREAD_OFFSET, FIGHT_RATING_DIFFICULTY } from '../data/fight-constants';
+import { oddsPreservingCapability } from './fightCalibration';
 import { mulberry32 } from '../lib/prng';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
 import { FIGHT_DUEL_GRUDGE } from '../data/encounters/fight-duel-grudge';
@@ -70,7 +84,19 @@ export const DUEL_CALIBRATION_DUELS = 400;
 
 const STRONG_RAW_CLASH = 30;
 const WEAK_RAW_CLASH = 15;
-const NERVE_CAPABILITY = 0.89;
+/** Both duellists' nerve on `main`'s saturated curve (THR-1531's bold-guard nerve). */
+const MAIN_NERVE_CAPABILITY = 0.89;
+
+/** The Dread difficulty a duellist faces: the other side's derived Might, shifted. */
+function dreadFacedFrom(opponentRawClash: number): number {
+  return FIGHT_RATING_DIFFICULTY[shiftRatingWord(deriveMightWord(opponentRawClash), FIGHT_DERIVED_DREAD_OFFSET)];
+}
+
+/** THR-1581: each side's nerve capability, re-stamped to keep `main`'s nerve odds. */
+const NERVE_CAPABILITY_BY_SIDE = {
+  strong: oddsPreservingCapability(MAIN_NERVE_CAPABILITY, dreadFacedFrom(WEAK_RAW_CLASH)),
+  weak: oddsPreservingCapability(MAIN_NERVE_CAPABILITY, dreadFacedFrom(STRONG_RAW_CLASH)),
+} as const;
 const BOLD_COURAGE = 0.35;
 
 const TICK = 1000;
@@ -96,7 +122,8 @@ export interface DuelCalibrationReport {
 function rawForCapability(graph: WorldGraph, nodeId: string, reach: ReachDomain, target: number): number {
   const caps = graph.getNode(nodeId)!.properties.domainCapabilities as Record<string, number>;
   let lo = 0;
-  let hi = 60;
+  // THR-1581: the re-fitted curve reaches 0.999 only near raw 116 (was 60).
+  let hi = 200;
   for (let i = 0; i < 40; i++) {
     const mid = (lo + hi) / 2;
     caps[reach] = mid;
@@ -231,7 +258,9 @@ export function runDuelCalibration(
   const graph = fixtureWorld();
   const raw: Record<string, Record<string, number>> = {};
   for (const id of [STRONG, WEAK]) {
-    const heart = rawForCapability(graph, id, 'heart', NERVE_CAPABILITY);
+    const heart = rawForCapability(
+      graph, id, 'heart', id === STRONG ? NERVE_CAPABILITY_BY_SIDE.strong : NERVE_CAPABILITY_BY_SIDE.weak,
+    );
     raw[id] = { iron: id === STRONG ? STRONG_RAW_CLASH : WEAK_RAW_CLASH, heart };
     graph.getNode(id)!.properties.domainCapabilities = { ...raw[id] };
   }

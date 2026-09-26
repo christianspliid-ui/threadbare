@@ -368,7 +368,7 @@
 
       <h3>Domain Capability &amp; the word ladder <span class="flag impl">IMPL</span></h3>
       <ul>
-        <li><code>NARRATIVE_LEXICON</code> (<code>src/types/traits.ts</code>) is the 10-rung label ladder, one array per Reach. <code>src/engine/domainCapability.ts</code> computes a raw score → sigmoid capability (<code>SIGMOID_MIDPOINT = 10</code>, <code>SIGMOID_K = 0.4</code>) → tier → label; <code>computeTier</code> indexes the lexicon.</li>
+        <li><code>NARRATIVE_LEXICON</code> (<code>src/types/traits.ts</code>) is the 10-rung label ladder, one array per Reach. <code>src/engine/domainCapability.ts</code> computes a raw score → sigmoid capability → tier → label; <code>computeTier</code> indexes the lexicon. <strong>Two curves since THR-1581</strong> (2026-09-26): the dice read <code>computeCapability</code> on the re-fitted curve (<code>SIGMOID_MIDPOINT = 30</code>, <code>SIGMOID_K = 0.08</code>, so raw 10 → 0.17, 30 → 0.50, 60 → 0.92 and who a mortal is moves their odds), while tier words, tier crossings, growth, mentorship and the other non-dice readers stay on <code>computeCapabilityPreRefit</code> (midpoint 10, k 0.4) until <a href="https://linear.app/threadbare/issue/THR-1580">THR-1580</a> re-fits each on its own evidence.</li>
         <li>Growth is encounter-driven and deterministic — <code>src/engine/capabilityGrowth.ts</code>: <code>BASE_ENCOUNTER_GROWTH = 0.5</code>, <code>PROMOTION_ELIGIBLE_MULTIPLIER = 2.0</code>, <code>DIMINISHING_RETURNS_FACTOR = 0.7</code>, <code>FAILURE_GROWTH_FRACTION = 0.2</code> (constants re-exported from <code>src/data/agent-behavior-constants.ts</code>). No PRNG.</li>
       </ul>
 
@@ -399,7 +399,7 @@
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
         <tbody>
-          <tr><td>SIGMOID_MIDPOINT / SIGMOID_K</td><td>10 / 0.4</td><td>Capability score → tier curve · <code>src/engine/domainCapability.ts</code></td></tr>
+          <tr><td>SIGMOID_MIDPOINT / SIGMOID_K</td><td>30 / 0.08 (dice) · 10 / 0.4 pre-refit (<code>PRE_REFIT_SIGMOID_*</code>, non-dice readers)</td><td>Capability score → tier curve · <code>src/engine/domainCapability.ts</code></td></tr>
           <tr><td>NARRATIVE_LEXICON</td><td>8 × 10</td><td>Per-Reach 10-rung capability label ladder · <code>src/types/traits.ts</code></td></tr>
           <tr><td>BASE_ENCOUNTER_GROWTH</td><td>0.5</td><td>Capability gain per successful step · <code>src/data/agent-behavior-constants.ts</code></td></tr>
           <tr><td>QUINTESSENCE_THRESHOLDS</td><td>0.50 / 0.25 / 0.10 / 0.0</td><td>Strained · Weakened · Critical · Dissolution · <code>src/types/quintessence.ts</code></td></tr>

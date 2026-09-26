@@ -394,6 +394,11 @@
         <li>Order within the tick (<code>orchestrator.ts</code>, Act 2.35x): <code>phaseArmyMovement</code> (2.352) → <code>phaseArmyAttrition</code> (2.355) → <code>phaseBattleDetection</code> (2.356) → <code>phaseBattleTick</code> (2.357, routes field vs siege) → <code>phaseLairEscalation</code> (2.3575, gated to every 25th tick). War lines are reported inside these phases, not in a phase of their own (THR-1564). Movement and attrition run before detection so colocation and strength are current; escalation runs after battles so a fight at a lair hex resolves first.</li>
       </ul>
 
+      <h3>Capability reads after the dice re-fit <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Army spawning&rsquo;s Gold and Iron reads (<code>armySpawning.ts</code>) still reads the pre-refit curve</strong> (THR-1581, 2026-09-26). The forecast-window change re-fitted the capability curve the dice read (<code>SIGMOID_MIDPOINT</code> 10 → 30, <code>SIGMOID_K</code> 0.4 → 0.08) so that who a mortal is moves their odds. Readers that do not feed a d100 — this one included — were repointed at <code>computeCapabilityPreRefit</code> (midpoint 10, k 0.4), so every threshold here reads exactly the number it was tuned against and nothing on this page changed behaviour. Each is re-fitted on its own evidence by <a href="https://linear.app/threadbare/issue/THR-1580">THR-1580</a>.</li>
+      </ul>
+
       <h3>Constants</h3>
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>

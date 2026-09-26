@@ -137,7 +137,9 @@ function offeredWithinCycle(s: GameState, actorId: string, ambitions: string[], 
   return false;
 }
 
-describe('the yield-and-leverage band on a generated world', () => {
+// Each arm builds its own world through TICKS real ticks; THR-1581's decision-phase cost
+// (≈ +27% ms/tick) put the cold first arm at the 5 s default under heavy-lane load.
+describe('the yield-and-leverage band on a generated world', { timeout: 30_000 }, () => {
   it('the world holds the things these cells act on', () => {
     // The premise every assertion below rests on. Without it the tests that follow
     // could pass vacuously on an empty population.

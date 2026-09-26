@@ -485,11 +485,12 @@ describe('THR-898 — N-route forks reach their variants', () => {
     expect(resolveRoute({ gold: 10, iron: 10, heart: 40 }).route).toBe('persuade');
   });
 
-  // Raw scores sit near the sigmoid's midpoint (10, k=0.4) deliberately: above
-  // ~20 the curve saturates and a 6-point raw gap compresses to <0.01
-  // capability, which lands inside ROUTE_DECISION_TIE_EPSILON and makes a
-  // "clear leader" fixture silently a tie.
-  const GOLD_LEADS = { gold: 12, iron: 10, heart: 4 };
+  // Raw scores sit near the sigmoid's midpoint deliberately, so a small raw gap
+  // stays a clear capability gap rather than a tie inside
+  // ROUTE_DECISION_TIE_EPSILON. THR-1581 moved the midpoint 10 → 30 and k 0.4 →
+  // 0.08, so the fixture moved with it: 40 / 30 / 7 read ≈ 0.69 / 0.50 / 0.14, the
+  // capabilities the old 12 / 10 / 4 read on the old curve.
+  const GOLD_LEADS = { gold: 40, iron: 30, heart: 7 };
 
   it('FALSIFIER 2 — one route card carries a mortal across to a rival course', () => {
     expect(resolveRoute(GOLD_LEADS).route).toBe('bribe');

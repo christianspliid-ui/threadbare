@@ -2269,6 +2269,28 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * The forecast window's verdicts (THR-1582) — `engagement_decision` traces, newest
+     * last, optionally narrowed to one agent (`@hero`, id, id prefix or partial name)
+     * and capped at `limit`. Requires `enableTracing()` first.
+     */
+    getEngagementVerdicts: async (agentQuery?: string, limit = 20) => {
+      const { getTraces } = await import('./engine/traceBuffer');
+      let verdicts = getTraces().filter(t => t.category === 'engagement_decision');
+      if (agentQuery) {
+        const state = _gameStateProvider?.();
+        if (!state) {
+          verdicts = verdicts.filter(t => t.agentId === agentQuery || t.agentId?.startsWith(agentQuery));
+        } else {
+          const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+          const resolved = resolveDebugAgent(state, agentQuery);
+          if (isDebugAgentMiss(resolved)) return [];
+          verdicts = verdicts.filter(t => t.agentId === resolved.node.id);
+        }
+      }
+      return verdicts.slice(-Math.max(0, limit));
+    },
+
+    /**
      * Every reader that ran at a cell completion (THR-1428), writes and refusals
      * alike — a survey that turned up nothing new is the interesting case.
      */

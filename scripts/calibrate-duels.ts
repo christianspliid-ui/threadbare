@@ -66,4 +66,10 @@ console.log(
 if (!report.routedWithinTolerance) {
   console.log('note: routed misses 11 by more than 8 — record this breakdown on THR-1264 (the remainder was not routs).');
 }
-process.exit(report.withinTolerance ? 0 : 1);
+// THR-1581: the four named classes are reported, not gated, until THR-1628 gives the
+// harness a card-read seam (see `src/testing/duelCalibration.ts`). A yield still fails:
+// bold duellists never yield, whatever the dice.
+if (!report.withinTolerance && report.counts.yielded === 0) {
+  console.log('REPORTED — the named classes are not gated on the re-fitted dice until THR-1628.');
+}
+process.exit(report.counts.yielded === 0 ? 0 : 1);

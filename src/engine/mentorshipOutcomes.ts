@@ -18,7 +18,7 @@ import type { PendingEncounterSeed } from '../types/unifiedAction';
 import type { ReachDomain } from '../types/traits';
 import { MASTERY_TRAIT_BY_REACH } from '../data/mastery-trait-content';
 import { emitTrace } from './traceBuffer';
-import { computeTier, computeCapability } from './domainCapability';
+import { computeTier, computeCapabilityPreRefit } from './domainCapability';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld } from './simulationRuntime';
 import {
@@ -79,10 +79,12 @@ export function resolveMentorship(
     arc = 'dissolution';
   } else if (progress >= 1.0 && bondQuality >= GRADUATION_BOND_THRESHOLD) {
     const apprTier = apprenticeNode
-      ? computeTier(computeCapability(graph, apprenticeId, domain))
+      // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+      ? computeTier(computeCapabilityPreRefit(graph, apprenticeId, domain))
       : 0;
     const mentorTier = mentorNode
-      ? computeTier(computeCapability(graph, mentorId, domain))
+      // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+      ? computeTier(computeCapabilityPreRefit(graph, mentorId, domain))
       : 0;
     arc = apprTier >= mentorTier + SURPASSING_TIER_DELTA ? 'surpassing' : 'graduation';
   } else if (bondQuality < FALLING_OUT_BOND_THRESHOLD) {
@@ -149,10 +151,12 @@ export function resolveMentorship(
       newEncounterSeeds.push(buildSystemSeed('mentorship.graduation', apprenticeId, tick, 'mentorship_surpassing'));
 
       const apprTier = apprenticeNode
-        ? computeTier(computeCapability(graph, apprenticeId, domain))
+        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+        ? computeTier(computeCapabilityPreRefit(graph, apprenticeId, domain))
         : 0;
       const mentorTier = mentorNode
-        ? computeTier(computeCapability(graph, mentorId, domain))
+        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+        ? computeTier(computeCapabilityPreRefit(graph, mentorId, domain))
         : 0;
 
       emitTrace({

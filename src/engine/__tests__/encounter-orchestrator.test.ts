@@ -229,12 +229,24 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
 
     const enc = available[0];
     initiateEncounter(state, actor.id, enc.id, 1);
-    state.tick = 100;
 
-    const phaseResult = phaseEncounterProgressionV2(state);
-    const encounterEvents = (phaseResult.tickEvents ?? []).filter(
-      e => e.type === 'encounter_completed' || e.type === 'encounter_step_failure' || e.type === 'encounter_step_success'
-    );
+    // The *completion* is what this test is about. The mid-encounter branch always
+    // names its actor ("<agent> succeeded in their encounter") for the event log;
+    // only the terminal branches gate `actorId` on retinue membership. So drive the
+    // phase to a terminal event, as the retinue test below does — a single call only
+    // ever tested the terminal branch when the dice happened to end the encounter on
+    // its first step (THR-1581's re-fit moved seed 102 off that luck).
+    let encounterEvents: TickEvent[] = [];
+    for (let i = 0; i < MAX_PHASE_DRIVE_TICKS && encounterEvents.length === 0; i++) {
+      state.tick = 100 + i;
+      const phaseResult = phaseEncounterProgressionV2(state);
+      state.encounterProgress = phaseResult.encounterProgress ?? state.encounterProgress;
+      state.tickEvents = phaseResult.tickEvents ?? state.tickEvents;
+      encounterEvents = state.tickEvents.filter(
+        e => (e.type === 'encounter_completed' || e.type === 'encounter_step_failure')
+          && !e.message.includes('in their encounter'),
+      );
+    }
 
     // Falsify the loop below — an empty array would satisfy it without asserting anything.
     expect(encounterEvents.length).toBeGreaterThanOrEqual(1);

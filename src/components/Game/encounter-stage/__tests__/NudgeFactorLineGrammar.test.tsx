@@ -32,8 +32,9 @@ import type { ReachDomain } from '../../../../types/traits';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 
-/** Well past the sigmoid's knee, so the actor lands in the top tier word. */
-const TOP_TIER_RAW = 40;
+/** Well past the sigmoid's knee, so the actor lands in the top tier word. THR-1581's
+ * re-fitted curve (midpoint 30, k 0.08) puts the knee near raw 67, so 80 (≈ 0.98). */
+const TOP_TIER_RAW = 80;
 
 function buildStep(reach: ReachDomain, authored: boolean): ActionStep {
   return {

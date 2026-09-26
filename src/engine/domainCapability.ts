@@ -13,9 +13,24 @@ import type { TraitDefinitionProperties, TraitAssignmentProperties, ReachDomain,
 import { REACH_DOMAINS, NARRATIVE_LEXICON } from '../types/traits';
 import { rawToReachShare } from '../data/reach-share-constants';
 
-/** Sigmoid parameters tuned per design doc */
-const SIGMOID_MIDPOINT = 10;
-const SIGMOID_K = 0.4;
+/**
+ * The dice curve (THR-1581, forecast window S3). Re-fitted to the protagonist raw
+ * range TB-056 made real (seeded raw 10–40+): raw 10 → 0.17, 20 → 0.31, 30 → 0.50,
+ * 40 → 0.69, 60 → 0.92. The March fit (midpoint 10, k 0.4) read raw 20 as 0.98, so
+ * every protagonist rolled as a master and who a mortal was barely moved the odds.
+ * Every read that feeds a d100 probability, or a choice between candidates by their
+ * odds, uses this curve (`computeCapability`).
+ */
+export const SIGMOID_MIDPOINT = 30;
+export const SIGMOID_K = 0.08;
+
+/**
+ * The pre-refit curve (the March fit), kept for readers that are **not** the dice —
+ * sight, tiers, growth, gates, leverage — until each is re-fitted on its own evidence
+ * (THR-1580). Read through `computeCapabilityPreRefit`.
+ */
+export const PRE_REFIT_SIGMOID_MIDPOINT = 10;
+export const PRE_REFIT_SIGMOID_K = 0.4;
 
 /**
  * Standard sigmoid function: 1 / (1 + e^(-k*(x - midpoint)))
@@ -134,6 +149,25 @@ export function computeCapability(
 }
 
 /**
+ * Capability on the **pre-refit** curve (midpoint 10, k 0.4) — THR-1581.
+ *
+ * The same raw walk as `computeCapability`, through the March sigmoid. For readers
+ * that do not feed a d100 probability or an odds-based choice: awareness range,
+ * tier words and tier crossings, growth, mentorship and agenda gates, leverage,
+ * anomaly thresholds. Their thresholds were tuned against this curve, and moving
+ * them with the dice would silently change who sees what and who qualifies for
+ * what. Each is re-fitted, one at a time, by THR-1580.
+ */
+// TODO(THR-1580): re-fit each pre-refit reader onto the dice curve on its own evidence, then retire this.
+export function computeCapabilityPreRefit(
+  graph: WorldGraph,
+  nodeId: string,
+  domain: ReachDomain,
+): number {
+  return sigmoid(computeRawScore(graph, nodeId, domain), PRE_REFIT_SIGMOID_MIDPOINT, PRE_REFIT_SIGMOID_K);
+}
+
+/**
  * The reach share (0–1) for a domain — the scale every capability *requirement* is
  * read on (THR-1562): ambition floors and milestones, spell `minReach` and the
  * `reach_drain` check, the `reach_above:` predicate, guild joins, strategic reach
@@ -215,7 +249,8 @@ export function computeFullProfile(
 
   for (const domain of REACH_DOMAINS) {
     const rawScore = computeRawScore(graph, nodeId, domain);
-    const capability = sigmoid(rawScore);
+    // TODO(THR-1580): pre-refit reader — a tier/label profile, not the dice.
+    const capability = sigmoid(rawScore, PRE_REFIT_SIGMOID_MIDPOINT, PRE_REFIT_SIGMOID_K);
     const tier = computeTier(capability);
     const label = getNarrativeLabel(domain, tier);
     result[domain] = { rawScore, capability, tier, label };

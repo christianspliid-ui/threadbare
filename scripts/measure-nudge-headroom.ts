@@ -12,7 +12,7 @@
  *      eight reaches at 10..40.
  *   2. The difficulty distribution of every shipped encounter step, which is the
  *      population WS5 converts to nudge points.
- *   3. Headroom = capability - difficulty, against PROBABILITY_FLOOR. A step is
+ *   3. Headroom = the resolver's odds (computeResolutionThreshold), against PROBABILITY_FLOOR. A step is
  *      "nudge-reachable" for an actor when a plausible hand can lift the raw
  *      threshold above the floor and keep it there.
  *
@@ -25,8 +25,8 @@ import { runTick, resetEventCounter } from '../src/engine/orchestrator';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
-import { computeCapability } from '../src/engine/domainCapability';
-import { PROBABILITY_FLOOR } from '../src/engine/resolutionService';
+import { computeCapability, SIGMOID_MIDPOINT, SIGMOID_K } from '../src/engine/domainCapability';
+import { PROBABILITY_FLOOR, computeResolutionThreshold } from '../src/engine/resolutionService';
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { REACH_DOMAINS } from '../src/types/traits';
@@ -129,8 +129,7 @@ console.log('=== Notable tier capability (exact, from NPC_CONSTANTS) ===');
 console.log('the tier a newly-threaded NPC lands in — NOTABLE_THRESHOLD=' +
   `${NPC_CONSTANTS.NOTABLE_THRESHOLD}, IMPORTANCE_PLAYER_ACTION=${NPC_CONSTANTS.IMPORTANCE_PLAYER_ACTION}`);
 
-const SIGMOID_MIDPOINT = 10;
-const SIGMOID_K = 0.4;
+// THR-1581: the dice curve's own constants, never a local copy.
 const sig = (x: number) => 1 / (1 + Math.exp(-SIGMOID_K * (x - SIGMOID_MIDPOINT)));
 
 const notableRoles = [
@@ -157,7 +156,7 @@ for (const d of [0.26, 0.45, 0.6]) {
     const caps: number[] = [];
     for (let raw = role.base; raw < role.base + role.range; raw++) caps.push(sig(raw));
     const above = (bonus: number) =>
-      (caps.filter((c) => c - d + bonus > PROBABILITY_FLOOR).length / caps.length * 100).toFixed(0);
+      (caps.filter((c) => clearsFloor(c, d, bonus)).length / caps.length * 100).toFixed(0);
     console.log(
       `${role.label}    d=${f2(d)}   ${above(0).padStart(6)}%` +
       `        ${above(0.22).padStart(5)}%` +
@@ -167,6 +166,16 @@ for (const d of [0.26, 0.45, 0.6]) {
   }
 }
 console.log('');
+
+/**
+ * THR-1581: a pair clears the floor when the resolver's own formula puts it above
+ * `PROBABILITY_FLOOR` — the clamp returns exactly the floor otherwise.
+ */
+function clearsFloor(capability: number, difficulty: number, bonus: number): boolean {
+  return computeResolutionThreshold({
+    actorId: 'headroom', domain: 'eye', capability, difficulty, sphereFactor: 0, actionModifiers: bonus,
+  }) > PROBABILITY_FLOOR;
+}
 
 // ── Part 1 + 3 (per seed): capability distribution and headroom ──
 
@@ -235,7 +244,7 @@ for (const seed of SEEDS) {
       const n = b.capsAll.length;
       if (n === 0) continue;
       const above = (bonus: number) =>
-        (b.capsAll.filter((c) => c - probe.difficulty + bonus > PROBABILITY_FLOOR).length / n);
+        (b.capsAll.filter((c) => clearsFloor(c, probe.difficulty, bonus)).length / n);
       console.log(
         `${probe.label.padEnd(24)} d=${f2(probe.difficulty)} ${tier.padEnd(10)}` +
         ` ${(above(0) * 100).toFixed(1).padStart(7)}%` +

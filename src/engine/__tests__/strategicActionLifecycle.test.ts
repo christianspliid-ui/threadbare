@@ -60,7 +60,9 @@ function buildTestGraph() {
     type: 'actor',
     properties: {
       actorType: 'individual',
-      domainCapabilities: { gold: 0.6, eye: 0.4 },
+      // Raw scores (THR-1581): 35 / 25 read capability ≈ 0.60 / 0.40 on the re-fitted
+      // curve — the values this fixture was written to mean.
+      domainCapabilities: { gold: 35, eye: 25 },
     },
   });
 

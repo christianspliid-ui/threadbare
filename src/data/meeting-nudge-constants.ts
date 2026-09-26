@@ -213,8 +213,18 @@ export const MEETING_NEUTRAL_LEAN_COIN = 0.5;
  * (`favorable`). That is the intended shape: an unled moment sits mid-ladder
  * and genuinely could go either way, and leaning moves it without demanding the
  * whole hand. Authored difficulty stays the per-test dial (NFP #1).
+ *
+ * **THR-1581 re-set 0.8 → 0.3.** Under the re-fitted odds formula
+ * (`ODDS_AT_PAR + ODDS_GAIN × (cap − diff) + sphere + mods`) 0.8 against 0.5 read
+ * p=0.95 — `fated`. 0.3 reproduces the tuned shape exactly:
+ * 0.55 + 1.25 × (0.3 − 0.5) + 0.1 = 0.40 (`uncertain`) unled, and the same
+ * two-card lean (~0.22, outside the gain) reaches 0.62 (`favorable`).
+ *
+ * **Re-set 0.3 → 0.42 when `ODDS_AT_PAR` was calibrated 0.55 → 0.40** (same
+ * ticket): 0.40 + 1.25 × (0.42 − 0.5) + 0.1 = 0.40 unled, and the ~0.22 lean
+ * still reaches 0.62 — the same tuned shape.
  */
-export const MEETING_TEST_CAPABILITY = 0.8;
+export const MEETING_TEST_CAPABILITY = 0.42;
 
 /** Sphere factor for meeting tests — the god is acting through raw attention. */
 export const MEETING_TEST_SPHERE_FACTOR = 0.1;

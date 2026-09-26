@@ -256,7 +256,9 @@ describe('Mark reveal scoring: matching encounters score higher', () => {
     const withMarks = scoreAndSelect([investigationCandidate], 'agent-1', 'loc-a', graph, 10, undefined, undefined, undefined, undefined, [agentMark]);
 
     const scoreDiff = withMarks.rankedCandidates[0].finalScore - withoutMarks.rankedCandidates[0].finalScore;
-    expect(scoreDiff).toBeCloseTo(MARK_REVEAL_SCORING_BONUS * 1.0); // severity=1.0
+    // THR-1582: the forecast window multiplies the whole score, so an additive term lifts
+    // finalScore by term × engagementFit (the fit is the same with and without the term).
+    expect(scoreDiff).toBeCloseTo(MARK_REVEAL_SCORING_BONUS * 1.0 * withMarks.rankedCandidates[0].engagementFit); // severity=1.0
     expect(withMarks.rankedCandidates[0].markRevealBonus).toBeCloseTo(MARK_REVEAL_SCORING_BONUS);
     expect(withoutMarks.rankedCandidates[0].markRevealBonus).toBe(0);
   });

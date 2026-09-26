@@ -27,7 +27,12 @@ const ELSEWHERE = 'loc_elsewhere';
 
 function buildWorld(): WorldGraph {
   const graph = new WorldGraph();
-  graph.addNode({ id: KEEPER, name: 'Keeper', type: 'actor', properties: { actorType: 'individual', spotlightTier: 'spotlight' } });
+  // THR-1582: a capable keeper (raw 40 ≈ capability 0.69 in every reach), so the
+  // forecast window does not refuse the cells and zero every score alike.
+  graph.addNode({ id: KEEPER, name: 'Keeper', type: 'actor', properties: {
+    actorType: 'individual', spotlightTier: 'spotlight',
+    domainCapabilities: { iron: 40, gold: 40, shadow: 40, veil: 40, heart: 40, eye: 40, stone: 40, star: 40 },
+  } });
   graph.addNode({ id: REALM, name: 'The Realm', type: 'actor', properties: { actorType: 'faction', factionClass: 'realm', factionDefId: 'realm.x' } });
   graph.addNode({ id: HELD, name: 'Held', type: 'location', properties: { locationSubtype: 'town', hexCol: 1, hexRow: 1, prosperity: 0.5 } });
   graph.addNode({ id: REALM_TOWN, name: 'Realm Town', type: 'location', properties: { locationSubtype: 'town', hexCol: 3, hexRow: 1, prosperity: 0.5 } });

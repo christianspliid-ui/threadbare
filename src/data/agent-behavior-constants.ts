@@ -562,8 +562,11 @@ export const MAX_COMPLETIONS_PER_TEMPLATE = 5;
 export const OUTGROWTH_CAP_THRESHOLD = 55;
 
 /** Whether outgrowth filtering is active. Toggle for tuning.
+ * Off since THR-1582 (forecast window S4): the too-easy side of the engagement fit
+ * (`ENGAGE_TOO_EASY_*`, `engagementWindow.ts`) replaces it — content beneath a mortal
+ * is allowed but unattractive rather than removed. Code retained (NFP #6).
  * @range boolean */
-export const OUTGROWTH_FILTER_ENABLED = true;
+export const OUTGROWTH_FILTER_ENABLED = false;
 
 /** THR-1579 (forecast window S2) — whether the encounter cache multiplies a step's
  * authored difficulty by the late-game tier multiplier (×1.3) and the hex danger
@@ -1199,3 +1202,21 @@ export const NOVELTY_GLOBAL_SHARE_EXPONENT = 8;
 export const ENGAGE_WINDOW_LOW = 0.50;
 /** Upper edge of the engagement window (see `ENGAGE_WINDOW_LOW`). @range 0.55–0.75 */
 export const ENGAGE_WINDOW_HIGH = 0.65;
+/** THR-1582 (S4) — window shift per unit of `courage_prudence`: a bold mortal (lean +1)
+ * accepts 0.45–0.60, a cautious one (−1) wants 0.55–0.70. @range 0–0.10 */
+export const ENGAGE_PERSONALITY_SHIFT = 0.05;
+/** Below this forecast a mortal will not engage a challenge on its own (fit 0). @range 0.20–0.45 */
+export const ENGAGE_REFUSE_BELOW = 0.30;
+/** Fit at the refuse edge — the bottom of the linear ramp below the window. @range 0–0.5 */
+export const ENGAGE_BELOW_FIT_MIN = 0.10;
+/** Forecast at which the too-easy side of the fit bottoms out. @range 0.75–0.95 */
+export const ENGAGE_TOO_EASY_AT = 0.75;
+/** Fit for challenges beneath a mortal — allowed, unattractive, so masters never idle
+ * for lack of master content. Replaces the outgrowth filter. @range 0.10–0.50 */
+export const ENGAGE_TOO_EASY_FIT = 0.10;
+/** Window shift toward easier per consecutive failed engagement (trap 2 guard). @range 0–0.10 */
+export const SETBACK_WINDOW_SHIFT = 0.05;
+/** Cap on the setback shift (three failures at the default). @range 0–0.30 */
+export const SETBACK_WINDOW_SHIFT_MAX = 0.15;
+/** A failed template's cooldown as a multiple of the completion cooldown (trap 1 guard). @range 1–6 */
+export const FAILED_TEMPLATE_COOLDOWN_MULT = 3;

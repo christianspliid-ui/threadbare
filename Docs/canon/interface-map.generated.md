@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 126 |
+| 🟢 LIVE | 127 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 40 |
-| **Total** | **174** |
+| **Total** | **175** |
 
 ## Contracts by producing subsystem
 
@@ -166,6 +166,7 @@ remediation ticket or the build fails.
 | `encounter-scored-binder-optin` | An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive. | function: `useScoredBinder`, `EncounterBinderContext`, `prepareEncounterSupportBundle`, `resolveBinding` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `encounter-seed-resolves-by-query` | An encounter plants its sequel by naming a family in game words — { kind: "encounter_template", tags: ["#circle_errand"] } — and the one content-query resolver finds it when the seed comes due, so a renamed template keeps its family and a newly authored one joins by carrying the tag. This replaces two rotting operands: a literal templateId, and encounterFamily, which was an id *prefix* and rotted the same way one level up. Measured before the change: of the 51 families the corpus authors, 41 matched no template at all, and seven seeds named templateIds that do not exist — so 48 kinds of promised follow-up had been withering on arrival, indistinguishable from a system that was never wired. The query travels on the seed rather than being drawn at plant time, so one site resolves and the family may have grown in the twenty ticks before the sequel is owed (THR-1488, slice 4 of THR-1481). | function: `seedContentQuery`, `ENCOUNTER_FAMILY_TAGS`, `validateEncounterSeedRefs`, `describeContentQuery` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `encounter-timeline-to-incident-bundle` | The mortals the player watches are the ones they will ask about, so each one arrives with the tail of what actually happened to them. | function: `getTimeline`, `getTrackedAgentIds` | Diagnostics & Incident Capture | 🟢 LIVE | — |
+| `engagement-forecast-gates-choice` | A mortal takes on challenges it forecasts winning about half the time: the engagement forecast `F` (the planner's whole-encounter survival odds, or an undertaking's checkpoint advance probability) is read against a window (`ENGAGE_WINDOW_LOW`–`ENGAGE_WINDOW_HIGH`, shifted by courage and by consecutive failures) and scales every candidate's score by the resulting fit — in-window 1, too easy `ENGAGE_TOO_EASY_FIT`, below the window a ramp to `ENGAGE_REFUSE_BELOW` and 0 under it. A multiplier, never a replacement: desire, ambition and variety still decide which in-window challenge wins. | function: `computeEngagementFit`, `computeSetbackShift` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `fight-band-conditions` | A fight leaves its mark as the ordinary conditions — inspired, shaken, terrified, wounded — so every ward, cure and reader that knows a condition knows a fight's wound. | edge-prop: `has_trait`, `ticksRemaining` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-complications-scoped` | When an exchange goes badly, the fight draws from its own events — the footing gives, it roars, quarter is offered — and those events move the fight itself: its odds, its clock, a fighter's nerve. | function: `fightComplicationScope`, `inFight`, `fight_momentum`, `fight_clock`, `fight_offer_quarter`, `fight_condition` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-death-feeds-reactive-loop` | A mortal killed in a fight is a killing with a culprit, written into the reactive loop in exactly the plot's shape — the dead's bonds take it up, the omen agenda can portend it, and the receipt credits it — never a death nobody answers. | function: `killStruckDownFighter`, `createUndertakingOutcomeNode`, `named_death`, `undertaking_outcome` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
@@ -923,10 +924,10 @@ exit
 - **Intent:** Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*
-- **Production hits:** 11 total — 2 write, 2 read, 7 unclassified
+- **Production hits:** 12 total — 2 write, 2 read, 8 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +2 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +3 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
@@ -1084,6 +1085,18 @@ exit
 - **Read sites:** `src/components/Game/debug/EncounterCacheView.tsx`, `src/engine/incidentBundle.ts`
 - **Other hits:** `src/debug-bridge.ts`, `src/engine/balanceTelemetry.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. The timeline accumulates in production with no DEV gate at all (`encounter.ts`, `orchestrator.ts`, `phaseAgentDecision.ts`) and its only reader was the DEV-only `EncounterCacheView`. `incidentBundle`'s `focus` section is the production reader, taking the last `INCIDENT_TIMELINE_TAIL` entries for the selection and for every followed mortal, plus `getTrackedAgentIds()` so a reader can see who else has history to ask for. The formatter/trigger split this subsystem already used is preserved — the bundle takes the raw events, not the TSV.
+
+### `engagement-forecast-gates-choice` — 🟢 LIVE
+
+- **Intent:** A mortal takes on challenges it forecasts winning about half the time: the engagement forecast `F` (the planner's whole-encounter survival odds, or an undertaking's checkpoint advance probability) is read against a window (`ENGAGE_WINDOW_LOW`–`ENGAGE_WINDOW_HIGH`, shifted by courage and by consecutive failures) and scales every candidate's score by the resulting fit — in-window 1, too easy `ENGAGE_TOO_EASY_FIT`, below the window a ramp to `ENGAGE_REFUSE_BELOW` and 0 under it. A multiplier, never a replacement: desire, ambition and variety still decide which in-window challenge wins.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Domain Capability*, *Encounter*, *Undertaking*
+- **Module:** `src/engine/engagementWindow.ts`
+- **Production hits:** 4 total — 1 write, 2 read, 1 unclassified
+- **Write sites:** `src/engine/engagementWindow.ts`
+- **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/encounterScoring.ts`
+- **Other hits:** `src/engine/phaseAgentDecision.ts`
+- **Verdict:** Verified 2026-09-26: THR-1581. `engagementWindow.test.ts` pins the zone edges, the personality and setback shifts and the too-easy exemption; `decisionBoard.test.ts` pins that between two in-window candidates the higher desire wins and that an in-window candidate beats a wanted too-easy one; the additive-term pins in `encounterScoring`, `appointments`, `intelligenceConsumption`, `locationTraitBonus`, `mark-reveal-liveness` and the relocation test now assert `term × engagementFit`, which fails if the fit stops reaching `finalScore`. On real seeded worlds (`engagementWindow.invariant.test.ts`, seeds 42/99 × 120 ticks, heavy lane) the novice band succeeds within the level band; `getEngagementVerdicts` and the `engagement_decision` trace expose F, fit and zone per candidate.
 
 ### `essence-earned-unlocks-attunement-cards` — 🟢 LIVE
 
@@ -2059,10 +2072,10 @@ exit
 - **Intent:** Traces are the causal trail — the one record that answers *why* rather than *what* — so a player who armed recording before the trouble can hand that trail over.
 - **Producer → Consumer:** Diagnostics & Incident Capture → Diagnostics & Incident Capture
 - **Module:** `src/engine/traceBuffer.ts`
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/traceBuffer.ts`
 - **Read sites:** `src/components/Game/hooks/useIncidentCapture.ts`, `src/engine/incidentBundle.ts`
-- **Other hits:** `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/debug-bridge.ts`
+- **Other hits:** `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/debug-bridge.ts`, `src/engine/phaseAgentDecision.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. `enableTracing` had no production caller — the ring was armed only from the DEV bridge and the CLI — so on the deployed build the causal trail could never be turned on at all. The Settings → Trouble toggle is that caller, and `incidentBundle.traces` is the reader. The buffer itself is untouched (358 importers) and stays off by default: `emitTrace` evicts with `shift()` plus a full renumber, which a saturated tick pays per evicted entry, so the toggle names its cost rather than hiding it. Both arms are pinned in `incidentBundle.test.ts`, each setting the module-scope flag itself rather than inheriting a sibling file's — the armed arm emits and asserts a non-empty ring (confirming the arm perturbed something), the disarmed arm asserts the section is the sentence *recording was off* and carries no `entries` key, because an empty array would read as *nothing happened*.
 
 ### `trait-predicate-resolution` — 🟢 LIVE

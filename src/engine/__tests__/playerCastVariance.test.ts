@@ -136,12 +136,17 @@ describe('THR-728 — player cast variance', () => {
     const template = makeTemplate(0.6);
     const state = makeState(4);
     const result = resolveUncontestedStep(makePlayerCast(template), template, state, seededRng(1));
-    // Raw 0 (the unbonused read) is capability 0.02; the bonus must clear that.
-    expect(result.capability).toBeGreaterThan(0.2);
+    // Raw 0 (the unbonused read) is capability ≈ 0.083 on the re-fitted curve
+    // (THR-1581; 0.02 before); the bonus must clear that.
+    expect(result.capability).toBeGreaterThan(0.12);
   });
 
   it('produces more than one outcome band across seeds for a positive-difficulty cast', () => {
-    const template = makeTemplate(0.6);
+    // THR-1581: authored difficulty now bites (the local floor is retired), so a 0.6
+    // price leaves a fresh god too little odds for a clean landing in 200 seeds. A
+    // moderate price keeps the property this test is about — the receipt is not a
+    // foregone conclusion — on the new dice.
+    const template = makeTemplate(0.3);
     const outcomes = new Set<string>();
     for (let seed = 1; seed <= 200; seed++) {
       const state = makeState(4);

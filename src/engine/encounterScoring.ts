@@ -47,12 +47,13 @@ import { hexDistance } from '../lib/hexMath';
 import { DRAW_TOGETHER_PULL_WEIGHT } from '../data/group-constants';
 import type { ScoringTrace } from '../types/trace';
 import type { ValuePair, AxiologicalProfile, MotivationPoles } from '../types/agent';
+import { META_VALUE_PAIR } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import type { FundamentState } from '../types/worldSoul';
-import { computeCapability, computeTier } from './domainCapability';
+import { computeCapability, computeCapabilityPreRefit, computeTier } from './domainCapability';
 // Distance matrix removed — hex distance used for travel cost estimation
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
@@ -155,6 +156,8 @@ import { NPC_ROLE_REACH_MAP } from '../types/npc';
 import type { NpcRole } from '../types/npc';
 import type { HexTile } from '../types/index';
 import { getRarityTier } from './rarity';
+import { computeEngagementFit, type EngagementZone } from './engagementWindow';
+import { BRANCHING_QUEST_SKIP_OUTGROWTH } from './encounter/branchingConstants';
 import { RARITY_ENCOUNTER_SCORE_MULTIPLIER } from '../data/rarity-constants';
 import {
   createStandingModifierReader,
@@ -451,14 +454,16 @@ export function computeAnomalyDiscoveryBonus(
   let eyeCap: number;
   let veilCap: number;
   try {
-    eyeCap = computeCapability(graph, agentId, 'eye');
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    eyeCap = computeCapabilityPreRefit(graph, agentId, 'eye');
   } catch {
     eyeCap = 0;
   }
   if (eyeCap < ANOMALY_EYE_THRESHOLD) return 0;
 
   try {
-    veilCap = computeCapability(graph, agentId, 'veil');
+    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
+    veilCap = computeCapabilityPreRefit(graph, agentId, 'veil');
   } catch {
     veilCap = 0;
   }
@@ -559,6 +564,14 @@ export interface ScoredCandidate {
    * (S4); carried and traced now so the number is inspectable before it gates.
    */
   engagementForecast: number;
+  /**
+   * THR-1582 (S4) — the forecast window's multiplier on this candidate's score,
+   * from `computeEngagementFit(engagementForecast, courage, setbacks)`. 1 in the
+   * window, <1 above or below it, 0 when refused. Already folded into `finalScore`.
+   */
+  engagementFit: number;
+  /** THR-1582 — where `engagementForecast` sat against the mortal's window. */
+  engagementZone: EngagementZone;
   /** Phase 4: Estimated benefit of pushing (Q spend for better odds), 0 if not applicable */
   pushBenefit: number;
   /** Phase 4: Estimated benefit of resist option, 0 if not applicable */
@@ -1122,6 +1135,12 @@ export function scoreAndSelect(
    * they lean or depart; absent or out of regime, every score is unchanged.
    */
   appointment?: AppointmentContext | null,
+  /**
+   * THR-1582 (S4) — the forecast window's per-agent inputs. `consecutiveFailures`
+   * drives the setback shift; absent → 0. `bypass` switches the window off for a
+   * path that is not the mortal's free choice (every candidate fits 1).
+   */
+  engagement?: { consecutiveFailures?: number; bypass?: boolean },
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -1145,6 +1164,10 @@ export function scoreAndSelect(
   }
 
   const profile = resolveProfile(graph, agentId, tick, fundament);
+  // THR-1582 — the window shifts with the mortal's courage (incl. drift) and its setbacks.
+  const courageLean = (profile as Partial<Record<ValuePair, number>>)[META_VALUE_PAIR] ?? 0;
+  const consecutiveFailures = engagement?.consecutiveFailures ?? 0;
+  const windowBypassed = engagement?.bypass === true;
 
   // For the motive receipt's `divine` contribution (THR-641): resolve the same
   // profile without the divine value overlay so each candidate can attribute the
@@ -1439,7 +1462,19 @@ export function scoreAndSelect(
     const emaCeilingMultiplier = computeEMACeilingMultiplier(noveltyRecord, entry.templateId, tick);
     // 17f. Global share ceiling (THR-464 rung 6) — direct feedback from eligibility funnel; bypasses novelty decay
     const globalShareMultiplier = computeGlobalShareMultiplier(entry.templateId, funnelTotal, funnel);
-    const finalScore = preNoveltyScore * noveltyMultiplier * ceilingMultiplier * emaCeilingMultiplier * globalShareMultiplier;
+    // 17g. The forecast window (THR-1582, S4) — a multiplier, never a replacement:
+    // the mortal seeks challenges it forecasts winning about half the time, and
+    // every term above still decides which in-window challenge it picks. Branching
+    // quests keep the old outgrowth exemption as `exemptTooEasy`.
+    const engagementFitResult = windowBypassed
+      ? null
+      : computeEngagementFit(engagementForecast, courageLean, consecutiveFailures, {
+        exemptTooEasy: BRANCHING_QUEST_SKIP_OUTGROWTH && entry.isQuestEncounter === true,
+      });
+    const engagementFit = engagementFitResult?.fit ?? 1;
+    const engagementZone: EngagementZone = engagementFitResult?.zone ?? 'in';
+    const finalScore = preNoveltyScore * noveltyMultiplier * ceilingMultiplier * emaCeilingMultiplier * globalShareMultiplier
+      * engagementFit;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];
@@ -1457,6 +1492,8 @@ export function scoreAndSelect(
       expectedReward,
       expectedUtility,
       engagementForecast,
+      engagementFit,
+      engagementZone,
       pushBenefit,
       resistBenefit,
       travelCost,
@@ -1568,6 +1605,8 @@ function buildTrace(
       // Phase 4: rich forecast fields
       expectedUtility: c.expectedUtility,
       engagementForecast: c.engagementForecast,
+      forecastFit: c.engagementFit,
+      forecastZone: c.engagementZone,
       pushBenefit: c.pushBenefit,
       resistBenefit: c.resistBenefit,
       identityBiasBonus: c.identityBiasBonus,

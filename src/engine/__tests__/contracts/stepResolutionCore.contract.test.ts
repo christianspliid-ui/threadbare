@@ -180,6 +180,11 @@ describe('contract 1 — one input, one band, whichever entry point produced it'
     // is clamped at its maximum, so 0.5 and 0.99 produce the *same* probability and
     // the same band on every seed. A difficulty-based arm would have passed
     // vacuously for a reason that has nothing to do with the contract.
+    //
+    // THR-1581: after the dice re-fit the fixture's mortal reads capability ≈ 0.31,
+    // so its threshold is ≈ 0.29 — already close to the floor an incapable actor
+    // lands on. The injected arm therefore now goes the other way: a master against
+    // a trivial step, pinned at the ceiling, which parts company on most seeds.
     const template = makeTemplate(0.5);
     const action = createUnifiedAction({
       actorId: MORTAL_ID, templateId: template.id, targetId: TARGET_ID,
@@ -191,9 +196,9 @@ describe('contract 1 — one input, one band, whichever entry point produced it'
       const viaEncounter = resolveUncontestedStep(action, template, makeState(), seededRng(seed));
       const viaCore = resolveStepCore({
         actorId: MORTAL_ID, reach: 'stone',
-        capability: 0.01, // ← the injected difference: an all-but-incapable actor
-        difficulty: 0.99,
-        scale: 'cosmic', actionModifiers: 0, testShapers: [],
+        capability: 0.99, // ← the injected difference: a master
+        difficulty: 0.01,
+        scale: 'personal', actionModifiers: 0, testShapers: [],
         variancePolicy: 'agent', quintessencePolicy: 'none',
         tick: 10, sourceLabel: 'unified_action',
       }, seededRng(seed));
@@ -266,6 +271,13 @@ describe('contract 2 — one band ladder in the engine', () => {
       .map((f) => f.replace(/.*[\\/]/, ''))
       .sort();
     expect(importers).toEqual([
+      // Added by THR-1581 (dice re-fit), deliberately and in the open. Each had its
+      // own local `capability − difficulty` formula, which the re-fit would have left
+      // behind on the old dice. They now read `computeResolutionThreshold` — the
+      // threshold only, never the band ladder — so a contest, a control contest and
+      // the legacy resolver quote the same odds the core rolls.
+      'contestation.ts',
+      'controlContestationResolver.ts',
       // Added in slice 5 (THR-1292 §4), deliberately and in the open. The decision
       // board *forecasts* a band rather than rolling one: it enumerates all 100
       // rolls through `classifyResolutionRoll` + `breakdownToOutcome` +
@@ -292,6 +304,8 @@ describe('contract 2 — one band ladder in the engine', () => {
       // the roll will use, and re-typing 0.05 and 0.95 beside the resolver is exactly
       // the silent drift this pin exists to prevent (and was the shape of THR-998).
       'playerCastReadout.ts',
+      // THR-1581: see the note at the top of this list.
+      'resolution.ts',
       'resolutionScaleAdjust.ts',
       // Added by THR-1543 (fight block FB7), deliberately and in the open.
       // `scaledForecast.ts` forecasts a step exactly as the core rolls it — the
