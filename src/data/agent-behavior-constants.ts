@@ -1210,10 +1210,10 @@ export const ENGAGE_REFUSE_BELOW = 0.30;
 /** Fit at the refuse edge — the bottom of the linear ramp below the window. @range 0–0.5 */
 export const ENGAGE_BELOW_FIT_MIN = 0.10;
 /** Forecast at which the too-easy side of the fit bottoms out. @range 0.75–0.95 */
-export const ENGAGE_TOO_EASY_AT = 0.85;
+export const ENGAGE_TOO_EASY_AT = 0.75;
 /** Fit for challenges beneath a mortal — allowed, unattractive, so masters never idle
  * for lack of master content. Replaces the outgrowth filter. @range 0.10–0.50 */
-export const ENGAGE_TOO_EASY_FIT = 0.25;
+export const ENGAGE_TOO_EASY_FIT = 0.10;
 /** Window shift toward easier per consecutive failed engagement (trap 2 guard). @range 0–0.10 */
 export const SETBACK_WINDOW_SHIFT = 0.05;
 /** Cap on the setback shift (three failures at the default). @range 0–0.30 */

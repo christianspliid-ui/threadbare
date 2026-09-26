@@ -916,6 +916,20 @@ export interface DebugBridge {
    */
   getHoldingIncome: (actorQuery?: string) => Promise<ReadonlyArray<TraceEntry>>;
   /**
+   * The forecast window's verdicts (THR-1582, forecast window S4): the
+   * `engagement_decision` traces — one per agent decision that reached the board —
+   * each naming the mortal's window (after courage and setback shifts) and every
+   * board candidate's forecast `F`, proficiency, demanded difficulty, fit and zone
+   * (`refused` · `below` · `in` · `above`), plus the chosen id and a `reason`
+   * (`in_window` · `best_available` · `idle`).
+   *
+   * `agentQuery` narrows to one agent (`@hero`, id, id prefix or partial name); an
+   * unresolvable query returns `[]`. Newest last, at most `limit` (default 20).
+   * **Returns `[]` when tracing is disabled** — call `enableTracing()` and advance
+   * ticks first, like `getTraces`.
+   */
+  getEngagementVerdicts: (agentQuery?: string, limit?: number) => Promise<ReadonlyArray<TraceEntry>>;
+  /**
    * Every reader that ran at an undertaking cell completion (THR-1428) — writes *and*
    * refusals: a survey of somewhere already known traces `refused: 'already_known'`,
    * which is a different fact from a reader that never fired. Optionally narrowed to
