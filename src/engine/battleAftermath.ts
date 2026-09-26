@@ -485,6 +485,21 @@ function relocateOccupantsToParent(
  *
  * Called by resolveBattle after determining the outcome.
  */
+/**
+ * What the aftermath did, for the battle's record (THR-1528). `severity` is null for a
+ * stalemate, which has no aftermath. A mutual destruction names **no victor**: the
+ * aftermath treats it as a defender win internally, and nothing downstream may read a
+ * defender victory that never happened.
+ */
+export interface BattleAftermathSummary {
+  severity: DestructionSeverity | null;
+  victorFactionId?: string;
+  loserFactionId?: string;
+  commanderFate?: CommanderFate;
+  commanderId?: string;
+  settlementId?: string;
+}
+
 export function applyAftermath(
   state: GameState,
   battleState: BattleState,
@@ -492,7 +507,7 @@ export function applyAftermath(
   runtime?: SimulationRuntime,
   /** The battle node, for the id of a slain commander's harm record (THR-1566). */
   battleNodeId?: string,
-): void {
+): BattleAftermathSummary {
   const graph = state.graph;
 
   if (resolutionType === 'stalemate') {
@@ -503,7 +518,7 @@ export function applyAftermath(
       summary: `Battle stalemate — both sides withdraw with minor damage`,
       event: 'aftermath_stalemate',
     });
-    return;
+    return { severity: null };
   }
 
   // Determine winner and loser
@@ -513,6 +528,13 @@ export function applyAftermath(
 
   const loserNode = graph.getNode(loserArmyId);
   const loserState = loserNode?.properties.armyState as ArmyState | undefined;
+  // Read before the loser is disbanded below (THR-1528). A siege's loser is the town,
+  // which carries no `member_of` — its faction is whoever held it.
+  const factionOf = (id: string): string | undefined =>
+    graph.getOutgoingEdges(id, 'member_of')[0]?.target
+    ?? graph.getIncomingEdges(id, 'controls').find(e => graph.getNode(e.source)?.properties.actorType === 'faction')?.source;
+  const victorFactionId = factionOf(victorArmyId);
+  const loserFactionId = factionOf(loserArmyId);
   const loserQPercent = loserState
     ? loserState.cohesion / Math.max(1, loserState.cohesionMax)
     : 0;
@@ -729,6 +751,16 @@ export function applyAftermath(
     refugeeCount: refugeeIds.length,
     spherePressureCount: spherePressureEvents.length,
   });
+
+  const isMutual = resolutionType === 'mutual_destruction';
+  return {
+    severity,
+    ...(!isMutual && victorFactionId ? { victorFactionId } : {}),
+    ...(!isMutual && loserFactionId ? { loserFactionId } : {}),
+    commanderFate,
+    ...(commanderId ? { commanderId } : {}),
+    ...(settlementId ? { settlementId } : {}),
+  };
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────

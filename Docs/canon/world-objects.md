@@ -39,7 +39,7 @@ Two words for one thing is the drift this page exists to stop. Where the code wo
 | **Standing** | How two parties stand: reputation, relationship arc, quarrel. | `reputation_with` · `relates_to` · `hostile_to` edges | reputation · relationship · quarrel |
 | **Ambition** | What a mortal wants. | `ambition` node | — |
 | **Undertaking** | A work in progress — bookkeeping, not an entity (THR-1280). | `GameState.strategicState.projects[]` | — |
-| **Event** | What happened; the chronicle's substrate. One key: `eventType`. | `event` node | — |
+| **Event** | What happened; the chronicle's substrate. One key: `eventType`. A battle leaves a `battle_fought` Event on the ground it was fought over (THR-1528; `fight_fought` is registered for slice 2, THR-1574). | `event` node | — |
 | **Sphere · Reach** | Axes of the cosmos, not objects. | `GameState.cosmology` · `ReachDomain` | — |
 
 Templates (`action_template`, `encounter_template`) are authored content that happens to live in the graph — registered as `content`, never a thing a player points at. `resource` and `relationship` were retired from the union in slice 2 with their readers repointed (resources are stocks on a Location; a relationship is the `relates_to` edge). `cosmology` stays DORMANT: its two `contextBuilder` reads are dead in a live world and repointing them is its own ticket. `sublocation` is reader-accepted legacy (THR-1177).

@@ -79,7 +79,8 @@ import { FIGHT_LAIR_CONFRONT_ID } from '../src/data/encounters/fight-lair-confro
 import { FIGHT_DUEL_GRUDGE_ID } from '../src/data/encounters/fight-duel-grudge';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { describeAppointments } from '../src/engine/appointments';
-import { describeLocationTraits } from '../src/engine/phaseLocationTraits';
+import { describeLocationTraits, readBloodshed } from '../src/engine/phaseLocationTraits';
+import { describeBattleRecords } from '../src/engine/battleRecord';
 import { describeArtifactTraits } from '../src/engine/artifactTraits';
 import { resolveAxiologicalProfile } from '../src/engine/encounterScoring';
 import { hexDistance } from '../src/lib/hexMath';
@@ -628,7 +629,7 @@ function printAppointments(agentQuery?: string): void {
 // `phaseLocationTraits`, or planted by an aftermath — with each place's sustain
 // counters, so "how close is this town to Welcoming?" reads before the word does.
 function printLocationTraits(locationQuery?: string): void {
-  const rows = describeLocationTraits(state.graph, locationQuery || undefined);
+  const rows = describeLocationTraits(state.graph, locationQuery || undefined, state.tick);
   console.log(header(`Location traits — ${rows.length}${locationQuery ? ` (filter: ${locationQuery})` : ''}`));
   for (const r of rows) {
     const term = r.ticksRemaining !== null ? `${r.ticksRemaining}t left` : 'until it lifts';
@@ -640,11 +641,24 @@ function printLocationTraits(locationQuery?: string): void {
     // One place asked for: its counters are the answer even when it carries nothing yet.
     const first = rows[0];
     if (first) {
-      console.log(dim(`            sustain: welcoming ${first.sustain.welcoming}  lawless ${first.sustain.lawless}  veilThin ${first.sustain.veilThin}  haunted ${first.sustain.haunted}`));
+      console.log(dim(`            sustain: welcoming ${first.sustain.welcoming}  lawless ${first.sustain.lawless}  veilThin ${first.sustain.veilThin}  haunted ${first.sustain.haunted}  bloodSoaked ${first.sustain.bloodSoaked}  bloodshed ${first.bloodshed ?? 'none'}`));
     } else {
       const matches = describeLocationTraitsCounters(locationQuery);
       for (const line of matches) console.log(dim(`            ${line}`));
     }
+  }
+}
+
+/** THR-1528 — the records battles leave on the ground, newest first. */
+function printBattleRecords(locationQuery?: string): void {
+  const rows = describeBattleRecords(state.graph, locationQuery);
+  console.log(header(`Battle records — ${rows.length}${locationQuery ? ` (filter: ${locationQuery})` : ''}`));
+  for (const r of rows) {
+    const who = r.participants.map(p => `${p.name} (${p.role}, ${p.outcome})`).join(', ');
+    console.log(
+      `  t${r.tick ?? '?'}  ${r.locationName ?? dim('no place')}  ${r.battleType ?? '?'} ${r.resolutionType ?? '?'}${r.severity ? ` (${r.severity})` : ''}  ${dim(r.eventId)}`,
+    );
+    console.log(dim(`            "${r.summary}"${who ? `  — ${who}` : ''}`));
   }
 }
 
@@ -669,7 +683,8 @@ function describeLocationTraitsCounters(locationQuery: string): string[] {
     if (!(loc.id === locationQuery || loc.id.startsWith(locationQuery) || (loc.name ?? '').toLowerCase().includes(lowered))) continue;
     const p = loc.properties as Record<string, unknown>;
     const read = (k: string) => (typeof p[`locationTraitSustain.${k}`] === 'number' ? (p[`locationTraitSustain.${k}`] as number) : 0);
-    out.push(`${loc.name} (${loc.id}): no location trait — sustain welcoming ${read('welcoming')}  lawless ${read('lawless')}  veilThin ${read('veilThin')}  haunted ${read('haunted')}`);
+    const bloodshed = readBloodshed(state.graph, loc, state.tick);
+    out.push(`${loc.name} (${loc.id}): no location trait — sustain welcoming ${read('welcoming')}  lawless ${read('lawless')}  veilThin ${read('veilThin')}  haunted ${read('haunted')}  bloodSoaked ${read('bloodSoaked')}  bloodshed ${bloodshed ?? 'none'}`);
   }
   return out;
 }
@@ -1489,6 +1504,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}chapters${RESET} [agent]  Archived + active encounter chapters (THR-603), optionally by agent|@hero`);
   console.log(`  ${BOLD}appointments${RESET} [agent]  Live appointments — place, due tick, slack, regime (THR-1479), optionally by agent|@hero`);
   console.log(`  ${BOLD}traits${RESET} [location]  Location traits — what each place carries and since when (THR-790); with a place named, its sustain counters too. Then the artifact traits (THR-1521): Storied / Cursed on things, with the presence count Storied climbs on`);
+  console.log(`  ${BOLD}battles${RESET} [location]  Battle records — the \`battle_fought\` events battles leave on the ground they were fought over, newest first, with the commanders and their outcomes (THR-1528)`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}monsters${RESET}         List lair monsters with their cards (family, Dread/Might, clock, temper)`);
   console.log(`  ${BOLD}hunts${RESET}            The hunt ledger: founded, tracked, confronts planted/kept/missed, miss reasons, travel, out-of-scan holders`);
@@ -2570,6 +2586,9 @@ function handleCommand(line: string): boolean {
     case 'traits':
       printLocationTraits(arg || undefined);
       printArtifactTraits(arg || undefined);
+      break;
+    case 'battles':
+      printBattleRecords(arg || undefined);
       break;
     case 'factions':
       printFactions();

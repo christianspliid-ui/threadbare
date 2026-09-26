@@ -4,7 +4,7 @@
  * The first producer of location traits from the world's **own scalars**. Before
  * this phase every `trait.condition.location.*` edge was planted by an encounter
  * aftermath; nothing read a town's long prosperity or a shrine-hill's saturation and
- * said so on the page. Now four rules run over the place tier every tick:
+ * said so on the page. Now five rules run over the place tier every tick:
  *
  * | Trait | Enter | Release | Co-condition |
  * |---|---|---|---|
@@ -12,6 +12,15 @@
  * | *Lawless* | unrest ≥ `LOCATION_TRAIT_LAWLESS_ENTER` | `< …_RELEASE` | — |
  * | *Veil-thin* | saturation ≥ `LOCATION_TRAIT_VEIL_THIN_ENTER` | `< …_RELEASE` | not while *Haunted* |
  * | *Haunted* | saturation ≥ `LOCATION_TRAIT_HAUNTED_ENTER` | `< …_RELEASE` | `deathCount ≥ LOCATION_TRAIT_HAUNTED_DEATHS` |
+ * | *Blood-soaked* | bloodshed ≥ `BLOOD_SOAKED_ENTER` | `< BLOOD_SOAKED_RELEASE` | — (THR-1528) |
+ *
+ * *Blood-soaked* reads no scalar: its input is {@link readBloodshed}, the weighted
+ * count of `battle_fought` / `fight_fought` records at the place inside
+ * `BLOOD_SOAKED_WINDOW_TICKS`, gated to O(1) by the `lastBattleTick` /
+ * `lastFightTick` stamps the record writers leave on the Location. It carries its own
+ * sustain (the window already stops flicker). Its mint line is written at the shared
+ * 0.4: a battle's ending already reaches the chronicle through the war news
+ * (THR-1564), and a second loud line would tell the same battle twice.
  *
  * **The hysteresis is the promotion phase's** (`phaseSettlementPromotion.ts:100-124`):
  * a sustain counter persisted on the Location node (`locationTraitSustain.<rule>`)
@@ -69,6 +78,12 @@ import {
   LOCATION_TRAIT_HAUNTED_RELEASE,
   LOCATION_TRAIT_HAUNTED_DEATHS,
   LOCATION_TRAIT_EVENT_SIGNIFICANCE,
+  BLOOD_SOAKED_WINDOW_TICKS,
+  BLOOD_SOAKED_BATTLE_WEIGHT,
+  BLOOD_SOAKED_FIGHT_WEIGHT,
+  BLOOD_SOAKED_ENTER,
+  BLOOD_SOAKED_RELEASE,
+  BLOOD_SOAKED_SUSTAIN_TICKS,
   type LocationTraitInput,
   type LocationTraitRuleId,
 } from '../data/location-trait-constants';
@@ -92,9 +107,18 @@ interface LocationTraitRule {
   readonly coCondition?: (loc: GraphNode) => boolean;
   /** A trait whose presence on the place blocks this rule from minting. */
   readonly supersededBy?: string;
+  /**
+   * A computed input, used instead of the scalar property when present (THR-1528).
+   * `null` skips the rule for the place — no counter written — as a missing scalar does.
+   */
+  readonly read?: (graph: WorldGraph, loc: GraphNode, tick: number) => number | null;
+  /** Overrides `LOCATION_TRAIT_SUSTAIN_TICKS` for this rule (THR-1528). */
+  readonly sustainTicks?: number;
+  /** Overrides `LOCATION_TRAIT_EVENT_SIGNIFICANCE` on this rule's mint line (THR-1528). */
+  readonly chronicleSignificance?: number;
 }
 
-const SCALAR_PROPERTY: Readonly<Record<LocationTraitInput, string>> = {
+const SCALAR_PROPERTY: Readonly<Record<Exclude<LocationTraitInput, 'bloodshed'>, string>> = {
   prosperity: 'prosperity',
   unrest: 'unrest',
   saturation: 'magicalSaturation',
@@ -103,6 +127,57 @@ const SCALAR_PROPERTY: Readonly<Record<LocationTraitInput, string>> = {
 function readNumber(loc: GraphNode, key: string): number | null {
   const v = loc.properties?.[key];
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+/** The per-place stamps the record writers leave (THR-1528). */
+export const LAST_BATTLE_TICK_PROPERTY = 'lastBattleTick';
+export const LAST_FIGHT_TICK_PROPERTY = 'lastFightTick';
+
+/** The two record kinds that count as bloodshed, and each one's weight. */
+const BLOODSHED_WEIGHTS: Readonly<Record<string, number>> = {
+  battle_fought: BLOOD_SOAKED_BATTLE_WEIGHT,
+  fight_fought: BLOOD_SOAKED_FIGHT_WEIGHT,
+};
+
+/**
+ * Bloodshed at a place this tick (THR-1528): the weighted count of `battle_fought`
+ * (and, from slice 2, `fight_fought`) records whose `occurred_at` edge names the
+ * place and whose tick sits inside `BLOOD_SOAKED_WINDOW_TICKS`.
+ *
+ * - `null` when the place carries neither stamp: it never saw a battle, so the rule is
+ *   skipped and no sustain counter is written (the phase's missing-scalar path).
+ * - `0` when the stamps exist but both are older than the window — O(1), no edge walk.
+ *   The trait releases.
+ * - Otherwise the edge walk, which only a handful of recent battlefields ever reach.
+ *
+ * **Never reads `deathCount`.** A place where a plague killed twenty people has no
+ * record and reads `null`.
+ */
+export function readBloodshed(graph: WorldGraph, loc: GraphNode, tick: number): number | null {
+  const lastBattle = readNumber(loc, LAST_BATTLE_TICK_PROPERTY);
+  const lastFight = readNumber(loc, LAST_FIGHT_TICK_PROPERTY);
+  if (lastBattle === null && lastFight === null) return null;
+  const since = tick - BLOOD_SOAKED_WINDOW_TICKS;
+  if ((lastBattle ?? -Infinity) <= since && (lastFight ?? -Infinity) <= since) return 0;
+
+  let total = 0;
+  for (const edge of graph.getIncomingEdges(loc.id, 'occurred_at')) {
+    const record = graph.getNode(edge.source);
+    if (!record || record.type !== 'event') continue;
+    const weight = BLOODSHED_WEIGHTS[record.properties?.eventType as string];
+    if (weight === undefined) continue;
+    const at = record.properties?.tick;
+    if (typeof at !== 'number' || at <= since || at > tick) continue;
+    total += weight;
+  }
+  return total;
+}
+
+/** A rule's input this tick — its computed reader, or its scalar property. */
+function readInput(graph: WorldGraph, rule: LocationTraitRule, loc: GraphNode, tick: number): number | null {
+  if (rule.read) return rule.read(graph, loc, tick);
+  if (rule.input === 'bloodshed') return null;
+  return readNumber(loc, SCALAR_PROPERTY[rule.input]);
 }
 
 /**
@@ -141,6 +216,16 @@ export const LOCATION_TRAIT_RULES: readonly LocationTraitRule[] = [
     release: LOCATION_TRAIT_VEIL_THIN_RELEASE,
     supersededBy: LOCATION_TRAIT_IDS.haunted,
   },
+  // THR-1528 — independent of the other four: a battlefield can also be haunted.
+  {
+    id: 'bloodSoaked',
+    traitId: LOCATION_TRAIT_IDS.bloodSoaked,
+    input: 'bloodshed',
+    enter: BLOOD_SOAKED_ENTER,
+    release: BLOOD_SOAKED_RELEASE,
+    read: readBloodshed,
+    sustainTicks: BLOOD_SOAKED_SUSTAIN_TICKS,
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -178,7 +263,7 @@ export function phaseLocationTraits(state: GameState, runtime?: SimulationRuntim
 
   for (const loc of getLocationNodes(graph)) {
     for (const rule of LOCATION_TRAIT_RULES) {
-      const value = readNumber(loc, SCALAR_PROPERTY[rule.input]);
+      const value = readInput(graph, rule, loc, tick);
       // Fail-soft: a scalar the writers never set skips the rule — no counter written.
       if (value === null) continue;
 
@@ -213,13 +298,14 @@ export function phaseLocationTraits(state: GameState, runtime?: SimulationRuntim
       // Mid-band (release ≤ value < enter, or enter met without the co-condition):
       // the counter holds — the promotion phase's rule, kept on purpose.
 
-      if (counter >= LOCATION_TRAIT_SUSTAIN_TICKS) {
+      const sustainTicks = rule.sustainTicks ?? LOCATION_TRAIT_SUSTAIN_TICKS;
+      if (counter >= sustainTicks) {
         if (!graph.getNode(rule.traitId)) {
           // A world saved before this phase, or a definition that stopped shipping.
           // `seedEncounterTraitDefinitions` re-seeds on load; until then, count and
           // hold the counter at the threshold rather than throw from the tick loop.
           skippedMissingDefinition += 1;
-          loc.properties[key] = LOCATION_TRAIT_SUSTAIN_TICKS;
+          loc.properties[key] = sustainTicks;
           continue;
         }
         assignTrait(graph, loc.id, rule.traitId, { tick, source: LOCATION_TRAIT_SOURCE });
@@ -229,14 +315,14 @@ export function phaseLocationTraits(state: GameState, runtime?: SimulationRuntim
           traitId: rule.traitId,
           input: rule.input,
           value,
-          sustainTicks: LOCATION_TRAIT_SUSTAIN_TICKS,
+          sustainTicks,
         });
         events.push({
           id: `evt_location_trait_${loc.id}_${rule.id}_${tick}`,
           tick,
           type: 'narrative',
           message: `${loc.name} has become ${traitWord(graph, rule.traitId)}.`,
-          significance: LOCATION_TRAIT_EVENT_SIGNIFICANCE,
+          significance: rule.chronicleSignificance ?? LOCATION_TRAIT_EVENT_SIGNIFICANCE,
           hexCoords:
             typeof loc.properties?.hexCol === 'number' && typeof loc.properties?.hexRow === 'number'
               ? { col: loc.properties.hexCol as number, row: loc.properties.hexRow as number }
@@ -295,8 +381,13 @@ export interface LocationTraitReadout {
   readonly source: string | null;
   /** Remaining term for an aftermath-planted condition; null for a minted trait. */
   readonly ticksRemaining: number | null;
-  /** The four sustain counters on the place, as they stand this tick. */
+  /** The five sustain counters on the place, as they stand this tick. */
   readonly sustain: Readonly<Record<LocationTraitRuleId, number>>;
+  /**
+   * The place's bloodshed this tick ({@link readBloodshed}), or null when it never saw
+   * a battle (THR-1528).
+   */
+  readonly bloodshed: number | null;
 }
 
 /**
@@ -305,7 +396,7 @@ export interface LocationTraitReadout {
  * edges the page and the three readers read, so it cannot disagree with them.
  * Empty when nothing matches.
  */
-export function describeLocationTraits(graph: WorldGraph, query?: string): LocationTraitReadout[] {
+export function describeLocationTraits(graph: WorldGraph, query?: string, tick = 0): LocationTraitReadout[] {
   const lowered = query?.toLowerCase();
   const out: LocationTraitReadout[] = [];
   for (const loc of getLocationNodes(graph)) {
@@ -319,6 +410,7 @@ export function describeLocationTraits(graph: WorldGraph, query?: string): Locat
     const sustain = Object.fromEntries(
       LOCATION_TRAIT_RULES.map(r => [r.id, readNumber(loc, sustainKey(r.id)) ?? 0]),
     ) as Record<LocationTraitRuleId, number>;
+    const bloodshed = readBloodshed(graph, loc, tick);
     for (const edge of graph.getOutgoingEdges(loc.id, 'has_trait')) {
       if (!edge.target.startsWith(LOCATION_CONDITION_ID_PREFIX)) continue;
       const acquired = edge.properties?.acquiredTick;
@@ -332,6 +424,7 @@ export function describeLocationTraits(graph: WorldGraph, query?: string): Locat
         source: typeof edge.properties?.source === 'string' ? (edge.properties.source as string) : null,
         ticksRemaining: typeof remaining === 'number' ? remaining : null,
         sustain,
+        bloodshed,
       });
     }
   }

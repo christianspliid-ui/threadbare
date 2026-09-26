@@ -3103,12 +3103,21 @@ if (import.meta.env.DEV) {
     },
 
     // THR-790: the traits a place carries — minted by `phaseLocationTraits` from the
-    // world's own scalars, or planted by an aftermath — with the four sustain counters.
+    // world's own scalars, or planted by an aftermath — with the five sustain counters
+    // and the place's bloodshed (THR-1528).
     getLocationTraits: async (locationIdOrName?: string) => {
       const graph = _graphProvider?.();
       if (!graph) return [];
       const { describeLocationTraits } = await import('./engine/phaseLocationTraits');
-      return describeLocationTraits(graph, locationIdOrName);
+      return describeLocationTraits(graph, locationIdOrName, _gameStateProvider?.()?.tick ?? 0);
+    },
+
+    // THR-1528: the records battles leave on the ground they were fought over.
+    getBattleRecords: async (locationIdOrName?: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return [];
+      const { describeBattleRecords } = await import('./engine/battleRecord');
+      return describeBattleRecords(graph, locationIdOrName);
     },
 
     // THR-1521: the traits a thing carries — Storied / Cursed on artifacts.

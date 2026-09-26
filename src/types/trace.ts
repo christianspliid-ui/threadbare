@@ -87,6 +87,7 @@ export type TraceCategory =
   | 'trade_route_volume_change' | 'trade_route_dissolved'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
+  | 'battle_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
@@ -566,6 +567,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trade_route_volume_change', 'trade_route_dissolved',
   'settlement_tier_change', 'target_action_filter',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
+  'battle_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
@@ -1581,7 +1583,7 @@ export interface LocationTraitTrace extends TraceBase {
   minted: ReadonlyArray<{
     locationId: string;
     traitId: string;
-    input: 'prosperity' | 'unrest' | 'saturation';
+    input: 'prosperity' | 'unrest' | 'saturation' | 'bloodshed';
     value: number;
     sustainTicks: number;
   }>;
@@ -1590,6 +1592,27 @@ export interface LocationTraitTrace extends TraceBase {
   /** Mints held back because the definition node was missing from the graph (fail-soft). */
   skippedMissingDefinition: number;
 }
+/**
+ * Trace: a battle left (or failed to leave) its record on the ground (THR-1528).
+ *
+ * Emitted once per resolved battle by `resolveBattle` → `recordBattleFought`, including
+ * on failure, so "why does this battlefield carry no record?" is answerable from the
+ * buffer. The debug layer only: nothing player-facing reads it — the record is state.
+ */
+export interface BattleRecordedTrace extends TraceBase {
+  category: 'battle_recorded';
+  battleId: string;
+  /** Absent when the write failed. */
+  eventId?: string;
+  /** The outer-tier Location the record names; absent when no place resolved. */
+  locationId?: string;
+  resolutionType: 'attacker_victory' | 'defender_victory' | 'stalemate' | 'mutual_destruction';
+  severity: 'minor' | 'major' | 'total' | null;
+  /** Commanders given a `participated_in` edge. */
+  participants: number;
+  error?: string;
+}
+
 /**
  * Trace: an artifact trait stamped, climbed or removed (THR-1521).
  *
@@ -3933,6 +3956,7 @@ export type TraceEntry =
   | TradeRouteDissolvedTrace
   | SettlementTierChangeTrace
   | LocationTraitTrace
+  | BattleRecordedTrace
   | ArtifactTraitTrace
   | TargetActionFilterTrace
   | HexStateTickTrace

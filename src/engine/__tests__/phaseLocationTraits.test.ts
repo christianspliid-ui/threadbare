@@ -18,6 +18,8 @@ import { createSimulationRuntime } from '../simulationRuntime';
 import {
   describeLocationTraits,
   phaseLocationTraits,
+  readBloodshed,
+  LAST_BATTLE_TICK_PROPERTY,
   LOCATION_TRAIT_RULES,
   LOCATION_TRAIT_SOURCE,
   LOCATION_TRAIT_SUSTAIN_PROPERTY_PREFIX,
@@ -32,6 +34,9 @@ import {
   LOCATION_TRAIT_HAUNTED_ENTER,
   LOCATION_TRAIT_HAUNTED_DEATHS,
   LOCATION_TRAIT_EVENT_SIGNIFICANCE,
+  BLOOD_SOAKED_WINDOW_TICKS,
+  BLOOD_SOAKED_ENTER,
+  BLOOD_SOAKED_RELEASE,
 } from '../../data/location-trait-constants';
 import {
   CONDITION_DURATIONS,
@@ -119,7 +124,7 @@ describe('phaseLocationTraits — minting (THR-790)', () => {
     disableTracing();
   });
 
-  it('the four minted ids are location conditions by construction, and each ships a reader', () => {
+  it('every minted id is a location condition by construction, and each ships a reader', () => {
     for (const id of Object.values(LOCATION_TRAIT_IDS)) {
       expect(LOCATION_CONDITION_IDS, `${id} is not under the prefix`).toContain(id);
       expect(graph.getNode(id), `${id} is not seeded`).toBeDefined();
@@ -337,11 +342,111 @@ describe('describeLocationTraits — the readout the bridge and the CLI share', 
     expect(byName).toHaveLength(2);
     const minted = byName.find(r => r.traitId === LOCATION_TRAIT_IDS.welcoming)!;
     expect(minted).toMatchObject({ locationId: 'loc.rich', traitName: 'Welcoming', source: LOCATION_TRAIT_SOURCE, ticksRemaining: null, since: SUSTAIN });
-    expect(minted.sustain).toEqual({ welcoming: 0, lawless: 0, veilThin: 0, haunted: 0 });
+    expect(minted.sustain).toEqual({ welcoming: 0, lawless: 0, veilThin: 0, haunted: 0, bloodSoaked: 0 });
+    // Never saw a battle: no bloodshed to report (THR-1528).
+    expect(minted.bloodshed).toBeNull();
     const planted = byName.find(r => r.traitId === 'trait.condition.location.festival')!;
     expect(planted).toMatchObject({ traitName: 'Festival', ticksRemaining: 12, source: 'encounter.fair' });
 
     expect(describeLocationTraits(graph, 'loc.other')).toEqual([]);
     expect(describeLocationTraits(graph, 'nowhere')).toEqual([]);
+  });
+});
+
+// ─── THR-1528 — Blood-soaked ────────────────────────────────────────────────
+
+/** A battle record at a place, the way `recordBattleFought` writes one. */
+function addBattleRecord(graph: WorldGraph, locId: string, tick: number, id = `evt_battle_b${tick}_${locId}`): void {
+  graph.addNode({ id, type: 'event', name: 'Battle', properties: { eventType: 'battle_fought', tick, summary: 'A battle.' } });
+  graph.addEdge({ id: `occurred_at_${id}`, source: id, target: locId, type: 'occurred_at', properties: { tick } });
+  const prev = graph.getNode(locId)!.properties[LAST_BATTLE_TICK_PROPERTY];
+  graph.updateNode(locId, { properties: { [LAST_BATTLE_TICK_PROPERTY]: Math.max(tick, typeof prev === 'number' ? prev : -Infinity) } });
+}
+
+describe('phaseLocationTraits — Blood-soaked (THR-1528)', () => {
+  let graph: WorldGraph;
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+    seedEncounterTraitDefinitions(graph);
+    enableTracing();
+    clearTraces();
+  });
+
+  afterEach(() => {
+    clearTraces();
+    disableTracing();
+  });
+
+  it('the falsifier: twenty deaths and no battle record never mint it', () => {
+    // Saturation high enough to be haunted — the dead go there, not here.
+    addTown(graph, 'loc.plague', { deathCount: 20, magicalSaturation: 0 });
+    run(graph, BLOOD_SOAKED_WINDOW_TICKS);
+    expect(traitsOn(graph, 'loc.plague')).not.toContain(LOCATION_TRAIT_IDS.bloodSoaked);
+    // And no counter: the rule is skipped, not merely below threshold.
+    expect(graph.getNode('loc.plague')!.properties[`${LOCATION_TRAIT_SUSTAIN_PROPERTY_PREFIX}bloodSoaked`]).toBeUndefined();
+    expect(readBloodshed(graph, graph.getNode('loc.plague')!, BLOOD_SOAKED_WINDOW_TICKS)).toBeNull();
+  });
+
+  it('one battle mints it on the next traits pass, at the shared 0.4 significance', () => {
+    addTown(graph, 'loc.field', {});
+    addBattleRecord(graph, 'loc.field', 10);
+    const out = run(graph, 1, 10);
+    expect(traitsOn(graph, 'loc.field')).toEqual([LOCATION_TRAIT_IDS.bloodSoaked]);
+    const line = out.tickEvents!.find(e => e.message.includes('Blood-soaked'))!;
+    expect(line.message).toBe('Town loc.field has become Blood-soaked.');
+    // War news already tells the battle (THR-1564); the mint line stays quiet.
+    expect(line.significance).toBe(LOCATION_TRAIT_EVENT_SIGNIFICANCE);
+    const minted = locationTraitTraces()[0].minted[0];
+    expect(minted).toMatchObject({ input: 'bloodshed', value: BLOOD_SOAKED_ENTER, sustainTicks: 1 });
+  });
+
+  it('a record outside the window, or not yet happened, does not count', () => {
+    addTown(graph, 'loc.old', {});
+    addBattleRecord(graph, 'loc.old', 5);
+    const loc = graph.getNode('loc.old')!;
+    expect(readBloodshed(graph, loc, 5 + BLOOD_SOAKED_WINDOW_TICKS - 1)).toBe(1);
+    expect(readBloodshed(graph, loc, 5 + BLOOD_SOAKED_WINDOW_TICKS)).toBe(0);
+    expect(readBloodshed(graph, loc, 4)).toBe(0);
+  });
+
+  it('lifts once the battle is BLOOD_SOAKED_WINDOW_TICKS old — and not one tick sooner', () => {
+    addTown(graph, 'loc.field', {});
+    addBattleRecord(graph, 'loc.field', 10);
+    run(graph, 1, 10);
+    run(graph, 1, 10 + BLOOD_SOAKED_WINDOW_TICKS - 1);
+    expect(traitsOn(graph, 'loc.field')).toEqual([LOCATION_TRAIT_IDS.bloodSoaked]);
+    run(graph, 1, 10 + BLOOD_SOAKED_WINDOW_TICKS);
+    expect(traitsOn(graph, 'loc.field')).toEqual([]);
+    expect(locationTraitTraces().at(-1)!.released).toEqual([
+      { locationId: 'loc.field', traitId: LOCATION_TRAIT_IDS.bloodSoaked, value: 0 },
+    ]);
+    expect(BLOOD_SOAKED_RELEASE).toBeGreaterThan(0);
+  });
+
+  it('only battle and fight records count — an ordinary encounter at the place is not bloodshed', () => {
+    addTown(graph, 'loc.inn', { [LAST_BATTLE_TICK_PROPERTY]: 9 });
+    graph.addNode({ id: 'evt.enc', type: 'event', name: 'Brawl', properties: { eventType: 'encounter_outcome', tick: 9 } });
+    graph.addEdge({ id: 'oa.enc', source: 'evt.enc', target: 'loc.inn', type: 'occurred_at', properties: { tick: 9 } });
+    expect(readBloodshed(graph, graph.getNode('loc.inn')!, 10)).toBe(0);
+    run(graph, 3, 10);
+    expect(traitsOn(graph, 'loc.inn')).toEqual([]);
+  });
+
+  it('is independent of the other four: a battlefield can also be haunted', () => {
+    addTown(graph, 'loc.grave', { magicalSaturation: LOCATION_TRAIT_HAUNTED_ENTER, deathCount: LOCATION_TRAIT_HAUNTED_DEATHS });
+    addBattleRecord(graph, 'loc.grave', 1);
+    run(graph, SUSTAIN);
+    expect(traitsOn(graph, 'loc.grave')).toEqual([LOCATION_TRAIT_IDS.bloodSoaked, LOCATION_TRAIT_IDS.haunted].sort());
+  });
+
+  it('the four scalar rules carry none of the new optional fields — they behave as before', () => {
+    const scalarRules = LOCATION_TRAIT_RULES.filter(r => r.id !== 'bloodSoaked');
+    expect(scalarRules.map(r => r.id)).toEqual(['welcoming', 'lawless', 'haunted', 'veilThin']);
+    for (const r of scalarRules) {
+      expect(r.read, r.id).toBeUndefined();
+      expect(r.sustainTicks, r.id).toBeUndefined();
+      expect(r.chronicleSignificance, r.id).toBeUndefined();
+    }
   });
 });
