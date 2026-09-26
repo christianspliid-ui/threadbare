@@ -1553,6 +1553,8 @@ export interface TradeRouteDissolvedTrace extends TraceBase {
   peakVolume: number;
   totalTicksActive: number;
   causeOfDeath: 'decay';
+  /** THR-1615: the Route identity nodes removed with the lane (normally one; empty for an unminted lane). */
+  identityNodeIds?: string[];
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */

@@ -194,7 +194,12 @@ export interface UndertakingObjectShape {
    * `relates_to` otherwise. Declared instead of `edgeType`, never beside it.
    */
   readonly edgeTypes?: readonly EdgeType[];
-  readonly discriminator?: (n: GraphNode) => boolean;
+  /**
+   * The graph is optional so a pure node test stays callable without one; the
+   * resolver always passes it, so a kind whose objects are only alive while an
+   * edge stands can say so (THR-1615 — a Route whose lane dissolved).
+   */
+  readonly discriminator?: (n: GraphNode, graph?: WorldGraph) => boolean;
   /** The graph rides along so a discriminator can read the edge's ends (THR-1436). */
   readonly edgeDiscriminator?: (e: GraphEdge, graph: WorldGraph) => boolean;
 }
@@ -833,8 +838,18 @@ function itemTier(graph: WorldGraph, handle: UndertakingObjectHandle): Undertaki
   return typeof subcategory === 'string' ? ITEM_TIER_BY_CLASS[subcategory] ?? null : null;
 }
 
-function isRouteObject(n: GraphNode): boolean {
-  return n.type === 'location' && n.properties.locationSubtype === ROUTE_IDENTITY_SUBTYPE;
+/**
+ * A Route is its identity node **while its lane stands** (THR-1615). The subtype
+ * alone used to be the whole test, so an identity outliving its `trades_with` edge
+ * stayed claimable, usable and changeable: seed 42 granted a holding on a road 40
+ * ticks after its lane had dissolved. With the graph in hand the test also requires
+ * a live `routeEdgeId`; without it (a pure node probe) the subtype test stands.
+ */
+function isRouteObject(n: GraphNode, graph?: WorldGraph): boolean {
+  if (n.type !== 'location' || n.properties.locationSubtype !== ROUTE_IDENTITY_SUBTYPE) return false;
+  if (!graph) return true;
+  const edgeId = n.properties.routeEdgeId;
+  return typeof edgeId === 'string' && !!graph.getEdge(edgeId);
 }
 
 function routeTier(graph: WorldGraph, handle: UndertakingObjectHandle): UndertakingObjectTier | null {
@@ -2221,6 +2236,12 @@ const POWER: UndertakingObjectType = {
   // Sealing another's art is not property damage — nothing of theirs is rubble; a
   // thing was put *on* them, and the drive that answers it is the affliction's.
   harmOnDestroy: HARM_ON_AFFLICT,
+  eligibility: {
+    // THR-1617: only a caster may study. Refused at proposal, so a non-caster is never
+    // offered the cell; the completion-time check in `create` below stays as the
+    // backstop for a mortal who stops being a caster mid-project.
+    create: (graph, actorId) => (isCaster(graph, actorId) ? null : 'not_a_caster'),
+  },
   verbs: {
     /**
      * `create × Power` — a scholar learns a spell (THR-1429, THR-1397's tier-one work).
@@ -2732,7 +2753,7 @@ export function enumerateObjectHandles(graph: WorldGraph, type: UndertakingObjec
   try {
     if (type.shape.nodeType) {
       for (const n of graph.getNodesByType(type.shape.nodeType)) {
-        if (!type.shape.discriminator || type.shape.discriminator(n)) out.push({ kind: 'node', nodeId: n.id });
+        if (!type.shape.discriminator || type.shape.discriminator(n, graph)) out.push({ kind: 'node', nodeId: n.id });
       }
     }
     // THR-1436: several edge types stand for one object per ordered pair, the first
@@ -2763,7 +2784,7 @@ export function isObjectOfType(graph: WorldGraph, type: UndertakingObjectType, h
   if (handle.kind === 'node') {
     const n = graph.getNode(handle.nodeId);
     return !!n && !!type.shape.nodeType && n.type === type.shape.nodeType
-      && (!type.shape.discriminator || type.shape.discriminator(n));
+      && (!type.shape.discriminator || type.shape.discriminator(n, graph));
   }
   const e = graph.getEdge(handle.edgeId);
   return !!e && edgeTypesOf(type.shape).includes(e.type)

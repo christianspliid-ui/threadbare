@@ -203,6 +203,10 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
           type="text"
           value={mortalName}
           onChange={e => setMortalName(e.target.value)}
+          onKeyDown={e => {
+            // Enter submits the name, as it does in every other text field (THR-1604).
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleContinue();
+          }}
           placeholder="What were you called?"
           data-testid="mortal-name-input"
           className="block mx-auto mb-5 text-center text-lg outline-none"

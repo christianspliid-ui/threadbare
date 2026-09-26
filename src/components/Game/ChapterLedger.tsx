@@ -64,6 +64,20 @@ function isThreaded(gameState: GameState, actorId: string): boolean {
 }
 
 /**
+ * THR-1604 — the number of rows the global ledger's default view lists:
+ * threaded chapters, archived and in progress. The launcher's badge reads this,
+ * not `chapterArchive.length`, so it never promises chapters the ledger then
+ * says it does not have (the cold playtest saw "416" beside "No chapters yet").
+ */
+export function countThreadedChapters(gameState: GameState): number {
+  const archived = (gameState.chapterArchive ?? []).filter(r => r.threaded).length;
+  const active = gameState.unifiedActions.filter(
+    a => !a.resolved && isEncounterAction(a.templateId) && isThreaded(gameState, a.actorId),
+  ).length;
+  return archived + active;
+}
+
+/**
  * THR-1035 — the status label for a resolved chapter.
  *
  * The band is routed through the shared aftermath vocabulary rather than
