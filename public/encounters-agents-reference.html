@@ -704,7 +704,7 @@ const CHAPTERS = [
       {
         name: 'The Sigmoid Formula',
         desc: 'Every agent has a capability score (0.0\u20131.0) in each Reach, computed by walking their graph neighborhood and mapping through a sigmoid curve. This is the agent\'s "stat sheet."',
-        formula: 'capability = 1 / (1 + e^(-k \u00d7 (raw_score - midpoint)))\n\nclamped to [0.05, 0.95]',
+        formula: 'capability = 1 / (1 + e^(-k \u00d7 (raw_score - midpoint)))\nmidpoint 30, k 0.08 (THR-1581; non-dice readers keep 10 / 0.4 until THR-1580)\n\nroll odds = 0.40 + 1.25 \u00d7 (capability \u2212 difficulty) + modifiers, clamped to [0.05, 0.95]',
         tags: ['formula', 'cap: 0.05\u20130.95']
       },
       {
