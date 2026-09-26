@@ -200,6 +200,9 @@ export const EVENT_TYPES: readonly string[] = [
   'faction_quest', 'bounty',
   // THR-1479 — a mortal was (or was not) at the place by the time.
   'appointment_kept', 'appointment_missed',
+  // THR-1528 — a battle's record on the ground it was fought over; 'fight_fought' is
+  // slice 2's (THR-1574) and has no writer yet.
+  'battle_fought', 'fight_fought',
 ];
 
 // ─── The registry ───────────────────────────────────────────────────
@@ -378,7 +381,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   K({
     id: 'event', gameWord: 'Event', ulTerm: 'Graph.md#node', worldRef: 'encounter',
     shape: { kind: 'node', nodeType: 'event', discriminator: { key: 'eventType', values: EVENT_TYPES } },
-    owningSystem: 'Attention, Chronicle & Narrative', writers: ['encounterEventNode', 'grievance/undertakingOutcomeNode', 'phaseFactionActions', 'unifiedActionResolution'], status: 'live',
+    owningSystem: 'Attention, Chronicle & Narrative', writers: ['encounterEventNode', 'grievance/undertakingOutcomeNode', 'phaseFactionActions', 'unifiedActionResolution', 'battleRecord'], status: 'live',
     note: 'What happened: the chronicle\'s substrate. One kind key, `eventType`.',
   }),
 

@@ -633,7 +633,37 @@ export interface DebugBridge {
     since: number | null;
     source: string | null;
     ticksRemaining: number | null;
-    sustain: Record<'welcoming' | 'lawless' | 'veilThin' | 'haunted', number>;
+    sustain: Record<'welcoming' | 'lawless' | 'veilThin' | 'haunted' | 'bloodSoaked', number>;
+    /**
+     * THR-1528: the place's bloodshed this tick — the weighted count of battle records
+     * inside the Blood-soaked window — or null when the place never saw a battle.
+     */
+    bloodshed: number | null;
+  }>>;
+
+  /**
+   * THR-1528: every `battle_fought` / `fight_fought` record, newest first — or those at
+   * one place, matched by id, id prefix, or partial name (case-insensitive).
+   *
+   * A record is an `event` node a battle leaves on the ground it was fought over
+   * (`battleResolution.recordBattleFought`): a siege at its town, a field battle at the
+   * battle's own Location, both resolved to the outer tier. `participants` are the
+   * commanders given a `participated_in` edge, with the outcome read from the
+   * resolution (a mutual destruction is `lost` for both). Reads the same nodes the
+   * Blood-soaked rule and the place MEMORY read. Empty when the game is not loaded or
+   * nothing matches. Always `await` it.
+   */
+  getBattleRecords: (locationIdOrName?: string) => Promise<Array<{
+    eventId: string;
+    eventType: string;
+    tick: number | null;
+    locationId: string | null;
+    locationName: string | null;
+    battleType: string | null;
+    resolutionType: string | null;
+    severity: string | null;
+    summary: string;
+    participants: ReadonlyArray<{ actorId: string; name: string; role: string; outcome: string }>;
   }>>;
 
   /**

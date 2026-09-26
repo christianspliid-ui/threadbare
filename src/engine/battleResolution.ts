@@ -28,6 +28,7 @@ import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
 import { applyAftermath } from './battleAftermath';
+import { recordBattleFought } from './battleRecord';
 import { reportWar, captureArmySide, captureBattleForNews } from './armyNotifications';
 import type { SimulationRuntime } from './simulationRuntime';
 import { selectSpotlight, hasThreadToBattle } from './battleSpotlights';
@@ -513,11 +514,16 @@ export function resolveBattle(
   const newsCapture = captureBattleForNews(state, battleNodeId);
 
   // Apply aftermath consequences (destruction, commander fate, etc.)
-  applyAftermath(state, bs, resolutionType, runtime, battleNodeId);
+  const aftermath = applyAftermath(state, bs, resolutionType, runtime, battleNodeId);
 
   if (newsCapture) {
     reportWar(state, { kind: 'battle_ended', battleId: battleNodeId, capture: newsCapture, resolution: resolutionType });
   }
+
+  // The battle's record on its ground (THR-1528) — BEFORE the removal below, which takes
+  // the battle's `located_at` (the only answer to "where was this field battle fought")
+  // with it. Reads the pre-aftermath capture for the commanders; never throws.
+  recordBattleFought(state, battleNodeId, bs, resolutionType, aftermath, newsCapture, runtime);
 
   // Remove battle node (cleans up participates_in and located_at edges)
   graph.removeNode(battleNodeId);

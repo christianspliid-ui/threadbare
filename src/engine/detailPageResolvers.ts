@@ -32,6 +32,9 @@ import {
   getAgentEncounterHistory,
   getLocationEncounterHistory,
 } from './encounterEventNode';
+import { latestBloodshedRecord } from './battleRecord';
+import { BLOOD_SOAKED_WINDOW_TICKS } from '../data/location-trait-constants';
+import { TICKS_PER_DAY } from '../data/attention-constants';
 import {
   ACTOR_FALLBACK_TEMPLATES,
   EVENT_FALLBACK_TEMPLATES,
@@ -701,9 +704,41 @@ const conditionsHereResolver: SectionResolver = (ctx) => {
   return section;
 };
 
+/**
+ * When a remembered battle happened, as words (Law 13: no numbers on the page). The
+ * record window is ten days, so these four cover every record the MEMORY shows.
+ */
+export function bloodshedWhenWords(ageTicks: number): string {
+  const days = Math.floor(Math.max(0, ageTicks) / TICKS_PER_DAY);
+  if (days === 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 7) return 'a few days ago';
+  return 'more than a week ago';
+}
+
 const placeMemoryResolver: SectionResolver = (ctx) => {
   const place = ctx.graph.getNode(ctx.nodeId);
   if (!place) return null;
+
+  // THR-1528: a recent battle (or, from slice 2, fight) is what the place remembers
+  // first. The encounter helper filters to `encounter_outcome`, so the record is found
+  // by walking the place's own `occurred_at` edges.
+  const battle = latestBloodshedRecord(ctx.graph, place.id, ctx.tick, BLOOD_SOAKED_WINDOW_TICKS);
+  const battleSummary = battle?.properties?.summary;
+  if (battle && typeof battleSummary === 'string' && battleSummary.length > 0) {
+    const at = typeof battle.properties.tick === 'number' ? (battle.properties.tick as number) : ctx.tick;
+    const section: ProseSection = {
+      kind: 'prose',
+      typeId: 'memory',
+      label: 'MEMORY',
+      gold: false,
+      tier: 'notable',
+      source: 'placeMemoryResolver.battle',
+      prose: `${battleSummary} That was ${bloodshedWhenWords(ctx.tick - at)}.`,
+    };
+    return section;
+  }
+
   const events = getLocationEncounterHistory(ctx.graph, place.id, 1);
   if (events.length === 0) {
     const tpl = pickFrom(PLACE_FALLBACK_TEMPLATES.memory_none, seedFor(ctx, 'memory'));

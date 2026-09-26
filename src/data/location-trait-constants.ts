@@ -20,12 +20,15 @@
  * | `magicalSaturation` | `phaseMagicalSaturation.ts` | 0–1; `MAGICAL_SATURATION_VISIBILITY_THRESHOLD` is 0.3 |
  * | `deathCount` | `agentLifecycle.ts` | count of deaths recorded at the place |
  *
- * ## Why `#blood-soaked` is not here
+ * ## Why `#blood-soaked` reads records, not deaths (THR-1528)
  *
- * There is no per-location battle record — battles overwrite prosperity and subtype
- * and mint no Event node — and `deathCount` counts every death. Minting *blood-soaked*
- * from the death count would call a plague a massacre. The dead enter `#haunted` as a
- * co-condition instead, where *many died here and the veil is thin* is the fiction.
+ * `deathCount` counts every death, so minting *blood-soaked* from it would call a
+ * plague a massacre. Since THR-1528 a battle leaves a `battle_fought` Event on the
+ * ground it was fought over (`battleResolution.recordBattleFought`) and stamps
+ * `lastBattleTick` on the Location; the fifth rule reads those records inside
+ * `BLOOD_SOAKED_WINDOW_TICKS` and never the death count. The dead still enter
+ * `#haunted` as its co-condition, where *many died here and the veil is thin* is the
+ * fiction.
  */
 import { LOCATION_CONDITION_ID_PREFIX } from './condition-trait-content';
 
@@ -37,12 +40,14 @@ export const LOCATION_TRAIT_IDS = {
   lawless: `${LOCATION_CONDITION_ID_PREFIX}lawless`,
   veilThin: `${LOCATION_CONDITION_ID_PREFIX}veil_thin`,
   haunted: `${LOCATION_CONDITION_ID_PREFIX}haunted`,
+  // THR-1528 — minted from battle records, not from any scalar.
+  bloodSoaked: `${LOCATION_CONDITION_ID_PREFIX}blood_soaked`,
 } as const;
 
 export type LocationTraitRuleId = keyof typeof LOCATION_TRAIT_IDS;
 
 /** Which of the world's scalars a rule reads. */
-export type LocationTraitInput = 'prosperity' | 'unrest' | 'saturation';
+export type LocationTraitInput = 'prosperity' | 'unrest' | 'saturation' | 'bloodshed';
 
 // ─── Sustain ────────────────────────────────────────────────────────────────
 
@@ -103,6 +108,36 @@ export const LOCATION_TRAIT_HAUNTED_RELEASE = 0.3;
 
 /** `deathCount` co-condition for *Haunted* — a handful, not one unlucky traveller. */
 export const LOCATION_TRAIT_HAUNTED_DEATHS = 5;
+
+// ─── Blood-soaked (THR-1528) ────────────────────────────────────────────────
+
+/**
+ * How long bloodshed counts: ten game days. The ground stays soaked that long after
+ * the last battle, then the word lifts — the `battle_fought` record itself stays.
+ */
+export const BLOOD_SOAKED_WINDOW_TICKS = 120;
+
+/** A battle's share of bloodshed. */
+export const BLOOD_SOAKED_BATTLE_WEIGHT = 1.0;
+
+/**
+ * A fight's share: three fights ≈ one battle. No fight writes a record until slice 2
+ * (THR-1574); the weight is named here so that slice only adds the writer.
+ */
+export const BLOOD_SOAKED_FIGHT_WEIGHT = 0.34;
+
+/** Bloodshed at which the trait mints — one battle, or three fights. */
+export const BLOOD_SOAKED_ENTER = 1.0;
+
+/** Bloodshed below which it lifts (hysteresis: one fight left in the window lifts it). */
+export const BLOOD_SOAKED_RELEASE = 0.5;
+
+/**
+ * The rule's own sustain. The shared 36-tick sustain exists so a word does not
+ * flicker; bloodshed is already a ten-day window, so the ground reads blood-soaked
+ * from the day of the battle, not three days after it.
+ */
+export const BLOOD_SOAKED_SUSTAIN_TICKS = 1;
 
 // ─── The pool term ──────────────────────────────────────────────────────────
 
@@ -168,6 +203,13 @@ export const LOCATION_TRAIT_ENCOUNTER_BONUS: Readonly<
     '#anomaly': 0.10,
     '#fate': 0.08,
     '#delve': 0.06,
+  },
+  // Blood-soaked ground draws the stories of violence, loss and fear (THR-1528).
+  [LOCATION_TRAIT_IDS.bloodSoaked]: {
+    '#combat': 0.10,
+    '#loss': 0.08,
+    '#fear': 0.06,
+    '#iron': 0.05,
   },
 };
 

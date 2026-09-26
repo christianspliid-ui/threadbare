@@ -657,6 +657,25 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+  // THR-1528 — minted by `phaseLocationTraits` from the `battle_fought` records a
+  // battle leaves on its ground, never from `deathCount` (a plague is not a massacre).
+  {
+    id: 'trait.condition.location.blood_soaked',
+    type: 'trait',
+    name: 'Blood-soaked',
+    properties: {
+      subcategory: 'condition',
+      description: 'A battle was fought here lately, or blood has been spilled here again and again. Travellers go around, and the talk is of what happened.',
+      importance: 0.9,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the movement tax and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#combat', '#negative'],
+      flavorText: 'The crows have not left yet. Neither has the smell.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
   // THR-1548 — Scarred: the one fight wound that never heals (plan doc
   // `2026-09-23-defeat-and-victory.md` § Content). Written by the fight ending's
   // mauled face through `applyConditionToActor`, with the victor as the edge's
@@ -764,6 +783,10 @@ export const LOCATION_CONDITION_MOVEMENT_TAX: Record<string, number> = {
   // is the work done in a place, so their reader is the step table below.
   'trait.condition.location.welcoming': LOCATION_WELCOMING_MULTIPLIER,
   'trait.condition.location.haunted': LOCATION_AVOIDED_MULTIPLIER,
+  // THR-1528 — people go around a battlefield. Deliberately no step row: an Iron
+  // bonus would make fights easier exactly where fights happened, and a lair would
+  // feed its own trait. The road and the pool are the honest readers.
+  'trait.condition.location.blood_soaked': LOCATION_AVOIDED_MULTIPLIER,
   // `under_watch` and `tended_shrine` deliberately carry no tax: what a watcher or
   // a kept shrine changes is the work you do in a place, not how long it takes to
   // walk in. Their reader is `LOCATION_CONDITION_STEP_MODIFIER` below (THR-1483).
