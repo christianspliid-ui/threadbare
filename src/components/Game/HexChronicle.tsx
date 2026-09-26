@@ -10,6 +10,7 @@ import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import { LocationCard, SoulCard, FactionEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
+import { buildExplorationHooks } from './chronicle/explorationHooks';
 import { HeldByLine } from '../shared/HeldByLine';
 import { getLocationHolder } from '../../engine/realmHolder';
 import { isLocationNode } from '../../engine/sublocationShape';
@@ -461,12 +462,10 @@ export const HexChronicle = memo(function HexChronicle({
     return regionEtymologyResolver(regionData.regionId, graph, seed);
   }, [regionData, graph, seed]);
 
-  const explorationHooks = useMemo(() => {
-    if (!regionData?.historicalCulture?.ruinDescriptors) return [];
-    return regionData.historicalCulture.ruinDescriptors.slice(0, 3).map(desc =>
-      `The ${desc} have not been fully explored. What remains within may reward — or punish — the curious.`
-    );
-  }, [regionData]);
+  const explorationHooks = useMemo(
+    () => buildExplorationHooks(regionData?.historicalCulture?.ruinDescriptors),
+    [regionData],
+  );
 
   // ── HERO subtitle composition ──────────────────────────────────
 
