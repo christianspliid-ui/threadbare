@@ -15,6 +15,7 @@ import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
+import { buildCastReceipt } from './castReceipt';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
@@ -343,17 +344,13 @@ export function useAgentInteraction({
           });
 
           // Dispatch-time phrasing — initiation (present tense; the outcome lands later
-          // as a Divine Receipt, THR-727). Was consequenceMessage.success, which claimed a
-          // future success before the action had begun resolving.
-          const consequenceBody = template.narrativeTemplates?.initiation
-            ?? template.consequenceMessage?.success
-            ?? 'The action ripples outward.';
-
-          const sphereName = capturedSphere
-            ? capturedSphere.charAt(0).toUpperCase() + capturedSphere.slice(1)
-            : 'Action';
-          const toastTitle = `${sphereName} — Action Invoked`;
-          const toastMessage = `${toastTitle}. ${consequenceBody}`;
+          // as a Divine Receipt, THR-727). THR-1603: titled by the card's name, with the
+          // player as subject and the target named; the sphere stays a tint, not a title.
+          const targetNode = gameState.graph.getNode(capturedAgentId);
+          const receiptTargetName = capturedAgentId === gameState.ascendantId
+            ? null
+            : targetNode?.name;
+          const toastMessage = buildCastReceipt(template, receiptTargetName).message;
 
           // Push toast (optimistic, dispatch-time feedback)
           if (onPushToast) {
