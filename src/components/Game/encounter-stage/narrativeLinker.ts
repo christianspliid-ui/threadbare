@@ -12,7 +12,8 @@
 
 import type { WorldGraph } from '../../../engine/graph';
 import { tooltipResolves } from '../../../engine/tooltipResolver';
-import { getDomainWord } from '../../../data/domain-words';
+import { getCapabilityWord } from '../../../data/domain-words';
+import { computeCapability } from '../../../engine/domainCapability';
 import { getPortraitUrl } from '../../../data/portrait-assets';
 import type { EncounterSupportActorSpec, EncounterSupportBinding } from '../../../types/encounter';
 import type { ReachDomain } from '../../../types/traits';
@@ -242,7 +243,9 @@ export function buildEntityReference(
     detailParts.push(role.charAt(0).toUpperCase() + role.slice(1));
   }
 
-  // Top domain capability (use the highest-scoring domain)
+  // Top domain capability (use the highest-scoring domain). The word reads the
+  // dice curve — the same read as the sheet and the skill line (THR-1583); the
+  // raw seeded score only picks which reach leads.
   if (node?.properties?.domainCapabilities) {
     const caps = node.properties.domainCapabilities as Record<string, number>;
     let topDomain: string | undefined;
@@ -254,7 +257,9 @@ export function buildEntityReference(
       }
     }
     if (topDomain && topValue > 0) {
-      const word = getDomainWord(topDomain as ReachDomain, topValue);
+      let capability = 0;
+      try { capability = computeCapability(graph, binding.nodeId, topDomain as ReachDomain); } catch { capability = 0; }
+      const word = getCapabilityWord(topDomain as ReachDomain, capability);
       detailParts.push(`${word} at ${topDomain}`);
     }
   }

@@ -20,7 +20,9 @@ import { getArchetype, type NarrativeArchetype } from '../data/archetype-content
 import type { CooperationStrategy, InteractionRecord } from '../types/disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { KnowledgeLevel } from '../types/familiarity';
-import { getDomainWord, getDomainTier, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
+import { getCapabilityWord, getCapabilityTier, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
+import { computeCapability } from './domainCapability';
+import { REACH_DOMAINS } from '../types/traits';
 import { generateQuotes, generateBackstory, humanizeDescriptor } from './profileGenerator';
 import type { AmbitionCategory } from '../types/ambition';
 import { generateTieredBackstory } from './backstoryGenerator';
@@ -307,6 +309,13 @@ export interface AgentDetail {
   archetype: NarrativeArchetype | null;
   profile: AxiologicalProfile;
   domainCapabilities: Record<ReachDomain, number>;
+  /**
+   * Capability per reach on the dice curve (`computeCapability`, 0–1, traits and
+   * items included) — THR-1583. Every reach *word* the sheet and tooltips show reads
+   * this, never the raw `domainCapabilities` above, so they agree with the encounter
+   * skill line.
+   */
+  reachCapabilities: Record<ReachDomain, number>;
   topValues: TopValue[];
   topBonds: BondSummary[];
   cooperationStrategy: CooperationStrategy | null;
@@ -691,6 +700,14 @@ export function getAgentDetail(
     : 0;
   const profile = (props.axiologicalProfile as AxiologicalProfile) || {} as AxiologicalProfile;
   const domainCapabilities = (props.domainCapabilities as Record<ReachDomain, number>) || {} as Record<ReachDomain, number>;
+  // THR-1583: the words read the dice curve, the same read the skill line makes.
+  // Fail-soft per reach — a throwing walk reads 0 rather than losing the sheet.
+  const reachCapabilities = {} as Record<ReachDomain, number>;
+  for (const reach of REACH_DOMAINS) {
+    let capability = 0;
+    try { capability = computeCapability(graph, agentId, reach); } catch { capability = 0; }
+    reachCapabilities[reach] = Number.isFinite(capability) ? capability : 0;
+  }
   // Resolve location via located_at edge (authoritative), fallback to legacy property
   const locationId = getAgentLocationId(graph, agentId) ?? ((props.locationId as string) || '');
 
@@ -910,6 +927,7 @@ export function getAgentDetail(
     archetype,
     profile,
     domainCapabilities,
+    reachCapabilities,
     topValues,
     topBonds: bonds,
     cooperationStrategy,
@@ -1620,7 +1638,7 @@ export function getAgentInfoCard(
 
     // Top 1 domain (vague) for recognised, top 3 for known+
     const domainCount = knowledgeLevel === 'recognised' ? 1 : 3;
-    const sortedDomains = Object.entries(detail.domainCapabilities)
+    const sortedDomains = Object.entries(detail.reachCapabilities)
       .map(([domain, value]) => ({ domain: domain as ReachDomain, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, domainCount);
@@ -1628,8 +1646,8 @@ export function getAgentInfoCard(
     if (sortedDomains.length > 0) {
       card.domains = sortedDomains.map(({ domain, value }) => ({
         domain,
-        word: getDomainWord(domain, value),
-        tier: getDomainTier(value),
+        word: getCapabilityWord(domain, value),
+        tier: getCapabilityTier(value),
       }));
     }
   }
@@ -1679,11 +1697,11 @@ export function getAgentInfoCard(
   // Intimate+: full 9 domains, quotes, cooperation strategy, reputation, all traits, backstory paragraph 1
   if (knowledgeLevel === 'intimate' || knowledgeLevel === 'transparent') {
     // All 8 domains
-    card.domains = Object.entries(detail.domainCapabilities)
+    card.domains = Object.entries(detail.reachCapabilities)
       .map(([domain, value]) => ({
         domain: domain as ReachDomain,
-        word: getDomainWord(domain as ReachDomain, value),
-        tier: getDomainTier(value),
+        word: getCapabilityWord(domain as ReachDomain, value),
+        tier: getCapabilityTier(value),
       }));
 
     // Generate all quotes

@@ -39,7 +39,7 @@
 import type { NamedModifierContribution } from '../resolutionModifiers';
 import type { ReachDomain } from '../../types/traits';
 import type { StepOutcome } from '../../types/unifiedAction';
-import { DOMAIN_WORD_SCALES, getDomainTier, getDomainTierWordForm } from '../../data/domain-words';
+import { getCapabilityWord, getDomainTierWordForm } from '../../data/domain-words';
 import {
   DERIVED_FACTOR_ACTOR_FALLBACK,
   DERIVED_FACTOR_SENTENCES,
@@ -49,9 +49,6 @@ import {
   WHISPER_NO_NEXT_STEP_SENTENCE,
   WHISPER_UNSETTLED_NEXT_STEP_SENTENCE,
 } from '../../data/nudge-stage-content';
-
-/** Domain capability is 0–1; the reach word scales are indexed off 0–10. */
-const CAPABILITY_TO_DOMAIN_SCALE = 10;
 
 /**
  * Below this magnitude a contribution is not worth a line. Matches
@@ -148,9 +145,8 @@ export function deriveSkillLine(args: {
 }): DerivedFactorLine {
   const { actorName, reach, capability } = args;
   const safeCapability = Number.isFinite(capability) ? capability : 0;
-  const tier = getDomainTier(safeCapability * CAPABILITY_TO_DOMAIN_SCALE);
-  const scale = DOMAIN_WORD_SCALES[reach];
-  const word = scale?.[tier] ?? scale?.[0] ?? '';
+  // The one capability→word read the sheet also uses (THR-1583).
+  const word = getCapabilityWord(reach, safeCapability);
   // A noun tier word ("oracle", "magnate") needs the article the adjective
   // shape must not have — THR-1494. The table answers both questions at once:
   // 'adjective' selects the bare template, anything else IS the article.
