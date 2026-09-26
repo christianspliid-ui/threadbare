@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-26 11:55 local (09:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-26 12:55 local (10:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,23 +34,20 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 14 jobs are ready.** Nothing is in progress right now. [The Builder's Legacy fix](https://linear.app/threadbare/issue/THR-1618) merged at 11:30 local and is live.
+**Healthy: 13 jobs are ready.** Nothing is in progress right now. [A new trade route never ends where it starts](https://linear.app/threadbare/issue/THR-1619) merged via [#2069](https://github.com/christianspliid-ui/threadbare/pull/2069) and is live.
 
-- **The dice change went back to design, and you don't need to decide anything** ([THR-1581](https://linear.app/threadbare/issue/THR-1581), High).
-  - What happened: after your "1 in 6 is fine" answer, the builder resumed. It then hit the plan's last safety check: mid-skill mortals never take on harder challenges.
-  - Why: the dice work, but the world has almost nothing written for skilled mortals (234 beginner encounters, 41 mid-level, one each above).
-  - What's next: the builder recommends shipping the dice now and writing the missing content as its own job. That call belongs to the design lane (next run about 14:15 local), and you can veto it in chat.
-  - Nothing is lost: the work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit).
+- **The dice change is back with the design lane, and you don't need to decide anything** ([THR-1581](https://linear.app/threadbare/issue/THR-1581), High). The dice work, but the world has almost nothing written for skilled mortals. The builder recommends shipping the dice now and writing that content as its own job. The design lane decides at its next run (about 14:15 local), and you can veto in chat. The work is saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1581-dice-refit).
 - **Fight system: nearly ready, not yet a review ask.** Everything is live except [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554), which are queued.
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620) and [the item generator build](https://linear.app/threadbare/issue/THR-1570) have no priority set.
 
 ## Health
 
-- **Lane silence:** the worst recent gap is now 21 hours, Sunday 20 evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer asleep for exactly that window, so it is explained and needs nothing from you.
-- **Worktree reaper:** it last ran at 11:40 local. 5 worktrees are waiting to be sorted, which is routine.
+- **The long simulation tests went red with the trade-route fix** ([#2069](https://github.com/christianspliid-ui/threadbare/pull/2069), [failing run](https://github.com/christianspliid-ui/threadbare/actions/runs/36236191804)). Two checks in `yieldBandCells.test.ts` fail: a mortal who holds a town is no longer offered its harvest, and a mortal who holds a lane is no longer offered its widening. The builders own the follow-up fix. The live game is unaffected, and the required checks are green.
+- **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer asleep for exactly that window, so it is explained and needs nothing from you.
+- **Worktree reaper:** it last ran at 12:40 local. 5 worktrees are waiting to be sorted, which is routine.
 - **Everything else is green:**
   - The live site is up to date.
-  - Game speed is 63 ms per tick, 16% under the weekly median.
+  - Game speed is 64 ms per tick, 14% under the weekly median.
   - All ten scheduled lanes are on time.
   - No pull requests are waiting.
   - `main` is current.
