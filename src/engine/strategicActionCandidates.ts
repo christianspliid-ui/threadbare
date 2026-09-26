@@ -371,10 +371,19 @@ export function generateStrategicCandidates(
         // never silently, so a cell nobody can start is a measurement rather than a
         // hole (`ineligible:cohesion_holds:...` reads very differently from a cell that
         // found no target).
-        if (objectHandle && template.cellVariant && template.objectTypeId) {
+        //
+        // THR-1617: a `create` cell has no object yet — its target is the *site*
+        // (`CREATE_SITE_RULE`), so no object handle rides beside it and, before this,
+        // no create hook was ever consulted. The site stands in as the handle, the same
+        // node the resolver's `ctx.handle` names at completion, so a precondition about
+        // the maker (a non-caster cannot learn a spell) refuses here rather than after
+        // ~40 ticks of work.
+        const eligibilityHandle: UndertakingObjectHandle | undefined = objectHandle
+          ?? (template.cellVariant === 'create' ? { kind: 'node', nodeId: target.id } : undefined);
+        if (eligibilityHandle && template.cellVariant && template.objectTypeId) {
           const type = getUndertakingObjectType(template.objectTypeId);
           const refusal = type
-            ? eligibilityRefusal(graph, type, template.cellVariant, actorId, objectHandle, tick)
+            ? eligibilityRefusal(graph, type, template.cellVariant, actorId, eligibilityHandle, tick)
             : null;
           if (refusal) {
             rejections.push({ templateId, reason: `ineligible:${refusal}:${target.id}` });
