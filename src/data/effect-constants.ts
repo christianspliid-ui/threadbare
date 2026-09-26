@@ -381,3 +381,28 @@ export const WARDED_OVERLAY_MOVEMENT_MULTIPLIER = 1.75;
  * own hex, which is what keeps the world from going black.
  */
 export const SHROUDED_OVERLAY_AWARENESS_PENALTY = 2;
+
+// ─── Reaction windows (THR-1568) ───────────────────────────────────
+
+/**
+ * How long a reaction's *untimed* modifier lasts once the reaction fires, as a
+ * fraction of the reaction's cooldown.
+ *
+ * A `reactive` whose nested effect is a modifier (`duration`, `passive`,
+ * `permanent`, `decay`) opens a **window** on the attachment's runtime state
+ * when it fires; the resolver reads the nested value only while it is open.
+ * `duration` and `decay` carry their own length. `passive` and `permanent` do
+ * not, and "a burst that never ends" would turn one `attacked` into a permanent
+ * bonus — so the rule is: an untimed nested modifier lasts for the reaction's
+ * own `duration` field when authored, else for its cooldown × this fraction.
+ * At 1.0 the burst lasts exactly until the reaction can fire again, so a
+ * bearer struck often holds it continuously and one struck once loses it.
+ */
+export const REACTIVE_UNTIMED_WINDOW_COOLDOWN_FRACTION = 1.0;
+
+/**
+ * Floor on any reaction window, in ticks. A window of 0 would open and close
+ * in the same tick and read as "the reaction fired and did nothing" — the
+ * exact defect windows exist to fix (NFP #4, fail-soft toward the promise).
+ */
+export const REACTIVE_WINDOW_MIN_TICKS = 1;

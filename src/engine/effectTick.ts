@@ -59,6 +59,7 @@ import {
 } from '../data/effect-constants';
 import { getAgentLocation } from './graphQueries';
 import { advanceFightClock } from './fights/fightClock';
+import { tickReactiveWindow } from './effects/reactiveWindow';
 
 // ═══════════════════════════════════════════════════════════════════
 // Effect Tick Result
@@ -496,6 +497,9 @@ export function tickEffects(
 
       let state = updatedStates.get(node.id) ?? {};
       let shouldDestroy = false;
+      // THR-1568: runtime state is per attachment, so one countdown per tick
+      // even if the attachment carries more than one reaction.
+      let reactiveWindowTicked = false;
 
       for (const effect of effects) {
         switch (effect.type) {
@@ -555,6 +559,26 @@ export function tickEffects(
             if (agentNode) {
               const r = tickResourceManipulate(effect, agentNode, node.id, agentId, tick, graph);
               if (r.trace) traces.push(r.trace);
+            }
+            break;
+          }
+          case 'reactive': {
+            // THR-1568: count down the window a fired reaction opened. Closing
+            // it never destroys the attachment — a nested duration's
+            // destroyOnExpiry describes a standalone buff, not the item.
+            const r = reactiveWindowTicked ? null : tickReactiveWindow(state);
+            if (r) {
+              reactiveWindowTicked = true;
+              state = r.state;
+              traces.push({
+                type: 'effect_tick', tick, agentId, attachmentId: node.id,
+                action: r.closed ? 'expire' : 'decrement',
+                details: {
+                  effectType: 'reactive',
+                  nestedEffect: effect.effect.type,
+                  reactiveWindowTicksRemaining: r.state.reactiveWindowTicksRemaining ?? 0,
+                },
+              });
             }
             break;
           }
