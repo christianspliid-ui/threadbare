@@ -13,6 +13,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { raiseEffectEvent } from '../effectEventDispatch';
 import { processEffectEvent, type EffectEvent } from '../effectEvents';
 import { reactiveWindowTicks, isReactiveWindowEffect } from '../reactiveWindow';
+import { applyConditionToActor } from '../conditionApplier';
+import { raiseConditionLanded } from '../conditionProxyEvents';
 import { resolveEffectModifiers, buildPredicateContext } from '../../effectResolver';
 import { tickEffects } from '../../effectTick';
 import { WorldGraph } from '../../graph';
@@ -238,18 +240,18 @@ describe('reaction window — executor reactions are unchanged', () => {
 
 // ─── Census: every shipped reaction nesting a modifier ─────────────────
 
-/** The event that raises each reactive trigger — `null` where no producer exists yet. */
-const EVENT_FOR_TRIGGER: Record<ReactiveTrigger, EffectEvent | null> = {
+/** The event that raises each reactive trigger. */
+const EVENT_FOR_TRIGGER: Record<ReactiveTrigger, EffectEvent> = {
   attacked: { type: 'attacked' },
   damaged: { type: 'damaged', amount: 1 },
   healed: { type: 'healed', amount: 1 },
   entered_hex: { type: 'entered_hex', hex: { col: 0, row: 0 } },
   encounter_started: { type: 'combat_started' },
-  // No EffectEvent maps to these triggers (getReactiveTrigger). A reaction on
-  // them opens its window correctly once raised; nothing raises it yet.
-  blessed: null,
-  cursed: null,
-} as Record<ReactiveTrigger, EffectEvent | null>;
+  // THR-1624: raised by the condition proxy when a `#blessing` / `#curse` family
+  // condition lands (the landing-path tests below exercise the producer).
+  blessed: { type: 'blessed', amount: 1 },
+  cursed: { type: 'cursed', amount: 1 },
+} as Record<ReactiveTrigger, EffectEvent>;
 
 interface CensusRow { templateId: string; name: string; reactive: ReactiveEffect }
 
@@ -285,18 +287,81 @@ describe('reaction window — census of shipped content', () => {
       const graph = new WorldGraph();
       addBearer(graph, 'a1', 'item', [row.reactive]);
 
-      const fired = event
-        ? processEffectEvent(graph, 'a1', event, new Map(), 100, () => 0.5)
-        : null;
-      if (!fired) {
-        // Trigger with no producer: documented, not silently passed.
-        expect(['blessed', 'cursed']).toContain(row.reactive.trigger);
-        return;
-      }
+      expect(event, `no event raises ${row.reactive.trigger}`).toBeDefined();
+      const fired = processEffectEvent(graph, 'a1', event, new Map(), 100, () => 0.5);
       expect(fired.reactivesFired).toHaveLength(1);
       expect(fired.reactivesFired[0].mode).toBe('window');
       const value = modifier(graph, 'a1', nested.reach, fired.updatedStates);
       expect(value).not.toBe(0);
     },
   );
+});
+
+// ─── THR-1624: `blessed` / `cursed` have a producer ──────────────────────
+
+describe('reaction window — blessed / cursed fire when a family condition lands', () => {
+  function templateNode(id: string): GraphNode {
+    const node = [...REWARD_POSSESSIONS, ...STARTER_POSSESSIONS].find((n) => n.id === id);
+    if (!node) throw new Error(`missing template ${id}`);
+    return node;
+  }
+  function reactiveOf(node: GraphNode): ReactiveEffect {
+    const r = ((node.properties.effects ?? []) as AttachmentEffect[])
+      .find((e): e is ReactiveEffect => e.type === 'reactive');
+    if (!r) throw new Error(`${node.id} has no reactive`);
+    return r;
+  }
+  function familyCondition(tag: '#blessing' | '#curse'): GraphNode {
+    const node = [...REWARD_CONDITIONS, ...STARTER_CONDITIONS]
+      .find((n) => ((n.properties.tags ?? []) as string[]).includes(tag));
+    if (!node) throw new Error(`no shipped condition carries ${tag}`);
+    return node;
+  }
+
+  it.each([
+    ['reward_relics_talismans_ember_sigil', '#blessing', 'star', 0.03],
+    ['starter_whispering_eye', '#curse', 'heart', -0.03],
+  ] as const)('%s: a %s condition landing opens the burst the resolver reads', (itemId, tag, reach, burst) => {
+    const item = templateNode(itemId);
+    const reactive = reactiveOf(item);
+    expect(reactive.trigger).toBe(tag === '#blessing' ? 'blessed' : 'cursed');
+    const cond = familyCondition(tag);
+
+    // Two worlds, identical but for the bearer's reaction: the condition's own
+    // modifiers cancel out, so the difference is the burst alone.
+    const land = (withReaction: boolean) => {
+      const graph = new WorldGraph();
+      addBearer(graph, 'a1', itemId, withReaction ? [reactive] : []);
+      graph.addNode({ ...cond, properties: { ...cond.properties } });
+      const state = makeState(graph, 20);
+      expect(modifier(graph, 'a1', reach, state.effectStates!)).toBe(0);
+      const applied = applyConditionToActor(state, 'a1', cond.id, { tick: 20, durationTicks: 10 });
+      expect(applied.applied).toBe(true);
+      return modifier(graph, 'a1', reach, state.effectStates!);
+    };
+    const control = land(false);
+    const value = land(true);
+    expect(value - control).toBeCloseTo(burst);
+    const raised = getTraces().filter((t) => (t as { event?: string }).event === (tag === '#blessing' ? 'blessed' : 'cursed'));
+    expect(raised.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('a plain condition (no family tag) raises neither', () => {
+    const graph = new WorldGraph();
+    addBearer(graph, 'a1', 'sigil', [reactiveOf(templateNode('reward_relics_talismans_ember_sigil'))]);
+    graph.addNode({ id: 'cond.plain', type: 'trait', name: 'Plain', properties: { tags: ['#condition', '#positive'] } });
+    const state = makeState(graph, 20);
+    applyConditionToActor(state, 'a1', 'cond.plain', { tick: 20, durationTicks: 10 });
+    expect(modifier(graph, 'a1', 'star', state.effectStates!)).toBe(0);
+  });
+
+  it('a threading caller keeps its states when the landing raises nothing', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'a1', type: 'actor', name: 'Bearer', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'cond.plain', type: 'trait', name: 'Plain', properties: { tags: ['#positive'] } });
+    const state = makeState(graph, 20);
+    const threaded = new Map<string, EffectRuntimeState>([['x', {} as EffectRuntimeState]]);
+    const out = raiseConditionLanded(state, 'a1', 'cond.plain', 1, { states: threaded });
+    expect(out?.get('x')).toBeDefined();
+  });
 });

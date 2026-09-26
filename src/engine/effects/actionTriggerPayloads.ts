@@ -46,7 +46,7 @@ import type { WorldGraph } from '../graph';
 import type { TraceEntry } from '../../types/trace';
 import { emitTrace } from '../traceBuffer';
 import type { ActionTriggerPayloadIntent } from './actionTrigger';
-import { isHarmfulCondition, raiseConditionDamaged, raiseConditionHealed } from './conditionProxyEvents';
+import { isHarmfulCondition, raiseConditionLanded, raiseConditionHealed } from './conditionProxyEvents';
 
 export interface ActionTriggerPayloadApplyResult {
   conditionsGranted: number;
@@ -117,11 +117,14 @@ export function applyActionTriggerPayloads(
    * raises use `state.tick`, as every other production site does.
    */
   let running: ReadonlyMap<string, EffectRuntimeState> | undefined = opts?.states;
-  const raise = (kind: 'damaged' | 'healed', conditionTraitId: string, amount: number): void => {
+  const raise = (kind: 'landed' | 'healed', conditionTraitId: string, amount: number): void => {
     const before = running;
-    const fn = kind === 'damaged' ? raiseConditionDamaged : raiseConditionHealed;
+    const fn = kind === 'landed' ? raiseConditionLanded : raiseConditionHealed;
     const merged = fn(state, actorId, conditionTraitId, amount, before ? { states: before } : undefined);
-    if (before) running = merged;
+    // A gated-out raise (a boon grant, a non-person carrier) returns `undefined`;
+    // keep the threaded map rather than dropping it, or the end-of-batch hand-back
+    // below would replace the caller's states with an empty map.
+    if (before) running = merged ?? before;
   };
 
   for (let i = 0; i < intents.length; i++) {
@@ -174,7 +177,9 @@ export function applyActionTriggerPayloads(
           // harm and on person-carrier lives inside the proxy, so a boon grant and
           // a grant onto an army both fall through silently rather than needing a
           // second copy of the predicate here.
-          raise('damaged', payload.conditionTraitId, payload.intensity ?? 1);
+          // THR-1624: `landed` raises `damaged` for harm plus `blessed` / `cursed` for
+          // a family-tagged condition.
+          raise('landed', payload.conditionTraitId, payload.intensity ?? 1);
           emitTrace({
             tick,
             category: 'condition_applied',
