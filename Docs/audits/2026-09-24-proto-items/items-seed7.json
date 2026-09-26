@@ -1,0 +1,447 @@
+[
+  {
+    "id": "gen_item_7_0",
+    "type": "artifact",
+    "name": "Walker's Boots",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "vestments",
+      "slotTag": "vestment",
+      "tier": 1,
+      "tags": [
+        "#cloth",
+        "#life",
+        "#star",
+        "#travel"
+      ],
+      "mechanicalSummary": "range_modifier · +0.02 Star in_wilderness",
+      "lossCondition": "stealable",
+      "flavorText": "A pair of oiled leather boots, patched at the heel with three different leathers.",
+      "source": "They belonged to Maren Doss, who ran salt from Saltmere to the coast. She drowned with her boat at Low Harrow. They came back with someone else.",
+      "sphereAffinity": "life",
+      "effects": [
+        {
+          "type": "range_modifier",
+          "movementCostMultiplier": 0.9
+        },
+        {
+          "type": "conditional",
+          "condition": "in_wilderness",
+          "reach": "star",
+          "value": 0.02
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "wanderer",
+        "label": "road luck"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=wanderer",
+        "hero=maren_doss",
+        "event=salt_riots",
+        "faction=adventuring_guild",
+        "monster=mind_swarm",
+        "culture=ashborn",
+        "place=saltmere",
+        "form=boots",
+        "provenance=0",
+        "sphere=life",
+        "reach=star",
+        "material=leather",
+        "name.grammar=role",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer covers ground faster.",
+          "Out in the wilds, its bearer is a little better at travel and finding the way (Star)."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_7_1",
+    "type": "artifact",
+    "name": "Sorrow",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "mounts_beasts",
+      "slotTag": "mount",
+      "tier": 2,
+      "tags": [
+        "#beast",
+        "#mount",
+        "#life",
+        "#star",
+        "#travel"
+      ],
+      "mechanicalSummary": "range_modifier · +0.04 Star in_wilderness · action_trigger",
+      "lossCondition": "breakable",
+      "flavorText": "A brindled horse, patient with strangers and nobody else.",
+      "source": "It was Hesta Ryle's. It came home without her, and would not let anyone near it for a month.",
+      "sphereAffinity": "life",
+      "effects": [
+        {
+          "type": "range_modifier",
+          "movementCostMultiplier": 0.85
+        },
+        {
+          "type": "conditional",
+          "condition": "in_wilderness",
+          "reach": "star",
+          "value": 0.04
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_critical_failure",
+          "payload": {
+            "kind": "self_remove"
+          },
+          "probability": 0.2,
+          "cooldownTicks": 0,
+          "narrativeTemplate": "{item_name} does not come back."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "mount",
+        "label": "a beast worth its keep"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=mount",
+        "hero=hesta_ryle",
+        "event=greywater_stand",
+        "faction=civic_guard",
+        "monster=beast_pack",
+        "culture=ashborn",
+        "place=saltmere",
+        "form=horse",
+        "provenance=1",
+        "sphere=life",
+        "reach=stone",
+        "material=brindle",
+        "name.grammar=given",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer covers ground faster.",
+          "Out in the wilds, its bearer is noticeably better at travel and finding the way (Star)."
+        ],
+        "catches": [
+          "If things go very badly (about one time in five), the animal does not come back."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_7_2",
+    "type": "artifact",
+    "name": "The Worn Signet",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "ring",
+      "tier": 2,
+      "tags": [
+        "#talisman",
+        "#order",
+        "#heart",
+        "#relic",
+        "#social",
+        "#storied"
+      ],
+      "mechanicalSummary": "+0.04 Heart at_home_territory · modify_rules · social_modifier",
+      "lossCondition": "stealable",
+      "flavorText": "A brass signet ring with the family mark half rubbed away.",
+      "source": "It has been in the Hale family longer than anyone can say. Corvin Hale was the last to wear it openly.",
+      "sphereAffinity": "order",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "at_home_territory",
+          "reach": "heart",
+          "value": 0.04
+        },
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "faction_influence_multiplier",
+          "value": 1.2,
+          "ticks": "permanent"
+        },
+        {
+          "type": "social_modifier",
+          "targetFilter": "same_faction",
+          "cooperationBias": 0.15
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.storied",
+        "level": 2
+      }
+    ],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "heirloom",
+        "label": "the heirloom"
+      },
+      "classes": [
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=heirloom",
+        "hero=corvin_hale",
+        "event=long_winter",
+        "faction=merchant_consortium",
+        "monster=storm_flock",
+        "culture=harrowfolk",
+        "place=saltmere",
+        "form=signet",
+        "provenance=0",
+        "sphere=order",
+        "reach=heart",
+        "material=brass",
+        "build.heirloom.catch?=no",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "On home ground, its bearer is noticeably better at nerve and dealing with people (Heart).",
+          "Its bearer's standing with their faction grows faster.",
+          "Their own faction deal with its bearer more readily."
+        ],
+        "catches": [],
+        "fight": [
+          "It has seen much: whoever carries it stands a little steadier when a fight begins."
+        ]
+      }
+    }
+  },
+  {
+    "id": "gen_item_7_3",
+    "type": "artifact",
+    "name": "Lantern of the Low Watch",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "tools_instruments",
+      "slotTag": "utility",
+      "tier": 3,
+      "tags": [
+        "#equipment",
+        "#spirit",
+        "#eye",
+        "#vision",
+        "#supernatural"
+      ],
+      "mechanicalSummary": "reveal · +0.07 Veil health_low · Eye capability +0.56 · action_trigger",
+      "lossCondition": "permanent",
+      "flavorText": "A silver lantern, green with verdigris, on a short chain.",
+      "source": "The Temple of the Spheres give one to each keeper who sits with the dying. This one was never handed back.",
+      "sphereAffinity": "spirit",
+      "effects": [
+        {
+          "type": "reveal",
+          "target": "encounters",
+          "range": 2
+        },
+        {
+          "type": "conditional",
+          "condition": "health_low",
+          "reach": "veil",
+          "value": 0.07
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "eye": 0.56
+          }
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_failure",
+          "payload": {
+            "kind": "condition_grant",
+            "conditionTraitId": "trait.condition.grieving",
+            "durationTicks": 36
+          },
+          "probability": 0.25,
+          "cooldownTicks": 24,
+          "narrativeTemplate": "{item_name} shows {actor} someone they lost."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "shows_the_dead",
+        "label": "the lantern that shows the dead"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=shows_the_dead",
+        "hero=tamsin_weir",
+        "event=plague_year",
+        "faction=temple_of_spheres",
+        "monster=storm_flock",
+        "culture=vessani",
+        "place=saltmere",
+        "form=lantern",
+        "provenance=1",
+        "sphere=spirit",
+        "reach=eye",
+        "material=silver",
+        "build.shows_the_dead.catch=grief",
+        "name.grammar=xofy",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer always notices what is happening up to two hexes away, even when tired or in fog.",
+          "When badly worn down, its bearer is much better at magic and the unseen (Veil).",
+          "Carrying it makes its bearer somewhat more skilled at noticing and knowing (Eye)."
+        ],
+        "catches": [
+          "When its bearer fails, about one time in four they come away Grieving for three days."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_7_4",
+    "type": "artifact_legendary",
+    "name": "Reliquary of the Held Breath",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "necklace",
+      "tier": 4,
+      "tags": [
+        "#time",
+        "#heart",
+        "#relic",
+        "#cursed",
+        "#ancient"
+      ],
+      "mechanicalSummary": "modify_rules · Heart capability +0.94 · resource_manipulate",
+      "lossCondition": "cursed",
+      "flavorText": "A bronze reliquary, worn smooth where a great many hands have held it.",
+      "source": "Its last bearer walked out of the Long Winter without a scratch, and was a ghost of a person within the year.",
+      "sphereAffinity": "time",
+      "effects": [
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "death_prevented",
+          "value": true,
+          "ticks": "permanent"
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "heart": 0.94
+          }
+        },
+        {
+          "type": "resource_manipulate",
+          "resource": "quintessence",
+          "target": "self",
+          "amount": -0.004,
+          "mode": "per_tick"
+        }
+      ],
+      "censusTag": {
+        "scale": "regional"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.cursed",
+        "level": 1
+      }
+    ],
+    "review": {
+      "rarity": "Legendary",
+      "trope": {
+        "id": "deathless",
+        "label": "the thing that will not let you die"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=deathless",
+        "hero=wenna_kell",
+        "event=long_winter",
+        "faction=underking_court",
+        "monster=wraith_host",
+        "culture=ashborn",
+        "place=saltmere",
+        "form=reliquary",
+        "provenance=1",
+        "sphere=time",
+        "reach=heart",
+        "material=bronze",
+        "name.grammar=xofy",
+        "look.source=sphere"
+      ],
+      "words": {
+        "does": [
+          "Its bearer cannot die.",
+          "Carrying it makes its bearer a good deal more skilled at nerve and dealing with people (Heart)."
+        ],
+        "catches": [
+          "It feeds on its bearer. They slowly wear thin, and someone worn all the way through is gone from the story all the same."
+        ],
+        "fight": [
+          "The curse in it costs its bearer a little at every exchange of blows."
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,2625 @@
+[
+  {
+    "id": "gen_item_42_0",
+    "type": "artifact",
+    "name": "Delver's Fire-Wine",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "provisions",
+      "slotTag": "consumable",
+      "tier": 1,
+      "tags": [
+        "#provision",
+        "#life",
+        "#iron",
+        "#consumable"
+      ],
+      "mechanicalSummary": "consumable_charge",
+      "lossCondition": "consumable",
+      "flavorText": "A flask of black-honey fire-wine, wrapped in a clean cloth.",
+      "source": "The Adventurers Guild make these by the barrel and sell them at cost.",
+      "sphereAffinity": "life",
+      "effects": [
+        {
+          "type": "consumable_charge",
+          "charges": 2,
+          "onUse": {
+            "reach": "iron",
+            "value": 0.06
+          },
+          "destroyOnEmpty": true
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "provisions",
+        "label": "good things to carry"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=provisions",
+        "hero=sister_maud",
+        "event=library_burning",
+        "faction=holy_order_dawn",
+        "monster=plague_shamble",
+        "culture=harrowfolk",
+        "place=low_harrow",
+        "form=wine",
+        "faction.byForm=adventuring_guild",
+        "hero.byForm=tamsin_weir",
+        "provenance=1",
+        "sphere=life",
+        "reach=heart",
+        "material=black_honey",
+        "name.grammar=role",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Good for two hard stretches of fighting (Iron), noticeably better each time; then it is used up."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_1",
+    "type": "artifact",
+    "name": "Factor's Coin",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "wealth",
+      "tier": 1,
+      "tags": [
+        "#talisman",
+        "#matter",
+        "#gold",
+        "#trade"
+      ],
+      "mechanicalSummary": "+0.04 Gold roll · social_modifier",
+      "lossCondition": "stealable",
+      "flavorText": "A bronze coin, stamped with the Consortium's mark and a date.",
+      "source": "The Merchant Consortium hand these to factors who have proven they can count.",
+      "sphereAffinity": "matter",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "gold",
+          "value": 0.04
+        },
+        {
+          "type": "social_modifier",
+          "targetFilter": "any",
+          "cooperationBias": 0.05
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "merchant",
+        "label": "the trader's edge"
+      },
+      "classes": [
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=merchant",
+        "hero=maren_doss",
+        "event=drowning",
+        "faction=merchant_consortium",
+        "monster=mind_swarm",
+        "culture=harrowfolk",
+        "place=thornwood",
+        "form=coin",
+        "provenance=1",
+        "sphere=matter",
+        "reach=gold",
+        "material=bronze",
+        "name.grammar=role",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at trade and bargaining (Gold).",
+          "People deal with its bearer more readily."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_2",
+    "type": "artifact",
+    "name": "The Holed Charm",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "necklace",
+      "tier": 1,
+      "tags": [
+        "#talisman",
+        "#chaos",
+        "#star",
+        "#trinket"
+      ],
+      "mechanicalSummary": "prevent_loss",
+      "lossCondition": "consumable",
+      "flavorText": "A greystone charm with a hole worn through the middle.",
+      "source": "Tamsin Weir swore by it. She came out of the barrows alone, so make of that what you will.",
+      "sphereAffinity": "chaos",
+      "effects": [
+        {
+          "type": "prevent_loss",
+          "channel": "quintessence",
+          "amount": 0.03,
+          "consumeOnPrevent": true
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "lucky_charm",
+        "label": "a small luck"
+      },
+      "classes": [],
+      "problems": [],
+      "fired": [
+        "trope=lucky_charm",
+        "hero=tamsin_weir",
+        "event=kel_siege",
+        "faction=adventuring_guild",
+        "monster=echo_stalkers",
+        "culture=ashborn",
+        "place=low_harrow",
+        "form=charm",
+        "provenance=0",
+        "sphere=chaos",
+        "reach=eye",
+        "material=greystone",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "The next time a bad outcome would wear its bearer thin, it takes the loss instead — and is gone."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_3",
+    "type": "artifact",
+    "name": "Horn Bow",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 1,
+      "tags": [
+        "#weapon",
+        "#ranged",
+        "#force",
+        "#iron",
+        "#combat",
+        "#craft"
+      ],
+      "mechanicalSummary": "+0.04 Iron roll · Iron capability +0.28 · action_trigger",
+      "lossCondition": "breakable",
+      "flavorText": "A horn bow with a maker's mark punched near the grip.",
+      "source": "Ashborn smiths made it to do one job well, and it has done a great deal of that.",
+      "sphereAffinity": "force",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.04
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 0.28
+          }
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_critical_failure",
+          "payload": {
+            "kind": "self_remove"
+          },
+          "probability": 0.3,
+          "cooldownTicks": 0,
+          "narrativeTemplate": "{item_name} breaks."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "honest_gear",
+        "label": "plain gear, well made"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=honest_gear",
+        "hero=corvin_hale",
+        "event=salt_riots",
+        "faction=civic_guard",
+        "monster=mind_swarm",
+        "culture=ashborn",
+        "place=saltmere",
+        "form=bow",
+        "provenance=0",
+        "sphere=force",
+        "reach=eye",
+        "material=horn",
+        "name.grammar=material",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at fighting (Iron), and a touch more skilled at it for as long as they carry it."
+        ],
+        "catches": [
+          "If things go very badly (about one time in three), it breaks."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_4",
+    "type": "artifact",
+    "name": "Wolfpelt Cloak",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "vestments",
+      "slotTag": "vestment",
+      "tier": 1,
+      "tags": [
+        "#cloth",
+        "#life",
+        "#iron",
+        "#wilderness"
+      ],
+      "mechanicalSummary": "+0.03 Iron in_wilderness · +0.04 Iron roll",
+      "lossCondition": "stealable",
+      "flavorText": "A wolf-pelt cloak, scarred where it was cut free.",
+      "source": "Arn Veck took it from a wolf of the Thornwood Beast Pack and wore it home as proof.",
+      "sphereAffinity": "life",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "in_wilderness",
+          "reach": "iron",
+          "value": 0.03
+        },
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.04
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "beast_trophy",
+        "label": "a trophy taken from a monster"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=beast_trophy",
+        "hero=arn_veck",
+        "event=kel_siege",
+        "faction=rangers_brotherhood",
+        "monster=beast_pack",
+        "culture=vessani",
+        "place=kel_barrow",
+        "form=cloak",
+        "provenance=0",
+        "sphere=life",
+        "reach=iron",
+        "material=wolf_pelt",
+        "name.grammar=material",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at fighting (Iron). Out in the wilds, a little better again."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_5",
+    "type": "artifact",
+    "name": "Ivo's Boots",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "vestments",
+      "slotTag": "vestment",
+      "tier": 1,
+      "tags": [
+        "#cloth",
+        "#darkness",
+        "#shadow",
+        "#stealth"
+      ],
+      "mechanicalSummary": "+0.02 Shadow alone · +0.04 Shadow roll",
+      "lossCondition": "stealable",
+      "flavorText": "A pair of oiled leather boots, wrapped in a roll of oiled cloth.",
+      "source": "Ivo Tallow, who kept the best back room in Saltmere, sold them on. They have been sold several times since.",
+      "sphereAffinity": "darkness",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "alone",
+          "reach": "shadow",
+          "value": 0.02
+        },
+        {
+          "type": "passive",
+          "reach": "shadow",
+          "value": 0.04
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "thieves_kit",
+        "label": "tools of a quiet trade"
+      },
+      "classes": [],
+      "problems": [],
+      "fired": [
+        "trope=thieves_kit",
+        "hero=ivo_tallow",
+        "event=long_winter",
+        "faction=thieves_guild",
+        "monster=mind_swarm",
+        "culture=harrowfolk",
+        "place=saltmere",
+        "form=boots",
+        "provenance=0",
+        "sphere=darkness",
+        "reach=shadow",
+        "material=leather",
+        "build.thieves_kit.catch?=no",
+        "name.grammar=person",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at stealth and secrets (Shadow). When working alone, a little better again."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_6",
+    "type": "artifact",
+    "name": "Sexton",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "mounts_beasts",
+      "slotTag": "mount",
+      "tier": 1,
+      "tags": [
+        "#beast",
+        "#mount",
+        "#life",
+        "#heart",
+        "#travel"
+      ],
+      "mechanicalSummary": "+0.02 Heart in_combat · range_modifier · action_trigger",
+      "lossCondition": "breakable",
+      "flavorText": "A dun war-horse, patient with strangers and nobody else.",
+      "source": "It was bred at Greywater Ford. The breeders there still ask after it.",
+      "sphereAffinity": "life",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "in_combat",
+          "reach": "heart",
+          "value": 0.02
+        },
+        {
+          "type": "range_modifier",
+          "movementCostMultiplier": 0.9
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_critical_failure",
+          "payload": {
+            "kind": "self_remove"
+          },
+          "probability": 0.3,
+          "cooldownTicks": 0,
+          "narrativeTemplate": "{item_name} does not come back."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "mount",
+        "label": "a beast worth its keep"
+      },
+      "classes": [
+        "fight",
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=mount",
+        "hero=arn_veck",
+        "event=long_winter",
+        "faction=civic_guard",
+        "monster=behemoths",
+        "culture=vessani",
+        "place=greywater_ford",
+        "form=warhorse",
+        "provenance=0",
+        "sphere=life",
+        "reach=veil",
+        "material=dun",
+        "name.grammar=given",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Once a fight starts, its bearer's nerve holds a little better.",
+          "Its bearer covers ground faster."
+        ],
+        "catches": [
+          "If things go very badly (about one time in three), the animal does not come back."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_7",
+    "type": "artifact",
+    "name": "Tideway",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "tools_instruments",
+      "slotTag": "utility",
+      "tier": 1,
+      "tags": [
+        "#equipment",
+        "#time",
+        "#star",
+        "#travel"
+      ],
+      "mechanicalSummary": "range_modifier · +0.02 Star in_wilderness",
+      "lossCondition": "stealable",
+      "flavorText": "A bog-oak walking staff, worn smooth where a great many hands have held it.",
+      "source": "Merchant Consortium factors swap these at crossroads. Nobody remembers who made the first one.",
+      "sphereAffinity": "time",
+      "effects": [
+        {
+          "type": "range_modifier",
+          "movementCostMultiplier": 0.9
+        },
+        {
+          "type": "conditional",
+          "condition": "in_wilderness",
+          "reach": "star",
+          "value": 0.02
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "wanderer",
+        "label": "road luck"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=wanderer",
+        "hero=maren_doss",
+        "event=greywater_stand",
+        "faction=merchant_consortium",
+        "monster=wraith_host",
+        "culture=kel",
+        "place=kel_barrow",
+        "form=staff",
+        "provenance=1",
+        "sphere=time",
+        "reach=star",
+        "material=bog_oak",
+        "name.grammar=portmanteau",
+        "look.source=sphere"
+      ],
+      "words": {
+        "does": [
+          "Its bearer covers ground faster.",
+          "Out in the wilds, its bearer is a little better at travel and finding the way (Star)."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_8",
+    "type": "artifact",
+    "name": "Sellsword's Spear",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 1,
+      "tags": [
+        "#weapon",
+        "#melee",
+        "#matter",
+        "#iron",
+        "#combat",
+        "#craft"
+      ],
+      "mechanicalSummary": "+0.04 Iron roll · Iron capability +0.23 · action_trigger",
+      "lossCondition": "breakable",
+      "flavorText": "A bog-oak spear, black as tar and hard as stone.",
+      "source": "It was issued by the Free Company to a quartermaster, and never handed back.",
+      "sphereAffinity": "matter",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.04
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 0.23
+          }
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_critical_failure",
+          "payload": {
+            "kind": "self_remove"
+          },
+          "probability": 0.3,
+          "cooldownTicks": 0,
+          "narrativeTemplate": "{item_name} breaks."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mundane",
+      "trope": {
+        "id": "honest_gear",
+        "label": "plain gear, well made"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=honest_gear",
+        "hero=bram_oskell",
+        "event=greywater_stand",
+        "faction=mercenary_company",
+        "monster=mind_swarm",
+        "culture=vessani",
+        "place=greywater_ford",
+        "form=spear",
+        "provenance=1",
+        "sphere=matter",
+        "reach=heart",
+        "material=bog_oak",
+        "name.grammar=role",
+        "look.source=material"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at fighting (Iron), and a touch more skilled at it for as long as they carry it."
+        ],
+        "catches": [
+          "If things go very badly (about one time in three), it breaks."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_9",
+    "type": "artifact",
+    "name": "The Oskell Signet",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "ring",
+      "tier": 2,
+      "tags": [
+        "#talisman",
+        "#time",
+        "#gold",
+        "#relic",
+        "#social",
+        "#storied"
+      ],
+      "mechanicalSummary": "+0.05 Gold at_home_territory · modify_rules · social_modifier · social_modifier",
+      "lossCondition": "stealable",
+      "flavorText": "A pewter signet ring, mended more than once, each time by a different hand.",
+      "source": "It has been in the Oskell family longer than anyone can say. Bram Oskell was the last to wear it openly.",
+      "sphereAffinity": "time",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "at_home_territory",
+          "reach": "gold",
+          "value": 0.05
+        },
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "faction_influence_multiplier",
+          "value": 1.2,
+          "ticks": "permanent"
+        },
+        {
+          "type": "social_modifier",
+          "targetFilter": "same_faction",
+          "cooperationBias": 0.15
+        },
+        {
+          "type": "social_modifier",
+          "targetFilter": "different_faction",
+          "cooperationBias": -0.15
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.storied",
+        "level": 2
+      }
+    ],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "heirloom",
+        "label": "the heirloom"
+      },
+      "classes": [
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=heirloom",
+        "hero=bram_oskell",
+        "event=salt_riots",
+        "faction=underking_court",
+        "monster=wraith_host",
+        "culture=harrowfolk",
+        "place=greywater_ford",
+        "form=signet",
+        "provenance=0",
+        "sphere=time",
+        "reach=gold",
+        "material=pewter",
+        "build.heirloom.catch?=yes",
+        "name.grammar=house",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "On home ground, its bearer is noticeably better at trade and bargaining (Gold).",
+          "Its bearer's standing with their faction grows faster.",
+          "Their own faction deal with its bearer more readily."
+        ],
+        "catches": [
+          "People of other factions trust its bearer less."
+        ],
+        "fight": [
+          "It has seen much: whoever carries it stands a little steadier when a fight begins."
+        ]
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_10",
+    "type": "artifact",
+    "name": "Emberbite",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 2,
+      "tags": [
+        "#weapon",
+        "#melee",
+        "#energy",
+        "#iron",
+        "#combat"
+      ],
+      "mechanicalSummary": "+0.06 Iron roll · Iron capability +0.52 · +0.04 Heart in_combat · behavior_weight",
+      "lossCondition": "stealable",
+      "flavorText": "A bog-iron axe with a grip that is always warm.",
+      "source": "It was found on the field after the Siege of Kel Barrow, standing upright in the mud with nobody near it.",
+      "sphereAffinity": "energy",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.06
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 0.52
+          }
+        },
+        {
+          "type": "conditional",
+          "condition": "in_combat",
+          "reach": "heart",
+          "value": 0.04
+        },
+        {
+          "type": "behavior_weight",
+          "reach": "iron",
+          "multiplier": 1.34
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "blood_hungry",
+        "label": "the blade that wants blood"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=blood_hungry",
+        "hero=hesta_ryle",
+        "event=kel_siege",
+        "faction=adventuring_guild",
+        "monster=plague_shamble",
+        "culture=ashborn",
+        "place=vessas_rest",
+        "form=axe",
+        "provenance=2",
+        "sphere=energy",
+        "reach=iron",
+        "material=bog_iron",
+        "build.blood_hungry.catch=drag",
+        "name.grammar=portmanteau",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at fighting (Iron), and somewhat more skilled at it for as long as they carry it.",
+          "Once a fight starts, its bearer's nerve holds noticeably better."
+        ],
+        "catches": [
+          "Its bearer goes looking for fights."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_11",
+    "type": "artifact",
+    "name": "The Unquiet Blade",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 2,
+      "tags": [
+        "#weapon",
+        "#melee",
+        "#force",
+        "#iron",
+        "#combat",
+        "#storied"
+      ],
+      "mechanicalSummary": "+0.05 Iron roll · Iron capability +0.64 · +0.04 Heart in_combat · axiological_drift",
+      "lossCondition": "stealable",
+      "flavorText": "A blackiron sword, heavier than it looks.",
+      "source": "It belonged to Hesta Ryle, who held Greywater Ford. She never lost a fight with it, and never once put it down.",
+      "sphereAffinity": "force",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.05
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 0.64
+          }
+        },
+        {
+          "type": "conditional",
+          "condition": "in_combat",
+          "reach": "heart",
+          "value": 0.04
+        },
+        {
+          "type": "axiological_drift",
+          "axis": "mercy_ruthlessness",
+          "ratePerTick": -0.002,
+          "limitValue": -0.6
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.storied",
+        "level": 2
+      }
+    ],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "blood_hungry",
+        "label": "the blade that wants blood"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=blood_hungry",
+        "hero=hesta_ryle",
+        "event=kel_siege",
+        "faction=mercenary_company",
+        "monster=salt_golems",
+        "culture=ashborn",
+        "place=the_ashfold",
+        "form=sword",
+        "provenance=0",
+        "sphere=force",
+        "reach=iron",
+        "material=blackiron",
+        "build.blood_hungry.catch=drift",
+        "name.grammar=definite",
+        "look.source=sphere"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at fighting (Iron), and a good deal more skilled at it for as long as they carry it.",
+          "Once a fight starts, its bearer's nerve holds noticeably better."
+        ],
+        "catches": [
+          "Over time, its bearer grows Power-Hungry."
+        ],
+        "fight": [
+          "It has seen much: whoever carries it stands a little steadier when a fight begins."
+        ]
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_12",
+    "type": "artifact",
+    "name": "Chamberlain's Amulet",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "necklace",
+      "tier": 2,
+      "tags": [
+        "#talisman",
+        "#darkness",
+        "#gold",
+        "#relic",
+        "#curse"
+      ],
+      "mechanicalSummary": "test_shaper · +0.05 Gold roll · action_trigger",
+      "lossCondition": "stealable",
+      "flavorText": "A bog-iron amulet with a tiny pair of scales worked into it.",
+      "source": "The Underking's Court lend these out. They are never given, and the loan is always repaid.",
+      "sphereAffinity": "darkness",
+      "effects": [
+        {
+          "type": "test_shaper",
+          "trigger": "near_miss",
+          "steps": 1,
+          "maxMargin": 3
+        },
+        {
+          "type": "passive",
+          "reach": "gold",
+          "value": 0.05
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_success",
+          "payload": {
+            "kind": "resource_delta",
+            "resource": "quintessence",
+            "amount": -0.02
+          },
+          "cooldownTicks": 0,
+          "narrativeTemplate": "{item_name} takes its due from {actor}."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "bargain",
+        "label": "the ring that bargains"
+      },
+      "classes": [],
+      "problems": [],
+      "fired": [
+        "trope=bargain",
+        "hero=corvin_hale",
+        "event=long_winter",
+        "faction=underking_court",
+        "monster=beast_pack",
+        "culture=kel",
+        "place=thornwood",
+        "form=amulet",
+        "provenance=0",
+        "sphere=darkness",
+        "reach=gold",
+        "material=bog_iron",
+        "name.grammar=role",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at trade and bargaining (Gold).",
+          "When its bearer only just misses, it turns the miss into a scraped success."
+        ],
+        "catches": [
+          "Each time it helps its bearer succeed, it takes a little of them in payment: some of their sense of self, gone for good."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_13",
+    "type": "artifact",
+    "name": "The Unread Ledger",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "tomes_scrolls",
+      "slotTag": "tome",
+      "tier": 2,
+      "tags": [
+        "#tome",
+        "#darkness",
+        "#veil",
+        "#knowledge",
+        "#arcane"
+      ],
+      "mechanicalSummary": "modify_rules · +0.04 Veil alone · Veil capability +0.49 · action_trigger",
+      "lossCondition": "stealable",
+      "flavorText": "A birch-bark ledger that is hard to find once it is put down.",
+      "source": "A Harrowfolk scribe wrote it over one winter and would not say where the words came from.",
+      "sphereAffinity": "darkness",
+      "effects": [
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "tier_advancement_cost_multiplier",
+          "value": 0.85,
+          "ticks": "permanent"
+        },
+        {
+          "type": "conditional",
+          "condition": "alone",
+          "reach": "veil",
+          "value": 0.04
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "veil": 0.49
+          }
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_failure",
+          "payload": {
+            "kind": "condition_grant",
+            "conditionTraitId": "trait.condition.shaken",
+            "durationTicks": 24
+          },
+          "probability": 0.4,
+          "cooldownTicks": 12,
+          "narrativeTemplate": "{actor} cannot stop thinking about the last chapter."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "forbidden_book",
+        "label": "the book that should not be read"
+      },
+      "classes": [],
+      "problems": [],
+      "fired": [
+        "trope=forbidden_book",
+        "hero=old_vannic",
+        "event=library_burning",
+        "faction=arcane_circle",
+        "monster=salt_golems",
+        "culture=harrowfolk",
+        "place=kel_barrow",
+        "form=ledger",
+        "provenance=2",
+        "sphere=darkness",
+        "reach=veil",
+        "material=birch_bark",
+        "build.forbidden_book.catch=shaken",
+        "name.grammar=definite",
+        "look.source=sphere"
+      ],
+      "words": {
+        "does": [
+          "Its bearer learns faster: every step up in skill comes cheaper.",
+          "When working alone, its bearer is noticeably better at magic and the unseen (Veil).",
+          "Carrying it makes its bearer somewhat more skilled at magic and the unseen (Veil)."
+        ],
+        "catches": [
+          "When its bearer fails, often they come away Shaken for two days."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_14",
+    "type": "artifact",
+    "name": "Guardsman's Ring",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "ring",
+      "tier": 2,
+      "tags": [
+        "#talisman",
+        "#spirit",
+        "#eye",
+        "#relic",
+        "#social"
+      ],
+      "mechanicalSummary": "+0.07 Eye roll · Eye capability +0.5 · social_modifier · action_gate",
+      "lossCondition": "stealable",
+      "flavorText": "A blackiron ring, engraved on the inside with a short promise.",
+      "source": "The Civic Guard give it to members who take the full oath. Breaking the oath means handing it back.",
+      "sphereAffinity": "spirit",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "eye",
+          "value": 0.07
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "eye": 0.5
+          }
+        },
+        {
+          "type": "social_modifier",
+          "targetFilter": "same_faction",
+          "cooperationBias": 0.1
+        },
+        {
+          "type": "action_gate",
+          "mode": "block",
+          "reach": "shadow"
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "oath_object",
+        "label": "the vow-bound thing"
+      },
+      "classes": [
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=oath_object",
+        "hero=corvin_hale",
+        "event=drowning",
+        "faction=civic_guard",
+        "monster=beast_pack",
+        "culture=harrowfolk",
+        "place=kel_barrow",
+        "form=ring",
+        "provenance=0",
+        "sphere=spirit",
+        "reach=stone",
+        "material=blackiron",
+        "name.grammar=role",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is much better at noticing and knowing (Eye), and somewhat more skilled at it for as long as they carry it.",
+          "Their own faction deal with its bearer more readily."
+        ],
+        "catches": [
+          "While it is carried, its bearer will not sneak, lie or steal."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_15",
+    "type": "artifact",
+    "name": "The Last Helm",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "vestments",
+      "slotTag": "vestment",
+      "tier": 2,
+      "tags": [
+        "#force",
+        "#iron",
+        "#ruins"
+      ],
+      "mechanicalSummary": "+0.03 Iron outnumbered · Iron capability +0.36",
+      "lossCondition": "stealable",
+      "flavorText": "A cold-iron helm with frost-cracks in it that never close.",
+      "source": "It came down off the barrow hill after the Siege of Kel Barrow, when the Free Company held the hill against the Grey Wraith Host for a whole winter. It has been cold ever since.",
+      "sphereAffinity": "force",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "outnumbered",
+          "reach": "iron",
+          "value": 0.03
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 0.36
+          }
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "disaster_salvage",
+        "label": "salvage from a disaster"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=disaster_salvage",
+        "hero=old_vannic",
+        "event=kel_siege",
+        "faction=civic_guard",
+        "monster=salt_golems",
+        "culture=ashborn",
+        "place=thornwood",
+        "form=helm",
+        "provenance=0",
+        "sphere=force",
+        "reach=eye",
+        "material=cold_iron",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "When outnumbered, its bearer is a little better at fighting (Iron).",
+          "Carrying it makes its bearer somewhat more skilled at fighting (Iron)."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_16",
+    "type": "artifact",
+    "name": "The Frozen Mantle",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "vestments",
+      "slotTag": "vestment",
+      "tier": 2,
+      "tags": [
+        "#cloth",
+        "#energy",
+        "#stone",
+        "#ruins"
+      ],
+      "mechanicalSummary": "+0.03 Stone in_wilderness · Stone capability +0.47 · modify_rules",
+      "lossCondition": "stealable",
+      "flavorText": "A grey wool cloak, stiff, as if it has never quite thawed.",
+      "source": "It kept someone alive through the Long Winter, the year the passes stayed shut. People who were there still know it on sight.",
+      "sphereAffinity": "energy",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "in_wilderness",
+          "reach": "stone",
+          "value": 0.03
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "stone": 0.47
+          }
+        },
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "duration_decay_multiplier",
+          "value": 0.8,
+          "ticks": "permanent"
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "disaster_salvage",
+        "label": "salvage from a disaster"
+      },
+      "classes": [],
+      "problems": [],
+      "fired": [
+        "trope=disaster_salvage",
+        "hero=wenna_kell",
+        "event=long_winter",
+        "faction=lorekeepers_covenant",
+        "monster=storm_flock",
+        "culture=harrowfolk",
+        "place=low_harrow",
+        "form=cloak",
+        "provenance=1",
+        "sphere=energy",
+        "reach=eye",
+        "material=wool",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Out in the wilds, its bearer is a little better at making and enduring (Stone).",
+          "Carrying it makes its bearer somewhat more skilled at making and enduring (Stone)."
+        ],
+        "catches": [
+          "Time runs slow around its bearer: every condition on them, good or bad, lasts longer."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_17",
+    "type": "artifact",
+    "name": "Walker's Compass",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "tools_instruments",
+      "slotTag": "utility",
+      "tier": 2,
+      "tags": [
+        "#equipment",
+        "#life",
+        "#star",
+        "#travel"
+      ],
+      "mechanicalSummary": "range_modifier · +0.05 Star in_wilderness · reveal",
+      "lossCondition": "stealable",
+      "flavorText": "A bronze compass, scuffed from a great many roads.",
+      "source": "It belonged to Arn Veck, who walked the whole border twice. He walked into Thornwood and did not come out. It came back with someone else.",
+      "sphereAffinity": "life",
+      "effects": [
+        {
+          "type": "range_modifier",
+          "movementCostMultiplier": 0.85
+        },
+        {
+          "type": "conditional",
+          "condition": "in_wilderness",
+          "reach": "star",
+          "value": 0.05
+        },
+        {
+          "type": "reveal",
+          "target": "hexes",
+          "range": 2
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": {
+        "id": "wanderer",
+        "label": "road luck"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=wanderer",
+        "hero=arn_veck",
+        "event=greywater_stand",
+        "faction=adventuring_guild",
+        "monster=storm_flock",
+        "culture=vessani",
+        "place=thornwood",
+        "form=compass",
+        "provenance=0",
+        "sphere=life",
+        "reach=star",
+        "material=bronze",
+        "build.wanderer.catch?=no",
+        "name.grammar=role",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer covers ground faster.",
+          "Out in the wilds, its bearer is noticeably better at travel and finding the way (Star).",
+          "Whenever its bearer arrives somewhere new, every place within two hexes becomes known to them."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_18",
+    "type": "artifact",
+    "name": "The Bright Blade",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 3,
+      "tags": [
+        "#weapon",
+        "#melee",
+        "#order",
+        "#iron",
+        "#combat",
+        "#relic",
+        "#storied"
+      ],
+      "mechanicalSummary": "+0.08 Iron has_trait:trait.core.core_hope.virtue · +0.07 Iron roll · Iron capability +0.95 · -0.09 Iron lacks_trait:trait.core.core_hope.virtue",
+      "lossCondition": "permanent",
+      "flavorText": "A bog-iron sword, wrapped in a faded ribbon nobody has dared to take off.",
+      "source": "The Civic Guard keep it for whoever is worthy of Hesta Ryle, who held Greywater Ford. Most who try it put it down again.",
+      "sphereAffinity": "order",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "has_trait:trait.core.core_hope.virtue",
+          "reach": "iron",
+          "value": 0.08
+        },
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.07
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 0.95
+          }
+        },
+        {
+          "type": "conditional",
+          "condition": "lacks_trait:trait.core.core_hope.virtue",
+          "reach": "iron",
+          "value": -0.09
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.storied",
+        "level": 2
+      }
+    ],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "chose_bearer",
+        "label": "the weapon that chose its bearer"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=chose_bearer",
+        "hero=hesta_ryle",
+        "event=salt_riots",
+        "faction=civic_guard",
+        "monster=beast_pack",
+        "culture=harrowfolk",
+        "place=saltmere",
+        "form=sword",
+        "provenance=1",
+        "sphere=order",
+        "reach=iron",
+        "material=bog_iron",
+        "build.chose_bearer.virtue=trait.core.core_hope.virtue",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is much better at fighting (Iron), and a good deal more skilled at it for as long as they carry it.",
+          "In the hands of someone Hopeful, it is much better at fighting (Iron) still."
+        ],
+        "catches": [
+          "Anyone who is not Hopeful finds it fights them: they are much worse at fighting (Iron) with it than with a plain blade."
+        ],
+        "fight": [
+          "It has seen much: whoever carries it stands a little steadier when a fight begins."
+        ]
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_19",
+    "type": "artifact",
+    "name": "Hollowroot",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "utility",
+      "tier": 3,
+      "tags": [
+        "#entropy",
+        "#shadow",
+        "#relic",
+        "#curse",
+        "#ancient"
+      ],
+      "mechanicalSummary": "+0.08 Shadow roll · +0.04 Shadow alone · Shadow capability +0.81 · hex_effect",
+      "lossCondition": "permanent",
+      "flavorText": "A bog-oak idol that leaves a grey smear on anything it rests on.",
+      "source": "A thing of the Plague Shamble carried it. When the thing was burned, this was all that did not.",
+      "sphereAffinity": "entropy",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "shadow",
+          "value": 0.08
+        },
+        {
+          "type": "conditional",
+          "condition": "alone",
+          "reach": "shadow",
+          "value": 0.04
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "shadow": 0.81
+          }
+        },
+        {
+          "type": "hex_effect",
+          "property": "corruption",
+          "value": 0.01,
+          "mode": "add"
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "blight",
+        "label": "the relic that sours the land"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=blight",
+        "hero=maren_doss",
+        "event=plague_year",
+        "faction=adventuring_guild",
+        "monster=plague_shamble",
+        "culture=vessani",
+        "place=thornwood",
+        "form=idol",
+        "provenance=1",
+        "sphere=entropy",
+        "reach=shadow",
+        "material=bog_oak",
+        "name.grammar=portmanteau",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is much better at stealth and secrets (Shadow), and a good deal more skilled at it for as long as they carry it. When working alone, noticeably better again."
+        ],
+        "catches": [
+          "The land sours wherever its bearer stays."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_20",
+    "type": "artifact",
+    "name": "The Blue Glass",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "tools_instruments",
+      "slotTag": "utility",
+      "tier": 3,
+      "tags": [
+        "#tool",
+        "#spirit",
+        "#eye",
+        "#vision",
+        "#supernatural"
+      ],
+      "mechanicalSummary": "reveal · +0.06 Veil health_low · Eye capability +0.65 · -0.04 Heart roll",
+      "lossCondition": "permanent",
+      "flavorText": "A bronze hand-mirror that shows the room a little darker than it is.",
+      "source": "Maren Doss used it to look for the people she lost. She found them.",
+      "sphereAffinity": "spirit",
+      "effects": [
+        {
+          "type": "reveal",
+          "target": "encounters",
+          "range": 2
+        },
+        {
+          "type": "conditional",
+          "condition": "health_low",
+          "reach": "veil",
+          "value": 0.06
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "eye": 0.65
+          }
+        },
+        {
+          "type": "passive",
+          "reach": "heart",
+          "value": -0.04
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "shows_the_dead",
+        "label": "the lantern that shows the dead"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=shows_the_dead",
+        "hero=maren_doss",
+        "event=plague_year",
+        "faction=holy_order_dawn",
+        "monster=behemoths",
+        "culture=ashborn",
+        "place=greywater_ford",
+        "form=mirror",
+        "provenance=2",
+        "sphere=spirit",
+        "reach=eye",
+        "material=bronze",
+        "build.shows_the_dead.catch=thin_living",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer always notices what is happening up to two hexes away, even when tired or in fog.",
+          "When badly worn down, its bearer is noticeably better at magic and the unseen (Veil).",
+          "Carrying it makes its bearer a good deal more skilled at noticing and knowing (Eye)."
+        ],
+        "catches": [
+          "Its bearer is noticeably worse at nerve and dealing with people (Heart)."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_21",
+    "type": "artifact",
+    "name": "The Black Knife",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 3,
+      "tags": [
+        "#weapon",
+        "#melee",
+        "#precision",
+        "#darkness",
+        "#veil",
+        "#relic",
+        "#curse",
+        "#ancient"
+      ],
+      "mechanicalSummary": "+0.08 Veil roll · +0.04 Veil health_low · Veil capability +0.91 · hex_effect",
+      "lossCondition": "permanent",
+      "flavorText": "A bone knife with a blade gone grey and pitted.",
+      "source": "It was dug up in Low Harrow the spring after the Drowning. The field it came from has not grown anything since.",
+      "sphereAffinity": "darkness",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "veil",
+          "value": 0.08
+        },
+        {
+          "type": "conditional",
+          "condition": "health_low",
+          "reach": "veil",
+          "value": 0.04
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "veil": 0.91
+          }
+        },
+        {
+          "type": "hex_effect",
+          "property": "corruption",
+          "value": 0.01,
+          "mode": "add"
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "blight",
+        "label": "the relic that sours the land"
+      },
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=blight",
+        "hero=hesta_ryle",
+        "event=drowning",
+        "faction=arcane_circle",
+        "monster=plague_shamble",
+        "culture=kel",
+        "place=vessas_rest",
+        "form=knife",
+        "provenance=0",
+        "sphere=darkness",
+        "reach=veil",
+        "material=bone",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is much better at magic and the unseen (Veil), and a good deal more skilled at it for as long as they carry it. When badly worn down, noticeably better again."
+        ],
+        "catches": [
+          "The land sours wherever its bearer stays."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_22",
+    "type": "artifact",
+    "name": "Horn of Hesta Ryle",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "utility",
+      "tier": 3,
+      "tags": [
+        "#force",
+        "#iron",
+        "#combat"
+      ],
+      "mechanicalSummary": "aura · social_modifier · +0.05 Heart roll · behavior_weight",
+      "lossCondition": "permanent",
+      "flavorText": "A pewter war-horn, dented where it was used as a club.",
+      "source": "Hesta Ryle blew it at the Last Stand at Greywater Ford. She died at the ford; it never went quiet.",
+      "sphereAffinity": "force",
+      "effects": [
+        {
+          "type": "aura",
+          "radius": 1,
+          "target": "allies",
+          "reach": "iron",
+          "value": 0.05
+        },
+        {
+          "type": "social_modifier",
+          "targetFilter": "same_faction",
+          "cooperationBias": 0.15
+        },
+        {
+          "type": "passive",
+          "reach": "heart",
+          "value": 0.05
+        },
+        {
+          "type": "behavior_weight",
+          "reach": "iron",
+          "multiplier": 1.23
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "war_banner",
+        "label": "the standard that steadies the line"
+      },
+      "classes": [
+        "fight",
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=war_banner",
+        "hero=hesta_ryle",
+        "event=kel_siege",
+        "faction=civic_guard",
+        "monster=echo_stalkers",
+        "culture=vessani",
+        "place=vessas_rest",
+        "form=horn",
+        "provenance=1",
+        "sphere=force",
+        "reach=iron",
+        "material=pewter",
+        "name.grammar=proper",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at nerve and dealing with people (Heart).",
+          "Allies within one hex of its bearer are noticeably better at fighting (Iron).",
+          "Their own faction deal with its bearer more readily."
+        ],
+        "catches": [
+          "Its bearer goes looking for fights."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_23",
+    "type": "artifact",
+    "name": "Stole of Sister Maud",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "vestments",
+      "slotTag": "vestment",
+      "tier": 3,
+      "tags": [
+        "#cloth",
+        "#light",
+        "#heart",
+        "#divine",
+        "#relic",
+        "#healing"
+      ],
+      "mechanicalSummary": "tag_immunity · modify_rules · aura · hex_effect · action_gate",
+      "lossCondition": "permanent",
+      "flavorText": "An undyed silk stole, embroidered with a small, crooked sun.",
+      "source": "It was worn by Sister Maud, who nursed Thornwood through the Plague Year. The Holy Order of the Dawn carry it to places the sick cannot leave.",
+      "sphereAffinity": "light",
+      "effects": [
+        {
+          "type": "tag_immunity",
+          "tags": [
+            "#disease"
+          ]
+        },
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "healing_multiplier",
+          "value": 1.75,
+          "ticks": "permanent"
+        },
+        {
+          "type": "aura",
+          "radius": 1,
+          "target": "allies",
+          "reach": "heart",
+          "value": 0.05
+        },
+        {
+          "type": "hex_effect",
+          "property": "divineInfluence",
+          "value": 0.006,
+          "mode": "add"
+        },
+        {
+          "type": "action_gate",
+          "mode": "block",
+          "reach": "shadow"
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "saints_relic",
+        "label": "a saint's relic"
+      },
+      "classes": [
+        "fight",
+        "world",
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=saints_relic",
+        "hero=sister_maud",
+        "event=plague_year",
+        "faction=holy_order_dawn",
+        "monster=beast_pack",
+        "culture=ashborn",
+        "place=vessas_rest",
+        "form=stole",
+        "provenance=0",
+        "sphere=light",
+        "reach=heart",
+        "material=silk",
+        "build.saints_relic.ward=disease",
+        "name.grammar=proper",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Road Fever, Gut Rot, Greyscale and the Wasting cannot take hold of its bearer.",
+          "Every condition on its bearer runs its course much faster: wounds, sickness and curses — but blessings too.",
+          "Allies within one hex of its bearer are noticeably better at nerve and dealing with people (Heart).",
+          "Ground where its bearer stays a while grows holy."
+        ],
+        "catches": [
+          "While it is carried, its bearer will not sneak, lie or steal."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_24",
+    "type": "artifact",
+    "name": "Quartermaster's Amulet",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "necklace",
+      "tier": 3,
+      "tags": [
+        "#talisman",
+        "#order",
+        "#iron",
+        "#relic",
+        "#social"
+      ],
+      "mechanicalSummary": "+0.11 Iron roll · Iron capability +0.71 · social_modifier · action_gate",
+      "lossCondition": "permanent",
+      "flavorText": "A pewter amulet with the mark of its order stamped deep.",
+      "source": "The Free Company give it to members who take the full oath. Breaking the oath means handing it back.",
+      "sphereAffinity": "order",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.11
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 0.71
+          }
+        },
+        {
+          "type": "social_modifier",
+          "targetFilter": "same_faction",
+          "cooperationBias": 0.1
+        },
+        {
+          "type": "action_gate",
+          "mode": "block",
+          "reach": "heart"
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": {
+        "id": "oath_object",
+        "label": "the vow-bound thing"
+      },
+      "classes": [
+        "fight",
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=oath_object",
+        "hero=father_gall",
+        "event=kel_siege",
+        "faction=mercenary_company",
+        "monster=plague_shamble",
+        "culture=ashborn",
+        "place=greywater_ford",
+        "form=amulet",
+        "provenance=1",
+        "sphere=order",
+        "reach=gold",
+        "material=pewter",
+        "name.grammar=role",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is far better at fighting (Iron), and a good deal more skilled at it for as long as they carry it.",
+          "Their own faction deal with its bearer more readily."
+        ],
+        "catches": [
+          "While it is carried, its bearer will not plead or charm."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_25",
+    "type": "artifact_legendary",
+    "name": "The Unfinished Locket",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "necklace",
+      "tier": 4,
+      "tags": [
+        "#talisman",
+        "#time",
+        "#stone",
+        "#relic",
+        "#cursed",
+        "#ancient"
+      ],
+      "mechanicalSummary": "modify_rules · Stone capability +0.95 · resource_manipulate",
+      "lossCondition": "cursed",
+      "flavorText": "A bog-iron locket with a lock of grey hair behind cracked glass.",
+      "source": "Wenna Kell, who outlived four masters of the Court, wore it for longer than anyone could remember. She never died. In the end there was not enough of her left to.",
+      "sphereAffinity": "time",
+      "effects": [
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "death_prevented",
+          "value": true,
+          "ticks": "permanent"
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "stone": 0.95
+          }
+        },
+        {
+          "type": "resource_manipulate",
+          "resource": "quintessence",
+          "target": "self",
+          "amount": -0.004,
+          "mode": "per_tick"
+        }
+      ],
+      "censusTag": {
+        "scale": "regional"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.cursed",
+        "level": 1
+      }
+    ],
+    "review": {
+      "rarity": "Legendary",
+      "trope": {
+        "id": "deathless",
+        "label": "the thing that will not let you die"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=deathless",
+        "hero=wenna_kell",
+        "event=long_winter",
+        "faction=temple_of_spheres",
+        "monster=behemoths",
+        "culture=ashborn",
+        "place=the_ashfold",
+        "form=locket",
+        "provenance=0",
+        "sphere=time",
+        "reach=stone",
+        "material=bog_iron",
+        "name.grammar=definite",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer cannot die.",
+          "Carrying it makes its bearer a good deal more skilled at making and enduring (Stone)."
+        ],
+        "catches": [
+          "It feeds on its bearer. They slowly wear thin, and someone worn all the way through is gone from the story all the same."
+        ],
+        "fight": [
+          "The curse in it costs its bearer a little at every exchange of blows."
+        ]
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_26",
+    "type": "artifact_legendary",
+    "name": "Nightstone",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "utility",
+      "tier": 4,
+      "tags": [
+        "#talisman",
+        "#darkness",
+        "#eye",
+        "#anti-magic"
+      ],
+      "mechanicalSummary": "suppress · +0.13 Eye roll · tag_immunity",
+      "lossCondition": "permanent",
+      "flavorText": "A salt-crystal stone with no mark of any kind on it.",
+      "source": "It was found in the ashes after the Burning of the Library. Nothing near it had burned.",
+      "sphereAffinity": "darkness",
+      "effects": [
+        {
+          "type": "suppress",
+          "target": "all_effects",
+          "scope": {
+            "scope": "radius",
+            "hexes": 2
+          },
+          "ticks": 2
+        },
+        {
+          "type": "passive",
+          "reach": "eye",
+          "value": 0.13
+        },
+        {
+          "type": "tag_immunity",
+          "tags": [
+            "#curse"
+          ]
+        }
+      ],
+      "censusTag": {
+        "scale": "regional"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Legendary",
+      "trope": {
+        "id": "nullstone",
+        "label": "the stone that quiets magic"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=nullstone",
+        "hero=wenna_kell",
+        "event=library_burning",
+        "faction=civic_guard",
+        "monster=storm_flock",
+        "culture=ashborn",
+        "place=thornwood",
+        "form=stone",
+        "provenance=1",
+        "sphere=darkness",
+        "reach=eye",
+        "material=salt",
+        "name.grammar=portmanteau",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is far better at noticing and knowing (Eye).",
+          "Every charm and enchanted thing within two hexes of its bearer goes quiet — friend's or foe's.",
+          "Ill Luck, Nightmares, Tonguebound and six other curses cannot take hold of its bearer."
+        ],
+        "catches": [
+          "Its bearer's own charms go quiet too — it does not pick sides."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_27",
+    "type": "artifact_legendary",
+    "name": "Spear of Bram Oskell",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 4,
+      "tags": [
+        "#weapon",
+        "#melee",
+        "#force",
+        "#iron",
+        "#combat",
+        "#relic",
+        "#storied"
+      ],
+      "mechanicalSummary": "+0.12 Iron has_trait:trait.core.core_forgiveness.virtue · +0.08 Iron roll · Iron capability +1.75 · -0.09 Iron lacks_trait:trait.core.core_forgiveness.virtue",
+      "lossCondition": "permanent",
+      "flavorText": "A blackiron spear with a plain grip and no ornament at all.",
+      "source": "It went into the ground with Bram Oskell. It came back up on its own, and it is still looking for someone Forgiving.",
+      "sphereAffinity": "force",
+      "effects": [
+        {
+          "type": "conditional",
+          "condition": "has_trait:trait.core.core_forgiveness.virtue",
+          "reach": "iron",
+          "value": 0.12
+        },
+        {
+          "type": "passive",
+          "reach": "iron",
+          "value": 0.08
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "iron": 1.75
+          }
+        },
+        {
+          "type": "conditional",
+          "condition": "lacks_trait:trait.core.core_forgiveness.virtue",
+          "reach": "iron",
+          "value": -0.09
+        }
+      ],
+      "censusTag": {
+        "scale": "regional"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.storied",
+        "level": 3
+      }
+    ],
+    "review": {
+      "rarity": "Legendary",
+      "trope": {
+        "id": "chose_bearer",
+        "label": "the weapon that chose its bearer"
+      },
+      "classes": [
+        "fight"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=chose_bearer",
+        "hero=bram_oskell",
+        "event=greywater_stand",
+        "faction=civic_guard",
+        "monster=mind_swarm",
+        "culture=harrowfolk",
+        "place=greywater_ford",
+        "form=spear",
+        "provenance=2",
+        "sphere=force",
+        "reach=iron",
+        "material=blackiron",
+        "build.chose_bearer.virtue=trait.core.core_forgiveness.virtue",
+        "name.grammar=proper",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is much better at fighting (Iron), and far more skilled at it for as long as they carry it — a lift big enough to show on their sheet.",
+          "In the hands of someone Forgiving, it is far better at fighting (Iron) still."
+        ],
+        "catches": [
+          "Anyone who is not Forgiving finds it fights them: they are much worse at fighting (Iron) with it than with a plain blade."
+        ],
+        "fight": [
+          "It has seen it all: whoever carries it stands a little steadier when a fight begins."
+        ]
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_28",
+    "type": "artifact_legendary",
+    "name": "Coin of the Long Account",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "wealth",
+      "tier": 4,
+      "tags": [
+        "#talisman",
+        "#chaos",
+        "#gold",
+        "#relic",
+        "#curse",
+        "#cursed"
+      ],
+      "mechanicalSummary": "test_shaper · +0.14 Gold roll · Gold capability +1.77 · action_trigger",
+      "lossCondition": "cursed",
+      "flavorText": "A silver coin that never sits quite where it was left.",
+      "source": "Nobody made it. It turns up in the pocket of someone who badly needs a win, and it keeps an account.",
+      "sphereAffinity": "chaos",
+      "effects": [
+        {
+          "type": "test_shaper",
+          "trigger": "near_miss",
+          "steps": 1,
+          "maxMargin": 8
+        },
+        {
+          "type": "passive",
+          "reach": "gold",
+          "value": 0.14
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "gold": 1.77
+          }
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_success",
+          "payload": {
+            "kind": "resource_delta",
+            "resource": "quintessence",
+            "amount": -0.05
+          },
+          "cooldownTicks": 0,
+          "narrativeTemplate": "{item_name} takes its due from {actor}."
+        }
+      ],
+      "censusTag": {
+        "scale": "regional"
+      }
+    },
+    "generatedTraits": [
+      {
+        "id": "trait.artifact.cursed",
+        "level": 1
+      }
+    ],
+    "review": {
+      "rarity": "Legendary",
+      "trope": {
+        "id": "bargain",
+        "label": "the ring that bargains"
+      },
+      "classes": [],
+      "problems": [],
+      "fired": [
+        "trope=bargain",
+        "hero=corvin_hale",
+        "event=drowning",
+        "faction=underking_court",
+        "monster=wraith_host",
+        "culture=ashborn",
+        "place=saltmere",
+        "form=coin",
+        "provenance=2",
+        "sphere=chaos",
+        "reach=gold",
+        "material=silver",
+        "name.grammar=xofy",
+        "look.source=sphere"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is far better at trade and bargaining (Gold), and far more skilled at it for as long as they carry it — a lift big enough to show on their sheet.",
+          "When its bearer only just misses, it turns the miss into a scraped success."
+        ],
+        "catches": [
+          "Each time it helps its bearer succeed, it takes a little of them in payment: some of their sense of self, gone for good."
+        ],
+        "fight": [
+          "The curse in it costs its bearer a little at every exchange of blows."
+        ]
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_29",
+    "type": "artifact_legendary",
+    "name": "Stole of Father Gall",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "vestments",
+      "slotTag": "vestment",
+      "tier": 4,
+      "tags": [
+        "#cloth",
+        "#light",
+        "#stone",
+        "#divine",
+        "#relic",
+        "#healing"
+      ],
+      "mechanicalSummary": "tag_immunity · modify_rules · aura · hex_effect · action_gate",
+      "lossCondition": "permanent",
+      "flavorText": "An undyed silk stole, worn thin where the faithful have kissed it.",
+      "source": "Father Gall is buried under the shrine he kept. The sick who pray at his grave still go home well.",
+      "sphereAffinity": "light",
+      "effects": [
+        {
+          "type": "tag_immunity",
+          "tags": [
+            "#curse"
+          ]
+        },
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "healing_multiplier",
+          "value": 2,
+          "ticks": "permanent"
+        },
+        {
+          "type": "aura",
+          "radius": 1,
+          "target": "allies",
+          "reach": "stone",
+          "value": 0.06
+        },
+        {
+          "type": "hex_effect",
+          "property": "divineInfluence",
+          "value": 0.01,
+          "mode": "add"
+        },
+        {
+          "type": "action_gate",
+          "mode": "block",
+          "reach": "shadow"
+        }
+      ],
+      "censusTag": {
+        "scale": "regional"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Legendary",
+      "trope": {
+        "id": "saints_relic",
+        "label": "a saint's relic"
+      },
+      "classes": [
+        "world",
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "trope=saints_relic",
+        "hero=father_gall",
+        "event=falling_stars",
+        "faction=holy_order_dawn",
+        "monster=beast_pack",
+        "culture=vessani",
+        "place=low_harrow",
+        "form=stole",
+        "provenance=1",
+        "sphere=light",
+        "reach=stone",
+        "material=silk",
+        "build.saints_relic.ward=curse",
+        "name.grammar=proper",
+        "look.source=trope"
+      ],
+      "words": {
+        "does": [
+          "Ill Luck, Nightmares, Tonguebound and six other curses cannot take hold of its bearer.",
+          "Every condition on its bearer runs its course much faster: wounds, sickness and curses — but blessings too.",
+          "Allies within one hex of its bearer are noticeably better at making and enduring (Stone).",
+          "Ground where its bearer stays a while grows holy."
+        ],
+        "catches": [
+          "While it is carried, its bearer will not sneak, lie or steal."
+        ],
+        "fight": []
+      }
+    }
+  }
+]

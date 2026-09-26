@@ -1,0 +1,255 @@
+[
+  {
+    "id": "gen_item_42_free_0",
+    "type": "artifact",
+    "name": "Keencoin",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "relics_talismans",
+      "slotTag": "wealth",
+      "tier": 2,
+      "tags": [
+        "#talisman",
+        "#mind",
+        "#heart",
+        "#creation"
+      ],
+      "mechanicalSummary": "+0.05 Heart roll · Heart capability +0.48 · behavior_weight · action_trigger",
+      "lossCondition": "breakable",
+      "flavorText": "A pewter coin, marked with small, careful tally-scratches.",
+      "source": "It passed through the hands of the Adventurers Guild before it reached its present owner.",
+      "sphereAffinity": "mind",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "heart",
+          "value": 0.05
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "heart": 0.48
+          }
+        },
+        {
+          "type": "behavior_weight",
+          "reach": "heart",
+          "multiplier": 1.32
+        },
+        {
+          "type": "action_trigger",
+          "on": "encounter_critical_failure",
+          "payload": {
+            "kind": "self_remove"
+          },
+          "probability": 0.2,
+          "cooldownTicks": 0,
+          "narrativeTemplate": "{item_name} breaks."
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Storied",
+      "trope": null,
+      "classes": [],
+      "problems": [],
+      "fired": [
+        "hero=maren_doss",
+        "event=long_winter",
+        "faction=adventuring_guild",
+        "monster=mind_swarm",
+        "culture=vessani",
+        "place=greywater_ford",
+        "form=coin",
+        "provenance=1",
+        "sphere=mind",
+        "reach=heart",
+        "material=pewter",
+        "free.boon=passive",
+        "free.catch=drag",
+        "name.grammar=portmanteau",
+        "look.source=sphere"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is noticeably better at nerve and dealing with people (Heart), and somewhat more skilled at it for as long as they carry it."
+        ],
+        "catches": [
+          "Its bearer is drawn towards nerve and dealing with people.",
+          "If things go very badly (about one time in five), it breaks."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_free_1",
+    "type": "artifact",
+    "name": "The Patient Glass",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "tools_instruments",
+      "slotTag": "utility",
+      "tier": 3,
+      "tags": [
+        "#tool",
+        "#time",
+        "#gold",
+        "#creation"
+      ],
+      "mechanicalSummary": "test_shaper · Gold capability +0.93 · action_gate · modify_rules",
+      "lossCondition": "permanent",
+      "flavorText": "A cold-iron hand-mirror, worn smooth where a great many hands have held it.",
+      "source": "Harrowfolk makers made it, and sold it on at Kel Barrow.",
+      "sphereAffinity": "time",
+      "effects": [
+        {
+          "type": "test_shaper",
+          "trigger": "near_miss",
+          "steps": 1,
+          "maxMargin": 5
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "gold": 0.93
+          }
+        },
+        {
+          "type": "action_gate",
+          "mode": "block",
+          "reach": "eye"
+        },
+        {
+          "type": "modify_rules",
+          "scope": {
+            "scope": "self"
+          },
+          "rule": "duration_decay_multiplier",
+          "value": 0.85,
+          "ticks": "permanent"
+        }
+      ],
+      "censusTag": {
+        "scale": "local"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Mythic",
+      "trope": null,
+      "classes": [
+        "social"
+      ],
+      "problems": [],
+      "fired": [
+        "hero=tamsin_weir",
+        "event=long_winter",
+        "faction=holy_order_dawn",
+        "monster=wraith_host",
+        "culture=harrowfolk",
+        "place=kel_barrow",
+        "form=mirror",
+        "provenance=0",
+        "sphere=time",
+        "reach=gold",
+        "material=cold_iron",
+        "free.boon=shaper",
+        "free.catch=gate",
+        "name.grammar=definite",
+        "look.source=sphere"
+      ],
+      "words": {
+        "does": [
+          "When its bearer only just misses, it turns the miss into a scraped success.",
+          "Carrying it makes its bearer a good deal more skilled at trade and bargaining (Gold)."
+        ],
+        "catches": [
+          "While it is carried, its bearer will not pry into secrets.",
+          "Time runs slow around its bearer: every condition on them, good or bad, lasts longer."
+        ],
+        "fight": []
+      }
+    }
+  },
+  {
+    "id": "gen_item_42_free_2",
+    "type": "artifact_legendary",
+    "name": "The Bright Maul",
+    "properties": {
+      "attachmentCategory": "possession",
+      "subcategory": "arms",
+      "slotTag": "weapon",
+      "tier": 4,
+      "tags": [
+        "#weapon",
+        "#melee",
+        "#light",
+        "#stone",
+        "#creation"
+      ],
+      "mechanicalSummary": "+0.12 Stone roll · Stone capability +1.59 · range_modifier",
+      "lossCondition": "permanent",
+      "flavorText": "A silver mace, tarnished black in every crease.",
+      "source": "Maren Doss owned it once — a Consortium factor who ran salt from Saltmere to the coast.",
+      "sphereAffinity": "light",
+      "effects": [
+        {
+          "type": "passive",
+          "reach": "stone",
+          "value": 0.12
+        },
+        {
+          "type": "stat_contribution",
+          "contributions": {
+            "stone": 1.59
+          }
+        },
+        {
+          "type": "range_modifier",
+          "awarenessRangeBonus": 1
+        }
+      ],
+      "censusTag": {
+        "scale": "regional"
+      }
+    },
+    "generatedTraits": [],
+    "review": {
+      "rarity": "Legendary",
+      "trope": null,
+      "classes": [
+        "world"
+      ],
+      "problems": [],
+      "fired": [
+        "hero=maren_doss",
+        "event=salt_riots",
+        "faction=arcane_circle",
+        "monster=behemoths",
+        "culture=vessani",
+        "place=thornwood",
+        "form=mace",
+        "provenance=3",
+        "sphere=light",
+        "reach=stone",
+        "material=silver",
+        "free.boon=passive",
+        "name.grammar=definite",
+        "look.source=material"
+      ],
+      "words": {
+        "does": [
+          "Its bearer is far better at making and enduring (Stone), and far more skilled at it for as long as they carry it — a lift big enough to show on their sheet.",
+          "Its bearer notices things one hex further off than they otherwise would."
+        ],
+        "catches": [],
+        "fight": []
+      }
+    }
+  }
+]

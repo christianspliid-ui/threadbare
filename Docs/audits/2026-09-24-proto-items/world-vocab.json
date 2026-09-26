@@ -1,0 +1,3805 @@
+{
+  "extractedFrom": "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator",
+  "SPHERE_VOCABULARY": {
+    "force": {
+      "adjectives": [
+        "mighty",
+        "thunderous",
+        "relentless",
+        "crushing",
+        "unyielding",
+        "brutal",
+        "staggering",
+        "iron-willed",
+        "ferocious",
+        "unflinching"
+      ],
+      "verbs": [
+        "shattered",
+        "struck",
+        "overwhelmed",
+        "battered",
+        "surged",
+        "hammered",
+        "cleaved",
+        "collided",
+        "broke",
+        "crashed"
+      ],
+      "nouns": [
+        "might",
+        "fury",
+        "impact",
+        "avalanche",
+        "storm",
+        "weight",
+        "hammer",
+        "tide",
+        "thunder",
+        "pressure"
+      ]
+    },
+    "matter": {
+      "adjectives": [
+        "solid",
+        "enduring",
+        "immovable",
+        "crystalline",
+        "dense",
+        "tempered",
+        "uneroded",
+        "rooted",
+        "mineral",
+        "ponderous"
+      ],
+      "verbs": [
+        "forged",
+        "shaped",
+        "hardened",
+        "anchored",
+        "crystallized",
+        "set",
+        "reinforced",
+        "compressed",
+        "calcified",
+        "cemented"
+      ],
+      "nouns": [
+        "stone",
+        "iron",
+        "foundation",
+        "bulwark",
+        "bedrock",
+        "ore",
+        "weight",
+        "marrow",
+        "sediment",
+        "permanence"
+      ]
+    },
+    "energy": {
+      "adjectives": [
+        "crackling",
+        "luminous",
+        "volatile",
+        "radiant",
+        "searing",
+        "incandescent",
+        "blinding",
+        "kinetic",
+        "furious",
+        "white-hot"
+      ],
+      "verbs": [
+        "blazed",
+        "surged",
+        "erupted",
+        "ignited",
+        "cascaded",
+        "flared",
+        "arced",
+        "detonated",
+        "kindled",
+        "scorched"
+      ],
+      "nouns": [
+        "flame",
+        "lightning",
+        "pulse",
+        "arc",
+        "inferno",
+        "spark",
+        "conflagration",
+        "voltage",
+        "radiance",
+        "furnace"
+      ]
+    },
+    "life": {
+      "adjectives": [
+        "verdant",
+        "flourishing",
+        "vital",
+        "blooming",
+        "fecund",
+        "tenacious",
+        "warm-blooded",
+        "rooted",
+        "persistent",
+        "green"
+      ],
+      "verbs": [
+        "bloomed",
+        "healed",
+        "nurtured",
+        "grew",
+        "restored",
+        "mended",
+        "seeded",
+        "quickened",
+        "thrived",
+        "germinated"
+      ],
+      "nouns": [
+        "growth",
+        "renewal",
+        "bloom",
+        "vitality",
+        "spring",
+        "root",
+        "breath",
+        "sap",
+        "marrow",
+        "pulse"
+      ]
+    },
+    "mind": {
+      "adjectives": [
+        "keen",
+        "piercing",
+        "calculating",
+        "lucid",
+        "insightful",
+        "measured",
+        "exacting",
+        "ruthless",
+        "crystalline",
+        "surgical"
+      ],
+      "verbs": [
+        "discerned",
+        "analyzed",
+        "perceived",
+        "understood",
+        "unraveled",
+        "calculated",
+        "deduced",
+        "mapped",
+        "dissected",
+        "read"
+      ],
+      "nouns": [
+        "thought",
+        "insight",
+        "clarity",
+        "revelation",
+        "logic",
+        "precision",
+        "pattern",
+        "schema",
+        "diagnosis",
+        "architecture"
+      ]
+    },
+    "spirit": {
+      "adjectives": [
+        "hallowed",
+        "transcendent",
+        "resonant",
+        "spectral",
+        "sacred",
+        "solemn",
+        "unworldly",
+        "numinous",
+        "consecrated",
+        "liminal"
+      ],
+      "verbs": [
+        "resonated",
+        "sanctified",
+        "communed",
+        "invoked",
+        "channeled",
+        "blessed",
+        "consecrated",
+        "stirred",
+        "entreated",
+        "anointed"
+      ],
+      "nouns": [
+        "soul",
+        "essence",
+        "prayer",
+        "vision",
+        "aura",
+        "rite",
+        "covenant",
+        "devotion",
+        "sacrament",
+        "vigil"
+      ]
+    },
+    "time": {
+      "adjectives": [
+        "ancient",
+        "inexorable",
+        "cyclic",
+        "fading",
+        "eternal",
+        "weathered",
+        "patient",
+        "eroded",
+        "persistent",
+        "slow"
+      ],
+      "verbs": [
+        "aged",
+        "unwound",
+        "echoed",
+        "rippled",
+        "decayed",
+        "accumulated",
+        "endured",
+        "recurred",
+        "persisted",
+        "outlasted"
+      ],
+      "nouns": [
+        "epoch",
+        "moment",
+        "tide",
+        "cycle",
+        "memory",
+        "erosion",
+        "patience",
+        "sediment",
+        "season",
+        "inheritance"
+      ]
+    },
+    "entropy": {
+      "adjectives": [
+        "corroding",
+        "consuming",
+        "inevitable",
+        "dissolving",
+        "chaotic",
+        "hollow",
+        "terminal",
+        "fraying",
+        "spent",
+        "irreversible"
+      ],
+      "verbs": [
+        "crumbled",
+        "consumed",
+        "unraveled",
+        "corroded",
+        "scattered",
+        "erased",
+        "devoured",
+        "hollowed",
+        "dismantled",
+        "extinguished"
+      ],
+      "nouns": [
+        "ash",
+        "ruin",
+        "void",
+        "silence",
+        "dust",
+        "wreckage",
+        "remnant",
+        "absence",
+        "entropy",
+        "nothing"
+      ]
+    }
+  },
+  "ARTIFACT_LORE_PATTERNS": [
+    {
+      "id": "reverent_origin",
+      "template": "Crafted by the first artisans of the {culture}, blessed by hands that knew the old ways",
+      "toneCategory": "reverent"
+    },
+    {
+      "id": "martial_conquest",
+      "template": "Won in battle when the {culture} stood against the tide and refused to break",
+      "toneCategory": "martial"
+    },
+    {
+      "id": "mystical_creation",
+      "template": "Born in the dreaming hours when the {culture}'s seers walked between worlds",
+      "toneCategory": "mystical"
+    },
+    {
+      "id": "practical_innovation",
+      "template": "Devised by {culture} necessity, when survival demanded invention over tradition",
+      "toneCategory": "practical"
+    },
+    {
+      "id": "ominous_inheritance",
+      "template": "Passed down through {culture} generations, each holder marked by its dark purpose",
+      "toneCategory": "ominous"
+    },
+    {
+      "id": "sacred_sacrifice",
+      "template": "Forged from the sacrifice of a {culture} hero who gave everything for their people",
+      "toneCategory": "reverent"
+    }
+  ],
+  "CULTURE_NAME_FRAGMENTS": {
+    "foundation": {
+      "chaos": [
+        "Storm-Born",
+        "Untamed",
+        "Wild",
+        "Shifting",
+        "Unchained"
+      ],
+      "order": [
+        "Stone-Set",
+        "Codex",
+        "Lawbound",
+        "Pillar",
+        "Measured"
+      ],
+      "light": [
+        "Sun-Sworn",
+        "Open",
+        "Radiant",
+        "Witness",
+        "Bright"
+      ],
+      "darkness": [
+        "Veiled",
+        "Shadow-Kept",
+        "Hidden",
+        "Inner",
+        "Masked"
+      ]
+    },
+    "sphere": {
+      "force": [
+        "Iron",
+        "War",
+        "Blade",
+        "Hammer",
+        "Shield"
+      ],
+      "matter": [
+        "Stone",
+        "Craft",
+        "Forge",
+        "Earth",
+        "Anvil"
+      ],
+      "energy": [
+        "Spark",
+        "Storm",
+        "Lightning",
+        "Flame",
+        "Current"
+      ],
+      "life": [
+        "Root",
+        "Bloom",
+        "Seed",
+        "Grove",
+        "Green"
+      ],
+      "mind": [
+        "Thought",
+        "Lore",
+        "Cipher",
+        "Ink",
+        "Scroll"
+      ],
+      "spirit": [
+        "Ghost",
+        "Dream",
+        "Whisper",
+        "Veil",
+        "Prayer"
+      ],
+      "time": [
+        "Hour",
+        "Tide",
+        "Dust",
+        "Ruin",
+        "Memory"
+      ],
+      "entropy": [
+        "Ash",
+        "Hollow",
+        "Fade",
+        "Bone",
+        "Rust"
+      ]
+    },
+    "biome": {
+      "desert": [
+        "Sands",
+        "Dunes",
+        "Wastes",
+        "Oasis"
+      ],
+      "mountains": [
+        "Peaks",
+        "Heights",
+        "Crags",
+        "Summit"
+      ],
+      "hills": [
+        "Ridges",
+        "Slopes",
+        "Hollows",
+        "Downs"
+      ],
+      "grassland": [
+        "Plains",
+        "Meadows",
+        "Fields",
+        "Steppe"
+      ],
+      "savanna": [
+        "Savanna",
+        "Dry Fields",
+        "Sun-Lands",
+        "Flatlands"
+      ],
+      "steppe": [
+        "Steppe",
+        "Windlands",
+        "Dry Reaches",
+        "Barrens"
+      ],
+      "temperate_forest": [
+        "Groves",
+        "Canopy",
+        "Glades",
+        "Timberlands"
+      ],
+      "dense_forest": [
+        "Deepwood",
+        "Thickets",
+        "Dark Timber",
+        "Old Growth"
+      ],
+      "boreal_forest": [
+        "Pinelands",
+        "Frost-Wood",
+        "Northern Trees",
+        "Cold Forest"
+      ],
+      "jungle": [
+        "Tangles",
+        "Green Depths",
+        "Rain Canopy",
+        "Overgrowth"
+      ],
+      "swamp": [
+        "Mires",
+        "Bog-Lands",
+        "Still Waters",
+        "Fenlands"
+      ],
+      "marsh": [
+        "Marshes",
+        "Peatlands",
+        "Dark Pools",
+        "Fen"
+      ],
+      "tundra": [
+        "Frost",
+        "Ice Fields",
+        "Cold Reach",
+        "Permafrost"
+      ],
+      "glacier": [
+        "Glacier",
+        "Ice Wall",
+        "Frozen Reach",
+        "Rime"
+      ],
+      "volcano": [
+        "Cinder",
+        "Ember Fields",
+        "Ash Slopes",
+        "Crater"
+      ],
+      "broken_lands": [
+        "Shatter",
+        "Ruin-Fields",
+        "Scarlands",
+        "Breach"
+      ],
+      "plateau": [
+        "Mesa",
+        "High Table",
+        "Flatrock",
+        "Skyfield"
+      ],
+      "badlands": [
+        "Badlands",
+        "Gulch",
+        "Dry Canyons",
+        "Cracked Earth"
+      ],
+      "farmland": [
+        "Furrows",
+        "Tilth",
+        "Harvest-Lands",
+        "Homesteads"
+      ],
+      "forested_hills": [
+        "Green Heights",
+        "Wooded Ridges",
+        "Forest Slopes",
+        "Dappled Hills"
+      ]
+    },
+    "patterns": [
+      "The {foundation} {sphere} of the {biome}",
+      "The {sphere} {biome}",
+      "Children of the {foundation} {biome}",
+      "{foundation} {sphere}",
+      "The {foundation} {biome}",
+      "Keepers of the {sphere} {biome}"
+    ]
+  },
+  "WORK_ROOTS_BY_REACH": {
+    "iron": [
+      "Ironfast",
+      "Hammered",
+      "Bulwark",
+      "Shieldborn",
+      "Anvil",
+      "Fastheld",
+      "Warded",
+      "Braced"
+    ],
+    "gold": [
+      "Gilded",
+      "Coined",
+      "Saltway",
+      "Tallied",
+      "Ledgered",
+      "Weighed",
+      "Freighted",
+      "Minted"
+    ],
+    "shadow": [
+      "Quiet",
+      "Unlit",
+      "Sable",
+      "Cutpurse",
+      "Blackfoot",
+      "Slipped",
+      "Unmarked",
+      "Hushfoot"
+    ],
+    "veil": [
+      "Hushed",
+      "Veiled",
+      "Whispered",
+      "Thin",
+      "Half-Seen",
+      "Waking",
+      "Shrouded",
+      "Threadbare"
+    ],
+    "heart": [
+      "Kindred",
+      "Sworn",
+      "Openhand",
+      "Hearthed",
+      "Beloved",
+      "Bound",
+      "Gathered",
+      "Trusted"
+    ],
+    "eye": [
+      "Charted",
+      "Farseen",
+      "Keen",
+      "Reckoned",
+      "Lantern",
+      "Watchful",
+      "Marked",
+      "Surveyed"
+    ],
+    "stone": [
+      "Deepset",
+      "Quarried",
+      "Rooted",
+      "Standing",
+      "Gravebound",
+      "Longstone",
+      "Set",
+      "Enduring"
+    ],
+    "star": [
+      "Auspice",
+      "Wheeling",
+      "Highset",
+      "Omened",
+      "Meridian",
+      "Ascendant",
+      "Farturning",
+      "Vaulted"
+    ]
+  },
+  "WORK_ROOTS_BY_FOUNDATION": {
+    "chaos": [
+      "Windfall",
+      "Riven",
+      "Wildrun",
+      "Scattered",
+      "Fraying",
+      "Sudden"
+    ],
+    "order": [
+      "Charter",
+      "Warden",
+      "Canon",
+      "Pillar",
+      "Ledger",
+      "Measured"
+    ],
+    "light": [
+      "Dawnward",
+      "Beacon",
+      "Grace",
+      "Bright",
+      "Halowed",
+      "Clear"
+    ],
+    "darkness": [
+      "Duskward",
+      "Umbral",
+      "Pall",
+      "Gloaming",
+      "Nightset",
+      "Deep"
+    ]
+  },
+  "DOMAIN_WORD_SCALES": {
+    "iron": [
+      "Meek",
+      "Trained",
+      "Formidable",
+      "Fearsome",
+      "Legendary"
+    ],
+    "gold": [
+      "Naive",
+      "Bartering",
+      "Shrewd",
+      "Masterful",
+      "Magnate"
+    ],
+    "shadow": [
+      "Exposed",
+      "Cautious",
+      "Subtle",
+      "Unseen",
+      "Phantom"
+    ],
+    "veil": [
+      "Blind",
+      "Sensitive",
+      "Attuned",
+      "Channeler",
+      "Transcendent"
+    ],
+    "heart": [
+      "Shunned",
+      "Tolerated",
+      "Liked",
+      "Beloved",
+      "Revered"
+    ],
+    "eye": [
+      "Oblivious",
+      "Observant",
+      "Perceptive",
+      "Seer",
+      "Oracle"
+    ],
+    "stone": [
+      "Clumsy",
+      "Handy",
+      "Skilled",
+      "Masterwork",
+      "Monumental"
+    ],
+    "star": [
+      "Lost",
+      "Guided",
+      "Fated",
+      "Destined",
+      "Cosmic"
+    ]
+  },
+  "FACTION_VOICE_BIBLE": [
+    {
+      "factionDefId": "thieves_guild",
+      "tagline": "Streetwise, sardonic, pragmatic. The guild is a ledger. Honor is whatever keeps the ledger balanced.",
+      "lexicon": [
+        "ledger",
+        "take",
+        "mark",
+        "hand",
+        "pocket",
+        "clean",
+        "fast",
+        "crowd",
+        "slow work",
+        "earning the door",
+        "quiet word"
+      ],
+      "neverUse": [
+        "righteous",
+        "holy",
+        "sworn",
+        "grace",
+        "glory",
+        "honor"
+      ]
+    },
+    {
+      "factionDefId": "arcane_circle",
+      "tagline": "Scholarly, obsessive, half in love with the thing that could kill them.",
+      "lexicon": [
+        "resonance",
+        "calibration",
+        "fold",
+        "ley current",
+        "sigil",
+        "anomaly",
+        "elegant",
+        "clean line",
+        "pattern holds",
+        "it does not hold"
+      ],
+      "neverUse": [
+        "demonic",
+        "evil",
+        "magic"
+      ]
+    },
+    {
+      "factionDefId": "civic_guard",
+      "tagline": "Dutiful, measured, institutional. The city has made a promise and the guard is the promise.",
+      "lexicon": [
+        "watch",
+        "post",
+        "shift",
+        "log",
+        "book",
+        "gate",
+        "round",
+        "what was missed",
+        "what the city owes",
+        "what the city is owed"
+      ],
+      "neverUse": [
+        "glory",
+        "quest",
+        "adventure"
+      ]
+    },
+    {
+      "factionDefId": "holy_order_dawn",
+      "tagline": "The faithful do not admit doubt. When the prose admits doubt, it shows it in the weather — a cloud across the sun, a candle guttering.",
+      "lexicon": [
+        "Dawn",
+        "vigil",
+        "faithful",
+        "light",
+        "shadow",
+        "oath",
+        "blade",
+        "rite",
+        "cleansing",
+        "witness",
+        "bear witness"
+      ],
+      "neverUse": [
+        "pray"
+      ]
+    },
+    {
+      "factionDefId": "underking_court",
+      "tagline": "Regal, intrigue-laden, old. The Court speaks as if every conversation has been happening for a hundred years.",
+      "lexicon": [
+        "compact",
+        "old word",
+        "throne beneath",
+        "what is owed",
+        "what is held in trust",
+        "courtesy",
+        "courtesy denied",
+        "long quiet"
+      ],
+      "neverUse": [
+        "boss",
+        "kingdom",
+        "ruler"
+      ]
+    },
+    {
+      "factionDefId": "builders_fellowship",
+      "tagline": "Practical, craft-focused, quietly proud. The Fellowship's prose does not moralize — it measures.",
+      "lexicon": [
+        "work",
+        "join",
+        "stone",
+        "line",
+        "plumb",
+        "true",
+        "square",
+        "set",
+        "cure",
+        "load",
+        "what will hold"
+      ],
+      "neverUse": [
+        "art",
+        "mastery"
+      ]
+    },
+    {
+      "factionDefId": "rangers_brotherhood",
+      "tagline": "Terse, observant, the prose reads as if written by someone on watch.",
+      "lexicon": [
+        "sign",
+        "trail",
+        "trace",
+        "track",
+        "wind",
+        "bearing",
+        "line",
+        "draw",
+        "ridge",
+        "dark under trees",
+        "what the wild permits"
+      ],
+      "neverUse": [
+        "monster"
+      ]
+    },
+    {
+      "factionDefId": "merchant_consortium",
+      "tagline": "Calculating, civil, precise. The Consortium smiles at you and takes a small, clean bite.",
+      "lexicon": [
+        "terms",
+        "split",
+        "margin",
+        "quiet price",
+        "handshake",
+        "book price",
+        "street price",
+        "what the room will bear"
+      ],
+      "neverUse": [
+        "greed",
+        "fair"
+      ]
+    },
+    {
+      "factionDefId": "mercenary_company",
+      "tagline": "Blunt, professional, darkly funny. Mercenaries do the work and want to be paid.",
+      "lexicon": [
+        "contract",
+        "clause",
+        "work",
+        "pay",
+        "split",
+        "captain",
+        "line",
+        "ground",
+        "keeping it honest",
+        "keeping the word"
+      ],
+      "neverUse": [
+        "glory"
+      ]
+    },
+    {
+      "factionDefId": "lorekeepers_covenant",
+      "tagline": "Quiet, precise, patient. The Covenant knows the world forgets and considers that a personal affront.",
+      "lexicon": [
+        "record",
+        "record keeps",
+        "annal",
+        "entry",
+        "margin",
+        "hand",
+        "date",
+        "what was said",
+        "what was not said",
+        "what is remembered"
+      ],
+      "neverUse": [
+        "story",
+        "myth"
+      ]
+    },
+    {
+      "factionDefId": "temple_of_spheres",
+      "tagline": "Mystic, layered, careful. The Temple holds all nine spheres and weighs them against each other constantly.",
+      "lexicon": [
+        "nine",
+        "weight",
+        "alignment",
+        "turning",
+        "open sphere",
+        "closed sphere",
+        "mote",
+        "orbit",
+        "passage"
+      ],
+      "neverUse": [
+        "god"
+      ]
+    }
+  ],
+  "FACTIONS": [
+    {
+      "id": "adventuring_guild",
+      "name": "The Adventurers Guild",
+      "motto": "Fortune favors the bold.",
+      "reachWeights": {
+        "iron": 0.6,
+        "eye": 0.8,
+        "stone": 0.5,
+        "shadow": 0.3,
+        "heart": 0.2,
+        "gold": 0.3,
+        "star": 0.4,
+        "veil": 0.2
+      },
+      "factionType": "guild"
+    },
+    {
+      "id": "mercenary_company",
+      "name": "The Free Company",
+      "motto": "Steel speaks louder than oaths.",
+      "reachWeights": {
+        "iron": 0.9,
+        "gold": 0.7,
+        "shadow": 0.4,
+        "heart": 0.3,
+        "stone": 0.3,
+        "eye": 0.2,
+        "star": 0.1,
+        "veil": 0.1
+      },
+      "factionType": "military"
+    },
+    {
+      "id": "thieves_guild",
+      "name": "The Thieves Guild",
+      "motto": "What the eye does not see, the heart does not grieve.",
+      "reachWeights": {
+        "shadow": 0.9,
+        "gold": 0.7,
+        "eye": 0.5,
+        "heart": 0.3,
+        "iron": 0.2,
+        "veil": 0.1,
+        "stone": 0.1,
+        "star": 0
+      },
+      "factionType": "criminal"
+    },
+    {
+      "id": "merchant_consortium",
+      "name": "The Merchant Consortium",
+      "motto": "Prosperity shared is prosperity doubled.",
+      "reachWeights": {
+        "gold": 0.9,
+        "heart": 0.6,
+        "eye": 0.5,
+        "shadow": 0.3,
+        "stone": 0.3,
+        "iron": 0.2,
+        "veil": 0.1,
+        "star": 0.1
+      },
+      "factionType": "guild"
+    },
+    {
+      "id": "temple_of_spheres",
+      "name": "The Temple of the Spheres",
+      "motto": "In devotion, all spheres are one.",
+      "reachWeights": {
+        "star": 0.9,
+        "heart": 0.7,
+        "veil": 0.5,
+        "eye": 0.4,
+        "stone": 0.3,
+        "gold": 0.2,
+        "iron": 0.1,
+        "shadow": 0
+      },
+      "factionType": "religious"
+    },
+    {
+      "id": "arcane_circle",
+      "name": "The Arcane Circle",
+      "motto": "Knowledge is the only true power.",
+      "reachWeights": {
+        "veil": 0.9,
+        "eye": 0.7,
+        "star": 0.4,
+        "shadow": 0.3,
+        "heart": 0.2,
+        "gold": 0.2,
+        "stone": 0.1,
+        "iron": 0.1
+      },
+      "factionType": "guild"
+    },
+    {
+      "id": "rangers_brotherhood",
+      "name": "The Rangers Brotherhood",
+      "motto": "We walk so others need not.",
+      "reachWeights": {
+        "eye": 0.8,
+        "iron": 0.7,
+        "stone": 0.5,
+        "shadow": 0.4,
+        "heart": 0.3,
+        "gold": 0.1,
+        "veil": 0.1,
+        "star": 0.1
+      },
+      "factionType": "guild"
+    },
+    {
+      "id": "civic_guard",
+      "name": "The Civic Guard",
+      "motto": "Order endures where vigilance stands.",
+      "reachWeights": {
+        "iron": 0.8,
+        "stone": 0.6,
+        "heart": 0.5,
+        "eye": 0.4,
+        "gold": 0.2,
+        "shadow": 0.2,
+        "veil": 0.1,
+        "star": 0.1
+      },
+      "factionType": "political"
+    },
+    {
+      "id": "underking_court",
+      "name": "The Underking's Court",
+      "motto": "Every throne casts a shadow. Ours is the deeper.",
+      "reachWeights": {
+        "shadow": 0.8,
+        "gold": 0.6,
+        "heart": 0.6,
+        "iron": 0.4,
+        "eye": 0.3,
+        "stone": 0.2,
+        "veil": 0.1,
+        "star": 0
+      },
+      "factionType": "criminal"
+    },
+    {
+      "id": "holy_order_dawn",
+      "name": "The Holy Order of the Dawn",
+      "motto": "By blade and prayer, darkness is undone.",
+      "reachWeights": {
+        "star": 0.8,
+        "iron": 0.8,
+        "heart": 0.5,
+        "stone": 0.4,
+        "eye": 0.3,
+        "veil": 0.2,
+        "gold": 0.1,
+        "shadow": 0
+      },
+      "factionType": "military"
+    },
+    {
+      "id": "builders_fellowship",
+      "name": "The Builders Fellowship",
+      "motto": "What we raise endures.",
+      "reachWeights": {
+        "stone": 0.9,
+        "gold": 0.6,
+        "iron": 0.5,
+        "heart": 0.3,
+        "eye": 0.2,
+        "shadow": 0.1,
+        "veil": 0.1,
+        "star": 0.1
+      },
+      "factionType": "guild"
+    },
+    {
+      "id": "lorekeepers_covenant",
+      "name": "The Lorekeepers Covenant",
+      "motto": "To forget is to lose. To record is to endure.",
+      "reachWeights": {
+        "eye": 0.9,
+        "veil": 0.6,
+        "heart": 0.4,
+        "stone": 0.3,
+        "gold": 0.2,
+        "shadow": 0.2,
+        "star": 0.2,
+        "iron": 0.1
+      },
+      "factionType": "guild"
+    }
+  ],
+  "MONSTER_FACTIONS": [
+    {
+      "id": "monster_force",
+      "name": "The {adj} Beast Pack",
+      "reachWeights": {
+        "iron": 0.9,
+        "stone": 0.7
+      },
+      "factionType": "monster"
+    },
+    {
+      "id": "monster_matter",
+      "name": "The {adj} Golem Cluster",
+      "reachWeights": {
+        "stone": 0.9,
+        "iron": 0.5
+      },
+      "factionType": "monster"
+    },
+    {
+      "id": "monster_energy",
+      "name": "The {adj} Storm Flock",
+      "reachWeights": {
+        "iron": 0.8,
+        "star": 0.6
+      },
+      "factionType": "monster"
+    },
+    {
+      "id": "monster_life",
+      "name": "The {adj} Behemoth Herd",
+      "reachWeights": {
+        "iron": 0.9,
+        "eye": 0.4
+      },
+      "factionType": "monster"
+    },
+    {
+      "id": "monster_mind",
+      "name": "The {adj} Mind Swarm",
+      "reachWeights": {
+        "veil": 0.9,
+        "eye": 0.7
+      },
+      "factionType": "monster"
+    },
+    {
+      "id": "monster_spirit",
+      "name": "The {adj} Wraith Host",
+      "reachWeights": {
+        "veil": 0.8,
+        "shadow": 0.7
+      },
+      "factionType": "monster"
+    },
+    {
+      "id": "monster_time",
+      "name": "The {adj} Echo Stalkers",
+      "reachWeights": {
+        "star": 0.8,
+        "veil": 0.5
+      },
+      "factionType": "monster"
+    },
+    {
+      "id": "monster_entropy",
+      "name": "The {adj} Plague Shamble",
+      "reachWeights": {
+        "shadow": 0.8,
+        "stone": 0.5
+      },
+      "factionType": "monster"
+    }
+  ],
+  "AGENT_CONDITIONS": [
+    {
+      "id": "trait.condition.wounded",
+      "name": "Wounded",
+      "tags": [
+        "#condition",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Suffering from injuries sustained in conflict. Combat effectiveness reduced.",
+      "domainContributions": {
+        "iron": -0.08,
+        "stone": -0.04
+      }
+    },
+    {
+      "id": "trait.condition.inspired",
+      "name": "Inspired",
+      "tags": [
+        "#condition",
+        "#social",
+        "#positive"
+      ],
+      "description": "Buoyed by a triumph of the spirit. Social and creative endeavors flourish.",
+      "domainContributions": {
+        "heart": 0.08,
+        "star": 0.04
+      }
+    },
+    {
+      "id": "trait.condition.terrified",
+      "name": "Terrified",
+      "tags": [
+        "#condition",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Gripped by fear from a harrowing encounter. Avoids danger at all costs.",
+      "domainContributions": {
+        "iron": -0.06,
+        "shadow": 0.04
+      }
+    },
+    {
+      "id": "trait.condition.blessed",
+      "name": "Blessed",
+      "tags": [
+        "#condition",
+        "#divine",
+        "#positive"
+      ],
+      "description": "Touched by divine favor. Fortune bends in their direction.",
+      "domainContributions": {
+        "star": 0.1,
+        "heart": 0.04
+      }
+    },
+    {
+      "id": "trait.condition.cursed",
+      "name": "Cursed",
+      "tags": [
+        "#condition",
+        "#mystical",
+        "#negative"
+      ],
+      "description": "Marked by malign forces. Misfortune clings to every endeavor.",
+      "domainContributions": {
+        "star": -0.08,
+        "gold": -0.06
+      }
+    },
+    {
+      "id": "trait.condition.exhausted",
+      "name": "Exhausted",
+      "tags": [
+        "#condition",
+        "#negative"
+      ],
+      "description": "Pushed beyond their limits. Everything takes more effort.",
+      "domainContributions": {
+        "iron": -0.04,
+        "eye": -0.04,
+        "stone": -0.04
+      }
+    },
+    {
+      "id": "trait.condition.grieving",
+      "name": "Grieving",
+      "tags": [
+        "#condition",
+        "#social",
+        "#negative"
+      ],
+      "description": "Carrying a loss. Attention goes where the absence is, not where the work is.",
+      "domainContributions": {
+        "heart": -0.08,
+        "eye": -0.05
+      }
+    },
+    {
+      "id": "trait.condition.shaken",
+      "name": "Shaken",
+      "tags": [
+        "#condition",
+        "#social",
+        "#negative"
+      ],
+      "description": "Their own judgement is the thing they trust least right now.",
+      "domainContributions": {
+        "star": -0.08,
+        "heart": -0.05
+      }
+    }
+  ],
+  "REWARD_CONDITIONS": [
+    {
+      "id": "reward_condition_fractured_arm",
+      "name": "Fractured Arm",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#iron",
+        "#combat",
+        "#negative"
+      ],
+      "description": "A broken bone limits striking power and grip strength.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_gashed_leg",
+      "name": "Gashed Leg",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#heart",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Deep laceration impairs movement and endurance.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_cracked_ribs",
+      "name": "Cracked Ribs",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#iron",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Breathing hurts. Fighting hurts more.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_bruised_knuckles",
+      "name": "Bruised Knuckles",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#stone",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Swollen hands make delicate work impossible.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_deep_stab_wound",
+      "name": "Deep Stab Wound",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#iron",
+        "#heart",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Internal damage that risks infection and limits exertion.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_shattered_shield_arm",
+      "name": "Shattered Shield Arm",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#iron",
+        "#combat",
+        "#negative"
+      ],
+      "description": "The arm that blocks can no longer bear weight.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_blinded_eye",
+      "name": "Blinded Eye",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#eye",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Lost depth perception impairs awareness and aim.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_spine_wound",
+      "name": "Spine Wound",
+      "tags": [
+        "#wound",
+        "#physical",
+        "#iron",
+        "#flesh",
+        "#combat",
+        "#negative"
+      ],
+      "description": "Catastrophic injury to the back. Movement and combat severely impaired.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_dawn_kissed",
+      "name": "Dawn-Kissed",
+      "tags": [
+        "#blessing",
+        "#star",
+        "#divine",
+        "#healing",
+        "#positive"
+      ],
+      "description": "A faint warmth lingers, granting minor divine favor.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_healers_touch",
+      "name": "Healer's Touch",
+      "tags": [
+        "#blessing",
+        "#heart",
+        "#stone",
+        "#healing",
+        "#positive"
+      ],
+      "description": "Hands carry a soothing warmth that eases pain.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_fortune_marked",
+      "name": "Fortune-Marked",
+      "tags": [
+        "#blessing",
+        "#gold",
+        "#divine",
+        "#trade",
+        "#positive"
+      ],
+      "description": "Luck bends slightly in your direction.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_saints_ward",
+      "name": "Saint's Ward",
+      "tags": [
+        "#blessing",
+        "#star",
+        "#divine",
+        "#heart",
+        "#healing",
+        "#positive"
+      ],
+      "description": "A protective aura that dulls hostile intent nearby.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_earthblood_vigor",
+      "name": "Earthblood Vigor",
+      "tags": [
+        "#blessing",
+        "#stone",
+        "#wilderness",
+        "#positive"
+      ],
+      "description": "Vitality drawn from the land itself. Wounds close faster, muscles ache less.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_the_anointing",
+      "name": "The Anointing",
+      "tags": [
+        "#blessing",
+        "#star",
+        "#divine",
+        "#eye",
+        "#ruins",
+        "#positive"
+      ],
+      "description": "Marked by divine purpose. Perception and faith burn bright.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_ill_luck",
+      "name": "Ill Luck",
+      "tags": [
+        "#curse",
+        "#shadow",
+        "#gold",
+        "#negative"
+      ],
+      "description": "Misfortune clings like smoke. Commerce and stealth suffer.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_nightmares",
+      "name": "Nightmares",
+      "tags": [
+        "#curse",
+        "#heart",
+        "#veil",
+        "#negative"
+      ],
+      "description": "Restless sleep erodes composure and empathy.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_tonguebound",
+      "name": "Tonguebound",
+      "tags": [
+        "#curse",
+        "#heart",
+        "#shadow",
+        "#negative"
+      ],
+      "description": "Cannot speak truths about a particular subject. Social reach impaired.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_mark_of_debt",
+      "name": "Mark of Debt",
+      "tags": [
+        "#curse",
+        "#gold",
+        "#veil",
+        "#negative"
+      ],
+      "description": "A supernatural debt that drains material fortune.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_watch_scrutiny",
+      "name": "Watch Scrutiny",
+      "tags": [
+        "#checkpoint",
+        "#curse",
+        "#eye",
+        "#shadow",
+        "#negative"
+      ],
+      "description": "The checkpoint remembers your face. Inspections linger, questions multiply, and every small irregularity now feels one witness away from becoming a problem.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_the_hollow",
+      "name": "The Hollow",
+      "tags": [
+        "#curse",
+        "#heart",
+        "#shadow",
+        "#veil",
+        "#negative"
+      ],
+      "description": "Something essential has been taken. Joy, purpose, or identity — something is missing.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_road_fever",
+      "name": "Road Fever",
+      "tags": [
+        "#iron",
+        "#disease",
+        "#flesh",
+        "#wilderness",
+        "#negative"
+      ],
+      "description": "A common illness from exposure and bad water.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_gut_rot",
+      "name": "Gut Rot",
+      "tags": [
+        "#iron",
+        "#disease",
+        "#flesh",
+        "#wilderness",
+        "#negative"
+      ],
+      "description": "Contaminated food or water. Debilitating cramps and weakness.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_greyscale",
+      "name": "Greyscale",
+      "tags": [
+        "#disease",
+        "#flesh",
+        "#stone",
+        "#negative"
+      ],
+      "description": "Skin hardens and cracks. Mobility and appearance degrade.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_the_wasting",
+      "name": "The Wasting",
+      "tags": [
+        "#disease",
+        "#flesh",
+        "#veil",
+        "#negative"
+      ],
+      "description": "A supernatural consumption that devours vitality and thins the boundary to death.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_fey_touched",
+      "name": "Fey-Touched",
+      "tags": [
+        "#supernatural",
+        "#veil",
+        "#eye",
+        "#positive"
+      ],
+      "description": "Brief exposure to the otherworld leaves lingering perception.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_death_marked",
+      "name": "Death-Marked",
+      "tags": [
+        "#supernatural",
+        "#shadow",
+        "#eye",
+        "#positive"
+      ],
+      "description": "Survived something that should have killed. The shadow world notices.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_void_scarred",
+      "name": "Void-Scarred",
+      "tags": [
+        "#supernatural",
+        "#star",
+        "#shadow",
+        "#veil",
+        "#positive"
+      ],
+      "description": "Touched by the space between worlds. Reality sits uneasy around you.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_gale_touched",
+      "name": "Gale-Touched",
+      "tags": [
+        "#blessing",
+        "#star",
+        "#divine",
+        "#combat",
+        "#positive"
+      ],
+      "description": "A divine gift of speed — the body moves before the mind decides.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_temporal_anchor",
+      "name": "Temporal Anchor",
+      "tags": [
+        "#blessing",
+        "#veil",
+        "#temporal",
+        "#positive"
+      ],
+      "description": "Time flows around you like water around a stone. Your blessings linger.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_leaden_limbs",
+      "name": "Leaden Limbs",
+      "tags": [
+        "#curse",
+        "#shadow",
+        "#iron",
+        "#combat",
+        "#negative"
+      ],
+      "description": "A sluggishness in the bones. Movement becomes a negotiation with gravity.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_time_eaten",
+      "name": "Time-Eaten",
+      "tags": [
+        "#curse",
+        "#shadow",
+        "#veil",
+        "#temporal",
+        "#negative"
+      ],
+      "description": "Something has bitten a piece from your timeline. Moments vanish without memory.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_the_red_divide",
+      "name": "The Red Divide",
+      "tags": [
+        "#supernatural",
+        "#iron",
+        "#heart",
+        "#combat",
+        "#positive"
+      ],
+      "description": "A berserker trance. The world slows, the body quickens, reason dims.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_fortune_kissed",
+      "name": "Fortune-Kissed",
+      "tags": [
+        "#blessing",
+        "#star",
+        "#fate",
+        "#positive"
+      ],
+      "description": "Fate bends gently toward the bearer. Misfortune slides past like rain off wax.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_null_touched",
+      "name": "Null-Touched",
+      "tags": [
+        "#supernatural",
+        "#shadow",
+        "#veil",
+        "#anti-magic",
+        "#curse",
+        "#negative"
+      ],
+      "description": "Something has scoured the magic from your blood. Spells slide off you. So do blessings.",
+      "domainContributions": {}
+    },
+    {
+      "id": "reward_condition_warded_ground",
+      "name": "Warded Ground",
+      "tags": [
+        "#supernatural",
+        "#stone",
+        "#eye",
+        "#territorial",
+        "#ward",
+        "#positive"
+      ],
+      "description": "The earth itself remembers your claim. Trespassers feel the boundary in their bones.",
+      "domainContributions": {}
+    }
+  ],
+  "CATALOG_ITEM_NAMES": [
+    {
+      "id": "reward_arms_bronze_spear",
+      "name": "Bronze Spear",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_hunting_bow",
+      "name": "Hunting Bow",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_rusted_mace",
+      "name": "Rusted Mace",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_bone_knife",
+      "name": "Bone Knife",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_blackiron_blade",
+      "name": "Blackiron Blade",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_crossbow_of_the_watch",
+      "name": "Crossbow of the Watch",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_tools_instruments_gate_seal_case",
+      "name": "Gate Seal Case",
+      "tier": 1,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_arms_thornwood_staff",
+      "name": "Thornwood Staff",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_hollowfang",
+      "name": "Hollowfang",
+      "tier": 3,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_starfall_longbow",
+      "name": "Starfall Longbow",
+      "tier": 3,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_the_quiet_blade",
+      "name": "The Quiet Blade",
+      "tier": 4,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_grave_robbers_stiletto",
+      "name": "Grave-Robber's Stiletto",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_cracked_brass_horn",
+      "name": "Cracked Brass Horn",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_spotters_marking_bolt",
+      "name": "Spotter's Marking Bolt",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_basalt_maul",
+      "name": "Basalt Maul",
+      "tier": 1,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_stranglers_cord",
+      "name": "Strangler's Cord",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_hazel_switch",
+      "name": "Hazel Switch",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_banner_of_the_lost_company",
+      "name": "Banner of the Lost Company",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_lens_sighted_arbalest",
+      "name": "Lens-Sighted Arbalest",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_petrified_ironwood_glaive",
+      "name": "Petrified Ironwood Glaive",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_arms_assessors_weighted_scales",
+      "name": "Assessor's Weighted Scales",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_vestments_padded_jerkin",
+      "name": "Padded Jerkin",
+      "tier": 1,
+      "subcategory": "vestments"
+    },
+    {
+      "id": "reward_vestments_merchant_silks",
+      "name": "Merchant Silks",
+      "tier": 1,
+      "subcategory": "vestments"
+    },
+    {
+      "id": "reward_vestments_pilgrim_robe",
+      "name": "Pilgrim's Robe",
+      "tier": 1,
+      "subcategory": "vestments"
+    },
+    {
+      "id": "reward_vestments_chainmail_hauberk",
+      "name": "Chainmail Hauberk",
+      "tier": 2,
+      "subcategory": "vestments"
+    },
+    {
+      "id": "reward_vestments_shadowweave_cloak",
+      "name": "Shadowweave Cloak",
+      "tier": 2,
+      "subcategory": "vestments"
+    },
+    {
+      "id": "reward_vestments_mantle_of_the_unremembered",
+      "name": "Mantle of the Unremembered",
+      "tier": 3,
+      "subcategory": "vestments"
+    },
+    {
+      "id": "reward_vestments_the_woven_sky",
+      "name": "The Woven Sky",
+      "tier": 4,
+      "subcategory": "vestments"
+    },
+    {
+      "id": "reward_tomes_scrolls_field_journal",
+      "name": "Field Journal",
+      "tier": 1,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_prayer_scroll",
+      "name": "Prayer Scroll",
+      "tier": 1,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_merchants_ledger",
+      "name": "Merchant's Ledger",
+      "tier": 1,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_letters_of_introduction",
+      "name": "Letters of Introduction",
+      "tier": 1,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_chronicle_of_the_falling",
+      "name": "Chronicle of the Falling",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_veilscript_fragment",
+      "name": "Veilscript Fragment",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_the_silent_testament",
+      "name": "The Silent Testament",
+      "tier": 3,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_codex_of_unmaking",
+      "name": "Codex of Unmaking",
+      "tier": 4,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tools_instruments_iron_tongs",
+      "name": "Iron Tongs",
+      "tier": 1,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_herbalists_pouch",
+      "name": "Herbalist's Pouch",
+      "tier": 1,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_surveyors_glass",
+      "name": "Surveyor's Glass",
+      "tier": 1,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_alchemists_crucible",
+      "name": "Alchemist's Crucible",
+      "tier": 2,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_master_chisel",
+      "name": "Master Chisel",
+      "tier": 2,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_chronoscope",
+      "name": "Chronoscope",
+      "tier": 2,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_the_astrolabe_of_yven",
+      "name": "Astrolabe of Yven",
+      "tier": 3,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_relics_talismans_wayfarers_charm",
+      "name": "Wayfarer's Charm",
+      "tier": 1,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_bone_ward",
+      "name": "Bone Ward",
+      "tier": 1,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_duelists_luck_token",
+      "name": "Duelist's Luck Token",
+      "tier": 1,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_ember_sigil",
+      "name": "Ember Sigil",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_shadowglass_pendant",
+      "name": "Shadowglass Pendant",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_hearthglass_ward",
+      "name": "Hearthglass Ward",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_stasis_pearl",
+      "name": "Stasis Pearl",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_heart_of_the_barrow",
+      "name": "Heart of the Barrow",
+      "tier": 3,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_the_weeping_icon",
+      "name": "The Weeping Icon",
+      "tier": 3,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_hourglass_of_the_unraveling",
+      "name": "Hourglass of the Unraveling",
+      "tier": 3,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_the_fulcrum",
+      "name": "The Fulcrum",
+      "tier": 4,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_mounts_beasts_draft_pony",
+      "name": "Draft Pony",
+      "tier": 1,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_hound",
+      "name": "Tracking Hound",
+      "tier": 1,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_pack_goat",
+      "name": "Pack Goat",
+      "tier": 1,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_war_hound",
+      "name": "War Hound",
+      "tier": 2,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_steppe_mare",
+      "name": "Steppe Mare",
+      "tier": 2,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_ashenmane_destrier",
+      "name": "Ashenmane Destrier",
+      "tier": 3,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_dustwalker",
+      "name": "Dustwalker",
+      "tier": 2,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_smoke_tooth",
+      "name": "Smoke-Tooth",
+      "tier": 3,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_shimmer_hart",
+      "name": "Shimmer Hart",
+      "tier": 2,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_glimmermoth",
+      "name": "Glimmermoth",
+      "tier": 3,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_hearthbound_hound",
+      "name": "Hearthbound Hound",
+      "tier": 2,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_sorrowheart_mare",
+      "name": "Sorrowheart Mare",
+      "tier": 3,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_dawnfeather_kestrel",
+      "name": "Dawnfeather Kestrel",
+      "tier": 3,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_mounts_beasts_pale_pilgrim",
+      "name": "The Pale Pilgrim",
+      "tier": 4,
+      "subcategory": "mounts_beasts"
+    },
+    {
+      "id": "reward_provisions_hardtack_and_salt",
+      "name": "Hardtack and Salt",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_waterskin",
+      "name": "Full Waterskin",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_firestarter_kit",
+      "name": "Firestarter Kit",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_travelers_wine",
+      "name": "Traveler's Wine",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_berserker_draught",
+      "name": "Berserker's Draught",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_healing_poultice",
+      "name": "Healing Poultice",
+      "tier": 2,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_sanctuary_incense",
+      "name": "Sanctuary Incense",
+      "tier": 2,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_timekeepers_last_vial",
+      "name": "Timekeeper's Last Vial",
+      "tier": 2,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_intelligence_shrine_map",
+      "name": "Vessen Shrine Map",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_intelligence_trade_route_dossier",
+      "name": "Trade Route Dossier",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_provisions_veilwater_flask",
+      "name": "Veilwater Flask",
+      "tier": 3,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_arms_ember_edge",
+      "name": "Ember Edge",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_relics_talismans_moonstone_pendant",
+      "name": "Moonstone Pendant",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_arms_veterans_shield",
+      "name": "Veteran's Shield",
+      "tier": 2,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_provisions_battle_salve",
+      "name": "Battle Salve",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_tomes_scrolls_fading_ward",
+      "name": "Fading Ward",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_arms_double_edged_blade",
+      "name": "Double-Edged Blade",
+      "tier": 3,
+      "subcategory": "arms"
+    },
+    {
+      "id": "reward_relics_talismans_the_hush_stone",
+      "name": "The Hush Stone",
+      "tier": 1,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_gamblers_last_copper",
+      "name": "Gambler's Last Copper",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_null_circlet",
+      "name": "Null Circlet",
+      "tier": 3,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_tools_instruments_wardwright_compass",
+      "name": "Wardwright's Compass",
+      "tier": 2,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_fatesight_lens",
+      "name": "Fatesight Lens",
+      "tier": 3,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_provisions_ward_incense",
+      "name": "Ward Incense",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_tomes_scrolls_book_of_sealing",
+      "name": "Book of Sealing",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_provisions_spring_water_vial",
+      "name": "Spring Water Vial",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_meditation_stones",
+      "name": "Meditation Stones",
+      "tier": 1,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_the_quiet_cup",
+      "name": "The Quiet Cup",
+      "tier": 4,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_the_last_harvest",
+      "name": "The Last Harvest",
+      "tier": 4,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_provisions_the_black_mead",
+      "name": "The Black Mead",
+      "tier": 4,
+      "subcategory": "provisions"
+    },
+    {
+      "id": "reward_relics_talismans_river_clay_bead",
+      "name": "River Clay Bead",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_tarnished_draw_tube",
+      "name": "Tarnished Draw-Tube",
+      "tier": 2,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_relics_talismans_the_sweating_vessel",
+      "name": "The Sweating Vessel",
+      "tier": 3,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_tools_instruments_leather_bandolier",
+      "name": "Leather Bandolier",
+      "tier": 1,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_scroll_case",
+      "name": "Scroll Case",
+      "tier": 1,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_quartermasters_harness",
+      "name": "Quartermaster's Harness",
+      "tier": 2,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_salvage_kit",
+      "name": "Salvage Kit",
+      "tier": 2,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_bag_of_conveyance",
+      "name": "Bag of Conveyance",
+      "tier": 3,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_the_trembling_needle",
+      "name": "The Trembling Needle",
+      "tier": 4,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tools_instruments_the_anvilbone",
+      "name": "The Anvilbone",
+      "tier": 4,
+      "subcategory": "tools_instruments"
+    },
+    {
+      "id": "reward_tomes_scrolls_sealed_bounty_scroll",
+      "name": "Sealed Bounty Scroll",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_tomes_scrolls_tithe_box",
+      "name": "Tithe Box",
+      "tier": 2,
+      "subcategory": "tomes_scrolls"
+    },
+    {
+      "id": "reward_talisman_pilgrims_wayfinding_stone",
+      "name": "Pilgrim's Wayfinding Stone",
+      "tier": 1,
+      "subcategory": "relics_talismans"
+    },
+    {
+      "id": "reward_charm_battle_spoils_talisman",
+      "name": "Battle Spoils Talisman",
+      "tier": 1,
+      "subcategory": "relics_talismans"
+    }
+  ],
+  "CONTENT_TAGS": [
+    {
+      "tag": "#iron",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#gold",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#shadow",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#veil",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#heart",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#eye",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#stone",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#star",
+      "axis": "reach",
+      "kinds": null
+    },
+    {
+      "tag": "#chaos",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#order",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#light",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#darkness",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#force",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#matter",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#energy",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#life",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#mind",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#spirit",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#time",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#entropy",
+      "axis": "sphere",
+      "kinds": null
+    },
+    {
+      "tag": "#positive",
+      "axis": "polarity",
+      "kinds": null
+    },
+    {
+      "tag": "#negative",
+      "axis": "polarity",
+      "kinds": null
+    },
+    {
+      "tag": "#weapon",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#melee",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#ranged",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#precision",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#cloth",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#tome",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#scroll",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#map",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#talisman",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#gem",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#crystal",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#pearl",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#herb",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#fungus",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#flesh",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#beast",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#mount",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#tool",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#equipment",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#provision",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#carrying",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#ward",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#star_metal",
+      "axis": "form",
+      "kinds": null
+    },
+    {
+      "tag": "#relic",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#trinket",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#legendary",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#consumable",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#anomaly",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#ancient",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#creation",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#bestowed",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#anti-magic",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#blessing",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#curse",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#cursed",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#storied",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#wound",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#disease",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#physical",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#divine",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#arcane",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#supernatural",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#mystical",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#nature",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#fate",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#vision",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#temporal",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#combat",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#knowledge",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#craft",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#healing",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#restoration",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#survival",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#stealth",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#social",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#trade",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#commercial",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#travel",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#discovery",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#patronage",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#territorial",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#wilderness",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#wilds",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#ruins",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#ruin_seeker",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#settlement",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#road",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#court",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#checkpoint",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#crossroads_debt",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#guild_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#circle_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#fellowship_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#watch_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#dawn_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#covenant_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#company_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#consortium_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#ranger_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#temple_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#thieves_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#court_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#crown_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#town_keeper",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#tavern_night",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#delve",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#threshold_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#broker_errand",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#craft_commission",
+      "axis": "family",
+      "kinds": [
+        "encounter_template"
+      ]
+    },
+    {
+      "tag": "#core",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#personality",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#mastery",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#reputation",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#cultural",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#condition",
+      "axis": "family",
+      "kinds": [
+        "condition_template"
+      ]
+    },
+    {
+      "tag": "#scar",
+      "axis": "family",
+      "kinds": [
+        "condition_template"
+      ]
+    },
+    {
+      "tag": "#location",
+      "axis": "family",
+      "kinds": [
+        "condition_template"
+      ]
+    },
+    {
+      "tag": "#virtue",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#vice",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#core_warmth",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#core_hope",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#core_forgiveness",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#core_humility",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#core_integrity",
+      "axis": "family",
+      "kinds": [
+        "trait_template"
+      ]
+    },
+    {
+      "tag": "#economic",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#guild",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#loss",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#monopoly",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#smuggling",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#debt",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#construction",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#perception",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#stability",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#fear",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#sacred",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#martial",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#honor",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#violence",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#generosity",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#exploitation",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#discretion",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#criminal",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#magic",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#wisdom",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#danger",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#warmth",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#manipulation",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#espionage",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#infrastructure",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#trust",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#tyranny",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#devotion",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#fanaticism",
+      "axis": "family",
+      "kinds": null
+    },
+    {
+      "tag": "#renown",
+      "axis": "family",
+      "kinds": null
+    }
+  ],
+  "REACH_TAG_DESCRIPTIONS": {
+    "iron": "Of force and arms — a thing meant for the fight, or marked by one.",
+    "gold": "Of trade and worth — a thing bought, bartered, or counted.",
+    "shadow": "Of stealth and secrets — a thing that keeps quiet, or keeps something quiet.",
+    "veil": "Of the unseen — a thing touched by what lies behind the world.",
+    "heart": "Of bonds and feeling — a thing that moves people, or is moved by them.",
+    "eye": "Of watching and knowing — a thing that sees further than it should.",
+    "stone": "Of craft and endurance — a thing built to last, or built to build.",
+    "star": "Of lore and the far pattern — a thing that answers to what is written above."
+  },
+  "SPHERE_TAG_DESCRIPTIONS": {
+    "chaos": "Sworn to Chaos — unruly, and apt to become something it was not.",
+    "order": "Sworn to Order — it holds its shape, and holds others to theirs.",
+    "light": "Sworn to Light — it reveals, warms, and is hard to hide behind.",
+    "darkness": "Sworn to Darkness — it conceals, and asks nothing about what it hides.",
+    "force": "Of Force — it pushes, strikes, or refuses to be moved.",
+    "matter": "Of Matter — solid, worked, and stubbornly itself.",
+    "energy": "Of Energy — it burns, quickens, or spends itself to act.",
+    "life": "Of Life — it grows, heals, or wants to keep growing.",
+    "mind": "Of Mind — it thinks, remembers, or leans on the thoughts of others.",
+    "spirit": "Of Spirit — it answers to devotion rather than to hands.",
+    "time": "Of Time — it wears, waits, or keeps a reckoning of its own.",
+    "entropy": "Of Entropy — it unmakes, and is patient about it."
+  },
+  "SPHERE_OPPOSITES": {
+    "chaos": "order",
+    "order": "chaos",
+    "light": "darkness",
+    "darkness": "light",
+    "force": "mind",
+    "matter": "time",
+    "energy": "spirit",
+    "life": "entropy",
+    "mind": "force",
+    "spirit": "energy",
+    "time": "matter",
+    "entropy": "life"
+  },
+  "SPHERE_ALLIES": {
+    "chaos": "darkness",
+    "order": "light",
+    "light": "order",
+    "darkness": "chaos",
+    "force": "matter",
+    "matter": "force",
+    "energy": "life",
+    "life": "energy",
+    "mind": "spirit",
+    "spirit": "mind",
+    "time": "entropy",
+    "entropy": "time"
+  },
+  "AXES": [
+    {
+      "reach": "iron",
+      "valuePair": "mercy_ruthlessness",
+      "virtue": {
+        "role": "Protector",
+        "word": "Brave"
+      },
+      "vice": {
+        "role": "Conqueror",
+        "word": "Power-Hungry"
+      }
+    },
+    {
+      "reach": "gold",
+      "valuePair": "asceticism_extravagance",
+      "virtue": {
+        "role": "Patron",
+        "word": "Generous"
+      },
+      "vice": {
+        "role": "Extractor",
+        "word": "Greedy"
+      }
+    },
+    {
+      "reach": "shadow",
+      "valuePair": "honesty_cunning",
+      "virtue": {
+        "role": "Broker",
+        "word": "Fair"
+      },
+      "vice": {
+        "role": "Manipulator",
+        "word": "Scheming"
+      }
+    },
+    {
+      "reach": "veil",
+      "valuePair": "tradition_novelty",
+      "virtue": {
+        "role": "Weaver",
+        "word": "Patient"
+      },
+      "vice": {
+        "role": "Unraveller",
+        "word": "Impatient"
+      }
+    },
+    {
+      "reach": "heart",
+      "valuePair": "loyalty_ambition",
+      "virtue": {
+        "role": "Sworn",
+        "word": "Loyal"
+      },
+      "vice": {
+        "role": "Renegade",
+        "word": "Disloyal"
+      }
+    },
+    {
+      "reach": "eye",
+      "valuePair": "revelation_discretion",
+      "virtue": {
+        "role": "Seer",
+        "word": "Perceptive"
+      },
+      "vice": {
+        "role": "Inquisitor",
+        "word": "Judgemental"
+      }
+    },
+    {
+      "reach": "stone",
+      "valuePair": "preservation_transformation",
+      "virtue": {
+        "role": "Keeper",
+        "word": "Careful"
+      },
+      "vice": {
+        "role": "Destroyer",
+        "word": "Reckless"
+      }
+    },
+    {
+      "reach": "star",
+      "valuePair": "sacrifice_survival",
+      "virtue": {
+        "role": "Beacon",
+        "word": "Guiding"
+      },
+      "vice": {
+        "role": "Wrecker",
+        "word": "Misleading"
+      }
+    }
+  ],
+  "CORE_TRAITS": [
+    {
+      "id": "trait.core.core_warmth.virtue",
+      "name": "Warm"
+    },
+    {
+      "id": "trait.core.core_warmth.vice",
+      "name": "Cold"
+    },
+    {
+      "id": "trait.core.core_hope.virtue",
+      "name": "Hopeful"
+    },
+    {
+      "id": "trait.core.core_hope.vice",
+      "name": "Bitter"
+    },
+    {
+      "id": "trait.core.core_forgiveness.virtue",
+      "name": "Forgiving"
+    },
+    {
+      "id": "trait.core.core_forgiveness.vice",
+      "name": "Vengeful"
+    },
+    {
+      "id": "trait.core.core_humility.virtue",
+      "name": "Humble"
+    },
+    {
+      "id": "trait.core.core_humility.vice",
+      "name": "Proud"
+    },
+    {
+      "id": "trait.core.core_integrity.virtue",
+      "name": "True"
+    },
+    {
+      "id": "trait.core.core_integrity.vice",
+      "name": "False"
+    }
+  ],
+  "RARITY_TIER_NAMES": {
+    "1": "Mundane",
+    "2": "Storied",
+    "3": "Mythic",
+    "4": "Legendary"
+  },
+  "POSSESSION_SUBCATEGORY_NAMES": {
+    "arms": "Arms",
+    "mounts_beasts": "Mounts & Beasts",
+    "vestments": "Vestments",
+    "tomes_scrolls": "Tomes & Scrolls",
+    "relics_talismans": "Relics & Talismans",
+    "tools_instruments": "Tools & Instruments",
+    "provisions": "Provisions"
+  },
+  "EFFECT_CAPS": {
+    "EFFECT_PER_ITEM_CAP": 0.15,
+    "EFFECT_MODIFIER_CAP": 0.3,
+    "MAX_EFFECTS_PER_ATTACHMENT": 8,
+    "ACTION_TRIGGER_MAX_PER_ATTACHMENT": 2,
+    "AURA_MAX_RADIUS": 2,
+    "RULE_OVERRIDE_VALUE_CAP": 3
+  },
+  "ITEM_STAT_BANDS": {
+    "MINOR": 0.5,
+    "NOTABLE": 1,
+    "LEGENDARY": 2
+  },
+  "ARTIFACT_TRAITS": {
+    "STORIED": "trait.artifact.storied",
+    "CURSED": "trait.artifact.cursed",
+    "STORIED_MAX_LEVEL": 3,
+    "LEVEL_WORDS": {
+      "trait.artifact.storied": [
+        "has seen a thing or two",
+        "has seen much",
+        "has seen it all"
+      ],
+      "trait.artifact.cursed": [
+        "the harm comes with the having"
+      ]
+    }
+  },
+  "SLOT_CAPS": {
+    "weapon": 2,
+    "vestment": 1,
+    "ring": 2,
+    "necklace": 1,
+    "tome": 2,
+    "spell": 3,
+    "consumable": 4,
+    "utility": 2,
+    "mount": 1,
+    "ally": 1,
+    "companion": 1,
+    "wealth": 3,
+    "brand": 2,
+    "agreement": 4,
+    "quest": 3
+  },
+  "REGION_NAME_FRAGMENTS": {
+    "mountain_range": {
+      "nouns": [
+        "Crags",
+        "Peaks",
+        "Spires",
+        "Teeth",
+        "Spine",
+        "Horns",
+        "Crown"
+      ],
+      "suffixes": [
+        "wall",
+        "spire",
+        "peak",
+        "horn",
+        "crest"
+      ],
+      "adjectives": [
+        "Iron",
+        "Grey",
+        "White",
+        "Black",
+        "Shattered",
+        "Frozen",
+        "Jagged"
+      ]
+    },
+    "hill_country": {
+      "nouns": [
+        "Hollows",
+        "Downs",
+        "Ridges",
+        "Folds",
+        "Rises",
+        "Knolls",
+        "Barrows"
+      ],
+      "suffixes": [
+        "dale",
+        "hollow",
+        "downs",
+        "ridge",
+        "fell"
+      ],
+      "adjectives": [
+        "Rolling",
+        "Green",
+        "Windswept",
+        "Barren",
+        "Gentle",
+        "Stony"
+      ]
+    },
+    "forest": {
+      "nouns": [
+        "Wood",
+        "Canopy",
+        "Thicket",
+        "Weald",
+        "Shade",
+        "Boughs",
+        "Timber"
+      ],
+      "suffixes": [
+        "wood",
+        "weald",
+        "grove",
+        "shade",
+        "tangle"
+      ],
+      "adjectives": [
+        "Deep",
+        "Dark",
+        "Old",
+        "Whispering",
+        "Tangled",
+        "Ancient",
+        "Green"
+      ]
+    },
+    "plains": {
+      "nouns": [
+        "Reach",
+        "Expanse",
+        "Fields",
+        "Flats",
+        "Steppe",
+        "Sweep",
+        "Grasslands"
+      ],
+      "suffixes": [
+        "reach",
+        "field",
+        "plain",
+        "mead",
+        "lea"
+      ],
+      "adjectives": [
+        "Vast",
+        "Golden",
+        "Empty",
+        "Windswept",
+        "Sunlit",
+        "Endless"
+      ]
+    },
+    "desert": {
+      "nouns": [
+        "Wastes",
+        "Sands",
+        "Barrens",
+        "Dust",
+        "Dunes",
+        "Scorch",
+        "Flats"
+      ],
+      "suffixes": [
+        "waste",
+        "scar",
+        "burn",
+        "dust",
+        "blight"
+      ],
+      "adjectives": [
+        "Red",
+        "White",
+        "Scorched",
+        "Dry",
+        "Blasted",
+        "Salt",
+        "Burning"
+      ]
+    },
+    "wetland": {
+      "nouns": [
+        "Marshes",
+        "Mire",
+        "Fen",
+        "Bogs",
+        "Pools",
+        "Shallows",
+        "Mere"
+      ],
+      "suffixes": [
+        "mere",
+        "fen",
+        "mire",
+        "marsh",
+        "pool"
+      ],
+      "adjectives": [
+        "Black",
+        "Still",
+        "Murky",
+        "Grey",
+        "Rotting",
+        "Silent",
+        "Drowned"
+      ]
+    },
+    "tundra": {
+      "nouns": [
+        "Wastes",
+        "Expanse",
+        "Flats",
+        "Reach",
+        "Barrens",
+        "Frost",
+        "Ice"
+      ],
+      "suffixes": [
+        "frost",
+        "ice",
+        "waste",
+        "reach",
+        "pale"
+      ],
+      "adjectives": [
+        "Frozen",
+        "White",
+        "Bitter",
+        "Howling",
+        "Dead",
+        "Pale",
+        "Endless"
+      ]
+    },
+    "river": {
+      "nouns": [
+        "River",
+        "Waters",
+        "Current",
+        "Flow",
+        "Torrent",
+        "Run"
+      ],
+      "suffixes": [
+        "water",
+        "flow",
+        "run",
+        "brook",
+        "stream"
+      ],
+      "adjectives": [
+        "Swift",
+        "Dark",
+        "Silver",
+        "Broad",
+        "Winding",
+        "Cold"
+      ]
+    },
+    "lake": {
+      "nouns": [
+        "Lake",
+        "Mere",
+        "Pool",
+        "Tarn",
+        "Waters",
+        "Basin"
+      ],
+      "suffixes": [
+        "mere",
+        "lake",
+        "pool",
+        "tarn",
+        "deep"
+      ],
+      "adjectives": [
+        "Still",
+        "Clear",
+        "Dark",
+        "Mirror",
+        "Deep",
+        "Silver"
+      ]
+    }
+  },
+  "QUINTESSENCE_PASSIVE_REGEN": 0.002
+}
