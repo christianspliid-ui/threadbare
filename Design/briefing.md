@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-26 16:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-26 18:02 local (16:02 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,10 +25,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 13 jobs are ready, and 1 is being built.**
+**Healthy: 13 jobs are ready, none being built right now.** The builder lane picks the next one up at its next hourly run.
 
-- **The new dice are live.** [The dice re-fit](https://linear.app/threadbare/issue/THR-1581) merged via [#2073](https://github.com/christianspliid-ui/threadbare/pull/2073) and is on the site. Three follow-ups it was holding back are now queued: [the sheet and the skill line use the same word](https://linear.app/threadbare/issue/THR-1583), [finished mentorships make a mortal better](https://linear.app/threadbare/issue/THR-1584), and [the duel balance check is re-gated](https://linear.app/threadbare/issue/THR-1628). Nothing to decide on them.
-- **Being built: [battle history — the ground remembers its battles](https://linear.app/threadbare/issue/THR-1528).** Its pull request [#2074](https://github.com/christianspliid-ui/threadbare/pull/2074) is waiting on checks and will merge on green.
+- **Two more pieces shipped this hour, both live on the site:**
+  - [The ground remembers its battles](https://linear.app/threadbare/issue/THR-1528), via [#2074](https://github.com/christianspliid-ui/threadbare/pull/2074). Its next piece is queued: [a fight leaves a record on the ground, and three fights soak it](https://linear.app/threadbare/issue/THR-1574).
+  - [The sheet and the skill line use the same word for a mortal's reach](https://linear.app/threadbare/issue/THR-1583), via [#2075](https://github.com/christianspliid-ui/threadbare/pull/2075). With it, the whole [dice-reading-everyone-as-a-master](https://linear.app/threadbare/issue/THR-1575) fix is done.
 - **Fight system: nearly ready, not yet a review ask.** Everything is live except [the lair elites' portraits](https://linear.app/threadbare/issue/THR-1554), which are queued.
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620) and [the item generator build](https://linear.app/threadbare/issue/THR-1570) have no priority set.
 
@@ -36,9 +37,9 @@ Say "veto <title>" to reverse any of these.
 
 - **Lane silence:** the worst recent gap is still 21 hours, from Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
-  - The long simulation tests pass again on the latest `main`; the earlier failures are cleared.
-  - The live site is up to date with the dice change.
-  - Game speed is 78 ms per tick, 6% above the weekly median. That is normal, and expected with the new dice.
+  - The live site is serving the latest `main` (with #2075).
+  - Automated checks and the long simulation tests are green on the latest `main`.
+  - Game speed is 76 ms per tick, 3% above the weekly median. Normal.
   - All ten scheduled lanes are on time.
-  - The worktree reaper last ran at 16:40 local; 5 worktrees wait to be sorted, which is routine.
-  - `main` is current.
+  - The worktree reaper last ran at 17:42 local; 5 worktrees wait to be sorted, which is routine.
+  - No pull requests are waiting to merge. `main` is current.

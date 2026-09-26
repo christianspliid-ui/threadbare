@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-26 16:58 local (14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-26 18:02 local (16:02 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -37,6 +37,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-26 — the sheet and the skill line now say the same word for a mortal's reach** ([THR-1583](https://linear.app/threadbare/issue/THR-1583)). Merged via [#2075](https://github.com/christianspliid-ui/threadbare/pull/2075), and live on the site. This finishes the [dice-read-everyone-as-a-master fix](https://linear.app/threadbare/issue/THR-1575).
+- **2026-09-26 — the ground remembers its battles** ([THR-1528](https://linear.app/threadbare/issue/THR-1528)). Merged via [#2074](https://github.com/christianspliid-ui/threadbare/pull/2074), and live on the site.
 - **2026-09-26 — the new dice are live** ([THR-1581](https://linear.app/threadbare/issue/THR-1581)). The dice re-fit and "mortals take on challenges they can win about half the time" merged together via [#2073](https://github.com/christianspliid-ui/threadbare/pull/2073), and are on the site. Skill now counts when a mortal rolls.
 - **2026-09-25 — you answered how much history a new world starts with: A, "explain the map"** ([THR-1591](https://linear.app/threadbare/issue/THR-1591)). Your words: *"a is fine"*. The two smaller calls were decided by delegation, and you can veto either: the outline is shown from minute one while the specifics are found by visiting, and the past stays mortal, with no rival god in it. The briefs until 15:00 today kept listing it as open; that was a stale read, corrected this run.
 - **2026-09-26 — culture and Realm names never show a raw terrain code** ([THR-1622](https://linear.app/threadbare/issue/THR-1622)). Merged via [#2070](https://github.com/christianspliid-ui/threadbare/pull/2070), and live on the site.
@@ -45,8 +47,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26 — The Builder's Legacy now counts only what was built after the mandate began** ([THR-1618](https://linear.app/threadbare/issue/THR-1618)). Merged via [#2068](https://github.com/christianspliid-ui/threadbare/pull/2068), and live on the site.
 - **2026-09-26 — non-casters are no longer offered "create a power"** ([THR-1617](https://linear.app/threadbare/issue/THR-1617)). Merged via [#2066](https://github.com/christianspliid-ui/threadbare/pull/2066), and live on the site.
 - **2026-09-26 — a dissolved trade route now removes its road and its shock lands** ([THR-1615](https://linear.app/threadbare/issue/THR-1615)). Merged via [#2064](https://github.com/christianspliid-ui/threadbare/pull/2064), and live on the site.
-- **2026-09-26 — five small interface faults found by the cold playtest are fixed** ([THR-1604](https://linear.app/threadbare/issue/THR-1604)). Merged via [#2063](https://github.com/christianspliid-ui/threadbare/pull/2063), and live on the site.
-- **2026-09-26 — a notable's agenda phase now carries a chronicle title** ([THR-1585](https://linear.app/threadbare/issue/THR-1585)) instead of an internal id. Merged via [#2061](https://github.com/christianspliid-ui/threadbare/pull/2061), and live on the site.
 
 ---
 
