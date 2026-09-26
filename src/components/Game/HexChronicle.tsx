@@ -15,6 +15,7 @@ import { getLocationHolder } from '../../engine/realmHolder';
 import { isLocationNode } from '../../engine/sublocationShape';
 import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
+import { getCultureFoundationPairKey } from '../../engine/cultureFoundationPair';
 import { elapsedLabel } from '../../engine/aftermathWords';
 import { sustainFlowSpheres } from '../../data/sustained-control-status-prose';
 import { mulberry32 } from '../../lib/prng';
@@ -340,16 +341,12 @@ export const HexChronicle = memo(function HexChronicle({
 
   const cultureProse = useMemo(() => {
     if (!dominantCulture?.foundationBias) return null;
-    // foundationBias is like "order" or "chaos" — map to foundationPair key
-    // CULTURE_LOCATION_PROSE is keyed by foundationPair: "order_light", "order_darkness", etc.
-    const bias = dominantCulture.foundationBias;
-    const spheres = dominantCulture.dominantSpheres || [];
-    const hasLight = spheres.includes('light' as SphereName);
-    const hasDarkness = spheres.includes('darkness' as SphereName);
-    let pairKey = bias;
-    if (hasLight) pairKey = `${bias}_light`;
-    else if (hasDarkness) pairKey = `${bias}_darkness`;
-    else pairKey = `${bias}_light`; // default
+    // The same derived key the location and mortal resolvers use (THR-1623).
+    const pairKey = getCultureFoundationPairKey({
+      foundationBias: dominantCulture.foundationBias,
+      veneratedSpheres: dominantCulture.dominantSpheres,
+    });
+    if (!pairKey) return null;
 
     const templates = CULTURE_LOCATION_PROSE[pairKey];
     if (!templates) return null;
