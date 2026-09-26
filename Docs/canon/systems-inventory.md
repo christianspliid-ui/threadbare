@@ -328,7 +328,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `leverage` (1) | `leverageOps.ts` | `THR-1439` |
 | `location` (1) | `locationTraitBonus.ts` | `THR-1481`, `THR-790` |
 | `magic` (1) | `magicPower.ts` | — |
-| `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198` |
+| `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198`, `THR-1618` |
 | `meeting` (1) | `meetingEncounter.ts` | `THR-1213` |
 | `mentorship` (2) | `mentorshipOutcomes.ts`, `mentorshipUndertaking.ts` | `THR-1292`, `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
