@@ -96,16 +96,22 @@ export type AssignArtifactTraitResult =
   | { ok: false; reason: ArtifactTraitRefusal };
 
 /**
- * Stamp an artifact trait on a thing at level 1. Refuses (never throws) a missing node,
- * a non-artifact, a holding face, and a definition outside `trait.artifact.*`. A trait
+ * Stamp an artifact trait on a thing — at level 1, or at `opts.level` (clamped to the
+ * definition's `maxLevel`) when the thing arrives with a past: a generated heirloom is
+ * born *has seen much* (THR-1570). Refuses (never throws) a missing node, a
+ * non-artifact, a holding face, and a definition outside `trait.artifact.*`. A trait
  * already held is a no-op reported as `alreadyHeld` — `reinforceTrait` and the presence
  * counter are the level's writers, not a second stamp.
+ *
+ * The level is written on the edge *after* `assignTrait` returns, which always writes
+ * level 1: `traits.ts` has hundreds of importers and is deliberately not edited.
+ * `updateEdge` merges properties, so the rest of the assignment survives.
  */
 export function assignArtifactTrait(
   graph: WorldGraph,
   artifactId: string,
   traitId: string,
-  opts: { tick: number; source: string },
+  opts: { tick: number; source: string; level?: number },
 ): AssignArtifactTraitResult {
   const node = graph.getNode(artifactId);
   if (!node) return { ok: false, reason: 'artifact_not_found' };
@@ -127,6 +133,14 @@ export function assignArtifactTrait(
   const edge = graph.getEdge(edgeId);
   if (!edge) return { ok: false, reason: 'write_failed' };
 
+  let level = 1;
+  if (typeof opts.level === 'number' && Number.isFinite(opts.level) && opts.level > 1) {
+    level = Math.min(Math.floor(opts.level), readMaxLevel(graph, traitId));
+    if (level > 1) {
+      try { graph.updateEdge(edgeId, { properties: { level } }); } catch { level = 1; }
+    }
+  }
+
   emitTrace({
     category: 'artifact_trait',
     tick: opts.tick,
@@ -135,7 +149,7 @@ export function assignArtifactTrait(
     artifactName: node.name ?? artifactId,
     traitId,
     change: 'stamped',
-    level: 1,
+    level,
     source: opts.source,
   });
   return { ok: true, edgeId, alreadyHeld: false };
