@@ -10,7 +10,7 @@ The alternatives weighed, the tensions surfaced and the Vision premises invoked 
 
 - **North star — "the mortal has to feel like a person, not a unit … If the player meets them for the first time in the crisis, the moment does not work."** This is why the meeting cannot wait on a walk: every tester's one message was *put one named mortal on screen*.
 - **North star — "pressure that is not the player's to pause."** Strengthened by the Stellaris ruling: the clocks run for real now.
-- **Core loop — "Turn-based is load-bearing."** Its *reason* (reading and scanning must not leak time) is kept and made the rule of the halt registry. Its *mechanism* (single-step ticks) is retired by Christian's ruling. The game already ran in real time, so the premise described a game that did not exist.
+- **Core loop — "Turn-based is load-bearing."** Its *reason* (reading and scanning must not leak time) is kept and made the rule of the interrupt registry. Its *mechanism* (single-step ticks) is retired by Christian's ruling. The game already ran in real time, so the premise described a game that did not exist.
 - **Non-negotiable §3 — prose, never numbers.** Untouched here; the readability sibling plan handles it under Law 13.
 - **Taste profile — sphere-tinted ceremonial cards (Christian loves them).** The spine gifts stay ceremonial modals, paced, not demoted to toasts.
 
@@ -39,7 +39,7 @@ The alternatives weighed, the tensions surfaced and the Vision premises invoked 
 ### Clock (THR-1608)
 
 - **Pure turn-based (the old Vision premise).** Ruled out by Christian.
-- **Paused-by-default until the First is met, real time after.** Subsumed: the meeting now opens at once and is itself a halt, so the world never runs before the bond anyway.
+- **Paused-by-default until the First is met, real time after.** Subsumed: the meeting now opens at once and is itself an interrupt, so the world never runs before the bond anyway.
 - **Stellaris with resume-always (today's behaviour).** Rejected: a player who paused to think is thrown back into running time by closing any popup. Stellaris itself restores the prior state.
 - **Stellaris with per-event player settings** (which events auto-pause). A good later feature; out of scope. The registry's declared list is the shape it would configure.
 

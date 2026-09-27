@@ -38,7 +38,7 @@ It also updates the rulebook §3/§8 and the Vision core-loop and taste profile 
 
 ## impact_class
 
-Reversible. Every slice is behind named constants or additive optional fields; old saves read the missing fields as today's behaviour. The Vision edit is a real direction change, but it was made by Christian in chat (quoted above), not by this plan.
+**High-risk (judge-corrected from Reversible, 2026-09-27):** the plan reverses a settled Vision premise and edits rules of play. Sign-off is Christian's verbatim rulings in intent_quote. Originally proposed as Reversible: every slice is behind named constants or additive optional fields; old saves read the missing fields as today's behaviour. The Vision edit is a real direction change, but it was made by Christian in chat (quoted above), not by this plan.
 
 ## evidence cited
 

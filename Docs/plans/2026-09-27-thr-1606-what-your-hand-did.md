@@ -77,7 +77,7 @@ Step 0.6 greps: the inventory and `src/engine/` for *receipt, influence, digest,
   - The overview uses the template's **display name**, never `template.name` (Law 14).
   - A cast with any target-side change goes to the receipt's toast tier with a chip, and the toast is clickable to the target (Law 1 link).
 - **The target's story remembers.** The cast's digest entry is also filed under the target's id, so `composeThreadStory(target)` shows *"Your hand reached into their sleep."* The god's own copy stays.
-- **Spine gifts announce themselves.** `seedHomeSeat` and `seedThreadedArtifact` return the placed node ids. `resolvePendingBeat` emits a notice-tier event (chronicle significance ≥ `CHRONICLE_SIGNIFICANCE_THRESHOLD`) naming the place or the bearer: *"A seat is raised for you in Wraithwood."*, *"Kael Thornweaver now carries A Thing Left Behind."*
+- **Spine gifts announce themselves.** `seedHomeSeat` and `seedThreadedArtifact` return the placed node ids. `resolvePendingBeat` emits a toast-tier event (chronicle significance ≥ `CHRONICLE_SIGNIFICANCE_THRESHOLD`) naming the place or the bearer: *"A seat is raised for you in Wraithwood."*, *"Kael Thornweaver now carries A Thing Left Behind."*
   - Both call `touchWorld()` after mutating.
   - "Speak" and the investment beats grant cards only; their existing card-reveal already says so. No event.
 
@@ -136,7 +136,7 @@ Tooltip registry entries in `ui-content.ts`, each ≤200 characters (Law 18):
 - `ui.forecast.cast.<tier>` × 5: a cast always lands; the word says how cleanly. *"Doomed — it will land, but crooked."*
 - `ui.reach_tier.<reach>.<word>` for the tier words that render at tier 1–2 (Owing, Sealed, Unnamed, Unmourned, Unblooded and their siblings). Each gives the rung and what the next one opens.
 - `ui.quintessence` and `ui.quintessence.<band>`, including *ABSOLUTE* and *whole and present*.
-- `ui.counter_omens`, `ui.doom_debt`, `ui.investiture`.
+- `ui.counter_omens`, `ui.doom_debt`, `ui.investiture`, `ui.covenant` (reuse any id that already exists for these words; add only the missing ones).
 
 ### Encounter templates
 
@@ -182,12 +182,16 @@ N/A.
   - The registry tooltip replaces the raw `title` (Law 17 / 19).
 - **Quintessence:** the identity strip names *Quintessence* beside its word, with registry tooltips on the word and the ladder line.
 - **Counter-Omens, Doom Debt, Investiture:** registry tooltips. (The opening plan's S5 already hides the mandate and doom surfaces until the bond, so a new player meets these later.)
+- **The first-ten-minutes selection** (THR-1607: "do not just add tooltips to everything"):
+  - *Read now*, in the first session: essence (number, bar, fold), card cost, the forecast word on casts, and the reach tier words.
+  - *Hidden until later* by the opening plan's S5 (they sit on the doom and mandate surfaces): Counter-Omens and Doom Debt. They get tooltips here so that when they appear they are never unexplained.
+  - *Out of scope*, because a new player does not meet them in the first session and each surfaces only through its own late-game system: Signatures (arrive at spine Beat 4 with their own ceremonial reveal card), Covenants and Investiture (tooltip only).
 
 ### Event notifications
 
 - Receipt toast (B1), with a chip and a link.
 - Chronicle line for gift placements (B1).
-- The veil opening from Witness (B3) is the existing encounter halt, so it pauses per the sibling plan's S3 registry.
+- The veil opening from Witness (B3) is the existing encounter interrupt, so it pauses per the sibling plan's S3 registry.
 
 ### Debug inspection (DebugPanel)
 
@@ -213,6 +217,21 @@ N/A — the existing cast particle burst already marks the target's hex; no laye
 | Witness playback (B3) | beat director offer filter; `resolvePendingBeat` | `AscendantBeatModal` → `EncounterVeil` | `tieredEncounterState` (existing) | `beat.delivery_played` / `beat.delivery_skipped` | trace viewer |
 | Readable spend (B4) | — | `EssenceBlock`, `CardFace`, `ReachesBlock`, `IdentityStrip`, `MandateTracker`, `DoomClockDetail` | `essencePool` (existing) | — | Playwright DOM |
 
+**Player controls:**
+- the existing cast cards (unchanged);
+- the receipt toast is a link to the target (Law 1);
+- hovering a card highlights the essence row it draws from;
+- the *Elder powers* fold is a disclosure toggle;
+- Witness is the existing beat button, now opening the veil.
+
+**Prose:**
+- Receipt lines come from `receipt-content.ts` through the receipt's existing `{target}` / `{pole}` substitution.
+- Chip hover sentences use `durationLabel`.
+- Digest and gift-placement lines are plain strings with graph-resolved names.
+- No new `enrichProse()` slot. If the executor finds the receipt pipeline already routes through `enrichProse()`, use it there rather than adding a second path.
+
+**Traces:** the five new trace types register in `TraceCategory` / `TRACE_CATEGORIES` / the `TraceEntry` union, like every checklist section.
+
 ## Interface impact
 
 Essence & Divine Economy, Ascendant Beats, and Attention & Chronicle are ⚪ UNAUDITED; this plan writes the rows it touches. Each slice registers its rows in `scripts/interface-contracts.ts` and regenerates the map.
@@ -232,7 +251,7 @@ Essence & Divine Economy, Ascendant Beats, and Attention & Chronicle are ⚪ UNA
 |----------|---------|---------|
 | `DREAM_VALUE_DRIFT` | 0.08 | Magnitude of Oneiric Sending's drift on the target's lean (within the existing drift scale; executor checks it against `buildValueOverlay`'s clamp). |
 | `COMPULSION_VALUE_DRIFT` | 0.15 | Magnitude of Divine Compulsion's drift. |
-| `ESSENCE_BAR_CEILING` | 50 (the starting pool) | What a full essence bar means; replaces the `/10` scale. |
+| `ESSENCE_BAR_CEILING` | `INITIAL_ESSENCE_PER_SPHERE` (50, `src/engine/influence.ts`; bound to it, not a literal) | What a full essence bar means; replaces the `/10` scale. |
 | `ESSENCE_SPEND_FLASH_MS` | 2500 | How long the delta cluster shows on a row after a spend. |
 | `ESSENCE_FOUNDATION_FOLDED_DEFAULT` | true | Whether the Elder powers fold starts closed. |
 
@@ -345,6 +364,11 @@ Order: **B2 → B1**. B1's receipt would otherwise have nothing to name for thes
 | 6. Additive over destructive | PASS with note | Additive throughout. One deliberate retirement: the silent template-aftermath run for delivery beats, which wrote untrue consequences against the god. |
 | 7. Performance budget | PASS | One before/after diff per player cast; negligible. |
 
+## Kill criteria
+
+- **B2 moves nothing.** If the drift magnitudes produce no observable behaviour change in the 30-tick headless comparison (B2 Done-when), raise them. If they still move nothing, the value overlay is not the live steering path: re-scope B2 to a scoring term on candidate encounters of the god's primary reach, **before B1 ships any chip for these two casts** (Law 56). B1's soft-block on B2 is exactly this branch.
+- **Round 2 is the test.** Fixed when a round-2 cold tester can name a consequence of their own cast, and can say what their essence is and what "doomed" means on a card. If they cannot, the next pass is the surface (where the receipt and chips land), not more tooltips.
+
 ## Done when
 
 Per slice (each ticket carries its copy):
@@ -406,6 +430,27 @@ Per slice (each ticket carries its copy):
 - **The second essence store** (`ascendant.properties.essencePool`, used by Stillness and influence maintenance) diverges from `GameState.essencePool`, so those changes never show on the bar. B4 does not unify them. It is filed as its own ticket, [THR-1645](https://linear.app/threadbare/issue/THR-1645).
 - `AgentInfoCard` is imported but unmounted in `GameView.tsx`. After B1 moves the chip block, check whether the rest of `AgentInfoCard` is dead and say so in the PR; do not delete it inside this slice.
 
+## Intent-judge verdict
+
+- **First pass: Revise** (2026-09-27, `fable`). A VIOLATION on kill criteria (they were in the proposal, not the plan) and a GAP on wiring (player controls, prose). All four required actions were applied: § Kill criteria, the Wiring player-controls, prose and traces lines, the B4 first-ten-minutes selection, and trace registration.
+- **Re-run: Allow**, Reversible, zero GAPs. Its advisory — bind `ESSENCE_BAR_CEILING` to `INITIAL_ESSENCE_PER_SPHERE` — was applied.
+
 ## Forked-audit verdicts
 
-<!-- populated by design-audit-pipeline -->
+| Dimension | Verdict | Note |
+|---|---|---|
+| NFP | PASS-with-notes | #6: one named retirement (the silent delivery-beat aftermath), justified as writing untrue consequences. |
+| Three-pillar | PASS | All pillars substantive; `card.activeEffects` correctly marked *activates*; no green-field duplication. |
+| Vision | PASS | Repairs the north star's "consequential intervention"; deepens the aftermath beat; the numeral is within the Law 13 exception. Watch in play: Divine Compulsion stays a drift feeding the re-score, never a set outcome. |
+
+### NFP audit
+
+PASS-with-notes. Five named tunables; five trace types plus two debug accessors; no PRNG; a seven-row fail-soft table; "the dream found nothing to hold" keeps the no-op a story; one justified retirement; a single diff per cast.
+
+### Three-pillar audit
+
+PASS. Engine, Content and UI are each substantive, with N/A rows carrying rationale. Wiring covers every module plus player controls and prose. The substrate inventory cross-checks against the systems inventory.
+
+### Vision audit
+
+PASS. `00-north-star` confirmed; `01-core-loop` aftermath extended; non-negotiables §1/§3/§5/§7 inside bounds; the design-tension legibility lean is warranted by the file itself; the taste-profile elder-magic fold is honoured. No contradictions.

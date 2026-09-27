@@ -92,7 +92,7 @@ This works because of what the meeting already is. The god *senses* three souls 
   - (b) for beats 1–4, `isFirstBonded`;
   - (c) `BEAT_MIN_GAP` ticks have run since the last spine beat resolved (today spine offers skip that gap);
   - (d) *Session decision:* the player has taken **at least `SPINE_PLAYER_ACTS_BETWEEN_GIFTS` acts** since the last spine beat resolved, **or** `SPINE_IDLE_FALLBACK_TICKS` running ticks have passed. The fallback means an idle player is never starved.
-- **"Player act"** is a new monotonic counter `GameState.playerActCount`, an additive field. It is incremented in `commitPlayerCast`, on an avatar move command, and when a Follow or Observe is issued. The director stores `ascendantBeats.playerActCountAtLastSpine` and `lastSpineResolvedTick`.
+- **"Player act"** is a new monotonic counter `GameState.playerActCount`, an additive field. It is an engine counter, never a player-facing word, so it owes no UL entry. It is incremented in `commitPlayerCast`, on an avatar move command, and when a Follow or Observe is issued. The director stores `ascendantBeats.playerActCountAtLastSpine` and `lastSpineResolvedTick`.
 - Beat 0 ("Reach Down") is unchanged, and the meeting follows it directly (S1).
 - Pool, deepening and milestone beats are untouched.
 
@@ -149,15 +149,17 @@ The constants below (§ Constants table), plus `DOOM_WAKES_LINES` (7 entries).
 
 **S3 — The Stellaris clock** ([THR-1608](https://linear.app/threadbare/issue/THR-1608)):
 
-- **One declared registry.** Replace the `otherInterruptOpen` OR-expression with a declared list `INTERRUPT_SURFACES` (new module `src/components/Game/interruptRegistry.ts`). Each entry is `{ id, isOpen(state), tier: 'halt' }`.
-  - Every surface in the current expression is a halt: encounter veil, Meet The First, premonitions, journey vignettes, story beats, entered ascendant beat, choice sets, emergence dilemma, divine receipt, moment card.
-  - Add as halts: the Chapter Ledger (reading must not leak time — the Vision rhythm argument), doom-stage popups, and "The Unmaking".
+- **One declared registry.** Replace the `otherInterruptOpen` OR-expression with a declared list `INTERRUPT_SURFACES` (new module `src/components/Game/interruptRegistry.ts`). Each entry is `{ id, isOpen(state), tier: 'interrupt' }`.
+  - The tier word is the UL's own: an *interrupt* "stops the world" (`Docs/ubiquitous-language/Agents.md` § Moment presentation). Do not coin a second stop-the-world word in code.
+  - The never-pausing class is *toast*, the existing notification channel.
+  - Every surface in the current expression is an interrupt: encounter veil, Meet The First, premonitions, journey vignettes, story beats, entered ascendant beat, choice sets, emergence dilemma, divine receipt, moment card.
+  - Add as interrupts: the Chapter Ledger (reading must not leak time — the Vision rhythm argument), doom-stage popups, and "The Unmaking".
   - `getDebugOpenModals` reads the same list, so the debug surface and the pause can never disagree.
-- **One queue.** Popup-channel notifications (doom stages, the Unmaking, rival scheme cracks) no longer render beside open modals. They wait in the notification queue until no halt is open. This ends stacking. The second pause path in `useNotifications` is removed in favour of the registry.
+- **One queue.** Popup-channel notifications (doom stages, the Unmaking, rival scheme cracks) no longer render beside open modals. They wait in the notification queue until no interrupt is open. This ends stacking. The second pause path in `useNotifications` is removed in favour of the registry.
 - **Resume to prior state.** *Session decision:*
-  - When the first halt opens, record whether the clock was running. When the last halt closes, restore that state. A player who paused stays paused.
+  - When the first interrupt opens, record whether the clock was running. When the last interrupt closes, restore that state. A player who paused stays paused.
   - `forceResumeAfterInterruptsRef` and `ChoiceSetModal`'s direct `setRunning(true)` go through the same policy. Before removing either, read the commit that added it and keep any intent that is not "always resume". If a case genuinely needs a forced resume, it becomes an explicit `resume: 'always'` field on that registry entry, never a side channel.
-- **Notice tier** (never pauses, never modal): rival probe toasts, omen rotation, doom progress ticks, receipts at toast tier. These already route as toasts; the plan's job is to keep them out of the halt list.
+- **Toast tier** (never pauses, never modal): rival probe toasts, omen rotation, doom progress ticks, receipts at toast tier. These already route as toasts; the plan's job is to keep them out of the interrupt list.
 - **Copy:** the store page and the two turn-structure wiki pages say "turn-based". Rewrite them to the Stellaris model, in the Vision's own terms: *time runs between moments and stops for every one.*
   - [`public/the-game.html`](https://github.com/christianspliid-ui/threadbare/blob/main/public/the-game.html): title, hero eyebrow, footer.
   - [`public/turn-structure-reference.html`](https://github.com/christianspliid-ui/threadbare/blob/main/public/turn-structure-reference.html) ~188-189, ~279.
@@ -167,12 +169,12 @@ The constants below (§ Constants table), plus `DOOM_WAKES_LINES` (7 entries).
 **S5 — A quiet first screen.**
 
 - Until `isFirstBonded`, the top bar hides `DoomBar`, `RivalsButton`, `NotablesButton`, `OmenIndicator` and `MandateTracker` (Law 53, the HUD is a budget).
-- **At the bond:** the doom bar appears with the S2 wake line as a notice-tier toast. The mandate tracker and notables appear with it.
+- **At the bond:** the doom bar appears with the S2 wake line as a toast-tier toast. The mandate tracker and notables appear with it.
 - **Rivals:** the rivals button appears when the first rival action lands, derived from any rival event in `recentEvents`.
 - **Omens:** the indicator appears with the first omen, as it already does once `omenState.primary` is set.
 - `?seeded` pre-bonds The First, so every dev URL shows the full HUD unchanged.
 - **Chapter Ledger badge:** counts **unread** chapters (resolved since the ledger was last opened), not the running total `countThreadedChapters`. UI-local state; resetting on reload is acceptable.
-- **Ledger reopen fix:** after the ledger closes, return focus to the game surface, not the ledger button. That kills the Enter-reopens path in `useDialogFocus`. The z-order collision with the beat modal goes away with the S3 queue (one halt at a time).
+- **Ledger reopen fix:** after the ledger closes, return focus to the game surface, not the ledger button. That kills the Enter-reopens path in `useDialogFocus`. The z-order collision with the beat modal goes away with the S3 queue (one interrupt at a time).
 
 **S6 — Who am I** ([THR-1609](https://linear.app/threadbare/issue/THR-1609)). *Session decision:* the avatar keeps the name from the remembrance, because the player named their own past self and that is the emotional hook. It is framed everywhere as the player's own shape:
 
@@ -192,13 +194,13 @@ The constants below (§ Constants table), plus `DOOM_WAKES_LINES` (7 entries).
 
 ### Event notifications
 
-- Doom wake line: notice-tier toast plus a chronicle line.
-- Doom stage popups and the Unmaking: halt-tier, queued (S3).
+- Doom wake line: toast-tier toast plus a chronicle line.
+- Doom stage popups and the Unmaking: interrupt-tier, queued (S3).
 - Spine gifts: unchanged surfaces (ceremonial `RevealCard`), now paced (S4). The sphere-tinted card treatment stays.
 
 ### Debug inspection (DebugPanel)
 
-- `window.__DEBUG.getInterruptState()` → `{ open: string[]; wasRunningBeforeHalt: boolean | null; queuedPopups: number }` (S3).
+- `window.__DEBUG.getInterruptState()` → `{ open: string[]; wasRunningBeforeInterrupt: boolean | null; queuedPopups: number }` (S3).
 - `window.__DEBUG.getOpeningState()` → `{ firstBonded: boolean; doomWokeAtTick: number | null; doomFloorMetAtTick: number | null; playerActCount: number; nextSpineBeat: string | null; spineGateBlockedBy: 'minTurn' | 'first' | 'gap' | 'acts' | null; meetingLocationId: string | null }` (S1, S2, S4).
 - Both are declared in `src/debug-bridge.d.ts` with JSDoc, per the bridge convention.
 
@@ -217,12 +219,20 @@ S6 avatar marker; S7 sight and zoom. No new layer, only marker styling on the ex
 | Doom wake + floor (S2) | `phaseDoom`, `phaseDoomExpiry` | `DoomBar` (revealed at bond) | `doomClock.wokeAtTick` | `doom.wake`, `doom.expiry_held` | `getOpeningState()` |
 | Rival/omen grace (S2) | `phaseRivalActions`, `phaseOmenAgenda` | Rivals panel, omen indicator | reads `doomClock.wokeAtTick` | `rival.grace_hold` (once) | trace viewer |
 | Spine gates (S4) | `1.75` director | `AscendantBeatModal` | `playerActCount`, `ascendantBeats.playerActCountAtLastSpine`, `ascendantBeats.lastSpineResolvedTick` | `beat.spine_deferred` | `getOpeningState().spineGateBlockedBy` |
-| Interrupt registry (S3) | — | `interruptRegistry.ts`, `useInterruptAutoPause`, notification queue | — (UI state) | `clock.halt_open` / `clock.halt_close` (UI trace, dev only) | `getInterruptState()` |
+| Interrupt registry (S3) | — | `interruptRegistry.ts`, `useInterruptAutoPause`, notification queue | — (UI state) | `clock.interrupt_open` / `clock.interrupt_close` (UI trace, dev only) | `getInterruptState()` |
 | First-screen reveal (S5) | — | `GameViewTopBar`, `ChapterLedger` badge | — (derived + UI-local last-seen) | — | Playwright DOM assertion |
 | Avatar marker (S6) | — | HexMapV2 agent layer, avatar sheet header | — | — | Claude-in-Chrome screenshot |
 | Sight/zoom (S7) | visibility (existing) | `D3ZoomCamera`, fog | — | — | Claude-in-Chrome screenshot |
 
-**Player controls:** unchanged — Space, `+`/`-`, `.`, the speed buttons. S3 changes only what happens *after* an interrupt.
+**Player controls:** unchanged — Space, `+`/`-`, `.`, the speed buttons. S3 changes only what happens *after* an interrupt. The manual "Meet The First" card in the location drawer stays as the retry path.
+
+**Prose:**
+- The Beat 0 line uses the beat content's existing `{avatarName}` substitution; the executor confirms the placeholder name the beat resolver uses.
+- The doom-wake lines are plain strings keyed by archetype, emitted as a chronicle `TickEvent`.
+- The meeting's prose is unchanged and keeps its existing `{agent.location}` resolution.
+- No new `enrichProse()` slot.
+
+**Traces:** the five new engine trace types register in `TraceCategory` / `TRACE_CATEGORIES` / the `TraceEntry` union.
 
 ## Interface impact
 
@@ -294,7 +304,7 @@ interface SpineDeferredTrace {
 }
 ```
 
-S3's `clock.halt_open` / `clock.halt_close` are dev-only UI traces through the existing UI trace path. They are not engine traces, since the engine never sees the UI's pause.
+S3's `clock.interrupt_open` / `clock.interrupt_close` are dev-only UI traces through the existing UI trace path. They are not engine traces, since the engine never sees the UI's pause.
 
 ## Fail-soft table
 
@@ -345,7 +355,7 @@ Seven build slices: three existing tickets and four new ones (THR-1646 to THR-16
 
 - [x] This plan does not *silently* contradict a Vision premise; the one it changes is changed openly, below.
 - [x] **This plan changes a Vision premise, and the edit is in scope.** `Vision/01-core-loop.md` § "Turn-based is load-bearing" and `Vision/taste-profile.md` ("Turn-based, not auto-advancing"; rejected "Auto-advancing time") are rewritten to Christian's 2026-09-27 ruling, by this session, in the vault, as the same act as this PR.
-  - The premise's *reason* survives intact and becomes the rule: *time must not run while the player reads a moment or scans their portfolio*. The Stellaris model delivers that by halting for every moment (S3) and by making the ledger a halt, not by making every tick wait.
+  - The premise's *reason* survives intact and becomes the rule: *time must not run while the player reads a moment or scans their portfolio*. The Stellaris model delivers that by halting for every moment (S3) and by making the ledger an interrupt, not by making every tick wait.
   - What is dropped is the *mechanism*: "the world advances only when you say so". The game has not worked that way in code; the rulebook's `[IMPL]` tag for it was wrong.
 - `00-north-star.md` ("pressure that is not the player's to pause") is **strengthened**, not contradicted: the clocks now run.
 - `02-non-negotiables.md` §3 (prose, never numbers): untouched here. Readability numbers are the sibling plan's question ([THR-1607](https://linear.app/threadbare/issue/THR-1607)), under the Law 13 ratified exception.
@@ -354,7 +364,7 @@ Seven build slices: three existing tickets and four new ones (THR-1646 to THR-16
 
 - [x] This plan changes rules of play (clock; win/loss timing).
 - [x] **This plan changes two rules of play; `Docs/canon/rulebook.md` and `rulebook-quick-reference.md` are updated in this PR.**
-  - § 3 "The Three-Beat Turn": "turn-based … single-step per player command [IMPL]" → real time between moments, halting for every moment [IMPL — the clock]; halt registry and resume-to-prior [DESIGN — this plan, S3].
+  - § 3 "The Three-Beat Turn": "turn-based … single-step per player command [IMPL]" → real time between moments, halting for every moment [IMPL — the clock]; interrupt registry and resume-to-prior [DESIGN — this plan, S3].
   - § 8 "The Clocks": the Doom Clock wakes at the bond and cannot culminate before a floor [DESIGN — this plan, S2].
   - The quick-reference "The world advances only when you say so" → the same, one line.
 
@@ -445,6 +455,29 @@ Per slice (each slice ticket carries its own copy):
 - **The resume policy is the contested line.** If you find a case where resume-to-prior feels wrong in play (for example, the player paused, then chose an encounter card, and expects the world to run on), record it in the PR and ask in the ticket rather than re-adding `always resume`.
 - **What comes next (not in scope):** Christian's broader direction is that *every* threading plays a ceremony, the closest thing the game has to character creation. It is filed as its own ticket, [THR-1644](https://linear.app/threadbare/issue/THR-1644). S1 deliberately moves the meeting toward "the ceremony comes to where the mortal is", which is the shape that ticket needs.
 
+## Intent-judge verdict
+
+**Allow** (2026-09-27, `fable`, cold context). Impact class corrected Reversible → **High-risk**; sign-off present as Christian's verbatim rulings. Two advisory GAPs, both applied before commit:
+
+- (3) the wiring prose line and trace registration, added to § Wiring;
+- (6) the tier word renamed from a coined "halt" to the UL's *interrupt*, with toasts for the never-pausing class.
+
 ## Forked-audit verdicts
 
-<!-- populated by design-audit-pipeline -->
+| Dimension | Verdict | Note |
+|---|---|---|
+| NFP | PASS-with-notes | #3: the rival grace window shifts when an existing draw fires (re-baseline, not nondeterminism). #6: one deliberate removal (the second pause path) is justified. |
+| Three-pillar | PASS | All pillars substantive; substrate inventory matches the inventory; no green-field duplication. |
+| Vision | PASS-with-notes | The premise edit is declared and already made in the vault. Soft note: S7's zoom-out leans toward legibility in the legibility-vs-mystery tension; bounded by its kill criterion. |
+
+### NFP audit
+
+PASS-with-notes. Tunability: 12 named constants; two inline rival numbers promoted. Inspectability: five trace types plus two debug accessors covering every gate. Determinism: no new PRNG; id tie-break; the post-grace rival stream re-baselines. Fail-soft: 9 cases, none throws. Narrative: the meeting's 107 settlement lines are preserved by moving the meeting; doom wakes with a line of prose. Additive: optional fields only; the second pause path is folded, not dropped silently. Performance: a one-time picker and an O(1) gate.
+
+### Three-pillar audit
+
+PASS. Engine: all five subsections concrete. Content: templates and attachments N/A with rationale; prose and data tables filled. UI: all four subsections concrete, with two debug accessors. Wiring covers S1–S7 plus player controls, prose and traces. Substrate: eight rows, each extends, tunes or replaces an ACTIVE subsystem.
+
+### Vision audit
+
+PASS-with-notes. `01-core-loop` and `taste-profile` confirmed rewritten to the Stellaris model, with the rhythm reason kept verbatim; `00-north-star` "pressure not the player's to pause" is extended; non-negotiables untouched. No contradictions. Soft note on S7 (legibility vs mystery).
