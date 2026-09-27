@@ -42,7 +42,7 @@ import { touchWorld, type SimulationRuntime } from './simulationRuntime';
 
 /** The event type a battle's record carries. */
 export const BATTLE_FOUGHT_EVENT_TYPE = 'battle_fought';
-/** The event type a fight's record carries (slice 2, THR-1574 — no writer yet). */
+/** The event type a fight's record carries (slice 2, THR-1574 — `fights/fightRecord`). */
 export const FIGHT_FOUGHT_EVENT_TYPE = 'fight_fought';
 
 /** The record kinds that count as bloodshed on the ground. */

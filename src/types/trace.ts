@@ -87,7 +87,7 @@ export type TraceCategory =
   | 'trade_route_volume_change' | 'trade_route_dissolved'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
-  | 'battle_recorded'
+  | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
@@ -567,7 +567,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trade_route_volume_change', 'trade_route_dissolved',
   'settlement_tier_change', 'target_action_filter',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
-  'battle_recorded',
+  'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
@@ -1610,6 +1610,28 @@ export interface BattleRecordedTrace extends TraceBase {
   severity: 'minor' | 'major' | 'total' | null;
   /** Commanders given a `participated_in` edge. */
   participants: number;
+  error?: string;
+}
+
+/**
+ * Trace: a fight left (or did not leave) its record on the ground (THR-1574).
+ *
+ * Emitted once per ended fight by the first dispatcher branch (`fights/fightRecord`),
+ * including when it skips — a no-roll end or a zero-clash rout writes no record — so
+ * "why does this lair carry no fight record?" is answerable from the buffer. The debug
+ * layer only: nothing player-facing reads it — the record is state.
+ */
+export interface FightRecordedTrace extends TraceBase {
+  category: 'fight_recorded';
+  actionId: string;
+  /** Present only when a record was written. */
+  eventId?: string;
+  /** The outer-tier Location the record names. */
+  locationId?: string;
+  /** Why no record was written: no exchange happened, or no place resolved. */
+  skipped?: 'no_exchanges' | 'no_place';
+  /** The fighter and opponent given a `participated_in` edge. */
+  participants?: number;
   error?: string;
 }
 
@@ -3957,6 +3979,7 @@ export type TraceEntry =
   | SettlementTierChangeTrace
   | LocationTraitTrace
   | BattleRecordedTrace
+  | FightRecordedTrace
   | ArtifactTraitTrace
   | TargetActionFilterTrace
   | HexStateTickTrace
