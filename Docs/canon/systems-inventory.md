@@ -272,7 +272,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `debug` (7) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-689`, `THR-878` |
 | `decay` (1) | `decayCurve.ts` | — |
 | `decision` (2) | `decisionBoard.ts`, `decisionTier.ts` | `THR-1292`, `THR-1329`, `THR-1348`, `THR-1349` |
-| `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-452`, `THR-506`, `THR-514` |
+| `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-1650`, `THR-452`, `THR-506` |
 | `depression` (2) | `depressionFilling.ts`, `depressionLakes.ts` | — |
 | `derive` (1) | `deriveLocationActivities.ts` | — |
 | `detail` (2) | `detailPageGenerator.ts`, `detailPageResolvers.ts` | `THR-577` |

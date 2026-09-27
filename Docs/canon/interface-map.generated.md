@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 131 |
+| 🟢 LIVE | 132 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 40 |
-| **Total** | **179** |
+| **Total** | **180** |
 
 ## Contracts by producing subsystem
 
@@ -74,6 +74,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `delivery-beat-plays-its-encounter` | A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template's fallback reactions — it used to run them against the god, writing a mortal scene's consequences on the wrong actor (the THR-1526 untrue-scene class). | function: `prepareDeliveryEncounter`, `bindDeliverySubject` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `hunger-resonance-weighs-the-meeting-deal` | The Hunger you chose in remembrance decides which formative tests your First is put through — the god you said you were shows up in what the world asks of them, instead of only in how the prose is framed. | function: `buildLensFromIdentity`, `scoreDilemmaResonance`, `selectDilemmasScored` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🟢 LIVE | — |
@@ -749,10 +750,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 84 total — 4 write, 7 read, 73 unclassified
+- **Production hits:** 85 total — 4 write, 7 read, 74 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +68 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/GameView.tsx` +69 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
@@ -964,6 +965,17 @@ exit
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentSelection.ts`, `src/engine/decisionBoard.ts`, `src/engine/encounterScoring.ts` +3 more
 - **Verdict:** Verified 2026-08-29: THR-1302 re-ran `npm run census:undertakings` (seeds 42 + 99 × 150 ticks, medium) with the ambition-centrality term in place: the cutover gate now PASSES on BOTH seeds — 42 at undertaking 17.4% / encounter 63.8% / idle 18.8%, 99 at 13.7% / 75.2% / 11.1%, both inside [0.10, 0.35]. The mode nonetheless stays `shadow`; flipping it is THR-1301's call, not this row's. Supersedes the 2026-08-27 evidence (42 at 11.9% PASS, 99 at 4.1% FAIL), which had already gone stale under work that landed between the two runs — the census was green on both seeds BEFORE THR-1302 touched anything, so nothing here should be read as this term having closed that gap. The payload gained `ambitionBoost`: `desireMultiplier` varied throughout the shadow period while one of its two factors was a frozen constant, and no channel carried the factor, so the telemetry could not have shown it. decisionBoardLiveness.test.ts now pins that input directly (65/959 seed-42 and 110/1713 seed-99 undertaking rows score 0, p25 != p50 on both) rather than only the product it disappears into.
 
+### `delivery-beat-plays-its-encounter` — 🟢 LIVE
+
+- **Intent:** A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template's fallback reactions — it used to run them against the god, writing a mortal scene's consequences on the wrong actor (the THR-1526 untrue-scene class).
+- **Producer → Consumer:** Ascendant Beats & Progression → Encounters & Dilemmas
+- **UL terms:** *Ascendant Beat*, *The First*, *Encounter*
+- **Module:** `src/engine/deliveryBeatAdapter.ts`
+- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Write sites:** `src/engine/deliveryBeatAdapter.ts`
+- **Read sites:** `src/components/Game/GameView.tsx`, `src/engine/ascendantBeat.ts`
+- **Verdict:** Verified 2026-09-27: THR-1650 — on `?view=game&seeded&size=medium` (Playwright, 1920×1080): Kael Thornweaver moved to a spawned hamlet, `__DEBUG.fireBeat('beat.delivery.encounter.slice.the_table_that_holds')`, the modal showed the encounter's real title and teaser, and Witness opened `EncounterVeil` (`getOpenModals()` → `['EncounterVeil']`) on Kael Thornweaver with trace `beat.delivery_played … opened on ind_dev_the_first`. `deliveryBeatPlayback.test.ts` pins that no aftermath reaction runs for a delivery beat (spy on `applyEncounterAftermathReaction` never called) while a pool beat's still does, the four bind refusals, and that with no First the Director never draws a delivery beat.
+
 ### `destroy-candidates-gated-on-motive` — 🟢 LIVE
 
 - **Intent:** A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb.
@@ -1080,10 +1092,10 @@ exit
 - **Intent:** An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive.
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **Module:** `src/engine/encounterSupportBundle.ts`
-- **Production hits:** 11 total — 5 write, 2 read, 4 unclassified
+- **Production hits:** 12 total — 5 write, 2 read, 5 unclassified
 - **Write sites:** `src/data/encounters/one-body-short.ts`, `src/engine/binding/encounterBinderContext.ts`, `src/engine/debugEncounterTools.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/phaseAgentDecision.ts`
 - **Read sites:** `src/engine/binding/applyBinding.ts`, `src/engine/binding/binder.ts`
-- **Other hits:** `src/data/default-support-bundles.ts`, `src/engine/binding/undertakingBindPass.ts`, `src/types/encounter.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/data/default-support-bundles.ts`, `src/engine/binding/undertakingBindPass.ts`, `src/engine/deliveryBeatAdapter.ts`, `src/types/encounter.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-08-27: THR-1305. Slice 6 left this row UNVERIFIED-OK on measurement rather than caution — 120 ticks at seed 42/medium produced 91 encounter actions across 52 templates and zero firings of the exemplar, so no live run had travelled the route. It is now travelled, and the thing that made the proof cheap is the fix itself: the review levers were wired to the same board. `?spawn=`, `?forceencounters` and the CLI `spawn encounter` supplied no `EncounterBinderContext`, so a migrated template was cast by the legacy first-role-match resolver and wrote no ledger row — content review of a migrated encounter reviewed a different casting than players get. Live proof, CLI seed 42/medium: `tick 30` then `spawn encounter @hero encounter.border.one_body_short` leaves `state.strategicState.bindings` holding `{projectId:'enc_encounter.border.one_body_short_asc.archetype.chaos_0', castKey:'survivor', persistence:'must-persist', boundRole:'mercenary', boundAtTick:30, status:'live'}`. Control arm in the same harness: the un-migrated `cg.quest.gate_duty` writes zero `enc_*` rows, so the opt-in gate still holds live and the row is not evidence that every template now ledgers. The assembly rule (a context is built only when BOTH a runtime and `strategicState` exist, else the legacy path) moved into `binding/encounterBinderContext.ts` so the four call sites share one copy; `getBindings` tolerates an absent strategic state by returning `[]`, so an assembler skipping that check would write rows to an unowned array and report a successful bind. Non-vacuous by `src/engine/binding/__tests__/debugToolsBinderWiring.test.ts` (7 tests, both entry points, both fallback arms) — falsified in two controlled arms: with the binder not threaded, 2-of-7 red; with the caller's agent *query* stamped as `actorId` instead of the resolved node id, 1-of-7 red because `binder.ts`'s self-exclusion (`node.id === request.actorId`) stops matching and the agent is cast as their own fellow survivor. The 8 golden opt-in tests are unchanged and green, so the un-migrated corpus is untouched.
 
 ### `encounter-seed-resolves-by-query` — 🟢 LIVE

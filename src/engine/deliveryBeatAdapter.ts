@@ -15,9 +15,14 @@
  * This module is the *adapter*: it maps each branching `UnifiedActionTemplate` into a
  * lightweight delivery `BeatDefinition` the Director can schedule, and exposes the
  * eligibility filter that keeps the offered set to *currently-valid, not-yet-delivered*
- * branching encounters. The rich, player-facing offer→enter→resolve path is a
- * follow-up (TODO(THR-514)); a delivery beat's `templateId` already points at the
- * source encounter so that path — and the Director's traces today — name it.
+ * branching encounters.
+ *
+ * **Playback (THR-1650).** The vision is a scene, not a silent grant: Witness opens the
+ * source encounter in the encounter veil with **The First** as its actor, through
+ * {@link prepareDeliveryEncounter} — the non-debug sibling of `prepareDebugEncounterSpawn`.
+ * A delivery beat whose source cannot bind The First ({@link bindDeliverySubject}) is
+ * never offered; the encounter's own aftermath runs through the veil against The First,
+ * so `resolvePendingBeat` no longer runs the template's fallback reactions against the god.
  *
  * Load-bearing decision (matches the rest of the beat system): a delivery beat is
  * NOT a new node type. It is a `BeatDefinition` descriptor whose `templateId` is the
@@ -25,9 +30,21 @@
  */
 
 import type { BeatDefinition } from '../types/ascendantBeat';
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
-import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../data/unified-action-templates';
-import { isDrawable } from './encounterCache';
+import type { GameState } from '../types/gameState';
+import type { ClearanceGateRuntimeState } from '../types/contentShells';
+import type { EncounterNotification } from '../types/encounterVisibility';
+import type { ThreadEdgeProperties } from '../types/influence';
+import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
+import { VISIBILITY_BY_POSITION } from '../types/encounterVisibility';
+import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES, getUnifiedTemplateById } from '../data/unified-action-templates';
+import { getLocationType, isDrawable } from './encounterCache';
+import { getAgentLocationId } from './graphQueries';
+import { resolveToParentLocation } from './sublocationShape';
+import { buildEncounterNotification } from './encounterVisibility';
+import { prepareEncounterSupportBundle, type EncounterBinderContext } from './encounterSupportBundle';
+import { initializeClearanceGates } from './clearanceGate';
+import { createUnifiedAction } from './unifiedActionLifecycle';
+import { mulberry32 } from '../lib/prng';
 
 /** Stable prefix for every delivery beat id. A beat id is `${PREFIX}${templateId}`. */
 export const DELIVERY_BEAT_ID_PREFIX = 'beat.delivery.';
@@ -117,4 +134,164 @@ export function eligibleDeliveryBeats(
 ): readonly BeatDefinition[] {
   const delivered = new Set(deliveredBeatIds);
   return ALL_DELIVERY_BEATS.filter(b => !delivered.has(b.beatId));
+}
+
+// ─── Playback: Witness opens the scene on The First (THR-1650) ──────────────
+
+/** Why a delivery beat cannot be played on The First. Mirrors `BeatDeliveryTrace.reason`. */
+export type DeliveryBindFailure = 'no_first' | 'no_anchor' | 'ineligible' | 'template_missing';
+
+/** Result of {@link bindDeliverySubject}. */
+export type DeliveryBinding =
+  | { readonly ok: true; readonly subjectId: string; readonly anchorLocationId: string; readonly template: UnifiedActionTemplate }
+  | { readonly ok: false; readonly reason: DeliveryBindFailure; readonly subjectId: string | null };
+
+/**
+ * The First — the actor on the ascendant's `thread` edge at `courtPosition: 'the_first'`.
+ * Null when no First is bonded (or the edge points at something that is not an actor).
+ */
+export function findDeliverySubject(state: GameState): string | null {
+  const ascendantId = state.ascendantId;
+  if (!ascendantId) return null;
+  try {
+    const edge = state.graph.getOutgoingEdges(ascendantId, 'thread').find(e =>
+      (e.properties as { courtPosition?: string }).courtPosition === 'the_first'
+      && state.graph.getNode(e.target)?.type === 'actor');
+    return edge?.target ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Can this delivery beat's source encounter be played with The First as its actor?
+ *
+ * "Bind" is deliberately structural, not the mortal-pathing prerequisites (reputation
+ * tiers, marks, court position) — sidestepping those is the whole point of a divine
+ * vision (THR-506). It asks the questions whose failure would make the scene untrue:
+ * - **no_first** — no First is bonded, so there is no one for the vision to fall on.
+ * - **no_anchor** — The First stands nowhere the encounter can anchor to.
+ * - **ineligible** — the encounter is set at a kind of place (its `locationSubtypes`)
+ *   and The First is not at one. A template that declares no subtypes is place-agnostic.
+ *
+ * Pure; fail-soft (a thrown lookup reads as `no_anchor`, never an exception).
+ */
+export function bindDeliverySubject(state: GameState, templateId: string): DeliveryBinding {
+  const template = getUnifiedTemplateById(templateId);
+  const subjectId = findDeliverySubject(state);
+  if (!template) return { ok: false, reason: 'template_missing', subjectId };
+  if (!subjectId) return { ok: false, reason: 'no_first', subjectId: null };
+  try {
+    const anchorLocationId = getAgentLocationId(state.graph, subjectId);
+    if (!anchorLocationId) return { ok: false, reason: 'no_anchor', subjectId };
+    const subtypes: readonly string[] = template.locationSubtypes ?? [];
+    if (subtypes.length > 0) {
+      const place = resolveToParentLocation(state.graph, state.graph.getNode(anchorLocationId));
+      const locationType = place ? getLocationType(state.graph, place.id) : undefined;
+      if (!locationType || !subtypes.includes(locationType)) {
+        return { ok: false, reason: 'ineligible', subjectId };
+      }
+    }
+    return { ok: true, subjectId, anchorLocationId, template };
+  } catch {
+    return { ok: false, reason: 'no_anchor', subjectId };
+  }
+}
+
+/** What {@link prepareDeliveryEncounter} minted for the caller to stage and open. */
+export interface PreparedDeliveryEncounter {
+  readonly success: boolean;
+  readonly message: string;
+  readonly reason?: DeliveryBindFailure | 'open_failed';
+  readonly agent?: { readonly id: string; readonly name: string };
+  readonly template?: UnifiedActionTemplate;
+  readonly notification?: EncounterNotification;
+  readonly unifiedAction?: UnifiedAction;
+  readonly clearanceGateStates?: Map<string, ClearanceGateRuntimeState>;
+}
+
+/**
+ * Mint the encounter a delivery beat plays: the non-debug sibling of
+ * `prepareDebugEncounterSpawn` (THR-1650). It builds the `UnifiedAction`, the clearance
+ * gates and the encounter notification exactly as that path does, for The First at where
+ * The First stands — so the veil opens on a real encounter whose own aftermath runs
+ * against the right actor.
+ *
+ * Unlike the debug path it never writes a `thread` edge (The First is already threaded),
+ * never stamps a test avatar, and refuses — rather than improvises — when the source
+ * cannot bind `subjectId` (see {@link bindDeliverySubject}). Pure over the graph: the
+ * caller appends the action/notification/gates to state and opens the veil.
+ */
+export function prepareDeliveryEncounter(
+  state: GameState,
+  templateId: string,
+  subjectId: string,
+  options: { binder?: EncounterBinderContext } = {},
+): PreparedDeliveryEncounter {
+  const binding = bindDeliverySubject(state, templateId);
+  if (!binding.ok) {
+    return { success: false, reason: binding.reason, message: `Delivery '${templateId}' cannot bind The First (${binding.reason})` };
+  }
+  if (binding.subjectId !== subjectId) {
+    // The vision falls on The First only; any other subject is a caller error.
+    return { success: false, reason: 'no_first', message: `Delivery subject '${subjectId}' is not The First` };
+  }
+  try {
+    const { template, anchorLocationId } = binding;
+    const agentName = state.graph.getNode(subjectId)?.name ?? subjectId;
+    const locationName = state.graph.getNode(anchorLocationId)?.name ?? 'unknown location';
+    const threadEdge = state.ascendantId
+      ? state.graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.target === subjectId)
+      : undefined;
+    const threadProps = threadEdge?.properties as ThreadEdgeProperties | undefined;
+    const courtPosition = threadProps?.courtPosition ?? 'the_first';
+    const attentionMode = threadProps?.attentionMode ?? VISIBILITY_BY_POSITION[courtPosition].defaultAttentionMode;
+
+    const supportBindings = prepareEncounterSupportBundle(
+      state, template, anchorLocationId, undefined,
+      options.binder ? { ...options.binder, actorId: subjectId } : undefined,
+    );
+    const gateInit = initializeClearanceGates(
+      state.clearanceGateStates, template, supportBindings, anchorLocationId, state.tick,
+    );
+    const rng = mulberry32(state.seed + state.tick * 43 + subjectId.length);
+    const action = createUnifiedAction({
+      actorId: subjectId,
+      templateId: template.id,
+      targetId: anchorLocationId,
+      scale: template.scale,
+      source: 'system',
+      tick: state.tick,
+      template,
+      rng,
+      supportBindings,
+      clearanceGateIds: gateInit.gateIds,
+      targetProperties: state.graph.getNode(anchorLocationId)?.properties,
+    });
+    // unified_action metadata so the dedup key matches what phaseEncounterVisibility
+    // generates next tick (the same reason the debug path gives).
+    const notification = buildEncounterNotification(
+      subjectId, agentName, template.id, template.name, locationName,
+      courtPosition, attentionMode, state.tick,
+      { sourceSystem: 'unified_action', stepIndex: 0, actionId: action.actionId },
+    );
+    if (!notification) {
+      return { success: false, reason: 'open_failed', message: `Encounter visibility is disabled for ${agentName}` };
+    }
+    return {
+      success: true,
+      message: `Delivered '${template.name}' to ${agentName}`,
+      agent: { id: subjectId, name: agentName },
+      template,
+      notification,
+      unifiedAction: action,
+      clearanceGateStates: gateInit.clearanceGateStates,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      reason: 'open_failed',
+      message: `prepareDeliveryEncounter error (${templateId}): ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
 }

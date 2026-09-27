@@ -54,7 +54,7 @@ import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { REACH_SIGNATURE_ID_BY_REACH } from '../data/reach-signature-content';
 import { ASCENDANT_DEEPENING_BEATS, getDeepeningBeatById } from '../data/ascendant-deepening-beats';
 import { ASCENDANT_MILESTONE_BEATS, getMilestoneBeatById } from '../data/ascendant-milestone-beats';
-import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
+import { bindDeliverySubject, eligibleDeliveryBeats, getDeliveryBeatById, type DeliveryBindFailure } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import { touchWorld, touchStructure, type SimulationRuntime } from './simulationRuntime';
@@ -352,6 +352,49 @@ function emitSkipped(
   });
 }
 
+/**
+ * Keep only the delivery beats whose source encounter can bind The First (THR-1650).
+ * Emits one aggregate `beat.delivery_skipped` per draw that withholds any — the reason is
+ * `no_first` when nothing is bonded, else the first failing beat's reason. Fail-soft: a
+ * thrown binder withholds that beat (never offer a vision that cannot play).
+ */
+function withholdUnbindableDeliveryBeats(
+  candidates: readonly BeatDefinition[],
+  state: GameState,
+  turn: number,
+): BeatDefinition[] {
+  const kept: BeatDefinition[] = [];
+  let firstReason: DeliveryBindFailure | undefined;
+  let subjectId: string | null = null;
+  for (const beat of candidates) {
+    if (!beat.templateId) continue;
+    try {
+      const binding = bindDeliverySubject(state, beat.templateId);
+      subjectId = binding.subjectId;
+      if (binding.ok) {
+        kept.push(beat);
+      } else {
+        firstReason ??= binding.reason;
+      }
+    } catch {
+      firstReason ??= 'no_anchor';
+    }
+  }
+  const filteredCount = candidates.length - kept.length;
+  if (filteredCount > 0) {
+    emitTrace({
+      tick: turn,
+      category: 'beat.delivery_skipped',
+      turn,
+      subjectId,
+      reason: firstReason,
+      filteredCount,
+      summary: `beat.delivery_skipped: ${filteredCount} delivery beat(s) withheld (${firstReason ?? 'unknown'})`,
+    });
+  }
+  return kept;
+}
+
 /** Build the offer + emit scheduled/offered traces; returns the next Director state. */
 function offer(
   beats: AscendantBeatState,
@@ -506,7 +549,12 @@ export function phaseAscendantBeatDirector(
     // are still eligible — branching encounters not yet delivered this run (THR-506).
     // The base pool stays delivery-free; delivery dedup against history happens in the
     // adapter, per-beat eligibility predicates (THR-516) are applied below.
-    const pool = [...ASCENDANT_BEAT_POOL, ...eligibleDeliveryBeats(beats.history.map(h => h.beatId))];
+    // THR-1650: a delivery beat plays its encounter on The First, so one whose source
+    // cannot bind The First (none bonded, nowhere to anchor, wrong kind of place) is
+    // never offered — withheld here, not shown and then failed.
+    const deliveryCandidates = eligibleDeliveryBeats(beats.history.map(h => h.beatId));
+    const bindableDelivery = withholdUnbindableDeliveryBeats(deliveryCandidates, state, turn);
+    const pool = [...ASCENDANT_BEAT_POOL, ...bindableDelivery];
     // Drop beats whose eligibility predicate fails against current world state, then draw
     // weighted by ascendant identity (reach/sphere) on top of the kind-mix weights.
     const eligible = pool.filter(b => isBeatEligible(b, state));
@@ -819,7 +867,11 @@ export function resolvePendingBeat(
     const contentTemplate = def.templateId && opts.templateProvider
       ? opts.templateProvider(def.templateId)
       : undefined;
-    if (opts.runtime && contentTemplate) {
+    // THR-1650: never for a `delivery` beat. Its template is a mortal branching encounter
+    // whose own aftermath runs through the veil against The First when Witness plays it;
+    // running its fallback reactions here wrote that scene's consequences against the god
+    // (the THR-1526 untrue-scene class). Retired, not rerouted.
+    if (opts.runtime && contentTemplate && pending.kind !== 'delivery') {
       const after = runBeatTemplateAftermath(
         workingState, def.beatId, pending.boundNodeIds, contentTemplate, opts.runtime, turn,
       );

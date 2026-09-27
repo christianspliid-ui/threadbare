@@ -361,6 +361,9 @@ export type TraceCategory =
   | 'ascendant.beat.skipped'
   | 'ascendant.beat.resolved'
   | 'ascendant.beat.seeded'
+  // Delivery-beat playback — Witness opens the scene on The First (THR-1650)
+  | 'beat.delivery_played'
+  | 'beat.delivery_skipped'
   | 'action.unlock.granted'
   // Ascendant expression cards (THR-508)
   | 'ascendant_expression'
@@ -855,6 +858,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.beat.skipped',
   'ascendant.beat.resolved',
   'ascendant.beat.seeded',
+  // Delivery-beat playback (THR-1650)
+  'beat.delivery_played',
+  'beat.delivery_skipped',
   'action.unlock.granted',
   // Ascendant expression cards (THR-508)
   'ascendant_expression',
@@ -4275,6 +4281,7 @@ export type TraceEntry =
   | BeatSkippedTrace
   | BeatResolvedTrace
   | BeatSeededTrace
+  | BeatDeliveryTrace
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
   | ChapterArchivedTrace
@@ -4614,6 +4621,23 @@ export interface BeatSkippedTrace extends TraceBase {
   turn: number;
   reason: 'pending' | 'cadence' | 'empty_pool' | 'missing_template';
   beatId?: string;
+}
+
+/**
+ * Trace: a delivery beat's Witness playback outcome (THR-1650). `beat.delivery_played`
+ * — the source encounter opened on The First. `beat.delivery_skipped` — it could not
+ * bind The First, so it was withheld at offer time (`beatId` absent, `filteredCount`
+ * set) or, for a beat already pending, resolved without playing or running aftermath.
+ */
+export interface BeatDeliveryTrace extends TraceBase {
+  category: 'beat.delivery_played' | 'beat.delivery_skipped';
+  turn: number;
+  beatId?: string;
+  sourceTemplateId?: string;
+  subjectId: string | null;
+  reason?: 'no_first' | 'no_anchor' | 'ineligible' | 'template_missing' | 'open_failed';
+  /** Offer-time withholding only: how many delivery beats were filtered out this draw. */
+  filteredCount?: number;
 }
 
 /** Trace: a pending ascendant beat resolved. THR-500 */
