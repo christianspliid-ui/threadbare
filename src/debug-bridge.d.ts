@@ -649,7 +649,10 @@ export interface DebugBridge {
    * (`battleResolution.recordBattleFought`): a siege at its town, a field battle at the
    * battle's own Location, both resolved to the outer tier. `participants` are the
    * commanders given a `participated_in` edge, with the outcome read from the
-   * resolution (a mutual destruction is `lost` for both). Reads the same nodes the
+   * resolution (a mutual destruction is `lost` for both). THR-1574: a fight's record
+   * (`fights/fightRecord`, written when a fight had at least one exchange) sits at the
+   * fighter's outer-tier Location, carries `result`, and names the fighter and opponent
+   * as participants (`role` `fighter` / `opponent`). Reads the same nodes the
    * Blood-soaked rule and the place MEMORY read. Empty when the game is not loaded or
    * nothing matches. Always `await` it.
    */
@@ -662,6 +665,8 @@ export interface DebugBridge {
     battleType: string | null;
     resolutionType: string | null;
     severity: string | null;
+    /** A fight record's result (THR-1574); null on a battle record. */
+    result: string | null;
     summary: string;
     participants: ReadonlyArray<{ actorId: string; name: string; role: string; outcome: string }>;
   }>>;

@@ -244,6 +244,8 @@ export interface BattleRecordReadout {
   readonly battleType: string | null;
   readonly resolutionType: string | null;
   readonly severity: string | null;
+  /** A fight record's `FightResult` (THR-1574); null on a battle record. */
+  readonly result: string | null;
   readonly summary: string;
   readonly participants: ReadonlyArray<{ actorId: string; name: string; role: string; outcome: string }>;
 }
@@ -278,6 +280,7 @@ export function describeBattleRecords(graph: WorldGraph, query?: string): Battle
       battleType: str(node.properties.battleType),
       resolutionType: str(node.properties.resolutionType),
       severity: str(node.properties.severity),
+      result: str(node.properties.result),
       summary: str(node.properties.summary) ?? node.name,
       participants: graph.getIncomingEdges(node.id, 'participated_in').map(e => ({
         actorId: e.source,
