@@ -8,7 +8,12 @@ import { HEX_CONSTANTS } from '../scene/HexFillMesh';
  * NFP #1: Every magic number is named here — tune by changing values.
  */
 export const CAMERA_CONSTANTS = {
-  MIN_ZOOM: 5,                // Full-world zoom — capped so fog edge is never visible
+  // THR-1649: was MIN_ZOOM 5, "capped so fog edge is never visible". Cold-playtest round 1
+  // read that cap as "a tiny or broken world" — scroll could not zoom out and the opening
+  // fit-to-grid zoom was clamped up. The floor is now low enough to show the whole map
+  // outline, with unexplored ground as parchment fog.
+  MIN_ZOOM_FLOOR: 2,          // Default zoom-out limit; drops further when the grid needs it to fit
+  ABSOLUTE_MIN_ZOOM: 0.5,     // Hard guard under MIN_ZOOM_FLOOR — never zoom out past this
   MAX_ZOOM: 20,               // Hero-local zoom (~600px/hex apparent)
   JUMP_TO_DURATION_MS: 500,   // Smooth fly-to duration in ms (CONTEXT.md decision)
   DEFAULT_ZOOM: 1.5,          // Starting zoom level — shows a comfortable region
@@ -51,6 +56,40 @@ export function syncCameraToZoom(
 }
 
 /**
+ * Zoom scale at which the whole grid fits the canvas (with FIT_PADDING).
+ * Grid world extent: cols * HEX_SCALE_X * hexSize wide, rows * HEX_SCALE_Y * hexSize tall.
+ * Zoom k means 1 world unit = k screen pixels, so k = canvasPx / worldUnits.
+ * Returns null for a degenerate grid or canvas (fail-soft: callers fall back to defaults).
+ */
+export function computeFitZoom(
+  gridCols: number,
+  gridRows: number,
+  canvasW: number,
+  canvasH: number,
+): number | null {
+  const worldW = gridCols * HEX_SCALE_X * HEX_CONSTANTS.HEX_SIZE;
+  const worldH = gridRows * HEX_SCALE_Y * HEX_CONSTANTS.HEX_SIZE;
+  if (!(worldW > 0) || !(worldH > 0) || !(canvasW > 0) || !(canvasH > 0)) return null;
+  return Math.min(
+    (canvasW * CAMERA_CONSTANTS.FIT_PADDING) / worldW,
+    (canvasH * CAMERA_CONSTANTS.FIT_PADDING) / worldH,
+  );
+}
+
+/**
+ * The zoom-out limit (THR-1649): MIN_ZOOM_FLOOR, lowered to the fit-to-grid zoom when
+ * the grid is too big to show whole at the floor (large/epic maps), and never below
+ * ABSOLUTE_MIN_ZOOM. So the player can always scroll out to the full map outline.
+ */
+export function computeMinZoom(fitK: number | null): number {
+  if (fitK == null || !Number.isFinite(fitK)) return CAMERA_CONSTANTS.MIN_ZOOM_FLOOR;
+  return Math.max(
+    CAMERA_CONSTANTS.ABSOLUTE_MIN_ZOOM,
+    Math.min(CAMERA_CONSTANTS.MIN_ZOOM_FLOOR, fitK),
+  );
+}
+
+/**
  * Attaches d3-zoom to a canvas and wires it to an OrthographicCamera.
  *
  * Features:
@@ -81,8 +120,15 @@ export function setupD3Zoom(
   // instead of the mouse cursor position.
   let zoomTarget: { worldX: number; worldY: number } | null = null;
 
+  // Fit-to-grid zoom, measured once at setup (THR-1649) — drives both the
+  // zoom-out limit and the opening zoom.
+  const fitK = gridCols != null && gridRows != null
+    ? computeFitZoom(gridCols, gridRows, canvas.clientWidth, canvas.clientHeight)
+    : null;
+  const minZoom = computeMinZoom(fitK);
+
   const zoom = d3.zoom<HTMLCanvasElement, unknown>()
-    .scaleExtent([CAMERA_CONSTANTS.MIN_ZOOM, CAMERA_CONSTANTS.MAX_ZOOM])
+    .scaleExtent([minZoom, CAMERA_CONSTANTS.MAX_ZOOM])
     // Block double-click zoom and ALL wheel events — we handle wheel manually
     // because d3-zoom's default zoom-toward-cursor math assumes a standard
     // screen↔data mapping, but our syncCameraToZoom uses a custom mapping
@@ -176,22 +222,12 @@ export function setupD3Zoom(
   };
   const { x: gridCenterX, y: gridCenterY } = hexToPixel(startHex, HEX_CONSTANTS.HEX_SIZE);
 
-  // Compute initial zoom to fit grid within the canvas (with padding).
-  // Grid world extent: cols * HEX_SCALE_X * hexSize wide, rows * HEX_SCALE_Y * hexSize tall.
-  // Zoom k means 1 world unit = k screen pixels, so we need k = canvasPx / worldUnits.
-  const FIT_PADDING = CAMERA_CONSTANTS.FIT_PADDING;
+  // Initial zoom fits the whole grid within the canvas (with padding), clamped to
+  // the zoom extent. Since THR-1649 the floor no longer clamps it up, so the opening
+  // view shows the full map outline.
   let k = CAMERA_CONSTANTS.DEFAULT_ZOOM;
-  if (gridCols != null && gridRows != null) {
-    const worldW = gridCols * HEX_SCALE_X * HEX_CONSTANTS.HEX_SIZE;
-    const worldH = gridRows * HEX_SCALE_Y * HEX_CONSTANTS.HEX_SIZE;
-    const canvasW = canvas.clientWidth;
-    const canvasH = canvas.clientHeight;
-    const fitK = Math.min(
-      (canvasW * FIT_PADDING) / worldW,
-      (canvasH * FIT_PADDING) / worldH,
-    );
-    // Clamp to zoom extent
-    k = Math.max(CAMERA_CONSTANTS.MIN_ZOOM, Math.min(CAMERA_CONSTANTS.MAX_ZOOM, fitK));
+  if (fitK != null) {
+    k = Math.max(minZoom, Math.min(CAMERA_CONSTANTS.MAX_ZOOM, fitK));
   }
 
   // World center: hexToPixel gives positive y, but HexFillMesh stores

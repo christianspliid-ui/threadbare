@@ -82,9 +82,12 @@ describe('recalcVisibility', () => {
     const next = recalcVisibility(prev, sources, graph, 1, 20, 15);
 
     expect(next.get(visKey(5, 7))?.state).toBe('visible');
-    // With range 0, adjacent hexes are NOT visible
-    expect(next.get(visKey(6, 7))?.state).toBe('unexplored');
-    expect(next.get(visKey(4, 7))?.state).toBe('unexplored');
+    // Relative to AVATAR_SIGHT_RANGE (THR-1649: 2): hexes in range are visible,
+    // the first column past it is not.
+    expect(next.get(visKey(5 + AVATAR_SIGHT_RANGE, 7))?.state).toBe('visible');
+    expect(next.get(visKey(5 - AVATAR_SIGHT_RANGE, 7))?.state).toBe('visible');
+    expect(next.get(visKey(5 + AVATAR_SIGHT_RANGE + 1, 7))?.state).toBe('unexplored');
+    expect(next.get(visKey(5 - AVATAR_SIGHT_RANGE - 1, 7))?.state).toBe('unexplored');
   });
 
   it('marks distant hexes as unexplored', () => {
@@ -122,9 +125,10 @@ describe('recalcVisibility', () => {
     const sources = collectLOSSources(graph, ascendantId, []);
     const result = recalcVisibility(new Map(), sources, graph, 1, 20, 15);
 
-    // With range 0, only the avatar's own hex is visible
+    // Hexes within AVATAR_SIGHT_RANGE become visible; one column past it stays unexplored
     expect(result.get(visKey(5, 7))?.state).toBe('visible');
-    expect(result.get(visKey(6, 7))?.state).toBe('unexplored');
+    expect(result.get(visKey(5 + AVATAR_SIGHT_RANGE, 7))?.state).toBe('visible');
+    expect(result.get(visKey(5 + AVATAR_SIGHT_RANGE + 1, 7))?.state).toBe('unexplored');
   });
 
   it('transitions remembered → visible when re-entering range', () => {

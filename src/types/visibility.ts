@@ -28,7 +28,9 @@ export interface LOSSource {
 
 // --- Tunable Constants ---
 
-export const AVATAR_SIGHT_RANGE = 0;
+// THR-1649: 0 → 2. The god's own shape sees further than a mortal (AGENT_SIGHT_RANGE stays 1);
+// at 0 cold-playtest testers saw ~7–10 hexes and read the world as tiny.
+export const AVATAR_SIGHT_RANGE = 2;
 export const AGENT_SIGHT_RANGE = 1;
 export const SCRY_SIGHT_RANGE = 0;
 export const SCRY_ESSENCE_PER_TICK = 2;
