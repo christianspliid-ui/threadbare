@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 23:54 local (21:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-28 00:55 local (22:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -49,22 +49,21 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but thin: 3 jobs ready to build, 1 being built.** One job shipped this hour: [thread upkeep is now actually charged](https://linear.app/threadbare/issue/THR-1652), so the essence readout's income-after-upkeep is true. Merged via [#2104](https://github.com/christianspliid-ui/threadbare/pull/2104) and live on the site.
+**Thin: 2 jobs ready to build, 1 being built.** One job shipped this hour: [the world reads bigger](https://linear.app/threadbare/issue/THR-1649). Your avatar now sees two hexes, and the camera can zoom out to the whole map. Merged via [#2105](https://github.com/christianspliid-ui/threadbare/pull/2105) and live on the site.
 
 - **Ready, top first:**
-  - [The world reads bigger](https://linear.app/threadbare/issue/THR-1649): the avatar sees two hexes, and you can zoom out to the whole map.
   - [Heroes start with kin, friends and rivals](https://linear.app/threadbare/issue/THR-1630), the plan above.
   - [Let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above.
-- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635), [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091). No new push since 19:17 UTC; it still clashes with newer `main` and its required check still fails. Its local copy holds no unsaved changes (the pushed branch is 47 commits ahead of it), so nothing is at risk.
+- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635), [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091). There has been no new push since 19:17 UTC. It still conflicts with newer `main`, and its required check still fails. Its local copy holds no unsaved changes, so nothing is at risk.
 - **The fight system is live but not ready for you to review.** No one-click link opens a fight the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) conflicts with `main`, and its [required check](https://github.com/christianspliid-ui/threadbare/actions/runs/36343752679) fails: the encounter composition check reports 26 failing encounters. Auto-merge is on, but it will not fire until someone fixes both. This is for a builder, not you.
-- **The slow simulation tests are red on the latest `main`** ("Heavy simulation tests", 0 h old). A follow-up fix is owed by a builder; it does not block merges or the live site.
-- **Game speed dipped for the fifth hour running:** tick cost 118 ms/tick steady, 53% above the 7-day median (77, 134 rows since df1cf66c); top phase agent_decision, 486 agents. Name the merges between df1cf66c and 96a4d892: `git log --oneline --merges df1cf66c..96a4d892`. The same commit (2bebc045) measured 76 at 16:56 UTC and 114 an hour later, so this is load on the machine, not a code regression.
+- **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) conflicts with `main`, and its [required check](https://github.com/christianspliid-ui/threadbare/actions/runs/36343752679) fails. It has been stuck about 15 hours. Auto-merge is on, but it will not fire until someone fixes both. This is for a builder, not you.
+- **The slow simulation tests are red on the latest `main`** ("Heavy simulation tests", 1 h old). A builder owes a follow-up fix. It does not block merges or the live site.
+- **Game speed is still above normal, but improving:** tick cost 106 ms/tick steady, 37% above the 7-day median (77, 135 rows since df1cf66c); top phase agent_decision, 486 agents. Name the merges between df1cf66c and 2ba9db47: `git log --oneline --merges df1cf66c..2ba9db47`. It was 118 an hour ago. The earlier same-commit comparison (76 vs 114) still points at machine load, not a code regression.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
-  - The live site is serving the latest commit on main (96a4d892).
+  - The live site is serving the latest commit on main (2ba9db47).
   - Automated checks and the three background jobs are running normally.
-  - All ten scheduled lanes are on time. The worktree cleaner ran at 23:40.
+  - All ten scheduled lanes are on time. The worktree cleaner ran at 00:40.
