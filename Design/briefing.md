@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 14:56 local (12:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-27 15:56 local (13:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,20 +27,19 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but thin: 2 jobs ready to build, 1 being built.** The seeded item generator ([THR-1570](https://linear.app/threadbare/issue/THR-1570)) merged via [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088) and is live.
+**Nearly empty: 1 job ready to build, 1 being built.** Found items now take their stories from your actual world, so a saint's relic or monster trophy draws on the world's own dead heroes, disasters and monsters ([THR-1637](https://linear.app/threadbare/issue/THR-1637)). It merged via [#2095](https://github.com/christianspliid-ui/threadbare/pull/2095) and is live. The design lane has three more plans free to start, so the shelf refills on its own.
 
 - **Ready:** [let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above. It is also the fix path for [a new player never meeting The First](https://linear.app/threadbare/issue/THR-1605).
-- **Ready:** [found items take their stories from your actual world](https://linear.app/threadbare/issue/THR-1637): a saint's relic or monster trophy draws on the world's dead heroes, disasters and monsters. First follow-up to the item generator. *— from tb-orchestrator*
 - **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) clashes with newer `main` and failed its required check (see Health).
 - **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
 - **One build can't merge until a builder brings it up to date by hand.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) clashes with newer `main` in three docs files, and its required check failed, so the failure needs reading before the clash is fixed. It is not yours.
-- **The long simulation tests are still red** on the latest `main` (10 hours). They fail by running past a time limit, not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
-  - The live site is up to date, item generator included (6aae72cb); newer commits are docs only.
-  - Game speed is 77 ms per tick, +1% against the weekly median of 77.
+  - The live site is serving the latest `main` (ce917ad9), found-item stories included.
+  - The long simulation tests are green again on the latest `main`.
+  - Game speed is 78 ms per tick, +2% against the weekly median of 77.
   - All ten scheduled lanes are on time.
-  - The worktree reaper ran at 14:40 and left 5 worktrees waiting to be sorted, which is routine.
+  - The worktree reaper left 5 worktrees waiting to be sorted, which is routine.
