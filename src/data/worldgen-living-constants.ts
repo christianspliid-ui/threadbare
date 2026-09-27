@@ -55,8 +55,12 @@ export const WORLDGEN_POSSESSIONS_PER_SPOTLIGHT = 1;
 /** A seeded `relates_to` at or below this sentiment is a standing quarrel the world begins with. */
 export const WORLDGEN_QUARREL_SENTIMENT_MAX = -0.6;
 
-/** Marks held between protagonists of one culture — one secret per culture is history, not a spy network. */
-export const WORLDGEN_SEEDED_MARKS_PER_CULTURE = 1;
+/**
+ * The most marks held between protagonists of one culture. A ceiling since THR-1630 — the
+ * count itself is `WORLDGEN_MARKS_PER_PROTAGONIST` per hero; this keeps one culture from
+ * becoming a spy network. `0` disables the pass.
+ */
+export const WORLDGEN_SEEDED_MARKS_PER_CULTURE = 6;
 
 /** Armies mustered at each culture's capital — a capital nobody garrisons is a capital nothing defends. */
 export const WORLDGEN_CAPITAL_GARRISONS_PER_CULTURE = 1;
@@ -67,16 +71,83 @@ export const WORLDGEN_GARRISON_CAPTAIN_IRON = 60;
 /** The garrison captain's Gold capability — drives army size through `spawnArmy`'s faction-gold read. */
 export const WORLDGEN_GARRISON_CAPTAIN_GOLD = 40;
 
+// ─── The people web (THR-1630 S1) ──────────────────────────────────────────
+
 /**
- * One reserved `mulberry32(seed + prime)` stream per pass (W2…W8).
+ * Whether the legacy random worldwide tie pass in `seedWorld` writes its edges. Its
+ * dice are always rolled (the shared worldgen stream must not shift); only the write is
+ * gated. Off: `seedTies` below replaces it with ties among neighbours.
+ */
+export const WORLDGEN_RANDOM_PROTAGONIST_TIES_ENABLED = false;
+
+/** The legacy pass's per-pair chance of a tie — named, not changed. */
+export const WORLDGEN_RANDOM_TIE_CHANCE = 0.3;
+
+/** The legacy pass's strength floor and span (`floor + draw × span`) — named, not changed. */
+export const WORLDGEN_RANDOM_TIE_STRENGTH_MIN = 0.3;
+export const WORLDGEN_RANDOM_TIE_STRENGTH_SPAN = 0.5;
+
+/** A seeded tie's trust is its sentiment times this (Phase 0e's rule, shared by both passes). */
+export const WORLDGEN_TIE_TRUST_FROM_SENTIMENT = 0.5;
+
+/** Kin ties per named hero — one family member among the neighbours. */
+export const WORLDGEN_KIN_PER_PROTAGONIST = 1;
+
+/** Friend ties per named hero. */
+export const WORLDGEN_FRIENDS_PER_PROTAGONIST = 1;
+
+/** Rival ties per named hero — the tie most systems read. */
+export const WORLDGEN_RIVALS_PER_PROTAGONIST = 1;
+
+/** A kin tie's warmth. Family is warm on balance, not uncritically. */
+export const WORLDGEN_KIN_SENTIMENT = 0.5;
+
+/** A kin tie's weight — above any friend or rival, so `findHeir` (which reads strength) picks kin. */
+export const WORLDGEN_KIN_STRENGTH = 0.8;
+
+/** Friend warmth, drawn uniformly in [min, max]. */
+export const WORLDGEN_FRIEND_SENTIMENT_RANGE: readonly [number, number] = [0.3, 0.8];
+
+/** Rival coldness, drawn uniformly in [min, max]; at or below `WORLDGEN_QUARREL_SENTIMENT_MAX` it becomes an old quarrel. */
+export const WORLDGEN_RIVAL_SENTIMENT_RANGE: readonly [number, number] = [-0.8, -0.3];
+
+/** How far a hero whose home is not a settlement looks for neighbours, in hexes (same culture). */
+export const WORLDGEN_TIE_FALLBACK_MAX_HEXES = 6;
+
+/** The S1 gate's floor: co-resident tied pairs per hero who has a tie pool. A test constant, not a writer's. */
+export const WORLDGEN_TIES_MIN_PER_PROTAGONIST = 2;
+
+/** Favours a hero with a faction owes a fellow member at game start. */
+export const WORLDGEN_FAVORS_PER_FACTION_PROTAGONIST = 1;
+
+/** A seeded favour's size. */
+export const WORLDGEN_FAVOR_MAGNITUDE = 0.5;
+
+/**
+ * The warmth and weight of the friendship pair a seeded favour adds when the two have no
+ * tie yet — `phaseSecretsFavors` drift needs a positive tie to read. Fixed, not drawn:
+ * the favours pass sorts.
+ */
+export const WORLDGEN_FAVOR_FRIENDSHIP_SENTIMENT = 0.4;
+export const WORLDGEN_FAVOR_FRIENDSHIP_STRENGTH = 0.4;
+
+/** Seeded secrets per named hero (floored; at least one when any culture holds two heroes). */
+export const WORLDGEN_MARKS_PER_PROTAGONIST = 0.33;
+
+/**
+ * One reserved `mulberry32(seed + prime)` stream per pass (W2…W8), then one per pass
+ * that draws (append only — never reuse or reorder).
  *
- * None is drawn today — every choice in `seedLivingWorld` is a sort. Reserved so a
+ * The first seven are not drawn — every choice in those passes is a sort. Reserved so a
  * later pass that *does* draw cannot perturb the streams already in use (the THR-1344
- * hygiene lesson).
+ * hygiene lesson). The eighth (60089) is `seedTies`' stream (THR-1630).
  */
 export const WORLDGEN_LIVING_PRIMES: readonly number[] = [
-  60013, 60017, 60029, 60037, 60041, 60077, 60083,
+  60013, 60017, 60029, 60037, 60041, 60077, 60083, 60089,
 ];
+
+/** Index into `WORLDGEN_LIVING_PRIMES` of `seedTies`' stream. */
+export const WORLDGEN_TIES_PRIME_INDEX = 7;
 
 /**
  * The whole tuning surface as one object, so a test (or a future CMS panel) can pass
@@ -97,6 +168,22 @@ export interface LivingWorldConstants {
   WORLDGEN_GARRISON_CAPTAIN_IRON: number;
   WORLDGEN_GARRISON_CAPTAIN_GOLD: number;
   WORLDGEN_LIVING_PRIMES: readonly number[];
+  WORLDGEN_KIN_PER_PROTAGONIST: number;
+  WORLDGEN_FRIENDS_PER_PROTAGONIST: number;
+  WORLDGEN_RIVALS_PER_PROTAGONIST: number;
+  WORLDGEN_KIN_SENTIMENT: number;
+  WORLDGEN_KIN_STRENGTH: number;
+  WORLDGEN_FRIEND_SENTIMENT_RANGE: readonly [number, number];
+  WORLDGEN_RIVAL_SENTIMENT_RANGE: readonly [number, number];
+  WORLDGEN_TIE_FALLBACK_MAX_HEXES: number;
+  WORLDGEN_TIE_TRUST_FROM_SENTIMENT: number;
+  WORLDGEN_RANDOM_TIE_STRENGTH_MIN: number;
+  WORLDGEN_RANDOM_TIE_STRENGTH_SPAN: number;
+  WORLDGEN_FAVORS_PER_FACTION_PROTAGONIST: number;
+  WORLDGEN_FAVOR_MAGNITUDE: number;
+  WORLDGEN_FAVOR_FRIENDSHIP_SENTIMENT: number;
+  WORLDGEN_FAVOR_FRIENDSHIP_STRENGTH: number;
+  WORLDGEN_MARKS_PER_PROTAGONIST: number;
 }
 
 export const LIVING_WORLD_DEFAULTS: LivingWorldConstants = {
@@ -114,4 +201,20 @@ export const LIVING_WORLD_DEFAULTS: LivingWorldConstants = {
   WORLDGEN_GARRISON_CAPTAIN_IRON,
   WORLDGEN_GARRISON_CAPTAIN_GOLD,
   WORLDGEN_LIVING_PRIMES,
+  WORLDGEN_KIN_PER_PROTAGONIST,
+  WORLDGEN_FRIENDS_PER_PROTAGONIST,
+  WORLDGEN_RIVALS_PER_PROTAGONIST,
+  WORLDGEN_KIN_SENTIMENT,
+  WORLDGEN_KIN_STRENGTH,
+  WORLDGEN_FRIEND_SENTIMENT_RANGE,
+  WORLDGEN_RIVAL_SENTIMENT_RANGE,
+  WORLDGEN_TIE_FALLBACK_MAX_HEXES,
+  WORLDGEN_TIE_TRUST_FROM_SENTIMENT,
+  WORLDGEN_RANDOM_TIE_STRENGTH_MIN,
+  WORLDGEN_RANDOM_TIE_STRENGTH_SPAN,
+  WORLDGEN_FAVORS_PER_FACTION_PROTAGONIST,
+  WORLDGEN_FAVOR_MAGNITUDE,
+  WORLDGEN_FAVOR_FRIENDSHIP_SENTIMENT,
+  WORLDGEN_FAVOR_FRIENDSHIP_STRENGTH,
+  WORLDGEN_MARKS_PER_PROTAGONIST,
 };

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 130 |
+| 🟢 LIVE | 132 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 41 |
-| **Total** | **179** |
+| **Total** | **181** |
 
 ## Contracts by producing subsystem
 
@@ -307,7 +307,9 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `seeded-ties-never-graduate` | A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count. | edge-prop: `worldgen` | Agent Lifecycle | 🟢 LIVE | — |
+| `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `worldgen-ties-reach-ambition-and-grief` | Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes. | edge-prop: `relates_to` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ## Evidence
 
@@ -1480,10 +1482,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 65 total — 2 write, 3 read, 60 unclassified
+- **Production hits:** 66 total — 2 write, 3 read, 61 unclassified
 - **Write sites:** `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionQuestGeneration.ts`, `src/engine/factionReputation.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx` +55 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx` +56 more
 - **Verdict:** Verified 2026-09-22: THR-1448. On a fixture (`holdStanding.test.ts`): a stance on a town inside a Realm’s projection mints `member_of` with `reputation = HOLD_STANDING_REPUTATION_SEED`, `rank` stays 0 and derives to *subject*; a second pass writes and announces nothing; an existing member reads `membershipMinted: false` and keeps their reputation; a wilds stance opens nothing; a gone stance traces `position_closed` and leaves the edge. On a **generated** world (`holdStandingReach.test.ts`, heavy lane, seed 42 small): a real mortal claims a real town on a Realm’s ground through `claimControl`, one `runTick` traces `position_opened` naming the projection’s Realm with the membership minted at the seed, and collapsing the stance closes the standing with the membership present.
 
 ### `held-town-supplies-keeper-content-past-rank-access` — 🟢 LIVE
@@ -1656,10 +1658,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Faction*, *Prerequisite*
 - **Module:** `src/engine/factionMembership.ts`
-- **Production hits:** 26 total — 1 write, 1 read, 24 unclassified
+- **Production hits:** 27 total — 1 write, 1 read, 25 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/fight-constants.ts` +19 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/fight-constants.ts` +20 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mentorship-rides-undertaking-checkpoints` — 🟢 LIVE
@@ -2053,6 +2055,17 @@ exit
 - **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-07-25: PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.
 
+### `seeded-ties-never-graduate` — 🟢 LIVE
+
+- **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
+- **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
+- **Module:** `src/engine/npcGraduation.ts`
+- **Production hits:** 90 total — 1 write, 1 read, 88 unclassified
+- **Write sites:** `src/engine/seedLivingWorld.ts`
+- **Read sites:** `src/engine/npcGraduation.ts`
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +83 more
+- **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
+
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
 
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
@@ -2344,7 +2357,7 @@ exit
 
 ### `worldgen-seeds-the-living-world` — 🟢 LIVE
 
-- **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
+- **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
 - **Production hits:** 263 total — 2 write, 6 read, 255 unclassified
@@ -2352,6 +2365,17 @@ exit
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +250 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
+
+### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
+
+- **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
+- **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
+- **Module:** `src/engine/seedLivingWorld.ts`
+- **Production hits:** 76 total — 1 write, 3 read, 72 unclassified
+- **Write sites:** `src/engine/seedLivingWorld.ts`
+- **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +67 more
+- **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE
 
