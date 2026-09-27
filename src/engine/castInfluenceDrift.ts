@@ -19,7 +19,9 @@
  */
 
 import type { WorldGraph } from './graph';
-import type { CastValueDriftRule } from '../types/graphOp';
+import type { CastValueDriftRule, InfluencePayload } from '../types/graphOp';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { isActionStepBranch } from '../types/unifiedAction';
 import type { ValuePair } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import { REACH_VALUE_PAIR } from '../types/agent';
@@ -83,6 +85,22 @@ export function resolveCastValueDrift(
     return { outcome: 'no_lean', reach, pair, lean, drift: 0 };
   }
   return { outcome: 'drift', reach, pair, lean, drift: Math.sign(lean) * Math.abs(rule.magnitude) };
+}
+
+/**
+ * The first `apply_influence` payload in a template's concrete steps that carries
+ * a `valueDriftRule` — how a reader recognises a value-drifting cast without a
+ * template-id list. Branch steps are skipped; they carry no ops of their own.
+ */
+export function findValueDriftInfluence(
+  template: Pick<UnifiedActionTemplate, 'steps'>,
+): InfluencePayload | undefined {
+  for (const step of template.steps ?? []) {
+    if (isActionStepBranch(step)) continue;
+    const op = (step.onSuccess ?? []).find((o) => o.op === 'apply_influence' && o.influence?.valueDriftRule);
+    if (op?.influence) return op.influence;
+  }
+  return undefined;
 }
 
 /**

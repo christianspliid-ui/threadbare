@@ -40,6 +40,7 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import type {
   UnifiedAction,
+  UnifiedActionTemplate,
   UnifiedActionOutcome,
   EncounterAftermathChange,
   EncounterAftermathReaction,
@@ -69,8 +70,7 @@ import {
   CAST_INFLUENCE_AT_COST_BANDS,
   fillCastInfluenceLine,
 } from '../data/receipt-content';
-import { resolveCastValueDrift, valuePoleWord } from './castInfluenceDrift';
-import type { GraphOp } from '../types/graphOp';
+import { resolveCastValueDrift, valuePoleWord, findValueDriftInfluence } from './castInfluenceDrift';
 import type { DivineInfluenceEntry } from '../types/dream';
 
 // ─── Receipt type ────────────────────────────────────────────────────────────────
@@ -221,14 +221,11 @@ function enrichReceiptText(
 export function castInfluenceReceiptLine(
   state: GameState,
   action: UnifiedAction,
-  template: { steps?: ReadonlyArray<{ onSuccess?: ReadonlyArray<GraphOp> }> },
+  template: Pick<UnifiedActionTemplate, 'steps'>,
   band: OutcomeBand,
   targetName: string,
 ): string | undefined {
-  const influenceOp = template.steps
-    ?.flatMap((s) => s.onSuccess ?? [])
-    .find((op) => op.op === 'apply_influence' && op.influence?.valueDriftRule);
-  const payload = influenceOp?.influence;
+  const payload = findValueDriftInfluence(template);
   const rule = payload?.valueDriftRule;
   if (!payload || !rule || !action.targetId) return undefined;
   const lines = CAST_INFLUENCE_RECEIPT_LINES[payload.interventionType as 'dream' | 'persuade'];

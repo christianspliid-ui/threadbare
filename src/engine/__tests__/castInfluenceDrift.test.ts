@@ -20,6 +20,7 @@ import type { AxiologicalProfile } from '../../types/agent';
 import type { GraphOp } from '../../types/graphOp';
 import type { GameState } from '../../types/gameState';
 import type { UnifiedAction } from '../../types/unifiedAction';
+import { isActionStepBranch } from '../../types/unifiedAction';
 
 const GOD = 'asc-1';
 const MORTAL = 'mortal-1';
@@ -32,7 +33,7 @@ function profile(overrides: Partial<AxiologicalProfile> = {}): AxiologicalProfil
 function templateOps(templateId: string): GraphOp[] {
   const t = getUnifiedTemplateById(templateId);
   if (!t) throw new Error(`missing template ${templateId}`);
-  return t.steps.flatMap((s) => s.onSuccess ?? []) as GraphOp[];
+  return t.steps.flatMap((s) => (isActionStepBranch(s) ? [] : s.onSuccess ?? [])) as GraphOp[];
 }
 
 function cast(graph: WorldGraph, templateId: string, tick = 10) {
