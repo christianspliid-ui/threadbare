@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-27 01:56 local (23:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-27 02:57 local (00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-27: three seeded story hooks whose follow-ups told the wrong story were retired** ([THR-1565](https://linear.app/threadbare/issue/THR-1565)). Merged via [#2084](https://github.com/christianspliid-ui/threadbare/pull/2084), and live on the site.
 - **2026-09-27: every monster family has its own portrait** on the lair card and in the fight header ([THR-1554](https://linear.app/threadbare/issue/THR-1554)). Merged via [#2083](https://github.com/christianspliid-ui/threadbare/pull/2083), and live on the site.
 - **2026-09-26: the duel odds check works again on the new dice** ([THR-1628](https://linear.app/threadbare/issue/THR-1628)). Merged via [#2082](https://github.com/christianspliid-ui/threadbare/pull/2082), and live on the site.
 - **2026-09-26: a protection against losing a condition now refuses the condition it names** ([THR-1625](https://linear.app/threadbare/issue/THR-1625)). Merged via [#2081](https://github.com/christianspliid-ui/threadbare/pull/2081), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26: faith and politics at game start became world settings** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)). The design lane set the first test setup from your answer: a temple chapter per culture, at least two holy places per culture, about a third of towns unheld. It is in the briefing under "Decided for you" for 24 hours.
 - **2026-09-26: the Follow button now says it keeps a mortal in close view** ([THR-1573](https://linear.app/threadbare/issue/THR-1573)). Merged via [#2077](https://github.com/christianspliid-ui/threadbare/pull/2077), and live on the site.
 - **2026-09-26: you answered faith and politics at game start** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)). Your words: *"This should be tunable for different scenarios. To begin let's go with something that allows us to test and see balance and interaction"*. They are recorded on the ticket. It becomes a world setting you can tune. The design lane picks the first test setup and shows it to you under "Decided for you". This was the last open question on [the living-world map](https://linear.app/threadbare/issue/THR-1589).
-- **2026-09-26: a mortal's mastery is permanent, and a graduate's mastery moves the dice** ([THR-1584](https://linear.app/threadbare/issue/THR-1584)). Merged via [#2076](https://github.com/christianspliid-ui/threadbare/pull/2076), and live on the site.
 
 ---
 
