@@ -21,7 +21,7 @@
   - Two DISTINCT sight systems, both hex-distance based:
     (1) player fog of war — visibility.ts / recalcVisibility, states
         unexplored|visible|remembered; sources are avatar + retinue + scry.
-        AVATAR_SIGHT_RANGE 0, AGENT_SIGHT_RANGE 1, SCRY_SIGHT_RANGE 0 (types/visibility.ts).
+        AVATAR_SIGHT_RANGE 2, AGENT_SIGHT_RANGE 1, SCRY_SIGHT_RANGE 0 (types/visibility.ts).
     (2) agent encounter awareness — encounterAwareness.ts / filterByAwareness,
         per-reach hop budget (AWARENESS_THRESHOLD 0.05, BASE 1, PER_HOP 0.15, MAX 5).
     Do not conflate them — one is what the god sees, the other is what a mortal sees.
@@ -260,7 +260,7 @@
 
   <section class="section">
     <h2>Sight, and the fog over the world<span class="lead">You do not see the whole world at once. Fog covers what no one of yours is watching — and, separately, each mortal sees only so far across the hexes themselves.</span></h2>
-    <p>A god is not omniscient here. The map wears a <span class="term">fog of war</span>, and a hex you have never watched sits <span class="term">unexplored</span> — dark, unknown. You lift the fog by <em>looking</em>: through your avatar where it walks, through the mortals of your retinue out in the world, and through scrying a distant thread. Wherever one of those eyes reaches, the hexes around it turn <span class="term">visible</span>, and you see what is truly there, now.</p>
+    <p>A god is not omniscient here. The map wears a <span class="term">fog of war</span>, and a hex you have never watched sits <span class="term">unexplored</span> — dark, unknown. You lift the fog by <em>looking</em>: through your avatar where it walks, through the mortals of your retinue out in the world, and through scrying a distant thread. Wherever one of those eyes reaches, the hexes around it turn <span class="term">visible</span>, and you see what is truly there, now. Your avatar sees two hexes out in every direction — further than any mortal of yours — and you can pull the camera back until the whole world's outline shows, the fog lying over everything you have yet to see.</p>
     <p>Look away and the world does not vanish, but it goes stale. A hex you have seen and then left slips to <span class="term">remembered</span>: you keep the picture of it as it last was — the places, the faces — but you are no longer told what changes there until you look again. The fog is not ignorance so much as <em>old news</em>. Your sight is narrow and your attention finite, and the map quietly reminds you that ruling by watching means always choosing where <em>not</em> to look.</p>
     <div class="callout purple">
       <div class="callout-title">The mortals have their own sight</div>
@@ -321,7 +321,7 @@
       <h3>Player fog of war <span class="flag impl">IMPL</span></h3>
       <ul>
         <li><code>recalcVisibility(prev, sources, graph, tick, cols, rows)</code> (<code>visibility.ts</code>, inline near the end of <code>runTick</code>) recomputes a <code>VisibilityMap</code> keyed <code>"col,row"</code> over the whole grid. Three states: <code>unexplored</code> → <code>visible</code> (in range of any LOS source) → <code>remembered</code> (was visible, now out of range; a <code>StaleSnapshot</code> of location + agent names is captured at <code>tick − 1</code>). Newly-visible hexes auto-reveal the land layer.</li>
-        <li><code>collectLOSSources</code> gathers line-of-sight from three origins — the avatar (<code>AVATAR_SIGHT_RANGE = 0</code>), retinue agents on non-dormant threads at tier ≥ 1 (<code>AGENT_SIGHT_RANGE = 1</code>), and scry targets (<code>SCRY_SIGHT_RANGE = 0</code>) — each range passing through <code>getModifiedValue(…, 'los_range', …)</code> for effect modifiers. Ranges are deliberately tight: sight is narrow, and the fog is a real constraint, not decoration.</li>
+        <li><code>collectLOSSources</code> gathers line-of-sight from three origins — the avatar (<code>AVATAR_SIGHT_RANGE = 2</code> — raised from 0 by THR-1649: the god's own shape sees two hexes out, further than any mortal), retinue agents on non-dormant threads at tier ≥ 1 (<code>AGENT_SIGHT_RANGE = 1</code>), and scry targets (<code>SCRY_SIGHT_RANGE = 0</code>) — each range passing through <code>getModifiedValue(…, 'los_range', …)</code> for effect modifiers. Ranges are deliberately tight: sight is narrow, and the fog is a real constraint, not decoration.</li>
       </ul>
 
       <h3>Agent encounter awareness — hex distance, not location hops <span class="flag impl">IMPL</span></h3>
@@ -358,9 +358,9 @@
           <tr><td>HEX_DIVINE_TRANSFORM_THRESHOLD</td><td>0.8</td><td>Influence → terrain restore · <code>:32</code></td></tr>
           <tr><td>HEX_TRANSFORM_COOLDOWN_TICKS</td><td>10</td><td>Ticks between transforms · <code>:33</code></td></tr>
           <tr><td>MAGICAL_SATURATION_DECAY_RATE</td><td>0.02</td><td>Per-tick location saturation fade · <code>phaseMagicalSaturation.ts:25</code></td></tr>
-          <tr><td>AVATAR_SIGHT_RANGE</td><td>0</td><td>Fog: avatar LOS hexes · <code>types/visibility.ts:31</code></td></tr>
-          <tr><td>AGENT_SIGHT_RANGE</td><td>1</td><td>Fog: retinue-agent LOS hexes · <code>:32</code></td></tr>
-          <tr><td>SCRY_SIGHT_RANGE</td><td>0</td><td>Fog: scry-target LOS hexes · <code>:33</code></td></tr>
+          <tr><td>AVATAR_SIGHT_RANGE</td><td>2</td><td>Fog: avatar LOS hexes (THR-1649, was 0) · <code>types/visibility.ts:33</code></td></tr>
+          <tr><td>AGENT_SIGHT_RANGE</td><td>1</td><td>Fog: retinue-agent LOS hexes · <code>:34</code></td></tr>
+          <tr><td>SCRY_SIGHT_RANGE</td><td>0</td><td>Fog: scry-target LOS hexes · <code>:35</code></td></tr>
           <tr><td>AWARENESS_THRESHOLD</td><td>0.05</td><td>Min capability to see beyond own hex · <code>agent-behavior-constants.ts:47</code></td></tr>
           <tr><td>BASE_AWARENESS_HOPS</td><td>1</td><td>Hops granted above threshold · <code>:51</code></td></tr>
           <tr><td>CAPABILITY_PER_HOP</td><td>0.15</td><td>Capability per extra awareness hop · <code>:55</code></td></tr>
