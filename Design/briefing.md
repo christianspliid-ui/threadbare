@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 18:56 local (16:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-27 19:56 local (17:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,21 +27,22 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy again: 4 jobs ready to build, 1 being built.** Since last hour, the ascendant's essence lives in one place, so the essence bar reads the right number ([THR-1645](https://linear.app/threadbare/issue/THR-1645), merged via [#2099](https://github.com/christianspliid-ui/threadbare/pull/2099), live). Three fixes from your first cold playtest are now queued, from [the opening plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md). The rest of the opening waits on "the meeting comes to the player", still being designed.
+**Healthy: 5 jobs ready to build, 1 being built.** Nothing merged this hour. One fix joined the queue: [thread upkeep is never charged](https://linear.app/threadbare/issue/THR-1652). The essence readout subtracts an upkeep the game never takes. The builder will either make the upkeep real, as designed, or drop it from the readout. You can veto that choice on the ticket. Three fixes from your first cold playtest are also queued, from [the opening plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md). The rest of the opening waits on "the meeting comes to the player", which is still being designed.
 
 - **Ready, top first:**
   - [A Vision plays its scene](https://linear.app/threadbare/issue/THR-1650): it opens the encounter on The First instead of resolving silently.
   - [Dreams and compulsions change someone](https://linear.app/threadbare/issue/THR-1651): Oneiric Sending and Divine Compulsion shift the mortal's values.
   - [The world reads bigger](https://linear.app/threadbare/issue/THR-1649): the avatar sees two hexes, and you can zoom out to the whole map.
+  - [Thread upkeep is actually charged](https://linear.app/threadbare/issue/THR-1652), or dropped from the readout.
   - [Let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above.
-- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). Its build [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) has not moved for about 5 hours (see Health).
+- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). Its build [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) has not moved for about 6 hours (see Health).
 - **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
 - **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) clashes with newer `main` in three docs files and failed its required check; its last change was 12:12 UTC. Builders have shipped two other jobs since, so nobody is on it. Not yours.
-- **The long simulation tests are still red on the latest `main`** (about 2 hours now; 4 of the last 5 runs failed). Earlier readings were checks running out of time, not wrong answers, so it looks like a slow test rather than broken game logic. A builder should raise its time limit or speed it up.
-- **Game speed is back to normal:** 76 ms/tick, right on the 7-day median (77). Last hour's slowdown did not repeat.
+- **The long simulation tests are still red on the latest `main`** (about 3 hours now). Earlier readings were checks running out of time, not wrong answers, so it looks like a slow test rather than broken game logic. A builder should raise its time limit or speed it up.
+- **Game speed dipped again:** 114 ms/tick, 49% above the 7-day median (77). `main` has not changed since last hour's normal reading (76), so this looks like a busy machine rather than slower code. A builder should look only if it repeats. For whoever looks: `git log --oneline --merges df1cf66c..2bebc045`.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
   - The live site is serving the latest `main` (2bebc045), which includes the essence fix.
