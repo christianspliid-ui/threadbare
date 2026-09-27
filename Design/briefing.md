@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 04:56 local (02:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-27 05:56 local (03:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,19 +27,19 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 jobs are ready, none being built right now.** The builder lane picks the next one up at its next hourly run.
+**Healthy: 2 jobs are ready and 1 is being built.**
 
-- **Shipped this hour:** travellers' resting spots on the road no longer pile up as nameless places that no system recognises ([THR-1616](https://linear.app/threadbare/issue/THR-1616), via [#2086](https://github.com/christianspliid-ui/threadbare/pull/2086)). It is live on the site.
-- **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight. One small bug is still queued: [when two duellists kill each other, the second death leaves no grief behind](https://linear.app/threadbare/issue/THR-1629).
+- **Being built:** [when two duellists kill each other, the second death leaves no grief behind](https://linear.app/threadbare/issue/THR-1629). The fix is up for merge as [#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), but one of its automatic checks failed (see Health).
+- **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620) and [the item generator build](https://linear.app/threadbare/issue/THR-1570) have no priority set.
 
 ## Health
 
-- **The long simulation tests are now red eight runs in a row** on `main` ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/36288900430)). Still the same three tests: two about who inherits a company or army when its commander dies, and one that records what each ownership cell does. They fail by running just past a time limit, not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
+- **The duel fix ([#2087](https://github.com/christianspliid-ui/threadbare/pull/2087)) is armed to merge but stuck.** Its required check [failed](https://github.com/christianspliid-ui/threadbare/actions/runs/36291016816): a fight-calibration test ran past its 10-second setup limit. That looks like the same slow-test problem as below, not a wrong answer. A builder needs to re-run or fix it. It is not yours.
+- **The long simulation tests are now red nine runs in a row** on `main` ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/36291709545)). They fail by running just past a time limit, not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
-  - The live site is serving the latest `main` (with #2086).
-  - Game speed is 78 ms per tick, 4% above the weekly median. That is within the normal range.
+  - The live site is serving the latest `main` (with [#2086](https://github.com/christianspliid-ui/threadbare/pull/2086)).
+  - Game speed is 79 ms per tick, 4% above the weekly median. That is within the normal range.
   - All ten scheduled lanes are on time.
-  - The worktree reaper last ran at 04:40 local. 5 worktrees are waiting to be sorted, which is routine.
-  - No pull requests are waiting to merge.
+  - The worktree reaper last ran at 05:42 local. 5 worktrees are waiting to be sorted, which is routine.
