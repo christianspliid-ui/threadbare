@@ -2876,3 +2876,11 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `engine/fights/fightRecord.ts` (new: `fightRecordBranch`, `recordFightFought`, `resolveFightPlace`, `fightRecordSummary`) | step resolution (`finalizeFightEnd` → `onFightEnded`, **first** in `FIGHT_END_BRANCHES`) | place MEMORY (`latestBloodshedRecord`), location page conditions row (*Blood-soaked*, via `phaseLocationTraits`) | graph: `fight_fought` event + `occurred_at` + `participated_in`; `lastFightTick` on the Location | `fight_recorded` (once per ended fight, incl. `skipped: no_exchanges / no_place` and `error`) | `getBattleRecords()` (rows carry `result`), CLI `battles` |
 
 **Wired and asserted:** `fightRecord.test.ts` runs through the real `onFightEnded` with the shipped branches. Live CLI (seed 42 medium): three `spawn fight`s at Ardenmor Keep mint *Blood-soaked* (bloodshed 1.02), one does not (0.34).
+
+## Thread upkeep phase (THR-1652)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/phaseInfluenceMaintenance.ts` (new: `phaseInfluenceMaintenance`) | inline `influence_maintenance`, immediately after `essence`, before `control_effects` | none new. The existing income readout (`computeEssenceIncome` via `GameView`) now matches the pool's real delta | `essencePool` (primary sphere debited); thread edge `ticksAtCurrentTier` / `maintenanceCurrent` / `totalEssenceSpent` | `influence_maintenance` (one aggregate, only on ticks where a thread lapses or is restored) | CLI `eval state.essencePool`; thread edges via `eval state.graph.getOutgoingEdges(state.ascendantId,'thread')` |
+
+**Wired and asserted:** `phaseInfluenceMaintenance.test.ts` runs `phaseEssence` then `phaseInfluenceMaintenance` for one tick with a tier-2 thread and asserts every sphere's delta equals `computeEssenceIncome`. It is a separate phase, not a call inside `phaseEssence`, so `applyEssenceEarned` banks gross income and treats upkeep as a spend (the contract in `essenceEarned.ts`). `processInfluenceMaintenance` previously had no production caller, so `phaseInfluenceTierPromotion` could only promote threads whose ticks the co-located aura advanced.
