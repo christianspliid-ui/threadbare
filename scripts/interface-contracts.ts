@@ -483,7 +483,8 @@ export const CONTRACTS: readonly Contract[] = [
     // removal) with an `occurred_at` edge to the outer-tier Location and a
     // `lastBattleTick` stamp; the fifth location-trait rule reads the records in a
     // window (never `deathCount`) and the place MEMORY tells the latest one. Slice 2
-    // (THR-1574) adds `fight_fought` through the same readers and gets its own row.
+    // (THR-1574) adds `fight_fought` through the same readers in its own row,
+    // `fights-leave-a-record-on-the-ground`.
     id: 'battles-leave-a-record-on-the-ground',
     producerSystem: 'War, Armies & Battles',
     consumerSystem: TRAITS,
@@ -513,6 +514,48 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-26',
       evidence:
         "THR-1528. Unit (src/engine/__tests__/battleRecord.test.ts, 14 arms, driven through the real resolveBattle): each of the four resolutions writes one battle_fought record at its ground with lastBattleTick stamped and the participated_in outcome from the resolution table (mutual destruction: lost on both sides, no victor in the summary); a field battle on a Place is remembered at the outer-tier Location; a siege records at its town even when its node sits elsewhere; a commander removed by the aftermath gets no edge, one kept as deceased does; no place -> record without occurred_at, traced no_place; a failed write is traced and never throws into resolveBattle; a resolved battle mints Blood-soaked on the next traits pass; a sieged town's MEMORY carries the siege inside the window and the ordinary line outside it. The falsifier (phaseLocationTraits.test.ts): twenty deaths and no record never mint it and write no counter. Live: seed 42 medium CLI to tick 182 wrote 13 battle records across 4 places and held Blood-soaked on 3 of them.",
+    },
+  },
+  {
+    // THR-1574 — slice 2 of the blood-soaked ground. A fight with at least one
+    // exchange writes one `fight_fought` Event where it was fought (the fighter's
+    // outer-tier Location; for a lair fight, the lair) with `participated_in` from both
+    // sides and a `lastFightTick` stamp. The writer is the FIRST branch in
+    // `FIGHT_END_BRANCHES`, so the record exists even when a later branch throws.
+    // It reuses slice 1's readers: `readBloodshed` weights a fight at
+    // BLOOD_SOAKED_FIGHT_WEIGHT (three fights soak the ground), the place memory tells
+    // the latest record, and the debug readout lists it.
+    id: 'fights-leave-a-record-on-the-ground',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'A fight where blows were actually exchanged leaves its history on the ground it was fought on, so a lair where the beast is fought again and again reads Blood-soaked, and a mortal who fled at the sight of the beast leaves no mark.',
+    ulTerms: ['Location Trait', 'Trait'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        // Write side — the dispatcher branch and the writer it calls.
+        'fightRecordBranch',
+        'recordFightFought',
+        // Read side — slice 1's readers, which weight and tell a `fight_fought` record.
+        'readBloodshed',
+        'latestBloodshedRecord',
+        'describeBattleRecords',
+      ],
+      module: 'src/engine/fights/fightRecord.ts',
+    },
+    writeSites: ['src/engine/fights/fightRecord.ts', 'src/engine/fights/fightOutcome.ts'],
+    readSites: [
+      'src/engine/phaseLocationTraits.ts',
+      'src/engine/battleRecord.ts',
+      'src/engine/detailPageResolvers.ts',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-27',
+      evidence:
+        "THR-1574. Unit (src/engine/fights/__tests__/fightRecord.test.ts, 15 arms, driven through the real onFightEnded with the shipped branches): the branch is first in FIGHT_END_BRANCHES; a fight with an exchange writes one fight_fought record at the outer-tier Location (a fighter in a Place is remembered at its lair) with lastFightTick stamped and participated_in from fighter and opponent; a duel writes one record, not two; no_opponent, opponent_gone and a zero-clash rout write none (traced no_exchanges), while a rout after a real clash does; a failed write is caught and traced and the later branches still run; three records inside the window reach BLOOD_SOAKED_ENTER and one does not. Live: seed 42 medium CLI, three spawn fights at Ardenmor Keep (t7, t14, t17) read bloodshed 1.02 and minted Blood-soaked at t17; one fight read 0.34 and minted nothing.",
     },
   },
   {

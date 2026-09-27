@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 127 |
+| 🟢 LIVE | 128 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 40 |
-| **Total** | **175** |
+| **Total** | **176** |
 
 ## Contracts by producing subsystem
 
@@ -183,6 +183,7 @@ remediation ticket or the build fails.
 | `fight-victory-earns-gratitude-and-standing` | Felling or driving off a beast earns the nearest settlement's gratitude; beating a person, or being yielded to, earns standing with the loser's faction or home — reputation with a party, never world renown. | edge-prop: `reputation_with`, `applyReputationWithDelta`, `fight_gratitude`, `fight_standing` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `fight-writes-opponent-clock` | Every blow a fighter lands fills the opponent's clock, and the next fight reads where it was left — a monster worn down by one hero is closer to falling for the next, recovering only with time. | node-prop: `advanceFightClock`, `monsterState`, `FIGHT_CLOCK_MAILBOX_PROP` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-yield-humiliates-at-home` | Yielding to another person costs a mortal face with their home settlement; yielding to a beast costs nothing, because there is nobody to tell. | edge-prop: `reputation_with`, `applyReputationWithDelta`, `fight_humiliation` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
+| `fights-leave-a-record-on-the-ground` | A fight where blows were actually exchanged leaves its history on the ground it was fought on, so a lair where the beast is fought again and again reads Blood-soaked, and a mortal who fled at the sight of the beast leaves no mark. | function: `fightRecordBranch`, `recordFightFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -682,10 +683,10 @@ exit
 - **Producer → Consumer:** War, Armies & Battles → Personality & Emergent Traits
 - **UL terms:** *Location Trait*, *Trait*
 - **Module:** `src/engine/battleRecord.ts`
-- **Production hits:** 7 total — 2 write, 3 read, 2 unclassified
+- **Production hits:** 8 total — 2 write, 3 read, 3 unclassified
 - **Write sites:** `src/engine/battleRecord.ts`, `src/engine/battleResolution.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/phaseLocationTraits.ts`
-- **Other hits:** `src/data/location-trait-constants.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/location-trait-constants.ts`, `src/engine/fights/fightRecord.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-26: THR-1528. Unit (src/engine/__tests__/battleRecord.test.ts, 14 arms, driven through the real resolveBattle): each of the four resolutions writes one battle_fought record at its ground with lastBattleTick stamped and the participated_in outcome from the resolution table (mutual destruction: lost on both sides, no victor in the summary); a field battle on a Place is remembered at the outer-tier Location; a siege records at its town even when its node sits elsewhere; a commander removed by the aftermath gets no edge, one kept as deceased does; no place -> record without occurred_at, traced no_place; a failed write is traced and never throws into resolveBattle; a resolved battle mints Blood-soaked on the next traits pass; a sieged town's MEMORY carries the siege inside the window and the ordinary line outside it. The falsifier (phaseLocationTraits.test.ts): twenty deaths and no record never mint it and write no counter. Live: seed 42 medium CLI to tick 182 wrote 13 battle records across 4 places and held Blood-soaked on 3 of them.
 
 ### `binder-decision-traced` — 🔵 UNVERIFIED-OK
@@ -1186,10 +1187,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Fight Clock*, *SCAR*, *BOND*, *BOON*, *PATH*
 - **Module:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`
-- **Production hits:** 27 total — 3 write, 2 read, 22 unclassified
+- **Production hits:** 28 total — 3 write, 2 read, 23 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/fights/fightState.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts` +17 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts` +18 more
 - **Verdict:** Verified 2026-09-25: THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with "Let fate decide": the aftermath rendered PATH · KRENN "Krenn was slain." ◆ slain and PATH · THE KINDLED WARREN "The Kindled Warren is cleared." ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`. THR-1561 (a duel's loser): `?view=game&seeded&size=medium&forceencounters`, tick 10, `spawnDuel('Corran', …, { courtPosition: 'the_first' })` → `ua_31`, where `opponentEnding` was spared with `grudgeWritten`; the aftermath drew BOND · NESRIN "Nesrin holds a grudge against Corran." ▼ (`Docs/evidence/thr-1561/`).
 
 ### `fight-fells-monster-clears-lair` — 🔵 UNVERIFIED-OK
@@ -1270,10 +1271,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Fight Clock*, *Opponent Card*
 - **Module:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`
-- **Production hits:** 34 total — 2 write, 2 read, 30 unclassified
+- **Production hits:** 35 total — 2 write, 2 read, 31 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/fights/fightState.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/OpponentHeader.tsx`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts` +25 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts` +26 more
 - **Verdict:** Verified 2026-09-25: THR-1551 F2. Review route `?view=game&seeded&size=medium`, `tick(60)`, `spawnFight('Ryx')` (major lair, blight family): `getOpponentHeaderModel('ua_116').name === 'Ryx'`, sentence "A walking rot that spreads where it goes. Fearsome to face, a fair match.", clock 4 square pips at 14px, word "untouched", no threat whisper, hand unscrolled at 1920×1080 (`Docs/evidence/thr-1551/`). Non-vacuous by `src/components/Game/encounter-stage/__tests__/opponentHeaderF2.test.tsx`: the nerve step's word equals the first exchange's after a real `executeStepResult` with a pending recovery (a raw read would say "failing"), and the word tracks `fightState.clockNow` once the fight exists.
 
 ### `fight-victory-draws-trophy` — 🔵 UNVERIFIED-OK
@@ -1323,6 +1324,17 @@ exit
 - **Read sites:** `src/engine/reputation.ts`
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +28 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `fights-leave-a-record-on-the-ground` — 🟢 LIVE
+
+- **Intent:** A fight where blows were actually exchanged leaves its history on the ground it was fought on, so a lair where the beast is fought again and again reads Blood-soaked, and a mortal who fled at the sight of the beast leaves no mark.
+- **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
+- **UL terms:** *Location Trait*, *Trait*
+- **Module:** `src/engine/fights/fightRecord.ts`
+- **Production hits:** 6 total — 2 write, 4 read, 0 unclassified
+- **Write sites:** `src/engine/fights/fightOutcome.ts`, `src/engine/fights/fightRecord.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/battleRecord.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/phaseLocationTraits.ts`
+- **Verdict:** Verified 2026-09-27: THR-1574. Unit (src/engine/fights/__tests__/fightRecord.test.ts, 15 arms, driven through the real onFightEnded with the shipped branches): the branch is first in FIGHT_END_BRANCHES; a fight with an exchange writes one fight_fought record at the outer-tier Location (a fighter in a Place is remembered at its lair) with lastFightTick stamped and participated_in from fighter and opponent; a duel writes one record, not two; no_opponent, opponent_gone and a zero-clash rout write none (traced no_exchanges), while a rout after a real clash does; a failed write is caught and traced and the later branches still run; three records inside the window reach BLOOD_SOAKED_ENTER and one does not. Live: seed 42 medium CLI, three spawn fights at Ardenmor Keep (t7, t14, t17) read bloodshed 1.02 and minted Blood-soaked at t17; one fight read 0.34 and minted nothing.
 
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
 
@@ -1553,10 +1565,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 21 total — 2 write, 5 read, 14 unclassified
+- **Production hits:** 22 total — 2 write, 5 read, 15 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +9 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +10 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `location-traits-shift-encounter-pool` — 🟢 LIVE
@@ -1565,10 +1577,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Location Trait*, *Trait*, *Encounter*
 - **Module:** `src/engine/phaseLocationTraits.ts`
-- **Production hits:** 9 total — 1 write, 3 read, 5 unclassified
+- **Production hits:** 10 total — 1 write, 3 read, 6 unclassified
 - **Write sites:** `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterScoring.ts`, `src/engine/locationTraitBonus.ts`
-- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/engine/battleRecord.ts`, `src/engine/orchestrator.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/engine/battleRecord.ts`, `src/engine/fights/fightRecord.ts`, `src/engine/orchestrator.ts` +1 more
 - **Verdict:** Verified 2026-09-22: THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
