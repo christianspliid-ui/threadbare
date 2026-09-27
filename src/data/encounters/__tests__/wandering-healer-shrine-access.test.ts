@@ -151,7 +151,6 @@ describe('The Healer at the Ward-Gate — aftermath config', () => {
     const changeIds = config.fallback.changes.map(c => c.id);
     expect(changeIds).toContain('healer_departs');
     expect(changeIds).toContain('ward_policy_tested');
-    expect(changeIds).toContain('child_recovers');
   });
 
   // Repointed by THR-1141. This assertion used to read `reactions` must be
@@ -171,8 +170,22 @@ describe('The Healer at the Ward-Gate — aftermath config', () => {
     // Thornwall Ward is fiction, not a faction node, so there is no
     // `targetFactionId` to move here.
     expect(kinds).toContain('reputation_score');
-    // `child_recovers` is a `future_hook`, and a hook is backed by a seed.
-    expect(kinds).toContain('encounter_seed');
+  });
+
+  // THR-1565. The retired `child_recovers` hook was backed by a seed of
+  // `encounter.slice.grateful_kin`, whose opening names *the family from the fen
+  // road* — the Swindled Family. From the Healer it thanked the mortal for a
+  // kindness they never did. The pin: the Healer plants no seed whose opening
+  // presumes a different parent, and no chip promises a return nothing brings.
+  it('plants no seed whose sequel opens on another encounter\'s family (THR-1565)', () => {
+    const seeds = (config.fallback.reactions ?? [])
+      .flatMap(r => r.effects)
+      .filter(e => e.kind === 'encounter_seed');
+    expect(seeds.map(s => (s as { templateId?: string }).templateId))
+      .not.toContain('encounter.slice.grateful_kin');
+    const kinds = config.fallback.changes.map(c => c.kind);
+    // A hook chip is only true while a seed brings the hook back.
+    if (seeds.length === 0) expect(kinds).not.toContain('future_hook');
   });
 
   it('every effect names a cast key the template actually declares', () => {
