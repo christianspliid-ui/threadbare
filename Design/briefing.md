@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 08:57 local (06:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-27 09:56 local (07:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,7 +8,7 @@
 - [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
-Everything from your four feedback batches is live. The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions. The next planned change to encounter openings deliberately leaves these five alone until you are done, so nothing moves under you.
+Everything from your four feedback batches is live. The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions. The change to encounter openings now being built deliberately leaves these five alone until you are done, so nothing moves under you.
 
 ## Also waiting (3)
 
@@ -27,20 +27,20 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Nearly empty shelf: 1 job is ready to build, and 2 are being built.** That is expected: the design lane just turned [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635) into buildable work, and it runs again at about 14:17 local with six more design jobs from the living-world map.
+**Empty shelf: nothing is waiting to be built, and 3 jobs are being built.** That is expected on a Sunday morning: the builder already took [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635), and the design lane runs again at about 14:17 local with six more design jobs from the living-world map.
 
-- **Ready to build:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). The next builder run (about 09:10 local) can take it.
+- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). Up for merge as [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091), with its checks running.
 - **Being built:** [the seeded item generator](https://linear.app/threadbare/issue/THR-1570). Up for merge as [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088), still stuck (see Health).
 - **Being built:** [when two duellists kill each other, the second death leaves no grief behind](https://linear.app/threadbare/issue/THR-1629). Up for merge as [#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), also stuck (see Health).
 - **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **Both builds waiting to merge ([#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088)) are still stuck, unchanged for 2–4 hours.** Each clashes with newer `main` and must be brought up to date by hand, and each failed its required check on the same slow fight-calibration test ([#2088's run](https://github.com/christianspliid-ui/threadbare/actions/runs/36295798947), [#2087's run](https://github.com/christianspliid-ui/threadbare/actions/runs/36291016816)), which ran past its time limit rather than giving a wrong answer. A builder needs to fix both. It is not yours.
-- **The long simulation tests are still red** on the latest `main` (7 hours). They fail by running past a time limit, not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
+- **Two builds waiting to merge ([#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088)) are still stuck, unchanged for 3–5 hours.** Each clashes with newer `main` and must be brought up to date by hand, and each failed its required check on the same slow fight-calibration test ([#2088's run](https://github.com/christianspliid-ui/threadbare/actions/runs/36295798947), [#2087's run](https://github.com/christianspliid-ui/threadbare/actions/runs/36291016816)), which ran past its time limit rather than giving a wrong answer. A builder needs to fix both. It is not yours.
+- **The long simulation tests are still red** on the latest `main` (8 hours). They fail by running past a time limit, not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
   - The live site is up to date. Nothing since [#2089](https://github.com/christianspliid-ui/threadbare/pull/2089) changed the game itself.
-  - Game speed is 79 ms per tick, 4% above the weekly median of 76.
+  - Game speed is 76 ms per tick, level with the weekly median of 76.
   - All ten scheduled lanes are on time.
-  - The worktree reaper last ran at 08:40 local. 5 worktrees are waiting to be sorted, which is routine.
+  - The worktree reaper last ran at 09:40 local. 5 worktrees are waiting to be sorted, which is routine.
