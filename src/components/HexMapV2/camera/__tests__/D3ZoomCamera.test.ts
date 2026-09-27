@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { syncCameraToZoom, CAMERA_CONSTANTS } from '../D3ZoomCamera';
+import { syncCameraToZoom, CAMERA_CONSTANTS, computeFitZoom, computeMinZoom } from '../D3ZoomCamera';
 import * as THREE from 'three';
 import { zoomIdentity } from 'd3-zoom';
 
@@ -61,9 +61,44 @@ describe('syncCameraToZoom', () => {
 
 describe('CAMERA_CONSTANTS', () => {
   it('has expected zoom range values', () => {
-    expect(CAMERA_CONSTANTS.MIN_ZOOM).toBe(5);
+    expect(CAMERA_CONSTANTS.MIN_ZOOM_FLOOR).toBe(2);
+    expect(CAMERA_CONSTANTS.ABSOLUTE_MIN_ZOOM).toBe(0.5);
     expect(CAMERA_CONSTANTS.MAX_ZOOM).toBe(20);
     expect(CAMERA_CONSTANTS.JUMP_TO_DURATION_MS).toBe(500);
     expect(CAMERA_CONSTANTS.DEFAULT_ZOOM).toBe(1.5);
+  });
+});
+
+// THR-1649: the camera can zoom out to the whole map.
+describe('computeFitZoom / computeMinZoom', () => {
+  it('fits a medium 32×24 grid at 1920×1080 below the old clamp of 5', () => {
+    const fitK = computeFitZoom(32, 24, 1920, 1080);
+    expect(fitK).not.toBeNull();
+    expect(fitK!).toBeLessThan(5);
+    // The whole-map zoom is reachable: the floor never sits above the fit zoom.
+    expect(computeMinZoom(fitK)).toBeLessThanOrEqual(fitK!);
+  });
+
+  it('keeps MIN_ZOOM_FLOOR when the grid already fits above it', () => {
+    const fitK = computeFitZoom(8, 6, 1920, 1080)!;
+    expect(fitK).toBeGreaterThan(CAMERA_CONSTANTS.MIN_ZOOM_FLOOR);
+    expect(computeMinZoom(fitK)).toBe(CAMERA_CONSTANTS.MIN_ZOOM_FLOOR);
+  });
+
+  it('drops below the floor for a large grid so it can still show whole', () => {
+    const fitK = computeFitZoom(48, 36, 1920, 1080)!;
+    expect(fitK).toBeLessThan(CAMERA_CONSTANTS.MIN_ZOOM_FLOOR);
+    expect(computeMinZoom(fitK)).toBeCloseTo(fitK);
+  });
+
+  it('never zooms out past ABSOLUTE_MIN_ZOOM', () => {
+    expect(computeMinZoom(0.01)).toBe(CAMERA_CONSTANTS.ABSOLUTE_MIN_ZOOM);
+  });
+
+  it('fails soft on degenerate input', () => {
+    expect(computeFitZoom(0, 24, 1920, 1080)).toBeNull();
+    expect(computeFitZoom(32, 24, 0, 0)).toBeNull();
+    expect(computeMinZoom(null)).toBe(CAMERA_CONSTANTS.MIN_ZOOM_FLOOR);
+    expect(computeMinZoom(Number.NaN)).toBe(CAMERA_CONSTANTS.MIN_ZOOM_FLOOR);
   });
 });

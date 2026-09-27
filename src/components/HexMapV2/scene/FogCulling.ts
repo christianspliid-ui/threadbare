@@ -17,7 +17,7 @@ import { getHexColor } from '../palette/colorUtils';
 import { getActivePalette } from '../palette/activePalette';
 import { hexNeighbors } from '../../../lib/hexMath';
 import type { HexVisibilityState, VisibilityMap, LOSSource } from '../../../types/visibility';
-import { visKey } from '../../../types/visibility';
+import { visKey, AVATAR_SIGHT_RANGE } from '../../../types/visibility';
 
 // ── Fog Constants ─────────────────────────────────────────────────────────────
 
@@ -28,8 +28,8 @@ import { visKey } from '../../../types/visibility';
 export const FOG_CONSTANTS = {
   /** @deprecated Use getActivePalette().fogUnexploredColor — kept for constant table docs */
   UNEXPLORED_HEX_COLOR: '#0a0a0c',
-  /** Default sight range for the avatar (own hex only). Matches AVATAR_SIGHT_RANGE. */
-  DEFAULT_SIGHT_RANGE: 0,
+  /** Default sight range for the avatar. Derived from AVATAR_SIGHT_RANGE so the two cannot drift. */
+  DEFAULT_SIGHT_RANGE: AVATAR_SIGHT_RANGE,
   /** Extra range granted for elevated positions (hill, mountain). */
   ELEVATION_BONUS: 1,
   /**

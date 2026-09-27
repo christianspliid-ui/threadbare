@@ -4,6 +4,7 @@ import { collectLOSSources, recalcVisibility } from '../visibility';
 import { getModifiedValue, collectModifiers } from '../modifiers';
 import { visKey, AVATAR_SIGHT_RANGE } from '../../types/visibility';
 import type { VisibilityMap } from '../../types/visibility';
+import { hexDistance } from '../../lib/hexMath';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 
 function buildFullTestGraph(): {
@@ -40,20 +41,22 @@ describe('modifier system integration', () => {
     });
 
     // Avatar at mountains (+2 terrain) with Eagle-Eyed (+1 trait)
-    // Total LOS = 0 (base) + 2 (mountains) + 1 (eagle) = 3
+    // Total LOS = AVATAR_SIGHT_RANGE (base) + 2 (mountains) + 1 (eagle)
     const sources = collectLOSSources(graph, ascendantId, []);
-    expect(sources[0].range).toBe(3);
+    const range = AVATAR_SIGHT_RANGE + 3;
+    expect(sources[0].range).toBe(range);
 
     // Run visibility on 11x11 grid
     const prev: VisibilityMap = new Map();
     const next = recalcVisibility(prev, sources, graph, 1, 11, 11);
 
-    // Avatar at (5,5) with range 3 should see hexes within distance 3
-    expect(next.get(visKey(5, 5))?.state).toBe('visible');
-    expect(next.get(visKey(5, 4))?.state).toBe('visible'); // 1 away
-    expect(next.get(visKey(5, 2))?.state).toBe('visible'); // 3 away
-    // Hex 4 away should be unexplored
-    expect(next.get(visKey(5, 1))?.state).toBe('unexplored');
+    // Avatar at (5,5): every hex within the modified range is visible, every hex past it is not
+    for (let col = 0; col < 11; col++) {
+      for (let row = 0; row < 11; row++) {
+        const d = hexDistance({ col: 5, row: 5 }, { col, row });
+        expect(next.get(visKey(col, row))?.state).toBe(d <= range ? 'visible' : 'unexplored');
+      }
+    }
   });
 
   it('negative modifier floors at 0 LOS', () => {
@@ -66,10 +69,10 @@ describe('modifier system integration', () => {
     graph.addNode({ id: 'trait.blind', type: 'trait', name: 'Night Blind', properties: {} });
     graph.addEdge({
       id: 'e.trait.blind', source: avatarId, target: 'trait.blind', type: 'has_trait',
-      properties: { level: 1, modifiers: { los_range: -1 } },
+      properties: { level: 1, modifiers: { los_range: -(AVATAR_SIGHT_RANGE + 1) } },
     });
 
-    // 0 (base) + (-1 forest) + (-1 blind) = -2, floored at 0
+    // AVATAR_SIGHT_RANGE + (-1 forest) + (-(AVATAR_SIGHT_RANGE + 1) blind) = -2, floored at 0
     const val = getModifiedValue(graph, avatarId, 'los_range', AVATAR_SIGHT_RANGE);
     expect(val).toBe(0);
 
