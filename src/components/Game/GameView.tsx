@@ -3006,7 +3006,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       summary: played
         ? `beat.delivery_played: ${pending.beatId} opened on ${subjectId}`
         : `beat.delivery_skipped: ${pending.beatId} (${prepared.reason ?? 'unknown'})`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
+    });
 
     if (played && action && preparedNotification && deliveredTemplate && agent) {
       const notification = { ...preparedNotification, viewed: true };

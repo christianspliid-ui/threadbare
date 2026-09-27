@@ -52,7 +52,7 @@ function worldState(opts: {
 } = {}): GameState {
   const { first = true, located = true, subtype = MATCHING_SUBTYPE, tick = 40 } = opts;
   const graph = new WorldGraph();
-  graph.addNode({ id: ASCENDANT, type: 'ascendant', name: 'The Witness', properties: {} });
+  graph.addNode({ id: ASCENDANT, type: 'actor', name: 'The Witness', properties: { actorType: 'ascendant' } });
   graph.addNode({ id: FIRST, type: 'actor', name: 'Kael Thornweaver', properties: { actorType: 'individual' } });
   graph.addNode({
     id: TOWN, type: 'location', name: 'Wraithwood',

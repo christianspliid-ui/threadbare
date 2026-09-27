@@ -54,7 +54,7 @@ import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { REACH_SIGNATURE_ID_BY_REACH } from '../data/reach-signature-content';
 import { ASCENDANT_DEEPENING_BEATS, getDeepeningBeatById } from '../data/ascendant-deepening-beats';
 import { ASCENDANT_MILESTONE_BEATS, getMilestoneBeatById } from '../data/ascendant-milestone-beats';
-import { bindDeliverySubject, eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
+import { bindDeliverySubject, eligibleDeliveryBeats, getDeliveryBeatById, type DeliveryBindFailure } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import { touchWorld, touchStructure, type SimulationRuntime } from './simulationRuntime';
@@ -364,7 +364,7 @@ function withholdUnbindableDeliveryBeats(
   turn: number,
 ): BeatDefinition[] {
   const kept: BeatDefinition[] = [];
-  let firstReason: string | undefined;
+  let firstReason: DeliveryBindFailure | undefined;
   let subjectId: string | null = null;
   for (const beat of candidates) {
     if (!beat.templateId) continue;
@@ -390,7 +390,7 @@ function withholdUnbindableDeliveryBeats(
       reason: firstReason,
       filteredCount,
       summary: `beat.delivery_skipped: ${filteredCount} delivery beat(s) withheld (${firstReason ?? 'unknown'})`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
+    });
   }
   return kept;
 }

@@ -340,7 +340,13 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-09-26 by Claude Code (THR-1581 — forecast window S3 + S4, the dice re-fit and the window).
+2026-09-27 by Claude Code (THR-1650 — Witness plays the delivery beat). **Added** 🟢 LIVE
+`delivery-beat-plays-its-encounter` (Ascendant Beats & Progression → Encounters & Dilemmas:
+Witness mints the source encounter on The First and opens the veil; the Director withholds a
+vision that cannot bind The First). **Retired** the silent `runBeatTemplateAftermath` run for
+`delivery` beats, which wrote a mortal scene's fallback reactions against the god; no test
+asserted that path, and the new suite pins its absence.
+Earlier: 2026-09-26 by Claude Code (THR-1581 — forecast window S3 + S4, the dice re-fit and the window).
 **Added** 🟢 LIVE `engagement-forecast-gates-choice` (Encounters & Dilemmas → Encounters &
 Dilemmas: the engagement forecast scales every free-choice candidate by its fit to the
 50–65% window, on both the encounter and the undertaking line). **Retired**
