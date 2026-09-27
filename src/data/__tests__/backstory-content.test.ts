@@ -34,7 +34,7 @@ const ALL_ARCHETYPES = [
 
 const ALL_SPHERES = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
 
-const ALL_BOND_BASES = ['friendship', 'rivalry', 'loyalty', 'alliance', 'trade', 'faith', 'lineage', 'gratitude'];
+const ALL_BOND_BASES = ['friendship', 'rivalry', 'loyalty', 'alliance', 'trade', 'faith', 'lineage', 'kin', 'gratitude'];
 
 const ALL_TRAIT_CATEGORIES = ['innate', 'mastery', 'reputation', 'scar', 'condition', 'destiny'];
 
@@ -141,7 +141,7 @@ describe('SURFACE_SPHERE_PROSE', () => {
 describe('BOND_HISTORY_PROSE', () => {
   validateKeyedTable(BOND_HISTORY_PROSE, ALL_BOND_BASES, ['{name}', '{bond}'], 'BOND_HISTORY_PROSE');
 
-  test('covers all 8 bond basis types', () => {
+  test('covers all 9 bond basis types (kin joined with THR-1630)', () => {
     expect(Object.keys(BOND_HISTORY_PROSE).length).toBe(ALL_BOND_BASES.length);
   });
 
@@ -158,7 +158,7 @@ describe('BOND_HISTORY_PROSE', () => {
 describe('BOND_HISTORY_NEGATIVE_PROSE', () => {
   validateKeyedTable(BOND_HISTORY_NEGATIVE_PROSE, ALL_BOND_BASES, ['{name}', '{bond}'], 'BOND_HISTORY_NEGATIVE_PROSE');
 
-  test('covers all 8 bond basis types', () => {
+  test('covers all 9 bond basis types (kin joined with THR-1630)', () => {
     expect(Object.keys(BOND_HISTORY_NEGATIVE_PROSE).length).toBe(ALL_BOND_BASES.length);
   });
 

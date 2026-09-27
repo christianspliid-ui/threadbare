@@ -273,6 +273,16 @@ describe('evaluateGraphCondition', () => {
       const cond: GraphCondition = { type: 'agent_has_bonds', minCount: 2, basis: 'loyalty' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
+
+    // THR-1630: `lineage` is a reader word for the canonical `kin` a seeded tie carries.
+    it('matches a seeded kin edge when the template asks for lineage', () => {
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: {} }],
+        [{ source: 'a1', target: 'a2', type: 'relates_to', properties: { basis: 'kin', origin: 'worldgen' } }],
+      );
+      const cond: GraphCondition = { type: 'agent_has_bonds', minCount: 1, basis: 'lineage' };
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
+    });
   });
 
   // ── agent_controls_location ──────────────────────────────────

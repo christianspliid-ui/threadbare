@@ -311,7 +311,7 @@ export const BOND_HISTORY_PROSE: Record<string, string[]> = {
     'The kinship that connects {name} and {bond} carries weight accumulated before either was old enough to understand its terms. By the time they could, it had already shaped them both.',
     '{name}\'s kinship with {bond} has always been partly an argument with the past: a negotiation between the inheritance they were given and the relationship they would have chosen.',
     'The kinship between {name} and {bond} was settled before either could object. Both made peace with it at different speeds.',
-    '{name} carries {bond}\'s name into rooms where it still means something. Whether the kinship is an asset or a debt depends on the room.',
+    '{name} carries {bond}\'s name into rooms where it still means something. Whether the {basis} tie is an asset or a debt depends on the room.',
   ],
   gratitude: [
     'What {name} owes {bond} is the kind of {basis} that resists being repaid — not because {bond} holds it over them, but because the scale of it exceeds what accounting can reach.',
@@ -391,7 +391,7 @@ export const BOND_HISTORY_NEGATIVE_PROSE: Record<string, string[]> = {
     '{name}\'s bond of kinship with {bond} carries obligations that feel more like chains than roots — an inheritance that was not chosen and has not been welcome.',
     'The kinship that binds {name} and {bond} is not chosen and cannot be ended — only managed. {name} has arrived at a position on this that functions in practical terms and requires not examining too closely.',
     'What the bond of kinship with {bond} has taught {name} is that unchosen connection is no less real than chosen connection and no more virtuous. It simply is, and the absence of choice makes the weight no lighter.',
-    'The kinship between {name} and {bond} cannot be ended, only attended less often.',
+    'The {basis} tie between {name} and {bond} cannot be ended, only attended less often.',
     '{name} sends what the kinship requires to {bond} and nothing beyond it. The exactness is the message.',
   ],
   gratitude: [

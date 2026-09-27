@@ -296,7 +296,7 @@ export function generateStrategicCandidates(
       // stands for rides beside the node — an edge object has no node of its own.
       const objectHandles = new Map<string, UndertakingObjectHandle>();
       const objectSweep = { enumerated: 0 };
-      let targets = findValidTargets(graph, actorId, template, locationId, actorHex, objectHandles, objectSweep);
+      let targets = findValidTargets(graph, actorId, template, locationId, actorHex, objectHandles, objectSweep, tick);
       if (review?.targetId) targets = targets.filter(t => t.id === review.targetId);
       if (review?.preferOwnedTarget) {
         // Owned first, stable otherwise: the motive gate already knows how to count
@@ -610,6 +610,8 @@ function findValidTargets(
   objectHandles?: Map<string, UndertakingObjectHandle>,
   /** Out: how many objects of the type existed before the ownership rule (slice 2's unreachable reason). */
   objectSweep?: { enumerated: number },
+  /** The board's tick, for the eligibility hook consulted when two objects share a place (THR-1630). */
+  tick = 0,
 ): GraphNode[] {
   const rule = template.targetRule;
 
@@ -627,6 +629,14 @@ function findValidTargets(
       const seen = new Set<string>();
       const handles = enumerateObjectHandles(graph, type);
       if (objectSweep) objectSweep.enumerated = handles.length;
+      // THR-1630: two edge objects placed on one node (a favour owed *to* the actor and a
+      // secret somebody holds *about* them both sit at the actor) used to collapse to the
+      // first by edge id, so a mortal who was the subject of any mark could never redeem
+      // a favour owed to them. When the place is shared, keep the handle this actor may
+      // act on; the first by edge id still wins when neither or both are eligible.
+      const kept = new Map<string, UndertakingObjectHandle>();
+      const eligible = (h: UndertakingObjectHandle): boolean =>
+        !template.cellVariant || eligibilityRefusal(graph, type, template.cellVariant, actorId, h, tick) === null;
       for (const handle of handles) {
         const ownership = ownershipOf(graph, actorId, type, handle);
         if (!ownershipSatisfies(rule.ownership, ownership)) continue;
@@ -643,9 +653,18 @@ function findValidTargets(
         if (template.undertakingVerb === 'control' && ownership === 'own') continue;
         const placeId = objectPlaceNodeId(graph, handle);
         const node = placeId ? graph.getNode(placeId) : undefined;
-        if (!node || seen.has(node.id)) continue;
+        if (!node) continue;
+        if (seen.has(node.id)) {
+          const prior = kept.get(node.id);
+          if (prior && !eligible(prior) && eligible(handle)) {
+            kept.set(node.id, handle);
+            objectHandles?.set(node.id, handle);
+          }
+          continue;
+        }
         seen.add(node.id);
         nodes.push(node);
+        kept.set(node.id, handle);
         objectHandles?.set(node.id, handle);
       }
       // THR-1560: a type may keep its own cap (the monster scan), else the object one.

@@ -1579,6 +1579,12 @@ effects: [
 - **The withdrawn option** is real — it produces a quieter outcome with less seeding, which is the game-mechanical expression of "the god chose not to interfere"
 - **The divine intervention choices are genuinely different** — supporting the festival vs. warning about the spy are different kinds of godly action with different consequences
 
+### Bond words — which `basis` to write and read (THR-1630)
+
+A `relates_to` edge's `basis` is compared through `bondBasisMatches` (`src/data/bond-basis.ts`), which folds reader words onto the canonical word a writer stamps. **Write a canonical word** (`CANONICAL_BOND_BASES`: `kin`, `friendship`, `rivalry`, `romantic`, `mentorship`, `trade`, `loyalty`, `alliance`, …); **read any alias** — `lineage`, `heir`, `exile_kin` and `kinship` all match `kin`, `enemy` matches `rivalry`, `spouse` matches `romantic`, `mentor` matches `mentorship`, `trade_partner` matches `trade`. Ambition `bondModifiers`, the `agent_has_bonds` condition, the backstory bond tables and the Return's spouse ripple all read through it.
+
+What exists at tick 0: every named hero has one `kin`, one `friendship` and one `rivalry` tie among their neighbours (both directions, `origin: 'worldgen'`), so a template gated on family or rivalry has somebody to find from the first tick. Seeded ties never count toward graduation into the deciding tier. A new bond word goes in `CANONICAL_BOND_BASES` (and `BOND_BASIS_WORDS` for the sheet) in the same PR as its first writer.
+
 ### The counterpart pattern — `{target}` + `bond_change` + `inheritContext` composing (THR-699)
 
 When an encounter is *with* someone — an alliance overture, a duel, a shakedown — three capabilities compose so the prose, the graph, and the follow-up all agree on who that someone is. The shipped `social.forge_alliance` is the live exemplar:

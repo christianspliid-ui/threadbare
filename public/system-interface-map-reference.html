@@ -947,6 +947,19 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; People who start tied to each other
+      <span class="lead">Added 2026-09-28 (THR-1630). Every named hero begins with a kin, a friend and a rival among their neighbours, and the systems that read ties by their basis can see them.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">World generation <span class="arrow">&#10230;</span> Ambitions, grief and scene casting &mdash; seeded kin, friend and rival ties reach every reader of a bond (<code>worldgen-ties-reach-ambition-and-grief</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1630. <code>seedLivingWorld.seedTies</code> writes each tie in both directions, stamped <code>origin: 'worldgen'</code>. Nothing had ever written a family word, so the ambitions reading <code>lineage</code>, <code>heir</code> or <code>kin</code> were dead. One alias table (<code>src/data/bond-basis.ts</code>) now folds those onto <code>kin</code>, and <code>bondModifiers</code>, <code>agent_has_bonds</code>, the backstory tables and the Return&rsquo;s spouse ripple all read through it. On medium, seed 42 &middot; 99, person-to-person ties at t0 went from 21 &middot; 37 (none mutual) to 104 &middot; 128 (all mutual), and ambition re-evaluations scoring a seeded bond went from 0 to 3 &middot; 3 by t200.</span></li>
+      <li class="live"><span class="flow">World generation <span class="arrow">&#10230;</span> Agent Lifecycle &mdash; a seeded tie never makes a decider (<code>seeded-ties-never-graduate</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1630. <code>phaseNpcGraduation</code> counts only ties earned in play toward <code>SPOTLIGHT_MIN_EDGES</code>. Without the filter, a hero&rsquo;s three seeded neighbours would hold graduation-ready edges from tick 0; THR-1592 measured +87&ndash;115% tick cost that way. Deciders at t200 went 22 &rarr; 21 and 21 &rarr; 21 against a same-session baseline.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

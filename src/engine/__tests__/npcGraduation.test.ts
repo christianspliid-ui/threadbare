@@ -405,3 +405,33 @@ describe('phaseNpcGraduation', () => {
     expect(graph.getNode('npc_0')!.properties.spotlightTier).toBe('notable');
   });
 });
+
+// ─── THR-1630: seeded ties never make a decider ─────────────────────────────
+
+describe('phaseNpcGraduation — seeded ties (THR-1630)', () => {
+  function notableWithTies(origin: string | undefined): WorldGraph {
+    const graph = new WorldGraph();
+    makeNotableNpc(graph, 'npc_n');
+    graph.getNode('npc_n')!.properties.importance = NPC_CONSTANTS.SPOTLIGHT_THRESHOLD;
+    for (let i = 0; i < NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES; i++) {
+      makeAmbientNpc(graph, `npc_t${i}`);
+      graph.addEdge({
+        id: `rel_${i}`, source: 'npc_n', target: `npc_t${i}`, type: 'relates_to',
+        properties: { basis: 'kin', sentiment: 0.5, strength: 0.8, ...(origin ? { origin } : {}) },
+      });
+    }
+    return graph;
+  }
+
+  it('does not count relates_to edges stamped origin worldgen toward SPOTLIGHT_MIN_EDGES', () => {
+    const graph = notableWithTies('worldgen');
+    phaseNpcGraduation(makeState(graph));
+    expect(graph.getNode('npc_n')!.properties.spotlightTier).toBe('notable');
+  });
+
+  it('still counts ties earned in play', () => {
+    const graph = notableWithTies(undefined);
+    phaseNpcGraduation(makeState(graph));
+    expect(graph.getNode('npc_n')!.properties.spotlightTier).toBe('spotlight');
+  });
+});

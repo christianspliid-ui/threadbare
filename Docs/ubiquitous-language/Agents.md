@@ -761,6 +761,24 @@ Code anchors: `src/engine/undertakingMotive.ts` (`holdsMotive`, `GRUDGE_PROVENAN
 
 ---
 
+### Kin
+
+**Aliases:** `lineage`, `heir`, `exile_kin`, `kinship` (reader words folded onto `kin`); *family* (prose framing)
+**Also see:** `[[Rivalry]]`, `[[Grievance]]`, `[[Spotlight tier]]`
+**Status:** canonical
+
+*Seated 2026-09-28 by THR-1630, which gave the word its first writer.*
+
+A `relates_to` bond of family: `basis: 'kin'`. Every named hero starts the game with one kin among their neighbours (the people of their home settlement, or the nearest settlement of their culture when they live outside one), written in both directions and stamped `origin: 'worldgen'`, alongside one friend and one rival.
+
+**One word, several spellings.** Ambition templates were authored against `lineage`, `heir` and `exile_kin` long before anything wrote a family tie, so every kin-reading template was dead. `kin` is the canonical word a writer stamps; a reader compares through `bondBasisMatches`, which folds `lineage`, `heir`, `exile_kin` and `kinship` onto `kin` (and, in the same table, `enemy` onto `rivalry` and `spouse` onto `romantic`).
+
+**What kin does.** Kin is the heaviest seeded tie (strength 0.8), so when a hero dies their grievance passes to kin (the heir is the strongest positive bond), grief routes to them, and the binder casts them in each other's scenes. A seeded kin tie never counts toward graduation into the deciding tier: seeding gives people family, not agency.
+
+Code anchors: `src/data/bond-basis.ts` (`CANONICAL_BOND_BASES`, `BOND_BASIS_ALIASES`, `bondBasisMatches`), `src/engine/seedLivingWorld.ts` (`seedTies`), `src/engine/npcGraduation.ts` (the `origin` filter).
+
+---
+
 ### Covet Rivalry
 
 **Aliases:** the covet edge, `cause: 'covets'` (engine); *a holding one of them kept reaching for* (the sheet's clause)
