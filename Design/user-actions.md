@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-27 22:58 local (20:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-27 23:54 local (21:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-27: thread upkeep is now actually charged**, so the essence readout's income-after-upkeep is the real number ([THR-1652](https://linear.app/threadbare/issue/THR-1652)). Merged via [#2104](https://github.com/christianspliid-ui/threadbare/pull/2104), and live on the site.
 - **2026-09-27: dreams and compulsions now change someone**: Oneiric Sending and Divine Compulsion shift the target mortal's values ([THR-1651](https://linear.app/threadbare/issue/THR-1651)). Merged via [#2103](https://github.com/christianspliid-ui/threadbare/pull/2103), and live on the site.
 - **2026-09-27: a Vision now plays its scene** on The First instead of resolving silently ([THR-1650](https://linear.app/threadbare/issue/THR-1650)). Merged via [#2100](https://github.com/christianspliid-ui/threadbare/pull/2100), and live on the site.
 - **2026-09-27: the ascendant’s essence is now kept in one place**, so the essence bar reads the same number that Stillness and upkeep spend ([THR-1645](https://linear.app/threadbare/issue/THR-1645)). Merged via [#2099](https://github.com/christianspliid-ui/threadbare/pull/2099), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-27: the seeded item generator is live**: a finished masterwork is now born with an idea, a real power and often a price ([THR-1570](https://linear.app/threadbare/issue/THR-1570)). Merged via [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088), and live on the site.
 - **2026-09-27: when two duellists kill each other, the second death now leaves grief behind too** ([THR-1629](https://linear.app/threadbare/issue/THR-1629)). Merged via [#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), and live on the site.
 - **2026-09-27: heroes' starting faction membership now carries standing** ([THR-1620](https://linear.app/threadbare/issue/THR-1620)). Merged via [#2089](https://github.com/christianspliid-ui/threadbare/pull/2089), and live on the site.
-- **2026-09-27: travellers’ resting spots on the road no longer pile up as nameless places** ([THR-1616](https://linear.app/threadbare/issue/THR-1616)). Merged via [#2086](https://github.com/christianspliid-ui/threadbare/pull/2086), and live on the site.
 
 ---
 
