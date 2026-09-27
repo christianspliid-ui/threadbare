@@ -6,6 +6,27 @@
 
 ---
 
+## The seeded item generator — a masterwork is made with an idea (THR-1570)
+
+Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `itemGenerator/generateItem.ts` | via completion (below) | — | — (reads `state.seed`) | — (the minter traces) | `previewGeneratedItem`, CLI `generate items` |
+| `itemGenerator/mintGeneratedItem.ts` (the one writer; `generateValidItem` rerolls) | strategic project completion (`executeInstantMutation`) and undertaking completion (`resolveUndertakingCompletion` → Item `create`) | `ArtifactSheet` | graph only | `item.generated`, `item.generate_fallback` | `getGeneratedItems`, `mintGeneratedItem` |
+| `mintMasterwork` (edited — optional `opts { worldSeed, outcomeBand, placeId }`) | same | `ArtifactSheet` | graph only | existing + the two above | CLI `agent <name>` |
+| `christenCompletedWork` (edited — a `origin: 'generated'` node keeps its name) | strategic project completion, both mint paths | chronicle, `ArtifactSheet` title | graph only | completion trace `christenedName` = the generated name | — |
+| `contentQuery.ts` carve (edited — minted instances are not templates) | every reward draw | — | — | existing `traceContentQuery` | — |
+| `assignArtifactTrait` (edited — optional starting `level`) | same completion | `ArtifactSheet` trait chips | graph only | existing `artifact_trait` trace, now with the real level | `getArtifactTraits` |
+| `itemGenerator/describeItem.ts` | — | `ArtifactSheet` *What it does* / *The catch* | — | — | CLI output |
+| `itemGenerator/validateGeneratedItem.ts` + `data/item-honest-vocabulary.ts` | — (gate + minter) | — | — | — | CLI verdict line |
+
+- [x] Engine module called from a live path: `mintMasterwork` ← `strategicActionLifecycle` (`mint_masterwork` hint) and `undertaking-objects` Item `create`.
+- [x] UI renders the output: `ArtifactSheet` *Made by* / *What it does* / *The catch* (generated items only; Law 4).
+- [x] Traces registered in the THR-928 trio (`types/traces/item-generator-traces.ts`).
+- [x] Debug levers: `getGeneratedItems`, `previewGeneratedItem`, `mintGeneratedItem`; CLI `generate items`.
+- [ ] Found-origin minting point (reward draws) — THR-1626; live past for found things — THR-1637.
+
 ## Draw-by-trait completion — never dealt what you hold, a bearer-trait term, the trait catalogs seated (THR-1520)
 
 > Plan doc: `Docs/plans/2026-09-21-thr-790-traits-wave-2.md` § Done when › Slice 2.

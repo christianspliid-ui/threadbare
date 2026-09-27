@@ -66,6 +66,20 @@ The player-facing word is the definition's display name; *artifact trait* is the
 
 ---
 
+### Rarity Band
+
+**Aliases:** Rarity, Rarity Tier, Item Band
+**Also see:** `[[Artifact Trait]]`, `[[Attachment]]`
+**Status:** canonical
+
+How remarkable a thing is, in four words: **Mundane**, **Storied**, **Mythic**, **Legendary** — numeric `tier` 1–4 on an item (`RarityTier`, `RARITY_TIER_NAMES`, `src/types/rarity.ts`). Shown as the rarity badge on the artifact sheet; never as a numeral.
+
+**The *Storied* ruling (THR-1570, 2026-09-27).** *Storied* is both the second rarity word and an `[[Artifact Trait]]` (*has seen a thing or two / much / it all*). They are **one meaning, not two**: *Storied* means **has a history**. The band is the promise a thing makes about its history at birth; the trait is where that history lives and grows. The rule that makes the words agree: **a generated item of band Storied or higher is always born carrying the Storied trait** — a masterwork at level one (it has seen only its making), a found thing at `STORIED_START_LEVEL_FOUND_BY_BAND` (a past, but level three is only ever earned). A Mundane thing may still *earn* the trait by being carried where things happen.
+
+The item generator (`src/engine/itemGenerator/`) mints Storied and up only; Mundane gear stays in the hand catalog. A workshop never makes a Legendary (`MASTERWORK_MAX_BAND`); a great day at the forge (`critical_success`) makes a Mythic thing.
+
+---
+
 ### Trait Category
 
 **Aliases:** Trait Subcategory

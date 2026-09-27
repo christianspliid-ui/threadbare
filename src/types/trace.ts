@@ -33,6 +33,7 @@ import type {
   MonsterMintedTrace,
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
+import type { ItemGeneratedTrace, ItemGenerateFallbackTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -547,7 +548,11 @@ export type TraceCategory =
   | 'fight.trigger'
   // Hunts — a hunter finished tracking a beast (THR-1560).
   // Interface in `src/types/traces/monster-traces.ts`.
-  | 'hunt.tracked';
+  | 'hunt.tracked'
+  // Item generator — a generated item minted, or the generator gave up (THR-1570).
+  // Interfaces in `src/types/traces/item-generator-traces.ts`.
+  | 'item.generated'
+  | 'item.generate_fallback';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -826,6 +831,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'fight.trigger',
   // Hunts — tracking finished (THR-1560)
   'hunt.tracked',
+  // Item generator — minted / fell back (THR-1570)
+  'item.generated',
+  'item.generate_fallback',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -4229,6 +4237,8 @@ export type TraceEntry =
   | WarReportedTrace
   // Monsters (THR-1544)
   | MonsterMintedTrace
+  | ItemGeneratedTrace
+  | ItemGenerateFallbackTrace
   | MonsterHardenedTrace
   | MonsterFelledTrace
   | MonsterDrivenOffTrace

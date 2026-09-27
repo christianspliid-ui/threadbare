@@ -4168,6 +4168,36 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'generated-item-honest-vocabulary',
+    producerSystem: AMBITIONS,
+    consumerSystem: ATTACHMENTS,
+    intent:
+      'An item the world makes promises only what the engine does. Every effect a generated item carries is a shape with a live production reader (`item-honest-vocabulary.ts`), and `mintGeneratedItem` is only ever handed an item the validator passed.',
+    ulTerms: ['Rarity Band', 'Artifact Trait'],
+    // Producer: the validator + the vocabulary it reads. Read site: the minter (it is
+    // handed only validated items, via `generateValidItem`) and the gate test's engine
+    // read-back, which mints each item into a test world and calls the named reader.
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['validateGeneratedItem', 'conditionsBlockedBy'],
+      module: 'src/engine/itemGenerator/validateGeneratedItem.ts',
+    },
+    writeSites: [
+      'src/engine/itemGenerator/validateGeneratedItem.ts',
+      'src/data/item-honest-vocabulary.ts',
+    ],
+    readSites: [
+      'src/engine/itemGenerator/mintGeneratedItem.ts',
+      'src/engine/strategicGraphOps.ts',
+      'src/engine/itemGenerator/readBack.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-27',
+      evidence:
+        'THR-1570. The gate (`itemGenerator/__tests__/itemGenerator.gate.test.ts`) generates seeds 7/42/99 × every band × both origins × 12 items and every signature of every core at every legal band, mints each into a three-mortal test world and reads every effect back through the real readers (`resolveEffectModifiers`, `collectStatContributions`, `getActiveRuleOverride`, `isImmuneToAnyTag`, `checkAndFireActionTriggers`, `tickEffects`, `applySuppressions`, …): zero validator problems, zero read-back failures, zero rerolls, all 19 cores fire. A control batch of eight deliberately dishonest items (a fight bonus on Iron, a trigger on `rest`, a rule nothing reads, an immunity to nothing, an unread hex overlay, a condition that does not exist, breakable with nothing that breaks it, a bonus over the cap) all fail. Live: seed 99 medium mints four generated masterworks in 150 ticks and seed 42 two by tick 220, zero `item.generate_fallback`.',
+    },
+  },
+  {
     id: 't1-undertaking-objects-feed-existing-economies',
     producerSystem: AMBITIONS,
     consumerSystem: ATTACHMENTS,

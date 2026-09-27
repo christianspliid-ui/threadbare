@@ -244,7 +244,8 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     id: 'item_template',
     gameWord: 'Item',
     ulTerm: 'Traits.md#attachment',
-    idPrefixes: ['reward_', 'starter_', 'anomaly_'],
+    // `gen_` — items the item generator mints (THR-1570): a masterwork's idea, and later found things.
+    idPrefixes: ['reward_', 'starter_', 'anomaly_', 'gen_'],
     catalogs: [
       { module: 'data/reward-attachment-catalog', export: 'REWARD_POSSESSIONS' },
       { module: 'data/reward-attachment-catalog', export: 'TREASURE_MAPS' },

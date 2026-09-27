@@ -182,7 +182,7 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
     destroy: { op: 'remove_companion', note: 'Turn another\'s companion — motive-gated against the mortal they walk beside, who holds them through `accompanies` (THR-1436). Dismissing one\'s own companion is not a work: it stays the story\'s and the expiry phase\'s (`removeCompanion`, `expireCompanions`).' },
   },
   item: {
-    create: { op: 'mint_masterwork', note: 'A masterwork where the maker stands; a chart is the same cell with the kind as a parameter.', retires: ['craft_masterwork'] },
+    create: { op: 'mint_masterwork', note: 'A masterwork where the maker stands — made with an idea by the item generator since THR-1570 (a gen_masterwork_* item that does something and costs something); a chart is the same cell with the kind as a parameter.', retires: ['craft_masterwork'] },
     'control:seize': { op: 'seize_item', note: 'The possesses edge moves; motive-gated.' },
     destroy: { op: 'destroy_item', note: 'The bearer edges, then the node.' },
   },

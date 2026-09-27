@@ -2195,6 +2195,9 @@ const ITEM: UndertakingObjectType = {
       typeof ctx.params?.craftTag === 'string' ? ctx.params.craftTag : 'craft',
       ctx.tick,
       typeof ctx.params?.tier === 'number' ? ctx.params.tier : undefined,
+      // THR-1570: the world seed switches the item generator on; the band the work
+      // landed on decides how remarkable the thing is.
+      { worldSeed: ctx.state?.seed, outcomeBand: ctx.outcome },
     ),
     // Seizing an item moves the `possesses` edge: the world has the edge and the
     // funnel (`treasureMapConsumption` removes exactly this pair), no template ever

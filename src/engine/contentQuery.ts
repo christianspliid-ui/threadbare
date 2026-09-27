@@ -193,6 +193,11 @@ function carveNodes(
     // The stamp the instantiator writes is the declaration; `rewardPool-dedup.test.ts`
     // carries the pre-fix arm.
     if (node.properties.source === REWARD_EDGE_SOURCE) continue;
+    // THR-1570 — a minted instance is a *made thing*, not library content either. Every
+    // masterwork (`craftedBy`) and every generated item (`origin: 'generated'`) was being
+    // carved as an `item_template`, so a reward draw could hand a stranger a clone of
+    // somebody's masterwork — or of "The Unquiet Blade", a thing that exists once.
+    if (typeof node.properties.craftedBy === 'string' || node.properties.origin === 'generated') continue;
     const candidate = candidateFromNode(kind, node as GraphNode);
     if (shape.classes && (candidate.cls === null || !shape.classes.includes(candidate.cls))) continue;
     out.push(candidate);

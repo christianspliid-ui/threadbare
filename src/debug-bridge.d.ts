@@ -715,6 +715,39 @@ export interface DebugBridge {
   >;
 
   /**
+   * THR-1570: every generated item in the world (`properties.origin === 'generated'`) —
+   * masterworks made with an idea, and debug mints. `coreId` / `signatureId` name the
+   * authored idea it grew around; `band` is 2 Storied / 3 Mythic / 4 Legendary;
+   * `rerolls` is 0 in a healthy world. Empty when the game is not loaded. Always `await` it.
+   */
+  getGeneratedItems: () => Promise<Array<{
+    id: string; name: string; coreId: string; signatureId: string; band: 2 | 3 | 4;
+    origin: 'masterwork' | 'found'; makerId: string | null; tick: number | null; rerolls: number;
+  }>>;
+
+  /**
+   * THR-1570: preview a generated item without minting — the review batch's `index`-th
+   * item for `seed` (default 42), from the review world. Returns the item, its plain
+   * words (`does`, `catches`) and the validator's `problems` (empty on a pass).
+   */
+  previewGeneratedItem: (opts?: { seed?: number; band?: 2 | 3 | 4; origin?: 'masterwork' | 'found'; index?: number }) => Promise<{
+    item: unknown; does: readonly string[]; catches: readonly string[]; problems: readonly string[]; seedKey: string; rerolls: number;
+  }>;
+
+  /**
+   * THR-1570: mint a generated item onto a mortal (`holder` default `@hero`, `band`
+   * default 3, `origin` default `masterwork`) and return its id — the browser-verify
+   * lever for the artifact sheet's *Made by* / *What it does* / *The catch*. A masterwork
+   * is made by its holder, dressed by their faction, place and culture; a found thing is
+   * dressed from the review world. Bumps the world version. Dev lever only — production
+   * items come from `mintMasterwork`. Always `await` it.
+   */
+  mintGeneratedItem: (opts?: { holder?: string; band?: 2 | 3 | 4; origin?: 'masterwork' | 'found'; seed?: number }) => Promise<
+    | { ok: true; id: string; name: string; coreId: string; signatureId: string; band: 2 | 3 | 4; holderId: string }
+    | { ok: false; reason: string; problems?: string[] }
+  >;
+
+  /**
    * THR-1142: read an agent's live travel intent — where an `agent_relocation`
    * aftermath effect sent them, and how far along they are.
    *
