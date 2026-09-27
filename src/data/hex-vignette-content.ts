@@ -558,4 +558,5 @@ export const SUBTYPE_DISPLAY_NAMES: Record<LocationSubtype, string> = {
   oasis: 'oasis',
   unexplored_poi: 'unknown site',
   wilderness: 'wilderness',
+  wilderness_waypoint: 'wilderness',
 };

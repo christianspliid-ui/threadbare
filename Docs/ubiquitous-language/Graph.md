@@ -46,6 +46,16 @@ The inner place tier — an inn, a granary, a gatehouse, a grove, a spring — i
 
 ---
 
+### Waypoint
+
+**Aliases:** Transit hex, transient location, `loc.transient.*`
+**Also see:** `[[Location]]`, `[[Three-tier Position Model]]`, `[[located_at Edge]]`
+**Status:** canonical
+
+A patch of open ground an actor passed through: a Location that movement pathing mints on a hex with no Location of its own (`findOrCreateLocationAtHex`, `src/engine/hexMovementPath.ts`), id `loc.transient.<col>.<row>`, `locationSubtype: 'wilderness_waypoint'`, in the **wild** class (THR-1616). It keeps `locationType: 'wilderness'`, so it draws wilderness encounters. **Permanent — never collected**, because an agent can be `located_at` one mid-journey; a sweep that means *somewhere someone lives* must exclude it, and durable endpoints (trade routes, holdings) never anchor on one (`resolveDurableActorLocation`). Never a "settlement" and never a Place.
+
+---
+
 ### Route
 
 **Aliases:** Road, Trade route, Pilgrim way, Portal

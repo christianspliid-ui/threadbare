@@ -78,6 +78,7 @@ export const LOCATION_SUBTYPE_NAMES: Record<LocationSubtype, string> = {
   haunted_ground: 'Haunted Ground',
   corruption_zone: 'Corruption Zone',
   wilderness: 'Wilderness',
+  wilderness_waypoint: 'Wilderness',
   lair: 'Lair',
   cleared_lair: 'Cleared Lair',
   // ── Ruins layer (THR-149) ──

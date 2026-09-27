@@ -87,6 +87,7 @@ export const TERRAIN_TAXES: Record<TerrainType, number> = {
 export const LOCATION_ENTRY_TAXES: Record<LocationSubtype, number> = {
   // Free (0) — no meaningful entry cost
   wilderness: 0,
+  wilderness_waypoint: 0,
   hamlet: 0,
   camp: 0,
   farmland: 0,

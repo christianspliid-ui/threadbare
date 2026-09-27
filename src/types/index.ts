@@ -105,6 +105,7 @@ export type LocationSubtype =
   | 'haunted_ground'   // Spirit + Darkness — restless spirits
   | 'corruption_zone'  // Entropy + Chaos — spreading wrongness
   | 'wilderness'   // default — no overlay icon
+  | 'wilderness_waypoint' // THR-1616 — a transit hex movement pathing mints (`loc.transient.*`); permanent, never collected
   | 'lair'         // monster lair (m2.5)
   | 'cleared_lair' // lair cleared by a faction (m2.5)
   // ── Ruins layer (THR-149) ──
