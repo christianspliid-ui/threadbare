@@ -141,6 +141,24 @@ describe('buildItemWorldContext reads the past (THR-1637)', () => {
     expect(empty.maker).toBeNull();
   });
 
+  it('a line naming a person and a battle names their own battle — never a battle they were not at', () => {
+    const told: string[] = [];
+    for (const coreId of ['war_banner', 'forbidden_book']) {
+      for (let k = 0; k < 40; k++) {
+        const r = tryGenerate({ seedKey: `gen_item:thr1637:own_event:${coreId}:${k}`, band: 3, origin: 'found', world: ctx, coreId });
+        if (typeof r === 'string') continue;
+        const heroIds = r.concepts.filter(c => c.kind === 'actor').map(c => c.id);
+        for (const heroId of heroIds) {
+          const own = ctx.heroes[heroId]?.eventId;
+          for (const ev of Object.values(ctx.events)) {
+            if (ev.id !== own && r.provenance.includes(ev.name)) told.push(`${r.name}: ${r.provenance}`);
+          }
+        }
+      }
+    }
+    expect(told).toEqual([]);
+  });
+
   it('every found core grows a clean item from this past: validator-clean on the first draw, read-back clean', () => {
     const failures: string[] = [];
     for (const core of ITEM_GEN_CORES.filter(c => c.origins.includes('found'))) {

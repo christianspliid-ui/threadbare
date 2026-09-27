@@ -80,6 +80,12 @@ describe('the live world context dresses every found core (THR-1637)', () => {
           if (problems.length) failures.push(`${core.id}/${r.signatureId} b${band} (${r.name}): ${problems.join('; ')}`);
           const rb = readBack(r);
           if (!rb.ok) failures.push(`${core.id}/${r.signatureId} b${band} (${r.name}): ${rb.failures.join('; ')}`);
+          // A named dead person is only ever told at their own battle.
+          for (const c of r.concepts.filter(x => x.kind === 'actor')) {
+            const own = world.heroes[c.id]?.eventId;
+            const stray = Object.values(world.events).find(ev => ev.id !== own && r.provenance.includes(ev.name));
+            if (stray) failures.push(`${core.id} (${r.name}): ${c.name} told at ${stray.name} — ${r.provenance}`);
+          }
           if (k === 0 && band === core.bands[0]) console.log(`[THR-1637] ${core.id}: ${r.name} — ${r.provenance}`);
         }
       }

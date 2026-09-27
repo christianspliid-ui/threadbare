@@ -1532,10 +1532,10 @@ exit
 - **Intent:** A wrong-looking world is noticed long after its cause; the recorder keeps far more history than the hundred events the UI shows, so the cause is still in the file.
 - **Producer → Consumer:** Diagnostics & Incident Capture → Diagnostics & Incident Capture
 - **Module:** `src/engine/incidentRecorder.ts`
-- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
 - **Write sites:** `src/engine/orchestrator.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/incidentBundle.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/incidentRecorder.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/incidentRecorder.ts`, `src/engine/itemGenerator/worldContext.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. `recordTick` is called once per tick from the tick-end site beside `validateTickOutput` with `runtime` already in scope, and both rings are read by `incidentBundle`'s `events` and `census` sections plus `__DEBUG.getIncidentRecorderStats()`. Owned on `SimulationRuntime` rather than at module scope, per the load-bearing decision, so a second playthrough cannot inherit the first one's events. Non-vacuous by `src/engine/__tests__/incidentRecorder.test.ts` (wrap behaviour asserted past `INCIDENT_EVENT_RING_SIZE`, oldest-first order across the wrap, and a throwing census that increments `misses`, leaves the tick untouched, and still records the *next* tick — the last clause falsifies the guard rather than confirming it) and by `incidentBundle.test.ts`'s census/recorder assertion.
 
 ### `lair-arrival-spawns-confront` — 🟢 LIVE
@@ -1695,10 +1695,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 45 total — 5 write, 3 read, 37 unclassified
+- **Production hits:** 46 total — 5 write, 3 read, 38 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +32 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +33 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -1835,10 +1835,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 315 total — 1 write, 1 read, 313 unclassified
+- **Production hits:** 316 total — 1 write, 1 read, 314 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +308 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +309 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1951,10 +1951,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 114 total — 1 write, 1 read, 112 unclassified
+- **Production hits:** 115 total — 1 write, 1 read, 113 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +107 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +108 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2236,10 +2236,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 35 total — 5 write, 5 read, 25 unclassified
+- **Production hits:** 37 total — 5 write, 5 read, 27 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
 - **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/tabs/JourneyTab.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentArc.ts`
-- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts`, `src/data/encounters/vertical-slice.ts`, `src/data/foreshadowing-content.ts` +20 more
+- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts`, `src/data/encounters/vertical-slice.ts`, `src/data/foreshadowing-content.ts` +22 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
