@@ -66,8 +66,8 @@ For each issue found:
 
 Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill tree** — the second tree at `.agents/skills/`, `scripts/check-skill-sync.js`, and the THR-192 parity pre-commit hook were all deleted 2026-07-21 (THR-654).
 
-- **If `.agents/skills/` exists at all, that is a finding** — it was demolished and must not come back.
-- For each folder under `.claude/skills/`: confirm `SKILL.md` exists with `name` and `description` in the frontmatter.
+- **If any `SKILL.md` exists under `.agents/skills/`, that is a finding** — the tree was demolished and must not come back. Find it with `find .agents -name SKILL.md`, not `ls -d`: the directory itself survives in the home tree, untracked (by 2026-09-27 `ls -la` listed it empty while `rmdir` reported it non-empty, and the unattended lane may not delete it). A directory holding no `SKILL.md` is debris, not a tree. Record it in `## Notes`, not as a finding (2026-09-13 F3, 2026-09-27).
+- For each folder under `.claude/skills/`: confirm `SKILL.md` exists with `name` and `description` in the frontmatter. **Known-accepted exception:** `.claude/skills/image-manipulation-workspace/` is gitignored eval output from the `image-manipulation` skill (iteration-1..3 PNGs) with no `SKILL.md`. The skill loader skips it, and it is not an orphan skill.
 - CLAUDE.md's `## Domain Skills` table was retired in THR-760 — skill triggers now live in each skill's own `description:` frontmatter. Cross-check instead that every skill named in CLAUDE.md's Domain Skills **routing policy** (the load-order bullets) resolves to a real folder under `.claude/skills/`, and that each skill's `description:` is non-empty. Broken references and empty descriptions are findings.
 - Look for orphan skill directories — present in the tree but referenced nowhere in CLAUDE.md or documented routing.
 - Spot-check `last_validated_against` dates: a skill whose referenced systems have since changed but whose date is months stale is worth flagging.
