@@ -13,6 +13,7 @@
  *
  * Design doc: Docs/plans/2026-03-17-tiered-backstory-generation-design.md
  */
+import { bondBasisMatches } from '../data/bond-basis';
 import type { BackstoryLayer } from '../types/prose';
 import { BACKSTORY_CONSTANTS } from '../types/prose';
 import type { WorldGraph } from './graph';
@@ -186,7 +187,8 @@ export function bondHistoryResolver(
   const sentiment = (strongest.properties?.sentiment as number) ?? 0;
 
   const table = sentiment < 0 ? BOND_HISTORY_NEGATIVE_PROSE : BOND_HISTORY_PROSE;
-  const templates = table[basis];
+  const templates = table[basis]
+    ?? Object.entries(table).find(([key]) => bondBasisMatches(basis, key))?.[1];
   if (!templates) return [];
 
   const template = pickTemplate(templates, seed);

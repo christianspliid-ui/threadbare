@@ -9,6 +9,7 @@
  * applyReturnOutcome.
  */
 
+import { bondBasisMatches } from '../data/bond-basis';
 import type { WorldGraph } from './graph';
 import type { GameState, TickEvent } from '../types/gameState';
 import type { ThreadEdgeProperties, CourtPosition } from '../types/influence';
@@ -322,7 +323,7 @@ export function gatherRippleTargets(graph: WorldGraph, agentId: string): RippleT
     if (bond.sentiment > 0.5) {
       // Check for romantic basis
       const basis = (bond.edge.properties.basis as string) ?? '';
-      const type: RippleTargetType = basis === 'romantic' ? 'spouse' : 'ally';
+      const type: RippleTargetType = bondBasisMatches(basis, 'romantic') ? 'spouse' : 'ally';
       targets.push({
         nodeId: bond.agent.id,
         name: bond.agent.name,

@@ -6,6 +6,7 @@
  *
  * Pure function — reads templates + agent snapshot, returns scored selections.
  */
+import { bondBasisMatches } from '../data/bond-basis';
 import type { AmbitionTemplate } from '../types/ambition';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
@@ -104,7 +105,7 @@ export function scoreDesirability(
 
   // Bond modifiers: +modifier per matching bond type
   for (const bm of template.bondModifiers) {
-    const matchCount = agent.bonds.filter(b => b.bondType === bm.bondType).length;
+    const matchCount = agent.bonds.filter(b => bondBasisMatches(b.bondType, bm.bondType)).length;
     score += matchCount * bm.modifier;
   }
 

@@ -403,9 +403,14 @@ export function phaseNpcGraduation(state: GameState): NpcGraduatedEvent[] {
         importance,
       });
     } else if (tier === 'notable' && importance >= NPC_CONSTANTS.SPOTLIGHT_THRESHOLD) {
-      // Check edge count: outgoing + incoming relates_to edges
-      const outEdges = state.graph.getOutgoingEdges(actor.id, 'relates_to');
-      const inEdges = state.graph.getIncomingEdges(actor.id, 'relates_to');
+      // Check edge count: outgoing + incoming relates_to edges *earned in play*.
+      // THR-1630: ties seeded at worldgen (`origin: 'worldgen'`) never count — the
+      // people web gives every hero's kin, friend and rival three edges at t0, and
+      // letting those cross SPOTLIGHT_MIN_EDGES would make deciders out of seeding
+      // (THR-1592 measured +87–115% tick cost that way).
+      const earned = (e: { properties: Record<string, unknown> }) => e.properties.origin !== 'worldgen';
+      const outEdges = state.graph.getOutgoingEdges(actor.id, 'relates_to').filter(earned);
+      const inEdges = state.graph.getIncomingEdges(actor.id, 'relates_to').filter(earned);
       const edgeCount = outEdges.length + inEdges.length;
 
       if (edgeCount >= NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES) {

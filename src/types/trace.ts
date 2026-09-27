@@ -3797,6 +3797,12 @@ export interface AmbitionProgressTrace extends TraceBase {
   event?: string;
   /** Why the ambition could not be evaluated — see `AmbitionSkipReason`. */
   reason?: string;
+  /**
+   * THR-1630: on a re-evaluation assignment, how many of the actor's bonds matched the
+   * template's `bondModifiers` (through `bondBasisMatches`), and their written bases.
+   */
+  bondsMatched?: number;
+  bondBases?: string[];
 }
 
 /**

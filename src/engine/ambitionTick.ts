@@ -5,6 +5,7 @@
  * milestone completion, full completion, and abandonment. Runs re-evaluation
  * of empty ambition slots every AMBITION_REEVAL_INTERVAL ticks.
  */
+import { bondBasisMatches } from '../data/bond-basis';
 import type { GameState, TickEvent } from '../types/gameState';
 import type { ActiveAmbition, AmbitionPriority } from '../types/ambition';
 import type { ReachDomain } from '../types/traits';
@@ -102,6 +103,20 @@ export const MINT_MAX_PER_EVENT = 4;
  * and must reach the funnel every time, or the seed decides whether a vendetta exists.
  */
 export const MINT_BASE_CHANCE = 0.6;
+
+/**
+ * THR-1630: which of the actor's bonds a template's `bondModifiers` scored — the S1 gate's
+ * read that seeded ties reach ambition selection.
+ */
+function bondsScoredFor(
+  template: { bondModifiers: ReadonlyArray<{ bondType: string }> } | undefined,
+  snapshot: AmbitionAgentSnapshot,
+): { bondsMatched: number; bondBases: string[] } {
+  const matched = template
+    ? snapshot.bonds.filter(b => template.bondModifiers.some(bm => bondBasisMatches(b.bondType, bm.bondType)))
+    : [];
+  return { bondsMatched: matched.length, bondBases: matched.map(b => b.bondType) };
+}
 
 /** Distinct PRNG stream offset so minting rolls don't shadow spontaneous re-eval. */
 export const MINT_SEED_OFFSET = 7919;
@@ -1071,6 +1086,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               templateId: assignment.templateId,
               result: 'assigned',
               priority: assignment.priority,
+              ...bondsScoredFor(template, agentSnapshot),
             });
           }
         }
