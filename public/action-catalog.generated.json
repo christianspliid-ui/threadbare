@@ -2333,7 +2333,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
       "description": "Reaches into the sleeping mind of a mortal and reshapes their dreaming landscape with divine intent. Desires and motivations shift beneath the surface, nudging the sleeper toward choices the deity favors. The effect lingers as a quiet conviction long after waking.",
-      "technicalEffect": "Applies a divine influence (interventionType `dream`, Mind sphere) to the target agent — a decaying `Influence` on their decision loop that biases behaviour and axiological drift until it lapses. Does not mutate the graph directly.",
+      "technicalEffect": "Applies a decaying divine influence (interventionType `dream`, Mind sphere) to the target agent carrying a `valueDrifts` entry of `DREAM_VALUE_DRIFT` on the value pair bound to the caster's primary reach, in the direction the target already leans (THR-1651). `buildValueOverlay` feeds it into the agent re-score and the motive receipt until it lapses. A target at exactly 0 on that pair gets no entry (`influence.no_lean` trace).",
       "effectSource": "template-ops"
     },
     {
@@ -2389,7 +2389,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
       "description": "Whispers an irresistible conviction into a mortal's soul, making the deity's preferred course feel like the only sensible choice. The mortal acts with sudden certainty, unaware of the divine origin of their resolve. The compulsion fades over time as natural doubt reasserts itself.",
-      "technicalEffect": "Applies a divine influence (interventionType `persuade`, Spirit sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "technicalEffect": "Applies a decaying divine influence (interventionType `persuade`, Spirit sphere) to the target agent carrying a `valueDrifts` entry of `COMPULSION_VALUE_DRIFT` toward the first-named (positive) pole of the value pair bound to the caster's primary reach (THR-1651), biasing their decision-making until the influence decays.",
       "effectSource": "template-ops"
     },
     {

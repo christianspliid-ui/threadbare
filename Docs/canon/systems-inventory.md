@@ -249,6 +249,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `callback` (1) | `callbackEligibility.ts` | — |
 | `calling` (1) | `calling.ts` | `THR-1281`, `THR-1299` |
 | `capability` (1) | `capabilityGrowth.ts` | — |
+| `cast` (1) | `castInfluenceDrift.ts` | `THR-1651` |
 | `chapter` (1) | `chapterArchive.ts` | `THR-603` |
 | `chosen` (1) | `chosenFactionPowers.ts` | `THR-509`, `THR-513` |
 | `chronicle` (1) | `chronicle.ts` | `THR-21` |
@@ -426,4 +427,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 198 engine domains · 608 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 199 engine domains · 609 modules._
