@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-27 13:55 local (11:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-27 14:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-27: the seeded item generator is live**: a finished masterwork is now born with an idea, a real power and often a price ([THR-1570](https://linear.app/threadbare/issue/THR-1570)). Merged via [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088), and live on the site.
 - **2026-09-27: when two duellists kill each other, the second death now leaves grief behind too** ([THR-1629](https://linear.app/threadbare/issue/THR-1629)). Merged via [#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), and live on the site.
 - **2026-09-27: heroes' starting faction membership now carries standing** ([THR-1620](https://linear.app/threadbare/issue/THR-1620)). Merged via [#2089](https://github.com/christianspliid-ui/threadbare/pull/2089), and live on the site.
 - **2026-09-27: travellers’ resting spots on the road no longer pile up as nameless places** ([THR-1616](https://linear.app/threadbare/issue/THR-1616)). Merged via [#2086](https://github.com/christianspliid-ui/threadbare/pull/2086), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26: the duel odds check works again on the new dice** ([THR-1628](https://linear.app/threadbare/issue/THR-1628)). Merged via [#2082](https://github.com/christianspliid-ui/threadbare/pull/2082), and live on the site.
 - **2026-09-26: a protection against losing a condition now refuses the condition it names** ([THR-1625](https://linear.app/threadbare/issue/THR-1625)). Merged via [#2081](https://github.com/christianspliid-ui/threadbare/pull/2081), and live on the site.
 - **2026-09-26: reactions to a mortal becoming blessed or cursed now fire** ([THR-1624](https://linear.app/threadbare/issue/THR-1624)). Merged via [#2080](https://github.com/christianspliid-ui/threadbare/pull/2080), and live on the site.
-- **2026-09-26: a hex's lore now says "not fully explored" once, not once per ruin** ([THR-1621](https://linear.app/threadbare/issue/THR-1621)). Merged via [#2079](https://github.com/christianspliid-ui/threadbare/pull/2079), and live on the site.
 
 ---
 
