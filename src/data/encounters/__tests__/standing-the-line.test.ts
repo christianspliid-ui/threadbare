@@ -33,6 +33,7 @@ import { describe, it, expect } from 'vitest';
 import { STANDING_THE_LINE_TEMPLATE } from '../standing-the-line';
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
 import { isActionStepBranch } from '../../../types/unifiedAction';
+import { compileOpeningColoration } from '../../../engine/fragmentResolution';
 import type {
   ActionStep,
   ActionStepBranch,
@@ -142,7 +143,10 @@ describe('Standing the Line — registration', () => {
   it('is registered and resolvable in UNIFIED_ACTION_TEMPLATES', () => {
     const found = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'encounter.border.standing_the_line');
     expect(found).toBeDefined();
-    expect(found).toBe(TEMPLATE);
+    // The registry holds the compiled copy: the THR-1635 coloration pass adds the
+    // `{frag:place_fact}` token to step 0, so identity with the source constant is gone
+    // but the template is otherwise the one authored here.
+    expect(found).toEqual(compileOpeningColoration(TEMPLATE));
   });
 
   it('has the id, reach, and rarity the design doc specifies', () => {
