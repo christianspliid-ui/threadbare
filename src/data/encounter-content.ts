@@ -11397,8 +11397,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
      * Four `byOutcome` bands against ruling 7's floor of three. The axis is the
      * one the fiction already has: did anything answer, and what did the giving
      * cost. Every chip is backed by a write in its own band's reaction (Law 56)
-     * — `thread_strengthen`, `apply_condition`, `encounter_seed`, and
-     * `thread_weaken` on the way down.
+     * — `thread_strengthen`, `apply_condition`, and `thread_weaken` on the way
+     * down.
+     *
+     * THR-1565 retired the `critical_success` band's third chip, 'A Heading',
+     * with the `encounter_seed` that backed it. The seed named no `templateId`
+     * and no `query`, so `evaluateEncounterSeeds` discarded it at maturity every
+     * time: the chip promised somewhere to be, and nothing ever arrived. The
+     * heading stays in the band's overview, which is prose, not a claim.
      */
     aftermathConfig: {
       branchOnStep: 0,
@@ -11470,18 +11476,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
                 // noun on the condition, the ground on a concept.
                 concepts: [{ text: 'The stones here', entityId: '$here', visualKind: 'location' }],
               },
-              {
-                id: 'shrine_offering.a_heading',
-                kind: 'trait',
-                title: 'A Heading',
-                causeClause: 'The answer came as a direction rather than a sentence',
-                detail: 'There is somewhere to be now, and the road ahead has one fork fewer on it.',
-                polarity: 'gain',
-                category: 'path',
-                direction: 'opens',
-                stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
-                concepts: [{ text: 'one fork fewer on it' }],
-              },
             ],
             reactions: [
               {
@@ -11502,12 +11496,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
                     targetLocationId: '$here',
                     intensity: 0.55,
                     durationTicks: 72,
-                  },
-                  {
-                    kind: 'encounter_seed',
-                    delayTicks: 6,
-                    seedLabel: 'The heading taken at the stones',
-                    priority: 0.6,
                   },
                 ],
               },

@@ -103,8 +103,6 @@ export const SLICE_PASS_SEASON_DURATION_TICKS = 360;
 export const SLICE_PASS_SEASON_INTENSITY = 0.4;
 /** Ticks until the crossroads marker can be found again (~15 game days). */
 export const SLICE_CROSSROADS_RETURN_DELAY_TICKS = 180;
-/** Ticks until word of the swindled family's road comes back (~13 game days). */
-export const SLICE_FAMILY_NEWS_DELAY_TICKS = 156;
 /** Four days walked inside a hunted column buys a warm edge, not a friendship. */
 export const SLICE_CARAVAN_MASTER_SENTIMENT = 0.15;
 export const SLICE_CARAVAN_MASTER_TRUST = 0.1;
@@ -3117,7 +3115,13 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             polarity: 'info',
             category: 'path',
             direction: 'opens',
-            stateNoun: { text: 'seed', tooltipId: 'ui.aftermath_seed' },
+            // THR-1565 — was `seed`, backed by a seed of this very template.
+            // That seed replayed the first meeting (a family with a handcart,
+            // walking east) under a label promising news of them, so it is
+            // retired. What declining actually leaves is knowledge of the fen
+            // road, written by the `intelligence` effect below; the noun names
+            // that, the way 'Two Roads' on the fallback already does.
+            stateNoun: { text: 'knowledge', tooltipId: 'ui.knowledge' },
             concepts: [{ text: 'the fen' }],
           },
         ],
@@ -3127,18 +3131,8 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             label: 'Make the town by dark',
             intent: 'The planned road, at the planned pace.',
             effects: [
-              // Law 56 (THR-1141): 'East Is Theirs' claims the fen does its work
-              // out of their sight. Out of sight is not out of the world — the
-              // seed is what makes the phrase true, bringing back what happened
-              // on the road they did not take.
-              {
-                kind: 'encounter_seed',
-                templateId: SLICE_TEMPLATE_IDS.family,
-                targetAgentId: '$actor',
-                delayTicks: SLICE_FAMILY_NEWS_DELAY_TICKS,
-                seedLabel: 'Word comes back from the fen road about a handcart and three children.',
-                inheritContext: true,
-              },
+              // Law 56 (THR-1141): 'East Is Theirs' claims they know what the fen
+              // does, out of their sight. The intel record is that knowing.
               {
                 kind: 'intelligence',
                 category: 'trade_route',
@@ -3156,7 +3150,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           // THR-1468 — overview-only, the lightest band shape in the file and the
           // right one here. `applyAftermathOutcomeBand` falls through field by
           // field (`band.changes ?? variant.changes`), so 'East Is Theirs' and the
-          // base reaction's fen-road seed + intel all survive untouched — which is
+          // base reaction's fen-road intel both survive untouched — which is
           // correct, because declining writes the same things however well the
           // walk to town went. What a failure changes is how the evening sat, and
           // an evening is prose. The `critical_failure` below it is the band that
@@ -3206,21 +3200,13 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                     source: 'slice.family.the_fen_in_mind',
                   },
                   // Carried down from the base reaction on purpose. THR-1141
-                  // added the fen-road seed and intel to `negative`'s base
-                  // reaction so 'East Is Theirs' has a write behind it; this
-                  // band authors its own `reactions`, and
-                  // `applyAftermathOutcomeBand` substitutes them **wholesale**,
-                  // so anything not repeated here is silently dropped. The
-                  // haunted ending is the one that most needs the news to come
-                  // back — that is the whole shape of it.
-                  {
-                    kind: 'encounter_seed',
-                    templateId: SLICE_TEMPLATE_IDS.family,
-                    targetAgentId: '$actor',
-                    delayTicks: SLICE_FAMILY_NEWS_DELAY_TICKS,
-                    seedLabel: 'Word comes back from the fen road about a handcart and three children.',
-                    inheritContext: true,
-                  },
+                  // added the fen-road intel to `negative`'s base reaction so
+                  // 'East Is Theirs' has a write behind it; this band authors
+                  // its own `reactions`, and `applyAftermathOutcomeBand`
+                  // substitutes them **wholesale**, so anything not repeated
+                  // here is silently dropped. (The fen-road self-seed that used
+                  // to ride beside it was retired by THR-1565: it replayed the
+                  // first meeting instead of bringing news.)
                   {
                     kind: 'intelligence',
                     category: 'trade_route',
@@ -3262,7 +3248,9 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           effects: [
             // Law 56 (THR-1141): 'Two Roads' claims they know what lies east and
             // will not walk into it. Knowing is the write — a record the fen-road
-            // steps can read — and the seed brings the other road's answer back.
+            // steps can read. THR-1565 retired the self-seed that sat after it:
+            // it replayed the first meeting rather than bringing the other
+            // road's answer back.
             {
               kind: 'intelligence',
               category: 'trade_route',
@@ -3272,14 +3260,6 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 + 'handcart is walking it once.',
               targetAgentId: '$actor',
               reliability: 0.8,
-            },
-            {
-              kind: 'encounter_seed',
-              templateId: SLICE_TEMPLATE_IDS.family,
-              targetAgentId: '$actor',
-              delayTicks: SLICE_FAMILY_NEWS_DELAY_TICKS,
-              seedLabel: 'The fen road gives back word of the family who took it.',
-              inheritContext: true,
             },
           ],
         },
