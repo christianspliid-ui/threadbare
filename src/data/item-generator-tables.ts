@@ -379,3 +379,117 @@ export const ITEM_GEN_VIRTUES: Readonly<Record<string, { word: string; adj: stri
   'trait.core.core_forgiveness.virtue': { word: 'Forgiving', adj: 'Merciful', spheres: { spirit: 2, life: 1 } },
   'trait.core.core_humility.virtue':    { word: 'Humble', adj: 'Plain', spheres: { order: 1, matter: 2 } },
 };
+
+// ─── The live world's past (THR-1637) ────────────────────────────────
+//
+// What `buildItemWorldContext` reads to dress a `found` thing from a live world: the
+// retained dead, the battles fought, and the monster hosts. The review world
+// (`engine/itemGenerator/reviewWorld.ts`) hand-writes the same shapes; these tables turn
+// what the live graph *records* into those shapes, and say nothing it does not record.
+// `{place}` / `{event}` / `{home}` / `{slayer}` are filled by `worldContext.ts`.
+
+/** How many of the dead a found thing may name — the most recently fallen first. */
+export const ITEM_GEN_LIVE_HEROES_MAX = 16;
+/** How many battles a found thing may have come out of — the most recent first, one per place and kind. */
+export const ITEM_GEN_LIVE_EVENTS_MAX = 12;
+/** How many monster hosts a trophy or a blight may come from — the oldest hosts first. */
+export const ITEM_GEN_LIVE_MONSTERS_MAX = 12;
+
+/** How a mortal died, as a plain predicate: "{hero.They} {hero.fate}." Keyed by `deathCause`. */
+export const ITEM_GEN_LIVE_FATE_BY_CAUSE: Readonly<Record<string, { at: string; bare: string }>> = {
+  band:       { at: 'did not walk away from a brawl at {place}', bare: 'did not walk away from a brawl' },
+  fight:      { at: 'was killed in a fight at {place}', bare: 'was killed in a fight' },
+  battle:     { at: 'fell in battle at {place}', bare: 'fell in battle' },
+  plot:       { at: 'was murdered at {place}', bare: 'was murdered' },
+  commission: { at: 'was struck down at {place}', bare: 'was struck down' },
+};
+/** A death with no row above. */
+export const ITEM_GEN_LIVE_FATE_FALLBACK = { at: 'died at {place}', bare: 'died' } as const;
+/** A fight death whose killer is still named in the graph. */
+export const ITEM_GEN_LIVE_FATE_SLAIN_BY = { at: 'was killed by {slayer} at {place}', bare: 'was killed by {slayer}' } as const;
+/** A death in a recorded battle — the battle's own name. */
+export const ITEM_GEN_LIVE_FATE_IN_BATTLE = 'fell in {event}';
+
+/** What a mortal did, as a relative clause: "{hero}, {hero.deed}." A recorded battle outranks a trade. */
+export const ITEM_GEN_LIVE_DEED_IN_BATTLE = 'who fought in {event}';
+/** A mortal's trade at their home, keyed by `npcRole`. */
+export const ITEM_GEN_LIVE_DEED_BY_ROLE: Readonly<Record<string, string>> = {
+  guard: 'who stood guard at {home}', guard_captain: 'who kept the watch at {home}',
+  innkeeper: 'who kept the inn at {home}', brewer: 'who brewed for {home}',
+  merchant: 'who traded out of {home}', trader: 'who traded out of {home}',
+  smith: 'who kept the forge at {home}', healer: 'who tended the sick at {home}',
+  sage: 'who kept the old learning at {home}', researcher: 'who kept the old learning at {home}', archmage: 'who kept the old learning at {home}',
+  bard: 'who sang for {home}', entertainer: 'who played for {home}',
+  sailor: 'who sailed out of {home}', steward: 'who kept the stores at {home}',
+  herald: 'who carried the news at {home}', clerk: 'who kept the books at {home}',
+  ranger: 'who walked the country around {home}', courier: 'who carried letters out of {home}',
+  labourer: 'who worked the yards at {home}',
+};
+/** A mortal whose trade has no row above. */
+export const ITEM_GEN_LIVE_DEED_HOME = 'who lived at {home}';
+/** A mortal with neither a recorded battle nor a home. */
+export const ITEM_GEN_LIVE_DEED_FALLBACK = 'who kept to the roads';
+/** "{hero.role}" for a mortal with no trade. */
+export const ITEM_GEN_LIVE_ROLE_FALLBACK = 'a traveller';
+
+/**
+ * A recorded battle, told as the disaster a thing was salvaged from. Keyed by
+ * `battleType`, then `resolutionType`. `kind` picks the salvage core's looks, forms and
+ * names; the words say only what the record says — where, what kind, how it ended.
+ */
+export const ITEM_GEN_LIVE_BATTLE_EVENT: Readonly<Record<'siege' | 'field_battle', {
+  readonly kind: 'siege' | 'last_stand';
+  readonly name: string;
+  readonly short: string;
+  readonly spheres: Partial<Record<SphereName, number>>;
+  /** `{event.what}` — what happened, by `resolutionType`. */
+  readonly what: Readonly<Record<string, string>> & { readonly default: string };
+  /** `{event.salvage}` — a whole sentence, by `resolutionType`. */
+  readonly salvage: Readonly<Record<string, string>> & { readonly default: string };
+  readonly lingers: string;
+}>> = {
+  siege: {
+    kind: 'siege', name: 'the Siege of {place}', short: 'the siege', spheres: { force: 2, order: 1 },
+    what: {
+      attacker_victory: 'the walls of {place} were taken', defender_victory: '{place} held against the armies outside it',
+      stalemate: '{place} was besieged and neither side gave way', mutual_destruction: 'both armies were broken under the walls of {place}',
+      default: '{place} was besieged',
+    },
+    salvage: {
+      attacker_victory: 'It was carried out of {place} the day its walls were taken.',
+      defender_victory: 'It came down off the walls of {place} after the siege was broken.',
+      stalemate: 'It came out of {place} after a siege that neither side won.',
+      mutual_destruction: 'It was picked out of the wreck under the walls of {place}, where both armies broke.',
+      default: 'It came out of {place} after {event}.',
+    },
+    lingers: 'There is still grit from the walls in its seams.',
+  },
+  field_battle: {
+    kind: 'last_stand', name: 'the Battle of {place}', short: 'the battle', spheres: { force: 2, chaos: 1 },
+    what: {
+      attacker_victory: 'one army broke the other at {place}', defender_victory: 'one army held its ground at {place}',
+      stalemate: 'two armies met at {place} and neither gave way', mutual_destruction: 'two armies broke each other at {place}',
+      default: 'two armies met at {place}',
+    },
+    salvage: {
+      attacker_victory: 'It was picked up off the field after {event}, where one army broke the other.',
+      defender_victory: 'It was picked up off the field after {event}, where one army held its ground.',
+      stalemate: 'It was picked up off the field at {place}, where two armies met and neither gave way.',
+      mutual_destruction: 'It was picked up off the field at {place}, where two armies broke each other.',
+      default: 'It was picked up off the field after {event}.',
+    },
+    lingers: 'It still has the mud of the field in its seams.',
+  },
+};
+
+/** What one of a host is called — "a golem of the Blighted Golem Cluster" — by the host's sphere. */
+export const ITEM_GEN_LIVE_MONSTER_UNIT: Readonly<Partial<Record<SphereName, string>>> = {
+  matter: 'golem', energy: 'bird', entropy: 'thing', life: 'behemoth', spirit: 'wraith',
+  force: 'wolf', mind: 'husk', time: 'echo stalker',
+};
+/** A host sphere with no row above. */
+export const ITEM_GEN_LIVE_MONSTER_UNIT_FALLBACK = 'creature';
+/** The condition family a host's trophies ward against, by sphere — only where the review world gave one. */
+export const ITEM_GEN_LIVE_MONSTER_IMMUNE: Readonly<Partial<Record<SphereName, string>>> = {
+  spirit: '#curse', entropy: '#disease',
+};

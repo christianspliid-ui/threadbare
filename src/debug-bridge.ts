@@ -3200,7 +3200,8 @@ if (import.meta.env.DEV) {
 
     // THR-1570: mint a generated item onto a mortal — the browser-verify lever, because a
     // masterwork is a ~1-in-40-ticks event. A masterwork is made by its holder in the live
-    // world; a found thing is dressed from the review world (the live one has no past yet).
+    // world; a found thing is dressed by the live world's past (THR-1637) — the review
+    // world only when this world has no past yet.
     mintGeneratedItem: async (opts: { holder?: string; band?: 2 | 3 | 4; origin?: 'masterwork' | 'found'; seed?: number } = {}) => {
       const graph = _graphProvider?.();
       const state = _gameStateProvider?.();
@@ -3209,10 +3210,12 @@ if (import.meta.env.DEV) {
       if (!agent) return { ok: false as const, reason: 'holder_not_found' };
       const origin = opts.origin ?? 'masterwork';
       const tick = state?.tick ?? 0;
-      const { buildItemWorldContext, itemGenHistoryFromGraph } = await import('./engine/itemGenerator/worldContext');
+      const { buildItemWorldContext, hasItemWorldPast, itemGenHistoryFromGraph } = await import('./engine/itemGenerator/worldContext');
       const { reviewWorldContext } = await import('./engine/itemGenerator/reviewWorld');
       const { generateValidItem, mintGeneratedItem } = await import('./engine/itemGenerator/mintGeneratedItem');
-      const world = origin === 'masterwork' ? buildItemWorldContext(graph, { makerId: agent.id }) : reviewWorldContext(null);
+      const past = origin === 'found' ? buildItemWorldContext(graph, {}) : null;
+      const world = origin === 'masterwork' ? buildItemWorldContext(graph, { makerId: agent.id })
+        : past && hasItemWorldPast(past) ? past : reviewWorldContext(null);
       const history = itemGenHistoryFromGraph(graph);
       const n = graph.getNodesByType('artifact').filter(x => x.id.startsWith('gen_debug_')).length;
       const seedKey = `gen_item:${opts.seed ?? state?.seed ?? 0}:${origin}:debug:${agent.id}:${tick}:${n}`;

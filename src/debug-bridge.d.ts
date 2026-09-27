@@ -739,7 +739,9 @@ export interface DebugBridge {
    * default 3, `origin` default `masterwork`) and return its id — the browser-verify
    * lever for the artifact sheet's *Made by* / *What it does* / *The catch*. A masterwork
    * is made by its holder, dressed by their faction, place and culture; a found thing is
-   * dressed from the review world. Bumps the world version. Dev lever only — production
+   * dressed by this world's past — its retained dead, its battles, its monster hosts
+   * (THR-1637) — and from the review world only while the world has no past yet. Bumps
+   * the world version. Dev lever only — production
    * items come from `mintMasterwork`. Always `await` it.
    */
   mintGeneratedItem: (opts?: { holder?: string; band?: 2 | 3 | 4; origin?: 'masterwork' | 'found'; seed?: number }) => Promise<

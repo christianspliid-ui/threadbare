@@ -238,6 +238,20 @@ export function tryGenerate(req: ItemGenRequest): GeneratedItem | GenerateItemRe
       line = other;
     }
   }
+  // A line naming a person and an event tells of *their* event, so the person must have
+  // one in this world (THR-1637: a live world's dead mostly fought in no battle). Every
+  // review-world hero has one, so this only ever re-picks on a live past; the re-pick is
+  // its own stream, so no other roll shifts.
+  if (line.uses.includes('hero') && line.uses.includes('event') && !(hero?.eventId && world.events[hero.eventId])) {
+    const withEvent = Object.values(world.heroes).filter(h => h.eventId && world.events[h.eventId]);
+    const repick = world.heroes[R.draw('hero.with_event', Object.fromEntries(withEvent.map(h => [h.id, 1]))) ?? ''];
+    if (repick) hero = repick;
+    else {
+      const other = lines.find(l => !(l.uses.includes('hero') && l.uses.includes('event')) && !l.needsFactionHero);
+      if (!other) return 'no_eligible_line';
+      line = other;
+    }
+  }
   if (line.uses.includes('hero') && line.uses.includes('faction') && hero?.factionId && world.factions[hero.factionId]) faction = world.factions[hero.factionId];
   if (line.uses.includes('hero') && line.uses.includes('event') && hero?.eventId && world.events[hero.eventId]) event = world.events[hero.eventId];
 
