@@ -19,6 +19,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { isActionStepBranch } from '../../types/unifiedAction';
 import { UNIFIED_ACTION_TEMPLATES } from '../unified-action-templates';
 import { SLICE_TEMPLATE_IDS } from '../encounters/vertical-slice';
 
@@ -82,7 +83,9 @@ describe('seed targets tell the right story (THR-1565)', () => {
     // Its step-0 opening is kin to "the family from the fen road". Any other
     // parent makes that sentence false.
     const kin = byId(SLICE_TEMPLATE_IDS.gratefulKin);
-    expect(kin.steps[0]?.narrativeTemplate ?? '').toMatch(/family from the fen road/);
+    const opening = kin.steps[0];
+    expect(opening && !isActionStepBranch(opening) ? opening.narrativeTemplate : '')
+      .toMatch(/family from the fen road/);
 
     const parents = UNIFIED_ACTION_TEMPLATES
       .filter(t => seedsIn(t).some(s => s.templateId === SLICE_TEMPLATE_IDS.gratefulKin))
