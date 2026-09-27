@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-27 03:57 local (01:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-27 04:56 local (02:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-27: travellers’ resting spots on the road no longer pile up as nameless places** ([THR-1616](https://linear.app/threadbare/issue/THR-1616)). Merged via [#2086](https://github.com/christianspliid-ui/threadbare/pull/2086), and live on the site.
 - **2026-09-27: a fight now leaves a record on the ground, and three systems read it** ([THR-1574](https://linear.app/threadbare/issue/THR-1574)). Merged via [#2085](https://github.com/christianspliid-ui/threadbare/pull/2085), and live on the site.
 - **2026-09-27: three seeded story hooks whose follow-ups told the wrong story were retired** ([THR-1565](https://linear.app/threadbare/issue/THR-1565)). Merged via [#2084](https://github.com/christianspliid-ui/threadbare/pull/2084), and live on the site.
 - **2026-09-27: every monster family has its own portrait** on the lair card and in the fight header ([THR-1554](https://linear.app/threadbare/issue/THR-1554)). Merged via [#2083](https://github.com/christianspliid-ui/threadbare/pull/2083), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26: a hex's lore now says "not fully explored" once, not once per ruin** ([THR-1621](https://linear.app/threadbare/issue/THR-1621)). Merged via [#2079](https://github.com/christianspliid-ui/threadbare/pull/2079), and live on the site.
 - **2026-09-26: colocation and role fit now read a mortal's reach share** ([THR-1576](https://linear.app/threadbare/issue/THR-1576)). Merged via [#2078](https://github.com/christianspliid-ui/threadbare/pull/2078), and live on the site.
 - **2026-09-26: faith and politics at game start became world settings** ([THR-1596](https://linear.app/threadbare/issue/THR-1596)). The design lane set the first test setup from your answer: a temple chapter per culture, at least two holy places per culture, about a third of towns unheld. It is in the briefing under "Decided for you" for 24 hours.
-- **2026-09-26: the Follow button now says it keeps a mortal in close view** ([THR-1573](https://linear.app/threadbare/issue/THR-1573)). Merged via [#2077](https://github.com/christianspliid-ui/threadbare/pull/2077), and live on the site.
 
 ---
 
