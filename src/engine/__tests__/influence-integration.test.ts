@@ -114,7 +114,7 @@ describe('Ascendant Lifecycle Integration', () => {
       });
 
       // Process maintenance
-      const maintResult = processInfluenceMaintenance(graph, ascendantId, tick);
+      const maintResult = processInfluenceMaintenance(graph, ascendantId, tick, pool);
       expect(maintResult.maintenanceFailed).toHaveLength(0);
 
       // Check for promotions

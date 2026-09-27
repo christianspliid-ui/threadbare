@@ -149,7 +149,12 @@ export interface AscendantProperties {
   actorType: 'ascendant';
   /** Primary and secondary sphere alignment. */
   sphereAlignment: SphereAlignment;
-  /** Current essence pool. */
+  /**
+   * Creation-time snapshot of the starting pool. **Not the live store** — the
+   * player's essence lives in `GameState.essencePool` (THR-1645), which the
+   * bar reads and every spend and regen writes. Nothing updates this after
+   * creation; it stays readable for saved worlds only.
+   */
   essencePool: EssencePool;
   /** Maximum essence pool size (computed, cached). */
   maxEssence: number;

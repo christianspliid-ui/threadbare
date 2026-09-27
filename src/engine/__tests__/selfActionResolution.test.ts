@@ -21,6 +21,7 @@ import {
   REVEAL_DEVOTION_DELTA,
 } from '../../data/self-action-constants';
 import type { GameState } from '../../types/gameState';
+import { BASE_MAX_ESSENCE } from '../../types/influence';
 import { WorldGraph } from '../graph';
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -98,7 +99,8 @@ function createSelfActionTestState(): GameState {
     tiles: [],
     clock: {} as any,
     ascendantId: 'asc-1',
-    essencePool: {} as any,
+    // THR-1645: the live store the bar reads. The node pool above is a snapshot.
+    essencePool: { spirit: 20, mind: 10, time: 5, life: 5, iron: 5, gold: 5, shadow: 5, stone: 5, order: 5 } as any,
     mandateDefinition: null,
     mandateState: null,
     rivalDefinitions: [],
@@ -222,27 +224,32 @@ describe('Stillness effect', () => {
     clearTraces();
   });
 
-  it('adds STILLNESS_ESSENCE_REGEN to primary sphere on success', () => {
+  it('adds STILLNESS_ESSENCE_REGEN to the primary sphere of GameState.essencePool (THR-1645)', () => {
     const state = createSelfActionTestState();
-    const before = (state.graph.getNode('asc-1')!.properties.essencePool as any).spirit;
+    const before = (state.essencePool as any).spirit;
 
     runSelfAction(state, 'divine.self.stillness');
 
-    const after = (state.graph.getNode('asc-1')!.properties.essencePool as any).spirit;
-    expect(after).toBe(before + STILLNESS_ESSENCE_REGEN);
+    expect((state.essencePool as any).spirit).toBe(before + STILLNESS_ESSENCE_REGEN);
   });
 
-  it('does not exceed maxEssence when already near cap', () => {
+  it('never writes the ascendant node snapshot (THR-1645)', () => {
     const state = createSelfActionTestState();
-    // Set spirit pool to 2 below max
-    state.graph.updateNode('asc-1', {
-      properties: { essencePool: { spirit: 98, mind: 10, time: 5, life: 5, iron: 5, gold: 5, shadow: 5, stone: 5, order: 5 } },
-    });
+    const snapshot = { ...(state.graph.getNode('asc-1')!.properties.essencePool as any) };
 
     runSelfAction(state, 'divine.self.stillness');
 
-    const after = (state.graph.getNode('asc-1')!.properties.essencePool as any).spirit;
-    expect(after).toBe(100); // capped at maxEssence
+    expect(state.graph.getNode('asc-1')!.properties.essencePool).toEqual(snapshot);
+  });
+
+  it('does not exceed the computeMaxEssence ceiling when already near cap', () => {
+    const state = createSelfActionTestState();
+    // No thread edges, so the ceiling is BASE_MAX_ESSENCE.
+    (state.essencePool as any).spirit = BASE_MAX_ESSENCE - 2;
+
+    runSelfAction(state, 'divine.self.stillness');
+
+    expect((state.essencePool as any).spirit).toBe(BASE_MAX_ESSENCE);
   });
 
   it('resolves the action successfully', () => {

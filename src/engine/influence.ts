@@ -222,17 +222,21 @@ export interface MaintenanceResult {
 /**
  * Process maintenance for all of an ascendant's influenced actors.
  * Deducts essence from the ascendant's primary sphere for each agent.
- * Mutates graph edge properties and ascendant's essencePool.
+ * Mutates graph edge properties and `pool` in place.
+ *
+ * THR-1645: `pool` is the player's `GameState.essencePool` — the one store the
+ * essence bar reads. The ascendant node's `properties.essencePool` is a
+ * creation-time snapshot; maintenance neither reads nor writes it.
  */
 export function processInfluenceMaintenance(
   graph: WorldGraph,
   ascendantId: string,
-  _currentTick: number
+  _currentTick: number,
+  pool: EssencePool,
 ): MaintenanceResult {
   const ascendant = graph.getNode(ascendantId);
   if (!ascendant) throw new Error(`Ascendant not found: ${ascendantId}`);
 
-  const pool = ascendant.properties.essencePool as EssencePool;
   const alignment = ascendant.properties.sphereAlignment as SphereAlignment;
   const primarySphere = alignment.primary;
 
@@ -272,11 +276,6 @@ export function processInfluenceMaintenance(
       result.maintenanceFailed.push(edge.target);
     }
   }
-
-  // Write updated pool back
-  graph.updateNode(ascendantId, {
-    properties: { ...ascendant.properties, essencePool: pool },
-  });
 
   return result;
 }
