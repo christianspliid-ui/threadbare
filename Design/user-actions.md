@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-27 19:56 local (17:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-27 20:56 local (18:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-27: a Vision now plays its scene** on The First instead of resolving silently ([THR-1650](https://linear.app/threadbare/issue/THR-1650)). Merged via [#2100](https://github.com/christianspliid-ui/threadbare/pull/2100), and live on the site.
 - **2026-09-27: the ascendant’s essence is now kept in one place**, so the essence bar reads the same number that Stillness and upkeep spend ([THR-1645](https://linear.app/threadbare/issue/THR-1645)). Merged via [#2099](https://github.com/christianspliid-ui/threadbare/pull/2099), and live on the site.
 - **2026-09-27: a mortal you thread with the Agent Thread card is now actually watched**, instead of vanishing from view ([THR-1643](https://linear.app/threadbare/issue/THR-1643)). Merged via [#2098](https://github.com/christianspliid-ui/threadbare/pull/2098), and live on the site.
 - **2026-09-27: a new cycle now starts with a fresh Doom clock** instead of inheriting the old one ([THR-1642](https://linear.app/threadbare/issue/THR-1642)). Merged via [#2096](https://github.com/christianspliid-ui/threadbare/pull/2096), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-27: heroes' starting faction membership now carries standing** ([THR-1620](https://linear.app/threadbare/issue/THR-1620)). Merged via [#2089](https://github.com/christianspliid-ui/threadbare/pull/2089), and live on the site.
 - **2026-09-27: travellers’ resting spots on the road no longer pile up as nameless places** ([THR-1616](https://linear.app/threadbare/issue/THR-1616)). Merged via [#2086](https://github.com/christianspliid-ui/threadbare/pull/2086), and live on the site.
 - **2026-09-27: a fight now leaves a record on the ground, and three systems read it** ([THR-1574](https://linear.app/threadbare/issue/THR-1574)). Merged via [#2085](https://github.com/christianspliid-ui/threadbare/pull/2085), and live on the site.
-- **2026-09-27: three seeded story hooks whose follow-ups told the wrong story were retired** ([THR-1565](https://linear.app/threadbare/issue/THR-1565)). Merged via [#2084](https://github.com/christianspliid-ui/threadbare/pull/2084), and live on the site.
 
 ---
 
