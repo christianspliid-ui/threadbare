@@ -1576,6 +1576,23 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/playerReceipts.ts', 'src/data/receipt-content.ts'],
   },
   {
+    id: 'cast-influence-shifts-target-values',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A god\'s dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster\'s primary reach and the target\'s lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target\'s `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt\'s divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing.',
+    ulTerms: ['AxiologicalProfile', 'ValuePair'],
+    mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'valueDrifts', 'valueDriftRule', 'resolveCastValueDrift'] },
+    writeSites: ['src/engine/graphOpExecutor.ts', 'src/data/unified-action-templates.ts'],
+    readSites: [
+      'src/engine/interventionEffects.ts',
+      'src/engine/agentSelection.ts',
+      'src/engine/encounterScoring.ts',
+      'src/engine/playerReceipts.ts',
+      'src/debug-bridge.ts',
+    ],
+  },
+  {
     id: 'player-action-receipts-queue',
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',

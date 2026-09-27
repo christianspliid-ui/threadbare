@@ -48,9 +48,9 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
 
   // — Interventions granted by the introduction beat —
   'divine.persuade':
-    "Presses a conviction into a mortal's mind, bending them toward the course you choose.",
+    "Presses a conviction into a mortal's mind, pulling their choices toward the virtue your reach names first.",
   'divine.dream':
-    'Sends a dream to a sleeping mortal, reshaping what they want beneath waking thought.',
+    'Sends a dream to a sleeping mortal: whichever way they already lean on the question your reach asks, they lean harder.',
   'divine.omen':
     'Sets a sign in the world for mortals to read, pulling those who heed it toward your intent.',
   'divine.inspire':

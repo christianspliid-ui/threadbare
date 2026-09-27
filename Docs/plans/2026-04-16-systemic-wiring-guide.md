@@ -1413,6 +1413,26 @@ completion: [
 
 **Where to find the implementation:** the readers in `src/data/undertaking-objects.ts` (`applyObserveReaders`, `maybeSpawnSiteClue`, `mintAreaChart`, `maybeMintObservedMark`), the `{learned}` resolver in `src/engine/undertakingProse.ts` (`learnedClause`), the income pass in `src/engine/holdingIncome.ts`. Plan: `Docs/plans/2026-09-07-thr-1428-owed-readers.md`.
 
+### Capability 29: Influence Drift Rules — a Cast That Changes What the Mortal Chooses (THR-1651)
+
+**What it does:** an `apply_influence` payload may carry a `valueDriftRule` instead of (or beside) a fixed `valueDrifts` map. The executor resolves it at apply time against the **caster's primary reach** and the **target's own lean**, writes one signed drift on the value pair bound to that reach (`REACH_VALUE_PAIR`), and drops the rule from the stored entry.
+
+```ts
+influence: {
+  interventionType: 'dream', sphere: 'mind', ...DECAY_CONSTANTS.dream,
+  valueDriftRule: { direction: 'own_lean', magnitude: DREAM_VALUE_DRIFT },
+}
+```
+
+- `own_lean` deepens whichever way the mortal already leans. A mortal at exactly 0 gets **no entry at all** and an `influence.no_lean` trace, so nothing shows on them that is not really there (Law 56).
+- `first_pole` pushes toward the pair's first-named pole (`ARCHETYPE_NAMES[pair].positive`, e.g. Iron → Protector).
+
+**Why you want it:** a static `valueDrifts` map cannot know which god cast it or who received it. Before this rule, Oneiric Sending and Divine Compulsion wrote an entry with no drift, and `buildValueOverlay`, the agent re-score and the motive receipt's divine term all computed nothing. Use the rule whenever a verb's direction depends on the caster or the target.
+
+**How to tell whether yours landed.** `influence.applied` and `influence.no_lean` traces; `await window.__DEBUG.getActiveInfluences('<name>')` in the browser; in the CLI, `cast divine.dream <name>`, `tick 5`, `agent <name>` (the *Divine influences* block). The receipt reads the same resolution through `castInfluenceReceiptLine`, so its `{pole}` word is always the pole written.
+
+**Where to find the implementation:** `src/engine/castInfluenceDrift.ts` (`resolveCastValueDrift`, `describeActiveInfluences`), the executor in `src/engine/graphOpExecutor.ts` (`executeApplyInfluence`), the receipt lines in `src/data/receipt-content.ts` (`CAST_INFLUENCE_RECEIPT_LINES`). Plan: `Docs/plans/2026-09-27-thr-1606-what-your-hand-did.md` § B2.
+
 ---
 
 ## Part 3: The Wiring Checklist — Ask These Before You Write
@@ -2183,6 +2203,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Emergent personality traits (THR-527) | `personality_trait_emerged` (grant + release; `details.kind`, `details.axisId`, `details.position`) |
 | Origin-vignette birth seeding (THR-561) | `personality_origin_seeded` (aggregate per tick; `details.kind`: `seeded` \| `unknown_axis`, `details.count`, `details.vignettesApplied`) |
 | Core personality foundation (THR-542) | `core_personality` (`details.kind`: `seeded` \| `emerge` \| `fade` \| `bend`) |
+| Cast value drifts (THR-1651) | `influence.applied`, `influence.no_lean` (`reason`: `no_lean` \| `no_reach`) |
 | God-side progression (THR-613) | `ascendant.progression.practice`, `ascendant.progression.tier_up`, `ascendant.progression.deepening_enqueued`, `ascendant.progression.milestone_enqueued` |
 
 **How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.

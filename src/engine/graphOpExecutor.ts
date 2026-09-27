@@ -26,6 +26,7 @@ import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../types/battl
 import type { AttachmentEffect } from '../types/effects';
 import { SPHERE_EFFECT_TABLE, isArtifactNode } from './ascendantPrimitives';
 import { advanceAttachmentTier } from './attachmentTierAdvancement';
+import { resolveCastValueDrift } from './castInfluenceDrift';
 import { assignArtifactTrait, removeArtifactTrait } from './artifactTraits';
 import { ARTIFACT_CURSED_TRAIT_ID } from '../data/artifact-trait-content';
 import { CURSE_QUINTESSENCE_DRAIN } from '../data/ascendant-expression-constants';
@@ -761,10 +762,49 @@ function executeApplyInfluence(
     return { op, success: false, error: `Target node ${targetId} not found` };
   }
 
+  // THR-1651: a drift rule resolves against the caster and target now, and the
+  // rule itself is not stored — the entry carries only the resolved drift.
+  const { valueDriftRule, ...payload } = op.influence;
+  let valueDrifts = payload.valueDrifts;
+  if (valueDriftRule) {
+    const casterId = resolveRef(op.source ?? '$actor', ctx);
+    const resolved = resolveCastValueDrift(graph, casterId, targetId, valueDriftRule);
+    if (resolved.outcome !== 'drift' || !resolved.pair) {
+      // Nothing to hold: write no entry, so nothing shows on the mortal that is
+      // not really there (Law 56). The op still succeeds — the cast landed.
+      emitTrace({
+        tick: ctx.tick ?? 0,
+        category: 'influence.no_lean',
+        agentId: targetId,
+        interventionType: payload.interventionType,
+        casterId,
+        targetId,
+        valuePair: resolved.pair,
+        reason: resolved.outcome === 'no_reach' ? 'no_reach' : 'no_lean',
+        summary: `influence: ${payload.interventionType} on ${node.name ?? targetId} found nothing to hold (${resolved.outcome}${resolved.pair ? `, ${resolved.pair}` : ''})`,
+      });
+      return { op, success: true };
+    }
+    valueDrifts = { ...(valueDrifts ?? {}), [resolved.pair]: resolved.drift };
+    emitTrace({
+      tick: ctx.tick ?? 0,
+      category: 'influence.applied',
+      agentId: targetId,
+      interventionType: payload.interventionType,
+      casterId,
+      targetId,
+      valuePair: resolved.pair,
+      drift: resolved.drift,
+      durationTicks: payload.maxDuration,
+      summary: `influence: ${payload.interventionType} drifts ${node.name ?? targetId} ${resolved.drift >= 0 ? '+' : ''}${resolved.drift} on ${resolved.pair} (lean ${resolved.lean.toFixed(2)}, ${payload.maxDuration} ticks)`,
+    });
+  }
+
   const existing: unknown[] = (node.properties?.divineInfluences as unknown[]) ?? [];
   const entry = {
     id: `influence-${++opCounter}`,
-    ...op.influence,
+    ...payload,
+    ...(valueDrifts ? { valueDrifts } : {}),
     tickApplied: ctx.tick ?? 0,
   };
 

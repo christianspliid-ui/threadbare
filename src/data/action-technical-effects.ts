@@ -125,9 +125,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
 
   // ─── divine.* — cosmic influence verbs (apply_influence on an agent) ───────
   'divine.dream':
-    "Applies a divine influence (interventionType `dream`, Mind sphere) to the target agent — a decaying `Influence` on their decision loop that biases behaviour and axiological drift until it lapses. Does not mutate the graph directly.",
+    "Applies a decaying divine influence (interventionType `dream`, Mind sphere) to the target agent carrying a `valueDrifts` entry of `DREAM_VALUE_DRIFT` on the value pair bound to the caster's primary reach, in the direction the target already leans (THR-1651). `buildValueOverlay` feeds it into the agent re-score and the motive receipt until it lapses. A target at exactly 0 on that pair gets no entry (`influence.no_lean` trace).",
   'divine.persuade':
-    'Applies a divine influence (interventionType `persuade`, Spirit sphere) to the target agent, biasing their decision-making until the influence decays.',
+    "Applies a decaying divine influence (interventionType `persuade`, Spirit sphere) to the target agent carrying a `valueDrifts` entry of `COMPULSION_VALUE_DRIFT` toward the first-named (positive) pole of the value pair bound to the caster's primary reach (THR-1651), biasing their decision-making until the influence decays.",
   'divine.deceive':
     'Applies a divine influence (interventionType `deceive`, Mind sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.intimidate':
