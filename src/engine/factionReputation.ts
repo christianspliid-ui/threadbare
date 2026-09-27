@@ -223,9 +223,10 @@ export function meetsFactionRankRequirement(
  *   through `clamp(raw + distortion + NaN)`.
  *
  * The mints that carry no `factionDefId` at all — the splinter and drift memberships in
- * `encounterAftermath.ts`, `factionTopology.ts`, `bandSpawner.ts`, and the seeded
- * membership in `worldSeed.ts` — have no definition to derive from and are left on the
- * fallback below. They are not a disagreement: the gate matches on `factionDefId` and
+ * `encounterAftermath.ts`, `factionTopology.ts`, and `bandSpawner.ts` — have no
+ * definition to derive from and are left on the fallback below. (`worldSeed.ts`'s
+ * protagonist membership was one of these until THR-1620; it now stamps the Realm's
+ * `factionDefId` and a seeded `reputation`, and writes the rank this function derives.) They are not a disagreement: the gate matches on `factionDefId` and
  * so does not see those edges either.
  *
  * Deriving is the answer the ticket asked for ("pick derived — it cannot go stale"),

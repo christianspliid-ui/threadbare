@@ -59,7 +59,9 @@ import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { AGENT_COUNT_BY_MAP_SIZE, AGENT_COUNT_FALLBACK } from '../data/agent-behavior-constants';
 // The one capability ceiling (THR-1440) — shared with the completion rider so the
 // seeder and the undertaking lifecycle cannot drift to two different 100s.
-import { CAPABILITY_MAX } from '../data/strategic-action-constants';
+import { CAPABILITY_MAX, SEEDED_PROTAGONIST_MEMBERSHIP_REPUTATION } from '../data/strategic-action-constants';
+import { computeRankFromReputation } from '../types/faction';
+import type { MemberOfEdgeProperties } from '../types/disposition';
 import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
 import { pickCulturalName, GENERIC_NAMES, buildSettlementCultureRoots, getSettlementCultureSuffixes } from '../data/culture-name-pools';
 import { spawnArmy } from './armySpawning';
@@ -1668,6 +1670,19 @@ export function seedWorld(
 
     if (rng() < 0.7 && factionIds.length > 0) {
       const factionId = pickRandom(rng, factionIds);
+      // THR-1620: the membership carries the Realm's `factionDefId` and a seeded
+      // `reputation`, the two fields every standing reader keys on (quest supply,
+      // rank gates). Before this, protagonists — the deciders — were the only
+      // members in the world with no working standing. `rank` is not hand-written:
+      // it is the tier the seeded reputation lands in on the Realm's own ladder,
+      // the same value `getDerivedMembershipRank` would derive. No rng draw.
+      const factionDefId = graph.getNode(factionId)?.properties.factionDefId as string | undefined;
+      const definition = factionDefId ? realmDefinitions[factionDefId] : undefined;
+      const reputation = SEEDED_PROTAGONIST_MEMBERSHIP_REPUTATION;
+      const rank = definition
+        ? definition.rankTiers.indexOf(computeRankFromReputation(reputation, definition))
+          / Math.max(definition.rankTiers.length - 1, 1)
+        : 0;
       graph.addEdge({
         id: `edge_member_${id}`,
         source: id,
@@ -1675,9 +1690,12 @@ export function seedWorld(
         type: 'member_of',
         properties: {
           role: 'member',
-          rank: 0.3,       // Default rank for seeded members (Phase 0f)
+          rank,
           joinedTick: 0,    // World creation tick
-        },
+          reputation,
+          factionDefId,
+          lastFactionActivityTick: 0,
+        } satisfies MemberOfEdgeProperties,
       });
     }
 
