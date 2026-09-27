@@ -23,6 +23,8 @@ import {
 import type { EchoDefinition } from '../types/echo';
 import type { GraphNode } from '../types/graph';
 import { buildCardEcho, selectEchoCard } from './nudgeCardRepertoire';
+import { createDoomClockState } from './doomClock';
+import { DEFAULT_DOOM_TICKS } from '../data/game-config';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -251,11 +253,34 @@ export function transitionToNewCycle(
     );
   }
 
+  // THR-1642 — the new cycle gets its own doom clock. Spreading `...state` alone
+  // carried the expired clock across, so the first `playing` tick re-fired
+  // `phaseDoomExpiry` and cycle 2 harvested TWILIGHT_TICKS later. The next cycle
+  // keeps the same doom archetype and stage definitions (a World-Soul redraw is
+  // future design); only the clock and its fired-milestone bookkeeping reset.
+  const doomClock = createDoomClockState(doomArch, DEFAULT_DOOM_TICKS);
+  const doomDefinition = { ...state.doomDefinition, totalTicks: DEFAULT_DOOM_TICKS };
+  // Identity milestones carry a runtime `triggered` flag; left set, the new
+  // cycle's milestones would never fire. Copy rather than mutate — the matrix
+  // is a shared module-level table.
+  const doomIdentityMatrix = state.doomIdentityMatrix
+    ? {
+        ...state.doomIdentityMatrix,
+        identityMilestones: state.doomIdentityMatrix.identityMilestones.map(m => ({
+          ...m,
+          triggered: false,
+        })),
+      }
+    : state.doomIdentityMatrix;
+
   return {
     ...state,
     cycle: state.cycle + 1,
     tick: 0,
     phase: 'transition',
+    doomClock,
+    doomDefinition,
+    doomIdentityMatrix,
     echoDefinitions: combinedDefinitions,
     echoStates: combinedStates,
     chronicle,

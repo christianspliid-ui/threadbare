@@ -50,6 +50,9 @@
     (cycleEnd.ts) returns {...state, cycle+1, tick:0, phase:'transition'} — it degrades
     echoes, builds a chronicle Volume, resets per-cycle logs, but does NOT re-run
     worldgen. No fresh cosmos is seeded. Flag re-seeding DESIGN.
+  - The new cycle gets a fresh Doom clock (THR-1642): createDoomClockState with the
+    same archetype and DEFAULT_DOOM_TICKS, identity milestones un-fired. Before, the
+    expired clock carried over and cycle 2 re-entered twilight on its first tick.
   - worldSoul.ts Fundament (sphereWeights coefficient ledger) + Resonance (curated
     ResonanceMemory fragments) are defined + unit-tested but UNWIRED at cycle
     transition: blendFundaments / captureMemory / applyFundamentShift /
@@ -323,7 +326,7 @@
 
       <h3>Cycle transition — echo persistence &amp; chronicle binding <span class="flag impl">IMPL</span> · <span class="flag design">DESIGN</span> (re-seeding)</h3>
       <ul>
-        <li><code>transitionToNewCycle</code> (<code>cycleEnd.ts</code>): degrades every surviving echo by <code>ECHO_DEGRADATION_RATE 0.15</code> (fade at <code>ECHO_FADE_THRESHOLD 0.9</code>, then pruned), keeps the survivors, appends the new cosmic echoes, and binds a chronicle <strong>Volume</strong> from this cycle's <code>chronicleEntries</code> — titled with the doom-identity chapter title when available (<code>doomIdentityMatrix.chronicleChapterTitles</code>, THR-21) and closed with the harvest summary. Echo-thread appearances are recorded. Then <code>cycle+1</code>, <code>tick:0</code>, <code>phase:'transition'</code>, and the per-cycle logs reset.</li>
+        <li><code>transitionToNewCycle</code> (<code>cycleEnd.ts</code>): degrades every surviving echo by <code>ECHO_DEGRADATION_RATE 0.15</code> (fade at <code>ECHO_FADE_THRESHOLD 0.9</code>, then pruned), keeps the survivors, appends the new cosmic echoes, and binds a chronicle <strong>Volume</strong> from this cycle's <code>chronicleEntries</code> — titled with the doom-identity chapter title when available (<code>doomIdentityMatrix.chronicleChapterTitles</code>, THR-21) and closed with the harvest summary. Echo-thread appearances are recorded. Then <code>cycle+1</code>, <code>tick:0</code>, <code>phase:'transition'</code>, and the per-cycle logs reset. The new cycle also gets a <strong>fresh Doom clock</strong> — same archetype and stage definitions, <code>DEFAULT_DOOM_TICKS</code> long, starting at stage 1 with every doom-identity milestone un-fired (THR-1642; before this the expired clock carried over and the next cycle fell straight back into the Unmaking on its first tick).</li>
         <li><strong>No fresh cosmos.</strong> The function does <em>not</em> re-run worldgen — the same graph continues into the next cycle. A regenerated world seeded by the last one's echoes is <span class="flag design">DESIGN</span> (and blocks on the unwired <code>collectInjections</code>, see the red callout).</li>
       </ul>
 
