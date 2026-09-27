@@ -61,6 +61,12 @@ import {
 import { aftermathFaces } from './compositionContract';
 import { pageOverlapFindings } from './aftermathPage';
 import { normaliseWord, wordRuns, wordsOf } from './proseWords';
+import { COLORATION_TOKEN } from '../../engine/fragmentResolution';
+import {
+  COLORATION_ALLOWED_TOKENS,
+  SPHERE_FACTS,
+  allColorationLines,
+} from '../culture-sphere-lines';
 
 // ─── Card-name shape (doctrine: imperative verb + noun) ──────────────
 
@@ -212,9 +218,14 @@ export function cardNameShapeProblems(template: UnifiedActionTemplate): readonly
  *
  * `{frag:*}` counts: a fragment slot resolves to setting-specific text that is
  * itself authored against the same rule, and `check:encounter`'s token dry-run
- * already proves the slot exists.
+ * already proves the slot exists. The one exception is the compiled coloration slot
+ * `{frag:place_fact}` (THR-1635): it is added to every eligible template, resolves to
+ * nothing at most places, and so names nobody's arrival.
  */
-export const PLACE_NAMING_TOKEN_PATTERN = /\{(?:location|cast:[^}]+|frag:[^}]+)\}/u;
+export const PLACE_NAMING_TOKEN_PATTERN = /\{(?:location|cast:[^}]+|frag:(?!place_fact\})[^}]+)\}/u;
+
+/** The compiled coloration token, stripped before an opening is priced (THR-1635). */
+const COLORATION_TOKEN_G = new RegExp(COLORATION_TOKEN.replace(/[{}]/g, '\\$&'), 'gu');
 
 /**
  * Split an opening into paragraphs.
@@ -237,8 +248,12 @@ export function openingParagraphs(text: string): readonly string[] {
  * it have the skeleton at all), the budget (is it the right size), and whether
  * P1 names where the agent is.
  */
-export function openingSkeletonProblems(text: string): readonly string[] {
+export function openingSkeletonProblems(rawText: string): readonly string[] {
   const problems: string[] = [];
+  // THR-1635 — the coloration line is priced on its own row
+  // (`NUDGE_WORD_BUDGETS.colorationLine`, see {@link colorationLineProblems}), never
+  // inside the opening's 80, so its compiled token is not part of the authored opening.
+  const text = rawText.replace(COLORATION_TOKEN_G, '');
   const paragraphs = openingParagraphs(text);
 
   if (paragraphs.length === 0) {
@@ -292,6 +307,43 @@ export function templateOpeningProblems(template: UnifiedActionTemplate): readon
     const composed = spine ? `${text}\n\n${spine}` : text;
     for (const problem of openingSkeletonProblems(composed)) {
       problems.push(`openings.${settingClass}: ${problem}`);
+    }
+  }
+  return problems;
+}
+
+// ─── The coloration line (THR-1635) ──────────────────────────────────
+
+/**
+ * Every authoring-rule breach in the culture-custom and sphere-fact tables, one line
+ * each, addressed by cell. Empty ⇒ the tables hold.
+ *
+ * The line an opening adds is shared table content, not per-template prose, so it is
+ * judged here once per line against its own budget,
+ * {@link NUDGE_WORD_BUDGETS.colorationLine}, rather than inside every opening's 80.
+ * Also checks the token allowlist (`{culture}` would name the *actor's* culture, not the
+ * town's), one sentence per line, and the sphere-jargon ban.
+ */
+export function colorationLineProblems(): readonly string[] {
+  const problems: string[] = [];
+  const allowed = new Set(COLORATION_ALLOWED_TOKENS);
+  const sphereNames = Object.keys(SPHERE_FACTS);
+  for (const { cell, line } of allColorationLines()) {
+    const words = wordsOf(line).length;
+    if (words > NUDGE_WORD_BUDGETS.colorationLine) {
+      problems.push(`${cell}: line is ${words} words, over the budget of ${NUDGE_WORD_BUDGETS.colorationLine}`);
+    }
+    for (const token of line.match(/\{[^}]*\}/gu) ?? []) {
+      if (!allowed.has(token)) problems.push(`${cell}: uses ${token}; only ${[...allowed].join(', ')} are allowed`);
+    }
+    if (/[.!?]\s+[A-Z{]/u.test(line) || !/[.!?]$/u.test(line.trim())) {
+      problems.push(`${cell}: must be exactly one sentence`);
+    }
+    if (cell.startsWith('sphere.')) {
+      const lower = line.toLowerCase();
+      if (/\b\w+-heavy\b/u.test(lower) || sphereNames.some(sphere => lower.startsWith(`${sphere} `))) {
+        problems.push(`${cell}: names its sphere as game jargon — say what the power does`);
+      }
     }
   }
   return problems;

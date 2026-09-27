@@ -11,6 +11,7 @@ import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { LocationSubtype } from '../types/index';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
+import { compileOpeningColoration } from '../engine/fragmentResolution';
 import {
   ENCOUNTER_TONE_ADJECTIVES,
   encounterToneTierForThreat,
@@ -13930,7 +13931,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
 ];
 
-export const ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = ENCOUNTER_TEMPLATES_RAW.map(toUnifiedTemplate);
+export const ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = ENCOUNTER_TEMPLATES_RAW
+  .map(toUnifiedTemplate)
+  // THR-1635 — the `{frag:place_fact}` token at the end of step 0's situation paragraph.
+  .map((t) => compileOpeningColoration(t));
 
 // ─── Cultural Encounter Overlays ───────────────────────────────────
 
@@ -14187,8 +14191,31 @@ export function getEncounterById(id: string): UnifiedActionTemplate | undefined 
  * Use this everywhere an encounter might be any type (resolution, advancement, display).
  */
 export function getAnyEncounterById(id: string): UnifiedActionTemplate | undefined {
-  return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
-    ?? getSocialEncounterById(id)
+  const found = ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
+    ?? findPoolEncounterById(id);
+  return found ? colorPoolEncounter(found) : undefined;
+}
+
+/**
+ * THR-1635 — compiled copies of the pool templates `getAnyEncounterById` resolves, keyed by
+ * the pool's own object, so one pool template always resolves to one compiled object (stable
+ * identity for memo-keyed callers) and each is compiled once rather than per lookup. The
+ * pools are compiled here, at their one shared read point, instead of in eight modules.
+ * `ENCOUNTER_TEMPLATES` members are already compiled; the compile pass is idempotent, so
+ * passing them through again returns the same object.
+ */
+const coloredPoolEncounters = new WeakMap<UnifiedActionTemplate, UnifiedActionTemplate>();
+
+function colorPoolEncounter(template: UnifiedActionTemplate): UnifiedActionTemplate {
+  const cached = coloredPoolEncounters.get(template);
+  if (cached) return cached;
+  const compiled = compileOpeningColoration(template);
+  coloredPoolEncounters.set(template, compiled);
+  return compiled;
+}
+
+function findPoolEncounterById(id: string): UnifiedActionTemplate | undefined {
+  return getSocialEncounterById(id)
     ?? getFactionEncounterById(id)
     ?? getMercenaryEncounterById(id)
     ?? getArmyEncounterById(id)

@@ -295,6 +295,7 @@ export function buildSimpleEncounterStageModel(
       // for every template that declares no fragments.
       contextFragments: template.contextFragments,
       contextFragmentTemplateId: template.id,
+      templateReach: template.reach, // THR-1635 — the {frag:place_fact} line
     },
   );
   const depth = proseDepthForTier(threadTier);

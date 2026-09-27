@@ -21,7 +21,7 @@ import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { assignCooperationStrategy } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { FundamentState } from '../types/worldSoul';
-import { generateCultures, assignCulturesToActors, registerPregenCultures, assignCultureToLocation } from './cultureGenerator';
+import { generateCultures, assignCulturesToActors, registerPregenCultures, assignCultureToLocation, stampCultureCustomVariants } from './cultureGenerator';
 import type { PregenCulture } from './cultureGenerator';
 import type { Province } from './worldgen/types';
 import {
@@ -1427,6 +1427,10 @@ export function seedWorld(
     const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, fundament);
     cultureIds.push(...generatedCultureIds);
   }
+
+  // THR-1635 — one custom variant per same-foundation culture, so two light cultures
+  // never read the same opening custom. An ordinal, not a roll: no rng stream is consumed.
+  stampCultureCustomVariants(graph);
 
   // ── Realms — a nation is the faction that holds the ground (THR-1155) ────────
   //

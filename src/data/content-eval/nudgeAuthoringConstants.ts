@@ -290,6 +290,14 @@ export const NUDGE_WORD_BUDGETS = {
    * through as a 30-word chip, which is the corpus median this row exists to cut.
    */
   chipSentence: 15,
+  /**
+   * One culture-custom or sphere-fact line (THR-1635) — the stated-fact sentence the
+   * coloration pass adds to the end of an opening's situation paragraph. Priced on its
+   * own row, **not** inside {@link NUDGE_WORD_BUDGETS.opening}: the authored opening keeps
+   * its 80, and the line is shared table content judged once per line, not once per
+   * template. The prototype's 36 lines ran a median of 19 and a maximum of 26.
+   */
+  colorationLine: 28,
 } as const;
 
 /**

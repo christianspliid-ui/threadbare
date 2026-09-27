@@ -5,6 +5,7 @@ import {
 } from '../../../engine/content-eval/surfaceFragmentReport';
 import type { TraceEntry } from '../../../types/trace';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
+import { COLORATION_TOKEN } from '../../../engine/fragmentResolution';
 
 // ── Constants (NFP #1) ───────────────────────────────────────────────────────
 /** How many recent live binding traces to show. */
@@ -79,6 +80,27 @@ export function FragmentsDebugTab({ traces }: FragmentsDebugTabProps) {
     }
   }, []);
 
+  // THR-1635 — the reserved coloration slot resolves from the place, not from any
+  // template's fragment table, so it has its own row fed by its own trace.
+  const colorationTraces = useMemo(
+    () =>
+      traces
+        .filter((t) => t.category === 'opening_coloration_bound')
+        .slice(-FRAGMENT_TRACE_LIMIT)
+        .reverse() as Array<
+        TraceEntry & {
+          templateId: string;
+          reach: string | null;
+          kind: 'culture' | 'sphere' | 'none';
+          reason: string;
+          foundation?: string;
+          dominantSphere?: string;
+          variant?: number;
+        }
+      >,
+    [traces],
+  );
+
   const bindingTraces = useMemo(
     () =>
       traces
@@ -149,6 +171,46 @@ export function FragmentsDebugTab({ traces }: FragmentsDebugTabProps) {
               ))}
             </div>
           ))
+        )}
+
+        <div style={SECTION_HEADING_STYLE}>Reserved slot {COLORATION_TOKEN} (opening_coloration_bound)</div>
+        {colorationTraces.length === 0 ? (
+          <div style={EMPTY_STATE_STYLE}>
+            No opening has resolved the coloration slot yet — open an encounter with tracing enabled.
+          </div>
+        ) : (
+          <>
+            <div style={{ ...BINDING_ROW_STYLE, color: 'var(--text-muted)', fontWeight: 600 }}>
+              <span>template</span>
+              <span>kind</span>
+              <span>cell</span>
+              <span style={{ textAlign: 'center' }}>variant</span>
+            </div>
+            {colorationTraces.map((trace, index) => (
+              <div
+                key={`${index}-${trace.templateId}`}
+                style={BINDING_ROW_STYLE}
+                data-testid="fragments-coloration-row"
+              >
+                <span style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {trace.templateId}
+                </span>
+                <span style={{ color: trace.kind === 'none' ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                  {trace.kind === 'none' ? trace.reason : trace.kind}
+                </span>
+                <span style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {trace.kind === 'culture'
+                    ? `${trace.foundation}.${trace.reach}`
+                    : trace.kind === 'sphere'
+                      ? `${trace.dominantSphere}.${trace.reach}`
+                      : '—'}
+                </span>
+                <span style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  {trace.variant ?? '—'}
+                </span>
+              </div>
+            ))}
+          </>
         )}
 
         <div style={SECTION_HEADING_STYLE}>Live bindings (surface_fragments_bound)</div>

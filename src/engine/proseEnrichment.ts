@@ -37,7 +37,13 @@ import {
 } from './graphQueries';
 import type { EncounterSupportBinding, EncounterSupportBundle } from '../types/encounter';
 import type { ContextFragmentSet } from '../types/unifiedAction';
-import { resolveFragment, type BoundFragmentAxes } from './fragmentResolution';
+import {
+  COLORATION_FRAGMENT_SLOT,
+  resolveFragment,
+  resolveOpeningColoration,
+  type BoundFragmentAxes,
+} from './fragmentResolution';
+import { gatherAgentPlaceColoration, type PlaceColoration } from './openingColoration';
 import { settingClassForSubtype } from '../data/settingClasses';
 import { locationTypeFromProperties } from './encounterCache';
 import { MONSTER_FAMILIES } from '../data/monster-families';
@@ -299,6 +305,18 @@ export interface NarrativeContext {
    * falling back to `contextFragmentTemplateId`). Absent for every non-social template,
    * so `{sphere_flavor}` strips there exactly as `{intel:*}` does without a view. */
   socialApproach?: SocialApproach;
+
+  /** The rendering template's reach (THR-1635) — the column of the culture/sphere tables
+   * the reserved `{frag:place_fact}` slot reads. Threaded by encounter-path callers via
+   * `opts.templateReach`; absent → the slot resolves to nothing (reason `no_reach`). */
+  templateReach?: string;
+
+  /** The scene's place facts for the coloration line (THR-1635): the town (Location tier)
+   * the agent stands in, the culture holding it (`belongs_to`, `cultureLayer: 'current'`)
+   * with its foundation and variant stamp, and the place's dominant sphere and share.
+   * Gathered only when `templateReach` is — nothing else reads it. Keyed on the *town*,
+   * never the actor's own culture. */
+  placeColoration?: PlaceColoration;
 }
 
 /**
@@ -437,6 +455,8 @@ export function gatherNarrativeContext(
      * Falls back to `contextFragmentTemplateId`, which every encounter-path caller
      * already threads, so no existing caller needs to change to get the token. */
     templateId?: string;
+    /** THR-1635 — the rendering template's reach, for the `{frag:place_fact}` line. */
+    templateReach?: string;
   },
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
@@ -559,6 +579,14 @@ export function gatherNarrativeContext(
     // a content-side map keyed by the template id every encounter-path caller threads.
     actorSphere: resolveActorSphere(graph, agentId),
     socialApproach: getSocialApproachForTemplate(opts?.templateId ?? opts?.contextFragmentTemplateId),
+    // Opening coloration (THR-1635) — only the encounter path threads a reach, and only
+    // that path renders the reserved slot, so the edge walks are skipped everywhere else.
+    ...(opts?.templateReach
+      ? {
+          templateReach: opts.templateReach,
+          placeColoration: gatherAgentPlaceColoration(graph, agentId),
+        }
+      : {}),
     // Identity axes (THR-573). Both are read from state the context builder already
     // resolved, so no caller threads a new required parameter; absent → the '*' path.
     sublocationTypeId: (location?.properties?.sublocationTypeId as string | undefined) ?? undefined,
@@ -640,6 +668,43 @@ function resolveBandPhrase(
   return result.replace(replaceRe, picked.text);
 }
 
+// ─── Opening coloration slot (THR-1635) ────────────────────────────
+
+/**
+ * Resolve `{frag:place_fact}` — the one stated fact about the town's culture or the
+ * place's power an encounter opening adds. Returns the line with its leading space (the
+ * compile pass writes the token flush against the paragraph), or `''` so a place with
+ * no line reads byte for byte as authored. `{actor}` inside the line is resolved by the
+ * rest of {@link enrichProse}. Emits one `opening_coloration_bound` trace.
+ */
+function resolveColorationSlot(ctx: NarrativeContext): string {
+  const place = ctx.placeColoration;
+  const templateId = ctx.contextFragmentTemplateId ?? 'unknown';
+  const coloration = resolveOpeningColoration(
+    { ...(place ?? {}), reach: ctx.templateReach ?? null },
+    templateId,
+  );
+  emitTrace({
+    category: 'opening_coloration_bound',
+    tick: ctx.tick ?? 0,
+    agentId: ctx.agentId,
+    templateId,
+    reach: ctx.templateReach ?? null,
+    placeLocationId: place?.placeLocationId ?? null,
+    kind: coloration.kind,
+    reason: coloration.reason,
+    ...(place?.foundation ? { foundation: place.foundation } : {}),
+    ...(place?.cultureId ? { cultureId: place.cultureId } : {}),
+    ...(coloration.variant !== undefined ? { variant: coloration.variant } : {}),
+    ...(place?.dominantSphere ? { dominantSphere: place.dominantSphere } : {}),
+    ...(place?.sphereShare != null ? { sphereShare: place.sphereShare } : {}),
+    summary: `opening_coloration: ${templateId} ${ctx.templateReach ?? '-'} → ${
+      coloration.kind === 'none' ? `none (${coloration.reason})` : `${coloration.cell}#${coloration.variant}`
+    }`,
+  });
+  return coloration.text ? ` ${coloration.text}` : '';
+}
+
 // ─── Placeholder Resolution ────────────────────────────────────────
 
 /**
@@ -672,6 +737,9 @@ export function enrichProse(
       setting: ctx.settingClass ?? null,
     };
     result = result.replace(/\{frag:([A-Za-z0-9_.-]+)\}/g, (_match, slot: string) => {
+      // THR-1635 — the reserved coloration slot is resolved from the scene's place
+      // facts, not from the template's own fragment tables (it declares none for it).
+      if (slot === COLORATION_FRAGMENT_SLOT) return resolveColorationSlot(ctx);
       const binding = resolveFragment(
         ctx.contextFragments,
         slot,

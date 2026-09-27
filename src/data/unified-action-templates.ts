@@ -21,6 +21,7 @@ import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { REKINDLE_ESSENCE_COST } from './nudge-constants';
 import { UNDERTAKING_INSPIRE_MODIFIER } from './strategic-action-constants';
+import { compileOpeningColoration } from '../engine/fragmentResolution';
 import {
   TIER_ADVANCEMENT_ESSENCE_COST,
   TIER_ADVANCEMENT_DIFFICULTY,
@@ -5680,6 +5681,30 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 ];
 
 /**
+ * Id prefixes of registry members that are verbs, not encounters (THR-1635): the
+ * mortal `action.*` card verbs and the `npc_*` interaction verbs. Together with
+ * ascendant-castable templates (divine, hex, location, artifact…) they are the part of
+ * the registry whose step 0 is not an encounter opening.
+ */
+export const NON_ENCOUNTER_REGISTRY_PREFIXES: readonly string[] = ['action.', 'npc_'];
+
+/**
+ * Whether a registry member is encounter-shaped — a scene a mortal walks into, whose
+ * step 0 is an opening — as opposed to a verb the god or a mortal casts (THR-1635).
+ */
+export function isEncounterShapedTemplate(
+  t: Pick<UnifiedActionTemplate, 'id' | 'actorAffinities'>,
+): boolean {
+  if (t.actorAffinities.includes('ascendant' as ActorType)) return false;
+  return !NON_ENCOUNTER_REGISTRY_PREFIXES.some((prefix) => t.id.startsWith(prefix));
+}
+
+/** THR-1635 — the coloration token, on encounter-shaped registry members only. */
+function withOpeningColoration(t: UnifiedActionTemplate): UnifiedActionTemplate {
+  return isEncounterShapedTemplate(t) ? compileOpeningColoration(t) : t;
+}
+
+/**
  * THR-604: overlay authored `technicalEffect` text (a single reviewable map in
  * `action-technical-effects.ts`) onto the assembled templates. Additive and
  * idempotent — a template already carrying an inline `technicalEffect` keeps it;
@@ -5701,7 +5726,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
  */
 export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
   RAW_UNIFIED_ACTION_TEMPLATES.map((t) =>
-    withGroupAffinity(withDefaultSupportBundle(withTechnicalEffectOverlay(t))),
+    withOpeningColoration(withGroupAffinity(withDefaultSupportBundle(withTechnicalEffectOverlay(t)))),
   );
 
 /**
@@ -5715,7 +5740,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
  * by attachment / divine systems) and social/tavern branching templates (handled
  * dynamically by generateSocialCandidates).
  */
-export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = [
+export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = ([
   // Vertical slice — THR-883: envelope-declared, cache-drawable at their subtypes.
   ...VERTICAL_SLICE_TEMPLATES,
   // NOTE (THR-733): the company-drama templates are deliberately NOT registered
@@ -5771,7 +5796,9 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   TITHE_DEMANDED_TEMPLATE,
   KEEPERS_PETITION_TEMPLATE,
   CROWNS_RECKONING_TEMPLATE,
-];
+  // THR-1635 — the coloration token. The slice ids are skipped by the compile pass itself
+  // (`COLORATION_EXCLUDED_TEMPLATE_PREFIXES`), so they stay the same objects.
+] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**
  * Regional-scale templates registered into the encounter-cache path (THR-779).
