@@ -298,13 +298,28 @@ happens. Its asserting tests run with tracing **disabled**, and one of them requ
 tracing-on and a tracing-off run to write identical lines. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**Two contracts added by THR-1635 (2026-09-27), audit-on-touch for Culture and Spheres &
+Quintessence** — `culture-custom-reaches-encounter-opening` and
+`place-sphere-reaches-encounter-opening`. Cultures and place sphere affinities were generated for
+every world and read by no encounter prose, so an opening in a town of open witnesses read the
+same as one in a town of sworn silence. Both rows now end at one reserved slot, `{frag:place_fact}`,
+compiled into step 0 of every encounter-shaped template. The culture row's write is a
+worldgen stamp (`cultureIdentity.customVariant`, an ordinal among same-foundation cultures) plus
+the Location's current `belongs_to` edge. The sphere row's write is the worldgen
+`sphereAffinity` seed. Both are keyed on the scene's **town**, never the actor's own culture,
+because a stranger reads the town's custom. Their asserting tests run on **generated** medium
+worlds (seeds 42 and 99) and require at least one culture line and one sphere line per seed,
+so they cannot pass vacuously. This moves the culture-to-opening and sphere-to-opening seams off
+the unaudited list; the rest of both subsystems remains audit-on-touch. Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 
 ## Unaudited subsystems (audit-on-touch)
 
 Contract rows not yet written for: War & Armies (the territorial seam and, since THR-1564, the war news — `war-news-reaches-chronicle` — are covered; the rest audit-on-touch) · Factions & Succession (the territorial seam and, since THR-1448, the held-town standing — `held-town-opens-realm-standing`, `held-town-supplies-keeper-content-past-rank-access` — are covered; the rest audit-on-touch) · Rival Schemes ·
-Doom/Journey · Mandate · Essence & Divine Economy · Encounters & Dilemmas (core) · Culture ·
+Doom/Journey · Mandate · Essence & Divine Economy · Encounters & Dilemmas (core) · Culture (the encounter-opening seam is covered since THR-1635; the rest audit-on-touch) ·
 Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
 Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·
 Movement & Colocation · Reputation & Influence · Secrets & Favors (DORMANT) ·

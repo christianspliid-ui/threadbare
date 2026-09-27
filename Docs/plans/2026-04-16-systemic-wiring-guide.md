@@ -1413,6 +1413,32 @@ completion: [
 
 **Where to find the implementation:** the readers in `src/data/undertaking-objects.ts` (`applyObserveReaders`, `maybeSpawnSiteClue`, `mintAreaChart`, `maybeMintObservedMark`), the `{learned}` resolver in `src/engine/undertakingProse.ts` (`learnedClause`), the income pass in `src/engine/holdingIncome.ts`. Plan: `Docs/plans/2026-09-07-thr-1428-owed-readers.md`.
 
+### Capability 29: The Place Fact — Culture and Spheres Showing Through (THR-1635)
+
+**What it does.** Every encounter opening can state one plain fact about the town's people or the place's power, and **you write nothing in the encounter to get it**. A compile pass puts the reserved token `{frag:place_fact}` at the end of step 0's first paragraph of step prose, the situation-and-complication beat, after the `{frag:opening}` envelope paragraph if there is one. At render the token becomes one sentence from a shared table, or nothing:
+
+1. a **culture custom**, `CULTURE_CUSTOMS[foundation][reach]`: the foundation of the culture that holds the scene's *town* (Chaos = honour and challenge, Order = written law, Light = open witness, Darkness = closed circles) × the encounter's reach;
+2. else a **sphere fact**, `SPHERE_FACTS[sphere][reach]`: the place's dominant sphere, once it holds at least `SPHERE_FACT_MIN_SHARE` (0.55) of the place's sphere score;
+3. else nothing, and the paragraph reads byte for byte as you wrote it.
+
+Culture comes first (`COLORATION_CULTURE_FIRST`). Two cultures of one foundation in the same world read different variants of a cell, because each culture is stamped with its own variant at worldgen.
+
+**Where you author: the tables, not the encounter.** `src/data/culture-sphere-lines.ts`. Rules, enforced by `colorationLineProblems` (doctrine checker) and the unit tests:
+
+- **One sentence of at most 28 words** (`NUDGE_WORD_BUDGETS.colorationLine`). It is priced on its own row, never inside your opening's 80.
+- **It states a custom, a cost or a pressure that bears on the test**: who may act, what it costs, who is watching, what is hidden. It never describes a mood.
+- **Tokens: `{actor}`, `{demonym}`, `{place}` only.** Never `{culture}`, which names the *actor's* culture; a stranger in town is exactly where the two differ.
+- **A sphere line never names its sphere as jargon.** Not *"matter-heavy ground"* but *"the thing is bound into the stone itself"*.
+- **A culture cell's three variants differ in the custom**, not the wording. They are what two same-foundation cultures read side by side.
+
+Slice 1 authored iron, stone and eye (all four foundations; life, matter, darkness and order spheres). An unauthored cell falls through to the next rule, and the trace names it (`culture_cell_unauthored`, `sphere_cell_unauthored`). Slice 2 (THR-1638) writes the rest.
+
+**If you want to place the line yourself**, write `{frag:place_fact}` where it should go in step 0. The compile pass leaves an author-placed token alone. **You cannot opt a template out by hand**: the exemptions are the pass's own (`colorationSkipReason`: the `encounter.slice.` prefix while that playthrough is open, no `reach`, branch-first, empty step 0), and the corpus guard `src/data/__tests__/openingColoration-corpus.test.ts` fails if an eligible template lacks exactly one token.
+
+**How to tell whether it landed.** `await window.__DEBUG.getOpeningColoration()` shows, for where the hero stands, each reach's `kind` / `reason` / `line`. `await window.__DEBUG.getColorationCensus()` shows how many towns carry a culture, how many places a strong sphere, and each culture's stamp. With tracing on, every resolution emits `opening_coloration_bound`, and the Fragments debug tab shows the reserved-slot row. Headless: `traces 500` in the CLI after `tick 30`.
+
+**Where to find the implementation:** `compileOpeningColoration` / `resolveOpeningColoration` in `src/engine/fragmentResolution.ts`, the place gatherer in `src/engine/openingColoration.ts`, the stamp `stampCultureCustomVariants` in `src/engine/cultureGenerator.ts`. Plan: `Docs/plans/2026-09-27-thr-1635-culture-sphere-openings.md`.
+
 ---
 
 ## Part 3: The Wiring Checklist — Ask These Before You Write
@@ -2165,6 +2191,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Verifies... | Categories |
 |---|---|
 | Prose enrichment works | `narrative_generation`, `intelligence_referenced` |
+| An opening stated its place fact (THR-1635) | `opening_coloration_bound` — `kind` culture / sphere / none, with its `reason` |
 | Aftermath fired | `encounter_aftermath_applied`, `encounter_aftermath_effect` |
 | Seeds planted and triggered | `encounter_seed_planted`, `encounter_seed_triggered`, `causation_edge_created` (THR-116) |
 | Hidden marks placed, revealed, or decayed | `hidden_mark_placed`, `hidden_mark_revealed` |

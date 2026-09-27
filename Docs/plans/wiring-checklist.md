@@ -2855,3 +2855,14 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `engine/fights/fightRecord.ts` (new: `fightRecordBranch`, `recordFightFought`, `resolveFightPlace`, `fightRecordSummary`) | step resolution (`finalizeFightEnd` → `onFightEnded`, **first** in `FIGHT_END_BRANCHES`) | place MEMORY (`latestBloodshedRecord`), location page conditions row (*Blood-soaked*, via `phaseLocationTraits`) | graph: `fight_fought` event + `occurred_at` + `participated_in`; `lastFightTick` on the Location | `fight_recorded` (once per ended fight, incl. `skipped: no_exchanges / no_place` and `error`) | `getBattleRecords()` (rows carry `result`), CLI `battles` |
 
 **Wired and asserted:** `fightRecord.test.ts` runs through the real `onFightEnded` with the shipped branches. Live CLI (seed 42 medium): three `spawn fight`s at Ardenmor Keep mint *Blood-soaked* (bloodshed 1.02), one does not (0.34).
+
+## Culture and spheres showing through — the opening place fact (THR-1635)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/cultureGenerator.ts` (`stampCultureCustomVariants`, `readCultureCustomVariant`) | worldgen (`worldSeed.ts`, after both culture paths) | — | graph: `cultureIdentity.customVariant` on culture nodes | none (one-shot, inspectable on the node) | `getColorationCensus()` |
+| `engine/fragmentResolution.ts` (`compileOpeningColoration`) | module load, at the catalog assembly points (`ENCOUNTER_TEMPLATES`, `getAnyEncounterById` pools, `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES`, encounter-shaped `UNIFIED_ACTION_TEMPLATES`) | CMS `PackageBlocks` shows the `{frag:place_fact}` chip | — | — | corpus guard `openingColoration-corpus.test.ts` |
+| `engine/openingColoration.ts` (new) + `resolveOpeningColoration` | render time, via `enrichProse` (four stage adapters, `unifiedActionResolution` step record, `chapterArchive`), each threading `templateReach` | encounter stage opening prose; frozen step records; chapter replay | `NarrativeContext.templateReach` / `placeColoration` | `opening_coloration_bound` (one per resolution, with `reason`) | `getOpeningColoration()`, Fragments tab reserved-slot row |
+| `data/narrative-content.ts` (`SPHERE_VOCABULARY` +4) | tick narrative events | event feed prose | — | — | — |
+
+**Wired and asserted:** the corpus guard (798 entries / 528 ids carry exactly one token), the generated-world leak guard (seeds 42 and 99, both line kinds fire, no raw token), and a 30-tick seed-42 CLI run emitting `opening_coloration_bound` with culture and sphere lines. Browser: *Master the Local Craft* at a Darkness town renders the custom in the opening.
