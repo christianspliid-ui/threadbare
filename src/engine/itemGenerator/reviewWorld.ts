@@ -3,12 +3,12 @@
  * and the gate test only (THR-1570).
  *
  * A live world supplies its own maker, factions, places and cultures through
- * `buildItemWorldContext`. What a young live world does *not* have yet is a past: dead
- * notables with deeds, disasters with names, monster hosts with haunts. The `found`
- * origin's cores are written around exactly that past, and they have no live minting
- * point until reward draws carry generated items (THR-1626). So the review path —
- * `generate items --review-world`, `previewGeneratedItem`, and the gate test that must
- * see every core fire — dresses items from this fixture instead.
+ * `buildItemWorldContext`, and — since THR-1637 — its past: the retained dead, the
+ * battles fought, the monster hosts. But a live past is whatever that world happened to
+ * record (a young world may hold no dead at all), so the review path —
+ * `generate items` without `--live`, `previewGeneratedItem`, and the gate test that must
+ * see every core fire on every seed — dresses items from this fixed fixture instead, and
+ * the live levers fall back to it while a world has no past yet.
  *
  * **Never read by a live world's mint.** `mintMasterwork` builds its context from the
  * graph; this module is imported only by the review levers and the tests.

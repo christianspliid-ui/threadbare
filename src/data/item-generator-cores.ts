@@ -885,7 +885,7 @@ export const ITEM_GEN_CORES: readonly ItemGenCore[] = [
       { tone: 'reverent', uses: ['event'], text: '{event.salvage} People who were there still know it on sight.' },
     ],
     names: { definite: ['Last'] },
-    definiteByEvent: { flood: ['Drowned', 'Salt'], siege: ['Cold', 'Last'], last_stand: ['Last', 'Ford'], fire: ['Burnt', 'Unburnt'], winter: ['Frozen', 'Winter'], starfall: ['Fallen', 'Burning'], plague: ['Grey', 'Last'], riot: ['Trodden', 'Last'] },
+    definiteByEvent: { flood: ['Drowned', 'Salt'], siege: ['Cold', 'Last'], last_stand: ['Last', 'Unbroken'], fire: ['Burnt', 'Unburnt'], winter: ['Frozen', 'Winter'], starfall: ['Fallen', 'Burning'], plague: ['Grey', 'Last'], riot: ['Trodden', 'Last'] },
     grammar: { proper: 4, definite: 3, portmanteau: 1 },
     formsByEvent: {
       flood: { bell: 3, helm: 1, cloak: 1 }, siege: { helm: 2, sword: 2, spear: 1 }, last_stand: { helm: 1, sword: 1, spear: 2 },
