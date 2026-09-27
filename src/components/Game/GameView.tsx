@@ -214,6 +214,12 @@ import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
 import { forceOfferBeatById, getBeatDefinitionById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import {
+  findDeliverySubject,
+  prepareDeliveryEncounter,
+  sourceTemplateIdOf,
+  type PreparedDeliveryEncounter,
+} from '../../engine/deliveryBeatAdapter';
 import { selectDefaultBeatChoice } from './beatDismissal';
 import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal';
 import { isSpineBeatId } from '../../data/ascendant-beat-content';
@@ -2915,7 +2921,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    */
   const beatProseOverride = useMemo((): { title: string; prose: string } | undefined => {
     if (!pendingBeat || isSpineBeatId(pendingBeat.beatId)) return undefined;
-    const template = getUnifiedTemplateById(pendingBeat.beatId);
+    // THR-1650: a delivery beat's id is prefixed (`beat.delivery.<templateId>`); look up
+    // the source encounter so the modal shows its real teaser, not the kind placeholder.
+    const template = getUnifiedTemplateById(sourceTemplateIdOf(pendingBeat.beatId) ?? pendingBeat.beatId);
     const body = template?.description ?? template?.narrativeTemplates.initiation;
     if (!template || !body) return undefined;
     try {
@@ -2960,6 +2968,78 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     ).state);
     setBeatEntered(false);
   }, [setGameState, runtime]);
+
+  /**
+   * The modal's resolve (THR-1650). For a `delivery` beat, Witness *plays* the vision:
+   * the source encounter is minted on The First (`prepareDeliveryEncounter`) and opened
+   * in the encounter veil, whose own aftermath then runs against The First. The beat is
+   * recorded as delivered either way; a vision that cannot bind resolves quietly with no
+   * aftermath (the engine no longer runs a delivery template's reactions on the god).
+   * Every other kind resolves exactly as {@link handleResolveBeat}. The debug drains
+   * (`dismissBeats` / `suppressBeats`) keep calling `handleResolveBeat`, so they never
+   * open a veil — that surface is what a verification run is there to observe.
+   */
+  const handleWitnessBeat = useCallback((chosenActionId?: string) => {
+    const current = _gameStateRef.current;
+    const pending = current?.ascendantBeats?.pending;
+    if (!current || !pending || pending.kind !== 'delivery') {
+      handleResolveBeat(chosenActionId);
+      return;
+    }
+    const sourceTemplateId = sourceTemplateIdOf(pending.beatId);
+    const subjectId = findDeliverySubject(current);
+    const prepared: PreparedDeliveryEncounter = sourceTemplateId && subjectId
+      ? prepareDeliveryEncounter(current, sourceTemplateId, subjectId, {
+        binder: buildEncounterBinderContext(runtime, current),
+      })
+      : { success: false, reason: sourceTemplateId ? 'no_first' : 'template_missing', message: '' };
+    const { unifiedAction: action, notification: preparedNotification, template: deliveredTemplate, agent } = prepared;
+    const played = Boolean(prepared.success && action && preparedNotification && deliveredTemplate && agent);
+    emitTrace({
+      tick: current.tick,
+      category: played ? 'beat.delivery_played' : 'beat.delivery_skipped',
+      turn: current.tick,
+      beatId: pending.beatId,
+      sourceTemplateId: sourceTemplateId ?? undefined,
+      subjectId,
+      ...(played ? {} : { reason: prepared.reason }),
+      summary: played
+        ? `beat.delivery_played: ${pending.beatId} opened on ${subjectId}`
+        : `beat.delivery_skipped: ${pending.beatId} (${prepared.reason ?? 'unknown'})`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+
+    if (played && action && preparedNotification && deliveredTemplate && agent) {
+      const notification = { ...preparedNotification, viewed: true };
+      const encounter = buildActiveEncounterDisplayFromUnifiedAction(action, current.tick);
+      const clearanceGateRuntimeId = action.clearanceGateIds?.[0];
+      setGameState(prev => ({
+        ...prev,
+        unifiedActions: [...(prev.unifiedActions ?? []), action],
+        clearanceGateStates: prepared.clearanceGateStates ?? prev.clearanceGateStates,
+        encounterNotifications: [...(prev.encounterNotifications ?? []), notification],
+      }));
+      if (encounter) {
+        setTieredEncounterState({
+          notification,
+          encounter,
+          template: deliveredTemplate,
+          agentId: agent.id,
+          agentName: agent.name,
+          threadTier: courtPositionToThreadTier(notification.courtPosition),
+          // Player-opened (they pressed Witness), like a ThreadsPanel click: closing
+          // the veil must not force-resume a sim the player had paused.
+          openedAsInterrupt: false,
+          activeActionId: action.actionId,
+          clearanceGateRuntimeId,
+          activeActionSnapshot: action,
+          clearanceGateStateSnapshot: clearanceGateRuntimeId
+            ? prepared.clearanceGateStates?.get(clearanceGateRuntimeId)
+            : undefined,
+        });
+      }
+    }
+    handleResolveBeat(chosenActionId);
+  }, [handleResolveBeat, setGameState, runtime]);
 
   // Spine beats present modally so the opening is not missable; pool beats wait behind
   // the offer affordance. Keyed on the spine id prefix so the closing selection beat
@@ -5559,7 +5639,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         <AscendantBeatModal
           open={true}
           pending={pendingBeat}
-          onResolve={handleResolveBeat}
+          // THR-1650: Witness on a delivery beat opens its encounter on The First.
+          onResolve={handleWitnessBeat}
           // Enriched, run-specific prose for template-backed pool beats (THR-514).
           proseOverride={beatProseOverride}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
