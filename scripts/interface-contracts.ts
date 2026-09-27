@@ -3731,6 +3731,30 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'delivery-beat-plays-its-encounter',
+    producerSystem: PROGRESSION,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template\'s fallback reactions — it used to run them against the god, writing a mortal scene\'s consequences on the wrong actor (the THR-1526 untrue-scene class).',
+    ulTerms: ['Ascendant Beat', 'The First', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['prepareDeliveryEncounter', 'bindDeliverySubject'],
+      module: 'src/engine/deliveryBeatAdapter.ts',
+    },
+    writeSites: ['src/engine/deliveryBeatAdapter.ts'],
+    readSites: [
+      'src/components/Game/GameView.tsx',
+      'src/engine/ascendantBeat.ts',
+      'src/engine/__tests__/deliveryBeatPlayback.test.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-27',
+      evidence:
+        'THR-1650 — on `?view=game&seeded&size=medium` (Playwright, 1920×1080): Kael Thornweaver moved to a spawned hamlet, `__DEBUG.fireBeat(\'beat.delivery.encounter.slice.the_table_that_holds\')`, the modal showed the encounter\'s real title and teaser, and Witness opened `EncounterVeil` (`getOpenModals()` → `[\'EncounterVeil\']`) on Kael Thornweaver with trace `beat.delivery_played … opened on ind_dev_the_first`. `deliveryBeatPlayback.test.ts` pins that no aftermath reaction runs for a delivery beat (spy on `applyEncounterAftermathReaction` never called) while a pool beat\'s still does, the four bind refusals, and that with no First the Director never draws a delivery beat.',
+    },
+  },
+  {
     id: 'encounter-seed-resolves-by-query',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: 'Encounters & Dilemmas',
