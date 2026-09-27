@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 10:56 local (08:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-27 11:56 local (09:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,20 +27,20 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Empty shelf: nothing is waiting to be built, and 2 jobs are being built.** Expected on a Sunday morning; the design lane runs again at about 14:17 local with six more design jobs from the living-world map.
+**Empty shelf: nothing is waiting to be built, and 2 jobs are being built.** Expected on a Sunday morning; the design lane runs again at about 14:17 local with more design jobs from the living-world map.
 
-- **Landed:** [when two duellists kill each other, the second death leaves no grief behind](https://linear.app/threadbare/issue/THR-1629) merged via [#2087](https://github.com/christianspliid-ui/threadbare/pull/2087) and is live.
-- **Being built:** [the seeded item generator](https://linear.app/threadbare/issue/THR-1570). [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088) now passes its checks but clashes with newer `main` (see Health).
+- **Being built:** [the seeded item generator](https://linear.app/threadbare/issue/THR-1570). [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088) passes its checks but clashes with newer `main` (see Health).
 - **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) clashes with newer `main` and failed its required check (see Health).
+- **Waiting behind the living-world plans:** the urgent finding that [a new player never meets The First](https://linear.app/threadbare/issue/THR-1605). *— from [the weekly hygiene sweep](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-hygiene-2026-09-27.md)*
 - **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **Two builds can't merge until a builder brings them up to date by hand.** [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088) is green but clashes with newer `main`. [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) clashes too, and its required check failed, so the failure needs reading before the clash is fixed. The slow fight test that timed out on earlier runs has since been fixed ([#2092](https://github.com/christianspliid-ui/threadbare/pull/2092)). It is not yours.
-- **The long simulation tests are still red** on the latest `main` (7 hours). They fail by running past a time limit, not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
+- **Two builds can't merge until a builder brings them up to date by hand.** [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088) is green but clashes with newer `main` (5 hours). [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) clashes too, and its required check failed, so the failure needs reading before the clash is fixed. It is not yours.
+- **The long simulation tests are still red** on the latest `main` (8 hours). They fail by running past a time limit, not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
-  - The live site is serving the latest `main` (3abbba8a), including #2087.
-  - Game speed is 78 ms per tick, +2% against the weekly median of 76.
+  - The live site is serving the latest `main` (3abbba8a).
+  - Game speed is 78 ms per tick, +3% against the weekly median of 76.
   - All ten scheduled lanes are on time.
   - The worktree reaper's latest run left 5 worktrees waiting to be sorted, which is routine.
