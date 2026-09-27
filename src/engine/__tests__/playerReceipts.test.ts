@@ -10,6 +10,7 @@ import {
   RECEIPT_FRAME_LINES,
 } from '../../data/receipt-content';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from '../../data/ascendant-pool-beat-templates';
+import { findValueDriftInfluence } from '../castInfluenceDrift';
 import type { GameState } from '../../types/gameState';
 import type {
   UnifiedAction,
@@ -23,7 +24,11 @@ const TOAST_TEMPLATE = UNIFIED_ACTION_TEMPLATES.find(
   (t) =>
     (t.steps?.length ?? 1) === 1 &&
     t.rarityTier < RECEIPT_MODAL_RARITY_FLOOR &&
-    (t.actorAffinities?.includes('ascendant') ?? false),
+    (t.actorAffinities?.includes('ascendant') ?? false) &&
+    // THR-1651: a value-drifting cast (Oneiric Sending, Divine Compulsion) reads its
+    // own influence line instead of the resolver overview — covered in
+    // castInfluenceDrift.test.ts. These tests are about the overview → toast path.
+    !findValueDriftInfluence(t),
 );
 
 const REACTION: EncounterAftermathReaction = {

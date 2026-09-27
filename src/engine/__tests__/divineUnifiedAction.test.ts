@@ -25,7 +25,8 @@ function createDivineTestState(): GameState {
 
   graph.addNode({
     id: 'asc-1', type: 'actor', name: 'The Weaver',
-    properties: { actorType: 'ascendant' },
+    // THR-1651: the casts drift the pair bound to the primary reach (iron → mercy_ruthlessness).
+    properties: { actorType: 'ascendant', domainAffinities: { iron: 0.8 } },
   });
 
   graph.addNode({
@@ -33,6 +34,7 @@ function createDivineTestState(): GameState {
     properties: {
       actorType: 'individual',
       divineInfluences: [],
+      axiologicalProfile: { mercy_ruthlessness: 0.3 },
     },
   });
 
@@ -185,6 +187,8 @@ describe('divine interventions via unified pipeline', () => {
     expect(influences).toBeDefined();
     expect(influences.length).toBeGreaterThan(0);
     expect(influences[0].interventionType).toBe('dream');
+    // THR-1651: the dream carries a real drift along the lean the target already has.
+    expect(influences[0].valueDrifts.mercy_ruthlessness).toBeGreaterThan(0);
   });
 
   it('cosmic scale divine actions resolve before personal agent actions', () => {

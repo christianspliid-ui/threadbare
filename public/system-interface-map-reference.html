@@ -936,6 +936,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; The casts that changed nothing
+      <span class="lead">Added 2026-09-27 (THR-1651). A dream or a compulsion now changes what the mortal chooses, and the receipt says which way.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Oneiric Sending / Divine Compulsion <span class="arrow">&#10230;</span> The target&rsquo;s value overlay, re-score and motive receipt (<code>cast-influence-shifts-target-values</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1651. Both verbs wrote a <code>divineInfluences</code> entry with no <code>valueDrifts</code>, so <code>buildValueOverlay</code>, the agent re-score and the motive receipt&rsquo;s divine term computed nothing. The payload now carries a <code>valueDriftRule</code> the <code>apply_influence</code> executor resolves at apply time (<code>resolveCastValueDrift</code>): the pair is the one bound to the god&rsquo;s primary reach; the dream deepens the mortal&rsquo;s own lean (a mortal at exactly 0 gets no entry and an <code>influence.no_lean</code> trace), the compulsion pushes toward the pair&rsquo;s first-named pole. The receipt re-resolves the same rule, so the pole it names is the pole written. Proved headless on seed 42: the target&rsquo;s re-score differs from a control run on five candidates two ticks after the dream.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

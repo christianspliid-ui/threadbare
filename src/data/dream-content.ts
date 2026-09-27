@@ -202,3 +202,24 @@ export const LOCAL_ENCOUNTER = {
   summonDetectionPenalty: 0.10,
   summonImpactBonus: 1.05,
 } as const;
+
+// ═══════════════════════════════════════════════════════════════════
+// 6. CAST VALUE DRIFTS (THR-1651)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Oneiric Sending's drift on the target's value pair bound to the god's primary
+ * reach, **in the direction the target already leans** — the dream deepens who
+ * they are; the god does not choose the pole. Raw magnitude: `buildValueOverlay`
+ * scales it by the influence's live decay strength (dream starts at 0.50), then
+ * clamps to [-1, 1].
+ */
+export const DREAM_VALUE_DRIFT = 0.08;
+
+/**
+ * Divine Compulsion's drift on the same pair, toward the pole the reach names
+ * first in its archetype pair (`ARCHETYPE_NAMES[pair].positive` — Iron:
+ * Protector ↔ Conqueror → Protector). Stronger than the dream because the god
+ * chooses the direction. Scaled by the persuade decay strength (starts 0.70).
+ */
+export const COMPULSION_VALUE_DRIFT = 0.15;

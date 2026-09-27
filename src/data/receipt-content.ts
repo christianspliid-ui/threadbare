@@ -173,3 +173,42 @@ export function receiptToastSentence(overview: string | undefined): string | und
   const lastSpace = clipped.lastIndexOf(' ');
   return `${(lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trimEnd()}…`;
 }
+
+// ─── Cast influence lines (THR-1651) ────────────────────────────────────────────
+
+/**
+ * Which receipt line a value-drifting cast reads. `clean` and `at_cost` follow the
+ * outcome band (the cast floor makes `at_cost` the common case); `found_nothing` is
+ * the dream on a mortal at exactly 0 on the axis, where no influence was written.
+ */
+export type CastInfluenceReceiptCase = 'clean' | 'at_cost' | 'found_nothing';
+
+/** Bands that read as the clean line. `strained` reads at cost; setback/catastrophe keep the resolver's own overview. */
+export const CAST_INFLUENCE_CLEAN_BANDS: readonly OutcomeBand[] = ['surge', 'neutral', 'fortunate'];
+export const CAST_INFLUENCE_AT_COST_BANDS: readonly OutcomeBand[] = ['strained'];
+
+/**
+ * The receipt overview for Oneiric Sending and Divine Compulsion, by intervention
+ * type and case. `{target}` is the mortal's name, `{pole}` the value word the drift
+ * pushes toward (`mercy`, `ambition`, …). Narrator register, past the fact.
+ *
+ * The toast shows only the first sentence (`receiptToastSentence`), so the first
+ * sentence of every landed line names both the mortal and the pole.
+ */
+export const CAST_INFLUENCE_RECEIPT_LINES: Record<'dream' | 'persuade', Record<CastInfluenceReceiptCase, string>> = {
+  dream: {
+    clean: '{target} dreams of who they already are, and wakes leaning harder toward {pole}. The dream will fade; for now it weighs in every choice.',
+    at_cost: '{target} sleeps badly, but the dream holds: {pole} weighs more in what they choose now. They wake tired and do not know why.',
+    found_nothing: '{target} dreams, but the dream finds nothing in them to take hold of. They wake as they were.',
+  },
+  persuade: {
+    clean: 'A certainty settles on {target} that was not there before: {pole} is the only sensible course. They think the thought is their own.',
+    at_cost: '{target} fights the conviction and loses, and now {pole} pulls at every choice they make. The struggle left them raw.',
+    found_nothing: 'Your conviction finds no purchase in {target}. They go on as they were.',
+  },
+};
+
+/** Fill a cast influence line's `{target}` and `{pole}` slots. */
+export function fillCastInfluenceLine(line: string, target: string, pole: string): string {
+  return line.split('{target}').join(target).split('{pole}').join(pole);
+}

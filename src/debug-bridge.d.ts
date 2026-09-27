@@ -1446,6 +1446,28 @@ export interface DebugBridge {
     | { readable: true; through: 'familiarity' | 'mark' | 'network'; via?: string; viaName?: string; secret: boolean }
     | { readable: false; secret: boolean }
   )) | null>;
+  /**
+   * THR-1651: the divine influences still steering a mortal — the entries
+   * `buildValueOverlay` would apply at the current tick (expired ones dropped).
+   * Each carries its `valueDrifts` (Oneiric Sending / Divine Compulsion write one
+   * signed drift on the pair bound to the god's primary reach), its live decay
+   * `strength`, and `durationLabel`, the time left as the player reads it.
+   * Accepts an id, id prefix, partial name or `@hero`; `null` when unresolved.
+   */
+  getActiveInfluences(agentRef: string): Promise<{
+    agentId: string;
+    name: string;
+    influences: Array<{
+      id: string;
+      interventionType: string;
+      sphere: string;
+      tickApplied: number;
+      valueDrifts: Readonly<Record<string, number>>;
+      strength: number;
+      ticksRemaining: number;
+      durationLabel: string;
+    }>;
+  } | null>;
   getCalling(agentRef: string): Promise<{
     agentId: string;
     title: string | null;
