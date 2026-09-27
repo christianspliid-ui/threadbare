@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 17:57 local (15:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-27 18:56 local (16:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,21 +27,23 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin but moving: 2 jobs ready to build, 1 being built.** Since last hour, threading a mortal with the Agent Thread card no longer makes them invisible ([THR-1643](https://linear.app/threadbare/issue/THR-1643), merged via [#2098](https://github.com/christianspliid-ui/threadbare/pull/2098), live). The two plans you shaped from the first cold playtest also landed ([#2097](https://github.com/christianspliid-ui/threadbare/pull/2097)): [the opening](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md) and [what your hand did](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1606-what-your-hand-did.md). The orchestrator can now queue their seven build tickets, which will refill the shelf.
+**Healthy again: 4 jobs ready to build, 1 being built.** Since last hour, the ascendant's essence lives in one place, so the essence bar reads the right number ([THR-1645](https://linear.app/threadbare/issue/THR-1645), merged via [#2099](https://github.com/christianspliid-ui/threadbare/pull/2099), live). Three fixes from your first cold playtest are now queued, from [the opening plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md). The rest of the opening waits on "the meeting comes to the player", still being designed.
 
 - **Ready, top first:**
-  - [The ascendant's essence is kept in two places, and the essence bar reads the wrong one](https://linear.app/threadbare/issue/THR-1645/two-essence-stores-stillness-and-influence-maintenance-write-the).
-  - [Let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above. It is also the fix path for [a new player never meeting The First](https://linear.app/threadbare/issue/THR-1605).
-- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) clashes with newer `main` and failed its required check (see Health).
+  - [A Vision plays its scene](https://linear.app/threadbare/issue/THR-1650): it opens the encounter on The First instead of resolving silently.
+  - [Dreams and compulsions change someone](https://linear.app/threadbare/issue/THR-1651): Oneiric Sending and Divine Compulsion shift the mortal's values.
+  - [The world reads bigger](https://linear.app/threadbare/issue/THR-1649): the avatar sees two hexes, and you can zoom out to the whole map.
+  - [Let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above.
+- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635). Its build [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) has not moved for about 5 hours (see Health).
 - **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **One build can't merge until a builder brings it up to date by hand.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) clashes in three docs files and also failed its required check, so the failure needs reading first. Not yours.
-- **The long simulation tests are still red on the latest `main`** (red for about an hour; 4 of the last 5 runs failed). Last hour's reading was three checks running out of time rather than giving a wrong answer, so it looks like a slow test, not broken game logic. A builder should raise its time limit or speed it up.
-- **Game speed dropped, and it held:** tick cost 114 ms/tick steady, 47% above the 7-day median (77, 132 rows since da7f4398); top phase agent_decision, 486 agents. Name the merges between da7f4398 and 096eb7b5: `git log --oneline --merges da7f4398..096eb7b5`. This is the second slow reading in a row (106, then 114; 78 before), so it is not a busy machine. The jump lands exactly on [#2096](https://github.com/christianspliid-ui/threadbare/pull/2096) (the fresh Doom clock, [THR-1642](https://linear.app/threadbare/issue/THR-1642)), the only merge between the last fast reading and the first slow one. Only the steady phase slowed, not warm-up. A builder should look there.
+- **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) clashes with newer `main` in three docs files and failed its required check; its last change was 12:12 UTC. Builders have shipped two other jobs since, so nobody is on it. Not yours.
+- **The long simulation tests are still red on the latest `main`** (about 2 hours now; 4 of the last 5 runs failed). Earlier readings were checks running out of time, not wrong answers, so it looks like a slow test rather than broken game logic. A builder should raise its time limit or speed it up.
+- **Game speed is back to normal:** 76 ms/tick, right on the 7-day median (77). Last hour's slowdown did not repeat.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
-  - The live site is serving 7dd4accc, which includes the Agent Thread fix; only docs landed after it.
+  - The live site is serving the latest `main` (2bebc045), which includes the essence fix.
   - All ten scheduled lanes are on time.
   - The worktree reaper left 5 worktrees waiting to be sorted, which is routine.
