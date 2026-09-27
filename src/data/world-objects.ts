@@ -149,7 +149,7 @@ export const LOCATION_CLASSES: Readonly<Record<string, readonly string[]>> = {
   stronghold: ['castle', 'fort', 'tower'],
   holy_place: ['shrine', 'temple', 'place_of_power'],
   ruin: ['ruins', 'ruined_tower', 'ruined_city', 'ruined_village', 'elder_ruin', 'shipwreck', 'ancient_vault', 'sunken_treasury'],
-  wild: ['wilderness', 'lair', 'cleared_lair', 'monument', 'cavern', 'grove', 'hot_spring', 'nest', 'haunted_ground', 'unexplored_poi', 'oasis', 'battleground', 'ancient_road', 'bridge', 'corruption_zone'],
+  wild: ['wilderness', 'wilderness_waypoint', 'lair', 'cleared_lair', 'monument', 'cavern', 'grove', 'hot_spring', 'nest', 'haunted_ground', 'unexplored_poi', 'oasis', 'battleground', 'ancient_road', 'bridge', 'corruption_zone'],
   wonder: ['healing_spring', 'master_forge', 'living_archive', 'fey_crossing', 'sacrifice_site', 'convergence', 'time_scar', 'standing_stones', 'shadow_hollow', 'ley_nexus', 'golden_grove', 'crystal_cavern', 'glowcap_hollow'],
   deposit: ['mining', 'gem_deposit', 'iron_seep', 'fossil_bed', 'pearl_shoal', 'herb_garden'],
 };
@@ -227,8 +227,8 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     id: 'location', gameWord: 'Location', ulTerm: 'Graph.md#location', worldRef: 'location',
     shape: { kind: 'node', nodeType: 'location', requires: 'no-parentLocationId', discriminator: { key: 'locationSubtype', fallbackKey: 'locationType', values: LOCATION_SUBTYPES } },
     classes: LOCATION_CLASSES,
-    owningSystem: 'World Generation, Terrain & Places', writers: ['worldSeed', 'strategicGraphOps'], status: 'live',
-    note: 'The outer tier: where mortals live, hold, ruin and wonder. Seven classes over the existing subtypes; nothing joins the union.',
+    owningSystem: 'World Generation, Terrain & Places', writers: ['worldSeed', 'strategicGraphOps', 'hexMovementPath'], status: 'live',
+    note: 'The outer tier: where mortals live, hold, ruin and wonder. Seven classes over the existing subtypes. One subtype joined the union since: `wilderness_waypoint` (THR-1616), the Waypoint that movement pathing mints on open ground — permanent, never a settlement or a durable endpoint.',
   }),
   K({
     id: 'place', gameWord: 'Place', ulTerm: 'Graph.md#place', worldRef: 'sublocation',

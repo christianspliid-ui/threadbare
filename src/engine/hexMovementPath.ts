@@ -13,9 +13,21 @@ import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
 import { getTerrainTax } from '../data/movement-content';
 import { hexKeyFromCoord } from '../lib/hexKey';
 
+/** Id prefix of a waypoint Location minted by movement pathing. */
+export const WAYPOINT_LOCATION_ID_PREFIX = 'loc.transient.';
+
 /**
- * Find an existing location node at the given hex, or create a transient one.
- * Sets terrain on transient locations so movementCost can compute taxes.
+ * The registered `locationSubtype` of a waypoint (THR-1616): a patch of open
+ * ground an actor passed through, in the `wild` Location class. Waypoints are
+ * permanent — never collected, because an agent can be `located_at` one
+ * mid-journey. `locationType` stays `'wilderness'`, which is the token the
+ * encounter cache reads first, so the encounters a waypoint draws are unchanged.
+ */
+export const WAYPOINT_LOCATION_SUBTYPE = 'wilderness_waypoint';
+
+/**
+ * Find an existing location node at the given hex, or create a waypoint one.
+ * Sets terrain on waypoints so movementCost can compute taxes.
  */
 export function findOrCreateLocationAtHex(
   graph: WorldGraph,
@@ -28,12 +40,16 @@ export function findOrCreateLocationAtHex(
     const hexCol = loc.properties.hexCol as number | undefined;
     const hexRow = loc.properties.hexRow as number | undefined;
     if (hexCol === hex.col && hexRow === hex.row) {
+      // A waypoint minted before THR-1616 (a saved world) carries no subtype — stamp it on reuse.
+      if (loc.id.startsWith(WAYPOINT_LOCATION_ID_PREFIX) && !loc.properties.locationSubtype) {
+        loc.properties.locationSubtype = WAYPOINT_LOCATION_SUBTYPE;
+      }
       return loc.id;
     }
   }
 
-  // Create transient location
-  const transientId = `loc.transient.${hex.col}.${hex.row}`;
+  // Create waypoint location
+  const transientId = `${WAYPOINT_LOCATION_ID_PREFIX}${hex.col}.${hex.row}`;
   if (!graph.getNode(transientId)) {
     graph.addNode({
       id: transientId,
@@ -43,6 +59,7 @@ export function findOrCreateLocationAtHex(
         hexCol: hex.col,
         hexRow: hex.row,
         locationType: 'wilderness',
+        locationSubtype: WAYPOINT_LOCATION_SUBTYPE,
         ...(terrain ? { terrain } : {}),
       },
     });

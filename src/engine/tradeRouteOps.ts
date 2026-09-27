@@ -51,8 +51,10 @@ import {
 /**
  * The actor's current location resolved to something a durable edge can anchor
  * on (THR-669): sublocations climb to their parent settlement; transient transit
- * hexes (`loc.transient.*`, garbage-collected after passage) resolve to undefined
- * rather than becoming an edge endpoint that will evaporate.
+ * hexes (`loc.transient.*`, subtype `wilderness_waypoint`) resolve to undefined
+ * rather than becoming an edge endpoint. Waypoints are permanent — nothing collects
+ * them, since an agent can be `located_at` one mid-journey (THR-1616) — but they are
+ * nobody's place: a route anchored on one would name a patch of passing ground.
  *
  * Shared with `strategicActionLifecycle`, which held the original copy — one
  * definition so the catalog verbs and the merchant strategic pack cannot drift

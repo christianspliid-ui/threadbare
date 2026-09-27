@@ -868,8 +868,8 @@ export interface StrategicProjectRuntime {
   /**
    * Where the project was undertaken (THR-669): the actor's resolved,
    * non-transient location at project start. Trade routes must anchor here —
-   * the actor's completion-time location is often a transient transit hex
-   * that gets garbage-collected, silently evaporating the route.
+   * the actor's completion-time location is often a transit waypoint
+   * (`loc.transient.*`, THR-1616) — nobody's place, so not a route endpoint.
    */
   readonly originLocationId?: string;
 

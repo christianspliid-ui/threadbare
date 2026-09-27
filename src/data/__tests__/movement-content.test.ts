@@ -319,7 +319,7 @@ describe('movement-content', () => {
         'castle', 'fort', 'tower', 'shrine', 'temple',
         'mining', 'ruins', 'ruined_tower', 'ruined_city', 'ruined_village',
         'battleground', 'oasis', 'unexplored_poi',
-        'wilderness',
+        'wilderness', 'wilderness_waypoint',
       ];
       for (const key of Object.keys(LOCATION_ENTRY_TAXES)) {
         expect(validLocations).toContain(key);
