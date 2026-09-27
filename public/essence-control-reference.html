@@ -256,6 +256,7 @@
       </div>
     </div>
     <p>Holding threads costs as well as feeds: the upkeep of your deepest bonds is drawn from your <em>primary</em> pool each turn, so a large, deep court quietly taxes the very Sphere you rely on most. (The thread ladder and its upkeep are the <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> page; here we care only that they are a running cost against your fuel.)</p>
+    <p><em>Implementation note (2026-09-27):</em> your pools are one store, <code>GameState.essencePool</code>. Every spend, every Stillness regen and thread upkeep all move the same numbers the essence bar shows (THR-1645). Thread upkeep is not yet charged by the tick loop, though the income readout already subtracts it (THR-1652).</p>
   </section>
 
   <section class="section">
