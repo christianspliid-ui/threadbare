@@ -340,6 +340,15 @@ function christenCompletedWork(
   const created = graph.getNode(createdId);
   if (!created) return undefined;
 
+  // A generated item is already christened (THR-1570): the item generator named it from
+  // its core, its maker and its story — "The Unquiet Blade" — and that name is what its
+  // trace, its sheet and its catch all speak of. Same precedent as the trait skip above:
+  // the producer is the authority on the name. The completion still reports the name, so
+  // the trace's `christenedName`, the cell's deed and the chronicle carry it.
+  if (created.properties?.origin === 'generated' && created.name) {
+    return { nodeId: createdId, name: created.name };
+  }
+
   // A cell has no kind row; its object type maps to the kind whose naming family
   // fits (THR-1392 slice 2, `OBJECT_TYPE_NAMING_KIND`).
   const objectType = project.objectTypeId ? getUndertakingObjectType(project.objectTypeId) : undefined;
@@ -1981,7 +1990,12 @@ function executeInstantMutation(
       // Gating it on a target would make the one kind whose object belongs to its
       // maker silently unbuildable wherever the target rule came up empty.
       case 'mint_masterwork': {
-        ops.push(mintMasterwork(graph, candidate.actorId, hint.craftTag, tick, hint.tier));
+        // THR-1570: the world seed switches the item generator on; the band the work
+        // landed on decides how remarkable the thing is.
+        ops.push(mintMasterwork(graph, candidate.actorId, hint.craftTag, tick, hint.tier, {
+          worldSeed: state.seed,
+          outcomeBand: outcome,
+        }));
         break;
       }
 

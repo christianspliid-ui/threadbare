@@ -14,7 +14,7 @@ import {
   setHomeSeat,
 } from '../influence';
 import type { SphereAlignment } from '../../types/influence';
-import { TIER_PROMOTION_THRESHOLDS, ESSENCE_PER_SEAT, ESSENCE_PER_PLACE_OF_POWER } from '../../types/influence';
+import { TIER_MAINTENANCE, TIER_PROMOTION_THRESHOLDS, ESSENCE_PER_SEAT, ESSENCE_PER_PLACE_OF_POWER } from '../../types/influence';
 import { SPHERE_NAMES } from '../../types/index';
 
 describe('Essence Pool', () => {
@@ -316,7 +316,7 @@ describe('Influence Tier Management', () => {
       },
     });
 
-    const result = processInfluenceMaintenance(graph, ascendantId, 1);
+    const result = processInfluenceMaintenance(graph, ascendantId, 1, pool);
 
     expect(result.maintenancePaid).toContain(agentId);
     expect(result.maintenanceFailed).toHaveLength(0);
@@ -324,6 +324,28 @@ describe('Influence Tier Management', () => {
     const edge = graph.getOutgoingEdges(ascendantId, 'thread')[0];
     expect(edge.properties.ticksAtCurrentTier).toBe(1);
     expect(edge.properties.maintenanceCurrent).toBe(true);
+  });
+
+  it('processInfluenceMaintenance charges the passed GameState pool, not the node snapshot (THR-1645)', () => {
+    const nodeSnapshot = createEmptyEssencePool();
+    nodeSnapshot.life = 10;
+    graph.updateNode(ascendantId, { properties: { ...graph.getNode(ascendantId)!.properties, essencePool: nodeSnapshot } });
+    const gameStatePool = createEmptyEssencePool();
+    gameStatePool.life = 10;
+
+    graph.addEdge({
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
+      properties: { tier: 2, ticksAtCurrentTier: 0, establishedTick: 0, totalEssenceSpent: 5, maintenanceCurrent: true },
+    });
+
+    const result = processInfluenceMaintenance(graph, ascendantId, 1, gameStatePool);
+
+    expect(result.totalEssenceSpent).toBe(TIER_MAINTENANCE[2]);
+    expect(gameStatePool.life).toBe(10 - TIER_MAINTENANCE[2]);
+    expect((graph.getNode(ascendantId)!.properties.essencePool as typeof nodeSnapshot).life).toBe(10);
   });
 
   it('processInfluenceMaintenance marks failed when insufficient essence', () => {
@@ -344,7 +366,7 @@ describe('Influence Tier Management', () => {
       },
     });
 
-    const result = processInfluenceMaintenance(graph, ascendantId, 11);
+    const result = processInfluenceMaintenance(graph, ascendantId, 11, pool);
     expect(result.maintenanceFailed).toContain(agentId);
 
     const edge = graph.getOutgoingEdges(ascendantId, 'thread')[0];

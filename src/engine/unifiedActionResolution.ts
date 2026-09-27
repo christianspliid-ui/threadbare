@@ -118,6 +118,7 @@ import { resolveCritFailureSeverity } from './resolutionScaleAdjust';
 // derives its inputs and applies its returns; the ladder itself lives there.
 import { resolveStepCore } from './stepResolutionCore';
 import type { AscendantProperties } from '../types/influence';
+import { computeMaxEssence } from './influence';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -3297,14 +3298,17 @@ function resolveSelfActionEffect(
   const props = ascendantNode?.properties as AscendantProperties | undefined;
 
   if (templateId === 'divine.self.stillness') {
-    if (!props?.essencePool || !props.sphereAlignment) return;
+    // THR-1645: the regen lands on `GameState.essencePool` — the one store the
+    // essence bar reads and `commitPlayerCast` spends from — capped at the same
+    // `computeMaxEssence` ceiling `phaseEssence` uses. The ascendant node's
+    // `properties.essencePool` is a creation-time snapshot and is never written.
+    if (!state.essencePool || !props?.sphereAlignment) return;
     const primarySphere = props.sphereAlignment.primary as SphereName;
-    const current = props.essencePool[primarySphere] ?? 0;
-    const max = props.maxEssence ?? Infinity;
-    const newTotal = Math.min(current + STILLNESS_ESSENCE_REGEN, max);
-    state.graph.updateNode(state.ascendantId, {
-      properties: { essencePool: { ...props.essencePool, [primarySphere]: newTotal } },
-    });
+    const current = state.essencePool[primarySphere] ?? 0;
+    const max = computeMaxEssence(state.graph, state.ascendantId);
+    const newTotal = Math.max(current, Math.min(current + STILLNESS_ESSENCE_REGEN, max));
+    // A fresh object, so any selector keyed on the pool's identity sees the change.
+    state.essencePool = { ...state.essencePool, [primarySphere]: newTotal };
     emitTrace({
       category: 'self_action',
       tick,

@@ -20,6 +20,12 @@ import {
 import { getAgentLocationId, getAgentsAtLocation, getFactionMembershipEdges } from './graphQueries';
 import { assignArtifactTrait } from './artifactTraits';
 import { ARTIFACT_STORIED_TRAIT_ID } from '../data/artifact-trait-content';
+import {
+  ITEM_GEN_ID_PREFIX, ITEM_GEN_MASTERWORK_ENABLED, MASTERWORK_BAND_BY_OUTCOME, MASTERWORK_MAX_BAND,
+} from '../data/item-generator-tables';
+import type { ItemGenBand } from '../data/item-generator-tables';
+import { buildItemWorldContext, itemGenHistoryFromGraph } from './itemGenerator/worldContext';
+import { generateValidItem, mintGeneratedItem } from './itemGenerator/mintGeneratedItem';
 // ── The T3 tier's writers (THR-1309) ──
 // Imported rather than reproduced: each of these is the *single* writer for its shape,
 // and a second mint site is a second shape (the lesson `groupShape.ts` records).
@@ -835,6 +841,13 @@ export function pressTheMark(
  * The node is a plain `artifact` carrying the possession property bag the attachment
  * layer already reads, which is why this kind needs no new carrying mechanism — its
  * object *is* an attachment, which is the reason it was chosen as a T1 kind at all.
+ *
+ * **A masterwork is made with an idea (THR-1570).** Given the world seed, the mint asks
+ * the item generator for a thing grown around an authored core — a blade that wants
+ * blood, a ring that bargains — dressed by its maker, their people and their place, at
+ * the band the work earned (`MASTERWORK_BAND_BY_OUTCOME`). It writes that item under a
+ * `gen_masterwork_*` id. Without a seed (an older caller, a test), with the switch off,
+ * or when the generator gives up, it writes exactly the plain masterwork it always has.
  */
 export function mintMasterwork(
   graph: WorldGraph,
@@ -843,11 +856,17 @@ export function mintMasterwork(
   tick: number,
   /** `AttachmentTier`, numeric 1–4. A masterwork defaults to Storied (2). */
   tier: number = 2,
+  opts?: MintMasterworkOptions,
 ): GraphOpResult {
   try {
     const maker = graph.getNode(makerId);
     if (!maker) {
       return { success: false, op: 'mint_masterwork', error: 'actor_not_found' };
+    }
+
+    if (opts?.worldSeed !== undefined && ITEM_GEN_MASTERWORK_ENABLED) {
+      const generatedId = mintGeneratedMasterwork(graph, makerId, tick, tier, opts);
+      if (generatedId) return { success: true, op: 'mint_masterwork', createdId: generatedId };
     }
 
     const itemId = `artifact_masterwork_${makerId}_${tick}`;
@@ -885,6 +904,73 @@ export function mintMasterwork(
     return { success: true, op: 'mint_masterwork', createdId: itemId };
   } catch (e) {
     return { success: false, op: 'mint_masterwork', error: String(e) };
+  }
+}
+
+/** The generator's inputs to a masterwork mint (THR-1570). */
+export interface MintMasterworkOptions {
+  /** `state.seed` — its presence is what switches the generator on for this mint. */
+  readonly worldSeed?: number;
+  /** The band the work's final checkpoint landed on; absent = a plain completion. */
+  readonly outcomeBand?: string;
+  /** The work's site, when it names one; otherwise where the maker stands. */
+  readonly placeId?: string;
+}
+
+/**
+ * The band a masterwork is made at: how the work went (`MASTERWORK_BAND_BY_OUTCOME`),
+ * never below the authored hint's tier, never above `MASTERWORK_MAX_BAND`.
+ */
+export function masterworkBand(outcomeBand: string | undefined, tier: number): ItemGenBand {
+  const byOutcome = (outcomeBand && MASTERWORK_BAND_BY_OUTCOME[outcomeBand as keyof typeof MASTERWORK_BAND_BY_OUTCOME]) || MASTERWORK_BAND_BY_OUTCOME.default;
+  const floor = Math.max(2, Math.round(Number.isFinite(tier) ? tier : 2));
+  return Math.min(MASTERWORK_MAX_BAND, Math.max(floor, byOutcome)) as ItemGenBand;
+}
+
+/**
+ * Generate and mint a masterwork's idea. Returns the new node id, or `null` after
+ * tracing `item.generate_fallback` — the caller then writes the plain masterwork.
+ * Never throws (NFP #4): the tick continues whatever the generator does.
+ */
+function mintGeneratedMasterwork(graph: WorldGraph, makerId: string, tick: number, tier: number, opts: MintMasterworkOptions): string | null {
+  const seedKey = `gen_item:${opts.worldSeed}:masterwork:${makerId}:${tick}`;
+  const fallback = (reason: 'no_eligible_core' | 'validator_exhausted' | 'world_context_missing' | 'threw', lastProblems: string[] = []) => {
+    emitTrace({
+      category: 'item.generate_fallback',
+      tick,
+      agentId: makerId,
+      summary: `The masterwork ${graph.getNode(makerId)?.name ?? makerId} made came out plain (${reason})`,
+      makerId,
+      seedKey,
+      reason,
+      lastProblems,
+    } as TraceEntry);
+    return null;
+  };
+  try {
+    const world = buildItemWorldContext(graph, { makerId, placeId: opts.placeId ?? null });
+    if (!world.maker) return fallback('world_context_missing');
+    const result = generateValidItem({
+      seedKey,
+      band: masterworkBand(opts.outcomeBand, tier),
+      origin: 'masterwork',
+      world,
+      history: itemGenHistoryFromGraph(graph),
+    });
+    if (!result.ok) return fallback(result.reason === 'validator_exhausted' ? 'validator_exhausted' : 'no_eligible_core', result.lastProblems);
+    const id = mintGeneratedItem(graph, result.item, {
+      id: `${ITEM_GEN_ID_PREFIX}masterwork_${makerId}_${tick}`,
+      tick,
+      holderId: makerId,
+      makerId,
+      placeId: world.maker.placeId,
+      rerolls: result.rerolls,
+      edgeTags: ['masterwork'],
+      source: 'mint_masterwork',
+    });
+    return id ?? fallback('threw', ['the generated node could not be written']);
+  } catch (e) {
+    return fallback('threw', [String(e)]);
   }
 }
 

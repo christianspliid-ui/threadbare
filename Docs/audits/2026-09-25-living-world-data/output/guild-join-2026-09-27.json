@@ -1,0 +1,223 @@
+{
+ "seeds": [
+  42,
+  99
+ ],
+ "ticks": 200,
+ "every": 10,
+ "perSeed": {
+  "42": {
+   "boardJoinSample": [
+    {
+     "f": 0.6,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.mend_equipment"
+    },
+    {
+     "f": 0.5,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.trade_caravan_escort"
+    },
+    {
+     "f": 0.5,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.local_tales"
+    },
+    {
+     "f": 0.6,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.patrol_perimeter"
+    },
+    {
+     "f": 0.6,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.decipher_old_markings"
+    },
+    {
+     "f": 0.68,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.study_surroundings"
+    },
+    {
+     "f": 0.74,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "ag.join"
+    },
+    {
+     "f": 0.88,
+     "fit": 0.1,
+     "zone": "above",
+     "chosen": "encounter.trace_ley_lines"
+    },
+    {
+     "f": 0.48,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.decipher_old_markings"
+    },
+    {
+     "f": 0.98,
+     "fit": 0.1,
+     "zone": "above",
+     "chosen": "veil.truth.page_beneath_saint"
+    },
+    {
+     "f": 0.93,
+     "fit": 0.1,
+     "zone": "above",
+     "chosen": "encounter.assess_holdings"
+    },
+    {
+     "f": 0.5,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.honor_duel"
+    }
+   ],
+   "tally": {
+    "samples": 677,
+    "no_hall_here": 508,
+    "at_hall_location": 169,
+    "stands_on_settlement": 169,
+    "join_generated": 166,
+    "join_survives_filters_alone": 109,
+    "first_hall:offerable": 109,
+    "any_hall_offerable": 160,
+    "first_hall:already_member": 3,
+    "join_filtered_alone": 57,
+    "first_hall:fails_prereq": 57,
+    "offerable_only_past_first_hall": 51,
+    "engagement_traces": 1243,
+    "board_top:join:zone=in": 29,
+    "board_top:join:chosen": 2,
+    "board_top:join:zone=above": 16,
+    "board_top:join:zone=below": 21
+   },
+   "hallsPerLoc": {
+    "0": 508,
+    "1": 19,
+    "2": 26,
+    "3": 103,
+    "4": 8,
+    "5": 13
+   },
+   "joinFired": {},
+   "deciderGuildMembershipsAtEnd": {
+    "mercenary_company": 1
+   }
+  },
+  "99": {
+   "boardJoinSample": [
+    {
+     "f": 0.54,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.court_noble"
+    },
+    {
+     "f": 0.68,
+     "fit": 0.6,
+     "zone": "above",
+     "chosen": "encounter.political_intrigue"
+    },
+    {
+     "f": 0.54,
+     "fit": 0.96,
+     "zone": "below",
+     "chosen": "encounter.shadow_hunt"
+    },
+    {
+     "f": 0.54,
+     "fit": 0.81,
+     "zone": "below",
+     "chosen": "encounter.tend_the_weary"
+    },
+    {
+     "f": 0.54,
+     "fit": 0.71,
+     "zone": "below",
+     "chosen": "encounter.listen_for_rumors"
+    },
+    {
+     "f": 0.6,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.pickpocket"
+    },
+    {
+     "f": 0.62,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "ag.join"
+    },
+    {
+     "f": 0.68,
+     "fit": 0.6,
+     "zone": "above",
+     "chosen": "encounter.trade_caravan_escort"
+    },
+    {
+     "f": 0.68,
+     "fit": 0.6,
+     "zone": "above",
+     "chosen": "encounter.decipher_old_markings"
+    },
+    {
+     "f": 0.51,
+     "fit": 0.91,
+     "zone": "below",
+     "chosen": "encounter.listen_for_rumors"
+    },
+    {
+     "f": 0.64,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.barter_with_travelers"
+    },
+    {
+     "f": 0.67,
+     "fit": 1,
+     "zone": "in",
+     "chosen": "encounter.guild_aid"
+    }
+   ],
+   "tally": {
+    "samples": 465,
+    "no_hall_here": 338,
+    "at_hall_location": 127,
+    "stands_on_settlement": 127,
+    "join_generated": 122,
+    "join_survives_filters_alone": 115,
+    "first_hall:offerable": 115,
+    "any_hall_offerable": 123,
+    "first_hall:already_member": 5,
+    "join_filtered_alone": 7,
+    "first_hall:fails_prereq": 7,
+    "offerable_only_past_first_hall": 8,
+    "engagement_traces": 959,
+    "board_top:join:zone=in": 6,
+    "board_top:join:zone=above": 7,
+    "board_top:join:zone=below": 4,
+    "board_top:join:chosen": 1
+   },
+   "hallsPerLoc": {
+    "0": 338,
+    "1": 49,
+    "2": 45,
+    "3": 26,
+    "4": 7
+   },
+   "joinFired": {},
+   "deciderGuildMembershipsAtEnd": {
+    "mercenary_company": 2
+   }
+  }
+ }
+}

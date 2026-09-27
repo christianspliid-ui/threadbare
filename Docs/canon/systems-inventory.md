@@ -322,6 +322,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
 | `intention` (1) | `intentionReading.ts` | `THR-1404`, `THR-1433` |
 | `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
+| `itemgenerator` (9) | `itemGenerator/describeItem.ts`, `itemGenerator/generateItem.ts`, `itemGenerator/mintGeneratedItem.ts`, `itemGenerator/readBack.ts`, `itemGenerator/reviewBatch.ts`, `itemGenerator/reviewWorld.ts`, `itemGenerator/types.ts`, `itemGenerator/validateGeneratedItem.ts`, `itemGenerator/worldContext.ts` | `THR-1155`, `THR-1235`, `THR-1236`, `THR-1528`, `THR-1570`, `THR-1637` |
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
 | `kpi` (4) | `kpi/branchingDistance.ts`, `kpi/engagementKpi.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-1578`, `THR-452`, `THR-457`, `THR-571` |
 | `lair` (3) | `lairClearing.ts`, `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2`, `THR-1319` |
@@ -426,4 +427,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 198 engine domains · 600 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 199 engine domains · 609 modules._
