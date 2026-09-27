@@ -40,7 +40,7 @@ names like `TB-073`) a premise might use.
 | **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
 | **Mandate** | 🟢 ACTIVE | mandate, divine mandate, objective | `mandate` | `mandate` |
 | **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source | `essence`, `essencesource`, `control`, `player` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715` |
-| **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction, content object, content tag, content query, tag vocabulary, appointment, rendezvous, due tick | `encounter`, `encounters`, `dilemma` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
+| **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction, content object, content tag, content query, tag vocabulary, appointment, rendezvous, due tick | `encounter`, `encounters`, `dilemma`, `fights` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits`, `artifact` | `6.626` |
 | **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo, holding, freehold, wealth, tithe, toll | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity`, `holding`, `yield` | `6.62`, `6.628`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
@@ -298,7 +298,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `faction` (14) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
-| `fights` (15) | `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1581`, `THR-1628` |
+| `fights` (16) | `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightRecord.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1528`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1574`, `THR-1581`, `THR-1628` |
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
@@ -425,4 +425,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 197 engine domains · 598 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 197 engine domains · 599 modules._

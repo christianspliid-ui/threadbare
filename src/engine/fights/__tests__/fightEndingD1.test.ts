@@ -20,6 +20,7 @@ import {
   type FightEndContext,
 } from '../fightOutcome';
 import { fighterEndingBranch, fightDeathGuard } from '../fightEnding';
+import { fightRecordBranch } from '../fightRecord';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../../data/condition-trait-content';
 import {
   FIGHT_HUMILIATION_REPUTATION,
@@ -141,8 +142,11 @@ beforeEach(() => { clearTraces(); enableTracing(); });
 afterEach(() => { clearTraces(); disableTracing(); resetFightEndBranches(); });
 
 describe('THR-1548 — the fighter branch is registered', () => {
-  it('ships first in the dispatcher\'s default branches', () => {
-    expect(DEFAULT_FIGHT_END_BRANCHES[0]).toBe(fighterEndingBranch);
+  it('ships right after the fight record, ahead of the opponent-side branches', () => {
+    // THR-1574 registers the fight's record on the ground first, on purpose (the record
+    // must exist even if a later branch throws); the fighter's ending is next.
+    expect(DEFAULT_FIGHT_END_BRANCHES[0]).toBe(fightRecordBranch);
+    expect(DEFAULT_FIGHT_END_BRANCHES[1]).toBe(fighterEndingBranch);
   });
 });
 
@@ -400,7 +404,9 @@ describe('THR-1548 — yields, routs and break-offs', () => {
   it('a break-off writes nothing', () => {
     const state = baseState(world());
     const edgesBefore = state.graph.getAllEdges().length;
-    const out = onFightEnded(state, fightAction('broke_off'), ctxFor(state, countingRng(0.5).rng));
+    // The ending branch alone: a two-exchange break-off is still a fight, so the record
+    // branch (THR-1574) rightly leaves its record on the ground.
+    const out = onFightEnded(state, fightAction('broke_off'), ctxFor(state, countingRng(0.5).rng), [fighterEndingBranch]);
     expect(withoutSignificance(out.fightState.ending)).toEqual({ face: 'broke_off', scarWritten: false, grudgeWritten: false });
     expect(state.graph.getAllEdges().length).toBe(edgesBefore);
   });

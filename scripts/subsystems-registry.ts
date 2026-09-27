@@ -94,7 +94,10 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     // are judged in the seed evaluator, so the badge reads them here too.
     aliases: ['encounter', 'dilemma', 'aftermath', 'chapter', 'reaction', 'content object', 'content tag', 'content query', 'tag vocabulary', 'appointment', 'rendezvous', 'due tick'],
     activityKeywords: ['encounter', 'dilemma', 'aftermath', 'reaction', 'appointment'],
-    domains: ['encounter', 'encounters', 'dilemma'],
+    // THR-1574 — `fights/` (the Physical Conflict fight block) runs as encounter
+    // templates (`fight.lair.confront`, `fight.duel.grudge`) through the encounter
+    // step machine; the interface map already files its contracts under Encounters.
+    domains: ['encounter', 'encounters', 'dilemma', 'fights'],
     phaseMatch: /\b(encounter|dilemma|aftermath)\b/i,
     note: 'The core narrative engine — scoring, eligibility, resolution, aftermath reactions, chapter archive.',
   },
