@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-27 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-27 16:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-27: a new cycle now starts with a fresh Doom clock** instead of inheriting the old one ([THR-1642](https://linear.app/threadbare/issue/THR-1642)). Merged via [#2096](https://github.com/christianspliid-ui/threadbare/pull/2096), and live on the site.
 - **2026-09-27: found items now take their stories from your actual world**: a relic or trophy draws on the world's own dead heroes, disasters and monsters ([THR-1637](https://linear.app/threadbare/issue/THR-1637)). Merged via [#2095](https://github.com/christianspliid-ui/threadbare/pull/2095), and live on the site.
 - **2026-09-27: the seeded item generator is live**: a finished masterwork is now born with an idea, a real power and often a price ([THR-1570](https://linear.app/threadbare/issue/THR-1570)). Merged via [#2088](https://github.com/christianspliid-ui/threadbare/pull/2088), and live on the site.
 - **2026-09-27: when two duellists kill each other, the second death now leaves grief behind too** ([THR-1629](https://linear.app/threadbare/issue/THR-1629)). Merged via [#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-27: three seeded story hooks whose follow-ups told the wrong story were retired** ([THR-1565](https://linear.app/threadbare/issue/THR-1565)). Merged via [#2084](https://github.com/christianspliid-ui/threadbare/pull/2084), and live on the site.
 - **2026-09-27: every monster family has its own portrait** on the lair card and in the fight header ([THR-1554](https://linear.app/threadbare/issue/THR-1554)). Merged via [#2083](https://github.com/christianspliid-ui/threadbare/pull/2083), and live on the site.
 - **2026-09-26: the duel odds check works again on the new dice** ([THR-1628](https://linear.app/threadbare/issue/THR-1628)). Merged via [#2082](https://github.com/christianspliid-ui/threadbare/pull/2082), and live on the site.
-- **2026-09-26: a protection against losing a condition now refuses the condition it names** ([THR-1625](https://linear.app/threadbare/issue/THR-1625)). Merged via [#2081](https://github.com/christianspliid-ui/threadbare/pull/2081), and live on the site.
 
 ---
 
