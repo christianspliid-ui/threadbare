@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-27 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-27 10:56 local (08:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-27: when two duellists kill each other, the second death now leaves grief behind too** ([THR-1629](https://linear.app/threadbare/issue/THR-1629)). Merged via [#2087](https://github.com/christianspliid-ui/threadbare/pull/2087), and live on the site.
 - **2026-09-27: heroes' starting faction membership now carries standing** ([THR-1620](https://linear.app/threadbare/issue/THR-1620)). Merged via [#2089](https://github.com/christianspliid-ui/threadbare/pull/2089), and live on the site.
 - **2026-09-27: travellers’ resting spots on the road no longer pile up as nameless places** ([THR-1616](https://linear.app/threadbare/issue/THR-1616)). Merged via [#2086](https://github.com/christianspliid-ui/threadbare/pull/2086), and live on the site.
 - **2026-09-27: a fight now leaves a record on the ground, and three systems read it** ([THR-1574](https://linear.app/threadbare/issue/THR-1574)). Merged via [#2085](https://github.com/christianspliid-ui/threadbare/pull/2085), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-26: a protection against losing a condition now refuses the condition it names** ([THR-1625](https://linear.app/threadbare/issue/THR-1625)). Merged via [#2081](https://github.com/christianspliid-ui/threadbare/pull/2081), and live on the site.
 - **2026-09-26: reactions to a mortal becoming blessed or cursed now fire** ([THR-1624](https://linear.app/threadbare/issue/THR-1624)). Merged via [#2080](https://github.com/christianspliid-ui/threadbare/pull/2080), and live on the site.
 - **2026-09-26: a hex's lore now says "not fully explored" once, not once per ruin** ([THR-1621](https://linear.app/threadbare/issue/THR-1621)). Merged via [#2079](https://github.com/christianspliid-ui/threadbare/pull/2079), and live on the site.
-- **2026-09-26: colocation and role fit now read a mortal's reach share** ([THR-1576](https://linear.app/threadbare/issue/THR-1576)). Merged via [#2078](https://github.com/christianspliid-ui/threadbare/pull/2078), and live on the site.
 
 ---
 
