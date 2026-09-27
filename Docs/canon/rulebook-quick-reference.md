@@ -23,7 +23,7 @@ A procedurally generated hex map. Hexes are mutable state (not graph nodes). Eve
 
 ## The Three-Beat Turn
 
-**Scan → Curated Moment → Aftermath.** Each tick is two in-world hours; 12 ticks per day. The world advances only when you say so. Order is load-bearing: scan means you chose to look; encounter is the chapter; aftermath is the breath before the next scan.
+**Scan → Curated Moment → Aftermath.** Each tick is two in-world hours; 12 ticks per day. The world runs in real time between moments and **halts for every moment that matters**; when it closes, the clock returns to the state you left it in [DESIGN — the Stellaris model, 2026-09-27; halt registry per the opening plan]. Order is load-bearing: scan means you chose to look; encounter is the chapter; aftermath is the breath before the next scan.
 
 ## What You Can Do
 
@@ -110,7 +110,7 @@ A heavy enough harm may take a full mortal's **secondary** want — the vendetta
 
 ## The Clocks and the Ending
 
-Two clocks pressure the run. **Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking. **Victory Mandate** (3 stages, graph-state win) runs in parallel. They pressure each other — essence spent on one is essence not spent on the other.
+Two clocks pressure the run. **Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking. It sleeps until you bond The First, and it cannot end the world before a floor of time after the bond [DESIGN — the opening plan, S2]. **Victory Mandate** (3 stages, graph-state win) runs in parallel. They pressure each other — essence spent on one is essence not spent on the other.
 
 Either clock ending triggers the **Twilight Phase**: the run's closing chapter, harvested into Echoes (Legacy / Monument / Relic) that feed the **World-Soul** and shape the next cycle.
 
