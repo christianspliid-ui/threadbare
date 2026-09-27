@@ -260,6 +260,15 @@ export const controlRenewalMessage = (actorName: string, targetName: string): st
 export const HOLD_STANDING_REPUTATION_SEED = 0.2;
 
 /**
+ * Reputation seeded at world creation on a spotlight protagonist's starting Realm
+ * membership (`worldSeed.ts`, THR-1620). Pinned to the hold seed so a named hero
+ * and a town keeper both start as a *subject* on the realm ladder — above the
+ * `stranger` rung whose `encounterAccess` is empty, so the court's quests reach
+ * them. Tune independently if protagonists should start higher or lower.
+ */
+export const SEEDED_PROTAGONIST_MEMBERSHIP_REPUTATION = HOLD_STANDING_REPUTATION_SEED;
+
+/**
  * The board term's weight on `computeTemperamentWeight` — same order as
  * `UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT`, so a keeper's work leans toward what
  * they hold without swamping the ambition and reach terms.
