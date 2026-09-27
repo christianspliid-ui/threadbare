@@ -649,14 +649,14 @@ function printLocationTraits(locationQuery?: string): void {
   }
 }
 
-/** THR-1528 — the records battles leave on the ground, newest first. */
+/** THR-1528 — the records battles (and, THR-1574, fights) leave on the ground, newest first. */
 function printBattleRecords(locationQuery?: string): void {
   const rows = describeBattleRecords(state.graph, locationQuery);
   console.log(header(`Battle records — ${rows.length}${locationQuery ? ` (filter: ${locationQuery})` : ''}`));
   for (const r of rows) {
     const who = r.participants.map(p => `${p.name} (${p.role}, ${p.outcome})`).join(', ');
     console.log(
-      `  t${r.tick ?? '?'}  ${r.locationName ?? dim('no place')}  ${r.battleType ?? '?'} ${r.resolutionType ?? '?'}${r.severity ? ` (${r.severity})` : ''}  ${dim(r.eventId)}`,
+      `  t${r.tick ?? '?'}  ${r.locationName ?? dim('no place')}  ${r.eventType === 'fight_fought' ? `fight ${r.result ?? '?'}` : `${r.battleType ?? '?'} ${r.resolutionType ?? '?'}`}${r.severity ? ` (${r.severity})` : ''}  ${dim(r.eventId)}`,
     );
     console.log(dim(`            "${r.summary}"${who ? `  — ${who}` : ''}`));
   }

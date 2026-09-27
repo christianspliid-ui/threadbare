@@ -4194,6 +4194,10 @@ fifth rule mints `trait.condition.location.blood_soaked` from those records insi
 `BLOOD_SOAKED_WINDOW_TICKS`. Its pool row is `#combat` / `#loss` / `#fear` / `#iron`, so a template
 about violence or grief carrying those family tags leans toward a recent battlefield; gate on it
 with `requiredTargetTraits` like any other. The place page's MEMORY tells the battle itself.
+Fights feed the same rule (THR-1574): a fight with at least one exchange writes one
+`fight_fought` Event where it was fought (`fights/fightRecord.recordFightFought`, the first
+`FIGHT_END_BRANCHES` entry), weighted `BLOOD_SOAKED_FIGHT_WEIGHT`, so a lair fought over three
+times in ten days reads Blood-soaked. A no-roll end or a zero-clash rout writes nothing.
 
 **What is deliberately not here.** Nothing is minted from the death count: it would call a
 plague a massacre, so the dead enter *Haunted* as its co-condition instead. No new

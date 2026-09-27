@@ -2847,3 +2847,11 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `buildLairMonsterCardModel` / `buildOpponentHeaderModel` (`portraitSrc`, via `portraitSrcFor`) | — (render-time) | `LairMonsterCard` chip and `OpponentHeader` art tile — both graph-free, so they pass it as `knownSrc` | reads `monsterState.family` | none | `__DEBUG.getLairMonsterCard(...).monster.portraitSrc`, `getOpponentHeaderModel(...).portraitSrc` |
 
 **Wired and asserted:** `entityVisualResolver.test.ts` (every family → its own art; unknown / missing / art-less family → the generic portrait), `lairMonsterF1.test.tsx` (the rendered lair card `<img>` is the family portrait), `opponentHeaderF2.test.tsx` (monster header carries it, mortal header does not). Live: seed `?view=game&seeded&size=medium`, tick 100, lair_2 "Fecund Roost" → Turvane's chip loads `/portraits/monster-behemoth.jpg` (`Docs/evidence/thr-1554/`). Before this, the lair card's graph-free chip could not see the family and drew the generic portrait — caught only by the live capture.
+
+### THR-1574 — a fight leaves a record on the ground (Blood-soaked slice 2)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/fights/fightRecord.ts` (new: `fightRecordBranch`, `recordFightFought`, `resolveFightPlace`, `fightRecordSummary`) | step resolution (`finalizeFightEnd` → `onFightEnded`, **first** in `FIGHT_END_BRANCHES`) | place MEMORY (`latestBloodshedRecord`), location page conditions row (*Blood-soaked*, via `phaseLocationTraits`) | graph: `fight_fought` event + `occurred_at` + `participated_in`; `lastFightTick` on the Location | `fight_recorded` (once per ended fight, incl. `skipped: no_exchanges / no_place` and `error`) | `getBattleRecords()` (rows carry `result`), CLI `battles` |
+
+**Wired and asserted:** `fightRecord.test.ts` runs through the real `onFightEnded` with the shipped branches. Live CLI (seed 42 medium): three `spawn fight`s at Ardenmor Keep mint *Blood-soaked* (bloodshed 1.02), one does not (0.34).

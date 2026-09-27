@@ -29,6 +29,7 @@ import { emitTrace } from '../traceBuffer';
 import { withFightResultMemory } from './fightState';
 import { monsterLairBranch } from '../monsters/monsterFelling';
 import { fighterEndingBranch } from './fightEnding';
+import { fightRecordBranch } from './fightRecord';
 
 /** What a dispatcher branch is handed (plan doc §6). */
 export interface FightEndContext {
@@ -66,16 +67,21 @@ export interface FightEndedResult {
  * The branches that ship with the engine, in run order. Plan docs 1, 3 and 5 add
  * theirs here (THR-1548, THR-1546, THR-1557 and siblings).
  *
+ * - `fightRecordBranch` (THR-1574): the fight's record on the ground it was fought on
+ *   (`fight_fought` + `occurred_at` + `lastFightTick`), the input *Blood-soaked* reads.
+ *   **First, on purpose:** the record must exist even if a later branch throws and stops
+ *   the dispatch, so it cannot carry the ending's face. Do not move it later. It never
+ *   throws — it catches and traces its own errors.
  * - `fighterEndingBranch` (THR-1548): what the ending leaves on the fighter — the
- *   defeat faces, the death gate, Scarred, the grudge, humiliation. First, so the
- *   fighter's record is written before any opponent-side branch reads the action.
+ *   defeat faces, the death gate, Scarred, the grudge, humiliation. Before the
+ *   opponent-side branches, so the fighter's record is written before they read the action.
  * - `monsterLairBranch` (THR-1546): felling or driving off a lair's monster.
  *
  * A duel's other side (THR-1557) is not a branch of its own: the victor's mercy fork
  * and the opponent's face are decided inside `fighterEndingBranch`, which returns both
  * `ending` and `opponentEnding`, so one `fight.ending` trace carries the whole fork.
  */
-export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [fighterEndingBranch, monsterLairBranch];
+export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [fightRecordBranch, fighterEndingBranch, monsterLairBranch];
 
 /** The live branch list `onFightEnded` runs by default. Tests may push onto it. */
 export const FIGHT_END_BRANCHES: FightEndBranch[] = [...DEFAULT_FIGHT_END_BRANCHES];
