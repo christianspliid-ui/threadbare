@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-27 02:57 local (00:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-27 03:57 local (01:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,19 +27,19 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 jobs are ready, none being built right now.** The builder lane picks the next one up at its next hourly run.
+**Healthy: 4 jobs are ready, none being built right now.** The builder lane picks the next one up at its next hourly run.
 
-- **Shipped this hour:** three seeded story hooks whose follow-ups told the wrong story were retired ([THR-1565](https://linear.app/threadbare/issue/THR-1565), via [#2084](https://github.com/christianspliid-ui/threadbare/pull/2084)). It is live on the site.
+- **Shipped this hour:** a fight now leaves a record on the ground, and three systems read it ([THR-1574](https://linear.app/threadbare/issue/THR-1574), via [#2085](https://github.com/christianspliid-ui/threadbare/pull/2085)). It is live on the site.
 - **Fight system: every planned piece is live, but not yet ready for you to review.** There is no one-click link that opens a fight, the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight. One small bug is still queued: [when two duellists kill each other, the second death leaves no grief behind](https://linear.app/threadbare/issue/THR-1629).
 - [Heroes' starting faction membership carries no standing](https://linear.app/threadbare/issue/THR-1620) and [the item generator build](https://linear.app/threadbare/issue/THR-1570) have no priority set.
 
 ## Health
 
-- **The long simulation tests are now red six runs in a row** on `main` ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/36282783834)). It is the same two tests every time, about who inherits a company or army when its commander dies, and they fail by running just past a 5-second time limit, not by giving wrong answers. The impediment log has it three times this week, so the weekly retro will promote the fix. It is not yours.
+- **The long simulation tests are now red seven runs in a row** on `main` ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/36286072161)). It is now three tests, not two: the two about who inherits a company or army when its commander dies, plus a third from the same file that records what each ownership cell does. All three fail by running just past a time limit (about 6 seconds against 5), not by giving wrong answers. The impediment log has it, so the weekly retro will promote the fix. It is not yours.
 - **Lane silence:** the worst recent gap is still 21 hours, Sunday 20 September evening into Monday 21 September afternoon. [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer was asleep for that window, so it needs nothing from you.
 - **Everything else is green:**
-  - The live site is serving the latest `main` (with #2084).
-  - Game speed is 78 ms per tick, 4% above the weekly median. That is within the normal range.
+  - The live site is serving the latest `main` (with #2085).
+  - Game speed is 78 ms per tick, 3% above the weekly median. That is within the normal range.
   - All ten scheduled lanes are on time.
-  - The worktree reaper last ran at 02:40 local. 5 worktrees are waiting to be sorted, which is routine.
+  - The worktree reaper last ran at 03:42 local. 5 worktrees are waiting to be sorted, which is routine.
   - No pull requests are waiting to merge.
