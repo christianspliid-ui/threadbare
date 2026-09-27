@@ -68,7 +68,7 @@ Prefixes are claimed for **totality**, not ownership: every id in a kind's catal
 | `encounter_template` | `encounter.` `encounter_` `enc.` `borderland.` `social.` `tavern.` `npc_` `monster.` `army.` `reputation.` `faction.` `mentorship.` `liminal.` `broker.` `healer.` `crafting.` `star.` `stone.` `veil.` `eye.` `gold.` `fight.` `hunt.` `ag.` `mc.` `tg.` `ac.` `bf.` `cg.` `hod.` `uk.` `rb.` `mct.` `lk.` `ts.` `fa.` |
 | `action_template` | `action.` `hex.` `divine.` `loc.` `invest.` `artifact.` `company.` `sub.` `thread.` `bind_` `observe_` `scry_` `whisper_` `dream_` |
 | `undertaking_template` | `strategic_` `cell.` |
-| `item_template` | `reward_` `starter_` `anomaly_` |
+| `item_template` | `reward_` `starter_` `anomaly_` `gen_` |
 | `legendary_template` | `worldforge_` `heartseed_` `voidgate_` |
 | `condition_template` | `reward_` `starter_` `anomaly_` `trait.condition.` `trait.scar.` `trait.artifact.` |
 | `power_template` | `reward_` `anomaly_` `spell_` |
