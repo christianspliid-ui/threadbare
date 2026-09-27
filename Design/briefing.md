@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-28 00:55 local (22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-28 01:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,7 +18,7 @@ Everything from your four feedback batches is live. The one question is: **playe
 
 ## Decided for you
 
-- [Someone who wants something in every settlement, and people tied to each other](https://linear.app/threadbare/issue/THR-1630): **the plan is written and ready to build.** Every settlement gets one local figure. That figure owns property, has an old quarrel, and holds a secret or a favour tied to a nearby hero. Every named hero starts with a relative, a friend and a rival among their neighbours. Other calls made:
+- [Someone who wants something in every settlement, and people tied to each other](https://linear.app/threadbare/issue/THR-1630): **the plan is written and now being built.** Every settlement gets one local figure. That figure owns property, has an old quarrel, and holds a secret or a favour tied to a nearby hero. Every named hero starts with a relative, a friend and a rival among their neighbours. Other calls made:
   - Newcomers no longer climb into the deciding tier past your attention limit. This is measured before it ships and can be switched off.
   - Family is called "kin" everywhere.
   - A hero's starting Realm is the one that holds their home.
@@ -43,27 +43,27 @@ Everything from your four feedback batches is live. The one question is: **playe
   - [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635)
   - [seeded things that stay alive](https://linear.app/threadbare/issue/THR-1636)
 
-  *— from tb-design-lane* (say "veto living-world carve-up")
+  *— from tb-design-lane* (say "veto living-world carve-up"; this one drops off next hour)
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: 2 jobs ready to build, 1 being built.** One job shipped this hour: [the world reads bigger](https://linear.app/threadbare/issue/THR-1649). Your avatar now sees two hexes, and the camera can zoom out to the whole map. Merged via [#2105](https://github.com/christianspliid-ui/threadbare/pull/2105) and live on the site.
+**Starved: 1 job ready to build, 2 being built.** The design lane is writing plans; its next run is around 02:18 local.
 
-- **Ready, top first:**
-  - [Heroes start with kin, friends and rivals](https://linear.app/threadbare/issue/THR-1630), the plan above.
-  - [Let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above.
-- **Being built:** [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635), [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091). There has been no new push since 19:17 UTC. It still conflicts with newer `main`, and its required check still fails. Its local copy holds no unsaved changes, so nothing is at risk.
+- **Ready:** [let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above.
+- **Being built:**
+  - [Heroes start with kin, friends and rivals](https://linear.app/threadbare/issue/THR-1630). Picked up this hour. The first slice is [#2106](https://github.com/christianspliid-ui/threadbare/pull/2106), last pushed 12 minutes ago. It has no conflicts and will merge on its own once its checks pass.
+  - [Culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635), [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091). No new push since 19:17 UTC. It still conflicts with newer `main`, and its required check still fails. Its local copy holds no unsaved changes, so nothing is at risk.
 - **The fight system is live but not ready for you to review.** No one-click link opens a fight the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) conflicts with `main`, and its [required check](https://github.com/christianspliid-ui/threadbare/actions/runs/36343752679) fails. It has been stuck about 15 hours. Auto-merge is on, but it will not fire until someone fixes both. This is for a builder, not you.
-- **The slow simulation tests are red on the latest `main`** ("Heavy simulation tests", 1 h old). A builder owes a follow-up fix. It does not block merges or the live site.
-- **Game speed is still above normal, but improving:** tick cost 106 ms/tick steady, 37% above the 7-day median (77, 135 rows since df1cf66c); top phase agent_decision, 486 agents. Name the merges between df1cf66c and 2ba9db47: `git log --oneline --merges df1cf66c..2ba9db47`. It was 118 an hour ago. The earlier same-commit comparison (76 vs 114) still points at machine load, not a code regression.
+- **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) conflicts with `main`, and its [required check](https://github.com/christianspliid-ui/threadbare/actions/runs/36343752679) fails. It has been stuck about 16 hours. Auto-merge is on, but it will not fire until someone fixes both. This is for a builder, not you.
+- **The slow simulation tests are red on the latest `main`** ("Heavy simulation tests", 2 h old). A builder owes a follow-up fix. It does not block merges or the live site.
+- **Game speed is still above normal, but improving:** tick cost 104 ms/tick steady, 35% above the 7-day median (77, 136 rows since df1cf66c); top phase agent_decision, 486 agents. Name the merges between df1cf66c and 2ba9db47: `git log --oneline --merges df1cf66c..2ba9db47`. It was 106 an hour ago, on the same commit, which still points at machine load rather than a code regression.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
   - The live site is serving the latest commit on main (2ba9db47).
   - Automated checks and the three background jobs are running normally.
-  - All ten scheduled lanes are on time. The worktree cleaner ran at 00:40.
+  - All ten scheduled lanes are on time. The worktree cleaner ran at 01:40.
