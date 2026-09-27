@@ -17,6 +17,7 @@ import { WorldGraph } from '../graph';
 import { executeGraphOps } from '../graphOpExecutor';
 import { resolveEffectiveTier } from '../attentionTier';
 import { THREAD_CREATION_TEMPLATES } from '../../data/unified-action-templates';
+import { isActionStepBranch } from '../../types/unifiedAction';
 import type { CourtPosition } from '../../types/influence';
 
 function makeGraph(): WorldGraph {
@@ -29,10 +30,13 @@ function makeGraph(): WorldGraph {
 function threadMortalWith(templateId: string): CourtPosition | null {
   const template = THREAD_CREATION_TEMPLATES.find(t => t.id === templateId);
   expect(template, `template ${templateId} exists`).toBeDefined();
+  const step = template!.steps[0];
+  if (isActionStepBranch(step)) throw new Error(`${templateId} step 0 is a branch`);
   const g = makeGraph();
-  const result = executeGraphOps(g, template!.steps[0].onSuccess, {
+  const result = executeGraphOps(g, [...step.onSuccess], {
     actorId: 'asc',
     targetId: 'mortal',
+    locationId: 'mortal',
     tick: 3,
   });
   expect(result.allSucceeded).toBe(true);

@@ -36,6 +36,14 @@ const TICKS = 30;
  */
 const ROTATION_CYCLE_TICKS = 24;
 
+/**
+ * Ceiling for a case that builds its own fresh world and runs `TICKS` ticks (THR-1517
+ * rule: a `runTick` loop carries its own ceiling). Alone the case runs ~1.7–4.5 s; under
+ * the full `test:heavy` lane it crossed vitest's 5 s default five times in three days
+ * (impediment rows 1073, 1081, 1084, 1088, and THR-1643's run).
+ */
+const FRESH_WORLD_CASE_TIMEOUT_MS = 60_000;
+
 function world(seed: number, ticks: number): GameState {
   resetEventCounter();
   const runtime = createSimulationRuntime();
@@ -114,7 +122,7 @@ describe('the ownership band on a generated world', () => {
     const offers = cycle().filter((c): c is NonNullable<typeof c> => c !== undefined);
     expect(offers.length).toBeGreaterThan(0);
     expect(offers[0].objectTypeId).toBe('company');
-  });
+  }, FRESH_WORLD_CASE_TIMEOUT_MS);
 
   it('an army whose commander dies is offered to a faction-mate, and to nobody outside', () => {
     const s = world(SEED, TICKS);
@@ -159,7 +167,7 @@ describe('the ownership band on a generated world', () => {
       }
     }
     console.log(`[THR-1438] outsiders walking claim×army: ${walkedByAnOutsider} of ${outsiders.length}`);
-  });
+  }, FRESH_WORLD_CASE_TIMEOUT_MS);
 
   it('records what each of the seven cells does on this world — offered, or refused by name', () => {
     // The census the ticket owes: every cell either starts, or its refusal reason is
