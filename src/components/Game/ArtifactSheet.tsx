@@ -47,6 +47,38 @@ import type { WorldGraph } from '../../engine/graph';
 import { readArtifactTraits } from '../../engine/artifactTraits';
 import { ATTACHMENT_TOOLTIP_PREFIX } from '../../engine/attachmentTemplateIndex';
 import { contentTagChips } from './contentTagChips';
+import { EntityLink } from '../shared/EntityLink';
+import { describeItem } from '../../engine/itemGenerator/describeItem';
+import { isAgentGone } from '../../engine/groups/groupQueries';
+import type { GeneratedItemProvenance } from '../../engine/itemGenerator/types';
+import type { AttachmentEffect } from '../../types/effects';
+
+/** One plain-words block: a small-caps heading, then a sentence per line. */
+function GeneratedBlock({ label, lines }: { label: string; lines: readonly string[] }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+      <div
+        style={{
+          fontSize: 'var(--text-xs)',
+          fontFamily: 'var(--font-display)',
+          fontVariant: 'small-caps',
+          letterSpacing: '0.05em',
+          color: 'var(--text-tertiary)',
+        }}
+      >
+        {label}
+      </div>
+      {lines.map((line, i) => (
+        <p
+          key={i}
+          style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', lineHeight: 1.5, color: 'var(--text-secondary)' }}
+        >
+          {line}
+        </p>
+      ))}
+    </div>
+  );
+}
 
 interface ArtifactSheetProps {
   name: string;
@@ -113,6 +145,20 @@ export const ArtifactSheet = React.memo(function ArtifactSheet({
       }))
     : [];
 
+  // THR-1570 — a generated item's maker, and its words. Authored catalog items carry no
+  // `origin`, so none of this renders for them (their "when…" bonuses are a separate call).
+  const generated = props.origin === 'generated' ? (props.generated as GeneratedItemProvenance | undefined) : undefined;
+  const effects = Array.isArray(props.effects) ? (props.effects as AttachmentEffect[]) : [];
+  const generatedWords = generated ? describeItem(effects, generated.catchIndexes ?? [], generated.catchNotes ?? []) : null;
+  const makerId = typeof props.craftedBy === 'string' ? props.craftedBy : null;
+  const makerNode = makerId && graph ? graph.getNode(makerId) : undefined;
+  const makerConcept = generated?.provenanceConcepts?.find(c => c.kind === 'actor' && c.id === makerId);
+  const maker = generated && makerId && (makerNode?.name || makerConcept?.name)
+    ? { id: makerId, name: (makerNode?.name ?? makerConcept?.name) as string, linked: !isAgentGone(makerNode) }
+    : null;
+  const placeConcept = generated?.provenanceConcepts?.find(c => c.kind === 'location');
+  const makerPlace = placeConcept && graph?.getNode(placeConcept.id) ? { id: placeConcept.id, name: placeConcept.name } : null;
+
   return (
     <Modal open={true} onClose={onClose} aria-label={`${name} profile`}>
       <Modal.Header onClose={onClose}>{name}</Modal.Header>
@@ -150,6 +196,26 @@ export const ArtifactSheet = React.memo(function ArtifactSheet({
             </div>
           )}
 
+          {/* THR-1570 — who made it, as a link to their sheet (the name alone, unlinked,
+              when the maker is gone: never a dead link, Law 21). */}
+          {maker && (
+            <div
+              style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-body)' }}
+              data-testid="artifact-sheet-maker"
+            >
+              Made by{' '}
+              {maker.linked
+                ? <EntityLink id={maker.id} name={maker.name} entityRef={{ kind: 'agent', id: maker.id }} />
+                : <span style={{ color: 'var(--text-primary)' }}>{maker.name}</span>}
+              {makerPlace && (
+                <>
+                  {' at '}
+                  <EntityLink id={makerPlace.id} name={makerPlace.name} entityRef={{ kind: 'location', id: makerPlace.id }} />
+                </>
+              )}
+            </div>
+          )}
+
           {/* Information — the item's own prose, or the designed absence line. */}
           <p
             style={{
@@ -164,6 +230,20 @@ export const ArtifactSheet = React.memo(function ArtifactSheet({
           >
             {flavor ?? NO_DETAIL_COPY}
           </p>
+
+          {/* THR-1570 — a generated item says what it does and what it costs, in words.
+              Derived at render from `effects[]`, so they never go stale when an effect is
+              rescaled; each block renders only when it has content (Law 4). */}
+          {generatedWords && generatedWords.does.length > 0 && (
+            <div data-testid="artifact-sheet-does">
+              <GeneratedBlock label="What it does" lines={generatedWords.does} />
+            </div>
+          )}
+          {generatedWords && generatedWords.catches.length > 0 && (
+            <div data-testid="artifact-sheet-catch">
+              <GeneratedBlock label="The catch" lines={generatedWords.catches} />
+            </div>
+          )}
 
           {/* Traits — what the thing has become (THR-1521). Only when it carries one. */}
           {traitChips.length > 0 && (

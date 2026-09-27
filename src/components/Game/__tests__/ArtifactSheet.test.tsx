@@ -212,3 +212,44 @@ describe('ArtifactSheet — the trait slot (THR-1521)', () => {
     expect(screen.getByTestId('artifact-sheet-tags').textContent).not.toMatch(/#/);
   });
 });
+
+describe('ArtifactSheet — a generated item says what it does (THR-1570)', () => {
+  function graphWithGeneratedMasterwork(): { graph: WorldGraph; id: string } {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'maker', type: 'actor', name: 'Sila Vane', properties: { actorType: 'individual' } } as never);
+    graph.addNode({ id: 'town', type: 'location', name: 'Saltmere', properties: { locationSubtype: 'town', hexCol: 1, hexRow: 1 } } as never);
+    graph.addEdge({ id: 'at_maker', source: 'maker', target: 'town', type: 'located_at', properties: {} });
+    const minted = mintMasterwork(graph, 'maker', 'masterwork', 12, 2, { worldSeed: 42 });
+    return { graph, id: minted.createdId! };
+  }
+
+  it('shows Made by, What it does and The catch, in words — never a numeral (Law 13)', () => {
+    const { graph, id } = graphWithGeneratedMasterwork();
+    const name = graph.getNode(id)!.name;
+    render(<ArtifactSheet name={name} artifactId={id} graph={graph} onClose={() => {}} />);
+    expect(screen.getByTestId('artifact-sheet-maker').textContent).toMatch(/Made by Sila Vane/);
+    const does = screen.getByTestId('artifact-sheet-does');
+    expect(does.textContent).toMatch(/What it does/);
+    expect(does.textContent).not.toMatch(/\d/);
+    const catchBlock = screen.queryByTestId('artifact-sheet-catch');
+    if (catchBlock) expect(catchBlock.textContent).not.toMatch(/\d/);
+    // The numeric authoring aid stays hidden.
+    expect(document.body.textContent).not.toContain(String(graph.getNode(id)!.properties.mechanicalSummary));
+  });
+
+  it('Law 21: a maker who has died is named, not linked', () => {
+    const { graph, id } = graphWithGeneratedMasterwork();
+    graph.updateNode('maker', { properties: { actorType: 'individual', deceased: true } });
+    render(<ArtifactSheet name="x" artifactId={id} graph={graph} onClose={() => {}} />);
+    const maker = screen.getByTestId('artifact-sheet-maker');
+    expect(maker.textContent).toMatch(/Sila Vane/);
+    expect(maker.querySelector('button')).toBeNull();
+  });
+
+  it('Law 4: an authored item shows none of the generated blocks', () => {
+    render(<ArtifactSheet name="Road-Worn Mule" artifactId="starter_road_worn_mule" graph={graphWithMule()} onClose={() => {}} />);
+    expect(screen.queryByTestId('artifact-sheet-maker')).toBeNull();
+    expect(screen.queryByTestId('artifact-sheet-does')).toBeNull();
+    expect(screen.queryByTestId('artifact-sheet-catch')).toBeNull();
+  });
+});

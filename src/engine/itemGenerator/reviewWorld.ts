@@ -14,8 +14,7 @@
  * graph; this module is imported only by the review levers and the tests.
  */
 
-import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
-import { MONSTER_FACTION_DEFINITIONS } from '../../data/monster-faction-definitions';
+import { getFactionDefinition, getFactionDefinitionRoster } from '../../data/faction-definition-lookup';
 import { ITEM_GEN_FACTION_WORDS, ITEM_GEN_FACTION_WORDS_FALLBACK } from '../../data/item-generator-tables';
 import type {
   ItemGenCulture, ItemGenEvent, ItemGenFaction, ItemGenHero, ItemGenMaker, ItemGenMonster, ItemGenPlace, ItemWorldContext,
@@ -23,7 +22,8 @@ import type {
 
 /** Build the generator's view of a faction from its definition — shared with the live context. */
 export function itemGenFactionFromDefinition(id: string, defId: string | null, name: string | undefined): ItemGenFaction {
-  const def = defId ? FACTION_DEFINITIONS.get(defId) : undefined;
+  // The one lookup (THR-1155): a run-founded faction or Realm resolves like an authored one.
+  const def = getFactionDefinition(defId) ?? undefined;
   const full = name ?? def?.nameTemplate ?? 'the company';
   const bare = full.replace(/^the\s+/i, '');
   const words = (defId && ITEM_GEN_FACTION_WORDS[defId]) || ITEM_GEN_FACTION_WORDS_FALLBACK;
@@ -87,7 +87,7 @@ const REVIEW_HEROES: Record<string, ItemGenHero> = {
   wenna_kell:  H('wenna_kell', 'Wenna Kell', 'Wenna', 'Kell', 'she', 'underking_court', "a lady of the Underking's Court", 'who outlived four masters of the Court', 'long_winter', 'faded out of the world rather than died', false),
 };
 
-const monsterReach = (defId: string) => MONSTER_FACTION_DEFINITIONS.find(d => d.id === defId)?.reachWeights ?? {};
+const monsterReach = (defId: string) => getFactionDefinition(defId)?.reachWeights ?? {};
 const REVIEW_MONSTERS: Record<string, ItemGenMonster> = {
   wraith_host:    { id: 'wraith_host', name: 'the Grey Wraith Host', sphere: 'spirit', placeId: 'kel_barrow', one: 'a wraith of the Grey Wraith Host', immune: '#curse', reachWeights: monsterReach('monster_spirit') },
   storm_flock:    { id: 'storm_flock', name: 'the Ashen Storm Flock', sphere: 'energy', placeId: 'the_ashfold', one: 'a bird of the Ashen Storm Flock', reachWeights: monsterReach('monster_energy') },
@@ -116,7 +116,10 @@ let cachedFactions: Record<string, ItemGenFaction> | null = null;
 function reviewFactions(): Record<string, ItemGenFaction> {
   if (!cachedFactions) {
     cachedFactions = {};
-    for (const def of FACTION_DEFINITIONS.values()) cachedFactions[def.id] = itemGenFactionFromDefinition(def.id, def.id, def.nameTemplate);
+    for (const def of getFactionDefinitionRoster().values()) {
+      if (def.id.startsWith('monster_') || !ITEM_GEN_FACTION_WORDS[def.id]) continue; // the twelve guilds the review world's people belong to
+      cachedFactions[def.id] = itemGenFactionFromDefinition(def.id, def.id, def.nameTemplate);
+    }
   }
   return cachedFactions;
 }

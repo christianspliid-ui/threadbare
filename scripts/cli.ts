@@ -133,6 +133,9 @@ import { getAgentGrudges } from '../src/engine/agentDetail';
 import { getAgentAttachments } from '../src/engine/agentAttachments';
 import { isSpellSuppressedFor } from '../src/engine/effects/effectSuppression';
 import { getGrievanceHeatWord } from '../src/data/grievance-prose';
+import { generateReviewBatch, formatReviewCard } from '../src/engine/itemGenerator/reviewBatch';
+import { readBack as readBackGeneratedItem } from '../src/engine/itemGenerator/readBack';
+import { buildItemWorldContext } from '../src/engine/itemGenerator/worldContext';
 import {
   getAllGroups,
   getGroupCohesion,
@@ -1553,6 +1556,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
   console.log(`  ${BOLD}profile${RESET} [N]      Run N ticks (default 30) with profiling, print per-phase avg/max/p95 + slowest ticks`);
   console.log(`  ${BOLD}profile phases${RESET}   Print the timing aggregate for ticks already profiled`);
+  console.log(`  ${BOLD}generate items${RESET} [N] [--band 2|3|4] [--origin masterwork|found] [--seed S] [--live]  Review N generated items as the sheet reads them, with validator + engine read-back verdicts (THR-1570). Default: the review world; --live dresses masterworks from this world's mortals`);
   console.log(`  ${BOLD}help${RESET}             This help`);
   console.log(`  ${BOLD}quit${RESET} / ${BOLD}exit${RESET}     Exit`);
 }
@@ -2477,6 +2481,47 @@ function handleBeatCommand(args: string[]): void {
 
 // ─── REPL ─────────────────────────────────────────────────────────
 
+/**
+ * `generate items` — the item generator's review path (THR-1570). Prints each item the
+ * way the artifact sheet reads it, plus the validator's and the engine read-back's
+ * verdict. The review world is the default because a young live world has no past to
+ * dress found things with (THR-1637); `--live` makes masterworks from this world's mortals.
+ */
+function handleGenerate(args: string[]): void {
+  if (args[0] !== 'items') {
+    console.log(`${RED}Usage: generate items [N] [--band 2|3|4] [--origin masterwork|found] [--seed S] [--live]${RESET}`);
+    return;
+  }
+  const opt = (k: string) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : undefined; };
+  const count = Math.max(1, parseInt(args[1] ?? '', 10) || 30);
+  const bandRaw = Number(opt('band'));
+  const band = bandRaw === 2 || bandRaw === 3 || bandRaw === 4 ? bandRaw : undefined;
+  const originRaw = opt('origin');
+  const origin = originRaw === 'masterwork' || originRaw === 'found' ? originRaw : undefined;
+  const seed = Number(opt('seed') ?? state.seed);
+  const live = args.includes('--live');
+  const makers = live
+    ? state.graph.getNodesByType('actor').filter(n => n.properties.actorType === 'individual' && n.properties.deceased !== true)
+    : [];
+  const batch = generateReviewBatch({
+    seed, count, band, origin: live ? 'masterwork' : origin,
+    world: live && makers.length > 0 ? (i: number) => buildItemWorldContext(state.graph, { makerId: makers[i % makers.length].id }) : undefined,
+  });
+  let clean = 0; let checks = 0;
+  batch.forEach((r, i) => {
+    let verdict: string | undefined;
+    if (r.item) {
+      const rb = readBackGeneratedItem(r.item);
+      checks += rb.checks;
+      if (rb.ok) clean++;
+      verdict = rb.ok ? `read-back clean (${rb.checks} checks)` : `READ-BACK FAILED: ${rb.failures.join('; ')}`;
+    }
+    console.log(formatReviewCard(r, i, verdict));
+    console.log('');
+  });
+  console.log(`${BOLD}${clean}/${batch.length}${RESET} items clean against the engine (${checks} checks) — seed ${seed}${live ? ', live world' : ', review world'}`);
+}
+
 function handleCommand(line: string): boolean {
   const trimmed = line.trim();
   if (!trimmed) return true;
@@ -2743,6 +2788,9 @@ function handleCommand(line: string): boolean {
       }
       break;
     }
+    case 'generate':
+      handleGenerate(rest);
+      break;
     case 'help':
     case 'h':
     case '?':

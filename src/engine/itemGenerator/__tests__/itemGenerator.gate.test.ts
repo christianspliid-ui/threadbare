@@ -21,7 +21,7 @@ import { generateItem } from '../generateItem';
 import { generateValidItem } from '../mintGeneratedItem';
 import { validateGeneratedItem } from '../validateGeneratedItem';
 import { REVIEW_MAKERS, reviewWorldContext } from '../reviewWorld';
-import { readBack } from './readBack';
+import { readBack } from '../readBack';
 import type { GeneratedItem } from '../types';
 import type { AttachmentEffect } from '../../../types/effects';
 

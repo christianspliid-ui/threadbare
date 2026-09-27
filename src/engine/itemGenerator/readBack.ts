@@ -12,31 +12,31 @@
  * ordinary step and *on* in its situation, or it is a passive in disguise.
  */
 
-import { WorldGraph } from '../../graph';
-import { resolveEffectModifiers, collectTestShapers, collectPreventLossEffects } from '../../effectResolver';
+import { WorldGraph } from '../graph';
+import { resolveEffectModifiers, collectTestShapers, collectPreventLossEffects } from '../effectResolver';
 import {
   collectStatContributions, getActiveRuleOverride, getRangeModifiers, getRevealRanges, getBehaviorWeights,
   computeBehaviorWeightMultiplier, getActionGates, getSocialModifiers, computeSocialCooperationBias, isImmuneToAnyTag,
-} from '../../effects/effectQueries';
-import { collectAttachmentEffects } from '../../effects/effectWalker';
-import { buildPredicateContext } from '../../effects/effectPredicates';
-import { checkAndFireActionTriggers } from '../../effects/actionTrigger';
-import { tickEffects } from '../../effectTick';
-import { processEffectEvent } from '../../effects/effectEvents';
-import { applySuppressions } from '../../effects/effectSuppression';
-import { collectAuraEffectsNear, resolveAuraModifiers, resolveAgentPosition } from '../../effectAura';
-import { spendConsumableCharges } from '../../effects/consumableCharges';
-import { computeEffectiveSlotCaps } from '../../attachmentSlotResolver';
-import { EFFECT_MODIFIER_CAP } from '../../../data/effect-constants';
-import { SLOT_CAPS } from '../../../data/attachment-slot-constants';
-import { ITEM_HONEST_SITUATIONS } from '../../../data/item-honest-vocabulary';
-import { ARTIFACT_STORIED_TRAIT_ID } from '../../../data/artifact-trait-content';
-import { mintGeneratedItem, storiedStartLevel } from '../mintGeneratedItem';
-import { knownConditions } from '../validateGeneratedItem';
-import type { GeneratedItem } from '../types';
-import type { ReachDomain } from '../../../types/traits';
-import type { AttachmentEffect } from '../../../types/effects';
-import type { EffectRuntimeState } from '../../../types/effects';
+} from '../effects/effectQueries';
+import { collectAttachmentEffects } from '../effects/effectWalker';
+import { buildPredicateContext } from '../effects/effectPredicates';
+import { checkAndFireActionTriggers } from '../effects/actionTrigger';
+import { tickEffects } from '../effectTick';
+import { processEffectEvent } from '../effects/effectEvents';
+import { applySuppressions } from '../effects/effectSuppression';
+import { collectAuraEffectsNear, resolveAuraModifiers, resolveAgentPosition } from '../effectAura';
+import { spendConsumableCharges } from '../effects/consumableCharges';
+import { computeEffectiveSlotCaps } from '../attachmentSlotResolver';
+import { EFFECT_MODIFIER_CAP } from '../../data/effect-constants';
+import { SLOT_CAPS } from '../../data/attachment-slot-constants';
+import { ITEM_HONEST_SITUATIONS } from '../../data/item-honest-vocabulary';
+import { ARTIFACT_STORIED_TRAIT_ID } from '../../data/artifact-trait-content';
+import { mintGeneratedItem, storiedStartLevel } from './mintGeneratedItem';
+import { knownConditions } from './validateGeneratedItem';
+import type { GeneratedItem } from './types';
+import type { ReachDomain } from '../../types/traits';
+import type { AttachmentEffect } from '../../types/effects';
+import type { EffectRuntimeState } from '../../types/effects';
 
 const REACHES: readonly ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
 const near = (a: number, b: number) => Math.abs(a - b) < 1e-9;

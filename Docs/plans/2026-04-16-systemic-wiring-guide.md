@@ -4618,3 +4618,17 @@ Inspect: `__DEBUG.spawnDuel(a, b, { courtPosition? })` (moves `b` to `a`, stages
 `opponentLoss`, both sides' forks with `side`); CLI `spawn duel <a> --with <b>`; traces `fight.step`
 (`opponentBand`, `opponentProbability`), `fight.fork` (`side`), `fight.end` (`opponentLoss`);
 `npm run calibrate:duels` (400 duels against THR-1264's row).
+
+## Capability 35: A masterwork is made with an idea — the seeded item generator (THR-1570)
+
+Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
+
+**What it is for an author.** Items the world makes grow around authored **trope cores** (`src/data/item-generator-cores.ts`) — *the blade that wants blood*, *the ring that bargains* — and the live world dresses them: the maker's name, faction, place and culture; sphere, reach, form, material, look, provenance line and name are drawn from tables. You author the **idea**, never the individual item.
+
+**A core carries:** `bands` (2 Storied · 3 Mythic · 4 Legendary — never Mundane), `origins` (`masterwork` needs at least one `made: true` provenance line using only `maker`; `found` lines name a past), the forms/reaches/spheres that fit it, `looks`, `provenance` lines with `{maker}` / `{place}` / `{faction.the}` / `{hero}` / `{event}` / `{monster.one}` / `{culture.Adj}` / `{craft}` placeholders (a line whose entity the world lacks is simply ineligible), `names` + `grammar` weights, and **two or three `signatures`** — each a builder returning boon and catch effects through the `fx` helpers. A second signature must change *what the thing does*, not its dressing (the gate compares effect shapes).
+
+**The honesty rule.** Emit only shapes in `src/data/item-honest-vocabulary.ts` with status `live`/`narrow`. The validator refuses a planned shape, a `rest`/`spell_cast` trigger, an unread rule key or hex property, a condition that does not exist, an immunity that blocks nothing, a `when…` bonus on its own reach, and caps from `effect-constants.ts` / `item-stat-bands.ts`. A new shape joins the vocabulary only with a read-back case in `src/engine/itemGenerator/readBack.ts`.
+
+**Review a change:** `npm run cli` → `generate items 30 --seed 42` (review world; `--live` for this world's makers) prints each card as the sheet reads it with the validator and engine read-back verdict; `itemGenerator.gate.test.ts` must stay at zero problems / zero read-back failures / zero rerolls.
+
+Inspect: `__DEBUG.getGeneratedItems()`, `previewGeneratedItem({ seed, band, origin })`, `mintGeneratedItem({ holder: '@hero', band, origin })`; traces `item.generated` (carries the `seedKey` that reproduces the item), `item.generate_fallback`.

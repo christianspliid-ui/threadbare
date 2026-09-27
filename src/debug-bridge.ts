@@ -3175,6 +3175,63 @@ if (import.meta.env.DEV) {
       return { ...result, artifactId, traitId, artifactName: graph.getNode(artifactId)?.name ?? artifactId };
     },
 
+    // THR-1570: every generated item in the world — core, signature, band, maker.
+    getGeneratedItems: async () => {
+      const graph = _graphProvider?.();
+      if (!graph) return [];
+      const { getGeneratedItemNodes } = await import('./engine/itemGenerator/worldContext');
+      return getGeneratedItemNodes(graph).map(n => {
+        const g = (n.properties.generated ?? {}) as import('./engine/itemGenerator/types').GeneratedItemProvenance;
+        return {
+          id: n.id, name: n.name, coreId: g.coreId, signatureId: g.signatureId, band: g.band, origin: g.origin,
+          makerId: g.makerId ?? null, tick: (n.properties.createdTick as number | undefined) ?? null, rerolls: g.rerolls ?? 0,
+        };
+      });
+    },
+
+    // THR-1570: preview a generated item without minting it — the review world by default.
+    previewGeneratedItem: async (opts: { seed?: number; band?: 2 | 3 | 4; origin?: 'masterwork' | 'found'; index?: number } = {}) => {
+      const { generateReviewBatch } = await import('./engine/itemGenerator/reviewBatch');
+      const index = opts.index ?? 0;
+      const batch = generateReviewBatch({ seed: opts.seed ?? 42, count: index + 1, band: opts.band, origin: opts.origin });
+      const r = batch[index];
+      return { item: r.item, does: r.does, catches: r.catches, problems: r.problems, seedKey: r.seedKey, rerolls: r.rerolls };
+    },
+
+    // THR-1570: mint a generated item onto a mortal — the browser-verify lever, because a
+    // masterwork is a ~1-in-40-ticks event. A masterwork is made by its holder in the live
+    // world; a found thing is dressed from the review world (the live one has no past yet).
+    mintGeneratedItem: async (opts: { holder?: string; band?: 2 | 3 | 4; origin?: 'masterwork' | 'found'; seed?: number } = {}) => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph) return { ok: false as const, reason: 'no_game' };
+      const agent = await resolveAgentNode(opts.holder ?? '@hero');
+      if (!agent) return { ok: false as const, reason: 'holder_not_found' };
+      const origin = opts.origin ?? 'masterwork';
+      const tick = state?.tick ?? 0;
+      const { buildItemWorldContext, itemGenHistoryFromGraph } = await import('./engine/itemGenerator/worldContext');
+      const { reviewWorldContext } = await import('./engine/itemGenerator/reviewWorld');
+      const { generateValidItem, mintGeneratedItem } = await import('./engine/itemGenerator/mintGeneratedItem');
+      const world = origin === 'masterwork' ? buildItemWorldContext(graph, { makerId: agent.id }) : reviewWorldContext(null);
+      const history = itemGenHistoryFromGraph(graph);
+      const n = graph.getNodesByType('artifact').filter(x => x.id.startsWith('gen_debug_')).length;
+      const seedKey = `gen_item:${opts.seed ?? state?.seed ?? 0}:${origin}:debug:${agent.id}:${tick}:${n}`;
+      const result = generateValidItem({ seedKey, band: opts.band ?? 3, origin, world, history });
+      if (!result.ok) return { ok: false as const, reason: result.reason, problems: result.lastProblems };
+      const id = mintGeneratedItem(graph, result.item, {
+        id: `gen_debug_${agent.id}_${tick}_${n}`, tick, holderId: agent.id,
+        makerId: origin === 'masterwork' ? agent.id : null, rerolls: result.rerolls, source: 'debug_mint',
+        edgeTags: origin === 'masterwork' ? ['masterwork'] : [],
+      });
+      if (!id) return { ok: false as const, reason: 'mint_failed' };
+      const runtime = _runtimeProvider?.();
+      if (runtime) {
+        const { touchWorld } = await import('./engine/simulationRuntime');
+        touchWorld(runtime);
+      }
+      return { ok: true as const, id, name: result.item.name, coreId: result.item.coreId, signatureId: result.item.signatureId, band: result.item.band, holderId: agent.id };
+    },
+
     // THR-1142: travel-intent readout — where an encounter ending sent this agent.
     getRelocationIntent: async (agentIdOrName: string) => {
       const graph = _graphProvider?.();
