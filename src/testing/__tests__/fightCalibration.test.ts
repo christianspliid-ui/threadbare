@@ -19,12 +19,22 @@ import {
 } from '../fightCalibration';
 import { ODDS_AT_PAR, ODDS_GAIN } from '../../engine/resolutionService';
 
+/**
+ * The 400-fight sweep runs in the `beforeAll`, and on CI it took 7.9 s, 9.9 s and
+ * 10.3 s on three consecutive merged PRs (2026-09-27) — against vitest's 10 s
+ * default hook timeout. Three ready PRs then went red on `Hook timed out in
+ * 10000ms` with every assertion untested. Sized ~6x the observed worst case so
+ * runner variance cannot reach it while a genuine hang still fails (the
+ * `FIXTURE_SWEEP_TIMEOUT_MS` pattern in ascendantReachFixtures.test.ts).
+ */
+const FIGHT_SWEEP_TIMEOUT_MS = 60_000;
+
 describe('fight calibration against THR-1531 (Major elite × bold guard)', () => {
   let report: FightCalibrationReport;
   beforeAll(() => {
     disableTracing();
     report = runFightCalibration(FIGHT_CALIBRATION_FIGHTS);
-  });
+  }, FIGHT_SWEEP_TIMEOUT_MS);
 
   it('stamps the fixture fighter to the row odds (THR-1581: odds preserved, not capability)', () => {
     // A steep step (0.50) rolled 0.999 − 0.50 = 0.499 and 0.89 − 0.50 = 0.39 before
