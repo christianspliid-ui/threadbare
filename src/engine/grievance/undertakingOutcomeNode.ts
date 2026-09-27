@@ -159,6 +159,27 @@ export function resolveOutcomeSite(
 }
 
 /**
+ * The event node id for a non-undertaking harm (THR-1629).
+ *
+ * `evt_und_<kind>_<actionId>_<tick>` names the *action*, not the victim, so one action
+ * that kills two mortals in the same tick — a duel's double knockout — collided on it:
+ * the second `addNode` threw, the catch below swallowed it, and the second death wrote
+ * no outcome node, so its harm never reached the dead mortal's living bonds (THR-1536).
+ * The first victim keeps the bare id (every existing single-death id is unchanged); a
+ * later victim of the same action and tick is keyed on their own id as well.
+ */
+function nonUndertakingEventNodeId(
+  graph: WorldGraph,
+  source: OutcomeNonUndertakingSource,
+  actionId: string,
+  tick: number,
+): string {
+  const base = `${UNDERTAKING_EVENT_NODE_ID_PREFIX}${source.kind}_${actionId}_${tick}`;
+  if (!source.targetNodeId || !graph.getNode(base)) return base;
+  return `${base}_${source.targetNodeId}`;
+}
+
+/**
  * Write the graph event node for a harm-carrying undertaking outcome.
  *
  * Returns the node id, or `undefined` when nothing was written — an unknown harm class,
@@ -200,7 +221,7 @@ export function createUndertakingOutcomeNode(
   if (harmMagnitude === undefined) return undefined;
 
   const eventNodeId = source
-    ? `${UNDERTAKING_EVENT_NODE_ID_PREFIX}${source.kind}_${project.projectId}_${tick}`
+    ? nonUndertakingEventNodeId(graph, source, project.projectId, tick)
     : `${UNDERTAKING_EVENT_NODE_ID_PREFIX}${project.projectId}_${tick}`;
 
   try {

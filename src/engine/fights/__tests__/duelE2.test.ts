@@ -9,7 +9,7 @@
  * `fightState.opponentEnding`, the victor's standing and drifts, and the trace.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WorldGraph } from '../../graph';
 import { createSimulationRuntime } from '../../simulationRuntime';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../../traceBuffer';
@@ -340,6 +340,31 @@ describe('double knockout and the chronicle', () => {
     expect(t.bothStruckDown).toBe(true);
     expect(t.opponentVictorPole).toBe('positive');
     expect(out.events.map(e => e.id)).toEqual(['fight_ended_ua-duel_200', 'fight_ended_ua-duel_200_opponent']);
+  });
+
+  it('THR-1629: a double kill mints two outcome nodes, each naming its own victim', () => {
+    const state = baseState(world({ heroMercy: -1, rivalMercy: -1 }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const out = end(state, duel('struck_down', 'struck_down'), countingRng(0).rng);
+      expect(out.fightState.ending?.face).toBe('slain');
+      expect(out.fightState.opponentEnding?.face).toBe('slain');
+      expect(warn.mock.calls.filter(c => String(c[0]).includes('UndertakingOutcomeNode'))).toEqual([]);
+    } finally {
+      warn.mockRestore();
+    }
+
+    const outcomes = state.graph.getNodesByType('event')
+      .filter(n => n.properties.eventType === 'undertaking_outcome');
+    expect(outcomes.map(n => [n.properties.victimAgentId, n.properties.culpritAgentId]).sort())
+      .toEqual([['hero', 'rival'], ['rival', 'hero']]);
+    // The fighter's own death is decided first and keeps the bare action+tick id (every
+    // single-death id is unchanged); the opponent's, second, is keyed on its victim.
+    expect(state.graph.getNode(`evt_und_fight_ua-duel_${TICK}`)?.properties.victimAgentId).toBe('hero');
+    expect(state.graph.getNode(`evt_und_fight_ua-duel_${TICK}_rival`)?.properties.victimAgentId).toBe('rival');
+    for (const n of outcomes) {
+      expect(n.properties.targetNodeId).toBe(n.properties.victimAgentId);
+    }
   });
 
   it("a duel the fighter won tells the loser's story once", () => {
