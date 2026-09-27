@@ -5310,7 +5310,10 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
           maintenanceCurrent: true,
           readBackstoryTier: 0,
           devotion: 0,
-          courtPosition: null,
+          // THR-1643: a mortal thread enters the court at 'watched' — the entry
+          // tier of the attention model. `null` read as 'invisible' in
+          // resolveEffectiveTier and phaseAttention, so the essence bought nothing.
+          courtPosition: 'watched',
           attentionMode: 'auto_resolve',
         },
       }],
@@ -5358,7 +5361,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
           maintenanceCurrent: true,
           readBackstoryTier: 0,
           devotion: 0,
-          courtPosition: null,
+          courtPosition: 'watched', // THR-1643 — see bind_thread_agent
           attentionMode: 'auto_resolve',
         },
       }],
