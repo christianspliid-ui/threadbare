@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-28 12:56 local (10:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-28 13:55 local (11:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,19 +27,18 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 jobs ready to build, none being built right now.** The last builder run shipped **the world now pauses for every moment and resumes where you left it** — the Chapter Ledger and doom popups stop time while you read them, popups queue one at a time, and play resumes in the state you left it ([the first ten minutes](https://linear.app/threadbare/issue/THR-1608), [#2118](https://github.com/christianspliid-ui/threadbare/pull/2118), merged 12:43, live). The next builder run starts within the hour.
+**Healthy: 8 jobs ready to build, none being built right now.** The last builder run shipped **the opening gifts now wait for the player**: one gift per thing you do, not a pile of popups before you have acted ([THR-1647](https://linear.app/threadbare/issue/THR-1647), [#2119](https://github.com/christianspliid-ui/threadbare/pull/2119), merged 13:37, live). The next builder run starts within the hour.
 
-- **The opening, for new players. Two steps are next:** [the opening gifts wait for the player](https://linear.app/threadbare/issue/THR-1647) and [a quiet first screen](https://linear.app/threadbare/issue/THR-1648). Behind them: [what you spend and risk](https://linear.app/threadbare/issue/THR-1607) and ["who am I?"](https://linear.app/threadbare/issue/THR-1609). Keeping the avatar's past-life name as "your mortal shape" is a call you can veto. It is in [the opening plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md). *— from tb-orchestrator and daily-backlog-grooming*
+- **The opening, for new players. Next:** [a quiet first screen](https://linear.app/threadbare/issue/THR-1648). Behind it: [what you spend and risk](https://linear.app/threadbare/issue/THR-1607) and ["who am I?"](https://linear.app/threadbare/issue/THR-1609). Keeping the avatar's past-life name as "your mortal shape" is a call you can veto. It is in [the opening plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md). *— from daily-backlog-grooming*
 - **The living world:** [one notable in every settlement](https://linear.app/threadbare/issue/THR-1654), [the player meets the past](https://linear.app/threadbare/issue/THR-1656), [the past feeds ambitions](https://linear.app/threadbare/issue/THR-1657), [guild joining](https://linear.app/threadbare/issue/THR-1640) and [faith and politics](https://linear.app/threadbare/issue/THR-1632).
 - **The fight system is live but not ready for you to review.** No one-click link opens a fight the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **Game speed is still slow:** tick cost 123 ms/tick steady, 58% above the 7-day median (78, 147 rows since df1cf66c); top phase agent_decision, 501 agents. Name the merges between df1cf66c and 85a00047: git log --oneline --merges df1cf66c..85a00047. Today's readings: 93 → 110 → 136 → 131 → 116 → 123. A builder's job, not yours.
-- **The slow simulation tests are green again for the newest merge** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/36411414581)). The run for the doom-clock merge before it [went red](https://github.com/christianspliid-ui/threadbare/actions/runs/36406357454) — the third red run today, each followed by a green one. That flicker is a builder's to chase; these tests never block merges or the live site.
-- **The home checkout is now 26 commits behind `main`**, up from 22. The stray empty file there (`Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md`, untracked) has the same name as a merged plan and still likely blocks the update. The next builder run should clear it.
+- **Game speed keeps getting slower:** tick cost 137 ms/tick steady, 76% above the 7-day median (78, 148 rows since df1cf66c); top phase agent_decision, 501 agents. Name the merges between df1cf66c and 50cc9bc2: git log --oneline --merges df1cf66c..50cc9bc2. Today's readings: 93 → 110 → 136 → 131 → 116 → 123 → 137. A builder's job, not yours.
+- **The home checkout is now 30 commits behind `main`**, up from 26. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan and still likely blocks the update. The next builder run should clear it.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
-  - The live site is serving the latest commit (85a00047).
+  - The live site is serving the latest commit (50cc9bc2).
   - Automated checks and the three background jobs are running normally, and no pull requests are waiting.
   - All ten scheduled lanes are on time. The worktree cleaner reports five old worktrees awaiting its own decision.

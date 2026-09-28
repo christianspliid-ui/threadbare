@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 12:56 local (10:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 13:55 local (11:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: the opening gifts wait for the player**: one gift per thing you do, not a pile of popups before you have acted ([THR-1647](https://linear.app/threadbare/issue/THR-1647)). Merged via [#2119](https://github.com/christianspliid-ui/threadbare/pull/2119), live.
 - **2026-09-28: the world pauses for every moment and resumes where you left it**: the Chapter Ledger and doom popups stop time while you read, popups wait their turn, and play resumes as you left it (part of [the first ten minutes](https://linear.app/threadbare/issue/THR-1608)). Merged via [#2118](https://github.com/christianspliid-ui/threadbare/pull/2118), and live on the site.
 - **2026-09-28: the doom clock waits for The First**: the world can no longer end before your First has had a real journey ([THR-1646](https://linear.app/threadbare/issue/THR-1646)). Merged via [#2117](https://github.com/christianspliid-ui/threadbare/pull/2117), and live on the site.
 - **2026-09-28: you see what your hand did**: after a cast, the player now sees who it touched and what changed ([THR-1606](https://linear.app/threadbare/issue/THR-1606)). Merged via [#2116](https://github.com/christianspliid-ui/threadbare/pull/2116), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: a journey keeps its goal**: a mortal walking to an encounter still arrives after a detour ([THR-1639](https://linear.app/threadbare/issue/THR-1639)). Merged via [#2111](https://github.com/christianspliid-ui/threadbare/pull/2111), and live on the site.
 - **2026-09-28: every reach now reads the town**: the rest of the culture and sphere lines for encounter openings are written ([THR-1638](https://linear.app/threadbare/issue/THR-1638)). Merged via [#2110](https://github.com/christianspliid-ui/threadbare/pull/2110), and live on the site.
 - **2026-09-28: new worlds start with a past**: founding ages, old wars and the dead, stored behind the scenes for now, the first step of [a world with a past](https://linear.app/threadbare/issue/THR-1631). Merged via [#2109](https://github.com/christianspliid-ui/threadbare/pull/2109), and live on the site.
-- **2026-09-28: encounter openings now carry the town's culture**: one plain sentence on how a settlement handles this kind of trouble, or what its ruling sphere does to it ([THR-1635](https://linear.app/threadbare/issue/THR-1635)). Merged via [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091), and live on the site.
 
 ---
 
