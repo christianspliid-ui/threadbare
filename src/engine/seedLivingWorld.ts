@@ -11,13 +11,15 @@
  * are held by fourteen people.
  *
  * Seven passes (W2…W8), run in order after every existing seed step, plus the people web
- * (THR-1630: ties, home standing, favours) between possessions and quarrels. Each:
+ * (THR-1630: ties, home standing, favours) between possessions and quarrels, and one
+ * notable per settlement (THR-1654) between marks and garrisons. Each:
  *   - is guarded by its own constant (`0` — or `'round_robin'` for territory — disables it),
  *   - reuses the writer the in-run system already uses (no second spelling of anything),
  *   - is wrapped in its own try/catch, so a throwing pass is reported and skipped
  *     rather than invalidating the world (NFP #4), with per-item fail-soft inside,
  *   - chooses by sorting, never by drawing (NFP #3) — except `seedTies`, which draws from
- *     its own reserved stream over id-sorted lists.
+ *     its own reserved stream over id-sorted lists, and `seedNotables`, whose hydration
+ *     draws a notable's archetype and values from its own.
  *
  * The PRNG streams are *reserved* rather than used: see `WORLDGEN_LIVING_PRIMES`.
  */
@@ -48,9 +50,13 @@ import {
   UNDERTAKING_DEFAULT_MARK_MAGNITUDE,
 } from '../data/strategic-action-constants';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
+import { hydrateToTier, ROLE_WEALTH, DEFAULT_WEALTH } from './npcGraduation';
+import type { SublocationTag } from './settlementGenome/types';
 import {
   LIVING_WORLD_DEFAULTS,
   WORLDGEN_TIES_PRIME_INDEX,
+  WORLDGEN_NOTABLES_PRIME_INDEX,
+  NOTABLE_ORIGIN_WORLDGEN,
   type LivingWorldConstants,
 } from '../data/worldgen-living-constants';
 
@@ -98,6 +104,8 @@ export interface LivingWorldSummary {
   favors: number;
   quarrels: number;
   marks: number;
+  /** THR-1654: one notable per settlement, and every settlement whose package came up short. */
+  notables: SeededNotablesSummary;
   garrisons: number;
   /** Garrison captains minted — protagonists by construction, folded into `individualIds`. */
   captainIds: string[];
@@ -868,6 +876,188 @@ export function seedMarks(
   return minted;
 }
 
+// ─── S2 — one notable in every settlement (THR-1654) ───────────────────────
+
+export interface SeededNotablesSummary {
+  notables: number;
+  /** Settlement ids whose notable got no holding (no unheld Place). */
+  notablesWithoutHolding: string[];
+  /** Settlement ids whose notable got no old quarrel (no decider in reach, no other notable). */
+  notablesWithoutQuarrel: string[];
+  /** Settlement ids whose notable got no secret or favour (no decider in reach). */
+  notablesWithoutLeverage: string[];
+  /** Settlement ids with no ambient resident to promote. */
+  settlementsWithoutResident: string[];
+}
+
+/** An ambient resident: an individual with no tier above ambient, no capabilities, no host. */
+function isAmbientResident(node: GraphNode): boolean {
+  const tier = node.properties.spotlightTier;
+  if (tier !== undefined && tier !== 'ambient') return false;
+  if (node.properties.domainCapabilities) return false;
+  if (node.properties.armyState) return false;
+  return true;
+}
+
+function wealthOfRole(node: GraphNode): number {
+  const role = node.properties.npcRole;
+  return typeof role === 'string' ? (ROLE_WEALTH[role] ?? DEFAULT_WEALTH) : DEFAULT_WEALTH;
+}
+
+/**
+ * One resident of each settlement becomes a notable — the wealthiest role, id tie-break —
+ * with a stake, an old quarrel and a secret or favour tied to a decider (THR-1593's t0
+ * package). No ambition (0 of 10 templates pass eligibility for a hydrated notable) and no
+ * `relates_to`, so importance stays 0 and seeding graduates nobody.
+ *
+ * Two loops: every notable is promoted first, then each is given its package, so the
+ * quarrel fallback ("the nearest other settlement's notable") always has someone to name —
+ * including for the settlement that sorts first.
+ *
+ * Draws only through `hydrateToTier` (archetype, values, capabilities), on its own reserved
+ * stream; every choice of who and what is a sort (NFP #3).
+ */
+export function seedNotables(
+  graph: WorldGraph,
+  ctx: LivingWorldContext,
+  k: LivingWorldConstants,
+): SeededNotablesSummary {
+  const summary: SeededNotablesSummary = {
+    notables: 0,
+    notablesWithoutHolding: [],
+    notablesWithoutQuarrel: [],
+    notablesWithoutLeverage: [],
+    settlementsWithoutResident: [],
+  };
+  const prime = k.WORLDGEN_LIVING_PRIMES[WORLDGEN_NOTABLES_PRIME_INDEX];
+  if (typeof prime !== 'number') return summary;
+  const rng = mulberry32(ctx.seed + prime);
+
+  const settlements = graph.getNodesByType('location')
+    .filter(n => typeof n.properties.parentLocationId !== 'string' && SETTLEMENT_SUBTYPES.has(subtypeOf(n)))
+    .sort(byId);
+
+  // ── 1. Promote ──
+  const seeded: Array<{ settlementId: string; notableId: string; hex: HexCoord | undefined }> = [];
+  for (const settlement of settlements) {
+    const count = k.NOTABLES_PER_SETTLEMENT[subtypeOf(settlement)] ?? 0;
+    if (count <= 0) continue;
+    const residents = residentsOf(graph, settlement.id)
+      .filter(isAmbientResident)
+      .sort((a, b) => wealthOfRole(b) - wealthOfRole(a) || byId(a, b));
+    if (residents.length === 0) { summary.settlementsWithoutResident.push(settlement.id); continue; }
+    for (const resident of residents.slice(0, count)) {
+      try {
+        hydrateToTier(graph, resident.id, 'notable', rng);
+        graph.updateNode(resident.id, { properties: { notableOrigin: NOTABLE_ORIGIN_WORLDGEN } });
+        seeded.push({ settlementId: settlement.id, notableId: resident.id, hex: hexOf(graph, settlement.id) });
+        summary.notables++;
+      } catch {
+        // Per-item fail-soft: a resident who cannot be promoted stays ambient.
+      }
+    }
+  }
+
+  // Deciders with a hex, nearest-first per query — sorted by id once so ties break by id.
+  const deciders = collectSpotlightMortals(graph, ctx.individualIds)
+    .filter(n => n.properties.alive !== false)
+    .map(n => {
+      const home = homeLocationOf(graph, n.id);
+      return { id: n.id, hex: home ? hexOf(graph, home) : undefined };
+    })
+    .filter((d): d is { id: string; hex: HexCoord } => !!d.hex);
+  const nearestDeciders = (from: HexCoord, maxHexes: number): string[] =>
+    deciders
+      .map(d => ({ id: d.id, distance: hexDistance(from, d.hex) }))
+      .filter(d => d.distance <= maxHexes)
+      .sort((a, b) => a.distance - b.distance || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+      .map(d => d.id);
+
+  // Unheld Places by parent settlement, in holding-preference order, then id.
+  const preferred = k.WORLDGEN_NOTABLE_HOLDING_PLACE_CLASSES;
+  const rankOf = (place: GraphNode): number => {
+    const cls = placeClassOf(place.properties.sublocationTypeId as string | undefined) ?? '';
+    const i = preferred.indexOf(cls as SublocationTag);
+    return i < 0 ? preferred.length : i;
+  };
+  const placesOf = (settlementId: string): GraphNode[] =>
+    graph.getNodesByType('location')
+      .filter(n => n.properties.parentLocationId === settlementId)
+      .filter(n => graph.getIncomingEdges(n.id, 'owns').length === 0)
+      .sort((a, b) => rankOf(a) - rankOf(b) || byId(a, b));
+
+  // ── 2. The package ──
+  seeded.forEach((entry, index) => {
+    const { settlementId, notableId, hex } = entry;
+
+    // Holding — a Place in their own settlement nobody holds.
+    let held = false;
+    for (const place of placesOf(settlementId)) {
+      try {
+        if (grantHolding(graph, notableId, place.id, { tick: 0 }, 'creation').success) { held = true; break; }
+      } catch {
+        // Per-item fail-soft: try the next Place.
+      }
+    }
+    if (!held) summary.notablesWithoutHolding.push(settlementId);
+
+    // Old quarrel — the nearest decider in reach, else the nearest other seeded notable.
+    let partner = hex ? nearestDeciders(hex, k.WORLDGEN_NOTABLE_QUARREL_MAX_HEXES)[0] : undefined;
+    if (!partner && hex) {
+      let best: { id: string; distance: number } | undefined;
+      for (const other of seeded) {
+        if (other.notableId === notableId || other.settlementId === settlementId || !other.hex) continue;
+        const distance = hexDistance(hex, other.hex);
+        if (!best || distance < best.distance || (distance === best.distance && other.notableId < best.id)) {
+          best = { id: other.notableId, distance };
+        }
+      }
+      partner = best?.id;
+    }
+    let quarrelled = false;
+    if (partner) {
+      try {
+        // `'old_quarrel'` stays outside GRUDGE_PROVENANCE: the motive gate reads rivalry (THR-1383).
+        quarrelled = writeGrudge(graph, notableId, partner, 0, 'old_quarrel')
+          || graph.getOutgoingEdges(notableId, 'hostile_to').some(e => e.target === partner);
+      } catch {
+        // Per-item fail-soft.
+      }
+    }
+    if (!quarrelled) summary.notablesWithoutQuarrel.push(settlementId);
+
+    // Secret or favour with a decider — preferring one who is not the quarrel partner.
+    // Even-indexed settlements: the notable knows something about the hero. Odd: the hero
+    // owes the notable. The binder's story-tie term then casts the notable in that hero's scenes.
+    const inReach = hex ? nearestDeciders(hex, k.WORLDGEN_NOTABLE_TIE_MAX_HEXES) : [];
+    const decider = inReach.find(id => id !== partner) ?? inReach[0];
+    let leveraged = false;
+    if (decider) {
+      try {
+        leveraged = index % 2 === 0
+          ? mintLeverageMark(graph, notableId, decider,
+            UNDERTAKING_DEFAULT_MARK_SECRET_TYPE, k.WORLDGEN_NOTABLE_MARK_MAGNITUDE, 0).success
+          : createFavorEdge(decider, notableId, k.WORLDGEN_NOTABLE_FAVOR_MAGNITUDE, 'worldgen', 0, graph);
+      } catch {
+        // Per-item fail-soft.
+      }
+    }
+    if (!leveraged) summary.notablesWithoutLeverage.push(settlementId);
+
+    // Faction — the holder of their settlement.
+    const holder = graph.getIncomingEdges(settlementId, 'controls').slice().sort(byId)[0]?.source;
+    if (holder) {
+      try {
+        joinFaction(graph, notableId, holder, 0);
+      } catch {
+        // Per-item fail-soft: an unaffiliated notable is still a notable.
+      }
+    }
+  });
+
+  return summary;
+}
+
 // ─── W8 — garrisons ────────────────────────────────────────────────────────
 
 /**
@@ -1057,6 +1247,13 @@ export function seedLivingWorld(
     favors: 0,
     quarrels: 0,
     marks: 0,
+    notables: {
+      notables: 0,
+      notablesWithoutHolding: [],
+      notablesWithoutQuarrel: [],
+      notablesWithoutLeverage: [],
+      settlementsWithoutResident: [],
+    },
     garrisons: 0,
     captainIds: [],
     failedPasses: [],
@@ -1082,6 +1279,9 @@ export function seedLivingWorld(
   run('favors', () => { summary.favors = seedFavors(graph, ctx, k); });
   run('quarrels', () => { summary.quarrels = seedQuarrels(graph, ctx, k); });
   run('marks', () => { summary.marks = seedMarks(graph, ctx, k); });
+  // THR-1654: after quarrels and marks (a notable's quarrel partner may be a hero), before
+  // garrisons (a captain is minted with a capital already holding its notable).
+  run('notables', () => { summary.notables = seedNotables(graph, ctx, k); });
   run('garrisons', () => {
     const result = seedGarrisons(graph, ctx, k);
     summary.garrisons = result.garrisons;
@@ -1098,6 +1298,11 @@ export function formatLivingWorldSummary(s: LivingWorldSummary): string {
     + ` · ties kin ${s.ties.kin}/friend ${s.ties.friendship}/rival ${s.ties.rivalry}`
     + ` (no pool ${s.ties.protagonistsWithoutPool.length}) · home-realm moves ${s.homeStandingMoves.length}`
     + ` · favours ${s.favors}`
-    + ` · quarrels ${s.quarrels} · marks ${s.marks} · garrisons ${s.garrisons}`;
+    + ` · quarrels ${s.quarrels} · marks ${s.marks}`
+    + ` · notables ${s.notables.notables} (no holding ${s.notables.notablesWithoutHolding.length}`
+    + ` / no quarrel ${s.notables.notablesWithoutQuarrel.length}`
+    + ` / no secret-or-favour ${s.notables.notablesWithoutLeverage.length}`
+    + ` / no resident ${s.notables.settlementsWithoutResident.length})`
+    + ` · garrisons ${s.garrisons}`;
   return s.failedPasses.length > 0 ? `${base} · failed: ${s.failedPasses.join(', ')}` : base;
 }

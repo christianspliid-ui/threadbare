@@ -50,6 +50,8 @@ import {
 } from '../data/notable-agendas';
 import {
   MAX_ACTIVE_NOTABLE_AGENDAS,
+  MAX_ACTIVE_LOCAL_AGENDAS,
+  LOCAL_AGENDA_FAMILY_IDS,
   NOTABLE_PROMINENCE_WEIGHT_SCOPE,
   NOTABLE_PROMINENCE_WEIGHT_POWER,
   NOTABLE_PROMINENCE_WEIGHT_DRIVE,
@@ -65,6 +67,8 @@ import {
   NOTABLE_AGENDA_CRACK_PRESSURE_MULTIPLIER,
 } from '../data/notable-agenda-config';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
+import { isPlaceNode, getLocationNodes, resolveToParentLocation } from './sublocationShape';
+import { NOTABLE_ORIGIN_WORLDGEN } from '../data/worldgen-living-constants';
 import { humanizePhaseId } from './phaseComposition';
 
 // ─── World-flag helpers ────────────────────────────────────────────────────
@@ -80,6 +84,8 @@ export const agendaFlags = {
   stallUntil: (compositionId: string) => `agenda.${compositionId}.stall-until`,
   completedNoted: (compositionId: string) => `agenda.${compositionId}.completed-noted`,
   lastLaunch: (notableId: string) => `agenda.notable.${notableId}.last-launch`,
+  /** THR-1654: set on a local notable's agenda — the split between the two caps. */
+  local: (compositionId: string) => `agenda.${compositionId}.local`,
 } as const;
 
 // ─── Trace helper ──────────────────────────────────────────────────────────
@@ -340,6 +346,121 @@ export function selectAgendaTarget(
       return selectFeudTarget(state, notableId, factionId, notables, alreadyTargeted);
     case 'none':
       return 'none';
+  }
+}
+
+// ─── Local notables (THR-1654) ─────────────────────────────────────────────
+
+export interface LocalNotable {
+  notableId: string;
+  /** The Location they live in (a Place resolves up to it). */
+  settlementId: string;
+  /** Their first faction, if any — only for prominence scope and the `{faction}` word. */
+  factionId?: string;
+}
+
+/**
+ * The local roster: seeded settlement notables (`notableOrigin: 'worldgen'`, still at the
+ * notable tier, alive, placed), excluding anyone the leader roster already carries. A
+ * notable who graduates to spotlight leaves this roster — they decide for themselves now.
+ */
+export function listLocalNotables(graph: WorldGraph): LocalNotable[] {
+  const leaders = new Set(listNotables(graph).map((n) => n.notableId));
+  const out: LocalNotable[] = [];
+  for (const node of graph.getNodesByType('actor')) {
+    const p = node.properties;
+    if (p.actorType !== 'individual' || p.spotlightTier !== 'notable') continue;
+    if (p.notableOrigin !== NOTABLE_ORIGIN_WORLDGEN || p.alive === false) continue;
+    if (leaders.has(node.id)) continue;
+    const at = graph.getOutgoingEdges(node.id, 'located_at')[0]?.target;
+    const settlement = at ? resolveToParentLocation(graph, graph.getNode(at)) : undefined;
+    if (!settlement) continue;
+    out.push({
+      notableId: node.id,
+      settlementId: settlement.id,
+      factionId: getFactionMembershipEdges(graph, node.id)[0]?.target,
+    });
+  }
+  return out.sort((a, b) => a.notableId.localeCompare(b.notableId));
+}
+
+export type LocalTargetSource = 'quarrel' | 'quarrel_holding' | 'neighbour_place' | 'home';
+
+export interface LocalTarget {
+  targetId: string;
+  targetName: string;
+  targetSource: LocalTargetSource;
+}
+
+/** The notable's standing old quarrels, living partners only, by partner id. */
+function quarrelPartners(graph: WorldGraph, notableId: string): string[] {
+  return graph
+    .getOutgoingEdges(notableId, 'hostile_to')
+    .filter((e) => e.properties.cause === 'old_quarrel')
+    .map((e) => e.target)
+    .filter((id) => {
+      const n = graph.getNode(id);
+      return !!n && n.properties.alive !== false;
+    })
+    .sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * A local agenda aims at the notable's own seeded story, never the nearest faction's
+ * (plan § S2c): feud → the quarrel partner; claim → a Place the partner holds, else an
+ * unheld Place in the nearest other settlement; rite → their own settlement, which always
+ * resolves. Rng-free — sorted by distance, then id.
+ */
+export function selectLocalAgendaTarget(
+  state: GameState,
+  familyId: string,
+  local: LocalNotable,
+  alreadyTargeted: ReadonlySet<string>,
+): LocalTarget | undefined {
+  const graph = state.graph;
+  const nameOf = (id: string) => graph.getNode(id)?.name ?? id;
+  switch (familyId) {
+    case 'feud': {
+      const partner = quarrelPartners(graph, local.notableId).find((id) => !alreadyTargeted.has(id));
+      return partner ? { targetId: partner, targetName: nameOf(partner), targetSource: 'quarrel' } : undefined;
+    }
+    case 'claim': {
+      for (const partner of quarrelPartners(graph, local.notableId)) {
+        const place = graph
+          .getOutgoingEdges(partner, 'owns')
+          .map((e) => graph.getNode(e.target))
+          .filter((n): n is NonNullable<typeof n> => !!n && isPlaceNode(n) && !alreadyTargeted.has(n.id))
+          .sort((a, b) => a.id.localeCompare(b.id))[0];
+        if (place) return { targetId: place.id, targetName: place.name, targetSource: 'quarrel_holding' };
+      }
+      const home = resolveLocationToHex(graph, local.settlementId);
+      if (!home) return undefined;
+      const unheldPlaces = new Map<string, string[]>();
+      for (const n of graph.getNodesByType('location')) {
+        const parent = n.properties.parentLocationId;
+        if (typeof parent !== 'string' || parent === local.settlementId) continue;
+        if (alreadyTargeted.has(n.id) || graph.getIncomingEdges(n.id, 'owns').length > 0) continue;
+        const list = unheldPlaces.get(parent) ?? [];
+        list.push(n.id);
+        unheldPlaces.set(parent, list);
+      }
+      let best: { placeId: string; dist: number; settlementId: string } | undefined;
+      for (const loc of getLocationNodes(graph)) {
+        const places = unheldPlaces.get(loc.id);
+        if (!places || loc.properties.locationSubtype === 'ruins') continue;
+        const hex = resolveLocationToHex(graph, loc.id);
+        if (!hex) continue;
+        const dist = hexDistance(home, hex);
+        if (!best || dist < best.dist || (dist === best.dist && loc.id.localeCompare(best.settlementId) < 0)) {
+          best = { placeId: [...places].sort((a, b) => a.localeCompare(b))[0], dist, settlementId: loc.id };
+        }
+      }
+      return best ? { targetId: best.placeId, targetName: nameOf(best.placeId), targetSource: 'neighbour_place' } : undefined;
+    }
+    case 'rite':
+      return { targetId: local.settlementId, targetName: nameOf(local.settlementId), targetSource: 'home' };
+    default:
+      return undefined;
   }
 }
 
@@ -848,10 +969,14 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
 
   // ── 2. Roster scan on cadence: launch new agendas up to budget ──
   if (state.tick % NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS === 0 && state.tick > 0) {
-    const liveAgendas = activeCompositions.filter(
+    const allLive = activeCompositions.filter(
       (c) => c.sponsorNotableId && c.agendaFamily && c.status === 'active',
     );
-    const busyNotables = new Set(liveAgendas.map((c) => c.sponsorNotableId!));
+    const isLocal = (c: ActiveComposition) => worldFlags[agendaFlags.local(c.compositionId)] === true;
+    // THR-1654: two rosters, two caps — a leader's slots never count a town's quarrel.
+    const liveAgendas = allLive.filter((c) => !isLocal(c));
+    const liveLocal = allLive.filter(isLocal);
+    const busyNotables = new Set(allLive.map((c) => c.sponsorNotableId!));
     const alreadyTargeted = new Set<string>();
     for (const c of activeCompositions) {
       if (c.status === 'active' && c.resolvedNodes.target) {
@@ -930,6 +1055,73 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
         family: family.id,
         prominence: cand.prominence,
         targetNodeId: targetId,
+        local: false,
+      });
+    }
+
+    // ── 2b. The local roster (THR-1654): seeded settlement notables, own cap ──
+    // Runs after the leaders on the same stream, so the leader scan draws exactly what it
+    // drew before local agendas existed.
+    let localSlots = Math.max(0, MAX_ACTIVE_LOCAL_AGENDAS - liveLocal.length);
+    let localLaunched = 0;
+    const localFamilies = LOCAL_AGENDA_FAMILY_IDS
+      .map((id) => getNotableAgendaFamily(id))
+      .filter((f): f is NotableAgendaFamily => !!f);
+    const localCandidates = localSlots > 0
+      ? listLocalNotables(state.graph)
+        .filter((n) => !busyNotables.has(n.notableId))
+        .map((n) => ({
+          ...n,
+          // Scope reads the faction's `controls`; an unaffiliated notable has none (0).
+          prominence: scoreNotableProminence(state, n.notableId, n.factionId ?? n.notableId),
+        }))
+        .sort((a, b) => b.prominence - a.prominence || a.notableId.localeCompare(b.notableId))
+      : [];
+    for (const cand of localCandidates) {
+      if (localSlots <= 0) break;
+      if (isThreadedByPlayer(state, cand.notableId)) {
+        skippedThreaded++;
+        continue;
+      }
+      const lastLaunch = readNum(worldFlags, agendaFlags.lastLaunch(cand.notableId));
+      if (lastLaunch > 0 && state.tick - lastLaunch < NOTABLE_AGENDA_LAUNCH_COOLDOWN_TICKS) continue;
+      const options = localFamilies
+        .map((family) => ({ family, target: selectLocalAgendaTarget(state, family.id, cand, alreadyTargeted) }))
+        .filter((o): o is { family: NotableAgendaFamily; target: LocalTarget } => !!o.target);
+      if (options.length === 0) continue;
+      const { family, target } = options[Math.floor(rng() * options.length)] ?? options[0];
+      const notableNode = state.graph.getNode(cand.notableId);
+      // The `{faction}` word: their faction, else the town they speak for.
+      const factionName = (cand.factionId ? state.graph.getNode(cand.factionId)?.name : undefined)
+        ?? state.graph.getNode(cand.settlementId)?.name
+        ?? 'their people';
+      const plan = buildNotableAgenda(
+        cand.notableId,
+        notableNode?.name ?? 'a notable',
+        factionName,
+        family,
+        state.tick,
+        target.targetId,
+        target.targetName,
+        rng,
+      );
+      activeCompositions = [...activeCompositions, plan.composition];
+      Object.assign(worldFlags, plan.worldFlagUpdates);
+      worldFlags[agendaFlags.local(plan.composition.compositionId)] = true;
+      alreadyTargeted.add(target.targetId);
+      localSlots--;
+      localLaunched++;
+      emitNotableTrace({
+        category: 'notable.agenda_launched' as const,
+        tick: state.tick,
+        summary: `${notableNode?.name ?? cand.notableId} launches local ${family.id} against ${target.targetName}`,
+        notableId: cand.notableId,
+        compositionId: plan.composition.compositionId,
+        family: family.id,
+        prominence: cand.prominence,
+        targetNodeId: target.targetId,
+        local: true,
+        targetSource: target.targetSource,
       });
     }
 
@@ -942,6 +1134,9 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
       activeAgendas: liveAgendas.length + launched,
       launched,
       skippedThreaded,
+      localCandidatesScored: localCandidates.length,
+      localActiveAgendas: liveLocal.length + localLaunched,
+      localLaunched,
     });
   }
 

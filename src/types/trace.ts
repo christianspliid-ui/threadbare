@@ -5510,6 +5510,10 @@ export interface NotableAgendaLaunchedTrace extends TraceBase {
   family: string;
   prominence: number;
   targetNodeId?: string;
+  /** THR-1654: true for the local roster (seeded settlement notables), false for leaders. */
+  local?: boolean;
+  /** THR-1654: which part of a local notable's own story the target came from. */
+  targetSource?: 'quarrel' | 'quarrel_holding' | 'neighbour_place' | 'home';
 }
 
 /** Trace: an agenda phase activated and its concrete move fired. */
@@ -5548,6 +5552,10 @@ export interface NotableRosterScanTrace extends TraceBase {
   activeAgendas: number;
   launched: number;
   skippedThreaded: number;
+  /** THR-1654: the local roster's share of the same scan (its own cap, its own slots). */
+  localCandidatesScored?: number;
+  localActiveAgendas?: number;
+  localLaunched?: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════
