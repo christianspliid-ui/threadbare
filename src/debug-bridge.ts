@@ -2403,6 +2403,18 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1640 — the guild-join funnel: joins that reached a board, were chosen,
+     * resolved (by band) and became memberships, plus spotlight guild coverage now.
+     */
+    getGuildJoinFunnel: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getTraces } = await import('./engine/traceBuffer');
+      const { computeGuildJoinFunnel } = await import('./engine/guildJoinFunnel');
+      return computeGuildJoinFunnel(state.graph, getTraces());
+    },
+
+    /**
      * Every reader that ran at a cell completion (THR-1428), writes and refusals
      * alike — a survey that turned up nothing new is the interesting case.
      */

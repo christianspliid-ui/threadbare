@@ -26,6 +26,58 @@ export const FACTION_REPUTATION_PROMOTION_URGENCY_GAP = 0.08;
 /** Reputation on joining (just above zero) */
 export const FACTION_JOIN_STARTING_REPUTATION = 0.05;
 
+// ─── Spotlight mortals who join guilds (THR-1640) ────────────────────────────
+
+/**
+ * When true, `generateFactionLifecycleCandidates` offers a join (or promotion) at
+ * **every** faction hall at the Location, each keyed to its own hall. False restores
+ * the pre-THR-1640 read of the first hall only — 59 of seed 42's 183 offerable
+ * samples were offerable only at a second or later hall.
+ */
+export const FACTION_LIFECYCLE_ALL_HALLS = true;
+
+/**
+ * Guild-fit weight on a join's reward: `FACTION_JOIN_FIT_BONUS × fit`, where `fit` is
+ * the mortal's mean reach share across the guild's primary reaches. A mortal whose
+ * reaches match a guild wants to belong to it; a poor fit still can, but rarely.
+ * Added to the join's success reward, so it reaches valuePerTick and the decision
+ * board (which never reads the additive bonus terms). 0 disables.
+ */
+export const FACTION_JOIN_FIT_BONUS = 1.0;
+
+/**
+ * How many of a guild's highest `reachWeights` count as its primary reaches for the
+ * guild-fit term. Ties at the cut are all kept, so a guild never loses a reach it
+ * weights equally.
+ */
+export const FACTION_JOIN_FIT_PRIMARY_REACHES = 2;
+
+/**
+ * The THR-1640 coverage gate: by t200 on seeds 42 and 99 spotlight mortals hold
+ * memberships in at least this many of the non-Realm guilds. Read by the guild-join
+ * funnel accessor and the reader; not a runtime lever.
+ */
+export const GUILD_SPOTLIGHT_COVERAGE_MIN = 5;
+
+/**
+ * Ticks after joining during which a member cannot be the target of its faction's
+ * `excommunicate` action. A join starts at `FACTION_JOIN_STARTING_REPUTATION`, the
+ * lowest standing in any established guild, and excommunication picks the lowest —
+ * so without a grace the newest member is always the next one struck off. 0 disables.
+ */
+export const FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS = 100;
+
+/**
+ * The resolved bands in which a join or promotion **lands** on the live
+ * unified-action path (THR-1640). A near miss is a miss: the mortal was turned away
+ * and may try again after the cooldown.
+ */
+export const FACTION_LIFECYCLE_SUCCESS_BANDS: ReadonlySet<string> = new Set([
+  'critical_success',
+  'success',
+  'success_at_cost',
+]);
+
 /** Base reputation per completed quest step */
 export const FACTION_QUEST_REPUTATION_GAIN = 0.04;
 

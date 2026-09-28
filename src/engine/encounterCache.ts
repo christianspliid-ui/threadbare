@@ -143,6 +143,14 @@ export interface EncounterCacheEntry {
    * JOURNEY_GOAL_CAP_RESERVE slot at the cap stage. Optional and falsy by default.
    */
   journeyGoal?: boolean;
+  /**
+   * THR-1640 — on a guild **join** entry only: the mortal's fit for that guild, the
+   * mean reach share (0–1) over the guild's primary reaches, computed per agent by
+   * `generateFactionLifecycleCandidates`. `scoreAndSelect` adds
+   * `FACTION_JOIN_FIT_BONUS × guildFit` so membership follows character. Absent on
+   * every other entry, so every other score is unchanged.
+   */
+  guildFit?: number;
   // Pre-computed for scoring:
   totalTickCost: number;
   successRewardEstimate: number;

@@ -31,6 +31,12 @@ import {
 } from '../data/faction-definitions';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import {
+  FACTION_LIFECYCLE_ALL_HALLS,
+  FACTION_JOIN_FIT_PRIMARY_REACHES,
+} from '../data/faction-constants';
+import { computeReachShare } from './domainCapability';
+import type { ReachDomain } from '../types/traits';
+import {
   FACTION_ENCOUNTER_META,
   FACTION_JOIN_TEMPLATE,
   FACTION_PROMOTION_TEMPLATE,
@@ -285,17 +291,56 @@ export function generateFactionLifecycleCandidates(
 
   if (sublocations.length === 0) return candidates;
 
-  // Find the guild hall's sublocation ID (first one)
-  const guildHallNode = sublocations[0]!;
-  const guildHallId = guildHallNode.id;
+  // THR-1640: every hall at the Location, each keyed to its own hall. The flag off
+  // restores the first-hall-only read. A guild with two halls here offers once.
+  const halls = FACTION_LIFECYCLE_ALL_HALLS ? sublocations : sublocations.slice(0, 1);
+  const seenDefs = new Set<string>();
+  for (const guildHallNode of halls) {
+    const factionDefId = guildHallNode!.properties?.factionDefId as string | undefined;
+    if (!factionDefId || seenDefs.has(factionDefId)) continue;
+    seenDefs.add(factionDefId);
+    const definition = getFactionDefinition(factionDefId);
+    if (!definition) continue;
+    pushLifecycleCandidatesForHall(graph, agentId, locationId, guildHallNode!.id, definition, candidates);
+  }
 
-  // Determine which faction this guild hall belongs to
-  const factionDefId = guildHallNode.properties?.factionDefId as string | undefined;
-  if (!factionDefId) return candidates;
+  return candidates;
+}
 
-  const definition = getFactionDefinition(factionDefId);
-  if (!definition) return candidates;
+/**
+ * THR-1640 — the mortal's fit for a guild: mean reach share over the guild's primary
+ * reaches (its top `FACTION_JOIN_FIT_PRIMARY_REACHES` `reachWeights`, ties at the
+ * cut kept). The same `computeReachShare` the join requirements read. Fail-soft: a
+ * guild with no weights, or a throwing walk, reads 0 — no bonus, never a throw.
+ */
+export function computeGuildFit(
+  graph: WorldGraph,
+  agentId: string,
+  definition: FactionDefinition,
+): number {
+  const weighted = Object.entries(definition.reachWeights ?? {})
+    .filter((e): e is [string, number] => typeof e[1] === 'number' && e[1] > 0)
+    .sort((a, b) => b[1] - a[1]);
+  if (weighted.length === 0) return 0;
+  const cutIndex = Math.min(FACTION_JOIN_FIT_PRIMARY_REACHES, weighted.length) - 1;
+  const cut = weighted[Math.max(0, cutIndex)]![1];
+  const primary = weighted.filter(([, w]) => w >= cut).map(([reach]) => reach as ReachDomain);
+  let sum = 0;
+  for (const reach of primary) sum += computeReachShare(graph, agentId, reach);
+  const fit = sum / primary.length;
+  return Number.isFinite(fit) ? Math.max(0, Math.min(1, fit)) : 0;
+}
 
+/** The join or promotion candidate one hall offers this agent (TB-061, per hall since THR-1640). */
+function pushLifecycleCandidatesForHall(
+  graph: WorldGraph,
+  agentId: string,
+  locationId: string,
+  guildHallId: string,
+  definition: FactionDefinition,
+  candidates: EncounterCacheEntry[],
+): void {
+  const factionDefId = definition.id;
   // Check if agent is already a member of this faction
   const memberEdges = getFactionMembershipEdges(graph, agentId)
     .filter(e => {
@@ -320,6 +365,7 @@ export function generateFactionLifecycleCandidates(
         requiresPresence: true,
         questPriority: 6.0,
         successRewardEstimate: 0.05,
+        guildFit: computeGuildFit(graph, agentId, definition),
       }));
     }
   } else {
@@ -366,6 +412,4 @@ export function generateFactionLifecycleCandidates(
       }
     }
   }
-
-  return candidates;
 }

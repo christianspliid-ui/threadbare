@@ -1476,6 +1476,16 @@ Three things follow with no authoring:
 
 **Where to find the implementation:** `src/engine/castTargetChanges.ts`, the snapshot pair in `executeStepResult` and the digest write in `src/engine/unifiedActionResolution.ts`, `src/engine/playerReceipts.ts`, `src/components/Game/ActiveEffectChips.tsx`. Plan: `Docs/plans/2026-09-27-thr-1606-what-your-hand-did.md` § B1.
 
+### Capability 32: Guild Fit — Who Joins Your Guild (THR-1640)
+
+**What it does:** a deciding mortal at a town is offered a join at **every** guild hall there. Each join's reward carries the mortal's **guild fit**: the mean reach share (`computeReachShare`) over the guild's two highest `reachWeights`, times `FACTION_JOIN_FIT_BONUS` (1.0). A join that resolves in `critical_success`, `success` or `success_at_cost` writes the `member_of` edge, and the new member is safe from the guild's `excommunicate` action for `FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS` (100).
+
+**Why you want it:** a guild definition's `reachWeights` now decide who joins it, as well as which of its templates get drawn. The Lorekeepers pull scholars and the Civic Guard pulls fighters, so the members the player watches match the guild's character. Once they join, the guild's rank-gated content has a deciding member to reach. When you author a new guild, its top two `reachWeights` are its recruiting pitch. `joinPrerequisites` stays the hard gate; fit is the lean.
+
+**How to tell whether yours landed.** `await window.__DEBUG.getGuildJoinFunnel()` reports joins reached → chosen → resolved by band → joined, and `coverage` counts the non-Realm guilds with a spotlight member now. Each resolved join emits a `guild_join_resolved` trace; when no edge was written, its `reason` is `band_not_landed`, `already_member`, `no_faction_node` or `unresolved_meta`. Headless: `readers/guild-join.ts 42,99 200` with `PROBE=0`.
+
+**Where to find the implementation:** `generateFactionLifecycleCandidates` / `computeGuildFit` in `src/engine/factionQuestGeneration.ts`, `computeGuildFitBonus` in `src/engine/encounterScoring.ts`, `processResolvedFactionLifecycleAction` in `src/engine/factionOutcome.ts` (called from the orchestrator's newly-resolved transition), `src/engine/guildJoinFunnel.ts`. Plan: `Docs/plans/2026-09-27-thr-1633-written-encounters-land.md` § S3.
+
 ---
 
 ## Part 3: The Wiring Checklist — Ask These Before You Write

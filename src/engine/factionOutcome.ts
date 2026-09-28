@@ -27,6 +27,8 @@ import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { resolveMetaFactionDefId } from './factionMetaScope';
 import { applyFactionReputationGain } from './factionReputation';
 import { emitTrace } from './traceBuffer';
+import type { GuildJoinResolvedTrace } from '../types/trace';
+import { FACTION_LIFECYCLE_SUCCESS_BANDS } from '../data/faction-constants';
 
 // ─── Join Outcome ───────────────────────────────────────────────────────
 
@@ -257,6 +259,85 @@ let factionEventSeq = 0;
 /** Reset per-tick faction event counter. Called by orchestrator.resetEventCounters(). */
 export function resetFactionEventSeq(): void {
   factionEventSeq = 0;
+}
+
+/**
+ * The live join/promotion hook (THR-1640).
+ *
+ * `processFactionOutcome` was only ever called from the `state.encounterProgress` loop
+ * in `phaseEncounterProgressionV2`, and no production path fills that list (THR-1069).
+ * Joins resolve as unified actions, so a chosen join that resolved in a success band
+ * wrote no `member_of` edge — measured on seeds 42 · 99 at t200: 6 joins landed
+ * (`success` ×4, `success_at_cost` ×2), 0 memberships. The orchestrator now calls this
+ * at the newly-resolved transition, beside `applySecretsFavorsFromResolvedAction`.
+ *
+ * A landed band routes through the same `processFactionOutcome` the legacy loop used,
+ * so the edge shape, the event and the promotion rules are unchanged. Every resolved
+ * join emits one `guild_join_resolved` trace, landed or not.
+ *
+ * Fail-soft: a template that is not a lifecycle template returns [] without a trace.
+ */
+export function processResolvedFactionLifecycleAction(
+  graph: WorldGraph,
+  action: { readonly actorId: string; readonly templateId: string; readonly outcome?: string | null },
+  tick: number,
+  rng: () => number,
+): TickEvent[] {
+  const meta = FACTION_ENCOUNTER_META.get(action.templateId);
+  if (!meta) return [];
+  const factionDefId = resolveMetaFactionDefId(graph, action.actorId, meta);
+  const definition = getFactionDefinition(factionDefId);
+  const isJoin = definition
+    ? action.templateId === definition.joinEncounterTemplateId
+    : action.templateId.endsWith('.join');
+  const isPromotion = definition != null && action.templateId === definition.promotionEncounterTemplateId;
+  if (!isJoin && !isPromotion) return [];
+
+  const outcome = action.outcome ?? 'unknown';
+  const landed = FACTION_LIFECYCLE_SUCCESS_BANDS.has(outcome);
+  const events = landed && definition
+    ? processFactionOutcome(
+      graph,
+      {
+        encounterId: action.templateId,
+        actorId: action.actorId,
+        currentEncounterIndex: 0,
+        history: [],
+        status: 'completed',
+        startedTick: tick,
+      },
+      tick,
+      rng,
+    )
+    : [];
+
+  if (isJoin) {
+    const joined = events.some(e => e.type === 'faction_member_joined');
+    let reason: GuildJoinResolvedTrace['reason'] = 'joined';
+    if (!joined) {
+      if (!definition) reason = 'unresolved_meta';
+      else if (!landed) reason = 'band_not_landed';
+      else if (getFactionMembershipEdges(graph, action.actorId).some(e =>
+        (e.properties as Partial<MemberOfEdgeProperties>).factionDefId === definition.id)) reason = 'already_member';
+      else reason = 'no_faction_node';
+    }
+    const agentName = graph.getNode(action.actorId)?.name ?? action.actorId;
+    emitTrace({
+      tick,
+      category: 'guild_join_resolved',
+      agentId: action.actorId,
+      templateId: action.templateId,
+      factionDefId: definition?.id ?? null,
+      outcome,
+      landed,
+      joined,
+      reason,
+      summary: joined
+        ? `${agentName} joined ${definition?.nameTemplate ?? action.templateId} (${outcome})`
+        : `${agentName}'s ${action.templateId} did not become a membership: ${reason} (${outcome})`,
+    });
+  }
+  return events;
 }
 
 /**

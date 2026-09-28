@@ -57,6 +57,7 @@ import { refreshFactionDerivedFlags, getFactionLeaderId, getAnointedLeaderId } f
 import { resolveFactionMemberWork } from './factionMemberWork';
 import type { FactionStirDissentTrace } from '../types/factionAction';
 import { getFactionMembershipEdges } from './graphQueries';
+import { FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS } from '../data/faction-constants';
 
 // ─── PRNG (mulberry32 — same as all engine modules) ──────────────────────────
 
@@ -494,6 +495,14 @@ function executeExcommunicate(
     const member = state.graph.getNode(edge.source);
     if (!member || member.type !== 'actor') continue;
     if (member.properties.armyState != null || member.properties.actorType === 'group') continue;
+    // THR-1640: a novice is not struck from the rolls in the season it was admitted.
+    // A fresh join starts at the lowest reputation in the guild, so without this the
+    // newest member was always the purge's first pick — measured: both spotlight
+    // joins on seed 99 were excommunicated 20–24 ticks after joining.
+    const joinedTick = edge.properties.joinedTick as number | undefined;
+    // Worldgen members carry joinedTick 0 and are not novices: the grace is for joins made in play.
+    if (typeof joinedTick === 'number' && joinedTick > 0
+      && state.tick - joinedTick < FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS) continue;
 
     const rep = (edge.properties.reputation as number) ?? 0;
     // Check if this member also belongs to a rival faction

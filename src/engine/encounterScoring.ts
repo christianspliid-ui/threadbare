@@ -36,6 +36,7 @@
  */
 
 import type { EncounterCacheEntry } from './encounterCache';
+import { FACTION_JOIN_FIT_BONUS } from '../data/faction-constants';
 import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
@@ -599,6 +600,8 @@ export interface ScoredCandidate {
   convergenceBonus: number;
   /** Appointment pull toward the promised place (THR-1479); 0 outside the leaning/departing regimes. */
   appointmentBonus?: number;
+  /** THR-1640 — guild-fit reward on a join entry (`computeGuildFitBonus`), already inside valuePerTick; 0 elsewhere. */
+  guildFitBonus?: number;
   hunchBonus: number;
   rarityMultiplier: number;
   roleAffinityMultiplier: number;
@@ -1067,6 +1070,20 @@ export function computeReputationScoringBonus(
   return bonus;
 }
 
+// ─── Guild Fit (THR-1640) ──────────────────────────────────────────
+
+/**
+ * Reward term for a guild join: `FACTION_JOIN_FIT_BONUS × entry.guildFit`, added to the
+ * entry's success reward so it reaches valuePerTick (and so the decision board).
+ * `guildFit` is written only on join entries by `generateFactionLifecycleCandidates`,
+ * so this is 0 for every other candidate. Non-finite or out-of-range fit clamps to 0–1.
+ */
+export function computeGuildFitBonus(entry: Pick<EncounterCacheEntry, 'guildFit'>): number {
+  const fit = entry.guildFit;
+  if (typeof fit !== 'number' || !Number.isFinite(fit)) return 0;
+  return FACTION_JOIN_FIT_BONUS * Math.max(0, Math.min(1, fit));
+}
+
 // ─── Role-Reach Affinity ──────────────────────────────────────────
 
 /**
@@ -1231,7 +1248,12 @@ export function scoreAndSelect(
     // 3. Phase 4: Expected utility from 5-tier outcome ladder (replaces binary model).
     // Uses the same math as live resolution via forecastEncounterExpectedUtility.
     // Reward scale includes both direct reward and growth value.
-    const rewardWithGrowth = entry.successRewardEstimate + growthValue;
+    // 2b. Guild fit (THR-1640) — a join entry carries the mortal's fit for that guild,
+    // and a good fit is worth belonging to. It rides the *reward*, not an additive
+    // bonus: the live decision board ranks encounters by valuePerTick × desire × fit
+    // and never reads the additive terms. Absent on every other entry, so 0 there.
+    const guildFitBonus = computeGuildFitBonus(entry);
+    const rewardWithGrowth = entry.successRewardEstimate + growthValue + guildFitBonus;
     const forecast = forecastEncounterExpectedUtility(entry, agentId, graph, rewardWithGrowth, standing);
     const expectedUtility = forecast.expectedUtility;
     const engagementForecast = forecast.engagementForecast;
@@ -1240,7 +1262,7 @@ export function scoreAndSelect(
 
     // 3b. Binary expected reward — fallback when EU is negative (incapable agents, extreme difficulty).
     const expectedReward =
-      completionProb * (entry.successRewardEstimate + growthValue);
+      completionProb * (entry.successRewardEstimate + growthValue + guildFitBonus);
 
     // 4. Travel cost (B.3: dampened by TRAVEL_COST_WEIGHT, modulated by personality wanderlust)
     const wanderlust = Math.min(1, Math.max(0, -(profile[WANDERLUST_PAIR] ?? 0))); // clamped 0..1, higher = more curious
@@ -1513,6 +1535,7 @@ export function scoreAndSelect(
       attractionBonus,
       convergenceBonus,
       appointmentBonus,
+      guildFitBonus,
       hunchBonus,
       rarityMultiplier,
       roleAffinityMultiplier,

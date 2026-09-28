@@ -1,0 +1,596 @@
+{
+ "ticket": "THR-1640",
+ "note": "readers/guild-join.ts 42,99 200 with PROBE=0. before = origin/main 42e3757e; after = FACTION_JOIN_FIT_BONUS 1.0; arms = the calibration sweep (after-tree, bonus patched in the bundle).",
+ "before": {
+  "seeds": [
+   42,
+   99
+  ],
+  "ticks": 200,
+  "every": 10,
+  "perSeed": {
+   "42": {
+    "boardJoinSample": [
+     {
+      "f": 0.55,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.merchants_gambit"
+     },
+     {
+      "f": 0.55,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.smuggle_goods"
+     },
+     {
+      "f": 0.55,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "veil.truth.page_beneath_saint"
+     },
+     {
+      "f": 0.55,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "lk.join"
+     }
+    ],
+    "tally": {
+     "engagement_traces": 933,
+     "board_top:join:zone=in": 4,
+     "board_top:join:chosen": 1
+    },
+    "hallsPerLoc": {},
+    "joinFired": {
+     "lk.join|decider": 1
+    },
+    "joinResolved": {
+     "failure|no_member": 1
+    },
+    "deciderGuildMembershipsAtEnd": {
+     "mercenary_company": 2
+    },
+    "guildsCovered": 1,
+    "decidersAtEnd": 19
+   },
+   "99": {
+    "boardJoinSample": [
+     {
+      "f": 0.67,
+      "fit": 0.93,
+      "zone": "above",
+      "chosen": "encounter.decipher_old_markings"
+     },
+     {
+      "f": 0.48,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.festival_of_spheres"
+     },
+     {
+      "f": 0.67,
+      "fit": 0.8,
+      "zone": "above",
+      "chosen": "eye.reckoning.verdict_that_burns"
+     },
+     {
+      "f": 0.69,
+      "fit": 0.65,
+      "zone": "above",
+      "chosen": "encounter.commune_with_stars"
+     },
+     {
+      "f": 0.69,
+      "fit": 0.65,
+      "zone": "above",
+      "chosen": "encounter.rally_the_locals"
+     },
+     {
+      "f": 0.69,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.festival_of_spheres"
+     },
+     {
+      "f": 0.68,
+      "fit": 0.72,
+      "zone": "above",
+      "chosen": "encounter.library_expansion"
+     },
+     {
+      "f": 0.64,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.aid_refugees"
+     },
+     {
+      "f": 0.65,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.pickpocket"
+     },
+     {
+      "f": 0.62,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.mend_equipment"
+     },
+     {
+      "f": 0.62,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "star.turning.comet_omen"
+     },
+     {
+      "f": 0.68,
+      "fit": 0.72,
+      "zone": "above",
+      "chosen": "encounter.tend_the_weary"
+     }
+    ],
+    "tally": {
+     "engagement_traces": 1081,
+     "board_top:join:zone=above": 16,
+     "board_top:join:zone=in": 19,
+     "board_top:join:chosen": 7,
+     "board_top:join:zone=below": 1
+    },
+    "hallsPerLoc": {},
+    "joinFired": {
+     "ag.join|decider": 5,
+     "hod.join|decider": 2
+    },
+    "joinResolved": {
+     "success|no_member": 2,
+     "success_at_cost|no_member": 1,
+     "failure|no_member": 1,
+     "critical_success|no_member": 1,
+     "critical_failure|no_member": 2
+    },
+    "deciderGuildMembershipsAtEnd": {
+     "mercenary_company": 4
+    },
+    "guildsCovered": 1,
+    "decidersAtEnd": 20
+   }
+  }
+ },
+ "after": {
+  "seeds": [
+   42,
+   99
+  ],
+  "ticks": 200,
+  "every": 10,
+  "perSeed": {
+   "42": {
+    "boardJoinSample": [
+     {
+      "f": 0.92,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "cell.control_claim.location"
+     },
+     {
+      "f": 0.92,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "cell.control_seize.place"
+     },
+     {
+      "f": 0.92,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "crafting.quest.flawed_steel"
+     },
+     {
+      "f": 0.7,
+      "fit": 0.84,
+      "zone": "above",
+      "chosen": "hod.join"
+     },
+     {
+      "f": 0.99,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.arcane_resonance_study"
+     },
+     {
+      "f": 0.42,
+      "fit": 0.65,
+      "zone": "below",
+      "chosen": "lk.join"
+     },
+     {
+      "f": 0.99,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.shadow_in_the_night"
+     },
+     {
+      "f": 0.99,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "uk.join"
+     },
+     {
+      "f": 0.56,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "mct.join"
+     },
+     {
+      "f": 0.43,
+      "fit": 0.69,
+      "zone": "below",
+      "chosen": "encounter.vault_heist"
+     },
+     {
+      "f": 0.43,
+      "fit": 0.58,
+      "zone": "below",
+      "chosen": "lk.join"
+     },
+     {
+      "f": 0.58,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "encounter.arcane_resonance_study"
+     }
+    ],
+    "tally": {
+     "engagement_traces": 1011,
+     "board_top:join:zone=above": 57,
+     "board_top:join:chosen": 21,
+     "board_top:join:zone=below": 8,
+     "board_top:join:zone=in": 16
+    },
+    "hallsPerLoc": {},
+    "joinFired": {
+     "hod.join|decider": 3,
+     "lk.join|decider": 8,
+     "uk.join|decider": 2,
+     "mct.join|decider": 1,
+     "cg.join|decider": 4,
+     "ts.join|decider": 1,
+     "ac.join|decider": 2
+    },
+    "joinResolved": {
+     "success|member": 9,
+     "failure|no_member": 7,
+     "success_at_cost|member": 3,
+     "critical_success|member": 1,
+     "contested_lost|no_member": 1
+    },
+    "deciderGuildMembershipsAtEnd": {
+     "temple_of_spheres": 1,
+     "civic_guard": 2,
+     "arcane_circle": 2,
+     "lorekeepers_covenant": 3,
+     "holy_order_dawn": 1,
+     "underking_court": 1,
+     "mercenary_company": 3
+    },
+    "guildsCovered": 7,
+    "decidersAtEnd": 19
+   },
+   "99": {
+    "boardJoinSample": [
+     {
+      "f": 0.57,
+      "fit": 1,
+      "zone": "in",
+      "chosen": "rb.join"
+     },
+     {
+      "f": 0.94,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.sacred_text_study"
+     },
+     {
+      "f": 0.47,
+      "fit": 1,
+      "zone": "below",
+      "chosen": "encounter.barter_supplies"
+     },
+     {
+      "f": 0.47,
+      "fit": 0.79,
+      "zone": "below",
+      "chosen": "encounter.master_craftsman_challenge"
+     },
+     {
+      "f": 0.98,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.listen_for_rumors"
+     },
+     {
+      "f": 0.94,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "cell.control_claim.place"
+     },
+     {
+      "f": 0.98,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.trace_ley_lines"
+     },
+     {
+      "f": 0.73,
+      "fit": 0.85,
+      "zone": "above",
+      "chosen": "ts.join"
+     },
+     {
+      "f": 0.98,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.patrol_perimeter"
+     },
+     {
+      "f": 0.98,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.local_gossip"
+     },
+     {
+      "f": 0.47,
+      "fit": 0.87,
+      "zone": "below",
+      "chosen": "lk.join"
+     },
+     {
+      "f": 0.91,
+      "fit": 0.1,
+      "zone": "above",
+      "chosen": "encounter.shadow_hunt"
+     }
+    ],
+    "tally": {
+     "engagement_traces": 1009,
+     "board_top:join:zone=in": 16,
+     "board_top:join:chosen": 28,
+     "board_top:join:zone=above": 73,
+     "board_top:join:zone=below": 5
+    },
+    "hallsPerLoc": {},
+    "joinFired": {
+     "rb.join|decider": 1,
+     "ts.join|decider": 6,
+     "lk.join|decider": 4,
+     "ag.join|decider": 4,
+     "mc.join|decider": 3,
+     "ac.join|decider": 1,
+     "mct.join|decider": 4,
+     "hod.join|decider": 5
+    },
+    "joinResolved": {
+     "failure|no_member": 8,
+     "success_at_cost|member": 5,
+     "critical_success|member": 2,
+     "success|member": 10,
+     "critical_failure|no_member": 2
+    },
+    "deciderGuildMembershipsAtEnd": {
+     "holy_order_dawn": 2,
+     "lorekeepers_covenant": 2,
+     "mercenary_company": 7,
+     "temple_of_spheres": 3,
+     "adventuring_guild": 2
+    },
+    "guildsCovered": 5,
+    "decidersAtEnd": 20
+   }
+  }
+ },
+ "arms": {
+  "0.2": {
+   "42": {
+    "tally": {
+     "engagement_traces": 968,
+     "board_top:join:zone=above": 25,
+     "board_top:join:zone=in": 25,
+     "board_top:join:chosen": 5,
+     "board_top:join:zone=below": 21
+    },
+    "joinFired": {
+     "hod.join|decider": 1,
+     "uk.join|decider": 1,
+     "lk.join|decider": 1,
+     "ag.join|decider": 1,
+     "tg.join|decider": 1
+    },
+    "joinResolved": {
+     "critical_success|member": 2,
+     "success_at_cost|member": 2,
+     "failure|no_member": 1
+    },
+    "guildsCovered": 3,
+    "decidersAtEnd": 19,
+    "deciderGuildMembershipsAtEnd": {
+     "mercenary_company": 2,
+     "lorekeepers_covenant": 1,
+     "thieves_guild": 1
+    }
+   },
+   "99": {
+    "tally": {
+     "engagement_traces": 1025,
+     "board_top:join:zone=below": 9,
+     "board_top:join:zone=in": 29,
+     "board_top:join:zone=above": 34,
+     "board_top:join:chosen": 11
+    },
+    "joinFired": {
+     "ts.join|decider": 2,
+     "lk.join|decider": 5,
+     "mct.join|decider": 1,
+     "hod.join|decider": 2,
+     "ag.join|decider": 1
+    },
+    "joinResolved": {
+     "success|member": 4,
+     "failure|no_member": 4,
+     "success_at_cost|member": 1,
+     "critical_success|member": 2
+    },
+    "guildsCovered": 4,
+    "decidersAtEnd": 20,
+    "deciderGuildMembershipsAtEnd": {
+     "temple_of_spheres": 2,
+     "mercenary_company": 2,
+     "holy_order_dawn": 1,
+     "lorekeepers_covenant": 2
+    }
+   }
+  },
+  "0.6": {
+   "42": {
+    "tally": {
+     "engagement_traces": 904,
+     "board_top:join:zone=above": 43,
+     "board_top:join:chosen": 12,
+     "board_top:join:zone=below": 11,
+     "board_top:join:zone=in": 11
+    },
+    "joinFired": {
+     "hod.join|decider": 3,
+     "uk.join|decider": 2,
+     "mct.join|decider": 1,
+     "cg.join|decider": 2,
+     "ts.join|decider": 2,
+     "lk.join|decider": 1,
+     "ac.join|decider": 1
+    },
+    "joinResolved": {
+     "success|member": 9,
+     "success_at_cost|member": 1,
+     "failure|no_member": 2
+    },
+    "guildsCovered": 6,
+    "decidersAtEnd": 20,
+    "deciderGuildMembershipsAtEnd": {
+     "civic_guard": 1,
+     "arcane_circle": 1,
+     "holy_order_dawn": 2,
+     "underking_court": 1,
+     "mercenary_company": 2,
+     "lorekeepers_covenant": 1
+    }
+   },
+   "99": {
+    "tally": {
+     "engagement_traces": 1036,
+     "board_top:join:zone=in": 14,
+     "board_top:join:zone=below": 9,
+     "board_top:join:chosen": 18,
+     "board_top:join:zone=above": 78
+    },
+    "joinFired": {
+     "rb.join|decider": 1,
+     "ts.join|decider": 3,
+     "lk.join|decider": 3,
+     "ac.join|decider": 2,
+     "hod.join|decider": 2,
+     "mc.join|decider": 3,
+     "mct.join|decider": 4
+    },
+    "joinResolved": {
+     "failure|no_member": 5,
+     "success|member": 7,
+     "critical_success|member": 4,
+     "success_at_cost|member": 1,
+     "contested_lost|no_member": 1
+    },
+    "guildsCovered": 4,
+    "decidersAtEnd": 20,
+    "deciderGuildMembershipsAtEnd": {
+     "mercenary_company": 4,
+     "temple_of_spheres": 2,
+     "arcane_circle": 1,
+     "merchant_consortium": 1
+    }
+   }
+  },
+  "1.2": {
+   "42": {
+    "tally": {
+     "engagement_traces": 990,
+     "board_top:join:zone=above": 54,
+     "board_top:join:chosen": 29,
+     "board_top:join:zone=below": 4,
+     "board_top:join:zone=in": 12
+    },
+    "joinFired": {
+     "hod.join|decider": 5,
+     "mc.join|decider": 1,
+     "lk.join|decider": 5,
+     "uk.join|decider": 3,
+     "mct.join|decider": 5,
+     "cg.join|decider": 6,
+     "ts.join|decider": 4
+    },
+    "joinResolved": {
+     "critical_failure|no_member": 3,
+     "failure|no_member": 9,
+     "success|member": 12,
+     "success_at_cost|member": 3,
+     "critical_success|member": 2
+    },
+    "guildsCovered": 7,
+    "decidersAtEnd": 20,
+    "deciderGuildMembershipsAtEnd": {
+     "temple_of_spheres": 2,
+     "holy_order_dawn": 1,
+     "underking_court": 2,
+     "lorekeepers_covenant": 3,
+     "mercenary_company": 2,
+     "merchant_consortium": 1,
+     "civic_guard": 2
+    }
+   },
+   "99": {
+    "tally": {
+     "engagement_traces": 1085,
+     "board_top:join:zone=in": 18,
+     "board_top:join:chosen": 28,
+     "board_top:join:zone=above": 52,
+     "board_top:join:zone=below": 5
+    },
+    "joinFired": {
+     "rb.join|decider": 1,
+     "ts.join|decider": 6,
+     "mc.join|decider": 3,
+     "lk.join|decider": 5,
+     "ac.join|decider": 2,
+     "hod.join|decider": 4,
+     "mct.join|decider": 4,
+     "ag.join|decider": 3
+    },
+    "joinResolved": {
+     "failure|no_member": 5,
+     "success|member": 16,
+     "critical_success|member": 3,
+     "critical_failure|no_member": 1,
+     "critical_failure|member": 1,
+     "success_at_cost|member": 2
+    },
+    "guildsCovered": 7,
+    "decidersAtEnd": 20,
+    "deciderGuildMembershipsAtEnd": {
+     "holy_order_dawn": 3,
+     "lorekeepers_covenant": 2,
+     "mercenary_company": 4,
+     "temple_of_spheres": 2,
+     "adventuring_guild": 2,
+     "merchant_consortium": 1,
+     "arcane_circle": 1
+    }
+   }
+  }
+ }
+}
