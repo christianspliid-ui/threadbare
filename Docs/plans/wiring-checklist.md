@@ -2905,3 +2905,15 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `data/narrative-content.ts` (`SPHERE_VOCABULARY` +4) | tick narrative events | event feed prose | — | — | — |
 
 **Wired and asserted:** the corpus guard (798 entries / 528 ids carry exactly one token), the generated-world leak guard (seeds 42 and 99, both line kinds fire, no raw token), and a 30-tick seed-42 CLI run emitting `opening_coloration_bound` with culture and sphere lines. Browser: *Master the Local Craft* at a Darkness town renders the custom in the opening.
+
+## The world's past — the past on the graph (THR-1631 S1)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/worldPast.ts` (new: `seedWorldPast`, `realmNeighbourPairs`, `formatWorldPastSummary`) | worldgen, `gameInit` after latent sources and before `loc.start`, try/catch; own stream `WORLDGEN_PAST_PRIME` 101363 | none in S1 — the "Before you woke" chronicle section and the place and dead-person lines are S2 ([THR-1656](https://linear.app/threadbare/issue/THR-1656)) | graph only: ≤ 6 event nodes (`past_elder_war`, `past_war`), ≤ 10 retained dead (`pastRole`, `pastOrigin: 'worldgen'`), `foundedYearsAgo`, `backstoryStrata` / `originCultureId`, `participated_in.role`, `constructed_by { structureType: 'founding' }` | `world_past_seeded` (one per world, every miss by id) + a worldgen console line | `__DEBUG.getWorldPast()`; `readers/past.ts` census |
+| `engine/worldPast.ts` (`readWorldPast`, `getPlacePast`, `isSeededDead`) | pure, read at call | S2 surfaces; ruin content (THR-1598) reads `getPlacePast` | — | — | `__DEBUG.getWorldPast()` |
+| `engine/aftermathWords.ts` (`pastSpanLabel`) | pure | S2 lines | — | — | unit test |
+| `engine/ruins/clueLifecycle.ts` (typed `WorldPastDescentStratum`) | clue production | — | — | existing clue traces carry `cultureBackstoryTieBonus` | — |
+| `engine/graphQueries.ts` / `hexZoom.ts` `getAgentsAtLocation`, `hexActorIndex.buildHexActorIndex`, `phases/routeEvents.pickTargetAgent` | every caller | — | — | — | — |
+
+**Wired and asserted:** `worldPast.test.ts` (fast, generated small world) proves determinism, that `enabled: false` gives exactly the pre-pass graph and that stripping the pass's writes recovers it byte for byte (nothing moved), the run-time death shape, founders and the Builder's Legacy scope, winner/loser on the edges, that a fall is claimed only where an `occurred_at` backs it, that the dead are not residents or seed targets, and that clue scoring reads a seeded stratum. `worldPast-generatedWorld.test.ts` (heavy) runs 200 ticks and finds no seeded dead alive, deciding, acting, counted as a resident or in the hex actor index. The four readers now skip `deceased === true` for the run-time dead too; they counted them before.

@@ -13,6 +13,8 @@ import { resetEventCounter } from '../orchestrator';
 import { resetReputationTraitInit } from '../phaseReputationTraits';
 import { readWorldPast, getPlacePast, isSeededDead, realmNeighbourPairs, TICKS_PER_YEAR } from '../worldPast';
 import { selectClueRecipient } from '../ruins/clueLifecycle';
+import { getAgentsAtLocation } from '../graphQueries';
+import { pickTargetAgent } from '../phases/routeEvents';
 import { WORLD_PAST_DEFAULTS } from '../../data/world-past-constants';
 import type { WorldGraph } from '../graph';
 import type { WorldPastDescentStratum } from '../../types/worldPast';
@@ -143,6 +145,19 @@ describe('worldPast — the past on the graph (THR-1631 S1)', () => {
     for (const loc of g.getNodesByType('location')) {
       const past = getPlacePast(g, loc.id);
       if (past?.fellInEventId) expect(sites.has(loc.id)).toBe(true);
+    }
+  });
+
+  it('the dead are not residents: location readers and seed targeting skip them', () => {
+    const state = buildWorld();
+    const g = state.graph;
+    const dead = g.getNodesByType('actor').filter(isSeededDead);
+    expect(dead.length).toBeGreaterThan(0);
+    for (const d of dead) {
+      const at = g.getOutgoingEdges(d.id, 'located_at')[0].target;
+      expect(getAgentsAtLocation(g, at).map(n => n.id)).not.toContain(d.id);
+      // Seed 99 drew a seeded founder for a scarcity quest before this reader skipped the dead.
+      expect(pickTargetAgent(state, [at])).not.toBe(d.id);
     }
   });
 

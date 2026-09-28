@@ -313,6 +313,18 @@ so they cannot pass vacuously. This moves the culture-to-opening and sphere-to-o
 the unaudited list; the rest of both subsystems remains audit-on-touch. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**Three contracts added by THR-1631 S1 (2026-09-28), audit-on-touch for World Generation's
+past** — `world-past-reaches-the-chronicle`, `world-past-descent-feeds-clue-scoring` and
+`seeded-dead-stay-dead`. Worldgen placed dead empires and about a hundred of their ruins and
+said nothing about them, and the one reader of descent (`clueLifecycle`) had no writer. The
+past pass (`worldPast.seedWorldPast`) now writes an elder war, founding ages, wars in living
+memory and up to ten dead onto the graph — never into `chronicleEntries`, which cycle end
+empties. The chronicle row is pinned **PARTIAL** to THR-1656 until the S2 surfaces read it.
+The dead row is written negative-first: its census caught `routeEvents.pickTargetAgent`
+handing a scarcity quest to a seeded founder, and the fix went into that reader and the three
+location readers that counted the dead as residents, never into the dead. The run-time dead
+had the same leak. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

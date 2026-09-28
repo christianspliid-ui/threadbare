@@ -203,6 +203,8 @@ export const EVENT_TYPES: readonly string[] = [
   // THR-1528 — a battle's record on the ground it was fought over; THR-1574 — a
   // fight's ('fight_fought', written by the first fight-end dispatcher branch).
   'battle_fought', 'fight_fought',
+  // THR-1631 — the world's past, written once at worldgen with a negative tick.
+  'past_elder_war', 'past_war',
 ];
 
 // ─── The registry ───────────────────────────────────────────────────
@@ -249,7 +251,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   K({
     id: 'mortal', gameWord: 'Mortal', ulTerm: 'Agents.md#agent', worldRef: 'agent',
     shape: { kind: 'node', nodeType: 'actor', discriminator: { key: 'actorType', values: ['individual'] } },
-    owningSystem: 'Agent Lifecycle', writers: ['worldSeed', 'npcSeeding', 'agentLifecycle', 'binding/mintInhabitant'], status: 'live',
+    owningSystem: 'Agent Lifecycle', writers: ['worldSeed', 'npcSeeding', 'agentLifecycle', 'binding/mintInhabitant', 'worldPast'], status: 'live',
     note: 'The game word for an individual actor; "agent" is the engine word. Roles, callings and spotlight tiers are variants. A **Monster** (a lair\'s beast) is a class of Mortal, not a kind (THR-1268): an `individual` actor carrying `isMonsterElite` — written by `createNamedElite` — or a `monsterState` card, read only through `isMonster` (`src/engine/monsters/isMonster.ts`, THR-1544). It takes no registry row of its own and `isMonsterElite` is deliberately not a `classes` map here, which groups the discriminator\'s own values. Systems meant for mortals exclude it through the predicate (the plot, NPC graduation, lair clearing, social visibility); the hunt acts on it as `destroy × monster` (THR-1559).',
   }),
   K({
@@ -381,7 +383,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   K({
     id: 'event', gameWord: 'Event', ulTerm: 'Graph.md#node', worldRef: 'encounter',
     shape: { kind: 'node', nodeType: 'event', discriminator: { key: 'eventType', values: EVENT_TYPES } },
-    owningSystem: 'Attention, Chronicle & Narrative', writers: ['encounterEventNode', 'grievance/undertakingOutcomeNode', 'phaseFactionActions', 'unifiedActionResolution', 'battleRecord', 'fights/fightRecord'], status: 'live',
+    owningSystem: 'Attention, Chronicle & Narrative', writers: ['encounterEventNode', 'grievance/undertakingOutcomeNode', 'phaseFactionActions', 'unifiedActionResolution', 'battleRecord', 'fights/fightRecord', 'worldPast'], status: 'live',
     note: 'What happened: the chronicle\'s substrate. One kind key, `eventType`.',
   }),
 

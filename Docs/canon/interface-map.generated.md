@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 134 |
-| 🟠 PARTIAL | 2 |
+| 🟢 LIVE | 136 |
+| 🟠 PARTIAL | 3 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 41 |
-| **Total** | **184** |
+| **Total** | **187** |
 
 ## Contracts by producing subsystem
 
@@ -315,7 +315,10 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `seeded-dead-stay-dead` | The dead worldgen seeds — founders, fallen commanders, wonder finders — lie where they rest in the run-time `retain` death shape, and no living-actor sweep treats them as a decider, a resident, an encounter participant or a seed target. | node-prop: `deceased` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `seeded-ties-never-graduate` | A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count. | edge-prop: `worldgen` | Agent Lifecycle | 🟢 LIVE | — |
+| `world-past-descent-feeds-clue-scoring` | About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it. | node-prop: `backstoryStrata`, `WorldPastDescentStratum` | Ruins, Clues & Delves | 🟢 LIVE | — |
+| `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `getPlacePast` | Attention, Chronicle & Narrative | 🟠 PARTIAL | THR-1656 |
 | `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `worldgen-ties-reach-ambition-and-grief` | Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes. | edge-prop: `relates_to` | Ambitions & Undertakings | 🟢 LIVE | — |
 
@@ -1526,10 +1529,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 157 total — 3 write, 7 read, 147 unclassified
+- **Production hits:** 158 total — 3 write, 7 read, 148 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +142 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts` +143 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1746,10 +1749,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 46 total — 5 write, 3 read, 38 unclassified
+- **Production hits:** 52 total — 5 write, 3 read, 44 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +33 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +39 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -2014,10 +2017,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 115 total — 1 write, 1 read, 113 unclassified
+- **Production hits:** 116 total — 1 write, 1 read, 114 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +108 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +109 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2075,6 +2078,18 @@ exit
 - **Other hits:** `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts`, `src/data/encounter-content.ts` +10 more
 - **Verdict:** Verified 2026-09-24: THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.
 
+### `seeded-dead-stay-dead` — 🟢 LIVE
+
+- **Intent:** The dead worldgen seeds — founders, fallen commanders, wonder finders — lie where they rest in the run-time `retain` death shape, and no living-actor sweep treats them as a decider, a resident, an encounter participant or a seed target.
+- **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
+- **UL terms:** *Location*
+- **Module:** `src/engine/worldPast.ts`
+- **Production hits:** 47 total — 1 write, 4 read, 42 unclassified
+- **Write sites:** `src/engine/worldPast.ts`
+- **Read sites:** `src/engine/graphQueries.ts`, `src/engine/hexActorIndex.ts`, `src/engine/hexZoom.ts`, `src/engine/phases/routeEvents.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +37 more
+- **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
+
 ### `seeded-opponent-survives-to-spawn` — 🟢 LIVE
 
 - **Intent:** A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse.
@@ -2092,10 +2107,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 91 total — 1 write, 1 read, 89 unclassified
+- **Production hits:** 95 total — 1 write, 1 read, 93 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +84 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +88 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2103,10 +2118,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 376 total — 1 write, 1 read, 374 unclassified
+- **Production hits:** 377 total — 1 write, 1 read, 375 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +369 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +370 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -2139,10 +2154,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **UL terms:** *Spotlight tier*, *Ambition*
 - **Module:** `src/engine/spotlightPull.ts`
-- **Production hits:** 38 total — 3 write, 4 read, 31 unclassified
+- **Production hits:** 39 total — 3 write, 4 read, 32 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/hexMapAgentVisibility.ts`, `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +26 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +27 more
 - **Verdict:** Verified 2026-09-22: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`. Re-verified 2026-09-24 under THR-1523 (unwatched builders step back): `census:undertakings` 150 ticks PASS both seeds — seed 42 3 pulled (1 swapped, 2 net-additive), 138 refusals across 116 mortals (was 215 per want), seed 99 4 pulled (1 swapped, 3 net-additive), 144 across 114 (was 235); at 300 ticks the class fires (seed 42 2 unwatched swaps, seed 99 1; 1 of 14 / 1 of 17 worldgen protagonists stepped back, kill criterion 30 %). `census:reachability -- --seeds 42,99,7` keeps merchant-expansion reachable on 2 of 3. `measure:tick-cost` medium steady within noise of main (seed 42 101 vs 109 ms, seed 99 152 vs 168 ms). Unit: `spotlightPullUnwatched.test.ts` (21).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -2255,10 +2270,10 @@ exit
 - **Intent:** Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **Module:** `src/engine/undertakingCapabilityGrowth.ts`
-- **Production hits:** 58 total — 2 write, 2 read, 54 unclassified
+- **Production hits:** 59 total — 2 write, 2 read, 55 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCapabilityGrowth.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +49 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +50 more
 - **Verdict:** Verified 2026-09-08: THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
@@ -2381,11 +2396,35 @@ exit
 - **Producer → Consumer:** Agent Lifecycle → Strategic Projects & Control
 - **UL terms:** *World Object*, *Location*, *Place*, *Route*, *Area*
 - **Module:** `src/data/world-objects.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
 - **Write sites:** `src/data/world-objects.ts`
 - **Read sites:** `src/engine/graph.ts`, `src/types/nodeSchema.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/yieldOps.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/worldPast.ts`, `src/engine/yieldOps.ts`
 - **Verdict:** Verified 2026-09-03: THR-1394 slice 1. The registry claims every NodeType, every LocationSubtype (each in exactly one of seven Location classes, or the Route identity subtype), every SUBLOCATION_TYPE_CATEGORY id (as a Place class member), and every non-reserved WorldRefKind; src/data/__tests__/worldObjects.test.ts pins each claim against the union itself through the anchor catalog's parser, never a copy, and runs a 20-tick seed-42 small world through validateNodeAgainstRegistry asserting zero unregistered values. The write-time guard is wired in WorldGraph.addNode behind import.meta.env.DEV and WORLD_OBJECT_VALIDATION_ENABLED, warn-once per (type, value) per world (reset in initializeGameState), WORLD_OBJECT_THROW_ON_UNKNOWN consulted. The first census (seeds 42 + 99, medium, tick 30) found one unregistered value — actor actorType=group, the group kinds had been registered on a key the writers do not use — and five phantom content target names (market, port, trading_post in three packs and the cells' FOUND_SITE_RULE; fortress and construction_site in ambition-templates), all fixed in the same PR; --check is green at zero drift.
+
+### `world-past-descent-feeds-clue-scoring` — 🟢 LIVE
+
+- **Intent:** About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it.
+- **Producer → Consumer:** World Generation, Terrain & Places → Ruins, Clues & Delves
+- **UL terms:** *Location*
+- **Module:** `src/engine/worldPast.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/worldPast.ts`
+- **Read sites:** `src/engine/ruins/clueLifecycle.ts`
+- **Other hits:** `src/types/worldPast.ts`
+- **Verdict:** Verified 2026-09-28: THR-1631 S1. The reader existed with no writer (an inline cast at `clueLifecycle.ts:120`, now typed `WorldPastDescentStratum`). On generated medium worlds the pass writes descent on 120 / 480 living mortals (seed 42) and 136 / 624 (seed 99), 25–26% of those on old land (`readers/past.ts`). `worldPast.test.ts` deletes the sibling `originCultureId` from a descended mortal on a generated small world and still reads `cultureBackstoryTieBonus > 0` from `selectClueRecipient` for the stratum's culture, and 0 for another.
+
+### `world-past-reaches-the-chronicle` — 🟠 PARTIAL
+
+- **Intent:** The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties.
+- **Producer → Consumer:** World Generation, Terrain & Places → Attention, Chronicle & Narrative
+- **UL terms:** *Location*, *Realm*
+- **Module:** `src/engine/worldPast.ts`
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/gameInit.ts`, `src/engine/worldPast.ts`
+- **Read sites:** `src/debug-bridge.ts`
+- **Other hits:** `src/types/worldPast.ts`
+- **Verdict:** Pinned by badgeOverride: Producer half shipped (THR-1631 S1): `seedWorldPast` runs in `initializeGameState` and `readWorldPast` / `getPlacePast` read it back, exposed as `window.__DEBUG.getWorldPast()`. The player-facing readers — the pinned chronicle section and the settlement, ruin and dead-person lines — are S2.
 
 ### `world-ref-opens-one-card` — 🟢 LIVE
 
@@ -2404,10 +2443,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 263 total — 2 write, 6 read, 255 unclassified
+- **Production hits:** 264 total — 2 write, 6 read, 256 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +250 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +251 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

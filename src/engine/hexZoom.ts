@@ -42,7 +42,8 @@ export function getAgentsAtLocation(graph: WorldGraph, locationId: string): Grap
   const agents: GraphNode[] = [];
   for (const edge of edges) {
     const node = graph.getNode(edge.source);
-    if (node && node.properties.actorType === 'individual') agents.push(node);
+    // The dead lie where they fell and keep the edge; they are not people here (THR-1631).
+    if (node && node.properties.actorType === 'individual' && node.properties.deceased !== true) agents.push(node);
   }
   return agents;
 }

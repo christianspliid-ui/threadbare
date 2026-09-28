@@ -349,6 +349,8 @@ export type TraceCategory =
   | 'outcome_band_prose_selected'
   // Opening coloration line (THR-1635)
   | 'opening_coloration_bound'
+  // The worldgen past (THR-1631)
+  | 'world_past_seeded'
   // Cool-failure story-artifact guarantee (THR-571 C1)
   | 'outcome_story_artifact'
   // Interaction-gated camera centering (THR-463)
@@ -847,6 +849,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'outcome_band_prose_selected',
   // Opening coloration line (THR-1635)
   'opening_coloration_bound',
+  // The worldgen past (THR-1631)
+  'world_past_seeded',
   // Cool-failure story-artifact guarantee (THR-571 C1)
   'outcome_story_artifact',
   // Interaction-gated camera centering (THR-463)

@@ -84,7 +84,10 @@ export function pickTargetAgent(state: GameState, endpointIds: readonly string[]
     for (const e of graph.getIncomingEdges(locId, 'located_at')) {
       const node = graph.getNode(e.source);
       if (node?.type === 'actor') {
-        if (node.properties.actorType === 'individual' && node.properties.armyState == null) {
+        // The dead keep their `located_at` edge where they lie; a seed must not be
+        // handed to one (THR-1631: a seeded founder was drawn for a scarcity quest).
+        if (node.properties.actorType === 'individual' && node.properties.armyState == null
+          && node.properties.deceased !== true) {
           candidates.push(node.id);
         }
         continue;

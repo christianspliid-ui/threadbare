@@ -26,6 +26,8 @@ const seeds = (process.argv[2] ?? '42,99').split(',').map(Number);
 const TICKS = Number(process.argv[3] ?? 0);
 const OFF = process.argv[4] === 'off';
 WORLD_PAST_DEFAULTS.enabled = !OFF;
+// Optional 5th arg: a JSON override of WORLD_PAST_DEFAULTS, for ablating one component.
+if (process.argv[5]) Object.assign(WORLD_PAST_DEFAULTS, JSON.parse(process.argv[5]));
 
 type P = Record<string, unknown>;
 const out: Record<string, unknown> = {};
@@ -82,6 +84,9 @@ for (const seed of seeds) {
     report.steadyMsPerTick = steadyTicks ? +(steadyMs / steadyTicks).toFixed(1) : null;
     report.deadLeaks = [...new Set(leaks)].slice(0, 20);
     report.deadLeakCount = leaks.length;
+    report.endLivingIndividuals = state.graph.getNodesByType('actor').filter(n => n.properties.actorType === 'individual' && n.properties.deceased !== true).length;
+    report.endEvents = state.graph.getNodesByType('event').length;
+    report.endEventsByType = state.graph.getNodesByType('event').reduce<Record<string, number>>((m, n) => { const k = String(n.properties.eventType ?? n.properties.kind ?? '?'); m[k] = (m[k] ?? 0) + 1; return m; }, {});
   }
   out[seed] = report;
 }
