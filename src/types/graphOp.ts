@@ -146,6 +146,25 @@ export interface InfluencePayload {
   readonly personalityBoost?: number;
   readonly strategyOverride?: string;
   readonly agendaId?: string;
+  /**
+   * THR-1651: a `valueDrifts` entry resolved at apply time from the caster and
+   * the target, for drifts a static template cannot know in advance. The
+   * executor (`resolveCastValueDrift`) reads the caster's primary reach, takes
+   * its bound value pair, and writes one signed drift of `magnitude` into the
+   * stored entry's `valueDrifts`:
+   * - `own_lean` — along the sign the target already leans; a target at exactly
+   *   0 gets no drift and **no entry** (`influence.no_lean` trace), so nothing
+   *   appears on them that is not really there (Law 56).
+   * - `first_pole` — toward the pair's first-named (positive) pole.
+   * The rule itself is not stored on the entry.
+   */
+  readonly valueDriftRule?: CastValueDriftRule;
+}
+
+/** THR-1651: how an `apply_influence` payload resolves its drift at apply time. */
+export interface CastValueDriftRule {
+  readonly direction: 'own_lean' | 'first_pole';
+  readonly magnitude: number;
 }
 
 /**

@@ -154,6 +154,7 @@ import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { applyEssenceEarned } from './essenceEarned';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
 import { phaseEssenceSources } from './phaseEssenceSources';
+import { phaseInfluenceMaintenance } from './phaseInfluenceMaintenance';
 import { phaseEffectShells } from './phaseEffectShells';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
 // Imported for internal runTick use; re-exported for backward compatibility (tests import from orchestrator).
@@ -3435,6 +3436,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     const r = runInlinePhase('essence', s, () => phaseEssence(s));
     s = r.next;
     phaseEventCounts['essence'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.05: Influence Maintenance (THR-1652) — thread upkeep taxes the
+  // primary sphere. Own phase so the essence-earned counter banks phaseEssence's
+  // gross income and treats upkeep as a spend.
+  {
+    const r = runInlinePhase('influence_maintenance', s, () => phaseInfluenceMaintenance(s));
+    s = r.next;
+    phaseEventCounts['influence_maintenance'] = r.eventDelta;
   }
   prevEventCount = s.tickEvents.length;
 

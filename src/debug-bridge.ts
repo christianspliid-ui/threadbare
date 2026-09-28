@@ -337,6 +337,19 @@ if (import.meta.env.DEV) {
      * what a fresh derivation would say — so a verification run can see a
      * challenger the hysteresis gate is holding back.
      */
+    /**
+     * THR-1651: the divine influences on a mortal right now — each entry's value
+     * drifts, live decay strength, and the time left as a player word. Expired
+     * entries are dropped, matching what `buildValueOverlay` still applies.
+     */
+    getActiveInfluences: async (agentRef: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const node = await resolveAgentNode(agentRef);
+      if (!node) return null;
+      const { describeActiveInfluences } = await import('./engine/castInfluenceDrift');
+      return { agentId: node.id, name: node.name, influences: describeActiveInfluences(state.graph, node.id, state.tick) };
+    },
     getCalling: async (agentRef: string) => {
       const state = _gameStateProvider?.();
       if (!state) return null;

@@ -40,6 +40,7 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import type {
   UnifiedAction,
+  UnifiedActionTemplate,
   UnifiedActionOutcome,
   EncounterAftermathChange,
   EncounterAftermathReaction,
@@ -64,7 +65,13 @@ import {
   RECEIPT_TOAST_USES_OVERVIEW,
   receiptToastSentence,
   selectReceiptFrameLine,
+  CAST_INFLUENCE_RECEIPT_LINES,
+  CAST_INFLUENCE_CLEAN_BANDS,
+  CAST_INFLUENCE_AT_COST_BANDS,
+  fillCastInfluenceLine,
 } from '../data/receipt-content';
+import { resolveCastValueDrift, valuePoleWord, findValueDriftInfluence } from './castInfluenceDrift';
+import type { DivineInfluenceEntry } from '../types/dream';
 
 // ─── Receipt type ────────────────────────────────────────────────────────────────
 
@@ -201,6 +208,56 @@ function enrichReceiptText(
   }
 }
 
+/**
+ * THR-1651: the overview for a value-drifting cast (Oneiric Sending, Divine
+ * Compulsion) — who changed and which way, or that the dream found nothing.
+ *
+ * Reads the template's own `apply_influence` drift rule and re-resolves it through
+ * the executor's resolver, so the line can never describe a different drift from
+ * the one written. A landed line needs the entry to actually be on the target
+ * (Law 56); a band outside clean/at-cost, or a cast whose influence is not there,
+ * returns `undefined` and the resolver's own overview stands.
+ */
+export function castInfluenceReceiptLine(
+  state: GameState,
+  action: UnifiedAction,
+  template: Pick<UnifiedActionTemplate, 'steps'>,
+  band: OutcomeBand,
+  targetName: string,
+): string | undefined {
+  const payload = findValueDriftInfluence(template);
+  const rule = payload?.valueDriftRule;
+  if (!payload || !rule || !action.targetId) return undefined;
+  const lines = CAST_INFLUENCE_RECEIPT_LINES[payload.interventionType as 'dream' | 'persuade'];
+  if (!lines) return undefined;
+
+  const resolved = resolveCastValueDrift(state.graph, action.actorId, action.targetId, rule);
+  if (resolved.outcome !== 'drift' || !resolved.pair) {
+    // Only a cast that landed can have found nothing; a failed one keeps its own overview.
+    if (CAST_INFLUENCE_CLEAN_BANDS.includes(band) || CAST_INFLUENCE_AT_COST_BANDS.includes(band)) {
+      return fillCastInfluenceLine(lines.found_nothing, targetName, '');
+    }
+    return undefined;
+  }
+
+  const lineCase = CAST_INFLUENCE_CLEAN_BANDS.includes(band)
+    ? 'clean'
+    : CAST_INFLUENCE_AT_COST_BANDS.includes(band)
+      ? 'at_cost'
+      : undefined;
+  if (!lineCase) return undefined;
+
+  const pair = resolved.pair;
+  const written = ((state.graph.getNode(action.targetId)?.properties?.divineInfluences ?? []) as DivineInfluenceEntry[])
+    .some((e) =>
+      e.interventionType === payload.interventionType &&
+      e.tickApplied >= action.startTick &&
+      (e.valueDrifts?.[pair] ?? 0) !== 0,
+    );
+  if (!written) return undefined;
+  return fillCastInfluenceLine(lines[lineCase], targetName, valuePoleWord(pair, resolved.drift));
+}
+
 function emitReceiptTrace(entry: Omit<PlayerReceiptTrace, 'id' | 'timestamp'>): void {
   emitTrace(entry as unknown as Parameters<typeof emitTrace>[0]);
 }
@@ -294,7 +351,10 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
     // the bare-name sentence survives, and only when the resolver wrote no overview
     // at all.
     const templateWord = template.spellName ?? template.name;
-    const rawOverview = summary?.overview ?? `Your ${templateWord} ${outcomeBandWord(band)}.`;
+    const rawOverview =
+      castInfluenceReceiptLine(state, action, template, band, targetName) ??
+      summary?.overview ??
+      `Your ${templateWord} ${outcomeBandWord(band)}.`;
     // THR-1050 — the overview and every reaction label/intent share one context,
     // gathered at most once per receipt and only when some field actually carries a
     // placeholder (preserving the original overview-only fast path). Reactions used

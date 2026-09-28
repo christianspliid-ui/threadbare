@@ -119,6 +119,7 @@ import { createUnifiedAction } from '../src/engine/unifiedActionLifecycle';
 import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '../src/data/reward-attachment-catalog';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-attachments';
 import { getCompanions } from '../src/engine/companions';
+import { describeActiveInfluences } from '../src/engine/castInfluenceDrift';
 import { COMPANION_MAX } from '../src/data/companion-templates';
 import { WORLD_OBJECT_KINDS, barePlaceTypeId } from '../src/data/world-objects';
 import { resolveContentQueryDetailed, CONTENT_QUERY_MAX_CANDIDATES } from '../src/engine/contentQuery';
@@ -355,6 +356,37 @@ function printSpotlight(): void {
   if (ledger.pulled.length === 0 && ledger.refused.length === 0) console.log(dim('  no pull has run yet'));
 }
 
+/**
+ * THR-1651 — `cast <templateId> <agent>`: the ascendant casts a divine template
+ * on a mortal as a player-sourced action, through the real unified-action
+ * pipeline (resolution, graph ops, receipts). Advance with `tick`, then read the
+ * target with `agent <name>`. Deterministic rng so a control run can diverge
+ * only by the cast.
+ */
+function handleCast(templateId: string | undefined, targetQuery: string | undefined): void {
+  if (!templateId || !targetQuery) {
+    console.log(`${RED}Usage: cast <templateId> <agent>  (e.g. cast divine.dream Oswen)${RESET}`);
+    return;
+  }
+  const template = getUnifiedTemplateById(templateId);
+  if (!template) { console.log(`${RED}No template '${templateId}'${RESET}`); return; }
+  const target = state.graph.getNodesByType('actor').find(n =>
+    n.id.startsWith(targetQuery) || (n.name ?? '').toLowerCase().includes(targetQuery.toLowerCase()));
+  if (!target) { console.log(`${RED}No agent matching '${targetQuery}'${RESET}`); return; }
+  const action = createUnifiedAction({
+    actorId: state.ascendantId,
+    templateId: template.id,
+    targetId: target.id,
+    scale: template.scale,
+    source: 'player',
+    tick: state.tick,
+    template,
+    rng: () => 0.5,
+  });
+  state = { ...state, unifiedActions: [...state.unifiedActions, action] };
+  console.log(`${GREEN}✓${RESET} ${template.spellName ?? template.name} cast on ${target.name ?? target.id} (${action.actionId})`);
+}
+
 function printAgent(partialId: string): void {
   const actors = state.graph.getNodesByType('actor');
   // Name lives on the node, not in its property bag — `properties.name` is
@@ -424,6 +456,19 @@ function printAgent(partialId: string): void {
   // Sphere alignment
   if (match.properties.sphereAlignment) {
     console.log(`  Sphere:    ${JSON.stringify(match.properties.sphereAlignment)}`);
+  }
+
+  // Divine influences (THR-1651) — what a god's hand is doing to them right now,
+  // the same live set `buildValueOverlay` applies to their re-score.
+  const influences = describeActiveInfluences(state.graph, match.id, state.tick);
+  if (influences.length > 0) {
+    console.log(`  Divine influences (${influences.length}):`);
+    for (const inf of influences) {
+      const drifts = Object.entries(inf.valueDrifts)
+        .map(([pair, d]) => `${pair} ${d > 0 ? '+' : ''}${d}`)
+        .join(', ');
+      console.log(`    ${inf.interventionType} (${inf.sphere}) — ${drifts || 'no value drift'} × strength ${inf.strength.toFixed(2)}, ${inf.ticksRemaining} ticks left`);
+    }
   }
 
   // Companions (THR-1096) — who walks with them, and what that is worth
@@ -1553,6 +1598,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}hold${RESET} [agent|@hero]  The standing a mortal's held town opens with the Realm (THR-1448); every keeper when omitted`);
   console.log(`  ${BOLD}history${RESET} [agent]   Strategic action history`);
   console.log(`  ${BOLD}seed${RESET}             Print current seed`);
+  console.log(`  ${BOLD}cast${RESET} <tpl> <agent> The ascendant casts a divine template on a mortal (THR-1651)`);
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
   console.log(`  ${BOLD}profile${RESET} [N]      Run N ticks (default 30) with profiling, print per-phase avg/max/p95 + slowest ticks`);
   console.log(`  ${BOLD}profile phases${RESET}   Print the timing aggregate for ticks already profiled`);
@@ -2782,6 +2828,11 @@ function handleCommand(line: string): boolean {
     case 'seed':
       console.log(`Seed: ${state.seed}`);
       break;
+    case 'cast': {
+      const [castTemplate, ...castTarget] = rest;
+      handleCast(castTemplate, castTarget.join(' ') || undefined);
+      break;
+    }
     case 'eval': {
       if (!arg) {
         console.log(`${RED}Usage: eval <expression>${RESET}`);

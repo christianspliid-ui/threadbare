@@ -1413,7 +1413,27 @@ completion: [
 
 **Where to find the implementation:** the readers in `src/data/undertaking-objects.ts` (`applyObserveReaders`, `maybeSpawnSiteClue`, `mintAreaChart`, `maybeMintObservedMark`), the `{learned}` resolver in `src/engine/undertakingProse.ts` (`learnedClause`), the income pass in `src/engine/holdingIncome.ts`. Plan: `Docs/plans/2026-09-07-thr-1428-owed-readers.md`.
 
-### Capability 29: The Place Fact — Culture and Spheres Showing Through (THR-1635)
+### Capability 29: Influence Drift Rules — a Cast That Changes What the Mortal Chooses (THR-1651)
+
+**What it does:** an `apply_influence` payload may carry a `valueDriftRule` instead of (or beside) a fixed `valueDrifts` map. The executor resolves it at apply time against the **caster's primary reach** and the **target's own lean**, writes one signed drift on the value pair bound to that reach (`REACH_VALUE_PAIR`), and drops the rule from the stored entry.
+
+```ts
+influence: {
+  interventionType: 'dream', sphere: 'mind', ...DECAY_CONSTANTS.dream,
+  valueDriftRule: { direction: 'own_lean', magnitude: DREAM_VALUE_DRIFT },
+}
+```
+
+- `own_lean` deepens whichever way the mortal already leans. A mortal at exactly 0 gets **no entry at all** and an `influence.no_lean` trace, so nothing shows on them that is not really there (Law 56).
+- `first_pole` pushes toward the pair's first-named pole (`ARCHETYPE_NAMES[pair].positive`, e.g. Iron → Protector).
+
+**Why you want it:** a static `valueDrifts` map cannot know which god cast it or who received it. Before this rule, Oneiric Sending and Divine Compulsion wrote an entry with no drift, and `buildValueOverlay`, the agent re-score and the motive receipt's divine term all computed nothing. Use the rule whenever a verb's direction depends on the caster or the target.
+
+**How to tell whether yours landed.** `influence.applied` and `influence.no_lean` traces; `await window.__DEBUG.getActiveInfluences('<name>')` in the browser; in the CLI, `cast divine.dream <name>`, `tick 5`, `agent <name>` (the *Divine influences* block). The receipt reads the same resolution through `castInfluenceReceiptLine`, so its `{pole}` word is always the pole written.
+
+**Where to find the implementation:** `src/engine/castInfluenceDrift.ts` (`resolveCastValueDrift`, `describeActiveInfluences`), the executor in `src/engine/graphOpExecutor.ts` (`executeApplyInfluence`), the receipt lines in `src/data/receipt-content.ts` (`CAST_INFLUENCE_RECEIPT_LINES`). Plan: `Docs/plans/2026-09-27-thr-1606-what-your-hand-did.md` § B2.
+
+### Capability 30: The Place Fact — Culture and Spheres Showing Through (THR-1635)
 
 **What it does.** Every encounter opening can state one plain fact about the town's people or the place's power, and **you write nothing in the encounter to get it**. A compile pass puts the reserved token `{frag:place_fact}` at the end of step 0's first paragraph of step prose, the situation-and-complication beat, after the `{frag:opening}` envelope paragraph if there is one. At render the token becomes one sentence from a shared table, or nothing:
 
@@ -1584,6 +1604,12 @@ effects: [
 - **Hidden marks** create dramatic irony — Pyra knows about the spy, but the spy doesn't know she knows, and investigation encounters can surface this
 - **The withdrawn option** is real — it produces a quieter outcome with less seeding, which is the game-mechanical expression of "the god chose not to interfere"
 - **The divine intervention choices are genuinely different** — supporting the festival vs. warning about the spy are different kinds of godly action with different consequences
+
+### Bond words — which `basis` to write and read (THR-1630)
+
+A `relates_to` edge's `basis` is compared through `bondBasisMatches` (`src/data/bond-basis.ts`), which folds reader words onto the canonical word a writer stamps. **Write a canonical word** (`CANONICAL_BOND_BASES`: `kin`, `friendship`, `rivalry`, `romantic`, `mentorship`, `trade`, `loyalty`, `alliance`, …); **read any alias** — `lineage`, `heir`, `exile_kin` and `kinship` all match `kin`, `enemy` matches `rivalry`, `spouse` matches `romantic`, `mentor` matches `mentorship`, `trade_partner` matches `trade`. Ambition `bondModifiers`, the `agent_has_bonds` condition, the backstory bond tables and the Return's spouse ripple all read through it.
+
+What exists at tick 0: every named hero has one `kin`, one `friendship` and one `rivalry` tie among their neighbours (both directions, `origin: 'worldgen'`), so a template gated on family or rivalry has somebody to find from the first tick. Seeded ties never count toward graduation into the deciding tier. A new bond word goes in `CANONICAL_BOND_BASES` (and `BOND_BASIS_WORDS` for the sheet) in the same PR as its first writer.
 
 ### The counterpart pattern — `{target}` + `bond_change` + `inheritContext` composing (THR-699)
 
@@ -2210,6 +2236,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Emergent personality traits (THR-527) | `personality_trait_emerged` (grant + release; `details.kind`, `details.axisId`, `details.position`) |
 | Origin-vignette birth seeding (THR-561) | `personality_origin_seeded` (aggregate per tick; `details.kind`: `seeded` \| `unknown_axis`, `details.count`, `details.vignettesApplied`) |
 | Core personality foundation (THR-542) | `core_personality` (`details.kind`: `seeded` \| `emerge` \| `fade` \| `bend`) |
+| Cast value drifts (THR-1651) | `influence.applied`, `influence.no_lean` (`reason`: `no_lean` \| `no_reach`) |
 | God-side progression (THR-613) | `ascendant.progression.practice`, `ascendant.progression.tier_up`, `ascendant.progression.deepening_enqueued`, `ascendant.progression.milestone_enqueued` |
 
 **How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.

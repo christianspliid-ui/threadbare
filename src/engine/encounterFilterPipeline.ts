@@ -87,7 +87,10 @@ import {
   OUTGROWTH_FILTER_ENABLED,
   PERSONAL_OFFER_CAP_RESERVE,
   SOCIAL_OFFER_CAP_RESERVE,
+  CAP_FILL_DISTINCT_FIRST,
+  CAP_FILL_ROTATE,
 } from '../data/agent-behavior-constants';
+import { hashString } from './factionAmbitions';
 
 /** Ordered threat tiers for index-based comparison */
 const THREAT_ORDER: ThreatRating[] = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];
@@ -671,14 +674,28 @@ export function filterByThreat(
 
 // ─── Stage 5: Performance Cap with Diversity ────────────────────
 
+/** How the cap stage fills its free slots (THR-1633 S1). */
+export interface CapFillOptions {
+  /** One entry per template before any repeats. */
+  distinctFirst: boolean;
+  /** Start at a per-(agent, tick) hash offset instead of index 0. */
+  rotate: boolean;
+}
+
 /**
  * Cap entries at MAX_SCORED_CANDIDATES while preserving at least
  * MIN_DIVERSITY_SLOTS per encounter type.
+ *
+ * `tick` seeds the free-slot fill's rotating start (THR-1633 S1); omitted → the
+ * fill starts at index 0, the old behaviour. `fill` defaults to the tuning constants;
+ * tests pass it explicitly to pin the mechanism whatever the shipped switch says.
  */
 export function capWithDiversity(
   entries: readonly EncounterCacheEntry[],
-  _agentId: string,
+  agentId: string,
   _graph: WorldGraph,
+  tick?: number,
+  fill: CapFillOptions = { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE },
 ): EncounterCacheEntry[] {
   if (entries.length <= MAX_SCORED_CANDIDATES) {
     return [...entries];
@@ -791,16 +808,31 @@ export function capWithDiversity(
     return reserved.slice(0, MAX_SCORED_CANDIDATES);
   }
 
-  const fill: EncounterCacheEntry[] = [];
-  for (const entry of entries) {
-    const key = `${entry.templateId}:${entry.locationId}`;
-    if (!reservedKeys.has(key)) {
-      fill.push(entry);
-      if (fill.length >= remaining) break;
+  // THR-1633 S1: the fill used to walk from index 0, and the list arrives in cache
+  // insertion order — so a template late in both the hex order and the registration
+  // order was never looked at (67 · 68 templates per seed cut unscored). The walk now
+  // starts at a per-(agent, tick) offset and wraps, and its first pass takes one entry
+  // per template. Reserves above are untouched; scoring still decides the pick.
+  const n = entries.length;
+  const start = fill.rotate && tick !== undefined && agentId
+    ? (hashString(`${agentId}:${tick}`) >>> 0) % n
+    : 0;
+  const seenTemplates = new Set(reserved.map(e => e.templateId));
+  const filled: EncounterCacheEntry[] = [];
+  const passes = fill.distinctFirst ? [true, false] : [false];
+  for (const distinctOnly of passes) {
+    for (let step = 0; step < n && filled.length < remaining; step++) {
+      const entry = entries[(start + step) % n];
+      if (distinctOnly && seenTemplates.has(entry.templateId)) continue;
+      const key = `${entry.templateId}:${entry.locationId}`;
+      if (reservedKeys.has(key)) continue;
+      filled.push(entry);
+      reservedKeys.add(key);
+      seenTemplates.add(entry.templateId);
     }
   }
 
-  return [...reserved, ...fill];
+  return [...reserved, ...filled];
 }
 
 // ─── Main Pipeline ──────────────────────────────────────────────
@@ -894,12 +926,17 @@ export function runFilterPipeline(
   const s4 = (funnel && s0) ? templateIdSet(current) : null;
 
   // Stage 5: Performance Cap
+  const beforeCap = current;
   try {
-    current = capWithDiversity(current, agentId, graph);
+    current = capWithDiversity(current, agentId, graph, tick);
   } catch {
     // Keep previous stage's output
   }
   const afterCap = current.length;
+  // THR-1633 S1 / impediment #239: a positional cut is otherwise an absence, not a count.
+  const capCutTemplates = afterThreat > MAX_SCORED_CANDIDATES
+    ? Math.max(0, distinctTemplateCount(beforeCap) - distinctTemplateCount(current))
+    : 0;
   const s5 = (funnel && s0) ? templateIdSet(current) : null;
 
   // Update funnel counters (only when all snapshots are available)
@@ -918,8 +955,15 @@ export function runFilterPipeline(
       afterPrerequisites,
       afterThreat,
       afterCap,
+      capCutTemplates,
     ),
   };
+}
+
+function distinctTemplateCount(entries: readonly EncounterCacheEntry[]): number {
+  const ids = new Set<string>();
+  for (const e of entries) ids.add(e.templateId);
+  return ids.size;
 }
 
 // ─── Trace Builder ──────────────────────────────────────────────
@@ -933,6 +977,7 @@ function buildTrace(
   afterPrerequisites: number,
   afterThreat: number,
   afterCap: number,
+  capCutTemplates = 0,
 ): FilterPipelineTrace {
   return {
     id: 0,
@@ -946,6 +991,7 @@ function buildTrace(
     afterPrerequisites,
     afterThreat,
     afterCap,
+    capCutTemplates,
     summary: `Agent ${agentId}: ${cacheSize} → ${afterCap} candidates`,
   };
 }

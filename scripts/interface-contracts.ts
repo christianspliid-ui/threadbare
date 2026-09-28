@@ -1577,6 +1577,23 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/playerReceipts.ts', 'src/data/receipt-content.ts'],
   },
   {
+    id: 'cast-influence-shifts-target-values',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A god\'s dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster\'s primary reach and the target\'s lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target\'s `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt\'s divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing.',
+    ulTerms: ['AxiologicalProfile', 'ValuePair'],
+    mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'valueDrifts', 'valueDriftRule', 'resolveCastValueDrift'] },
+    writeSites: ['src/engine/graphOpExecutor.ts', 'src/data/unified-action-templates.ts'],
+    readSites: [
+      'src/engine/interventionEffects.ts',
+      'src/engine/agentSelection.ts',
+      'src/engine/encounterScoring.ts',
+      'src/engine/playerReceipts.ts',
+      'src/debug-bridge.ts',
+    ],
+  },
+  {
     id: 'player-action-receipts-queue',
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',
@@ -3246,7 +3263,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'World Generation, Terrain & Places',
     consumerSystem: AMBITIONS,
     intent:
-      'Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.',
+      'Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.',
     // Keyed on the edges the seeder writes, not on the seeder: what crosses this
     // boundary is the graph the starting world holds — a lane, a holding, a possession,
     // a quarrel, a mark, a command — and every consumer reads those edges without
@@ -3272,6 +3289,55 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-08',
       evidence:
         'THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).',
+    },
+  },
+  {
+    id: 'worldgen-ties-reach-ambition-and-grief',
+    producerSystem: WORLDGEN,
+    consumerSystem: AMBITIONS,
+    intent:
+      'Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.',
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['relates_to'],
+      module: 'src/engine/seedLivingWorld.ts',
+    },
+    writeSites: [
+      'src/engine/seedLivingWorld.ts',
+    ],
+    readSites: [
+      'src/engine/ambitionTick.ts',
+      'src/engine/grievance/grievanceLifecycle.ts',
+      'src/engine/grievance/undertakingOutcomeNode.ts',
+      'src/engine/binding/binder.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.',
+    },
+  },
+  {
+    id: 'seeded-ties-never-graduate',
+    producerSystem: WORLDGEN,
+    consumerSystem: 'Agent Lifecycle',
+    intent:
+      'A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.',
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['worldgen'],
+      module: 'src/engine/npcGraduation.ts',
+    },
+    writeSites: [
+      'src/engine/seedLivingWorld.ts',
+    ],
+    readSites: [
+      'src/engine/npcGraduation.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.',
     },
   },
   {
@@ -4994,6 +5060,32 @@ export const CONTRACTS: readonly Contract[] = [
     },
     writeSites: ['src/data/undertaking-cells.ts'],
     readSites: ['src/engine/strategicActionLifecycle.ts'],
+  },
+
+  // ── Encounters & Dilemmas: the shortlist (THR-1633 S1) ────────────────────
+  // Audit-on-touch: the first row for the cap stage. The cut it guards against is
+  // positional — the free-slot fill walked a list in cache insertion order from
+  // index 0, so registration order, not scoring, decided which writing was looked at.
+  {
+    id: 'shortlist-reaches-every-template',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in.',
+    ulTerms: ['Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['capWithDiversity', 'CAP_FILL_ROTATE', 'capCutTemplates'],
+      module: 'src/engine/encounterFilterPipeline.ts',
+    },
+    writeSites: ['src/engine/encounterFilterPipeline.ts'],
+    readSites: ['src/engine/phaseAgentDecision.ts'],
+    badgeOverride: {
+      badge: 'PARTIAL',
+      reason:
+        'Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Switch CAP_FILL_ROTATE on after THR-1639 and re-measure.',
+      deferralTicket: 'THR-1633',
+    },
   },
   // -- Culture & Spheres -> the encounter opening (THR-1635) ------------------
   // The failure these rows exist to make impossible: cultures and sphere affinities are

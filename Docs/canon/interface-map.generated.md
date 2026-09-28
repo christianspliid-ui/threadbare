@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 132 |
-| 🟠 PARTIAL | 1 |
+| 🟢 LIVE | 134 |
+| 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 40 |
-| **Total** | **180** |
+| 🔵 UNVERIFIED-OK | 41 |
+| **Total** | **184** |
 
 ## Contracts by producing subsystem
 
@@ -210,9 +210,16 @@ remediation ticket or the build fails.
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seed-only-sequels-never-drawn` | A sequel whose opening assumes its parent — a promise made, a family met, a word broken — is marked `drawable: false` on its template, and the decision board never offers it: only its planter (a seed, an appointment's kept or missed branch, a trigger, a debug spawn) starts it (THR-1526). The encounter cache build skips it at all four appends (`isDrawable`), the divine-vision delivery beats refuse it (`isDeliverableBranchingEncounter`), and the deprecated array-scored path carries the same one-line gate. Seed resolution never reads the flag, so a named sequel still resolves, and the template keeps its catalog membership and its envelope because the seed query and `eligibleAt` read both. Before this contract the Full Moon Reckoning fired from the board and told mortals who had given no word that they had broken it (THR-1524's firing census: the Reckoning 1 and the Swindler Found 16 board firings on seed 42 over 200 ticks, their parents 0). | function: `isDrawable`, `isDeliverableBranchingEncounter`, `drawable` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
+| `shortlist-reaches-every-template` | Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in. | function: `capWithDiversity`, `CAP_FILL_ROTATE`, `capCutTemplates` | Encounters & Dilemmas | 🟠 PARTIAL | THR-1633 |
 | `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
 | `wheel-slot-card-face` | A `WheelSlot` is read as a `CardFaceModel` by `actionCardModel`, so the action card and the nudge card render the same primitive (THR-1002). Law 28: the registry row's rendering *is* this face. The slot carries the words — `crudType`, `reach`, `scaleWord`, `upkeepWord`, `forecastTier`, `templateId` — and the adapter chooses vocabulary for them; it never computes a fact of its own. Every numeral the retired card printed (cost badge, `{n} hex`, `{X}% risk`, the per-tick rate) now lives behind the designer-view line. | function: `actionCardModel`, `CardFaceModel` | Essence & Divine Economy | 🟢 LIVE | — |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Undertakings | 🟢 LIVE | — |
+
+### Essence & Divine Economy
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `cast-influence-shifts-target-values` | A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing. | node-prop: `divineInfluences`, `valueDrifts`, `valueDriftRule`, `resolveCastValueDrift` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 
 ### Factions & Succession
 
@@ -308,7 +315,9 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `seeded-ties-never-graduate` | A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count. | edge-prop: `worldgen` | Agent Lifecycle | 🟢 LIVE | — |
+| `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `worldgen-ties-reach-ambition-and-grief` | Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes. | edge-prop: `relates_to` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ## Evidence
 
@@ -768,6 +777,17 @@ exit
 - **Other hits:** `src/data/ambition-templates.ts`, `src/data/arcane-circle-definition.ts`, `src/data/colocation-content.ts`, `src/data/holy-order-dawn-definition.ts`, `src/data/temple-of-spheres-definition.ts` +5 more
 - **Verdict:** Verified 2026-09-24: THR-1562. Before, the seven requirement sites read four different numbers: ambition floors, milestones and abandonment compared the raw store (10–40+) against 0–1 thresholds, so every mortal passed every floor, milestones passed on first check and abandonment never fired; spells and `reach_above:` read `properties.domainCapability` (singular), which nothing writes; guild joins compared the dice curve against thresholds authored raw. Now all read `computeReachShare` (effective raw ÷ 40, capped at 1). Asserting tests: `reachShare.test.ts` (the function; each site — floors via the snapshot, a shipped spell and its `reach_drain` check, the shipped `reach_above:star:0.10` trickle, a thieves-guild join, the premonition window; a corpus test that every authored threshold kind is 0 < t ≤ 1; the abandonment idiom) and `graphConditions.test.ts` (a fail with the reader supplied; an un-migrated 0–1 fixture fails closed). Live, `npm run census:reach-gates`, medium, seeds 42 · 99 × 150 ticks, before (main 07d51e3e) → after: milestones completed 270 · 322 → 29 · 36; ambitions completed 33 · 38 → 6 · 5; abandoned 4 · 2 → 12 · 26; reach term of the winning ambition score 100% → 78% · 77%; mortals-with-capabilities holding ≥1 eligible ambition 100% · 100%; protagonist milestones met on first check at tick 0 66% · 64% → 49% · 51%.
 
+### `cast-influence-shifts-target-values` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing.
+- **Producer → Consumer:** Essence & Divine Economy → Encounters & Dilemmas
+- **UL terms:** *AxiologicalProfile*, *ValuePair*
+- **Production hits:** 15 total — 2 write, 3 read, 10 unclassified
+- **Write sites:** `src/data/unified-action-templates.ts`, `src/engine/graphOpExecutor.ts`
+- **Read sites:** `src/engine/agentSelection.ts`, `src/engine/interventionEffects.ts`, `src/engine/playerReceipts.ts`
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/engine/agentDetail.ts`, `src/engine/castInfluenceDrift.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/hexActionBridge.ts` +5 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
 
 - **Intent:** A hold is kept by working it (THR-1287). The band and the cell variant an undertaking completion already carries decide whether the holder’s control stance renews — so the neglect loop, which before this had no counterparty at all and could only ever increment, is finally something a mortal can push back against.
@@ -1004,10 +1024,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Struck down*, *Scarred*, *Grudge*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 88 total — 1 write, 1 read, 86 unclassified
+- **Production hits:** 89 total — 1 write, 1 read, 87 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/encounters/branchDecision.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts` +81 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts` +82 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `economy-context-scene-scoring` — 🟢 LIVE
@@ -1150,10 +1170,10 @@ exit
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
+- **Production hits:** 13 total — 1 write, 3 read, 9 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts` +3 more
+- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts` +4 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `factory-pack-registry` — 🔵 UNVERIFIED-OK
@@ -1173,10 +1193,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 116 total — 1 write, 1 read, 114 unclassified
+- **Production hits:** 117 total — 1 write, 1 read, 115 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +109 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +110 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1482,10 +1502,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 65 total — 2 write, 3 read, 60 unclassified
+- **Production hits:** 66 total — 2 write, 3 read, 61 unclassified
 - **Write sites:** `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionQuestGeneration.ts`, `src/engine/factionReputation.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx` +55 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx` +56 more
 - **Verdict:** Verified 2026-09-22: THR-1448. On a fixture (`holdStanding.test.ts`): a stance on a town inside a Realm’s projection mints `member_of` with `reputation = HOLD_STANDING_REPUTATION_SEED`, `rank` stays 0 and derives to *subject*; a second pass writes and announces nothing; an existing member reads `membershipMinted: false` and keeps their reputation; a wilds stance opens nothing; a gone stance traces `position_closed` and leaves the edge. On a **generated** world (`holdStandingReach.test.ts`, heavy lane, seed 42 small): a real mortal claims a real town on a Realm’s ground through `claimControl`, one `runTick` traces `position_opened` naming the projection’s Realm with the membership minted at the seed, and collapsing the stance closes the standing with the membership present.
 
 ### `held-town-supplies-keeper-content-past-rank-access` — 🟢 LIVE
@@ -1658,10 +1678,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Faction*, *Prerequisite*
 - **Module:** `src/engine/factionMembership.ts`
-- **Production hits:** 26 total — 1 write, 1 read, 24 unclassified
+- **Production hits:** 27 total — 1 write, 1 read, 25 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/fight-constants.ts` +19 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/fight-constants.ts` +20 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mentorship-rides-undertaking-checkpoints` — 🟢 LIVE
@@ -1834,10 +1854,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/playerReceipts.ts`
-- **Production hits:** 20 total — 1 write, 2 read, 17 unclassified
+- **Production hits:** 21 total — 1 write, 2 read, 18 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/data/receipt-content.ts`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +12 more
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK
@@ -2067,6 +2087,17 @@ exit
 - **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-07-25: PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.
 
+### `seeded-ties-never-graduate` — 🟢 LIVE
+
+- **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
+- **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
+- **Module:** `src/engine/npcGraduation.ts`
+- **Production hits:** 91 total — 1 write, 1 read, 89 unclassified
+- **Write sites:** `src/engine/seedLivingWorld.ts`
+- **Read sites:** `src/engine/npcGraduation.ts`
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +84 more
+- **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
+
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
 
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
@@ -2089,6 +2120,18 @@ exit
 - **Read sites:** `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/encounterScoring.ts`, `src/engine/fights/fightState.ts`, `src/engine/fights/opposedRoll.ts` +5 more
 - **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
+
+### `shortlist-reaches-every-template` — 🟠 PARTIAL
+
+- **Intent:** Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Encounter*
+- **Module:** `src/engine/encounterFilterPipeline.ts`
+- **Production hits:** 5 total — 1 write, 0 read, 4 unclassified
+- **Write sites:** `src/engine/encounterFilterPipeline.ts`
+- **Read sites:** —
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/engine/encounter/branchingCurator.ts`, `src/engine/encounterCache.ts`, `src/types/trace.ts`
+- **Verdict:** Pinned by badgeOverride: Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Switch CAP_FILL_ROTATE on after THR-1639 and re-measure.
 
 ### `strategic-ambition-pulls-holder-into-spotlight` — 🟢 LIVE
 
@@ -2358,7 +2401,7 @@ exit
 
 ### `worldgen-seeds-the-living-world` — 🟢 LIVE
 
-- **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons, each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
+- **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
 - **Production hits:** 263 total — 2 write, 6 read, 255 unclassified
@@ -2366,6 +2409,17 @@ exit
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts` +250 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
+
+### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
+
+- **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
+- **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
+- **Module:** `src/engine/seedLivingWorld.ts`
+- **Production hits:** 76 total — 1 write, 3 read, 72 unclassified
+- **Write sites:** `src/engine/seedLivingWorld.ts`
+- **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +67 more
+- **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE
 

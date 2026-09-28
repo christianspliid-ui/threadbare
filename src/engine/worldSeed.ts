@@ -78,6 +78,13 @@ import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits } from './effects/effectQueries';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 import { seedLivingWorld, formatLivingWorldSummary } from './seedLivingWorld';
+import {
+  WORLDGEN_RANDOM_PROTAGONIST_TIES_ENABLED,
+  WORLDGEN_RANDOM_TIE_CHANCE,
+  WORLDGEN_RANDOM_TIE_STRENGTH_MIN,
+  WORLDGEN_RANDOM_TIE_STRENGTH_SPAN,
+  WORLDGEN_TIE_TRUST_FROM_SENTIMENT,
+} from '../data/worldgen-living-constants';
 import { computeReachShares } from './domainCapability';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
@@ -1824,11 +1831,17 @@ export function seedWorld(
     artifactIds.push(id);
   }
 
-  // ── Inter-actor relationships ────────────────────────────
+  // ── Inter-actor relationships (legacy random worldwide pass) ──
+  // THR-1630: replaced by `seedLivingWorld`'s `seedTies` (kin, friend and rival among
+  // co-residents). The dice are still rolled, in the same order, on the shared worldgen
+  // stream — deleting them would shift every later draw and turn a ties change into a
+  // whole-world change. Only the write is gated.
   for (let i = 0; i < individualIds.length; i++) {
     for (let j = i + 1; j < individualIds.length; j++) {
-      if (rng() < 0.3) {
+      if (rng() < WORLDGEN_RANDOM_TIE_CHANCE) {
         const sentiment = (rng() * 2) - 1;
+        const strength = WORLDGEN_RANDOM_TIE_STRENGTH_MIN + rng() * WORLDGEN_RANDOM_TIE_STRENGTH_SPAN;
+        if (!WORLDGEN_RANDOM_PROTAGONIST_TIES_ENABLED) continue;
         graph.addEdge({
           id: `edge_rel_${i}_${j}`,
           source: individualIds[i],
@@ -1836,9 +1849,9 @@ export function seedWorld(
           type: 'relates_to',
           properties: {
             sentiment,
-            strength: 0.3 + rng() * 0.5,
+            strength,
             basis: sentiment > 0 ? 'friendship' : 'rivalry',
-            trust: sentiment * 0.5, // Initialize trust from sentiment (Phase 0e)
+            trust: sentiment * WORLDGEN_TIE_TRUST_FROM_SENTIMENT, // Initialize trust from sentiment (Phase 0e)
           },
         });
       }

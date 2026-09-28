@@ -10,12 +10,14 @@
  * object to read until an undertaking makes one, and the undertakings that make them
  * are held by fourteen people.
  *
- * Seven passes (W2…W8), run in order after every existing seed step. Each:
+ * Seven passes (W2…W8), run in order after every existing seed step, plus the people web
+ * (THR-1630: ties, home standing, favours) between possessions and quarrels. Each:
  *   - is guarded by its own constant (`0` — or `'round_robin'` for territory — disables it),
  *   - reuses the writer the in-run system already uses (no second spelling of anything),
  *   - is wrapped in its own try/catch, so a throwing pass is reported and skipped
  *     rather than invalidating the world (NFP #4), with per-item fail-soft inside,
- *   - chooses by sorting, never by drawing (NFP #3).
+ *   - chooses by sorting, never by drawing (NFP #3) — except `seedTies`, which draws from
+ *     its own reserved stream over id-sorted lists.
  *
  * The PRNG streams are *reserved* rather than used: see `WORLDGEN_LIVING_PRIMES`.
  */
@@ -35,6 +37,9 @@ import { mintRouteIdentity } from './tradeRouteOps';
 import { grantHolding } from './holdings';
 import { instantiateReward } from './rewardPool';
 import { writeGrudge } from './grievance/grudgeEdge';
+import { createFavorEdge } from './secretGeneration';
+import { joinFaction } from './factionMembership';
+import { isMonster } from './monsters/isMonster';
 import { spawnArmy } from './armySpawning';
 import { REALM_FACTION_CLASS } from '../data/realm-content';
 import { REWARD_POSSESSIONS } from '../data/reward-attachment-catalog';
@@ -45,6 +50,7 @@ import {
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 import {
   LIVING_WORLD_DEFAULTS,
+  WORLDGEN_TIES_PRIME_INDEX,
   type LivingWorldConstants,
 } from '../data/worldgen-living-constants';
 
@@ -84,6 +90,12 @@ export interface LivingWorldSummary {
   routes: number;
   freeholds: number;
   possessions: number;
+  /** THR-1630: seeded kin / friend / rival ties (each counted once, though written both ways). */
+  ties: SeededTiesSummary;
+  /** THR-1630: hero memberships moved to the Realm holding their home. */
+  homeStandingMoves: HomeStandingMove[];
+  /** THR-1630: favours owed inside a hero's faction. */
+  favors: number;
   quarrels: number;
   marks: number;
   garrisons: number;
@@ -464,6 +476,288 @@ export function seedPossessions(
   return minted;
 }
 
+// ─── S1 — the people web (THR-1630) ────────────────────────────────────────
+
+/**
+ * The settlement whose people a named hero is tied to: home, when home is a settlement;
+ * otherwise the nearest settlement of home's culture within
+ * `WORLDGEN_TIE_FALLBACK_MAX_HEXES` (any culture, when home has none), id tie-break.
+ *
+ * Half the deciders live at towers, ruins and roadside places (plan § Re-measured, 4),
+ * so the fallback is load-bearing. `undefined` = no pool; the hero gets no ties.
+ */
+export function tiePoolSettlementOf(
+  graph: WorldGraph,
+  ctx: LivingWorldContext,
+  k: LivingWorldConstants,
+  actorId: string,
+): string | undefined {
+  const homeId = homeLocationOf(graph, actorId);
+  if (!homeId) return undefined;
+  if (SETTLEMENT_SUBTYPES.has(subtypeOf(graph.getNode(homeId)))) return homeId;
+
+  const homeHex = hexOf(graph, homeId);
+  if (!homeHex) return undefined;
+  const homeCulture = ctx.locationCultureMap.get(homeId)?.cultureId;
+
+  let best: { id: string; distance: number } | undefined;
+  for (const n of graph.getNodesByType('location')) {
+    if (!SETTLEMENT_SUBTYPES.has(subtypeOf(n))) continue;
+    if (typeof n.properties.parentLocationId === 'string') continue;
+    if (homeCulture && ctx.locationCultureMap.get(n.id)?.cultureId !== homeCulture) continue;
+    const hex = hexOf(graph, n.id);
+    if (!hex) continue;
+    const distance = hexDistance(homeHex, hex);
+    if (distance > k.WORLDGEN_TIE_FALLBACK_MAX_HEXES) continue;
+    if (!best || distance < best.distance || (distance === best.distance && n.id < best.id)) {
+      best = { id: n.id, distance };
+    }
+  }
+  return best?.id;
+}
+
+/** Individuals standing in `settlementId` or any of its Places, monsters excluded, sorted by id. */
+function residentsOf(graph: WorldGraph, settlementId: string): GraphNode[] {
+  const out: GraphNode[] = [];
+  const seen = new Set<string>();
+  const collect = (locId: string): void => {
+    for (const e of graph.getIncomingEdges(locId, 'located_at')) {
+      if (seen.has(e.source)) continue;
+      const node = graph.getNode(e.source);
+      if (!node || node.type !== 'actor' || node.properties.actorType !== 'individual') continue;
+      if (isMonster(node) || node.properties.alive === false) continue;
+      seen.add(e.source);
+      out.push(node);
+    }
+  };
+  collect(settlementId);
+  for (const place of graph.getNodesByType('location')) {
+    if (place.properties.parentLocationId === settlementId) collect(place.id);
+  }
+  return out.sort(byId);
+}
+
+function hasTieWith(graph: WorldGraph, a: string, b: string): boolean {
+  return graph.getOutgoingEdges(a, 'relates_to').some(e => e.target === b)
+    || graph.getOutgoingEdges(b, 'relates_to').some(e => e.target === a);
+}
+
+/** Write one seeded tie in both directions, stamped `origin: 'worldgen'`. `false` if it already exists. */
+function writeSeededTie(
+  graph: WorldGraph,
+  a: string,
+  b: string,
+  basis: string,
+  sentiment: number,
+  strength: number,
+  k: LivingWorldConstants,
+): boolean {
+  const forward = `edge_tie_${a}_${b}_${basis}`;
+  const backward = `edge_tie_${b}_${a}_${basis}`;
+  if (graph.getEdge(forward) || graph.getEdge(backward)) return false;
+  const properties = {
+    sentiment,
+    strength,
+    basis,
+    trust: sentiment * k.WORLDGEN_TIE_TRUST_FROM_SENTIMENT,
+    origin: 'worldgen',
+  };
+  graph.addEdge({ id: forward, source: a, target: b, type: 'relates_to', properties: { ...properties } });
+  graph.addEdge({ id: backward, source: b, target: a, type: 'relates_to', properties: { ...properties } });
+  return true;
+}
+
+export interface SeededTiesSummary {
+  kin: number;
+  friendship: number;
+  rivalry: number;
+  /** Heroes with no settlement home and none of their culture in reach. */
+  protagonistsWithoutPool: string[];
+}
+
+/**
+ * Each named hero gets one kin, one friend and one rival among the people of their
+ * tie-pool settlement — protagonists count, so two heroes sharing a home tie to each
+ * other first (THR-1594). Both directions, `origin: 'worldgen'`.
+ *
+ * The only pass here that draws: one `mulberry32(seed + prime)` stream, reserved in
+ * `WORLDGEN_LIVING_PRIMES`, over candidate lists sorted by id (NFP #3). A pool too small
+ * for all three fills kin, then rival, then friend.
+ */
+export function seedTies(
+  graph: WorldGraph,
+  ctx: LivingWorldContext,
+  k: LivingWorldConstants,
+): SeededTiesSummary {
+  const summary: SeededTiesSummary = { kin: 0, friendship: 0, rivalry: 0, protagonistsWithoutPool: [] };
+  const prime = k.WORLDGEN_LIVING_PRIMES[WORLDGEN_TIES_PRIME_INDEX];
+  if (typeof prime !== 'number') return summary;
+  const rng = mulberry32(ctx.seed + prime);
+
+  const between = (range: readonly [number, number]): number => range[0] + rng() * (range[1] - range[0]);
+
+  for (const heroId of [...ctx.individualIds].sort()) {
+    const hero = graph.getNode(heroId);
+    if (!hero) continue;
+    const poolId = tiePoolSettlementOf(graph, ctx, k, heroId);
+    if (!poolId) { summary.protagonistsWithoutPool.push(heroId); continue; }
+
+    const candidates = residentsOf(graph, poolId)
+      .filter(n => n.id !== heroId && !hasTieWith(graph, heroId, n.id));
+
+    const wants: Array<'kin' | 'friendship' | 'rivalry'> = [];
+    const kin = Array<'kin'>(Math.max(0, k.WORLDGEN_KIN_PER_PROTAGONIST)).fill('kin');
+    const friends = Array<'friendship'>(Math.max(0, k.WORLDGEN_FRIENDS_PER_PROTAGONIST)).fill('friendship');
+    const rivals = Array<'rivalry'>(Math.max(0, k.WORLDGEN_RIVALS_PER_PROTAGONIST)).fill('rivalry');
+    const total = kin.length + friends.length + rivals.length;
+    // A full pool takes kin, friend, rival; a short one fills kin, then rival, then friend.
+    if (candidates.length >= total) wants.push(...kin, ...friends, ...rivals);
+    else wants.push(...[...kin, ...rivals, ...friends].slice(0, candidates.length));
+
+    for (const basis of wants) {
+      if (candidates.length === 0) break;
+      const pick = candidates.splice(Math.floor(rng() * candidates.length), 1)[0];
+      let sentiment: number;
+      let strength: number;
+      if (basis === 'kin') {
+        sentiment = k.WORLDGEN_KIN_SENTIMENT;
+        strength = k.WORLDGEN_KIN_STRENGTH;
+      } else {
+        sentiment = between(basis === 'friendship' ? k.WORLDGEN_FRIEND_SENTIMENT_RANGE : k.WORLDGEN_RIVAL_SENTIMENT_RANGE);
+        strength = k.WORLDGEN_RANDOM_TIE_STRENGTH_MIN + rng() * k.WORLDGEN_RANDOM_TIE_STRENGTH_SPAN;
+      }
+      try {
+        if (writeSeededTie(graph, heroId, pick.id, basis, sentiment, strength, k)) summary[basis]++;
+      } catch {
+        // Per-item fail-soft.
+      }
+    }
+  }
+  return summary;
+}
+
+export interface HomeStandingMove {
+  actorId: string;
+  fromFactionId: string;
+  toFactionId: string;
+}
+
+/** The Realm holding a settlement through `controls`, lowest edge id first. */
+function realmHolding(graph: WorldGraph, ctx: LivingWorldContext, settlementId: string): string | undefined {
+  const realms = new Set(ctx.factionIds);
+  return graph.getIncomingEdges(settlementId, 'controls')
+    .filter(e => realms.has(e.source))
+    .sort(byId)[0]?.source;
+}
+
+/**
+ * A hero's starting membership moves to the Realm that holds their home (THR-1594's
+ * "home-Realm standing" half; THR-1620 shipped the standing but drew the Realm at random).
+ *
+ * A post-pass rather than an edit to the draw in `seedWorld`, which would shift the shared
+ * stream. Only a Realm membership the draw wrote moves, and only when home (or, failing
+ * that, the hero's tie-pool settlement) is held by a *different* Realm; an unheld home
+ * keeps what was drawn. The moved edge keeps its seeded
+ * reputation and rank — THR-1620's standing, now at home.
+ */
+export function seedHomeStanding(
+  graph: WorldGraph,
+  ctx: LivingWorldContext,
+  k: LivingWorldConstants,
+): HomeStandingMove[] {
+  const moves: HomeStandingMove[] = [];
+  const realms = new Set(ctx.factionIds);
+  for (const heroId of [...ctx.individualIds].sort()) {
+    const drawn = graph.getOutgoingEdges(heroId, 'member_of')
+      .filter(e => realms.has(e.target) && e.properties.joinedTick === 0)
+      .sort(byId)[0];
+    if (!drawn) continue;
+    // Home itself first — a hero at a Realm's fossil bed or tower is that Realm's — then
+    // the settlement they are tied to.
+    const homeId = homeLocationOf(graph, heroId);
+    const poolId = tiePoolSettlementOf(graph, ctx, k, heroId);
+    const home = (homeId ? realmHolding(graph, ctx, homeId) : undefined)
+      ?? (poolId ? realmHolding(graph, ctx, poolId) : undefined);
+    if (!home || home === drawn.target) continue;
+
+    try {
+      const carried = { ...drawn.properties };
+      graph.removeEdge(drawn.id);
+      const joined = joinFaction(graph, heroId, home, 0);
+      if (!joined.changed || !joined.factionNodeId) continue;
+      const edge = graph.getOutgoingEdges(heroId, 'member_of').find(e => e.target === joined.factionNodeId);
+      if (!edge) continue;
+      const factionDefId = graph.getNode(home)?.properties.factionDefId as string | undefined;
+      graph.updateEdge(edge.id, {
+        properties: {
+          rank: carried.rank,
+          reputation: carried.reputation,
+          ...(factionDefId ? { factionDefId } : {}),
+          lastFactionActivityTick: 0,
+        },
+      });
+      moves.push({ actorId: heroId, fromFactionId: drawn.target, toFactionId: home });
+    } catch {
+      // Per-item fail-soft.
+    }
+  }
+  return moves;
+}
+
+/**
+ * Each hero with a faction owes a favour to the fellow member standing highest in it —
+ * nearest home as the tiebreak, then id — plus a friendship pair when the two have no tie,
+ * because `phaseSecretsFavors` drift reads a positive tie. An early-game hook: an unpaid
+ * favour sours after 30 ticks and is forgiven at 81 (`FAVOR_MAX_AGE_TICKS`).
+ */
+export function seedFavors(
+  graph: WorldGraph,
+  ctx: LivingWorldContext,
+  k: LivingWorldConstants,
+): number {
+  if (k.WORLDGEN_FAVORS_PER_FACTION_PROTAGONIST <= 0) return 0;
+  let written = 0;
+  for (const heroId of [...ctx.individualIds].sort()) {
+    const membership = graph.getOutgoingEdges(heroId, 'member_of').sort(byId)[0];
+    if (!membership) continue;
+    const factionId = membership.target;
+    const homeHex = (() => { const h = homeLocationOf(graph, heroId); return h ? hexOf(graph, h) : undefined; })();
+
+    const fellows = graph.getIncomingEdges(factionId, 'member_of')
+      .filter(e => e.source !== heroId)
+      .map(e => {
+        const node = graph.getNode(e.source);
+        const home = homeLocationOf(graph, e.source);
+        const hex = home ? hexOf(graph, home) : undefined;
+        return {
+          node,
+          reputation: typeof e.properties.reputation === 'number' ? e.properties.reputation : 0,
+          distance: homeHex && hex ? hexDistance(homeHex, hex) : Number.POSITIVE_INFINITY,
+        };
+      })
+      .filter((f): f is { node: GraphNode; reputation: number; distance: number } =>
+        !!f.node && f.node.properties.actorType === 'individual' && !isMonster(f.node))
+      .sort((a, b) => b.reputation - a.reputation || a.distance - b.distance || byId(a.node, b.node));
+
+    let owed = 0;
+    for (const fellow of fellows) {
+      if (owed >= k.WORLDGEN_FAVORS_PER_FACTION_PROTAGONIST) break;
+      try {
+        if (!createFavorEdge(heroId, fellow.node.id, k.WORLDGEN_FAVOR_MAGNITUDE, 'worldgen', 0, graph)) continue;
+        owed++;
+        written++;
+        if (!hasTieWith(graph, heroId, fellow.node.id)) {
+          writeSeededTie(graph, heroId, fellow.node.id, 'friendship',
+            k.WORLDGEN_FAVOR_FRIENDSHIP_SENTIMENT, k.WORLDGEN_FAVOR_FRIENDSHIP_STRENGTH, k);
+        }
+      } catch {
+        // Per-item fail-soft.
+      }
+    }
+  }
+  return written;
+}
+
 // ─── W6 — quarrels ─────────────────────────────────────────────────────────
 
 /**
@@ -503,7 +797,8 @@ export function seedQuarrels(
 // ─── W7 — marks ────────────────────────────────────────────────────────────
 
 /**
- * One protagonist of each culture knows something about another.
+ * Protagonists know things about each other — `WORLDGEN_MARKS_PER_PROTAGONIST` per hero
+ * (THR-1630; before, one per culture), within `WORLDGEN_SEEDED_MARKS_PER_CULTURE` per culture.
  *
  * Holder is the highest Shadow, subject the highest Eye among the rest — the two
  * capabilities the leverage economy is about, so the seeded pair is the pair the
@@ -519,27 +814,48 @@ export function seedMarks(
   const mortals = collectSpotlightMortals(graph, ctx.individualIds);
   const cultureOf = new Map<string, string>();
   for (const mortal of mortals) {
+    // THR-1630: a hero living off the settlement map belongs to the culture of the
+    // settlement they are tied to — the same pool `seedTies` uses.
     const homeId = homeLocationOf(graph, mortal.id);
-    const cultureId = homeId ? ctx.locationCultureMap.get(homeId)?.cultureId : undefined;
+    const poolId = tiePoolSettlementOf(graph, ctx, k, mortal.id);
+    const cultureId = (homeId ? ctx.locationCultureMap.get(homeId)?.cultureId : undefined)
+      ?? (poolId ? ctx.locationCultureMap.get(poolId)?.cultureId : undefined);
     if (cultureId) cultureOf.set(mortal.id, cultureId);
   }
 
-  let minted = 0;
+  // Every candidate pair per culture, in preference order: holders by Shadow, subjects by
+  // Eye among the rest — the two capabilities the leverage economy is about.
+  const pairsByCulture: Array<Array<[GraphNode, GraphNode]>> = [];
   for (const cultureId of [...ctx.cultureIds].sort()) {
     const members = mortals.filter(m => cultureOf.get(m.id) === cultureId);
     if (members.length < 2) continue;
-
     const byShadow = [...members].sort((a, b) =>
       capabilityOf(b, 'shadow') - capabilityOf(a, 'shadow') || byId(a, b));
-    const holder = byShadow[0];
-    const subjects = members
-      .filter(m => m.id !== holder.id)
-      .sort((a, b) => capabilityOf(b, 'eye') - capabilityOf(a, 'eye') || byId(a, b));
+    const byEye = [...members].sort((a, b) =>
+      capabilityOf(b, 'eye') - capabilityOf(a, 'eye') || byId(a, b));
+    const pairs: Array<[GraphNode, GraphNode]> = [];
+    for (const holder of byShadow) {
+      for (const subject of byEye) if (subject.id !== holder.id) pairs.push([holder, subject]);
+    }
+    pairsByCulture.push(pairs.slice(0, k.WORLDGEN_SEEDED_MARKS_PER_CULTURE));
+  }
+  if (pairsByCulture.length === 0) return 0;
 
-    for (const subject of subjects.slice(0, k.WORLDGEN_SEEDED_MARKS_PER_CULTURE)) {
+  // THR-1630: the count is per hero (0.33 each, floored), at least one while any culture
+  // holds two heroes. Taken in rounds across cultures so no one culture gets them all.
+  const wanted = Math.max(1, Math.floor(k.WORLDGEN_MARKS_PER_PROTAGONIST * ctx.individualIds.length));
+
+  let minted = 0;
+  for (let round = 0; minted < wanted; round++) {
+    let offered = false;
+    for (const pairs of pairsByCulture) {
+      if (minted >= wanted) break;
+      const pair = pairs[round];
+      if (!pair) continue;
+      offered = true;
       try {
         const result = mintLeverageMark(
-          graph, holder.id, subject.id,
+          graph, pair[0].id, pair[1].id,
           UNDERTAKING_DEFAULT_MARK_SECRET_TYPE, UNDERTAKING_DEFAULT_MARK_MAGNITUDE, 0,
         );
         if (result.success) minted++;
@@ -547,6 +863,7 @@ export function seedMarks(
         // Per-item fail-soft.
       }
     }
+    if (!offered) break;
   }
   return minted;
 }
@@ -735,6 +1052,9 @@ export function seedLivingWorld(
     routes: 0,
     freeholds: 0,
     possessions: 0,
+    ties: { kin: 0, friendship: 0, rivalry: 0, protagonistsWithoutPool: [] },
+    homeStandingMoves: [],
+    favors: 0,
     quarrels: 0,
     marks: 0,
     garrisons: 0,
@@ -755,6 +1075,11 @@ export function seedLivingWorld(
   run('routes', () => { summary.routes = seedTradeRoutes(graph, ctx, k); });
   run('freeholds', () => { summary.freeholds = seedFreeholds(graph, ctx, k); });
   run('possessions', () => { summary.possessions = seedPossessions(graph, ctx, k); });
+  // THR-1630: ties before quarrels, so a deep seeded rivalry still becomes an old quarrel;
+  // home standing before favours, so the favour is owed inside the faction the hero ends in.
+  run('ties', () => { summary.ties = seedTies(graph, ctx, k); });
+  run('home standing', () => { summary.homeStandingMoves = seedHomeStanding(graph, ctx, k); });
+  run('favors', () => { summary.favors = seedFavors(graph, ctx, k); });
   run('quarrels', () => { summary.quarrels = seedQuarrels(graph, ctx, k); });
   run('marks', () => { summary.marks = seedMarks(graph, ctx, k); });
   run('garrisons', () => {
@@ -770,6 +1095,9 @@ export function seedLivingWorld(
 export function formatLivingWorldSummary(s: LivingWorldSummary): string {
   const base = `[WorldGen] Living world: realm edges dropped at guild halls ${s.territoryRetargeted}`
     + ` · routes ${s.routes} · freeholds ${s.freeholds} · possessions ${s.possessions}`
+    + ` · ties kin ${s.ties.kin}/friend ${s.ties.friendship}/rival ${s.ties.rivalry}`
+    + ` (no pool ${s.ties.protagonistsWithoutPool.length}) · home-realm moves ${s.homeStandingMoves.length}`
+    + ` · favours ${s.favors}`
     + ` · quarrels ${s.quarrels} · marks ${s.marks} · garrisons ${s.garrisons}`;
   return s.failedPasses.length > 0 ? `${base} · failed: ${s.failedPasses.join(', ')}` : base;
 }

@@ -83,6 +83,7 @@ export type TraceCategory =
   | 'encounter_step_prose_recorded'
   | 'surface_fragments_bound'
   | 'familiarity_change' | 'movement' | 'intervention_effect'
+  | 'influence.applied' | 'influence.no_lean' // THR-1651: cast value drifts
   | 'action_execution' | 'modifier_resolution'
   | 'prosperity_tick' | 'wealth_delta' | 'econ_shock_seeded'
   | 'trade_route_volume_change' | 'trade_route_dissolved'
@@ -572,6 +573,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter_step_prose_recorded',
   'surface_fragments_bound',
   'familiarity_change', 'movement', 'intervention_effect',
+  'influence.applied', 'influence.no_lean',
   'action_execution', 'modifier_resolution',
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved',
@@ -1482,6 +1484,40 @@ export interface InterventionEffectTrace extends TraceBase {
   maxDuration?: number;
 }
 
+/**
+ * Trace: a cast wrote a non-empty value drift onto a mortal (THR-1651). One per
+ * resolved `valueDriftRule` — Oneiric Sending and Divine Compulsion today.
+ */
+export interface InfluenceAppliedTrace extends TraceBase {
+  category: 'influence.applied';
+  /** `dream` | `persuade` — the payload's intervention type (the op carries no template id). */
+  interventionType: string;
+  casterId: string;
+  targetId: string;
+  /** The value pair bound to the caster's primary reach, e.g. `mercy_ruthlessness`. */
+  valuePair: string;
+  /** Signed raw drift (before decay strength scales it in the overlay). */
+  drift: number;
+  /** The payload's `maxDuration` in ticks. */
+  durationTicks: number;
+}
+
+/**
+ * Trace: a cast's drift resolved to nothing and no influence was written
+ * (THR-1651) — a dream on a mortal at exactly 0 on the axis (`no_lean`), or a
+ * caster with no reach affinities (`no_reach`). Failure is plot: the receipt
+ * says the dream found nothing to hold.
+ */
+export interface InfluenceNoLeanTrace extends TraceBase {
+  category: 'influence.no_lean';
+  interventionType: string;
+  casterId: string;
+  targetId: string;
+  /** The pair that was read, or `null` when the caster had no reach. */
+  valuePair: string | null;
+  reason: 'no_lean' | 'no_reach';
+}
+
 /** Trace: CRUD action executed */
 export interface ActionExecutionTrace extends TraceBase {
   category: 'action_execution';
@@ -1774,6 +1810,8 @@ export interface FilterPipelineTrace extends TraceBase {
   afterPrerequisites: number;
   afterThreat: number;
   afterCap: number;
+  /** Distinct templates entering the cap stage minus distinct templates leaving it (THR-1633 S1). Optional: traces from before THR-1633 lack it. */
+  capCutTemplates?: number;
 }
 
 /** Trace: agent movement transition or decision */
@@ -3765,6 +3803,12 @@ export interface AmbitionProgressTrace extends TraceBase {
   event?: string;
   /** Why the ambition could not be evaluated — see `AmbitionSkipReason`. */
   reason?: string;
+  /**
+   * THR-1630: on a re-evaluation assignment, how many of the actor's bonds matched the
+   * template's `bondModifiers` (through `bondBasisMatches`), and their written bases.
+   */
+  bondsMatched?: number;
+  bondBases?: string[];
 }
 
 /**
@@ -3986,6 +4030,8 @@ export type TraceEntry =
   | EncounterResolutionTrace
   | FamiliarityChangeTrace
   | InterventionEffectTrace
+  | InfluenceAppliedTrace
+  | InfluenceNoLeanTrace
   | ActionExecutionTrace
   | ModifierResolutionTrace
   | ProsperityTickTrace

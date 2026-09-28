@@ -39,8 +39,8 @@ describe('FOG_CONSTANTS', () => {
     expect(FOG_CONSTANTS.UNEXPLORED_HEX_COLOR).toBe('#0a0a0c');
   });
 
-  it('DEFAULT_SIGHT_RANGE is 0', () => {
-    expect(FOG_CONSTANTS.DEFAULT_SIGHT_RANGE).toBe(0);
+  it('DEFAULT_SIGHT_RANGE matches the avatar sight range (THR-1649: 2)', () => {
+    expect(FOG_CONSTANTS.DEFAULT_SIGHT_RANGE).toBe(2);
   });
 
   it('ELEVATION_BONUS is 1', () => {

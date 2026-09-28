@@ -50,7 +50,7 @@ import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
 import { FIGHT_ENCOUNTER_TEMPLATES } from './fights/fight-templates';
 import { BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
-import { INTERVENTION_DEFINITIONS } from './dream-content';
+import { INTERVENTION_DEFINITIONS, DREAM_VALUE_DRIFT, COMPULSION_VALUE_DRIFT } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
 import { ROUTE_EVENT_ENCOUNTER_TEMPLATES } from './route-event-encounter-content';
 import {
@@ -378,6 +378,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
           interventionType: 'dream',
           sphere: 'mind',
           ...DECAY_CONSTANTS.dream,
+          // THR-1651: the dream deepens the lean the sleeper already has on the
+          // value pair bound to the god's primary reach.
+          valueDriftRule: { direction: 'own_lean', magnitude: DREAM_VALUE_DRIFT },
         },
       }],
       onFailure: [],
@@ -415,6 +418,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
           interventionType: 'persuade',
           sphere: 'spirit',
           ...DECAY_CONSTANTS.persuade,
+          // THR-1651: the compulsion pushes toward the pole the god's primary
+          // reach names first (ARCHETYPE_NAMES positive — Iron: Protector).
+          valueDriftRule: { direction: 'first_pole', magnitude: COMPULSION_VALUE_DRIFT },
         },
       }],
       onFailure: [],

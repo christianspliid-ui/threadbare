@@ -2,6 +2,7 @@
 // Pure evaluator for GraphCondition objects against a minimal graph interface.
 // Used by milestone and abandonment checks in the ambition system.
 
+import { bondBasisMatches } from '../data/bond-basis';
 import type { GraphCondition } from '../types/ambition';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import { readResidence, dwellTicks, isAwayFromOrigin } from './agentResidence';
@@ -290,7 +291,7 @@ export function evaluateGraphCondition(
 
     case 'agent_has_bonds': {
       const edges = graph.getOutgoingEdges(agentId, 'relates_to');
-      const count = edges.filter((e) => e.properties.basis === condition.basis).length;
+      const count = edges.filter((e) => bondBasisMatches(e.properties.basis, condition.basis)).length;
       return count >= condition.minCount;
     }
 
