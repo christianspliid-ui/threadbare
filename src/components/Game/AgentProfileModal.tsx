@@ -27,6 +27,7 @@ import { ChapterLedger } from './ChapterLedger';
 import { ActiveEffectChips, UNDER_YOUR_HAND_HEADING } from './ActiveEffectChips';
 import type { GameState } from '../../types/gameState';
 import type { SimulationRuntime } from '../../engine/simulationRuntime';
+import { AVATAR_SHEET_SUFFIX } from '../../data/avatar-framing';
 
 export interface AgentProfileModalProps {
   card: AgentInfoCardData;
@@ -60,9 +61,15 @@ export interface AgentProfileModalProps {
   /** THR-1299 slice 4 — the arc panel's follow toggle: current state and its flip. */
   followState?: import('./FollowToggle').FollowDescriptor;
   onToggleFollow?: (agentId: string) => void;
+  /**
+   * THR-1609 — set when this sheet is the player's avatar. The header then reads
+   * "{name} — your mortal shape" above the god's title, so the player never
+   * mistakes their own shape for a mortal to follow.
+   */
+  mortalShape?: { godTitleLine: string; sphereColor?: string; portraitUrl?: string };
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     scrollToNewStrata ? 'chronicle' : 'overview'
   );
@@ -130,9 +137,10 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
               by the resolver; click-to-expand only when real art resolves. */}
           {(() => {
             const portraitVisual = resolveEntityVisual(
-              { id: card.id, kind: 'agent', name: card.name, knownSrc: card.portraitUrl },
+              { id: card.id, kind: 'agent', name: card.name, knownSrc: mortalShape?.portraitUrl ?? card.portraitUrl },
               null,
-              { knowledgeLevel: card.knowledgeLevel as KnowledgeLevel },
+              // The player's own shape is never a stranger to them (THR-1609).
+              { knowledgeLevel: (mortalShape ? 'transparent' : card.knowledgeLevel) as KnowledgeLevel },
             );
             const canExpand = portraitVisual.tier === 'art';
             return (
@@ -156,6 +164,14 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
                 style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 {card.name}
+                {mortalShape && (
+                  <span
+                    data-testid="mortal-shape-suffix"
+                    style={{ color: 'var(--text-secondary)', fontWeight: 400 }}
+                  >
+                    {' — '}{AVATAR_SHEET_SUFFIX}
+                  </span>
+                )}
               </h1>
               {(() => {
                 const tier = clampRarityTier(Number(card.rarityTier) || 1);
@@ -164,6 +180,24 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
                 ) : null;
               })()}
             </div>
+
+            {/* The god who wears this shape (THR-1609) */}
+            {mortalShape && (
+              <p
+                data-testid="mortal-shape-god-title"
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'var(--text-base)',
+                  color: mortalShape.sphereColor ?? 'var(--accent-gold)',
+                  letterSpacing: '0.04em',
+                  fontStyle: 'italic',
+                  marginTop: 'var(--space-1)',
+                  marginBottom: 0,
+                }}
+              >
+                {mortalShape.godTitleLine}
+              </p>
+            )}
 
             {/* Archetype epithet — knowledge-gated, only when intimate+ (axiologicalProfile present) */}
             {card.axiologicalProfile && (() => {
@@ -183,12 +217,12 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
               ) : null;
             })()}
 
-            {/* Knowledge level badge */}
-            <Tooltip id={`knowledge.${card.knowledgeLevel}`}>
+            {/* Knowledge level badge — omitted on the player's own shape (THR-1609) */}
+            {!mortalShape && <Tooltip id={`knowledge.${card.knowledgeLevel}`}>
               <div className="inline-block px-2 py-0.5 rounded text-xs mb-2 underline decoration-dotted cursor-help" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--accent-gold)' }}>
                 {card.knowledgeLevel}
               </div>
-            </Tooltip>
+            </Tooltip>}
 
             {/* Metadata */}
             <div className="space-y-1">

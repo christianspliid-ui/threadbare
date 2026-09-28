@@ -31,7 +31,7 @@ import type { WheelSlot } from '../../engine/wheel';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { getBeatDefinitionById } from '../../engine/ascendantBeat';
-import { SPINE_BEAT_PRESENTATION, type SpineBeatPresentation } from '../../data/ascendant-beat-content';
+import { SPINE_BEAT_PRESENTATION, fillSpineAvatarName, type SpineBeatPresentation } from '../../data/ascendant-beat-content';
 import { DEEPENING_BEAT_PRESENTATION } from '../../data/ascendant-deepening-beats';
 import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beats';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
@@ -58,6 +58,8 @@ interface AscendantBeatModalProps {
    * `SPINE_BEAT_PRESENTATION` and never pass this.
    */
   proseOverride?: { title: string; prose: string };
+  /** The avatar's name, filled into authored spine prose (Beat 0 — THR-1609). */
+  avatarName?: string;
 }
 
 // ─── Kind-derived presentation (placeholder until THR-514 prose) ─────
@@ -292,6 +294,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   onResolve,
   onClose,
   proseOverride,
+  avatarName,
 }: AscendantBeatModalProps) {
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
   // Presentation precedence: authored per-beat copy (spine THR-504 / Deepening / Milestone)
@@ -304,7 +307,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   const grants = def?.grantsActionIds ?? [];
   const isSelection = pending.kind === 'selection';
   const title = proseOverride?.title ?? authored?.title ?? humanizeBeatId(pending.beatId);
-  const prose = proseOverride?.prose ?? presentation.prose;
+  const prose = proseOverride?.prose ?? fillSpineAvatarName(presentation.prose, avatarName);
 
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
   const handleClose = onClose ?? (() => { /* spine beats are not dismissable */ });

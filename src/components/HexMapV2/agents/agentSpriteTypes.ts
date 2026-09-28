@@ -45,6 +45,11 @@ export interface AgentRenderData {
   /** Sphere color hex for avatar highlight ring (only set when isAvatar) */
   avatarSphereColor?: string;
   /**
+   * The god's sigil — the primary sphere's glyph — stamped on the avatar's marker
+   * so it never reads as the same dot as a mortal (THR-1609). Only set when isAvatar.
+   */
+  avatarSigil?: string;
+  /**
    * Activity category from AgentActivityThread — drives a colored halo ring at hero-local zoom.
    * Absent = no halo (agent is stranger-tier or has no active action).
    * 'idle' is never set (idle agents get no halo).
@@ -121,6 +126,18 @@ export const AVATAR_Z_BUMP = 0.01;
 
 /** Width of the avatar sphere-colored ring as fraction of sprite radius */
 export const AVATAR_RING_WIDTH_FRACTION = 0.12;
+
+/** Avatar sigil badge radius as a fraction of the portrait radius (THR-1609) */
+export const AVATAR_SIGIL_BADGE_RADIUS_FRACTION = 0.34;
+
+/** Per-axis offset of the sigil badge from the portrait centre, as a fraction of radius (lower right) */
+export const AVATAR_SIGIL_BADGE_OFFSET_FRACTION = 0.6;
+
+/** Sigil glyph size as a fraction of the badge radius */
+export const AVATAR_SIGIL_GLYPH_FRACTION = 1.2;
+
+/** Badge outline and glyph colour — dark, so the sphere-tint fill carries the identity */
+export const AVATAR_SIGIL_INK_COLOR = '#12100c';
 
 // ── Activity Halo ────────────────────────────────────────────────────────────
 

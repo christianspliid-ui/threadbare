@@ -38,7 +38,8 @@ import { useAgentInteraction } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { hexToPixel } from '../../lib/hexMath';
 import { hexToWorld } from '../../lib/worldPosition';
-import { getSphereColor } from '../../data/sphereIcons';
+import { getSphereColor, getSphereSymbol } from '../../data/sphereIcons';
+import { avatarGodTitleLine } from '../../data/avatar-framing';
 import { ANOMALY_SPHERE_MAP } from '../../components/HexMapV2/scene/anomalyConstants';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
@@ -821,13 +822,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         isRetinue: retinueIds.has(n.id),
         isAvatar,
         avatarSphereColor: isAvatar ? sphereColor : undefined,
+        // THR-1609: the god's sigil marks the avatar as the player's own shape.
+        avatarSigil: isAvatar ? getSphereSymbol(archetype.sphereAlignment.primary) : undefined,
         name: n.name,
         currentRoadType: movState?.currentRoadType as 'major' | 'trail' | undefined,
         roadHexQueueLength: Array.isArray(movState?.roadHexQueue) ? movState.roadHexQueue.length : undefined,
       });
     }
     return result;
-  }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, ascendantIdentity?.originFragmentId]);
+  }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, ascendantIdentity?.originFragmentId, archetype.sphereAlignment.primary]);
 
   // ── Thread line render data (ascendant → threaded agents) ──
   // Rebuilds on every worldVersion tick so line positions track moving agents.
@@ -5380,6 +5383,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             // THR-1299 slice 4 — the arc panel's follow toggle.
             followState={profileModalAgentId ? describeFollowFor(profileModalAgentId) : undefined}
             onToggleFollow={(agentId) => handleToggleFollow(agentId, 'arc_panel')}
+            // THR-1609 — the avatar's sheet names it as the player's own shape.
+            mortalShape={profileModalAgentId && profileModalAgentId === avatarNodeId
+              ? { godTitleLine: avatarGodTitleLine(gameState.ascendantIdentity?.divineName, archetype.title, gameState.ascendantIdentity?.hungerName),
+                  sphereColor,
+                  portraitUrl: getOriginPortraitUrl(gameState.ascendantIdentity?.originFragmentId ?? ''),
+                }
+              : undefined}
           />
         )}
       </AnimateMount>
@@ -5700,6 +5710,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onResolve={handleWitnessBeat}
           // Enriched, run-specific prose for template-backed pool beats (THR-514).
           proseOverride={beatProseOverride}
+          // THR-1609: Beat 0 names the avatar as the player's own shape.
+          avatarName={avatarName}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />

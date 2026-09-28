@@ -18,8 +18,46 @@ import {
   RETINUE_BORDER_COLOR,
   RETINUE_BORDER_ALT_COLOR,
   AVATAR_RING_WIDTH_FRACTION,
+  AVATAR_SIGIL_BADGE_RADIUS_FRACTION,
+  AVATAR_SIGIL_BADGE_OFFSET_FRACTION,
+  AVATAR_SIGIL_GLYPH_FRACTION,
+  AVATAR_SIGIL_INK_COLOR,
   ACTIVITY_HALO_RING_WIDTH_FRACTION,
 } from './agentSpriteTypes';
+
+/**
+ * Stamps the god's sigil on the avatar's marker (THR-1609): a sphere-tint disc at
+ * the portrait's lower right carrying the primary sphere's glyph. A mortal's marker
+ * never carries one, so the avatar is never the same dot as a mortal.
+ */
+export function drawAvatarSigilBadge(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  sphereColor: string,
+  sigil: string,
+): void {
+  const offset = radius * AVATAR_SIGIL_BADGE_OFFSET_FRACTION;
+  const bx = cx + offset;
+  const by = cy + offset;
+  const br = radius * AVATAR_SIGIL_BADGE_RADIUS_FRACTION;
+
+  ctx.beginPath();
+  ctx.arc(bx, by, br, 0, Math.PI * 2);
+  ctx.fillStyle = sphereColor;
+  ctx.fill();
+  ctx.lineWidth = Math.max(2, br * 0.18);
+  ctx.strokeStyle = AVATAR_SIGIL_INK_COLOR;
+  ctx.stroke();
+  ctx.closePath();
+
+  ctx.fillStyle = AVATAR_SIGIL_INK_COLOR;
+  ctx.font = `bold ${Math.round(br * AVATAR_SIGIL_GLYPH_FRACTION)}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(sigil, bx, by + br * 0.06);
+}
 
 // ── Dot Texture Builders ─────────────────────────────────────────────────────
 
@@ -105,12 +143,44 @@ export function buildRetinueDotTexture(
   return tex;
 }
 
+/**
+ * Fallback avatar marker when the origin portrait fails to load: a dark disc
+ * ringed in the sphere tint, carrying the sigil badge (THR-1609).
+ */
+export function buildAvatarSigilDotTexture(
+  sphereColor: string,
+  sigil: string,
+  size: number = PORTRAIT_TEXTURE_SIZE,
+): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = size / 2 - 4;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = AVATAR_SIGIL_INK_COLOR;
+  ctx.fill();
+  ctx.lineWidth = Math.max(2, Math.round(radius * AVATAR_RING_WIDTH_FRACTION));
+  ctx.strokeStyle = sphereColor;
+  ctx.stroke();
+  ctx.closePath();
+  drawAvatarSigilBadge(ctx, cx, cy, radius, sphereColor, sigil);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
 // ── Portrait Texture Loader ──────────────────────────────────────────────────
 
 /** Options for avatar-specific portrait rendering */
 export interface PortraitOptions {
   isAvatar?: boolean;
   avatarSphereColor?: string;
+  /** The god's sigil glyph for the avatar badge (THR-1609) */
+  avatarSigil?: string;
 }
 
 /**
@@ -176,6 +246,10 @@ export async function loadPortraitTexture(
         ctx.lineWidth = 1;
         ctx.stroke();
         ctx.closePath();
+
+        if (options.avatarSigil) {
+          drawAvatarSigilBadge(ctx, cx, cy, radius, options.avatarSphereColor, options.avatarSigil);
+        }
       } else if (isRetinue) {
         // Gold retinue ring (thicker)
         ctx.beginPath();
@@ -209,6 +283,11 @@ export async function loadPortraitTexture(
 
     // NFP #4: On error, fall back to faction dot texture — never reject
     img.onerror = () => {
+      // The avatar keeps its god-marked look even without a portrait (THR-1609).
+      if (options?.isAvatar && options.avatarSphereColor && options.avatarSigil) {
+        resolve(buildAvatarSigilDotTexture(options.avatarSphereColor, options.avatarSigil));
+        return;
+      }
       resolve(buildFactionDotTexture(ringColor));
     };
 
