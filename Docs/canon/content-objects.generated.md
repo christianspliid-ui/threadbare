@@ -45,7 +45,7 @@ Required axes and projections land with the vocabulary in slice 2 (`src/data/con
 
 | Kind | Required axes | Projections (axis ← typed field) |
 |---|---|---|
-| `encounter_template` | _(slice 2)_ | reach ← `reach`, sphere ← `sphereAffinity` |
+| `encounter_template` | _(slice 2)_ | reach ← `reach`, sphere ← `sphereAffinity`, tag ← `encounterType` |
 | `action_template` | _(slice 2)_ | reach ← `reach`, sphere ← `sphereAffinity` |
 | `undertaking_template` | _(slice 2)_ | — |
 | `item_template` | `family` | — |
