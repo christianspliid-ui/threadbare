@@ -24,7 +24,7 @@ import { createSimulationRuntime } from '../../simulationRuntime';
 import { ITEM_GEN_CORES } from '../../../data/item-generator-cores';
 import { buildItemWorldContext } from '../worldContext';
 import { reviewWorldContext } from '../reviewWorld';
-import { tryGenerate } from '../generateItem';
+import { tryGenerate, coreEligible } from '../generateItem';
 import { validateGeneratedItem } from '../validateGeneratedItem';
 import { readBack } from '../readBack';
 import { bandsForOrigin } from '../reviewBatch';
@@ -37,6 +37,8 @@ const TICKS = 160;
 const KEYS_PER_BAND = 3;
 /** ≈8× the measured ~20 s build (THR-1517: a `runTick` loop carries its own ceiling). */
 const WORLD_TIMEOUT_MS = 180_000;
+/** Found cores this world may leave with nothing to name (see the core loop). */
+const MAX_UNREACHABLE_FOUND_CORES = 1;
 
 describe('the live world context dresses every found core (THR-1637)', () => {
   let world: ItemWorldContext;
@@ -67,9 +69,19 @@ describe('the live world context dresses every found core (THR-1637)', () => {
   it('every found core, every legal band: zero validator problems, zero read-back failures', () => {
     const failures: string[] = [];
     const fired = new Map<string, number>();
+    // A core none of whose found lines this world can fill (THR-1632: on the seed-42
+    // world with a Temple congregation per culture, none of the nine retained dead at
+    // tick 160 belonged to a faction, so `oath_object` has no faction to name) is the
+    // world's truth, not a generator failure — the same rule the header applies to the
+    // dead-person cores. It is recorded, capped, and never counted as a pass.
+    const unreachable = new Set<string>();
     let items = 0;
     for (const core of ITEM_GEN_CORES.filter(c => c.origins.includes('found'))) {
       for (const band of core.bands.filter(b => bandsForOrigin('found').includes(b))) {
+        if (!coreEligible(core, { seedKey: 'probe', band, origin: 'found', world, coreId: core.id })) {
+          unreachable.add(core.id);
+          continue;
+        }
         for (let k = 0; k < KEYS_PER_BAND; k++) {
           const seedKey = `gen_item:${SEED}:found:live:${core.id}:${band}:${k}`;
           const r = tryGenerate({ seedKey, band, origin: 'found', world, coreId: core.id });
@@ -90,9 +102,10 @@ describe('the live world context dresses every found core (THR-1637)', () => {
         }
       }
     }
-    console.log(`[THR-1637] ${items} found items on the live context, ${failures.length} failures`);
+    console.log(`[THR-1637] ${items} found items on the live context, ${failures.length} failures, unreachable here: ${[...unreachable].join(', ') || 'none'}`);
     expect(failures).toEqual([]);
     const foundCores = ITEM_GEN_CORES.filter(c => c.origins.includes('found')).map(c => c.id);
-    expect(foundCores.filter(id => !fired.has(id))).toEqual([]);
+    expect(foundCores.filter(id => !fired.has(id) && !unreachable.has(id))).toEqual([]);
+    expect(unreachable.size).toBeLessThanOrEqual(MAX_UNREACHABLE_FOUND_CORES);
   });
 });

@@ -457,7 +457,11 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   owes_favor: {
     type: 'owes_favor',
     sourceNodeType: 'actor',
-    targetNodeType: 'actor',
+    // `location` since THR-1632 surfaced it: an appointment with no counterparty makes the
+    // place itself the creditor — "a favour to a crossroads" (`appointments.ts`,
+    // `plantAppointmentPromise`, THR-1479). The writer always did this; the registry had
+    // only never seen a seeded run reach it.
+    targetNodeType: ['actor', 'location'],
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: ['magnitude', 'context', 'grantedTick', 'redeemed', 'broken'],

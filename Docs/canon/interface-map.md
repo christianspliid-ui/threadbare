@@ -313,6 +313,18 @@ so they cannot pass vacuously. This moves the culture-to-opening and sphere-to-o
 the unaudited list; the rest of both subsystems remains audit-on-touch. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**Two contracts added and one extended by THR-1632 S1 (2026-09-28), faith and politics at game
+start** — `seeded-pilgrim-route-pools-pilgrimage` (LIVE) and
+`congregation-sphere-reaches-faction-page` (LEAKED with ticket THR-1659 until the faction page
+line ships in S2). The pilgrim-route row activates a stranded writer: `sacred_route`'s only
+producer was a legacy strategic template never offered under the cells model, so worldgen now
+seeds one route per Temple congregation to its seat capital and the encounter cache pools the
+pilgrimage there. `culture-custom-reaches-encounter-opening` is **extended**: its producer now
+includes fringe links (a settlement outside every heartland taking the nearest culture, current
+layer, half strength), which are never Realm ground. `authored-faction-ids-resolve-to-seeded-faction-nodes`
+is **preserved** — a Temple reputation effect lands on the actor's own congregation, asserted on a
+generated world. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
+
 **Three contracts added by THR-1631 S1 (2026-09-28), audit-on-touch for World Generation's
 past** — `world-past-reaches-the-chronicle`, `world-past-descent-feeds-clue-scoring` and
 `seeded-dead-stay-dead`. Worldgen placed dead empires and about a hundred of their ruins and

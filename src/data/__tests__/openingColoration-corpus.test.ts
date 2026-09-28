@@ -131,10 +131,15 @@ function generate(seed: number): WorldGraph {
   return state.graph;
 }
 
-/** Measured on current main (plan § Re-measured): culture-bearing and strong-sphere places. */
+/**
+ * Measured on current main (plan § Re-measured): culture-bearing and strong-sphere places.
+ * Re-measured 2026-09-28 for THR-1632: fringe settlements (a culture outside every
+ * heartland within 4 hexes, S1d) now carry a culture — 40 → 44 on seed 42, 60 → 81 on
+ * seed 99. That plan names this opening line as an intended reader.
+ */
 const REMEASURE: Record<number, { withCulture: number; withStrongSphere: number }> = {
-  42: { withCulture: 40, withStrongSphere: 35 },
-  99: { withCulture: 60, withStrongSphere: 24 },
+  42: { withCulture: 44, withStrongSphere: 35 },
+  99: { withCulture: 81, withStrongSphere: 24 },
 };
 const CENSUS_TOLERANCE = 0.1;
 

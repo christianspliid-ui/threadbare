@@ -75,8 +75,10 @@ export function buildRealmCensus(graph: WorldGraph): RealmCensus {
   let unheld = 0;
 
   for (const location of getLocationNodes(graph)) {
+    // A fringe link (THR-1632) is a settlement *outside* every domain taking the nearest
+    // culture — never Realm ground, so it does not put a Location inside a domain.
     const cultureEdge = graph.getOutgoingEdges(location.id, 'belongs_to')
-      .find(edge => edge.properties?.cultureLayer === 'current');
+      .find(edge => edge.properties?.cultureLayer === 'current' && edge.properties?.fringe !== true);
     if (!cultureEdge) continue;
     domains.add(cultureEdge.target);
     locationsInDomain += 1;

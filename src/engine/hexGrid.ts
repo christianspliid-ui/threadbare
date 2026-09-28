@@ -102,6 +102,8 @@ export function generateWorld(
   lostCultures?: CultureForWorldgen[],
   cultureNameMap?: Map<string, string>,
   cultureFoundationMap?: Map<string, string>,
+  /** THR-1632 — the world scenario's wilderness counts; absent → today's constants. */
+  wilderness?: { provinceCount?: number; cornerCount?: number },
 ): WorldGenResult {
   const params: WorldGenParams = {
     cols,
@@ -113,6 +115,8 @@ export function generateWorld(
     mountainDensity: 'moderate',
     livingCultures: livingCultures ?? [],
     lostCultures: lostCultures ?? [],
+    wildernessProvinceCount: wilderness?.provinceCount,
+    cornerWildernessCount: wilderness?.cornerCount,
   };
 
   const pipeline = new WorldGenPipeline();

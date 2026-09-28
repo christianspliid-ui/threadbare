@@ -298,13 +298,21 @@ export function assignCultureToLocation(
   locationId: string,
   cultureId: string,
   layer: 'historical' | 'current',
+  /**
+   * THR-1632 S1d — a settlement outside every heartland takes the nearest culture as its
+   * **fringe**: a current link at reduced strength, flagged, with no historical link.
+   * Absent → a heartland link at full strength, as always.
+   */
+  options?: { strength?: number; fringe?: boolean },
 ): void {
   graph.addEdge({
     id: `edge_culture_${locationId}_${cultureId}_${layer}`,
     source: locationId,
     target: cultureId,
     type: 'belongs_to',
-    properties: { culturalStrength: 1.0, cultureLayer: layer },
+    properties: options?.fringe
+      ? { culturalStrength: options.strength ?? 1.0, cultureLayer: layer, fringe: true }
+      : { culturalStrength: options?.strength ?? 1.0, cultureLayer: layer },
   });
 
   // Assign culture trait to location for gating
