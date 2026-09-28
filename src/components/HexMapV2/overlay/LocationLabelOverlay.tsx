@@ -34,6 +34,7 @@ import {
 import { ZOOM_THRESHOLDS } from './RegionLabelOverlay';
 import { removeOverlaps, type ScreenLabel, type ScreenBBox } from './labelCollision';
 import { getActivePalette, buildLandHalo } from '../palette/activePalette';
+import { MAP_OVERLAY_Z } from './mapOverlayZ';
 
 // ── NFP #1: Tunable constants ─────────────────────────────────────────────────
 
@@ -331,7 +332,7 @@ export function LocationLabelOverlay({
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 21,
+        zIndex: MAP_OVERLAY_Z.LOCATION_LABELS,
         overflow: 'hidden',
       }}
     >

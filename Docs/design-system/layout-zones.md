@@ -2,7 +2,7 @@
 
 > **Purpose:** Definitive reference for viewport zones, z-index stacking, responsive scaling, and insertion points. Load this when placing new UI elements.
 >
-> **Last updated:** 2026-08-29 (metadata re-synced; body previously updated through THR-1139 without this line moving)
+> **Last updated:** 2026-09-28 (THR-1665: map-overlay sub-bands, tooltip above labels)
 
 ---
 
@@ -18,7 +18,7 @@
 | 60-  |           (Three.js / flex-1)             |  (--sidebar-  |
 | 220  |                                           |   width)      |
 | px   |                                           |               |
-|      |      +--HexTooltip (z:10)---+             |               |
+|      |      +--HexTooltip (z:15)---+             |               |
 |      |      | hover overlay        |             |               |
 |      |      +----------------------+             |               |
 |      |                                           |               |
@@ -132,7 +132,7 @@ From bottom to top — every layer that participates in the stacking context:
 | Z-Index | Layer | Component(s) | Notes |
 |---------|-------|--------------|-------|
 | 0 | Map canvas | `HexMapV2` | Three.js WebGL canvas, base layer |
-| 10 | Map overlays | `HexTooltip`, `LocationLabelOverlay` | HTML positioned over canvas |
+| 10–19 | Map overlays | `AgentPulseOverlay` (11), `RegionLabelOverlay` (12), `LocationLabelOverlay` (13), `HexTooltip` (15) | HTML positioned over canvas. Values are `MAP_OVERLAY_Z` in `src/components/HexMapV2/overlay/mapOverlayZ.ts` — never a literal. The HexMapV2 container sets `isolation: isolate`, so the band cannot outrank the HUD; the tooltip is on top so no label paints over it (THR-1665) |
 | 20 | HUD elements | `AvatarHUD`, encounter veil decorations | Always-on-top of map |
 | 30 | Top bar | Top bar container | `relative z-30` in GameView |
 | 40 | Action card hand | `ActionDrawer` card tray | Bottom drawer cards |

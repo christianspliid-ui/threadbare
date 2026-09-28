@@ -4,6 +4,7 @@ import { INTERACTION_CONSTANTS } from './HexRaycaster';
 import { LOCATION_ACTIVITY_CONSTANTS } from '../../../engine/deriveLocationActivities';
 import type { RouteTooltipEntry } from '../../../engine/tradeRouteMarkers';
 import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../../data/geo-word-bands';
+import { MAP_OVERLAY_Z } from '../overlay/mapOverlayZ';
 
 /** Max trade routes listed per tooltip before the "(N more)" overflow line. */
 const TOOLTIP_MAX_ROUTES = 3;
@@ -92,7 +93,8 @@ function MovementBadge({ phase }: { phase: AgentActivityThread['movementPhase'] 
  *   3. Familiarity-gated agent thread list (max TOOLTIP_MAX_NAMED_AGENTS + "(N others)")
  * When not provided, falls back to terrain name + coordinates.
  *
- * Z-index 10: above canvas, below modal overlays.
+ * Z-index MAP_OVERLAY_Z.HEX_TOOLTIP: top of the map-overlay band, above every
+ * label overlay (THR-1665, Law 35) and below the HUD.
  * pointer-events: none so it never intercepts mouse events.
  */
 export function HexTooltip({
@@ -163,7 +165,7 @@ export function HexTooltip({
         left:          `${left}px`,
         top:           `${top}px`,
         pointerEvents: 'none',
-        zIndex:        10,
+        zIndex:        MAP_OVERLAY_Z.HEX_TOOLTIP,
         background:    'var(--bg-surface)',
         border:        '1px solid rgba(255,255,255,0.08)',
         borderRadius:  '4px',
