@@ -53,6 +53,7 @@ import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../data/secret-encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { hashString } from './factionAmbitions';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { getTrust } from './trustMechanics';
@@ -90,6 +91,7 @@ import {
   STRANGER_CURIOSITY_THRESHOLD,
   STRANGER_CURIOSITY_BONUS,
   MAX_SOCIAL_CANDIDATES_PER_AGENT,
+  FACTION_SOCIAL_SLOT_ROTATE,
   VISIBLE_AGENT_MAX_HOPS,
   TAVERN_SOCIAL_ENCOUNTER_BOOST,
   TAVERN_COLOCATION_PARENT,
@@ -144,6 +146,8 @@ export function generateSocialCandidates(
   agentId: string,
   agentLocationId: string,
   distanceMatrix: DistanceMatrix,
+  /** Current tick — seeds the guild-slot rotation (THR-1641). Absent reads as 0. */
+  tick?: number,
 ): EncounterCacheEntry[] {
   // Fail-soft: missing agent node
   if (!graph.getNode(agentId)) return [];
@@ -259,7 +263,15 @@ export function generateSocialCandidates(
     const factionSlots = Math.min(factionTemplates.length, RESERVED_FACTION_SOCIAL_SLOTS);
     const slotsAfterFaction = Math.max(0, MAX_SOCIAL_CANDIDATES_PER_AGENT - factionSlots);
 
-    const selectedFaction = factionTemplates.slice(0, factionSlots);
+    // THR-1641: rotate the reserved slot across the guild's list, else only its first
+    // entry is ever offered. Pure hash of (agent, target, tick) — no PRNG draw.
+    const factionOffset = FACTION_SOCIAL_SLOT_ROTATE && factionTemplates.length > factionSlots
+      ? (hashString(`${agentId}:${targetAgentId}:${tick ?? 0}`) >>> 0) % factionTemplates.length
+      : 0;
+    const selectedFaction = [
+      ...factionTemplates.slice(factionOffset),
+      ...factionTemplates.slice(0, factionOffset),
+    ].slice(0, factionSlots);
 
     // Unified tavern templates fill next when at a tavern (highest priority for
     // location-specific encounters — THR-101).

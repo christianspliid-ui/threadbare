@@ -830,6 +830,7 @@ export function phaseAgentDecision(
         agentId,
         locationId,
         distanceMatrix,
+        state.tick,
       );
 
       // Generate faction quest candidates (TB-060)

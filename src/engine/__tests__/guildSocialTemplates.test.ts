@@ -12,7 +12,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { getSharedFactionSocialTemplates } from '../socialEncounterGeneration';
+import { generateSocialCandidates, getSharedFactionSocialTemplates } from '../socialEncounterGeneration';
+import type { DistanceMatrix } from '../distanceMatrix';
 import { ALL_FACTION_DEFINITIONS } from '../../data/faction-definition-lookup';
 import {
   getUnifiedTemplateById,
@@ -105,6 +106,33 @@ describe('getSharedFactionSocialTemplates — a guild other than the Adventurers
     ).map(t => t.id);
     expect(withPlace).toContain('mc.social.sparring_ring');
     expect(withPlace).not.toContain('mc.social.contract_negotiation');
+  });
+
+  it('rotates the reserved guild slot across the list over ticks (FACTION_SOCIAL_SLOT_ROTATE)', () => {
+    // Before, the one reserved slot always took the first listed template, so two
+    // guildmates only ever met over `ac.social.lecture_hall`.
+    const graph = twoMembers('arcane_circle');
+    graph.addNode({
+      id: 'loc.city', type: 'location', name: 'City',
+      properties: { locationType: 'city', hexCol: 0, hexRow: 0 },
+    });
+    for (const a of ['a1', 'a2']) {
+      graph.addEdge({ id: `${a}_at`, source: a, target: 'loc.city', type: 'located_at', properties: {} });
+    }
+    const dm: DistanceMatrix = {
+      distances: new Map([['loc.city', new Map([['loc.city', 0]])]]),
+      builtAtTick: 0,
+      locationCount: 1,
+    };
+    const offered = new Set<string>();
+    for (let tick = 0; tick < 60; tick++) {
+      for (const c of generateSocialCandidates(graph, 'a1', 'loc.city', dm, tick)) {
+        if (c.templateId.startsWith('ac.social.')) offered.add(c.templateId);
+      }
+    }
+    expect([...offered].sort()).toEqual([
+      'ac.social.lecture_hall', 'ac.social.library_browse', 'ac.social.spell_exchange',
+    ]);
   });
 
   it('offers nothing to members of two different guilds', () => {

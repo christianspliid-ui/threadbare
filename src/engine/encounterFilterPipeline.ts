@@ -90,6 +90,9 @@ import {
   PERSONAL_OFFER_CAP_RESERVE,
   SOCIAL_OFFER_CAP_RESERVE,
   JOURNEY_GOAL_CAP_RESERVE,
+  ANOMALY_SITE_CAP_RESERVE,
+  ANOMALY_SITE_TEMPLATE_PREFIX,
+  ANOMALY_SITE_MAX_HEX_DISTANCE,
   CAP_FILL_DISTINCT_FIRST,
   CAP_FILL_ROTATE,
   CAP_FILL_LOCAL_SLOTS,
@@ -829,6 +832,35 @@ export function capWithDiversity(
     for (const entry of entries) {
       if (needed <= 0) break;
       if (!entry.journeyGoal) continue;
+      const key = `${entry.templateId}:${entry.locationId}`;
+      if (reservedKeys.has(key)) continue;
+      reserved.push(entry);
+      reservedKeys.add(key);
+      needed--;
+    }
+  }
+
+  // Phase 1f: preserve up to ANOMALY_SITE_CAP_RESERVE anomaly-place entries (THR-1641).
+  //
+  // An anomaly place stands on an otherwise-empty wilderness hex, so its encounter is
+  // never on the deciding mortal's own hex and the own-hex-first fill below never reaches
+  // it — measured, the cap cut the ten anomaly templates on ~99% of the boards that could
+  // see one. Only a wonder within ANOMALY_SITE_MAX_HEX_DISTANCE earns the slot: with no
+  // distance bound, mortals walked to far wonders and never arrived, and total firings on
+  // seeds 42 + 99 fell 11% (1,857 → 1,621) for 14 anomaly firings. Walked in list order;
+  // ordered after 1a–1e so none of their guarantees is weakened; scoring still decides.
+  // Fail-soft: no agent location → no reserve (the old behaviour).
+  const anomalyAgentHex = ANOMALY_SITE_CAP_RESERVE > 0 && agentLocationId
+    ? resolveLocationToHex(graph, agentLocationId)
+    : null;
+  if (anomalyAgentHex) {
+    let needed = ANOMALY_SITE_CAP_RESERVE
+      - reserved.filter(e => e.templateId.startsWith(ANOMALY_SITE_TEMPLATE_PREFIX)).length;
+    for (const entry of entries) {
+      if (needed <= 0) break;
+      if (!entry.templateId.startsWith(ANOMALY_SITE_TEMPLATE_PREFIX)) continue;
+      const siteHex = resolveLocationToHex(graph, entry.locationId);
+      if (!siteHex || hexDistance(siteHex, anomalyAgentHex) > ANOMALY_SITE_MAX_HEX_DISTANCE) continue;
       const key = `${entry.templateId}:${entry.locationId}`;
       if (reservedKeys.has(key)) continue;
       reserved.push(entry);
