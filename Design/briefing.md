@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-28 15:56 local (13:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-28 16:56 local (14:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,19 +27,18 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 jobs ready to build, none being built right now.** The last builder run shipped **what you spend and risk**, made readable for new players ([THR-1607](https://linear.app/threadbare/issue/THR-1607), [#2122](https://github.com/christianspliid-ui/threadbare/pull/2122), merged 15:39, live). The next builder run starts within the hour.
+**Healthy: 8 jobs ready to build, none being built right now.** The last builder run shipped **"who am I?"**: the avatar's past-life name now reads as "your mortal shape" ([THR-1609](https://linear.app/threadbare/issue/THR-1609), [#2123](https://github.com/christianspliid-ui/threadbare/pull/2123), merged 16:37, live). That wording is still yours to veto; it is in [the opening plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md). *— from daily-backlog-grooming.* The next builder run starts within the hour.
 
-- **The opening, for new players. Next:** ["who am I?"](https://linear.app/threadbare/issue/THR-1609). Keeping the avatar's past-life name as "your mortal shape" is a call you can veto. It is in [the opening plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1605-the-opening.md). *— from daily-backlog-grooming*
 - **The living world:** [one notable in every settlement](https://linear.app/threadbare/issue/THR-1654), [the player meets the past](https://linear.app/threadbare/issue/THR-1656), [the past feeds ambitions](https://linear.app/threadbare/issue/THR-1657), [guild joining](https://linear.app/threadbare/issue/THR-1640), [a lead is a reason to look](https://linear.app/threadbare/issue/THR-1663), plus the trade-lane step of [seeded things that stay alive](https://linear.app/threadbare/issue/THR-1636) and [faith and politics](https://linear.app/threadbare/issue/THR-1632). The glossary words "lead" and "delve" ([THR-1662](https://linear.app/threadbare/issue/THR-1662)) are queued under your standing delegation. *— from tb-orchestrator*
 - **The fight system is live but not ready for you to review.** No one-click link opens a fight the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **Game speed drifted further above its weekly norm:** tick cost 118 ms/tick steady, 51% above the 7-day median (78, 150 rows since df1cf66c); top phase agent_decision, 501 agents. Name the merges between df1cf66c and d5c18734: git log --oneline --merges df1cf66c..d5c18734. Today's readings: 93 → 110 → 136 → 131 → 116 → 123 → 137 → 108 → 118. A builder's job, not yours.
-- **The home checkout is now 40 commits behind `main`**, up from 37. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan and still likely blocks the update. The next builder run should clear it.
+- **Game speed drifted further above its weekly norm:** tick cost 127 ms/tick steady, 63% above the 7-day median (78, 151 rows since df1cf66c); top phase agent_decision, 501 agents. Name the merges between df1cf66c and 88e4562c: git log --oneline --merges df1cf66c..88e4562c. Today's readings: 93 → 110 → 136 → 131 → 116 → 123 → 137 → 108 → 118 → 127. A builder's job, not yours.
+- **The home checkout is now 45 commits behind `main`**, up from 40. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan and still likely blocks the update. The next builder run should clear it.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
-  - The slow simulation tests are green again ([run on d5c18734](https://github.com/christianspliid-ui/threadbare/actions/runs/36430145976)), so last hour's red was cleared by the next merge.
-  - The live site is up to date (d5c18734).
+  - The slow simulation tests pass on the newest merge ([run on 88e4562c](https://github.com/christianspliid-ui/threadbare/actions/runs/36437419525)).
+  - The live site is up to date (88e4562c).
   - Automated checks and the three background jobs are running, and no pull requests are waiting.
   - All ten scheduled lanes are on time. The worktree cleaner reports five old worktrees awaiting its own decision.
