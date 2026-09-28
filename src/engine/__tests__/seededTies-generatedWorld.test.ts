@@ -77,9 +77,13 @@ describe.each([42, 99])('the seeded people web, seed %i', { timeout: 60_000 }, (
       n.properties.actorType === 'individual' && n.id !== hero
       && !graph.getOutgoingEdges(hero, 'relates_to').some(e => e.target === n.id))!;
     graph.getNode(hero)!.properties.deceased = true;
-    resolveGrievanceDisposition(graph, hero, { culpritAgentId: culprit.id, harmMagnitude: 0.8, chainDepth: 0 }, 1);
+    const disposition = resolveGrievanceDisposition(graph, hero, { culpritAgentId: culprit.id, harmMagnitude: 0.8, chainDepth: 0 }, 1);
+    // A decider heir with no standing grievance gets `write: true` — the drive is the
+    // caller's to write, so the returned holder is the carrier (THR-1632 re-measure: the
+    // seed-99 heir is a spotlight kin). Grudges and fed grievances are already on the graph.
     const carriers = [...kinIds].filter(k =>
-      graph.getOutgoingEdges(k, 'hostile_to').some(e => e.target === culprit.id)
+      (disposition.write && disposition.holderId === k)
+      || graph.getOutgoingEdges(k, 'hostile_to').some(e => e.target === culprit.id)
       || graph.getOutgoingEdges(k, 'pursues').some(e => e.properties.culpritAgentId === culprit.id));
     expect(carriers.length, `a kin of ${hero} carries the grievance`).toBe(1);
   });

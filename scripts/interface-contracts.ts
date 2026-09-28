@@ -2574,6 +2574,11 @@ export const CONTRACTS: readonly Contract[] = [
       evidence:
         "THR-1150. `applyFactionReputationGain` matched memberships with `e.target === factionId`, a faction NODE id, while every authored `faction_reputation_gain` passes a DEFINITION id ('mercenary_company', 'temple_of_spheres', 'underking_court', 'rangers_brotherhood', 'lorekeepers_covenant'). `factionSeeding` keys the node `faction_def_<definitionId><chapterSuffix>`, so the authored id matched no node and no edge target: every faction-standing consequence in the shipped game was a no-op. Both halves are now proven against a real `initializeGameState(seed 42, medium)` world rather than a fixture — `src/engine/__tests__/factionReputationSeededWorld.test.ts` asserts the seeded node id contains the definition id AND that the definition id resolves to no node, then fires the effect with the authored value and reads the reputation move off the seeded edge. Falsified at 1-of-3 red with the fix reverted; the two arms that stay green are the deliberate controls (the premise assertion, and the already-tracing faction_not_found path). Resolution is widening-only by `resolveFactionNodeId`'s exact-node-id-first order, so the three pre-existing node-id callers (`processFactionEncounterReputation`, `factionOutcome`, `chosenFactionPowers`) resolve to themselves — pinned by the 'explicit faction node id still works' arm in `aftermathFactionDefinitionId.test.ts`, 4-of-6 red without the fix. The second half is the trace: the `newRank === 'none'` sentinel used to `break` SILENTLY, which is why a corpus-wide dead effect survived to be found by an unrelated ticket. It now emits `encounter_aftermath_effect` with `failReason: 'not_a_member' | 'faction_not_found'`, and `faction_reputation_gain` was added to `EncounterAftermathEffectTrace.effectKind` so all four traces in the arm emit unlaundered — the cast ratchet (THR-1065) fell 110 → 107. Corpus pinned by `src/testing/__tests__/factionEffectIds.lint.test.ts`, which deep-walks UNIFIED_ACTION_TEMPLATES for all eight faction-carrying effect kinds and fails on any id naming no FACTION_DEFINITIONS entry — with a population guard, since a `<=` over an empty walk is the vacuous pass this lint exists to avoid.",
     },
+    // THR-1632: a world now seeds one Temple congregation per culture, all sharing the
+    // `temple_of_spheres` definition id. Preserved, not changed: `resolveFactionNodeId`
+    // prefers the actor's own congregation, pinned on a generated world by
+    // `worldScenario.test.ts` ('lands a Temple reputation effect on the actor's own
+    // congregation').
     // The bind pass covers all seven kinds carrying a faction id, not only the one
     // that was measurably dead: `faction_reputation_gain`, `faction_dissolve`,
     // `signature_warhost`, `faction_absorb`, `faction_declare_war`,
@@ -5188,8 +5193,8 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: CULTURE,
     consumerSystem: ENCOUNTERS,
     intent:
-      "An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs.",
-    ulTerms: ['Culture', 'Location'],
+      "An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too.",
+    ulTerms: ['Culture', 'Location', 'Fringe'],
     mechanism: {
       kind: 'node-prop',
       symbols: ['customVariant', 'stampCultureCustomVariants', 'readCultureCustomVariant', 'resolveOpeningColoration'],
@@ -5205,6 +5210,50 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-27',
       evidence:
         "THR-1635 slice 1. Asserted on GENERATED medium worlds, never a fixture (`src/data/__tests__/openingColoration-corpus.test.ts`): on seeds 42 and 99 step 0 of all 528 guarded templates renders through `enrichProse` at a culture-bearing town with no raw token, and 525 of them carry a culture line (all eight reaches since THR-1638 slice 2; slice 1's iron/stone/eye gave 248); the census matches the plan's re-measure (40 / 60 culture-bearing Locations) within ±10% and no two living same-foundation cultures share a stamp. The corpus guard proves every eligible template carries exactly one `{frag:place_fact}` (798 entries, 528 ids). Unit tests (`src/engine/__tests__/openingColoration.test.ts`) cover every reason code, culture-first precedence, the stamp ordinal with two same-foundation cultures, and the pre-stamp read-time fallback. Headless: a 30-tick seed-42 CLI run emits `opening_coloration_bound` traces including `culture.light.eye`.",
+    },
+  },
+  // -- World scenario -> faith at game start (THR-1632) -------------------------
+  // A Temple congregation carries the sphere its culture venerated at worldgen. The
+  // write needs a reader: the faction page line ships in S2 (THR-1659), so the row is
+  // registered now and classifies LEAKED-with-ticket until that slice lands.
+  {
+    id: 'congregation-sphere-reaches-faction-page',
+    producerSystem: FACTIONS,
+    consumerSystem: FACTIONS,
+    intent:
+      "Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line (\"Venerates Light.\") — the sphere a faith was founded on is something the player can read, not a hidden number.",
+    ulTerms: ['Congregation', 'Sphere', 'Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['veneratedSphere', 'formatCongregationSphereLine'],
+      module: 'src/data/world-scenario.ts',
+    },
+    writeSites: ['src/engine/worldSeed.ts'],
+    readSites: ['src/components/Game/FactionSheet.tsx'],
+    deferralTicket: 'THR-1659',
+  },
+  // -- World scenario -> the pilgrimage pool (THR-1632) ------------------------
+  // `sacred_route`'s only writer was a legacy strategic template never offered under
+  // the cells undertaking model, so its live reader had nothing to read. Worldgen now
+  // seeds one route per congregation to its seat.
+  {
+    id: 'seeded-pilgrim-route-pools-pilgrimage',
+    producerSystem: WORLDGEN,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "Every culture's capital is a pilgrim's destination from the first tick: its congregation consecrated a route there at worldgen, so the pilgrimage encounter can happen at a capital — a town that could never host it by subtype.",
+    ulTerms: ['Congregation', 'Location', 'Encounter'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['sacred_route', 'sacredRouteDestinationTemplates'],
+      module: 'src/engine/encounterCache.ts',
+    },
+    writeSites: ['src/engine/worldSeed.ts'],
+    readSites: ['src/engine/encounterCache.ts'],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        "THR-1632 S1. On GENERATED worlds, never a fixture: `src/engine/__tests__/worldScenario.test.ts` builds a small seed-42 world, asserts one `sacred_route` per congregation to its seat capital, then builds a full `EncounterCacheManager` over the graph and finds `encounter.pilgrimage_trial` pooled at every seat. The census reader (`Docs/audits/2026-09-25-living-world-data/readers/faith.ts`) reports on medium seeds 42 and 99: 3 routes each, 3 of 3 capitals pooling the pilgrimage (0 of 3 with the block at its all-\"today\" setting).",
     },
   },
   {

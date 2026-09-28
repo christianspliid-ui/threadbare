@@ -7,6 +7,7 @@
  * making it callable from headless scripts (e.g., playtest runners).
  */
 
+import { resolveWorldScenario, type WorldScenario } from '../data/world-scenario';
 import type { CosmologyProfile, HexTile } from '../types';
 import type { AscendantArchetype } from '../types/influence';
 import type { GameState } from '../types/gameState';
@@ -122,8 +123,15 @@ export function initializeGameState(
   cols: number = DEFAULT_COLS,
   rows: number = DEFAULT_ROWS,
   doomArchetype?: DoomClockArchetype,
+  /**
+   * Faith and politics at game start (THR-1632) — a partial override of the world
+   * scenario block. Absent → `DEFAULT_WORLD_SCENARIO`; `WORLD_SCENARIO_TODAY`
+   * reproduces the world as it was before the block existed.
+   */
+  scenario?: Partial<WorldScenario>,
 ): {
   state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
+  const worldScenario = resolveWorldScenario(scenario);
   // THR-1394: the write-time world-object guard warns once per (type, value) per world.
   resetNodeSchemaWarnings();
   // 1. Generate culture identities BEFORE worldgen (needed for province seeding)
@@ -135,7 +143,10 @@ export function initializeGameState(
   const cultureFoundationMap = new Map(pregenCultures.map(c => [c.id, c.identity.foundationBias]));
 
   // 2. Generate terrain WITH culture data — provinces seeded per culture
-  const worldGenResult = generateWorld(cosmology, cols, rows, seed, livingCultures, undefined, cultureNameMap, cultureFoundationMap);
+  const worldGenResult = generateWorld(cosmology, cols, rows, seed, livingCultures, undefined, cultureNameMap, cultureFoundationMap, {
+    provinceCount: worldScenario.wildernessProvinceCount,
+    cornerCount: worldScenario.cornerWildernessCount,
+  });
   const tiles = worldGenResult.tiles;
 
   // 3. Seed the world graph with actors, locations, artifacts — territory-aware
@@ -153,6 +164,7 @@ export function initializeGameState(
     // THR-1155: the Realms are minted from the very domains `generateWorld` grouped, so
     // the nation in the graph and the border label on the map carry one name.
     worldGenResult.regionData?.domains,
+    worldScenario,
   );
 
   // Register action template nodes so createAction can add performing edges
@@ -402,6 +414,7 @@ export function initializeGameState(
     echoDefinitions: [],
     echoStates: [],
     chronicle: createGreatChronicle(),
+    worldScenario,
   };
 
   // THR-1155: a Realm's definition is minted at worldgen and recorded here, on the

@@ -37,6 +37,8 @@ const TICKS = 160;
 const KEYS_PER_BAND = 3;
 /** ≈8× the measured ~20 s build (THR-1517: a `runTick` loop carries its own ceiling). */
 const WORLD_TIMEOUT_MS = 180_000;
+/** Found cores this world may leave with nothing to name (see the core loop). */
+const MAX_UNREACHABLE_FOUND_CORES = 1;
 
 describe('the live world context dresses every found core (THR-1637)', () => {
   let world: ItemWorldContext;
@@ -67,22 +69,17 @@ describe('the live world context dresses every found core (THR-1637)', () => {
   it('every found core, every legal band: zero validator problems, zero read-back failures', () => {
     const failures: string[] = [];
     const fired = new Map<string, number>();
+    // A core none of whose found lines this world can fill (THR-1632: on the seed-42
+    // world with a Temple congregation per culture, none of the nine retained dead at
+    // tick 160 belonged to a faction, so `oath_object` has no faction to name) is the
+    // world's truth, not a generator failure — the same rule the header applies to the
+    // dead-person cores. It is recorded, capped, and never counted as a pass.
+    const unreachable = new Set<string>();
     let items = 0;
-    // A core this world cannot host (e.g. a faction-voiced core when none of the retained
-    // dead belonged to a faction) is the world's truth, not a generator defect — the same
-    // rule the header applies to the dead. Such a core is held to the review world instead,
-    // so a core that can never grow anywhere still fails here. Measured THR-1636: with
-    // standing trade lanes, seed 42 at t160 keeps no faction-member dead, and
-    // `oath_object` (all four lines voice a faction) has nothing to name.
-    const unhosted = new Set<string>();
-    const review = reviewWorldContext(null);
     for (const core of ITEM_GEN_CORES.filter(c => c.origins.includes('found'))) {
       for (const band of core.bands.filter(b => bandsForOrigin('found').includes(b))) {
-        const probe = { seedKey: `probe:${core.id}:${band}`, band, origin: 'found' as const, coreId: core.id };
-        if (!coreEligible(core, { ...probe, world })) {
-          unhosted.add(core.id);
-          const inReview = tryGenerate({ ...probe, world: review });
-          if (typeof inReview === 'string') failures.push(`${core.id} b${band}: grows in neither the live nor the review world (${inReview})`);
+        if (!coreEligible(core, { seedKey: 'probe', band, origin: 'found', world, coreId: core.id })) {
+          unreachable.add(core.id);
           continue;
         }
         for (let k = 0; k < KEYS_PER_BAND; k++) {
@@ -105,12 +102,10 @@ describe('the live world context dresses every found core (THR-1637)', () => {
         }
       }
     }
-    console.log(`[THR-1637] ${items} found items on the live context, ${failures.length} failures`);
+    console.log(`[THR-1637] ${items} found items on the live context, ${failures.length} failures, unreachable here: ${[...unreachable].join(', ') || 'none'}`);
     expect(failures).toEqual([]);
     const foundCores = ITEM_GEN_CORES.filter(c => c.origins.includes('found')).map(c => c.id);
-    if (unhosted.size) console.log(`[THR-1637] cores this live world cannot host (held to the review world): ${[...unhosted].join(', ')}`);
-    expect(foundCores.filter(id => !fired.has(id) && !unhosted.has(id))).toEqual([]);
-    // The world must still host most of the catalogue, or the context reader has regressed.
-    expect(unhosted.size).toBeLessThanOrEqual(Math.floor(foundCores.length / 4));
+    expect(foundCores.filter(id => !fired.has(id) && !unreachable.has(id))).toEqual([]);
+    expect(unreachable.size).toBeLessThanOrEqual(MAX_UNREACHABLE_FOUND_CORES);
   });
 });

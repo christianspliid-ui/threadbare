@@ -2673,6 +2673,23 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1632 — faith and politics at game start: the world scenario block this world
+     * was made with, plus a census of what it put there (the same selector the
+     * `readers/faith.ts` census reader calls).
+     *
+     * **Async** (`await` it) — the census selector is pulled in on call.
+     */
+    getWorldScenario: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { selectWorldScenarioCensus } = await import('./engine/worldScenarioCensus');
+      return {
+        scenario: state.worldScenario ?? null,
+        ...selectWorldScenarioCensus(state.graph),
+      };
+    },
+
+    /**
      * THR-1605 — the opening: has the player met The First, and where.
      *
      * S1 fields plus the S2 doom wake (THR-1646); the spine gift gates (S4)

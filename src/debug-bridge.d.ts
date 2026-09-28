@@ -2103,6 +2103,23 @@ export interface DebugBridge {
     }
   >;
 
+  /** THR-1632 — faith and politics at game start.
+   *
+   *  `scenario` is the resolved world scenario block the world was made with (`null` on
+   *  a save that predates it). The rest is `selectWorldScenarioCensus` over the live
+   *  graph: one row per Temple congregation (culture, venerated sphere, seat, halls, halls
+   *  off its heartland — expected 0 — and whether a pilgrim route runs to the seat); holy
+   *  places per living culture's heartland; fringe settlements (and fringe links on
+   *  non-settlements — expected 0); cultureless settlements; town guilds labelled;
+   *  unheld hamlet-and-up settlements; and `sacred_route` edges.
+   *
+   *  Resolves `{ error }` with no live game state. **Async** (`await` it). */
+  getWorldScenario: () => Promise<
+    | { error: string }
+    | ({ scenario: import('./data/world-scenario').WorldScenario | null }
+      & import('./engine/worldScenarioCensus').WorldScenarioCensus)
+  >;
+
   /** THR-1030 — What the `?outcome=<band>` review pin actually produced.
    *
    *  Resolves `null` when no pin is armed. `{ ..., status: 'pending' }` means a pin is

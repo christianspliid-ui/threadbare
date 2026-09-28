@@ -83,6 +83,12 @@ export interface CultureIdentity {
 export interface CultureEdgeProperties {
   culturalStrength: number;
   cultureLayer?: 'historical' | 'current';
+  /**
+   * THR-1632 — a Location outside every culture's heartland that takes the nearest culture
+   * as its **fringe** (current layer only, half strength). Never Realm ground: fringe links
+   * are kept out of worldgen's `locationCultureMap`, which drives promotion and holding.
+   */
+  fringe?: boolean;
 }
 
 // ─── Tunable Constants ──────────────────────────────────────────

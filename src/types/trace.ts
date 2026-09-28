@@ -533,6 +533,8 @@ export type TraceCategory =
   | 'area_coverage'
   // Realms — a nation founded at worldgen (THR-1155)
   | 'realm_founded'
+  // World scenario — faith and politics at game start, once per world (THR-1632)
+  | 'worldgen_scenario_applied'
   // Realms — the political map rebuilt from the towns they hold (THR-1155)
   | 'realm_projection_rebuilt'
   // Realms — a town changed hands, so the border moved (THR-1155)
@@ -574,6 +576,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
   'area_coverage',
   'realm_founded',
+  'worldgen_scenario_applied',
   'realm_projection_rebuilt',
   'realm_territory_change',
   'ui_ref_opened',
@@ -1082,6 +1085,31 @@ export interface RealmFoundedTrace extends TraceBase {
   seatLocationId: string | null;
   /** How many Locations it holds at tick 0. */
   heldLocations: number;
+}
+
+/**
+ * The world scenario block applied at worldgen (THR-1632) — once per world. Lists every
+ * congregation, the holy-place floor per culture (`shortBy` > 0 when a heartland had no
+ * room), the fringe links written and the settlements beyond reach, the town guilds
+ * labelled, the pilgrim routes seeded, and every skip by id with its reason.
+ */
+export interface WorldgenScenarioAppliedTrace extends TraceBase {
+  category: 'worldgen_scenario_applied';
+  scenario: {
+    templeCongregationsPerCulture: number;
+    holyPlacesMinPerCulture: number;
+    wildernessProvinceCount: number;
+    cornerWildernessCount: number;
+    cultureFringeMaxHexes: number;
+    seedCongregationPilgrimRoutes: boolean;
+    labelSettlementGuilds: boolean;
+  };
+  congregations: Array<{ id: string; cultureId: string; veneratedSphere: string | null; seatId: string | null; hallCount: number }>;
+  holyPlaces: Record<string, { before: number; added: number; shortBy: number }>;
+  fringe: { linked: number; outOfRange: number };
+  settlementGuildsLabelled: number;
+  pilgrimRoutes: number;
+  skipped: Array<{ step: 'congregation' | 'holy' | 'fringe' | 'guild' | 'route'; id: string; reason: string }>;
 }
 
 /**
@@ -4102,6 +4130,7 @@ export type TraceEntry =
   | EdgeSchemaRefusedTrace
   | AreaCoverageTrace
   | RealmFoundedTrace
+  | WorldgenScenarioAppliedTrace
   | RealmProjectionTrace
   | RealmTerritoryChangeTrace
   // The ref router — where the player navigation went (THR-1490)

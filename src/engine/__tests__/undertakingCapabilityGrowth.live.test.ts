@@ -37,6 +37,7 @@ import { createBalancedCosmology } from '../cosmology';
 import { generateArchetypes } from '../ascendant';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { REACH_DOMAINS } from '../../types/traits';
+import { getStrategicTemplate } from '../strategicActionCandidates';
 import type { StrategicHistoryEntry } from '../../types/strategicAction';
 
 const SEED = 42;
@@ -89,8 +90,13 @@ describe('the capability rider is paid in the live simulation', () => {
     // cells in this population are expected to carry nothing.
     const grown = completed.filter(h => h.capabilityGrowth);
     expect(grown.length, 'completions happened and none paid the rider').toBeGreaterThan(4);
-    expect(grown.length, 'every completion paid — the instant terminal is paying again')
-      .toBeLessThan(completed.length);
+    // The instant terminal pays nothing. Asserted on the instant completions themselves,
+    // read by their template's execution mode — not as `grown < completed`, which
+    // presumed the run happened to contain an instant completion (THR-1632's seed-42
+    // world completed 18 works in 150 ticks, every one checkpointed).
+    const instantPaid = completed.filter(h =>
+      getStrategicTemplate(h.templateId)?.executionMode === 'instant' && h.capabilityGrowth);
+    expect(instantPaid.map(h => h.templateId), 'the instant terminal is paying again').toEqual([]);
     for (const h of grown) {
       expect(REACH_DOMAINS).toContain(h.capabilityGrowth!.reach);
       expect(h.capabilityGrowth!.delta).toBeGreaterThan(0);
