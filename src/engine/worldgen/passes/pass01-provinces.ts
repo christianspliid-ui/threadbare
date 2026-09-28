@@ -154,6 +154,9 @@ function findSeed(
 
 export function runProvincePass(ctx: WorldGenContext, params: WorldGenParams): void {
   const { cols, rows, seed, livingCultures, lostCultures } = params;
+  // THR-1632 — the wilderness counts are world-scenario knobs; absent reads today's constants.
+  const wildernessProvinceCount = params.wildernessProvinceCount ?? WILDERNESS_PROVINCE_COUNT;
+  const cornerWildernessCount = params.cornerWildernessCount ?? CORNER_WILDERNESS_COUNT;
   const rng = mulberry32(seed + PASS_SEED_PROVINCES);
 
   const provinces: Province[] = [];
@@ -207,7 +210,7 @@ export function runProvincePass(ctx: WorldGenContext, params: WorldGenParams): v
   ];
   let cornersPlaced = 0;
   for (const target of cornerTargets) {
-    if (cornersPlaced >= CORNER_WILDERNESS_COUNT) break;
+    if (cornersPlaced >= cornerWildernessCount) break;
     // Try the target hex, then nudge diagonally inward if too close to existing seeds
     let placed = false;
     for (let nudge = 0; nudge <= 5; nudge++) {
@@ -229,7 +232,7 @@ export function runProvincePass(ctx: WorldGenContext, params: WorldGenParams): v
   }
 
   // 3b. Place remaining random wilderness seeds
-  const remainingWilderness = Math.max(0, WILDERNESS_PROVINCE_COUNT - cornersPlaced);
+  const remainingWilderness = Math.max(0, wildernessProvinceCount - cornersPlaced);
   for (let w = 0; w < remainingWilderness; w++) {
     const wildCulture: CultureForWorldgen = {
       id: `wilderness_${w}`,

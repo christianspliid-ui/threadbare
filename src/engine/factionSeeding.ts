@@ -345,6 +345,13 @@ export function seedFactionFromDefinition(
  * @param definitions - Map of definition ID → FactionDefinition
  * @param locationIds - All location node IDs
  * @param seed - Base seed (each definition gets seed + hash offset)
+ * @param options - Optional per-definition instance plans (THR-1632). A plan replaces a
+ *   definition's own `instanceCount`: one instance per plan entry, each drawing its halls
+ *   only from that entry's Locations with its first hall forced at `primaryLocationId`.
+ *   Ids keep the numeric suffix (`faction_def_<id>_<i>`), so every `factionDefId` reader
+ *   and the disposition regex keep working. Every instance of a planned definition
+ *   receives its definition's dispositions, and every disposition *toward* it fans out
+ *   to every instance. An empty plan falls back to the definition's own path.
  * @returns Array of { factionId, guildHallIds, trace } per instance
  */
 export function seedAllFactions(
@@ -352,14 +359,31 @@ export function seedAllFactions(
   definitions: ReadonlyMap<string, FactionDefinition>,
   locationIds: readonly string[],
   seed: number,
+  options?: { instancePlans?: ReadonlyMap<string, ReadonlyArray<FactionInstancePlan>> },
 ): Array<{ factionId: string; guildHallIds: string[]; trace: FactionSeedTrace }> {
   const results: Array<{ factionId: string; guildHallIds: string[]; trace: FactionSeedTrace }> = [];
   let offsetIndex = 0;
+  const fanOutDefIds = new Set<string>();
 
   for (const [_id, definition] of definitions) {
     const instanceCount = definition.instanceCount ?? 1;
+    const plan = options?.instancePlans?.get(definition.id);
 
-    if (instanceCount <= 1) {
+    if (plan && plan.length > 0) {
+      // THR-1632: one instance per plan entry (Temple congregations, one per culture).
+      fanOutDefIds.add(definition.id);
+      for (let i = 0; i < plan.length; i++) {
+        const defSeed = seed + offsetIndex * 7919 + i * 7919;
+        results.push(seedFactionFromDefinition(
+          graph,
+          definition,
+          plan[i].locationIds,
+          defSeed,
+          String(i),
+          plan[i].primaryLocationId,
+        ));
+      }
+    } else if (instanceCount <= 1) {
       // Single-instance: standard path (no suffix)
       const defSeed = seed + offsetIndex * 7919; // prime spacing between streams
       const result = seedFactionFromDefinition(graph, definition, locationIds, defSeed);
@@ -407,9 +431,17 @@ export function seedAllFactions(
   // ── Seed inter-faction dispositions ─────────────────────────────────
   // Create relates_to edges between factions based on definition.dispositions.
   // Only creates edges where both factions were successfully seeded.
-  seedFactionDispositions(graph, definitions, results);
+  seedFactionDispositions(graph, definitions, results, fanOutDefIds);
 
   return results;
+}
+
+/** One planned instance of a faction definition (THR-1632). */
+export interface FactionInstancePlan {
+  /** The only Locations this instance may seat halls at. */
+  locationIds: readonly string[];
+  /** Forced first hall — the instance's home. */
+  primaryLocationId?: string;
 }
 
 // ─── Disposition Seeding ──────────────────────────────────────────────────
@@ -426,16 +458,31 @@ function seedFactionDispositions(
   graph: WorldGraph,
   definitions: ReadonlyMap<string, FactionDefinition>,
   seedResults: ReadonlyArray<{ factionId: string }>,
+  /** THR-1632: definitions whose every instance gives and receives dispositions. */
+  fanOutDefIds: ReadonlySet<string> = new Set(),
 ): void {
   // Build defId → factionNodeId map (handles multi-instance by using first instance)
   const defIdToNodeId = new Map<string, string>();
+  // THR-1632: every *seeded* instance, for the fanned-out definitions (Temple congregations).
+  const defIdToAllNodeIds = new Map<string, string[]>();
   for (const result of seedResults) {
     // factionId format: faction_def_{defId} or faction_def_{defId}_{suffix}
     const match = result.factionId.match(/^faction_def_(.+?)(?:_\d+)?$/);
-    if (match && !defIdToNodeId.has(match[1])) {
+    if (!match) continue;
+    if (!defIdToNodeId.has(match[1])) {
       defIdToNodeId.set(match[1], result.factionId);
     }
+    if (fanOutDefIds.has(match[1]) && graph.getNode(result.factionId)) {
+      const all = defIdToAllNodeIds.get(match[1]) ?? [];
+      all.push(result.factionId);
+      defIdToAllNodeIds.set(match[1], all);
+    }
   }
+  const nodesFor = (defId: string): string[] => {
+    if (fanOutDefIds.has(defId)) return defIdToAllNodeIds.get(defId) ?? [];
+    const first = defIdToNodeId.get(defId);
+    return first ? [first] : [];
+  };
 
   // Track created edges to avoid duplicates
   const createdEdges = new Set<string>();
@@ -444,31 +491,32 @@ function seedFactionDispositions(
   for (const [defId, definition] of definitions) {
     if (!definition.dispositions) continue;
 
-    const sourceNodeId = defIdToNodeId.get(defId);
-    if (!sourceNodeId) continue;
+    for (const sourceNodeId of nodesFor(defId)) {
+      for (const [targetDefId, sentiment] of Object.entries(definition.dispositions)) {
+        for (const targetNodeId of nodesFor(targetDefId)) {
+          // A congregation holds no disposition toward itself; the single-instance path is unchanged.
+          if (targetNodeId === sourceNodeId && fanOutDefIds.has(defId)) continue;
 
-    for (const [targetDefId, sentiment] of Object.entries(definition.dispositions)) {
-      const targetNodeId = defIdToNodeId.get(targetDefId);
-      if (!targetNodeId) continue;
+          const edgeKey = `${sourceNodeId}->${targetNodeId}`;
+          if (createdEdges.has(edgeKey)) continue;
 
-      const edgeKey = `${sourceNodeId}->${targetNodeId}`;
-      if (createdEdges.has(edgeKey)) continue;
+          graph.addEdge({
+            id: `edge_faction_disp_${edgeCounter}`,
+            source: sourceNodeId,
+            target: targetNodeId,
+            type: 'relates_to',
+            properties: {
+              sentiment,
+              trust: sentiment * 0.5,
+              strength: Math.abs(sentiment) * 0.3,
+              basis: 'faction_alignment',
+            },
+          });
 
-      graph.addEdge({
-        id: `edge_faction_disp_${edgeCounter}`,
-        source: sourceNodeId,
-        target: targetNodeId,
-        type: 'relates_to',
-        properties: {
-          sentiment,
-          trust: sentiment * 0.5,
-          strength: Math.abs(sentiment) * 0.3,
-          basis: 'faction_alignment',
-        },
-      });
-
-      createdEdges.add(edgeKey);
-      edgeCounter++;
+          createdEdges.add(edgeKey);
+          edgeCounter++;
+        }
+      }
     }
   }
 }

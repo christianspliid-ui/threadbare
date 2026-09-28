@@ -21,7 +21,7 @@ import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { assignCooperationStrategy } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { FundamentState } from '../types/worldSoul';
-import { generateCultures, assignCulturesToActors, registerPregenCultures, assignCultureToLocation, stampCultureCustomVariants } from './cultureGenerator';
+import { generateCultures, assignCulturesToActors, registerPregenCultures, assignCultureToLocation, assignCultureToActor, stampCultureCustomVariants } from './cultureGenerator';
 import type { PregenCulture } from './cultureGenerator';
 import type { Province } from './worldgen/types';
 import {
@@ -86,6 +86,18 @@ import {
   WORLDGEN_TIE_TRUST_FROM_SENTIMENT,
 } from '../data/worldgen-living-constants';
 import { computeReachShares } from './domainCapability';
+import {
+  resolveWorldScenario,
+  formatCongregationName,
+  CULTURE_FRINGE_SUBTYPES,
+  CULTURE_FRINGE_STRENGTH,
+  HOLY_PLACE_SPHERE_BIAS,
+  HOLY_PLACE_TOPUP_FIRST_TEMPLE,
+  HOLY_PLACE_TOPUP_SEED_OFFSET,
+  CONGREGATION_CULTURE_STRENGTH,
+  TEMPLE_OF_SPHERES_DEF_ID,
+  type WorldScenario,
+} from '../data/world-scenario';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -544,6 +556,23 @@ export interface SeedResult {
    * static `FACTION_DEFINITIONS` catalogue: that map is what the game ships with.
    */
   realmDefinitions: Record<string, FactionDefinition>;
+  /**
+   * What the world scenario block did to this world (THR-1632) — the payload of the
+   * `worldgen_scenario_applied` trace, kept on the result so tests and the census can
+   * read it without tracing enabled.
+   */
+  worldScenarioReport: WorldgenScenarioReport;
+}
+
+/** The `worldgen_scenario_applied` payload (THR-1632 § Tracing). */
+export interface WorldgenScenarioReport {
+  scenario: WorldScenario;
+  congregations: Array<{ id: string; cultureId: string; veneratedSphere: string | null; seatId: string | null; hallCount: number }>;
+  holyPlaces: Record<string, { before: number; added: number; shortBy: number }>;
+  fringe: { linked: number; outOfRange: number };
+  settlementGuildsLabelled: number;
+  pilgrimRoutes: number;
+  skipped: Array<{ step: 'congregation' | 'holy' | 'fringe' | 'guild' | 'route'; id: string; reason: string }>;
 }
 
 // ─── Location Subtype Selection ──────────────────────────────────────
@@ -593,6 +622,27 @@ function pickLocationSubtype(
   return 'wilderness';
 }
 
+/** The holy subtypes a top-up may place (THR-1632 S1c). */
+const HOLY_SUBTYPES: readonly LocationSubtype[] = ['shrine', 'temple'];
+
+/**
+ * A shrine or a temple, weighted by the terrain's own settlement table restricted to the
+ * holy subtypes (THR-1632 S1c). A terrain whose table lists neither falls back to the
+ * default table's holy weights. One draw.
+ */
+function pickHolySubtype(rng: () => number, terrain: TerrainType): LocationSubtype {
+  const table = TERRAIN_SETTLEMENT_WEIGHTS[terrain] ?? DEFAULT_SETTLEMENT_WEIGHTS;
+  let weights = table.filter(([st]) => HOLY_SUBTYPES.includes(st));
+  if (weights.length === 0) weights = DEFAULT_SETTLEMENT_WEIGHTS.filter(([st]) => HOLY_SUBTYPES.includes(st));
+  const total = weights.reduce((sum, [, w]) => sum + w, 0);
+  let roll = rng() * total;
+  for (const [subtype, weight] of weights) {
+    roll -= weight;
+    if (roll <= 0) return subtype;
+  }
+  return weights[weights.length - 1][0];
+}
+
 export function seedWorld(
   cosmology: CosmologyProfile,
   tiles: HexTile[],
@@ -620,7 +670,13 @@ export function seedWorld(
    * here from `provinces` by the same grouping rule, which is where they came from.
    */
   domains?: DomainRegion[],
+  /**
+   * Faith and politics at game start (THR-1632). `gameInit` resolves the block once and
+   * hands it in; a direct-`seedWorld` caller that passes nothing gets the default world.
+   */
+  scenarioInput?: WorldScenario,
 ): SeedResult {
+  const scenario: WorldScenario = scenarioInput ?? resolveWorldScenario();
   const rng = mulberry32(seed + 7919);
   const graph = new WorldGraph();
 
@@ -762,6 +818,15 @@ export function seedWorld(
       if (pc.phoneticSignature) pregenCultureSignatureMap.set(pc.id, pc.phoneticSignature);
     }
   }
+  // The living culture whose heartland a hex lies on (its province's `cultureId`) — the
+  // same ground `belongs_to` is written on below (THR-1632 counts holy places on it).
+  const getHexCultureId = (col: number, row: number): string | undefined => {
+    if (!provinceIds || !provinces) return undefined;
+    const provId = provinceIds[row * gridCols + col];
+    if (provId === undefined || provId < 0 || provId >= provinces.length) return undefined;
+    const cId = provinces[provId].cultureId;
+    return cId && pregenCultureMap.has(cId) ? cId : undefined;
+  };
   const getHexCultureIdentity = (col: number, row: number): CultureIdentity | undefined => {
     if (!provinceIds || !provinces) return undefined;
     const hexIdx = row * gridCols + col;
@@ -813,25 +878,26 @@ export function seedWorld(
   const placedSettlements: Array<{ col: number; row: number; subtype: LocationSubtype }> = [];
 
   let locIndex = 0;
-  for (const { tile, subtype: locationSubtype } of candidates) {
-    if (locIndex >= locCount) break;
 
-    // No two locations on the same hex
-    const hexKey = `${tile.coord.col},${tile.coord.row}`;
-    if (usedHexes.has(hexKey)) continue;
-
-    // ── Settlement spacing enforcement ──────────────────────
-    // The required gap is the MAX of the new settlement's spacing
-    // and each existing settlement's spacing (bidirectional rule).
-    const newSpacing = SETTLEMENT_MIN_SPACING[locationSubtype] ?? 0;
-    const tooClose = placedSettlements.some(placed => {
+  // ── Settlement spacing enforcement ──────────────────────
+  // The required gap is the MAX of the new settlement's spacing
+  // and each existing settlement's spacing (bidirectional rule).
+  const tooCloseToSettlements = (tile: HexTile, subtype: LocationSubtype): boolean => {
+    const newSpacing = SETTLEMENT_MIN_SPACING[subtype] ?? 0;
+    return placedSettlements.some(placed => {
       const requiredGap = Math.max(newSpacing, SETTLEMENT_MIN_SPACING[placed.subtype] ?? 0);
       if (requiredGap === 0) return false;
       const dist = hexDistance(tile.coord, { col: placed.col, row: placed.row });
       return dist <= requiredGap;
     });
-    if (tooClose) continue; // skip this tile, try next candidate
+  };
 
+  // One node shape for every settlement-tier placement (THR-1632 extracted it so the
+  // holy-place top-up creates exactly the node the loop does). `drawRng` is the stream
+  // the name and sphere-influence draws come from — the loop's shared `rng`, or the
+  // top-up's own stream — and the draws happen in the same order either way.
+  const placeLocation = (tile: HexTile, locationSubtype: LocationSubtype, drawRng: () => number): string => {
+    const hexKey = `${tile.coord.col},${tile.coord.row}`;
     const locInjection = injections?.find(inj => inj.injection.injectionType === 'location_feature');
     const sphereBiases = locInjection ? { ...locInjection.injection.sphereBiases } : {};
 
@@ -844,7 +910,7 @@ export function seedWorld(
     if (locIndex < LOCATION_NAMES.length) {
       name = LOCATION_NAMES[locIndex];
     } else {
-      name = generateLocationName(rng, tile.terrain, locationSubtype, usedLocationNames,
+      name = generateLocationName(drawRng, tile.terrain, locationSubtype, usedLocationNames,
         hexCulture?.foundationBias, hexCulture?.veneratedSpheres[0],
         hexCultureSig?.sig, hexCultureSig?.cultureId);
     }
@@ -853,7 +919,7 @@ export function seedWorld(
     // Initialize sphereInfluence on each location (used by mandate evaluation)
     const sphereInfluence: Record<string, number> = {};
     for (const sp of SPHERE_NAMES) {
-      sphereInfluence[sp] = (sphereBiases as Record<string, number>)[sp] ?? (rng() * 0.1);
+      sphereInfluence[sp] = (sphereBiases as Record<string, number>)[sp] ?? (drawRng() * 0.1);
     }
 
     usedHexes.add(hexKey);
@@ -876,6 +942,74 @@ export function seedWorld(
     });
     locationIds.push(id);
     locIndex++;
+    return id;
+  };
+
+  for (const { tile, subtype: locationSubtype } of candidates) {
+    if (locIndex >= locCount) break;
+
+    // No two locations on the same hex
+    const hexKey = `${tile.coord.col},${tile.coord.row}`;
+    if (usedHexes.has(hexKey)) continue;
+
+    if (tooCloseToSettlements(tile, locationSubtype)) continue; // skip this tile, try next candidate
+
+    placeLocation(tile, locationSubtype, rng);
+  }
+
+  // ── Holy places on every culture's ground (THR-1632 S1c) ─────────────
+  // Worldgen cuts holy places first (tier 3 of the placement sort), so on seed 42 no
+  // culture had a single shrine or temple on its own ground. The floor tops each living
+  // culture up to `holyPlacesMinPerCulture` on its heartland — never off it — on its own
+  // PRNG stream, so the loop's draws above and every later stream are untouched.
+  const holyPlaceStats: Record<string, { before: number; added: number; shortBy: number }> = {};
+  if (scenario.holyPlacesMinPerCulture > 0 && pregenCultures && provinceIds && provinces) {
+    const topUpRng = mulberry32(seed + HOLY_PLACE_TOPUP_SEED_OFFSET);
+    const livingCultureIds = pregenCultures.map(c => c.id).sort();
+    const holyCount = new Map<string, number>();
+    const hasTemple = new Set<string>();
+    for (const locId of locationIds) {
+      const node = graph.getNode(locId);
+      if (!node) continue;
+      const subtype = node.properties.locationSubtype as string;
+      if (subtype !== 'shrine' && subtype !== 'temple') continue;
+      const cId = getHexCultureId(node.properties.hexCol as number, node.properties.hexRow as number);
+      if (!cId) continue;
+      holyCount.set(cId, (holyCount.get(cId) ?? 0) + 1);
+      if (subtype === 'temple') hasTemple.add(cId);
+    }
+
+    for (const cultureId of livingCultureIds) {
+      const before = holyCount.get(cultureId) ?? 0;
+      let need = scenario.holyPlacesMinPerCulture - before;
+      let added = 0;
+      if (need > 0) {
+        const identity = pregenCultureMap.get(cultureId);
+        const bias = scenario.templeCongregationsPerCulture > 0
+          ? identity?.veneratedSpheres[0] : undefined;
+        // Pre-rolled candidates are the head of `shuffledTiles`, so walking it in order
+        // takes unused candidates on this ground first, then the rest of the ground.
+        for (const tile of shuffledTiles) {
+          if (need <= 0) break;
+          if (getHexCultureId(tile.coord.col, tile.coord.row) !== cultureId) continue;
+          if (usedHexes.has(`${tile.coord.col},${tile.coord.row}`)) continue;
+          const subtype: LocationSubtype = HOLY_PLACE_TOPUP_FIRST_TEMPLE && !hasTemple.has(cultureId)
+            ? 'temple'
+            : pickHolySubtype(topUpRng, tile.terrain);
+          if (tooCloseToSettlements(tile, subtype)) continue;
+          const id = placeLocation(tile, subtype, topUpRng);
+          if (bias) {
+            const node = graph.getNode(id);
+            const influence = node?.properties.sphereInfluence as Record<string, number> | undefined;
+            if (influence) influence[bias] = HOLY_PLACE_SPHERE_BIAS;
+          }
+          if (subtype === 'temple') hasTemple.add(cultureId);
+          need--;
+          added++;
+        }
+      }
+      holyPlaceStats[cultureId] = { before, added, shortBy: Math.max(0, need) };
+    }
   }
 
   // ── Pass 2: Sphere-Resonant Wonder Locations ────────────────────
@@ -1599,6 +1733,49 @@ export function seedWorld(
     });
   }
 
+  // ── Fringe culture outside every heartland (THR-1632 S1d) ────────────
+  // Half the mortals on seed 42 had no culture because only Locations inside a culture
+  // province got `belongs_to`. A settlement within `cultureFringeMaxHexes` of a heartland
+  // now takes the nearest culture as its fringe: a current link at half strength, no
+  // historical link. It runs *after* promotion and Realm holding and is never added to
+  // `locationCultureMap`, so a fringe town is neither promoted nor annexed — nothing
+  // political changes. Draw-free: nearest by hex distance, ties by culture id, then id.
+  const fringeStats = { linked: 0, outOfRange: 0 };
+  if (scenario.cultureFringeMaxHexes > 0 && locationCultureMap.size > 0) {
+    const heartland: Array<{ id: string; cultureId: string; col: number; row: number }> = [];
+    for (const [locId, { cultureId }] of locationCultureMap) {
+      const node = graph.getNode(locId);
+      if (!node) continue;
+      heartland.push({ id: locId, cultureId, col: node.properties.hexCol as number, row: node.properties.hexRow as number });
+    }
+    for (const locId of locationIds) {
+      if (locationCultureMap.has(locId)) continue;
+      const node = graph.getNode(locId);
+      if (!node) continue;
+      if (!CULTURE_FRINGE_SUBTYPES.has(node.properties.locationSubtype as string)) continue;
+      if (graph.getOutgoingEdges(locId, 'belongs_to').length > 0) continue;
+      const here = { col: node.properties.hexCol as number, row: node.properties.hexRow as number };
+      let best: { cultureId: string; id: string; dist: number } | null = null;
+      for (const h of heartland) {
+        const dist = hexDistance(here, h);
+        if (!best || dist < best.dist
+          || (dist === best.dist && (h.cultureId < best.cultureId
+            || (h.cultureId === best.cultureId && h.id < best.id)))) {
+          best = { cultureId: h.cultureId, id: h.id, dist };
+        }
+      }
+      if (!best || best.dist > scenario.cultureFringeMaxHexes) {
+        fringeStats.outOfRange++;
+        continue;
+      }
+      assignCultureToLocation(graph, locId, best.cultureId, 'current', {
+        strength: CULTURE_FRINGE_STRENGTH,
+        fringe: true,
+      });
+      fringeStats.linked++;
+    }
+  }
+
   // ── Individuals ──────────────────────────────────────────
   // Derive map size category from tile count to scale agent population
   const tileCount = tiles.length;
@@ -1865,13 +2042,87 @@ export function seedWorld(
   // Separate PRNG stream (seed + 31337) — avoids collision with other streams.
   // Guilds are spawned after resources are seeded (guild type depends on resources)
   // and after factions/individuals exist (for graph integrity).
-  const guildIds = seedGuilds(graph, locationIds, seed + 31337);
+  const guildIds = seedGuilds(graph, locationIds, seed + 31337, {
+    labelGuilds: scenario.labelSettlementGuilds,
+  });
+  const scenarioSkipped: WorldgenScenarioReport['skipped'] = [];
+
+  // ── Temple congregations — one per living culture (THR-1632 S1b) ────────
+  // Every world used to start with one world-wide Temple whose halls fell anywhere on the
+  // map. With `templeCongregationsPerCulture = 1` the Temple definition is seeded once per
+  // living culture instead: each congregation is seated at its culture's capital, draws
+  // its other halls only from that culture's heartland (never a wild town, never another
+  // culture's), and keeps the numeric-suffix id every `factionDefId` reader parses.
+  // Living cultures only — `hist_culture_*` nodes are cultures too, and are not in
+  // `cultureIds`.
+  const congregationCultures: Array<{ cultureId: string; seatId: string }> = [];
+  if (scenario.templeCongregationsPerCulture > 0 && locationCultureMap.size > 0) {
+    const templeDef = FACTION_DEFINITIONS.get(TEMPLE_OF_SPHERES_DEF_ID);
+    const eligible = new Set((templeDef?.locationTypes ?? []).map(String));
+    const heartlandByCulture = new Map<string, string[]>();
+    for (const locId of locationIds) {
+      const cId = locationCultureMap.get(locId)?.cultureId;
+      if (!cId) continue;
+      const arr = heartlandByCulture.get(cId) ?? [];
+      arr.push(locId);
+      heartlandByCulture.set(cId, arr);
+    }
+    for (const cultureId of [...cultureIds].sort()) {
+      const heart = heartlandByCulture.get(cultureId) ?? [];
+      const seat = heart.find(id => graph.getNode(id)?.properties.locationSubtype === 'capital')
+        ?? heart.find(id => eligible.has(graph.getNode(id)?.properties.locationSubtype as string));
+      if (!seat) {
+        scenarioSkipped.push({ step: 'congregation', id: cultureId, reason: 'no capital or Temple-eligible Location on the heartland' });
+        continue;
+      }
+      congregationCultures.push({ cultureId, seatId: seat });
+    }
+  }
+  const instancePlans = new Map<string, Array<{ locationIds: string[]; primaryLocationId: string }>>();
+  if (congregationCultures.length > 0) {
+    instancePlans.set(TEMPLE_OF_SPHERES_DEF_ID, congregationCultures.map(({ cultureId, seatId }) => ({
+      locationIds: locationIds.filter(id => locationCultureMap.get(id)?.cultureId === cultureId),
+      primaryLocationId: seatId,
+    })));
+  } else if (scenario.templeCongregationsPerCulture > 0) {
+    scenarioSkipped.push({ step: 'congregation', id: TEMPLE_OF_SPHERES_DEF_ID, reason: 'no living culture with a seat; one world-wide Temple seeded' });
+  }
 
   // ── Faction Definitions (TB-058) ────────────────────────────
   // Separate PRNG stream (seed + 41449) — avoids collision with other streams.
   // Seeds data-driven factions (Adventuring Guild, etc.) with guild hall sublocations.
-  const factionDefResults = seedAllFactions(graph, FACTION_DEFINITIONS, locationIds, seed + 41449);
+  const factionDefResults = seedAllFactions(graph, FACTION_DEFINITIONS, locationIds, seed + 41449, {
+    instancePlans,
+  });
   const factionDefIds = factionDefResults.map(r => r.factionId);
+
+  // Congregation identity (THR-1632 S1b): its culture by `belongs_to` — the edge every
+  // actor's culture already is — the sphere its people venerated at worldgen (a founding
+  // fact; it stays put if the culture later drifts), and its own name.
+  const congregations: WorldgenScenarioReport['congregations'] = [];
+  for (let i = 0; i < congregationCultures.length; i++) {
+    const { cultureId, seatId } = congregationCultures[i];
+    const result = factionDefResults.find(r => r.factionId === `faction_def_${TEMPLE_OF_SPHERES_DEF_ID}_${i}`);
+    if (!result || !graph.getNode(result.factionId)) {
+      scenarioSkipped.push({ step: 'congregation', id: cultureId, reason: 'Temple seeding found no qualifying Location' });
+      continue;
+    }
+    const cultureNode = graph.getNode(cultureId);
+    const identity = cultureNode?.properties.cultureIdentity as CultureIdentity | undefined;
+    const veneratedSphere = identity?.veneratedSpheres?.[0] ?? null;
+    graph.updateNode(result.factionId, {
+      name: formatCongregationName(cultureNode?.name ?? cultureId),
+      properties: { veneratedSphere },
+    });
+    assignCultureToActor(graph, result.factionId, cultureId, CONGREGATION_CULTURE_STRENGTH);
+    congregations.push({
+      id: result.factionId,
+      cultureId,
+      veneratedSphere,
+      seatId,
+      hallCount: result.guildHallIds.length,
+    });
+  }
 
   // ── Mercenary Company Post-Seeding Wiring (TB-073 Phase 0 / Phase 18) ──
   // After generic seedAllFactions creates the two merc company faction nodes,
@@ -1994,6 +2245,33 @@ export function seedWorld(
   // ── Faction territory + NPC institutional wiring ─────────────────────
   // Data-driven factions should visibly command the places where they operate.
   ensureFactionControlAtHomeLocations(graph, factionDefIds);
+
+  // ── Pilgrim routes restored by seeding (THR-1632 S1f) ────────────────────
+  // `sacred_route`'s only writer is a legacy template never offered under the cells
+  // undertaking model, so its live reader (the encounter cache pools the pilgrimage at a
+  // route's destination) had nothing to read. Each congregation consecrates one route to
+  // its seat at game start. Draw-free. Mid-game consecration is THR-1660.
+  let pilgrimRoutes = 0;
+  if (scenario.seedCongregationPilgrimRoutes) {
+    for (const c of congregations) {
+      if (!c.seatId || !graph.getNode(c.seatId)) {
+        scenarioSkipped.push({ step: 'route', id: c.id, reason: 'no seat' });
+        continue;
+      }
+      try {
+        graph.addEdge({
+          id: `edge_sacred_route_${c.id}_${c.seatId}`,
+          source: c.id,
+          target: c.seatId,
+          type: 'sacred_route',
+          properties: { establishedTick: 0, origin: 'worldgen' },
+        });
+        pilgrimRoutes++;
+      } catch (err) {
+        scenarioSkipped.push({ step: 'route', id: c.id, reason: String(err) });
+      }
+    }
+  }
   // Realms join the recruiting map, guilds and orders do not change (THR-1155).
   //
   // Nobody was a subject of a nation: this map was built from `factionDefIds` alone —
@@ -2103,5 +2381,30 @@ export function seedWorld(
     );
   }
 
-  return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds, realmDefinitions };
+  // ── The world scenario's one trace (THR-1632 § Tracing) ─────────────────
+  for (const [cId, stat] of Object.entries(holyPlaceStats)) {
+    if (stat.shortBy > 0) {
+      scenarioSkipped.push({ step: 'holy', id: cId, reason: `heartland had room for ${stat.added} of ${stat.added + stat.shortBy}` });
+    }
+  }
+  const worldScenarioReport: WorldgenScenarioReport = {
+    scenario,
+    congregations,
+    holyPlaces: holyPlaceStats,
+    fringe: fringeStats,
+    settlementGuildsLabelled: scenario.labelSettlementGuilds ? guildIds.length : 0,
+    pilgrimRoutes,
+    skipped: scenarioSkipped,
+  };
+  emitTrace({
+    tick: 0,
+    category: 'worldgen_scenario_applied',
+    summary: `World scenario: ${congregations.length} congregations, `
+      + `${Object.values(holyPlaceStats).reduce((n, h) => n + h.added, 0)} holy places added, `
+      + `${fringeStats.linked} fringe settlements, ${worldScenarioReport.settlementGuildsLabelled} town guilds labelled, `
+      + `${pilgrimRoutes} pilgrim routes`,
+    ...worldScenarioReport,
+  });
+
+  return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds, realmDefinitions, worldScenarioReport };
 }

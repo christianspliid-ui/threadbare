@@ -513,6 +513,14 @@ export interface GameState {
   // at game init.
   dynamicFactionDefinitions?: Record<string, import('./faction').FactionDefinition>;
 
+  /**
+   * The world scenario block this world was made with (THR-1632) — faith and politics
+   * at game start. Written once by `initializeGameState`; read by
+   * `window.__DEBUG.getWorldScenario()` and a later scenario picker. Absent on saves
+   * that predate it — nothing branches on its absence.
+   */
+  worldScenario?: import('../data/world-scenario').WorldScenario;
+
   // Strategic actions — proactive world-shaping behavior driven by ambitions
   strategicState?: StrategicRuntimeState;
 

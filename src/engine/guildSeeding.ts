@@ -22,6 +22,16 @@ import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
 import type { AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
+import type { FactionClass } from '../data/realm-content';
+
+/**
+ * THR-1632 S1e — the `factionType` and `factionClass` a labelled town guild carries.
+ * `factionClass` separates a town guild from the six *definition* guilds, which carry a
+ * `factionDefId` instead; nothing branches on either today beyond the faction page's kind
+ * line and the schism naming table.
+ */
+export const SETTLEMENT_GUILD_FACTION_TYPE = 'guild';
+export const SETTLEMENT_GUILD_FACTION_CLASS: FactionClass = 'guild';
 
 // ─── Constants (System 3) ─────────────────────────────────────────────────
 
@@ -242,12 +252,15 @@ export function generateGuildAxiologicalProfile(
  * @param graph - World graph (mutated in place)
  * @param locationIds - All location node IDs
  * @param seed - World seed for deterministic PRNG
+ * @param options - `labelGuilds` (THR-1632) stamps each town guild `factionType: 'guild'`
+ *   and `factionClass: 'guild'`; absent → untyped, as before. No draw either way.
  * @returns Array of created guild faction node IDs
  */
 export function seedGuilds(
   graph: WorldGraph,
   locationIds: readonly string[],
   seed: number,
+  options?: { labelGuilds?: boolean },
 ): string[] {
   const rng = mulberry32(seed);
   const guildIds: string[] = [];
@@ -287,6 +300,9 @@ export function seedGuilds(
         properties: {
           actorType: 'faction',
           guildType,
+          ...(options?.labelGuilds
+            ? { factionType: SETTLEMENT_GUILD_FACTION_TYPE, factionClass: SETTLEMENT_GUILD_FACTION_CLASS }
+            : {}),
           axiologicalProfile: profile,
           domainCapabilities: caps,
           reachPreferences: reachPrefs,

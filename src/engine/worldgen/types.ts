@@ -84,6 +84,13 @@ export interface WorldGenParams {
   // Culture roster provided externally
   livingCultures: CultureForWorldgen[];
   lostCultures: CultureForWorldgen[];
+  /**
+   * Wilderness province seeds (THR-1632). Absent → WILDERNESS_PROVINCE_COUNT. Carried from
+   * the world scenario block (`src/data/world-scenario.ts`) so the ground nobody holds is a knob.
+   */
+  wildernessProvinceCount?: number;
+  /** Of those, how many sit in the map corners (THR-1632). Absent → CORNER_WILDERNESS_COUNT. */
+  cornerWildernessCount?: number;
 }
 
 /** Minimal culture data needed by worldgen — extracted from full CultureIdentity */
