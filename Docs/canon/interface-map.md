@@ -313,6 +313,12 @@ so they cannot pass vacuously. This moves the culture-to-opening and sphere-to-o
 the unaudited list; the rest of both subsystems remains audit-on-touch. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1636 S1 (2026-09-28), trade lanes that carry** — `blockade-suspends-lane-traffic`
+(UNVERIFIED-OK). A warlord's blockade (`blockadedBy` + `threatened`, written by `blockadeRoute`) is read
+by `laneTraffic`, which classes the lane `suspended`: kept fresh, never dissolved, volume settling
+toward 1 until `routeEvents` lifts the threat. Proven by `phaseTradeRouteDecay.laneTraffic.test.ts`;
+no blockade landed on a lane in 300 ticks on seeds 42 and 99, so no live evidence yet.
+
 **Two contracts added and one extended by THR-1632 S1 (2026-09-28), faith and politics at game
 start** — `seeded-pilgrim-route-pools-pilgrimage` (LIVE) and
 `congregation-sphere-reaches-faction-page` (LEAKED with ticket THR-1659 until the faction page
