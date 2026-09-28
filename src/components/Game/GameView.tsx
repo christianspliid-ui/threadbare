@@ -5385,7 +5385,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onToggleFollow={(agentId) => handleToggleFollow(agentId, 'arc_panel')}
             // THR-1609 — the avatar's sheet names it as the player's own shape.
             mortalShape={profileModalAgentId && profileModalAgentId === avatarNodeId
-              ? { godTitleLine: avatarGodTitleLine(ascendantIdentity?.divineName, archetype.title), sphereColor }
+              ? { godTitleLine: avatarGodTitleLine(gameState.ascendantIdentity?.divineName, archetype.title, gameState.ascendantIdentity?.hungerName),
+                  sphereColor,
+                  portraitUrl: getOriginPortraitUrl(gameState.ascendantIdentity?.originFragmentId ?? ''),
+                }
               : undefined}
           />
         )}

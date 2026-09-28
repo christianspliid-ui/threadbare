@@ -66,7 +66,7 @@ export interface AgentProfileModalProps {
    * "{name} — your mortal shape" above the god's title, so the player never
    * mistakes their own shape for a mortal to follow.
    */
-  mortalShape?: { godTitleLine: string; sphereColor?: string };
+  mortalShape?: { godTitleLine: string; sphereColor?: string; portraitUrl?: string };
 }
 
 export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape }: AgentProfileModalProps) {
@@ -137,9 +137,10 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
               by the resolver; click-to-expand only when real art resolves. */}
           {(() => {
             const portraitVisual = resolveEntityVisual(
-              { id: card.id, kind: 'agent', name: card.name, knownSrc: card.portraitUrl },
+              { id: card.id, kind: 'agent', name: card.name, knownSrc: mortalShape?.portraitUrl ?? card.portraitUrl },
               null,
-              { knowledgeLevel: card.knowledgeLevel as KnowledgeLevel },
+              // The player's own shape is never a stranger to them (THR-1609).
+              { knowledgeLevel: (mortalShape ? 'transparent' : card.knowledgeLevel) as KnowledgeLevel },
             );
             const canExpand = portraitVisual.tier === 'art';
             return (
@@ -216,12 +217,12 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
               ) : null;
             })()}
 
-            {/* Knowledge level badge */}
-            <Tooltip id={`knowledge.${card.knowledgeLevel}`}>
+            {/* Knowledge level badge — omitted on the player's own shape (THR-1609) */}
+            {!mortalShape && <Tooltip id={`knowledge.${card.knowledgeLevel}`}>
               <div className="inline-block px-2 py-0.5 rounded text-xs mb-2 underline decoration-dotted cursor-help" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--accent-gold)' }}>
                 {card.knowledgeLevel}
               </div>
-            </Tooltip>
+            </Tooltip>}
 
             {/* Metadata */}
             <div className="space-y-1">

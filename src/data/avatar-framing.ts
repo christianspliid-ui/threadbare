@@ -18,12 +18,22 @@ export function avatarHoverLine(avatarName: string): string {
 }
 
 /**
- * The god's title shown under the avatar's sheet header. The divine name leads when
- * the remembrance gave one; the archetype title follows it (or stands alone).
+ * The god's title shown under the avatar's sheet header — the direct answer to "who
+ * am I?". The divine name leads; the archetype title follows, or the hunger ("the
+ * Witness") when the archetype carries no title.
  */
-export function avatarGodTitleLine(divineName: string | undefined, archetypeTitle: string): string {
+export function avatarGodTitleLine(
+  divineName: string | undefined,
+  archetypeTitle: string | undefined,
+  hungerName?: string,
+): string {
   const divine = divineName?.trim();
-  const title = archetypeTitle.trim();
-  if (divine && title && divine !== title) return `Worn by ${divine}, ${title}`;
-  return `Worn by ${divine || title || 'you'}`;
+  const hunger = hungerName?.trim();
+  // An identity-derived archetype carries the divine name as its title; repeating
+  // it says nothing, so the hunger stands in.
+  const archetype = archetypeTitle?.trim();
+  const title = archetype && archetype !== divine ? archetype : (hunger ? `the ${hunger}` : '');
+  if (divine && title && divine !== title) return `You are ${divine}, ${title}`;
+  const only = divine || title;
+  return only ? `You are ${only}` : 'You are the god who wears it';
 }

@@ -32,9 +32,13 @@ describe('avatar framing copy (THR-1609)', () => {
     expect(avatarHoverLine('  ')).toBe('You walk here.');
   });
 
-  it('god title line leads with the divine name, then the archetype title', () => {
-    expect(avatarGodTitleLine('Mira', 'The Living Balm')).toBe('Worn by Mira, The Living Balm');
-    expect(avatarGodTitleLine(undefined, 'The Living Balm')).toBe('Worn by The Living Balm');
+  it('god title line leads with the divine name, then the archetype title or the hunger', () => {
+    expect(avatarGodTitleLine('Mira', 'The Living Balm')).toBe('You are Mira, The Living Balm');
+    expect(avatarGodTitleLine(undefined, 'The Living Balm')).toBe('You are The Living Balm');
+    expect(avatarGodTitleLine('Vara', '', 'Witness')).toBe('You are Vara, the Witness');
+    expect(avatarGodTitleLine('Vara', 'Vara', 'Witness')).toBe('You are Vara, the Witness');
+    expect(avatarGodTitleLine('Vara', 'Vara')).toBe('You are Vara');
+    expect(avatarGodTitleLine(undefined, undefined)).toBe('You are the god who wears it');
   });
 });
 
@@ -44,12 +48,23 @@ describe('avatar sheet header (THR-1609)', () => {
       <AgentProfileModal
         card={avatarCard}
         onClose={() => {}}
-        mortalShape={{ godTitleLine: 'Worn by Mira, The Living Balm' }}
+        mortalShape={{ godTitleLine: 'You are Mira, The Living Balm' }}
       />,
     );
     const heading = screen.getByRole('heading', { level: 1 });
     expect(heading.textContent).toBe(`Maren — ${AVATAR_SHEET_SUFFIX}`);
-    expect(screen.getByTestId('mortal-shape-god-title').textContent).toBe('Worn by Mira, The Living Balm');
+    expect(screen.getByTestId('mortal-shape-god-title').textContent).toBe('You are Mira, The Living Balm');
+  });
+
+  it('the player\'s own shape is never labelled a stranger', () => {
+    render(
+      <AgentProfileModal
+        card={{ ...avatarCard, knowledgeLevel: 'stranger' }}
+        onClose={() => {}}
+        mortalShape={{ godTitleLine: 'You are Vara, the Witness', portraitUrl: '/portraits/origin.png' }}
+      />,
+    );
+    expect(screen.queryByText('stranger')).toBeNull();
   });
 
   it('a mortal\'s sheet carries no mortal-shape framing', () => {
