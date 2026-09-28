@@ -18,14 +18,34 @@ import type { AscendantBeatState } from '../../types/ascendantBeat';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
-function directorState(tick: number, beats: AscendantBeatState, unlocked: readonly string[] = []): GameState {
+/** A world where The First is bonded — spine gifts 1–4 wait on the bond (THR-1647 S4). */
+function bondedGraph(): WorldGraph {
+  const graph = new WorldGraph();
+  graph.addNode({ id: 'asc-1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+  graph.addNode({ id: 'first-1', type: 'actor', name: 'Kael', properties: { actorType: 'individual' } });
+  graph.addEdge({
+    id: 'thread-first', source: 'asc-1', target: 'first-1', type: 'thread',
+    properties: { courtPosition: 'the_first', tier: 1 },
+  });
+  return graph;
+}
+
+const BONDED = bondedGraph();
+
+function directorState(
+  tick: number,
+  beats: AscendantBeatState,
+  unlocked: readonly string[] = [],
+  playerActCount = 0,
+): GameState {
   return {
     tick,
     seed: 42,
     ascendantId: 'asc-1',
-    graph: new WorldGraph(),
+    graph: BONDED,
     ascendantBeats: beats,
     unlockedActionIds: unlocked,
+    playerActCount,
   } as unknown as GameState;
 }
 
@@ -105,13 +125,14 @@ describe('Scripted onboarding spine — Beats 0–4 (THR-504)', () => {
     expect(chosen.state.unlockedActionIds).toEqual([options[0]]);
   });
 
-  it('the Director walks the whole arc 0→4 and the player holds the first cards by ~turn 8', () => {
+  it('the Director walks the whole arc 0→4, one player act apart, and the player holds the first cards by ~turn 16', () => {
     let beats = createInitialAscendantBeatState();
     let unlocked: readonly string[] = [];
+    let acts = 0;
     const offeredOrder: string[] = [];
 
-    for (let turn = 0; turn <= 8; turn++) {
-      const offer = phaseAscendantBeatDirector(directorState(turn, beats, unlocked), () => 0.5).ascendantBeats;
+    for (let turn = 0; turn <= 16; turn++) {
+      const offer = phaseAscendantBeatDirector(directorState(turn, beats, unlocked, acts), () => 0.5).ascendantBeats;
       if (offer?.pending) {
         beats = offer;
         offeredOrder.push(offer.pending.beatId);
@@ -119,13 +140,15 @@ describe('Scripted onboarding spine — Beats 0–4 (THR-504)', () => {
         const isSel = offer.pending.kind === 'selection';
         const chosen = isSel ? (ASCENDANT_SPINE[4].grantsActionIds ?? [])[0] : undefined;
         const res = resolvePendingBeat(
-          directorState(turn, offer, unlocked),
+          directorState(turn, offer, unlocked, acts),
           { chosenActionId: chosen },
           templateResolver,
         );
         expect(res.resolved).toBe(true);
         beats = res.state.ascendantBeats!;
         unlocked = res.state.unlockedActionIds ?? unlocked;
+        // The player acts once after each gift (THR-1647 S4) — the next one waits for it.
+        acts += 1;
       } else if (offer) {
         beats = offer;
       }

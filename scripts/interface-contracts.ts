@@ -5347,6 +5347,33 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/phaseDoom.ts'],
     readSites: ['src/engine/journeyEngine.ts'],
   },
+  // THR-1647 (plan 2026-09-27-thr-1605-the-opening S4): the opening's spine gifts
+  // 1–4 wait for the player — one act (cast, avatar move, Follow) between gifts,
+  // or an idle fallback — instead of arriving back to back on a turn timer.
+  {
+    id: 'player-acts-pace-spine-gifts',
+    producerSystem: PROGRESSION,
+    consumerSystem: PROGRESSION,
+    intent:
+      'The god\x27s gifts arrive between the player\x27s own acts: after one opening gift resolves, the next waits until the player has cast, moved the avatar or followed a mortal — or until an idle fallback has run — so the opening never stacks popups before the player has acted.',
+    ulTerms: ['Ascendant Beat', 'The First'],
+    // Keyed on the state field: `commitPlayerCast`, `followAgent` and the avatar
+    // move command write `playerActCount` (through `recordPlayerAct`); the beat
+    // director reads it in `spineGateBlockedBy` against the count stamped when the
+    // last spine gift resolved.
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['playerActCount'],
+      module: 'src/engine/ascendantBeat.ts',
+    },
+    writeSites: [
+      'src/engine/playerActs.ts',
+      'src/engine/playerCastDispatch.ts',
+      'src/engine/followedAgents.ts',
+      'src/components/Game/hooks/useViewNavigation.ts',
+    ],
+    readSites: ['src/engine/ascendantBeat.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

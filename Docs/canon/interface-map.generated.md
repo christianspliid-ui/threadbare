@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 48 |
-| **Total** | **195** |
+| 🔵 UNVERIFIED-OK | 49 |
+| **Total** | **196** |
 
 ## Contracts by producing subsystem
 
@@ -77,6 +77,7 @@ remediation ticket or the build fails.
 | `delivery-beat-plays-its-encounter` | A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template's fallback reactions — it used to run them against the god, writing a mortal scene's consequences on the wrong actor (the THR-1526 untrue-scene class). | function: `prepareDeliveryEncounter`, `bindDeliverySubject` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `hunger-resonance-weighs-the-meeting-deal` | The Hunger you chose in remembrance decides which formative tests your First is put through — the god you said you were shows up in what the world asks of them, instead of only in how the prose is framed. | function: `buildLensFromIdentity`, `scoreDilemmaResonance`, `selectDilemmasScored` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `player-acts-pace-spine-gifts` | The god's gifts arrive between the player's own acts: after one opening gift resolves, the next waits until the player has cast, moved the avatar or followed a mortal — or until an idle fallback has run — so the opening never stacks popups before the player has acted. | state-field: `playerActCount` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
 | `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🟢 LIVE | — |
 
 ### Attachments, Items & Possessions
@@ -1966,6 +1967,18 @@ exit
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/components/Game/ActionDrawer.tsx`, `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`
 - **Other hits:** `src/data/world-objects.ts`, `src/engine/castTargetChanges.ts`, `src/engine/incidentBundle.ts`, `src/types/gameState.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `player-acts-pace-spine-gifts` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The god's gifts arrive between the player's own acts: after one opening gift resolves, the next waits until the player has cast, moved the avatar or followed a mortal — or until an idle fallback has run — so the opening never stacks popups before the player has acted.
+- **Producer → Consumer:** Ascendant Beats & Progression → Ascendant Beats & Progression
+- **UL terms:** *Ascendant Beat*, *The First*
+- **Module:** `src/engine/ascendantBeat.ts`
+- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/followedAgents.ts`, `src/engine/playerActs.ts`
+- **Read sites:** `src/engine/ascendantBeat.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/types/ascendantBeat.ts`, `src/types/gameState.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-cast-lands-in-target-story` — 🔵 UNVERIFIED-OK

@@ -105,6 +105,7 @@ export type TraceCategory =
   | 'reaction_selected'
   | 'player_receipt'
   | 'receipt.target_changes' | 'beat.gift_placed' // THR-1606: what your hand did
+  | 'beat.spine_deferred' // THR-1647: a due spine gift waits for the player
   | 'rarity_graduation'
   | 'rarity_importance'
   | 'divine_proximity_phase'
@@ -897,6 +898,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Divine Receipt — player action resolution feedback (THR-727)
   'player_receipt',
   'receipt.target_changes', 'beat.gift_placed',
+  // Spine gifts wait for the player (THR-1647)
+  'beat.spine_deferred',
   // Reach signature: Iron / Warhost (THR-550)
   'ascendant.signature.warhost',
   // Reach signature: Veil / Rend the Gate (THR-551)
@@ -4378,6 +4381,7 @@ export type TraceEntry =
   | PlayerReceiptTrace
   | ReceiptTargetChangesTrace
   | BeatGiftPlacedTrace
+  | SpineDeferredTrace
   // World-minted ambitions (THR-726)
   | AmbitionMintedTrace
   // Agent residence (THR-822)
@@ -4645,6 +4649,18 @@ export interface BeatGiftPlacedTrace extends TraceBase {
   placedNodeId: string;
   /** The settlement (seat) or the bearer (artifact). */
   anchorId: string;
+}
+
+/**
+ * Trace: a due spine gift (beats 1–4) was held back (THR-1647 S4) — The First is
+ * not bonded yet, the minimum gap since the last gift has not run, or the player
+ * has not acted since the last gift and the idle fallback has not elapsed.
+ * Deduped per (beatId, reason).
+ */
+export interface SpineDeferredTrace extends TraceBase {
+  category: 'beat.spine_deferred';
+  beatId: string;
+  reason: 'first_not_bonded' | 'min_gap' | 'awaiting_player_act';
 }
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */

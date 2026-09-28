@@ -37,6 +37,7 @@ import type {
   BeatOfferedTrace,
   BeatSkippedTrace,
   BeatResolvedTrace,
+  SpineDeferredTrace,
 } from '../types/trace';
 import {
   ASCENDANT_SPINE,
@@ -44,6 +45,9 @@ import {
   BEAT_BASE_INTERVAL,
   BEAT_INTERVAL_JITTER,
   BEAT_MIN_GAP,
+  SPINE_PLAYER_ACTS_BETWEEN_GIFTS,
+  SPINE_IDLE_FALLBACK_TICKS,
+  isSpineBeatId,
   BEAT_KIND_WEIGHTS,
   BEAT_INIT_LAST_BEAT_TURN,
   BEAT_REACH_BIAS_BASE,
@@ -79,7 +83,8 @@ function emitBeatTrace(
     | Omit<BeatScheduledTrace, 'id' | 'timestamp'>
     | Omit<BeatOfferedTrace, 'id' | 'timestamp'>
     | Omit<BeatSkippedTrace, 'id' | 'timestamp'>
-    | Omit<BeatResolvedTrace, 'id' | 'timestamp'>,
+    | Omit<BeatResolvedTrace, 'id' | 'timestamp'>
+    | Omit<SpineDeferredTrace, 'id' | 'timestamp'>,
 ): void {
   emitTrace(entry as unknown as Parameters<typeof emitTrace>[0]);
 }
@@ -509,6 +514,79 @@ export function forceOfferBeatById(
   return null;
 }
 
+// ─── Spine pacing (THR-1647 S4) ──────────────────────────────────────────────
+
+/**
+ * Why the next spine gift is being held back, or `null` when it may be offered.
+ * `min_turn` is the beat's own authored trigger; the other three are the S4 gates
+ * that apply to gifts 1–4 only (Beat 0, "Reach Down", is paced by the turn alone).
+ */
+export type SpineGateReason = 'min_turn' | SpineDeferredTrace['reason'];
+
+/** Tick the last spine gift resolved: the stamped field, else the newest spine record in history. */
+export function lastSpineResolvedTick(beats: AscendantBeatState): number | null {
+  if (beats.lastSpineResolvedTick !== undefined) return beats.lastSpineResolvedTick;
+  for (let i = beats.history.length - 1; i >= 0; i--) {
+    if (isSpineBeatId(beats.history[i].beatId)) return beats.history[i].resolvedTurn;
+  }
+  return null;
+}
+
+/**
+ * The spine gate as a pure read (THR-1647 S4). For the beat at `beats.spineCursor`:
+ *
+ *  (a) its authored `minTurn` has passed (every spine beat);
+ *  and, for gifts 1–4,
+ *  (b) The First is bonded — every one of them references The First or grows from the bond;
+ *  (c) `BEAT_MIN_GAP` ticks have run since the last spine gift resolved;
+ *  (d) the player has acted `SPINE_PLAYER_ACTS_BETWEEN_GIFTS` times since that
+ *      gift resolved, or `SPINE_IDLE_FALLBACK_TICKS` ticks have run since it did.
+ *
+ * Returns `null` when the spine is exhausted, too — callers read `nextSpineBeat`
+ * for that. A missing `playerActCount` reads as 0, so an old save still gets its
+ * gifts through the idle fallback.
+ */
+export function spineGateBlockedBy(state: GameState): SpineGateReason | null {
+  const beats = state.ascendantBeats;
+  if (!beats || beats.spineCursor < 0 || beats.spineCursor >= ASCENDANT_SPINE.length) return null;
+  const def = ASCENDANT_SPINE[beats.spineCursor];
+  const turn = state.tick;
+  if (!isTriggerSatisfied(def.trigger, state, turn)) return 'min_turn';
+  if (beats.spineCursor === 0) return null;
+  if (!firstIsBonded(state)) return 'first_not_bonded';
+  const resolvedAt = lastSpineResolvedTick(beats);
+  if (resolvedAt === null) return null; // no gift resolved yet to space from
+  const since = turn - resolvedAt;
+  if (since < BEAT_MIN_GAP) return 'min_gap';
+  const actsSince = (state.playerActCount ?? 0) - (beats.playerActCountAtLastSpine ?? 0);
+  if (actsSince >= SPINE_PLAYER_ACTS_BETWEEN_GIFTS) return null;
+  if (since >= SPINE_IDLE_FALLBACK_TICKS) return null;
+  return 'awaiting_player_act';
+}
+
+/**
+ * Emit `beat.spine_deferred` once per (beatId, reason) and return the beats state
+ * carrying the new dedup key — or the same object when this deferral was already
+ * traced, so a held gift does not churn state every tick.
+ */
+function noteSpineDeferral(
+  beats: AscendantBeatState,
+  beatId: string,
+  reason: SpineDeferredTrace['reason'],
+  turn: number,
+): AscendantBeatState {
+  const key = `${beatId}|${reason}`;
+  if (beats.lastSpineDeferralKey === key) return beats;
+  emitBeatTrace({
+    tick: turn,
+    category: 'beat.spine_deferred',
+    beatId,
+    reason,
+    summary: `beat.spine_deferred: ${beatId} held (${reason})`,
+  });
+  return { ...beats, lastSpineDeferralKey: key };
+}
+
 /**
  * The Director phase. Returns a partial GameState (merged by the orchestrator).
  * No-ops to `{}` when there is no beat to offer or when the state is uninitialized
@@ -531,12 +609,18 @@ export function phaseAscendantBeatDirector(
     // 2. spine first
     if (beats.spineCursor >= 0 && beats.spineCursor < ASCENDANT_SPINE.length) {
       const def = ASCENDANT_SPINE[beats.spineCursor];
-      if (isTriggerSatisfied(def.trigger, state, turn)) {
+      const blockedBy = spineGateBlockedBy(state);
+      if (blockedBy === null) {
         // Spine beats are not `unintroduced_group`-eligible, so binding is empty — but
         // route through `bindBeatSubject` for one offer path (THR-522).
         return { ascendantBeats: offer(beats, def, def.trigger, turn, 0, bindBeatSubject(def, state), /*advanceSpine*/ true) };
       }
-      // Spine waiting on its trigger — keep the opening clean, do not interleave pool beats.
+      // Spine waiting — keep the opening clean, do not interleave pool beats. A gift
+      // that is due but held for the player (THR-1647 S4) says why, once per reason.
+      if (blockedBy !== 'min_turn') {
+        const next = noteSpineDeferral(beats, def.beatId, blockedBy, turn);
+        return next === beats ? {} : { ascendantBeats: next };
+      }
       return {};
     }
 
@@ -916,12 +1000,21 @@ export function resolvePendingBeat(
     }
 
     const outcome = opts.outcome ?? (pending.kind === 'selection' ? 'chosen' : 'received');
-    const resolvedBeats = resolveAscendantBeat(beats, {
+    const resolvedCore = resolveAscendantBeat(beats, {
       outcome,
       grantedActionIds: granted,
       seededNodeIds,
       turn,
     });
+    // THR-1647 S4: the next spine gift is spaced from this moment — the tick and the
+    // player's act count now — so acts taken after this resolve are what count.
+    const resolvedBeats: AscendantBeatState = isSpineBeatId(pending.beatId)
+      ? {
+        ...resolvedCore,
+        lastSpineResolvedTick: turn,
+        playerActCountAtLastSpine: state.playerActCount ?? 0,
+      }
+      : resolvedCore;
     return {
       state: { ...workingState, ascendantBeats: resolvedBeats },
       resolved: true,

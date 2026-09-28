@@ -541,6 +541,10 @@ export interface GameState {
    *  the settlement `pickMeetingLocation` chose, or the avatar's own location on
    *  the fallback path. Unset until the auto-trigger fires. */
   meetingLocationId?: string;
+  /** Monotonic count of the player's own acts — a cast, an avatar move command, a
+   *  Follow (THR-1647 S4). Engine pacing counter, never a player-facing word. Read
+   *  as 0 when absent (older saves). The beat director spaces spine gifts 1–4 by it. */
+  playerActCount?: number;
 
   // Template novelty pressure — global recency/quota tracking to prevent template monopoly (THR-453)
   encounterNoveltyRecord?: EncounterNoveltyRecord;

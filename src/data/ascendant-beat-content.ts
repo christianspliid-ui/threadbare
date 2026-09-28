@@ -32,12 +32,26 @@ import { ASCENDANT_MILESTONE_BEATS } from './ascendant-milestone-beats';
 export const BEAT_BASE_INTERVAL = 9;
 /** Seeded jitter applied to the interval (± this many turns). */
 export const BEAT_INTERVAL_JITTER = 2;
-/** Hard floor between any two beats, in turns. */
+/** Hard floor between any two beats, in turns. Since THR-1647 also the floor
+ *  between one spine gift resolving and the next being offered (beats 1–4). */
 export const BEAT_MIN_GAP = 4;
 /** Max simultaneously offered beats (max-one-pending invariant). */
 export const BEAT_MAX_PENDING = 1;
 /** Earliest turn each spine beat may fire. */
 export const SPINE_TRIGGER_TURNS: readonly number[] = [0, 2, 4, 6, 8];
+/**
+ * Player acts (a cast, an avatar move command, a Follow) required between spine
+ * gifts 1–4 (THR-1647 S4). A tick is a real second and resolving a gift resumes
+ * time, so without this the next gift was already due: round-1 testers got 5–7
+ * one-button popups before they acted once.
+ */
+export const SPINE_PLAYER_ACTS_BETWEEN_GIFTS = 1;
+/**
+ * Running ticks after the last spine gift resolved at which the next one arrives
+ * even without a player act (three in-world days), so an idle player is never
+ * starved of the opening (THR-1647 S4).
+ */
+export const SPINE_IDLE_FALLBACK_TICKS = 36;
 /** Pool-draw mix weights by beat kind. */
 export const BEAT_KIND_WEIGHTS: Partial<Record<BeatKind, number>> = {
   introduction: 3,
