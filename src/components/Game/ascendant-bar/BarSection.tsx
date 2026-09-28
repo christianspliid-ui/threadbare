@@ -1,4 +1,5 @@
 import React, { type ReactNode } from 'react';
+import { Tooltip } from '../../shared/Tooltip';
 import styles from './styles.module.css';
 
 interface BarSectionProps {
@@ -8,9 +9,14 @@ interface BarSectionProps {
   onToggle: () => void;
   children?: ReactNode;
   placeholder?: string;
+  /**
+   * Registry tooltip for the section's concept word (Law 17; THR-1607). The header
+   * is itself the button, so the tooltip never adds a second tab stop.
+   */
+  tooltipId?: string;
 }
 
-export function BarSection({ label, count, open, onToggle, children, placeholder }: BarSectionProps) {
+export function BarSection({ label, count, open, onToggle, children, placeholder, tooltipId }: BarSectionProps) {
   const showBody = open && (children != null || placeholder != null);
   const isEmpty = count === 0 || children == null;
 
@@ -23,7 +29,13 @@ export function BarSection({ label, count, open, onToggle, children, placeholder
         >
           <path d="M3 2 L7 5 L3 8" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span className={styles.sectionLabel}>{label}</span>
+        {tooltipId ? (
+          <Tooltip id={tooltipId} focusable={false}>
+            <span className={styles.sectionLabel}>{label}</span>
+          </Tooltip>
+        ) : (
+          <span className={styles.sectionLabel}>{label}</span>
+        )}
         {count !== undefined && count > 0 && (
           <span className={styles.sectionCount}>· {count}</span>
         )}

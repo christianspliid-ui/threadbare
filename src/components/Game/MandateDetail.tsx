@@ -5,6 +5,7 @@ import { ProgressBar } from '../shared/ProgressBar';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 import { durationLabel, elapsedLabel, sphereDeltaReading } from '../../engine/aftermathWords';
 import { DeltaCluster } from '../shared/DeltaCluster';
+import { Tooltip } from '../shared/Tooltip';
 
 interface MandateDetailProps {
   open: boolean;
@@ -82,7 +83,7 @@ function getNextCheckpoint(definition: MandateDefinition, state: MandateState) {
 // THR-1451: `value` widened from `string` to a node so a card can carry a delta
 // cluster rather than a formatted numeral. Every existing caller passes a string,
 // which is still a valid `ReactNode` — an additive widening (NFP #6).
-function SummaryCard({ label, value, color }: { label: string; value: ReactNode; color?: string }) {
+function SummaryCard({ label, value, color, tooltipId }: { label: string; value: ReactNode; color?: string; tooltipId?: string }) {
   return (
     <div style={{
       minWidth: '120px',
@@ -97,7 +98,7 @@ function SummaryCard({ label, value, color }: { label: string; value: ReactNode;
         letterSpacing: '0.08em',
         color: 'var(--text-muted)',
       }}>
-        {label}
+        {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
       </div>
       <div style={{
         marginTop: '4px',
@@ -354,11 +355,13 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
             />
             <SummaryCard
               label="Counter-Omens"
+              tooltipId="ui.counter_omens"
               value={`${state.counterOmensEarned ?? 0}`}
               color={(state.counterOmensEarned ?? 0) > 0 ? SENTIMENT_GREEN : undefined}
             />
             <SummaryCard
               label="Doom Debt"
+              tooltipId="ui.doom_debt"
               value={`${state.doomSeverityPenalties ?? 0}`}
               color={(state.doomSeverityPenalties ?? 0) > 0 ? SENTIMENT_NEGATIVE : undefined}
             />

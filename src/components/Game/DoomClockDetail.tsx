@@ -1,5 +1,6 @@
 import type { DoomClockDefinition, DoomClockState } from '../../types/doomClock';
 import { Modal } from '../shared/Modal';
+import { Tooltip } from '../shared/Tooltip';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { DOOM_CLIMAX_START } from '../../data/game-config';
 import { durationLabel } from '../../engine/aftermathWords';
@@ -215,11 +216,13 @@ export function DoomClockDetail({
               )}
               <StatRow
                 label="Counter-Omens"
+                tooltipId="ui.counter_omens"
                 value={`${state.counterOmens}`}
                 color={state.counterOmens > 0 ? '#22c55e' : undefined}
               />
               <StatRow
                 label="Doom Debt"
+                tooltipId="ui.doom_debt"
                 value={state.nextEscalationSeverityModifier > 0 ? `+${state.nextEscalationSeverityModifier.toFixed(1)}` : '0'}
                 color={state.nextEscalationSeverityModifier > 0 ? '#f97316' : undefined}
               />
@@ -409,7 +412,7 @@ export function DoomClockDetail({
   );
 }
 
-function StatRow({ label, value, color }: { label: string; value: string; color?: string }) {
+function StatRow({ label, value, color, tooltipId }: { label: string; value: string; color?: string; tooltipId?: string }) {
   return (
     <div style={{
       display: 'flex',
@@ -421,7 +424,7 @@ function StatRow({ label, value, color }: { label: string; value: string; color?
       fontSize: 'var(--text-xs)',
     }}>
       <span style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 'var(--text-xs)' }}>
-        {label}
+        {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
       </span>
       <span style={{
         fontFamily: 'var(--font-mono, monospace)',

@@ -2,7 +2,7 @@ import React from 'react';
 import { SphereIcon } from '../../shared/SphereIcon';
 import { Tooltip } from '../../shared/Tooltip';
 import { getSphereColor } from '../../../data/sphereIcons';
-import { quintessenceLine } from '../../../data/ascendant-bar-content';
+import { quintessenceLine, QUINTESSENCE_CONCEPT_LABEL } from '../../../data/ascendant-bar-content';
 import type { QuintessenceBand } from '../../../types/quintessence';
 import type { AscendantIdentityView, QuintessenceView } from './selectors';
 import styles from './styles.module.css';
@@ -173,6 +173,21 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
             <span>{identity.archetypeTitle}</span>
           </Tooltip>
           <span style={{ color: 'var(--border-medium)' }}>·</span>
+          {/* THR-1607: round-1 testers read the bare word ("ABSOLUTE") under the
+              god's name as a boast, not a measure. Naming the measure beside its
+              reading — with its own registry entry — is what makes it one. */}
+          <Tooltip id="ui.ascendant_quintessence">
+            <span
+              data-testid="identity-quintessence-label"
+              style={{
+                fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600,
+                color: 'var(--text-muted)', textTransform: 'uppercase',
+                letterSpacing: '0.18em', cursor: 'help',
+              }}
+            >
+              {QUINTESSENCE_CONCEPT_LABEL}
+            </span>
+          </Tooltip>
           <Tooltip id={`quintessence.${band}`}>
             <span style={{
               fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14,
@@ -184,13 +199,23 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
         </div>
 
         {identity.epithet && (
-          <div style={{
-            fontFamily: 'var(--font-body)', fontStyle: 'italic',
-            fontSize: 12, color: 'var(--text-muted)', marginTop: 3,
-            letterSpacing: '0.01em', lineHeight: 1.35,
-          }}>
-            {quintessenceLine(identity.primarySphere, band)}
-          </div>
+          // The ladder line ("whole and present") is the band's reading in the
+          // sphere's own voice, so it carries the band's registry entry (THR-1607).
+          <TooltipSlot style={{ alignSelf: 'flex-start' }}>
+            <Tooltip id={`quintessence.${band}`}>
+              <span
+                data-testid="identity-quintessence-line"
+                style={{
+                  display: 'block',
+                  fontFamily: 'var(--font-body)', fontStyle: 'italic',
+                  fontSize: 12, color: 'var(--text-muted)', marginTop: 3,
+                  letterSpacing: '0.01em', lineHeight: 1.35,
+                }}
+              >
+                {quintessenceLine(identity.primarySphere, band)}
+              </span>
+            </Tooltip>
+          </TooltipSlot>
         )}
       </div>
     </button>

@@ -93,3 +93,51 @@ export function getAscendantTierWord(reach: string, tier: number): string {
 export function getAscendantEchoLine(reach: string): string {
   return ASCENDANT_REACH_REGISTER[reach as ReachDomain]?.echoLine ?? '';
 }
+
+// ─── Tier-word tooltips (THR-1607) ───────────────────────────────────────────
+
+/**
+ * Round-1 cold testers read "Owing" (Gold) and "Sealed" (Veil) as *states* the god
+ * was in — a debt, a lock — rather than a rung on a ladder. Every tier word therefore
+ * carries a registry tooltip (Law 17) naming the rung and what the next one opens.
+ *
+ * Generated from the register rather than hand-authored 40 times, so a renamed word
+ * or a new reach cannot leave a dangling id (Law 3). The reach display name comes
+ * from `REACH_COPY`, the same name the row prints beside the word.
+ */
+const RUNG_ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth'] as const;
+
+/** Stable slug for a tier word: `War Itself` → `war_itself`. */
+function tierWordSlug(word: string): string {
+  return word.toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+/** The registry id for one reach's tier word, e.g. `ui.reach_tier.gold.owing`. */
+export function reachTierTooltipId(reach: string, word: string): string {
+  return `ui.reach_tier.${reach}.${tierWordSlug(word)}`;
+}
+
+/**
+ * Every reach's tier words as `ui.*` tooltip content, keyed by
+ * {@link reachTierTooltipId}. Copy stays well under Law 18's 200 characters and
+ * carries no numeral: the rung reads as an ordinal word.
+ */
+export function buildReachTierTooltips(
+  reachLabel: (reach: string) => string,
+): Record<string, { label: string; desc: string }> {
+  const out: Record<string, { label: string; desc: string }> = {};
+  for (const [reach, entry] of Object.entries(ASCENDANT_REACH_REGISTER)) {
+    const name = reachLabel(reach);
+    entry.tierWords.forEach((word, i) => {
+      const next = entry.tierWords[i + 1];
+      const rung = `The ${RUNG_ORDINALS[i] ?? 'last'} of five rungs of your hold on ${name}.`;
+      out[reachTierTooltipId(reach, word)] = {
+        label: `${name} — ${word}`,
+        desc: next
+          ? `${rung} Every working you cast in ${name} deepens it; at ${next}, new workings open to you.`
+          : `${rung} There is no deeper hold on ${name} to reach.`,
+      };
+    });
+  }
+  return out;
+}

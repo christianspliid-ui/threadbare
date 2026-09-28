@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TRAY_EMPTY_COPY } from '../../../data/ascendant-bar-content';
 import type { ActionTrayView, ActionTrayItem } from './selectors';
+import { Tooltip } from '../../shared/Tooltip';
 import styles from './styles.module.css';
 import { formatEssenceLabel } from '../../shared/formatEssence';
 
@@ -128,9 +129,11 @@ interface CoreActionButtonProps {
   label: string;
   description: string;
   onClick?: () => void;
+  /** Registry tooltip for the action's concept word (Law 17; THR-1607). */
+  tooltipId?: string;
 }
 
-function CoreActionButton({ label, description, onClick }: CoreActionButtonProps) {
+function CoreActionButton({ label, description, onClick, tooltipId }: CoreActionButtonProps) {
   return (
     <button
       className={styles.actionRow}
@@ -142,7 +145,7 @@ function CoreActionButton({ label, description, onClick }: CoreActionButtonProps
           fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600,
           color: 'var(--text-primary)', letterSpacing: '0.03em',
         }}>
-          {label}
+          {tooltipId ? <Tooltip id={tooltipId} focusable={false}>{label}</Tooltip> : label}
         </span>
         <span style={{
           fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic',
@@ -184,7 +187,7 @@ function CoreTierGroup({ onMove, onInvestiture }: { onMove?: () => void; onInves
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, paddingLeft: 14 }}>
           <CoreActionButton label="Move" description="Navigate through the world" onClick={onMove} />
-          <CoreActionButton label="Investiture" description="Manage your divine court" onClick={onInvestiture} />
+          <CoreActionButton label="Investiture" description="Manage your divine court" onClick={onInvestiture} tooltipId="ui.investiture" />
         </div>
       )}
     </div>
