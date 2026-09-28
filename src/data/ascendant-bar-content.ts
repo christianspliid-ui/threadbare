@@ -173,6 +173,20 @@ export const REACH_COPY: Record<string, ReachCopy> = {
   star:   { label: 'Star',   body: 'Faith, rite, and the naming of the sacred — what you can make the world hold holy.' },
 };
 
+/**
+ * The disclosure that folds the four Foundation spheres on the essence block
+ * (THR-1607). Foundation spheres are elder magic — discovered, not selected — so a
+ * god whose identity holds none meets them folded away.
+ */
+export const ESSENCE_ELDER_FOLD_LABEL = 'Elder powers';
+
+/**
+ * The concept name printed beside the god's quintessence word (THR-1607). Round-1
+ * testers read "ABSOLUTE" under the god's name as a boast, not a measure; naming
+ * the measure beside its reading is what makes it one.
+ */
+export const QUINTESSENCE_CONCEPT_LABEL = 'Quintessence';
+
 /** Eyebrow labels for the two permanent domains. */
 export const REACH_RANK_LABEL = {
   primary: 'Primary',

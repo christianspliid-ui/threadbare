@@ -9,7 +9,15 @@
  *
  * Prose-first, no numbers: the tier reads as a word ("Tempered"), never a tier index
  * or a capability float — consistent with the rest of the bar.
+ *
+ * THR-1607: round-1 testers read "Owing" and "Sealed" as states the god was in — a
+ * debt, a lock — not rungs. The row now reads as one phrase, reach and word joined
+ * ("Gold — Owing"), and both halves carry registry tooltips (Law 17): the reach its
+ * `reach.*` entry, the word its rung and what the next one opens. The raw `title`
+ * explanation that used to sit on the row is retired (Law 17 / 19).
  */
+import { Tooltip } from '../../shared/Tooltip';
+import { reachTierTooltipId } from '../../../data/ascendant-reach-register';
 import {
   REACH_RANK_LABEL,
   REACH_DEEPENING_PENDING_COPY,
@@ -43,7 +51,6 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
         <div
           key={row.reach}
           data-testid={`reach-row-${row.reach}`}
-          title={row.body}
           style={{ display: 'flex', flexDirection: 'column', gap: 1 }}
         >
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
@@ -60,6 +67,7 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
             >
               {REACH_RANK_LABEL[row.rank]}
             </span>
+            <Tooltip id={`reach.${row.reach}`}>
             <span
               style={{
                 fontFamily: 'var(--font-display)',
@@ -71,7 +79,9 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
             >
               {row.label}
             </span>
-            <span style={{ color: 'var(--border-medium)' }}>·</span>
+            </Tooltip>
+            <span style={{ color: 'var(--border-medium)' }} aria-hidden="true">—</span>
+            <Tooltip id={reachTierTooltipId(row.reach, row.tierWord)}>
             <span
               data-testid={`reach-tier-${row.reach}`}
               style={{
@@ -83,6 +93,7 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
             >
               {row.tierWord}
             </span>
+            </Tooltip>
           </div>
           {row.pendingDeepening && (
             <div

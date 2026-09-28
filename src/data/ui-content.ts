@@ -8,6 +8,8 @@
  */
 
 import type { TooltipContent } from '../types/tooltip';
+import { buildReachTierTooltips } from './ascendant-reach-register';
+import { REACH_COPY } from './ascendant-bar-content';
 
 export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Core HUD ──────────────────────────────────────────────────
@@ -709,6 +711,83 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Fated',
     desc: 'This cast is certain. Some divine workings ask nothing of the world — they simply happen, and the roll is a formality.',
   },
+
+  // ─── A readable spend (THR-1607, plan B4) ─────────────────────────────────
+  //
+  // Round-1 cold testers could not say what their essence was or what "doomed"
+  // meant on a card. These are the words the first ten minutes put in front of
+  // a new player, each explained where it sits.
+
+  // The cast forecast. A player cast never fails outright (the THR-728 floor turns
+  // a failing roll into success at a cost), so on a cast card the tier word says
+  // *how cleanly* it lands — never *whether*. The `ui.forecast.*` entries above
+  // still describe the shared ladder; the cast card routes here instead. One
+  // tester avoided a card marked "doomed" for fear it would doom her mortal.
+  'ui.forecast.cast.doomed': {
+    label: 'Doomed',
+    desc: 'It will land, but crooked. A cast never fails outright — your essence always buys something — yet the world is set against this one, and it will likely cost you.',
+  },
+  'ui.forecast.cast.perilous': {
+    label: 'Perilous',
+    desc: 'It will land, but likely with a cost attached. A cast never fails outright; this one is more likely to go crooked than clean.',
+  },
+  'ui.forecast.cast.uncertain': {
+    label: 'Uncertain',
+    desc: 'It will land — clean or crooked, the roll decides. A cast never fails outright; what is uncertain is the price.',
+  },
+  'ui.forecast.cast.favorable': {
+    label: 'Favorable',
+    desc: 'It will land, and likely cleanly. A cast never fails outright; this one leans toward costing you nothing more than its essence.',
+  },
+  'ui.forecast.cast.fated': {
+    label: 'Fated',
+    desc: 'It will land cleanly. Some divine workings ask nothing of the world — they simply happen.',
+  },
+
+  // The price on a card: the framed row of ✦ in the chip row.
+  'ui.card.cost': {
+    label: 'Essence cost',
+    desc: 'Each ✦ is one measure of essence, drawn from the pool of the sphere beside it. Your pools are listed under Essence on your bar.',
+  },
+
+  // The essence block on the ascendant bar.
+  'ui.essence.row': {
+    label: 'Essence',
+    desc: 'The power you have to spend in this sphere. Casting a card of this sphere draws it down, and the pool refills slowly with time.',
+  },
+  'ui.essence.foundation_fold': {
+    label: 'Elder powers',
+    desc: 'Elder powers — you have not yet learned to draw on these. They are older than the spheres you chose, found rather than taken.',
+  },
+
+  // The god's quintessence, named beside its word on the identity strip. Distinct
+  // from `ui.quintessence` above, which is a *mortal's* reserve of self.
+  'ui.ascendant_quintessence': {
+    label: 'Quintessence',
+    desc: 'How whole you still are, from Absolute down to Fraying. Worn thin, your workings cost more than they should; restoration mends it.',
+  },
+
+  // Mandate and doom-clock terms. The opening keeps these surfaces hidden until
+  // the bond (THR-1648), so a new player meets them later — explained when they do.
+  'ui.counter_omens': {
+    label: 'Counter-Omens',
+    desc: 'Signs you have earned against the doom by meeting your mandate\'s omens. When the doom next escalates, they are spent to soften the blow.',
+  },
+  'ui.doom_debt': {
+    label: 'Doom Debt',
+    desc: 'What your missed omens have cost. The next time the doom escalates, it lands harder by this much — unless counter-omens pay it down.',
+  },
+  'ui.investiture': {
+    label: 'Investiture',
+    desc: 'Your divine court: the mortals you have raised to act in your name. Open it to see who serves you, and in what seat.',
+  },
+  'ui.covenant': {
+    label: 'Covenants',
+    desc: 'The lasting grips you hold on the world — a place, a faction, a working kept open. Each costs upkeep while you hold it; release one to stop paying.',
+  },
+
+  // Reach tier words — generated from the register so no word can dangle.
+  ...buildReachTierTooltips((reach) => REACH_COPY[reach]?.label ?? reach),
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

@@ -214,6 +214,7 @@ export function AscendantBar({
       {/* 4b. Covenants (sustained controls the god holds — THR-613 §5.A) */}
       <BarSection
         label="Covenants"
+        tooltipId="ui.covenant"
         count={covenantRows.length}
         open={open.covenants}
         onToggle={() => toggle('covenants')}

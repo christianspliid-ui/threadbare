@@ -30,7 +30,7 @@
  * from (Laws 37/47), which is the feedback that beat was standing in for.
  */
 
-import React, { useCallback, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useSyncExternalStore } from 'react';
 import type { WheelSlot } from '../../engine/wheel';
 import type { OutcomeBand } from '../../engine/outcomeConsequences';
 import { CardFace } from '../shared/CardFace';
@@ -39,6 +39,7 @@ import {
   isNudgeDesignerViewEnabled,
   subscribeNudgeDesignerView,
 } from './encounter-stage/designerView';
+import { setEssencePreviewSphere, getEssencePreviewSphere } from './ascendant-bar/essenceDisplay';
 
 interface ActionCardProps {
   /** The wheel slot to display */
@@ -93,7 +94,28 @@ export const ActionCard = React.memo(function ActionCard({
     if (templateId) onOpenCodexEntry?.(templateId);
   }, [onOpenCodexEntry, templateId]);
 
+  // THR-1607 (Law 47): hovering or focusing a live card lights the essence row it
+  // would draw from, before the player commits. Only a card that costs something
+  // from a named sphere previews; a display-only card never does.
+  const previewSphere = interactive && slot.sphere && slot.essenceCost > 0 ? slot.sphere : null;
+  const startPreview = useCallback(() => {
+    if (previewSphere) setEssencePreviewSphere(previewSphere);
+  }, [previewSphere]);
+  const endPreview = useCallback(() => {
+    if (previewSphere && getEssencePreviewSphere() === previewSphere) setEssencePreviewSphere(null);
+  }, [previewSphere]);
+  // A card that unmounts mid-hover (drawer closed, cast committed) must not leave
+  // its row lit.
+  useEffect(() => endPreview, [endPreview]);
+
   return (
+    <div
+      style={{ display: 'contents' }}
+      onMouseEnter={startPreview}
+      onMouseLeave={endPreview}
+      onFocus={startPreview}
+      onBlur={endPreview}
+    >
     <CardFace
       designerView={designerView}
       onToggle={handleToggle}
@@ -108,6 +130,7 @@ export const ActionCard = React.memo(function ActionCard({
         ...(onOpenCodexEntry && templateId ? { onOpenName: handleOpenName } : {}),
       })}
     />
+    </div>
   );
 });
 

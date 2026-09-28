@@ -467,13 +467,17 @@ export function CardFace({
                 <SphereIcon sphere={model.sphere} size={CARD_SPHERE_ICON_PX} />
               </MaybeTooltip>
             )}
-            <CostPips
-              cost={model.cost}
-              size={CARD_COST_PIP_PX}
-              framed
-              emphasised={model.costEmphasised ?? false}
-              data-testid={`${p}-cost-${id}`}
-            />
+            {/* THR-1607: the price reads as cost, not tier or power — round-1
+                testers could not tell. Same opt-in as the marks beside it. */}
+            <MaybeTooltip id={model.markTooltips ? 'ui.card.cost' : undefined}>
+              <CostPips
+                cost={model.cost}
+                size={CARD_COST_PIP_PX}
+                framed
+                emphasised={model.costEmphasised ?? false}
+                data-testid={`${p}-cost-${id}`}
+              />
+            </MaybeTooltip>
           </span>
         </div>
 
@@ -600,7 +604,9 @@ export function CardFace({
           {model.odds?.kind === 'forecast' && (
             // Law 10: a card that *rolls* the odds reads them as a word. Pips
             // here would claim the card moves odds it only tests.
-            <Tooltip id={`ui.forecast.${model.odds.tier}`}>
+            // THR-1607: the cast floor means a cast always lands, so the word's
+            // tooltip says *how cleanly* (`ui.forecast.cast.*`), never *whether*.
+            <Tooltip id={`ui.forecast.cast.${model.odds.tier}`}>
               <span
                 data-testid={`${p}-forecast-${id}`}
                 data-forecast-tier={model.odds.tier}

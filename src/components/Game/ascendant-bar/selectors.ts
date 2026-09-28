@@ -10,7 +10,7 @@
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { SphereName } from '../../../types';
-import { SPHERE_NAMES } from '../../../types';
+import { SPHERE_NAMES, FOUNDATION_SPHERE_NAMES } from '../../../types';
 import {
   getQuintessenceRatio,
   getQuintessenceBand,
@@ -104,37 +104,51 @@ export interface EssenceRowView {
   trend: 'rising' | 'steady' | 'ebbing';
   isPrimary: boolean;
   isSecondary: boolean;
+  /**
+   * A Foundation sphere that is not one of the god's own (THR-1607). These fold
+   * under the *Elder powers* disclosure — elder magic, discovered, not selected.
+   */
+  isElder: boolean;
 }
 
+/**
+ * The god's essence pools, in a **fixed** order (THR-1607, plan B4).
+ *
+ * Order: the identity spheres first (primary, then secondary), then every other
+ * sphere in canonical `SPHERE_NAMES` order. Never by level — a sort on level made a
+ * spend silently reorder the list, which round-1 testers read as the game hiding
+ * what it had done. A creation sphere at 0 still hides, as before; the god's own
+ * spheres always show.
+ */
 export function selectEssenceRows(
   gameState: GameState,
   archetype: AscendantArchetype,
 ): EssenceRowView[] {
-  const pool = gameState.essencePool;
+  const pool = gameState.essencePool ?? {};
   const primary = archetype.sphereAlignment.primary;
   const secondary = archetype.sphereAlignment.secondary;
+  const foundation = new Set<SphereName>(FOUNDATION_SPHERE_NAMES);
 
-  return SPHERE_NAMES
+  const identity: SphereName[] = primary === secondary ? [primary] : [primary, secondary];
+  const rest = SPHERE_NAMES.filter((sphere) => !identity.includes(sphere));
+
+  return [...identity, ...rest]
     .filter((sphere) => {
       const val = pool[sphere] ?? 0;
       return val > 0 || sphere === primary || sphere === secondary;
     })
     .map((sphere) => {
       const level = pool[sphere] ?? 0;
+      const isPrimary = sphere === primary;
+      const isSecondary = sphere === secondary && !isPrimary;
       return {
         sphere,
         level,
         trend: 'steady' as const,    // income delta not yet surfaced in EssencePool; placeholder
-        isPrimary: sphere === primary,
-        isSecondary: sphere === secondary,
+        isPrimary,
+        isSecondary,
+        isElder: foundation.has(sphere) && !isPrimary && !isSecondary,
       };
-    })
-    .sort((a, b) => {
-      if (a.isPrimary) return -1;
-      if (b.isPrimary) return 1;
-      if (a.isSecondary) return -1;
-      if (b.isSecondary) return 1;
-      return b.level - a.level;
     });
 }
 

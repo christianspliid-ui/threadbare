@@ -78,7 +78,7 @@ function getSecondaryObjectiveProgress(definition: MandateDefinition, state: Man
 
 // THR-1451: `value` widened to a node so a pill can carry a delta cluster instead
 // of a formatted numeral. Every other caller still passes a string (NFP #6).
-function SummaryPill({ label, value, color }: { label: string; value: ReactNode; color?: string }) {
+function SummaryPill({ label, value, color, tooltipId }: { label: string; value: ReactNode; color?: string; tooltipId?: string }) {
   return (
     <div style={{
       minWidth: '92px',
@@ -93,7 +93,7 @@ function SummaryPill({ label, value, color }: { label: string; value: ReactNode;
         letterSpacing: '0.08em',
         color: 'var(--text-muted)',
       }}>
-        {label}
+        {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
       </div>
       <div style={{
         marginTop: '4px',
@@ -258,12 +258,14 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                 <SummaryPill label="Omens Held" value={omenCount > 0 ? `${heldOmens}/${omenCount}` : '0'} />
                 <SummaryPill
                   label="Doom Debt"
+                  tooltipId="ui.doom_debt"
                   value={`${state.doomSeverityPenalties ?? 0}`}
                   color={(state.doomSeverityPenalties ?? 0) > 0 ? SENTIMENT_NEGATIVE : undefined}
                 />
                 {(state.counterOmensEarned ?? 0) > 0 && (
                   <SummaryPill
                     label="Counter-Omens"
+                    tooltipId="ui.counter_omens"
                     value={`${state.counterOmensEarned ?? 0}`}
                     color={SENTIMENT_GREEN}
                   />
