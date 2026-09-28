@@ -335,7 +335,7 @@ export function processResolvedFactionLifecycleAction(
       summary: joined
         ? `${agentName} joined ${definition?.nameTemplate ?? action.templateId} (${outcome})`
         : `${agentName}'s ${action.templateId} did not become a membership: ${reason} (${outcome})`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
+    });
   }
   return events;
 }

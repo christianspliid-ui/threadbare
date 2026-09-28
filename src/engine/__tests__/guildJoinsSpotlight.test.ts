@@ -119,7 +119,7 @@ describe('THR-1640 — a resolved join becomes a membership on the live path', (
       const edge = getFactionMembershipEdges(graph, 'mortal')
         .find(e => (e.properties as Partial<MemberOfEdgeProperties>).factionDefId === AG);
       expect(edge, band).toBeDefined();
-      expect((edge!.properties as MemberOfEdgeProperties).joinedTick).toBe(40);
+      expect((edge!.properties as unknown as MemberOfEdgeProperties).joinedTick).toBe(40);
       expect(events.some(e => e.type === 'faction_member_joined')).toBe(true);
       const trace = getTraces().find(t => t.category === 'guild_join_resolved') as unknown as Record<string, unknown>;
       expect(trace).toMatchObject({ joined: true, landed: true, reason: 'joined', factionDefId: AG, outcome: band });

@@ -5477,6 +5477,11 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/factionQuestGeneration.ts',
       'src/engine/guildJoinFunnel.ts',
     ],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'THR-1640. `readers/guild-join.ts 42,99 200` with `PROBE=0` (the probe writes engine state, so the probed world is not the unprobed one): on `origin/main` 7 joins fired on seed 99, 3 landed in a success band, 0 memberships; with the live hook, joins resolved `success`/`success_at_cost`/`critical_success` write `member_of` every time (seed 42: 13 of 13 landed joins, seed 99: 17 of 17), and spotlight mortals belong to 7 · 5 non-Realm guilds at t200 (was 1 · 1). `readers/reach.ts 42,99 200`: first-gate `no_deciding_member` 83 · 84 → 35 · 37; drawable fired 161 → 159 (floor 121). Spotlight count at t200 19 · 20, unchanged. Unit: `guildJoinsSpotlight.test.ts` (13).',
+    },
   },
 ];
 
