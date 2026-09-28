@@ -3436,7 +3436,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-09-29',
       evidence:
-        'THR-1654. EVIDENCE_PLACEHOLDER',
+        'THR-1654. `Docs/audits/2026-09-25-living-world-data/readers/notables.ts` on medium, seed 42 · 99, same-session A/B: settlements with no resident holding an ambition, quarrel, secret or favour at t0 37/47 · 53/67 → 0; seeded notables 47 · 67 (one per settlement); local agendas launched by t150 11 · 11 (`notable.agenda_launched` with `local: true`); ms/tick t21–200 within +6.4%, deciders at t200 19 → 19 · 20 → 21. `seedLivingWorld.test.ts` pins one notable per settlement and zero storyless settlements on a generated world; `notableAgendas.test.ts` pins the roster, each family’s target and the separate cap.',
     },
   },
   {
