@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-28 01:58 local (23:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-28 02:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,52 +18,40 @@ Everything from your four feedback batches is live. The one question is: **playe
 
 ## Decided for you
 
-- [Someone who wants something in every settlement, and people tied to each other](https://linear.app/threadbare/issue/THR-1630): **the plan is written and now being built.** Every settlement gets one local figure. That figure owns property, has an old quarrel, and holds a secret or a favour tied to a nearby hero. Every named hero starts with a relative, a friend and a rival among their neighbours. Other calls made:
-  - Newcomers no longer climb into the deciding tier past your attention limit. This is measured before it ships and can be switched off.
-  - Family is called "kin" everywhere.
-  - A hero's starting Realm is the one that holds their home.
-  - A local figure's ambitions stay local.
-  - Masters and apprentices are left for later.
+- [A world with a past](https://linear.app/threadbare/issue/THR-1631): **the plan is written and ready to build.** It follows your "a is fine" choice. New worlds get a founding age for every settlement, one ancient war, two or three remembered wars, five to ten of the dead, and descent from a dead empire for some people. You meet it in a "Before you woke" section at the top of the chronicle, and in one line on each settlement, ruin and dead person's page. Calls made:
+  - Ages are words, not numbers ("about four centuries ago").
+  - Only capitals get a named founder.
+  - The outline is known from the start; the details are found by seeing a place or using Find or Perceive.
+  - Only heroes who already make their own choices get wants from the past.
+  - "Win back the old homeland" is not handed out at game start yet.
+  - The past is stored in the world itself, so saved games carry it.
 
-  Plan: [notables and ties](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1630-notables-and-ties.md). *— from tb-design-lane* (say "veto notables and ties")
-- [Let written encounters land](https://linear.app/threadbare/issue/THR-1633): **the plan is written and ready to build.** About 400 of the 514 written encounters never reach a mortal, so the plan makes existing writing reachable before anyone writes more. Calls made:
-  - Each mortal's 40-option shortlist is filled fairly.
-  - Mortals who choose for themselves can join guilds that suit them.
-  - The First gets no special rule. The fix for its quiet stretches helps every mortal.
-  - Place-trait bonuses use tags encounters already carry.
-
-  Plan: [let written encounters land](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1633-written-encounters-land.md). *— from tb-design-lane* (say "veto written encounters land")
-- [Culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635): **the plan is written and being built.** Each encounter opening gets one plain sentence about how the town handles this kind of trouble, or what a place's ruling sphere does to it. It changes words only. Your five playthrough encounters stay untouched until you finish. Plan: [culture and spheres in encounter openings](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1635-culture-sphere-openings.md). *— from tb-design-lane* (say "veto culture openings")
-- [A world that starts alive](https://linear.app/threadbare/issue/THR-1589/map-a-world-that-starts-alive-people-ties-and-a-past-at-game-start-and): **the map is closed and split into seven design jobs**:
-  - [people who want things, and ties between them](https://linear.app/threadbare/issue/THR-1630)
-  - [a world with a past](https://linear.app/threadbare/issue/THR-1631)
-  - [faith and politics as world settings](https://linear.app/threadbare/issue/THR-1632)
-  - [let written encounters land](https://linear.app/threadbare/issue/THR-1633)
-  - [finish the encounters the player actually meets](https://linear.app/threadbare/issue/THR-1634)
-  - [culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635)
-  - [seeded things that stay alive](https://linear.app/threadbare/issue/THR-1636)
-
-  *— from tb-design-lane* (say "veto living-world carve-up"; this one drops off next hour)
+  Plan: [a world with a past](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-28-thr-1631-world-with-a-past.md). *— from tb-design-lane* (say "veto world with a past")
+- [Someone who wants something in every settlement, and people tied to each other](https://linear.app/threadbare/issue/THR-1630): **being built.** The first step (every named hero starts with kin, a friend and a rival) is merged. Calls made: newcomers no longer climb into the deciding tier past your attention limit (measured before it ships, can be switched off); family is called "kin" everywhere; a hero's starting Realm is the one that holds their home; a local figure's ambitions stay local; masters and apprentices are left for later. Plan: [notables and ties](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1630-notables-and-ties.md). *— from tb-design-lane* (say "veto notables and ties")
+- [Let written encounters land](https://linear.app/threadbare/issue/THR-1633): **being built.** About 400 of the 514 written encounters never reach a mortal, so the plan makes existing writing reachable before anyone writes more. Calls made: each mortal's 40-option shortlist is filled fairly; mortals who choose for themselves can join guilds that suit them; The First gets no special rule; place-trait bonuses use tags encounters already carry. Plan: [let written encounters land](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1633-written-encounters-land.md). *— from tb-design-lane* (say "veto written encounters land")
+- [Culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635): **being built.** Each encounter opening gets one plain sentence about how the town handles this kind of trouble, or what a place's ruling sphere does to it. Words only. Your five playthrough encounters stay untouched until you finish. Plan: [culture and spheres in encounter openings](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-27-thr-1635-culture-sphere-openings.md). *— from tb-design-lane* (say "veto culture openings"; this one drops off in about six hours)
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 1 job ready to build, 2 being built.** The design lane is writing plans; its next run is around 02:18 local.
+**Healthy: 3 jobs ready to build, 1 being built.**
 
-- **Ready:** [let written encounters land](https://linear.app/threadbare/issue/THR-1633), the plan above.
-- **Being built:**
-  - [Heroes start with kin, friends and rivals](https://linear.app/threadbare/issue/THR-1630). Picked up this hour. The first slice is [#2106](https://github.com/christianspliid-ui/threadbare/pull/2106), last pushed 12 minutes ago. It has no conflicts and will merge on its own once its checks pass.
-  - [Culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635), [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091). No new push since 19:17 UTC. It still conflicts with newer `main`, and its required check still fails. Its local copy holds no unsaved changes, so nothing is at risk.
+- **Ready:**
+  - [People only step into the spotlight when there is room](https://linear.app/threadbare/issue/THR-1653) — next step of notables and ties.
+  - [A journey keeps its goal](https://linear.app/threadbare/issue/THR-1639) — second step of let written encounters land.
+  - [A world with a past](https://linear.app/threadbare/issue/THR-1631) — the plan above, just handed off.
+- **Being built:** [Culture and spheres showing through](https://linear.app/threadbare/issue/THR-1635), [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091). No new push since 19:17 UTC yesterday. Its local copy holds no unsaved changes, so nothing is at risk.
+- **Merged this hour:** [#2106](https://github.com/christianspliid-ui/threadbare/pull/2106), heroes start tied to kin, friends and rivals.
 - **The fight system is live but not ready for you to review.** No one-click link opens a fight the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) conflicts with `main`, and its [required check](https://github.com/christianspliid-ui/threadbare/actions/runs/36343752679) fails. It has been stuck about 16 hours. Auto-merge is on, but it will not fire until someone fixes both. This is for a builder, not you.
-- **The slow simulation tests are red on the latest `main`** ("Heavy simulation tests", 2 h old). A builder owes a follow-up fix. It does not block merges or the live site.
-- **Game speed is still above normal, but improving:** tick cost 104 ms/tick steady, 35% above the 7-day median (77, 136 rows since df1cf66c); top phase agent_decision, 486 agents. Name the merges between df1cf66c and 2ba9db47: `git log --oneline --merges df1cf66c..2ba9db47`. It was 106 an hour ago, on the same commit, which still points at machine load rather than a code regression.
+- **One build is stuck until a builder picks it back up.** [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091) (culture and spheres) conflicts with `main`, and its [required check](https://github.com/christianspliid-ui/threadbare/actions/runs/36343752679) fails. It has been stuck about 17 hours. Auto-merge is on, but it will not fire until someone fixes both. This is for a builder, not you.
+- **The slow simulation tests are red on the latest `main`** ("Heavy simulation tests", 3 h old). A builder owes a follow-up fix. It does not block merges or the live site.
+- **Game speed is still above normal, but easing:** tick cost 100 ms/tick steady, 29% above the 7-day median (77, 137 rows since df1cf66c); top phase agent_decision, 489 agents. Name the merges between df1cf66c and 931dbc98: `git log --oneline --merges df1cf66c..931dbc98`. It was 104 an hour ago and 106 before that.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
-  - The live site is serving the latest commit on main (2ba9db47).
+  - The live site is up to date; the newest commits only touched notes and docs.
   - Automated checks and the three background jobs are running normally.
-  - All ten scheduled lanes are on time. The worktree cleaner ran at 01:40.
+  - All ten scheduled lanes are on time. The worktree cleaner ran at 02:40.
