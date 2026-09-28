@@ -20,6 +20,8 @@ import {
   DOOM_CARD_PRESSURE_MAGNITUDE,
   DOOM_CARD_PROSPERITY_DELTA,
   DOOM_CARD_UNREST_DELTA,
+  DOOM_MIN_RUN_TICKS_AFTER_BOND,
+  RIVAL_GRACE_TICKS_AFTER_BOND,
 } from '../data/game-config';
 
 // ─── PRNG ───────────────────────────────────────────────────────
@@ -674,7 +676,35 @@ export function createDoomClockState(
     nextEscalationSeverityModifier: 0,
     counterOmens: 0,
     resolvedEvents: [],
+    // THR-1646: a fresh clock sleeps until The First is bonded.
+    wokeAtTick: null,
   };
+}
+
+/**
+ * THR-1646 — when did the doom clock wake? `null` while it sleeps. A clock with
+ * no `wokeAtTick` field at all predates the wake (old save, hand-built fixture)
+ * and reads as woken at tick 0 — it behaves exactly as it always did.
+ */
+export function resolveDoomWokeAtTick(clock: DoomClockState | undefined): number | null {
+  // Fail-soft: no clock at all (partial fixtures) reads like a pre-wake-era clock.
+  if (clock?.wokeAtTick === undefined) return 0;
+  return clock.wokeAtTick;
+}
+
+/** THR-1646 — the first tick the Unmaking may begin, or `null` while the clock sleeps. */
+export function doomFloorMetAtTick(clock: DoomClockState | undefined): number | null {
+  const woke = resolveDoomWokeAtTick(clock);
+  return woke === null ? null : woke + DOOM_MIN_RUN_TICKS_AFTER_BOND;
+}
+
+/**
+ * THR-1646 — true while rivals must hold: before the clock wakes, and for
+ * `RIVAL_GRACE_TICKS_AFTER_BOND` ticks after.
+ */
+export function isRivalGraceActive(clock: DoomClockState | undefined, tick: number): boolean {
+  const woke = resolveDoomWokeAtTick(clock);
+  return woke === null || tick < woke + RIVAL_GRACE_TICKS_AFTER_BOND;
 }
 
 export function getDoomClockStage(progress: number): number {

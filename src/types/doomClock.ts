@@ -85,6 +85,20 @@ export interface DoomClockState {
   counterOmens: number;
   /** History of resolved doom cards for UI/debug visibility. */
   resolvedEvents: DoomResolvedEvent[];
+  /**
+   * THR-1646 — the tick the clock woke, i.e. the first `phaseDoom` tick with
+   * The First bonded. Three readings, read them through `resolveDoomWokeAtTick`:
+   *  - `null` — asleep: a fresh clock (`createDoomClockState`) before the bond.
+   *    `phaseDoom` does not advance it.
+   *  - a number — awake since that tick; the Unmaking floor counts from here.
+   *  - `undefined` — a clock built before this field existed (old saves, hand-built
+   *    fixtures). Treated as woken at tick 0, so it behaves as it always did.
+   */
+  wokeAtTick?: number | null;
+  /** THR-1646 — `doom.expiry_held` has been traced this run (dedupe). */
+  expiryHeldTraced?: boolean;
+  /** THR-1646 — `rival.grace_hold` has been traced this run (dedupe). */
+  rivalGraceTraced?: boolean;
 }
 
 export interface DoomResolvedEvent {

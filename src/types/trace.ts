@@ -370,6 +370,10 @@ export type TraceCategory =
   | 'beat.delivery_skipped'
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
+  // The opening — the doom clock waits for The First (THR-1646 S2)
+  | 'doom.wake'
+  | 'doom.expiry_held'
+  | 'rival.grace_hold'
   | 'action.unlock.granted'
   // Ascendant expression cards (THR-508)
   | 'ascendant_expression'
@@ -872,6 +876,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'beat.delivery_skipped',
   // The opening (THR-1605 S1)
   'meeting.location_picked',
+  // The opening (THR-1646 S2)
+  'doom.wake',
+  'doom.expiry_held',
+  'rival.grace_hold',
   'action.unlock.granted',
   // Ascendant expression cards (THR-508)
   'ascendant_expression',
@@ -4350,6 +4358,9 @@ export type TraceEntry =
   | BeatSeededTrace
   | BeatDeliveryTrace
   | MeetingLocationPickedTrace
+  | DoomWakeTrace
+  | DoomExpiryHeldTrace
+  | RivalGraceHoldTrace
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
   | ChapterArchivedTrace
@@ -4746,6 +4757,36 @@ export interface MeetingLocationPickedTrace extends TraceBase {
   /** Picked for its current culture. */
   cultured: boolean;
   fallback: boolean;
+}
+
+/**
+ * Trace: the doom clock woke (THR-1646 S2) — the first `phaseDoom` tick with The
+ * First bonded. `tick` becomes `doomClock.wokeAtTick`. Once per cycle.
+ */
+export interface DoomWakeTrace extends TraceBase {
+  category: 'doom.wake';
+  archetype: string;
+}
+
+/**
+ * Trace: the doom clock has expired but the floor under the Unmaking is unmet
+ * (THR-1646 S2), so Culmination holds. Once per cycle.
+ */
+export interface DoomExpiryHeldTrace extends TraceBase {
+  category: 'doom.expiry_held';
+  wokeAtTick: number;
+  /** `wokeAtTick + DOOM_MIN_RUN_TICKS_AFTER_BOND` — the first tick the Unmaking may begin. */
+  floorMetAtTick: number;
+}
+
+/**
+ * Trace: the rivals held their hand this tick (THR-1646 S2) — the doom clock is
+ * asleep or inside its post-bond grace window. Once per cycle, on the first held tick.
+ */
+export interface RivalGraceHoldTrace extends TraceBase {
+  category: 'rival.grace_hold';
+  /** `null` while the doom clock still sleeps (no bond yet). */
+  graceEndsAtTick: number | null;
 }
 
 /** Trace: a pending ascendant beat resolved. THR-500 */
