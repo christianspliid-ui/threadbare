@@ -134,20 +134,63 @@ export const WORLDGEN_FAVOR_FRIENDSHIP_STRENGTH = 0.4;
 /** Seeded secrets per named hero (floored; at least one when any culture holds two heroes). */
 export const WORLDGEN_MARKS_PER_PROTAGONIST = 0.33;
 
+// ─── One notable in every settlement (THR-1630 S2, THR-1654) ────────────────
+
+/**
+ * Seeded notables per settlement, by settlement class — one resident of each promoted to
+ * the notable tier with a holding, an old quarrel and a secret or favour. One everywhere:
+ * THR-1592 measured two per settlement at +12–13% tick cost against a +10% line, so city
+ * and capital stay at one until re-measured. `0` for a class skips it (the kill criterion's
+ * first move is hamlets and camps).
+ */
+export const NOTABLES_PER_SETTLEMENT: Readonly<Record<string, number>> = {
+  capital: 1,
+  city: 1,
+  town: 1,
+  hamlet: 1,
+  camp: 1,
+  farmland: 1,
+};
+
+/** The origin stamp on a seeded notable (`properties.notableOrigin`) — what the local-agenda roster reads. */
+export const NOTABLE_ORIGIN_WORLDGEN = 'worldgen';
+
+/** How far a seeded notable's old quarrel reaches for a decider, in hexes — beyond it the quarrel is with the neighbouring notable. */
+export const WORLDGEN_NOTABLE_QUARREL_MAX_HEXES = 8;
+
+/** How far a seeded notable's secret or favour reaches for a decider, in hexes. */
+export const WORLDGEN_NOTABLE_TIE_MAX_HEXES = 12;
+
+/** A seeded notable's secret size — at the undertaking default, above `SECRET_DECAY_THRESHOLD`. */
+export const WORLDGEN_NOTABLE_MARK_MAGNITUDE = 0.5;
+
+/** A seeded notable's favour size — what a decider owes them. */
+export const WORLDGEN_NOTABLE_FAVOR_MAGNITUDE = 0.5;
+
+/**
+ * Place classes a seeded notable's holding is chosen from, in preference order; any
+ * other unheld Place is the last resort. The wealthiest resident holds a shop or a seat.
+ */
+export const WORLDGEN_NOTABLE_HOLDING_PLACE_CLASSES: readonly SublocationTag[] = ['commerce', 'authority'];
+
 /**
  * One reserved `mulberry32(seed + prime)` stream per pass (W2…W8), then one per pass
  * that draws (append only — never reuse or reorder).
  *
  * The first seven are not drawn — every choice in those passes is a sort. Reserved so a
  * later pass that *does* draw cannot perturb the streams already in use (the THR-1344
- * hygiene lesson). The eighth (60089) is `seedTies`' stream (THR-1630).
+ * hygiene lesson). The eighth (60089) is `seedTies`' stream (THR-1630); the ninth (60091)
+ * is `seedNotables`' — the notable's hydration (archetype, values, capabilities) draws.
  */
 export const WORLDGEN_LIVING_PRIMES: readonly number[] = [
-  60013, 60017, 60029, 60037, 60041, 60077, 60083, 60089,
+  60013, 60017, 60029, 60037, 60041, 60077, 60083, 60089, 60091,
 ];
 
 /** Index into `WORLDGEN_LIVING_PRIMES` of `seedTies`' stream. */
 export const WORLDGEN_TIES_PRIME_INDEX = 7;
+
+/** Index into `WORLDGEN_LIVING_PRIMES` of `seedNotables`' stream (THR-1654). */
+export const WORLDGEN_NOTABLES_PRIME_INDEX = 8;
 
 /**
  * The whole tuning surface as one object, so a test (or a future CMS panel) can pass
@@ -184,6 +227,12 @@ export interface LivingWorldConstants {
   WORLDGEN_FAVOR_FRIENDSHIP_SENTIMENT: number;
   WORLDGEN_FAVOR_FRIENDSHIP_STRENGTH: number;
   WORLDGEN_MARKS_PER_PROTAGONIST: number;
+  NOTABLES_PER_SETTLEMENT: Readonly<Record<string, number>>;
+  WORLDGEN_NOTABLE_QUARREL_MAX_HEXES: number;
+  WORLDGEN_NOTABLE_TIE_MAX_HEXES: number;
+  WORLDGEN_NOTABLE_MARK_MAGNITUDE: number;
+  WORLDGEN_NOTABLE_FAVOR_MAGNITUDE: number;
+  WORLDGEN_NOTABLE_HOLDING_PLACE_CLASSES: readonly SublocationTag[];
 }
 
 export const LIVING_WORLD_DEFAULTS: LivingWorldConstants = {
@@ -217,4 +266,10 @@ export const LIVING_WORLD_DEFAULTS: LivingWorldConstants = {
   WORLDGEN_FAVOR_FRIENDSHIP_SENTIMENT,
   WORLDGEN_FAVOR_FRIENDSHIP_STRENGTH,
   WORLDGEN_MARKS_PER_PROTAGONIST,
+  NOTABLES_PER_SETTLEMENT,
+  WORLDGEN_NOTABLE_QUARREL_MAX_HEXES,
+  WORLDGEN_NOTABLE_TIE_MAX_HEXES,
+  WORLDGEN_NOTABLE_MARK_MAGNITUDE,
+  WORLDGEN_NOTABLE_FAVOR_MAGNITUDE,
+  WORLDGEN_NOTABLE_HOLDING_PLACE_CLASSES,
 };

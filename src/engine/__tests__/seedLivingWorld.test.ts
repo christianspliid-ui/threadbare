@@ -14,7 +14,8 @@ import { createBalancedCosmology } from '../cosmology';
 import { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
 import { ROUTE_IDENTITY_SUBTYPE } from '../../data/strategic-action-constants';
-import { getLocationNodes } from '../sublocationShape';
+import { getLocationNodes, resolveToParentLocation } from '../sublocationShape';
+import { locationClassOf } from '../../data/world-objects';
 import { isArmyGroupNode } from '../groupShape';
 import { holdsMotive } from '../undertakingMotive';
 import { writeGrudge } from '../grievance/grudgeEdge';
@@ -23,9 +24,10 @@ import {
   collectSpotlightMortals,
   leadingReach,
   retargetTerritoryByProvince,
+  seedNotables,
   type LivingWorldContext,
 } from '../seedLivingWorld';
-import { LIVING_WORLD_DEFAULTS } from '../../data/worldgen-living-constants';
+import { LIVING_WORLD_DEFAULTS, NOTABLE_ORIGIN_WORLDGEN } from '../../data/worldgen-living-constants';
 
 const SEED = 42;
 
@@ -247,6 +249,73 @@ describe('seedLivingWorld — determinism (THR-1437)', () => {
 
     expect(nodeIds(a)).toEqual(nodeIds(b));
     expect(edgeIds(a)).toEqual(edgeIds(b));
+  });
+});
+
+describe('seedLivingWorld — one notable in every settlement (THR-1654, THR-1630 S2)', () => {
+  const graph = buildSmallWorld().state.graph;
+  const settlements = getLocationNodes(graph)
+    .filter(n => locationClassOf(n.properties.locationSubtype as string) === 'settlement');
+  const notables = graph.getNodesByType('actor')
+    .filter(n => n.properties.notableOrigin === NOTABLE_ORIGIN_WORLDGEN);
+  const settlementOf = (actorId: string): string | undefined => {
+    const at = graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
+    return resolveToParentLocation(graph, at ? graph.getNode(at) : undefined)?.id;
+  };
+
+  it('seeds exactly one notable per settlement, living there, at the notable tier', () => {
+    const bySettlement = new Map<string, number>();
+    for (const n of notables) {
+      expect(n.properties.spotlightTier).toBe('notable');
+      const home = settlementOf(n.id);
+      expect(home).toBeDefined();
+      bySettlement.set(home!, (bySettlement.get(home!) ?? 0) + 1);
+    }
+    console.log(`[THR-1654] settlements ${settlements.length} · seeded notables ${notables.length}`);
+    expect(notables.length).toBe(settlements.length);
+    for (const s of settlements) expect(`${s.id}:${bySettlement.get(s.id) ?? 0}`).toBe(`${s.id}:1`);
+  });
+
+  it('leaves no settlement without a story at t0 (the audit predicate)', () => {
+    const has = (id: string, t: 'hostile_to' | 'knows_secret_of' | 'owes_favor') =>
+      graph.getOutgoingEdges(id, t).length > 0 || graph.getIncomingEdges(id, t).length > 0;
+    const storyless = settlements.filter(s => {
+      const residents = graph.getNodesByType('actor')
+        .filter(a => a.properties.actorType === 'individual' && settlementOf(a.id) === s.id);
+      return !residents.some(r => graph.getOutgoingEdges(r.id, 'pursues').length > 0
+        || has(r.id, 'hostile_to') || has(r.id, 'knows_secret_of') || has(r.id, 'owes_favor'));
+    }).map(s => s.id);
+    expect(storyless).toEqual([]);
+  });
+
+  it('gives a notable a quarrel that reads as rivalry, a stake, and no want of their own', () => {
+    for (const n of notables) {
+      const quarrels = graph.getOutgoingEdges(n.id, 'hostile_to').filter(e => e.properties.cause === 'old_quarrel');
+      expect(quarrels.length).toBeGreaterThanOrEqual(1);
+      for (const q of quarrels) expect(holdsMotive(graph, n.id, q.target, 'grudge')).toBe(false);
+      // No ambition at t0, and nothing in the package counts toward graduation.
+      expect(graph.getOutgoingEdges(n.id, 'pursues')).toEqual([]);
+    }
+    const holders = notables.filter(n => graph.getOutgoingEdges(n.id, 'owns').length > 0);
+    console.log(`[THR-1654] notables holding a Place ${holders.length}/${notables.length}`);
+    expect(holders.length).toBeGreaterThan(0);
+    for (const n of holders) {
+      for (const e of graph.getOutgoingEdges(n.id, 'owns')) {
+        expect(graph.getNode(e.target)?.properties.parentLocationId).toBe(settlementOf(n.id));
+      }
+    }
+  });
+
+  it('seeds nothing when the per-class count is zero', () => {
+    const g = buildSmallWorld().state.graph;
+    const ctx = contextFrom(g);
+    for (const n of g.getNodesByType('actor')) {
+      if (n.properties.notableOrigin === NOTABLE_ORIGIN_WORLDGEN) {
+        g.updateNode(n.id, { properties: { notableOrigin: undefined } });
+      }
+    }
+    const summary = seedNotables(g, ctx, { ...LIVING_WORLD_DEFAULTS, NOTABLES_PER_SETTLEMENT: {} });
+    expect(summary.notables).toBe(0);
   });
 });
 

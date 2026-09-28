@@ -3361,7 +3361,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'World Generation, Terrain & Places',
     consumerSystem: AMBITIONS,
     intent:
-      'Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.',
+      'Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.',
     // Keyed on the edges the seeder writes, not on the seeder: what crosses this
     // boundary is the graph the starting world holds — a lane, a holding, a possession,
     // a quarrel, a mark, a command — and every consumer reads those edges without
@@ -3413,6 +3413,30 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-28',
       evidence:
         'THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.',
+    },
+  },
+  {
+    id: 'seeded-notable-holds-a-local-agenda',
+    producerSystem: WORLDGEN,
+    consumerSystem: FACTIONS,
+    intent:
+      'Every settlement starts with one notable — its wealthiest-role resident, promoted by `seedLivingWorld.seedNotables` and stamped `notableOrigin: worldgen` — holding a Place, an old quarrel with the nearest decider (else the neighbouring notable) and a secret about or favour from a decider. The notable-agenda phase reads that stamp through `listLocalNotables` and launches feud, claim and rite agendas aimed at the notable’s own quarrel, holding and home, under `MAX_ACTIVE_LOCAL_AGENDAS`, counted apart from the leaders’ cap.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['listLocalNotables', 'selectLocalAgendaTarget', 'NOTABLE_ORIGIN_WORLDGEN', 'MAX_ACTIVE_LOCAL_AGENDAS'],
+      module: 'src/engine/notableAgendas.ts',
+    },
+    writeSites: [
+      'src/engine/seedLivingWorld.ts',
+      'src/data/worldgen-living-constants.ts',
+    ],
+    readSites: [
+      'src/engine/notableAgendas.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-29',
+      evidence:
+        'THR-1654. `Docs/audits/2026-09-25-living-world-data/readers/notables.ts` on medium, seed 42 · 99, same-session A/B: settlements with no resident holding an ambition, quarrel, secret or favour at t0 37/47 · 53/67 → 0; seeded notables 47 · 67 (one per settlement); local agendas launched by t150 11 · 11 (`notable.agenda_launched` with `local: true`); ms/tick t21–200 within +6.4%, deciders at t200 19 → 19 · 20 → 21. `seedLivingWorld.test.ts` pins one notable per settlement and zero storyless settlements on a generated world; `notableAgendas.test.ts` pins the roster, each family’s target and the separate cap.',
     },
   },
   {

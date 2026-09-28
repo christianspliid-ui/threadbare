@@ -13,7 +13,10 @@ import {
   phaseNotableAgendas,
   agendaFlags,
   isThreadedByPlayer,
+  listLocalNotables,
+  selectLocalAgendaTarget,
 } from '../notableAgendas';
+import { writeGrudge } from '../grievance/grudgeEdge';
 import { CLAIM_FAMILY } from '../../data/notable-agendas/claim';
 import { FEUD_FAMILY } from '../../data/notable-agendas/feud';
 import { RITE_FAMILY } from '../../data/notable-agendas/rite';
@@ -21,6 +24,7 @@ import { SUCCESSION_FAMILY } from '../../data/notable-agendas/succession';
 import { selectFeudTarget, selectOwnHoldingTarget, selectAgendaTarget } from '../notableAgendas';
 import {
   MAX_ACTIVE_NOTABLE_AGENDAS,
+  MAX_ACTIVE_LOCAL_AGENDAS,
   NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS,
   NOTABLE_AGENDA_PHASE_INVEST_TICKS,
   NOTABLE_AGENDA_COUNTERS_TO_FAIL,
@@ -500,5 +504,107 @@ describe('notableAgendas (THR-630 seam A)', () => {
         (t) => t.category === 'notable.agenda_completed',
       ),
     ).toHaveLength(0);
+  });
+});
+
+// ─── Local agendas (THR-1654, THR-1630 S2c) ────────────────────────────────
+
+/**
+ * Three settlements with a seeded notable each: Ashford (quarrels with Brin of Brook), Brook
+ * (Brin holds the Mill), Cole (no quarrel). A faction leader rules Ashford — the leader
+ * roster must not pick up the local ones, and the reverse.
+ */
+function localWorld(): WorldGraph {
+  const graph = claimWorld();
+  const settlement = (id: string, col: number) =>
+    graph.addNode({ id, type: 'location', name: id, properties: { locationSubtype: 'town', hexCol: col, hexRow: 0 } });
+  settlement('ashford', 0);
+  settlement('brook', 2);
+  settlement('cole', 6);
+  graph.addNode({ id: 'mill', type: 'location', name: 'The Mill', properties: { parentLocationId: 'brook', hexCol: 2, hexRow: 0 } });
+  graph.addNode({ id: 'stall', type: 'location', name: 'A Stall', properties: { parentLocationId: 'cole', hexCol: 6, hexRow: 0 } });
+  const notable = (id: string, at: string) => {
+    graph.addNode({ id, type: 'actor', name: id, properties: { actorType: 'individual', spotlightTier: 'notable', notableOrigin: 'worldgen' } });
+    graph.addEdge({ id: `e_loc_${id}`, source: id, target: at, type: 'located_at', properties: {} });
+  };
+  notable('ann', 'ashford');
+  notable('brin', 'mill');
+  notable('cora', 'cole');
+  writeGrudge(graph, 'ann', 'brin', 0, 'old_quarrel');
+  graph.addEdge({ id: 'e_owns_brin_mill', source: 'brin', target: 'mill', type: 'owns', properties: {} });
+  // An earned notable (not seeded) and a seeded one who graduated are not local.
+  graph.addNode({ id: 'dov', type: 'actor', name: 'dov', properties: { actorType: 'individual', spotlightTier: 'notable' } });
+  graph.addNode({ id: 'eli', type: 'actor', name: 'eli', properties: { actorType: 'individual', spotlightTier: 'spotlight', notableOrigin: 'worldgen' } });
+  return graph;
+}
+
+describe('notableAgendas — local agendas (THR-1654)', () => {
+  beforeEach(() => { clearTraces(); enableTracing(); });
+  afterEach(() => { disableTracing(); clearTraces(); });
+
+  it('lists only seeded notables still at the notable tier, with their settlement', () => {
+    const local = listLocalNotables(localWorld());
+    expect(local.map((n) => `${n.notableId}@${n.settlementId}`)).toEqual(['ann@ashford', 'brin@brook', 'cora@cole']);
+  });
+
+  it('aims each family at the notable’s own story', () => {
+    const graph = localWorld();
+    const state = makeState(12, graph);
+    const [ann, , cora] = listLocalNotables(graph);
+    expect(selectLocalAgendaTarget(state, 'feud', ann, new Set())).toMatchObject({ targetId: 'brin', targetSource: 'quarrel' });
+    expect(selectLocalAgendaTarget(state, 'claim', ann, new Set())).toMatchObject({ targetId: 'mill', targetSource: 'quarrel_holding' });
+    expect(selectLocalAgendaTarget(state, 'rite', ann, new Set())).toMatchObject({ targetId: 'ashford', targetSource: 'home' });
+    // No quarrel: feud is skipped; claim reaches for an unheld Place next door.
+    expect(selectLocalAgendaTarget(state, 'feud', cora, new Set())).toBeUndefined();
+    expect(selectLocalAgendaTarget(state, 'claim', cora, new Set(['stall']))).toBeUndefined();
+    const brin = listLocalNotables(graph)[1];
+    expect(selectLocalAgendaTarget(state, 'claim', brin, new Set())).toMatchObject({ targetId: 'stall', targetSource: 'neighbour_place' });
+    // Leader-only families never resolve for a local notable.
+    expect(selectLocalAgendaTarget(state, 'campaign', ann, new Set())).toBeUndefined();
+  });
+
+  it('launches local agendas under their own cap, flagged local, beside a full leader roster', () => {
+    const graph = localWorld();
+    // The leader roster is at its cap: local launches must still happen.
+    const leaderAgendas = Array.from({ length: MAX_ACTIVE_NOTABLE_AGENDAS }, (_, i) => ({
+      compositionId: `leader-${i}`, firedAtTick: 0, activatedPhaseIds: [], phaseActivationTicks: {},
+      resolvedNodes: {}, status: 'active', lastEvaluationTick: 0, phases: [],
+      sponsorNotableId: `someone_${i}`, agendaFamily: 'rite',
+    })) as unknown as ActiveComposition[];
+    const state = makeState(NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS, graph, { activeCompositions: leaderAgendas });
+    const result = phaseNotableAgendas(state);
+    const launched = (result.activeCompositions ?? []).slice(MAX_ACTIVE_NOTABLE_AGENDAS);
+    expect(launched.length).toBe(Math.min(MAX_ACTIVE_LOCAL_AGENDAS, 3));
+    for (const c of launched) {
+      expect(result.worldFlags?.[agendaFlags.local(c.compositionId)]).toBe(true);
+      expect(['feud', 'claim', 'rite']).toContain(c.agendaFamily);
+    }
+    const traces = (getTraces() as unknown as Array<Record<string, unknown>>)
+      .filter((t) => t.category === 'notable.agenda_launched');
+    expect(traces.every((t) => t.local === true && typeof t.targetSource === 'string')).toBe(true);
+    const scan = (getTraces() as unknown as Array<Record<string, unknown>>).find((t) => t.category === 'notable.roster_scan');
+    expect(scan?.localLaunched).toBe(launched.length);
+  });
+
+  it('a full local roster launches no more locals, and does not eat a leader slot', () => {
+    const graph = localWorld();
+    const flags: Record<string, unknown> = {};
+    const locals = Array.from({ length: MAX_ACTIVE_LOCAL_AGENDAS }, (_, i) => {
+      flags[agendaFlags.local(`local-${i}`)] = true;
+      return {
+        compositionId: `local-${i}`, firedAtTick: 0, activatedPhaseIds: [], phaseActivationTicks: {},
+        resolvedNodes: {}, status: 'active', lastEvaluationTick: 0, phases: [],
+        sponsorNotableId: `town_${i}`, agendaFamily: 'rite',
+      };
+    }) as unknown as ActiveComposition[];
+    const state = makeState(NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS, graph, { activeCompositions: locals, worldFlags: flags });
+    const result = phaseNotableAgendas(state);
+    const fresh = (result.activeCompositions ?? []).slice(MAX_ACTIVE_LOCAL_AGENDAS);
+    // No new local launches, and the leader roster's count holds none of the locals.
+    expect(fresh.every((c) => result.worldFlags?.[agendaFlags.local(c.compositionId)] !== true)).toBe(true);
+    const scan = (getTraces() as unknown as Array<Record<string, unknown>>).find((t) => t.category === 'notable.roster_scan');
+    expect(scan?.activeAgendas).toBe(scan?.launched);
+    expect(scan?.localActiveAgendas).toBe(MAX_ACTIVE_LOCAL_AGENDAS);
+    expect(scan?.localLaunched).toBe(0);
   });
 });

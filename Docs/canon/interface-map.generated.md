@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 143 |
+| 🟢 LIVE | 144 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 51 |
-| **Total** | **204** |
+| **Total** | **205** |
 
 ## Contracts by producing subsystem
 
@@ -337,11 +337,12 @@ remediation ticket or the build fails.
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-dead-stay-dead` | The dead worldgen seeds — founders, fallen commanders, wonder finders — lie where they rest in the run-time `retain` death shape, and no living-actor sweep treats them as a decider, a resident, an encounter participant or a seed target. | node-prop: `deceased` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `seeded-notable-holds-a-local-agenda` | Every settlement starts with one notable — its wealthiest-role resident, promoted by `seedLivingWorld.seedNotables` and stamped `notableOrigin: worldgen` — holding a Place, an old quarrel with the nearest decider (else the neighbouring notable) and a secret about or favour from a decider. The notable-agenda phase reads that stamp through `listLocalNotables` and launches feud, claim and rite agendas aimed at the notable’s own quarrel, holding and home, under `MAX_ACTIVE_LOCAL_AGENDAS`, counted apart from the leaders’ cap. | function: `listLocalNotables`, `selectLocalAgendaTarget`, `NOTABLE_ORIGIN_WORLDGEN`, `MAX_ACTIVE_LOCAL_AGENDAS` | Factions & Succession | 🟢 LIVE | — |
 | `seeded-pilgrim-route-pools-pilgrimage` | Every culture's capital is a pilgrim's destination from the first tick: its congregation consecrated a route there at worldgen, so the pilgrimage encounter can happen at a capital — a town that could never host it by subtype. | edge: `sacred_route`, `sacredRouteDestinationTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-ties-never-graduate` | A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count. | edge-prop: `worldgen` | Agent Lifecycle | 🟢 LIVE | — |
 | `world-past-descent-feeds-clue-scoring` | About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it. | node-prop: `backstoryStrata`, `WorldPastDescentStratum` | Ruins, Clues & Delves | 🟢 LIVE | — |
 | `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `getPlacePast` | Attention, Chronicle & Narrative | 🟠 PARTIAL | THR-1656 |
-| `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `worldgen-ties-reach-ambition-and-grief` | Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes. | edge-prop: `relates_to` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ## Evidence
@@ -2285,6 +2286,17 @@ exit
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +37 more
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
 
+### `seeded-notable-holds-a-local-agenda` — 🟢 LIVE
+
+- **Intent:** Every settlement starts with one notable — its wealthiest-role resident, promoted by `seedLivingWorld.seedNotables` and stamped `notableOrigin: worldgen` — holding a Place, an old quarrel with the nearest decider (else the neighbouring notable) and a secret about or favour from a decider. The notable-agenda phase reads that stamp through `listLocalNotables` and launches feud, claim and rite agendas aimed at the notable’s own quarrel, holding and home, under `MAX_ACTIVE_LOCAL_AGENDAS`, counted apart from the leaders’ cap.
+- **Producer → Consumer:** World Generation, Terrain & Places → Factions & Succession
+- **Module:** `src/engine/notableAgendas.ts`
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Write sites:** `src/data/worldgen-living-constants.ts`, `src/engine/seedLivingWorld.ts`
+- **Read sites:** `src/engine/notableAgendas.ts`
+- **Other hits:** `src/data/notable-agenda-config.ts`
+- **Verdict:** Verified 2026-09-29: THR-1654. `Docs/audits/2026-09-25-living-world-data/readers/notables.ts` on medium, seed 42 · 99, same-session A/B: settlements with no resident holding an ambition, quarrel, secret or favour at t0 37/47 · 53/67 → 0; seeded notables 47 · 67 (one per settlement); local agendas launched by t150 11 · 11 (`notable.agenda_launched` with `local: true`); ms/tick t21–200 within +6.4%, deciders at t200 19 → 19 · 20 → 21. `seedLivingWorld.test.ts` pins one notable per settlement and zero storyless settlements on a generated world; `notableAgendas.test.ts` pins the roster, each family’s target and the separate cap.
+
 ### `seeded-opponent-survives-to-spawn` — 🟢 LIVE
 
 - **Intent:** A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse.
@@ -2314,10 +2326,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 96 total — 1 write, 1 read, 94 unclassified
+- **Production hits:** 97 total — 1 write, 1 read, 95 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +89 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +90 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2373,10 +2385,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **UL terms:** *Spotlight tier*, *Ambition*
 - **Module:** `src/engine/spotlightPull.ts`
-- **Production hits:** 40 total — 3 write, 4 read, 33 unclassified
+- **Production hits:** 41 total — 3 write, 4 read, 34 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/hexMapAgentVisibility.ts`, `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +28 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +29 more
 - **Verdict:** Verified 2026-09-28: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`. Re-verified 2026-09-24 under THR-1523 (unwatched builders step back): `census:undertakings` 150 ticks PASS both seeds — seed 42 3 pulled (1 swapped, 2 net-additive), 138 refusals across 116 mortals (was 215 per want), seed 99 4 pulled (1 swapped, 3 net-additive), 144 across 114 (was 235); at 300 ticks the class fires (seed 42 2 unwatched swaps, seed 99 1; 1 of 14 / 1 of 17 worldgen protagonists stepped back, kill criterion 30 %). `census:reachability -- --seeds 42,99,7` keeps merchant-expansion reachable on 2 of 3. `measure:tick-cost` medium steady within noise of main (seed 42 101 vs 109 ms, seed 99 152 vs 168 ms). Unit: `spotlightPullUnwatched.test.ts` (21). Re-verified 2026-09-28 under THR-1653 (graduation shares the budget): `readers/graduation-budget.ts 42,99 200` — deciders t0→t200 20→19 · 23→20, invariant bound 24 · 28 holds, 0 graduations on both arms (the curves are identical flag on and off); `readers/reach.ts 42,99 200` drawable fired 127 of 514 (floor 121); `readers/attended.ts 42,99 150` The First’s longest gap 25 · 21 ticks (ceiling 30), firing rows identical flag on and off. Unit: `npcGraduation.test.ts` THR-1653 block (4).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -2659,7 +2671,7 @@ exit
 
 ### `worldgen-seeds-the-living-world` — 🟢 LIVE
 
-- **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
+- **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
 - **Production hits:** 266 total — 2 write, 6 read, 258 unclassified
