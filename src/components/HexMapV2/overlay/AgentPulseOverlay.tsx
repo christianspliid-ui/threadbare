@@ -20,6 +20,7 @@ import * as THREE from 'three';
 import type { AgentRenderData } from '../agents/agentSpriteTypes';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
+import { MAP_OVERLAY_Z } from './mapOverlayZ';
 
 // ── NFP #1: Tunable constants ────────────────────────────────────────────────
 
@@ -138,7 +139,7 @@ export function AgentPulseOverlay({
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 18,
+        zIndex: MAP_OVERLAY_Z.AGENT_PULSE,
         overflow: 'hidden',
       }}
     >

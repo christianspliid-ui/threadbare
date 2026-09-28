@@ -1929,6 +1929,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           width:    '100%',
           height:   '100%',
           overflow: 'hidden',
+          // Own stacking context: the MAP_OVERLAY_Z bands order the overlays
+          // among themselves and never outrank the HUD (THR-1665, Law 35).
+          isolation: 'isolate',
         }}
       >
         <canvas

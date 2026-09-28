@@ -21,6 +21,7 @@ import * as THREE from 'three';
 import type { RegionLabel } from '../../../engine/regionTypes';
 import { removeOverlaps, estimateBBox, type ScreenLabel, type ScreenBBox } from './labelCollision';
 import { getActivePalette, buildLandHalo, buildRiverHalo } from '../palette/activePalette';
+import { MAP_OVERLAY_Z } from './mapOverlayZ';
 
 // ─── Zoom tier thresholds (NFP #1: Tunability) ───────────────────────────────
 
@@ -326,7 +327,7 @@ export function RegionLabelOverlay({
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 20,
+        zIndex: MAP_OVERLAY_Z.REGION_LABELS,
         overflow: 'hidden',
       }}
     >
