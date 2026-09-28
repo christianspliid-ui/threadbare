@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 136 |
+| 🟢 LIVE | 137 |
 | 🟠 PARTIAL | 3 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 41 |
-| **Total** | **187** |
+| **Total** | **188** |
 
 ## Contracts by producing subsystem
 
@@ -192,6 +192,7 @@ remediation ticket or the build fails.
 | `fight-writes-opponent-clock` | Every blow a fighter lands fills the opponent's clock, and the next fight reads where it was left — a monster worn down by one hero is closer to falling for the next, recovering only with time. | node-prop: `advanceFightClock`, `monsterState`, `FIGHT_CLOCK_MAILBOX_PROP` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-yield-humiliates-at-home` | Yielding to another person costs a mortal face with their home settlement; yielding to a beast costs nothing, because there is nobody to tell. | edge-prop: `reputation_with`, `applyReputationWithDelta`, `fight_humiliation` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `fights-leave-a-record-on-the-ground` | A fight where blows were actually exchanged leaves its history on the ground it was fought on, so a lair where the beast is fought again and again reads Blood-soaked, and a mortal who fled at the sight of the beast leaves no mark. | function: `fightRecordBranch`, `recordFightFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
+| `journey-keeps-encounter-target` | A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. | node-prop: `targetEncounterId`, `motivationPull`, `journeyGoal`, `JOURNEY_GOAL_CAP_RESERVE`, `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` | Movement & Colocation | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -843,10 +844,10 @@ exit
 - **Intent:** A company travels as one — members share a destination instead of wandering off separately.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
+- **Production hits:** 18 total — 1 write, 1 read, 16 unclassified
 - **Write sites:** `src/engine/groups/groupMovement.ts`
 - **Read sites:** `src/engine/phaseMovement.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts` +10 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/data/action-technical-effects.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/agentActivity.ts` +11 more
 - **Verdict:** Verified 2026-07-24: phaseGroups writes members' MovementState and phaseMovement (next phase in runTick) executes it. 72-tick CLI smoke, seed 42 medium: "The Watch of the Nameless Road" members Nareth and Hestia both at Wolfton; "The Steadfast Sparrows" both at Shadow-shade.
 
 ### `company-gates-exclusive-content-reachability` — 🟢 LIVE
@@ -1592,6 +1593,17 @@ exit
 - **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/incidentRecorder.ts`, `src/engine/itemGenerator/worldContext.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. `recordTick` is called once per tick from the tick-end site beside `validateTickOutput` with `runtime` already in scope, and both rings are read by `incidentBundle`'s `events` and `census` sections plus `__DEBUG.getIncidentRecorderStats()`. Owned on `SimulationRuntime` rather than at module scope, per the load-bearing decision, so a second playthrough cannot inherit the first one's events. Non-vacuous by `src/engine/__tests__/incidentRecorder.test.ts` (wrap behaviour asserted past `INCIDENT_EVENT_RING_SIZE`, oldest-first order across the wrap, and a throwing census that increments `misses`, leaves the tick untouched, and still records the *next* tick — the last clause falsifies the guard rather than confirming it) and by `incidentBundle.test.ts`'s census/recorder assertion.
 
+### `journey-keeps-encounter-target` — 🟢 LIVE
+
+- **Intent:** A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board.
+- **Producer → Consumer:** Encounters & Dilemmas → Movement & Colocation
+- **UL terms:** *Encounter*
+- **Production hits:** 12 total — 2 write, 1 read, 9 unclassified
+- **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/phaseMovement.ts`
+- **Read sites:** `src/engine/encounterFilterPipeline.ts`
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/movement-content.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterTimeline.ts`, `src/engine/groups/groupMovement.ts` +4 more
+- **Verdict:** Verified 2026-09-28: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First's longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan's first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.
+
 ### `lair-arrival-spawns-confront` — 🟢 LIVE
 
 - **Intent:** A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it.
@@ -2146,7 +2158,7 @@ exit
 - **Write sites:** `src/engine/encounterFilterPipeline.ts`
 - **Read sites:** —
 - **Other hits:** `src/data/agent-behavior-constants.ts`, `src/engine/encounter/branchingCurator.ts`, `src/engine/encounterCache.ts`, `src/types/trace.ts`
-- **Verdict:** Pinned by badgeOverride: Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Switch CAP_FILL_ROTATE on after THR-1639 and re-measure.
+- **Verdict:** Pinned by badgeOverride: Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Re-measured after THR-1639 (2026-09-28, same reader): with the journey fix in, rotation still cuts total firings 1,552 → 676 and raises selected_not_spawned 17 · 18 → 62 · 61, so the rotation loss is not the reroute defect alone — CAP_FILL_ROTATE stays off pending THR-1633.
 
 ### `strategic-ambition-pulls-holder-into-spotlight` — 🟢 LIVE
 

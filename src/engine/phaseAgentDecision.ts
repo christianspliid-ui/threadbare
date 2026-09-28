@@ -639,8 +639,12 @@ export function phaseAgentDecision(
 
         // GUARD 5: Target invalidation — check if current target encounter still exists
         const currentTargetId = movementState.targetEncounterId;
+        // THR-1639: a target is valid if EITHER catalog knows it. The legacy-only
+        // lookup read every unified-template goal (fa.*, veil.*, realm.*, mc.* …)
+        // as vanished and cleared it mid-journey — 42 journeys in 200 ticks on
+        // seed 99 lost their goal that way.
         const currentTargetValid = currentTargetId
-          ? !!getAnyEncounterById(currentTargetId)
+          ? !!(getAnyEncounterById(currentTargetId) ?? getUnifiedTemplateById(currentTargetId))
           : true; // No target encounter → just traveling (drift), always "valid"
 
         if (currentTargetValid) {
@@ -875,8 +879,9 @@ export function phaseAgentDecision(
           if (e.locationId === arrivedState?.destinationId) { goalIndex = i; break; }
         }
         if (goalIndex >= 0) {
-          mergedEntries = unflaggedEntries.slice();
-          mergedEntries[goalIndex] = { ...unflaggedEntries[goalIndex], journeyGoal: true };
+          const flagged = unflaggedEntries.slice();
+          flagged[goalIndex] = { ...unflaggedEntries[goalIndex], journeyGoal: true };
+          mergedEntries = flagged;
         }
       }
 

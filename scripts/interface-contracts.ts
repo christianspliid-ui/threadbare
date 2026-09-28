@@ -5083,8 +5083,35 @@ export const CONTRACTS: readonly Contract[] = [
     badgeOverride: {
       badge: 'PARTIAL',
       reason:
-        'Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Switch CAP_FILL_ROTATE on after THR-1639 and re-measure.',
+        'Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Re-measured after THR-1639 (2026-09-28, same reader): with the journey fix in, rotation still cuts total firings 1,552 → 676 and raises selected_not_spawned 17 · 18 → 62 · 61, so the rotation loss is not the reroute defect alone — CAP_FILL_ROTATE stays off pending THR-1633.',
       deferralTicket: 'THR-1633',
+    },
+  },
+  // -- Encounters -> Movement: a journey keeps its goal (THR-1639) --------------
+  // The failure this row exists to make impossible: a mortal chose an encounter in
+  // another town, set out, and lost it — at the first re-check (no pull recorded, so
+  // any entry elsewhere beat zero), on a reroute (the target was dropped), or on
+  // arrival (the shortlist cap cut it and the board re-decided without it).
+  {
+    id: 'journey-keeps-encounter-target',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Movement & Colocation',
+    intent:
+      'A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board.',
+    ulTerms: ['Encounter'],
+    // `movementState` is the carrier. `targetEncounterId` + `motivationPull` are
+    // written at queue time and on both reroutes; `journeyGoal` is the per-decision
+    // flag that claims the cap-stage reserve on arrival.
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['targetEncounterId', 'motivationPull', 'journeyGoal', 'JOURNEY_GOAL_CAP_RESERVE', 'ARRIVAL_GOAL_COMMITMENT_MULTIPLIER'],
+    },
+    writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/phaseMovement.ts'],
+    readSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/encounterFilterPipeline.ts'],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First\'s longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan\'s first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.',
     },
   },
   // -- Culture & Spheres -> the encounter opening (THR-1635) ------------------
