@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 42 |
-| **Total** | **189** |
+| 🔵 UNVERIFIED-OK | 45 |
+| **Total** | **192** |
 
 ## Contracts by producing subsystem
 
@@ -167,6 +167,7 @@ remediation ticket or the build fails.
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `authored-tier-ramp-target-scaled-price` | The authored per-tier advancement ramp reaches the player. `TIER_ADVANCEMENT_ESSENCE_COST` / `TIER_ADVANCEMENT_DIFFICULTY` / `TIER_ADVANCEMENT_DURATION` author a 3-row ladder, but only row 1 had a consumer — a static template step cannot read its target's tier — so advancing a Mundane artifact and a Mythic one both cost 4 essence at difficulty 0.20, and both took 2–3 ticks. | function: `tierScaledEssenceCost`, `tierScaledDifficulty`, `tierScaledDuration`, `essenceCostContext` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `decideBranchRoute`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
+| `cast-target-changes-reach-receipt` | The receipt names who a cast changed and how (THR-1606, extends `player-action-aftermath-read`). The step resolver snapshots a player cast's *target* before and after its ops (`snapshotCastTarget` / `snapshotTargetChanges`) and records each real write — a new divine influence, a trait placed or lifted — as an aftermath change carrying `subjectId`. The receipt leads with the first such change when its overview never names the target, keeps it on the toast tier with a chip, and declares the target as the event's world reference so the toast opens the mortal (Law 1). No change is produced for a write that did not happen (Law 56). | function: `snapshotCastTarget`, `snapshotTargetChanges`, `targetSideChanges`, `subjectId` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
 | `content-objects-registry` | Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485). | function: `CONTENT_OBJECT_KINDS`, `CONTENT_CATALOGS`, `entriesOfKind`, `contentKindsForId`, `contentKindsForWorldObject`, `SHARED_ID_PREFIXES` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `content-tag-vocabulary` | Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486). | function: `CONTENT_TAGS`, `isContentTag`, `axisOfContentTag`, `contentTagsOnAxis`, `contentTagTooltipId`, `effectiveTags`, `authoredTags`, `projectedTags` | Attachments, Items & Possessions | 🟢 LIVE | — |
@@ -203,6 +204,7 @@ remediation ticket or the build fails.
 | `planner-forecast-equals-roll` | A mortal chooses what to attempt by forecasting its odds, and the forecast is the number the dice use. The planner (`estimateStepProbability`, `forecastStepProbabilities`) forecasts every cache-entry step through `forecastActionAtScale` / `scaledStepProbability` at the template's `scale` — the same scale offset, difficulty cap and post-roll floor `resolveStepCore` applies — and the cache stores authored difficulty, since the roll never applies the late-game or danger multipliers (`PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false`). Only what a mortal cannot foresee (a god's nudges, a company assist, push/resist) sits outside it. Standing modifiers (items, conditions, the effect family, terrain, place conditions, sphere alignment) sit on both sides since THR-1535: the roll adds `computeStandingModifierTotal`, and the planner adds the same per-reach total through a `createStandingModifierReader` built once per decision pass. | function: `forecastActionAtScale`, `scaledStepProbability`, `applyScaleDifficultyAdjust` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. THR-1002 extended the read to the toast tier: the first sentence of that overview is now the toast message, where the toast previously discarded it and said `Your <internal template name> <band>.` — the payload check this row recorded as unverified, on ~93% of casts. | function: `processPlayerReceipts`, `aftermathSummary`, `receiptToastSentence` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast's fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed. | node-prop: `playerActionReceipts`, `resolvedBands` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `player-cast-lands-in-target-story` | The mortal's story remembers your hand (THR-1606). A resolved player cast whose capture found a target-side change files a notable digest entry under the target's id carrying `castLine` (`castDigestEntry`); `composeThreadStory` tells that line verbatim, and one such beat is enough to tell a story, so the Story So Far on the thread detail says "Your hand reached into their sleep…". Before this, player casts were never digested at all. | node-prop: `digestBuffer`, `castLine`, `castDigestEntry`, `composeThreadStory` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -221,6 +223,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `active-influences-render-on-sheet` | What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen. | node-prop: `divineInfluences`, `activeEffects`, `ActiveEffectChips` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `cast-influence-shifts-target-values` | A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing. | node-prop: `divineInfluences`, `valueDrifts`, `valueDriftRule`, `resolveCastValueDrift` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 
 ### Factions & Succession
@@ -336,6 +339,17 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/groups/groupDissolution.ts`
 - **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/HiddenMarksTab.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx`, `src/engine/ascendantExpression.ts` +9 more
 - **Verdict:** Verified 2026-08-18: src/engine/groups/__tests__/groupLifecycle.test.ts § "betrayal dissolution (THR-1174)" drives the reason through runGroupUpkeep and reads it off the result — never by passing the literal to selectPartingVariant, which is how this contract sat consumer-only for months. Disabling the trigger fails 3 of its rows; the negative rows (floor, category, former member, holding company) stay green by design.
+
+### `active-influences-render-on-sheet` — 🔵 UNVERIFIED-OK
+
+- **Intent:** What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen.
+- **Producer → Consumer:** Essence & Divine Economy → Attention, Chronicle & Narrative
+- **UL terms:** *AxiologicalProfile*
+- **Production hits:** 16 total — 1 write, 4 read, 11 unclassified
+- **Write sites:** `src/engine/graphOpExecutor.ts`
+- **Read sites:** `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/engine/agentDetail.ts`
+- **Other hits:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/engine/agentSelection.ts`, `src/engine/castInfluenceDrift.ts`, `src/engine/castTargetChanges.ts` +6 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `active-ui-state-to-incident-bundle` — 🟢 LIVE
 
@@ -787,10 +801,22 @@ exit
 - **Intent:** A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing.
 - **Producer → Consumer:** Essence & Divine Economy → Encounters & Dilemmas
 - **UL terms:** *AxiologicalProfile*, *ValuePair*
-- **Production hits:** 15 total — 2 write, 3 read, 10 unclassified
+- **Production hits:** 17 total — 2 write, 3 read, 12 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`, `src/engine/graphOpExecutor.ts`
 - **Read sites:** `src/engine/agentSelection.ts`, `src/engine/interventionEffects.ts`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/data/action-technical-effects.ts`, `src/engine/agentDetail.ts`, `src/engine/castInfluenceDrift.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/hexActionBridge.ts` +5 more
+- **Other hits:** `src/components/Game/ActiveEffectChips.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentDetail.ts`, `src/engine/castInfluenceDrift.ts`, `src/engine/castTargetChanges.ts` +7 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `cast-target-changes-reach-receipt` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The receipt names who a cast changed and how (THR-1606, extends `player-action-aftermath-read`). The step resolver snapshots a player cast's *target* before and after its ops (`snapshotCastTarget` / `snapshotTargetChanges`) and records each real write — a new divine influence, a trait placed or lifted — as an aftermath change carrying `subjectId`. The receipt leads with the first such change when its overview never names the target, keeps it on the toast tier with a chip, and declares the target as the event's world reference so the toast opens the mortal (Law 1). No change is produced for a write that did not happen (Law 56).
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Aftermath*
+- **Module:** `src/engine/castTargetChanges.ts`
+- **Production hits:** 20 total — 2 write, 1 read, 17 unclassified
+- **Write sites:** `src/engine/castTargetChanges.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/engine/playerReceipts.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/tabs/BondsTab.tsx`, `src/data/undertaking-objects.ts`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts` +12 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
@@ -1198,10 +1224,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 117 total — 1 write, 1 read, 115 unclassified
+- **Production hits:** 118 total — 1 write, 1 read, 116 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +110 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +111 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1798,10 +1824,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 92 total — 2 write, 3 read, 87 unclassified
+- **Production hits:** 93 total — 2 write, 3 read, 88 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +82 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +83 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1882,20 +1908,31 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/playerReceipts.ts`
-- **Production hits:** 21 total — 1 write, 2 read, 18 unclassified
+- **Production hits:** 22 total — 1 write, 2 read, 19 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/data/receipt-content.ts`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +13 more
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +14 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast's fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 7 total — 1 write, 3 read, 3 unclassified
+- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/components/Game/ActionDrawer.tsx`, `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`
-- **Other hits:** `src/data/world-objects.ts`, `src/engine/incidentBundle.ts`, `src/types/gameState.ts`
+- **Other hits:** `src/data/world-objects.ts`, `src/engine/castTargetChanges.ts`, `src/engine/incidentBundle.ts`, `src/types/gameState.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `player-cast-lands-in-target-story` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The mortal's story remembers your hand (THR-1606). A resolved player cast whose capture found a target-side change files a notable digest entry under the target's id carrying `castLine` (`castDigestEntry`); `composeThreadStory` tells that line verbatim, and one such beat is enough to tell a story, so the Story So Far on the thread detail says "Your hand reached into their sleep…". Before this, player casts were never digested at all.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Aftermath*
+- **Production hits:** 13 total — 1 write, 2 read, 10 unclassified
+- **Write sites:** `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/components/Game/hooks/useThreadStorySoFar.ts`, `src/engine/threadDigest.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/data/ia-manifest.ts`, `src/engine/castTargetChanges.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `quintessence-threshold-gates-candidacy-and-movement` — 🟠 PARTIAL
@@ -2143,10 +2180,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 377 total — 1 write, 1 read, 375 unclassified
+- **Production hits:** 378 total — 1 write, 1 read, 376 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +370 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +371 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
