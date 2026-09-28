@@ -18,6 +18,7 @@ import {
 import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
+import { RIVAL_GRACE_TICKS_AFTER_BOND } from '../../data/game-config';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import type { GraphNode } from '../../types/graph';
 
@@ -31,6 +32,9 @@ function makeDoomClock(stage: number): GameState['doomClock'] {
     progress: stage * 0.2,
     stageTransitions: [0, 20, 40, 60, 80],
     expired: false,
+    // THR-1646: rivals hold until the bond and a grace window after it. These arms
+    // test scheme mechanics, so the world's bond and grace are already behind it.
+    wokeAtTick: -RIVAL_GRACE_TICKS_AFTER_BOND,
   } as unknown as GameState['doomClock'];
 }
 

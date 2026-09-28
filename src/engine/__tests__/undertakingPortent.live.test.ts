@@ -19,6 +19,7 @@
 import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
 import { runTick } from '../orchestrator';
+import { RIVAL_GRACE_TICKS_AFTER_BOND } from '../../data/game-config';
 import { createBalancedCosmology } from '../cosmology';
 import { generateArchetypes } from '../ascendant';
 import { createSimulationRuntime } from '../simulationRuntime';
@@ -39,6 +40,10 @@ describe('a razing portends in the live simulation (THR-1432)', () => {
     let { state } = initializeGameState(
       archetype, 'portent', createBalancedCosmology(), SEED, preset.cols, preset.rows,
     );
+    // THR-1646: a generated world has no bonded First, so its doom clock sleeps and
+    // its rivals and omens hold. This suite tests a world in play, not the opening,
+    // so the fixture is one whose bond and rival grace are already behind it.
+    state = { ...state, doomClock: { ...state.doomClock, wokeAtTick: -RIVAL_GRACE_TICKS_AFTER_BOND } };
     for (let i = 0; i < WARMUP_TICKS; i++) state = runTick(state, [], runtime);
 
     const start = startUndertakingForReview(state, state.graph, 'ind_0', 'cell.destroy.location', { band: 'success' });

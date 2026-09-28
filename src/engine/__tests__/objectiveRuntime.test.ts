@@ -154,6 +154,8 @@ describe('remembered objective runtime', () => {
     const doomDefinition = generateDoomClock('breach', 100, 42);
     const doomClock = {
       ...createDoomClockState('breach', 100),
+      // THR-1646: a world after the bond — a fresh clock sleeps until then.
+      wokeAtTick: 0,
       currentTick: 19,
       progress: 0.19,
       currentStage: 1,

@@ -21,6 +21,7 @@ import { createGreatChronicle } from '../chronicle';
 import { createDefaultFundament, createResonanceState } from '../worldSoul';
 import { recalcVisibility, collectLOSSources } from '../visibility';
 import type { GameState } from '../../types/gameState';
+import { DOOM_MIN_RUN_TICKS_AFTER_BOND } from '../../data/game-config';
 import type { CosmologyProfile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
 
@@ -121,7 +122,12 @@ function createTestGameState(): GameState {
 
   // Generate doom clock
   const doomDef = generateDoomClock('breach', 360, seed);
-  const doomState = createDoomClockState('breach', 360);
+  // THR-1646: a fresh clock sleeps until The First is bonded, the Unmaking waits a
+  // floor after the wake, and rivals hold a grace window. These arms test the
+  // clock's and the rivals' mechanics, not the opening, so the fixture is a world
+  // whose bond, floor and grace are all already behind it. The opening itself is
+  // covered by doomWakesAtBond.test.ts.
+  const doomState = { ...createDoomClockState('breach', 360), wokeAtTick: -DOOM_MIN_RUN_TICKS_AFTER_BOND };
 
   // Initialize visibility map
   const losSources = collectLOSSources(graph, ascendantId, []);

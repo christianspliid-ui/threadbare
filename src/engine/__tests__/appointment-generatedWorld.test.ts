@@ -108,6 +108,23 @@ function plantAppointment(s: GameState, runtime: SimulationRuntime, actorId: str
 }
 
 /** Drive one tick and harvest the appointment traces before the ring evicts them. */
+/** Give a mortal the `death_prevented` ward (THR-1241), so a live world cannot take them mid-arm. */
+function wardAgainstDeath(state: GameState, actorId: string): GameState {
+  return {
+    ...state,
+    activeRuleOverrides: {
+      ...(state.activeRuleOverrides ?? {}),
+      [actorId]: [
+        ...(state.activeRuleOverrides?.[actorId] ?? []),
+        {
+          sourceAttachmentId: 'test.ward', sourceAgentId: actorId, rule: 'death_prevented',
+          value: true, scope: { scope: 'self' }, expiryTick: null, establishedTick: state.tick,
+        },
+      ],
+    },
+  };
+}
+
 function tickAndHarvest(s: GameState, runtime: SimulationRuntime, sink: TraceEntry[]): GameState {
   const next = runTick(s, [], runtime);
   for (const t of getTraces()) {
@@ -178,6 +195,12 @@ describe('THR-1479 — an appointment on a generated small world', () => {
     try {
       let { state, runtime } = world();
       const { actorId, fromId, placeId, travel } = pickMortalAndPlace(state);
+      // THR-1646: this arm's premise is a mortal who lives through the window, and a
+      // live world does not promise that — once the opening changed the world's pacing,
+      // seed 42's picked mortal died at tick 62 on an unrelated `agent_death`, before
+      // the window closed. Ward them with the game's own `death_prevented` override
+      // rather than pin the world to one recorded trajectory.
+      state = wardAgainstDeath(state, actorId);
       const delay = Math.ceil(travel) + SLACK_BEYOND_TRAVEL;
       state = plantAppointment(state, runtime, actorId, placeId, delay);
       const seed = state.pendingEncounterSeeds!.find(x => x.targetAgentId === actorId && readPlantedAppointment(x))!;
