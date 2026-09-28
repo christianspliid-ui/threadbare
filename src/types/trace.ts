@@ -86,7 +86,7 @@ export type TraceCategory =
   | 'influence.applied' | 'influence.no_lean' // THR-1651: cast value drifts
   | 'action_execution' | 'modifier_resolution'
   | 'prosperity_tick' | 'wealth_delta' | 'econ_shock_seeded'
-  | 'trade_route_volume_change' | 'trade_route_dissolved'
+  | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   | 'battle_recorded' | 'fight_recorded'
@@ -586,7 +586,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'influence.applied', 'influence.no_lean',
   'action_execution', 'modifier_resolution',
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
-  'trade_route_volume_change', 'trade_route_dissolved',
+  'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'settlement_tier_change', 'target_action_filter',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'battle_recorded', 'fight_recorded',
@@ -1615,7 +1615,8 @@ export interface TradeRouteVolumeChangeTrace extends TraceBase {
   targetId: string;
   previousVolume: number;
   newVolume: number;
-  cause: 'established' | 'expanded' | 'decayed' | 'disrupted' | 'taxed';
+  /** `traffic` (THR-1636): a standing lane stepped one toward its ambient traffic level. */
+  cause: 'established' | 'expanded' | 'decayed' | 'disrupted' | 'taxed' | 'traffic';
   causingActorId?: string;
   causingActionId?: string;
 }
@@ -1632,6 +1633,20 @@ export interface TradeRouteDissolvedTrace extends TraceBase {
   causeOfDeath: 'decay';
   /** THR-1615: the Route identity nodes removed with the lane (normally one; empty for an unminted lane). */
   identityNodeIds?: string[];
+}
+
+/**
+ * Trace: the whole trade web at a glance, once per lane-traffic settle tick
+ * (THR-1636 S1) — never one per lane per tick. Counts are this tick's classes.
+ */
+export interface TradeRouteUpkeepTrace extends TraceBase {
+  category: 'trade_route_upkeep';
+  carrying: number;
+  suspended: number;
+  idle: number;
+  /** Lanes whose volume stepped this settle tick, by direction. */
+  steppedUp: number;
+  steppedDown: number;
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
@@ -4070,6 +4085,7 @@ export type TraceEntry =
   | WealthDeltaTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
+  | TradeRouteUpkeepTrace
   | SettlementTierChangeTrace
   | LocationTraitTrace
   | BattleRecordedTrace
