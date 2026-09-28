@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 60,
+      "termCount": 62,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -668,6 +668,72 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#realm",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "congregation",
+      "name": "Congregation",
+      "aliases": [
+        "chapter (code word only — engine comments",
+        "`factionMembership.ts`)"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "*(code word: chapter)* one Temple of the Spheres instance per living culture, seated at its capital, venerating its people's first sphere; a Faction, never *chapter* on screen",
+      "body": "One instance of the **Temple of the Spheres** belonging to one living culture: seated at that culture's capital, with its halls only on that culture's heartland, venerating the sphere its people venerated first at worldgen (`veneratedSphere`), and named *The {culture} Congregation of the Spheres*. It belongs to its culture by a `belongs_to` edge. A congregation is a Faction, not a new kind — every congregation shares the `temple_of_spheres` definition, so every Temple content line reads every congregation, and a Temple reputation effect lands on the actor's own congregation. Seeded by the world scenario block (`templeCongregationsPerCulture`, `src/data/world-scenario.ts`); at 0 the world has one world-wide Temple instead.\n\n**Never *chapter* on a player surface** — the glossary uses *chapter* for the encounter reading unit. The code word survives in engine comments for multi-instance factions in general.\n\nSeated by delegation 2026-09-28 ([THR-1661](https://linear.app/threadbare/issue/THR-1661)); shipped with THR-1632.",
+      "seeAlso": [
+        {
+          "raw": "Faction",
+          "termName": "Faction",
+          "resolvedSlug": "agents#faction"
+        },
+        {
+          "raw": "Realm",
+          "termName": "Realm",
+          "resolvedSlug": "agents#realm"
+        },
+        {
+          "raw": "Fringe",
+          "termName": "Fringe",
+          "resolvedSlug": "agents#fringe"
+        },
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#congregation",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "fringe",
+      "name": "Fringe",
+      "aliases": [],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "a settlement outside every heartland carrying the nearest culture as a weak, current-only link; never Realm territory",
+      "body": "A settlement **outside every culture's heartland** (the culture's provinces) that carries the nearest culture within reach — a weaker, current-only culture link (`belongs_to` with `fringe: true`, half strength, no historical layer). Its mortals are born to that culture and its encounter openings can read that culture's custom, but **it is not territory**: Realm holding, settlement promotion and the map's borders never follow a fringe link. Ruins, lairs and wonders never take one. On a player surface the culture reads *{culture} fringe*, never as full membership and never as a number.\n\nSeated by delegation 2026-09-28 ([THR-1661](https://linear.app/threadbare/issue/THR-1661)); shipped with THR-1632.",
+      "seeAlso": [
+        {
+          "raw": "Realm",
+          "termName": "Realm",
+          "resolvedSlug": "agents#realm"
+        },
+        {
+          "raw": "Congregation",
+          "termName": "Congregation",
+          "resolvedSlug": "agents#congregation"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#fringe",
       "contentAdjacent": true
     },
     {
