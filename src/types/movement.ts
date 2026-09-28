@@ -35,6 +35,13 @@ export interface MovementState {
   targetSublocationId?: string;
   /** Encounter template the agent intends to attempt on arrival */
   targetEncounterId?: string;
+  /**
+   * THR-1669 — the appointment seed whose `departing` regime this journey was chosen
+   * under. Set only on an encounter journey the board picked while the promise was
+   * already competing (so the pick already fit the slack); the mid-journey promise
+   * re-route lets such a journey stand. Any rewrite of the journey drops it.
+   */
+  appointmentOutvoteSeedId?: string;
 
   // --- Road traversal fields (all optional, backward-compatible) ---
 

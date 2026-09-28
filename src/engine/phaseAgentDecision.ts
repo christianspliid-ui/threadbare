@@ -615,11 +615,22 @@ export function phaseAgentDecision(
         // the journey now, through the same writer every departure uses, rather
         // than waiting on the reroute guard's cache scan (which knows nothing
         // about promises). Heading for the place already → leave them be.
+        //
+        // THR-1669 — one rule in both places: the board's outvote stands for the
+        // length of the journey. A journey the full decision chose while this same
+        // promise was already departing (and so already competing, and already
+        // filtered to what fits the slack) is not turned back here; re-routing it
+        // held the board's verdict for exactly one tick and sent one mortal on seed
+        // 99 out and back 41 times. A journey begun before the regime turned — or
+        // rewritten since by the reroute guard — carries no mark and is re-routed.
         if (appointmentCtx?.regime === 'departing') {
           const destHex = resolveLocationToHex(graph, movementState.destinationId);
-          const headingThere = destHex ? hexDistance(destHex, appointmentCtx.slack.placeHex) === 0 : false;
+          const outvoteStands = !!movementState.targetEncounterId
+            && movementState.appointmentOutvoteSeedId === appointmentCtx.seed.seedId;
+          const leaveBe = outvoteStands
+            || (destHex ? hexDistance(destHex, appointmentCtx.slack.placeHex) === 0 : false);
           const fromId = getAgentLocationId(graph, agentId);
-          if (!headingThere && fromId
+          if (!leaveBe && fromId
             && queueAppointmentJourney(graph, agentId, actor, fromId, appointmentCtx, state.tiles, state.tick)) {
             traceAppointmentRegime(graph, agentId, actor, appointmentCtx, state.tick, true);
             newEvents.push({
@@ -1914,6 +1925,12 @@ export function phaseAgentDecision(
             // Attach encounter targeting fields
             movState.targetSublocationId = sel.entry.sublocationId ?? undefined;
             movState.targetEncounterId = sel.entry.templateId;
+            // THR-1669: chosen while departing — `sel` came off the regime-filtered
+            // board, so it already fits the slack. Mark the journey so the moving
+            // path's promise re-route lets the outvote stand to the end of the walk.
+            if (appointmentCtx?.regime === 'departing') {
+              movState.appointmentOutvoteSeedId = appointmentCtx.seed.seedId;
+            }
             // THR-1639: record the pull that chose this journey. The reroute check
             // (GUARD 3) compares alternatives against `motivationPull ?? 0`, so an
             // unset pull meant any entry elsewhere won at the first re-check and the
