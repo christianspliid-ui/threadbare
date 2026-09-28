@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 06:56 local (04:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: newcomers only join the deciding tier when your attention limit has room**, the second step of [notables and ties](https://linear.app/threadbare/issue/THR-1653). Merged via [#2112](https://github.com/christianspliid-ui/threadbare/pull/2112), and live on the site.
+- **2026-09-28: a journey keeps its goal**: a mortal walking to an encounter still arrives after a detour ([THR-1639](https://linear.app/threadbare/issue/THR-1639)). Merged via [#2111](https://github.com/christianspliid-ui/threadbare/pull/2111), and live on the site.
 - **2026-09-28: every reach now reads the town**: the rest of the culture and sphere lines for encounter openings are written ([THR-1638](https://linear.app/threadbare/issue/THR-1638)). Merged via [#2110](https://github.com/christianspliid-ui/threadbare/pull/2110), and live on the site.
 - **2026-09-28: new worlds start with a past**: founding ages, old wars and the dead, stored behind the scenes for now, the first step of [a world with a past](https://linear.app/threadbare/issue/THR-1631). Merged via [#2109](https://github.com/christianspliid-ui/threadbare/pull/2109), and live on the site.
 - **2026-09-28: encounter openings now carry the town's culture**: one plain sentence on how a settlement handles this kind of trouble, or what its ruling sphere does to it ([THR-1635](https://linear.app/threadbare/issue/THR-1635)). Merged via [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091), and live on the site.
@@ -39,8 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-27: thread upkeep is now actually charged**, so the essence readout's income-after-upkeep is the real number ([THR-1652](https://linear.app/threadbare/issue/THR-1652)). Merged via [#2104](https://github.com/christianspliid-ui/threadbare/pull/2104), and live on the site.
 - **2026-09-27: dreams and compulsions now change someone**: Oneiric Sending and Divine Compulsion shift the target mortal's values ([THR-1651](https://linear.app/threadbare/issue/THR-1651)). Merged via [#2103](https://github.com/christianspliid-ui/threadbare/pull/2103), and live on the site.
 - **2026-09-27: a Vision now plays its scene** on The First instead of resolving silently ([THR-1650](https://linear.app/threadbare/issue/THR-1650)). Merged via [#2100](https://github.com/christianspliid-ui/threadbare/pull/2100), and live on the site.
-- **2026-09-27: the ascendant’s essence is now kept in one place**, so the essence bar reads the same number that Stillness and upkeep spend ([THR-1645](https://linear.app/threadbare/issue/THR-1645)). Merged via [#2099](https://github.com/christianspliid-ui/threadbare/pull/2099), and live on the site.
-- **2026-09-27: a mortal you thread with the Agent Thread card is now actually watched**, instead of vanishing from view ([THR-1643](https://linear.app/threadbare/issue/THR-1643)). Merged via [#2098](https://github.com/christianspliid-ui/threadbare/pull/2098), and live on the site.
 
 ---
 
