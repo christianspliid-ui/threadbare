@@ -100,6 +100,7 @@ import { FLOOR_UPGRADE_OUTCOME, mapResolverOutcomeToStep } from './stepResolutio
 import { CHECKPOINT_EFFECT_BY_BAND, pickPrimaryReach } from './undertakingCheckpoints';
 import { computeCapability } from './domainCapability';
 import { findAmbitionTemplate, getStrategicTemplate } from './strategicActionCandidates';
+import { ARRIVAL_GOAL_COMMITMENT_MULTIPLIER } from '../data/movement-content';
 import {
   findGrievanceForAmbitionTemplate,
   grievanceHeat01,
@@ -207,6 +208,14 @@ export interface BoardEntry {
   readonly proficiency?: number;
   /** THR-1582 — the difficulty the entry demands (for the engagement trace). */
   readonly difficulty?: number;
+  /**
+   * THR-1668 — the arrival commitment on the encounter a mortal just walked to
+   * (`ARRIVAL_GOAL_COMMITMENT_MULTIPLIER`), already folded into `score`; absent on
+   * every other entry. On the entry for the reason `ambitionBoost` is: a
+   * multiplier that lives in no trace is how THR-1639's first version of this
+   * commitment went dead unnoticed (it scaled `finalScore`, which the board never reads).
+   */
+  readonly arrivalCommitment?: number;
 }
 
 export interface BoardResult {
@@ -237,6 +246,13 @@ export interface BoardInput {
    * shift. Absent → 0.
    */
   readonly consecutiveFailures?: number;
+  /**
+   * THR-1668 — the encounter a finished journey was walking to, when this is the
+   * first decision after arrival and the goal is still on the encounter list. Its
+   * entry (the one at `locationId`, else every entry of the template) scores
+   * `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` × its board score. Absent → no commitment.
+   */
+  readonly arrivalGoal?: { readonly templateId: string; readonly locationId?: string };
 }
 
 // ─── Payoff ─────────────────────────────────────────────────────
@@ -515,15 +531,28 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // THR-1582: the forecast window's fit was computed once by `scoreAndSelect` and
   // rides on the candidate; applying the same number here keeps the two scorers from
   // disagreeing about the window. A candidate scored before S4 reads fit 1.
+  //
+  // THR-1668: the arrival commitment is applied here, where the decision is made.
+  // Prefer the goal's instance at the journey's destination; if none is there,
+  // every instance of the template carries it (the scorer found it elsewhere).
+  const goal = input.arrivalGoal;
+  const goalAtDestination = goal?.locationId !== undefined && input.encounterCandidates.some(
+    c => c.entry.templateId === goal.templateId && c.entry.locationId === goal.locationId,
+  );
   for (const [index, candidate] of input.encounterCandidates.entries()) {
     const forecastFit = Number.isFinite(candidate.engagementFit) ? candidate.engagementFit : 1;
+    const isGoal = goal !== undefined
+      && candidate.entry.templateId === goal.templateId
+      && (!goalAtDestination || candidate.entry.locationId === goal.locationId);
+    const arrivalCommitment = isGoal ? ARRIVAL_GOAL_COMMITMENT_MULTIPLIER : 1;
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
       evt: candidate.valuePerTick,
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
-      score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit,
+      score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment,
+      ...(isGoal ? { arrivalCommitment } : {}),
       candidateIndex: index,
       forecast: candidate.engagementForecast,
       forecastFit,

@@ -984,7 +984,15 @@ export function phaseAgentDecision(
       // ARRIVAL_GOAL_COMMITMENT_MULTIPLIER × its board score, and the goal is then
       // consumed so the bias never outlives the arrival. Ineligible on arrival →
       // the goal is dropped and the board decides as before (fail-soft).
+      //
+      // THR-1668: in `'live'` the unified board below makes the decision, and it
+      // scores encounters from `valuePerTick`, never `finalScore` — so the commit
+      // here only moves the legacy pick. The board gets the goal as `arrivalGoal`
+      // and applies the same multiplier where it decides. It sees only
+      // `topCandidates` (the scorer's top five), so a goal ranked below that is
+      // appended — otherwise the commitment could never reach it.
       let arrivalGoal: 'kept' | 'dropped' | undefined;
+      let boardArrivalGoal: { templateId: string; locationId?: string } | undefined;
       if (journeyGoalId && arrivedState) {
         const goalId = journeyGoalId;
         const commit = (list: ScoredCandidate[]): ScoredCandidate[] => list
@@ -996,6 +1004,13 @@ export function phaseAgentDecision(
           decision.topCandidates = commit(decision.topCandidates);
           const top = decision.rankedCandidates[0] ?? null;
           if (top && top.finalScore >= IDLE_SCORE_THRESHOLD) decision.selected = top;
+          if (!decision.topCandidates.some(c => c.entry.templateId === goalId)) {
+            const goalCandidate = decision.rankedCandidates.find(
+              c => c.entry.templateId === goalId && c.entry.locationId === arrivedState.destinationId,
+            ) ?? decision.rankedCandidates.find(c => c.entry.templateId === goalId);
+            if (goalCandidate) decision.topCandidates = [...decision.topCandidates, goalCandidate];
+          }
+          boardArrivalGoal = { templateId: goalId, locationId: arrivedState.destinationId };
         }
         arrivalGoal = goalOnBoard ? 'kept' : 'dropped';
         // Consumed in place: later writes in this iteration spread the actor's
@@ -1180,6 +1195,7 @@ export function phaseAgentDecision(
             fundament: state.worldSoul?.fundament,
             holdStanding: holdReader.standingFor(agentId),
             consecutiveFailures,
+            ...(boardArrivalGoal ? { arrivalGoal: boardArrivalGoal } : {}),
           });
 
           // An empty board is a real verdict, not a missing one: it is what the
@@ -1255,6 +1271,7 @@ export function phaseAgentDecision(
                 : {}),
               ...(e.forecastFit !== undefined ? { forecastFit: e.forecastFit } : {}),
               ...(e.forecastZone !== undefined ? { forecastZone: e.forecastZone } : {}),
+              ...(e.arrivalCommitment !== undefined ? { arrivalCommitment: e.arrivalCommitment } : {}),
             })),
             agreement,
             boardFamily,

@@ -49,6 +49,7 @@ import {
   UNDERTAKING_NEUTRAL_DESIRE,
 } from '../../data/strategic-action-constants';
 import { MINIMUM_DESIRE, PERSONALITY_SCORE_EXPONENT } from '../../data/agent-behavior-constants';
+import { ARRIVAL_GOAL_COMMITMENT_MULTIPLIER } from '../../data/movement-content';
 
 // ─── Fixtures ───────────────────────────────────────────────────
 
@@ -541,6 +542,72 @@ describe('scoreUnifiedBoard', () => {
     // An encounter has no checkpoint, so it carries no forecast — an absent key,
     // not a zero that would read as "certain to halt".
     expect(board.entries[0].advanceProbability).toBeUndefined();
+  });
+
+  // THR-1668 — the arrival commitment acts on the board, where the decision is made.
+  // Its first version scaled `finalScore`, which this board never reads, so a mortal
+  // arriving at the encounter it walked to was re-ranked from scratch.
+  describe('arrivalGoal (THR-1668)', () => {
+    const M = ARRIVAL_GOAL_COMMITMENT_MULTIPLIER;
+    const mk = (id: string, vpt: number, locationId = 'loc_here') => ({
+      entry: { templateId: id, locationId },
+      valuePerTick: vpt,
+      desireMultiplier: 1,
+    }) as never;
+
+    it('lets the goal beat a runner-up it would lose to without the commitment', () => {
+      const runnerUp = 0.4 * (1 + M) / 2; // above the goal, below goal × M
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('other', runnerUp), mk('goal', 0.4)],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal', locationId: 'loc_here' },
+      });
+      expect(board.winner?.id).toBe('goal');
+      const goal = board.entries.find(e => e.id === 'goal')!;
+      expect(goal.score).toBeCloseTo(0.4 * M, 10);
+      expect(goal.arrivalCommitment).toBe(M);
+      expect(board.entries.find(e => e.id === 'other')!.arrivalCommitment).toBeUndefined();
+    });
+
+    it('still loses to a board that has moved by more than the commitment', () => {
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('goal', 0.4), mk('other', 0.4 * M * 1.1)],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal', locationId: 'loc_here' },
+      });
+      expect(board.winner?.id).toBe('other');
+    });
+
+    it('commits only the instance at the destination when one is there', () => {
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('goal', 0.4, 'loc_here'), mk('goal', 0.4, 'loc_far')],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal', locationId: 'loc_here' },
+      });
+      const committed = board.entries.filter(e => e.arrivalCommitment !== undefined);
+      expect(committed).toHaveLength(1);
+      expect(committed[0].candidateIndex).toBe(0);
+    });
+
+    it('commits every instance when none is at the destination, and nothing without a goal', () => {
+      const elsewhere = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('goal', 0.4, 'loc_a'), mk('goal', 0.4, 'loc_b')],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal', locationId: 'loc_here' },
+      });
+      expect(elsewhere.entries.every(e => e.arrivalCommitment === M)).toBe(true);
+      const none = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('goal', 0.4)],
+        strategicCandidates: [],
+      });
+      expect(none.entries[0].arrivalCommitment).toBeUndefined();
+      expect(none.entries[0].score).toBeCloseTo(0.4, 10);
+    });
   });
 
   it('sorts descending and caps `top`', () => {
