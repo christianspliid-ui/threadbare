@@ -12,6 +12,10 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
+import type { HexCoord } from '../types';
+import { hexDistance } from '../lib/hexMath';
+import { getLocationNodes, resolveToParentLocation } from './sublocationShape';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
@@ -46,6 +50,7 @@ import type {
 import {
   INTENT_OPTIONS,
   MEETING_CANDIDATE_COUNT,
+  MEETING_CULTURED_PREFERENCE_RADIUS,
   MEETING_DILEMMA_COUNT_MIN,
   MEETING_DILEMMA_COUNT_MAX,
   DILEMMA_SHIFT_MAGNITUDE,
@@ -1264,6 +1269,101 @@ export const MEETING_SETTLED_LOCATION_SUBTYPES: readonly string[] = [
 ];
 
 /**
+ * True once the ascendant holds a `thread` edge at court position `the_first`
+ * (THR-1605 S1). The one read of "has the player met their First?" — the doom
+ * wake (S2), the spine gift gates (S4) and the first-screen reveal (S5) all ask
+ * through here rather than re-scanning thread edges inline.
+ */
+export function isFirstBonded(graph: WorldGraph, ascendantId: string): boolean {
+  return graph.getOutgoingEdges(ascendantId, 'thread').some(e =>
+    (e.properties.courtPosition as string) === 'the_first',
+  );
+}
+
+/** Result of {@link pickMeetingLocation}: the settlement and why it won. */
+export interface MeetingLocationPick {
+  readonly locationId: string;
+  /** Hex distance from the avatar's resolved hex (or the map centre, see below). */
+  readonly hexDistance: number;
+  /** True when the settlement carries a current culture. */
+  readonly cultured: boolean;
+}
+
+function hexOf(node: GraphNode | undefined): HexCoord | null {
+  const col = node?.properties.hexCol;
+  const row = node?.properties.hexRow;
+  return typeof col === 'number' && typeof row === 'number' ? { col, row } : null;
+}
+
+function hasCurrentCulture(graph: WorldGraph, locationId: string): boolean {
+  return graph.getOutgoingEdges(locationId, 'belongs_to').some(e =>
+    (e.properties.cultureLayer as string | undefined) === 'current',
+  );
+}
+
+/**
+ * Pick the settlement where the Meet-The-First beat takes place (THR-1605 S1).
+ *
+ * The god *senses* the three souls from a height and the candidates are born at
+ * the meeting location, so the avatar does not have to stand there. The meeting
+ * goes to the settlement nearest the avatar, which keeps every
+ * `{agent.location}` line in the dilemma library true as written.
+ *
+ * - Candidates: outer-tier Locations (`getLocationNodes`, never a Place) whose
+ *   subtype is in {@link MEETING_SETTLED_LOCATION_SUBTYPES}.
+ * - Score: hex distance from the avatar's hex, resolved upward through
+ *   `located_at` → parent Location. With no resolvable avatar hex, distance is
+ *   measured from the centre of the settlements' bounding box (fail-soft).
+ * - A settlement with a current culture within
+ *   {@link MEETING_CULTURED_PREFERENCE_RADIUS} beats a nearer uncultured one.
+ * - Ties break on node id: deterministic, no PRNG (NFP #3).
+ *
+ * Returns `null` when no settlement exists; the caller falls back to the
+ * avatar's own location. Never throws.
+ */
+export function pickMeetingLocation(
+  graph: WorldGraph,
+  ascendantId: string,
+): MeetingLocationPick | null {
+  const settlements = getLocationNodes(graph)
+    .map(node => ({ node, hex: hexOf(node) }))
+    .filter((c): c is { node: GraphNode; hex: HexCoord } =>
+      c.hex !== null
+      && MEETING_SETTLED_LOCATION_SUBTYPES.includes(c.node.properties.locationSubtype as string));
+  if (settlements.length === 0) return null;
+
+  let origin: HexCoord | null = null;
+  const avatarId = graph.getIncomingEdges(ascendantId, 'avatar_of')[0]?.source;
+  const locEdge = avatarId ? graph.getOutgoingEdges(avatarId, 'located_at')[0] : undefined;
+  if (locEdge) {
+    const at = graph.getNode(locEdge.target);
+    origin = hexOf(at) ?? hexOf(resolveToParentLocation(graph, at));
+  }
+  if (!origin) {
+    const cols = settlements.map(s => s.hex.col);
+    const rows = settlements.map(s => s.hex.row);
+    origin = {
+      col: Math.round((Math.min(...cols) + Math.max(...cols)) / 2),
+      row: Math.round((Math.min(...rows) + Math.max(...rows)) / 2),
+    };
+  }
+
+  const scored = settlements
+    .map(({ node, hex }) => ({
+      locationId: node.id,
+      hexDistance: hexDistance(origin, hex),
+      cultured: hasCurrentCulture(graph, node.id),
+    }))
+    .sort((a, b) => a.hexDistance - b.hexDistance || (a.locationId < b.locationId ? -1 : a.locationId > b.locationId ? 1 : 0));
+
+  const nearestCultured = scored.find(s => s.cultured);
+  if (nearestCultured && nearestCultured.hexDistance <= MEETING_CULTURED_PREFERENCE_RADIUS) {
+    return nearestCultured;
+  }
+  return scored[0];
+}
+
+/**
  * Check if the Meet The First action is available.
  * Requires: no active First, cooldown expired, location has agents.
  */
@@ -1273,11 +1373,7 @@ export function isMeetTheFirstAvailable(
   currentTick: number,
 ): boolean {
   // Check no existing 'the_first' court position
-  const threads = graph.getOutgoingEdges(ascendantId, 'thread');
-  const hasActiveFirst = threads.some(e =>
-    (e.properties.courtPosition as string) === 'the_first'
-  );
-  if (hasActiveFirst) return false;
+  if (isFirstBonded(graph, ascendantId)) return false;
 
   // Check cooldown
   const ascendant = graph.getNode(ascendantId);

@@ -5238,6 +5238,28 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.',
     },
   },
+  // -- The opening: the meeting's bond is what makes a First (THR-1605 S1) ---
+  // Audit-on-touch row for the plan `2026-09-27-thr-1605-the-opening.md`. The
+  // meeting writes one `thread` edge at court position `the_first`; that edge is
+  // the only thing that makes a mortal The First. `isFirstBonded` is its single
+  // reader in the meeting module (the doom wake, spine gift gates and first-screen
+  // reveal of S2/S4/S5 read through it), and attention promotes the First's
+  // background encounters to shaping on the same court position.
+  {
+    id: 'meeting-bond-writes-the-first',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player\'s First — the meeting stops offering itself, and their encounters are raised to shaping attention.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['the_first'],
+      module: 'src/engine/meetingEncounter.ts',
+    },
+    writeSites: ['src/engine/meetingEncounter.ts'],
+    readSites: ['src/engine/attentionTier.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

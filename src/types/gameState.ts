@@ -537,6 +537,10 @@ export interface GameState {
 
   // Onboarding — one-shot flags for auto-triggered encounters
   meetTheFirstAutoTriggered?: boolean;
+  /** Where the auto-triggered Meet-The-First beat took place (THR-1605 S1) —
+   *  the settlement `pickMeetingLocation` chose, or the avatar's own location on
+   *  the fallback path. Unset until the auto-trigger fires. */
+  meetingLocationId?: string;
 
   // Template novelty pressure — global recency/quota tracking to prevent template monopoly (THR-453)
   encounterNoveltyRecord?: EncounterNoveltyRecord;

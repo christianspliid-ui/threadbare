@@ -367,6 +367,8 @@ export type TraceCategory =
   // Delivery-beat playback — Witness opens the scene on The First (THR-1650)
   | 'beat.delivery_played'
   | 'beat.delivery_skipped'
+  // The opening — the meeting comes to the player (THR-1605 S1)
+  | 'meeting.location_picked'
   | 'action.unlock.granted'
   // Ascendant expression cards (THR-508)
   | 'ascendant_expression'
@@ -867,6 +869,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Delivery-beat playback (THR-1650)
   'beat.delivery_played',
   'beat.delivery_skipped',
+  // The opening (THR-1605 S1)
+  'meeting.location_picked',
   'action.unlock.granted',
   // Ascendant expression cards (THR-508)
   'ascendant_expression',
@@ -4343,6 +4347,7 @@ export type TraceEntry =
   | BeatResolvedTrace
   | BeatSeededTrace
   | BeatDeliveryTrace
+  | MeetingLocationPickedTrace
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
   | ChapterArchivedTrace
@@ -4699,6 +4704,21 @@ export interface BeatDeliveryTrace extends TraceBase {
   reason?: 'no_first' | 'no_anchor' | 'ineligible' | 'template_missing' | 'open_failed';
   /** Offer-time withholding only: how many delivery beats were filtered out this draw. */
   filteredCount?: number;
+}
+
+/**
+ * Trace: the Meet-The-First auto-trigger chose where the meeting takes place
+ * (THR-1605 S1). Exactly one per run — the trigger is one-shot. `fallback: true`
+ * means no settlement existed and the avatar's own location was used.
+ */
+export interface MeetingLocationPickedTrace extends TraceBase {
+  category: 'meeting.location_picked';
+  locationId: string;
+  /** From the avatar's resolved hex; -1 on the fallback path. */
+  hexDistance: number;
+  /** Picked for its current culture. */
+  cultured: boolean;
+  fallback: boolean;
 }
 
 /** Trace: a pending ascendant beat resolved. THR-500 */

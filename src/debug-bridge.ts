@@ -2624,6 +2624,32 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1605 — the opening: has the player met The First, and where.
+     *
+     * S1 fields only; later slices of the opening plan (doom wake, spine gift
+     * gates) extend this object. `meetingLocationId` is set the moment the
+     * auto-trigger fires and stays set after the bond.
+     *
+     * **Async** (`await` it) — the engine helper is pulled in on call.
+     */
+    getOpeningState: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { isFirstBonded, isMeetTheFirstAvailable } = await import('./engine/meetingEncounter');
+      const { ASCENDANT_SPINE } = await import('./data/ascendant-beat-content');
+      const openingBeatId = ASCENDANT_SPINE[0].beatId;
+      return {
+        firstBonded: isFirstBonded(state.graph, state.ascendantId),
+        meetTheFirstAvailable: isMeetTheFirstAvailable(state.graph, state.ascendantId, state.tick),
+        openingBeatResolved: state.ascendantBeats
+          ? state.ascendantBeats.history.some(r => r.beatId === openingBeatId)
+          : true,
+        meetingAutoTriggered: state.meetTheFirstAutoTriggered === true,
+        meetingLocationId: state.meetingLocationId ?? null,
+      };
+    },
+
+    /**
      * THR-1030 — what the `?outcome=<band>` review pin actually produced.
      *
      * Resolves `null` when no pin is armed, or when one is armed but the pinned
