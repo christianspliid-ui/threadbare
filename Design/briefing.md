@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-29 00:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-29 01:56 local (23:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,22 +27,20 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 jobs ready to build, none being built right now.** The builder picks up the next one at the top of the hour. New this hour, both merged and live:
+**Healthy: 6 jobs ready to build, none being built right now.** The builder picks up the next one at the top of the hour. New this hour, merged and live:
 
-- [A mortal who walks to a remote encounter starts it on arrival](https://linear.app/threadbare/issue/THR-1668) ([#2131](https://github.com/christianspliid-ui/threadbare/pull/2131)).
-- [A mortal with a promise to keep stops turning back from every journey](https://linear.app/threadbare/issue/THR-1669) ([#2132](https://github.com/christianspliid-ui/threadbare/pull/2132)).
+- [One notable in every settlement](https://linear.app/threadbare/issue/THR-1654) ([#2133](https://github.com/christianspliid-ui/threadbare/pull/2133)).
 
-- **The living world, next up:** [one notable in every settlement](https://linear.app/threadbare/issue/THR-1654), [the player meets the past](https://linear.app/threadbare/issue/THR-1656), [the past feeds ambitions](https://linear.app/threadbare/issue/THR-1657), [the player sees faith and fringe](https://linear.app/threadbare/issue/THR-1659), [a lead is a reason to look](https://linear.app/threadbare/issue/THR-1663), and [finish the encounters, step two](https://linear.app/threadbare/issue/THR-1666). The glossary words "lead" and "delve" ([THR-1662](https://linear.app/threadbare/issue/THR-1662)) are queued under your standing delegation.
+- **The living world, next up:** [the player meets the past](https://linear.app/threadbare/issue/THR-1656), [the past feeds ambitions](https://linear.app/threadbare/issue/THR-1657), [the player sees faith and fringe](https://linear.app/threadbare/issue/THR-1659), [a lead is a reason to look](https://linear.app/threadbare/issue/THR-1663), and [finish the encounters, step two](https://linear.app/threadbare/issue/THR-1666). The glossary words "lead" and "delve" ([THR-1662](https://linear.app/threadbare/issue/THR-1662)) are queued under your standing delegation.
 - **Faith and politics is not ready for you to look at yet.** The world now has it, but nothing on screen shows it until [THR-1659](https://linear.app/threadbare/issue/THR-1659) ships.
 - **The fight system is live but not ready for you to review.** No one-click link opens a fight the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **The home checkout is now 83 commits behind `main`**, stuck for about 17 hours. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan, which probably blocks the update. A builder's job, not yours.
+- **The home checkout is now 88 commits behind `main`**, stuck for about 18 hours. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan, which probably blocks the update. A builder's job, not yours.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
-  - The slow simulation tests are green again: the one failure from last hour cleared on the next two merges ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/36493339045)).
-  - Game speed: 90 ms per tick, within range of the weekly median (78).
-  - The live site is up to date (1200a6f7, the promise-keeping fix).
+  - Game speed: 92 ms per tick, within range of the weekly median (78).
+  - The live site is up to date (7d0f4f0e, the settlement notables).
   - Automated checks and the three background jobs are running; no pull requests are waiting.
   - All ten scheduled lanes are on time. The worktree cleaner reports five old worktrees awaiting its own decision.
