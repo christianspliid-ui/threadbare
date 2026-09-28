@@ -1,60 +1,64 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 interface UseInterruptAutoPauseParams {
   /**
-   * True while ANY blocking interrupt surface is open (encounter veil, beat
-   * modal, vignette, story beat, premonition, emergence dilemma, choice set,
-   * meeting flow). The caller ORs the render conditions of every such surface —
-   * mirror the render condition exactly, or a modal that cannot render will
-   * hold the sim paused behind an invisible gate.
+   * True while ANY interrupt is open. The caller reads this from the interrupt
+   * registry (`interruptRegistry.ts`, THR-1608) — never from an ad-hoc OR of
+   * render conditions, or the pause and the debug surface can disagree.
    */
   interruptOpen: boolean;
   running: boolean;
   setRunning: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export interface InterruptAutoPauseHandle {
   /**
-   * Optional external escape hatch: when a flow sets this ref to true (e.g.
-   * commit-and-continue, interrupt-opened encounters), the next
-   * all-interrupts-closed transition resumes the sim even if it was not
-   * auto-paused. Cleared by the hook when consumed.
+   * Whether the clock was running when the current run of interrupts began.
+   * `null` while no interrupt is open. Read by `__DEBUG.getInterruptState()`.
    */
-  forceResumeRef?: React.MutableRefObject<boolean>;
+  getWasRunningBeforeInterrupt: () => boolean | null;
 }
 
 /**
- * Central auto-pause for blocking interrupt surfaces (THR-668).
+ * Central auto-pause for interrupts (THR-668), with the Stellaris resume
+ * policy (THR-1608, plan § S3): **time returns to the state it was in.**
  *
- * Semantics:
- * - Opening any interrupt surface while the sim runs pauses it and records
- *   that the pause was automatic.
- * - The sim resumes only when ALL interrupt surfaces are closed AND the pause
- *   was automatic. A manual pause taken before the interrupt stays a manual
- *   pause — closing the modal does not resume.
- * - While an interrupt is open, any attempt to resume (e.g. a per-modal close
- *   handler firing while a second modal is still up) is re-paused on the next
- *   effect pass, so stacked modals cannot leak a running sim.
+ * - When the first interrupt opens, record whether the clock was running, and
+ *   stop it.
+ * - While any interrupt stays open, the clock stays stopped. Anything that
+ *   restarts it behind the modal (a per-modal close handler, a stale path) is
+ *   stopped again on the next effect pass, and does NOT change the recorded
+ *   state — stacked interrupts cannot leak a running world.
+ * - When the last interrupt closes, restore the recorded state. A player who
+ *   paused stays paused; a running world runs on.
+ *
+ * There is no forced-resume side channel. THR-668 kept one for encounter
+ * commit-and-continue and interrupt-opened encounters; both are resume-to-prior
+ * now, per Christian's 2026-09-27 ruling (the clock is the Stellaris model). If
+ * a surface ever genuinely needs "always resume", it becomes an explicit field
+ * on its registry entry, never a ref.
  */
 export function useInterruptAutoPause({
   interruptOpen,
   running,
   setRunning,
-  forceResumeRef,
-}: UseInterruptAutoPauseParams): void {
-  /** Tracks whether the current pause was taken by this hook (vs. the player). */
-  const wasRunningBeforeInterrupt = useRef(false);
+}: UseInterruptAutoPauseParams): InterruptAutoPauseHandle {
+  /** `null` = no interrupt open; otherwise the clock state before the first one opened. */
+  const priorRunning = useRef<boolean | null>(null);
 
   useEffect(() => {
-    if (interruptOpen && running) {
-      wasRunningBeforeInterrupt.current = true;
-      setRunning(false);
+    if (interruptOpen) {
+      if (priorRunning.current === null) priorRunning.current = running;
+      if (running) setRunning(false);
+      return;
+    }
+    if (priorRunning.current !== null) {
+      const resume = priorRunning.current;
+      priorRunning.current = null;
+      if (resume) setRunning(true);
     }
   }, [interruptOpen, running, setRunning]);
 
-  useEffect(() => {
-    if (interruptOpen) return;
-    if (wasRunningBeforeInterrupt.current || forceResumeRef?.current) {
-      wasRunningBeforeInterrupt.current = false;
-      if (forceResumeRef) forceResumeRef.current = false;
-      setRunning(true);
-    }
-  }, [interruptOpen, setRunning, forceResumeRef]);
+  const getWasRunningBeforeInterrupt = useCallback(() => priorRunning.current, []);
+  return { getWasRunningBeforeInterrupt };
 }

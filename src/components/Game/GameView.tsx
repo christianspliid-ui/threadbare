@@ -192,6 +192,7 @@ import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
+import { resolveInterrupts } from './interruptRegistry';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
 import {
@@ -1296,7 +1297,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   } = useNotifications({
     tickEvents: gameState.tickEvents,
     running,
-    setRunning,
     visibilityMap: effectiveVisibilityMap,
     suspendChoicePopups: interruptSuppressedUntilTick !== null && gameState.tick < interruptSuppressedUntilTick,
     preferences: notificationPrefs,
@@ -3128,8 +3128,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     // World view → encounter handoff (THR-340 / Phase F2):
     // emit `spotlight_changed` trace, then write the new spotlightedAgent to GameState.
-    // The world freeze (turn-based contract) is enforced by the central
-    // interrupt auto-pause, which runs `setRunning(false)` when tieredEncounterState mounts.
+    // The world freeze (the Stellaris clock — time stops for every moment) is
+    // enforced by the central interrupt auto-pause, which runs `setRunning(false)`
+    // when tieredEncounterState mounts.
     const prevSpotlight = gameState.spotlightedAgent ?? null;
     if (prevSpotlight !== agentId) {
       prepareEncounterHandoff({
@@ -3158,24 +3159,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.spotlightedAgent, gameState.tick, gameState.unifiedActions, setGameState]);
 
-  /**
-   * External force-resume flag for the central interrupt auto-pause (THR-668):
-   * set before closing an interrupt surface to resume the sim once ALL
-   * interrupt surfaces are closed, even if the sim was not auto-paused.
-   * Consumed (cleared) by useInterruptAutoPause.
-   */
-  const forceResumeAfterInterruptsRef = useRef<boolean>(false);
   const suppressedEncounterNotificationId = useRef<string | null>(null);
 
-  const closeEncounterModalAndResume = useCallback((openedAsInterrupt?: boolean) => {
+  // `openedAsInterrupt` no longer forces a resume (THR-1608): the central
+  // auto-pause restores the clock to its state before the encounter opened.
+  const closeEncounterModalAndResume = useCallback((_openedAsInterrupt?: boolean) => {
     setTieredEncounterState(null);
     // Clear the spotlight so AgentPulseOverlay stops pulsing once the encounter screen unmounts (THR-340).
     setGameState(prev => (prev.spotlightedAgent === undefined
       ? prev
       : { ...prev, spotlightedAgent: undefined }));
-    // Interrupt-opened encounters resume even if the sim was idle when they
-    // fired; either way the resume waits until all interrupt surfaces closed.
-    if (openedAsInterrupt) forceResumeAfterInterruptsRef.current = true;
   }, [setGameState]);
 
   const handleEncounterDisregard = useCallback(() => {
@@ -3813,7 +3806,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
-    forceResumeAfterInterruptsRef.current = true;
   }, [
     tieredEncounterState,
     encounterVeilModel,
@@ -3830,9 +3822,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
-    // Commit-and-continue always resumes — but only once ALL interrupt
-    // surfaces are closed (central auto-pause consumes this flag, THR-668).
-    forceResumeAfterInterruptsRef.current = true;
+    // The clock returns to its state before the encounter opened, once ALL
+    // interrupts are closed (THR-668 auto-pause, THR-1608 resume-to-prior).
   }, [gameState.tick, handleEncounterIntervene, tieredEncounterState]);
 
   /** Boost handler — Watched tier essence boost */
@@ -4316,34 +4307,40 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [setGameState]);
 
-  // ── Central interrupt auto-pause (THR-668) ──
-  // Any blocking interrupt surface pauses the sim while open; the sim resumes
-  // only when ALL of them are closed and the pause was automatic (a manual
-  // pause stays manual). Each term mirrors the surface's render condition —
-  // pausing for a modal that cannot render would hold the sim behind an
-  // invisible gate. Add new interrupt surfaces here AND to getDebugOpenModals.
+  // ── The Stellaris clock: interrupt registry + auto-pause (THR-668, THR-1608) ──
+  // Every surface that stops the world is an entry in `INTERRUPT_SURFACES`
+  // (interruptRegistry.ts); this snapshot is the raw state their render
+  // conditions read. The auto-pause, `getOpenModals()` and
+  // `getInterruptState()` all read the same resolution, so they cannot disagree.
+  // Add a new interrupt surface to the registry, never to an expression here.
   //
   // `otherInterruptOpen` is every surface except the moment card, and is what
   // gates the card (THR-1299 slice 3): the card fills its slot only when this is
   // false and renders only while it stays false, so an encounter that opens in the
-  // same tick wins the race and a card never co-renders with anything.
-  const otherInterruptOpen =
-    tieredEncounterState !== null
-    || (meetingState !== null && !!ascendantIdentity)
-    || (activePremonition !== null && !interruptsSuppressed)
-    || (activeVignette !== null && !interruptsSuppressed)
-    || (!!activeStoryBeatId && !!activeStoryBeatTemplate && !interruptsSuppressed)
-    || (!!pendingBeat && beatEntered)
-    || !!pendingChoice
-    || !!gameState.pendingEmergenceDecision
-    || activeReceipt !== null;
-  const interruptModalOpen = otherInterruptOpen || pendingMoment !== null;
+  // same tick wins the race and a card never co-renders with anything. The popup
+  // channel yields to everything, the card included (one interrupt at a time).
+  const interruptResolution = resolveInterrupts({
+    interruptsSuppressed,
+    encounterOpen: tieredEncounterState !== null,
+    meetingPending: meetingState !== null,
+    hasAscendantIdentity: !!ascendantIdentity,
+    premonitionPending: activePremonition !== null,
+    vignettePending: activeVignette !== null,
+    storyBeatPending: !!activeStoryBeatId && !!activeStoryBeatTemplate,
+    ascendantBeatEntered: !!pendingBeat && beatEntered,
+    choiceSetPending: !!pendingChoice,
+    emergenceDecisionPending: !!gameState.pendingEmergenceDecision,
+    divineReceiptPending: activeReceipt !== null,
+    momentPending: pendingMoment !== null,
+    chapterLedgerOpen,
+    popupQueued: currentPopup !== null,
+  });
+  const otherInterruptOpen = interruptResolution.otherThanMomentOpen;
 
-  useInterruptAutoPause({
-    interruptOpen: interruptModalOpen,
+  const interruptAutoPause = useInterruptAutoPause({
+    interruptOpen: interruptResolution.anyOpen,
     running,
     setRunning,
-    forceResumeRef: forceResumeAfterInterruptsRef,
   });
 
   // ── Moment queue consumer (THR-1299 slice 3) ──
@@ -4382,17 +4379,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       if (stubModalState.category === 'artifact') openModals.push('ArtifactSheet');
     }
     if (attachmentSheetId) openModals.push('AttachmentDetailView');
-    if (tieredEncounterState && encounterVeilModel) openModals.push('EncounterVeil');
-    if (meetingState && ascendantIdentity) openModals.push('MeetTheFirstFlow');
-    if (activeVignette && !interruptsSuppressed) openModals.push('JourneyVignetteModal');
-    if (activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed) openModals.push('StoryBeatModal');
-    if (pendingBeat && beatEntered) openModals.push('AscendantBeatModal');
-    else if (pendingBeat && !interruptsSuppressed) openModals.push('AscendantBeatOfferBanner');
-    if (pendingChoice) openModals.push('ChoiceSetModal');
-    if (gameState.pendingEmergenceDecision) openModals.push('EmergenceDilemmaModal');
-    if (activeReceipt) openModals.push('DivineReceiptModal');
-    if (pendingMoment && !otherInterruptOpen) openModals.push('MomentCard');
-    if (activePremonition && !interruptsSuppressed) openModals.push('PremonitionModal');
+    // Every interrupt comes from the registry (THR-1608) — the same resolution
+    // the auto-pause reads, so the debug surface and the pause cannot disagree.
+    openModals.push(...interruptResolution.open);
+    // The offer banner is not an interrupt: it does not stop the world.
+    if (pendingBeat && !beatEntered && !interruptsSuppressed) openModals.push('AscendantBeatOfferBanner');
     if (ascendantSheetOpen) openModals.push('AscendantSheet');
     if (doomDetailOpen) openModals.push('DoomClockDetail');
     if (mandateDetailOpen && gameState.mandateDefinition && gameState.mandateState) openModals.push('MandateDetail');
@@ -4400,26 +4391,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     return openModals;
   }, [
-    activePremonition,
-    activeStoryBeatId,
-    activeStoryBeatTemplate,
-    activeVignette,
     agendaPickerOpen,
     agentInfoCard,
-    ascendantIdentity,
     ascendantSheetOpen,
     attachmentSheetId,
     debugPanelOpen,
     doomDetailOpen,
     drawerOpen,
-    encounterVeilModel,
     enrichedNonAgentSlots,
     gameState.mandateDefinition,
     gameState.mandateState,
     harvestResult,
+    interruptResolution,
     interruptsSuppressed,
     mandateDetailOpen,
-    meetingState,
     nonAgentDrawerOpen,
     pendingAgendas,
     profileModalAgentId,
@@ -4428,15 +4413,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     selectedAgentId,
     settingsPanelOpen,
     stubModalState,
-    tieredEncounterState,
     pendingBeat,
     beatEntered,
-    pendingChoice,
-    gameState.pendingEmergenceDecision,
-    activeReceipt,
-    pendingMoment,
-    otherInterruptOpen,
   ]);
+
+  /** `__DEBUG.getInterruptState()` (THR-1608 S3) — what stops the clock, and what it returns to. */
+  const getDebugInterruptState = useCallback(() => ({
+    open: interruptResolution.open,
+    wasRunningBeforeInterrupt: interruptAutoPause.getWasRunningBeforeInterrupt(),
+    // Popups waiting their turn: the whole queue while one is held back, the
+    // rest behind the head while it shows.
+    queuedPopups: Math.max(0, notificationState.popupQueue.length - (interruptResolution.popupMayRender ? 1 : 0)),
+    running,
+  }), [interruptResolution, interruptAutoPause, notificationState.popupQueue.length, running]);
 
   const getDebugActiveUIState = useCallback(() => {
     const urlView = new URLSearchParams(window.location.search).get('view') ?? 'game';
@@ -4481,7 +4470,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerOpenModalsProvider(getDebugOpenModals);
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
-  }, [getDebugActiveUIState, getDebugOpenModals]);
+    window.__DEBUG._registerInterruptStateProvider?.(getDebugInterruptState);
+  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState]);
 
   // ── Incident snapshot (THR-1134) ──
   // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
@@ -4943,9 +4933,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                           }));
                         }
 
-                        // Queue nested choice (if a consequence produced one) or clear and resume
+                        // Queue nested choice (if a consequence produced one) or clear.
+                        // The central auto-pause restores the clock (THR-1608).
                         setPendingChoice(nestedPending);
-                        if (!nestedPending) setRunning(true);
                       }}
                       onDismiss={() => {
                         if (pendingChoice) {
@@ -4959,7 +4949,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                           });
                         }
                         setPendingChoice(null);
-                        setRunning(true);
                       }}
                     />
                   )}
@@ -5776,7 +5765,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       {/* Event popup overlay */}
       <EventPopup
-        popup={interruptsSuppressed ? null : currentPopup}
+        popup={interruptResolution.popupMayRender ? currentPopup : null}
         queueLength={notificationState.popupQueue.length}
         onDismiss={handleDismissPopup}
         onChoice={handlePopupChoice}

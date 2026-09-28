@@ -45,8 +45,8 @@ export const useNotificationsTestHelpers = {
 
 interface UseNotificationsParams {
   tickEvents: TickEvent[];
+  /** Drives the toast expiry timer only. Pausing for popups is the interrupt registry's job (THR-1608). */
   running: boolean;
-  setRunning: (running: boolean) => void;
   visibilityMap: VisibilityMap;
   /** Notification preferences — controls which categories are shown and duration mode */
   preferences?: NotificationPreferences;
@@ -74,7 +74,6 @@ export interface UseNotificationsReturn {
 export function useNotifications({
   tickEvents,
   running,
-  setRunning,
   visibilityMap,
   preferences,
   graph,
@@ -88,9 +87,6 @@ export function useNotifications({
   });
 
   const prevTickEventsRef = useRef<TickEvent[]>([]);
-  const wasRunningRef = useRef(running);
-  const runningRef = useRef(running);
-  runningRef.current = running;
 
   // The graph is mutated in place, so it is read through a ref rather than
   // tracked as an effect dependency — the gate is rebuilt per routing pass
@@ -127,14 +123,10 @@ export function useNotifications({
     return () => clearInterval(interval);
   }, [running]);
 
-  // Auto-pause for popups with choices
-  useEffect(() => {
-    const currentPopup = state.popupQueue[0] ?? null;
-    if (currentPopup?.choices && currentPopup.choices.length > 0 && runningRef.current) {
-      wasRunningRef.current = true;
-      setRunning(false);
-    }
-  }, [state.popupQueue, setRunning]);
+  // No pause path here (THR-1608): the popup channel is an entry in the
+  // interrupt registry (`interruptRegistry.ts`, id `EventPopup`). It waits in
+  // this queue until no other interrupt is open, and the central auto-pause
+  // stops and restores the clock around it — one pause system, not two.
 
   const handleDismissToast = useCallback((id: string) => {
     setState(prev => dismissToast(prev, id));
@@ -153,18 +145,8 @@ export function useNotifications({
   }, []);
 
   const handleDismissPopup = useCallback(() => {
-    setState(prev => {
-      const next = advancePopupQueue(prev);
-      const nextPopup = next.popupQueue[0];
-      if (!nextPopup || !nextPopup.choices?.length) {
-        if (wasRunningRef.current) {
-          wasRunningRef.current = false;
-          setRunning(true);
-        }
-      }
-      return next;
-    });
-  }, [setRunning]);
+    setState(prev => advancePopupQueue(prev));
+  }, []);
 
   const handlePopupChoice = useCallback((_effect: string) => {
     // TODO(THR-14): dispatch effect to engine when choice resolution is implemented
