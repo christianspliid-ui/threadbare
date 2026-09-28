@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: you see what your hand did**: after a cast, the player now sees who it touched and what changed ([THR-1606](https://linear.app/threadbare/issue/THR-1606)). Merged via [#2116](https://github.com/christianspliid-ui/threadbare/pull/2116), and live on the site.
 - **2026-09-28: the meeting comes to you**: after Reach Down, Meet The First now opens at the nearest settlement, so a new player can no longer miss The First (first step of [the opening](https://linear.app/threadbare/issue/THR-1605)). Merged via [#2115](https://github.com/christianspliid-ui/threadbare/pull/2115), and live on the site.
 - **2026-09-28: every written encounter gets its turn**: each mortal's shortlist is filled fairly, and a mortal in a town sees what it can start there first ([let written encounters land](https://linear.app/threadbare/issue/THR-1633)). Merged via [#2114](https://github.com/christianspliid-ui/threadbare/pull/2114), and live on the site.
 - **2026-09-28: newcomers only join the deciding tier when your attention limit has room**, the second step of [notables and ties](https://linear.app/threadbare/issue/THR-1653). Merged via [#2112](https://github.com/christianspliid-ui/threadbare/pull/2112), and live on the site.
