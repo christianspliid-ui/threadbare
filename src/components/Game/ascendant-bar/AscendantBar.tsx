@@ -74,6 +74,11 @@ interface AscendantBarProps {
    * `HooksBlock`; the bar itself has no chip of its own to link.
    */
   onOpenAttachment?: (templateNodeId: string) => void;
+  /**
+   * A quiet first screen (THR-1648): the mandate arrives with the bond to The
+   * First. Omitted means shown — the pre-S5 behaviour.
+   */
+  showMandate?: boolean;
 }
 
 export function AscendantBar({
@@ -89,6 +94,7 @@ export function AscendantBar({
   onReleaseControl,
   onOpenCodex,
   onOpenAttachment,
+  showMandate = true,
 }: AscendantBarProps) {
   const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
   const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -216,7 +222,8 @@ export function AscendantBar({
         <CovenantsBlock rows={covenantRows} onRelease={onReleaseControl} />
       </BarSection>
 
-      {/* 5. Mandate */}
+      {/* 5. Mandate — hidden until the bond (THR-1648) */}
+      {showMandate && (
       <BarSection
         label="Mandate"
         open={open.mandate}
@@ -227,6 +234,7 @@ export function AscendantBar({
           <MandateBlock mandate={mandateRow} onOpen={onOpenMandate} />
         ) : null}
       </BarSection>
+      )}
 
       {/* 6. Hooks (conditions / clues / vows) */}
       <BarSection

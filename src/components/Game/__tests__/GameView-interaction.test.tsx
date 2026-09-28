@@ -128,13 +128,27 @@ describe('GameView', () => {
     expect(matches.length).toBeGreaterThan(0);
   });
 
-  it('renders doom bar at top', () => {
+  it('keeps the doom bar, rivals and notables off the first screen until The First is bonded (THR-1648)', () => {
     render(
       <GameView
         archetype={mockArchetype}
         avatarName="The Divine Witness"
         cosmology={mockCosmology}
         seed={42}
+      />
+    );
+    expect(screen.queryByText('Doom')).toBeNull();
+    expect(screen.queryByLabelText('View doom clock details')).toBeNull();
+  });
+
+  it('renders doom bar at top once The First is bonded', () => {
+    render(
+      <GameView
+        archetype={mockArchetype}
+        avatarName="The Divine Witness"
+        cosmology={mockCosmology}
+        seed={42}
+        seedFirst
       />
     );
     // THR-1424 (Law 15 ruling, 2026-09-10): this used to look for `\d+%` — the doom progress

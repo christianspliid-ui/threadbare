@@ -11,6 +11,7 @@ import { IconButton } from '../../shared/IconButton';
 import { WorldSoulIndicator } from '../../WorldSoulIndicator';
 
 import type { GameState } from '../../../types/gameState';
+import type { FirstScreenReveal } from './firstScreenReveal';
 import type {
   NotificationPreferences,
   NotificationCategoryKey,
@@ -84,6 +85,12 @@ export interface GameViewTopBarProps {
 
   // Leave the game for the title screen (THR-1604)
   onExitToTitle?: () => void;
+
+  /**
+   * A quiet first screen (THR-1648): which pressure surfaces the player has
+   * earned. Omitted means everything shows — the pre-S5 behaviour.
+   */
+  reveal?: FirstScreenReveal;
 }
 
 export function GameViewTopBar({
@@ -127,7 +134,12 @@ export function GameViewTopBar({
   handleToggleIncludeWorld,
   handleSaveSnapshot,
   onExitToTitle,
+  reveal,
 }: GameViewTopBarProps) {
+  const showDoom = reveal?.doom ?? true;
+  const showRivals = reveal?.rivals ?? true;
+  const showNotables = reveal?.notables ?? true;
+  const showOmens = reveal?.omens ?? true;
   // ═══ Top bar — v7 visual language: solid bg, hairline border, two-tier label/value pattern ═══
   return (
       <div
@@ -199,6 +211,7 @@ export function GameViewTopBar({
             gap: 'var(--topbar-gap)',
           }}
         >
+          {showDoom && (
           <div
             role="button" tabIndex={0}
             onClick={() => setDoomDetailOpen(true)}
@@ -213,7 +226,8 @@ export function GameViewTopBar({
               journeyLabel={doomJourneyLabel}
             />
           </div>
-          {gameState.omenState?.primary && (
+          )}
+          {showOmens && gameState.omenState?.primary && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
               <OmenIndicator
@@ -224,12 +238,14 @@ export function GameViewTopBar({
           )}
           {/* MandateTracker superseded by AscendantBar (THR-184) */}
           {/* AlertBar disabled */}
-          <RivalsButton
-            definitions={gameState.rivalDefinitions}
-            states={gameState.rivalStates}
-          />
+          {showRivals && (
+            <RivalsButton
+              definitions={gameState.rivalDefinitions}
+              states={gameState.rivalStates}
+            />
+          )}
           {/* Notables intent panel (THR-630) */}
-          <NotablesButton gameState={gameState} />
+          {showNotables && <NotablesButton gameState={gameState} />}
           {/* Read the Threads — divine digest review */}
           <IconButton
             icon={<span>📖</span>}
