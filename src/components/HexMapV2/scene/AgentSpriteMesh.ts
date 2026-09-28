@@ -38,6 +38,7 @@ import {
   buildRetinueDotTexture,
   loadPortraitTexture,
   buildAvatarRingTexture,
+  buildAvatarSigilDotTexture,
   buildActivityHaloTexture,
 } from '../agents/agentPortraitTextures';
 import { RENDER_ORDER } from './RenderLayers';
@@ -175,8 +176,11 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
       const wx = worldPos.x;
       const wy = worldPos.y;
 
-      const factionTexture = dotTextureCache.get(agent.factionIndex)
-        ?? dotTextureCache.get(0)!;
+      // THR-1609: the avatar starts god-marked (sphere ring + sigil), never as a
+      // faction dot, so it is distinct from mortals before its portrait loads.
+      const factionTexture = agent.isAvatar && agent.avatarSphereColor && agent.avatarSigil
+        ? buildAvatarSigilDotTexture(agent.avatarSphereColor, agent.avatarSigil)
+        : dotTextureCache.get(agent.factionIndex) ?? dotTextureCache.get(0)!;
 
       // Pre-build all tier materials
       const portraitMaterial = new THREE.SpriteMaterial({
@@ -439,6 +443,7 @@ export async function loadAgentPortraits(
       const texture = await loadPortraitTexture(agent.portraitUrl!, ringColor, agent.isRetinue, {
         isAvatar: agent.isAvatar,
         avatarSphereColor: agent.avatarSphereColor,
+        avatarSigil: agent.avatarSigil,
       });
 
       // Update both portrait and dot materials

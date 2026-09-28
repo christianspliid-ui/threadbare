@@ -54,6 +54,13 @@ interface HexTooltipProps {
    * counterpart name + cargo manifest, red-tinted when the route is threatened.
    */
   tradeRoutes?: RouteTooltipEntry[];
+  /**
+   * THR-1609: "You walk here as {name}." when the player's avatar stands on this
+   * hex — the line that tells the player this figure is their own shape.
+   */
+  avatarLine?: string;
+  /** Sphere tint for the avatar line's marker dot. */
+  avatarColor?: string;
 }
 
 // THR-1451 (Class C): `pct()` drew `73%` on the geo row. The reading exists —
@@ -100,6 +107,8 @@ export function HexTooltip({
   hasRiver,
   locationActivity,
   tradeRoutes,
+  avatarLine,
+  avatarColor,
 }: HexTooltipProps) {
   const hasLocationData = locationActivity && locationActivity.agentThreads.length > 0 || locationActivity?.murmurs.length;
 
@@ -115,15 +124,16 @@ export function HexTooltip({
   const routeOverflow = Math.max(0, (tradeRoutes?.length ?? 0) - TOOLTIP_MAX_ROUTES);
   const routeSectionHeight = namedRouteCount > 0 ? 8 + namedRouteCount * 16 + (routeOverflow > 0 ? 14 : 0) : 0;
 
-  const estimatedWidth  = hasLocationData || namedRouteCount > 0 ? 240 : 180;
+  const estimatedWidth  = hasLocationData || namedRouteCount > 0 || avatarLine ? 240 : 180;
   const estimatedHeight = geoParams ? 100
     : hasLocationData
       ? 46 + murmurLineCount * 18 + threadCount * 16 + (hasOverflow ? 14 : 0) + 8 + routeSectionHeight
       : 46 + routeSectionHeight;
+  const avatarLineHeight = avatarLine ? 20 : 0;
   const offsetY = INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y;
 
   let left = screenX - estimatedWidth / 2;
-  let top  = screenY - offsetY - estimatedHeight;
+  let top  = screenY - offsetY - estimatedHeight - avatarLineHeight;
 
   if (left < 4) left = 4;
   if (left + estimatedWidth > canvasWidth - 4) left = canvasWidth - estimatedWidth - 4;
@@ -195,6 +205,34 @@ export function HexTooltip({
           <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>{terrainKey}</span>
         )}
       </div>
+
+      {/* The player's own shape on this hex (THR-1609) */}
+      {avatarLine && (
+        <div
+          data-testid="hex-tooltip-avatar-line"
+          style={{
+            display:    'flex',
+            alignItems: 'center',
+            gap:        6,
+            color:      'var(--text-primary)',
+            fontSize:   'var(--text-xs)',
+            fontFamily: 'var(--font-body)',
+            fontStyle:  'italic',
+            lineHeight: 1.5,
+            whiteSpace: 'normal',
+            marginBottom: 4,
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+              border: `2px solid ${avatarColor ?? 'var(--accent-gold)'}`,
+            }}
+          />
+          {avatarLine}
+        </div>
+      )}
 
       {/* Location murmur prose — italic, atmospheric */}
       {locationActivity?.murmurs && locationActivity.murmurs.length > 0 && (

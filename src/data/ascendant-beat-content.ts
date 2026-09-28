@@ -167,6 +167,18 @@ export interface SpineBeatPresentation {
   readonly cta: string;
 }
 
+/** The one placeholder spine prose may carry: the avatar's (remembered) name — THR-1609. */
+export const SPINE_AVATAR_NAME_TOKEN = '{avatarName}';
+
+/** Said in place of the name when none is known. */
+export const SPINE_AVATAR_NAME_FALLBACK = 'the one you were';
+
+/** Fills `{avatarName}` in authored spine prose; never leaks the raw token. */
+export function fillSpineAvatarName(prose: string, avatarName: string | undefined): string {
+  const name = avatarName?.trim() || SPINE_AVATAR_NAME_FALLBACK;
+  return prose.split(SPINE_AVATAR_NAME_TOKEN).join(name);
+}
+
 /**
  * The scripted onboarding spine's authored presentation, keyed by `beatId`. The modal
  * prefers this over the generic kind-derived placeholder copy so the opening reads as a
@@ -175,14 +187,16 @@ export interface SpineBeatPresentation {
  * Voice: second-person, player-as-god, indirect intervention (you lean, you press, you
  * speak a pressure — never command). The spine is deterministic and identical every run,
  * so the prose carries no `enrichProse` placeholders; per-run generated names enter via
- * the pool beats (TODO(THR-514)), not the scripted spine.
+ * the pool beats (TODO(THR-514)), not the scripted spine. One narrow exception
+ * (THR-1609): Beat 0 names the avatar through `SPINE_AVATAR_NAME_TOKEN`, filled by
+ * `fillSpineAvatarName` — the player typed that name themselves, so it is not generated.
  */
 export const SPINE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentation>> = {
   'beat.spine.opening': {
     eyebrow: 'The First Thread',
     title: 'The First',
     prose:
-      'Of all the souls below, one burns at a pitch only you can hear. You do not seize it — you lean close, and a single thread spins out between your attention and the mortal world. Watch this one. Whatever kind of god you become, it will be answered first in them.',
+      'You walk the world again as {avatarName} — your own shape, not the soul you seek. Of all the souls below, one burns at a pitch only you can hear. You do not seize it — you lean close, and a single thread spins out between your attention and the mortal world. Watch this one. Whatever kind of god you become, it will be answered first in them.',
     cta: 'Reach Down',
   },
   'beat.spine.the_seat': {

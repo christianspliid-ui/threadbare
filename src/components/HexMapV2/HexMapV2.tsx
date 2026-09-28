@@ -105,6 +105,7 @@ import { LocationLabelOverlay, type LocationLabelData } from './overlay/Location
 import { AgentPulseOverlay } from './overlay/AgentPulseOverlay';
 import type { ScreenBBox } from './overlay/labelCollision';
 import { HexTooltip } from './interaction/HexTooltip';
+import { avatarHoverLine } from '../../data/avatar-framing';
 import type { LocationActivitySummary } from '../../types/locationActivity';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
 import { getFixedSlotOffset } from '../../lib/movementPath';
@@ -1990,6 +1991,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             t => t.coord.col === tooltipHex.col && t.coord.row === tooltipHex.row,
           );
           const terrainName = String(hoveredTile?.terrain ?? '');
+          // THR-1609: name the player's own shape when the avatar stands here.
+          const avatarHere = agents?.find(
+            a => a.isAvatar && a.hexCol === tooltipHex.col && a.hexRow === tooltipHex.row,
+          );
           return (
             <HexTooltip
               terrainName={terrainName}
@@ -2000,6 +2005,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               canvasHeight={canvasDimensions.h}
               locationActivity={locationActivity}
               tradeRoutes={tradeRoutes}
+              avatarLine={avatarHere ? avatarHoverLine(avatarHere.name ?? '') : undefined}
+              avatarColor={avatarHere?.avatarSphereColor}
             />
           );
         })()}
