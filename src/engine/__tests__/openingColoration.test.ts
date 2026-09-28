@@ -84,10 +84,18 @@ describe('resolveOpeningColoration — choosing the line (THR-1635)', () => {
       .toBe('no_culture');
     expect(resolveOpeningColoration({ ...TOWN, foundation: 'balanced', sphereShare: 0.1 }).reason)
       .toBe('unknown_foundation');
-    // A reach slice 1 did not author (slice 2, THR-1638) → falls through, cell named.
-    const unauthored = resolveOpeningColoration({ ...TOWN, reach: 'gold', sphereShare: 0.1 });
-    expect(unauthored.reason).toBe('culture_cell_unauthored');
-    expect(unauthored.cell).toBe('culture.order.gold');
+    // An unauthored culture cell → falls through, cell named. Slice 2 (THR-1638) authored
+    // every culture cell, so the gap is made by lifting one out for the assertion.
+    const byReach = CULTURE_CUSTOMS.order as Partial<Record<string, readonly string[]>>;
+    const goldCell = byReach.gold;
+    delete byReach.gold;
+    try {
+      const unauthored = resolveOpeningColoration({ ...TOWN, reach: 'gold', sphereShare: 0.1 });
+      expect(unauthored.reason).toBe('culture_cell_unauthored');
+      expect(unauthored.cell).toBe('culture.order.gold');
+    } finally {
+      byReach.gold = goldCell;
+    }
     expect(resolveOpeningColoration({ ...TOWN, foundation: null, sphereShare: SPHERE_FACT_MIN_SHARE - 0.01 }).reason)
       .toBe('sphere_below_share');
     expect(resolveOpeningColoration({ ...TOWN, foundation: null, dominantSphere: 'force' }).reason)
@@ -236,6 +244,28 @@ describe('content rules (THR-1635)', () => {
         expect(SPHERE_FACTS[sphere]?.[reach]).toHaveLength(2);
       }
     }
+  });
+
+  it('slice 2 cells are complete: every foundation × reach, and the seven dominating spheres × reach (THR-1638)', () => {
+    const reaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'] as const;
+    for (const foundation of ['chaos', 'order', 'light', 'darkness'] as const) {
+      for (const reach of reaches) {
+        const cell = CULTURE_CUSTOMS[foundation][reach];
+        expect(cell, `culture.${foundation}.${reach}`).toHaveLength(CULTURE_CUSTOM_VARIANTS);
+        // Variants are what two same-foundation cultures read side by side — never duplicates.
+        expect(new Set(cell).size).toBe(CULTURE_CUSTOM_VARIANTS);
+      }
+    }
+    for (const sphere of ['matter', 'entropy', 'life', 'energy', 'darkness', 'time', 'light'] as const) {
+      for (const reach of reaches) {
+        const cell = SPHERE_FACTS[sphere]?.[reach];
+        expect(cell, `sphere.${sphere}.${reach}`).toHaveLength(2);
+        expect(new Set(cell).size).toBe(2);
+      }
+    }
+    // No line is reused across cells: each reads as its own fact.
+    const lines = allColorationLines().map(l => l.line);
+    expect(new Set(lines).size).toBe(lines.length);
   });
 
   it('the doctrine checker catches an over-budget line and a {culture} token', () => {

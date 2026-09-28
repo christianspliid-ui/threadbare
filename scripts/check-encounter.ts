@@ -85,7 +85,8 @@ import {
 } from '../src/data/content-eval/compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
-import { doctrineV2Warnings } from '../src/data/content-eval/doctrineV2Checks';
+import { doctrineV2Warnings, colorationLineProblems } from '../src/data/content-eval/doctrineV2Checks';
+import { allColorationLines } from '../src/data/culture-sphere-lines';
 import { pinnedForkAxisWarnings } from '../src/data/content-eval/motivationPoleChecks';
 import {
   validateNudgeGrantRefs,
@@ -431,6 +432,14 @@ const staleEntries = wantsAll
     })
   : [];
 
+// THR-1638 — the coloration tables (`culture-sphere-lines.ts`) are shared by every
+// opening rather than owned by one template, so they are swept once per `--all` run
+// and reported on the warn channel (non-gating, like every doctrine budget). Before
+// this, `colorationLineProblems` ran only in the unit test, and a green `--all` said
+// nothing about the lines it could not see.
+const colorationLineCount = wantsAll ? allColorationLines().length : 0;
+const colorationWarnings: readonly string[] = wantsAll ? colorationLineProblems() : [];
+
 // ─── Report ──────────────────────────────────────────────────────────
 
 if (wantsListFailures) {
@@ -451,6 +460,7 @@ if (wantsJson) {
         pendingFailures: results.filter(r => r.failed && r.pending).length,
         warnings: results.reduce((sum, r) => sum + r.warnings.length, 0),
         staleRatchetEntries: staleEntries,
+        colorationLines: { checked: colorationLineCount, warnings: colorationWarnings },
         results,
       },
       null,
@@ -494,6 +504,14 @@ if (wantsJson) {
     for (const line of result.warnings) console.log(`      [warn] ${line}`);
   }
   console.log('');
+
+  if (wantsAll) {
+    console.log(
+      `  ── Coloration lines: checked ${colorationLineCount}   warnings ${colorationWarnings.length} ──`,
+    );
+    for (const line of colorationWarnings) console.log(`      [warn] [coloration] ${line}`);
+    console.log('');
+  }
 
   if (missing.length > 0) {
     console.log(`  ── Unresolved ids (${missing.length}) ──`);

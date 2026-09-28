@@ -19,7 +19,12 @@ import { initializeGameState, MAP_SIZE_PRESETS } from '../../engine/gameInit';
 import { generateArchetypes } from '../../engine/ascendant';
 import { createBalancedCosmology } from '../../engine/cosmology';
 import { getLocationNodes } from '../../engine/sublocationShape';
-import { gatherPlaceColoration, buildColorationCensus, getCurrentCultureOf } from '../../engine/openingColoration';
+import {
+  gatherPlaceColoration,
+  buildColorationCensus,
+  getCurrentCultureOf,
+  describeOpeningColoration,
+} from '../../engine/openingColoration';
 import { enrichProse, gatherNarrativeContext } from '../../engine/proseEnrichment';
 import { SPHERE_FACT_MIN_SHARE } from '../culture-sphere-lines';
 import type { WorldGraph } from '../../engine/graph';
@@ -151,6 +156,28 @@ describe('coloration on a generated medium world (THR-1635)', () => {
       const perFoundation = new Map<string, number>();
       for (const c of census.cultures) perFoundation.set(c.foundation, (perFoundation.get(c.foundation) ?? 0) + 1);
       if ([...perFoundation.values()].every(n => n <= 3)) expect(census.sharedStamps).toEqual([]);
+    });
+
+    it(`seed ${seed}: no Location reads an unauthored cell at any reach (THR-1638)`, () => {
+      // Every living culture × every reach, and every place-dominating sphere × every
+      // reach, resolves to an authored line — the slice-2 Done-when, swept through the
+      // same resolver `window.__DEBUG.getOpeningColoration` reads.
+      const graph = generate(seed);
+      const reasons: Record<string, number> = {};
+      const unauthored: string[] = [];
+      for (const location of getLocationNodes(graph)) {
+        const readout = describeOpeningColoration(graph, location.id);
+        for (const [reach, r] of Object.entries(readout.perReach)) {
+          if (!r) continue;
+          reasons[r.reason] = (reasons[r.reason] ?? 0) + 1;
+          if (r.reason.endsWith('_cell_unauthored')) {
+            unauthored.push(`${location.id} ${reach}: ${r.reason} (${readout.foundation ?? readout.dominantSphere})`);
+          }
+        }
+      }
+      console.log(`[THR-1638 cell sweep] seed ${seed}: ${JSON.stringify(reasons)}`);
+      expect(unauthored).toEqual([]);
+      expect((reasons.culture ?? 0) + (reasons.sphere ?? 0)).toBeGreaterThan(0);
     });
 
     it(`seed ${seed}: step 0 of every guarded template renders with no raw token, and both line kinds fire`, () => {
